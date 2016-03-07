@@ -1,0 +1,125 @@
+###############################################################################
+#
+# (c) Copyright IBM Corp. 2014, 2016
+#
+#  This program and the accompanying materials are made available
+#  under the terms of the Eclipse Public License v1.0 and
+#  Apache License v2.0 which accompanies this distribution.
+#
+#      The Eclipse Public License is available at
+#      http://www.eclipse.org/legal/epl-v10.html
+#
+#      The Apache License v2.0 is available at
+#      http://www.opensource.org/licenses/apache2.0.php
+#
+# Contributors:
+#    Multiple authors (IBM Corp.) - initial implementation and documentation
+###############################################################################
+
+# configure artifacts
+autom4te.cache
+config.cache
+config.log
+config.status
+install-sh
+SPEC
+
+OMR_VERSION_STRING
+OMR_JIT_VERSION_STRING
+
+CONFIGURE_SENTINEL_FILE
+*.sentinel
+
+# misc generated files
+gc/base/mmomrhook_internal.h
+gc/base/mmprivatehook.h
+gc/base/mmprivatehook_internal.h
+gc/doc/html
+include_core/mmomrhook.h
+include_core/omrcfg.h
+include_core/omrversionstrings.h
+fvtest/algotest/hooksample.h
+fvtest/algotest/hooksample_internal.h
+omrmakefiles/omrcfg.mk
+omrmakefiles/configure.mk
+omrmakefiles/toolconfigure.mk
+omrsigcompat/omrsig.exportlist
+
+J9TraceFormat.dat
+OMRTestTraceFormat.dat
+OMRTraceFormat.dat
+
+omralgotest
+omrgcexample
+omrgctest
+omrperfgctest
+omrporttest
+omrrastest
+omrsigtest
+omrsubscribertest
+omrthreadextendedtest
+omrthreadtest
+omrtraceoptiontest
+omrutiltest
+omrvmtest
+utTrcCounters
+
+# hook generation tool
+hookgen
+
+# trace
+/tracegen
+/tracemerge
+*.pdat
+ut_*.c
+ut_*.h
+ut_*.inc
+
+install_manifest.txt
+Testing/
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.so.dbg
+*.dylib
+*.def
+*.dll
+*.exp
+*.map
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+*.d
+*.pdb
+*.res
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Visual Studio
+*.dir/
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj.filters
+Debug/
+gc/example/Debug/
+omr_test/Debug/
+port/omrsyslogmessages.h
+port/omrsyslogmessages.rc
+port/MSG00001.bin
+x64/

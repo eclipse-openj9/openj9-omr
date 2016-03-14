@@ -1,5 +1,7 @@
 language: c
 sudo: false
+os: linux
+cache: ccache
 
 addons:
   apt:
@@ -7,7 +9,12 @@ addons:
        - ubuntu-toolchain-r-test
     packages:
        - libnuma-dev
+       - bison
 
-script: make -f run_configure.mk SPEC=linux_x86-64 OMRGLUE=./example/glue && make && make test
+before_script:
+  - ulimit -c unlimited
+  - make -f run_configure.mk SPEC=linux_x86-64 OMRGLUE=./example/glue
+  - export GTEST_FILTER=-*dump_test_create_dump_*
 
+script: make && make test
 

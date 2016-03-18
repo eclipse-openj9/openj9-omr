@@ -104,10 +104,36 @@ GCConfigTest::TearDown()
 	/* free object table */
 	objectTable.free();
 
-	/* close verboseManager */
+	/* close verboseManager and clean up verbose files */
 	verboseManager->closeStreams(env);
 	verboseManager->disableVerboseGC();
 	verboseManager->kill(env);
+	if (false == gcTestEnv->keepLog) {
+		if (0 == numOfFiles) {
+			J9FileStat buf;
+			int32_t fileStatRC = -1;
+			fileStatRC = omrfile_stat(verboseFile, 0, &buf);
+			if (0 == fileStatRC) {
+				if (1 == buf.isFile) {
+					omrfile_unlink(verboseFile);
+				}
+			}
+		} else {
+			for (int32_t seq = 1; seq <= (int32_t)numOfFiles; seq++) {
+				char verboseFileSeq[MAX_NAME_LENGTH];
+				omrstr_printf(verboseFileSeq, MAX_NAME_LENGTH, "%s.%03zu", verboseFile, seq);
+				J9FileStat buf;
+				int32_t fileStatRC = -1;
+				fileStatRC = omrfile_stat(verboseFileSeq, 0, &buf);
+				if (0 > fileStatRC) {
+					if (1 != buf.isFile) {
+						break;
+					}
+				}
+				omrfile_unlink(verboseFileSeq);
+			}
+		}
+	}
 	omrmem_free_memory((void *)verboseFile);
 
 	/* Shut down the dispatcher threads */

@@ -118,6 +118,9 @@ OMRAgent_OnUnload(OMR_TI const *ti, OMR_VM *vm)
 	fclose(testData1.outfile);
 	fclose(testData2.outfile);
 
+	omrfile_unlink(testData1.trcFileName);
+	omrfile_unlink(testData2.trcFileName);
+
 	return rc;
 }
 

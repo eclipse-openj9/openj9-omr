@@ -57,6 +57,17 @@ typedef struct protectedWriteInfo {
 	char *address;
 } protectedWriteInfo;
 
+class PortMmapTest : public ::testing::Test
+{
+protected:
+	static void
+	TearDownTestCase()
+	{
+		testFileCleanUp("mmapTest");
+		testFileCleanUp("omrmmap_test");
+	}
+};
+
 static uintptr_t
 simpleHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *handler_arg)
 {
@@ -86,7 +97,7 @@ protectedWriter(OMRPortLibrary *portLibrary, void *arg)
 /**
  * Verify port library properly setup to run mmap tests
  */
-TEST(PortMmapTest, mmap_test0)
+TEST_F(PortMmapTest, mmap_test0)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test0";
@@ -134,7 +145,7 @@ TEST(PortMmapTest, mmap_test0)
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * processes read-only mapping
  */
-TEST(PortMmapTest, mmap_test1)
+TEST_F(PortMmapTest, mmap_test1)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test1";
@@ -237,7 +248,7 @@ exit:
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * processes write mapping
  */
-TEST(PortMmapTest, mmap_test2)
+TEST_F(PortMmapTest, mmap_test2)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test2";
@@ -372,7 +383,7 @@ exit:
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * processes copy-on-write mapping
  */
-TEST(PortMmapTest, mmap_test3)
+TEST_F(PortMmapTest, mmap_test3)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test3";
@@ -507,7 +518,7 @@ exit:
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * processes msync updates of the file on disk
  */
-TEST(PortMmapTest, mmap_test4)
+TEST_F(PortMmapTest, mmap_test4)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test4";
@@ -652,7 +663,7 @@ exit:
  *
  * Note: This test uses helper functions from omrfileTest.c
  */
-TEST(PortMmapTest, mmap_test5)
+TEST_F(PortMmapTest, mmap_test5)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -915,7 +926,7 @@ exit:
 * Verify that if @ref omrmmap.c::omrmmap_protect "omrmmap_protect()" returns  OMRPORT_MMAP_CAPABILITY_PROTECT,
 * 	that @ref omrmmap::omrmmap_get_region_granularity "omrmmap_get_region_granularity()" does not return 0
 */
-TEST(PortMmapTest, mmap_test6)
+TEST_F(PortMmapTest, mmap_test6)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test6";
@@ -1040,7 +1051,7 @@ exit:
  * OMRPORT_PAGE_PROTECT_READ allows the
  * memory to be read.
  */
-TEST(PortMmapTest, mmap_test7)
+TEST_F(PortMmapTest, mmap_test7)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test7";
@@ -1157,7 +1168,7 @@ exit:
  * OMRPORT_PAGE_PROTECT_READ | OMRPORT_PAGE_PROTECT_WRITE allows the
  * memory to be read from and written to.
  */
-TEST(PortMmapTest, mmap_test8)
+TEST_F(PortMmapTest, mmap_test8)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test8";
@@ -1300,7 +1311,7 @@ exit:
  * and that we are once again able to write when we set it back
  *  to OMRPORT_PAGE_PROTECT_READ | OMRPORT_PAGE_PROTECT_READ
  */
-TEST(PortMmapTest, mmap_test9)
+TEST_F(PortMmapTest, mmap_test9)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test9";
@@ -1481,7 +1492,7 @@ exit:
  * Verify the page size is correct - create a file over two pages, protect the first and
  * then write to the second page (should be ok) and the last byte of the first page (should fail).
  */
-TEST(PortMmapTest, mmap_test10)
+TEST_F(PortMmapTest, mmap_test10)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test10";
@@ -1696,7 +1707,7 @@ exit:
 }
 
 /** Work on a funny boundary (ie. not a 64k boundary, just a 4k one) */
-TEST(PortMmapTest, mmap_test11)
+TEST_F(PortMmapTest, mmap_test11)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test11";
@@ -1919,7 +1930,7 @@ exit:
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * manages the memory counters
  */
-TEST(PortMmapTest, mmap_test12)
+TEST_F(PortMmapTest, mmap_test12)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test12";
@@ -2051,7 +2062,7 @@ exit:
  * Verify @ref omrmmap.c::omrmmap_map_file "omrmmap_map_file()" correctly
  * maps the whole file when the size argument is 0.
  */
-TEST(PortMmapTest, mmap_test13)
+TEST_F(PortMmapTest, mmap_test13)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_test13";
@@ -2140,7 +2151,7 @@ exit:
 }
 
 #define TEST_BUFF_LEN 0x10000
-TEST(PortMmapTest, mmap_testDontNeed)
+TEST_F(PortMmapTest, mmap_testDontNeed)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmmap_testDontNeed";

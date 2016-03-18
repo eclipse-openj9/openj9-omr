@@ -79,6 +79,7 @@ int startsWith(const char *s, const char *prefix);
 uintptr_t raiseSEGV(OMRPortLibrary *portLibrary, void *arg);
 intptr_t omrfile_create_status_file(OMRPortLibrary *portLibrary, const char *filename, const char *testName);
 intptr_t omrfile_status_file_exists(OMRPortLibrary *portLibrary, const char *filename, const char *testName);
+void testFileCleanUp(const char* filePrefix);
 
 /**
  * @see omrsignalTest.c::validateGPInfo

@@ -66,6 +66,17 @@ static BOOLEAN isAsync = FALSE;
 
 #define APPEND_ASYNC(testName) (isAsync ?  #testName "_async" : #testName )
 
+class PortFileTest2 : public ::testing::Test
+{
+protected:
+	static void
+	TearDownTestCase()
+	{
+		testFileCleanUp("tfileTest");
+		testFileCleanUp("omrfile_test");
+	}
+};
+
 /**
  * @internal
  * Write to a file
@@ -147,7 +158,7 @@ omrfile_flength_helper(struct OMRPortLibrary *portLibrary, intptr_t fd)
 /**
  * Verify port library properly setup to run file tests
  */
-TEST(PortFileTest2, file_test0)
+TEST_F(PortFileTest2, file_test0)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test0);
@@ -382,7 +393,7 @@ TEST(PortFileTest2, file_test0)
  * Verify port file system.
  * @ref omrfile.c::omrfile_write "omrfile_write()"
  */
-TEST(PortFileTest2, file_test1)
+TEST_F(PortFileTest2, file_test1)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test1);
@@ -398,7 +409,7 @@ TEST(PortFileTest2, file_test1)
  * Verify port file system.
  * @ref omrfile.c::omrfile_write_text "omrfile_write_text()"
  */
-TEST(PortFileTest2, file_test2)
+TEST_F(PortFileTest2, file_test2)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test2);
@@ -414,7 +425,7 @@ TEST(PortFileTest2, file_test2)
  * Verify port file system.
  * @ref omrfile.c::omrfile_vprintf "omrfile_vprintf()"
  */
-TEST(PortFileTest2, file_test3)
+TEST_F(PortFileTest2, file_test3)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	/* first we need a file to copy use with vprintf */
@@ -550,7 +561,7 @@ openFlagTest(struct OMRPortLibrary *portLibrary, const char *testName, const cha
  * Verify @ref omrfile.c::omrfile_attr "omrfile_attr()" correctly
  * determines if files and directories exist.
  */
-TEST(PortFileTest2, file_test4)
+TEST_F(PortFileTest2, file_test4)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test4);
@@ -607,7 +618,7 @@ TEST(PortFileTest2, file_test4)
  * indication if the tests following that exhaustively test operations
  * will pass or fail.
  */
-TEST(PortFileTest2, file_test5)
+TEST_F(PortFileTest2, file_test5)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test5);
@@ -696,7 +707,7 @@ exit:
  * @ref omrfile.c::omrfile_close "omrfile_close()"
  * are verified by this test.
  */
-TEST(PortFileTest2, file_test6)
+TEST_F(PortFileTest2, file_test6)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test6);
@@ -880,7 +891,7 @@ exit:
  * @ref omrfile::omrfile_write "omrfile_write()"
  * operations
  */
-TEST(PortFileTest2, file_test7)
+TEST_F(PortFileTest2, file_test7)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test7);
@@ -964,7 +975,7 @@ exit:
  * writes FGHIJ to it, fileseeks to start of file and reads 10 chars and hopefully this matches
  * ABCDEFGHIJ ....
  */
-TEST(PortFileTest2, file_test8)
+TEST_F(PortFileTest2, file_test8)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test8);
@@ -1101,7 +1112,7 @@ exit:
  * @ref omrfile.c::omrfile_length "omrfile_length()"
  * @ref omrfile.c::omrfile_set_length "omrfile_set_length()"
  */
-TEST(PortFileTest2, file_test9)
+TEST_F(PortFileTest2, file_test9)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test9);
@@ -1223,7 +1234,7 @@ exit:
  * Verify port file system.
  * @ref omrfile.c::omrfile_seek "omrfile_seek()"
  */
-TEST(PortFileTest2, file_test10)
+TEST_F(PortFileTest2, file_test10)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test10);
@@ -1391,7 +1402,7 @@ exit:
  * Create directories @ref omrfile.c::omrfile_mkdir "omrfile_mkdir() and
  * delete them @ref omrfile.c::omrfile_unlinkdir "omrfile_unlinkdir()"
  */
-TEST(PortFileTest2, file_test11)
+TEST_F(PortFileTest2, file_test11)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test11);
@@ -1510,7 +1521,7 @@ exit:
  * @ref omrfile.c::omrfile_unlink "omrfile_unlink()" and
  * @ref omrfile.c::omrfile_unlinkdir "omrfile_unlinkdir()"
  */
-TEST(PortFileTest2, file_test12)
+TEST_F(PortFileTest2, file_test12)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test12);
@@ -1631,7 +1642,7 @@ exit:
  * Verify file move operation
  * @ref omrfile.c::omrfile_move "omrfile_move()"
  */
-TEST(PortFileTest2, file_test13)
+TEST_F(PortFileTest2, file_test13)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	/* This case tests ability to create a directory/file and rename it */
@@ -1709,7 +1720,7 @@ exit:
  * @ref omrfile.c::omrfile_findnext "omrfile_findnext()"
  * @ref omrfile.c::omrfile_findclose "omrfile_findclose()"
  */
-TEST(PortFileTest2, file_test14)
+TEST_F(PortFileTest2, file_test14)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test14);
@@ -1885,7 +1896,7 @@ exit:
  * Verify port file system.
  * @ref omrfile.c::omrfile_sync "omrfile_sync()"
  */
-TEST(PortFileTest2, file_test15)
+TEST_F(PortFileTest2, file_test15)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test15);
@@ -1978,7 +1989,7 @@ exit:
  * Verify port file system.
  * Verify @ref omrfile.c::omrfile_error_message "omrfile_error_message()".
  */
-TEST(PortFileTest2, file_test16)
+TEST_F(PortFileTest2, file_test16)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test16);
@@ -1994,7 +2005,7 @@ TEST(PortFileTest2, file_test16)
  * Verify file printf function.
  * Verify @ref omrfile.c::omrfile_printf "omrfile_printf()"
  */
-TEST(PortFileTest2, file_test17)
+TEST_F(PortFileTest2, file_test17)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	/* first we need a file to copy use with vprintf */
@@ -2183,7 +2194,7 @@ omrfile_status_file_exists(OMRPortLibrary *portLibrary, const char *filename, co
  * Basic test: ensure we can acquire and release a read lock
  *
  */
-TEST(PortFileTest2, file_test18)
+TEST_F(PortFileTest2, file_test18)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2235,7 +2246,7 @@ exit:
  * Basic test: ensure we can acquire and release a write lock
  *
  */
-TEST(PortFileTest2, file_test19)
+TEST_F(PortFileTest2, file_test19)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2291,7 +2302,7 @@ exit:
  */
 #define TEST20_OFFSET 16
 #define TEST20_LENGTH 4
-TEST(PortFileTest2, file_test20)
+TEST_F(PortFileTest2, file_test20)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2448,7 +2459,7 @@ exit:
  */
 #define TEST21_OFFSET 16
 #define TEST21_LENGTH 4
-TEST(PortFileTest2, file_test21)
+TEST_F(PortFileTest2, file_test21)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2619,7 +2630,7 @@ exit:
  */
 #define TEST22_OFFSET 16
 #define TEST22_LENGTH 4
-TEST(PortFileTest2, file_test22)
+TEST_F(PortFileTest2, file_test22)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2792,7 +2803,7 @@ exit:
  */
 #define TEST23_OFFSET 16
 #define TEST23_LENGTH 4
-TEST(PortFileTest2, file_test23)
+TEST_F(PortFileTest2, file_test23)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -2969,7 +2980,7 @@ exit:
  */
 #define TEST24_OFFSET 16
 #define TEST24_LENGTH 4
-TEST(PortFileTest2, file_test24)
+TEST_F(PortFileTest2, file_test24)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -3154,7 +3165,7 @@ exit:
  */
 #define TEST25_OFFSET 16
 #define TEST25_LENGTH 4
-TEST(PortFileTest2, file_test25)
+TEST_F(PortFileTest2, file_test25)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -3362,7 +3373,7 @@ exit:
  * Verify @ref omrfile.c::omrfile_stat "omrfile_stat()" correctly
  * determines if files and directories exist.
  */
-TEST(PortFileTest2, file_test26)
+TEST_F(PortFileTest2, file_test26)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test26);
@@ -3422,7 +3433,7 @@ TEST(PortFileTest2, file_test26)
  * Verify @ref omrfile.c::omrfile_chmod "omrfile_chmod()" correctly
  * sets file permissions.
  */
-TEST(PortFileTest2, file_test27)
+TEST_F(PortFileTest2, file_test27)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test27);
@@ -3520,7 +3531,7 @@ TEST(PortFileTest2, file_test27)
  * Verify @ref omrfile.c::omrfile_chmod "omrfile_chmod()" correctly
  * sets file permissions.
  */
-TEST(PortFileTest2, file_test28)
+TEST_F(PortFileTest2, file_test28)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test28);
@@ -3581,7 +3592,7 @@ TEST(PortFileTest2, file_test28)
  * Verify @ref omrfile.c::omrfile_chown "omrfile_chown()" correctly
  * sets file group.  Also test omrsysinfo_get_egid(), omrsysinfo_get_euid()
  */
-TEST(PortFileTest2, file_test29)
+TEST_F(PortFileTest2, file_test29)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test29);
@@ -3621,7 +3632,7 @@ TEST(PortFileTest2, file_test29)
  *
  * Verify @ref omrfile.c::omrfile_open returns OMRPORT_ERROR_FILE_ISDIR if we are trying to create a directory.
  */
-TEST(PortFileTest2, file_test30)
+TEST_F(PortFileTest2, file_test30)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test30);
@@ -3699,7 +3710,7 @@ exit:
 /**
  * Test file owner and group attributes
  */
-TEST(PortFileTest2, file_test31)
+TEST_F(PortFileTest2, file_test31)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test31);
@@ -3757,7 +3768,7 @@ exit:
 	reportTestExit(OMRPORTLIB, testName);
 }
 
-TEST(PortFileTest2, file_test32)
+TEST_F(PortFileTest2, file_test32)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test32_test_file_permission_bits_using_omrfile_stat());
@@ -3909,7 +3920,7 @@ done:
 }
 
 
-TEST(PortFileTest2, file_test33)
+TEST_F(PortFileTest2, file_test33)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -3953,7 +3964,7 @@ const char *testName = APPEND_ASYNC(omrfile_test33: test UTF - 8 encoding);
  * Note that this test is only run on windows, as it is the only OS (AFAIK)
  * that supports file names longer than 256 chars.
  */
-TEST(PortFileTest2, file_test_long_file_name)
+TEST_F(PortFileTest2, file_test_long_file_name)
 {
 	/* first we need a file to copy use with vprintf */
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
@@ -4236,7 +4247,7 @@ exit:
  * Test omrfile_test35
  * Tests omrfile_flength()
  */
-TEST(PortFileTest2, file_test35)
+TEST_F(PortFileTest2, file_test35)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 
@@ -4305,7 +4316,7 @@ exit:
  *
  * Simple test of omrfile_convert_native_fd_to_omrfile_fd (it's a simple function!)
  */
-TEST(PortFileTest2, file_test36)
+TEST_F(PortFileTest2, file_test36)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test36);
@@ -4340,7 +4351,7 @@ TEST(PortFileTest2, file_test36)
  * determines if files and directories exist.
  * Similar to omrfile_test26 for omrfile_stat().
  */
-TEST(PortFileTest2, file_test37)
+TEST_F(PortFileTest2, file_test37)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test37);
@@ -4383,7 +4394,7 @@ TEST(PortFileTest2, file_test37)
  * Test file owner and group attributes using omrfile_fstat()
  * Similar to omrfile_test31 for omrfile_stat().
  */
-TEST(PortFileTest2, file_test38)
+TEST_F(PortFileTest2, file_test38)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test38);
@@ -4449,7 +4460,7 @@ TEST(PortFileTest2, file_test38)
  * Test file file permission bits using omrfile_fstat()
  * Similar to omrfile_test32 for omrfile_stat().
  */
-TEST(PortFileTest2, file_test39)
+TEST_F(PortFileTest2, file_test39)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits using omrfile_fstat());
@@ -4689,7 +4700,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
  * Verify port file system.
  * @ref omrfile.c::omrfile_set_length "omrfile_set_length()"
  */
-TEST(PortFileTest2, file_test40)
+TEST_F(PortFileTest2, file_test40)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = APPEND_ASYNC(omrfile_test40);

@@ -236,8 +236,10 @@ TEST(TraceLogTest, stressTraceBufferManagement)
 	ASSERT_EQ((uint32_t)1, failData.alarmCount);
 	/* Implementation detail: The callCount is guaranteed because subscriber callbacks are invoked under mutex. */
 	ASSERT_EQ((uint32_t)2, failData.callCount);
-}
 
+	/* Clean up trace file */
+	omrfile_unlink("traceLogTest.trc");
+}
 
 static void
 startChildThread(OMRTestVM *testVM, omrthread_t *childThread, omrthread_entrypoint_t entryProc, TestChildThreadData *childData)

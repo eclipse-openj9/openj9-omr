@@ -73,6 +73,8 @@ int main(void)
 		if (strncmp(resultBuffer, VERBOSE_GC_FILE_PREFIX, strlen(VERBOSE_GC_FILE_PREFIX)) == 0) {
 			analyze(resultBuffer, portLibrary);
 			totalFiles++;
+			/* Clean up verbose log file */
+			omrfile_unlink(resultBuffer);
 		}
 		rcFile = omrfile_findnext(handle, resultBuffer);
 	}

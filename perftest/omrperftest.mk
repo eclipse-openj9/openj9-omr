@@ -39,7 +39,7 @@ endif
 all: test
 	
 omr_perfgctest:
-	./omrgctest -configListFile=perftest/gctest/configuration/perfConfigListFile.txt
+	./omrgctest -configListFile=perftest/gctest/configuration/perfConfigListFile.txt -keepVerboseLog
 	./omrperfgctest
 
 .PHONY: all test omr_perfgctest 

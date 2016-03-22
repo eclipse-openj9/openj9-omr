@@ -60,6 +60,8 @@ GCTestEnvironment::initParams()
 				params.push_back(line);
 			}
 			omrfile_close(fileDescriptor);
+		} else if (0 == strcmp(_argv[i], "-keepVerboseLog")) {
+			keepLog = true;
 		}
 	}
 	if (params.empty()) {

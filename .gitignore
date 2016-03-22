@@ -88,6 +88,7 @@ Testing/
 *.so
 *.so.dbg
 *.dylib
+*.dylib.dbg
 *.def
 *.dll
 *.exp
@@ -123,3 +124,17 @@ port/omrsyslogmessages.h
 port/omrsyslogmessages.rc
 port/MSG00001.bin
 x64/
+
+# Test Output
+core
+core.*
+mmapTest*.tst
+omrfile_test*
+omrmmap_test*
+subscriberAgentTrace1.out
+subscriberAgentTrace2.out
+subscriberAgentWithJ9threadTrace1.out
+subscriberAgentWithJ9threadTrace2.out
+tfileTest*.tst
+traceLogTest.trc
+VerboseGC_*.xml*

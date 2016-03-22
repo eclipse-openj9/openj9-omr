@@ -512,3 +512,24 @@ raiseSEGV(OMRPortLibrary *portLibrary, void *arg)
 	return 8096;
 }
 
+/* Clean up the test output when test case passes */
+void
+testFileCleanUp(const char* filePrefix)
+{
+	if (::testing::UnitTest::GetInstance()->current_test_case()->Passed()) {
+		OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+		uintptr_t rc = -1;
+		uintptr_t handle = -1;
+		char resultBuffer[1024];
+		rc = handle = omrfile_findfirst("./", resultBuffer);
+		while ((uintptr_t)-1 != rc) {
+			if (0 == strncmp(resultBuffer, filePrefix, strlen(filePrefix))) {
+				omrfile_unlink(resultBuffer);
+			}
+			rc = omrfile_findnext(handle, resultBuffer);
+		}
+		if ((uintptr_t)-1 != handle) {
+			omrfile_findclose(handle);
+		}
+	}
+}

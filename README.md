@@ -1,4 +1,5 @@
 # Welcome to the OMR Project!
+[![Build Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)
 
 The OMR project consists of a highly integrated set of open source C and C++ 
 components that can be used to build robust language runtimes that will support 

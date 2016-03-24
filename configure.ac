@@ -480,6 +480,20 @@ OMRCFG_DEFINE_FLAG([OMRTHREAD_LIB_UNIX],[1],
 	)]
 )
 
+AS_IF([test "$cross_compiling" != "yes"],
+	[# Look for libdwarf.h
+	AC_CHECK_HEADER([libdwarf.h], [],
+		[AC_CHECK_HEADER([/usr/include/libdwarf/libdwarf.h],
+			[OMR_LIBDWARF_IPATH="/usr/include/libdwarf"])])
+
+	# Look for libdwarf.so
+	# If the shared lib isn't found, assume we're linking the static lib,
+	# so elf must be linked explicitly.
+	AC_CHECK_FILE([/usr/lib/libdwarf.so],
+		[OMR_LIBDWARF_SHARED_LIBS="dwarf"],
+		[OMR_LIBDWARF_STATIC_LIBS="dwarf elf"])]
+)
+
 ###
 ### Variable Substitution
 ###
@@ -532,6 +546,10 @@ AC_SUBST(libprefix)
 AC_SUBST(lib_output_dir)
 AC_SUBST(exe_output_dir)
 
+
+AC_SUBST(OMR_LIBDWARF_IPATH)
+AC_SUBST(OMR_LIBDWARF_SHARED_LIBS)
+AC_SUBST(OMR_LIBDWARF_STATIC_LIBS)
 
 ###
 ### Version strings

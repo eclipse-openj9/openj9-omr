@@ -622,6 +622,9 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 OMR_UNDEFINED_JIT_VERSION_STRING
 OMR_UNDEFINED_VERSION_STRING
+OMR_LIBDWARF_STATIC_LIBS
+OMR_LIBDWARF_SHARED_LIBS
+OMR_LIBDWARF_IPATH
 libprefix
 objext
 arlibext
@@ -7714,6 +7717,49 @@ fi
 
 
 
+if test "$cross_compiling" != "yes"; then :
+  # Look for libdwarf.h
+	ac_fn_c_check_header_mongrel "$LINENO" "libdwarf.h" "ac_cv_header_libdwarf_h" "$ac_includes_default"
+if test "x$ac_cv_header_libdwarf_h" = xyes; then :
+
+else
+  ac_fn_c_check_header_mongrel "$LINENO" "/usr/include/libdwarf/libdwarf.h" "ac_cv_header__usr_include_libdwarf_libdwarf_h" "$ac_includes_default"
+if test "x$ac_cv_header__usr_include_libdwarf_libdwarf_h" = xyes; then :
+  OMR_LIBDWARF_IPATH="/usr/include/libdwarf"
+fi
+
+
+fi
+
+
+
+	# Look for libdwarf.so
+	# If the shared lib isn't found, assume we're linking the static lib,
+	# so elf must be linked explicitly.
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for /usr/lib/libdwarf.so" >&5
+$as_echo_n "checking for /usr/lib/libdwarf.so... " >&6; }
+if ${ac_cv_file__usr_lib_libdwarf_so+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "/usr/lib/libdwarf.so"; then
+  ac_cv_file__usr_lib_libdwarf_so=yes
+else
+  ac_cv_file__usr_lib_libdwarf_so=no
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_file__usr_lib_libdwarf_so" >&5
+$as_echo "$ac_cv_file__usr_lib_libdwarf_so" >&6; }
+if test "x$ac_cv_file__usr_lib_libdwarf_so" = xyes; then :
+  OMR_LIBDWARF_SHARED_LIBS="dwarf"
+else
+  OMR_LIBDWARF_STATIC_LIBS="dwarf elf"
+fi
+
+
+fi
+
 ###
 ### Variable Substitution
 ###
@@ -7723,6 +7769,10 @@ if test "x$BUILD_CC" = "x"; then :
   BUILD_CC=$CC
 fi
 CC=$BUILD_CC
+
+
+
+
 
 
 

@@ -34,7 +34,7 @@ single commit and very obvious change) PRs may be accepted without an issue if t
 change really is simple, but committers have the right to request an issue for any
 change.
 2. Please read carefully and adhere to the legal considerations and copyright/license requirements outlined below.
-3. Follow the coding style and format of the code you are modifying.
+3. Follow the coding style and format of the code you are modifying (see doc/CodingStandard.md)
 4. All commits must be signed (see Legal considerations, below) and use the following commit template (Issue #nn may be omitted if appropriate):
     ```
     Issue #nn Simple Description

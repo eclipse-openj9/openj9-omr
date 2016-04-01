@@ -42,7 +42,8 @@ change.
 
     Signed-off-by: First Last <email>
     ```
-5. Ensure that "make test" passes all tests before you submit your Pull Request.
+5. Ensure that "make test" passes all tests before you submit a Pull Request.
+6. Reference the Issue number when you create the Pull Request comment.
 
 ## Legal considerations
 

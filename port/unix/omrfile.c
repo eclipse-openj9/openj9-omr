@@ -156,6 +156,7 @@ findError(int32_t errorCode)
 {
 	switch (errorCode) {
 	case EACCES:
+			/* FALLTHROUGH */
 	case EPERM:
 		return OMRPORT_ERROR_FILE_NOPERMISSION;
 	case ENAMETOOLONG:
@@ -171,6 +172,7 @@ findError(int32_t errorCode)
 	case EEXIST:
 		return OMRPORT_ERROR_FILE_EXIST;
 	case ENOSPC:
+			/* FALLTHROUGH */
 	case EFBIG:
 		return OMRPORT_ERROR_FILE_DISKFULL;
 	case EINVAL:
@@ -180,11 +182,11 @@ findError(int32_t errorCode)
 	case EAGAIN:
 		return OMRPORT_ERROR_FILE_EAGAIN;
 	case EFAULT:
-		return	OMRPORT_ERROR_FILE_EFAULT;
+		return OMRPORT_ERROR_FILE_EFAULT;
 	case EINTR:
-		return	OMRPORT_ERROR_FILE_EINTR;
+		return OMRPORT_ERROR_FILE_EINTR;
 	case EIO:
-		return	OMRPORT_ERROR_FILE_IO;
+		return OMRPORT_ERROR_FILE_IO;
 	case EOVERFLOW:
 		return OMRPORT_ERROR_FILE_OVERFLOW;
 	case ESPIPE:
@@ -1237,11 +1239,33 @@ intptr_t
 omrfile_convert_native_fd_to_omrfile_fd(struct OMRPortLibrary *portLibrary, intptr_t nativeFD)
 {
 
-	intptr_t omrfileFD = nativeFD;
+#if (FD_BIAS != 0)
+	/* Do NOT add the FD_BIAS to standard streams */
+	switch (nativeFD) {
+	case OMRPORT_TTY_IN:
+		/* FALLTHROUGH */
+	case OMRPORT_TTY_OUT:
+		/* FALLTHROUGH */
+	case OMRPORT_TTY_ERR:
+		break;
+	default:
+		nativeFD = nativeFD + FD_BIAS;
+		break;
+	}
+#endif /* (FD_BIAS != 0) */
 
-#if defined(J9ZOS390)
-	omrfileFD = nativeFD + FD_BIAS;
-#endif /* defined(J9ZOS390) */
+	return nativeFD;
+}
+
+intptr_t
+omrfile_convert_omrfile_fd_to_native_fd(struct OMRPortLibrary *portLibrary, intptr_t omrfileFD)
+{
+
+#if (FD_BIAS != 0)
+	if (omrfileFD >= FD_BIAS) {
+		omrfileFD = omrfileFD - FD_BIAS;
+	}
+#endif /* (FD_BIAS != 0) */
 
 	return omrfileFD;
 }

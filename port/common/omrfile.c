@@ -804,3 +804,19 @@ omrfile_convert_native_fd_to_omrfile_fd(struct OMRPortLibrary *portLibrary, intp
 {
 	return nativeFD;
 }
+
+/**
+ * Convert a file descriptor that was obtained from the port library via omrfile_open(),
+ * to one that can be used by the native APIs
+ *
+ * @param[in] portLibrary 	The port library
+ * @param[in] omrfileFD		The file descriptor to be converted
+
+ * @return A file descriptor that can be used by the native platform APIs
+ *
+ */
+intptr_t
+omrfile_convert_omrfile_fd_to_native_fd(struct OMRPortLibrary *portLibrary, intptr_t omrfileFD)
+{
+	return omrfileFD;
+}

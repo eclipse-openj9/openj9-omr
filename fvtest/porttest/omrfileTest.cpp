@@ -4339,6 +4339,19 @@ TEST_F(PortFileTest2, file_test36)
 
 #endif /* defined(J9ZOS390) */
 
+	/* go back and forth with a standard stream.  */
+	nativeFD = omrfile_convert_omrfile_fd_to_native_fd(OMRPORT_TTY_OUT);
+	if (nativeFD < 0) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "nativeFD < 0 , should be non-negative. nativeFD: %x\n", nativeFD);
+	}
+
+	omrfileFD = omrfile_convert_native_fd_to_omrfile_fd(nativeFD);
+	if (omrfileFD == OMRPORT_INVALID_FD) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "j9fileFD == J9PORT_INVALID_FD, they should be the same. j9fileFD: %x\n", omrfileFD);
+	}
+	if (omrfileFD != OMRPORT_TTY_OUT) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "j9fileFD != J9PORT_TTY_OUT, they should be the same. j9fileFD: %x\n", omrfileFD);
+	}
 
 	reportTestExit(OMRPORTLIB, testName);
 }

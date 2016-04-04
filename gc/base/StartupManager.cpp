@@ -34,6 +34,12 @@
 #define OMR_XCOMPACTGC "-Xcompactgc"
 #define OMR_XCOMPACTGC_LENGTH 11
 #endif /* OMR_GC_MODRON_COMPACTION */
+#if defined(OMR_GC_MODRON_SCAVENGER)
+#define OMR_XGCPOLICY "-Xgcpolicy:"
+#define OMR_XGCPOLICY_LENGTH 11
+#define OMR_GCPOLICY_GENCON "gencon"
+#define OMR_GCPOLICY_GENCON_LENGTH 6
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 #define OMR_XVERBOSEGCLOG "-Xverbosegclog:"
 #define OMR_XVERBOSEGCLOG_LENGTH 15
 #define OMR_XGCTHREADS "-Xgcthreads"
@@ -182,8 +188,6 @@ MM_StartupManager::loadGcOptions(MM_GCExtensionsBase *extensions)
 	extensions->compactOnSystemGC = 0;
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-	extensions->packetListSplit = 1;
-
 	uintptr_t *pageSizes = omrvmem_supported_page_sizes();
 	uintptr_t *pageFlags = omrvmem_supported_page_flags();
 
@@ -206,7 +210,7 @@ MM_StartupManager::loadGcOptions(MM_GCExtensionsBase *extensions)
 	assert(0 != defaultMaxHeapSize);
 	assert(defaultMinHeapSize <= defaultMaxHeapSize);
 
-	/* Currently we only support Standard GC in OMR */
+	/* Set defaults to support Standard GC in OMR */
 	extensions->initialMemorySize = defaultMinHeapSize;
 	extensions->minNewSpaceSize = 0;
 	extensions->newSpaceSize = 0;
@@ -218,7 +222,9 @@ MM_StartupManager::loadGcOptions(MM_GCExtensionsBase *extensions)
 	extensions->maxSizeDefaultMemorySpace = defaultMaxHeapSize;
 
 	/* Now override defaults with specified settings, if any */
-	return parseGcOptions(extensions);
+	bool result = parseGcOptions(extensions);
+
+	return result;
 }
 
 bool
@@ -260,7 +266,19 @@ MM_StartupManager::handleOption(MM_GCExtensionsBase *extensions, char *option)
 		} else {
 			strcpy(verboseFileName, option + OMR_XVERBOSEGCLOG_LENGTH);
 		}
-	} else if (0 == strncmp(option, OMR_XGCTHREADS, OMR_XGCTHREADS_LENGTH)) {
+	}
+#if defined(OMR_GC_MORDON_SCAVENGER)
+	else if (0 == strncmp(option, OMR_XGCPOLICY, OMR_XGCPOLICY_LENGTH)) {
+		char *gcpolicy = option + OMR_XGCPOLICY_LENGTH;
+		if (0 == strncmp(gcpolicy, OMR_GCPOLICY_GENCON, OMR_GCPOLICY_GENCON_LENGTH)) {
+			/* this is disabled by default -- enable scavenger here */
+			extensions->scavengerEnabled = true;
+		} else {
+			result = false;
+		}
+	}
+#endif /* defined(OMR_GC_MORDON_SCAVENGER) */
+	else if (0 == strncmp(option, OMR_XGCTHREADS, OMR_XGCTHREADS_LENGTH)) {
 		uintptr_t forcedThreadCount = 0;
 		if (0 >= getUDATAValue(option + OMR_XGCTHREADS_LENGTH, &forcedThreadCount)) {
 			result = false;

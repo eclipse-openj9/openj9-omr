@@ -136,17 +136,22 @@ public:
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env) = 0;
-	virtual void scavenger_masterSetupForGC_clearLangStats(MM_EnvironmentBase * env) = 0;
+	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase * env) = 0;
 	virtual void scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase * envBase) = 0;
 	virtual void scavenger_reportScavengeEnd(MM_EnvironmentBase * envBase, bool scavengeSuccessful) = 0;
 	virtual void scavenger_mergeGCStats_mergeLangStats(MM_EnvironmentBase * envBase) = 0;
 	virtual void scavenger_masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase * envBase) = 0;
 	virtual void scavenger_masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *envBase) = 0;
 	virtual bool scavenger_internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase * envBase, PercolateReason * percolateReason, uint32_t * gcCode) = 0;
-	virtual GC_ObjectScanner *parallelScavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags) = 0;
-	virtual void parallelScavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject) = 0;
+	virtual GC_ObjectScanner *scavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags) = 0;
+	virtual void scavenger_flushReferenceObjects(MM_EnvironmentStandard *env) = 0;
+	virtual bool scavenger_hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	virtual bool scavenger_scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	virtual void scavenger_backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	virtual void scavenger_backOutIndirectObjects(MM_EnvironmentStandard *env) = 0;
+	virtual void scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject) = 0;
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-	virtual void parallelScavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew) = 0;
+	virtual void scavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew) = 0;
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 

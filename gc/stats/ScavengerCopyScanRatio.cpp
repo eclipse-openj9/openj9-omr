@@ -26,18 +26,20 @@
 #include "ScavengerCopyScanRatio.hpp"
 
 void
-MM_ScavengerCopyScanRatio::reset(MM_EnvironmentBase* env)
+MM_ScavengerCopyScanRatio::reset(MM_EnvironmentBase* env, bool resetHistory)
 {
 	_accumulatingSamples = 0;
 	_accumulatedSamples = SCAVENGER_COUNTER_DEFAULT_ACCUMULATOR;
-	_scalingUpdateCount = 0;
-	_overflowCount = 0;
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	_resetTimestamp = omrtime_hires_clock();
 	_threadCount = env->getExtensions()->dispatcher->threadCount();
-	_historyFoldingFactor = 1;
-	_historyTableIndex = 0;
-	memset(&(_historyTable[_historyTableIndex]), 0, SCAVENGER_UPDATE_HISTORY_SIZE * sizeof(UpdateHistory));
+	if (resetHistory) {
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		_resetTimestamp = omrtime_hires_clock();
+		_scalingUpdateCount = 0;
+		_overflowCount = 0;
+		_historyFoldingFactor = 1;
+		_historyTableIndex = 0;
+		memset(_historyTable, 0, SCAVENGER_UPDATE_HISTORY_SIZE * sizeof(UpdateHistory));
+	}
 }
 
 uintptr_t

@@ -58,6 +58,11 @@
 #define OBJECT_HEADER_AGE_MIN  1
 #define OBJECT_HEADER_AGE_MAX  14
 
+/**
+ * #defines representing tags used in the Remembered Set
+ */
+#define DEFERRED_RS_REMOVE_FLAG 			0x1
+
 #define J9_MU_WALK_DEBUGGER_REFS 0x1
 #define J9_MU_WALK_DEBUGGER_CLASS_REFS 0x2
 #define J9_MU_WALK_ALL 0x3

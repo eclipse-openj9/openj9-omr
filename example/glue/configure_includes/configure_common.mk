@@ -24,4 +24,5 @@ CONFIGURE_ARGS += \
   --enable-OMR_OMRSIG \
   --enable-fvtest \
   --enable-OMR_GC_SEGREGATED_HEAP \
+  --enable-OMR_GC_MODRON_SCAVENGER \
   --enable-OMR_THR_CUSTOM_SPIN_OPTIONS

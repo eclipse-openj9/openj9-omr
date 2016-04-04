@@ -31,6 +31,8 @@
  * @{
  */
 #define J9MODRON_TGC_PARALLEL_STATISTICS
+#define J9VM_INTERP_NATIVE_SUPPORT
+/** @} */
 
 #endif /* MODRONOPT_H_ */
 

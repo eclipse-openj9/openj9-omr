@@ -63,6 +63,7 @@ MM_Configuration::initialize(MM_EnvironmentBase* env)
 			result = initializeNUMAManager(env);
 			if (result) {
 				initializeGCThreadCount(env);
+				initializeGCParameters(env);
 			}
 		}
 	}
@@ -451,6 +452,49 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 		/* but not higher than maximum default */
 		if (_configurationLanguageInterface->getMaxGCThreadCount() < extensions->gcThreadCount) {
 			extensions->gcThreadCount = _configurationLanguageInterface->getMaxGCThreadCount();
+		}
+	}
+}
+
+void
+MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+	
+	/* TODO 108399: May need to adjust -Xmn*, -Xmo* values here if not fully specified on startup options */
+
+	/* initialize packet lock splitting factor */
+	if (0 == extensions->packetListSplit) {
+		if (16 >= extensions->gcThreadCount) {
+			extensions->packetListSplit = extensions->gcThreadCount;
+		} else if (32 >= extensions->gcThreadCount) {
+			extensions->packetListSplit = 16 + ((extensions->gcThreadCount - 16) / 4);
+		} else {
+			extensions->packetListSplit = 20 + ((extensions->gcThreadCount - 32) / 8);
+		}
+	}
+
+	/* initialize scan cache lock splitting factor */
+	if (0 == extensions->cacheListSplit) {
+		if (16 >= extensions->gcThreadCount) {
+			extensions->cacheListSplit = extensions->gcThreadCount;
+		} else if (32 >= extensions->gcThreadCount) {
+			extensions->cacheListSplit = 16 + ((extensions->gcThreadCount - 16) / 4);
+		} else {
+			extensions->cacheListSplit = 20 + ((extensions->gcThreadCount - 32) / 8);
+		}
+	}
+
+	/* initialize default split freelist split amount */
+	if (0 == extensions->splitFreeListSplitAmount) {
+	#if defined(OMR_GC_MODRON_SCAVENGER)
+		if (extensions->scavengerEnabled) {
+			extensions->splitFreeListSplitAmount = (extensions->gcThreadCount - 1) / 8  +  1;
+		} else
+	#endif /* J9VM_GC_MODRON_SCAVENGER */
+		{
+			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+			extensions->splitFreeListSplitAmount = (omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) - 1) / 8  +  1;
 		}
 	}
 }

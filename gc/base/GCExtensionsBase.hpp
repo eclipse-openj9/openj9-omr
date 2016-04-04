@@ -41,6 +41,9 @@
 #include "OMRVMThreadListIterator.hpp"
 #include "ObjectModel.hpp"
 #include "ScavengerCopyScanRatio.hpp"
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+#include "ScavengerHotFieldStats.hpp"
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #include "ScavengerStats.hpp"
 #include "SublistPool.hpp"
 
@@ -90,7 +93,7 @@ struct J9Pool;
 #define DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE 16384
 
 #define DEFAULT_SCAN_CACHE_MAXIMUM_SIZE (128 * 1024)
-#define DEFAULT_SCAN_CACHE_MINIMUM_SIZE (32 * 1024)
+#define DEFAULT_SCAN_CACHE_MINIMUM_SIZE (8 * 1024)
 
 #define NO_ESTIMATE_FRAGMENTATION 			0x0
 #define LOCALGC_ESTIMATE_FRAGMENTATION 		0x1
@@ -355,7 +358,9 @@ public:
 		OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST = 0,
 		OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL,
 	};
-	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in ParallelScavenger */
+	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in Scavenger */
+	bool scavengerTraceHotFields; /**< whether tracing hot fields in Scavenger is enabled */
+	MM_ScavengerHotFieldStats scavengerHotFieldStats; /**< hot field stats accumulated over all GC threads */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
@@ -656,8 +661,8 @@ public:
 
 	bool _holdRandomThreadBeforeHandlingWorkUnit; /**< Whether we should randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
 	uintptr_t _holdRandomThreadBeforeHandlingWorkUnitPeriod; /** < How often (in terms of number of times MM_ParallelTask::handleNextWorkUnit() is called) to randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
-	bool _forceRandomBackoutsAfterScan; /** < Whether we should force MM_ParallelScavenger::completeScan() to randomly fail due to backout */
-	uintptr_t _forceRandomBackoutsAfterScanPeriod; /**< How often (in terms of number of times MM_ParallelScavenger::completeScan() is called) to randomly have MM_ParallelScavenger::completeScan() fail due to backout */
+	bool _forceRandomBackoutsAfterScan; /** < Whether we should force MM_Scavenger::completeScan() to randomly fail due to backout */
+	uintptr_t _forceRandomBackoutsAfterScanPeriod; /**< How often (in terms of number of times MM_Scavenger::completeScan() is called) to randomly have MM_Scavenger::completeScan() fail due to backout */
 
 	MM_ReferenceChainWalkerMarkMap* referenceChainWalkerMarkMap; /**< Reference to Reference Chain Walker mark map - will be created at first call and destroyed in Configuration tearDown*/
 
@@ -1052,6 +1057,8 @@ public:
 		, gcThreadCountForced(false)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
+		, scavengerTraceHotFields(false)
+#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, scvTenureRatioHigh(J9_SCV_TENURE_RATIO_HIGH)
 		, scvTenureRatioLow(J9_SCV_TENURE_RATIO_LOW)
@@ -1091,7 +1098,6 @@ public:
 		, enableSplitHeap(false)
 		, splitHeapSection(HEAP_INITIALIZATION_SPLIT_HEAP_UNKNOWN)
 #endif /* OMR_GC_MODRON_SCAVENGER */
-#endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 		, globalMaximumContraction(0.05) /* by default, contract must be at most 5% of the committed heap */
 		, globalMinimumContraction(0.01) /* by default, contract must be at least 1% of the committed heap */
 		, excessiveGCEnabled()

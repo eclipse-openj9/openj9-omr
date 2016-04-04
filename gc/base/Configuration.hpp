@@ -150,6 +150,16 @@ protected:
 	 */
 	void initializeGCThreadCount(MM_EnvironmentBase* env);
 	/**
+	 * Sets GC parameters that are dependent on the number of gc threads (if not previously initialized):
+	 *
+	 * MM_GCExtensionsBase::packetListSplit
+	 * MM_GCExtensionsBase::cacheListSplit
+	 * MM_GCExtensionsBase::splitFreeListSplitAmount
+	 *
+	 * @param env[in] - the current environment
+	 */
+	virtual void initializeGCParameters(MM_EnvironmentBase* env);
+	/*
 	 * Initialize OMR_VM->_sizeClasses using J9JavaVM->realtimeSizeClasses
 	 *
 	 * @param env[in] - the current environment

@@ -46,6 +46,7 @@ testMain(int argc, char ** argv, char **envp)
 	omrthread_t self = NULL;
 	exampleVM._omrVM = NULL;
 	exampleVM.rootTable = NULL;
+	exampleVM.objectTable = NULL;
 
 	/* Initialize the VM */
 	omr_error_t rc = OMR_Initialize(&exampleVM, &exampleVM._omrVM);
@@ -62,6 +63,11 @@ testMain(int argc, char ** argv, char **envp)
 	exampleVM.rootTable = hashTableNew(
 			exampleVM._omrVM->_runtime->_portLibrary, OMR_GET_CALLSITE(), 0, sizeof(RootEntry), 0, 0, OMRMEM_CATEGORY_MM,
 			rootTableHashFn, rootTableHashEqualFn, NULL, NULL);
+
+	/* Initialize root table */
+	exampleVM.objectTable = hashTableNew(
+			exampleVM._omrVM->_runtime->_portLibrary, OMR_GET_CALLSITE(), 0, sizeof(ObjectEntry), 0, 0, OMRMEM_CATEGORY_MM,
+			objectTableHashFn, objectTableHashEqualFn, NULL, NULL);
 
 	/* Initialize heap and collector */
 	{
@@ -149,8 +155,14 @@ testMain(int argc, char ** argv, char **envp)
 	rc = OMR_GC_ShutdownHeap(exampleVM._omrVM);
 	Assert_MM_true(OMR_ERROR_NONE == rc);
 
+	/* Free object hash table */
+	hashTableForEachDo(exampleVM.objectTable, objectTableFreeFn, &exampleVM);
+	hashTableFree(exampleVM.objectTable);
+	exampleVM.objectTable = NULL;
+
 	/* Free root hash table */
 	hashTableFree(exampleVM.rootTable);
+	exampleVM.rootTable = NULL;
 
 	/* Balance the omrthread_attach_ex() issued above */
 	omrthread_detach(self);

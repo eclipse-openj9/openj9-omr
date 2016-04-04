@@ -44,7 +44,7 @@ protected:
 	 * @param[in] flags Scanning context flags
 	 */
 	GC_MixedObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t flags)
-		: GC_ObjectScanner(env, objectPtr, (fomrobject_t *)(objectPtr + 1), 0, flags, 0)
+		: GC_ObjectScanner(env, objectPtr, (fomrobject_t *)objectPtr + 1, 0, flags, 0)
 		, _endPtr((fomrobject_t *)((uint8_t*)objectPtr + MM_GCExtensionsBase::getExtensions(env->getOmrVM())->objectModel.getConsumedSizeInBytesWithHeader(objectPtr)))
 		, _mapPtr(_scanPtr)
 	{
@@ -64,10 +64,10 @@ protected:
 
 		/* Initialize the slot map assuming all slots are reference slots or NULL */
 		if (slotCount < _bitsPerScanMap) {
-			_scanMap = (((fomrobject_t) 1) << slotCount) - 1;
+			_scanMap = (((uintptr_t)1) << slotCount) - 1;
 			_flags = setNoMoreSlots(_flags, true);
 		} else {
-			_scanMap = ~((fomrobject_t) 0);
+			_scanMap = ~((uintptr_t)0);
 			_flags = setNoMoreSlots(_flags, slotCount == _bitsPerScanMap);
 		}
 	}
@@ -103,15 +103,14 @@ public:
 
 		/* Initialize the slot map assuming all slots are reference slots or NULL */
 		if (slotCount < _bitsPerScanMap) {
-			slotMap = (((fomrobject_t) 1) << slotCount) - 1;
+			slotMap = (((uintptr_t)1) << slotCount) - 1;
 			hasNextSlotMap = false;
 		} else {
-			slotMap = ~((fomrobject_t) 0);
+			slotMap = ~((uintptr_t)0);
 			hasNextSlotMap = slotCount > _bitsPerScanMap;
 		}
 
 		_mapPtr += _bitsPerScanMap;
-		Assert_MM_true(_mapPtr == _scanPtr);
 		return _mapPtr;
 	}
 };

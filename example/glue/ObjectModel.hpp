@@ -145,7 +145,7 @@ public:
 	MMINLINE bool
 	isDeadObject(void *objectPtr)
 	{
-		return 0 != (*OMR_OBJECT_METADATA_SLOT_EA(objectPtr) & J9_GC_OBJ_HEAP_HOLE_MASK);
+		return J9_GC_OBJ_HEAP_HOLE == (OMR_OBJECT_FLAGS(objectPtr) & J9_GC_OBJ_HEAP_HOLE_MASK);
 	}
 
 	/**
@@ -156,7 +156,7 @@ public:
 	MMINLINE bool
 	isSingleSlotDeadObject(omrobjectptr_t objectPtr)
 	{
-		return J9_GC_SINGLE_SLOT_HOLE == (*OMR_OBJECT_METADATA_SLOT_EA(objectPtr) & J9_GC_OBJ_HEAP_HOLE_MASK);
+		return J9_GC_SINGLE_SLOT_HOLE == (OMR_OBJECT_FLAGS(objectPtr) & J9_GC_OBJ_HEAP_HOLE_MASK);
 	}
 
 	/**
@@ -217,8 +217,7 @@ public:
 	MMINLINE uintptr_t
 	getSizeInBytesWithHeader(omrobjectptr_t objectPtr)
 	{
-		fomrobject_t *header = OMR_OBJECT_METADATA_SLOT_EA(objectPtr);
-		return *header >> OMR_OBJECT_METADATA_SIZE_SHIFT;
+		return OMR_OBJECT_SIZE(objectPtr);
 	}
 
 	MMINLINE void
@@ -318,8 +317,8 @@ public:
 		bool result = true;
 
 		volatile fomrobject_t* flagsPtr = OMR_OBJECT_METADATA_SLOT_EA(objectPtr);
-		volatile fomrobject_t oldFlags;
-		volatile fomrobject_t newFlags;
+		fomrobject_t oldFlags;
+		fomrobject_t newFlags;
 
 		do {
 			oldFlags = *flagsPtr;
@@ -355,8 +354,8 @@ public:
 		bool result = true;
 
 		volatile fomrobject_t* flagsPtr = (fomrobject_t*) OMR_OBJECT_METADATA_SLOT_EA(objectPtr);
-		volatile fomrobject_t oldFlags;
-		volatile fomrobject_t newFlags;
+		fomrobject_t oldFlags;
+		fomrobject_t newFlags;
 
 		do {
 			oldFlags = *flagsPtr;
@@ -551,12 +550,36 @@ public:
 	fixupForwardedObject(MM_ForwardedHeader *forwardedHeader, omrobjectptr_t destinationObjectPtr, uintptr_t objectAge)
 	{
 		/* Copy the preserved fields from the forwarded header into the destination object */
-		ForwardedHeaderAssert(!forwardedHeader->isForwardedPointer());
 		forwardedHeader->fixupForwardedObject(destinationObjectPtr);
 
 		uintptr_t age = objectAge << OMR_OBJECT_METADATA_AGE_SHIFT;
 		setFlags(destinationObjectPtr, OMR_OBJECT_METADATA_AGE_MASK, age);
 	}
+
+	MMINLINE bool
+	restoreForwardedObject(MM_ForwardedHeader *forwardedHeader)
+	{
+		if (forwardedHeader->isForwardedPointer()) {
+			omrobjectptr_t originalObject = forwardedHeader->getObject();
+			omrobjectptr_t forwardedObject = forwardedHeader->getForwardedObject();
+
+			/* Restore the original object header from the forwarded object */
+			setObjectSize(originalObject, getSizeInBytesWithHeader(forwardedObject));
+			setFlags(originalObject, OMR_OBJECT_METADATA_FLAGS_MASK, OMR_OBJECT_FLAGS(forwardedObject));
+
+#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+			/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
+			 * as well or it may be already reversed - such fixup will be completed at in a later pass.
+			 */
+			forwardedHeader->restoreDestroyedOverlap();
+#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
+
+			return true;
+		}
+		return false;
+	}
+
+
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 	/**

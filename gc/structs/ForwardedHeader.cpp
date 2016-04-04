@@ -16,8 +16,12 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "ForwardedHeader.hpp"
 
+#include "ForwardedHeader.hpp"
+#if defined(FORWARDEDHEADER_DEBUG)
+#include <stdio.h>
+#include <stdlib.h>
+#endif /* defined(FORWARDEDHEADER_DEBUG) */
 #include "AtomicOperations.hpp"
 
 #if defined(FORWARDEDHEADER_DEBUG)
@@ -30,26 +34,13 @@ MM_ForwardedHeader::Assert(bool condition, const char *assertion, const char *fi
 }
 
 void
-MM_ForwardedHeader::Dump(omrobjectptr_t destinationObjectPtr)
+MM_ForwardedHeader::ForwardedHeaderDump(omrobjectptr_t destinationObjectPtr)
 {
-	fprintf(stderr, "MM_ForwardedHeader@%p[_objectPtr=%p] -> %p:\n", this, _objectPtr, destinationObjectPtr);
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-	fprintf(stderr, "\t*((uintptr_t*)_objectPtr): 0x%lx; msb(0x%x) lsb(0x%x); slot(0x%x) overlap(0x%x)\n", *((uintptr_t*)_objectPtr), (uint32_t)((*((uintptr_t*)_objectPtr) >> 32) & 0xffffffff), (uint32_t)(*((uintptr_t*)_objectPtr) & 0xffffffff), (uint32_t)_preserved.slot, (uint32_t)_preserved.overlap);
+	fprintf(stderr, "MM_ForwardedHeader@%p[%p(%p):%x:%x] -> %p(%p)\n", this, _objectPtr, (uintptr_t*)(*_objectPtr), _preserved.slot, _preserved.overlap, destinationObjectPtr, (uintptr_t*)(*destinationObjectPtr));
 #else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-	fprintf(stderr, "\t*((uintptr_t*)_objectPtr): 0x%lx; msb(0x%x) lsb(0x%x); slot(0x%lx)\n", *((uintptr_t*)_objectPtr), (uint32_t)((*((uintptr_t*)_objectPtr) >> 32) & 0xffffffff), (uint32_t)(*((uintptr_t*)_objectPtr) & 0xffffffff), (uintptr_t)_preserved.slot);
+	fprintf(stderr, "MM_ForwardedHeader@%p[%p(%p):%x] -> %p(%p)\n", this, _objectPtr, (uintptr_t*)(*_objectPtr), _preserved.slot, destinationObjectPtr, (uintptr_t*)(*destinationObjectPtr));
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-	fprintf(stderr, "\t\tgetObject(): %p\n", getObject());
-	if (!isForwardedPointer()) {
-		fprintf(stderr, "\t\tisReverseForwardedPointer(): 0x%x\n", isReverseForwardedPointer());
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-		fprintf(stderr, "\t\tgetPreservedSlot(): 0x%x\n", (uint32_t)getPreservedSlot());
-		fprintf(stderr, "\t\tgetPreservedOverlap(): 0x%x\n", getPreservedOverlap());
-#else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-		fprintf(stderr, "\t\tgetPreservedSlot(): 0x%lx\n", (uintptr_t)getPreservedSlot());
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-	} else {
-		fprintf(stderr, "\t\tgetForwardedObject(): %p\n", getForwardedObject());
-	}
 }
 #endif /* defined(FORWARDEDHEADER_DEBUG) */
 
@@ -66,7 +57,7 @@ omrobjectptr_t
 MM_ForwardedHeader::setForwardedObject(omrobjectptr_t destinationObjectPtr)
 {
 	ForwardedHeaderAssert(!isForwardedPointer());
-	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((uintptr_t*)_objectPtr + _forwardingSlotOffset);
+	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
 	uintptr_t oldValue = *(uintptr_t *)&_preserved.slot;
 
 	/* Forwarded tag should be in low bits of the pointer and at the same time be in forwarding slot */

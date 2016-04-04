@@ -18,21 +18,8 @@
 
 #include "gcTestHelpers.hpp"
 
-typedef struct ObjectEntry {
-	const char *name;
-	omrobjectptr_t objPtr;
-	int32_t numOfRef;
-} ObjectEntry;
-
 class GCConfigObjectTable {
 private:
-	J9HashTable *objectTable;
-	OMRPortLibrary *portLib;
 
 public:
-	GCConfigObjectTable(OMRPortLibrary *portLibrary) : objectTable(NULL), portLib(portLibrary) {}
-	void create();
-	void free();
-	int32_t find(ObjectEntry **entry, const char *name);
-	int32_t add(const char *name, omrobjectptr_t obj, int32_t numOfRef);
 };

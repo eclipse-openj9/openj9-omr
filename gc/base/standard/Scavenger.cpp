@@ -19,9 +19,9 @@
 #if 0
 #define OMR_SCAVENGER_DEBUG
 #define OMR_SCAVENGER_TRACE
+#define OMR_SCAVENGER_TRACE_REMEMBERED_SET
 #define OMR_SCAVENGER_TRACE_BACKOUT
 #define OMR_SCAVENGER_TRACE_COPY
-#define OMR_SCAVENGER_TRACE_REMEMBERED_SET
 #endif
 
 #include <math.h>
@@ -813,7 +813,7 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
  * @return the optimum copyscancache size
  */
 MMINLINE uintptr_t
-MM_Scavenger::calculateOptimumSurvivorSpaceCopyScanCacheSize(MM_EnvironmentStandard *env)
+MM_Scavenger::calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env)
 {
 	/* scale down maximal scan cache size using wait/copy/scan factor and round up to nearest tlh size */
 	uintptr_t scaleSize = (uintptr_t)(_extensions->copyScanRatio.getScalingFactor(env) * _extensions->scavengerScanCacheMaximumSize);
@@ -880,7 +880,7 @@ MM_Scavenger::reserveMemoryForAllocateInSemiSpace(MM_EnvironmentStandard *env, o
 			} else {
 				MM_AllocateDescription allocDescription(0, 0, false, true);
 				/* Update the optimum scan cache size */
-				uintptr_t scanCacheSize = calculateOptimumSurvivorSpaceCopyScanCacheSize(env);
+				uintptr_t scanCacheSize = calculateOptimumCopyScanCacheSize(env);
 				allocateResult = (NULL != _survivorMemorySubSpace->collectorAllocateTLH(env, this, &allocDescription, scanCacheSize, addrBase, addrTop));
 				env->_scavengerStats._semiSpaceAllocationCountSmall += 1;
 			}
@@ -988,7 +988,8 @@ MM_Scavenger::reserveMemoryForAllocateInTenureSpace(MM_EnvironmentStandard *env,
 			} else {
 				MM_AllocateDescription allocDescription(0, 0, false, true);
 				allocDescription.setCollectorAllocateExpandOnFailure(true);
-				allocateResult = (NULL != _tenureMemorySubSpace->collectorAllocateTLH(env, this, &allocDescription, _extensions->tlhMaximumSize, addrBase, addrTop));
+				uintptr_t scanCacheSize = calculateOptimumCopyScanCacheSize(env);
+				allocateResult = (NULL != _tenureMemorySubSpace->collectorAllocateTLH(env, this, &allocDescription, scanCacheSize, addrBase, addrTop));
 
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
 				if (allocateResult && allocDescription.isLOAAllocation()) {
@@ -1293,10 +1294,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
 	if (destinationObjectPtr == originalDestinationObjectPtr) {
 		/* Succeeded in forwarding the object - copy and adjust the age value */
-#if defined(OMR_SCAVENGER_TRACE_COPY)
-		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("{SCAV: Copied %p -> %p}\n", objectPtr, destinationObjectPtr);
-#endif /* OMR_SCAVENGER_TRACE_COPY */
 
 #if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
@@ -1308,6 +1305,11 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		memcpy((void *)destinationObjectPtr, forwardedHeader->getObject(), objectCopySizeInBytes);
 
 		_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
+
+#if defined(OMR_SCAVENGER_TRACE_COPY)
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		omrtty_printf("{SCAV: Copied %p[%p] -> %p[%p]}\n", forwardedHeader->getObject(), *((uintptr_t*)(forwardedHeader->getObject())), destinationObjectPtr, *((uintptr_t*)destinationObjectPtr));
+#endif /* OMR_SCAVENGER_TRACE_COPY */
 
 		/* Move the cache allocate pointer to reflect the consumed memory */
 		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
@@ -2024,14 +2026,15 @@ MM_Scavenger::addToRememberedSetFragment(MM_EnvironmentStandard *env, omrobjectp
 	}
 
 	/* There is at least 1 free entry in the fragment - use it */
-#if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("{SCAV: Add to remembered set %p}\n", objectPtr);
-#endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
-
 	env->_scavengerRememberedSet.count++;
 	uintptr_t *rememberedSetEntry = env->_scavengerRememberedSet.fragmentCurrent++;
 	*rememberedSetEntry = (uintptr_t)objectPtr;
+
+#if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	omrtty_printf("{SCAV: Add to remembered set %p; env count = %lld; ext count = %lld}\n",
+			objectPtr, env->_scavengerRememberedSet.count, _extensions->rememberedSet.countElements());
+#endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 }
 
 void
@@ -2193,7 +2196,9 @@ MM_Scavenger::scavengeRememberedSetOverflow(MM_EnvironmentStandard *env)
 MMINLINE void
 MM_Scavenger::flushRememberedSet(MM_EnvironmentStandard *env)
 {
-	MM_SublistFragment::flush((J9VMGC_SublistFragment*)&env->_scavengerRememberedSet);
+	if (0 != env->_scavengerRememberedSet.count) {
+		MM_SublistFragment::flush((J9VMGC_SublistFragment*)&env->_scavengerRememberedSet);
+	}
 }
 
 void
@@ -2266,7 +2271,7 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 
 #if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
 		if(isRememberedSetInOverflowState()) {
-			omrtty_printf"{SCAV: Pruned remembered set still in overflow}\n");
+			omrtty_printf("{SCAV: Pruned remembered set still in overflow}\n");
 		} else {
 			omrtty_printf("{SCAV: Pruned remembered set no longer in overflow}\n");
 		}
@@ -2289,7 +2294,7 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 
 #if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("{SCAV: Prune remembered set list}\n");
+	omrtty_printf("{SCAV: Begin prune remembered set list; count = %lld}\n", _extensions->rememberedSet.countElements());
 #endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 
 	GC_SublistIterator remSetIterator(&(_extensions->rememberedSet));
@@ -2330,6 +2335,9 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 			} /* while non-null slots */
 		}
 	}
+#if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
+	omrtty_printf("{SCAV: End prune remembered set list; count = %lld}\n", _extensions->rememberedSet.countElements());
+#endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 }
 
 void
@@ -2917,7 +2925,12 @@ MM_Scavenger::backOutFixSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 		MM_ForwardedHeader forwardHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
-			*(omrobjectptr_t*)slotPtr = forwardHeader.getReverseForwardedPointer();
+			*slotPtr = forwardHeader.getReverseForwardedPointer();
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+			OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
+			omrtty_printf("{SCAV: Back out uncompressed slot %p[%p]->%p}\n", objectPtr, *objectPtr, *slotPtr);
+			Assert_MM_true(isObjectInEvacuateMemory(*slotPtr));
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 			return true;
 		}
 	}
@@ -2934,9 +2947,12 @@ MM_Scavenger::backOutFixSlot(GC_SlotObject *slotObject)
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
 			omrobjectptr_t fwdObjectPtr = forwardHeader.getReverseForwardedPointer();
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+			Assert_MM_true(isObjectInEvacuateMemory(fwdObjectPtr));
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 			slotObject->writeReferenceToSlot(fwdObjectPtr);
-	return true;
-}
+			return true;
+		}
 	}
 	return false;
 }
@@ -2949,7 +2965,14 @@ MM_Scavenger::backOutObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t obje
 	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, (void *) &objectScannerState, GC_ObjectScanner::scanRoots);
 	if (NULL != objectScanner) {
 		while (NULL != (slotObject = objectScanner->getNextSlot())) {
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+			omrtty_printf("{SCAV: Back out object in %p; slot[%p] %p->", objectPtr, slotObject->readAddressFromSlot(), slotObject->readReferenceFromSlot());
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 			backOutFixSlot(slotObject);
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+			omrtty_printf("%p}\n", slotObject->readReferenceFromSlot());
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 		}
 	}
 
@@ -2975,12 +2998,17 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 			omrobjectptr_t objectPtr = NULL;
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-			omrtty_printf("{SCAV: Reverse forward pointers in [%p->%p]}\n", rootRegion->getLowAddress(), rootRegion->getHighAddress());
+			omrtty_printf("{SCAV: Back out forward pointers in region [%p:%p]}\n", rootRegion->getLowAddress(), rootRegion->getHighAddress());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
 				MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
 				_cli->scavenger_reverseForwardedObject(env, &header);
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+				omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
+				MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
+				omrtty_printf("{SCAV: Back out forward pointer %p@%p -> %p[%p]}\n", objectPtr, fwdObjectPtr, freeHeader->getNext(), freeHeader->getSize());
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 			}
 		}
 	}
@@ -3004,7 +3032,15 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
 				MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+				uint32_t originalOverlap = header.getPreservedOverlap();
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 				_cli->scavenger_fixupDestroyedSlot(env, &header, _activeSubSpace);
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+				omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
+				MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
+				omrtty_printf("{SCAV: Fixup destroyed slot %p@%p -> %u->%u}\n", objectPtr, fwdObjectPtr, originalOverlap, header.getPreservedOverlap());
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 			}
 		}
 	}
@@ -3143,8 +3179,14 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 
 					if(objectPtr) {
 						if (MM_ForwardedHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET).isReverseForwardedPointer()) {
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+							omrtty_printf("{SCAV: Back out remove RS object %p[%p]}\n", objectPtr, *objectPtr);
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 							remSetSlotIterator.removeSlot();
 						} else {
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+							omrtty_printf("{SCAV: Back out fixup RS object %p[%p]}\n", objectPtr, *objectPtr);
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 							backOutObjectScan(env, objectPtr);
 						}
 					} else {

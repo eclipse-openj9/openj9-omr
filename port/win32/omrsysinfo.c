@@ -1555,3 +1555,10 @@ omrsysinfo_get_tmp(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufL
 	portLibrary->mem_free_memory(portLibrary, unicodeBuffer);
 	return 0;
 }
+
+int32_t
+omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *count)
+{
+	return OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED;
+}
+

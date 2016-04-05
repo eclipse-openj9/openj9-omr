@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -413,6 +413,8 @@ omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintp
  *          Operating system specific core information
  *            On AIX limit is set to the sys_parm fullcore value
  *            Not defined on other operating systems
+ *   OMRPORT_RESOURCE_FILE_DESCRIPTORS
+ *   		Gets the maximum number of file descriptors that can opened in a process.
  *
  * resourceID may be bit-wise or'ed with one of:
  *    OMRPORT_LIMIT_SOFT
@@ -718,3 +720,21 @@ omrsysinfo_get_tmp(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufL
 {
 	return -1;
 }
+
+/**
+ * Returns the number of files opened in the current process or an error, in
+ * case of failure.
+ *
+ * @param[in] portLibrary instance of port library
+ * @param[out] count The number of files in opened state in the process.
+ *
+ * @return Returns 0 on success or a negative value for failure, setting the
+ * last error.  If OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED is returned,
+ * last error is not set, as it simply indicates unavailability of the API.
+ */
+int32_t
+omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *count)
+{
+	return OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED;
+}
+

@@ -128,6 +128,7 @@
 #define OMRPORT_RESOURCE_ADDRESS_SPACE ((uintptr_t) 2)
 #define OMRPORT_RESOURCE_CORE_FILE ((uintptr_t) 3)
 #define OMRPORT_RESOURCE_CORE_FLAGS ((uintptr_t) 4)
+#define OMRPORT_RESOURCE_FILE_DESCRIPTORS ((uintptr_t) 5)
 /** @} */
 
 /**
@@ -1323,6 +1324,8 @@ typedef struct OMRPortLibrary {
 	intptr_t (*sysinfo_get_tmp)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, BOOLEAN ignoreEnvVariable) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_number_CPUs_by_type "omrsysinfo_get_number_CPUs_by_type"*/
 	void (*sysinfo_set_number_entitled_CPUs)(struct OMRPortLibrary *portLibrary, uintptr_t number) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_open_file_count "omrsysinfo_get_open_file_count"*/
+	int32_t (*sysinfo_get_open_file_count)(struct OMRPortLibrary *portLibrary, uint64_t *count) ;
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1745,6 +1748,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_number_CPUs_by_type(param1) privateOmrPortLibrary->sysinfo_get_number_CPUs_by_type(privateOmrPortLibrary, (param1))
 #define omrsysinfo_get_cwd(param1,param2) privateOmrPortLibrary->sysinfo_get_cwd(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_tmp(param1,param2,param3) privateOmrPortLibrary->sysinfo_get_tmp(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsysinfo_get_open_file_count(param1) privateOmrPortLibrary->sysinfo_get_open_file_count(privateOmrPortLibrary, (param1))
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

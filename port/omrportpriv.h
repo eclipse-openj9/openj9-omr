@@ -465,11 +465,12 @@ extern J9_CFUNC intptr_t
 omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime);
 extern J9_CFUNC void
 omrsysinfo_set_number_entitled_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number);
-
 extern J9_CFUNC intptr_t
 omrsysinfo_get_cwd(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen);
 extern J9_CFUNC intptr_t
 omrsysinfo_get_tmp(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, BOOLEAN ignoreEnvVariable);
+extern J9_CFUNC int32_t 
+omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *count);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

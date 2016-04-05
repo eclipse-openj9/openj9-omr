@@ -25,7 +25,6 @@
 #if defined(LINUX)
 /* _GNU_SOURCE forces GLIBC_2.0 sscanf/vsscanf/fscanf for RHEL5 compatability */
 #define _GNU_SOURCE
-#define __USE_GNU 1
 #endif /* defined(LINUX) */
 
 #include <pthread.h>

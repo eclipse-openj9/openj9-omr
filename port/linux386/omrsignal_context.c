@@ -16,9 +16,10 @@
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
  *******************************************************************************/
 
-#include <unistd.h>
-#define __USE_GNU 1
+#define _GNU_SOURCE
+
 #include <sys/ucontext.h>
+#include <unistd.h>
 
 #include "omrport.h"
 #include "omrsignal_context.h"

@@ -270,6 +270,18 @@ findError(int32_t errorCode)
 		return OMRPORT_ERROR_FILE_EFAULT;
 	case EINVAL:
 		return OMRPORT_ERROR_FILE_INVAL;
+	case EBADF:
+		return OMRPORT_ERROR_FILE_BADF;
+	case ENOENT:
+		return OMRPORT_ERROR_FILE_NOENT;
+	case ENOTDIR:
+		return OMRPORT_ERROR_FILE_NOTDIR;
+	case ENOMEM:
+		return OMRPORT_ERROR_FILE_INSUFFICIENT_BUFFER;
+	case EMFILE:
+		/* FALLTHROUGH */
+	case ENFILE:
+		return OMRPORT_ERROR_FILE_TOO_MANY_OPEN_FILES;
 	default:
 		return OMRPORT_ERROR_FILE_OPFAILED;
 	}
@@ -1038,7 +1050,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		cpu_set_t cpuSet;
 		int32_t size = sizeof(cpuSet); /* Size in bytes */
 		pid_t mainProcess = getpid();
-		I_32 error = sched_getaffinity(mainProcess, size, &cpuSet);
+		int32_t error = sched_getaffinity(mainProcess, size, &cpuSet);
 
 		if (0 == error) {
 			int32_t count = 0;
@@ -1648,6 +1660,33 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
 		rc = OMRPORT_LIMIT_UNKNOWN;
 #endif
+	}
+	break;
+	/* Get the limit on maximum number of files that may be opened in any
+	 * process, in the current configuration of the operating system.  This
+	 * must match "ulimit -n".
+	 */
+	case OMRPORT_RESOURCE_FILE_DESCRIPTORS: {
+#if defined(AIXPPC) || defined(LINUX) || defined(OSX) || defined(J9ZOS390)
+		/* getrlimit(2) is a POSIX routine. */
+		if (0 == getrlimit(RLIMIT_NOFILE, &lim)) {
+			*limit = (uint64_t) (hardLimitRequested ? lim.rlim_max : lim.rlim_cur);
+			if (RLIM_INFINITY == *limit) {
+				rc = OMRPORT_LIMIT_UNLIMITED;
+			} else {
+				rc = OMRPORT_LIMIT_LIMITED;
+			}
+		} else {
+			*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
+			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+			Trc_PRT_sysinfo_getrlimit_error(resource, findError(errno));
+			rc = OMRPORT_LIMIT_UNKNOWN;
+		}
+#else
+		/* unsupported on other platforms (just in case). */
+		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
+		rc = OMRPORT_LIMIT_UNKNOWN;
+#endif /* defined(AIXPPC) || defined(LINUX) || defined(OSX) || defined(J9ZOS390) */
 	}
 	break;
 	default:
@@ -2849,3 +2888,71 @@ setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t port
 
 	return;
 }
+
+int32_t
+omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *count)
+{
+	int32_t ret = 0;
+#if defined(LINUX) || defined(AIXPPC)
+	uint64_t fdCount = 0;
+	char buffer[PATH_MAX] = {0};
+	const char *procDirectory = "/proc/%d/fd/";
+	struct dirent *dp = NULL;
+	DIR *dir = NULL;
+
+	Trc_PRT_sysinfo_get_open_file_count_Entry();
+	/* Check whether a valid pointee exists, to write to. */
+	if (NULL == count) {
+		portLibrary->error_set_last_error(portLibrary, EINVAL, findError(EINVAL));
+		Trc_PRT_sysinfo_get_open_file_count_invalidArgRecvd("count");
+		ret = -1;
+		goto leave_routine;
+	}
+	/* On Linux, "/proc/self" is as good as "/proc/<current-pid>/", but not on
+	 * AIX, where the current process's PID must be specified.
+	 */
+	portLibrary->str_printf(portLibrary, buffer, sizeof(buffer), procDirectory, getpid());
+	dir = opendir(buffer);
+	if (NULL == dir) {
+		int32_t rc = findError(errno);
+		portLibrary->error_set_last_error(portLibrary, errno, rc);
+		Trc_PRT_sysinfo_get_open_file_count_failedOpeningProcFS(rc);
+		ret = -1;
+		goto leave_routine;
+	}
+	/* opendir(3) was successful; look into the directory for fds. */
+	errno = 0; /* readdir(3) will set this, if an error occurs. */
+	dp = readdir(dir);
+	while (NULL != dp) {
+		/* Skip "." and ".." */
+		if (!(('.' == dp->d_name[0] && '\0' == dp->d_name[1])
+		||    ('.' == dp->d_name[0] && '.' == dp->d_name[1] && '\0' == dp->d_name[2]))
+		) {
+			fdCount++;
+		}
+		dp = readdir(dir);
+	}
+	/* readdir(3) would eventually return NULL; check whether there was an
+	 * error and readdir returned prematurely.
+	 */
+	if (0 != errno) {
+		int32_t rc = findError(errno);
+		portLibrary->error_set_last_error(portLibrary, errno, rc);
+		Trc_PRT_sysinfo_get_open_file_count_failedReadingProcFS(rc);
+		ret = -1;
+	} else {
+		/* Successfully counted up the files opened. */
+		*count = fdCount;
+		Trc_PRT_sysinfo_get_open_file_count_fileCount(fdCount);
+	}
+	closedir(dir); /* Done reading the /proc file-system. */
+leave_routine:
+	/* Clean-ups, setting-error (if any), etc, done. */
+#elif defined(OSX) || defined(J9ZOS390)
+	/* TODO: stub where z/OS || OSX code goes in. */
+	ret = OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED;
+#endif
+	Trc_PRT_sysinfo_get_open_file_count_Exit(ret);
+	return ret;
+}
+

@@ -929,3 +929,11 @@ TraceException=Trc_PRT_cuda_initDeviceData_fail2 Group=cuda Level=1 NoEnv Overhe
 
 TraceException=Trc_PRT_cuda_reset_fail1 Group=cuda Level=1 NoEnv Overhead=1 Template="omrcuda resetDevices: failed to %s current device, error=%d"
 TraceException=Trc_PRT_cuda_reset_fail2 Group=cuda Level=1 NoEnv Overhead=1 Template="omrcuda resetDevices: failed to reset device=%u, error=%d"
+
+TraceEntry=Trc_PRT_sysinfo_get_open_file_count_Entry Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_open_file_count: Entry."
+TraceException=Trc_PRT_sysinfo_get_open_file_count_invalidArgRecvd Group=sysinfo Level=1 NoEnv Overhead=1 Template="omrsysinfo_get_open_file_count received invalid argument: %s."
+TraceException=Trc_PRT_sysinfo_get_open_file_count_failedOpeningProcFS Group=sysinfo Level=1 NoEnv Overhead=1 Template="omrsysinfo_get_open_file_count failed opening /proc = %d."
+TraceException=Trc_PRT_sysinfo_get_open_file_count_failedReadingProcFS Group=sysinfo Level=1 NoEnv Overhead=1 Template="omrsysinfo_get_open_file_count failed reading /proc = %d."
+TraceEvent=Trc_PRT_sysinfo_get_open_file_count_fileCount Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_open_file_count files opened by this process=%llu."
+TraceExit=Trc_PRT_sysinfo_get_open_file_count_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_open_file_count: Return = %d."
+

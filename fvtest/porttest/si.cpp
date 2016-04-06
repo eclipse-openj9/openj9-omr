@@ -32,6 +32,13 @@
 #if !(defined(WIN32) || defined(WIN64))
 #include <grp.h>
 #include <errno.h>
+#if defined(J9ZOS390)
+#include <limits.h>
+#else
+#define __STDC_LIMIT_MACROS
+#include <stdint.h> /* For INT64_MAX. */
+#endif /* defined(J9ZOS390) */
+#include <sys/resource.h> /* For RLIM_INFINITY */
 #endif /* !(defined(WIN32) || defined(WIN64)) */
 
 #if defined(J9ZOS390)
@@ -48,6 +55,13 @@
 #else
 #define J9DIRECTORY_SEPARATOR_CHARACTER '/'
 #endif
+
+/* Under the standard compiler configuration, INT64_MAX is
+ * not available; instead, LONGLONG_MAX is defined by xLC.
+ */
+#if defined(J9ZOS390) && !defined(INT64_MAX)
+#define INT64_MAX LONGLONG_MAX
+#endif /* defined(J9ZOS390) && !defined(INT64_MAX) */
 
 /**
  * @brief Function takes an expected name for an executable and also the name that was actually
@@ -872,7 +886,95 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FLAGS)
 }
 #endif /* defined(AIXPPC) */
 
-#endif /* !defined(WIN32) || !defined(WIN64) */
+/**
+ * Test omrsysinfo_test_sysinfo_get_limit for resource OMRPORT_RESOURCE_FILE_DESCRIPTORS.
+ * API available on all Unix platforms.
+ */
+TEST(PortSysinfoTest, sysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS";
+	uint32_t rc = 0;
+	uint64_t curLimit = 0;
+	uint64_t maxLimit = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+	/* First, get the current (soft) limit on the resource nofiles. */
+	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, &curLimit);
+	if (OMRPORT_LIMIT_UNLIMITED == rc) { /* Not an error, just that it is not configured. */
+		/* If the API reported this limit as set to "unlimited", the resource limit must be
+		 * set to implementation-defined limit, RLIM_INFINITY.
+		 */
+		if (RLIM_INFINITY == curLimit) {
+			outputComment(OMRPORTLIB,
+				"omrsysinfo_get_limit(nofiles): soft limit=RLIM_INFINITY (unlimited).\n");
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_get_limit(nofiles): soft limit (unlimited), bad maximum reported %lld.\n",
+				((int64_t) curLimit));
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else if (OMRPORT_LIMIT_LIMITED == rc) {
+		if ((((int64_t) curLimit) > 0) && (((int64_t) curLimit) <= INT64_MAX)) {
+			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles) soft limit: %lld.\n",
+				((int64_t) curLimit));
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_get_limit(nofiles) failed: bad limit received!\n");
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else { /* The port library failed! */
+		outputErrorMessage(PORTTEST_ERROR_ARGS, 
+			"omrsysinfo_get_limit(nofiles): failed with error code=%d.\n",
+			omrerror_last_error_number());
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+
+	/* Now, for the hard limit. */
+	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS | OMRPORT_LIMIT_HARD, &maxLimit);
+	if (OMRPORT_LIMIT_UNLIMITED == rc) {
+		/* Not an error, just that it is not configured.  Ok to compare!. */
+		if (RLIM_INFINITY == maxLimit) {
+			outputComment(OMRPORTLIB,
+				"omrsysinfo_get_limit(nofiles): hard limit = RLIM_INFINITY (unlimited).\n");
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_get_limit(nofiles): hard limit (unlimited), bad maximum reported %lld.\n",
+				((int64_t) curLimit));
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else if (OMRPORT_LIMIT_LIMITED == rc) {
+		if ((((int64_t) maxLimit) > 0) && (((int64_t) maxLimit) <= INT64_MAX)) {
+			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles) hard limit: %lld.\n",
+				((int64_t) maxLimit));
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_get_limit(nofiles) failed: bad limit received!\n");
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else { /* The port library failed! */
+		outputErrorMessage(PORTTEST_ERROR_ARGS, 
+			"omrsysinfo_get_limit(nofiles): failed with error code=%d.\n",
+			omrerror_last_error_number());
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+
+	/* Ensure that the resource's current (soft) limit does not exceed the hard limit. */
+	if (curLimit > maxLimit) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_get_limit(nofiles): current limit exceeds the hard limit.\n");
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+	reportTestExit(OMRPORTLIB, testName);
+}
+#endif /* !(defined(WIN32) || defined(WIN64)) */
 
 /* Since the processor and memory usage port library APIs are not available on zOS (neither
  * 31-bit not 64-bit) yet, so we exclude these tests from running on zOS. When the zOS
@@ -1845,4 +1947,75 @@ TEST(PortSysinfoTest, sysinfo_test_get_groups)
 	}
 	reportTestExit(OMRPORTLIB, testName);
 }
+
+#if defined(LINUX) || defined(AIXPPC)
+/**
+ * Test omrsysinfo_test_get_open_file_count.
+ * Available only on Linux and AIX.
+ */
+TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_test_get_open_file_count";
+	int32_t ret = 0;
+	uint64_t openCount = 0;
+	uint64_t curLimit = 0;
+	uint32_t rc = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+	/* Get the number of files opened till this point. */
+	ret = omrsysinfo_get_open_file_count(&openCount);
+	if (ret < 0) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_get_open_file_count() failed.\n");
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+	outputComment(OMRPORTLIB, "omrsysinfo_get_open_file_count(): Files opened by this process=%lld\n", 
+		openCount);
+
+	/* Now, get the current (soft) limit on the resource "nofiles".  We check the current
+	 * number of files opened, against this.
+	 */
+	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_FILE_DESCRIPTORS, &curLimit);
+	if (OMRPORT_LIMIT_UNLIMITED == rc) {
+		/* Not really an error, just a sentinel.  Comparisons can still work! */
+		if (RLIM_INFINITY == curLimit) {
+			outputComment(OMRPORTLIB, 
+				"omrsysinfo_get_limit(nofiles): soft limit=RLIM_INFINITY (unlimited).\n");
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, 
+				"omrsysinfo_get_limit(nofiles): soft limit (unlimited), bad maximum reported=%lld.\n",
+				((int64_t) curLimit));
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else if (OMRPORT_LIMIT_LIMITED == rc) {
+		/* Check that the limits received are sane, before comparing against files opened. */
+		if ((((int64_t) curLimit) > 0) && (((int64_t) curLimit) <= INT64_MAX)) {
+			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles): soft limit=%lld.\n", 
+				((int64_t) curLimit));
+		} else {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, 
+				"omrsysinfo_get_limit(nofiles) failed: bad limits received!\n");
+			reportTestExit(OMRPORTLIB, testName);
+			return;
+		}
+	} else { /* The port library failed! */
+		outputErrorMessage(PORTTEST_ERROR_ARGS, 
+			"omrsysinfo_get_limit(nofiles): failed with error code=%d.\n",
+			omrerror_last_error_number());
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+	/* Sanity check: are more files reported as opened than the limit? */
+	if (((int64_t) openCount) > ((int64_t) curLimit)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, 
+			"omrsysinfo_get_open_file_count() failed: reports more files opened than allowed!\n");
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	}
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+#endif /* defined(LINUX) || defined(AIXPPC) */
 #endif /* !(defined(WIN32) || defined(WIN64)) */

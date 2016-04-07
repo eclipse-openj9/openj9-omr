@@ -86,18 +86,22 @@ MM_CollectorLanguageInterfaceImpl::flushNonAllocationCaches(MM_EnvironmentBase *
 OMR_VMThread *
 MM_CollectorLanguageInterfaceImpl::attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason)
 {
-	OMR_VMThread *vmThread = NULL;
-	omr_error_t rc = OMR_Thread_Init(omrVM, NULL, &vmThread, threadName);
+	OMR_VMThread *omrVMThread = NULL;
+	omr_error_t rc = OMR_ERROR_NONE;
+
+	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
 	if (OMR_ERROR_NONE != rc) {
-		vmThread = NULL;
+		return NULL;
 	}
-	return vmThread;
+	return omrVMThread;
 }
 
 void
 MM_CollectorLanguageInterfaceImpl::detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason)
 {
-	OMR_Thread_Free(omrVMThread);
+	if (NULL != omrVMThread) {
+		OMR_Glue_UnbindCurrentThread(omrVMThread);
+	}
 }
 
 void

@@ -47,7 +47,7 @@ change. If in doubt, create an issue.
     ```
 
 5. Ensure that "make test" passes all tests before you submit a Pull Request.
-6. The pull request comment should reference the issue number in its title, just as in the commit message template.
+6. The pull request should reference the issue number with "#n" in the discussion remark, not just the title.
 
 
 ## Legal considerations

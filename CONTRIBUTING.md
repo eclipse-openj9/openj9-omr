@@ -1,8 +1,6 @@
 # Contributing to Eclipse OMR
 Thanks for your interest in this project.
 
-You can propose contributions by sending pull requests through GitHub.
-
 ## Project description
 The Eclipse OMR project consists of a highly integrated set of open source C
 and C++ components that can be used to build robust language runtimes that will
@@ -18,6 +16,38 @@ implementers can much more quickly and easily create more fully featured
 languages to enrich the options available to programmers.
 
 - [https://projects.eclipse.org/projects/technology.omr](https://projects.eclipse.org/projects/technology.omr)
+
+
+## GitHub Issues
+
+This project uses GitHub Issues to track ongoing development and issues. Be sure
+to search for existing bugs before you create another one. Contributions are always welcome!
+
+- [https://github.com/eclipse/omr/issues](https://github.com/eclipse/omr/issues)
+
+## Submitting a contribution
+You can propose contributions by sending pull requests through GitHub. Following these guidelines
+will help us to merge your pull requests smoothly:
+
+1.  It is generally a good idea to file an issue to explain your idea before writing
+code or submitting a PR, especially when introducing new features. Trivial (must be
+single commit and very obvious change) PRs may be accepted without an issue if the
+change really is simple, but committers have the right to request an issue for any
+change. If in doubt, create an issue.
+2. Please read carefully and adhere to the legal considerations and copyright/license requirements outlined below.
+3. Follow the coding style and format of the code you are modifying (see doc/CodingStandard.md)
+4. All commits must be signed (see Legal considerations, below) and use the following commit template ("#n" only needed if there is an issue):
+
+    ```
+    Short, simple summary that must include #n
+
+    Detailed information if required
+
+    Signed-off-by: First Last <email>
+    ```
+
+5. Ensure that "make test" passes all tests before you submit a Pull Request.
+6. The pull request should reference the issue number with "#n" in the discussion remark, not just the title.
 
 
 ## Legal considerations
@@ -70,17 +100,3 @@ The template for the copyright notice and dual-license is as follows:
  *    <First author> - initial implementation and documentation
  *******************************************************************************/
 ```
-
-## Technical considerations
-
-1. Please follow the coding style and format of the code you are modifying.
-2. Please ensure that "make test" passes all tests before you submit a Pull Request.
-
-
-## GitHub Issues
-
-This project uses GitHub Issues to track ongoing development and issues. Be sure
-to search for existing bugs before you create another one. Contributions are always welcome!
-
-- [https://github.com/eclipse/omr/issues](https://github.com/eclipse/omr/issues)
-

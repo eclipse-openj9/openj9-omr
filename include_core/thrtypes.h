@@ -47,6 +47,9 @@ typedef struct J9Thread {
 #if defined(J9ZOS390)
 	omrthread_os_errno_t os_errno2;
 #endif   /* J9ZOS390 */
+#if !defined(WIN32)
+	uintptr_t key_deletion_attempts;
+#endif /* !WIN32 */
 } J9Thread;
 
 typedef struct J9ThreadMonitor {

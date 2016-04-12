@@ -32,6 +32,7 @@ OBJECTS := \
   CThread \
   DbgMsg \
   joinTest \
+  keyDestructorTest \
   lockedMonitorCountTest \
   main \
   ospriority \

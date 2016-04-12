@@ -163,6 +163,41 @@ omrthread_t global_lock_owner = UNOWNED;
  * Thread Library
  */
 
+#if !defined(WIN32)
+
+/**
+ * pthread TLS key destructor for self_ptr
+ *
+ * This will be called if the current pthread exits before it has been detached
+ * from the thread library with omrthread_detach.
+ *
+ * Up to a maximum of OMR_MAX_KEY_DELETION_ATTEMPTS times, the TLS key will be
+ * restored to allow other key destructors to run and use the thread library.
+ *
+ * Once the maximum number of attempts have been made, the key will no longer be
+ * restored and the behaviour of any remaining key destructors that attempt to use
+ * the thread library is undefined.
+ *
+ * @param[in] current_omr_thread the previous value of the TLS slot - the current omrthread_t
+ */
+
+#define OMR_MAX_KEY_DELETION_ATTEMPTS 10
+
+static void
+self_key_destructor(void *current_omr_thread)
+{
+	omrthread_t omrthread = current_omr_thread;
+	uintptr_t attempts = omrthread->key_deletion_attempts;
+	if (attempts < OMR_MAX_KEY_DELETION_ATTEMPTS) {
+		omrthread->key_deletion_attempts = attempts + 1;
+		TLS_SET(((omrthread_library_t)GLOBAL_DATA(default_library))->self_ptr, current_omr_thread);
+	}
+}
+
+#undef OMR_MAX_KEY_DELETION_ATTEMPTS
+
+#endif /* !WIN32 */
+
 /**
  * Initialize a J9 threading library.
  *
@@ -197,7 +232,12 @@ omrthread_init(omrthread_library_t lib)
 
 	STATIC_ASSERT(CALLER_LAST_INDEX <= MAX_CALLER_INDEX);
 
-	if (TLS_ALLOC(lib->self_ptr)) {
+#if defined(WIN32)
+	if (TLS_ALLOC(lib->self_ptr))
+#else /* WIN32 */
+	if (TLS_ALLOC_WITH_DESTRUCTOR(lib->self_ptr, self_key_destructor))
+#endif /* WIN32 */
+	{
 		goto init_cleanup1;
 	}
 

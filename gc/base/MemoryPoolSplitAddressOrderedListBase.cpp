@@ -353,10 +353,11 @@ MM_MemoryPoolSplitAddressOrderedListBase::rebuildFreeListInRegion(MM_Environment
 	lock(env);
 	reset();
 
-#if defined(J9MODRON_SCAVENGER_DEBUG)
+	/* TODO 108399 Determine whether this is still necessary (OMR_SCAVENGER_DEBUG is defined in Scavenger.cpp and is not accessible here) */
+#if defined(OMR_SCAVENGER_DEBUG)
 	/* Fill the new space with a bogus value */
 	memset(rangeBase, 0xFA, rangeSize);
-#endif /* J9MODRON_SCAVENGER_DEBUG */
+#endif /* OMR_SCAVENGER_DEBUG */
 
 	/* Segment list is already address ordered */
 	if (createFreeEntry(env, rangeBase, rangeTop, previousFreeEntry, NULL)) {

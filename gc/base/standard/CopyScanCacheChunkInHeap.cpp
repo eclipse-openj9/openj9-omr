@@ -75,7 +75,7 @@ MM_CopyScanCacheChunkInHeap::newInstance(MM_EnvironmentStandard *env, MM_CopySca
 		chunk = (MM_CopyScanCacheChunkInHeap *)((uintptr_t)addrBase + sizeof(MM_HeapLinkedFreeHeader));
 		new(chunk) MM_CopyScanCacheChunkInHeap(addrBase, addrTop, memorySubSpace);
 		chunk->_baseCache = (MM_CopyScanCacheStandard *)(chunk + 1);
-		if(chunk->initialize(env, numberOfCaches, nextChunk, J9VM_MODRON_SCAVENGER_CACHE_TYPE_HEAP, sublistTail)) {
+		if(chunk->initialize(env, numberOfCaches, nextChunk, OMR_SCAVENGER_CACHE_TYPE_HEAP, sublistTail)) {
 			*entries = numberOfCaches;
 		} else {
 			chunk->kill(env);

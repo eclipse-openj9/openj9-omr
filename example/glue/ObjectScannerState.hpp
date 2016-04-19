@@ -19,7 +19,7 @@
 #if !defined(OBJECTSCANNERSTATE_HPP_)
 #define OBJECTSCANNERSTATE_HPP_
 
-#include "ObjectScanner.hpp"
+#include "MixedObjectScanner.hpp"
 
 /**
  * This union is not intended for runtime usage -- it is required only to determine the maximal size of
@@ -29,7 +29,7 @@
  */
 typedef union GC_ObjectScannerState
 {
-	uint8_t scanner[sizeof(GC_ObjectScanner)];
+	uint8_t scanner[sizeof(GC_MixedObjectScanner)];
 } GC_ObjectScannerState;
 
 #endif /* OBJECTSCANNERSTATE_HPP_ */

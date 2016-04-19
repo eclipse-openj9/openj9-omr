@@ -180,7 +180,7 @@ public:
 	MMINLINE uint64_t
 	update(MM_EnvironmentBase* env, uint64_t *slotsScanned, uint64_t *slotsCopied, uint64_t waitingCount)
 	{
-		if (SCAVENGER_SLOTS_SCANNED_PER_THREAD_UPDATE < *slotsScanned) {
+		if (SCAVENGER_SLOTS_SCANNED_PER_THREAD_UPDATE <= *slotsScanned) {
 			uint64_t scannedCount =  *slotsScanned;
 			uint64_t copiedCount =  *slotsCopied;
 			*slotsScanned = *slotsCopied = 0;
@@ -216,7 +216,7 @@ public:
 	 * Major update of progress stats: a snapshot returned by minor update is stored into _accumulatedSamples.
 	 * This is the value used for subsequent calculations of copy/scan ratios and average wait counts, up until 
 	 * the next major update. Various other parameters (like scan queue metrics) are also updated at this point.
-	 * @param updateResult snapshot of packed copy/scan/wait/update value return by minor update and to be stored up until next major update
+	 * @param updateResult snapshot of packed wait/copy/scan/update value return by minor update and to be stored up until next major update
 	 * @param nonEmptyScanLists number of non-empty scan queue lists
 	 * @param cachesQueued total number of items in scan queue lists
 	 */
@@ -241,8 +241,9 @@ public:
 	 * and on the master thread before starting a scavenging gc cycle to ensure
 	 * that the effective copy/scan cache size is maximal until all gc threads
 	 * have entered completeScan().
+	 * @param resetHistory if true history will be reset (eg at end of gc after reporting stats)
 	 */
-	void reset(MM_EnvironmentBase* env);
+	void reset(MM_EnvironmentBase* env, bool resetHistory);
 
 	/**
 	 * Each accumulator update represents global scanned slot count of at
@@ -350,15 +351,18 @@ private:
 	MMINLINE uint64_t
 	atomicAddThreadUpdate(uint64_t threadUpdate)
 	{
+		uint64_t newValue = 0;
 		/* Stop compiler optimizing away load of oldValue */
 		volatile uint64_t *localAddr = &_accumulatingSamples;
-		uint64_t oldValue = (uint64_t)*localAddr;
-		uint64_t newValue = MM_AtomicOperations::lockCompareExchangeU64(localAddr, oldValue, oldValue + threadUpdate);
-		uint64_t updateCount = updates(newValue);
-		if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE <= updateCount) {
-			MM_AtomicOperations::setU64(&_accumulatingSamples, 0);
-			if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE < updateCount) {
-				newValue = 0;
+		uint64_t oldValue = *localAddr;
+		if (oldValue == MM_AtomicOperations::lockCompareExchangeU64(localAddr, oldValue, oldValue + threadUpdate)) {
+			newValue = oldValue + threadUpdate;
+			uint64_t updateCount = updates(newValue);
+			if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE <= updateCount) {
+				MM_AtomicOperations::setU64(&_accumulatingSamples, 0);
+				if (SCAVENGER_THREAD_UPDATES_PER_MAJOR_UPDATE < updateCount) {
+					newValue = 0;
+				}
 			}
 		}
 		return newValue;

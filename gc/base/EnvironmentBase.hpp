@@ -36,6 +36,9 @@
 #include "LargeObjectAllocateStats.hpp"
 #include "MarkStats.hpp"
 #include "RootScannerStats.hpp"
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+#include "ScavengerHotFieldStats.hpp"
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #include "ScavengerStats.hpp"
 #include "SweepStats.hpp"
 #include "WorkPacketStats.hpp"
@@ -146,12 +149,14 @@ public:
 #if defined(OMR_GC_MODRON_COMPACTION)
 	MM_CompactStats _compactStats;
 #endif /* OMR_GC_MODRON_COMPACTION */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	MM_ScavengerStats _scavengerStats;
-#endif /* OMR_GC_MODRON_SCAVENGER */
 #endif /* OMR_GC_MODRON_STANDARD || OMR_GC_REALTIME */
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+	MM_ScavengerStats _scavengerStats;
+	MM_ScavengerHotFieldStats _hotFieldStats; /**< hot field statistics for this GC thread */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 private:
+
 protected:
 	virtual bool initialize(MM_GCExtensionsBase *extensions);
 	virtual void tearDown(MM_GCExtensionsBase *extensions);

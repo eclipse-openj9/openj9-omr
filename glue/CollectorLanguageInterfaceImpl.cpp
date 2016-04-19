@@ -25,10 +25,13 @@
 #include "CompactScheme.hpp"
 #endif /* OMR_GC_MODRON_COMPACTION */
 #include "EnvironmentStandard.hpp"
+#include "ForwardedHeader.hpp"
 #include "GCExtensionsBase.hpp"
+#include "HeapLinkedFreeHeader.hpp"
 #include "MarkingScheme.hpp"
 #include "mminitcore.h"
 #include "objectdescription.h"
+#include "ObjectModel.hpp"
 #include "omr.h"
 #include "omrvm.h"
 #include "OMRVMInterface.hpp"
@@ -163,7 +166,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBa
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC_clearLangStats(MM_EnvironmentBase *env)
+MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC(MM_EnvironmentBase *env)
 {
 	/* Do nothing for now */
 }
@@ -201,15 +204,95 @@ MM_CollectorLanguageInterfaceImpl::scavenger_masterThreadGarbageCollect_scavenge
 bool
 MM_CollectorLanguageInterfaceImpl::scavenger_internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase *envBase, PercolateReason *reason, uint32_t *gcCode)
 {
-	/* Do nothing for now */
-	return false;
+#error Return true if scavenge cycle should be forgone and GC cycle percolated up to another collector
 }
 
 GC_ObjectScanner *
-MM_CollectorLanguageInterfaceImpl::parallelScavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
+MM_CollectorLanguageInterfaceImpl::scavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
 {
-#error provide an object scanner
+#error Implement a GC_ObjectScanner subclass for each distinct kind of objects (eg scanner for scalar objects and scanner for indexable objects)
 }
+
+void
+MM_CollectorLanguageInterfaceImpl::scavenger_flushReferenceObjects(MM_EnvironmentStandard *env)
+{
+	/* Do nothing for now */
+}
+
+bool
+MM_CollectorLanguageInterfaceImpl::scavenger_hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+{
+	/* This method must be implemented and return true an object may hold any object references that are live
+	 * but not reachable by traversing the reference graph from the root set or remembered set. Otherwise this
+	 * default implementation should be used.
+	 */
+	return false;
+}
+
+bool
+MM_CollectorLanguageInterfaceImpl::scavenger_scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+{
+	/* This method must be implemented if an object may hold any object references that are live but not reachable
+	 * by traversing the reference graph from the root set or remembered set. In that case, this method should
+	 * call MM_Scavenger::copyObjectSlot(..) for each such indirect object reference, ORing the boolean result
+	 * from each call to MM_Scavenger::copyObjectSlot(..) into a single boolean value to be returned.
+	 */
+	return false;
+}
+
+void
+MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+{
+	/* This method must be implemented if an object may hold any object references that are live but not reachable
+	 * by traversing the reference graph from the root set or remembered set. In that case, this method should
+	 * call MM_Scavenger::backOutFixSlotWithoutCompression(..) for each uncompressed slot holding a reference to
+	 * an indirect object that is associated with the object.
+	 */
+}
+
+void
+MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(MM_EnvironmentStandard *env)
+{
+	/* This method must be implemented if an object may hold any object references that are live but not reachable
+	 * by traversing the reference graph from the root set or remembered set. In that case, this method should locate
+	 * all such objects and call MM_Scavenger::backOutObjectScan(..) for each such object that is in the remembered
+	 * set. For example,
+	 *
+	 * if (_extensions->objectModel.isRemembered(indirectObject)) {
+	 *    _extensions->scavenger->backOutObjectScan(env, indirectObject);
+	 * }
+	 */
+}
+
+void
+MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader)
+{
+	if (forwardedHeader->isForwardedPointer()) {
+		omrobjectptr_t objectPtr = forwardedHeader->getObject();
+		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
+		omrobjectptr_t fwdObjectPtr = forwardedHeader->getForwardedObject();
+
+		/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
+		 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
+		 */
+		UDATA evacuateObjectSizeInBytes = extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr);
+		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
+		freeHeader->setNext((MM_HeapLinkedFreeHeader*)objectPtr);
+		freeHeader->setSize(evacuateObjectSizeInBytes);
+	}
+}
+
+#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+void
+MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader, MM_MemorySubSpaceSemiSpace *subSpaceNew)
+{
+	/* This method must be implemented if (and only if) the object header is stored in a compressed slot. in that
+	 * case the other half of the full (omrobjectptr_t sized) slot may hold a compressed object reference that
+	 * must be restored by this method.
+	 */
+	Assert_MM_unimplemented();
+}
+#endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 #if defined(OMR_GC_MODRON_COMPACTION)

@@ -20,6 +20,7 @@
 #define ARRAYLETOBJECTMODEL_
 
 #include "omrcfg.h"
+#include "ModronAssertions.h"
 
 #if defined(OMR_GC_ARRAYLETS)
 
@@ -52,6 +53,18 @@ public:
 	expandArrayletSubSpaceRange(MM_MemorySubSpace * subSpace, void * rangeBase, void * rangeTop, uintptr_t largestDesirableArraySpineSize)
 	{
 		/* No-op */
+	}
+	
+	/**
+	 * Returns the size of an indexable object, in bytes, including the header.
+	 * @param arrayPtr Pointer to the indexable object whose size is required
+	 * @return Size of object in bytes including the header
+	 */
+	MMINLINE uintptr_t
+	getSizeInBytesWithHeader(omrarrayptr_t arrayPtr)
+	{
+		Assert_MM_unimplemented();
+		return 0;
 	}
 };
 

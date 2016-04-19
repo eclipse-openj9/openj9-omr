@@ -120,7 +120,7 @@ MM_CopyScanCacheList::removeAllHeapAllocatedChunks(MM_EnvironmentStandard *env)
 			MM_CopyScanCacheStandard *cache = _sublists[index]._cacheHead;
 	
 			while(cache != NULL) {
-				if (0 != (cache->flags & J9VM_MODRON_SCAVENGER_CACHE_TYPE_HEAP)) {
+				if (0 != (cache->flags & OMR_SCAVENGER_CACHE_TYPE_HEAP)) {
 					/* this cache is heap allocated - remove it from list */
 					if (NULL == previousCache) {
 						/* still be a first element */
@@ -151,7 +151,7 @@ MM_CopyScanCacheList::removeAllHeapAllocatedChunks(MM_EnvironmentStandard *env)
 		while(chunk != NULL) {
 			MM_CopyScanCacheChunk *nextChunk = chunk->getNext();
 
-			if (0 != (chunk->getBase()->flags & J9VM_MODRON_SCAVENGER_CACHE_TYPE_HEAP)) {
+			if (0 != (chunk->getBase()->flags & OMR_SCAVENGER_CACHE_TYPE_HEAP)) {
 				/* this chunk is heap allocated - remove it from list */
 				if (NULL == previousChunk) {
 					/* still be a first element */

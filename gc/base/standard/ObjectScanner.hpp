@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2015
+ * (c) Copyright IBM Corp. 2015, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -55,6 +55,7 @@ protected:
 	fomrobject_t *_scanPtr;					/**< Pointer to base of object slots mapped by current _scanMap */
 	GC_SlotObject _slotObject;				/**< Create own SlotObject class to provide output */
 	uintptr_t _flags;						/**< Scavenger context flags (scanRoots, scanHeap, ...) */
+	uintptr_t _hotFieldsDescriptor;			/**< Hot fields descriptor for languages that support hot field tracking */
 	
 public:
 	/**
@@ -80,14 +81,16 @@ protected:
 	 * @param[in] scanPtr The first slot contained in the object to be scanned
 	 * @param[in] scanMap Bit map marking object reference slots, with least significant bit mapped to slot at scanPtr
 	 * @param[in] flags A bit mask comprised of InstanceFlags
+	 * @param[in] hotFieldsDescriptor Hot fields descriptor for languages that support hot field tracking (0 if no hot fields support)
 	 */
-	GC_ObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t parentObjectPtr, fomrobject_t *scanPtr, uintptr_t scanMap, uintptr_t flags)
+	GC_ObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t parentObjectPtr, fomrobject_t *scanPtr, uintptr_t scanMap, uintptr_t flags, uintptr_t hotFieldsDescriptor = 0)
 		: MM_BaseVirtual()
 		, _parentObjectPtr(parentObjectPtr)
 		, _scanMap(scanMap)
 		, _scanPtr(scanPtr)
 		, _slotObject(env->getOmrVM(), NULL)
 		, _flags(flags)
+		, _hotFieldsDescriptor(hotFieldsDescriptor)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -120,6 +123,9 @@ public:
 	 * @return true if the object to be scanned is a leaf object
 	 */
 	MMINLINE bool isLeafObject() { return (0 == _scanMap) && !hasMoreSlots(); }
+
+
+	MMINLINE uintptr_t getHotFieldsDescriptor() { return _hotFieldsDescriptor; }
 
 	/**
 	 * Get the next object slot if one is available.

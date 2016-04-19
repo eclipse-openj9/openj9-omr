@@ -38,8 +38,8 @@ AC_ARG_VAR([OMRGLUE_CFLAGS], [Extra CFLAGS to be passed to the C compiler when c
 AC_ARG_VAR([OMRGLUE_CXXFLAGS], [Extra CXXFLAGS to be passed to the C++ compiler when compiling OMRGLUE.])
 AC_ARG_VAR([OMRGLUE_INCLUDES], [Extra include directories to be passed to the C preprocessor compiler when compiling OMRGLUE.])
 
-AC_ARG_VAR([lib_output_dir], [The output directory for libraries. Default: $top_srcdir/lib])
-AC_ARG_VAR([exe_output_dir], [The output directory for executables. Default: $top_srcdir])
+AC_ARG_VAR([lib_output_dir], [The output directory for libraries. (Default: $top_srcdir/lib)])
+AC_ARG_VAR([exe_output_dir], [The output directory for executables. (Default: $top_srcdir)])
 AC_ARG_VAR([OMR_HOST_OS], [The operating system where the package will run. One of: aix,linux,osx,win,zos])
 AC_ARG_VAR([OMR_HOST_ARCH], [The architecture of the CPU where the package will run. One of: arm,ppc,s390,x86])
 AC_ARG_VAR([OMR_TARGET_DATASIZE], [Specifies whether the package will run in 32- or 64-bit mode. One of: 31,32,64])
@@ -47,10 +47,10 @@ AC_ARG_VAR([OMR_TOOLCHAIN], [The toolchain used to build the package. One of: gc
 AC_ARG_VAR([OMR_CROSS_CONFIGURE],
 	[Indicates that configure is not being run on a system that is capable of building the package.
 	Compiler and feature detection tests will be invalid. All options must be configured manually.
-	One of: yes,no. Default: no.])
+	One of: yes,no. (Default: no)])
 
 AC_ARG_ENABLE([optimized],
-	AS_HELP_STRING([--enable-optimized], [Create an optimized build (default is yes).]),
+	AS_HELP_STRING([--enable-optimized], [Create an optimized build. (Default: yes)]),
 	[],
 	[enable_optimized=yes]
 )
@@ -59,7 +59,7 @@ AS_IF([test "$enable_optimized" != "no"],
 	[OMR_OPTIMIZE=0])
 
 AC_ARG_ENABLE([warnings-as-errors],
-	AS_HELP_STRING([--enable-warnings-as-errors], [Stop compilation when there is a warning (default is yes).]),
+	AS_HELP_STRING([--enable-warnings-as-errors], [Stop compilation when there is a warning. (Default: yes)]),
 	[],
 	[enable_warnings_as_errors=yes]
 )
@@ -68,7 +68,7 @@ AS_IF([test "$enable_warnings_as_errors" != "no"],
 	[OMR_WARNINGS_AS_ERRORS=0])
 
 AC_ARG_ENABLE([enhanced-warnings],
-	AS_HELP_STRING([--enable-enhanced-warnings], [Enhanced compiler warnings (default is yes).]),
+	AS_HELP_STRING([--enable-enhanced-warnings], [Enhanced compiler warnings. (Default: yes)]),
 	[],
 	[enable_enhanced_warnings=yes])
 AS_IF([test "$enable_enhanced_warnings" != "no"],
@@ -76,7 +76,7 @@ AS_IF([test "$enable_enhanced_warnings" != "no"],
 	[OMR_ENHANCED_WARNINGS=0])
 
 AC_ARG_ENABLE([debug],
-	AS_HELP_STRING([--enable-debug], [Generate debug information during compilation (default is yes).]),
+	AS_HELP_STRING([--enable-debug], [Generate debug information during compilation. (Default: yes)]),
 	[],
 	[enable_debug=yes])
 AS_IF([test "$enable_debug" != "no"],
@@ -84,16 +84,15 @@ AS_IF([test "$enable_debug" != "no"],
 	[OMR_DEBUG=0])
 
 AC_ARG_ENABLE([fvtest],
-	AS_HELP_STRING([[--enable-fvtest]], [Build fvtests (default is no).]),
+	AS_HELP_STRING([[--enable-fvtest]], [Build fvtests. (Default: no)]),
 	[],
 	[enable_fvtest=no]
 )
-
 AC_ARG_ENABLE([fvtest-agent],
 	AS_HELP_STRING([[--enable-fvtest-agent]],
-		[Build fvtest agents even if fvtests are not enabled (default is no).
+		[Build fvtest agents even if fvtests are not enabled.
 		This setting is ignored if --enable-fvtest=yes because if fvtests are
-		being built, fvtest agents must also be built.]),
+		being built, fvtest agents must also be built. (Default: no)]),
 	[],
 	[enable_fvtest_agent=no]
 )
@@ -101,7 +100,7 @@ AC_ARG_ENABLE([fvtest-agent],
 AS_IF([test "$enable_fvtest" = "yes"], [enable_fvtest_agent=yes])
 
 AC_ARG_ENABLE([tracegen],
-	AS_HELP_STRING([[--enable-tracegen]], [Run tracegen and tracemerge (default is yes).]),
+	AS_HELP_STRING([[--enable-tracegen]], [Run tracegen and tracemerge. (Default: yes)]),
 	[],
 	[enable_tracegen=yes]
 )
@@ -251,7 +250,7 @@ exe_output_dir=${exe_output_dir:-"\$(top_srcdir)"}
 AC_ARG_ENABLE([auto-build-flag],
 	AS_HELP_STRING([--enable-auto-build-flag],
 		[Automatically detect the value of build flags that are not explicitly
-     enabled or disabled (default is yes).]),
+     enabled or disabled. (Default: yes)]),
 	[],
 	[enable_auto_build_flag=yes]
 )
@@ -351,11 +350,11 @@ echo "##" >> omrmakefiles/omrcfg.mk
 echo "" >> omrmakefiles/omrcfg.mk
 
 ############### Top-Level Components
-OMRCFG_DEFINE_FLAG_ON([OMR_GC], [], [Enable building the OMR GC. (Default is yes)])
-OMRCFG_DEFINE_FLAG_ON([OMR_PORT], [], [Enable building the Port library. (Default is yes)])
-OMRCFG_DEFINE_FLAG_ON([OMR_THREAD], [], [Enable building the Thread library. (Default is yes)])
-OMRCFG_DEFINE_FLAG_ON([OMR_OMRSIG], [], [Enable building the OMRSig library. (Default is yes)])
-OMRCFG_DEFINE_FLAG_OFF([OMR_EXAMPLE], [], [Whether we are building OMR against the example code. (Default is no)])
+OMRCFG_DEFINE_FLAG_ON([OMR_GC], [], [Enable building the OMR GC. (Default: yes)])
+OMRCFG_DEFINE_FLAG_ON([OMR_PORT], [], [Enable building the Port library. (Default: yes)])
+OMRCFG_DEFINE_FLAG_ON([OMR_THREAD], [], [Enable building the Thread library. (Default: yes)])
+OMRCFG_DEFINE_FLAG_ON([OMR_OMRSIG], [], [Enable building the OMRSig library. (Default: yes)])
+OMRCFG_DEFINE_FLAG_OFF([OMR_EXAMPLE], [], [Whether we are building OMR against the example code. (Default: no)])
 
 ############### Flags that are always enabled
 # Each flag must have a corresponding entry in omrcfg.h.in

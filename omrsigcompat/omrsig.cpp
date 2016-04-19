@@ -38,6 +38,12 @@
 #include "omrsig.h"
 #include "omrsig_internal.hpp"
 
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21)
+#undef OMR_OMRSIG_HAS_SIGVEC
+#else /* defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21) */
+#define OMR_OMRSIG_HAS_SIGVEC
+#endif /* defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21) */
+
 extern "C" {
 
 static OMR_SigData sigData[NSIG];
@@ -48,6 +54,7 @@ static int omrsig_sigaction_internal(int signum, const struct sigaction *act, st
 static bool validSignalNum(int signum, bool nullAction);
 static bool handlerIsFunction(const struct sigaction *act);
 #if !defined(WIN32) && !defined(J9ZOS390)
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
 static void sa_mask_to_sv_mask(const sigset_t *sa_mask, int *sv_mask);
 static void sv_mask_to_sa_mask(const int *sv_mask, sigset_t *sa_mask);
 #if (defined(S390) && defined(OMR_ENV_DATA64))
@@ -57,6 +64,7 @@ static void sv_flags_to_sa_flags(const int *sv_flags, long unsigned int *sa_flag
 static void sa_flags_to_sv_flags(const int *sa_flags, int *sv_flags);
 static void sv_flags_to_sa_flags(const int *sv_flags, int *sa_flags);
 #endif /* (defined(S390) && defined(OMR_ENV_DATA64)) */
+#endif /* defined(OMR_OMRSIG_HAS_SIGVEC) */
 #endif /* !defined(WIN32) && !defined(J9ZOS390) */
 
 #if defined(WIN32)
@@ -593,6 +601,8 @@ sysv_signal(int signum, sighandler_t handler) __THROW
 	return omrsig_signal_internal(signum, handler);
 }
 
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
+
 static void
 sv_mask_to_sa_mask(const int *sv_mask, sigset_t *sa_mask)
 {
@@ -661,12 +671,17 @@ sa_flags_to_sv_flags(const int *sa_flags, int *sv_flags)
 #endif /* defined(AIXPPC) */
 }
 
+#endif /* defined(OMR_OMRSIG_HAS_SIGVEC) */
+
 #endif /* !defined(J9ZOS390) */
 #endif /* !defined(WIN32) */
 
 } /* extern "C" { */
 
 #if (!defined(J9ZOS390) && !defined(WIN32))
+
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
+
 int
 #if defined(OSX)
 sigvec(int sig, struct sigvec * vec, struct sigvec *ovec)
@@ -705,5 +720,8 @@ sigvec(int sig, const struct sigvec *vec, struct sigvec *ovec) __THROW
 	}
 	return rc;
 }
+
+#endif /* defined(OMR_OMRSIG_HAS_SIGVEC) */
+
 #endif /* (!defined(J9ZOS390) && !defined(WIN32)) */
 

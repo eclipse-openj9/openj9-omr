@@ -22,6 +22,9 @@
 
 #include "EnvironmentStandard.hpp"
 #include "GCExtensionsBase.hpp"
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+#include "Scavenger.hpp"
+#endif
 
 MM_EnvironmentStandard *
 MM_EnvironmentStandard::newInstance(MM_GCExtensionsBase *extensions, OMR_VMThread *omrVMThread)
@@ -44,6 +47,10 @@ MM_EnvironmentStandard::newInstance(MM_GCExtensionsBase *extensions, OMR_VMThrea
 bool
 MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	extensions->scavenger->mutatorSetupForGC(this);
+#endif
+
 	/* initialize base class */
 	return MM_EnvironmentBase::initialize(extensions);
 }
@@ -51,6 +58,9 @@ MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 void
 MM_EnvironmentStandard::tearDown(MM_GCExtensionsBase *extensions)
 {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	extensions->scavenger->mutatorFinalReleaseCopyCaches(this, this);
+#endif
 	/* tearDown base class */
 	MM_EnvironmentBase::tearDown(extensions);
 }

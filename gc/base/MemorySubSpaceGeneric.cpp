@@ -289,7 +289,9 @@ MM_MemorySubSpaceGeneric::allocateObject(MM_EnvironmentBase* env, MM_AllocateDes
 	 * Next time when the frame is built (shouldCollectOnFailure is true, while _allocateAtSafePointOnly is still true) we proceed with allocate (otherwise risk OOM),
 	 * but on the way out of this allocate, when we pay tax, concurrent mark will trigger the final phase. */
 	if (!_allocateAtSafePointOnly || shouldCollectOnFailure) {
-		result = _memoryPool->allocateObject(env, allocDescription);
+		if (_isAllocatable) {
+			result = _memoryPool->allocateObject(env, allocDescription);
+		}
 
 		if(NULL != result) {
 			/* Allocate succeeded */
@@ -318,7 +320,9 @@ MM_MemorySubSpaceGeneric::allocateArrayletLeaf(MM_EnvironmentBase* env, MM_Alloc
 	void *result = NULL;
 
 	if (!_allocateAtSafePointOnly || shouldCollectOnFailure) {
-		result = _memoryPool->allocateArrayletLeaf(env, allocDescription);
+		if (_isAllocatable) {
+			result = _memoryPool->allocateArrayletLeaf(env, allocDescription);
+		}
 
 		if(NULL == result) {
 			/* Allocate failed - try the parent */
@@ -361,7 +365,9 @@ MM_MemorySubSpaceGeneric::allocateTLH(MM_EnvironmentBase* env, MM_AllocateDescri
 	 * Next time when the frame is built (shouldCollectOnFailure is true, while _allocateAtSafePointOnly is still true) we proceed with allocate (otherwise risk OOM),
 	 * but on the way out of this allocate, when we pay tax, concurrent mark will trigger the final phase. */
 	if (!_allocateAtSafePointOnly || shouldCollectOnFailure) {
-		result = objectAllocationInterface->allocateTLH(env, allocDescription, this, _memoryPool);
+		if (_isAllocatable) {
+			result = objectAllocationInterface->allocateTLH(env, allocDescription, this, _memoryPool);
+		}
 
 		if (NULL == result) {
 			if (shouldCollectOnFailure) {

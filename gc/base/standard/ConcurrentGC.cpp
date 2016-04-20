@@ -3706,7 +3706,12 @@ MM_ConcurrentGC::recordCardCleanPass2Start(MM_EnvironmentStandard *env)
 bool
 MM_ConcurrentGC::collectorStartup(MM_GCExtensionsBase* extensions)
 {
-	bool result = initializeConcurrentHelpers(extensions);
+	bool result = MM_ParallelGlobalGC::collectorStartup(extensions);
+
+	if (result) {
+		result = initializeConcurrentHelpers(extensions);
+	}
+
 	return result;
 }
 
@@ -3719,6 +3724,7 @@ void
 MM_ConcurrentGC::collectorShutdown(MM_GCExtensionsBase *extensions)
 {
 	shutdownConHelperThreads(extensions);
+	MM_ParallelGlobalGC::collectorShutdown(extensions);
 }
 
 void

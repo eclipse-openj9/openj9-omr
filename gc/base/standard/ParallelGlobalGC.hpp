@@ -182,7 +182,7 @@ protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 
-	void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits);
+	virtual void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits);
 
 	virtual void setupForGC(MM_EnvironmentBase *env);
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);

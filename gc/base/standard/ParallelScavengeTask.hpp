@@ -39,7 +39,7 @@ class MM_EnvironmentBase;
  */
 class MM_ParallelScavengeTask : public MM_ParallelTask
 {
-private:
+protected:
 	MM_Scavenger *_collector;
 	MM_CycleState *_cycleState;  /**< Collection cycle state active for the task */
 

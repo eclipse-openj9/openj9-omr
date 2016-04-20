@@ -622,6 +622,18 @@ MM_EnvironmentBase::releaseExclusiveForConcurrentKickoff()
 }
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
+uintptr_t
+MM_EnvironmentBase::relinquishExclusiveVMAccess()
+{
+	return _envLanguageInterface->relinquishExclusiveVMAccess();
+}
+
+void
+MM_EnvironmentBase::assumeExclusiveVMAccess(uintptr_t exclusiveCount)
+{
+	_envLanguageInterface->assumeExclusiveVMAccess(exclusiveCount);
+}
+
 MM_MemorySubSpace *
 MM_EnvironmentBase::getDefaultMemorySubSpace()
 {

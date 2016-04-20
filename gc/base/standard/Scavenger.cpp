@@ -267,6 +267,14 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 
 	_cacheLineAlignment = CACHE_LINE_SIZE;
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		if (!_masterGCThread.initialize(this)) {
+			return false;
+		}
+	}
+#endif
+
 	return true;
 }
 
@@ -290,6 +298,36 @@ MM_Scavenger::tearDown(MM_EnvironmentBase *env)
 	/* Unregister hook for global GC end. */
 	(*mmOmrHooks)->J9HookUnregister(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_START, hookGlobalCollectionStart, (void *)this);
 	(*mmOmrHooks)->J9HookUnregister(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, hookGlobalCollectionComplete, (void *)this);
+}
+
+/**
+ * Perform any collector initialization particular to the concurrent collector.
+ */
+bool
+MM_Scavenger::collectorStartup(MM_GCExtensionsBase* extensions)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		if (!_masterGCThread.startup()) {
+			return false;
+		}
+	}
+#endif
+	return true;
+}
+
+/**
+ * Perform any collector shutdown particular to the concurrent collector.
+ * Currently this just involves stopping the concurrent background helper threads.
+ */
+void
+MM_Scavenger::collectorShutdown(MM_GCExtensionsBase* extensions)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		_masterGCThread.shutdown();
+	}
+#endif
 }
 
 /****************************************
@@ -1135,7 +1173,16 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, GC_SlotObject *slotObj
 {
 	omrobjectptr_t slot = slotObject->readReferenceFromSlot();
 	bool result = copyAndForward(env, &slot);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	// todo: could do non-atomically during STW phases
+	// bool swapResult =
+	slotObject->atomicWriteReferenceToSlot(slot);
+	// it's valid for this atomic write to fail. it means another thread raced us with either fixing the slot (with same value, though),
+	// or there was a mutator write to that slot that we must not overwrite.
+	//Assert_MM_true(swapResult);
+#else
 	slotObject->writeReferenceToSlot(slot);
+#endif
 
 	if (NULL != env->_effectiveCopyScanCache) {
 		env->_scavengerStats.countCopyDistance((uintptr_t)slotObject->readAddressFromSlot(), (uintptr_t)slotObject->readReferenceFromSlot());
@@ -3210,128 +3257,180 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
  * Setup, execute and complete a scavenge.
  */
 void
-MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentStandard *env)
+MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_AllocateDescription *allocDescription, bool initMarkMap, bool rebuildMarkBits)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	OMRPORT_ACCESS_FROM_OMRPORT(envBase->getPortLibrary());
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 	Trc_MM_Scavenger_masterThreadGarbageCollect_Entry(env->getLanguageVMThread());
+
+	/* We might be running in a context of either main or master thread, but either way we must have exclusive access */
+	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
 
 	if (_extensions->trackMutatorThreadCategory) {
 		/* This thread is doing GC work, account for the time spent into the GC bucket */
 		omrthread_set_category(env->getOmrVMThread()->_os_thread, J9THREAD_CATEGORY_SYSTEM_GC_THREAD, J9THREAD_TYPE_SET_GC);
 	}
 
-	if (_extensions->processLargeAllocateStats) {
-		processLargeAllocateStatsBeforeGC(env);
-	}
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isConcurrentInProgress())
+#endif
+	{
+		if (_extensions->processLargeAllocateStats) {
+			processLargeAllocateStatsBeforeGC(env);
+		}
 
-	reportGCCycleStart(env);
+		reportGCCycleStart(env);
+	}
 	reportGCStart(env);
 	reportGCIncrementStart(env);
-	reportScavengeStart(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isConcurrentInProgress())
+#endif
+	{
+		reportScavengeStart(env);
 
-	_extensions->scavengerStats._startTime = omrtime_hires_clock();
+		_extensions->scavengerStats._startTime = omrtime_hires_clock();
 
-	/* Perform any master-specific setup */
-	masterSetupForGC(env);
+		masterSetupForGC(env);
+	}
 
-	/* And perform the scavenge */
-	scavenge(env);
-
-	/* defer to collector language interface */
-	_cli->scavenger_masterThreadGarbageCollect_scavengeComplete(env);
-
-	/* Record the completion time of the scavenge */
-	_extensions->scavengerStats._endTime = omrtime_hires_clock();
-
-	reportScavengeEnd(env);
-
-	/* Reset the resizable flag of the semi space.
-	 * NOTE: Must be done before we attempt to resize the new space.
-	 */
-	_activeSubSpace->setResizable(_cachedSemiSpaceResizableFlag);
-
-	if(scavengeCompletedSuccessfully(env)) {
-		/* Merge sublists in the remembered set (if necessary) */
-		_extensions->rememberedSet.compact(env);
-
-		/* Must report object events before memory spaces are flipped */
-		_cli->scavenger_reportObjectEvents(env);
-		
-		/* If -Xgc:fvtest=forcePoisonEvacuate has been specified, poison(fill poison pattern) evacuate space */
-		if(_extensions->fvtest_forcePoisonEvacuate) {
-			_activeSubSpace->poisonEvacuateSpace();
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		if (concurrent_state_idle == _concurrentState) {
+			_concurrentState = concurrent_state_init;
+			_forceConcurrentTermination = false;
 		}
+		scavengeIncremental(env, 3);
+		if (concurrent_state_scan == _concurrentState) {
+			_activeSubSpace->flip(env, 1);
+			/* Let know MemorySpace about new default MemorySubSpace */
+			_activeSubSpace->getMemorySpace()->setDefaultMemorySubSpace(_activeSubSpace->getDefaultMemorySubSpace());
+		}
+	}
+	else
+#endif
+	{
+		/* And perform the scavenge */
+		scavenge(env);
+	}
 
-		/* Build free list in evacuate profile */
-		_activeSubSpace->rebuildFreeListForEvacuate(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isConcurrentInProgress())
+#endif
+	{
+		/* defer to collector language interface */
+		_cli->scavenger_masterThreadGarbageCollect_scavengeComplete(env);
 
-		/* Flip the memory space allocate profile */
-		_activeSubSpace->flip();
+		/* Record the completion time of the scavenge */
+		_extensions->scavengerStats._endTime = omrtime_hires_clock();
 
-		/* Let know MemorySpace about new default MemorySubSpace */
-		_activeSubSpace->getMemorySpace()->setDefaultMemorySubSpace(_activeSubSpace->getDefaultMemorySubSpace());
+		reportScavengeEnd(env);
 
-		/* Adjust memory between the semi spaces where applicable */
-		_activeSubSpace->checkResize(env);
-		_activeSubSpace->performResize(env);
+		/* Reset the resizable flag of the semi space.
+		 * NOTE: Must be done before we attempt to resize the new space.
+		 */
+		_activeSubSpace->setResizable(_cachedSemiSpaceResizableFlag);
 
-		/* Defer to collector language interface */
-		_cli->scavenger_masterThreadGarbageCollect_scavengeSuccess(env);
+		if(scavengeCompletedSuccessfully(env)) {
+			/* Merge sublists in the remembered set (if necessary) */
+			_extensions->rememberedSet.compact(env);
 
-		if(_extensions->scvTenureStrategyAdaptive) {
-			/* Adjust the tenure age based on the percentage of new space used.  Also, avoid / by 0 */
-			uintptr_t newSpaceTotalSize = _activeSubSpace->getActiveMemorySize();
-			uintptr_t newSpaceConsumedSize = newSpaceTotalSize - _activeSubSpace->getActualActiveFreeMemorySize();
-			uintptr_t newSpaceSizeScale = newSpaceTotalSize / 100;
+			/* Must report object events before memory spaces are flipped */
+			_cli->scavenger_reportObjectEvents(env);
 
-			if((newSpaceConsumedSize < (_extensions->scvTenureRatioLow * newSpaceSizeScale)) && (_extensions->scvTenureAdaptiveTenureAge < OBJECT_HEADER_AGE_MAX)) {
-				_extensions->scvTenureAdaptiveTenureAge++;
-			} else {
-				if((newSpaceConsumedSize > (_extensions->scvTenureRatioHigh * newSpaceSizeScale)) && (_extensions->scvTenureAdaptiveTenureAge > OBJECT_HEADER_AGE_MIN)) {
-					_extensions->scvTenureAdaptiveTenureAge--;
+			/* If -Xgc:fvtest=forcePoisonEvacuate has been specified, poison(fill poison pattern) evacuate space */
+			if(_extensions->fvtest_forcePoisonEvacuate) {
+				_activeSubSpace->poisonEvacuateSpace();
+			}
+
+			/* Build free list in evacuate profile */
+			_activeSubSpace->rebuildFreeListForEvacuate(env);
+
+			/* Flip the memory space allocate profile */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			if (!_extensions->concurrentScavenger)
+#endif
+			{
+				_activeSubSpace->flip(env, 1);
+				/* Let know MemorySpace about new default MemorySubSpace */
+				_activeSubSpace->getMemorySpace()->setDefaultMemorySubSpace(_activeSubSpace->getDefaultMemorySubSpace());
+			}
+			_activeSubSpace->flip(env, 2);
+			_activeSubSpace->flip(env, 3);
+
+
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+			/* Adjust memory between the semi spaces where applicable */
+			_activeSubSpace->checkResize(env);
+			_activeSubSpace->performResize(env);
+#endif
+
+			/* Defer to collector language interface */
+			_cli->scavenger_masterThreadGarbageCollect_scavengeSuccess(env);
+
+			if(_extensions->scvTenureStrategyAdaptive) {
+				/* Adjust the tenure age based on the percentage of new space used.  Also, avoid / by 0 */
+				uintptr_t newSpaceTotalSize = _activeSubSpace->getActiveMemorySize();
+				uintptr_t newSpaceConsumedSize = newSpaceTotalSize - _activeSubSpace->getActualActiveFreeMemorySize();
+				uintptr_t newSpaceSizeScale = newSpaceTotalSize / 100;
+
+				if((newSpaceConsumedSize < (_extensions->scvTenureRatioLow * newSpaceSizeScale)) && (_extensions->scvTenureAdaptiveTenureAge < OBJECT_HEADER_AGE_MAX)) {
+					_extensions->scvTenureAdaptiveTenureAge++;
+				} else {
+					if((newSpaceConsumedSize > (_extensions->scvTenureRatioHigh * newSpaceSizeScale)) && (_extensions->scvTenureAdaptiveTenureAge > OBJECT_HEADER_AGE_MIN)) {
+						_extensions->scvTenureAdaptiveTenureAge--;
+					}
 				}
 			}
+		} else {
+			/* Build free list in survivor profile - the scavenge was unsuccessful, so rebuild the free list */
+			_activeSubSpace->rebuildFreeListForBackout(env);
 		}
-	} else {
-		/* Build free list in survivor profile - the scavenge was unsuccessful, so rebuild the free list */
-		_activeSubSpace->rebuildFreeListForBackout(env);
-	}
 
-	/* Restart the allocation caches associated to all threads */
-	{
-		GC_OMRVMThreadListIterator threadListIterator(_omrVM);
-		OMR_VMThread *walkThread;
-		while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
-			MM_EnvironmentBase *walkEnv = MM_EnvironmentBase::getEnvironment(walkThread);
-			walkEnv->_objectAllocationInterface->restartCache(env);
+		/* Restart the allocation caches associated to all threads */
+		{
+			GC_OMRVMThreadListIterator threadListIterator(_omrVM);
+			OMR_VMThread *walkThread;
+			while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
+				MM_EnvironmentBase *walkEnv = MM_EnvironmentBase::getEnvironment(walkThread);
+				walkEnv->_objectAllocationInterface->restartCache(env);
+			}
 		}
-	}
 
-	_extensions->heap->resetHeapStatistics(false);
+		_extensions->heap->resetHeapStatistics(false);
 
-	/* If there was a failed tenure of a size greater than the threshold, set the flag. */
-	/* The next attempt to scavenge will result in a global collect */
-	if (_extensions->scavengerStats._failedTenureCount > 0) {
-		if (_extensions->scavengerStats._failedTenureBytes >= _extensions->scavengerFailedTenureThreshold) {
-			Trc_MM_Scavenger_masterThreadGarbageCollect_setFailedTenureFlag(env->getLanguageVMThread(), _extensions->scavengerStats._failedTenureLargest);
-			setFailedTenureThresholdFlag();
-			setFailedTenureLargestObject(_extensions->scavengerStats._failedTenureLargest);
+		/* If there was a failed tenure of a size greater than the threshold, set the flag. */
+		/* The next attempt to scavenge will result in a global collect */
+		if (_extensions->scavengerStats._failedTenureCount > 0) {
+			if (_extensions->scavengerStats._failedTenureBytes >= _extensions->scavengerFailedTenureThreshold) {
+				Trc_MM_Scavenger_masterThreadGarbageCollect_setFailedTenureFlag(env->getLanguageVMThread(), _extensions->scavengerStats._failedTenureLargest);
+				setFailedTenureThresholdFlag();
+				setFailedTenureLargestObject(_extensions->scavengerStats._failedTenureLargest);
+			}
 		}
-	}
-	if (_extensions->processLargeAllocateStats) {
-		processLargeAllocateStatsAfterGC(env);
-	}
-	
-	reportGCCycleFinalIncrementEnding(env);
+		if (_extensions->processLargeAllocateStats) {
+			processLargeAllocateStatsAfterGC(env);
+		}
+
+		reportGCCycleFinalIncrementEnding(env);
+
+	} // if !isConcurrentInProgress
+
+
 	reportGCIncrementEnd(env);
 	reportGCEnd(env);
-	reportGCCycleEnd(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isConcurrentInProgress())
+#endif
+	{
+		reportGCCycleEnd(env);
 
-	if (_extensions->processLargeAllocateStats) {
-		/* reset tenure processLargeAllocateStats after TGC */ 
-		resetTenureLargeAllocateStats(env);
-	}
-	_extensions->allocationStats.clear();
+		if (_extensions->processLargeAllocateStats) {
+			/* reset tenure processLargeAllocateStats after TGC */
+			resetTenureLargeAllocateStats(env);
+		}
+		_extensions->allocationStats.clear();
+	} // if !isConcurrentInProgress
 
 	if (_extensions->trackMutatorThreadCategory) {
 		/* Done doing GC, reset the category back to the old one */
@@ -3673,7 +3772,15 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 	masterClearHotFieldStats();
 
-	masterThreadGarbageCollect(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		_masterGCThread.garbageCollect(env, allocDescription);
+	}
+	else
+#endif
+	{
+		masterThreadGarbageCollect(env, allocDescription);
+	}
 
 	masterReportHotFieldStats();
 
@@ -4086,5 +4193,427 @@ MM_Scavenger::resetTenureLargeAllocateStats(MM_EnvironmentBase *env)
 	MM_MemoryPool *tenureMemoryPool = tenureMemorySubspace->getMemoryPool();
 	tenureMemoryPool->resetLargeObjectAllocateStats();
 }
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+bool
+MM_Scavenger::isConcurrentWorkAvailable(MM_EnvironmentBase *env)
+{
+	bool concurrentWorkAvailable = (concurrent_state_scan == _concurrentState);
+
+	Assert_MM_true(!concurrentWorkAvailable || isConcurrentInProgress());
+
+	return concurrent_state_scan == _concurrentState;
+}
+
+
+class MM_ConcurrentScavengeTask : public MM_ParallelScavengeTask
+{
+	/* Data Members */
+private:
+	UDATA const _bytesToScan;	/**< The number of bytes that this must scan before it will stop trying to do more work */
+	UDATA volatile _bytesScanned;	/**< The number of bytes scanned by this */
+	volatile bool * const _forceExit;	/**< Shared state concurrently updated by an external thread to force the receiver to cause all threads to yield (by setting the destination of the pointer to true) */
+protected:
+public:
+
+	enum ConcurrentAction {
+		SCAVENGE_ALL = 1,
+		SCAVENGE_ROOTS,
+		SCAVENGE_SCAN,
+		SCAVENGE_COMPLETE
+	};
+
+	/* _action should be private */
+	ConcurrentAction _action;
+
+	/* Member Functions */
+private:
+protected:
+public:
+	virtual UDATA getVMStateID()
+	{
+		return J9VMSTATE_GC_CONCURRENT_SCAVENGER;
+	}
+
+	UDATA getBytesScanned()
+	{
+		return _bytesScanned;
+	}
+	virtual void setup(MM_EnvironmentBase *env)
+	{
+		MM_ParallelScavengeTask::setup(env);
+	}
+	virtual void run(MM_EnvironmentBase *env);
+	virtual void cleanup(MM_EnvironmentBase *env)
+	{
+		MM_ParallelScavengeTask::cleanup(env);
+	}
+	virtual bool shouldYieldFromTask(MM_EnvironmentBase *env)
+	{
+		return false;
+	}
+
+	MM_ConcurrentScavengeTask(MM_EnvironmentBase *env,
+			MM_Dispatcher *dispatcher,
+			MM_Scavenger *scavenger,
+			ConcurrentAction action,
+			uintptr_t bytesToScan,
+			volatile bool *forceExit,
+			MM_CycleState *cycleState) :
+		MM_ParallelScavengeTask(env, dispatcher, scavenger, cycleState)
+		, _bytesToScan(bytesToScan)
+		, _bytesScanned(0)
+		, _forceExit(forceExit)
+		, _action(action)
+	{
+		_typeId = __FUNCTION__;
+	};
+};
+
+void
+MM_ConcurrentScavengeTask::run(MM_EnvironmentBase *envBase)
+{
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+
+	switch (_action) {
+	case SCAVENGE_ALL:
+		_collector->workThreadProcessRoots(env);
+		_collector->workThreadScan(env);
+		_collector->workThreadComplete(env);
+		break;
+	case SCAVENGE_ROOTS:
+		_collector->workThreadProcessRoots(env);
+		break;
+	case SCAVENGE_SCAN:
+		_collector->workThreadScan(env);
+		break;
+	case SCAVENGE_COMPLETE:
+		_collector->workThreadComplete(env);
+		break;
+	default:
+		Assert_MM_unreachable();
+	}
+}
+
+bool
+MM_Scavenger::scavengeInit(MM_EnvironmentBase *env, int64_t timeThreshold)
+{
+	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
+	OMR_VMThread *walkThread = NULL;
+
+	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
+		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
+		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+			// we have to do a subset of setup operations that GC workers do
+			// possibly some of those also to be done of thread (env) initialization
+			mutatorSetupForGC(env);
+		}
+	}
+	return false;
+}
+
+bool
+MM_Scavenger::scavengeRoots(MM_EnvironmentBase *env)
+{
+	Assert_MM_true(concurrent_state_roots == _concurrentState);
+
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_ROOTS, U_64_MAX, NULL, env->_cycleState);
+	_dispatcher->run(env, &scavengeTask);
+
+	return false;
+}
+
+bool
+MM_Scavenger::scavengeScan(MM_EnvironmentBase *env, int64_t timeThreshold)
+{
+	Assert_MM_true(concurrent_state_scan == _concurrentState);
+
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, U_64_MAX, NULL, env->_cycleState);
+	_dispatcher->run(env, &scavengeTask);
+
+	return false;
+}
+
+void
+MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
+{
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+
+	/* caches should all be reset */
+	Assert_MM_true(NULL == env->_survivorCopyScanCache);
+	Assert_MM_true(NULL == env->_tenureCopyScanCache);
+	Assert_MM_true(NULL == env->_scanCache);
+	Assert_MM_true(NULL == env->_deferredScanCache);
+	Assert_MM_true(NULL == env->_deferredCopyCache);
+	Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
+	Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
+	Assert_MM_false(env->_loaAllocation);
+	Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
+	Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+}
+
+void
+MM_Scavenger::mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_EnvironmentBase *threadEnvironmentBase)
+{
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+	MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(threadEnvironmentBase);
+
+	if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+		/* in case of scavenge complete phase, master thread will act on behalf (use its own environment) of mutator threads
+		 * in case of thread teardown, caller ensures that own environment is used
+		 */
+
+		// todo: try to simplify. perhaps even we can use threadEnvironment directly?
+
+		/* take a snapshot of all copy cache relevant variables */
+		if (envBase != threadEnvironmentBase) {
+			Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
+			Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
+			Assert_MM_false(env->_loaAllocation);
+			Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
+			Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+
+			env->_tenureTLHRemainderBase = threadEnvironment->_tenureTLHRemainderBase;
+			env->_tenureTLHRemainderTop = threadEnvironment->_tenureTLHRemainderTop;
+			env->_loaAllocation = threadEnvironment->_loaAllocation;
+			env->_survivorTLHRemainderBase = threadEnvironment->_survivorTLHRemainderBase;
+			env->_survivorTLHRemainderTop = threadEnvironment->_survivorTLHRemainderTop;
+
+			threadEnvironment->_tenureTLHRemainderBase = NULL;
+			threadEnvironment->_tenureTLHRemainderTop = NULL;
+			threadEnvironment->_loaAllocation = false;
+			threadEnvironment->_survivorTLHRemainderBase = NULL;
+			threadEnvironment->_survivorTLHRemainderTop = NULL;
+
+			Assert_MM_true(NULL == threadEnvironment->_deferredScanCache);
+			Assert_MM_true(NULL == threadEnvironment->_scanCache);
+		}
+
+		if (threadEnvironment->_survivorCopyScanCache) {
+			Assert_MM_true(threadEnvironment->_survivorCopyScanCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+			threadEnvironment->_survivorCopyScanCache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+			env->_scavengerStats._releaseScanListCount += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+			clearCache(env, threadEnvironment->_survivorCopyScanCache);
+			addCacheEntryToScanListAndNotify(env, threadEnvironment->_survivorCopyScanCache);
+			threadEnvironment->_survivorCopyScanCache = NULL;
+		}
+		if (threadEnvironment->_deferredCopyCache) {
+			Assert_MM_true(threadEnvironment->_deferredCopyCache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED);
+			Assert_MM_true(threadEnvironment->_deferredCopyCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+			threadEnvironment->_deferredCopyCache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+			env->_scavengerStats._releaseScanListCount += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+			addCacheEntryToScanListAndNotify(env, threadEnvironment->_deferredCopyCache);
+			threadEnvironment->_deferredCopyCache = NULL;
+		}
+		if (threadEnvironment->_tenureCopyScanCache) {
+			Assert_MM_true(threadEnvironment->_tenureCopyScanCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);
+			threadEnvironment->_tenureCopyScanCache->flags &= ~OMR_SCAVENGER_CACHE_TYPE_COPY;
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+			env->_scavengerStats._releaseScanListCount += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+			clearCache(env, threadEnvironment->_tenureCopyScanCache);
+			addCacheEntryToScanListAndNotify(env, threadEnvironment->_tenureCopyScanCache);
+			threadEnvironment->_tenureCopyScanCache = NULL;
+		}
+		abandonTLHRemainders(env);
+	}
+}
+
+bool
+MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
+{
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
+
+	Assert_MM_true(concurrent_state_complete == _concurrentState);
+
+	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
+	OMR_VMThread *walkThread = NULL;
+
+	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
+		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
+		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+			mutatorFinalReleaseCopyCaches(env, threadEnvironment);
+		}
+	}
+
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_COMPLETE, U_64_MAX, NULL, env->_cycleState);
+	_dispatcher->run(env, &scavengeTask);
+
+	return false;
+}
+
+bool
+MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncrementEndTime)
+{
+	bool result = false;
+	bool timeout = false;
+
+	while (!timeout) {
+		switch (_concurrentState) {
+		case concurrent_state_init:
+		{
+			/* initialize the mark map */
+			scavengeInit(env, scavengeIncrementEndTime);
+
+			_concurrentState = concurrent_state_roots;
+		}
+			break;
+
+		case concurrent_state_roots:
+		{
+			/* initialize all the roots */
+			scavengeRoots(env);
+
+			_concurrentState = concurrent_state_scan;
+			timeout = true;
+		}
+			break;
+
+		case concurrent_state_scan:
+		{
+			// todo: normally scan work should be done by scavengeConcurrent
+			Assert_MM_unreachable();
+
+			timeout = scavengeScan(env, scavengeIncrementEndTime);
+
+			_concurrentState = concurrent_state_complete;
+			timeout = true;
+		}
+			break;
+
+		case concurrent_state_complete:
+		{
+			scavengeComplete(env);
+
+			result = true;
+			_concurrentState = concurrent_state_idle;
+			timeout = true;
+		}
+			break;
+
+		case concurrent_state_idle:
+		default:
+			Assert_MM_unreachable();
+		}
+	}
+
+	return result;
+}
+
+void
+MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
+{
+	workerSetupForGC(env);
+
+	MM_ScavengerRootScanner rootScanner(env, this);
+
+	rootScanner.scavengeRememberedSet(env);
+
+	rootScanner.scanRoots(env);
+}
+
+void
+MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
+{
+	completeScan(env);
+	// todo: are these two steps really necessary?
+	// we probably have to clear all things for master since it'll be doing final release/clear on behalf of mutator threads
+	// but is it really needed for slaves as well?
+	addCopyCachesToFreeList(env);
+	abandonTLHRemainders(env);
+}
+
+void
+MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
+{
+	MM_ScavengerRootScanner rootScanner(env, this);
+	// todo: if not abort
+	completeScan(env);
+	{
+		if (_rescanThreadsForRememberedObjects) {
+			rootScanner.rescanThreadSlots(env);
+			flushRememberedSet(env);
+		}
+		rootScanner.scanClearable(env);
+	}
+	rootScanner.flush(env);
+
+	addCopyCachesToFreeList(env);
+	abandonTLHRemainders(env);
+
+	/* If -Xgc:fvtest=forceScavengerBackout has been specified, set backout flag every 3rd scavenge */
+	if(_extensions->fvtest_forceScavengerBackout) {
+		if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+			if (2 <= _extensions->fvtest_backoutCounter) {
+#if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+				omrtty_printf("{SCAV: Forcing back out(%p)}\n", env->getLanguageVMThread());
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
+				setBackOutFlag(env, true);
+				_extensions->fvtest_backoutCounter = 0;
+			} else {
+				_extensions->fvtest_backoutCounter += 1;
+			}
+			env->_currentTask->releaseSynchronizedGCThreads(env);
+		}
+	}
+
+	if(backOutFlagRaised()) {
+		env->_scavengerStats._backout = 1;
+		completeBackOut(env);
+	} else {
+		/* pruning */
+		rootScanner.pruneRememberedSet(env);
+	}
+
+	/* No matter what happens, always sum up the gc stats */
+	mergeGCStats(env);
+}
+
+uintptr_t
+MM_Scavenger::scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScavenge, volatile bool *forceExit)
+{
+	Assert_MM_true(concurrent_state_scan == _concurrentState);
+
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, totalBytesToScavenge, forceExit, env->_cycleState);
+	_dispatcher->run(env, &scavengeTask);
+
+	uintptr_t bytesScanned = scavengeTask.getBytesScanned();
+	/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */
+	_concurrentState = concurrent_state_complete;
+	/* make allocate space non-allocatable to trigger the final GC phase */
+	_activeSubSpace->flip(env, 2);
+
+	return bytesScanned;
+}
+
+uintptr_t
+MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
+{
+	/* note that we can't check isConcurrentWorkAvailable at this point since another thread could have set _forceConcurrentTermination since the
+	 * master thread calls this outside of the control monitor
+	 */
+	Assert_MM_true(NULL == env->_cycleState);
+	Assert_MM_true(concurrent_state_scan == _concurrentState);
+
+	env->_cycleState = &_cycleState;
+
+	/* We pass a pointer to _forceConcurrentTermination so that we can cause the concurrent to terminate early by setting the
+	 * flag to true if we want to interrupt it so that the master thread returns to the control mutex in order to receive a
+	 * new GC request.
+	 */
+	uintptr_t bytesConcurrentlyScanned = scavengeConcurrent(env, 100000, &_forceConcurrentTermination);
+
+	env->_cycleState = NULL;
+
+	/* return the number of bytes scanned since the caller needs to pass it into postConcurrentUpdateStatsAndReport for stats reporting */
+	return bytesConcurrentlyScanned;
+}
+
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

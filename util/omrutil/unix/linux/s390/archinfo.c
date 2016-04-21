@@ -19,7 +19,7 @@
 /* _GNU_SOURCE forces GLIBC_2.0 sscanf/vsscanf/fscanf for RHEL5 compatability */
 #if defined(LINUX)
 #define _GNU_SOURCE
-#endif /* defined(__GNUC__) */
+#endif /* defined(LINUX) */
 
 #include <string.h>
 #include <stdio.h>

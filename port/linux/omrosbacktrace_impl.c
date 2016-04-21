@@ -22,16 +22,16 @@
  * @brief Stack backtracing support
  */
 
+#define _GNU_SOURCE
+
 #include "omrport.h"
 #include "omrportpriv.h"
 #include "omrsignal_context.h"
 
-#include <execinfo.h>
-#include <string.h>
-#include <stdlib.h>
-
-#define __USE_GNU 1
 #include <dlfcn.h>
+#include <execinfo.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "omrintrospect.h"
 

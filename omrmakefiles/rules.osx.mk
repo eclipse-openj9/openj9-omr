@@ -20,7 +20,7 @@
 ### Global Flags
 ###
 
-GLOBAL_CPPFLAGS += -DOSX -DJ9HAMMER -D_REENTRANT -D_FILE_OFFSET_BITS=64 -DIPv6_FUNCTION_SUPPORT
+GLOBAL_CPPFLAGS += -DOSX -DJ9HAMMER -D_REENTRANT -D_FILE_OFFSET_BITS=64
 
 # Compile without exceptions
 GLOBAL_CXXFLAGS+=-fno-exceptions -fno-rtti -fno-threadsafe-statics

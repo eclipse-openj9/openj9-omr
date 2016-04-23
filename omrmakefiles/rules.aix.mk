@@ -40,7 +40,6 @@ endif
 GLOBAL_CFLAGS += -q mbcs -qlanglvl=extended -qarch=ppc -qinfo=pro -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
 GLOBAL_CXXFLAGS+=-q mbcs -qlanglvl=extended -qarch=ppc -qinfo=pro -qalias=noansi -qxflag=LTOL:LTOL0 -qsuppress=1506-1108
 GLOBAL_CPPFLAGS+=-D_XOPEN_SOURCE_EXTENDED=1 -D_ALL_SOURCE -DRS6000 -DAIXPPC -D_LARGE_FILES
-GLOBAL_CPPFLAGS+=-DIPv6_FUNCTION_SUPPORT
 
 ###
 ### Optimization

@@ -110,6 +110,8 @@ ENABLE_FVTEST := @enable_fvtest@
 ENABLE_FVTEST_AGENT := @enable_fvtest_agent@
 ENABLE_TRACEGEN := @enable_tracegen@
 
+ENABLE_DDR := @enable_DDR@
+
 ###
 ### Global Options
 ###
@@ -163,7 +165,9 @@ ifeq (1,$(OMR_GC_SEGREGATED_HEAP))
 OMRGC_IPATH += $(top_srcdir)/gc/base/segregated
 endif
 
+ifeq (yes,$(ENABLE_DDR))
 # libdwarf location
 OMR_LIBDWARF_IPATH = @OMR_LIBDWARF_IPATH@
 OMR_LIBDWARF_STATIC_LIBS = @OMR_LIBDWARF_STATIC_LIBS@
 OMR_LIBDWARF_SHARED_LIBS = @OMR_LIBDWARF_SHARED_LIBS@
+endif

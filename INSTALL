@@ -21,3 +21,23 @@ The following packages are required to build OMR:
 - autoconf
 - curl
 - numa-dev (which provides numa.h)
+
+
+Building DDR support for OMR
+============================
+The following packages are required to build DDR support for OMR on Linux:
+(The package name may vary slightly depending on distro.)
+
+- libdwarf-devel
+- libelf
+
+To build libdwarf, the source code can be obtained from:
+- https://www.prevanders.net/dwarf.html
+
+The following packages may also be required to build libdwarf:
+- libelf-devel
+- zlib-devel
+
+To build libelf, the source code can be obtained from:
+- https://fedorahosted.org/elfutils/
+

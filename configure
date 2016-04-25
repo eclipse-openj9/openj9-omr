@@ -630,6 +630,7 @@ objext
 arlibext
 solibext
 exeext
+enable_DDR
 enable_tracegen
 enable_fvtest_agent
 enable_fvtest
@@ -795,6 +796,7 @@ enable_optimized
 enable_warnings_as_errors
 enable_enhanced_warnings
 enable_debug
+enable_DDR
 enable_fvtest
 enable_fvtest_agent
 enable_tracegen
@@ -1504,6 +1506,8 @@ Optional Features:
                           Enhanced compiler warnings. (Default: yes)
   --enable-debug          Generate debug information during compilation.
                           (Default: yes)
+  --enable-DDR            Enable DDR support. Requires --enable-debug.
+                          (Default: no)
   --enable-fvtest         Build fvtests. (Default: no)
   --enable-fvtest-agent   Build fvtest agents even if fvtests are not enabled.
                           This setting is ignored if --enable-fvtest=yes
@@ -2760,6 +2764,16 @@ if test "$enable_debug" != "no"; then :
   OMR_DEBUG=1
 else
   OMR_DEBUG=0
+fi
+# Check whether --enable-DDR was given.
+if test "${enable_DDR+set}" = set; then :
+  enableval=$enable_DDR;
+else
+  enable_DDR=no
+fi
+
+if test $enable_DDR = "yes" && test $enable_debug != "yes"; then :
+  as_fn_error $? "--enable-DDR requires --enable-debug." "$LINENO" 5
 fi
 
 # Check whether --enable-fvtest was given.
@@ -7768,6 +7782,7 @@ if test "x$BUILD_CC" = "x"; then :
   BUILD_CC=$CC
 fi
 CC=$BUILD_CC
+
 
 
 

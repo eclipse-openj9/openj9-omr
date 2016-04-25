@@ -92,6 +92,7 @@ bool
 MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveVMAccess()
 {
 	if (0 == _exclusiveCount) {
+		_exclusiveCount = 1;
 		_env->getOmrVMThread()->exclusiveCount = 1;
 		reportExclusiveAccessAcquire();
 	} else {
@@ -130,11 +131,13 @@ bool
 MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveVMAccessForGC(MM_Collector *collector)
 {
 	if (0 == _exclusiveCount) {
+		_exclusiveCount = 1;
 		_env->getOmrVMThread()->exclusiveCount = 1;
 		reportExclusiveAccessAcquire();
 	} else {
 		_exclusiveCount += 1;
 	}
+	collector->incrementExclusiveAccessCount();
 	return true;
 }
 
@@ -142,11 +145,13 @@ bool
 MM_EnvironmentLanguageInterfaceImpl::acquireExclusiveVMAccessForGC(MM_Collector *collector)
 {
 	if (0 == _exclusiveCount) {
+		_exclusiveCount = 1;
 		_env->getOmrVMThread()->exclusiveCount = 1;
 		reportExclusiveAccessAcquire();
 	} else {
 		_exclusiveCount += 1;
 	}
+	collector->incrementExclusiveAccessCount();
 	return true;
 }
 
@@ -164,6 +169,7 @@ void
 MM_EnvironmentLanguageInterfaceImpl::unwindExclusiveVMAccessForGC()
 {
 	if (_exclusiveCount > 0) {
+		_exclusiveCount = 0;
 		_env->getOmrVMThread()->exclusiveCount = 0;
 		reportExclusiveAccessRelease();
 	}
@@ -176,6 +182,7 @@ void
 MM_EnvironmentLanguageInterfaceImpl::acquireExclusiveVMAccess()
 {
 	if (0 == _exclusiveCount) {
+		_exclusiveCount = 1;
 		_env->getOmrVMThread()->exclusiveCount = 1;
 		reportExclusiveAccessAcquire();
 	} else {

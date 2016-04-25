@@ -149,6 +149,7 @@ MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveVMAccessForGC(MM_Collect
 	} else {
 		_exclusiveCount += 1;
 	}
+	collector->incrementExclusiveAccessCount();
 	return true;
 }
 
@@ -162,6 +163,7 @@ MM_EnvironmentLanguageInterfaceImpl::acquireExclusiveVMAccessForGC(MM_Collector 
 	} else {
 		_exclusiveCount += 1;
 	}
+	collector->incrementExclusiveAccessCount();
 	return true;
 }
 

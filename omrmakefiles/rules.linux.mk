@@ -87,8 +87,6 @@ else
     GLOBAL_CXXFLAGS+=-qpic=large
 endif
 
-GLOBAL_CPPFLAGS+=-DIPv6_FUNCTION_SUPPORT
-
 ## ASFLAGS
 # xlc on ppc does not actually understand this
 # option, it is silently ignored.

@@ -571,6 +571,7 @@ public:
 		HEAP_INITIALIZATION_FAILURE_REASON_CAN_NOT_INSTANTIATE_SPLIT_HEAP_GEOMETRY,
 		HEAP_INITIALIZATION_FAILURE_REASON_CAN_NOT_ALLOCATE_LOW_MEMORY_RESERVE,
 		HEAP_INITIALIZATION_FAILURE_REASON_CAN_NOT_SATISFY_REQUESTED_PAGE_SIZE,
+		HEAP_INITIALIZATION_FAILURE_REASON_METRONOME_DOES_NOT_SUPPORT_4BIT_SHIFT,
 	};
 	HeapInitializationFailureReason heapInitializationFailureReason; /**< Error code provided additional information about heap initialization failure */
 	bool scavengerAlignHotFields; /**< True if the scavenger is to check the hot field description for an object in order to better cache align it when tenuring (enabled with the -Xgc:hotAlignment option) */

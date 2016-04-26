@@ -2243,7 +2243,6 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentStandard *env, MM_MemorySubSpace *
 
 		case CONCURRENT_ROOT_TRACING4:
 			if(_stats->switchExecutionMode(CONCURRENT_ROOT_TRACING4, CONCURRENT_ROOT_TRACING5)) {
-#if defined(J9VM_GC_FINALIZATION)
 				/* Complete finalizable roots */
 				bool completedFinalizableRoots = false;
 				_cli->concurrentGC_collectRoots(env, CONCURRENT_ROOT_TRACING4, &_scanClassesMode, completedFinalizableRoots, taxPaid);
@@ -2251,7 +2250,6 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentStandard *env, MM_MemorySubSpace *
 					resumeConHelperThreads(env);
 				}
 				flushLocalBuffers(env);
-#endif /* J9VM_GC_FINALIZATION */
 				_stats->setModeComplete(CONCURRENT_ROOT_TRACING4);
 			}
 			break;

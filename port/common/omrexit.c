@@ -58,7 +58,7 @@ omrexit_get_exit_code(struct OMRPortLibrary *portLibrary)
 void OMRNORETURN
 omrexit_shutdown_and_exit(struct OMRPortLibrary *portLibrary, int32_t exitCode)
 {
-#if defined(J9VM_OPT_CUDA)
+#if defined(OMR_OPT_CUDA)
 	/* Because we're exiting we don't expect the port library to be shutdown normally,
 	 * but we don't want to omit the cuda shutdown step because it resets the devices
 	 * (if any were discovered) avoiding resource leaks that may lead to trouble for
@@ -66,7 +66,7 @@ omrexit_shutdown_and_exit(struct OMRPortLibrary *portLibrary, int32_t exitCode)
 	 * The function is also idempotent so a subsequent call would do no harm.
 	 */
 	portLibrary->cuda_shutdown(portLibrary);
-#endif /* J9VM_OPT_CUDA */
+#endif /* defined(OMR_OPT_CUDA) */
 
 #if !defined(WIN32)
 #if defined(OMRPORT_OMRSIG_SUPPORT)

@@ -23,9 +23,9 @@
 #include "modronopt.h"
 
 #include "CollectionStatisticsStandard.hpp"
-#if defined(J9VM_GC_CONCURRENT_SWEEP)
+#if defined(OMR_GC_CONCURRENT_SWEEP)
 #include "ConcurrentSweepScheme.hpp"
-#endif /* J9VM_GC_CONCURRENT_SWEEP */
+#endif /* defined(OMR_GC_CONCURRENT_SWEEP) */
 #include "CycleState.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -238,11 +238,11 @@ protected:
 	{
 		MM_ParallelSweepScheme *sweepScheme = NULL;
 
-#if defined(J9VM_GC_CONCURRENT_SWEEP)
+#if defined(OMR_GC_CONCURRENT_SWEEP)
 		if(_extensions->concurrentSweep) {
 			sweepScheme = MM_ConcurrentSweepScheme::newInstance(env, globalCollector);
 		} else
-#endif /* J9VM_GC_CONCURRENT_SWEEP */
+#endif /* defined(OMR_GC_CONCURRENT_SWEEP) */
 		{
 			sweepScheme = MM_ParallelSweepScheme::newInstance(env);
 		}

@@ -301,6 +301,11 @@ OMR_GC_ShutdownCollector(OMR_VMThread* omrVMThread)
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
+	MM_Collector *globalCollector = extensions->getGlobalCollector();
+	
+	if (NULL != globalCollector) {
+		globalCollector->collectorShutdown(extensions);
+	}
 
 	if ((NULL != extensions) && (NULL != extensions->heap)) {
 		MM_MemorySpace *defaultSpace = extensions->heap->getDefaultMemorySpace();

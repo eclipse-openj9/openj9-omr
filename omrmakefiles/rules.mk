@@ -54,6 +54,9 @@ show-objects:
 	@echo $(OBJECTS)
 .PHONY: show-objects
 
+ddrgen: $(OBJECTS:$(OBJEXT)=.i)
+.PHONY: ddrgen
+
 ##
 ## Helpers
 ##
@@ -177,9 +180,12 @@ $(AR) $(ARFLAGS) $(MODULE_ARFLAGS) $(GLOBAL_ARFLAGS) rcv $@ $(OBJECTS)
 endef
 
 define CLEAN_COMMAND
--$(RM) $(OBJECTS) *.d
+-$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
 endef
 
+define DDR_CPP_COMMAND
+$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< -o $@
+endef
 
 ###
 ### Platform-Specific Options
@@ -347,3 +353,19 @@ endif
 %$(OBJEXT): %.asm
 	$(AS_COMMAND)
 
+###
+### DDR Rules
+###
+%.i: %.c
+	$(DDR_CPP_COMMAND)
+
+%.i: %.cpp
+	$(DDR_CPP_COMMAND)
+
+# just create an empty output file
+%.i: %.s
+	touch $@
+
+# just create an empty output file
+%.i: %.asm
+	touch $@

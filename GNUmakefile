@@ -132,6 +132,11 @@ main_targets += omrtrace
 # OMR Startup
 main_targets += omr omr/startup
 
+# DDR tools
+ifeq (yes,$(ENABLE_DDR))
+postbuild_targets += tools/ddrgen
+endif
+
 # RAS Tests
 test_targets += fvtest/rastest
 
@@ -154,6 +159,10 @@ test_targets += fvtest/rastest fvtest/util
 endif
 endif
 
+ifeq (yes,$(DO_TEST_TARGET))
+postbuild_targets += tests
+endif
+
 ###
 ### Rules
 ###
@@ -162,14 +171,14 @@ endif
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets := $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets)
+targets := $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) tools/ddrgen
 targets_clean := $(addsuffix _clean,$(targets))
+targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/%, $(targets)))
 
-postbuild: tests
+postbuild: $(postbuild_targets)
 	$(TRACEMERGE_COMMAND)
 	
 tests: staticlib
-
 ifeq (yes,$(DO_TEST_TARGET))
 	@$(MAKE) -f GNUmakefile $(test_targets)
 endif
@@ -203,6 +212,8 @@ tools/tracegen:: util/a2e
 tools/tracemerge:: util/a2e
 tools/hookgen:: util/a2e
 endif
+
+tools/ddrgen:: staticlib
 
 $(HOOK_DEFINITION_SENTINEL): $(exe_output_dir)/hookgen$(EXEEXT)
 %.sentinel: %.hdf
@@ -252,3 +263,13 @@ else
 	@echo Functional verification tests are disabled.
 endif
 .PHONY: test
+
+
+# preprocess ddrgen-annotated source code
+ddrgen:
+	$(MAKE) -f GNUmakefile $(targets_ddrgen)
+
+$(targets_ddrgen):
+	$(MAKE) -C $(patsubst %_ddrgen,%,$@) ddrgen
+
+.PHONY: ddrgen $(targets_ddrgen)

@@ -342,4 +342,5 @@ ifeq (1,$(OMR_OPT_CUDA))
   endif
 
 omrcuda$(OBJEXT) : MODULE_INCLUDES += $(CUDA_HOME)/include
+omrcuda.i : MODULE_INCLUDES += $(CUDA_HOME)/include
 endif

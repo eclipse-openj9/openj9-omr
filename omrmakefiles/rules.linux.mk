@@ -395,7 +395,7 @@ $(OBJCOPY) --add-gnu-debuglink=$@ $@.dbg
 endef
 
 ## Files to clean
-CLEAN_FILES=$(OBJECTS) *.d
+CLEAN_FILES=$(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
 CLEAN_FILES+=$($(MODULE_NAME)_shared).dbg $(MODULE_NAME).map
 define CLEAN_COMMAND
 -$(RM) $(CLEAN_FILES)

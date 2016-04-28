@@ -82,6 +82,12 @@ AC_ARG_ENABLE([debug],
 AS_IF([test "$enable_debug" != "no"],
 	[OMR_DEBUG=1],
 	[OMR_DEBUG=0])
+AC_ARG_ENABLE([DDR],
+	AS_HELP_STRING([[--enable-DDR]], [Enable DDR support. Requires --enable-debug. (Default: no)]),
+	[],
+	[enable_DDR=no])
+AS_IF([test $enable_DDR = "yes" && test $enable_debug != "yes"],
+	AC_MSG_ERROR([--enable-DDR requires --enable-debug.]))
 
 AC_ARG_ENABLE([fvtest],
 	AS_HELP_STRING([[--enable-fvtest]], [Build fvtests. (Default: no)]),
@@ -535,6 +541,7 @@ AC_SUBST(OMR_DEBUG)
 AC_SUBST([enable_fvtest])
 AC_SUBST([enable_fvtest_agent])
 AC_SUBST([enable_tracegen])
+AC_SUBST([enable_DDR])
 
 AC_SUBST(exeext)
 AC_SUBST(solibext)

@@ -75,6 +75,11 @@ ut_*.c
 ut_*.h
 ut_*.inc
 
+# ddr
+blob_reader
+ddrgen
+ddrgentest
+
 install_manifest.txt
 Testing/
 
@@ -103,6 +108,7 @@ Testing/
 *.d
 *.pdb
 *.res
+*.i
 
 # Executables
 *.exe
@@ -138,3 +144,7 @@ subscriberAgentWithJ9threadTrace2.out
 tfileTest*.tst
 traceLogTest.trc
 VerboseGC_*.xml*
+
+# common development artifacts
+.*.swp
+tags

@@ -158,10 +158,7 @@ test_targets := $(test_prereqs)
 test_targets += fvtest/rastest fvtest/util
 endif
 endif
-
-ifeq (yes,$(DO_TEST_TARGET))
 postbuild_targets += tests
-endif
 
 ###
 ### Rules

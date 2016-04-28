@@ -30,9 +30,9 @@
 #include "MarkingScheme.hpp"
 #include "Task.hpp"
 #include "WorkPackets.hpp"
-#if defined(J9VM_GC_MODRON_CONCURRENT_MARK)
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "WorkPacketsConcurrent.hpp"
-#endif /* J9VM_GC_MODRON_CONCURRENT_MARK */
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 #include "WorkPacketsStandard.hpp"
 
 /**
@@ -343,11 +343,11 @@ MM_WorkPackets *
 MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
 	MM_WorkPackets *workPackets = NULL;
 
-#if defined(J9VM_GC_MODRON_CONCURRENT_MARK)
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if(_extensions->concurrentMark) {
 		workPackets = MM_WorkPacketsConcurrent::newInstance(env);
 	} else
-#endif /* J9VM_GC_MODRON_CONCURRENT_MARK */
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 	{
 		workPackets = MM_WorkPacketsStandard::newInstance(env);
 	}

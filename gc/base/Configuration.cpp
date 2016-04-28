@@ -254,7 +254,7 @@ MM_Configuration::initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase*
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 	OMR_VM *omrVM = env->getOmrVM();
 
-#if defined (J9VM_GC_COMPRESSED_POINTERS)
+#if defined(OMR_GC_COMPRESSED_POINTERS)
 	UDATA heapTop = (uintptr_t)heap->getHeapTop();
 	UDATA maxAddressValue = (uintptr_t)1 << 32;
 	UDATA shift = (extensions->shouldAllowShiftingCompression) ? LOW_MEMORY_HEAP_CEILING_SHIFT : 0;
@@ -290,7 +290,7 @@ MM_Configuration::initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase*
 
 	omrVM->_compressedPointersShift = shift;
 
-#endif /* J9VM_GC_COMPRESSED_POINTERS */
+#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 #define MINIMUM_OBJECT_ALIGNMENT 0x8
 #define MINIMUM_OBJECT_ALIGNMENT_SHIFT 0x3

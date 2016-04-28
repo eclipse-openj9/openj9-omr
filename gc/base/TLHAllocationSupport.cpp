@@ -399,4 +399,4 @@ MM_TLHAllocationSupport::objectAllocationNotify(MM_EnvironmentBase *env, void *h
 }
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */
 
-#endif /* J9VM_GC_THREAD_LOCAL_HEAP */
+#endif /* defined(OMR_GC_THREAD_LOCAL_HEAP) */

@@ -107,7 +107,7 @@ bool
 MM_VerboseHandlerOutput::getThreadName(char *buf, uintptr_t bufLen, OMR_VMThread *vmThread)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
-	omrstr_printf(buf, bufLen, "OMR_VMThread [%]",vmThread);
+	omrstr_printf(buf, bufLen, "OMR_VMThread [%p]",vmThread);
 
 	return true;
 }

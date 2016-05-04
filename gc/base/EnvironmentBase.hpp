@@ -95,6 +95,14 @@ private:
 	MM_AllocationContext *_allocationContext;	/**< The "second-level caching mechanism" for this thread */
 	MM_AllocationContext *_commonAllocationContext;	/**< Common Allocation Context shared by all threads */
 
+
+	uintptr_t _exclusiveCount; /**< count of recursive exclusive VM access requests */
+	uint64_t _exclusiveAccessTime; /**< time (in ticks) of the last exclusive access request */
+	uint64_t _meanExclusiveAccessIdleTime; /**< mean idle time (in ticks) of the last exclusive access request */
+	OMR_VMThread* _lastExclusiveAccessResponder; /**< last thread to respond to last exclusive access request */
+	uintptr_t _exclusiveAccessHaltedThreads; /**< number of threads halted by last exclusive access request */
+	bool _exclusiveAccessBeatenByOtherThread; /**< true if last exclusive access request had to wait for another GC thread */
+
 protected:
 	bool _allocationFailureReported;	/**< verbose: used to report af-start/af-end once per allocation failure even more then one GC cycle need to resolve AF */
 
@@ -161,6 +169,9 @@ protected:
 	virtual bool initialize(MM_GCExtensionsBase *extensions);
 	virtual void tearDown(MM_GCExtensionsBase *extensions);
 	MMINLINE void setEnvironmentId(uintptr_t environmentId) {_environmentId = environmentId;}
+
+	void reportExclusiveAccessRelease();
+	void reportExclusiveAccessAcquire();
 
 public:
 	static MM_EnvironmentBase *newInstance(MM_GCExtensionsBase *extensions, OMR_VMThread *vmThread);
@@ -332,6 +343,16 @@ public:
 	void allocationFailureEndReportIfRequired(MM_AllocateDescription *allocDescription);
 
 	/**
+	 * Acquires shared VM access.
+	 */
+	void acquireVMAccess();
+
+	/**
+	 * Releases shared VM access.
+	 */
+	void releaseVMAccess();
+
+	/**
 	 * Try and acquire exclusive access if no other thread is already requesting it.
 	 * Make an attempt at acquiring exclusive access if the current thread does not already have it.  The
 	 * attempt will abort if another thread is already going for exclusive, which means this
@@ -346,7 +367,11 @@ public:
 	 * Checks to see if the thread has exclusive access
 	 * @return true if the thread has exclusive access, false if not.
 	 */
-	bool inquireExclusiveVMAccessForGC();
+	bool
+	inquireExclusiveVMAccessForGC()
+	{
+		return (_exclusiveCount > 0);
+	}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	/**
@@ -427,7 +452,7 @@ public:
 	 * are responsible for converting to the desired resolution (msec, usec)
 	 * @return The time taken to acquire exclusive access.
 	 */
-	uint64_t getExclusiveAccessTime();
+	uint64_t getExclusiveAccessTime() { return _exclusiveAccessTime; };
 
 	/**
 	 * Get the time average threads were idle while acquiring exclusive access.
@@ -435,25 +460,25 @@ public:
 	 * are responsible for converting to the desired resolution (msec, usec)
 	 * @return The mean idle time during exclusive access acquisition.
 	 */
-	uint64_t getMeanExclusiveAccessIdleTime();
+	uint64_t getMeanExclusiveAccessIdleTime() { return _meanExclusiveAccessIdleTime; };
 
 	/**
 	 * Get the last thread to respond to the exclusive access request.
 	 * @return The last thread to respond
 	 */
-	OMR_VMThread* getLastExclusiveAccessResponder();
+	OMR_VMThread* getLastExclusiveAccessResponder() { return _lastExclusiveAccessResponder; };
 
 	/**
 	 * Get the number of threads which were halted for the exclusive access request.
 	 * @return The number of halted threads
 	 */
-	uintptr_t getExclusiveAccessHaltedThreads();
+	uintptr_t getExclusiveAccessHaltedThreads() { return _exclusiveAccessHaltedThreads; };
 
 	/**
 	 * Enquire whether we were beaten to exclusive access by another thread.
 	 * @return true if we were beaten, false otherwise.
 	 */
-	bool exclusiveAccessBeatenByOtherThread();
+	bool exclusiveAccessBeatenByOtherThread() { return _exclusiveAccessBeatenByOtherThread; }
 
 
 	MMINLINE uintptr_t getWorkUnitIndex() { return _workUnitIndex; }
@@ -522,6 +547,12 @@ public:
 		,_threadScanned(false)
 		,_allocationContext(NULL)
 		,_commonAllocationContext(NULL)
+		,_exclusiveCount(0)
+		,_exclusiveAccessTime(0)
+		,_meanExclusiveAccessIdleTime(0)
+		,_lastExclusiveAccessResponder(NULL)
+		,_exclusiveAccessHaltedThreads(0)
+		,_exclusiveAccessBeatenByOtherThread(false)
 		,_allocationFailureReported(false)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_regionWorkList(NULL)

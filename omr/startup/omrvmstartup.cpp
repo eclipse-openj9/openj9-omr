@@ -419,7 +419,7 @@ OMR_Initialize_VM(OMR_VM **omrVMSlot, OMR_VMThread **omrVMThreadSlot, void *lang
 	}
 #endif /* OMR_GC */
 
-	rc = OMR_Thread_Init(omrVM, languageVMThread, &vmThread, "SOMMainThread");
+	rc = OMR_Thread_Init(omrVM, languageVMThread, &vmThread, "Main Thread");
 	if (OMR_ERROR_NONE != rc) {
 		omrtty_printf("Failed to attach current thread as OMR Thread, rc=%d.\n", rc);
 		goto failed;

@@ -244,14 +244,24 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 		break;
 	}
 
-	uintptr_t threadCount = _extensions->dispatcher->threadCountMaximum();
-	uintptr_t minCacheCount = threadCount * _cachesPerThread;
-	/* Estimate how many caches we might need to describe the entire heap */
-	uintptr_t heapCaches = _extensions->maxNewSpaceSize / _extensions->scavengerScanCacheMinimumSize;
-	/* use whichever value is higher */
-	uintptr_t totalCacheCount = OMR_MAX(minCacheCount, heapCaches);
+	/**
+	 *incrementNewSpaceSize = 
+	 *  Xmnx <= 32MB		---> Xmnx
+	 *  32MB < Xmnx < 4GB	---> MAX(Xmnx/16, 32MB)
+	 *  Xmnx >= 4GB			---> 256MB
+	 */
+	uintptr_t incrementNewSpaceSize = OMR_MAX(_extensions->maxNewSpaceSize/16, 32*1024*1024);
+	incrementNewSpaceSize = OMR_MIN(incrementNewSpaceSize, _extensions->maxNewSpaceSize);
+	incrementNewSpaceSize = OMR_MIN(incrementNewSpaceSize, 256*1024*1024);
 
-	if (!_scavengeCacheFreeList.resizeCacheEntries(env, totalCacheCount)) {
+	uintptr_t incrementCacheCount = incrementNewSpaceSize / _extensions->scavengerScanCacheMinimumSize;
+	uintptr_t totalActiveCacheCount = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / _extensions->scavengerScanCacheMinimumSize;
+	if (0 == totalActiveCacheCount) {
+		totalActiveCacheCount += 1;
+	}
+
+
+	if (!_scavengeCacheFreeList.resizeCacheEntries(env, totalActiveCacheCount, incrementCacheCount)) {
 		return false;
 	}
 
@@ -637,6 +647,9 @@ MM_Scavenger::mergeGCStats(MM_EnvironmentStandard *env)
 	finalGCStats->_rememberedSetOverflow |= scavStats->_rememberedSetOverflow;
 	finalGCStats->_causedRememberedSetOverflow |= scavStats->_causedRememberedSetOverflow;
 	finalGCStats->_scanCacheOverflow |= scavStats->_scanCacheOverflow;
+	finalGCStats->_scanCacheAllocationFromHeap |= scavStats->_scanCacheAllocationFromHeap;
+	finalGCStats->_scanCacheAllocationDurationDuringSavenger = OMR_MAX(finalGCStats->_scanCacheAllocationDurationDuringSavenger, scavStats->_scanCacheAllocationDurationDuringSavenger);
+
 	finalGCStats->_backout |= scavStats->_backout;
 	finalGCStats->_tenureAggregateCount += scavStats->_tenureAggregateCount;
 	finalGCStats->_tenureAggregateBytes += scavStats->_tenureAggregateBytes;
@@ -2472,9 +2485,24 @@ MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 
 	MM_CopyScanCacheStandard *cache = _scavengeCacheFreeList.popCache(env);
 
-	if (NULL == cache) {
-		/* Still need a new cache and nothing left reserved - create it in Heap */
-		cache = createCacheInHeap(env);
+	if (NULL == cache) {	
+		env->_scavengerStats._scanCacheOverflow = 1;
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		uint64_t duration = omrtime_current_time_millis();
+
+		omrthread_monitor_enter(_freeCacheMonitor);
+		bool result = _scavengeCacheFreeList.resizeCacheEntries(env, 1+_scavengeCacheFreeList.getAllocatedCacheCount(), 0);
+		omrthread_monitor_exit(_freeCacheMonitor);
+		if (result) {
+			cache = _scavengeCacheFreeList.popCache(env);
+		}
+		if (NULL == cache) {
+			/* Still need a new cache and nothing left reserved - create it in Heap */
+			cache = createCacheInHeap(env);
+		}
+		duration = omrtime_current_time_millis() - duration;
+		env->_scavengerStats._scanCacheAllocationDurationDuringSavenger += duration;
+
 	}
 
 	return cache;
@@ -2500,7 +2528,7 @@ MM_Scavenger::createCacheInHeap(MM_EnvironmentStandard *env)
 	MM_CopyScanCacheStandard *cache = _scavengeCacheFreeList.popCache(env);
 
 	if (NULL == cache) {
-		env->_scavengerStats._scanCacheOverflow = 1;
+		env->_scavengerStats._scanCacheAllocationFromHeap = 1;
 		/* try to create a temporary chunk of scanCaches in Survivor */
 		cache = _scavengeCacheFreeList.appendCacheEntriesInHeap(env, _survivorMemorySubSpace, this);
 		if (NULL != cache) {
@@ -3396,6 +3424,11 @@ MM_Scavenger::collectorExpanded(MM_EnvironmentBase *env, MM_MemorySubSpace *subS
 		env->_scavengerStats._tenureExpandedCount += 1;
 		env->_scavengerStats._tenureExpandedBytes += expandSize;
 		env->_scavengerStats._tenureExpandedTime += resizeStats->getLastExpandTime();
+
+		uintptr_t totalActiveCacheCount = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / _extensions->scavengerScanCacheMinimumSize;
+
+		/* TODO: can fail? */
+		_scavengeCacheFreeList.resizeCacheEntries(env, totalActiveCacheCount, 0);
 	}
 }
 

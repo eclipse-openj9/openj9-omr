@@ -428,7 +428,7 @@ MM_VerboseHandlerOutputStandard::handleScavengeEnd(J9HookInterface** hook, uintp
 		}
 	}
 	if(scavengerStats->_scanCacheOverflow) {
-		writer->formatAndOutput(env, 1, "<warning details=\"scan cache overflow (storage acquired from heap)\" />");
+		writer->formatAndOutput(env, 1, "<warning details=\"scan cache overflow (new chunk allocation acquired durationms=%zu, fromHeap=%s)\" />", scavengerStats->_scanCacheAllocationDurationDuringSavenger, (0 != scavengerStats->_scanCacheAllocationFromHeap)?"true":"false");
 	}
 	if(scavengerStats->_backout) {
 		writer->formatAndOutput(env, 1, "<warning details=\"aborted collection due to insufficient free space\" />");

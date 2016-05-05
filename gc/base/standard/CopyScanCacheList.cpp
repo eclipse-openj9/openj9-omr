@@ -79,25 +79,33 @@ MM_CopyScanCacheList::tearDown(MM_EnvironmentBase *env)
 }
 
 bool
-MM_CopyScanCacheList::resizeCacheEntries(MM_EnvironmentBase *env, uintptr_t totalCacheEntryCount)
+MM_CopyScanCacheList::resizeCacheEntries(MM_EnvironmentBase *env, uintptr_t allocateCacheEntryCount, uintptr_t incrementCacheEntryCount)
 {
 	MM_GCExtensionsBase *ext = env->getExtensions();
+	
+	/* 0 has special meaning of 'do not change' */
+	if (0 == allocateCacheEntryCount) {
+		allocateCacheEntryCount = _totalAllocatedEntryCount;
+	}
+	if (0 != incrementCacheEntryCount) {
+		 _incrementEntryCount = incrementCacheEntryCount;
+	}
 	
 	/* If -Xgc:fvtest=scanCacheCountn has been specified, then restrict the number of scan caches to n.
 	 * Stop all future resizes from having any effect. */
 	if (0 != ext->fvtest_scanCacheCount) {
-		if (0 == _totalEntryCount) {
-			totalCacheEntryCount = ext->fvtest_scanCacheCount;
-			return appendCacheEntries(env, totalCacheEntryCount);
+		if (0 == _totalAllocatedEntryCount) {
+			allocateCacheEntryCount = ext->fvtest_scanCacheCount;
+			_incrementEntryCount = 0;
+			return appendCacheEntries(env, allocateCacheEntryCount);
 		} else {
 			return true;
 		}
 	}
 	
-	if (totalCacheEntryCount > _totalEntryCount) {
-		/* TODO: consider appending at least by some minimum entry count
-		 * or having total entry count a multiple of let say 16 or so */
-		return appendCacheEntries(env, totalCacheEntryCount - _totalEntryCount);
+	if ( allocateCacheEntryCount > _totalAllocatedEntryCount) {
+		/* Increase cacheEntries by incrementEntryCount */
+		return appendCacheEntries(env, _incrementEntryCount);
 	}
 
 	/* downsizing is non-trivial with current list/chunk implementation since
@@ -176,8 +184,8 @@ MM_CopyScanCacheList::removeAllHeapAllocatedChunks(MM_EnvironmentStandard *env)
 
 		Assert_MM_true(0 < reservedInHeap);
 
-		/* increase number of permanent scan caches by number of used this scavenge temporary */
-		resizeCacheEntries(env, reservedInHeap + _totalEntryCount);
+		/* increase number of permanent scan caches by number of incrementEntryCount */
+		appendCacheEntries(env, _incrementEntryCount);
 	}
 }
 
@@ -201,7 +209,7 @@ MM_CopyScanCacheList::appendCacheEntries(MM_EnvironmentBase *env, uintptr_t cach
 		_sublists[index]._cacheLock.release();
 
 		_chunkHead = chunk;
-		_totalEntryCount += cacheEntryCount;
+		_totalAllocatedEntryCount += cacheEntryCount;
 		result = true;
 	}
 	return result;
@@ -249,7 +257,7 @@ MM_CopyScanCacheList::getApproximateEntryCount()
 bool
 MM_CopyScanCacheList::areAllCachesReturned()
 {
-	return (getApproximateEntryCount() == _totalEntryCount);
+	return (getApproximateEntryCount() == _totalAllocatedEntryCount);
 }
 
 MMINLINE void
@@ -274,6 +282,7 @@ MM_CopyScanCacheList::decrementCount(CopyScanCacheSublist *sublist, uintptr_t va
 
 	if ((0 == sublist->_entryCount) && (NULL != _cachedEntryCount)) {
 		Assert_MM_true(*_cachedEntryCount >= 1);
+		Assert_MM_true(NULL == sublist->_cacheHead);
 		if (1 == _sublistCount) {
 			*_cachedEntryCount -= 1;
 		} else {
@@ -319,6 +328,10 @@ MM_CopyScanCacheList::popCache(MM_EnvironmentBase *env)
 			if (NULL != cache) {
 				list->_cacheHead = (MM_CopyScanCacheStandard *)cache->next;
 				decrementCount(list, 1);
+
+				if (NULL == list->_cacheHead) {
+					Assert_MM_true(0 == list->_entryCount);
+				}
 			}
 			list->_cacheLock.release();
 

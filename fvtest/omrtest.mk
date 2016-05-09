@@ -70,7 +70,7 @@ omr_threadtest:
 	./omrthreadtest
 	./omrthreadtest --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight
 ifneq (,$(findstring linux,$(SPEC)))
-	./omrthreadtest --gtest_filter=ThreadCreateTest.* -realtime
+	./omrthreadtest --gtest_filter=ThreadCreateTest.*:$(GTEST_FILTER) -realtime
 endif
 	@echo ALL $@ PASSED
 

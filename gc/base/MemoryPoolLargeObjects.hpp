@@ -205,6 +205,15 @@ public:
 	}
 
 	/**
+	 * @return the ratio of Large Object Area
+	 */
+	MMINLINE double
+	getLOARatio()
+	{
+		return _currentLOARatio;
+	}
+
+	/**
 	 * Create a MemoryPoolLargeObjects object.
 	 */
 	MM_MemoryPoolLargeObjects(MM_EnvironmentBase* env, MM_MemoryPoolAddressOrderedListBase* largeObjectArea, MM_MemoryPoolAddressOrderedListBase* smallObjectArea)

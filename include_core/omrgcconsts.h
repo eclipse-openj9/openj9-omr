@@ -394,7 +394,7 @@ typedef enum {
 /* Define the low memory heap ceiling (max heap address when -Xgc:forceLowMemHeap is specified) */
 #if defined(OMR_ENV_DATA64)
 /* highest supported shift for the low memory setting */
-#define LOW_MEMORY_HEAP_CEILING_SHIFT 3
+#define LOW_MEMORY_HEAP_CEILING_SHIFT 4
 /* shift required for the "default" low memory setting */
 #define DEFAULT_LOW_MEMORY_HEAP_CEILING_SHIFT 3
 /* 4 GiB when running scaling heap-base 0 VMs */

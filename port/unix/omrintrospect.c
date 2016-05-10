@@ -154,23 +154,19 @@ struct PlatformWalkData {
 	barrier_r release_barrier;
 };
 
-
-/* Wrapper for the close function that checks we're not closing stdin,stdout or stderr and
- * retries on EINTR.
- */
+/* Wrapper for the close function that retries on EINTR. */
 static int
 close_wrapper(int fd)
 {
-	if (fd != -1) {
-		int rc = 0;
-		do {
-			close(fd);
-		} while (rc == EINTR);
+	int rc = 0;
 
-		return rc;
+	if (-1 != fd) {
+		do {
+			rc = close(fd);
+		} while ((0 != rc) && (EINTR == errno));
 	}
 
-	return 0;
+	return rc;
 }
 
 /*
@@ -1685,7 +1681,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 		goto cleanup;
 	}
 
-#if defined(LINUX) || defined(AIXPPC) || defined(J9ZOS390)
+#if defined(AIXPPC) || defined(J9ZOS390)
 	do {
 		result = sem_trywait_r(&data->controller_sem);
 		/* linux seems to have a scheduler bug whereby a process with all threads in system waits doesn't get scheduled
@@ -1743,7 +1739,8 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 
 	data->consistent = 1;
 
-	if (setup_native_thread(state, NULL, 0) != 0) {
+	result = setup_native_thread(state, NULL, 0);
+	if (0 != result) {
 		RECORD_ERROR(state, ALLOCATION_FAILURE, result);
 		goto cleanup;
 	}

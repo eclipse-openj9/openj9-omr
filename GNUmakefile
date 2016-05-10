@@ -135,6 +135,7 @@ main_targets += omr omr/startup
 # DDR tools
 ifeq (yes,$(ENABLE_DDR))
 postbuild_targets += tools/ddrgen
+targets += tools/ddrgen
 endif
 
 # RAS Tests
@@ -160,17 +161,18 @@ endif
 endif
 postbuild_targets += tests
 
-###
-### Rules
-###
-
 # Remove duplicates
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets := $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) tools/ddrgen
+targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets)
 targets_clean := $(addsuffix _clean,$(targets))
 targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/%, $(targets)))
+
+
+###
+### Rules
+###
 
 postbuild: $(postbuild_targets)
 	$(TRACEMERGE_COMMAND)

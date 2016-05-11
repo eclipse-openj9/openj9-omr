@@ -60,7 +60,9 @@ private:
 	uintptr_t _sublistCount; /**< the number of lists (split for parallelism). Must be at least 1 */
 	
 	MM_CopyScanCacheChunk *_chunkHead; 
-	uintptr_t _totalEntryCount;
+	uintptr_t _incrementEntryCount;
+	uintptr_t _totalAllocatedEntryCount;
+	
 	volatile uintptr_t *_cachedEntryCount; /* pointer to cachedEntryCount, that is shared among all lists (of all nodes) */
 
 protected:
@@ -111,12 +113,23 @@ public:
 	virtual void tearDown(MM_EnvironmentBase *env);
 
 	/**
+	 * Retrieve Allocated cache entry count
+	 */
+	MMINLINE uintptr_t
+	getAllocatedCacheCount()
+	{
+		return _totalAllocatedEntryCount;
+	}
+	 
+	/**
 	 * Resizes the number of cache entries.
 	 *
 	 * @param env[in] A GC thread
-	 * @param totalCacheEntryCount[in] The number of cache entries which this list should be resized to contain
+	 * @param allocatedCacheEntryCount[in] The number of cache entries which this list should be resized to contain
+	 * @param incrementCacheEntryCount[in] increment increase count
+	 * @return true if resize success
 	 */
-	bool resizeCacheEntries(MM_EnvironmentBase *env, uintptr_t totalCacheEntryCount);
+	bool resizeCacheEntries(MM_EnvironmentBase *env, uintptr_t allocatedCacheEntryCount, uintptr_t incrementCacheEntryCount);
 
 	/**
 	 * Remove all heap allocated chunks from chunks list
@@ -173,7 +186,8 @@ public:
 		, _sublists(NULL)
 		, _sublistCount(0)
 		, _chunkHead(NULL)
-		, _totalEntryCount(0)
+		, _incrementEntryCount(0)
+		, _totalAllocatedEntryCount(0)
 		, _cachedEntryCount(NULL)
 	{
 		_typeId = __FUNCTION__;

@@ -54,6 +54,8 @@ public:
 	uintptr_t _rememberedSetOverflow;
 	uintptr_t _causedRememberedSetOverflow;
 	uintptr_t _scanCacheOverflow;
+	uintptr_t _scanCacheAllocationFromHeap;
+	uint64_t  _scanCacheAllocationDurationDuringSavenger;
 	uintptr_t _backout;
 	uintptr_t _flipCount;
 	uintptr_t _flipBytes;

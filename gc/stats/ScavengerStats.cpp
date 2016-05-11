@@ -31,6 +31,8 @@ MM_ScavengerStats::MM_ScavengerStats()
 	,_rememberedSetOverflow(0)
 	,_causedRememberedSetOverflow(0)
 	,_scanCacheOverflow(0)
+	,_scanCacheAllocationFromHeap(0)
+	,_scanCacheAllocationDurationDuringSavenger(0)
 	,_backout(0)
 	,_failedTenureCount(0)
 	,_failedTenureBytes(0)
@@ -116,6 +118,8 @@ MM_ScavengerStats::clear()
 	_rememberedSetOverflow = 0;
 	_causedRememberedSetOverflow = 0;
 	_scanCacheOverflow = 0;
+	_scanCacheAllocationFromHeap = 0;
+	_scanCacheAllocationDurationDuringSavenger = 0;
 	_backout = 0;
 	_flipCount = 0;
 	_flipBytes = 0;

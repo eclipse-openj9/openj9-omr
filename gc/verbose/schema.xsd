@@ -485,6 +485,8 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 
 	<complexType name="warning">
 		<attribute name="details" type="string" use="required" />
+		<attribute name="count" type="integer" use="optional" />
+		<attribute name="packetcount" type="integer" use="optional" />
 	</complexType>
 
 	<complexType name="compact-info">

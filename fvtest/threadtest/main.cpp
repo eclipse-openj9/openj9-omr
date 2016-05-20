@@ -22,7 +22,7 @@
 
 ThreadTestEnvironment *omrTestEnv;
 
-extern "C"int
+extern "C" int
 testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);

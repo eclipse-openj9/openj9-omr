@@ -42,6 +42,8 @@
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 #define OMR_XVERBOSEGCLOG "-Xverbosegclog:"
 #define OMR_XVERBOSEGCLOG_LENGTH 15
+#define OMR_XGCBUFFERED_LOGGING "-Xgc:bufferedLogging"
+#define OMR_XGCBUFFERED_LOGGING_LENGTH 20
 #define OMR_XGCTHREADS "-Xgcthreads"
 #define OMR_XGCTHREADS_LENGTH 11
 
@@ -266,6 +268,9 @@ MM_StartupManager::handleOption(MM_GCExtensionsBase *extensions, char *option)
 		} else {
 			strcpy(verboseFileName, option + OMR_XVERBOSEGCLOG_LENGTH);
 		}
+	}
+	else if (0 == strncmp(option, OMR_XGCBUFFERED_LOGGING, OMR_XGCBUFFERED_LOGGING_LENGTH)) {
+		extensions->bufferedLogging = true;
 	}
 #if defined(OMR_GC_MORDON_SCAVENGER)
 	else if (0 == strncmp(option, OMR_XGCPOLICY, OMR_XGCPOLICY_LENGTH)) {

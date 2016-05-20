@@ -85,7 +85,10 @@ MM_VerboseManagerImpl::reconfigureVerboseGC(OMR_VM *omrVM)
 	 * otherwise we append the pid of the child before the extension.
 	 */
 	WriterType type = parseWriterType(NULL, filename, 0, 0); /* All parameters other than filename aren't used */
-	if (type == VERBOSE_WRITER_FILE_LOGGING && NULL == strstr(filename, "%p") &&  NULL == strstr(filename, "%pid")) {
+	if (
+			((type == VERBOSE_WRITER_FILE_LOGGING_SYNCHRONOUS) || (type == VERBOSE_WRITER_FILE_LOGGING_BUFFERED))
+			&& (NULL == strstr(filename, "%p")) && (NULL == strstr(filename, "%pid"))
+		) {
 #define MAX_PID_LENGTH 16
 		char pidStr[MAX_PID_LENGTH];
 		uintptr_t pid = omrsysinfo_get_pid();

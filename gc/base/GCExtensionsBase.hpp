@@ -557,6 +557,7 @@ public:
 	uintptr_t verbosegcCycleTime;
 	bool verboseExtensions;
 	bool verboseNewFormat; /**< a flag, enabled by -XXgc:verboseNewFormat, to enable the new verbose GC format */
+	bool bufferedLogging; /**< Enabled by -Xgc:bufferedLogging.  Use buffered filestreams when writing logs (e.g. verbose:gc) to a file */
 
 	uintptr_t lowAllocationThreshold; /**< the lower bound of the allocation threshold range */
 	uintptr_t highAllocationThreshold; /**< the upper bound of the allocation threshold range */
@@ -1193,6 +1194,7 @@ public:
 		, verbosegcCycleTime(1000)  /* by default metronome outputs verbosegc every 1sec */
 		, verboseExtensions(false)
 		, verboseNewFormat(true)
+		, bufferedLogging(false)
 		, lowAllocationThreshold(UDATA_MAX)
 		, highAllocationThreshold(UDATA_MAX)
 		, disableInlineCacheForAllocationThreshold(false)

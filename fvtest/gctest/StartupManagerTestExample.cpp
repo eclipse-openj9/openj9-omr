@@ -85,6 +85,8 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 					/* TODO: support multi-thread GC*/
 				} else if (0 == strcmp(attr.name(), "GCPolicy")) {
 					extensions->scavengerEnabled = (0 == j9_cmdla_stricmp(attr.value(), "gencon"));
+				} else if (0 == strcmp(attr.name(), "forceBackOut")) {
+					extensions->fvtest_forceScavengerBackout = (0 == j9_cmdla_stricmp(attr.value(), "true"));
 				} else if ((0 == strcmp(attr.name(), "verboseLog")) || (0 == strcmp(attr.name(), "numOfFiles")) || (0 == strcmp(attr.name(), "numOfCycles")) || (0 == strcmp(attr.name(), "sizeUnit"))) {
 				} else {
 					result = false;

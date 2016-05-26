@@ -36,7 +36,8 @@
 #include "omrvm.h"
 #include "OMRVMInterface.hpp"
 #include "ScanClassesMode.hpp"
-#include "ObjectIterator.hpp"
+#include "Scavenger.hpp"
+#include "SlotObject.hpp"
 
 /**
  * Initialization
@@ -158,6 +159,23 @@ MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMT
 	/* Do nothing for now.  only required for SRT */
 }
 
+void
+MM_CollectorLanguageInterfaceImpl::generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject)
+{
+	GC_SlotObject slotObject(omrThread->_vm, parentSlot);
+	slotObject.writeReferenceToSlot(childObject);
+	MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)omrThread->_vm->_gcOmrVMExtensions;
+	if (extensions->scavengerEnabled) {
+		if (extensions->isOld(parentObject) && extensions->scavenger->isObjectInNewSpace(childObject)) {
+			if (extensions->objectModel.atomicSetRemembered(parentObject)) {
+				/* The object has been successfully marked as REMEMBERED - allocate an entry in the remembered set */
+				MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(omrThread);
+				extensions->scavenger->addToRememberedSetFragment(env, parentObject);
+			}
+		}
+	}
+}
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
@@ -267,19 +285,12 @@ MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(MM_Environme
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader)
 {
-	if (forwardedHeader->isForwardedPointer()) {
-		omrobjectptr_t objectPtr = forwardedHeader->getObject();
-		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
-		omrobjectptr_t fwdObjectPtr = forwardedHeader->getForwardedObject();
-
-		/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
-		 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
-		 */
-		UDATA evacuateObjectSizeInBytes = extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr);
-		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
-		freeHeader->setNext((MM_HeapLinkedFreeHeader*)objectPtr);
-		freeHeader->setSize(evacuateObjectSizeInBytes);
-	}
+	/* This method must restore the object header slot (and overlapped slot, if header is compressed)
+	 * in the original object and install a reverse forwarded object in the forwarding location. 
+	 * A reverse forwarded object is a hole (MM_HeapLinkedFreeHeader) whose 'next' pointer actually 
+	 * points at the original object. This keeps tenure space walkable once the reverse forwarded 
+	 * objects are abandoned.
+	 */
 }
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)

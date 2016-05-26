@@ -111,6 +111,7 @@ public:
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	virtual uintptr_t markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo) = 0;
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+
 	/**
 	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated.  You are however
 	 * guaranteed by the start of the next gc, you will be notified for all objects allocated since the last gc.
@@ -134,6 +135,14 @@ public:
 	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap) = 0;
 #endif /* OMR_GC_MODRON_COMPACTION */
 
+	/**
+	 * In the absence of other (equivalent) write barrier, this method must be implemented and called
+	 * to store object references to other objects. For collectors that move objects, if the parent object
+	 * that is receiving the child object reference is tenured and the child object is not, the parent
+	 * object must be added to the collector's remembered set. For other collectors, this method must only
+	 * implement the assignment of the child reference to the parent slot.
+	 */
+	virtual void generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject) = 0;
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env) = 0;
 	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase * env) = 0;

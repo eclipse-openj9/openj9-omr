@@ -17,9 +17,11 @@
  *******************************************************************************/
 
 #include "GCConfigTest.hpp"
-#include "VerboseWriterChain.hpp"
-#include "ObjectIterator.hpp"
+#include "omrExampleVM.hpp"
 #include "omrgc.h"
+#include "SlotObject.hpp"
+#include "VerboseWriterChain.hpp"
+#include "CollectorLanguageInterface.hpp"
 
 //#define OMRGCTEST_DEBUG
 //#define OMRGCTEST_PRINTFILE
@@ -37,8 +39,9 @@ GCConfigTest::SetUp()
 
 	printMemUsed("Setup()", gcTestEnv->portLib);
 
-	/* Initialize heap and collector */
 	MM_StartupManagerTestExample startupManager(exampleVM->_omrVM, GetParam());
+
+	/* Initialize heap and collector */
 	omr_error_t rc = OMR_GC_IntializeHeapAndCollector(exampleVM->_omrVM, &startupManager);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "Setup(): OMR_GC_IntializeHeapAndCollector failed, rc=" << rc;
 
@@ -50,7 +53,13 @@ GCConfigTest::SetUp()
 	/* Kick off the dispatcher threads */
 	rc = OMR_GC_InitializeDispatcherThreads(exampleVM->_omrVMThread);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "Setup(): OMR_GC_InitializeDispatcherThreads failed, rc=" << rc;
+
+	/* Instantiate collector interface */
 	env = MM_EnvironmentBase::getEnvironment(exampleVM->_omrVMThread);
+	cli = startupManager.createCollectorLanguageInterface(env);
+	if (NULL == cli) {
+		FAIL() << "Failed to instantiate collector interface.";
+	}
 
 	/* load config file */
 	omrtty_printf("Configuration File: %s\n", GetParam());
@@ -84,13 +93,15 @@ GCConfigTest::SetUp()
 	verboseManager->enableVerboseGC();
 	verboseManager->setInitializedTime(omrtime_hires_clock());
 
-	/* create object table */
-	objectTable.create();
-
-	/* create root table */
+	/* Initialize root table */
 	exampleVM->rootTable = hashTableNew(
-		gcTestEnv->portLib, OMR_GET_CALLSITE(), 0, sizeof(RootEntry), 0, 0, OMRMEM_CATEGORY_MM,
-		rootTableHashFn, rootTableHashEqualFn, NULL, NULL);
+			exampleVM->_omrVM->_runtime->_portLibrary, OMR_GET_CALLSITE(), 0, sizeof(RootEntry), 0, 0, OMRMEM_CATEGORY_MM,
+			rootTableHashFn, rootTableHashEqualFn, NULL, NULL);
+
+	/* Initialize object table */
+	exampleVM->objectTable = hashTableNew(
+			exampleVM->_omrVM->_runtime->_portLibrary, OMR_GET_CALLSITE(), 0, sizeof(ObjectEntry), 0, 0, OMRMEM_CATEGORY_MM,
+			objectTableHashFn, objectTableHashEqualFn, NULL, NULL);
 }
 
 void
@@ -98,11 +109,14 @@ GCConfigTest::TearDown()
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 
-	/* free root table */
+	/* Free root hash table */
 	hashTableFree(exampleVM->rootTable);
+	exampleVM->rootTable = NULL;
 
-	/* free object table */
-	objectTable.free();
+	/* Free object hash table */
+	hashTableForEachDo(exampleVM->objectTable, objectTableFreeFn, exampleVM);
+	hashTableFree(exampleVM->objectTable);
+	exampleVM->objectTable = NULL;
 
 	/* close verboseManager and clean up verbose files */
 	verboseManager->closeStreams(env);
@@ -249,118 +263,114 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 	return objType;
 }
 
-int32_t
-GCConfigTest::allocateHelper(omrobjectptr_t *obj, char *objName, uintptr_t size)
+ObjectEntry *
+GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
-	int32_t rt = 0;
-	uintptr_t actualSize = 0;
 	MM_ObjectAllocationInterface *allocationInterface = env->_objectAllocationInterface;
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 	uintptr_t allocatedFlags = 0;
 	uintptr_t sizeAdjusted = extensions->objectModel.adjustSizeInBytes(size);
 	MM_AllocateDescription mm_allocdescription(sizeAdjusted, allocatedFlags, true, true);
 
-	*obj = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), false);
+	ObjectEntry objEntry;
+	objEntry.name = objName;
+	objEntry.objPtr = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), false);
+	objEntry.numOfRef = 0;
 
-	if (NULL == *obj) {
-		omrtty_printf("No free memory to allocate %s, GC start.\n", objName);
-		*obj = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), true);
+	ObjectEntry *hashedEntry = NULL;
+	if (NULL == objEntry.objPtr) {
+		omrtty_printf("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
+		objEntry.objPtr = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), true);
 		env->unwindExclusiveVMAccessForGC();
-		if (NULL == *obj) {
-			rt = 1;
-			omrtty_printf("%s:%d No free memory after a GC. Failed to allocate object %s.\n", __FILE__, __LINE__, objName);
+		if (NULL == objEntry.objPtr) {
+			omrtty_printf("%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);
 			goto done;
 		}
 		verboseManager->getWriterChain()->endOfCycle(env);
 	}
-
-	actualSize = mm_allocdescription.getBytesRequested();
-
-	if (NULL != *obj) {
-		memset(*obj, 0, actualSize);
+	if (NULL != objEntry.objPtr) {
+		/* set size in header */
+		uintptr_t actualSize = mm_allocdescription.getBytesRequested();
+		memset(objEntry.objPtr, 0, actualSize);
+		extensions->objectModel.setObjectSize(objEntry.objPtr, actualSize);
+#if defined(OMRGCTEST_DEBUG)
+		omrtty_printf("Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, actualSize);
+#endif
+		hashedEntry = add(&objEntry);
 	}
 
-	/* set size in header */
-	extensions->objectModel.setObjectSize(*obj, actualSize);
-
-#if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("Allocate object name: %s; size: %dB; objPtr: %llu\n", objName, actualSize, *obj);
-#endif
-
 done:
-	return rt;
+	return hashedEntry;
 }
 
-int32_t
-GCConfigTest::createObject(omrobjectptr_t *obj, char **objName, const char *namePrefix, OMRGCObjectType objType, int32_t depth, int32_t nthInRow, uintptr_t size)
+ObjectEntry *
+GCConfigTest::createObject(const char *namePrefix, OMRGCObjectType objType, int32_t depth, int32_t nthInRow, uintptr_t size)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
-	int32_t rt = 0;
 	ObjectEntry *objEntry = NULL;
 
-	*objName = (char *)omrmem_allocate_memory(MAX_NAME_LENGTH, OMRMEM_CATEGORY_MM);
-	if (NULL == *objName) {
-		rt = 1;
+	char *objName = (char *)omrmem_allocate_memory(MAX_NAME_LENGTH, OMRMEM_CATEGORY_MM);
+	if (NULL == objName) {
 		omrtty_printf("%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
 		goto done;
 	}
-	omrstr_printf(*objName, MAX_NAME_LENGTH, "%s_%d_%d", namePrefix, depth, nthInRow);
+	omrstr_printf(objName, MAX_NAME_LENGTH, "%s_%d_%d", namePrefix, depth, nthInRow);
 
-	if (0 == objectTable.find(&objEntry, *objName)) {
+	objEntry = find(objName);
+	if (NULL != objEntry) {
 #if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("Find object %s in hash table.\n", *objName);
+		omrtty_printf("Found object %s in object table.\n", objEntry->name);
 #endif
-		*obj = objEntry->objPtr;
+		omrmem_free_memory(objName);
 	} else {
-		rt = allocateHelper(obj, *objName, size);
-		OMRGCTEST_CHECK_RT(rt);
-
-		/* keep object in table */
-		rt = objectTable.add(*objName, *obj, 0);
-		OMRGCTEST_CHECK_RT(rt)
-
-		/* Keep count of the new allocated non-garbage object size for garbage insertion. If the object exists in objectTable, its size is ignored. */
-		if ((ROOT == objType) || (NORMAL == objType)) {
-			gp.accumulatedSize += env->getExtensions()->objectModel.getSizeInBytesWithHeader(*obj);
+		objEntry = allocateHelper(objName, size);
+		if (NULL != objEntry) {
+			/* Keep count of the new allocated non-garbage object size for garbage insertion. If the object exists in objectTable, its size is ignored. */
+			if ((ROOT == objType) || (NORMAL == objType)) {
+				gp.accumulatedSize += env->getExtensions()->objectModel.getSizeInBytesWithHeader(objEntry->objPtr);
+			}
+		} else {
+			omrmem_free_memory(objName);
 		}
 	}
 
 done:
-	return rt;
+	return objEntry;
 }
 
 int32_t
-GCConfigTest::createFixedSizeTree(omrobjectptr_t *rootObj, const char *namePrefixStr, OMRGCObjectType objType, uintptr_t totalSize, uintptr_t objSize, int32_t breadth)
+GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char *namePrefixStr, OMRGCObjectType objType, uintptr_t totalSize, uintptr_t objSize, int32_t breadth)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
-	int32_t rt = 0;
-	OMR_VM *omrVMPtr = exampleVM->_omrVM;
-	int32_t depth = 1;
-	int32_t numOfParents = 1;
-	uintptr_t bytesLeft = totalSize;
+	*rootEntryIndirectPtr = NULL;
 
+	int32_t rt = 0;
+	uintptr_t bytesLeft = totalSize;
 	if (bytesLeft < objSize) {
 		objSize = bytesLeft;
 		if (objSize <= 0) {
 			return rt;
 		}
 	}
-
-	/* allocate the root object */
-	char *rootObjName = NULL;
-	rt = createObject(rootObj, &rootObjName, namePrefixStr, objType, 0, 0, objSize);
-	OMRGCTEST_CHECK_RT(rt);
 	bytesLeft -= objSize;
+	rt = 1;
 
-	/* Add object to root hash table. If it's the root of the garbage tree, temporarily keep it as root for allocating
-	 * the rest of the tree. Remove it from the root set after the entire garbage tree is allocated.*/
-	RootEntry rEntry;
-	rEntry.name = rootObjName;
-	rEntry.rootPtr = *rootObj;
-	if (NULL == hashTableAdd(exampleVM->rootTable, &rEntry)) {
-		rt = 1;
-		omrtty_printf("%s:%d Failed to add new root entry to root table!\n", __FILE__, __LINE__);
+	int32_t depth = 1;
+	int32_t numOfParents = 1;
+
+	/* allocate the root object and add it to the object table */
+	*rootEntryIndirectPtr = createObject(namePrefixStr, objType, 0, 0, objSize);
+	if (NULL == *rootEntryIndirectPtr) {
+		goto done;
+	}
+
+	/* add it to the root table */
+	RootEntry rootEntry;
+	rootEntry.name = (*rootEntryIndirectPtr)->name;
+	rootEntry.rootPtr = (*rootEntryIndirectPtr)->objPtr;
+	if (NULL == hashTableAdd(exampleVM->rootTable, &rootEntry)) {
+		omrtty_printf("%s:%d Failed to add new root entry %s to root table!\n", __FILE__, __LINE__, rootEntry.name);
 		goto done;
 	}
 
@@ -375,46 +385,49 @@ GCConfigTest::createFixedSizeTree(omrobjectptr_t *rootObj, const char *namePrefi
 		for (int32_t j = 0; j < numOfParents; j++) {
 			char parentName[MAX_NAME_LENGTH];
 			omrstr_printf(parentName, sizeof(parentName), "%s_%d_%d", namePrefixStr, (depth - 1), j);
-			ObjectEntry *parentEntry;
-			rt = objectTable.find(&parentEntry, parentName);
-			if (0 != rt) {
+			ObjectEntry *parentEntry = find(parentName);
+			if (NULL == parentEntry) {
 				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 				goto done;
 			}
-			omrobjectptr_t parent = parentEntry->objPtr;
-			GC_ObjectIterator objectIterator(omrVMPtr, parent);
-			objectIterator.restore(parentEntry->numOfRef);
 			for (int32_t k = 0; k < breadth; k++) {
 				if (bytesLeft < objSize) {
 					objSize = bytesLeft;
 					if (objSize <= 0) {
+						rt = 0;
 						goto done;
 					}
 				}
-				omrobjectptr_t obj;
-				char *objName = NULL;
-				rt = createObject(&obj, &objName, namePrefixStr, objType, depth, nthInRow, objSize);
-				OMRGCTEST_CHECK_RT(rt);
-				bytesLeft -= objSize;
-				nthInRow += 1;
-				GC_SlotObject *slotObject = NULL;
-				if (NULL != (slotObject = objectIterator.nextSlot())) {
-#if defined(OMRGCTEST_DEBUG)
-					omrtty_printf("\tadd to parent(%llu) slot %d.\n", parent, parentEntry->numOfRef + k);
-#endif
-					slotObject->writeReferenceToSlot(obj);
-				} else {
-					rt = 1;
-					omrtty_printf("%s:%d Invalid XML input: numOfFields defined for %s is not enough to hold all children references.\n", __FILE__, __LINE__, parentName);
+				ObjectEntry *childEntry = createObject(namePrefixStr, objType, depth, nthInRow, objSize);
+				if (NULL == childEntry) {
 					goto done;
 				}
+				parentEntry = find(parentName);
+				if (NULL == parentEntry) {
+					omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+					goto done;
+				}
+				if (0 != attachChildEntry(parentEntry, childEntry)) {
+					goto done;
+				}
+				bytesLeft -= objSize;
+				nthInRow += 1;
 			}
-			parentEntry->numOfRef += breadth;
+			parentEntry = find(parentName);
+			if (NULL == parentEntry) {
+				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+				goto done;
+			}
 		}
 		numOfParents = nthInRow;
 		depth += 1;
 	}
-
+	*rootEntryIndirectPtr = find(rootEntry.name);
+	if (NULL == *rootEntryIndirectPtr) {
+		omrtty_printf("%s:%d Could not find root of fixed-size tree %s in object table.\n", __FILE__, __LINE__, rootEntry.name);
+		goto done;
+	}
+	rt = 0;
 done:
 	return rt;
 }
@@ -424,80 +437,61 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 
-	int32_t rt = 0;
-	OMR_VM *omrVMPtr = exampleVM->_omrVM;
+	int32_t rt = 1;
 	int32_t numOfParents = 0;
 
 	/* Create objects and store them in the root table or the slot object based on objType. */
 	if ((ROOT == objType) || (GARBAGE_ROOT == objType)) {
 		for (int32_t i = 0; i < breadthElem->value; i++) {
-			omrobjectptr_t obj;
-			char *objName = NULL;
-
 			uintptr_t sizeCalculated = numOfFieldsElem->value * sizeof(fomrobject_t) + sizeof(uintptr_t);
-			rt = createObject(&obj, &objName, namePrefixStr, objType, 0, i, sizeCalculated);
-			OMRGCTEST_CHECK_RT(rt);
+			ObjectEntry *objectEntry = createObject(namePrefixStr, objType, 0, i, sizeCalculated);
+			if (NULL == objectEntry) {
+				goto done;
+			}
 			numOfFieldsElem = numOfFieldsElem->linkNext;
 
 			/* Add object to root hash table. If it's the root of the garbage tree, temporarily keep it as root for allocating
 			 * the rest of the tree. Remove it from the root set after the entire garbage tree is allocated.*/
 			RootEntry rEntry;
-			rEntry.name = objName;
-			rEntry.rootPtr = obj;
+			rEntry.name = objectEntry->name;
+			rEntry.rootPtr = objectEntry->objPtr;
 			if (NULL == hashTableAdd(exampleVM->rootTable, &rEntry)) {
-				rt = 1;
 				omrtty_printf("%s:%d Failed to add new root entry to root table!\n", __FILE__, __LINE__);
 				goto done;
 			}
 
 			/* insert garbage per node */
 			if ((ROOT == objType) && (0 == strcmp(gp.frequency, "perObject"))) {
-				rt = insertGarbage();
-				OMRGCTEST_CHECK_RT(rt);
+				int32_t grt = insertGarbage();
+				OMRGCTEST_CHECK_RT(grt);
 			}
 		}
 	} else if ((NORMAL == objType) || (GARBAGE_TOP == objType) || (GARBAGE_CHILD == objType)) {
 		char parentName[MAX_NAME_LENGTH];
 		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute("namePrefix").value(), 0, 0);
-		ObjectEntry *parentEntry;
-		rt = objectTable.find(&parentEntry, parentName);
-		if (0 != rt) {
-			omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
-			goto done;
-		}
-		omrobjectptr_t parent = parentEntry->objPtr;
-		GC_ObjectIterator objectIterator(omrVMPtr, parent);
-		objectIterator.restore(parentEntry->numOfRef);
 		for (int32_t i = 0; i < breadthElem->value; i++) {
-			omrobjectptr_t obj;
-			char *objName = NULL;
 			uintptr_t sizeCalculated = numOfFieldsElem->value * sizeof(fomrobject_t) + sizeof(uintptr_t);
-			rt = createObject(&obj, &objName, namePrefixStr, objType, 0, i, sizeCalculated);
-			OMRGCTEST_CHECK_RT(rt);
-			numOfFieldsElem = numOfFieldsElem->linkNext;
-			GC_SlotObject *slotObject = NULL;
-			if (NULL != (slotObject = objectIterator.nextSlot())) {
-#if defined(OMRGCTEST_DEBUG)
-				omrtty_printf("\tadd to slot of parent(%llu) %d\n", parent, parentEntry->numOfRef + i);
-#endif
-				/* Add object to parent's slot. If it's the top of the garbage tree, temporarily keep it in the slot until
-				 * the rest of the tree is allocated. */
-				slotObject->writeReferenceToSlot(obj);
-			} else {
-				rt = 1;
-				omrtty_printf("%s:%d Invalid XML input: numOfFields defined for %s is not enough to hold all children references.\n", __FILE__, __LINE__, parentName);
+			ObjectEntry *childEntry = createObject(namePrefixStr, objType, 0, i, sizeCalculated);
+			if (NULL == childEntry) {
 				goto done;
 			}
+			ObjectEntry *parentEntry = find(parentName);
+			if (NULL == parentEntry) {
+				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+				goto done;
+			}
+			if (0 != attachChildEntry(parentEntry, childEntry)) {
+				goto done;
+			}
+			numOfFieldsElem = numOfFieldsElem->linkNext;
 
 			/* insert garbage per node */
 			if ((NORMAL == objType) && (0 == strcmp(gp.frequency, "perObject"))) {
-				rt = insertGarbage();
-				OMRGCTEST_CHECK_RT(rt);
+				int32_t grt = insertGarbage();
+				OMRGCTEST_CHECK_RT(grt);
 			}
 		}
-		parentEntry->numOfRef += breadthElem->value;
 	} else {
-		rt = 1;
 		goto done;
 	}
 
@@ -514,47 +508,34 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 		for (int32_t j = 0; j < numOfParents; j++) {
 			char parentName[MAX_NAME_LENGTH];
 			omrstr_printf(parentName, sizeof(parentName), "%s_%d_%d", namePrefixStr, (i - 1), j);
-			ObjectEntry *parentEntry;
-			rt = objectTable.find(&parentEntry, parentName);
-			if (0 != rt) {
-				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
-				goto done;
-			}
-			omrobjectptr_t parent = parentEntry->objPtr;
-			GC_ObjectIterator objectIterator(omrVMPtr, parent);
-			objectIterator.restore(parentEntry->numOfRef);
 			for (int32_t k = 0; k < breadthElem->value; k++) {
-				omrobjectptr_t obj;
-				char *objName = NULL;
-				uintptr_t sizeCalculated = numOfFieldsElem->value * sizeof(fomrobject_t) + sizeof(uintptr_t);
-				rt = createObject(&obj, &objName, namePrefixStr, objType, i, nthInRow, sizeCalculated);
-				OMRGCTEST_CHECK_RT(rt);
-				numOfFieldsElem = numOfFieldsElem->linkNext;
-				nthInRow += 1;
-				GC_SlotObject *slotObject = NULL;
-				if (NULL != (slotObject = objectIterator.nextSlot())) {
-#if defined(OMRGCTEST_DEBUG)
-					omrtty_printf("\tadd to parent(%llu) slot %d.\n", parent, parentEntry->numOfRef + k);
-#endif
-					slotObject->writeReferenceToSlot(obj);
-				} else {
-					rt = 1;
-					omrtty_printf("%s:%d Invalid XML input: numOfFields defined for %s is not enough to hold all children references.\n", __FILE__, __LINE__, parentName);
+				uintptr_t sizeCalculated = sizeof(omrobjectptr_t) + numOfFieldsElem->value * sizeof(fomrobject_t);
+				ObjectEntry *childEntry = createObject(namePrefixStr, objType, i, nthInRow, sizeCalculated);
+				if (NULL == childEntry) {
 					goto done;
 				}
+				ObjectEntry *parentEntry = find(parentName);
+				if (NULL == parentEntry) {
+					omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+					goto done;
+				}
+				if (0 != attachChildEntry(parentEntry, childEntry)) {
+					goto done;
+				}
+				numOfFieldsElem = numOfFieldsElem->linkNext;
+				nthInRow += 1;
 
 				/* insert garbage per node */
 				if ((NORMAL == objType) && (0 == strcmp(gp.frequency, "perObject"))) {
-					rt = insertGarbage();
-					OMRGCTEST_CHECK_RT(rt);
+					int32_t grt = insertGarbage();
+					OMRGCTEST_CHECK_RT(grt);
 				}
 			}
-			parentEntry->numOfRef += breadthElem->value;
 		}
 		numOfParents = nthInRow;
 		breadthElem = breadthElem->linkNext;
 	}
-
+	rt = 0;
 done:
 	return rt;
 }
@@ -577,18 +558,16 @@ GCConfigTest::insertGarbage()
 	}
 
 #if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("Inserting garbage %s of %dB (%f%% of previous object/tree size %dB) ...\n", fullNamePrefix, totalSize, gp.percentage, gp.accumulatedSize);
+	omrtty_printf("Inserting garbage %s of 0x%llx (%f%% of previous object/tree size 0x%llx) ...\n", fullNamePrefix, totalSize, gp.percentage, gp.accumulatedSize);
 #endif
 
-	omrobjectptr_t rootObj = NULL;
-	rt = createFixedSizeTree(&rootObj, fullNamePrefix, GARBAGE_ROOT, totalSize, objSize, breadth);
+	ObjectEntry *rootObjectEntry = NULL;
+	rt = createFixedSizeTree(&rootObjectEntry, fullNamePrefix, GARBAGE_ROOT, totalSize, objSize, breadth);
 	OMRGCTEST_CHECK_RT(rt);
 
 	/* remove garbage root object from the root set */
-	if (NULL != rootObj) {
-		char rootObjName[MAX_NAME_LENGTH];
-		omrstr_printf(rootObjName, MAX_NAME_LENGTH, "%s_%d_%d", fullNamePrefix, 0, 0);
-		rt = removeObjectFromRootTable(rootObjName);
+	if (NULL != rootObjectEntry) {
+		rt = removeObjectFromRootTable(rootObjectEntry->name);
 		OMRGCTEST_CHECK_RT(rt);
 	}
 
@@ -600,62 +579,113 @@ done:
 }
 
 int32_t
+GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry)
+{
+	int32_t rc = 0;
+	MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)exampleVM->_omrVM->_gcOmrVMExtensions;
+	uintptr_t size = extensions->objectModel.getConsumedSizeInBytesWithHeader(parentEntry->objPtr);
+	fomrobject_t *firstSlot = (fomrobject_t *)parentEntry->objPtr + 1;
+	fomrobject_t *endSlot = (fomrobject_t *)((uint8_t *)parentEntry->objPtr + size);
+	uintptr_t slotCount = endSlot - firstSlot;
+
+	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
+	if ((uint32_t)parentEntry->numOfRef < slotCount) {
+		fomrobject_t *childSlot = firstSlot + parentEntry->numOfRef;
+		cli->generationalWriteBarrierStore(exampleVM->_omrVMThread, parentEntry->objPtr, childSlot, childEntry->objPtr);
+#if defined(OMRGCTEST_DEBUG)
+		omrtty_printf("\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n",
+				childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);
+#endif
+		parentEntry->numOfRef += 1;
+	} else {
+		omrtty_printf("%s:%d Invalid XML input: numOfFields %d defined for %s(%p[0x%llx]) is not enough to hold child reference for %s(%p[0x%llx]).\n",
+				__FILE__, __LINE__, parentEntry->numOfRef, parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childEntry->name, childEntry->objPtr, *(childEntry->objPtr));
+		rc = 1;
+	}
+	return rc;
+}
+
+int32_t
 GCConfigTest::removeObjectFromRootTable(const char *name)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
-	int32_t rt = 0;
+	int32_t rt = 1;
 	RootEntry searchEntry;
-	RootEntry *rEntryPtr = NULL;
 	searchEntry.name = name;
-	rEntryPtr = (RootEntry *)hashTableFind(exampleVM->rootTable, &searchEntry);
-	if (NULL == rEntryPtr) {
-		rt = 1;
+	RootEntry *rootEntry = (RootEntry *)hashTableFind(exampleVM->rootTable, &searchEntry);
+	if (NULL == rootEntry) {
 		omrtty_printf("%s:%d Failed to find root object %s in root table.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-	if (0 != hashTableRemove(exampleVM->rootTable, rEntryPtr)) {
-		rt = 1;
+	if (0 != hashTableRemove(exampleVM->rootTable, rootEntry)) {
 		omrtty_printf("%s:%d Failed to remove root object %s from root table!\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 #if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Remove object(%s) from root table.\n", name);
+	omrtty_printf("Remove object %s(%p[0x%llx]) from root table.\n", name, rootEntry->rootPtr, *(rootEntry->rootPtr));
 #endif
 
+	rt = 0;
 done:
 	return rt;
 }
 
 int32_t
-GCConfigTest::removeObjectFromParentSlot(const char *name, omrobjectptr_t parentPtr)
+GCConfigTest::removeObjectFromObjectTable(const char *name)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
 	int32_t rt = 1;
-	GC_ObjectIterator objectIterator(exampleVM->_omrVM, parentPtr);
-	GC_SlotObject *slotObject = NULL;
+	ObjectEntry *foundEntry = find(name);
+	if (NULL == foundEntry) {
+		omrtty_printf("%s:%d Failed to find object %s in object table.\n", __FILE__, __LINE__, name);
+		goto done;
+	}
+	if (0 != hashTableRemove(exampleVM->objectTable, foundEntry)) {
+		omrtty_printf("%s:%d Failed to remove object %s from object table!\n", __FILE__, __LINE__, name);
+		goto done;
+	}
+#if defined(OMRGCTEST_DEBUG)
+	omrtty_printf("Remove object %s(%p[0x%llx]) from object table.\n", name, foundEntry->objPtr, *(foundEntry->objPtr));
+#endif
 
-	ObjectEntry *objEntry;
-	rt = objectTable.find(&objEntry, name);
-	if (0 != rt) {
+	rt = 0;
+done:
+	return rt;
+}
+
+int32_t
+GCConfigTest::removeObjectFromParentSlot(const char *name, ObjectEntry *parentEntry)
+{
+	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
+
+	MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)exampleVM->_omrVM->_gcOmrVMExtensions;
+	uintptr_t size = extensions->objectModel.getConsumedSizeInBytesWithHeader(parentEntry->objPtr);
+	fomrobject_t *currentSlot = (fomrobject_t *)parentEntry->objPtr + 1;
+	fomrobject_t *endSlot = (fomrobject_t *)((uint8_t *)parentEntry->objPtr + size);
+
+	int32_t rt = 1;
+	ObjectEntry *objEntry = find(name);
+	if (NULL == objEntry) {
 		omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 
-	while (NULL != (slotObject = objectIterator.nextSlot())) {
-		if (objEntry->objPtr == slotObject->readReferenceFromSlot()) {
-			slotObject->writeReferenceToSlot(NULL);
+	while (currentSlot < endSlot) {
+		GC_SlotObject slotObject(exampleVM->_omrVM, currentSlot);
+		if (objEntry->objPtr == slotObject.readReferenceFromSlot()) {
+#if defined(OMRGCTEST_DEBUG)
+			omrtty_printf("Remove object %s(%p[0x%llx]) from parent %s(%p[0x%llx]) slot %p.\n", name, objEntry->objPtr, *(objEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), slotObject.readAddressFromSlot());
+#endif
+			slotObject.writeReferenceToSlot(NULL);
 			rt = 0;
 			break;
 		}
+		currentSlot += 1;
 	}
 	if (0 != rt) {
-		omrtty_printf("%s:%d Failed to find object %s from its parent's slot.\n", __FILE__, __LINE__, name);
+		omrtty_printf("%s:%d Failed to remove object %s from its parent's slot.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-
-#if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Remove object %s from its parent's slot.\n", name);
-#endif
 
 done:
 	return rt;
@@ -725,17 +755,15 @@ GCConfigTest::allocationWalker(pugi::xml_node node)
 	} else if (GARBAGE_TOP == objType) {
 		char parentName[MAX_NAME_LENGTH];
 		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute("namePrefix").value(), 0, 0);
-		ObjectEntry *parentEntry;
-		rt = objectTable.find(&parentEntry, parentName);
-		if (0 != rt) {
+		ObjectEntry *parentEntry = find(parentName);
+		if (NULL == parentEntry) {
 			omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 			goto done;
 		}
-		omrobjectptr_t parentPtr = parentEntry->objPtr;
 		for (int32_t i = 0; i < breadthElem->value; i++) {
 			char objName[MAX_NAME_LENGTH];
 			omrstr_printf(objName, MAX_NAME_LENGTH, "%s_%d_%d", namePrefixStr, 0, i);
-			rt = removeObjectFromParentSlot(objName, parentPtr);
+			rt = removeObjectFromParentSlot(objName, parentEntry);
 			OMRGCTEST_CHECK_RT(rt);
 		}
 	}

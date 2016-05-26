@@ -46,7 +46,7 @@ private:
 	initialize(OMR_VM *omrVM, omrobjectptr_t objectPtr)
 	{
 		/* Start _scanPtr after header */
-		_scanPtr = (fomrobject_t *)(objectPtr + 1);
+		_scanPtr = (fomrobject_t *)objectPtr + 1;
 
 		MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)omrVM->_gcOmrVMExtensions;
 		uintptr_t size = extensions->objectModel.getConsumedSizeInBytesWithHeader(objectPtr);

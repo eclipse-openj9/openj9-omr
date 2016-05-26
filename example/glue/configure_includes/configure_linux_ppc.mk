@@ -105,6 +105,23 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc, $(SPEC))
     --enable-OMR_GC_ARRAYLETS
 endif
 
+ifeq (linux_ppc-64_cmprssptrs_le, $(SPEC))
+  CONFIGURE_ARGS += \
+    --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_POWER \
+    --enable-OMR_ENV_DATA64 \
+    --enable-OMR_ENV_LITTLE_ENDIAN \
+    --enable-OMR_GC_COMPRESSED_POINTERS \
+    --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
+    --enable-OMR_INTERP_SMALL_MONITOR_SLOT \
+    --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
+    --enable-OMR_PORT_NUMA_SUPPORT \
+    --enable-OMR_THR_FORK_SUPPORT \
+    --enable-OMR_GC_ARRAYLETS
+
+  TEMP_TOOLS=$(XLC_TOOLS)
+endif
+
 ifeq (linux_ppc-64_cmprssptrs, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \

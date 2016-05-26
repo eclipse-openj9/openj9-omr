@@ -26,7 +26,9 @@
 
 #include "Base.hpp"
 #include "EnvironmentStandard.hpp"
+#include "ForwardedHeader.hpp"
 #include "Scavenger.hpp"
+#include "SublistFragment.hpp"
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
@@ -56,6 +58,7 @@ public:
 	void
 	scavengeRememberedSet(MM_EnvironmentStandard *env)
 	{
+		MM_SublistFragment::flush((J9VMGC_SublistFragment*)&env->_scavengerRememberedSet);
 		_scavenger->scavengeRememberedSet(env);
 	}
 
@@ -68,19 +71,49 @@ public:
 	void
 	scanRoots(MM_EnvironmentBase *env)
 	{
-		J9HashTableState state;
+		/* TODO: Consider serializing thread access so that each gc thread gets a portion of the roots. */
 		OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
-		MM_EnvironmentStandard *envStd = MM_EnvironmentStandard::getEnvironment(env);
-		RootEntry *rootEntry = (RootEntry *)hashTableStartDo(omrVM->rootTable, &state);
-		while (rootEntry != NULL) {
-			_scavenger->copyObjectSlot(envStd, (volatile omrobjectptr_t *) &rootEntry->rootPtr);
-			rootEntry = (RootEntry *)hashTableNextDo(&state);
+		if (env->_currentTask->synchronizeGCThreadsAndReleaseSingleThread(env, UNIQUE_ID)) {
+			J9HashTableState state;
+			MM_EnvironmentStandard *envStd = MM_EnvironmentStandard::getEnvironment(env);
+			if (NULL != omrVM->rootTable) {
+				RootEntry *rootEntry = (RootEntry *)hashTableStartDo(omrVM->rootTable, &state);
+				while (NULL != rootEntry) {
+					if (NULL != rootEntry->rootPtr) {
+						_scavenger->copyObjectSlot(envStd, (volatile omrobjectptr_t *) &rootEntry->rootPtr);
+					}
+					rootEntry = (RootEntry *)hashTableNextDo(&state);
+				}
+			}
+			env->_currentTask->releaseSynchronizedGCThreads(env);
 		}
 	}
 
 	void rescanThreadSlots(MM_EnvironmentStandard *env) { }
 
-	void scanClearable(MM_EnvironmentBase *env) { }
+	void scanClearable(MM_EnvironmentBase *env)
+	{
+		OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
+		if (NULL != omrVM->objectTable) {
+			if (env->_currentTask->synchronizeGCThreadsAndReleaseSingleThread(env, UNIQUE_ID)) {
+				J9HashTableState state;
+				ObjectEntry *objectEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
+				while (NULL != objectEntry) {
+					if (_scavenger->isObjectInEvacuateMemory(objectEntry->objPtr)) {
+						MM_ForwardedHeader fwdHeader(objectEntry->objPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+						if (fwdHeader.isForwardedPointer()) {
+							omrobjectptr_t fwdPtr = fwdHeader.getForwardedObject();
+							objectEntry->objPtr = fwdPtr;
+						} else {
+							hashTableDoRemove(&state);
+						}
+					}
+					objectEntry = (ObjectEntry *)hashTableNextDo(&state);
+				}
+			}
+			env->_currentTask->releaseSynchronizedGCThreads(env);
+		}
+	}
 
 	void flush(MM_EnvironmentStandard *env) { }
 };

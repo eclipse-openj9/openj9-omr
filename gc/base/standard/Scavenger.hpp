@@ -138,7 +138,7 @@ private:
 	 */
 	void globalCollectionComplete(MM_EnvironmentBase *env);
 
-	MMINLINE uintptr_t calculateOptimumSurvivorSpaceCopyScanCacheSize(MM_EnvironmentStandard *env);
+	MMINLINE uintptr_t calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env);
 	MMINLINE MM_CopyScanCacheStandard *reserveMemoryForAllocateInSemiSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectToEvacuate, uintptr_t objectReserveSizeInBytes);
 	MM_CopyScanCacheStandard *reserveMemoryForAllocateInTenureSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectToEvacuate, uintptr_t objectReserveSizeInBytes);
 
@@ -315,16 +315,6 @@ private:
 	void masterReportHotFieldStats();
 	void clearHotFieldStats(MM_EnvironmentStandard *env);
 	void mergeHotFieldStats(MM_EnvironmentStandard *env);
-
-	/**
-	 * Attempt to add the specified object to the current thread's remembered set fragment.
-	 * Grow the remembered set if necessary and, if that fails, overflow.
-	 * The object must already have its remembered bits set.
-	 *
-	 * @param env[in] the current thread
-	 * @param objectPtr[in] the object to remember
-	 */
-	void addToRememberedSetFragment(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/**
 	 * Add the specified object to the remembered set.
@@ -504,6 +494,16 @@ public:
 	virtual uintptr_t getVMStateID();
 
 	bool completeScan(MM_EnvironmentStandard *env);
+
+	/**
+	 * Attempt to add the specified object to the current thread's remembered set fragment.
+	 * Grow the remembered set if necessary and, if that fails, overflow.
+	 * The object must already have its remembered bits set.
+	 *
+	 * @param env[in] the current thread
+	 * @param objectPtr[in] the object to remember
+	 */
+	void addToRememberedSetFragment(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/**
 	 * Provide public (out-of-line) access to private (inline) copyAndForward(), copy() for client language

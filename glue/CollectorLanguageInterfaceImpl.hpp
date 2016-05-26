@@ -124,6 +124,7 @@ public:
 	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap);
 #endif /* OMR_GC_MODRON_COMPACTION */
 
+	virtual void generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject);
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env);
 	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase *env);

@@ -15,6 +15,7 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
+#include "j9nongenerated.h"
 #include "modronbase.h"
 
 #include "CollectorLanguageInterfaceImpl.hpp"
@@ -29,16 +30,20 @@
 #include "GCExtensionsBase.hpp"
 #include "HeapLinkedFreeHeader.hpp"
 #include "MarkingScheme.hpp"
+#include "MemorySubSpaceSemiSpace.hpp"
 #include "MixedObjectScanner.hpp"
 #include "mminitcore.h"
 #include "objectdescription.h"
+#include "ObjectIterator.hpp"
 #include "ObjectModel.hpp"
 #include "omr.h"
+#include "omrExampleVM.hpp"
 #include "omrvm.h"
 #include "OMRVMInterface.hpp"
 #include "ScanClassesMode.hpp"
-#include "ObjectIterator.hpp"
-#include "omrExampleVM.hpp"
+#include "Scavenger.hpp"
+#include "SlotObject.hpp"
+#include "SublistFragment.hpp"
 
 /**
  * Initialization
@@ -85,6 +90,10 @@ MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
 void
 MM_CollectorLanguageInterfaceImpl::flushNonAllocationCaches(MM_EnvironmentBase *env)
 {
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	MM_EnvironmentStandard *envStd = MM_EnvironmentStandard::getEnvironment(env);
+	MM_SublistFragment::flush((J9VMGC_SublistFragment*)&envStd->_scavengerRememberedSet);
+#endif /* defined(OMR_GC_MODRON_STANDARD) */
 }
 
 OMR_VMThread *
@@ -144,13 +153,21 @@ MM_CollectorLanguageInterfaceImpl::markingScheme_masterSetupForWalk(MM_Environme
 void
 MM_CollectorLanguageInterfaceImpl::markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env)
 {
+	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
+	J9HashTableState state;
+	ObjectEntry *rEntry = NULL;
+	rEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
+	while (rEntry != NULL) {
+		if (!_markingScheme->isMarked(rEntry->objPtr)) {
+			hashTableDoRemove(&state);
+		}
+		rEntry = (ObjectEntry *)hashTableNextDo(&state);
+	}
 }
 
 uintptr_t
 MM_CollectorLanguageInterfaceImpl::markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason)
 {
-	uintptr_t objectSize = env->getExtensions()->objectModel.getSizeInBytesWithHeader(objectPtr);
-
 	GC_ObjectIterator objectIterator(_omrVM, objectPtr);
 	GC_SlotObject *slotObject = NULL;
 	while (NULL != (slotObject = objectIterator.nextSlot())) {
@@ -159,7 +176,7 @@ MM_CollectorLanguageInterfaceImpl::markingScheme_scanObject(MM_EnvironmentBase *
 			_markingScheme->markObject(env, slot);
 		}
 	}
-	return objectSize;
+	return env->getExtensions()->objectModel.getSizeInBytesWithHeader(objectPtr);
 }
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -174,6 +191,23 @@ void
 MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread)
 {
 	/* Do nothing for now.  only required for SRT */
+}
+
+void
+MM_CollectorLanguageInterfaceImpl::generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject)
+{
+	GC_SlotObject slotObject(omrThread->_vm, parentSlot);
+	slotObject.writeReferenceToSlot(childObject);
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrThread->_vm);
+	if (extensions->scavengerEnabled) {
+		if (extensions->isOld(parentObject) && !extensions->isOld(childObject)) {
+			if (extensions->objectModel.atomicSetRemembered(parentObject)) {
+				/* The object has been successfully marked as REMEMBERED - allocate an entry in the remembered set */
+				MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(omrThread);
+				extensions->scavenger->addToRememberedSetFragment(env, parentObject);
+			}
+		}
+	}
 }
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
@@ -291,11 +325,10 @@ MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(MM_Environme
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader)
 {
-	if (forwardedHeader->isForwardedPointer()) {
-		omrobjectptr_t objectPtr = forwardedHeader->getObject();
-		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
-		omrobjectptr_t fwdObjectPtr = forwardedHeader->getForwardedObject();
-
+	omrobjectptr_t objectPtr = forwardedHeader->getObject();
+	omrobjectptr_t fwdObjectPtr = forwardedHeader->getForwardedObject();
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
+	if (extensions->objectModel.restoreForwardedObject(forwardedHeader)) {
 		/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
 		 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 		 */
@@ -314,7 +347,30 @@ MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBa
 	 * case the other half of the full (omrobjectptr_t sized) slot may hold a compressed object reference that
 	 * must be restored by this method.
 	 */
-	Assert_MM_unimplemented();
+	/* This assumes that all slots are object slots, including the slot adjacent to the header slot */
+	if ((0 != forwardedHeader->getPreservedOverlap()) && !_extensions->objectModel.isIndexable(forwardedHeader)) {
+		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
+		/* Get the uncompressed reference from the slot */
+		fomrobject_t preservedOverlap = (fomrobject_t)forwardedHeader->getPreservedOverlap();
+		GC_SlotObject preservedSlotObject(_omrVM, &preservedOverlap);
+		omrobjectptr_t survivingCopyAddress = preservedSlotObject.readReferenceFromSlot();
+		/* Check if the address we want to read is aligned (since mis-aligned reads may still be less than a top address but extend beyond it) */
+		if (0 == ((uintptr_t)survivingCopyAddress & (extensions->getObjectAlignmentInBytes() - 1))) {
+			/* Ensure that the address we want to read is within part of the heap which could contain copied objects (tenure or survivor) */
+			void *topOfObject = (void *)((uintptr_t *)survivingCopyAddress + 1);
+			if (subSpaceNew->isObjectInNewSpace(survivingCopyAddress, topOfObject) || extensions->isOld(survivingCopyAddress, topOfObject)) {
+				/* if the slot points to a reverse-forwarded object, restore the original location (in evacuate space) */
+				MM_ForwardedHeader reverseForwardedHeader(survivingCopyAddress, OMR_OBJECT_METADATA_SLOT_OFFSET);
+				if (reverseForwardedHeader.isReverseForwardedPointer()) {
+					/* overlapped slot must be fixed up */
+					fomrobject_t fixupSlot = 0;
+					GC_SlotObject fixupSlotObject(_omrVM, &fixupSlot);
+					fixupSlotObject.writeReferenceToSlot(reverseForwardedHeader.getReverseForwardedPointer());
+					forwardedHeader->restoreDestroyedOverlap((uint32_t)fixupSlot);
+				}
+			}
+		}
+	}
 }
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
 #endif /* OMR_GC_MODRON_SCAVENGER */

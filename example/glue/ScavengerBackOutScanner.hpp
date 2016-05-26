@@ -63,6 +63,13 @@ public:
 			_scavenger->backOutFixSlotWithoutCompression((volatile omrobjectptr_t *) &rootEntry->rootPtr);
 			rootEntry = (RootEntry *)hashTableNextDo(&state);
 		}
+		ObjectEntry *objectEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
+		while (NULL != objectEntry) {
+			if (NULL != objectEntry->objPtr) {
+				_scavenger->backOutFixSlotWithoutCompression((volatile omrobjectptr_t *) &objectEntry->objPtr);
+			}
+			objectEntry = (ObjectEntry *)hashTableNextDo(&state);
+		}
 	}
 };
 

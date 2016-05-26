@@ -21,9 +21,6 @@
 
 /* Do not define FORWARDEDHEADER_DEBUG for production builds */
 #undef FORWARDEDHEADER_DEBUG
-#if defined(FORWARDEDHEADER_DEBUG)
-#include <stdlib.h>
-#endif /* defined(FORWARDEDHEADER_DEBUG) */
 
 #include "omrcfg.h"
 #include "modronbase.h"
@@ -81,10 +78,10 @@ public:
 #define ForwardedHeaderAssertCondition(condition) #condition
 #define ForwardedHeaderAssert(condition) MM_ForwardedHeader::Assert((condition), ForwardedHeaderAssertCondition(((condition))), __FILE__, __LINE__)
 	static void Assert(bool condition, const char *assertion, const char *file, uint32_t line);
-	void Dump(omrobjectptr_t destinationObjectPtr);
+	void ForwardedHeaderDump(omrobjectptr_t destinationObjectPtr);
 #else
 #define ForwardedHeaderAssert(condition)
-#define Dump(destinationObjectPtr)
+#define ForwardedHeaderDump(destinationObjectPtr)
 #endif /* defined(FORWARDEDHEADER_DEBUG) */
 
 	/**
@@ -161,7 +158,7 @@ public:
 	MMINLINE void
 	restoreDestroyedOverlap(uint32_t restoredValue)
 	{
-		((MutableHeaderFields *)((uintptr_t *)getObject() + _forwardingSlotOffset))->overlap = restoredValue;
+		((MutableHeaderFields *)((fomrobject_t *)getObject() + _forwardingSlotOffset))->overlap = restoredValue;
 	}
 
 	/**
@@ -170,7 +167,7 @@ public:
 	MMINLINE void
 	restoreDestroyedOverlap()
 	{
-		restoreDestroyedOverlap(((MutableHeaderFields *)((uintptr_t *)getForwardedObject() + _forwardingSlotOffset))->overlap);
+		restoreDestroyedOverlap(((MutableHeaderFields *)((fomrobject_t *)getForwardedObject() + _forwardingSlotOffset))->overlap);
 	}
 #endif /* defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
 
@@ -186,8 +183,11 @@ public:
 	MMINLINE void
 	fixupForwardedObject(omrobjectptr_t destinationObjectPtr)
 	{
-		volatile MutableHeaderFields* newHeader = (volatile MutableHeaderFields *)((uintptr_t *)destinationObjectPtr + _forwardingSlotOffset);
-		*(uintptr_t *)&newHeader->slot = *(uintptr_t *)&_preserved.slot;
+		MutableHeaderFields* newHeader = (MutableHeaderFields *)((fomrobject_t *)destinationObjectPtr + _forwardingSlotOffset);
+		newHeader->slot = _preserved.slot;
+#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+		newHeader->overlap = _preserved.overlap;
+#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
 	}
 
 	/**
@@ -222,13 +222,13 @@ public:
 	 * Constructor.
 	 *
 	 * @param[in] objectPtr pointer to the object, which may or may not have been forwarded
-	 * @param[in] forwardingSlotOffset uintptr_t offset to uintptr_t size slot that will hold the forwarding pointer
+	 * @param[in] forwardingSlotOffset fomrobject_t offset to uintptr_t size slot that will hold the forwarding pointer
 	 */
 	MM_ForwardedHeader(omrobjectptr_t objectPtr, uintptr_t forwardingSlotOffset)
 	: _objectPtr(objectPtr)
 	, _forwardingSlotOffset(forwardingSlotOffset)
 	{
-		volatile MutableHeaderFields* originalHeader = (volatile MutableHeaderFields *)((uintptr_t*)_objectPtr + _forwardingSlotOffset);
+		volatile MutableHeaderFields* originalHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
 		*(uintptr_t *)&_preserved.slot = *((uintptr_t *)&originalHeader->slot);
 	}
 

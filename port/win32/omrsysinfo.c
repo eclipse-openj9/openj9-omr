@@ -193,7 +193,7 @@ WIN32_WINNT version constants :
 		if (IsWindowsServer()) {
 #if defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10)
 			if (IsWindows10OrGreater()) {
-				PPG_si_osType = "Windows Server 2016 Technical Preview";
+				PPG_si_osType = "Windows Server 2016";
 			} else
 #endif /* defined(_WIN32_WINNT_WIN10) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WIN10) */
 			if (IsWindows8Point1OrGreater()) {
@@ -308,7 +308,8 @@ WIN32_WINNT version constants :
 				break;
 			}
 			case 10: {
-				if (VER_NT_WORKSTATION == versionInfo.wProductType) {
+				switch (versionInfo.wProductType) {
+				case VER_NT_WORKSTATION: {
 					switch (versionInfo.dwMinorVersion) {
 					case 0:
 						PPG_si_osType = "Windows 10";
@@ -319,7 +320,20 @@ WIN32_WINNT version constants :
 					}
 				}
 				break;
+				default: {
+					switch (versionInfo.dwMinorVersion) {
+					case 0:
+						PPG_si_osType = "Windows Server 2016";
+						break;
+					default:
+						PPG_si_osType = defaultTypeName;
+						break;
+					}
+				}
+				break;
+				}
 			}
+			break;
 			default:
 				PPG_si_osType = defaultTypeName;
 				break;

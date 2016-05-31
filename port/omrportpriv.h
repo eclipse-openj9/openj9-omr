@@ -224,6 +224,8 @@ extern J9_CFUNC int32_t
 omrfile_unlock_bytes(struct OMRPortLibrary *portLibrary, intptr_t fd, uint64_t offset, uint64_t length);
 extern J9_CFUNC intptr_t
 omrfile_convert_native_fd_to_omrfile_fd(struct OMRPortLibrary *portLibrary, intptr_t nativeFD);
+extern J9_CFUNC intptr_t
+omrfile_convert_omrfile_fd_to_native_fd(struct OMRPortLibrary *portLibrary, intptr_t nativeFD);
 
 /* J9SourceJ9File_BlockingAsyncText*/
 extern J9_CFUNC int32_t
@@ -246,6 +248,32 @@ extern J9_CFUNC int32_t
 omrfile_blockingasync_startup(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC void
 omrfile_blockingasync_shutdown(struct OMRPortLibrary *portLibrary);
+
+/* J9SourceJ9FileStream */
+extern J9_CFUNC int32_t
+omrfilestream_startup(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC void
+omrfilestream_shutdown(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC OMRFileStream *
+omrfilestream_open(struct OMRPortLibrary *portLibrary, const char *path, int32_t flags, int32_t mode);
+extern J9_CFUNC int32_t
+omrfilestream_close(struct OMRPortLibrary *portLibrary,  OMRFileStream *fileStream);
+extern J9_CFUNC intptr_t
+omrfilestream_write(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const void *buf, intptr_t nbytes);
+extern J9_CFUNC intptr_t
+omrfilestream_write_text(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *buf, intptr_t nbytes, int32_t toCode);
+extern J9_CFUNC void
+omrfilestream_vprintf(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *format, va_list args);
+extern J9_CFUNC void
+omrfilestream_printf(struct OMRPortLibrary *portLibrary, OMRFileStream *filestream, const char *format, ...);
+extern J9_CFUNC int32_t
+omrfilestream_sync(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream);
+extern J9_CFUNC int32_t
+omrfilestream_setbuffer(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, char *buffer, int32_t mode, uintptr_t size);
+extern J9_CFUNC OMRFileStream *
+omrfilestream_fdopen(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t flags);
+extern J9_CFUNC intptr_t
+omrfilestream_fileno(struct OMRPortLibrary *portLibrary, OMRFileStream *stream);
 
 /* J9SourceJ9FileText*/
 extern J9_CFUNC intptr_t

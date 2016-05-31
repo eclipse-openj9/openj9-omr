@@ -58,6 +58,29 @@ toHandle(OMRPortLibrary *portLibrary, intptr_t fd)
 	}
 }
 
+/* Convert windows file handle to a file descriptor.
+ * OMRPORT_TTY_IN, OMRPORT_TTY_OUT and OMRPORT_TTY_ERR are handled as a special case because they don't
+ * match UNIX standard stream file descriptors.
+ * @param[in] fd returned by port library functions
+ * @return windows file handle.
+ */
+static intptr_t
+fromHandle(OMRPortLibrary *portLibrary, HANDLE handle)
+{
+	if (handle == PPG_tty_consoleInputHd) {
+		return OMRPORT_TTY_IN;
+	}
+	if (handle == PPG_tty_consoleOutputHd) {
+		return OMRPORT_TTY_OUT;
+	}
+	if (handle == PPG_tty_consoleErrorHd) {
+		return OMRPORT_TTY_ERR;
+	}
+
+	return (intptr_t) handle;
+}
+
+
 /*
  * Uses the standard port_convertFromUTF8 and if the resulting unicode path is longer than the Windows defined MAX_PATH,
  * the path is converted to an absolute path and prepended with \\?\ or \\?\UNC if it is a networked path (eg. \\server\share\..)
@@ -1081,5 +1104,11 @@ omrfile_stat_filesystem(struct OMRPortLibrary *portLibrary, const char *path, ui
 intptr_t
 omrfile_convert_native_fd_to_omrfile_fd(struct OMRPortLibrary *portLibrary, intptr_t nativeFD)
 {
-	return nativeFD;
+	return fromHandle(portLibrary, (HANDLE) nativeFD);
+}
+
+intptr_t
+omrfile_convert_omrfile_fd_to_native_fd(struct OMRPortLibrary *portLibrary, intptr_t omrfileFD)
+{
+	return (intptr_t) toHandle(portLibrary, omrfileFD);
 }

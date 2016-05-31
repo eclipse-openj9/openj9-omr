@@ -93,7 +93,7 @@ omrfile_read_text(struct OMRPortLibrary *portLibrary, intptr_t fd, char *buf, in
  * @return 0 on success, negative error code on failure.
  */
 int32_t
-omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *charsetName, uintptr_t nbytes)
+omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *buf, uintptr_t nbytes)
 {
 	intptr_t result = portLibrary->file_write(portLibrary, fd, (void *)buf, nbytes);
 	return (result == nbytes) ? 0 : result;

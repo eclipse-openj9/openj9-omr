@@ -109,6 +109,8 @@ OBJECTS += omrerrorhelpers
 OBJECTS += omrexit
 OBJECTS += omrfile
 OBJECTS += omrfiletext
+OBJECTS += omrfilestream
+OBJECTS += omrfilestreamtext
 
 ifneq (win,$(OMR_HOST_OS))
   OBJECTS += omriconvhelpers

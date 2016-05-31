@@ -32,6 +32,7 @@ OBJECTS := \
   omrdumpTest \
   omrerrorTest \
   omrfileTest \
+  omrfilestreamTest \
   omrheapTest \
   omrintrospectTest \
   omrmemTest \

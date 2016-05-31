@@ -29,6 +29,7 @@
 #endif
 
 #include <stdarg.h>	/* for va_list */
+#include <stdio.h> /* For FILE */
 #include <signal.h>
 #include "omrcomp.h"
 #include "omrthread.h"
@@ -98,6 +99,15 @@
 
 #define EsIsDir 	0	/* Return values for EsFileAttr */
 #define EsIsFile 	1
+
+/* Invalid file descriptor */
+#define OMRPORT_INVALID_FD	-1
+
+/* Filestream Buffering modes */
+#define OMRPORT_FILESTREAM_FULL_BUFFERING _IOFBF
+#define OMRPORT_FILESTREAM_LINE_BUFFERING _IOLBF
+#define OMRPORT_FILESTREAM_NO_BUFFERING _IONBF
+
 /** EsMaxPath was chosen from unix MAXPATHLEN.  Override in platform
   * specific omrfile implementations if needed.
   */
@@ -267,6 +277,12 @@ typedef struct J9FileStatFilesystem {
 	uint64_t freeSizeBytes;
 	uint64_t totalSizeBytes;
 } J9FileStatFilesystem;
+
+/**
+ * A handle to a filestream.
+ * Private, platform specific implementation.
+ */
+typedef FILE OMRFileStream;
 
 /* It is the responsibility of the user to create the storage for J9PortVMemParams.
  * The structure is only needed for the lifetime of the call to omrvmem_reserve_memory_ex
@@ -593,6 +609,10 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_TTY_IN  0
 #define OMRPORT_TTY_OUT  1
 #define OMRPORT_TTY_ERR  2
+
+#define OMRPORT_STREAM_IN  stdin
+#define OMRPORT_STREAM_OUT stdout
+#define OMRPORT_STREAM_ERR stderr
 
 #define OMRPORT_CTLDATA_SIG_FLAGS  "SIG_FLAGS"
 #define OMRPORT_CTLDATA_TRACE_START  "TRACE_START"
@@ -1086,6 +1106,30 @@ typedef struct OMRPortLibrary {
 	int32_t (*file_blockingasync_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrfile.c::omrfile_blockingasync_shutdown "omrfile_blockingasync_shutdown"*/
 	void (*file_blockingasync_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrfilestream::omrfilestream_startup "filestream_startup"*/
+	int32_t ( *filestream_startup)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrfilestream::omrfilestream_shutdown "filestream_shutdown"*/
+	void ( *filestream_shutdown)(struct OMRPortLibrary *portLibrary) ;
+	/** see @ref omrfilestream::omrfilestreamm_open "filestream_open"*/
+	OMRFileStream *( *filestream_open)(struct OMRPortLibrary *portLibrary, const char *path, int32_t flags, int32_t mode) ;
+	/** see @ref omrfilestream::omrfilestream_close "filestream_close"*/
+	int32_t ( *filestream_close)(struct OMRPortLibrary *portLibrary,  OMRFileStream *fileStream) ;
+	/** see @ref omrfilestream::omrfilestream_write "filestream_write"*/
+	intptr_t ( *filestream_write)(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const void *buf, intptr_t nbytes) ;
+	/** see @ref omrfilestream::omrfilestream_write_text "filestream_write_text"*/
+	intptr_t ( *filestream_write_text)(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *buf, intptr_t nbytes, int32_t toCode) ;
+	/** see @ref omrfilestream::omrfilestream_vprintf "filestream_vprintf"*/
+	void ( *filestream_vprintf)(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *format, va_list args) ;
+	/** see @ref omrfilestream::omrfilestream_printf "filestream_printf"*/
+	void ( *filestream_printf)(struct OMRPortLibrary *portLibrary, OMRFileStream *filestream, const char *format, ...) ;
+	/** see @ref omrfilestream::omrfilestream_sync "filestream_sync"*/
+	int32_t ( *filestream_sync)(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream) ;
+	/** see @ref omrfilestream::omrfilestream_setbuffer "filestream_setbuffer"*/
+	int32_t ( *filestream_setbuffer)(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, char *buffer, int32_t mode, uintptr_t size) ;
+	/** see @ref omrfilestream::omrfilestream_fdopen "filestream_fdopen"*/
+	OMRFileStream *( *filestream_fdopen)(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t flags) ;
+	/** see @ref omrfilestream::omrfilestream_fileno "filestream_fileno"*/
+	intptr_t ( *filestream_fileno)(struct OMRPortLibrary *portLibrary, OMRFileStream *stream) ;
 	/** see @ref omrsl.c::omrsl_startup "omrsl_startup"*/
 	int32_t (*sl_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrsl.c::omrsl_shutdown "omrsl_shutdown"*/
@@ -1288,6 +1332,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*file_lock_bytes)(struct OMRPortLibrary *portLibrary, intptr_t fd, int32_t lockFlags, uint64_t offset, uint64_t length) ;
 	/** see @ref omrfile.c::omrfile_convert_native_fd_to_omrfile_fd "omrfile_convert_native_fd_to_omrfile_fd"*/
 	intptr_t (*file_convert_native_fd_to_omrfile_fd)(struct OMRPortLibrary *portLibrary, intptr_t nativeFD) ;
+	/** see @ref omrfile.c::omrfile_convert_omrfile_fd_to_native_fd "omrfile_convert_omrfile_fd_to_native_fd"*/
+	intptr_t (*file_convert_omrfile_fd_to_native_fd)(struct OMRPortLibrary *portLibrary, intptr_t omrfileFD) ;
 	/** see @ref omrfile_blockingasync.c::omrfile_blockingasync_unlock_bytes "omrfile_blockingasync_unlock_bytes"*/
 	int32_t (*file_blockingasync_unlock_bytes)(struct OMRPortLibrary *portLibrary, intptr_t fd, uint64_t offset, uint64_t length) ;
 	/** see @ref omrfile_blockingasync.c::omrfile_blockingasync_lock_bytes "omrfile_blockingasync_lock_bytes"*/
@@ -1633,6 +1679,18 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrfile_blockingasync_lock_bytes(param1,param2,param3,param4) privateOmrPortLibrary->file_blockingasync_lock_bytes(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrfile_blockingasync_set_length(param1,param2) privateOmrPortLibrary->file_blockingasync_set_length(privateOmrPortLibrary, (param1), (param2))
 #define omrfile_blockingasync_flength(param1) privateOmrPortLibrary->file_blockingasync_flength(privateOmrPortLibrary, (param1))
+#define omrfilestream_startup() privateOmrPortLibrary->filestream_startup(privatePortLibrary)
+#define omrfilestream_shutdown() privateOmrPortLibrary->filestream_shutdown(privatePortLibrary)
+#define omrfilestream_open(param1, param2, param3) privateOmrPortLibrary->filestream_open(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrfilestream_close(param1) privateOmrPortLibrary->filestream_close(privateOmrPortLibrary, (param1))
+#define omrfilestream_write(param1, param2, param3) privateOmrPortLibrary->filestream_write(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrfilestream_write_text(param1, param2, param3, param4) privateOmrPortLibrary->filestream_write_text(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
+#define omrfilestream_vprintf(param1, param2, param3) privateOmrPortLibrary->filestream_vprintf(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrfilestream_printf(...) privateOmrPortLibrary->filestream_printf(privateOmrPortLibrary, __VA_ARGS__)
+#define omrfilestream_sync(param1) privateOmrPortLibrary->filestream_sync(privateOmrPortLibrary, param1)
+#define omrfilestream_setbuffer(param1, param2, param3, param4) privateOmrPortLibrary->filestream_setbuffer(privateOmrPortLibrary, param1, param2, param3, param4)
+#define omrfilestream_fdopen(param1, param2) privateOmrPortLibrary->filestream_fdopen(privateOmrPortLibrary, param1, param2)
+#define omrfilestream_fileno(param1) privateOmrPortLibrary->filestream_fileno(privateOmrPortLibrary, param1)
 #define omrsl_startup() privateOmrPortLibrary->sl_startup(privateOmrPortLibrary)
 #define omrsl_shutdown() privateOmrPortLibrary->sl_shutdown(privateOmrPortLibrary)
 #define omrsl_close_shared_library(param1) privateOmrPortLibrary->sl_close_shared_library(privateOmrPortLibrary, (param1))
@@ -1733,6 +1791,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrfile_unlock_bytes(param1,param2,param3) privateOmrPortLibrary->file_unlock_bytes(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrfile_lock_bytes(param1,param2,param3,param4) privateOmrPortLibrary->file_lock_bytes(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrfile_convert_native_fd_to_omrfile_fd(param1) privateOmrPortLibrary->file_convert_native_fd_to_omrfile_fd(privateOmrPortLibrary, (param1))
+#define omrfile_convert_omrfile_fd_to_native_fd(param1) privateOmrPortLibrary->file_convert_omrfile_fd_to_native_fd(privateOmrPortLibrary,param1)
 #define omrstr_ftime(param1,param2,param3,param4) privateOmrPortLibrary->str_ftime(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrmmap_startup() privateOmrPortLibrary->mmap_startup(privateOmrPortLibrary)
 #define omrmmap_shutdown() privateOmrPortLibrary->mmap_shutdown(privateOmrPortLibrary)

@@ -109,6 +109,18 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrfile_blockingasync_flength, /* file_blockingasync_flength */
 	omrfile_blockingasync_startup, /* file_blockingasync_startup */
 	omrfile_blockingasync_shutdown, /* file_blockingasync_shutdown */
+	omrfilestream_startup, /* filestream_startup */
+	omrfilestream_shutdown, /* filestream_shutdown */
+	omrfilestream_open, /* filestream_open */
+	omrfilestream_close, /* filestream_close */
+	omrfilestream_write, /* filestream_write */
+	omrfilestream_write_text, /* filestream_write_text */
+	omrfilestream_vprintf, /* filestream_vprintf */
+	omrfilestream_printf, /* filestream_printf */
+	omrfilestream_sync, /* filestream_sync */
+	omrfilestream_setbuffer, /* filestream_setbuffer */
+	omrfilestream_fdopen, /* filestream_fdopen */
+	omrfilestream_fileno, /* filestream_fileno */
 	omrsl_startup, /* sl_startup */
 	omrsl_shutdown, /* sl_shutdown */
 	omrsl_close_shared_library, /* sl_close_shared_library */
@@ -215,6 +227,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrfile_unlock_bytes, /* file_unlock_bytes */
 	omrfile_lock_bytes, /* file_lock_bytes */
 	omrfile_convert_native_fd_to_omrfile_fd, /* file_convert_native_fd_to_omrfile_fd */
+	omrfile_convert_omrfile_fd_to_native_fd,
 	omrfile_blockingasync_unlock_bytes, /* file_blockingasync_unlock_bytes */
 	omrfile_blockingasync_lock_bytes, /* file_blockingasync_lock_bytes */
 	omrstr_ftime, /* str_ftime */

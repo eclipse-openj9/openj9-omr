@@ -29,8 +29,8 @@ MODULE_INCLUDES += ../base ../base/standard ../include ../stats ../structs ../ve
 
 ifeq (linux,$(OMR_HOST_OS))
   ifeq (x86,$(OMR_HOST_ARCH))
-    MODULE_CFLAGS += -fpeel-loops
-    MODULE_CXXFLAGS += -fpeel-loops
+    MODULE_CFLAGS += -funroll-loops
+    MODULE_CXXFLAGS += -funroll-loops
   endif
 endif
 

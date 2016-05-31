@@ -25,14 +25,6 @@
 
 MM_EnvironmentLanguageInterfaceImpl::MM_EnvironmentLanguageInterfaceImpl(MM_EnvironmentBase *env)
 	: MM_EnvironmentLanguageInterface(env)
-	,_portLibrary(env->getPortLibrary())
-	,_env(env)
-	,_exclusiveCount(0)
-	,_exclusiveAccessTime(0)
-	,_meanExclusiveAccessIdleTime(0)
-	,_lastExclusiveAccessResponder(NULL)
-	,_exclusiveAccessHaltedThreads(0)
-	,_exclusiveAccessBeatenByOtherThread(false)
 {
 	_typeId = __FUNCTION__;
 };
@@ -40,18 +32,18 @@ MM_EnvironmentLanguageInterfaceImpl::MM_EnvironmentLanguageInterfaceImpl(MM_Envi
 MM_EnvironmentLanguageInterfaceImpl *
 MM_EnvironmentLanguageInterfaceImpl::newInstance(MM_EnvironmentBase *env)
 {
-	MM_EnvironmentLanguageInterfaceImpl *eliJava = NULL;
+	MM_EnvironmentLanguageInterfaceImpl *eli = NULL;
 
-	eliJava = (MM_EnvironmentLanguageInterfaceImpl *)env->getForge()->allocate(sizeof(MM_EnvironmentLanguageInterfaceImpl), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
-	if (NULL != eliJava) {
-		new(eliJava) MM_EnvironmentLanguageInterfaceImpl(env);
-		if (!eliJava->initialize(env)) {
-        	eliJava->kill(env);
-        	eliJava = NULL;
+	eli = (MM_EnvironmentLanguageInterfaceImpl *)env->getForge()->allocate(sizeof(MM_EnvironmentLanguageInterfaceImpl), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	if (NULL != eli ) {
+		new(eli) MM_EnvironmentLanguageInterfaceImpl(env);
+		if (!eli ->initialize(env)) {
+			eli->kill(env);
+			eli = NULL;
 		}
 	}
 
-	return eliJava;
+	return eli;
 }
 
 void
@@ -77,130 +69,6 @@ MM_EnvironmentLanguageInterfaceImpl::initialize(MM_EnvironmentBase *env)
 void
 MM_EnvironmentLanguageInterfaceImpl::tearDown(MM_EnvironmentBase *env)
 {
-}
-
-/**
- * Try and acquire exclusive access if no other thread is already requesting it.
- * Make an attempt at acquiring exclusive access if the current thread does not already have it.  The
- * attempt will abort if another thread is already going for exclusive, which means this
- * call can return without exclusive access being held.  As well, this call will block for any other
- * requesting thread, and so should be treated as a safe point.
- * @note call can release VM access.
- * @return true if exclusive access was acquired, false otherwise.
- */
-bool
-MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveVMAccess()
-{
-	if (0 == _exclusiveCount) {
-		_exclusiveCount = 1;
-		_env->getOmrVMThread()->exclusiveCount = 1;
-		reportExclusiveAccessAcquire();
-	} else {
-		_exclusiveCount += 1;
-	}
-	return true;
-}
-
-/**
- * Checks to see if the thread has exclusive access
- * @return true if the thread has exclusive access, false if not.
- */
-bool
-MM_EnvironmentLanguageInterfaceImpl::inquireExclusiveVMAccessForGC()
-{
-	return (_exclusiveCount > 0);
-}
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-bool
-MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveForConcurrentKickoff(MM_ConcurrentGCStats *stats)
-{
-	Assert_MM_unreachable();
-	return true;
-}
-
-void
-MM_EnvironmentLanguageInterfaceImpl::releaseExclusiveForConcurrentKickoff()
-{
-	Assert_MM_unreachable();
-	return;
-}
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
-
-bool
-MM_EnvironmentLanguageInterfaceImpl::tryAcquireExclusiveVMAccessForGC(MM_Collector *collector)
-{
-	if (0 == _exclusiveCount) {
-		_exclusiveCount = 1;
-		_env->getOmrVMThread()->exclusiveCount = 1;
-		reportExclusiveAccessAcquire();
-	} else {
-		_exclusiveCount += 1;
-	}
-	collector->incrementExclusiveAccessCount();
-	return true;
-}
-
-bool
-MM_EnvironmentLanguageInterfaceImpl::acquireExclusiveVMAccessForGC(MM_Collector *collector)
-{
-	if (0 == _exclusiveCount) {
-		_exclusiveCount = 1;
-		_env->getOmrVMThread()->exclusiveCount = 1;
-		reportExclusiveAccessAcquire();
-	} else {
-		_exclusiveCount += 1;
-	}
-	collector->incrementExclusiveAccessCount();
-	return true;
-}
-
-void
-MM_EnvironmentLanguageInterfaceImpl::releaseExclusiveVMAccessForGC()
-{
-	_exclusiveCount -= 1;
-	if (0 == _exclusiveCount) {
-		_env->getOmrVMThread()->exclusiveCount = 0;
-		reportExclusiveAccessRelease();
-	}
-}
-
-void
-MM_EnvironmentLanguageInterfaceImpl::unwindExclusiveVMAccessForGC()
-{
-	if (_exclusiveCount > 0) {
-		_exclusiveCount = 0;
-		_env->getOmrVMThread()->exclusiveCount = 0;
-		reportExclusiveAccessRelease();
-	}
-}
-
-/**
- * Aquires exclusive VM access
- */
-void
-MM_EnvironmentLanguageInterfaceImpl::acquireExclusiveVMAccess()
-{
-	if (0 == _exclusiveCount) {
-		_exclusiveCount = 1;
-		_env->getOmrVMThread()->exclusiveCount = 1;
-		reportExclusiveAccessAcquire();
-	} else {
-		_exclusiveCount += 1;
-	}
-}
-
-/**
- * Releases exclusive VM access.
- */
-void
-MM_EnvironmentLanguageInterfaceImpl::releaseExclusiveVMAccess()
-{
-	_exclusiveCount -= 1;
-	if (0 == _exclusiveCount) {
-		_env->getOmrVMThread()->exclusiveCount = 0;
-		reportExclusiveAccessRelease();
-	}
 }
 
 bool

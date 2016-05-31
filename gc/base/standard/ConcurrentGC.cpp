@@ -1125,11 +1125,11 @@ MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID)
 		if (CONCURRENT_HELPER_SHUTDOWN == request) {
 			continue;
 		}
-		env->_envLanguageInterface->acquireVMAccess(env);
+		env->acquireVMAccess();
 
 		request = getConHelperRequest();
 		if (CONCURRENT_HELPER_MARK != request) {
-			env->_envLanguageInterface->releaseVMAccess(env);
+			env->releaseVMAccess();
 			continue;
 		}
 
@@ -1193,7 +1193,7 @@ MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID)
 		Assert_MM_true(CONCURRENT_HELPER_MARK != request);
 
 		reportConcurrentBackgroundThreadFinished(env, totalScanned);
-		env->_envLanguageInterface->releaseVMAccess(env);
+		env->releaseVMAccess();
 	} // end while (SHUTDOWN != request)
 	
 	/*
@@ -2803,7 +2803,7 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentStandard *env, MM_Memor
 	/* Switch to FINAL_COLLECTION; if we fail another thread beat us to it so just return */
 	if	(_stats->switchExecutionMode(CONCURRENT_EXHAUSTED, CONCURRENT_FINAL_COLLECTION)) {
 
-		if(env->_envLanguageInterface->tryAcquireExclusiveVMAccessForGC(this)) {
+		if(env->tryAcquireExclusiveVMAccessForGC(this)) {
 			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 			/* We got exclusive control first so do collection */
 			reportConcurrentCollectionStart(env);
@@ -2811,7 +2811,7 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentStandard *env, MM_Memor
 			garbageCollect(env, subSpace, NULL, J9MMCONSTANT_IMPLICIT_GC_DEFAULT, NULL, NULL, NULL);
 			reportConcurrentCollectionEnd(env, omrtime_hires_clock() - startTime);
 
-			env->_envLanguageInterface->releaseExclusiveVMAccessForGC();
+			env->releaseExclusiveVMAccessForGC();
 		}
 
 		return true;
@@ -2984,7 +2984,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
 	/* Ensure caller acquired exclusive VM access before calling */
-	Assert_MM_true(env->_envLanguageInterface->inquireExclusiveVMAccessForGC());
+	Assert_MM_true(env->inquireExclusiveVMAccessForGC());
 
 	/* Set flag to show global collector is active; some operations need to know if they
 	 * are called during a global collect or not, eg heapAddRange

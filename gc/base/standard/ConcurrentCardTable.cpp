@@ -428,7 +428,7 @@ MM_ConcurrentCardTable::heapReconfigured(MM_EnvironmentStandard *env)
  * @return reference to MM_ConcurrentCardTable object or NULL
  */
 MM_ConcurrentCardTable *
-MM_ConcurrentCardTable::newInstance(MM_EnvironmentStandard *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector)
+MM_ConcurrentCardTable::newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector)
 {
 	MM_ConcurrentCardTable *cardTable = (MM_ConcurrentCardTable *)env->getForge()->allocate(sizeof(MM_ConcurrentCardTable), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != cardTable) {
@@ -876,7 +876,7 @@ MM_ConcurrentCardTable::cleanCards(MM_EnvironmentStandard *env, bool isMutator, 
 		 * relieve work stack overflow we empty packets by dirtying cards for their referenced
 		 * objects. Therefore we cannot be sure tracing into all active TLH's will be deferred.
 		 */
-		if (isCardInActiveTLH(env,nextDirtyCard) && !(_extensions->collectorLanguageInterface->concurrentGC_hasConcurrentOverflowOcurred())) {
+		if (isCardInActiveTLH(env,nextDirtyCard) && !(_extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getConcurrentWorkStackOverflowOcurred())) {
 			continue;
 		}
 
@@ -982,7 +982,7 @@ MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentStandard *env, Card *card,
 		 * objects. Therefore we cannot be sure all tracing into this particular TLH will be
 		 * deferred.
 		*/
-		if (isObjectInActiveTLH(env,objectPtr) && !(_extensions->collectorLanguageInterface->concurrentGC_hasConcurrentOverflowOcurred())) {
+		if (isObjectInActiveTLH(env,objectPtr) && !(_extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getConcurrentWorkStackOverflowOcurred())) {
 			return true;
 		}
 
@@ -1163,7 +1163,7 @@ MM_ConcurrentCardTable::processTLHMarkBits(MM_EnvironmentStandard *env, MM_Memor
 		 * to be cleared later (rather than cleaned). We would not then retrace
 		 * objects in that card and refernces may be missed.
 		 */
-		if ((CLEAR == action) && !_extensions->collectorLanguageInterface->concurrentGC_hasConcurrentOverflowOcurred()) {
+		if ((CLEAR == action) && !(_extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getConcurrentWorkStackOverflowOcurred())) {
 			clearCardsInRange(env,base,top);
 
 			/* Need a store barrier here so that all cards are cleared BEFORE we reset

@@ -35,9 +35,22 @@
 #include "omr.h"
 #include "omrvm.h"
 #include "OMRVMInterface.hpp"
-#include "ScanClassesMode.hpp"
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
+
+/* This enum extends ConcurrentStatus with values > CONCURRENT_ROOT_TRACING. Values from this
+ * and from ConcurrentStatus are treated as uintptr_t values everywhere except when used as
+ * case labels in switch() statements where manifest constants are required.
+ * 
+ * ConcurrentStatus extensions allow the client language to define discrete units of work
+ * that can be executed in parallel by concurrent threads. ConcurrentGC will call 
+ * MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(..., concurrentStatus, ...)
+ * only once with each client-defined status value. The thread that receives the call
+ * can check the concurrentStatus value to select and execute the appropriate unit of work.
+ */
+enum {
+	CONCURRENT_ROOT_TRACING1 = ((uintptr_t)((uintptr_t)CONCURRENT_ROOT_TRACING + 1))
+};
 
 /**
  * Initialization
@@ -160,23 +173,6 @@ MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMT
 }
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
-void
-MM_CollectorLanguageInterfaceImpl::generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject)
-{
-	GC_SlotObject slotObject(omrThread->_vm, parentSlot);
-	slotObject.writeReferenceToSlot(childObject);
-	MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)omrThread->_vm->_gcOmrVMExtensions;
-	if (extensions->scavengerEnabled) {
-		if (extensions->isOld(parentObject) && extensions->scavenger->isObjectInNewSpace(childObject)) {
-			if (extensions->objectModel.atomicSetRemembered(parentObject)) {
-				/* The object has been successfully marked as REMEMBERED - allocate an entry in the remembered set */
-				MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(omrThread);
-				extensions->scavenger->addToRememberedSetFragment(env, parentObject);
-			}
-		}
-	}
-}
-
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
 {
@@ -341,28 +337,34 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_createSafepointCallback(MM_Envir
 }
 
 uintptr_t
-MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStandard *env, ConcurrentStatus concurrentStatus, MM_ScanClassesMode *scanClassesMode, bool &collectedRoots, bool &paidTax)
+MM_CollectorLanguageInterfaceImpl::concurrentGC_getNextTracingMode(uintptr_t executionMode)
+{
+	uintptr_t nextExecutionMode = CONCURRENT_TRACE_ONLY;
+	switch (executionMode) {
+	case CONCURRENT_ROOT_TRACING:
+		nextExecutionMode = CONCURRENT_ROOT_TRACING1;
+		break;
+	case CONCURRENT_ROOT_TRACING1:
+		nextExecutionMode = CONCURRENT_TRACE_ONLY;
+		break;
+	default:
+		Assert_MM_unreachable();
+	}
+
+	return nextExecutionMode;
+}
+
+uintptr_t
+MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStandard *env, uintptr_t concurrentStatus, bool *collectedRoots, bool *paidTax)
 {
 	uintptr_t bytesScanned = 0;
-	collectedRoots = true;
-	paidTax = true;
+	*collectedRoots = true;
+	*paidTax = true;
 
 	switch (concurrentStatus) {
 	case CONCURRENT_ROOT_TRACING1:
-		break;
-	case CONCURRENT_ROOT_TRACING2:
 		markingScheme_scanRoots(env);
 		break;
-	case CONCURRENT_ROOT_TRACING3:
-		break;
-	case CONCURRENT_ROOT_TRACING4:
-		break;
-	case CONCURRENT_ROOT_TRACING5:
-		break;
-#if defined(OMR_GC_DYNAMIC_CLASS_UNLOADING)
-	case CONCURRENT_TRACE_ONLY:
-		break;
-#endif /* OMR_GC_DYNAMIC_CLASS_UNLOADING */
 	default:
 		Assert_MM_unreachable();
 	}

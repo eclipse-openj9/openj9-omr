@@ -19,6 +19,13 @@
 #if !defined(CONCURRENTGCSTATS_HPP_)
 #define CONCURRENTGCSTATS_HPP_
 
+#undef CONCURRENT_EXECUTION_MODE_DEBUG
+	
+#if defined(CONCURRENT_EXECUTION_MODE_DEBUG)
+#include <stdio.h>
+#include <stdlib.h>
+#endif /* CONCURRENT_EXECUTION_MODE_DEBUG */
+
 #include "omrcomp.h"
 #include "omrport.h"
 #include "modronbase.h"
@@ -26,7 +33,9 @@
 
 #include "AtomicOperations.hpp"
 #include "Base.hpp"
-	
+
+class MM_EnvironmentBase;
+
 /**
  * @todo Provide class documentation
  * @ingroup GC_Stats
@@ -34,7 +43,7 @@
 class MM_ConcurrentGCStats : public MM_Base 
 {
 	volatile uintptr_t _executionMode;
-	ConcurrentStatus _executionModeAtGC;
+	uintptr_t _executionModeAtGC;
 	
 	uintptr_t _initWorkRequired;
 	uintptr_t _traceSizeTarget;
@@ -71,31 +80,29 @@ class MM_ConcurrentGCStats : public MM_Base
 	ConcurrentCardCleaningReason _cardCleaningReason; /**< a constant indicating why card cleaning was kicked off */
 	
 public:
-	MMINLINE ConcurrentStatus  getExecutionMode() { return (ConcurrentStatus)_executionMode; };
+	static const char* getConcurrentStatusString(MM_EnvironmentBase *env, uintptr_t status, char *statusBuffer, uintptr_t statusBufferLength);
+	MMINLINE uintptr_t  getExecutionMode() { return _executionMode; };
 
-	MMINLINE bool concurrentMarkNotStarted() { return (_executionMode == CONCURRENT_OFF); };
-	MMINLINE bool concurrentMarkInProgress() 
-	{ 
-		if (_executionMode > CONCURRENT_OFF) {
+	MMINLINE bool concurrentMarkNotStarted() { return (_executionMode == CONCURRENT_OFF); }
+	MMINLINE bool concurrentMarkInProgress() { return (_executionMode > CONCURRENT_OFF); }
+	
+	MMINLINE bool switchExecutionMode(uintptr_t oldMode, uintptr_t newMode)
+	{
+		if (oldMode == MM_AtomicOperations::lockCompareExchange(&_executionMode, oldMode, newMode)) {
+#if defined(CONCURRENT_EXECUTION_MODE_DEBUG)
+			fprintf(stderr, "+++ MM_ConcurrentGCStats::switchExecutionMode: %d -> %d\n", (int) oldMode, (int) newMode);
+#endif /* CONCURRENT_EXECUTION_MODE_DEBUG */
 			return true;
 		} else {
+#if defined(CONCURRENT_EXECUTION_MODE_DEBUG)
+			fprintf(stderr, "--- MM_ConcurrentGCStats::switchExecutionMode: %d -> %d [%d]\n", (int) oldMode, (int) newMode, (int) _executionMode);
+#endif /* CONCURRENT_EXECUTION_MODE_DEBUG */
 			return false;
-		}		
-	}	
+		}
+	}
 	
-	MMINLINE bool switchExecutionMode(ConcurrentStatus oldMode, ConcurrentStatus newMode) 
-	{
-		if (oldMode == (ConcurrentStatus)MM_AtomicOperations::lockCompareExchange(&_executionMode,
-																   (uintptr_t)oldMode, 
-																   (uintptr_t)newMode)) {
-			return true;
-		} else 	{
-			return false;
-		}	
-	};
-	
-	MMINLINE ConcurrentStatus  getExecutionModeAtGC() { return _executionModeAtGC; };
-	MMINLINE void  setExecutionModeAtGC(ConcurrentStatus executionMode) { _executionModeAtGC= executionMode; };
+	MMINLINE uintptr_t  getExecutionModeAtGC() { return _executionModeAtGC; };
+	MMINLINE void  setExecutionModeAtGC(uintptr_t executionMode) { _executionModeAtGC = executionMode; };
 	
 	/* Getter and setter methods for concurrent statistics */
 	MMINLINE uintptr_t getKickoffThreshold() { return _kickoffThreshold; };
@@ -208,7 +215,7 @@ public:
 	MMINLINE void incThreadsScannedCount() { incrementCount((uintptr_t*)&_threadsScannedCount, 1); };
 	MMINLINE uintptr_t getThreadsScannedCount() { return _threadsScannedCount; };
 	
-	MMINLINE bool isRootTracingComplete() { return (_completedModes & CONCURRENT_ROOT_TRACING_ALL) == CONCURRENT_ROOT_TRACING_ALL; };
+	MMINLINE bool isRootTracingComplete() { return (_completedModes & CONCURRENT_ROOT_TRACING) == CONCURRENT_ROOT_TRACING; };
 	MMINLINE void setModeComplete(ConcurrentStatus mode) {
 		uint32_t mask = (uint32_t)1 << mode;
 		uint32_t currentValue = _completedModes;

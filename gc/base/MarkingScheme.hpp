@@ -24,6 +24,7 @@
 
 #include "BaseVirtual.hpp"
 
+#include "CollectorLanguageInterface.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MarkMap.hpp"

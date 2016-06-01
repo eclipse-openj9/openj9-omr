@@ -22,16 +22,13 @@
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
 #include "modronopt.h"
+#include "omrmodroncore.h"
 
 #include "CycleState.hpp"
 #include "ParallelTask.hpp"
 
 class MM_Dispatcher;
 class MM_EnvironmentBase;
-
-//todo: dagar - should we be using J9VMSTATE here? find a better home for this
-#define J9VMSTATE_GC 0x20000
-#define J9VMSTATE_GC_SCAVENGE (J9VMSTATE_GC | 0x000F)
 
 /**
  * @todo Provide class documentation

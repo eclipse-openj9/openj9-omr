@@ -195,7 +195,7 @@ protected:
 	 */
 	virtual void updateTuningStatistics(MM_EnvironmentBase *env) { }
 
-	virtual void reportGCCycleStart(MM_EnvironmentBase *env);
+	void reportGCCycleStart(MM_EnvironmentBase *env);
 	void reportGCCycleEnd(MM_EnvironmentBase *env);
 	void reportGCCycleFinalIncrementEnding(MM_EnvironmentBase *env);
 	void reportGCStart(MM_EnvironmentBase *env);

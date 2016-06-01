@@ -73,7 +73,6 @@ protected:
 	virtual void handleConcurrentTracingEndInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentKickoffInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual const char* getConcurrentKickoffReason(void *eventData);
-	const char* getConcurrentStatusString(ConcurrentStatus status);
 	virtual void handleConcurrentHaltedInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentCollectionStartInternal(MM_EnvironmentBase *env, void* eventData);
 	virtual void handleConcurrentCollectionEndInternal(MM_EnvironmentBase *env, void* eventData);

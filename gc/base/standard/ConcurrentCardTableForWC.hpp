@@ -53,7 +53,7 @@ class MM_ConcurrentCardTableForWC : public MM_ConcurrentCardTable
 	bool _cardTablePreparedForCleaning;
 	MM_ConcurrentSafepointCallback *_callback;
 	
-	bool initialize(MM_EnvironmentStandard *env, MM_Heap *heap);
+	bool initialize(MM_EnvironmentBase *env, MM_Heap *heap);
 	virtual void tearDown(MM_EnvironmentBase *env);
 		
 	virtual	void prepareCardsForCleaning(MM_EnvironmentStandard *env);
@@ -76,7 +76,7 @@ class MM_ConcurrentCardTableForWC : public MM_ConcurrentCardTable
 	
 	
 public:
-	static MM_ConcurrentCardTable	*newInstance(MM_EnvironmentStandard *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector);
+	static MM_ConcurrentCardTable	*newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector);
 	
 	void prepareCardTableChunk(MM_EnvironmentStandard *env, Card *chunkStart, Card *chunkEnd, CardAction action);
 	virtual void initializeFinalCardCleaning(MM_EnvironmentStandard *env);
@@ -87,7 +87,7 @@ public:
 	 * as we know such cards are sure to be cleaned in future either after a STW card table 
 	 * prepare phase or during FCC.
 	 */  
-	MMINLINE virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t *object)
+	MMINLINE virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object)
 	{
 		return false;	
 	}
@@ -95,7 +95,7 @@ public:
 	/**
 	 * Create a CardTableForWC object.
 	 */
-	MM_ConcurrentCardTableForWC(MM_EnvironmentStandard *env, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector):
+	MM_ConcurrentCardTableForWC(MM_EnvironmentBase *env, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector):
 		MM_ConcurrentCardTable(env, markingScheme, collector),
 		_cardTablePreparedForCleaning(false)
 		,_callback(NULL)

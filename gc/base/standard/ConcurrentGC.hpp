@@ -32,9 +32,6 @@
 #include "CycleState.hpp"
 #include "EnvironmentStandard.hpp"
 #include "ParallelGlobalGC.hpp"
-#if defined(OMR_GC_DYNAMIC_CLASS_UNLOADING)
-#include "ScanClassesMode.hpp"
-#endif
 
 extern "C" {
 int con_helper_thread_proc(void *info);
@@ -272,7 +269,6 @@ private:
 
 protected:
 	MM_ConcurrentSafepointCallback *_callback;
-	MM_ScanClassesMode _scanClassesMode;
 	MM_ConcurrentGCStats *_stats;
 public:
 	
@@ -312,11 +308,6 @@ private:
 	uintptr_t doConcurrentInitialization(MM_EnvironmentStandard *env, uintptr_t initToDo);
 	uintptr_t doConcurrentTrace(MM_EnvironmentStandard *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool tlhAllocation);
 
-#if defined(OMR_GC_DYNAMIC_CLASS_UNLOADING)
-	virtual uintptr_t concurrentClassMark(MM_EnvironmentStandard *env, bool &completedClassMark) { Assert_MM_unreachable(); return 0;}
-#endif	/* OMR_GC_DYNAMIC_CLASS_UNLOADING */
-
-	const char *getScanClassesModeAsString();
 	bool tracingRateDropped(MM_EnvironmentStandard *env);
 #if defined(OMR_GC_MODRON_SCAVENGER)	
 	uintptr_t potentialFreeSpace(MM_EnvironmentStandard *env, MM_AllocateDescription *allocDescription);
@@ -350,7 +341,7 @@ private:
 	 * @param env current thread environment
 	 * @return true if table is created
 	 */
-	bool createCardTable(MM_EnvironmentStandard *env);
+	bool createCardTable(MM_EnvironmentBase *env);
 
 	void clearConcurrentWorkStackOverflow(MM_EnvironmentStandard *env);
 
@@ -382,18 +373,17 @@ private:
 	ConHelperRequest getConHelperRequest();
 
 protected:
-	bool initialize(MM_EnvironmentStandard *env);
-	void tearDown(MM_EnvironmentStandard *env);
+	bool initialize(MM_EnvironmentBase *env);
+	void tearDown(MM_EnvironmentBase *env);
 
 	void concurrentMark(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace,  MM_AllocateDescription *allocDescription);
 	virtual void internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 	virtual void internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace);
-	virtual void reportGCCycleStart(MM_EnvironmentStandard *env);
 
 public:
 	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_COLLECTOR_CONCURRENTGC; };
 
-	static 	MM_ConcurrentGC *newInstance(MM_EnvironmentStandard *env, MM_CollectorLanguageInterface *cli);
+	static 	MM_ConcurrentGC *newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli);
 	virtual void kill(MM_EnvironmentBase *env);
 	
 	virtual void postMark(MM_EnvironmentBase *envModron);
@@ -476,7 +466,7 @@ public:
 
 	void concurrentWorkStackOverflow();
 	
-	MM_ConcurrentGC(MM_EnvironmentStandard *env, MM_CollectorLanguageInterface *cli) :
+	MM_ConcurrentGC(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli) :
 		MM_ParallelGlobalGC(env, cli)
 		,_cardTable(NULL)
 		,_heapBase(NULL)

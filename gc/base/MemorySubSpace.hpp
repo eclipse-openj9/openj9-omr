@@ -48,6 +48,12 @@ typedef enum {
 	MODRON_COUNTER_BALANCE_TYPE_EXPAND
 } ModronCounterBalanceType;
 
+extern "C" {
+/**
+ */
+void memorySubSpaceAsyncCallbackHandler(OMR_VMThread *omrVMThread);
+}
+
 /**
  * @todo Provide class documentation
  * @ingroup GC_Base_Core

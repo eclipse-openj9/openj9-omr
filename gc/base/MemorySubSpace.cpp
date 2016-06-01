@@ -50,6 +50,25 @@
 
 class MM_EnvironmentBase;
 
+extern "C" {
+
+void
+memorySubSpaceAsyncCallbackHandler(OMR_VMThread *omrVMThread)
+{
+	/* TODO: MultiMemorySpace - This is really once for every collector in the system */
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
+	if(!env->isThreadScanned()) {
+		MM_MemorySpace *defaultMemorySpace =  env->getExtensions()->heap->getDefaultMemorySpace();
+		MM_MemorySubSpace *memorySubSpaceList = defaultMemorySpace->getMemorySubSpaceList();
+		while(memorySubSpaceList) {
+			memorySubSpaceList->getCollector()->scanThread(env);
+			memorySubSpaceList = memorySubSpaceList->getNext();
+		}
+	}
+}
+
+} /* extern "C" */
+
 void
 MM_MemorySubSpace::reportSystemGCStart(MM_EnvironmentBase* env, uint32_t gcCode)
 {

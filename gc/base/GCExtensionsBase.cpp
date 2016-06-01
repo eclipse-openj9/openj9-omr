@@ -24,6 +24,7 @@
 #include "omrmemcategories.h"
 #include "modronbase.h"
 
+#include "CollectorLanguageInterface.hpp"
 #include "EnvironmentBase.hpp"
 
 MM_GCExtensionsBase*

@@ -27,6 +27,7 @@
 #include <stdlib.h> 
 
 #include "AtomicOperations.hpp" 
+#include "CollectorLanguageInterface.hpp"
 #include "ConcurrentCardTableForWC.hpp"
 #include "ConcurrentPrepareCardTableTask.hpp"
 #include "Debug.hpp"
@@ -43,7 +44,7 @@
  * @return reference to new MM_ConcurrentCardTableForWC object or NULL
  */
 MM_ConcurrentCardTable *
-MM_ConcurrentCardTableForWC::newInstance(MM_EnvironmentStandard *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector)
+MM_ConcurrentCardTableForWC::newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector)
 {
 	MM_ConcurrentCardTableForWC *cardTable;
 	
@@ -66,7 +67,7 @@ MM_ConcurrentCardTableForWC::newInstance(MM_EnvironmentStandard *env, MM_Heap *h
  * @return TRUE if object initialized OK; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTableForWC::initialize(MM_EnvironmentStandard *env, MM_Heap *heap)
+MM_ConcurrentCardTableForWC::initialize(MM_EnvironmentBase *env, MM_Heap *heap)
 {
 	/* First call super class initialize */
 	if (!MM_ConcurrentCardTable::initialize(env, heap)) {

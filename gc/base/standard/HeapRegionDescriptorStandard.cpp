@@ -19,6 +19,7 @@
 #include "omrcfg.h"
 #include "ModronAssertions.h"
 
+#include "CollectorLanguageInterface.hpp"
 #include "EnvironmentStandard.hpp"
 #include "HeapRegionDescriptorStandard.hpp"
 

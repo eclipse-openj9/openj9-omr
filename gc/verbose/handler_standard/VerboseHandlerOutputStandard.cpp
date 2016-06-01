@@ -20,6 +20,7 @@
 #include "gcutils.h"
 
 #include "CollectionStatisticsStandard.hpp"
+#include "ConcurrentGCStats.hpp"
 #include "CycleState.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -654,61 +655,16 @@ MM_VerboseHandlerOutputStandard::handleConcurrentHalted(J9HookInterface** hook, 
 	exitAtomicReportingBlock();
 }
 
-const char*
-MM_VerboseHandlerOutputStandard::getConcurrentStatusString(ConcurrentStatus status)
-{
-	const char* statusString = NULL;
-	switch (status) {
-		case CONCURRENT_OFF:
-			statusString = "off";
-			break;
-		case CONCURRENT_INIT_RUNNING:
-			statusString = "init running";
-			break;
-		case CONCURRENT_INIT_COMPLETE:
-			statusString = "init complete";
-			break;
-		case CONCURRENT_ROOT_TRACING1:
-			return "root tracing1";
-			break;
-		case CONCURRENT_ROOT_TRACING2:
-			statusString = "root tracing2";
-			break;
-		case CONCURRENT_ROOT_TRACING3:
-			statusString = "root tracing3";
-			break;
-		case CONCURRENT_ROOT_TRACING4:
-			statusString = "root tracing4";
-			break;
-		case CONCURRENT_ROOT_TRACING5:
-			statusString = "root tracing5";
-			break;
-		case CONCURRENT_TRACE_ONLY:
-			statusString = "trace only";
-			break;
-		case CONCURRENT_CLEAN_TRACE:
-			statusString = "clean trace";
-			break;
-		case CONCURRENT_EXHAUSTED:
-			statusString = "exhausted";
-			break;
-		case CONCURRENT_FINAL_COLLECTION:
-			statusString = "final collection";
-			break;
-		default:
-			statusString = "unknown";
-			break;
-	}
-	return statusString;
-}
-
 void
 MM_VerboseHandlerOutputStandard::handleConcurrentHaltedInternal(MM_EnvironmentBase *env, void* eventData)
 {
 	MM_ConcurrentHaltedEvent* event = (MM_ConcurrentHaltedEvent*)eventData;
 	MM_VerboseManager* manager = getManager();
 	MM_VerboseWriterChain* writer = manager->getWriterChain();
-	const char* statusString = getConcurrentStatusString((ConcurrentStatus)event->executionMode);
+#define CONCURRENT_STATUS_BUFFER_LENGTH 32
+	char statusBuffer[CONCURRENT_STATUS_BUFFER_LENGTH];
+	const char* statusString = MM_ConcurrentGCStats::getConcurrentStatusString(env, event->executionMode, statusBuffer, CONCURRENT_STATUS_BUFFER_LENGTH);
+#undef CONCURRENT_STATUS_BUFFER_LENGTH
 	const char* stateString = "Complete";
 	if (0 == event->isTracingExhausted) {
 		stateString = "Tracing incomplete";

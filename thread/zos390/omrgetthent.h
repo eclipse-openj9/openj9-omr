@@ -544,8 +544,9 @@ struct j9pg_thread_data {
 	struct pgthj pgthj;
 	/* Minimum padding of 128 bytes as per
 	 * http://pic.dhe.ibm.com/infocenter/zos/v1r11/index.jsp?topic=/com.ibm.zos.r11.bpxb100/gth.htm
+	 * However, some machines require a larger buffer.
 	 */
-	char padding[128];
+	char padding[256];
 };
 
 #pragma pack(reset)

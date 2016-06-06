@@ -30,10 +30,11 @@ class MM_VerboseManager;
  */
 class MM_VerboseWriterFileLogging : public MM_VerboseWriter
 {
-/* fields */
+	/*
+	 * Data members
+	 */
 public:
 protected:
-private:
 	char *_filename; /**< the filename template supplied from the command line */
 	uintptr_t _numFiles; /**< number of files to rotate through */
 	uintptr_t _numCycles; /**< number of cycles in each file */
@@ -42,40 +43,37 @@ private:
 	uintptr_t _currentFile; /**< zero-based index of current rotating file */
 	uintptr_t _currentCycle; /**< current GC cycle within this file */
 
-	intptr_t _logFileDescriptor; /**< the file being written to */
-	
 	J9StringTokens *_tokens; /**< tokens used during filename expansion */
 
 	MM_VerboseManager *_manager; /**< Verbose manager */
+private:
 
-/* methods */
+	/*
+	 * Function members
+	 */
 public:
-	static MM_VerboseWriterFileLogging *newInstance(MM_EnvironmentBase *env, MM_VerboseManager *manager, char* filename, uintptr_t fileCount, uintptr_t iterations);
-
 	virtual bool reconfigure(MM_EnvironmentBase *env, const char* filename, uintptr_t fileCount, uintptr_t iterations);
 
 	void closeStream(MM_EnvironmentBase *env);
 
 	virtual void endOfCycle(MM_EnvironmentBase *env);
 
-	virtual void outputString(MM_EnvironmentBase *env, const char* string);
+	virtual void outputString(MM_EnvironmentBase *env, const char* string) = 0;
 
 protected:
-	MM_VerboseWriterFileLogging(MM_EnvironmentBase *env, MM_VerboseManager *manager);
+	MM_VerboseWriterFileLogging(MM_EnvironmentBase *env, MM_VerboseManager *manager, WriterType type);
 
 	virtual bool initialize(MM_EnvironmentBase *env, const char *filename, uintptr_t numFiles, uintptr_t numCycles);
-
-private:
 	virtual void tearDown(MM_EnvironmentBase *env);
 
-	bool openFile(MM_EnvironmentBase *env);
-	void closeFile(MM_EnvironmentBase *env);
+	virtual bool openFile(MM_EnvironmentBase *env) = 0;
+	virtual void closeFile(MM_EnvironmentBase *env) = 0;
 
 	intptr_t findInitialFile(MM_EnvironmentBase *env);
 	bool initializeFilename(MM_EnvironmentBase *env, const char *filename);
 	bool initializeTokens(MM_EnvironmentBase *env);
 	char* expandFilename(MM_EnvironmentBase *env, uintptr_t currentFile);
-
+private:
 };
 
 #endif /* VERBOSEWRITERFILELOGGING_HPP_ */

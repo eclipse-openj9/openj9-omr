@@ -30,6 +30,8 @@
 #include "VerboseWriterChain.hpp"
 #include "VerboseWriterHook.hpp"
 #include "VerboseWriterFileLogging.hpp"
+#include "VerboseWriterFileLoggingBuffered.hpp"
+#include "VerboseWriterFileLoggingSynchronous.hpp"
 #include "VerboseWriterStreamOutput.hpp"
 
 /**
@@ -209,6 +211,8 @@ MM_VerboseManager::disableWriters()
 WriterType
 MM_VerboseManager::parseWriterType(MM_EnvironmentBase *env, char *filename, uintptr_t fileCount, uintptr_t iterations)
 {
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
 	if(NULL == filename) {
 		return VERBOSE_WRITER_STANDARD_STREAM;
 	}
@@ -227,7 +231,11 @@ MM_VerboseManager::parseWriterType(MM_EnvironmentBase *env, char *filename, uint
 		return VERBOSE_WRITER_HOOK;
 	}
 
-	return VERBOSE_WRITER_FILE_LOGGING;
+	if (extensions->bufferedLogging) {
+		return VERBOSE_WRITER_FILE_LOGGING_BUFFERED;
+	}
+
+	return VERBOSE_WRITER_FILE_LOGGING_SYNCHRONOUS;
 }
 
 /**
@@ -279,8 +287,20 @@ MM_VerboseManager::createWriter(MM_EnvironmentBase *env, WriterType type, char *
 	case VERBOSE_WRITER_HOOK:
 		writer = MM_VerboseWriterHook::newInstance(env);
 		break;
-	case VERBOSE_WRITER_FILE_LOGGING:
-		writer = MM_VerboseWriterFileLogging::newInstance(env, this, filename, fileCount, iterations);
+	case VERBOSE_WRITER_FILE_LOGGING_SYNCHRONOUS:
+		writer = MM_VerboseWriterFileLoggingSynchronous::newInstance(env, this, filename, fileCount, iterations);
+		if (NULL == writer) {
+			writer = findWriterInChain(VERBOSE_WRITER_STANDARD_STREAM);
+			if (NULL != writer) {
+				writer->isActive(true);
+				return writer;
+			}
+			/* if we failed to create a file stream and there is no stderr stream try to create a stderr stream */
+			writer = MM_VerboseWriterStreamOutput::newInstance(env, NULL);
+		}
+		break;
+	case VERBOSE_WRITER_FILE_LOGGING_BUFFERED:
+		writer = MM_VerboseWriterFileLoggingBuffered::newInstance(env, this, filename, fileCount, iterations);
 		if (NULL == writer) {
 			writer = findWriterInChain(VERBOSE_WRITER_STANDARD_STREAM);
 			if (NULL != writer) {

@@ -591,7 +591,9 @@ GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry
 	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
 	if ((uint32_t)parentEntry->numOfRef < slotCount) {
 		fomrobject_t *childSlot = firstSlot + parentEntry->numOfRef;
+#if defined(OMR_GC_MODRON_SCAVENGER)
 		cli->generationalWriteBarrierStore(exampleVM->_omrVMThread, parentEntry->objPtr, childSlot, childEntry->objPtr);
+#endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMRGCTEST_DEBUG)
 		omrtty_printf("\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n",
 				childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);

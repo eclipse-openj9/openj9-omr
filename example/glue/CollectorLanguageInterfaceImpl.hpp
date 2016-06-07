@@ -131,8 +131,8 @@ public:
 
 	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
 
-	virtual void generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject);
 #if defined(OMR_GC_MODRON_SCAVENGER)
+	virtual void generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject);
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env);
 	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase *env);
 	virtual void scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase *env);

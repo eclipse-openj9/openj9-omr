@@ -159,6 +159,7 @@ MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMT
 	/* Do nothing for now.  only required for SRT */
 }
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
 void
 MM_CollectorLanguageInterfaceImpl::generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject)
 {
@@ -176,7 +177,6 @@ MM_CollectorLanguageInterfaceImpl::generationalWriteBarrierStore(OMR_VMThread *o
 	}
 }
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
 {

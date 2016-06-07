@@ -16,8 +16,6 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "omrcfg.h"
-
 #include "Collector.hpp"
 #include "EnvironmentLanguageInterfaceImpl.hpp"
 #include "EnvironmentStandard.hpp"
@@ -27,8 +25,6 @@
 
 MM_EnvironmentLanguageInterfaceImpl::MM_EnvironmentLanguageInterfaceImpl(MM_EnvironmentBase *env)
 	: MM_EnvironmentLanguageInterface(env)
-	,_portLibrary(env->getPortLibrary())
-	,_env(env)
 {
 	_typeId = __FUNCTION__;
 };
@@ -42,8 +38,8 @@ MM_EnvironmentLanguageInterfaceImpl::newInstance(MM_EnvironmentBase *env)
 	if (NULL != eli) {
 		new(eli) MM_EnvironmentLanguageInterfaceImpl(env);
 		if (!eli->initialize(env)) {
-        	eli->kill(env);
-        	eli = NULL;
+			eli->kill(env);
+			eli = NULL;
 		}
 	}
 

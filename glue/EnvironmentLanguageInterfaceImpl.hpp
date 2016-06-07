@@ -28,8 +28,6 @@
 class MM_EnvironmentLanguageInterfaceImpl : public MM_EnvironmentLanguageInterface
 {
 private:
-	OMRPortLibrary *_portLibrary;
-	MM_EnvironmentBase *_env;  /**< Associated Environment */
 protected:
 public:
 
@@ -45,21 +43,6 @@ public:
 	virtual void kill(MM_EnvironmentBase *env);
 
 	static MM_EnvironmentLanguageInterfaceImpl *getInterface(MM_EnvironmentLanguageInterface *linterface) { return (MM_EnvironmentLanguageInterfaceImpl *)linterface; }
-
-	virtual void acquireVMAccess(MM_EnvironmentBase *env);
-	virtual void releaseVMAccess(MM_EnvironmentBase *env);
-
-	virtual bool tryAcquireExclusiveVMAccess();
-	virtual void acquireExclusiveVMAccess();
-	virtual void releaseExclusiveVMAccess();
-
-	virtual uint64_t getExclusiveAccessTime() { return _exclusiveAccessTime; }
-	virtual uint64_t getMeanExclusiveAccessIdleTime() { return _meanExclusiveAccessIdleTime; }
-	virtual OMR_VMThread* getLastExclusiveAccessResponder() { return _lastExclusiveAccessResponder; }
-	virtual uintptr_t getExclusiveAccessHaltedThreads() { return _exclusiveAccessHaltedThreads; }
-	virtual bool exclusiveAccessBeatenByOtherThread() { return _exclusiveAccessBeatenByOtherThread; }
-
-	virtual bool isExclusiveAccessRequestWaiting() { return false; }
 
 	virtual bool saveObjects(omrobjectptr_t objectPtr);
 	virtual void restoreObjects(omrobjectptr_t *objectPtrIndirect);

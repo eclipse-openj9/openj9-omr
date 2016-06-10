@@ -204,6 +204,7 @@ define WRITE_COMMON_THREAD_EXPORTS
 @echo omrthread_park >>$@
 @echo omrthread_unpark >>$@
 @echo omrthread_numa_get_max_node >>$@
+@echo omrthread_numa_set_enabled >>$@
 @echo omrthread_numa_set_node_affinity >>$@
 @echo omrthread_numa_get_node_affinity >>$@
 @echo omrthread_map_native_priority >>$@

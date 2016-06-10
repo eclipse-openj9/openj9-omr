@@ -233,6 +233,12 @@ omrthread_numa_shutdown(omrthread_library_t lib)
 #endif /* OMR_PORT_NUMA_SUPPORT */
 }
 
+void
+omrthread_numa_set_enabled(BOOLEAN enabled)
+{
+	isNumaAvailable = enabled;
+}
+
 /**
  * Return the highest NUMA node ID available to the process.
  * The first node is always identified as 1, as 0 is used to indicate no affinity.
@@ -248,7 +254,7 @@ uintptr_t
 omrthread_numa_get_max_node(void)
 {
 	uintptr_t result = numNodes;
-	return result;
+	return isNumaAvailable ? result : 0;
 }
 
 intptr_t

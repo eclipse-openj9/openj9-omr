@@ -19,6 +19,10 @@
 #ifndef UTE_DATAFORMAT_H_INCLUDED
 #define UTE_DATAFORMAT_H_INCLUDED
 
+/*
+ * @ddr_namespace: map_to_type=UteDataformatConstants
+ */
+
 #include <limits.h>
 
 #if defined(__cplusplus)

@@ -19,6 +19,10 @@
 #if !defined(OMRPORT_H_)
 #define OMRPORT_H_
 
+/*
+ * @ddr_namespace: map_to_type=J9PortLibrary
+ */
+
 #include "omrcfg.h"
 
 /* NOTE:  omrportlib.h include is at the bottom of this file until its dependencies on this file can be relaxed */

@@ -19,6 +19,10 @@
 #ifndef omrportpg_h
 #define omrportpg_h
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #if defined(OMR_ENV_DATA64)
 #include "omrmem32struct.h"

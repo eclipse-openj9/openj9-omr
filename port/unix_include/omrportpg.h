@@ -19,6 +19,10 @@
 #ifndef omrportpg_h
 #define omrportpg_h
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 
 #include "omrport.h"

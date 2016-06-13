@@ -19,6 +19,10 @@
 #ifndef omravldefines_h
 #define omravldefines_h
 
+/*
+ * @ddr_namespace: map_to_type=J9AVLConsts
+ */
+
 /* DO NOT DIRECTLY INCLUDE THIS FILE! */
 /* Include avl_api.h instead */
 

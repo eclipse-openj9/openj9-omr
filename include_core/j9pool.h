@@ -39,6 +39,10 @@ typedef struct J9PoolPuddleList {
 	J9WSRP nextAvailablePuddle;
 } J9PoolPuddleList;
 
+/*
+ * @ddr_namespace: map_to_type=J9PoolPuddle
+ */
+
 typedef struct J9PoolPuddle {
 	uintptr_t usedElements;
 	J9SRP firstElementAddress;
@@ -55,6 +59,10 @@ typedef struct J9PoolPuddle {
 #define PUDDLE_KILLED  4
 #define PUDDLE_ACTIVE  2
 
+/*
+ * @ddr_namespace: map_to_type=J9Pool
+ */
+
 typedef struct J9Pool {
 	uintptr_t elementSize;
 	uintptr_t elementsPerPuddle;
@@ -69,7 +77,6 @@ typedef struct J9Pool {
 	uint32_t memoryCategory;
 } J9Pool;
 
-
 #define POOL_NO_ZERO  8
 #define POOL_ROUND_TO_PAGE_SIZE  16
 #define POOL_USES_HOLES  32
@@ -78,6 +85,10 @@ typedef struct J9Pool {
 #define POOL_ALWAYS_KEEP_SORTED  4
 #define POOL_ALLOC_TYPE_PUDDLE_LIST  2
 #define POOL_ALLOC_TYPE_POOL  0
+
+/*
+ * @ddr_namespace: map_to_type=J9PoolState
+ */
 
 typedef struct J9PoolState {
 	uintptr_t leftToDo;

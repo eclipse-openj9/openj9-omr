@@ -52,6 +52,10 @@ typedef struct J9Thread {
 #endif /* !WIN32 */
 } J9Thread;
 
+/*
+ * @ddr_namespace: map_to_type=J9ThreadMonitor
+ */
+
 typedef struct J9ThreadMonitor {
 	J9_ABSTRACT_MONITOR_FIELDS
 	J9OSMutex mutex;
@@ -60,6 +64,10 @@ typedef struct J9ThreadMonitor {
 
 
 #define J9THREAD_MONITOR_POOL_SIZE 64
+
+/*
+ * @ddr_namespace: map_to_type=J9ThreadMonitorPool
+ */
 
 typedef struct J9ThreadMonitorPool {
 	struct J9ThreadMonitorPool *next;
@@ -139,6 +147,10 @@ typedef struct J9ThreadLibrary {
 	clock_serv_t clockService;
 #endif /* defined(OSX) */
 } J9ThreadLibrary;
+
+/*
+ * @ddr_namespace: map_to_type=J9Semaphore
+ */
 
 typedef struct J9Semaphore {
 	OSSEMAPHORE sem;

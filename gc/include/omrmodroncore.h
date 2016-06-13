@@ -19,6 +19,10 @@
 #ifndef OMRMODRONCORE_H_
 #define OMRMODRONCORE_H_
 
+/*
+ * @ddr_namespace: map_to_type=J9ModroncoreConstants
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 

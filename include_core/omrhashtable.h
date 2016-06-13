@@ -19,6 +19,10 @@
 #ifndef OMRHASHTABLE_H
 #define OMRHASHTABLE_H
 
+/*
+ * @ddr_namespace: default
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

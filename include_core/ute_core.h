@@ -19,6 +19,10 @@
 #ifndef _IBM_UTE_CORE_H
 #define _IBM_UTE_CORE_H
 
+/*
+ * @ddr_namespace: map_to_type=UteCoreConstants
+ */
+
 #include <limits.h>
 
 #include "omrcomp.h"

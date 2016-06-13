@@ -19,6 +19,10 @@
 #if !defined(OMR_BASEVIRTUAL_HPP_)
 #define OMR_BASEVIRTUAL_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "OMR_Base.hpp"
 
 class OMR_BaseVirtual : public OMR_Base

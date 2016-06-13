@@ -23,6 +23,10 @@
 #ifndef _IBM_UTE_MODULE_H
 #define _IBM_UTE_MODULE_H
 
+/*
+ * @ddr_namespace: map_to_type=UteModuleConstants
+ */
+
 #define UTE_VERSION_1_1                0x7E000101
 
 #include <stdio.h>

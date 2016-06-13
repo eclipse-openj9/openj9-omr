@@ -19,6 +19,10 @@
 #if !defined(OMR_AGENT_HPP_INCLUDED)
 #define OMR_AGENT_HPP_INCLUDED
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omr.h"
 #include "omragent.h"
 

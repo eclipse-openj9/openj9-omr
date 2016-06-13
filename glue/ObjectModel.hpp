@@ -19,6 +19,10 @@
 #if !defined(OBJECTMODEL_HPP_)
 #define OBJECTMODEL_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "ModronAssertions.h"
 #include "modronbase.h"
 #include "objectdescription.h"

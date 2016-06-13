@@ -18,6 +18,11 @@
 
 #ifndef OMRMEMCATEGORIES_H
 #define OMRMEMCATEGORIES_H
+
+/*
+ * @ddr_namespace: default
+ */
+
 #include <stdint.h>
 
 #include "omrcfg.h"

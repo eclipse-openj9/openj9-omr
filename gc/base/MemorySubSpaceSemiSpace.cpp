@@ -136,6 +136,13 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	return addr;
 }
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+void
+MM_MemorySubSpaceSemiSpace::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription)
+{
+}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 #if defined(OMR_GC_ARRAYLETS)
 void *
 MM_MemorySubSpaceSemiSpace::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)
@@ -421,15 +428,23 @@ MM_MemorySubSpaceSemiSpace::tearDown(MM_EnvironmentBase *env)
  ****************************************
  */
 void
-MM_MemorySubSpaceSemiSpace::flip()
+MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, uintptr_t step)
 {
-	MM_MemorySubSpace *swapTemp = _memorySubSpaceSurvivor;
-	_memorySubSpaceSurvivor = _memorySubSpaceAllocate;
-	_memorySubSpaceAllocate = swapTemp;
+	if (1 == step) {
+		_memorySubSpaceEvacuate = _memorySubSpaceAllocate;
+		_memorySubSpaceAllocate = _memorySubSpaceSurvivor;
+		_memorySubSpaceEvacuate->isAllocatable(false);
+		_memorySubSpaceAllocate->isAllocatable(true);
+	}
 
-	/* reset allocatable flag */
-	_memorySubSpaceSurvivor->isAllocatable(false);
-	_memorySubSpaceAllocate->isAllocatable(true);
+	if (2 == step) {
+		_memorySubSpaceAllocate->isAllocatable(false);
+	}
+
+	if (3 == step) {
+		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
+		_memorySubSpaceAllocate->isAllocatable(true);
+	}
 }
 
 void
@@ -481,8 +496,12 @@ MM_MemorySubSpaceSemiSpace::tilt(MM_EnvironmentBase *env, uintptr_t survivorSpac
 void
 MM_MemorySubSpaceSemiSpace::rebuildFreeListForEvacuate(MM_EnvironmentBase *env)
 {
-	/* Build free list in evacuate (from GC perspective) */
+	// todo: try to consolite so that we call just aginst evacuate in both cases
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	_memorySubSpaceEvacuate->rebuildFreeList(env);
+#else
 	_memorySubSpaceAllocate->rebuildFreeList(env);
+#endif
 }
 
 

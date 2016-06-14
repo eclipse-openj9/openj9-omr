@@ -26,6 +26,8 @@
 #include "modronbase.h"
 #include "objectdescription.h"
 
+#include "AtomicOperations.hpp"
+
 class GC_SlotObject
 {
 private:
@@ -89,6 +91,22 @@ public:
 		if (compressed != *_slot) {
 			*_slot = compressed;
 		}
+	}
+	
+	MMINLINE bool atomicWriteReferenceToSlot(omrobjectptr_t reference)
+	{
+		fomrobject_t compressedOld = *_slot;
+		fomrobject_t compressedNew = convertTokenFromPointer(reference);
+	
+		bool swapResult = false;
+		if (sizeof(fomrobject_t) == sizeof(uintptr_t)) {
+			swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
+		} else if (sizeof(fomrobject_t) == sizeof(uint32_t)) {
+			swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
+		} else {
+			//Assert_MM_unreachable();
+		}
+		return swapResult;
 	}
 
 	/**

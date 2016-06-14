@@ -439,6 +439,18 @@ public:
 	 * Releases exclusive VM access.
 	 */
 	void releaseExclusiveVMAccess();
+	
+	/**
+	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)
+	 * @return the exclusive count of the current thread before relinquishing 
+	 */
+	uintptr_t relinquishExclusiveVMAccess();
+
+	/**
+	 * Assume exclusive access from a collaborating thread i.e. main-to-master or master-to-main)
+	 * @param exclusiveCount the exclusive count to be restored 
+	 */
+	void assumeExclusiveVMAccess(uintptr_t exclusiveCount);
 
 	/**
 	 * Checks to see if any thread has requested exclusive access

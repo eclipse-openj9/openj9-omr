@@ -52,6 +52,9 @@
 #endif /* OMR_GC_MODRON_COMPACTION */
 #include "ParallelSweepScheme.hpp"
 #include "ParallelTask.hpp"
+#if defined(OMR_GC_MODRON_SCAVENGER)
+#include "Scavenger.hpp"
+#endif /* OMR_GC_MODRON_SCAVENGER */
 #include "WorkPackets.hpp"
 
 /* OMRTODO temporary workaround to allow both ut_j9mm.h and ut_omrmm.h to be included.
@@ -982,12 +985,22 @@ MM_ParallelGlobalGC::heapReconfigured(MM_EnvironmentBase *env)
 bool
 MM_ParallelGlobalGC::collectorStartup(MM_GCExtensionsBase* extensions)
 {
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if (extensions->scavengerEnabled && (NULL != extensions->scavenger)) {
+		extensions->scavenger->collectorStartup(extensions);
+	}
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 	return true;
 }
 
 void
 MM_ParallelGlobalGC::collectorShutdown(MM_GCExtensionsBase *extensions)
 {
+#if defined(J9VM_GC_MODRON_SCAVENGER)
+	if (extensions->scavengerEnabled && (NULL != extensions->scavenger)) {
+		extensions->scavenger->collectorShutdown(extensions);
+	}
+#endif /* defined(J9VM_GC_MODRON_SCAVENGER) */
 }
 
 /**

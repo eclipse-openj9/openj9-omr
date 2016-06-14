@@ -30,6 +30,7 @@
 class MM_AllocateDescription;
 class MM_AllocationContext;
 class MM_CollectorLanguageInterface;
+class MM_ConcurrentGMPStats;
 class MM_MemoryPool;
 class MM_ObjectAllocationInterface;
 class MM_MemorySubSpace;
@@ -269,7 +270,15 @@ public:
 	 * @return true if the collector implementation knows that the given objectPtr is marked (false if not or if the implementation doesn't know)
 	 */
 	virtual bool isMarked(void* objectPtr);
-
+	
+	virtual void preMasterGCThreadInitialize(MM_EnvironmentBase *env) {}
+	virtual	void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false) {}
+	virtual bool isConcurrentWorkAvailable(MM_EnvironmentBase *env) { return false; }
+	virtual	void preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentGMPStats *stats) {}
+	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env) { return 0; }
+	virtual	void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentGMPStats *stats, UDATA bytesConcurrentlyScanned) {}
+	virtual void forceConcurrentFinish() {}
+	
 	MM_Collector(MM_CollectorLanguageInterface *cli)
 		: MM_BaseVirtual()
 		, _exclusiveAccessCount(0)

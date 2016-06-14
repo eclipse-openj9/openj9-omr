@@ -373,6 +373,9 @@ public:
 	bool scvTenureStrategyHistory; /**< Flag for enabling the History scavenger tenure strategy. */
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	bool concurrentScavenger;
+#endif	
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
 	uintptr_t scvArraySplitMaximumAmount; /**< maximum number of elements to split array scanning work in the scavenger */
@@ -593,13 +596,14 @@ public:
 	bool numaForced; /**< if true, specifies if numa is disabled or enabled (actual value stored in NUMA Manager) by command line option */
 
 	bool padToPageSize;
+	
+	bool fvtest_disableExplictMasterThread; /**< Test option to disable creation of explicit master GC thread */
 
 #if defined(OMR_GC_VLHGC)
 	bool tarokDebugEnabled; /**< True if we want to perform additional checks and freed memory poisoning which aid in debugging Tarok problems  */
 	uintptr_t tarokGlobalMarkIncrementTimeMillis; /**< The time period in millisecond a Global Mark increment is allowed to run (as set by the user, normally dynamic)*/
 	uintptr_t fvtest_tarokForceNUMANode; /**< The NUMA node to force the heap onto (UDATA_MAX => no force, 0 => interleaved, >0 => specific node) */
 	uintptr_t fvtest_tarokFirstContext; /**< The allocation context number to use first, when associating the first thread (assignments will proceed, as a round robin, from this number).  Defaults to 0 */
-	bool fvtest_tarokDisableMasterThread; /**< Test option to disable creation of explicit master GC thread */
 	bool tarokEnableScoreBasedAtomicCompact; /**< True if atomic compact does use score based compact region selection heuristic */
 	uintptr_t tarokIdealEdenMinimumBytes; /**< The ideal size of the eden space, in bytes, when the heap is at its -Xms size */
 	uintptr_t tarokIdealEdenMaximumBytes; /**< The ideal size of the eden space, in bytes, when the heap is at its -Xmx size */
@@ -1072,6 +1076,9 @@ public:
 		, scvTenureStrategyLookback(true)
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		, concurrentScavenger(true)
+#endif		
 		, scavengerFailedTenureThreshold(0)
 		, scvArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
 		, scvArraySplitMinimumAmount(DEFAULT_ARRAY_SPLIT_MINIMUM_SIZE)
@@ -1216,12 +1223,12 @@ public:
 		, _numaManager()
 		, numaForced(false)
 		, padToPageSize(false)
+		, fvtest_disableExplictMasterThread(false)
 #if defined(OMR_GC_VLHGC)
 		, tarokDebugEnabled(false) /* by default, we turn off the Tarok debug options since they are an appreciable performance hit */
 		, tarokGlobalMarkIncrementTimeMillis(0)
 		, fvtest_tarokForceNUMANode(UDATA_MAX)
 		, fvtest_tarokFirstContext(0)
-		, fvtest_tarokDisableMasterThread(false)
 		, tarokEnableScoreBasedAtomicCompact(true)
 		, tarokIdealEdenMinimumBytes(0)
 		, tarokIdealEdenMaximumBytes(0)

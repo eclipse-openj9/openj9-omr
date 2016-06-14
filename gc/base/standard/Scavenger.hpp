@@ -32,6 +32,7 @@
 #include "CopyScanCacheStandard.hpp"
 #include "CycleState.hpp"
 #include "GCExtensionsBase.hpp"
+#include "MasterGCThread.hpp"
  
 struct J9HookInterface;
 class GC_ObjectScanner;
@@ -106,6 +107,22 @@ private:
 	void *_heapBase;  /**< Cached base pointer of heap */
 	void *_heapTop;  /**< Cached top pointer of heap */
 	MM_HeapRegionManager *_regionManager;
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	MM_MasterGCThread _masterGCThread; /**< An object which manages the state of the master GC thread */
+	
+	enum ConcurrentState {
+		concurrent_state_idle,
+		concurrent_state_init,
+		concurrent_state_roots,
+		concurrent_state_scan,
+		concurrent_state_complete
+	} _concurrentState;
+	
+	/* TODO: put it parent Collector class and share with Balanced? */ 
+	volatile bool _forceConcurrentTermination;
+#endif
+
 
 protected:
 
@@ -370,8 +387,7 @@ private:
 
 	void scavenge(MM_EnvironmentBase *env);
 	bool scavengeCompletedSuccessfully(MM_EnvironmentStandard *env);
-	void masterThreadGarbageCollect(MM_EnvironmentStandard *env);
-
+	virtual	void masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool initMarkMap = false, bool rebuildMarkBits = false);
 
 	MMINLINE uintptr_t
 	isTiltedScavenge()
@@ -461,6 +477,42 @@ public:
 
 	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_CollectorLanguageInterface *cli, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
+	
+	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
+	virtual void collectorShutdown(MM_GCExtensionsBase* extensions);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* API for interaction with MasterGCTread */
+	virtual bool isConcurrentWorkAvailable(MM_EnvironmentBase *env);
+	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env);
+
+	/* master thread */
+	uintptr_t scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScavenge, volatile bool *forceExit);
+	bool scavengeIncremental(MM_EnvironmentBase *env, I_64 scavengeIncrementEndTime);
+	
+	bool scavengeInit(MM_EnvironmentBase *env, int64_t timeThreshold);
+	bool scavengeRoots(MM_EnvironmentBase *env);
+	bool scavengeScan(MM_EnvironmentBase *env, int64_t timeThreshold);
+	bool scavengeComplete(MM_EnvironmentBase *env);
+	
+	/* mutator thread */
+	void mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *env, MM_EnvironmentBase *threadEnvironment);
+	void mutatorSetupForGC(MM_EnvironmentBase *env);
+
+	/* worker thread */
+	void workThreadProcessRoots(MM_EnvironmentStandard *env);
+	void workThreadScan(MM_EnvironmentStandard *env);
+	void workThreadComplete(MM_EnvironmentStandard *env);
+
+	
+	virtual void forceConcurrentFinish() {
+		_forceConcurrentTermination = true;
+	}
+	bool isConcurrentInProgress() {
+		return concurrent_state_idle != _concurrentState;
+	}
+
+#endif	
 
 	/**
 	 * Determine whether the object pointer is found within the heap proper.
@@ -593,6 +645,11 @@ public:
 		, _heapBase(NULL)
 		, _heapTop(NULL)
 		, _regionManager(regionManager)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		, _masterGCThread(env)
+		, _concurrentState(concurrent_state_idle)
+		, _forceConcurrentTermination(false)		
+#endif		
 		, _omrVM(env->getOmrVM())
 	{
 		_typeId = __FUNCTION__;

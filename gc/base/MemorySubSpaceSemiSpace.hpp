@@ -49,6 +49,7 @@ class MM_MemorySubSpaceSemiSpace : public MM_MemorySubSpace
 private:
 	MM_MemorySubSpace *_memorySubSpaceAllocate;
 	MM_MemorySubSpace *_memorySubSpaceSurvivor;
+	MM_MemorySubSpace *_memorySubSpaceEvacuate;
 
 	void *_allocateSpaceBase, *_allocateSpaceTop;
 	void *_survivorSpaceBase, *_survivorSpaceTop;
@@ -112,6 +113,10 @@ public:
 	void rebuildFreeListForEvacuate(MM_EnvironmentBase* env);
 	void rebuildFreeListForBackout(MM_EnvironmentBase *env);
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);
+#endif
+
 	MM_MemorySubSpace *getTenureMemorySubSpace() { 	return _parent->getTenureMemorySubSpace(); }
 	MM_MemorySubSpace *getMemorySubSpaceAllocate() { return _memorySubSpaceAllocate; };
 	MM_MemorySubSpace *getMemorySubSpaceSurvivor() { return _memorySubSpaceSurvivor; };
@@ -135,7 +140,7 @@ public:
 	virtual void systemGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode);
 
 	/* Type specific methods */
-	void flip();
+	void flip(MM_EnvironmentBase *env, uintptr_t step);
 	
 	MMINLINE uintptr_t getSurvivorSpaceSizeRatio() const { return _survivorSpaceSizeRatio; }
 	MMINLINE void setSurvivorSpaceSizeRatio(uintptr_t size) { _survivorSpaceSizeRatio = size; }
@@ -157,6 +162,7 @@ public:
 		MM_MemorySubSpace(env, collector, physicalSubArena, usesGlobalCollector, minimumSize, initialSize, maximumSize, MEMORY_TYPE_NEW, 0)
 		,_memorySubSpaceAllocate(memorySubSpaceAllocate)
 		,_memorySubSpaceSurvivor(memorySubSpaceSurvivor)
+		,_memorySubSpaceEvacuate(NULL)
 		,_allocateSpaceBase(NULL)
 		,_allocateSpaceTop(NULL)
 		,_survivorSpaceBase(NULL)

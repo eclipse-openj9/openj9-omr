@@ -120,6 +120,18 @@ public:
 	virtual void reacquireCriticalHeapAccess(uintptr_t data) {}
 
 	/**
+	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)
+	 * @return the exclusive count of the current thread before relinquishing 
+	 */
+	virtual uintptr_t relinquishExclusiveVMAccess() { return 0; }
+	
+	/**
+	 * Assume exclusive access from a collaborating thread i.e. main-to-master or master-to-main)
+	 * @param exclusiveCount the exclusive count to be restored 
+	 */
+	virtual void assumeExclusiveVMAccess(uintptr_t exclusiveCount) {}
+
+	/**
 	 * Checks to see if any thread has requested exclusive access
 	 * @return true if a thread is waiting on exclusive access, false if not.
 	 */

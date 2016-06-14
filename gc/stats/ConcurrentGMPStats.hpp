@@ -27,8 +27,6 @@
 #include "omrcfg.h"
 #include "omrcomp.h"
 
-#if defined(OMR_GC_VLHGC)
-
 #include "Base.hpp"
 
 /**
@@ -58,7 +56,5 @@ public:
 		, _terminationWasRequested(false)
 	{}
 }; 
-
-#endif /* defined(OMR_GC_VLHGC) */
 
 #endif /* CONCURRENTGMPSTATS_HPP_ */

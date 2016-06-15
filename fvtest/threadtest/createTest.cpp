@@ -976,6 +976,19 @@ endthread:
 	return 0;
 }
 
+TEST_F(ThreadCreateTest, NumaEnableDisable)
+{
+#define NODE_LIST_SIZE 4
+	uintptr_t originalMaxNode = omrthread_numa_get_max_node();
+	uintptr_t numaMaxNode = 0;
+	omrthread_numa_set_enabled(false);
+	numaMaxNode = omrthread_numa_get_max_node();
+	ASSERT_EQ((uintptr_t)0, numaMaxNode) << "nmaMaxNode not zero with numa disabled";
+	omrthread_numa_set_enabled(true);
+	numaMaxNode = omrthread_numa_get_max_node();
+	ASSERT_EQ(originalMaxNode, numaMaxNode) << "Re-enabling max_node doesn't restore original value";
+}
+
 /* Since we can't read affinity on Win32, at least make sure that we can call the setAffinity API without crashing.
  * Note that this should be safe on all platforms (either succeeds or fails but we ignore the return code since
  * any answer is correct, so long as we don't crash - without reading the affinity, we don't know of any more

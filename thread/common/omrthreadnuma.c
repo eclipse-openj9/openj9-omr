@@ -45,6 +45,15 @@ omrthread_numa_shutdown(omrthread_library_t lib)
 }
 
 /**
+ * Sets the NUMA enabled status.
+ * This applies to the entire process.
+ */
+void
+omrthread_numa_set_enabled(BOOLEAN enabled)
+{
+}
+
+/**
  * Return the highest NUMA node ID available to the process.
  * The first node is always identified as 1, as 0 is used to indicate no affinity.
  *

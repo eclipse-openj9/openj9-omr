@@ -23,6 +23,7 @@
  */
 #include "omrcfg.h"
 #include "threaddef.h"
+static BOOLEAN isNumaAvailable = FALSE;
 
 /**
  * Loads the necessary functions for NUMA support from the OS's dynamic library for NUMA.
@@ -34,6 +35,7 @@
 void
 omrthread_numa_init(omrthread_library_t lib)
 {
+	isNumaAvailable = TRUE;
 }
 
 /**
@@ -42,6 +44,13 @@ omrthread_numa_init(omrthread_library_t lib)
 void
 omrthread_numa_shutdown(omrthread_library_t lib)
 {
+	isNumaAvailable = FALSE;
+}
+
+void
+omrthread_numa_set_enabled(BOOLEAN enabled)
+{
+	isNumaAvailable = enabled;
 }
 
 /**
@@ -60,10 +69,10 @@ omrthread_numa_get_max_node(void)
 {
 	uintptr_t result = 0;
 	ULONG nodeNumber = 0;
-	if ((GetNumaHighestNodeNumber(&nodeNumber)) && (nodeNumber > 1)) {
+	if (isNumaAvailable && (GetNumaHighestNodeNumber(&nodeNumber)) && (nodeNumber > 1)) {
 		result = (uintptr_t)nodeNumber + 1;
 	}
-	return (uintptr_t)result;
+	return result;
 }
 
 intptr_t
@@ -74,7 +83,7 @@ omrthread_numa_set_node_affinity_nolock(omrthread_t thread, const uintptr_t *nod
 	DWORD_PTR processAffinityMask = 0;
 	DWORD_PTR systemAffinityMask = 0;
 
-	if (GetProcessAffinityMask(processHandle, &processAffinityMask, &systemAffinityMask)) {
+	if (isNumaAvailable && GetProcessAffinityMask(processHandle, &processAffinityMask, &systemAffinityMask)) {
 		/* go through the nodes and build a mask corresponding to the processors (or groups) on the user-provided nodes and take the intersection of these sets */
 		uintptr_t i = 0;
 		ULONGLONG mask = 0;
@@ -104,12 +113,15 @@ omrthread_numa_set_node_affinity(omrthread_t thread, const uintptr_t *numaNodes,
 {
 	intptr_t result = J9THREAD_NUMA_ERR;
 
-	if (NULL != thread) {
-		THREAD_LOCK(thread, 0);
-		result = omrthread_numa_set_node_affinity_nolock(thread, numaNodes, nodeCount, flags);
-		THREAD_UNLOCK(thread);
-	}
-
+	if (isNumaAvailable) {
+		if (NULL != thread) {
+			THREAD_LOCK(thread, 0);
+			result = omrthread_numa_set_node_affinity_nolock(thread, numaNodes, nodeCount, flags);
+			THREAD_UNLOCK(thread);
+		}
+	} else {
+		result = J9THREAD_NUMA_OK;	
+	} 
 	return result;
 }
 

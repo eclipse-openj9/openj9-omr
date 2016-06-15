@@ -1385,6 +1385,7 @@ omrthread_numa_get_max_node(void);
 intptr_t
 omrthread_numa_set_node_affinity(omrthread_t thread, const uintptr_t *numaNodes, uintptr_t nodeCount, uint32_t flags);
 
+
 /**
  * @brief
  * @param thread
@@ -1394,6 +1395,13 @@ omrthread_numa_set_node_affinity(omrthread_t thread, const uintptr_t *numaNodes,
  */
 intptr_t
 omrthread_numa_get_node_affinity(omrthread_t thread, uintptr_t *numaNodes, uintptr_t *nodeCount);
+
+/**
+ * Sets the NUMA enabled status.
+ * This applies to the entire process.
+ */
+void
+omrthread_numa_set_enabled(BOOLEAN enabled);
 
 /* -------------- rasthrsup.c ------------------- */
 /**

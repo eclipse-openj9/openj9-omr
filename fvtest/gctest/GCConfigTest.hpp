@@ -53,6 +53,19 @@ typedef struct GarbagePolicy {
 	uintptr_t accumulatedSize;
 } GarbagePolicy;
 
+typedef struct XmlStr {
+	const char *object;
+	const char *namePrefix;
+	const char *type;
+	const char *numOfFields;
+	const char *breadth;
+	const char *depth;
+	const char *garbagePolicy;
+	const char *percentage;
+	const char *frequency;
+	const char *structure;
+} XmlStr;
+
 class GCConfigTest : public ::testing::Test, public ::testing::WithParamInterface<const char *>
 {
 	/*
@@ -64,6 +77,7 @@ protected:
 	MM_CollectorLanguageInterface *cli;
 	pugi::xml_document doc;
 	GarbagePolicy gp;
+	XmlStr xs;
 
 	/* verbose log options */
 	MM_VerboseManager *verboseManager;
@@ -93,6 +107,7 @@ protected:
 	int32_t verifyVerboseGC(pugi::xpath_node_set verboseGCs);
 	int32_t parseGarbagePolicy(pugi::xml_node node);
 	int32_t triggerOperation(pugi::xml_node node);
+	int32_t iniXMLStr(const char *configStyle);
 
 	/* This implementation assumes that existing entries hashed into the rootTable and objectTable can
 	 * be moved whenever new entries are added. This complicates the usage of ObjectEntry pointers that
@@ -149,5 +164,16 @@ public:
 		gp.structure = NULL;
 		gp.garbageSeq = 0;
 		gp.accumulatedSize = 0;
+
+		xs.object = NULL;
+		xs.namePrefix = NULL;
+		xs.type = NULL;
+		xs.numOfFields = NULL;
+		xs.breadth = NULL;
+		xs.depth = NULL;
+		xs.garbagePolicy = NULL;
+		xs.percentage = NULL;
+		xs.frequency = NULL;
+		xs.structure = NULL;
 	}
 };

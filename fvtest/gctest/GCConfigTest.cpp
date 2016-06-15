@@ -31,6 +31,8 @@
 	if (0 != (rt)) {\
 		goto done;\
 	}
+#define STRINGFY(str) DO_STRINGFY(str)
+#define DO_STRINGFY(str) #str
 
 void
 GCConfigTest::SetUp()
@@ -228,10 +230,10 @@ OMRGCObjectType
 GCConfigTest::parseObjectType(pugi::xml_node node)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
-	const char *namePrefixStr = node.attribute("namePrefix").value();
-	const char *typeStr = node.attribute("type").value();
+	const char *namePrefixStr = node.attribute(xs.namePrefix).value();
+	const char *typeStr = node.attribute(xs.type).value();
 	const char *parentStr = node.parent().name();
-	const char *parentTypeStr = node.parent().attribute("type").value();
+	const char *parentTypeStr = node.parent().attribute(xs.type).value();
 	OMRGCObjectType objType = INVALID;
 
 	if (0 == strcmp(typeStr, "root")) {
@@ -468,7 +470,7 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 		}
 	} else if ((NORMAL == objType) || (GARBAGE_TOP == objType) || (GARBAGE_CHILD == objType)) {
 		char parentName[MAX_NAME_LENGTH];
-		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute("namePrefix").value(), 0, 0);
+		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute(xs.namePrefix).value(), 0, 0);
 		for (int32_t i = 0; i < breadthElem->value; i++) {
 			uintptr_t sizeCalculated = numOfFieldsElem->value * sizeof(fomrobject_t) + sizeof(uintptr_t);
 			ObjectEntry *childEntry = createObject(namePrefixStr, objType, 0, i, sizeCalculated);
@@ -703,19 +705,19 @@ GCConfigTest::allocationWalker(pugi::xml_node node)
 	int32_t depth = 0;
 	OMRGCObjectType objType = INVALID;
 
-	const char *namePrefixStr = node.attribute("namePrefix").value();
-	const char *numOfFieldsStr = node.attribute("numOfFields").value();
-	const char *typeStr = node.attribute("type").value();
-	const char *breadthStr = node.attribute("breadth").value();
-	const char *depthStr = node.attribute("depth").value();
+	const char *namePrefixStr = node.attribute(xs.namePrefix).value();
+	const char *numOfFieldsStr = node.attribute(xs.numOfFields).value();
+	const char *typeStr = node.attribute(xs.type).value();
+	const char *breadthStr = node.attribute(xs.breadth).value();
+	const char *depthStr = node.attribute(xs.depth).value();
 
-	if (0 != strcmp(node.name(), "object")) {
+	if (0 != strcmp(node.name(), xs.object)) {
 		/* allow non-object node nested inside allocation? */
 		goto done;
 	}
-	if ((0 == strcmp(namePrefixStr, "")) || (0 == strcmp(typeStr, "")) || (0 == strcmp(numOfFieldsStr, ""))) {
+	if ((0 == strcmp(namePrefixStr, "")) || (0 == strcmp(typeStr, ""))) {
 		rt = 1;
-		omrtty_printf("%s:%d Invalid XML input: please specify namePrefix, type and numOfFields for object %s.\n", __FILE__, __LINE__, namePrefixStr);
+		omrtty_printf("%s:%d Invalid XML input: please specify namePrefix and type for object %s.\n", __FILE__, __LINE__, namePrefixStr);
 		goto done;
 	}
 	/* set default value for breadth and depth to 1 */
@@ -756,7 +758,7 @@ GCConfigTest::allocationWalker(pugi::xml_node node)
 		}
 	} else if (GARBAGE_TOP == objType) {
 		char parentName[MAX_NAME_LENGTH];
-		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute("namePrefix").value(), 0, 0);
+		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute(xs.namePrefix).value(), 0, 0);
 		ObjectEntry *parentEntry = find(parentName);
 		if (NULL == parentEntry) {
 			omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
@@ -906,18 +908,18 @@ GCConfigTest::parseGarbagePolicy(pugi::xml_node node)
 	gp.accumulatedSize = 0;
 
 	if (!node.empty()) {
-		gp.namePrefix = node.attribute("namePrefix").value();
+		gp.namePrefix = node.attribute(xs.namePrefix).value();
 		if (0 == strcmp(gp.namePrefix, "")) {
 			gp.namePrefix = "GARBAGE";
 		}
 
-		const char* percentageStr = node.attribute("percentage").value();
+		const char* percentageStr = node.attribute(xs.percentage).value();
 		if (0 == strcmp(percentageStr, "")) {
 			percentageStr = "100";
 		}
 		gp.percentage = (float)atof(percentageStr);
 
-		gp.frequency = node.attribute("frequency").value();
+		gp.frequency = node.attribute(xs.frequency).value();
 		if (0 == strcmp(gp.frequency, "")) {
 			gp.frequency = "perRootStruct";
 		}
@@ -927,7 +929,7 @@ GCConfigTest::parseGarbagePolicy(pugi::xml_node node)
 			goto done;
 		}
 
-		gp.structure = node.attribute("structure").value();
+		gp.structure = node.attribute(xs.structure).value();
 		if (0 == strcmp(gp.structure, "")) {
 			gp.structure = "node";
 		}
@@ -969,43 +971,82 @@ done:
 	return rt;
 }
 
+int32_t
+GCConfigTest::iniXMLStr(const char *configStyle)
+{
+	int32_t rt = 0;
+	if ((0 == strcmp(configStyle, "nor")) || (0 == strcmp(configStyle, ""))) {
+		xs.object = "object";
+		xs.namePrefix = "namePrefix";
+		xs.type = "type";
+		xs.numOfFields = "numOfFields";
+		xs.breadth = "breadth";
+		xs.depth = "depth";
+		xs.garbagePolicy = "garbagePolicy";
+		xs.percentage = "percentage";
+		xs.frequency = "frequency";
+		xs.structure = "structure";
+	} else if (0 == strcmp(configStyle, "min")) {
+		xs.object = "o";
+		xs.namePrefix = "n";
+		xs.type = "t";
+		xs.numOfFields = "f";
+		xs.breadth = "b";
+		xs.depth = "d";
+		xs.garbagePolicy = "gp";
+		xs.percentage = "per";
+		xs.frequency = "fre";
+		xs.structure = "str";
+	} else {
+		rt = 1;
+	}
+	return rt;
+}
+
 TEST_P(GCConfigTest, test)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 
 	int32_t rt = 0;
 
-	pugi::xml_node configNode = doc.select_node("/gc-config").node().first_child();
-	if (0 == strcmp(configNode.name(), "option")) {
-		configNode = configNode.next_sibling();
+	pugi::xml_node configNode = doc.select_node("/gc-config").node();
+	const char *configStyle = configNode.attribute("style").value();
+	ASSERT_EQ(0, iniXMLStr(configStyle)) << "Invalid XML input: unrecognized gc-config style \"" << configStyle << "\".";
+
+	pugi::xml_node configChild = configNode.first_child();
+	if (0 == strcmp(configChild.name(), "option")) {
+		configChild = configChild.next_sibling();
 	}
-	for (; configNode; configNode = configNode.next_sibling()) {
-		if (0 == strcmp(configNode.name(), "allocation")) {
+	for (; configChild; configChild = configChild.next_sibling()) {
+		if (0 == strcmp(configChild.name(), "allocation")) {
 			omrtty_printf("\n+++++++++++++++++++++++++++Allocation+++++++++++++++++++++++++++\n");
-			rt = parseGarbagePolicy(configNode.child("garbagePolicy"));
+			rt = parseGarbagePolicy(configChild.child(xs.garbagePolicy));
 			ASSERT_EQ(0, rt) << "Failed to parse garbage policy.";
-			pugi::xpath_node_set objects = configNode.select_nodes("object");
+			pugi::xpath_node_set objects = configChild.select_nodes(xs.object);
 			int64_t startTime = omrtime_current_time_millis();
 			for (pugi::xpath_node_set::const_iterator it = objects.begin(); it != objects.end(); ++it) {
 				rt = allocationWalker(it->node());
 				ASSERT_EQ(0, rt) << "Failed to perform allocation.";
 			}
 			omrtty_printf("Time elapsed in allocation: %lld ms\n", (omrtime_current_time_millis() - startTime));
-		} else if (0 == strcmp(configNode.name(), "verification")) {
+		} else if (0 == strcmp(configChild.name(), "verification")) {
 			omrtty_printf("\n++++++++++++++++++++++++++Verification++++++++++++++++++++++++++\n");
 			/* verboseGC verification */
-			pugi::xpath_node_set verboseGCs = configNode.select_nodes("verboseGC");
+			char verboseNodeSet[MAX_NAME_LENGTH];
+			/* select verboseGC nodes with right spec info */
+			omrstr_printf(verboseNodeSet, MAX_NAME_LENGTH, "verboseGC[not(@spec) or @spec = '%s']", STRINGFY(SPEC));
+			pugi::xpath_node_set verboseGCs = configChild.select_nodes(verboseNodeSet);
 			rt = verifyVerboseGC(verboseGCs);
 			ASSERT_EQ(0, rt) << "Failed in verbose GC verification.";
 			omrtty_printf("[ Verification Successful ]\n\n");
-		} else if (0 == strcmp(configNode.name(), "operation")) {
+		} else if (0 == strcmp(configChild.name(), "operation")) {
 			omrtty_printf("\n++++++++++++++++++++++++++++Operation+++++++++++++++++++++++++++\n");
-			rt = triggerOperation(configNode.first_child());
+			rt = triggerOperation(configChild.first_child());
 			ASSERT_EQ(0, rt) << "Failed to perform gc operation.";
-		} else if (0 == strcmp(configNode.name(), "mutation")) {
+		} else if (0 == strcmp(configChild.name(), "mutation")) {
 			/*TODO*/
 		} else {
-			FAIL() << "Invalid XML input: unrecognized XML node \"" << configNode.name() << "\" in configuration file.";
+			FAIL() << "Invalid XML input: unrecognized XML node \"" << configChild.name() << "\" in configuration file.";
 		}
 	}
 }

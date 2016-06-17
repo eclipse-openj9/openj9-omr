@@ -43,6 +43,7 @@
 #if defined(LINUX)
 #include <dirent.h>
 #include <dlfcn.h>
+#include <sys/utsname.h>
 #elif defined(AIXPPC)
 #include <sys/ldr.h>
 #include <sys/debug.h>
@@ -89,8 +90,6 @@
 #define POLL_RETRY_INTERVAL -1
 #endif
 
-
-
 typedef struct {
 	int descriptor_pair[2];
 	volatile uintptr_t in_count;
@@ -99,7 +98,6 @@ typedef struct {
 	uintptr_t spinlock;
 	volatile uintptr_t released;
 } barrier_r;
-
 
 typedef struct {
 	int descriptor_pair[2];
@@ -636,7 +634,6 @@ sem_destroy_r(sem_t_r *sem)
 	return 0;
 }
 
-
 /*
  * Utility function to check if we've timed out.
  *
@@ -961,7 +958,6 @@ count_threads(struct PlatformWalkData *data)
 }
 #endif
 
-
 /* This function installs a signal handler then generates signals until all threads in the process bar the calling
  * thread are suspended. The signals have to be real-time signals (ie. >= SIGRTMIN) or it's not possible to pass
  * a data via sigqueue. Also, non real-time signals of the same value can be collapsed and we require any threads
@@ -1026,24 +1022,23 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 		for (i = data->threadCount; i < thread_count - 1; i++) {
 			int ret = sigqueue(pid, SUSPEND_SIG, val);
 
-			if (ret != 0) {
+			if (0 != ret) {
 				if (errno == EAGAIN) {
 					/* retry the queuing until we time out */
-					int j;
-					for (j = 0; ret != 0 && errno == EAGAIN && !timedOut(data->state->deadline1); j++) {
+					while ((0 != ret) && (EAGAIN == errno) && !timedOut(data->state->deadline1)) {
 						omrthread_yield();
 						ret = sigqueue(pid, SUSPEND_SIG, val);
 					}
 				}
 
-				if (ret != 0) {
+				if (0 != ret) {
 					/* failed to queue the signal, unrecoverable */
 					data->threadsOutstanding = i;
 					return -errno;
 				}
 			}
 
-			/* allow the signals time to be dispatched so we don't overflow the signal queue. 10 is an arbitrary
+			/* Allow the signals time to be dispatched so we don't overflow the signal queue. 10 is an arbitrary
 			 * number to see if we can avoid the added complexity of coordination between the signal handler and
 			 * this suspend logic. Testing shows 48 threads suspended on AIX5.3 at the point where we get EAGAIN.
 			 */
@@ -1171,7 +1166,6 @@ suspend_all_preemptive(struct PlatformWalkData *data)
 #endif /* !defined(J9OS_I5) */
 }
 
-
 /*
  * Frees anything and everything to do with the scope of the specified thread.
  */
@@ -1209,7 +1203,6 @@ freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
 	}
 }
 
-
 /*
  * This functions resumes all threads suspended by suspend_all_preemptive. The general behaviour
  * is to swallow any spurious signals from the queue so they are not delivered after we remove our
@@ -1228,7 +1221,6 @@ resume_all_preempted(struct PlatformWalkData *data)
 	sigset_t set;
 	struct timespec time_out;
 	J9ThreadWalkState *state = data->state;
-
 
 	/* We skip everything but the semaphores and the process mask if we didn't sucessfully install the
 	 * signal handlers.
@@ -1334,7 +1326,6 @@ resume_all_preempted(struct PlatformWalkData *data)
 	int ret = 0;
 	J9ThreadWalkState *state = data->state;
 
-
 	if (data->threadsOutstanding > 0) {
 		/* inhibt collection of contexts from any of the outstanding threads we release */
 		data->error = 1;
@@ -1359,7 +1350,6 @@ resume_all_preempted(struct PlatformWalkData *data)
 
 #endif /* !defined(J9OS_I5) */
 }
-
 
 /*
  * Sets up the native thread structures including the backtrace. If a context is specified it is used instead of grabbing
@@ -1415,7 +1405,6 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		state->current_thread = data->thread;
 	}
 
-
 	/* populate backtraces if not present */
 	if (state->current_thread->callstack == NULL) {
 		/* don't pass sigContext in here as we should have fixed up the thread already. It confuses heap/not heap allocations if we
@@ -1456,6 +1445,36 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 	return 0;
 }
 
+/*
+ * On some systems, sigqueue() doesn't reliably lead to receipt of the expected
+ * number of signals: On those platforms, the controller must not use sem_timedwait_r
+ * otherwise the process may hang waiting for threads which were assumed to have
+ * received the SUSPEND_SIG signal but did not.
+ */
+static uintptr_t
+sigqueue_is_reliable(void)
+{
+#if defined(LINUX)
+	struct utsname sysinfo;
+	uintptr_t release = 0;
+
+	/* If either uname() or sscanf() fail, version will stay zero
+	 * and we'll consider sigqueue() unreliable.
+	 */
+	if (0 == uname(&sysinfo)) {
+		sscanf(sysinfo.release, "%lu", &release);
+	}
+
+	/* sigqueue() is sufficiently reliable on newer Linux kernels (version 3.* and later). */
+	return release >= 3;
+#elif defined(AIXPPC) || defined(J9ZOS390)
+	/* The controller can't use sem_timedwait_r on AIX or z/OS. */
+	return 0;
+#else
+	/* Other platforms can use sem_timedwait_r. */
+	return 1;
+#endif /* defined(LINUX) */
+}
 
 /*
  * Creates an iterator for the native threads present within the process, either all native threads
@@ -1619,7 +1638,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 #if defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL)
 	struct OMRPortLibrary *portLibrary = state->portLibrary;
 #endif /* defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL) */
-	
+
 	J9PlatformThread *thread = NULL;
 	int result = 0;
 #if !defined(J9OS_I5)
@@ -1681,24 +1700,28 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 		goto cleanup;
 	}
 
-#if defined(AIXPPC) || defined(J9ZOS390)
-	do {
-		result = sem_trywait_r(&data->controller_sem);
-		/* linux seems to have a scheduler bug whereby a process with all threads in system waits doesn't get scheduled
-		 * even though there are signals pending and the threads aren't in TASK_UNINTERRUPTABLE. Requeuing the signals
-		 * appears to prompt scheduling, we then take outstanding signals off the signal queue with sigwait when
-		 * we're done as with other systems.
-		 */
-		if (result == -1) {
-			sigval_t val;
-			val.sival_ptr = data;
+	if (sigqueue_is_reliable()) {
+		result = sem_timedwait_r(&data->controller_sem, timeout(data->state->deadline1));
+	} else {
+		for (;;) {
+			result = sem_trywait_r(&data->controller_sem);
+			if (0 == result) {
+				break;
+			} else if (timedOut(data->state->deadline1) || data->error) {
+				break;
+			} else {
+				sigval_t val;
+				val.sival_ptr = data;
 
-			sigqueue(getpid(), SUSPEND_SIG, val);
+				/*
+				 * Because sigqueue is not reliable, we attempt to queue more signals in
+				 * the hopes that it will cause one of the remaining threads to respond.
+				 */
+				sigqueue(getpid(), SUSPEND_SIG, val);
+				omrthread_yield();
+			}
 		}
-	} while (result == -1 && !timedOut(data->state->deadline1) && !data->error);
-#else
-	result = sem_timedwait_r(&data->controller_sem, timeout(data->state->deadline1));
-#endif
+	}
 
 	if (result != 0 || data->error) {
 		/* we've not received notification from a client thread */
@@ -1722,7 +1745,6 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 		RECORD_ERROR(state, COLLECTION_FAILURE, result);
 		goto cleanup;
 	}
-
 
 	{
 		ucontext_t ut;

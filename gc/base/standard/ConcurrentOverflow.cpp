@@ -34,6 +34,7 @@
 #include "Packet.hpp"
 #include "ParallelTask.hpp"
 
+#include "WorkPackets.hpp"
 #include "ConcurrentOverflow.hpp"
 
 /**
@@ -111,6 +112,10 @@ MM_ConcurrentOverflow::emptyToOverflow(MM_EnvironmentBase *env, MM_Packet *packe
 	 * so it can take any remedial action */
 	collector->concurrentWorkStackOverflow();
 
+	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
+	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();
+	_extensions->globalGCStats.workPacketStats.setSTWWorkpacketCountAtOverflow(_workPackets->getActivePacketCount());
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	clearCardsForNewSpace(MM_EnvironmentStandard::getEnvironment(env), collector);
 #endif /*  OMR_GC_MODRON_SCAVENGER */
@@ -143,7 +148,11 @@ MM_ConcurrentOverflow::overflowItem(MM_EnvironmentBase *env, void *item, MM_Over
 	 * so it can take any remedial action 
 	 */
 	collector->concurrentWorkStackOverflow();
-	
+
+	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(true);
+	_extensions->globalGCStats.workPacketStats.incrementSTWWorkStackOverflowCount();
+	_extensions->globalGCStats.workPacketStats.setSTWWorkpacketCountAtOverflow(_workPackets->getActivePacketCount());
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	clearCardsForNewSpace(MM_EnvironmentStandard::getEnvironment(env), collector);
 #endif /*  OMR_GC_MODRON_SCAVENGER */

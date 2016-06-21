@@ -63,6 +63,7 @@
 #endif
 
 #if defined(J9ZOS390)
+#include "omrsimap.h"
 #include "omrsysinfo_helpers.h"
 #include "omrcsrsi.h"
 #endif /* defined(J9ZOS390) */
@@ -150,10 +151,6 @@
 #pragma linkage (GETNCPUS,OS)
 #pragma map (Get_Number_Of_CPUs,"GETNCPUS")
 uintptr_t Get_Number_Of_CPUs();
-
-#pragma linkage (GETPHYM,OS)
-#pragma map (Get_Physical_Memory,"GETPHYM")
-uintptr_t Get_Physical_Memory();
 
 #endif
 
@@ -1441,8 +1438,11 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 	/* on systems with 43K headers. However, this is not an issue as we only support AIX 5.2 and above only */
 	return (uint64_t) _system_configuration.physmem;
 #elif defined(J9ZOS390)
-	/* Get_Physical_Memory returns "SIZE OF ACTUAL REAL STORAGE ONLINE IN 'K'" */
-	return (uint64_t)Get_Physical_Memory() * 1024;
+	U_64 result = 0;
+	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
+	J9RCE * __ptr32 rcep = cvtp->cvtrcep;
+	result = ((U_64)rcep->rcepool * J9BYTES_PER_PAGE);
+	return result;
 #elif defined(OSX)
 	int name[2] = {CTL_HW, HW_MEMSIZE};
 	uint64_t size = 0;

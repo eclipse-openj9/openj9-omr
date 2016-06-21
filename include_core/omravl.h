@@ -19,6 +19,10 @@
 #ifndef OMRAVL_H
 #define OMRAVL_H
 
+/*
+ * @ddr_namespace: default
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

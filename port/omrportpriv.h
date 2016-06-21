@@ -19,6 +19,10 @@
 #ifndef omrportlibraryprivatedefines_h
 #define omrportlibraryprivatedefines_h
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 #include "omrmutex.h"

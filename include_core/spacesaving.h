@@ -17,6 +17,11 @@
  *******************************************************************************/
 #if !defined(SPACESAVING_H_)
 #define SPACESAVING_H_
+
+/*
+ * @ddr_namespace: default
+ */
+
 #include "ranking.h"
 
 #ifdef __cplusplus

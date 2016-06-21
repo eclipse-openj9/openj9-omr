@@ -19,6 +19,10 @@
 #ifndef SIZECLASSES_H_
 #define SIZECLASSES_H_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcomp.h"
 
 #if defined(OMR_GC_SEGREGATED_HEAP)

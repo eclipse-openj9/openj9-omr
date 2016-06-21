@@ -23,6 +23,11 @@
 #ifndef OMRCFG_H
 #define OMRCFG_H
 
+/*
+ * @ddr_namespace: map_to_type=OmrBuildFlags
+ * @ddr_options: buildflagsonly
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif

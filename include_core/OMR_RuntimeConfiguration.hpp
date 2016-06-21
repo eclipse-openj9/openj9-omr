@@ -19,6 +19,10 @@
 #if !defined(OMR_RUNTIMECONFIGURATION_HPP_)
 #define OMR_RUNTIMECONFIGURATION_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omr.h"
 #include "OMR_BaseNonVirtual.hpp"
 

@@ -18,6 +18,11 @@
 
 #ifndef OMRAGENT_INTERNAL_H
 #define OMRAGENT_INTERNAL_H
+
+/*
+ * @ddr_namespace: default
+ */
+
 /**
  * This header file is used internally by OMR library. OMR agents should not use this header file.
  * The structures defined in this file may be changed without notice.

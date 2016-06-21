@@ -18,6 +18,10 @@
 
 /* TODO: remove once include paths are sorted out */
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcomp.h"
 
 #if defined(J9ZOS390)

@@ -19,6 +19,10 @@
 #if !defined(OMRAGENT_H_INCLUDED)
 #define OMRAGENT_H_INCLUDED
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcomp.h"
 #include "omr.h"
 #include "ute_core.h"

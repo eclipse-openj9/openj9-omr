@@ -19,6 +19,10 @@
 #ifndef MM_OMRGCAPI_HPP_
 #define MM_OMRGCAPI_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omr.h"
 #include "objectdescription.h"
 #include "omrcomp.h"

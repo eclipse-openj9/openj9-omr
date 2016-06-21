@@ -19,6 +19,10 @@
 #ifndef OMRTHREADGENERATED_H
 #define OMRTHREADGENERATED_H
 
+/*
+ * @ddr_namespace: map_to_type=OmrthreadGeneratedConstants
+ */
+
 #include "omrcomp.h"
 /* Reducing the TLS slots from 127 to 123 on ZOS and from 128 to 124 on the rest
  * to compensate for adding thread category related functionality
@@ -185,6 +189,11 @@ typedef struct J9ThreadMonitorTracing {
 	J9_ABSTRACT_MONITOR_FIELDS_5 \
 	J9_ABSTRACT_MONITOR_FIELDS_6
 
+
+/*
+ * @ddr_namespace: map_to_type=J9ThreadAbstractMonitor
+ */
+
 typedef struct J9ThreadAbstractMonitor {
 	J9_ABSTRACT_MONITOR_FIELDS
 } J9ThreadAbstractMonitor;
@@ -205,6 +214,10 @@ typedef struct J9ThreadAbstractMonitor {
 #define J9THREAD_MONITOR_SPINLOCK_UNOWNED  0
 #define J9THREAD_MONITOR_SPINLOCK_OWNED  1
 #define J9THREAD_MONITOR_SPINLOCK_EXCEEDED  2
+
+/*
+ * @ddr_namespace: map_to_type=J9AbstractThread
+ */
 
 typedef struct J9AbstractThread {
 	J9_ABSTRACT_THREAD_FIELDS

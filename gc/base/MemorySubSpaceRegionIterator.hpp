@@ -25,6 +25,10 @@
 #if !defined(MEMORYSUBSPACEREGIONITERATOR_HPP_)
 #define MEMORYSUBSPACEREGIONITERATOR_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #include "modronbase.h"
 

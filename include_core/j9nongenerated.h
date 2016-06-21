@@ -44,6 +44,10 @@ typedef struct J9AVLTree {
 #define J9AVLTREENODE_LEFTCHILD(base) AVL_SRP_GETNODE((base)->leftChild)
 #define J9AVLTREENODE_RIGHTCHILD(base) AVL_SRP_GETNODE((base)->rightChild)
 
+/*
+ * @ddr_namespace: map_to_type=J9JITHashTable
+ */
+
 /* NOTE: JIT HashTable (and walk state) likely need to be pushed into the JIT side of jvm/jit compilation */
 typedef struct J9JITHashTable {
 	J9AVLTreeNode parentAVLTreeNode;
@@ -92,6 +96,10 @@ typedef struct J9CmdLineOption {
 
 /*TODO Temporary duplicate of J9VMGCSublistFragment from j9generated.h */
 
+/*
+ * @ddr_namespace: map_to_type=J9VMGC_SublistFragment
+ */
+
 typedef struct J9VMGC_SublistFragment {
 	uintptr_t *fragmentCurrent;
 	uintptr_t *fragmentTop;
@@ -121,6 +129,10 @@ typedef struct J9MemorySpaceDescription {
 	uintptr_t oldSpaceSize;
 	uintptr_t newSpaceSize;
 } J9MemorySpaceDescription;
+
+/*
+ * @ddr_namespace: map_to_type=J9MemorySegment
+ */
 
 typedef struct J9MemorySegment {
 	J9AVLTreeNode parentAVLTreeNode;

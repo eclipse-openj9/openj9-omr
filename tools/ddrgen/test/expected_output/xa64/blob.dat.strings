@@ -1,0 +1,1073 @@
+Blob Header:
+ coreVersion: 1
+ sizeofBool: 1
+ sizeofUDATA: 8
+ bitfieldFormat: 1
+ structDataSize: 3248
+ stringTableDataSize: 2714
+ structureCount: 64
+
+== STRINGS ==
+    1:        0 [2] Aa
+    2:        4 [2] Bb
+    3:        8 [2] Cc
+    4:        c [16] Sample1Constants
+    5:       1e [2] E1
+    6:       22 [2] E2
+    7:       26 [2] E3
+    8:       2a [1] E
+    9:       2e [1] x
+   10:       32 [9] uint16_t*
+   11:       3e [1] y
+   12:       42 [8] uint16_t
+   13:       4c [1] A
+   14:       50 [1] a
+   15:       54 [11] uint8_t[10]
+   16:       62 [1] b
+   17:       66 [16] uint16_t[10][10]
+   18:       78 [3] SOA
+   19:       7e [3] ihl
+   20:       84 [7] uint8_t
+   21:       8e [7] version
+   22:       98 [3] ecn
+   23:       9e [4] dscp
+   24:       a4 [7] tot_len
+   25:       ae [2] id
+   26:       b2 [7] fragOff
+   27:       bc [5] flags
+   28:       c4 [3] ttl
+   29:       ca [8] protocol
+   30:       d4 [5] check
+   31:       dc [5] saddr
+   32:       e4 [8] uint32_t
+   33:       ee [5] daddr
+   34:       f6 [4] IPv4
+   35:       fc [1] C
+   36:      100 [2] xy
+   37:      104 [8] struct C
+   38:      10e [1] z
+   39:      112 [1] D
+   40:      116 [8] ipHeader
+   41:      120 [11] struct IPv4
+   42:      12e [7] srcPort
+   43:      138 [8] destPort
+   44:      142 [6] length
+   45:      14a [8] checksum
+   46:      154 [9] UDPPacket
+   47:      160 [1] F
+   48:      164 [1] G
+   49:      168 [1] c
+   50:      16c [1] d
+   51:      170 [1] H
+   52:      174 [5] Empty
+   53:      17c [7] int64_t
+   54:      186 [5] width
+   55:      18e [6] height
+   56:      196 [3] Box
+   57:      19c [3] red
+   58:      1a2 [5] green
+   59:      1aa [4] blue
+   60:      1b0 [9] RGBColour
+   61:      1bc [2] i8
+   62:      1c0 [3] f16
+   63:      1c6 [5] arrI8
+   64:      1ce [10] uint8_t[1]
+   65:      1da [10] Uniondata1
+   66:      1e6 [3] i16
+   67:      1ec [3] f32
+   68:      1f2 [10] uint8_t[3]
+   69:      1fe [10] Uniondata2
+   70:      20a [10] uint8_t[4]
+   71:      216 [10] Uniondata3
+   72:      222 [10] uint8_t[5]
+   73:      22e [10] Uniondata4
+   74:      23a [4] name
+   75:      240 [8] char[32]
+   76:      24a [6] salary
+   77:      252 [5] float
+   78:      25a [9] worker_no
+   79:      266 [3] int
+   80:      26c [8] Unionjob
+   81:      276 [11] MyNamespace
+   82:      284 [1] e
+   83:      288 [14] MyNamespace__Q
+   84:      298 [24] MyNamespace__RGBColourV2
+   85:      2b2 [23] MyNamespace__Uniondata5
+   86:      2cc [20] ForwardDeclaredClass
+   87:      2e2 [27] fieldOfForwardDeclaredClass
+   88:      300 [28] struct ForwardDeclaredClass*
+   89:      31e [24] HasAForwardDeclaredClass
+   90:      338 [23] instanceOfMyNestedClass
+   91:      352 [22] MyClass::MyNestedClass
+   92:      36a [4] data
+   93:      370 [5] ENUM1
+   94:      378 [5] ENUM2
+   95:      380 [5] ENUM3
+   96:      388 [1] Z
+   97:      38c [17] struct MyClass::Z
+   98:      3a0 [11] instanceOfZ
+   99:      3ae [7] MyClass
+  100:      3b8 [22] MyClass__MyNestedClass
+  101:      3d0 [1] g
+  102:      3d4 [8] uint64_t
+  103:      3de [1] h
+  104:      3e2 [15] uint16_t[20][5]
+  105:      3f4 [10] MyClass__Z
+  106:      400 [5] IDATA
+  107:      408 [2] S1
+  108:      40c [2] b2
+  109:      410 [9] struct S1
+  110:      41c [2] S2
+  111:      420 [9] struct S2
+  112:      42c [2] T2
+  113:      430 [9] struct T2
+  114:      43c [1] f
+  115:      440 [9] struct T3
+  116:      44c [2] T4
+  117:      450 [10] something1
+  118:      45c [10] something2
+  119:      468 [10] something3
+  120:      474 [10] something4
+  121:      480 [10] something5
+  122:      48c [10] somethingN
+  123:      498 [6] MyEnum
+  124:      4a0 [4] ipv6
+  125:      4a6 [9] s.hi_ipv6
+  126:      4b2 [9] s.lo_ipv6
+  127:      4be [2] Ip
+  128:      4c2 [8] hashCode
+  129:      4cc [16] volatile int64_t
+  130:      4de [5] BoxV2
+  131:      4e6 [9] uintptr_t
+  132:      4f2 [5] data2
+  133:      4fa [9] const int
+  134:      506 [3] Foo
+  135:      50c [3] Bar
+  136:      512 [8] voidStar
+  137:      51c [5] void*
+  138:      524 [16] HasVoidStarField
+  139:      536 [1] i
+  140:      53a [7] int32_t
+  141:      544 [1] s
+  142:      548 [7] int16_t
+  143:      552 [14] UnionFieldType
+  144:      562 [11] unionField1
+  145:      570 [20] union UnionFieldType
+  146:      586 [11] unionField2
+  147:      594 [13] HasUnionField
+  148:      5a4 [1] q
+  149:      5a8 [16] volatile uint8_t
+  150:      5ba [1] r
+  151:      5be [13] const uint8_t
+  152:      5ce [2] S3
+  153:      5d2 [5] speed
+  154:      5da [6] double
+  155:      5e2 [7] Vehicle
+  156:      5ec [10] durability
+  157:      5f8 [3] Toy
+  158:      5fe [9] hasWheels
+  159:      60a [11] MatchboxCar
+  160:      618 [15] functionPointer
+  161:      62a [9] INT_ARRAY
+  162:      636 [25] StructWithFunctionPointer
+  163:      652 [1] l
+  164:      656 [8] long int
+  165:      660 [4] char
+  166:      666 [4] bool
+  167:      66c [2] S4
+  168:      670 [15] innerField1.ui8
+  169:      682 [15] innerField2.i16
+  170:      694 [23] innerField3.innerStruct
+  171:      6ae [20] struct ::InnerStruct
+  172:      6c4 [5] Outer
+  173:      6cc [3] i32
+  174:      6d2 [13] __InnerStruct
+  175:      6e2 [32] instanceOfInnerClassWithSameName
+  176:      704 [52] OuterClassWithDifferentName1::InnerClassWithSameName
+  177:      73a [28] OuterClassWithDifferentName1
+  178:      758 [52] OuterClassWithDifferentName1__InnerClassWithSameName
+  179:      78e [52] OuterClassWithDifferentName2::InnerClassWithSameName
+  180:      7c4 [28] OuterClassWithDifferentName2
+  181:      7e2 [52] OuterClassWithDifferentName2__InnerClassWithSameName
+  182:      818 [4] real
+  183:      81e [9] imaginary
+  184:      82a [12] Complex<int>
+  185:      838 [15] Complex<double>
+  186:      84a [20] arrayWithTypedefType
+  187:      860 [10] UDATA2[12]
+  188:      86c [21] SArrayWithTypedefType
+  189:      884 [11] numElements
+  190:      892 [6] intArr
+  191:      89a [5] int[]
+  192:      8a2 [14] SNoLengthArray
+  193:      8b2 [8] SEAHORSE
+  194:      8bc [9] TEST_FLAG
+  195:      8c8 [10] TEST_FLAG2
+  196:      8d4 [15] TEST_FLAG_UNDEF
+  197:      8e6 [25] TestFileInSubDirConstants
+  198:      902 [3] COW
+  199:      908 [19] TestHeaderConstants
+  200:      91e [18] myMapToTypeMacro1a
+  201:      932 [18] myMapToTypeMacro1b
+  202:      946 [14] MapToTypeTest1
+  203:      956 [17] myMapToTypeMacro2
+  204:      96a [20] Map_to_typeConstants
+  205:      980 [17] myMapToTypeMacro3
+  206:      994 [14] MapToTypeTest3
+  207:      9a4 [17] myMapToTypeMacro4
+  208:      9b8 [14] MapToTypeTest4
+  209:      9c8 [7] dolphin
+  210:      9d2 [4] fish
+  211:      9d8 [7] octopus
+  212:      9e2 [5] whale
+  213:      9ea [13] TestConstants
+  214:      9fa [8] CHAR_MAX
+  215:      a04 [8] CHAR_MIN
+  216:      a0e [7] INT_MAX
+  217:      a18 [7] INT_MIN
+  218:      a22 [8] LONG_MAX
+  219:      a2c [8] LONG_MIN
+  220:      a36 [9] SCHAR_MAX
+  221:      a42 [9] SCHAR_MIN
+  222:      a4e [8] SHRT_MAX
+  223:      a58 [8] SHRT_MIN
+  224:      a62 [9] UCHAR_MAX
+  225:      a6e [8] UINT_MAX
+  226:      a78 [9] ULONG_MAX
+  227:      a84 [9] USHRT_MAX
+  228:      a90 [7] CLimits
+
+== STRUCTS ==
+
+Struct name: A
+ no superName
+ sizeOf: 16
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: x
+  declaredType: uint16_t*
+  offset: 0
+ Field declaredName: y
+  declaredType: uint16_t
+  offset: 8
+
+Struct name: Bar
+ superName: Foo
+ sizeOf: 16
+ fieldCount: 0
+ constCount: 0
+
+Struct name: Box
+ no superName
+ sizeOf: 24
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: length
+  declaredType: int64_t
+  offset: 0
+ Field declaredName: width
+  declaredType: int64_t
+  offset: 8
+ Field declaredName: height
+  declaredType: int64_t
+  offset: 16
+
+Struct name: BoxV2
+ no superName
+ sizeOf: 32
+ fieldCount: 4
+ constCount: 0
+ Field declaredName: hashCode
+  declaredType: volatile int64_t
+  offset: 0
+ Field declaredName: length
+  declaredType: int64_t
+  offset: 8
+ Field declaredName: width
+  declaredType: int64_t
+  offset: 16
+ Field declaredName: height
+  declaredType: int64_t
+  offset: 24
+
+Struct name: C
+ no superName
+ sizeOf: 8
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: x
+  declaredType: uint32_t
+  offset: 0
+ Field declaredName: y
+  declaredType: uint32_t
+  offset: 4
+
+Struct name: CLimits
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 14
+ Constant name: CHAR_MAX
+  value: 127
+ Constant name: CHAR_MIN
+  value: -128
+ Constant name: INT_MAX
+  value: 2147483647
+ Constant name: INT_MIN
+  value: -2147483648
+ Constant name: LONG_MAX
+  value: 9223372036854775807
+ Constant name: LONG_MIN
+  value: -9223372036854775808
+ Constant name: SCHAR_MAX
+  value: 127
+ Constant name: SCHAR_MIN
+  value: -128
+ Constant name: SHRT_MAX
+  value: 32767
+ Constant name: SHRT_MIN
+  value: -32768
+ Constant name: UCHAR_MAX
+  value: 255
+ Constant name: UINT_MAX
+  value: 4294967295
+ Constant name: ULONG_MAX
+  value: -1
+ Constant name: USHRT_MAX
+  value: 65535
+
+Struct name: Complex<double>
+ no superName
+ sizeOf: 16
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: real
+  declaredType: double
+  offset: 0
+ Field declaredName: imaginary
+  declaredType: double
+  offset: 8
+
+Struct name: Complex<int>
+ no superName
+ sizeOf: 8
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: real
+  declaredType: int
+  offset: 0
+ Field declaredName: imaginary
+  declaredType: int
+  offset: 4
+
+Struct name: D
+ no superName
+ sizeOf: 12
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: xy
+  declaredType: struct C
+  offset: 0
+ Field declaredName: z
+  declaredType: uint32_t
+  offset: 8
+
+Struct name: E
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 3
+ Constant name: E1
+  value: 2
+ Constant name: E2
+  value: 3
+ Constant name: E3
+  value: 4
+
+Struct name: Empty
+ no superName
+ sizeOf: 1
+ fieldCount: 0
+ constCount: 0
+
+Struct name: F
+ no superName
+ sizeOf: 2
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: x
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: y
+  declaredType: uint16_t
+  offset: 2
+ Field declaredName: z
+  declaredType: uint16_t
+  offset: 4
+
+Struct name: Foo
+ no superName
+ sizeOf: 16
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: data
+  declaredType: uintptr_t
+  offset: 0
+ Field declaredName: data2
+  declaredType: const int
+  offset: 8
+
+Struct name: ForwardDeclaredClass
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 0
+
+Struct name: G
+ no superName
+ sizeOf: 4
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: x
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: y
+  declaredType: uint16_t
+  offset: 2
+ Field declaredName: z
+  declaredType: uint16_t
+  offset: 4
+
+Struct name: H
+ no superName
+ sizeOf: 4
+ fieldCount: 4
+ constCount: 0
+ Field declaredName: a
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: b
+  declaredType: uint16_t
+  offset: 2
+ Field declaredName: c
+  declaredType: uint16_t
+  offset: 4
+ Field declaredName: d
+  declaredType: uint16_t
+  offset: 6
+
+Struct name: HasAForwardDeclaredClass
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: fieldOfForwardDeclaredClass
+  declaredType: struct ForwardDeclaredClass*
+  offset: 0
+
+Struct name: HasUnionField
+ no superName
+ sizeOf: 8
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: unionField1
+  declaredType: union UnionFieldType
+  offset: 0
+ Field declaredName: unionField2
+  declaredType: union UnionFieldType
+  offset: 4
+
+Struct name: HasVoidStarField
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: voidStar
+  declaredType: void*
+  offset: 0
+
+Struct name: IPv4
+ no superName
+ sizeOf: 20
+ fieldCount: 13
+ constCount: 0
+ Field declaredName: ihl
+  declaredType: uint8_t
+  offset: 0
+ Field declaredName: version
+  declaredType: uint8_t
+  offset: 1
+ Field declaredName: ecn
+  declaredType: uint8_t
+  offset: 2
+ Field declaredName: dscp
+  declaredType: uint8_t
+  offset: 3
+ Field declaredName: tot_len
+  declaredType: uint16_t
+  offset: 4
+ Field declaredName: id
+  declaredType: uint16_t
+  offset: 6
+ Field declaredName: fragOff
+  declaredType: uint16_t
+  offset: 8
+ Field declaredName: flags
+  declaredType: uint16_t
+  offset: 10
+ Field declaredName: ttl
+  declaredType: uint8_t
+  offset: 12
+ Field declaredName: protocol
+  declaredType: uint8_t
+  offset: 13
+ Field declaredName: check
+  declaredType: uint16_t
+  offset: 14
+ Field declaredName: saddr
+  declaredType: uint32_t
+  offset: 16
+ Field declaredName: daddr
+  declaredType: uint32_t
+  offset: 20
+
+Struct name: Ip
+ no superName
+ sizeOf: 8
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: ipv6
+  declaredType: uint64_t
+  offset: 0
+ Field declaredName: s.hi_ipv6
+  declaredType: uint32_t
+  offset: 0
+ Field declaredName: s.lo_ipv6
+  declaredType: uint32_t
+  offset: 4
+
+Struct name: MapToTypeTest1
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 2
+ Constant name: myMapToTypeMacro1a
+  value: 13
+ Constant name: myMapToTypeMacro1b
+  value: 14
+
+Struct name: MapToTypeTest3
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 1
+ Constant name: myMapToTypeMacro3
+  value: 33
+
+Struct name: MapToTypeTest4
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 1
+ Constant name: myMapToTypeMacro4
+  value: 43
+
+Struct name: Map_to_typeConstants
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 1
+ Constant name: myMapToTypeMacro2
+  value: 23
+
+Struct name: MatchboxCar
+ superName: Toy
+ sizeOf: 16
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: hasWheels
+  declaredType: int
+  offset: 0
+
+Struct name: MyClass
+ no superName
+ sizeOf: 440
+ fieldCount: 4
+ constCount: 3
+ Field declaredName: instanceOfMyNestedClass
+  declaredType: MyClass::MyNestedClass
+  offset: 0
+ Field declaredName: data
+  declaredType: int64_t
+  offset: 4
+ Field declaredName: Z
+  declaredType: struct MyClass::Z
+  offset: 16
+ Field declaredName: instanceOfZ
+  declaredType: struct MyClass::Z
+  offset: 224
+ Constant name: ENUM1
+  value: 0
+ Constant name: ENUM2
+  value: 1
+ Constant name: ENUM3
+  value: 2
+
+Struct name: MyClass__MyNestedClass
+ no superName
+ sizeOf: 4
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: d
+  declaredType: int
+  offset: 0
+
+Struct name: MyClass__Z
+ no superName
+ sizeOf: 208
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: g
+  declaredType: uint64_t
+  offset: 0
+ Field declaredName: h
+  declaredType: uint16_t[20][5]
+  offset: 8
+
+Struct name: MyEnum
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 6
+ Constant name: something1
+  value: 0
+ Constant name: something2
+  value: 1
+ Constant name: something3
+  value: 2
+ Constant name: something4
+  value: 3
+ Constant name: something5
+  value: 4
+ Constant name: somethingN
+  value: 5
+
+Struct name: MyNamespace
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 0
+
+Struct name: MyNamespace__Q
+ no superName
+ sizeOf: 202
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: d
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: e
+  declaredType: uint16_t[10][10]
+  offset: 2
+
+Struct name: MyNamespace__RGBColourV2
+ no superName
+ sizeOf: 3
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: red
+  declaredType: uint8_t
+  offset: 0
+ Field declaredName: green
+  declaredType: uint8_t
+  offset: 1
+ Field declaredName: blue
+  declaredType: uint8_t
+  offset: 2
+
+Struct name: MyNamespace__Uniondata5
+ no superName
+ sizeOf: 4
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: i16
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: f32
+  declaredType: uint32_t
+  offset: 2
+ Field declaredName: arrI8
+  declaredType: uint8_t[3]
+  offset: 6
+
+Struct name: Outer
+ no superName
+ sizeOf: 8
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: innerField1.ui8
+  declaredType: uint8_t
+  offset: 0
+ Field declaredName: innerField2.i16
+  declaredType: int16_t
+  offset: 0
+ Field declaredName: innerField3.innerStruct
+  declaredType: struct ::InnerStruct
+  offset: 0
+
+Struct name: OuterClassWithDifferentName1
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: instanceOfInnerClassWithSameName
+  declaredType: OuterClassWithDifferentName1::InnerClassWithSameName
+  offset: 0
+
+Struct name: OuterClassWithDifferentName1__InnerClassWithSameName
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: g
+  declaredType: double
+  offset: 0
+
+Struct name: OuterClassWithDifferentName2
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: instanceOfInnerClassWithSameName
+  declaredType: OuterClassWithDifferentName2::InnerClassWithSameName
+  offset: 0
+
+Struct name: OuterClassWithDifferentName2__InnerClassWithSameName
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: h
+  declaredType: double
+  offset: 0
+
+Struct name: RGBColour
+ no superName
+ sizeOf: 3
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: red
+  declaredType: uint8_t
+  offset: 0
+ Field declaredName: green
+  declaredType: uint8_t
+  offset: 1
+ Field declaredName: blue
+  declaredType: uint8_t
+  offset: 2
+
+Struct name: S1
+ no superName
+ sizeOf: 4
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: a
+  declaredType: IDATA
+  offset: 0
+
+Struct name: S2
+ no superName
+ sizeOf: 8
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: b
+  declaredType: IDATA
+  offset: 0
+ Field declaredName: b2
+  declaredType: struct S1
+  offset: 4
+
+Struct name: S3
+ no superName
+ sizeOf: 2
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: q
+  declaredType: volatile uint8_t
+  offset: 0
+ Field declaredName: r
+  declaredType: const uint8_t
+  offset: 1
+
+Struct name: S4
+ no superName
+ sizeOf: 32
+ fieldCount: 5
+ constCount: 0
+ Field declaredName: i
+  declaredType: int
+  offset: 0
+ Field declaredName: l
+  declaredType: long int
+  offset: 4
+ Field declaredName: d
+  declaredType: double
+  offset: 12
+ Field declaredName: c
+  declaredType: char
+  offset: 20
+ Field declaredName: b
+  declaredType: bool
+  offset: 21
+
+Struct name: SArrayWithTypedefType
+ no superName
+ sizeOf: 48
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: arrayWithTypedefType
+  declaredType: UDATA2[12]
+  offset: 0
+
+Struct name: SNoLengthArray
+ no superName
+ sizeOf: 4
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: numElements
+  declaredType: int
+  offset: 0
+ Field declaredName: intArr
+  declaredType: int[]
+  offset: 4
+
+Struct name: SOA
+ no superName
+ sizeOf: 210
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: a
+  declaredType: uint8_t[10]
+  offset: 0
+ Field declaredName: b
+  declaredType: uint16_t[10][10]
+  offset: 10
+
+Struct name: Sample1Constants
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 3
+ Constant name: Aa
+  value: 0
+ Constant name: Bb
+  value: 1
+ Constant name: Cc
+  value: 2
+
+Struct name: StructWithFunctionPointer
+ no superName
+ sizeOf: 88
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: functionPointer
+  declaredType: void*
+  offset: 0
+ Field declaredName: i
+  declaredType: INT_ARRAY
+  offset: 8
+
+Struct name: T2
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: c
+  declaredType: struct S2
+  offset: 0
+
+Struct name: T4
+ no superName
+ sizeOf: 24
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: d
+  declaredType: struct T2
+  offset: 0
+ Field declaredName: e
+  declaredType: struct S2
+  offset: 8
+ Field declaredName: f
+  declaredType: struct T3
+  offset: 16
+
+Struct name: TestConstants
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 4
+ Constant name: dolphin
+  value: 11
+ Constant name: fish
+  value: 4
+ Constant name: octopus
+  value: 11
+ Constant name: whale
+  value: 7
+
+Struct name: TestFileInSubDirConstants
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 4
+ Constant name: SEAHORSE
+  value: 77
+ Constant name: TEST_FLAG
+  value: 1
+ Constant name: TEST_FLAG2
+  value: 1
+ Constant name: TEST_FLAG_UNDEF
+  value: 0
+
+Struct name: TestHeaderConstants
+ no superName
+ sizeOf: 0
+ fieldCount: 0
+ constCount: 1
+ Constant name: COW
+  value: 1
+
+Struct name: Toy
+ no superName
+ sizeOf: 4
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: durability
+  declaredType: int
+  offset: 0
+
+Struct name: UDPPacket
+ no superName
+ sizeOf: 28
+ fieldCount: 5
+ constCount: 0
+ Field declaredName: ipHeader
+  declaredType: struct IPv4
+  offset: 0
+ Field declaredName: srcPort
+  declaredType: uint16_t
+  offset: 20
+ Field declaredName: destPort
+  declaredType: uint16_t
+  offset: 22
+ Field declaredName: length
+  declaredType: uint16_t
+  offset: 24
+ Field declaredName: checksum
+  declaredType: uint16_t
+  offset: 26
+
+Struct name: UnionFieldType
+ no superName
+ sizeOf: 4
+ fieldCount: 2
+ constCount: 0
+ Field declaredName: i
+  declaredType: int32_t
+  offset: 0
+ Field declaredName: s
+  declaredType: int16_t
+  offset: 4
+
+Struct name: Uniondata1
+ no superName
+ sizeOf: 4
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: i8
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: f16
+  declaredType: uint32_t
+  offset: 2
+ Field declaredName: arrI8
+  declaredType: uint8_t[1]
+  offset: 6
+
+Struct name: Uniondata2
+ no superName
+ sizeOf: 4
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: i16
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: f32
+  declaredType: uint32_t
+  offset: 2
+ Field declaredName: arrI8
+  declaredType: uint8_t[3]
+  offset: 6
+
+Struct name: Uniondata3
+ no superName
+ sizeOf: 4
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: i16
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: f32
+  declaredType: uint32_t
+  offset: 2
+ Field declaredName: arrI8
+  declaredType: uint8_t[4]
+  offset: 6
+
+Struct name: Uniondata4
+ no superName
+ sizeOf: 8
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: i16
+  declaredType: uint16_t
+  offset: 0
+ Field declaredName: f32
+  declaredType: uint32_t
+  offset: 2
+ Field declaredName: arrI8
+  declaredType: uint8_t[5]
+  offset: 6
+
+Struct name: Unionjob
+ no superName
+ sizeOf: 32
+ fieldCount: 3
+ constCount: 0
+ Field declaredName: name
+  declaredType: char[32]
+  offset: 0
+ Field declaredName: salary
+  declaredType: float
+  offset: 32
+ Field declaredName: worker_no
+  declaredType: int
+  offset: 36
+
+Struct name: Vehicle
+ no superName
+ sizeOf: 8
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: speed
+  declaredType: double
+  offset: 0
+
+Struct name: __InnerStruct
+ no superName
+ sizeOf: 4
+ fieldCount: 1
+ constCount: 0
+ Field declaredName: i32
+  declaredType: int32_t
+  offset: 0

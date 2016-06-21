@@ -19,6 +19,10 @@
 #if !defined(OMRGCCONSTS_H_)
 #define OMRGCCONSTS_H_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 

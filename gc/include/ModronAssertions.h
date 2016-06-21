@@ -19,6 +19,10 @@
 #if !defined(MODRONASSERTIONS_H__)
 #define MODRONASSERTIONS_H__
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 #include "ut_j9mm.h"

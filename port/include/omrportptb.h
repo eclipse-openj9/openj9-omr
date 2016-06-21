@@ -19,6 +19,10 @@
 #ifndef omrportptb_h
 #define omrportptb_h
 
+/*
+ * @ddr_namespace: map_to_type=J9PortptbConstants
+ */
+
 /**
  * @file
  * @ingroup Port

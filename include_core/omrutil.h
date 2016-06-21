@@ -19,6 +19,10 @@
 #ifndef OMRUTIL_H_INCLUDED
 #define OMRUTIL_H_INCLUDED
 
+/*
+ * @ddr_namespace: default
+ */
+
 /**
 * This file contains public function prototypes and
 * type definitions for the util_core module.

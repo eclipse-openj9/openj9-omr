@@ -19,6 +19,10 @@
 #if !defined(OMR_VM_HPP_)
 #define OMR_VM_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omr.h"
 #include "OMR_BaseNonVirtual.hpp"
 #include "OMR_VMConfiguration.hpp"

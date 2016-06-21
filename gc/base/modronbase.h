@@ -19,6 +19,10 @@
 #if !defined(MODRONBASE_H_)
 #define MODRONBASE_H_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 #include "omrgcconsts.h"

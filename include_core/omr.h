@@ -19,6 +19,10 @@
 #ifndef omr_h
 #define omr_h
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrport.h"
 
 #define OMRPORT_ACCESS_FROM_OMRRUNTIME(omrRuntime) OMRPortLibrary *privateOmrPortLibrary = (omrRuntime)->_portLibrary

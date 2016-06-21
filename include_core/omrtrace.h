@@ -19,6 +19,10 @@
 #ifndef OMR_TRACE_H_INCLUDED
 #define OMR_TRACE_H_INCLUDED
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "ute_core.h"
 
 #ifdef  __cplusplus

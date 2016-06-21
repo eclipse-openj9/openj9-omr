@@ -19,6 +19,10 @@
 #ifndef thread_api_h
 #define thread_api_h
 
+/*
+ * @ddr_namespace: map_to_type=ThreadApiConstants
+ */
+
 /**
 * @file thread_api.h
 * @brief Public API for the THREAD module.

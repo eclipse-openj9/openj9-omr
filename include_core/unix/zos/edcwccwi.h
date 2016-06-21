@@ -15,7 +15,11 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-                                                                                
+
+/*
+ * @ddr_namespace: default
+ */
+
                    ??=ifndef __edcwccwi                                         
                    ??=ifdef __COMPILER_VER__                                    
                      ??=pragma filetag("IBM-1047")                              

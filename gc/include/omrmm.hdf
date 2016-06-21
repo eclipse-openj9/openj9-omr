@@ -22,7 +22,11 @@
 	<description>Memory manager OMR hookable events</description>
 
 	<declarations>
-	
+
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omr.h"
 #include "objectdescription.h"
 

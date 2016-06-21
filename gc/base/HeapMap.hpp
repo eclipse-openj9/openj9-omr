@@ -19,6 +19,10 @@
 #if !defined(HEAPMAP_HPP_)
 #define HEAPMAP_HPP_
 
+/*
+ * @ddr_namespace: map_to_type=MM_HeapMap
+ */
+
 #include "omrcfg.h"
 #include "omrcomp.h"
 #include "modronbase.h"

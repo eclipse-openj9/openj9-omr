@@ -19,6 +19,10 @@
 #if !defined(OMR_BASE_HPP_)
 #define OMR_BASE_HPP_
 
+/*
+ * @ddr_namespace: default
+ */
+
 #include "omrcomp.h"
 
 class OMR_Base

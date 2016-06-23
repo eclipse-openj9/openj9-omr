@@ -21,7 +21,6 @@ autom4te.cache
 config.cache
 config.log
 config.status
-install-sh
 SPEC
 
 OMR_VERSION_STRING

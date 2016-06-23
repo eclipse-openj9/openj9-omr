@@ -654,15 +654,15 @@ trcRegisterRecordSubscriber(OMR_TraceThread *thr, const char *description, utsSu
 	OMRPORT_ACCESS_FROM_OMRPORT(OMR_TRACEGLOBAL(portLibrary));
 	UtSubscription *subscription = (UtSubscription *)omrmem_allocate_memory(sizeof(UtSubscription), OMRMEM_CATEGORY_TRACE);
 	if (subscription == NULL) {
-		UT_DBGOUT(1, ("<UT thr="UT_POINTER_SPEC"> Out of memory allocating subscription\n", thr));
+		UT_DBGOUT(1, ("<UT thr=" UT_POINTER_SPEC "> Out of memory allocating subscription\n", thr));
 		return OMR_ERROR_OUT_OF_NATIVE_MEMORY;
 	}
 
 	incrementRecursionCounter(thr);
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Acquiring lock for registration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Acquiring lock for registration\n", thr));
 	omrthread_monitor_enter(OMR_TRACEGLOBAL(subscribersLock));
 	getTraceLock(thr);
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Lock acquired for registration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Lock acquired for registration\n", thr));
 
 	if (subscriptionReference != NULL) {
 		*subscriptionReference = subscription;
@@ -679,7 +679,7 @@ trcRegisterRecordSubscriber(OMR_TraceThread *thr, const char *description, utsSu
 	descriptionLen = strlen(description);
 	subscription->description = (char *)omrmem_allocate_memory(sizeof(char) * (descriptionLen + 1), OMRMEM_CATEGORY_TRACE);
 	if (subscription->description == NULL) {
-		UT_DBGOUT(1, ("<UT thr="UT_POINTER_SPEC"> Out of memory allocating description\n", thr));
+		UT_DBGOUT(1, ("<UT thr=" UT_POINTER_SPEC "> Out of memory allocating description\n", thr));
 		result = OMR_ERROR_OUT_OF_NATIVE_MEMORY;
 		goto out;
 	}
@@ -697,10 +697,10 @@ out:
 		destroyRecordSubscriber(thr, subscription, FALSE);
 	}
 
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Releasing lock for registration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Releasing lock for registration\n", thr));
 	freeTraceLock(thr);
 	omrthread_monitor_exit(OMR_TRACEGLOBAL(subscribersLock));
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Lock released for registration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Lock released for registration\n", thr));
 	decrementRecursionCounter(thr);
 	return result;
 }
@@ -726,21 +726,21 @@ trcDeregisterRecordSubscriber(OMR_TraceThread *thr, UtSubscription *subscription
 	}
 
 	incrementRecursionCounter(thr);
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Acquiring lock for deregistration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Acquiring lock for deregistration\n", thr));
 	omrthread_monitor_enter(OMR_TRACEGLOBAL(subscribersLock));
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Lock acquired for deregistration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Lock acquired for deregistration\n", thr));
 
 	if (findRecordSubscriber(subscriptionID)) {
 		getTraceLock(thr);
 		destroyRecordSubscriber(thr, subscriptionID, TRUE);
 		freeTraceLock(thr);
 	} else {
-		UT_DBGOUT(1, ("<UT thr="UT_POINTER_SPEC"> Failed to find subscriber to deregister\n", thr));
+		UT_DBGOUT(1, ("<UT thr=" UT_POINTER_SPEC "> Failed to find subscriber to deregister\n", thr));
 		result = OMR_ERROR_ILLEGAL_ARGUMENT;
 	}
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Releasing lock for deregistration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Releasing lock for deregistration\n", thr));
 	omrthread_monitor_exit(OMR_TRACEGLOBAL(subscribersLock));
-	UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Lock released for deregistration\n", thr));
+	UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Lock released for deregistration\n", thr));
 	decrementRecursionCounter(thr);
 	return result;
 }
@@ -964,7 +964,7 @@ destroyRecordSubscriber(OMR_TraceThread *thr, UtSubscription *subscription, BOOL
 
 	if (NULL == OMR_TRACEGLOBAL(subscribers)) {
 		OMR_TRACEGLOBAL(traceInCore) = TRUE;
-		UT_DBGOUT(5, ("<UT thr="UT_POINTER_SPEC"> Set traceInCore to TRUE\n", thr));
+		UT_DBGOUT(5, ("<UT thr=" UT_POINTER_SPEC "> Set traceInCore to TRUE\n", thr));
 	}
 
 	deleteRecordSubscriber(omrTraceGlobal, subscription);

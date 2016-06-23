@@ -267,7 +267,7 @@ getTrcBuf(OMR_TraceThread *thr, OMR_TraceBuffer *oldBuf, int bufferType)
 		}
 
 		VM_AtomicSupport::addU32((volatile uint32_t *)&OMR_TRACEGLOBAL(allocatedTraceBuffers), 1);
-		UT_DBGOUT(1, ("<UT> Allocated buffer %i " UT_POINTER_SPEC"\n", OMR_TRACEGLOBAL(allocatedTraceBuffers), trcBuf));
+		UT_DBGOUT(1, ("<UT> Allocated buffer %i " UT_POINTER_SPEC "\n", OMR_TRACEGLOBAL(allocatedTraceBuffers), trcBuf));
 	}
 
 
@@ -702,7 +702,7 @@ traceV(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char
 	/* additional sanity check */
 	if ((p < (char *)&trcBuf->record) || (p > ((char *)&trcBuf->record + OMR_TRACEGLOBAL(bufferSize)))) {
 		/* the buffer's been mangled so free it for reuse and acquire another */
-		UT_DBGOUT(1, ("<UT> invalid nextEntry value in record. Freed trace buffer for thread "UT_POINTER_SPEC" and reinitialized\n", thr));
+		UT_DBGOUT(1, ("<UT> invalid nextEntry value in record. Freed trace buffer for thread " UT_POINTER_SPEC " and reinitialized\n", thr));
 
 		releaseTraceBuffer(thr, trcBuf);
 		thr->trcBuf = NULL;

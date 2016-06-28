@@ -466,16 +466,17 @@ MM_MemoryPoolLargeObjects::resetLOASize(MM_EnvironmentBase* env, double newLOARa
 	uintptr_t newLOASize, oldAreaSize;
 	bool debug = _extensions->debugLOAResize;
 
-	_currentLOARatio = newLOARatio;
-
-	/* Get total size of owning subspace */
-	oldAreaSize = _memorySubSpace->getActiveMemorySize();
-
-	/* Calculate LOA size based on new loa ratio */
-	newLOASize = MM_Math::roundToFloor(_extensions->heapAlignment, (uintptr_t)(oldAreaSize * _currentLOARatio));
-
 	/* Has LOA changed in size ? */
-	if (oldLOASize != newLOASize) {
+	if (_currentLOARatio != newLOARatio) {
+
+		_currentLOARatio = newLOARatio;
+
+		/* Get total size of owning subspace */
+		oldAreaSize = _memorySubSpace->getActiveMemorySize();
+
+		/* Calculate LOA size based on new loa ratio */
+		newLOASize = MM_Math::roundToFloor(_extensions->heapAlignment, (uintptr_t)(oldAreaSize * _currentLOARatio));
+
 		HeapResizeType resizeType = HEAP_NO_RESIZE;
 		uintptr_t resizeSize = 0;
 		/* Does this leave a reasonable sized LOA ? */

@@ -203,6 +203,9 @@ struct {
 #if defined(AIXPPC)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
 #endif
+#if defined(J9ZOS390)
+	, {OMRPORT_SIG_FLAG_SIGABEND, SIGABND}
+#endif
 
 };
 
@@ -967,18 +970,22 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		int rc = omrsig_handler(signal, (void *)sigInfo, contextInfo);
 #if !defined(J9ZOS390)
 		if ((OMRSIG_RC_DEFAULT_ACTION_REQUIRED == rc) && (SI_USER != sigInfo->si_code)) {
-#else /* !defined(J9ZOS390) */
-		if ((OMRSIG_RC_DEFAULT_ACTION_REQUIRED == rc) && J9_ARE_ANY_BITS_SET(sigInfo->si_code, _ABND_REAL)) {
-#endif /* !defined(J9ZOS390) */
 			abort();
 		}
+#endif /* !defined(J9ZOS390) */
 	}
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
 	/* if we got this far there weren't any handlers on the stack that knew what to with this signal
 	 * default action is to abort */
-	abort();
-
+#if defined(J9ZOS390)
+	if (SIGABND != signal) {
+		/* Percolate unhandled SIGABND and let the default action occur */
+#endif /* defined(J9ZOS390) */
+		abort();
+#if defined(J9ZOS390)
+	}
+#endif /* defined(J9ZOS390) */
 }
 
 

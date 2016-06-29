@@ -37,7 +37,7 @@ MODULE_INCLUDES += \
   $(OMR_IPATH) \
   $(OMRGC_IPATH)
 
-MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
+MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS) -DSPEC=$(SPEC)
 
 vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 

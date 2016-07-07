@@ -37,6 +37,7 @@ CONFIGURE_ARGS += \
 ifeq (linux_x86-64_cmprssptrs_cuda, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
@@ -53,6 +54,7 @@ endif
 ifeq (linux_x86-64_cmprssptrs, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
@@ -68,6 +70,7 @@ endif
 ifeq (linux_x86-64_codecov, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
@@ -80,6 +83,7 @@ endif
 ifeq (linux_x86-64_cuda, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
@@ -93,6 +97,7 @@ endif
 ifeq (linux_x86-64, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
@@ -105,6 +110,7 @@ endif
 ifeq (linux_x86_codecov, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
@@ -116,6 +122,7 @@ endif
 ifeq (linux_x86, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_UNIX \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \

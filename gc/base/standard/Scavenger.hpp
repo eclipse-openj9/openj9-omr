@@ -99,8 +99,9 @@ private:
 	omrthread_monitor_t _freeCacheMonitor; /**< monitor to synchronize threads on free list */
 	volatile uintptr_t _waitingCount; /**< count of threads waiting  on scan cache queues (blocked via _scanCacheMonitor); threads never wait on _freeCacheMonitor */
 	uintptr_t _cacheLineAlignment; /**< The number of bytes per cache line which is used to determine which boundaries in memory represent the beginning of a cache line */
-
-	volatile bool _rescanThreadsForRememberedObjects; /**< VMDESIGN 2048: Indicates that thread-referenced objects were tenured and threads must be rescanned */
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
+#endif	
 	bool _backOutFlag; /**< set to true if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
 	uintptr_t _backOutDoneIndex; /**< snapshot of _doneIndex, when backOut was detected */
 
@@ -356,12 +357,11 @@ private:
 	MMINLINE void setRememberedSetOverflowState() { _extensions->setRememberedSetOverflowState(); }
 	MMINLINE void clearRememberedSetOverflowState() { _extensions->clearRememberedSetOverflowState(); }
 
-	/* VMDESIGN 2048: Auto-remember stack objects so JIT can omit generational barriers */
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* Auto-remember stack objects so JIT can omit generational barriers */
 	void rescanThreadSlots(MM_EnvironmentStandard *env);
-
 	/**
 	 * Determine if the specified remembered object was referenced by a thread or stack.
-	 * @see VMDESIGN 2048
 	 *
 	 * @param env[in] the current thread
 	 * @param objectPtr[in] a remembered object
@@ -379,6 +379,7 @@ private:
 	 * @return true if the object is a remembered thread reference
 	 */
 	bool processRememberedThreadReference(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	void clearGCStats(MM_EnvironmentStandard *env);
 	void mergeGCStats(MM_EnvironmentStandard *env);
@@ -579,6 +580,7 @@ public:
 	 */
 	void copyAndForwardThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect);
 
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
 	 * This function is called at the end of scavenging if any stack- (or thread-) referenced
 	 * objects were tenured during the scavenge. It is called by the RootScanner on each thread
@@ -588,6 +590,7 @@ public:
 	 * @param objectPtrIndirect[in] the slot to process
 	 */
 	void rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect);
+#endif
 
 	uintptr_t getArraySplitAmount(MM_EnvironmentStandard *env, uintptr_t sizeInElements);
 
@@ -639,7 +642,9 @@ public:
 		, _freeCacheMonitor(NULL)
 		, _waitingCount(0)
 		, _cacheLineAlignment(0)
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, _rescanThreadsForRememberedObjects(false)
+#endif
 		, _backOutFlag(false)
 		, _backOutDoneIndex(0)
 		, _heapBase(NULL)

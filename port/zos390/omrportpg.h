@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -55,7 +55,7 @@ typedef struct OMRPortPlatformGlobals {
 	/* This must only be set in omrsignal_startup() so that subsequent reads of this don't need to worry about synchronization */
 	BOOLEAN resumableTrapsSupported;
 	/* This must only be set in omrvmem_startup() so that subsequent reads of this don't need to worry about synchronization */
-	BOOLEAN twoToThirtyTwoGigAreaSupported;
+	uintptr_t userExtendedPrivateAreaMemoryType;
 	BOOLEAN loggingEnabled;
 	BOOLEAN fileTextIconvOpenFailed; /* this gets implicitly initialized to FALSE when the globals are allocated. */
 	BOOLEAN globalConverterEnabled;
@@ -76,7 +76,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_mem_mem32_subAllocHeapMem32 (portLibrary->portGlobals->platformGlobals.subAllocHeapMem32)
 #endif
 #define PPG_resumableTrapsSupported	(portLibrary->portGlobals->platformGlobals.resumableTrapsSupported)
-#define PPG_twoToThirtyTwoGigAreaSupported (portLibrary->portGlobals->platformGlobals.twoToThirtyTwoGigAreaSupported)
+#define PPG_userExtendedPrivateAreaMemoryType (portLibrary->portGlobals->platformGlobals.userExtendedPrivateAreaMemoryType)
 #define PPG_syslog_enabled (portLibrary->portGlobals->platformGlobals.loggingEnabled)
 #define PPG_syslog_flags (portLibrary->portGlobals->platformGlobals.systemLoggingFlags)
 #define PPG_file_text_iconv_open_failed (portLibrary->portGlobals->platformGlobals.fileTextIconvOpenFailed)

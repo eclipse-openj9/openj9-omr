@@ -17,7 +17,7 @@
 *    and/or initial documentation
 ***********************************************************************
 
-         TITLE 'Get_Two_to_Thirtytwo_Supported'
+         TITLE 'getUserExtendedPrivateAreaMemoryType'
 
 R0       EQU   0
 R1       EQU   1      Input: nothing
@@ -50,11 +50,18 @@ GETTTT   CELQPRLG BASEREG=6,DSASIZE=0
          L     R2,CVTRCEP     Load CVTRCEP addr from CVT
          USING RCE,R2         Map RCE
 
+* Test to see if Rce_Use2gto64gEnable bit is on
+         TM    RCEFLAGS4,X'08'
+         BZ    GET32G
+* Load return value 0x2 into R3 to indicate 2_to_64G found
+         LA    R3,2
+         B     EXIT
+
 *
 * Test to see if RCEUSE2GTo32GAREAOK bit is on
-         TM    RCEFLAGS,X'02'
+GET32G   TM    RCEFLAGS,X'02'
          BZ    EXIT
-* Load return value 0x1 into R3 to indicate success
+* Load return value 0x1 into R3 to indicate 2_to_32G found
          LA    R3,1
          B     EXIT           Without this branch fails at runtime
 EXIT     DS    0F

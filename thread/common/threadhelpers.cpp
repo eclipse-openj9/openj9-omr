@@ -60,7 +60,7 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 	for (uintptr_t spinCount3 = monitor->spinCount3; spinCount3 > 0; spinCount3--) {
 		for (uintptr_t spinCount2 = monitor->spinCount2; spinCount2 > 0; spinCount2--) {
 			/* Try to put 0 into the target field (-1 indicates free)'. */
-			if ((*target == oldState) && (oldState == VM_AtomicSupport::lockCompareExchange(target, oldState, newState))) {
+			if (oldState == VM_AtomicSupport::lockCompareExchange(target, oldState, newState, true)) {
 #if defined(OMR_THR_JLM)
 				if (NULL != tracing) {
 					/* Update JLM spin counts after partial set of spins - add JLM counts atomically.
@@ -126,7 +126,7 @@ omrthread_spinlock_acquire_no_spin(omrthread_t self, omrthread_monitor_t monitor
 	volatile uintptr_t *target = (volatile uintptr_t *)&monitor->spinlockState;
 	uintptr_t oldState = J9THREAD_MONITOR_SPINLOCK_UNOWNED;
 	uintptr_t newState = J9THREAD_MONITOR_SPINLOCK_OWNED;
-	if ((*target == oldState) && (oldState == VM_AtomicSupport::lockCompareExchange(target, oldState, newState))) {
+	if (oldState == VM_AtomicSupport::lockCompareExchange(target, oldState, newState, true)) {
 		result = 0;
 		VM_AtomicSupport::readBarrier();
 	}

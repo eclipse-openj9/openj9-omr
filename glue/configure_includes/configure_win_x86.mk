@@ -28,6 +28,7 @@ endif
 ifeq (win_x86-64_cmprssptrs_cuda, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_WIN32 \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
@@ -44,6 +45,7 @@ endif
 ifeq (win_x86-64_cmprssptrs, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_WIN32 \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
@@ -59,6 +61,7 @@ endif
 ifeq (win_x86-64_cuda, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_WIN32 \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
@@ -72,6 +75,7 @@ endif
 ifeq (win_x86-64, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_WIN32 \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
@@ -84,6 +88,7 @@ endif
 ifeq (win_x86, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_WIN32 \
+    --enable-OMR_ARCH_X86 \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_TLH_PREFETCH_FTA \
     --enable-OMR_PORT_ALLOCATE_TOP_DOWN \

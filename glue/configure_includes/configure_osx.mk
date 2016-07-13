@@ -21,6 +21,7 @@ TEMP_TARGET_DATASIZE:=64
 
 CONFIGURE_ARGS += \
   --enable-OMRTHREAD_LIB_UNIX \
+  --enable-OMR_ARCH_X86 \
   --enable-OMR_ENV_DATA64 \
   --enable-OMR_ENV_LITTLE_ENDIAN \
   --enable-OMR_GC_TLH_PREFETCH_FTA \

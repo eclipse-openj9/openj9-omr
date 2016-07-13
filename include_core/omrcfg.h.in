@@ -106,14 +106,24 @@ extern "C" {
 @OMRTHREAD_LIB_ZOS@
 
 /**
+ * This spec targets PPC processors.
+ */
+@OMR_ARCH_POWER@
+
+/**
  * This spec targets ARM processors.
  */
 @OMR_ARCH_ARM@
 
 /**
- * This spec targets PPC processors.
+ * This spec targets x86 processors.
  */
-@OMR_ARCH_POWER@
+@OMR_ARCH_X86@
+
+/**
+ * This spec targets S390 processors.
+ */
+@OMR_ARCH_S390@
 
 @OMR_ENV_DATA64@
 @OMR_ENV_GCC@

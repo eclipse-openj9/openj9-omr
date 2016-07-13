@@ -641,7 +641,10 @@ OMR_PORT_NUMA_SUPPORT
 OMR_ENV_GCC
 OMR_GC_TLH_PREFETCH_FTA
 OMR_ENV_LITTLE_ENDIAN
+OMR_ARCH_POWER
 OMR_ARCH_ARM
+OMR_ARCH_X86
+OMR_ARCH_S390
 OMR_GC_OBJECT_MAP
 OMR_THR_YIELD_ALG
 OMR_THR_CUSTOM_SPIN_OPTIONS
@@ -652,7 +655,6 @@ OMR_INTERP_SMALL_MONITOR_SLOT
 OMR_INTERP_COMPRESSED_OBJECT_HEADER
 OMR_GC_COMPRESSED_POINTERS
 OMR_ENV_DATA64
-OMR_ARCH_POWER
 OMR_PORT_ASYNC_HANDLER
 OMR_GC_VLHGC
 OMR_GC_STACCATO
@@ -811,6 +813,9 @@ enable_OMR_GC_STACCATO
 enable_OMR_GC_VLHGC
 enable_OMR_PORT_ASYNC_HANDLER
 enable_OMR_ARCH_POWER
+enable_OMR_ARCH_ARM
+enable_OMR_ARCH_X86
+enable_OMR_ARCH_S390
 enable_OMR_ENV_DATA64
 enable_OMR_GC_COMPRESSED_POINTERS
 enable_OMR_INTERP_COMPRESSED_OBJECT_HEADER
@@ -821,7 +826,6 @@ enable_OMR_THR_THREE_TIER_LOCKING
 enable_OMR_THR_CUSTOM_SPIN_OPTIONS
 enable_OMR_THR_YIELD_ALG
 enable_OMR_GC_OBJECT_MAP
-enable_OMR_ARCH_ARM
 enable_OMR_ENV_LITTLE_ENDIAN
 enable_OMR_GC_TLH_PREFETCH_FTA
 enable_OMR_ENV_GCC
@@ -1561,6 +1565,10 @@ Optional Features:
   --enable-OMR_PORT_ASYNC_HANDLER
 
   --enable-OMR_ARCH_POWER
+  --enable-OMR_ARCH_ARM
+  --enable-OMR_ARCH_X86
+  --enable-OMR_ARCH_S390
+  
   --enable-OMR_ENV_DATA64
   --enable-OMR_GC_COMPRESSED_POINTERS
 
@@ -1580,7 +1588,6 @@ Optional Features:
 
   --enable-OMR_GC_OBJECT_MAP
 
-  --enable-OMR_ARCH_ARM
   --enable-OMR_ENV_LITTLE_ENDIAN
 
   --enable-OMR_GC_TLH_PREFETCH_FTA
@@ -6459,6 +6466,102 @@ else
 fi
 
 
+# Check whether --enable-OMR_ARCH_ARM was given.
+if test "${enable_OMR_ARCH_ARM+set}" = set; then :
+  enableval=$enable_OMR_ARCH_ARM; if test "x${enableval}" = xyes; then :
+
+	if test "x" = "x"; then :
+  OMR_ARCH_ARM="#define OMR_ARCH_ARM"
+
+else
+  OMR_ARCH_ARM="#define OMR_ARCH_ARM "
+
+
+fi
+	echo "OMR_ARCH_ARM := 1" >> omrmakefiles/omrcfg.mk
+
+else
+
+	OMR_ARCH_ARM="#undef OMR_ARCH_ARM"
+
+	echo "OMR_ARCH_ARM := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+else
+
+	OMR_ARCH_ARM="#undef OMR_ARCH_ARM"
+
+	echo "OMR_ARCH_ARM := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+
+
+# Check whether --enable-OMR_ARCH_X86 was given.
+if test "${enable_OMR_ARCH_X86+set}" = set; then :
+  enableval=$enable_OMR_ARCH_X86; if test "x${enableval}" = xyes; then :
+
+	if test "x" = "x"; then :
+  OMR_ARCH_X86="#define OMR_ARCH_X86"
+
+else
+  OMR_ARCH_X86="#define OMR_ARCH_X86 "
+
+
+fi
+	echo "OMR_ARCH_X86 := 1" >> omrmakefiles/omrcfg.mk
+
+else
+
+	OMR_ARCH_X86="#undef OMR_ARCH_X86"
+
+	echo "OMR_ARCH_X86 := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+else
+
+	OMR_ARCH_X86="#undef OMR_ARCH_X86"
+
+	echo "OMR_ARCH_X86 := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+
+
+# Check whether --enable-OMR_ARCH_S390 was given.
+if test "${enable_OMR_ARCH_S390+set}" = set; then :
+  enableval=$enable_OMR_ARCH_S390; if test "x${enableval}" = xyes; then :
+
+	if test "x" = "x"; then :
+  OMR_ARCH_S390="#define OMR_ARCH_S390"
+
+else
+  OMR_ARCH_S390="#define OMR_ARCH_S390 "
+
+
+fi
+	echo "OMR_ARCH_S390 := 1" >> omrmakefiles/omrcfg.mk
+
+else
+
+	OMR_ARCH_S390="#undef OMR_ARCH_S390"
+
+	echo "OMR_ARCH_S390 := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+else
+
+	OMR_ARCH_S390="#undef OMR_ARCH_S390"
+
+	echo "OMR_ARCH_S390 := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+
+
 
 # Check whether --enable-OMR_ENV_DATA64 was given.
 if test "${enable_OMR_ENV_DATA64+set}" = set; then :
@@ -6854,38 +6957,6 @@ else
 	OMR_GC_OBJECT_MAP="#undef OMR_GC_OBJECT_MAP"
 
 	echo "OMR_GC_OBJECT_MAP := 0" >> omrmakefiles/omrcfg.mk
-
-
-fi
-
-
-# Check whether --enable-OMR_ARCH_ARM was given.
-if test "${enable_OMR_ARCH_ARM+set}" = set; then :
-  enableval=$enable_OMR_ARCH_ARM; if test "x${enableval}" = xyes; then :
-
-	if test "x" = "x"; then :
-  OMR_ARCH_ARM="#define OMR_ARCH_ARM"
-
-else
-  OMR_ARCH_ARM="#define OMR_ARCH_ARM "
-
-
-fi
-	echo "OMR_ARCH_ARM := 1" >> omrmakefiles/omrcfg.mk
-
-else
-
-	OMR_ARCH_ARM="#undef OMR_ARCH_ARM"
-
-	echo "OMR_ARCH_ARM := 0" >> omrmakefiles/omrcfg.mk
-
-
-fi
-else
-
-	OMR_ARCH_ARM="#undef OMR_ARCH_ARM"
-
-	echo "OMR_ARCH_ARM := 0" >> omrmakefiles/omrcfg.mk
 
 
 fi

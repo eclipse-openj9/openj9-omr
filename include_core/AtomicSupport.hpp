@@ -133,6 +133,14 @@
 #endif /* AIXPPC || LINUXPPC */
 #endif /* !defined(ATOMIC_SUPPORT_STUB) */
 
+#if defined(OMR_ARCH_X86) || defined(OMR_ARCH_S390)
+/* On x86 and s390 processors, allow the pre-read optimization in compare and swap.
+ * Benchmarking has proven this to be a negative on Power and no benchmarking has been
+ * performed on ARM.
+ */
+#define ATOMIC_ALLOW_PRE_READ
+#endif /* defined(OMR_ARCH_X86) || defined(OMR_ARCH_S390) */
+
 /**
  * Provide atomic access to data store.
  */
@@ -295,15 +303,25 @@ public:
 	 * @param address The memory location to be updated
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
+	 * @param readBeforeCAS Controls whether a pre-read occurs before the CAS attempt (default false)
 	 *
 	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
 	 */
 	VMINLINE static uint32_t
-	lockCompareExchangeU32(volatile uint32_t *address, uint32_t oldValue, uint32_t newValue)
+	lockCompareExchangeU32(volatile uint32_t *address, uint32_t oldValue, uint32_t newValue, bool readBeforeCAS = false)
 	{
 #if defined(ATOMIC_SUPPORT_STUB)
 		return 0;
-#elif defined(__GNUC__) /* defined(ATOMIC_SUPPORT_STUB) */
+#else /* defined(ATOMIC_SUPPORT_STUB) */
+#if defined(ATOMIC_ALLOW_PRE_READ)
+		if (readBeforeCAS) {
+			uint32_t currentValue = *address;
+			if (currentValue != oldValue) {
+				return currentValue;
+			}
+		}
+#endif /* defined(ATOMIC_ALLOW_PRE_READ) */
+#if defined(__GNUC__) /* defined(ATOMIC_SUPPORT_STUB) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
@@ -319,6 +337,7 @@ public:
 		return oldValue;
 #else /* defined(__xlC__) */
 #error "lockCompareExchangeU32(): unsupported platform!"
+#endif /* defined(__xlC__) */
 #endif /* defined(ATOMIC_SUPPORT_STUB) */
 	}
 
@@ -331,15 +350,30 @@ public:
 	 * @param address The memory location to be updated
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
+	 * @param readBeforeCAS Controls whether a pre-read occurs before the CAS attempt (default false)
 	 *
 	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
 	 */
 	VMINLINE static uint64_t
-	lockCompareExchangeU64(volatile uint64_t *address, uint64_t oldValue, uint64_t newValue)
+	lockCompareExchangeU64(volatile uint64_t *address, uint64_t oldValue, uint64_t newValue, bool readBeforeCAS = false)
 	{
 #if defined(ATOMIC_SUPPORT_STUB)
 		return 0;
-#elif defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) /* defined(ATOMIC_SUPPORT_STUB) */
+#else /* defined(ATOMIC_SUPPORT_STUB) */
+		/* For 64-bit CAS on 32-bit architectures, the pre-read is not
+		 * reliable, as the value will not be read atomically.  As this
+		 * is strictly a performance optimization, just don't do it in
+		 * this case.
+		 */
+#if defined(ATOMIC_ALLOW_PRE_READ) && defined(OMR_ENV_DATA64)
+		if (readBeforeCAS) {
+			uint64_t currentValue = *address;
+			if (currentValue != oldValue) {
+				return currentValue;
+			}
+		}
+#endif /* defined(ATOMIC_ALLOW_PRE_READ) */
+#if defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) /* defined(ATOMIC_SUPPORT_STUB) */
 		return J9CAS8Helper(address, ((uint32_t*)&oldValue)[1], ((uint32_t*)&oldValue)[0], ((uint32_t*)&newValue)[1], ((uint32_t*)&newValue)[0]);
 #elif defined(__GNUC__) /* defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) */
 		/* Assume GCC >= 4.2 */
@@ -363,6 +397,7 @@ public:
 		return oldValue;
 #else /* defined(__xlC__) */
 #error "lockCompareExchangeU64(): unsupported platform!"
+#endif /* defined(__xlC__) */
 #endif /* defined(ATOMIC_SUPPORT_STUB) */
 	}
 
@@ -375,16 +410,17 @@ public:
 	 * @param address The memory location to be updated
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
+	 * @param readBeforeCAS Controls whether a pre-read occurs before the CAS attempt (default false)
 	 *
 	 * @return the value at memory location <b>address</b> BEFORE the store was attempted
 	 */
 	VMINLINE static uintptr_t
-	lockCompareExchange(volatile uintptr_t * address, uintptr_t oldValue, uintptr_t newValue)
+	lockCompareExchange(volatile uintptr_t * address, uintptr_t oldValue, uintptr_t newValue, bool readBeforeCAS = false)
 	{
 #if defined(OMR_ENV_DATA64)
-		return (uintptr_t)lockCompareExchangeU64((volatile uint64_t *)address, (uint64_t)oldValue, (uint64_t)newValue);
+		return (uintptr_t)lockCompareExchangeU64((volatile uint64_t *)address, (uint64_t)oldValue, (uint64_t)newValue, readBeforeCAS);
 #else /* defined(OMR_ENV_DATA64) */
-		return (uintptr_t)lockCompareExchangeU32((volatile uint32_t *)address, (uint32_t)oldValue, (uint32_t)newValue);
+		return (uintptr_t)lockCompareExchangeU32((volatile uint32_t *)address, (uint32_t)oldValue, (uint32_t)newValue, readBeforeCAS);
 #endif /* defined(OMR_ENV_DATA64) */
 	}
 

@@ -20,7 +20,7 @@
 #if !defined(MM_STARTUPMANAGERTESTEXAMPLE_HPP_)
 #define MM_STARTUPMANAGERTESTEXAMPLE_HPP_
 
-#include "StartupManagerImpl.hpp"
+#include "gcTestHelpers.hpp"
 
 class MM_StartupManagerTestExample : public MM_StartupManagerImpl
 {

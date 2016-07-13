@@ -32,7 +32,6 @@ class ThreadExtendedTestEnvironment: public BaseEnvironment
  * Data members
  */
 private:
-	OMRPortLibrary *_portLibrary;
 protected:
 public:
 	uint32_t grindTime;
@@ -52,13 +51,7 @@ public:
 				sscanf(&argv[i][strlen("-grind=")], "%u", &grindTime);
 			}
 		}
-		_portLibrary = portLibrary;
-	}
-
-	OMRPortLibrary *
-	getPortLibrary()
-	{
-		return _portLibrary;
+		portLib = portLibrary;
 	}
 };
 

@@ -23,7 +23,6 @@
 #include "VerboseWriterChain.hpp"
 #include "CollectorLanguageInterface.hpp"
 
-//#define OMRGCTEST_DEBUG
 //#define OMRGCTEST_PRINTFILE
 
 #define MAX_NAME_LENGTH 512
@@ -64,7 +63,7 @@ GCConfigTest::SetUp()
 	}
 
 	/* load config file */
-	omrtty_printf("Configuration File: %s\n", GetParam());
+	gcTestEnv->log("Configuration File: %s\n", GetParam());
 #if defined(OMRGCTEST_PRINTFILE)
 	printFile(GetParam());
 #endif
@@ -88,10 +87,8 @@ GCConfigTest::SetUp()
 	omrstr_printf(verboseFile, MAX_NAME_LENGTH, "%s_%d_%lld.xml", verboseFileNamePrefix, omrsysinfo_get_pid(), omrtime_current_time_millis());
 	verboseManager = MM_VerboseManager::newInstance(env, exampleVM->_omrVM);
 	verboseManager->configureVerboseGC(exampleVM->_omrVM, verboseFile, numOfFiles, numOfCycles);
-	omrtty_printf("Verbose File: %s\n", verboseFile);
-#if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Verbose GC log name: %s; numOfFiles: %d; numOfCycles: %d.\n", verboseFile, numOfFiles, numOfCycles);
-#endif
+	gcTestEnv->log("Verbose File: %s\n", verboseFile);
+	gcTestEnv->log(LEVEL_VERBOSE, "Verbose GC log name: %s; numOfFiles: %d; numOfCycles: %d.\n", verboseFile, numOfFiles, numOfCycles);
 	verboseManager->enableVerboseGC();
 	verboseManager->setInitializedTime(omrtime_hires_clock());
 
@@ -195,7 +192,7 @@ GCConfigTest::parseAttribute(AttributeElem **root, const char *attrStr)
 
 	if (NULL == copyOfAttrStr) {
 		rt = 1;
-		omrtty_printf("%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
 		goto done;
 	}
 	strcpy(copyOfAttrStr, attrStr);
@@ -214,7 +211,7 @@ GCConfigTest::parseAttribute(AttributeElem **root, const char *attrStr)
 		AttributeElem *attrNode = (AttributeElem *)omrmem_allocate_memory(sizeof(AttributeElem), OMRMEM_CATEGORY_MM);
 		if (NULL == attrNode) {
 			rt = 1;
-			omrtty_printf("%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
 			goto done;
 		}
 		attrNode->value = attr;
@@ -229,7 +226,6 @@ done:
 OMRGCObjectType
 GCConfigTest::parseObjectType(pugi::xml_node node)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 	const char *namePrefixStr = node.attribute(xs.namePrefix).value();
 	const char *typeStr = node.attribute(xs.type).value();
 	const char *parentStr = node.parent().name();
@@ -240,13 +236,13 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 		if (0 == strcmp(parentStr, "allocation")) {
 			objType = ROOT;
 		} else {
-			omrtty_printf("%s:%d Invalid XML input: root object %s can not be child of other object!\n", __FILE__, __LINE__, namePrefixStr);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: root object %s can not be child of other object!\n", __FILE__, __LINE__, namePrefixStr);
 		}
 	} else if (0 == strcmp(typeStr, "normal")) {
 		if ((0 == strcmp(parentTypeStr, "root")) || (0 == strcmp(parentTypeStr, "normal"))) {
 			objType = NORMAL;
 		} else {
-			omrtty_printf("%s:%d Invalid XML input: normal object %s has to be child of root or normal object!\n", __FILE__, __LINE__, namePrefixStr);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: normal object %s has to be child of root or normal object!\n", __FILE__, __LINE__, namePrefixStr);
 		}
 	} else if (0 == strcmp(typeStr, "garbage")) {
 		if (0 == strcmp(parentStr, "allocation")) {
@@ -256,10 +252,10 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 		} else if (0 == strcmp(parentTypeStr, "garbage")) {
 			objType = GARBAGE_CHILD;
 		} else {
-			omrtty_printf("%s:%d Invalid XML input: garbage object %s has to be child of root, normal or allocation node!\n", __FILE__, __LINE__, namePrefixStr);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: garbage object %s has to be child of root, normal or allocation node!\n", __FILE__, __LINE__, namePrefixStr);
 		}
 	} else {
-		omrtty_printf("%s:%d Invalid XML input: object %s type should be root, normal or garbage .\n", __FILE__, __LINE__, namePrefixStr);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: object %s type should be root, normal or garbage .\n", __FILE__, __LINE__, namePrefixStr);
 	}
 
 	return objType;
@@ -268,7 +264,6 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 ObjectEntry *
 GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 	MM_ObjectAllocationInterface *allocationInterface = env->_objectAllocationInterface;
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 	uintptr_t allocatedFlags = 0;
@@ -282,11 +277,11 @@ GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 
 	ObjectEntry *hashedEntry = NULL;
 	if (NULL == objEntry.objPtr) {
-		omrtty_printf("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
+		gcTestEnv->log("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
 		objEntry.objPtr = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), true);
 		env->unwindExclusiveVMAccessForGC();
 		if (NULL == objEntry.objPtr) {
-			omrtty_printf("%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);
 			goto done;
 		}
 		verboseManager->getWriterChain()->endOfCycle(env);
@@ -296,9 +291,7 @@ GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 		uintptr_t actualSize = mm_allocdescription.getBytesRequested();
 		memset(objEntry.objPtr, 0, actualSize);
 		extensions->objectModel.setObjectSize(objEntry.objPtr, actualSize);
-#if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, actualSize);
-#endif
+		gcTestEnv->log(LEVEL_VERBOSE, "Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, actualSize);
 		hashedEntry = add(&objEntry);
 	}
 
@@ -314,16 +307,14 @@ GCConfigTest::createObject(const char *namePrefix, OMRGCObjectType objType, int3
 
 	char *objName = (char *)omrmem_allocate_memory(MAX_NAME_LENGTH, OMRMEM_CATEGORY_MM);
 	if (NULL == objName) {
-		omrtty_printf("%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
 		goto done;
 	}
 	omrstr_printf(objName, MAX_NAME_LENGTH, "%s_%d_%d", namePrefix, depth, nthInRow);
 
 	objEntry = find(objName);
 	if (NULL != objEntry) {
-#if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("Found object %s in object table.\n", objEntry->name);
-#endif
+		gcTestEnv->log(LEVEL_VERBOSE, "Found object %s in object table.\n", objEntry->name);
 		omrmem_free_memory(objName);
 	} else {
 		objEntry = allocateHelper(objName, size);
@@ -372,7 +363,7 @@ GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char
 	rootEntry.name = (*rootEntryIndirectPtr)->name;
 	rootEntry.rootPtr = (*rootEntryIndirectPtr)->objPtr;
 	if (NULL == hashTableAdd(exampleVM->rootTable, &rootEntry)) {
-		omrtty_printf("%s:%d Failed to add new root entry %s to root table!\n", __FILE__, __LINE__, rootEntry.name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to add new root entry %s to root table!\n", __FILE__, __LINE__, rootEntry.name);
 		goto done;
 	}
 
@@ -389,7 +380,7 @@ GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char
 			omrstr_printf(parentName, sizeof(parentName), "%s_%d_%d", namePrefixStr, (depth - 1), j);
 			ObjectEntry *parentEntry = find(parentName);
 			if (NULL == parentEntry) {
-				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 				goto done;
 			}
 			for (int32_t k = 0; k < breadth; k++) {
@@ -406,7 +397,7 @@ GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char
 				}
 				parentEntry = find(parentName);
 				if (NULL == parentEntry) {
-					omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+					gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 					goto done;
 				}
 				if (0 != attachChildEntry(parentEntry, childEntry)) {
@@ -417,7 +408,7 @@ GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char
 			}
 			parentEntry = find(parentName);
 			if (NULL == parentEntry) {
-				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 				goto done;
 			}
 		}
@@ -426,7 +417,7 @@ GCConfigTest::createFixedSizeTree(ObjectEntry **rootEntryIndirectPtr, const char
 	}
 	*rootEntryIndirectPtr = find(rootEntry.name);
 	if (NULL == *rootEntryIndirectPtr) {
-		omrtty_printf("%s:%d Could not find root of fixed-size tree %s in object table.\n", __FILE__, __LINE__, rootEntry.name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find root of fixed-size tree %s in object table.\n", __FILE__, __LINE__, rootEntry.name);
 		goto done;
 	}
 	rt = 0;
@@ -458,7 +449,7 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 			rEntry.name = objectEntry->name;
 			rEntry.rootPtr = objectEntry->objPtr;
 			if (NULL == hashTableAdd(exampleVM->rootTable, &rEntry)) {
-				omrtty_printf("%s:%d Failed to add new root entry to root table!\n", __FILE__, __LINE__);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to add new root entry to root table!\n", __FILE__, __LINE__);
 				goto done;
 			}
 
@@ -479,7 +470,7 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 			}
 			ObjectEntry *parentEntry = find(parentName);
 			if (NULL == parentEntry) {
-				omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 				goto done;
 			}
 			if (0 != attachChildEntry(parentEntry, childEntry)) {
@@ -518,7 +509,7 @@ GCConfigTest::processObjNode(pugi::xml_node node, const char *namePrefixStr, OMR
 				}
 				ObjectEntry *parentEntry = find(parentName);
 				if (NULL == parentEntry) {
-					omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+					gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 					goto done;
 				}
 				if (0 != attachChildEntry(parentEntry, childEntry)) {
@@ -559,9 +550,7 @@ GCConfigTest::insertGarbage()
 		objSize = 64;
 	}
 
-#if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Inserting garbage %s of 0x%llx (%f%% of previous object/tree size 0x%llx) ...\n", fullNamePrefix, totalSize, gp.percentage, gp.accumulatedSize);
-#endif
+	gcTestEnv->log(LEVEL_VERBOSE, "Inserting garbage %s of 0x%llx (%f%% of previous object/tree size 0x%llx) ...\n", fullNamePrefix, totalSize, gp.percentage, gp.accumulatedSize);
 
 	ObjectEntry *rootObjectEntry = NULL;
 	rt = createFixedSizeTree(&rootObjectEntry, fullNamePrefix, GARBAGE_ROOT, totalSize, objSize, breadth);
@@ -590,17 +579,14 @@ GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry
 	fomrobject_t *endSlot = (fomrobject_t *)((uint8_t *)parentEntry->objPtr + size);
 	uintptr_t slotCount = endSlot - firstSlot;
 
-	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
 	if ((uint32_t)parentEntry->numOfRef < slotCount) {
 		fomrobject_t *childSlot = firstSlot + parentEntry->numOfRef;
 		cli->writeBarrierStore(exampleVM->_omrVMThread, parentEntry->objPtr, childSlot, childEntry->objPtr);
-#if defined(OMRGCTEST_DEBUG)
-		omrtty_printf("\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n",
+		gcTestEnv->log(LEVEL_VERBOSE, "\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n",
 				childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);
-#endif
 		parentEntry->numOfRef += 1;
 	} else {
-		omrtty_printf("%s:%d Invalid XML input: numOfFields %d defined for %s(%p[0x%llx]) is not enough to hold child reference for %s(%p[0x%llx]).\n",
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: numOfFields %d defined for %s(%p[0x%llx]) is not enough to hold child reference for %s(%p[0x%llx]).\n",
 				__FILE__, __LINE__, parentEntry->numOfRef, parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childEntry->name, childEntry->objPtr, *(childEntry->objPtr));
 		rc = 1;
 	}
@@ -610,22 +596,19 @@ GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry
 int32_t
 GCConfigTest::removeObjectFromRootTable(const char *name)
 {
-	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
 	int32_t rt = 1;
 	RootEntry searchEntry;
 	searchEntry.name = name;
 	RootEntry *rootEntry = (RootEntry *)hashTableFind(exampleVM->rootTable, &searchEntry);
 	if (NULL == rootEntry) {
-		omrtty_printf("%s:%d Failed to find root object %s in root table.\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to find root object %s in root table.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 	if (0 != hashTableRemove(exampleVM->rootTable, rootEntry)) {
-		omrtty_printf("%s:%d Failed to remove root object %s from root table!\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to remove root object %s from root table!\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-#if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Remove object %s(%p[0x%llx]) from root table.\n", name, rootEntry->rootPtr, *(rootEntry->rootPtr));
-#endif
+	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from root table.\n", name, rootEntry->rootPtr, *(rootEntry->rootPtr));
 
 	rt = 0;
 done:
@@ -635,20 +618,17 @@ done:
 int32_t
 GCConfigTest::removeObjectFromObjectTable(const char *name)
 {
-	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
 	int32_t rt = 1;
 	ObjectEntry *foundEntry = find(name);
 	if (NULL == foundEntry) {
-		omrtty_printf("%s:%d Failed to find object %s in object table.\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to find object %s in object table.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 	if (0 != hashTableRemove(exampleVM->objectTable, foundEntry)) {
-		omrtty_printf("%s:%d Failed to remove object %s from object table!\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to remove object %s from object table!\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-#if defined(OMRGCTEST_DEBUG)
-	omrtty_printf("Remove object %s(%p[0x%llx]) from object table.\n", name, foundEntry->objPtr, *(foundEntry->objPtr));
-#endif
+	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from object table.\n", name, foundEntry->objPtr, *(foundEntry->objPtr));
 
 	rt = 0;
 done:
@@ -658,8 +638,6 @@ done:
 int32_t
 GCConfigTest::removeObjectFromParentSlot(const char *name, ObjectEntry *parentEntry)
 {
-	OMRPORT_ACCESS_FROM_OMRVM(exampleVM->_omrVM);
-
 	MM_GCExtensionsBase *extensions = (MM_GCExtensionsBase *)exampleVM->_omrVM->_gcOmrVMExtensions;
 	uintptr_t size = extensions->objectModel.getConsumedSizeInBytesWithHeader(parentEntry->objPtr);
 	fomrobject_t *currentSlot = (fomrobject_t *)parentEntry->objPtr + 1;
@@ -668,16 +646,14 @@ GCConfigTest::removeObjectFromParentSlot(const char *name, ObjectEntry *parentEn
 	int32_t rt = 1;
 	ObjectEntry *objEntry = find(name);
 	if (NULL == objEntry) {
-		omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 
 	while (currentSlot < endSlot) {
 		GC_SlotObject slotObject(exampleVM->_omrVM, currentSlot);
 		if (objEntry->objPtr == slotObject.readReferenceFromSlot()) {
-#if defined(OMRGCTEST_DEBUG)
-			omrtty_printf("Remove object %s(%p[0x%llx]) from parent %s(%p[0x%llx]) slot %p.\n", name, objEntry->objPtr, *(objEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), slotObject.readAddressFromSlot());
-#endif
+			gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from parent %s(%p[0x%llx]) slot %p.\n", name, objEntry->objPtr, *(objEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), slotObject.readAddressFromSlot());
 			slotObject.writeReferenceToSlot(NULL);
 			rt = 0;
 			break;
@@ -685,7 +661,7 @@ GCConfigTest::removeObjectFromParentSlot(const char *name, ObjectEntry *parentEn
 		currentSlot += 1;
 	}
 	if (0 != rt) {
-		omrtty_printf("%s:%d Failed to remove object %s from its parent's slot.\n", __FILE__, __LINE__, name);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to remove object %s from its parent's slot.\n", __FILE__, __LINE__, name);
 		goto done;
 	}
 
@@ -715,7 +691,7 @@ GCConfigTest::allocationWalker(pugi::xml_node node)
 	}
 	if ((0 == strcmp(namePrefixStr, "")) || (0 == strcmp(typeStr, ""))) {
 		rt = 1;
-		omrtty_printf("%s:%d Invalid XML input: please specify namePrefix and type for object %s.\n", __FILE__, __LINE__, namePrefixStr);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: please specify namePrefix and type for object %s.\n", __FILE__, __LINE__, namePrefixStr);
 		goto done;
 	}
 	/* set default value for breadth and depth to 1 */
@@ -759,7 +735,7 @@ GCConfigTest::allocationWalker(pugi::xml_node node)
 		omrstr_printf(parentName, MAX_NAME_LENGTH, "%s_%d_%d", node.parent().attribute(xs.namePrefix).value(), 0, 0);
 		ObjectEntry *parentEntry = find(parentName);
 		if (NULL == parentEntry) {
-			omrtty_printf("%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Could not find object %s in hash table.\n", __FILE__, __LINE__, parentName);
 			goto done;
 		}
 		for (int32_t i = 0; i < breadthElem->value; i++) {
@@ -790,10 +766,10 @@ printFile(const char *name)
 	intptr_t fileDescriptor = omrfile_open(name, EsOpenRead, 0444);
 	char readBuf[2048];
 	while (readBuf == omrfile_read_text(fileDescriptor, readBuf, 2048)) {
-		omrtty_printf("%s", readBuf);
+		gcTestEnv->log("%s", readBuf);
 	}
 	omrfile_close(fileDescriptor);
-	omrtty_printf("\n");
+	gcTestEnv->log("\n");
 }
 #endif
 
@@ -807,7 +783,7 @@ GCConfigTest::verifyVerboseGC(pugi::xpath_node_set verboseGCs)
 	bool *isFound = (bool *)omrmem_allocate_memory(sizeof(int32_t) * numOfNode, OMRMEM_CATEGORY_MM);
 	if (NULL == isFound) {
 		rt = 1;
-		omrtty_printf("%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to allocate native memory.\n", __FILE__, __LINE__);
 		goto done;
 	}
 	for (size_t i = 0; i < numOfNode; i++) {
@@ -819,7 +795,7 @@ GCConfigTest::verifyVerboseGC(pugi::xpath_node_set verboseGCs)
 		pugi::xml_document verboseDoc;
 		if (0 == numOfFiles) {
 			verboseDoc.load_file(verboseFile);
-			omrtty_printf("Parsing verbose log %s:\n", verboseFile);
+			gcTestEnv->log("Parsing verbose log %s:\n", verboseFile);
 #if defined(OMRGCTEST_PRINTFILE)
 			printFile(verboseFile);
 #endif
@@ -830,7 +806,7 @@ GCConfigTest::verifyVerboseGC(pugi::xpath_node_set verboseGCs)
 			if (pugi::status_file_not_found == result.status) {
 				break;
 			}
-			omrtty_printf("Parsing verbose log %s:\n", currentVerboseFile);
+			gcTestEnv->log("Parsing verbose log %s:\n", currentVerboseFile);
 #if defined(OMRGCTEST_PRINTFILE)
 			printFile(currentVerboseFile);
 #endif
@@ -845,47 +821,47 @@ GCConfigTest::verifyVerboseGC(pugi::xpath_node_set verboseGCs)
 			pugi::xpath_query resultQuery(xqueryStr);
 			if (!resultQuery) {
 				rt = 1;
-				omrtty_printf("%s:%d Invalid xquery string \"%s\" specified in configuration file.\n", __FILE__, __LINE__, xqueryStr);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid xquery string \"%s\" specified in configuration file.\n", __FILE__, __LINE__, xqueryStr);
 				goto done;
 			}
 
 			pugi::xpath_query nodeQuery(xpathNodesStr);
 			if (!nodeQuery) {
 				rt = 1;
-				omrtty_printf("%s:%d Invalid xpathNodes string \"%s\" specified in configuration file.\n", __FILE__, __LINE__, xpathNodesStr);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid xpathNodes string \"%s\" specified in configuration file.\n", __FILE__, __LINE__, xpathNodesStr);
 				goto done;
 			}
 
 			pugi::xpath_node_set xpathNodes = nodeQuery.evaluate_node_set(verboseDoc);
 			if (!xpathNodes.empty()) {
 				bool isPassed = true;
-				omrtty_printf("Verifying xquery \"%s\" on xpath \"%s\":\n", xqueryStr, xpathNodesStr);
+				gcTestEnv->log("Verifying xquery \"%s\" on xpath \"%s\":\n", xqueryStr, xpathNodesStr);
 				for (pugi::xpath_node_set::const_iterator it = xpathNodes.begin(); it != xpathNodes.end(); ++it) {
 					pugi::xml_node node = it->node();
 					if (!resultQuery.evaluate_boolean(node)) {
 						rt = 1;
 						isPassed = false;
-						omrtty_printf("\t*FAILED* on node <%s", node.name());
+						gcTestEnv->log(LEVEL_ERROR, "\t*FAILED* on node <%s", node.name());
 						for (pugi::xml_attribute attr = node.first_attribute(); attr; attr = attr.next_attribute()) {
-							omrtty_printf("\t%s=%s", attr.name(), attr.value());
+							gcTestEnv->log(LEVEL_ERROR, "\t%s=%s", attr.name(), attr.value());
 						}
-						omrtty_printf(">\n");
+						gcTestEnv->log(LEVEL_ERROR, ">\n");
 					}
 				}
 				if (isPassed) {
-					omrtty_printf("*PASSED*\n");
+					gcTestEnv->log("*PASSED*\n");
 				}
 				isFound[i] = true;
 			}
 			i += 1;
 		}
-		omrtty_printf("\n");
+		gcTestEnv->log("\n");
 	} while (seq <= numOfFiles);
 
 	for (size_t i = 0; i < numOfNode; i++) {
 		if (!isFound[i]) {
 			rt = 1;
-			omrtty_printf("*FAILED* Could not find xpath node \"%s\" in verbose output.\n", verboseGCs[i].node().attribute("xpathNodes").value());
+			gcTestEnv->log(LEVEL_ERROR, "*FAILED* Could not find xpath node \"%s\" in verbose output.\n", verboseGCs[i].node().attribute("xpathNodes").value());
 		}
 	}
 
@@ -897,7 +873,6 @@ done:
 int32_t
 GCConfigTest::parseGarbagePolicy(pugi::xml_node node)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 	int32_t rt = 0;
 	gp.namePrefix = NULL;
 	gp.percentage = 0.0f;
@@ -923,7 +898,7 @@ GCConfigTest::parseGarbagePolicy(pugi::xml_node node)
 		}
 		if ((0 != strcmp(gp.frequency, "perObject")) && (0 != strcmp(gp.frequency, "perRootStruct"))){
 			rt = 1;
-			omrtty_printf("%s:%d Invalid XML input: the valid value of attribute \"frequency\" is \"perObject\" or \"perRootStruct\".\n", __FILE__, __LINE__);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: the valid value of attribute \"frequency\" is \"perObject\" or \"perRootStruct\".\n", __FILE__, __LINE__);
 			goto done;
 		}
 
@@ -933,7 +908,7 @@ GCConfigTest::parseGarbagePolicy(pugi::xml_node node)
 		}
 		if ((0 != strcmp(gp.structure, "node")) && (0 != strcmp(gp.structure, "tree"))){
 			rt = 1;
-			omrtty_printf("%s:%d Invalid XML input: the valid value of attribute \"structure\" is \"node\" or \"tree\".\n", __FILE__, __LINE__);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: the valid value of attribute \"structure\" is \"node\" or \"tree\".\n", __FILE__, __LINE__);
 			goto done;
 		}
 	}
@@ -945,7 +920,6 @@ done:
 int32_t
 GCConfigTest::triggerOperation(pugi::xml_node node)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 	int32_t rt = 0;
 	for (; node; node = node.next_sibling()) {
 		if (0 == strcmp(node.name(), "systemCollect")) {
@@ -955,10 +929,10 @@ GCConfigTest::triggerOperation(pugi::xml_node node)
 				gcCodeStr = "0";
 			}
 			uint32_t gcCode = (uint32_t)atoi(gcCodeStr);
-			omrtty_printf("Invoking gc system collect with gcCode %d...\n", gcCode);
+			gcTestEnv->log("Invoking gc system collect with gcCode %d...\n", gcCode);
 			rt = (int32_t)OMR_GC_SystemCollect(exampleVM->_omrVMThread, gcCode);
 			if (OMR_ERROR_NONE != rt) {
-				omrtty_printf("%s:%d Failed to perform OMR_GC_SystemCollect with error code %d.\n", __FILE__, __LINE__, rt);
+				gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to perform OMR_GC_SystemCollect with error code %d.\n", __FILE__, __LINE__, rt);
 				goto done;
 			}
 			OMRGCTEST_CHECK_RT(rt);
@@ -1017,7 +991,7 @@ TEST_P(GCConfigTest, test)
 	}
 	for (; configChild; configChild = configChild.next_sibling()) {
 		if (0 == strcmp(configChild.name(), "allocation")) {
-			omrtty_printf("\n+++++++++++++++++++++++++++Allocation+++++++++++++++++++++++++++\n");
+			gcTestEnv->log("\n+++++++++++++++++++++++++++Allocation+++++++++++++++++++++++++++\n");
 			rt = parseGarbagePolicy(configChild.child(xs.garbagePolicy));
 			ASSERT_EQ(0, rt) << "Failed to parse garbage policy.";
 			pugi::xpath_node_set objects = configChild.select_nodes(xs.object);
@@ -1026,9 +1000,9 @@ TEST_P(GCConfigTest, test)
 				rt = allocationWalker(it->node());
 				ASSERT_EQ(0, rt) << "Failed to perform allocation.";
 			}
-			omrtty_printf("Time elapsed in allocation: %lld ms\n", (omrtime_current_time_millis() - startTime));
+			gcTestEnv->log("Time elapsed in allocation: %lld ms\n", (omrtime_current_time_millis() - startTime));
 		} else if (0 == strcmp(configChild.name(), "verification")) {
-			omrtty_printf("\n++++++++++++++++++++++++++Verification++++++++++++++++++++++++++\n");
+			gcTestEnv->log("\n++++++++++++++++++++++++++Verification++++++++++++++++++++++++++\n");
 			/* verboseGC verification */
 			char verboseNodeSet[MAX_NAME_LENGTH];
 			/* select verboseGC nodes with right spec info */
@@ -1036,9 +1010,9 @@ TEST_P(GCConfigTest, test)
 			pugi::xpath_node_set verboseGCs = configChild.select_nodes(verboseNodeSet);
 			rt = verifyVerboseGC(verboseGCs);
 			ASSERT_EQ(0, rt) << "Failed in verbose GC verification.";
-			omrtty_printf("[ Verification Successful ]\n\n");
+			gcTestEnv->log("[ Verification Successful ]\n\n");
 		} else if (0 == strcmp(configChild.name(), "operation")) {
-			omrtty_printf("\n++++++++++++++++++++++++++++Operation+++++++++++++++++++++++++++\n");
+			gcTestEnv->log("\n++++++++++++++++++++++++++++Operation+++++++++++++++++++++++++++\n");
 			rt = triggerOperation(configChild.first_child());
 			ASSERT_EQ(0, rt) << "Failed to perform gc operation.";
 		} else if (0 == strcmp(configChild.name(), "mutation")) {

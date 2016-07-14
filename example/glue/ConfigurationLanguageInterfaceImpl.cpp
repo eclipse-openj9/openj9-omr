@@ -17,6 +17,7 @@
  *******************************************************************************/
 
 #include "AllocationInterfaceGeneric.hpp"
+#include "ConcurrentGC.hpp"
 #include "ConfigurationLanguageInterfaceImpl.hpp"
 #include "EnvironmentLanguageInterfaceImpl.hpp"
 #include "ParallelGlobalGC.hpp"
@@ -116,7 +117,15 @@ MM_ConfigurationLanguageInterfaceImpl::initializeAllocationType(MM_EnvironmentBa
 MM_GlobalCollector *
 MM_ConfigurationLanguageInterfaceImpl::createGlobalCollector(MM_EnvironmentBase *env)
 {
-	return MM_ParallelGlobalGC::newInstance(env, MM_GCExtensionsBase::getExtensions(env->getOmrVM())->collectorLanguageInterface);
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	if (extensions->concurrentMark) {
+		return MM_ConcurrentGC::newInstance(env, extensions->collectorLanguageInterface);
+	} else
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+	{
+		return MM_ParallelGlobalGC::newInstance(env, extensions->collectorLanguageInterface);
+	}
 }
 
 void

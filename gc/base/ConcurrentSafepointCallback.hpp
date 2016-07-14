@@ -45,9 +45,9 @@ protected:
 
 public:
 #if defined(AIXPPC) || defined(LINUXPPC)
-	virtual void registerCallback(MM_EnvironmentStandard *env, SafepointCallbackHandler handler, void *userData, bool cancelAfterGC = false);
+	virtual void registerCallback(MM_EnvironmentBase *env, SafepointCallbackHandler handler, void *userData, bool cancelAfterGC = false);
 #else
-	virtual void registerCallback(MM_EnvironmentStandard *env,  SafepointCallbackHandler handler, void *userData);
+	virtual void registerCallback(MM_EnvironmentBase *env,  SafepointCallbackHandler handler, void *userData);
 #endif /* defined(AIXPPC) || defined(LINUXPPC) */
 
 	virtual void requestCallback(MM_EnvironmentStandard *env);
@@ -55,12 +55,12 @@ public:
 	virtual void cancelCallback(MM_EnvironmentStandard *env);
 
 	/* Providing this no-op class as a concrete implementation reduces the glue burden on client languages. */
-	static MM_ConcurrentSafepointCallback *newInstance(MM_EnvironmentStandard *env);
+	static MM_ConcurrentSafepointCallback *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 	/**
 	 * Create a MM_ConcurrentSafepointCallback object
 	 */
-	MM_ConcurrentSafepointCallback(MM_EnvironmentStandard *env)
+	MM_ConcurrentSafepointCallback(MM_EnvironmentBase *env)
 		: MM_BaseVirtual()
 		,_handler(NULL)
 		,_userData(NULL)

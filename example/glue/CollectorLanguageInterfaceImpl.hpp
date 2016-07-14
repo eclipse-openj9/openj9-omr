@@ -33,7 +33,6 @@ class MM_EnvironmentStandard;
 class MM_ForwardedHeader;
 class MM_MarkingScheme;
 class MM_MemorySubSpaceSemiSpace;
-class MM_ScanClassesMode;
 
 /**
  * Class representing a collector language interface.  This implements the API between the OMR
@@ -103,13 +102,28 @@ public:
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	virtual MM_ConcurrentSafepointCallback* concurrentGC_createSafepointCallback(MM_EnvironmentBase *env);
-	virtual uintptr_t concurrentGC_collectRoots(MM_EnvironmentStandard *env, ConcurrentStatus concurrentStatus, MM_ScanClassesMode *scanClassesMode, bool &collectedRoots, bool &paidTax);
-	virtual omrsig_handler_fn concurrentGC_getProtectedSignalHandler(void *&signalHandlerArg) {return NULL;}
+	virtual omrsig_handler_fn concurrentGC_getProtectedSignalHandler(void **signalHandlerArg) {*signalHandlerArg = NULL; return NULL;}
+	virtual void concurrentGC_concurrentInitializationComplete(MM_EnvironmentStandard *env) {}
+	virtual bool concurrentGC_forceConcurrentKickoff(MM_EnvironmentBase *env, uintptr_t gcCode, uintptr_t *languageKickoffReason)
+	{
+		if (NULL != languageKickoffReason) {
+			*languageKickoffReason = NO_LANGUAGE_KICKOFF_REASON;
+		}
+		return false;
+	}
+	virtual uintptr_t concurrentGC_getNextTracingMode(uintptr_t executionMode);
+	virtual uintptr_t concurrentGC_collectRoots(MM_EnvironmentStandard *env, uintptr_t concurrentStatus, bool *collectedRoots, bool *paidTax);
+	virtual void concurrentGC_signalThreadsToTraceStacks(MM_EnvironmentStandard *env) {}
 	virtual void concurrentGC_signalThreadsToDirtyCards(MM_EnvironmentStandard *env) {}
 	virtual void concurrentGC_signalThreadsToStopDirtyingCards(MM_EnvironmentStandard *env) {}
+	virtual void concurrentGC_kickoffCardCleaning(MM_EnvironmentStandard *env) {}
 	virtual void concurrentGC_flushRegionReferenceLists(MM_EnvironmentBase *env) {}
 	virtual void concurrentGC_flushThreadReferenceBuffer(MM_EnvironmentBase *env) {}
 	virtual bool concurrentGC_isThreadReferenceBufferEmpty(MM_EnvironmentBase *env) {return true;}
+	virtual bool concurrentGC_startConcurrentScanning(MM_EnvironmentStandard *env, uintptr_t *bytesTraced, bool *collectedRoots) {*bytesTraced = 0; *collectedRoots = false; return false;}
+	virtual void concurrentGC_concurrentScanningStarted(MM_EnvironmentStandard *env, bool isConcurrentScanningComplete) {}
+	virtual bool concurrentGC_isConcurrentScanningComplete(MM_EnvironmentBase *env) {return true;}
+	virtual uintptr_t concurrentGC_reportConcurrentScanningMode(MM_EnvironmentBase *env) {return 0;}
 	virtual void concurrentGC_scanThread(MM_EnvironmentBase *env) {}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
@@ -132,7 +146,6 @@ public:
 	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	virtual void generationalWriteBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject);
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env);
 	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase *env);
 	virtual void scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase *env);

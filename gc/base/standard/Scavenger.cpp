@@ -3050,12 +3050,22 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
 				MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
-				_cli->scavenger_reverseForwardedObject(env, &header);
+				if (header.isForwardedPointer()) {
+					omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
+					omrobjectptr_t objectPtr = header.getObject();
+					_cli->scavenger_reverseForwardedObject(env, &header);
+					/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
+					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
+					 */
+					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr);
+					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
+					freeHeader->setNext((MM_HeapLinkedFreeHeader*)objectPtr);
+					freeHeader->setSize(evacuateObjectSizeInBytes);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-				omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
-				MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
-				omrtty_printf("{SCAV: Back out forward pointer %p@%p -> %p[%p]}\n", objectPtr, fwdObjectPtr, freeHeader->getNext(), freeHeader->getSize());
+					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(fwdObjectPtr);
+					omrtty_printf("{SCAV: Back out forward pointer %p@%p -> %p[%p]}\n", objectPtr, fwdObjectPtr, freeHeader->getNext(), freeHeader->getSize());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
+				}
 			}
 		}
 	}

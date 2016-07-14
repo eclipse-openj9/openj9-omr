@@ -593,9 +593,10 @@ MM_EnvironmentBase::tryAcquireExclusiveForConcurrentKickoff(MM_ConcurrentGCStats
 		}
 	}
 
-	/* thread is the winner for requesting a GC (possibly through recursive calls).  proceed with acquiring exclusive access. */
 	Assert_MM_true(_omrVMThread == extensions->gcExclusiveAccessThreadId);
+	Assert_MM_true(CONCURRENT_INIT_COMPLETE == stats->getExecutionMode());
 
+	/* thread is the winner for requesting a GC (possibly through recursive calls).  proceed with acquiring exclusive access. */
 	this->acquireExclusiveVMAccess();
 
 	return true;

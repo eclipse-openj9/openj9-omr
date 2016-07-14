@@ -194,31 +194,22 @@ typedef enum {
  */
 
 /**
- * Concurrent status symbols
+ * Concurrent status symbols. Client language may define additional status values > CONCURRENT_ROOT_TRACING
+ * and < CONCURRENT_TRACE_ONLY corresponding to parallelizable units of tracing work.
  * @ingroup GC_Base_Core
  * @{
  */
 typedef enum {
-		CONCURRENT_OFF=1,
-		CONCURRENT_INIT_RUNNING,
-		CONCURRENT_INIT_COMPLETE,
-		CONCURRENT_ROOT_TRACING1,
-		CONCURRENT_ROOT_TRACING2,
-		CONCURRENT_ROOT_TRACING3,
-		CONCURRENT_ROOT_TRACING4,
-		CONCURRENT_ROOT_TRACING5,
-		CONCURRENT_TRACE_ONLY,
-		CONCURRENT_CLEAN_TRACE,
-		CONCURRENT_EXHAUSTED,
-		CONCURRENT_FINAL_COLLECTION
+	CONCURRENT_OFF = 1,
+	CONCURRENT_INIT_RUNNING,
+	CONCURRENT_INIT_COMPLETE,
+	CONCURRENT_ROOT_TRACING,
+	/* ^ Value range reserved for client language v */
+	CONCURRENT_TRACE_ONLY = 28,
+	CONCURRENT_CLEAN_TRACE = 29,
+	CONCURRENT_EXHAUSTED = 30,
+	CONCURRENT_FINAL_COLLECTION = 31
 } ConcurrentStatus;
-
-#define CONCURRENT_ROOT_TRACING_ALL ( \
-	(1 << CONCURRENT_ROOT_TRACING1) | \
-	(1 << CONCURRENT_ROOT_TRACING2) | \
-	(1 << CONCURRENT_ROOT_TRACING3) | \
-	(1 << CONCURRENT_ROOT_TRACING4) | \
-	(1 << CONCURRENT_ROOT_TRACING5) )
 
 /**
  * Concurrent status symbols
@@ -227,11 +218,20 @@ typedef enum {
  * @{
  */
 typedef enum {
-		NO_KICKOFF_REASON=1,
-		KICKOFF_THRESHOLD_REACHED,
-		NEXT_SCAVENGE_WILL_PERCOLATE,
-		LANGUAGE_DEFINED_REASON
+	NO_KICKOFF_REASON=1,
+	KICKOFF_THRESHOLD_REACHED,
+	NEXT_SCAVENGE_WILL_PERCOLATE,
+	LANGUAGE_DEFINED_REASON
 } ConcurrentKickoffReason;
+
+/**
+ * Concurrent status symbols.
+ * Client languages may define additional values > NO_LANGUAGE_KICKOFF_REASON
+ * to explain why a kickoff was triggered.
+ */
+typedef enum {
+	NO_LANGUAGE_KICKOFF_REASON=1,
+} ConcurrentKickoffLanguageReason;
 
 /**
  * Concurrent status symbols

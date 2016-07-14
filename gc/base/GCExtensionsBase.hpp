@@ -29,7 +29,6 @@
 #include "AllocationStats.hpp"
 #include "ArrayObjectModel.hpp"
 #include "BaseVirtual.hpp"
-#include "CollectorLanguageInterface.hpp"
 #include "Configuration.hpp"
 #include "ExcessiveGCStats.hpp"
 #include "Forge.hpp"
@@ -50,6 +49,7 @@
 class MM_CardTable;
 class MM_ClassLoaderRememberedSet;
 class MM_Collector;
+class MM_CollectorLanguageInterface;
 class MM_CompactGroupPersistentStats;
 class MM_CompressedCardTable;
 class MM_Dispatcher;

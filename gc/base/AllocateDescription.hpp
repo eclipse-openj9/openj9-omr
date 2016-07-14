@@ -115,6 +115,7 @@ public:
 
 	MMINLINE void setAllocationTaxSize(uintptr_t size)	{ _allocationTaxSize = size; }
 	MMINLINE uintptr_t getAllocationTaxSize() 			{ return _allocationTaxSize; }
+	MMINLINE void payAllocationTax(MM_EnvironmentBase *env) { _memorySubSpace->payAllocationTax(env, this); }
 
 	MMINLINE void setTLHAllocation(bool tlhAlloc) 						{ _tlhAllocation = tlhAlloc; }
 	MMINLINE bool isTLHAllocation()										{ return _tlhAllocation; }

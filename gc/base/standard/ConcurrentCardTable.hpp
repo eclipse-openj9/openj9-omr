@@ -290,7 +290,7 @@ public:
 	 * @param[in] collector The collector with which we interact
 	 * @return The new isntance (NULL on failure)
 	 */
-	static MM_ConcurrentCardTable	*newInstance(MM_EnvironmentStandard *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector);
+	static MM_ConcurrentCardTable	*newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector);
 	
 	/**
 	 * Called when a range of memory has been added to the heap.
@@ -472,7 +472,7 @@ public:
 	/**
 	 * Create a CardTable object.
 	 */
-	MM_ConcurrentCardTable(MM_EnvironmentStandard *env, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector):
+	MM_ConcurrentCardTable(MM_EnvironmentBase *env, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector):
 		MM_CardTable(),
 		_tlhMarkMapMemoryHandle(),
 		_tlhMarkBits(NULL),

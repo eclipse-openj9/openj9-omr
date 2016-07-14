@@ -45,6 +45,7 @@
 #include "CollectionStatisticsStandard.hpp"
 #include "Collector.hpp"
 #include "CollectorLanguageInterface.hpp"
+#include "ConcurrentScavengeTask.hpp"
 #include "ConfigurationStandard.hpp"
 #include "CycleState.hpp"
 #include "Dispatcher.hpp"
@@ -338,15 +339,18 @@ MM_Scavenger::collectorShutdown(MM_GCExtensionsBase* extensions)
 void
 MM_Scavenger::setupForGC(MM_EnvironmentBase *env)
 {
-	/* Make sure the backout state is cleared */
-	setBackOutFlag(env, false);
-
-	_rescanThreadsForRememberedObjects = false;
 }
 
 void
 MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 {
+	/* Make sure the backout state is cleared */
+	setBackOutFlag(env, false);
+
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+	_rescanThreadsForRememberedObjects = false;
+#endif
+
 	_doneIndex = 0;
 
 	/* Reinitialize the copy scan caches */
@@ -1985,10 +1989,12 @@ MM_Scavenger::workThreadGarbageCollect(MM_EnvironmentStandard *env)
 	rootScanner.scanRoots(env);
 
 	if(completeScan(env)) {
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 		if (_rescanThreadsForRememberedObjects) {
 			rootScanner.rescanThreadSlots(env);
 			flushRememberedSet(env);
 		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		rootScanner.scanClearable(env);
 	}
 	rootScanner.flush(env);
@@ -2096,6 +2102,7 @@ MM_Scavenger::rememberObject(MM_EnvironmentStandard *env, omrobjectptr_t objectP
 	}
 }
 
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 bool
 MM_Scavenger::isRememberedThreadReference(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
@@ -2159,6 +2166,7 @@ MM_Scavenger::processRememberedThreadReference(MM_EnvironmentStandard *env, omro
 
 	return result;
 }
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 /********************************************************************
  * Object Scan Routines for Remembered Set Overflow (RSO) conditions
@@ -2297,12 +2305,13 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 					if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
 						shouldBeRemembered |= _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
 					}
-
-					/* VMDESIGN 2048 : unconditionally remember any recently referenced objects */
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+					/* unconditionally remember any recently referenced objects */
 					if (processRememberedThreadReference(env, objectPtr)) {
 						Trc_MM_ParallelScavenger_scavengeRememberedSet_keepingRememberedObject(env->getLanguageVMThread(), objectPtr, _extensions->objectModel.getRememberedBits(objectPtr));
 						shouldBeRemembered = true;
 					}
+#endif
 
 					/* Re-remember the object if necessary. This will add it to the list if possible. */
 					if(shouldBeRemembered) {
@@ -2374,10 +2383,12 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 					omrtty_printf("{SCAV: Remembered set object %p}\n", objectPtr);
 #endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 					if (processRememberedThreadReference(env, objectPtr)) {
 						/* the object was tenured from the stack on a previous scavenge -- keep it around for a bit longer */
 						Trc_MM_ParallelScavenger_scavengeRememberedSet_keepingRememberedObject(env->getLanguageVMThread(), objectPtr, _extensions->objectModel.getRememberedBits(objectPtr));
 					}
+#endif
 				}
 			} /* while non-null slots */
 		}
@@ -2415,8 +2426,9 @@ MM_Scavenger::scavengeRememberedSetList(MM_EnvironmentStandard *env)
 				if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
 					shouldBeRemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
 				}
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 				shouldBeRemembered |= isRememberedThreadReference(env, objectPtr);
-
+#endif
 				if (shouldBeRemembered) {
 					/* We want to remember this object after all; clear the flag for removal. */
 					*slotPtr = (omrobjectptr_t)((uintptr_t)*slotPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
@@ -2455,22 +2467,27 @@ MM_Scavenger::copyAndForwardThreadSlot(MM_EnvironmentStandard *env, omrobjectptr
 		if (isObjectInEvacuateMemory(objectPtr)) {
 			bool isInNewSpace = copyAndForward(env, objectPtrIndirect);
 			if (!isInNewSpace) {
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 				Trc_MM_ParallelScavenger_copyAndForwardThreadSlot_deferRememberObject(env->getLanguageVMThread(), *objectPtrIndirect);
 				/* the object was tenured while it was referenced from the stack. Undo the forward, and process it in the rescan pass. */
 				_rescanThreadsForRememberedObjects = true;
 				*objectPtrIndirect = objectPtr;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 			}
 		} else {
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 			if (_extensions->isOld(objectPtr)) {
 				if(_extensions->objectModel.atomicSetObjectCurrentlyReferenced(objectPtr)) {
 					Trc_MM_ParallelScavenger_copyAndForwardThreadSlot_renewingRememberedObject(env->getLanguageVMThread(), objectPtr,
 							OMR_TENURED_STACK_OBJECT_RECENTLY_REFERENCED);
 				}
 			}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		}
 	}
 }
 
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 void
 MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect)
 {
@@ -2494,6 +2511,7 @@ MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *obje
 		}
 	}
 }
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 /****************************************
  * Copy-Scan Cache management
@@ -4215,96 +4233,6 @@ MM_Scavenger::isConcurrentWorkAvailable(MM_EnvironmentBase *env)
 	return concurrent_state_scan == _concurrentState;
 }
 
-
-class MM_ConcurrentScavengeTask : public MM_ParallelScavengeTask
-{
-	/* Data Members */
-private:
-	UDATA const _bytesToScan;	/**< The number of bytes that this must scan before it will stop trying to do more work */
-	UDATA volatile _bytesScanned;	/**< The number of bytes scanned by this */
-	volatile bool * const _forceExit;	/**< Shared state concurrently updated by an external thread to force the receiver to cause all threads to yield (by setting the destination of the pointer to true) */
-protected:
-public:
-
-	enum ConcurrentAction {
-		SCAVENGE_ALL = 1,
-		SCAVENGE_ROOTS,
-		SCAVENGE_SCAN,
-		SCAVENGE_COMPLETE
-	};
-
-	/* _action should be private */
-	ConcurrentAction _action;
-
-	/* Member Functions */
-private:
-protected:
-public:
-	virtual UDATA getVMStateID()
-	{
-		return J9VMSTATE_GC_CONCURRENT_SCAVENGER;
-	}
-
-	UDATA getBytesScanned()
-	{
-		return _bytesScanned;
-	}
-	virtual void setup(MM_EnvironmentBase *env)
-	{
-		MM_ParallelScavengeTask::setup(env);
-	}
-	virtual void run(MM_EnvironmentBase *env);
-	virtual void cleanup(MM_EnvironmentBase *env)
-	{
-		MM_ParallelScavengeTask::cleanup(env);
-	}
-	virtual bool shouldYieldFromTask(MM_EnvironmentBase *env)
-	{
-		return false;
-	}
-
-	MM_ConcurrentScavengeTask(MM_EnvironmentBase *env,
-			MM_Dispatcher *dispatcher,
-			MM_Scavenger *scavenger,
-			ConcurrentAction action,
-			uintptr_t bytesToScan,
-			volatile bool *forceExit,
-			MM_CycleState *cycleState) :
-		MM_ParallelScavengeTask(env, dispatcher, scavenger, cycleState)
-		, _bytesToScan(bytesToScan)
-		, _bytesScanned(0)
-		, _forceExit(forceExit)
-		, _action(action)
-	{
-		_typeId = __FUNCTION__;
-	};
-};
-
-void
-MM_ConcurrentScavengeTask::run(MM_EnvironmentBase *envBase)
-{
-	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
-
-	switch (_action) {
-	case SCAVENGE_ALL:
-		_collector->workThreadProcessRoots(env);
-		_collector->workThreadScan(env);
-		_collector->workThreadComplete(env);
-		break;
-	case SCAVENGE_ROOTS:
-		_collector->workThreadProcessRoots(env);
-		break;
-	case SCAVENGE_SCAN:
-		_collector->workThreadScan(env);
-		break;
-	case SCAVENGE_COMPLETE:
-		_collector->workThreadComplete(env);
-		break;
-	default:
-		Assert_MM_unreachable();
-	}
-}
-
 bool
 MM_Scavenger::scavengeInit(MM_EnvironmentBase *env, int64_t timeThreshold)
 {
@@ -4316,7 +4244,7 @@ MM_Scavenger::scavengeInit(MM_EnvironmentBase *env, int64_t timeThreshold)
 		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
 			// we have to do a subset of setup operations that GC workers do
 			// possibly some of those also to be done of thread (env) initialization
-			mutatorSetupForGC(env);
+			mutatorSetupForGC(threadEnvironment);
 		}
 	}
 	return false;
@@ -4544,10 +4472,6 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 	// todo: if not abort
 	completeScan(env);
 	{
-		if (_rescanThreadsForRememberedObjects) {
-			rootScanner.rescanThreadSlots(env);
-			flushRememberedSet(env);
-		}
 		rootScanner.scanClearable(env);
 	}
 	rootScanner.flush(env);

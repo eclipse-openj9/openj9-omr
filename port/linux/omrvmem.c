@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -840,8 +840,6 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 	int 	fd;
 	int	bytes_read;
 	char	*line_ptr, read_buf[VMEM_MEMINFO_SIZE_MAX];
-	char	token_name[128];
-	int	token_value, tokens_assigned;
 
 	fd = omrfile_open(portLibrary, VMEM_PROC_MEMINFO_FNAME, EsOpenRead, 0);
 	if (fd < 0) {
@@ -863,14 +861,15 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 	 */
 	line_ptr = read_buf;
 	while (line_ptr && *line_ptr) {
-
-		tokens_assigned = sscanf(line_ptr, "%127s %d %*s", token_name, &token_value);
+		char token_name[128];
+		uintptr_t token_value = 0;
+		int tokens_assigned = sscanf(line_ptr, "%127s %zu %*s", token_name, &token_value);
 
 #ifdef LPDEBUG
-		portLibrary->tty_printf(portLibrary, "/proc/meminfo => %s [%d] %d\n", token_name, token_value, tokens_assigned);
+		portLibrary->tty_printf(portLibrary, "/proc/meminfo => %s [%zu] %d\n", token_name, token_value, tokens_assigned);
 #endif
 
-		if (tokens_assigned) {
+		if (2 == tokens_assigned) {
 			if (!strcmp(token_name, "HugePages_Total:")) {
 				page_info->pages_total = token_value;
 			} else if (!strcmp(token_name, "HugePages_Free:")) {

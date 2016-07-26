@@ -159,6 +159,19 @@ omrthread_t global_lock_owner = UNOWNED;
 #define J9THR_WAIT_INTERRUPTED(flags) (((flags) & J9THREAD_FLAG_INTERRUPTED) != 0)
 #define J9THR_WAIT_PRI_INTERRUPTED(flags) (((flags) & (J9THREAD_FLAG_PRIORITY_INTERRUPTED | J9THREAD_FLAG_ABORTED)) != 0)
 
+#if defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL)
+#define NOTIFY_WRAPPER(thread) J9OSCOND_NOTIFY_ALL((thread)->condition);
+#else /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
+#define NOTIFY_WRAPPER(thread) \
+	do { \
+		if (J9THREAD_LIB_NOTIFY_POLICY_SIGNAL == (thread)->library->notifyPolicy) { \
+			J9OSCOND_NOTIFY((thread)->condition); \
+		} else { \
+			J9OSCOND_NOTIFY_ALL((thread)->condition); \
+		} \
+	} while (0)
+#endif /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
+
 /*
  * Thread Library
  */
@@ -650,6 +663,13 @@ init_spinParameters(omrthread_library_t lib)
 		return -1;
 	}
 #endif
+
+#if !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL)
+	lib->notifyPolicy = J9THREAD_LIB_NOTIFY_POLICY_SIGNAL;
+	if (init_threadParam("notifyPolicy", &lib->notifyPolicy)) {
+		return -1;
+	}
+#endif /* !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL) */
 
 #if (defined(OMR_THR_THREE_TIER_LOCKING))
 	lib->secondarySpinForObjectMonitors = 0;
@@ -2434,7 +2454,7 @@ omrthread_resume(omrthread_t thread)
 	 * The thread _should_ only be OS suspended once, but
 	 * handle the case where it's suspended more than once anyway.
 	 */
-	J9OSCOND_NOTIFY_ALL(thread->condition);
+	NOTIFY_WRAPPER(thread);
 	thread->flags &= ~J9THREAD_FLAG_SUSPENDED;
 
 	Trc_THR_ThreadResumed(thread, MACRO_SELF());
@@ -2698,7 +2718,7 @@ threadInterrupt(omrthread_t thread, uintptr_t interruptFlag)
 
 	if (currFlags & testFlags) {
 		if (currFlags & (J9THREAD_FLAG_SLEEPING | J9THREAD_FLAG_PARKED)) {
-			J9OSCOND_NOTIFY_ALL(thread->condition);
+			NOTIFY_WRAPPER(thread);
 
 		} else if (currFlags & J9THREAD_FLAG_WAITING) {
 			if (interrupt_waiting_thread(self, thread) == 1) {
@@ -2740,7 +2760,7 @@ interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt)
 	monitor = threadToInterrupt->monitor;
 
 	if (MONITOR_TRY_LOCK(monitor) == 0) {
-		J9OSCOND_NOTIFY_ALL(threadToInterrupt->condition);
+		NOTIFY_WRAPPER(threadToInterrupt);
 	} else {
 		omrthread_monitor_pin(monitor, self);
 		THREAD_UNLOCK(threadToInterrupt);
@@ -2752,7 +2772,7 @@ interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt)
 			if ((threadToInterrupt->flags &
 				 (J9THREAD_FLAG_BLOCKED | J9THREAD_FLAG_ABORTABLE | J9THREAD_FLAG_ABORTED)) ==
 				(J9THREAD_FLAG_BLOCKED | J9THREAD_FLAG_ABORTABLE | J9THREAD_FLAG_ABORTED)) {
-				J9OSCOND_NOTIFY_ALL(threadToInterrupt->condition);
+				NOTIFY_WRAPPER(threadToInterrupt);
 			}
 		}
 
@@ -3042,7 +3062,7 @@ threadNotify(omrthread_t threadToNotify)
 
 	threadToNotify->flags &= ~J9THREAD_FLAG_WAITING;
 	threadToNotify->flags |= J9THREAD_FLAG_BLOCKED | J9THREAD_FLAG_NOTIFIED;
-	J9OSCOND_NOTIFY_ALL(threadToNotify->condition);
+	NOTIFY_WRAPPER(threadToNotify);
 }
 
 /**
@@ -3061,7 +3081,7 @@ threadInterruptWake(omrthread_t thread, omrthread_monitor_t monitor)
 	ASSERT(0 != monitor);
 
 	thread->flags |= J9THREAD_FLAG_BLOCKED;
-	J9OSCOND_NOTIFY_ALL(MONITOR_WAIT_CONDITION(thread, monitor));
+	NOTIFY_WRAPPER(thread);
 }
 
 /**
@@ -3162,7 +3182,7 @@ omrthread_unpark(omrthread_t thread)
 	thread->flags |= J9THREAD_FLAG_UNPARKED;
 
 	if (thread->flags & J9THREAD_FLAG_PARKED) {
-		J9OSCOND_NOTIFY_ALL(thread->condition);
+		NOTIFY_WRAPPER(thread);
 	}
 
 	THREAD_UNLOCK(thread);
@@ -3915,7 +3935,7 @@ unblock_spinlock_threads(omrthread_t self, omrthread_monitor_t monitor)
 	while (next) {
 		queue = next;
 		next = queue->next;
-		J9OSCOND_NOTIFY_ALL(queue->condition);
+		NOTIFY_WRAPPER(queue);
 		Trc_THR_ThreadSpinLockThreadUnblocked(self, queue, monitor);
 	}
 }

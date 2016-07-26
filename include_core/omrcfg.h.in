@@ -204,6 +204,12 @@ extern "C" {
 @OMR_THR_CUSTOM_SPIN_OPTIONS@
 
 /**
+ * Allows a user to select the thread notify policy: signal or broadcast.
+ * ifRemoved: User will not be able to select the thread notify policy, and broadcast policy will always be used.
+ */
+@OMR_NOTIFY_POLICY_CONTROL@
+
+/**
  * This enables the option to select different algorithms for yielding.
  */
 @OMR_THR_YIELD_ALG@

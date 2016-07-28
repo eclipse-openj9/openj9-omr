@@ -146,6 +146,9 @@ typedef struct J9ThreadLibrary {
 #if defined(OSX)
 	clock_serv_t clockService;
 #endif /* defined(OSX) */
+#if !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL)
+	uintptr_t notifyPolicy;
+#endif /* !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL) */
 } J9ThreadLibrary;
 
 /*

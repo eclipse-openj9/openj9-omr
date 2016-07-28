@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -142,8 +142,8 @@ omrmmap_get_region_granularity(struct OMRPortLibrary *portLibrary, void *address
 #pragma linkage (PGSERRM,OS)
 #pragma map(Pgser_Release,"PGSERRM")
 #if defined(OMR_ENV_DATA64)
-#pragma linkage(j9discard_data,OS_NOSTACK)
-int j9discard_data(void *address, int numFrames);
+#pragma linkage(omrdiscard_data,OS_NOSTACK)
+int omrdiscard_data(void *address, int numFrames);
 #endif /*OMR_ENV_DATA64 */
 
 intptr_t Pgser_Release(void *address, int byteAmount);
@@ -163,7 +163,7 @@ omrmmap_dont_need(struct OMRPortLibrary *portLibrary, const void *startAddress, 
 			Trc_PRT_mmap_dont_need_oscall(roundedStart, roundedLength);
 
 #if defined(OMR_ENV_DATA64)
-			if (j9discard_data((void *)roundedStart, roundedLength >> ZOS_REAL_FRAME_SIZE_SHIFT) != 0) {
+			if (omrdiscard_data((void *)roundedStart, roundedLength >> ZOS_REAL_FRAME_SIZE_SHIFT) != 0) {
 				Trc_PRT_mmap_dont_need_j9discard_data_failed((void *)roundedStart, roundedLength);
 			}
 #else

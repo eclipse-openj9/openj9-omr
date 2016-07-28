@@ -1,6 +1,6 @@
 ***********************************************************************
 *
-* (c) Copyright IBM Corp. 2012, 2015
+* (c) Copyright IBM Corp. 2012, 2016
 *
 *  This program and the accompanying materials are made available
 *  under the terms of the Eclipse Public License v1.0 and
@@ -25,14 +25,14 @@
 *       with "MEND"
 *
 * 1. MYPROLOG. This was needed for the METAL C compiler implementation
-*       of j9allocate_large_pages and j9free_large_pages (implemented
+*       of omrallocate_large_pages and omrfree_large_pages (implemented
 *       at bottom).
 * 2. MYEPILOG. See explanation for MYPROLOG
 *
 * This file also includes HLASM call to STORAGE OBTAIN HLASM
 * 		macro
 *		- These calls were generated using the METAL-C compiler
-*		- See j9storage.c for details/instructions.
+*		- See omrstorage.c for details/instructions.
 *
 *
          MACRO                                                                 
@@ -153,13 +153,13 @@
          MEND
 *
 **************************************************
-* Insert contents of j9storage.s below
+* Insert contents of omrstorage.s below
 **************************************************
 *
          ACONTROL AFPR                                                   000000
-J9STORAGE CSECT                                                          000000
-J9STORAGE AMODE 31                                                       000000
-J9STORAGE RMODE ANY                                                      000000
+OMRSTORAGE CSECT                                                         000000
+OMRSTORAGE AMODE 31                                                      000000
+OMRSTORAGE RMODE ANY                                                     000000
          GBLA  &CCN_DSASZ              DSA size of the function          000000
          GBLA  &CCN_SASZ               Save Area Size of this function   000000
          GBLA  &CCN_ARGS               Number of fixed parameters        000000
@@ -190,17 +190,17 @@ J9STORAGE RMODE ANY                                                      000000
 &CCN_LP64 SETB 0                                                         000000
 &CCN_RENT SETB 0                                                         000000
 &CCN_APARSE SETB 1                                                       000000
-&CCN_CSECT SETC 'J9STORAGE'                                              000000
+&CCN_CSECT SETC 'OMRSTORAGE'                                             000000
 &CCN_ARCHLVL SETC '7'                                                    000000
          SYSSTATE ARCHLVL=2                                              000000
          IEABRCX DEFINE                                                  000000
 .* The HLASM GOFF option is needed to assemble this program              000000
-@@CCN@19 ALIAS C'j9free_memory_below_bar'                                000000
-@@CCN@11 ALIAS C'j9allocate_4K_pages_below_bar'                          000000
-@@CCN@1  ALIAS C'j9allocate_1M_pageable_pages_below_bar'                 000000
+@@CCN@19 ALIAS C'omrfree_memory_below_bar'                               000000
+@@CCN@11 ALIAS C'omrallocate_4K_pages_below_bar'                         000000
+@@CCN@1  ALIAS C'omrallocate_1M_pageable_pages_below_bar'                000000
 * /********************************************************************  000001
 *  *                                                                     000002
-*  * (c) Copyright IBM Corp. 2001, 2015                                  000003
+*  * (c) Copyright IBM Corp. 2001, 2016                                  000003
 *  *                                                                     000004
 *  *  This program and the accompanying materials are made available     000005
 *  *  under the terms of the Eclipse Public License v1.0 and             000006
@@ -221,12 +221,12 @@ J9STORAGE RMODE ANY                                                      000000
 *  * that use the STORAGE macro in omrvmem.c                             000021
 *  *                                                                     000022
 *  * This file is compiled manually using the METAL-C compiler that was  000023
-*  * introduced in z/OS V1R9. The generated output (j9storage.s) is the  000024
+*  * introduced in z/OS V1R9. The generated output (omrstorage.s) is th  000024
 *  * inserted into omrvmem_support_below_bar_[31|64].s which is compile  000025
 *  *                                                                     000026
 *  * omrvmem_support_below_bar_[31|64].s indicates where to put the con  000027
 *  * Search for:                                                         000028
-*  *   Insert contents of j9storage.s below                              000029
+*  *   Insert contents of omrstorage.s below                             000029
 *  *                                                                     000030
 *  * *******                                                             000031
 *  * NOTE!!!!! You must strip the line numbers from any pragma statemen  000032
@@ -234,16 +234,16 @@ J9STORAGE RMODE ANY                                                      000000
 *  * *******                                                             000034
 *  *                                                                     000035
 *  * It should be obvious, however, just to be clear be sure to omit th  000036
-*  * first two lines from j9storage.s which will look something like:    000037
+*  * first two lines from omrstorage.s which will look something like:   000037
 *  *                                                                     000038
 *  *          TITLE '5694A01 V1.9 z/OS XL C                              000039
-*  *                     ./j9storage.c'                                  000040
+*  *                     ./omrstorage.c'                                 000040
 *  *                                                                     000041
 *  * To compile for 64-bit use:                                          000042
-*  *  xlc -S -qmetal -Wc,lp64 -qlongname j9storage.c                     000043
+*  *  xlc -S -qmetal -Wc,lp64 -qlongname omrstorage.c                    000043
 *  *                                                                     000044
 *  * To compile for 31-bit use:                                          000045
-*  *  xlc -S -qmetal -qlongname j9storage.c                              000046
+*  *  xlc -S -qmetal -qlongname omrstorage.c                             000046
 *  *                                                                     000047
 *  * z/OS V1R9 elements and features:                                    000048
 *  *   http://www-03.ibm.com/systems/z/os/zos/bkserv/r9pdf/index.html    000049
@@ -254,12 +254,12 @@ J9STORAGE RMODE ANY                                                      000000
 *  *                                                                     000054
 *  */                                                                    000055
 *                                                                        000056
-* #pragma prolog(j9allocate_1M_pageable_pages_below_bar,"MYPROLOG")      000057
-* #pragma epilog(j9allocate_1M_pageable_pages_below_bar,"MYEPILOG")      000058
+* #pragma prolog(omrallocate_1M_pageable_pages_below_bar,"MYPROLOG")     000057
+* #pragma epilog(omrallocate_1M_pageable_pages_below_bar,"MYEPILOG")     000058
 *                                                                        000059
 * /*                                                                     000060
 *  * Allocate 1MB pageable pages below 2GB bar using STORAGE system mac  000061
-*  * Memory allocated is freed using j9free_memory_below_bar().          000062
+*  * Memory allocated is freed using omrfree_memory_below_bar().         000062
 *  *                                                                     000063
 *  * @params[in] numBytes Number of bytes to be allocated                000064
 *  * @params[in] subpool subpool number to be used                       000065
@@ -267,7 +267,7 @@ J9STORAGE RMODE ANY                                                      000000
 *  * @return pointer to memory allocated, NULL on failure.               000067
 *  */                                                                    000068
 * void *                                                                 000069
-* j9allocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)   000070
+* omrallocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)  000070
 * {                                                                      000071
 *  long length;                                                          000072
 *  long sp;                                                              000073
@@ -288,12 +288,12 @@ J9STORAGE RMODE ANY                                                      000000
 *  }                                                                     000088
 * }                                                                      000089
 *                                                                        000090
-* #pragma prolog(j9allocate_4K_pages_below_bar,"MYPROLOG")               000091
-* #pragma epilog(j9allocate_4K_pages_below_bar,"MYEPILOG")               000092
+* #pragma prolog(omrallocate_4K_pages_below_bar,"MYPROLOG")              000091
+* #pragma epilog(omrallocate_4K_pages_below_bar,"MYEPILOG")              000092
 *                                                                        000093
 * /*                                                                     000094
 *  * Allocate 4K pages below 2GB bar using STORAGE system macro.         000095
-*  * Memory allocated is freed using j9free_memory_below_bar().          000096
+*  * Memory allocated is freed using omrfree_memory_below_bar().         000096
 *  *                                                                     000097
 *  * @params[in] numBytes Number of bytes to be allocated                000098
 *  * @params[in] subpool subpool number to be used                       000099
@@ -301,7 +301,7 @@ J9STORAGE RMODE ANY                                                      000000
 *  * @return pointer to memory allocated, NULL on failure. Returned val  000101
 *  */                                                                    000102
 * void *                                                                 000103
-* j9allocate_4K_pages_below_bar(long *numBytes, int *subpool)            000104
+* omrallocate_4K_pages_below_bar(long *numBytes, int *subpool)           000104
 * {                                                                      000105
 *  long length;                                                          000106
 *  long sp;                                                              000107
@@ -322,8 +322,8 @@ J9STORAGE RMODE ANY                                                      000000
 *  }                                                                     000122
 * }                                                                      000123
 *                                                                        000124
-* #pragma prolog(j9free_memory_below_bar,"MYPROLOG")                     000125
-* #pragma epilog(j9free_memory_below_bar,"MYEPILOG")                     000126
+* #pragma prolog(omrfree_memory_below_bar,"MYPROLOG")                    000125
+* #pragma epilog(omrfree_memory_below_bar,"MYEPILOG")                    000126
 *                                                                        000127
 * /*                                                                     000128
 *  * Free memory allocated using STORAGE system macro.                   000129
@@ -333,11 +333,11 @@ J9STORAGE RMODE ANY                                                      000000
 *  * @return non-zero if memory is not freed successfully, 0 otherwise.  000133
 *  */                                                                    000134
 * int                                                                    000135
-* j9free_memory_below_bar(void *address, long *length, int *subpool)     000136
+* omrfree_memory_below_bar(void *address, long *length, int *subpool)    000136
          J     @@CCN@19                                                  000136
 @@PFD@@  DC    XL8'00C300C300D50000'   Prefix Data Marker                000136
-         DC    CL8'20160229'           Compiled Date YYYYMMDD            000136
-         DC    CL6'095330'             Compiled Time HHMMSS              000136
+         DC    CL8'20160715'           Compiled Date YYYYMMDD            000136
+         DC    CL6'110945'             Compiled Time HHMMSS              000136
          DC    XL4'42010000'           Compiler Version                  000136
          DC    XL2'0000'               Reserved                          000136
          DC    BL1'00000000'           Flag Set 1                        000136
@@ -352,7 +352,7 @@ J9STORAGE RMODE ANY                                                      000000
          DC    XL4'00000000'           Reserved                          000136
 @@CCN@19 DS    0F                                                        000136
 &CCN_PRCN SETC '@@CCN@19'                                                000136
-&CCN_PRCN_LONG SETC 'j9free_memory_below_bar'                            000136
+&CCN_PRCN_LONG SETC 'omrfree_memory_below_bar'                           000136
 &CCN_LITN SETC '@@LIT@1'                                                 000136
 &CCN_BEGIN SETC '@@BGN@1'                                                000136
 &CCN_ASCM SETC 'P'                                                       000136
@@ -427,7 +427,7 @@ J9STORAGE RMODE ANY                                                      000000
          LMH   14,6,100(13)                                              000152
          DROP                                                            000152
          MYEPILOG                                                        000152
-J9STORAGE CSECT ,                                                        000152
+OMRSTORAGE CSECT ,                                                       000152
          DS    0F                                                        000152
 @@LIT@1  LTORG                                                           000000
 @@FPB@   LOCTR                                                           000000
@@ -444,9 +444,9 @@ J9STORAGE CSECT ,                                                        000152
          DC    XL2'0000'               Saved FPR Mask                    000000
          DC    BL2'1111111000000011'   Saved HGPR Mask                   000000
          DC    XL4'00000064'           HGPR Save Area Offset             000000
-         DC    AL2(23)                                                   000000
-         DC    C'j9free_memory_below_bar'                                000000
-J9STORAGE LOCTR                                                          000000
+         DC    AL2(24)                                                   000000
+         DC    C'omrfree_memory_below_bar'                               000000
+OMRSTORAGE LOCTR                                                         000000
          EJECT                                                           000000
 @@AUTO@1 DSECT                                                           000000
          DS    42F                                                       000000
@@ -472,8 +472,8 @@ J9STORAGE LOCTR                                                          000000
          ORG   @@PARMD@1+8                                               000000
 @22subpool@9 DS F                                                        000000
          EJECT                                                           000000
-J9STORAGE CSECT ,                                                        000000
-* j9allocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)   000070
+OMRSTORAGE CSECT ,                                                       000000
+* omrallocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)  000070
          ENTRY @@CCN@1                                                   000070
 @@CCN@1  AMODE 31                                                        000070
          DC    XL8'00C300C300D50100'   Function Entry Point Marker       000070
@@ -481,7 +481,7 @@ J9STORAGE CSECT ,                                                        000000
          DC    XL4'00000000'           Reserved                          000070
 @@CCN@1  DS    0F                                                        000070
 &CCN_PRCN SETC '@@CCN@1'                                                 000070
-&CCN_PRCN_LONG SETC 'j9allocate_1M_pageable_pages_below_bar'             000070
+&CCN_PRCN_LONG SETC 'omrallocate_1M_pageable_pages_below_bar'            000070
 &CCN_LITN SETC '@@LIT@3'                                                 000070
 &CCN_BEGIN SETC '@@BGN@3'                                                000070
 &CCN_ASCM SETC 'P'                                                       000070
@@ -569,7 +569,7 @@ J9STORAGE CSECT ,                                                        000000
          LMH   14,6,104(13)                                              000089
          DROP                                                            000089
          MYEPILOG                                                        000089
-J9STORAGE CSECT ,                                                        000089
+OMRSTORAGE CSECT ,                                                       000089
          DS    0F                                                        000089
 @@LIT@3  LTORG                                                           000000
 @@FPB@   LOCTR                                                           000000
@@ -586,9 +586,9 @@ J9STORAGE CSECT ,                                                        000089
          DC    XL2'0000'               Saved FPR Mask                    000000
          DC    BL2'1111111000000011'   Saved HGPR Mask                   000000
          DC    XL4'00000068'           HGPR Save Area Offset             000000
-         DC    AL2(38)                                                   000000
-         DC    C'j9allocate_1M_pageable_pages_below_bar'                 000000
-J9STORAGE LOCTR                                                          000000
+         DC    AL2(39)                                                   000000
+         DC    C'omrallocate_1M_pageable_pages_below_bar'                000000
+OMRSTORAGE LOCTR                                                         000000
          EJECT                                                           000000
 @@AUTO@3 DSECT                                                           000000
          DS    42F                                                       000000
@@ -612,8 +612,8 @@ J9STORAGE LOCTR                                                          000000
          ORG   @@PARMD@3+4                                               000000
 @3subpool DS   F                                                         000000
          EJECT                                                           000000
-J9STORAGE CSECT ,                                                        000000
-* j9allocate_4K_pages_below_bar(long *numBytes, int *subpool)            000104
+OMRSTORAGE CSECT ,                                                       000000
+* omrallocate_4K_pages_below_bar(long *numBytes, int *subpool)           000104
          ENTRY @@CCN@11                                                  000104
 @@CCN@11 AMODE 31                                                        000104
          DC    XL8'00C300C300D50100'   Function Entry Point Marker       000104
@@ -621,7 +621,7 @@ J9STORAGE CSECT ,                                                        000000
          DC    XL4'00000000'           Reserved                          000104
 @@CCN@11 DS    0F                                                        000104
 &CCN_PRCN SETC '@@CCN@11'                                                000104
-&CCN_PRCN_LONG SETC 'j9allocate_4K_pages_below_bar'                      000104
+&CCN_PRCN_LONG SETC 'omrallocate_4K_pages_below_bar'                     000104
 &CCN_LITN SETC '@@LIT@2'                                                 000104
 &CCN_BEGIN SETC '@@BGN@2'                                                000104
 &CCN_ASCM SETC 'P'                                                       000104
@@ -709,7 +709,7 @@ J9STORAGE CSECT ,                                                        000000
          LMH   14,6,104(13)                                              000123
          DROP                                                            000123
          MYEPILOG                                                        000123
-J9STORAGE CSECT ,                                                        000123
+OMRSTORAGE CSECT ,                                                       000123
          DS    0F                                                        000123
 @@LIT@2  LTORG                                                           000000
 @@FPB@   LOCTR                                                           000000
@@ -726,9 +726,9 @@ J9STORAGE CSECT ,                                                        000123
          DC    XL2'0000'               Saved FPR Mask                    000000
          DC    BL2'1111111000000011'   Saved HGPR Mask                   000000
          DC    XL4'00000068'           HGPR Save Area Offset             000000
-         DC    AL2(29)                                                   000000
-         DC    C'j9allocate_4K_pages_below_bar'                          000000
-J9STORAGE LOCTR                                                          000000
+         DC    AL2(30)                                                   000000
+         DC    C'omrallocate_4K_pages_below_bar'                         000000
+OMRSTORAGE LOCTR                                                         000000
          EJECT                                                           000000
 @@AUTO@2 DSECT                                                           000000
          DS    42F                                                       000000
@@ -752,4 +752,4 @@ J9STORAGE LOCTR                                                          000000
          ORG   @@PARMD@2+4                                               000000
 @13subpool@2 DS F                                                        000000
 *                                                                        000153
-         END   ,(5650ZOS   ,2100,16060)                                  000000
+         END   ,(5650ZOS   ,2100,16197)                                  000000

@@ -56,8 +56,8 @@
 intptr_t Pgser_Release(void *address, int byteAmount);
 
 #if defined(OMR_ENV_DATA64)
-#pragma linkage(j9discard_data,OS_NOSTACK)
-int j9discard_data(void *address, int numFrames);
+#pragma linkage(omrdiscard_data,OS_NOSTACK)
+int omrdiscard_data(void *address, int numFrames);
 #endif /*OMR_ENV_DATA64 */
 
 #endif /*J9ZOS390 */
@@ -137,7 +137,7 @@ omrmem_advise_and_free_memory_basic(struct OMRPortLibrary *portLibrary, void *me
 #elif defined(J9ZOS390)
 
 #if defined(OMR_ENV_DATA64)
-			if (j9discard_data((void *)memPtrPageRounded, memPtrSizePageRounded >> ZOS_REAL_FRAME_SIZE_SHIFT) != 0) {
+			if (omrdiscard_data((void *)memPtrPageRounded, memPtrSizePageRounded >> ZOS_REAL_FRAME_SIZE_SHIFT) != 0) {
 				Trc_PRT_mem_advise_and_free_memory_basic_j9discard_data_failed((void *)memPtrPageRounded, memPtrSizePageRounded);
 				Assert_PRT_ShouldNeverHappen_wrapper();
 			}

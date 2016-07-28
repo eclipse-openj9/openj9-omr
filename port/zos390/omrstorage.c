@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2001, 2015
+ * (c) Copyright IBM Corp. 2001, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,12 +21,12 @@
  * that use the STORAGE macro in omrvmem.c
  *
  * This file is compiled manually using the METAL-C compiler that was
- * introduced in z/OS V1R9. The generated output (j9storage.s) is then
+ * introduced in z/OS V1R9. The generated output (omrstorage.s) is then
  * inserted into omrvmem_support_below_bar_[31|64].s which is compiled by our makefiles.
  *
- * omrvmem_support_below_bar_[31|64].s indicates where to put the contents of j9storage.s.
+ * omrvmem_support_below_bar_[31|64].s indicates where to put the contents of omrstorage.s.
  * Search for:
- * 		Insert contents of j9storage.s below
+ * 		Insert contents of omrstorage.s below
  *
  * *******
  * NOTE!!!!! You must strip the line numbers from any pragma statements!
@@ -34,16 +34,16 @@
  * *******
  *
  * It should be obvious, however, just to be clear be sure to omit the
- * first two lines from j9storage.s which will look something like:
+ * first two lines from omrstorage.s which will look something like:
  *
  *          TITLE '5694A01 V1.9 z/OS XL C
- *                     ./j9storage.c'
+ *                     ./omrstorage.c'
  *
  * To compile for 64-bit use:
- *  xlc -S -qmetal -Wc,lp64 -qlongname j9storage.c
+ *  xlc -S -qmetal -Wc,lp64 -qlongname omrstorage.c
  *
  * To compile for 31-bit use:
- *  xlc -S -qmetal -qlongname j9storage.c
+ *  xlc -S -qmetal -qlongname omrstorage.c
  *
  * z/OS V1R9 elements and features:
  * 		http://www-03.ibm.com/systems/z/os/zos/bkserv/r9pdf/index.html
@@ -54,12 +54,12 @@
  *
  */
 
-#pragma prolog(j9allocate_1M_pageable_pages_below_bar,"MYPROLOG")
-#pragma epilog(j9allocate_1M_pageable_pages_below_bar,"MYEPILOG")
+#pragma prolog(omrallocate_1M_pageable_pages_below_bar,"MYPROLOG")
+#pragma epilog(omrallocate_1M_pageable_pages_below_bar,"MYEPILOG")
 
 /*
  * Allocate 1MB pageable pages below 2GB bar using STORAGE system macro.
- * Memory allocated is freed using j9free_memory_below_bar().
+ * Memory allocated is freed using omrfree_memory_below_bar().
  *
  * @params[in] numBytes Number of bytes to be allocated
  * @params[in] subpool subpool number to be used
@@ -67,7 +67,7 @@
  * @return pointer to memory allocated, NULL on failure.
  */
 void *
-j9allocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)
+omrallocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)
 {
 	long length;
 	long sp;
@@ -88,12 +88,12 @@ j9allocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)
 	}
 }
 
-#pragma prolog(j9allocate_4K_pages_below_bar,"MYPROLOG")
-#pragma epilog(j9allocate_4K_pages_below_bar,"MYEPILOG")
+#pragma prolog(omrallocate_4K_pages_below_bar,"MYPROLOG")
+#pragma epilog(omrallocate_4K_pages_below_bar,"MYEPILOG")
 
 /*
  * Allocate 4K pages below 2GB bar using STORAGE system macro.
- * Memory allocated is freed using j9free_memory_below_bar().
+ * Memory allocated is freed using omrfree_memory_below_bar().
  *
  * @params[in] numBytes Number of bytes to be allocated
  * @params[in] subpool subpool number to be used
@@ -101,7 +101,7 @@ j9allocate_1M_pageable_pages_below_bar(long *numBytes, int *subpool)
  * @return pointer to memory allocated, NULL on failure. Returned value is guaranteed to be page aligned.
  */
 void *
-j9allocate_4K_pages_below_bar(long *numBytes, int *subpool)
+omrallocate_4K_pages_below_bar(long *numBytes, int *subpool)
 {
 	long length;
 	long sp;
@@ -122,8 +122,8 @@ j9allocate_4K_pages_below_bar(long *numBytes, int *subpool)
 	}
 }
 
-#pragma prolog(j9free_memory_below_bar,"MYPROLOG")
-#pragma epilog(j9free_memory_below_bar,"MYEPILOG")
+#pragma prolog(omrfree_memory_below_bar,"MYPROLOG")
+#pragma epilog(omrfree_memory_below_bar,"MYEPILOG")
 
 /*
  * Free memory allocated using STORAGE system macro.
@@ -133,7 +133,7 @@ j9allocate_4K_pages_below_bar(long *numBytes, int *subpool)
  * @return non-zero if memory is not freed successfully, 0 otherwise.
  */
 int
-j9free_memory_below_bar(void *address, long *length, int *subpool)
+omrfree_memory_below_bar(void *address, long *length, int *subpool)
 {
 	int rc = 0;
 	void *addr;

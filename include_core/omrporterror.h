@@ -111,9 +111,9 @@
  * The least significant 16 bits will identify the errno that occured while calling the function
  *
  */
-#define OMRPORT_ERROR_FILE_FSTAT_ERROR (-2<<16)
-#define OMRPORT_ERROR_FILE_FSTATFS_ERROR (-3<<16)
-#define OMRPORT_ERROR_FILE_FSTATVFS_ERROR (-3<<16)
+#define OMRPORT_ERROR_FILE_FSTAT_ERROR (-(2<<16))
+#define OMRPORT_ERROR_FILE_FSTATFS_ERROR (-(3<<16))
+#define OMRPORT_ERROR_FILE_FSTATVFS_ERROR (-(3<<16))
 
 /**
  * @name File Errors
@@ -239,8 +239,8 @@
  * The least significant 16 bits will identify the errno that occured while calling the function
  *
  */
-#define OMRPORT_ERROR_SYSINFO_GETGROUPSSIZE_ERROR (-2<<16)
-#define OMRPORT_ERROR_SYSINFO_GETGROUPS_ERROR (-3<<16)
+#define OMRPORT_ERROR_SYSINFO_GETGROUPSSIZE_ERROR (-(2<<16))
+#define OMRPORT_ERROR_SYSINFO_GETGROUPS_ERROR (-(3<<16))
 
 /**
  * @name sysinfo Errors

@@ -25,12 +25,11 @@
 bool
 MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensions)
 {
-	OMRPORT_ACCESS_FROM_OMRVM(extensions->getOmrVM());
 	bool result = true;
 	pugi::xml_document doc;
 	pugi::xml_parse_result parseResult = doc.load_file(_configFile);
 	if (!parseResult) {
-		omrtty_printf("Failed to load test configuration file (%s) with error description: %s.\n", _configFile, parseResult.description());
+		gcTestEnv->log(LEVEL_ERROR, "Failed to load test configuration file (%s) with error description: %s.\n", _configFile, parseResult.description());
 		result = false;
 	} else {
 		/* parse options */
@@ -49,7 +48,7 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 				unitSize = 1024 * 1024 * 1024;
 			} else {
 				result = false;
-				omrtty_printf("Unrecognized size unit: %s.\n", unit);
+				gcTestEnv->log(LEVEL_ERROR, "Unrecognized size unit: %s.\n", unit);
 			}
 		}
 
@@ -95,7 +94,7 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 				} else if ((0 == strcmp(attr.name(), "verboseLog")) || (0 == strcmp(attr.name(), "numOfFiles")) || (0 == strcmp(attr.name(), "numOfCycles")) || (0 == strcmp(attr.name(), "sizeUnit"))) {
 				} else {
 					result = false;
-					omrtty_printf("Failed: Unrecognized option: %s\n", attr.name());
+					gcTestEnv->log(LEVEL_ERROR, "Failed: Unrecognized option: %s\n", attr.name());
 					break;
 				}
 			}

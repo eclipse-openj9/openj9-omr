@@ -136,10 +136,9 @@ protected:
 	ObjectEntry *
 	add(ObjectEntry *objectEntry)
 	{
-		OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 		ObjectEntry *hashedEntry = (ObjectEntry *) hashTableAdd(exampleVM->objectTable, objectEntry);
 		if (NULL == hashedEntry) {
-			omrtty_printf("%s:%d Failed to add new object %s to hash table!\n", __FILE__, __LINE__, objectEntry->name);
+			gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to add new object %s to hash table!\n", __FILE__, __LINE__, objectEntry->name);
 		}
 		return hashedEntry;
 	}

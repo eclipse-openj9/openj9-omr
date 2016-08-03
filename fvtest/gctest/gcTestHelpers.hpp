@@ -38,7 +38,6 @@ class GCTestEnvironment: public BaseEnvironment
 	 */
 public:
 	OMR_VM_Example exampleVM;
-	OMRPortLibrary *portLib;
 	std::vector<const char *> params;
 	bool keepLog;
 
@@ -58,7 +57,7 @@ public:
 
 public:
 	GCTestEnvironment(int argc, char **argv)
-	: BaseEnvironment(argc, argv), portLib(NULL), keepLog(false)
+	: BaseEnvironment(argc, argv), keepLog(false)
 	{
 	}
 };

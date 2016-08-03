@@ -54,9 +54,7 @@ GCTestEnvironment::initParams()
 					FAIL() << "Failed to allocate native memory.";
 				}
 				strcpy(line, readLine);
-#if defined(OMRGCTEST_DEBUG)
-				omrtty_printf("Configuration file: %s\n", line);
-#endif
+				gcTestEnv->log(LEVEL_VERBOSE, "Configuration file: %s\n", line);
 				params.push_back(line);
 			}
 			omrfile_close(fileDescriptor);
@@ -117,31 +115,31 @@ printMemUsed(const char *where, OMRPortLibrary *portLib)
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS)&pmc, sizeof(pmc));
 	/* result in bytes */
-	omrtty_printf("%s: phys: %ld; virt: %ld\n", where, pmc.WorkingSetSize, pmc.PrivateUsage);
+	gcTestEnv->log(LEVEL_VERBOSE, "%s: phys: %ld; virt: %ld\n", where, pmc.WorkingSetSize, pmc.PrivateUsage);
 #elif defined(LINUX)
 	OMRPORT_ACCESS_FROM_OMRPORT(portLib);
 	const char *statm_path = "/proc/self/statm";
 	intptr_t fileDescriptor = omrfile_open(statm_path, EsOpenRead, 0444);
 	if (-1 == fileDescriptor) {
-		omrtty_printf("%s: failed to open /proc/self/statm.\n", where);
+		gcTestEnv->log(LEVEL_ERROR, "%s: failed to open /proc/self/statm.\n", where);
 		return;
 	}
 
 	char lineStr[2048];
 	if (NULL == omrfile_read_text(fileDescriptor, lineStr, sizeof(lineStr))) {
-		omrtty_printf("%s: failed to read from /proc/self/statm.\n", where);
+		gcTestEnv->log(LEVEL_ERROR, "%s: failed to read from /proc/self/statm.\n", where);
 		return;
 	}
 
 	unsigned long size, resident, share, text, lib, data, dt;
 	int numOfTokens = sscanf(lineStr, "%ld %ld %ld %ld %ld %ld %ld", &size, &resident, &share, &text, &lib, &data, &dt);
 	if (7 != numOfTokens) {
-		omrtty_printf("%s: failed to query memory info from /proc/self/statm.\n", where);
+		gcTestEnv->log(LEVEL_ERROR, "%s: failed to query memory info from /proc/self/statm.\n", where);
 		return;
 	}
 
 	/* result in pages */
-	omrtty_printf("%s: phys: %ld; virt: %ld\n", where, resident, size);
+	gcTestEnv->log(LEVEL_VERBOSE,"%s: phys: %ld; virt: %ld\n", where, resident, size);
 	omrfile_close(fileDescriptor);
 #else
 	/* memory info not supported */

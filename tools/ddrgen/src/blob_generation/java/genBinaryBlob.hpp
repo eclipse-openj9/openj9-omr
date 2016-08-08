@@ -28,7 +28,6 @@
 #include "EnumMember.hpp"
 #include "EnumUDT.hpp"
 #include "Field.hpp"
-#include "genSuperset.hpp"
 #include "Macro.hpp"
 #include "Symbol_IR.hpp"
 #include "TypedefUDT.hpp"

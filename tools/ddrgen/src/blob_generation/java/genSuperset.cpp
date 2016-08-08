@@ -326,24 +326,29 @@ JavaSupersetGenerator::printFieldMember(Field *field, string prefix = "")
 	/* If the type of a field is an anonymous inner type, print its fields prefixed by its field
 	 * name in place of the field.
 	 */
-	if (field->_fieldType->isAnonymousType()) {
-		field->_fieldType->printToSuperset(this, true, prefix + field->_name + ".");
-	} else {
-		string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
-		string lineToPrint = "F|" + replace(nameFormatted, ".", "$") + "|" + nameFormatted + "|";
+	if (NULL == field->_fieldType) {
+		rc = DDR_RC_ERROR;
+		ERRMSG("Field %s has NULL type", field->_name.c_str());
+	} else if (!field->_isStatic) {
+		if (field->_fieldType->isAnonymousType()) {
+			field->_fieldType->printToSuperset(this, true, prefix + field->_name + ".");
+		} else {
+			string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
+			string lineToPrint = "F|" + replace(nameFormatted, ".", "$") + "|" + nameFormatted + "|";
 
-		string assembledTypeName;
-		string simpleTypeName;
+			string assembledTypeName;
+			string simpleTypeName;
 
-		rc = getFieldType(field, &assembledTypeName, &simpleTypeName);
-		if (DDR_RC_OK != rc) {
-			ERRMSG("Could not assemble field type name");
-		}
+			rc = getFieldType(field, &assembledTypeName, &simpleTypeName);
+			if (DDR_RC_OK != rc) {
+				ERRMSG("Could not assemble field type name");
+			}
 
-		if (DDR_RC_OK == rc) {
-			string fieldFormatted = replace(assembledTypeName, "::", "$");
-			lineToPrint += fieldFormatted + "|" + simpleTypeName + "\n";
-			omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+			if (DDR_RC_OK == rc) {
+				string fieldFormatted = replace(assembledTypeName, "::", "$");
+				lineToPrint += fieldFormatted + "|" + simpleTypeName + "\n";
+				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+			}
 		}
 	}
 

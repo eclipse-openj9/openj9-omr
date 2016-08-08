@@ -36,6 +36,13 @@ private:
 	// - enum
 	enum { ENUM1, ENUM2, ENUM3 } anonymousEnum;
 
+	enum InnerEnum
+	{
+		ENUM_A,
+		ENUM_B,
+		ENUM_C
+	};
+
 	// - struct
 	struct Z {
 		uint64_t g;
@@ -62,20 +69,20 @@ IDATA instanceOfIDATA;
 typedef struct S1 {
 	IDATA a;
 } T1;
-T1 instanceOfT1;
+T1 instanceOfT1 = {0};
 
 // - typedef where the name matches the struct tag
 typedef struct S2 {
 	IDATA b;
 	S1 b2;
 } S2;
-S2 instanceOfS2;
+S2 instanceOfS2 = {0, {0}};
 
 // - typedef there there is no struct tag
 typedef struct {
 	S2 c;
 } T2;
-T2 instanceOfT2;
+T2 instanceOfT2 = {{0, {0}}};
 
 /* Type without struct name at beginning used as a field. */
 typedef S2 * T3 ;
@@ -84,7 +91,7 @@ typedef struct {
 	S2 e;
 	T3 f;
 } T4;
-T4 instanceOfT4;
+T4 instanceOfT4 = {{{0, {0}}}, {0, {0}}, NULL};
 
 // - typedef'ed enum
 typedef enum {
@@ -135,13 +142,14 @@ public:
 class Foo
 {
 private:
+	static int staticTest;
 	uintptr_t data;
 	const int data2;
 public:
 	Foo(int x) : data(x), data2(4) {}
 };
 
-class Bar : Foo
+class Bar : public Foo
 {
 public:
 	Bar(int x) : Foo(x) {}

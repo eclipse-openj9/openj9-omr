@@ -219,11 +219,21 @@ namespace MyNamespace
 		uint32_t f32;
 		uint8_t arrI8[3];
 	};
+
+	namespace InnerNamespace
+	{
+		struct TypeInInnerNamespace
+		{
+			uint16_t h;
+		};
+		TypeInInnerNamespace instanceOfTypeInInnerNamespace;
+	}
 }
 MyNamespace::Q instanceOfQ;
 MyNamespace::RGBColourV2 instanceOfRGBColourV2;
 MyNamespace::UDATA instanceOfUDATA;
 MyNamespace::Uniondata5 instanceOfUniondata5;
+MyNamespace::THINGS instanceOfThings;
 
 /* This is a forward declaration of a class. */
 class ForwardDeclaredClass;

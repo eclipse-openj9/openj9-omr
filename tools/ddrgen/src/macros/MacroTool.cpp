@@ -16,16 +16,27 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#if defined(AIXPPC)
+#define __IBMCPP_TR1__ 1
+#include <unordered_map>
+#undef __IBMCPP_TR1__
+#else /* defined(AIXPPC) */
+#include <unordered_map>
+#endif /* !defined(AIXPPC) */
+
 #include "MacroTool.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <set>
-#include <unordered_map>
 
 #include "NamespaceUDT.hpp"
 
+#if defined(AIXPPC)
+using std::tr1::unordered_map;
+#else /* defined(AIXPPC) */
 using std::unordered_map;
+#endif /* !defined(AIXPPC) */
 
 string
 MacroTool::getTypeName(string s)
@@ -143,7 +154,7 @@ MacroTool::addMacrosToIR(Symbol_IR *ir)
 				rc = DDR_RC_ERROR;
 				break;
 			} else {
-				for (set<pair<string, string>>::iterator it = macroInfo->getMacroStart(); it != macroInfo->getMacroEnd(); ++it) {
+				for (set<pair<string, string> >::iterator it = macroInfo->getMacroStart(); it != macroInfo->getMacroEnd(); ++it) {
 					/* Check if the macro already exists before adding it. */
 					bool alreadyExists = false;
 					for (vector<Macro>::iterator it2 = ns->_macros.begin(); it2 != ns->_macros.end(); ++it2) {

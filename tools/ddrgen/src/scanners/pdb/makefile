@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2016
+# (c) Copyright IBM Corp. 2015, 2016
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -15,26 +15,22 @@
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
-
-ddrgen_topdir = ..
+ddrgen_topdir = ../../..
 include $(ddrgen_topdir)/config/ddrgencfg.mk
 
-MODULE_NAME := ddrgentest
-ARTIFACT_TYPE := cxx_executable
+MODULE_NAME := scanner
+ARTIFACT_TYPE := archive
 
-OBJECTS += $(patsubst %.cpp,%$(OBJEXT),$(wildcard *.cpp))
-OBJECTS += $(patsubst %.c,%$(OBJEXT),$(wildcard *.c))
-OBJECTS += $(patsubst %.cpp,%$(OBJEXT),$(wildcard test_subdir/*.cpp))
-OBJECTS += $(patsubst %.c,%$(OBJEXT),$(wildcard test_subdir/*.c))
-OBJECTS += $(patsubst %.cpp,%$(OBJEXT),$(wildcard map_to_type/*.cpp))
-OBJECTS += $(patsubst %.c,%$(OBJEXT),$(wildcard map_to_type/*.c))
+OBJECTS = \
+	PdbScanner.obj
 
-ifeq (gcc,$(OMR_TOOLCHAIN))
-MODULE_CXXFLAGS += -g3 -Wno-error
-else ifeq (msvc,$(OMR_TOOLCHAIN))
-MODULE_CXXFLAGS += /Zi
-else
-MODULE_CXXFLAGS += -qdbgfmt=dwarf
-endif
+MODULE_INCLUDES = \
+  $(ddrgen_srcdir)/scanners \
+  $(ddrgen_srcdir)/intermediate_representation \
+  $(ddrgen_srcdir)/blob_generation \
+  $(ddrgen_srcdir)/scanners/pdb/DIA-SDK/include \
+  $(ddrgen_srcdir)
+
+MODULE_STATIC_LIBS += diaguids.lib
 
 include $(top_srcdir)/omrmakefiles/rules.mk

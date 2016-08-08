@@ -863,10 +863,10 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 	while (line_ptr && *line_ptr) {
 		char token_name[128];
 		uintptr_t token_value = 0;
-		int tokens_assigned = sscanf(line_ptr, "%127s %zu %*s", token_name, &token_value);
+		int tokens_assigned = sscanf(line_ptr, "%127s %" SCNuPTR " %*s", token_name, &token_value);
 
 #ifdef LPDEBUG
-		portLibrary->tty_printf(portLibrary, "/proc/meminfo => %s [%zu] %d\n", token_name, token_value, tokens_assigned);
+		portLibrary->tty_printf(portLibrary, "/proc/meminfo => %s [%" PRIuPTR "] %d\n", token_name, token_value, tokens_assigned);
 #endif
 
 		if (2 == tokens_assigned) {

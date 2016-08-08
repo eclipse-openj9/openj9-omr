@@ -29,26 +29,107 @@ to search for existing bugs before you create another one. Contributions are alw
 You can propose contributions by sending pull requests through GitHub. Following these guidelines
 will help us to merge your pull requests smoothly:
 
-1.  It is generally a good idea to file an issue to explain your idea before writing
-code or submitting a PR, especially when introducing new features. Trivial (must be
-single commit and very obvious change) PRs may be accepted without an issue if the
-change really is simple, but committers have the right to request an issue for any
-change. If in doubt, create an issue.
-2. Please read carefully and adhere to the legal considerations and copyright/license requirements outlined below.
-3. Follow the coding style and format of the code you are modifying (see doc/CodingStandard.md)
-4. All commits must be signed (see Legal considerations, below) and use the following commit template ("#n" only needed if there is an issue):
-
-    ```
-    Short, simple summary that must include #n
-
-    Detailed information if required
-
-    Signed-off-by: First Last <email>
-    ```
-
+1. It is generally a good idea to file an issue to explain your idea before
+   writing code or submitting a pull request.
+2. Please read carefully and adhere to the legal considerations and
+   copyright/license requirements outlined below.
+3. Follow the coding style and format of the code you are modifying (see the
+   [coding standards](doc/CodingStandard.md)).
+4. Follow the commit guidelines found below.
 5. Ensure that "make test" passes all tests before you submit a Pull Request.
-6. The pull request should reference the issue number with "#n" in the discussion remark, not just the title.
 
+## Commit Guidelines
+
+The first line describes the change made. It is written in the imperative mood,
+say what happens when the patch is applied. Keep it short and simple. The first
+line should be less than 50 characters, lower case, and does not end in a
+period. Leave a blank line between the first line and the message body.
+
+The body should be wrapped at 72 characters, where reasonable. Write your commit in
+[github style markdown](https://guides.github.com/features/mastering-markdown/).
+Use headers and code snippets where it makes sense.
+
+Include as much information in your commit as possible. You may want to include
+designs and rationale, examples and code, or issues and next steps. Prefer
+copying resources into the body of the commit over providing external links.
+Structure large commit messages with markdown headers.
+
+Use the commit footer to place commit metadata. The footer is the last block of
+contiguous text in the message. It is separated from the body by one or more
+blank lines, and as such cannot contain any blank lines. Lines in the footer are
+of the form:
+
+```
+Key: Value
+```
+
+When a commit has related issues or commits, explain the relation in the message
+body. you should also leave an `Issue` tag in the footer. For example:
+
+```
+This patch eliminates the race condition in issue #1234.
+
+Issue: #1234
+```
+
+Sign off on your commit in the footer. By doing this, you assert original
+authorship of the commit and that you are permitted to contribute it. This can
+be automatically added to your commit by passing `-s` to `git commit`, or by
+hand adding the following line to the footer of the commit.
+
+```
+Signed-off-by: Full Name <email>
+```
+
+Remember, if a blank line is found anywhere after the `Signed-off-by` line, the
+`Signed-off-by:` will be considered outside of the footer, and will fail the
+automated Signed-off-by validation.
+
+It is important that you read and understand the legal considerations found
+below when signing off or contributing any commit.
+
+### Example commits
+
+Here is an example of a *good* commit:
+
+```
+Update and expand the commit guidelines
+
+Elaborate on the style guidelines for commit messages. These new
+style guidelines reflect the conversation found in #124.
+
+The guidelines are changed to:
+- Provide guidance on how to write a good first line.
+- Elaborate on formatting requirements.
+- Relax the advice on using issues for nontrivial commits.
+- Move issue references from the first line to the message footer.
+- Encourage contributors to put more information into the commit
+  message.
+
+Issue: #124
+Signed-off-by: Robert Young <rwy0717@gmail.com>
+```
+
+The first line is meaningful and imperative. The body contains enough
+information that the reader understands the why and how of the commit, and it's
+relation to any issues. The issue is properly tagged and the commit is signed
+off.
+
+The following is a *bad* commit:
+
+```
+FIX #124: Changing a couple random things in CONTRIBUTING.md.
+Also, there are some bug fixes in the thread library.
+```
+
+The commit rolls unrelated changes together in a very bad way. There is not
+enough information for the commit message to be useful. The first line is not
+meaningful or imperative. The message is not formatted correctly, the issue is
+improperly referenced, and the commit is not signed off by the author.
+
+### Other resources for writing good commits
+
+- http://chris.beams.io/posts/git-commit/
 
 ## Legal considerations
 

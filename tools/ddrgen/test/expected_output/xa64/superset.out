@@ -81,6 +81,10 @@ F|name|name|U8[]|char[]
 F|salary|salary|float|float
 F|worker_no|worker_no|I32|int
 S|MyNamespace|MyNamespacePointer|
+S|MyNamespace$THINGS|MyNamespace$THINGSPointer|
+C|THING1
+C|THING2
+C|THING3
 S|MyNamespace$Q|MyNamespace$QPointer|
 F|d|d|U16|uint16_t
 F|e|e|U16[][]|uint16_t[][]
@@ -92,6 +96,8 @@ S|MyNamespace$Uniondata5|MyNamespace$Uniondata5Pointer|
 F|i16|i16|U16|uint16_t
 F|f32|f32|U32|uint32_t
 F|arrI8|arrI8|U8[]|uint8_t[]
+S|TypeInInnerNamespace|TypeInInnerNamespacePointer|
+F|h|h|U16|uint16_t
 S|ForwardDeclaredClass|ForwardDeclaredClassPointer|
 S|HasAForwardDeclaredClass|HasAForwardDeclaredClassPointer|
 F|fieldOfForwardDeclaredClass|fieldOfForwardDeclaredClass|ForwardDeclaredClass*|ForwardDeclaredClass*
@@ -136,6 +142,7 @@ F|length|length|I64|int64_t
 F|width|width|I64|int64_t
 F|height|height|I64|int64_t
 S|Foo|FooPointer|
+F|staticTest|staticTest|I32|int
 F|data|data|UDATA|uintptr_t
 F|data2|data2|I32|const int
 S|Bar|BarPointer|Foo
@@ -190,24 +197,3 @@ F|arrayWithTypedefType|arrayWithTypedefType|U32[]|UDATA2[]
 S|SNoLengthArray|SNoLengthArrayPointer|
 F|numElements|numElements|I32|int
 F|intArr|intArr|I32[]|int[]
-S|TestFileInSubDirConstants|TestFileInSubDirConstantsPointer|
-C|SEAHORSE
-C|TEST_FLAG
-C|TEST_FLAG2
-C|TEST_FLAG_UNDEF
-S|TestHeaderConstants|TestHeaderConstantsPointer|
-C|COW
-S|MapToTypeTest1|MapToTypeTest1Pointer|
-C|myMapToTypeMacro1a
-C|myMapToTypeMacro1b
-S|Map_to_typeConstants|Map_to_typeConstantsPointer|
-C|myMapToTypeMacro2
-S|MapToTypeTest3|MapToTypeTest3Pointer|
-C|myMapToTypeMacro3
-S|MapToTypeTest4|MapToTypeTest4Pointer|
-C|myMapToTypeMacro4
-S|TestConstants|TestConstantsPointer|
-C|dolphin
-C|fish
-C|octopus
-C|whale

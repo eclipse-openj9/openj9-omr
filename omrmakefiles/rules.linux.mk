@@ -30,8 +30,8 @@ endif
 ifeq (gcc,$(OMR_TOOLCHAIN))
   ifeq (x86,$(OMR_HOST_ARCH))
     #-- GCC compilers support dependency generation --
-    GLOBAL_CFLAGS+=-MMD
-    GLOBAL_CXXFLAGS+=-MMD
+    GLOBAL_CFLAGS+=-MMD -MP
+    GLOBAL_CXXFLAGS+=-MMD -MP
   endif
 endif
 

@@ -41,13 +41,13 @@ MacroInfo::getNumMacros()
 	return _macros.size();
 }
 
-set<pair<string, string>>::iterator
+set<pair<string, string> >::iterator
 MacroInfo::getMacroStart()
 {
 	return _macros.begin();
 }
 
-set<pair<string, string>>::iterator
+set<pair<string, string> >::iterator
 MacroInfo::getMacroEnd()
 {
 	return _macros.end();

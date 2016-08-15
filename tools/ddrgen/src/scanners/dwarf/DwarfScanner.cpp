@@ -24,8 +24,6 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <set>
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>     /* For exit() */
@@ -41,10 +39,6 @@
 #include "NamespaceUDT.hpp"
 #include "Symbol_IR.hpp"
 #include "UnionUDT.hpp"
-
-using std::map;
-using std::unordered_map;
-using std::hash;
 
 DwarfScanner::DwarfScanner()
 	: _fileNameCount(0), _fileNamesTable(NULL), _ir(NULL), _debug(NULL)
@@ -273,7 +267,11 @@ DwarfScanner::getName(Dwarf_Die die, string *name)
 			}
 		}
 	} else if (NULL != name) {
-		*name = string(dieName);
+		if (0 == strncmp(dieName, "<anonymous", 10)) {
+			*name = "";
+		} else {
+			*name = string(dieName);
+		}
 		dwarf_dealloc(_debug, dieName, DW_DLA_STRING);
 	}
 NameDone:

@@ -37,7 +37,7 @@ private:
 	string _typeName;
 
 	/* A list of all macros associated with typeName */
-	set<pair<string, string>> _macros;
+	set<pair<string, string> > _macros;
 
 public:
 	MacroInfo(string typeName);
@@ -45,8 +45,8 @@ public:
 	string getTypeName();
 	void addMacro(pair<string, string> p);
 	size_t getNumMacros();
-	set<pair<string, string>>::iterator getMacroStart();
-	set<pair<string, string>>::iterator getMacroEnd();
+	set<pair<string, string> >::iterator getMacroStart();
+	set<pair<string, string> >::iterator getMacroEnd();
 };
 
 #endif /* MACROINFO_HPP */

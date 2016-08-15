@@ -26,7 +26,8 @@
 Field::Field()
 	: _fieldType(NULL),
 	  _sizeOf(0),
-	  _bitField(0)
+	  _bitField(0),
+	  _isStatic(false)
 {
 }
 

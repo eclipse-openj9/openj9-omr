@@ -77,15 +77,13 @@ void
 NamespaceUDT::replaceType(Type *typeToReplace, Type *replaceWith)
 {
 	UDT::replaceType(typeToReplace, replaceWith);
-	UDT *udt = dynamic_cast<UDT *>(replaceWith);
-	if (NULL != udt) {
-		for (size_t i = 0; i < _subUDTs.size(); i += 1) {
-			if (_subUDTs[i] == udt) {
-				_subUDTs[i] = udt;
-				break;
-			} else {
-				_subUDTs[i]->replaceType(typeToReplace, replaceWith);
-			}
+	UDT *udtFrom = dynamic_cast<UDT *>(typeToReplace);
+	UDT *udtTo = dynamic_cast<UDT *>(replaceWith);
+	for (size_t i = 0; i < _subUDTs.size(); i += 1) {
+		if (_subUDTs[i] == udtFrom) {
+			_subUDTs[i] = udtTo;
+		} else {
+			_subUDTs[i]->replaceType(typeToReplace, replaceWith);
 		}
 	}
 }

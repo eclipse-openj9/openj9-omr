@@ -63,6 +63,12 @@ endif
 
 ifeq (linux,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += rt pthread
+  ifeq (ppc,$(OMR_HOST_ARCH))
+    MODULE_SHARED_LIBS += elf z
+  endif
+  ifeq (s390,$(OMR_HOST_ARCH))
+    MODULE_SHARED_LIBS += z
+  endif
 endif
 ifeq (aix,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += iconv perfstat

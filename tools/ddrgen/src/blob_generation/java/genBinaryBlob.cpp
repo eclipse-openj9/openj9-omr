@@ -595,9 +595,9 @@ JavaBlobGenerator::addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constC
 
 	Type *type = f->_fieldType;
 	if (NULL == type) {
-		ERRMSG("Field has NULL type");
+		ERRMSG("Field %s has NULL type", f->_name.c_str());
 		rc = DDR_RC_ERROR;
-	} else {
+	} else if (!f->_isStatic) {
 		/* Anonymous classes, structs, and unions add their fields directly to the outer type. */
 		if (type->isAnonymousType()) {
 			type->buildBlob(this, true, prefix + f->_name + ".");
@@ -861,14 +861,16 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 
 	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
 		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-			/* Anonymous type members are added to the struct and not counted as a field themselves. */
-			if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-				rc = (*v)->_fieldType->enumerateType(this, true);
-				if (DDR_RC_OK != rc) {
-					break;
+			if (!(*v)->_isStatic) {
+				/* Anonymous type members are added to the struct and not counted as a field themselves. */
+				if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
+					rc = (*v)->_fieldType->enumerateType(this, true);
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				} else {
+					fieldCount += 1;
 				}
-			} else {
-				fieldCount += 1;
 			}
 		}
 	}
@@ -906,14 +908,16 @@ JavaBlobGenerator::dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly)
 
 	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
 		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-			/* Anonymous type members are added to the struct and not counted as a field themselves. */
-			if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-				rc = (*v)->_fieldType->enumerateType(this, true);
-				if (DDR_RC_OK != rc) {
-					break;
+			if (!(*v)->_isStatic) {
+				/* Anonymous type members are added to the struct and not counted as a field themselves. */
+				if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
+					rc = (*v)->_fieldType->enumerateType(this, true);
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				} else {
+					fieldCount += 1;
 				}
-			} else {
-				fieldCount += 1;
 			}
 		}
 	}

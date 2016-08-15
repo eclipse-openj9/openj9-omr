@@ -16,6 +16,10 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#if defined(AIXPPC)
+#define __IBMCPP_TR1__ 1
+#endif /* defined(AIXPPC) */
+
 #include <stdio.h>
 
 #include "genBlob.hpp"

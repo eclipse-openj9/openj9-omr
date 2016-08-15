@@ -65,5 +65,5 @@ UDT::replaceType(Type *typeToReplace, Type *replaceWith)
 string
 UDT::getFullName()
 {
-	return ((NULL == _outerUDT) ? "" : _outerUDT->_name + "::") + _name;
+	return ((NULL == _outerUDT) ? "" : _outerUDT->getFullName() + "::") + _name;
 }

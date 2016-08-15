@@ -34,6 +34,7 @@ public:
 	size_t _offset;
 	Modifiers _modifiers;
 	size_t _bitField;
+	bool _isStatic;
 
 	Field();
 

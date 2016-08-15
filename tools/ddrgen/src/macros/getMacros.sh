@@ -206,7 +206,7 @@ main() {
 	parse_namespace_policy_files
 
 	# preprocess annotated source code
-	make -C ${scan_dir} ddrgen
+	gmake --ignore-errors -C ${scan_dir} ddrgen
 
 	echo "Scraping anotations from preprocessed code ..."
 	local preproc_files=$(grep -rl -e @MACRO_ -e @TYPE_ ${scan_dir} | grep '\.i$')

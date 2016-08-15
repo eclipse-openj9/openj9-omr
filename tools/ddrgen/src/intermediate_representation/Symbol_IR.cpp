@@ -170,7 +170,7 @@ Symbol_IR::applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile)
 	/* Create a map of type name to vector of types to check all types
 	 * by name for type overrides.
 	 */
-	map<string, vector<Type *>> typeNames;
+	map<string, vector<Type *> > typeNames;
 	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); it += 1) {
 		Type *type = *it;
 		typeNames[type->_name].push_back(type);
@@ -278,7 +278,7 @@ DDR_RC
 Symbol_IR::removeDuplicates()
 {
 	DDR_RC rc = DDR_RC_OK;
-	map<string, vector<Type *>> typeNames;
+	map<string, vector<Type *> > typeNames;
 
 	/* Create a map of type name to vector of types to check all types
 	 * which share a name for duplicates.

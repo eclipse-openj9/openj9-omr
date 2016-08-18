@@ -65,8 +65,10 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 
 	/* Get the dwarf source file names. */
 	if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
+		ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
 		_fileNamesTable = NULL;
 		_fileNameCount = 0;
+		goto Failed;
 	}
 
 	/* Get the CU directory. */
@@ -87,11 +89,11 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		goto Failed;
 	}
 	memset(fileNamesTableConcat, 0, sizeof(char *) * _fileNameCount);
-	for (int i = 0; i < _fileNameCount; i += 1) {
+	for (Dwarf_Signed i = 0; i < _fileNameCount; i += 1) {
 		char *path = _fileNamesTable[i];
 		if (0 == strncmp(_fileNamesTable[i], "../", 3)) {
 			/* For each file name beginning with "../", reformat the path as an absolute path. */
-			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(compDir) + strlen(path) + 1));
+			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(compDir) + strlen(path) + 2));
 			strcpy(fileNamesTableConcat[i], compDir);
 
 			char *pathParent = path;
@@ -105,9 +107,14 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 			}
 			strcat(fileNamesTableConcat[i], "/");
 			strcat(fileNamesTableConcat[i], path);
-		} else {
+		} else if (0 == strncmp(_fileNamesTable[i], "/", 1)) {
 			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(path) + 1));
 			strcpy(fileNamesTableConcat[i], path);
+		} else {
+			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(compDir) + strlen(path) + 2));
+			strcpy(fileNamesTableConcat[i], compDir);
+			strcat(fileNamesTableConcat[i], "/");
+			strcat(fileNamesTableConcat[i], path);
 		}
 		dwarf_dealloc(_debug, _fileNamesTable[i], DW_DLA_STRING);
 	}
@@ -122,14 +129,19 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 	return DDR_RC_OK;
 
 Failed:
+	if (NULL != attr) {
+		dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
+	}
 	if (_fileNameCount > 0) {
-		for (int i = 0; i < _fileNameCount; i += 1) {
+		for (Dwarf_Signed i = 0; i < _fileNameCount; i += 1) {
 			dwarf_dealloc(_debug, _fileNamesTable[i], DW_DLA_STRING);
 		}
 		dwarf_dealloc(_debug, _fileNamesTable, DW_DLA_LIST);
+		_fileNamesTable = NULL;
+		_fileNameCount = 0;
 	}
 	if (NULL != fileNamesTableConcat) {
-		for (int i = 0; i < _fileNameCount; i += 1) {
+		for (Dwarf_Signed i = 0; i < _fileNameCount; i += 1) {
 			if (NULL != fileNamesTableConcat[i]) {
 				free(fileNamesTableConcat[i]);
 			} else {
@@ -160,7 +172,7 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 	}
 	if (hasDeclFile) {
 		/* If the Die has the attribute, get the attribute and its value. */
-		Dwarf_Attribute attr;
+		Dwarf_Attribute attr = NULL;
 		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_decl_file, &attr, &err)) {
 			ERRMSG("Getting attr decl_file: %s\n", dwarf_errmsg(err));
 			rc = DDR_RC_ERROR;
@@ -180,7 +192,9 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 		 * then we are interested in it. Also filter out decl file "<built-in>".
 		 */
 		if ((NULL == strstr(_fileNamesTable[declFile - 1], "<built-in>"))
-			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/usr/", 5))) {
+			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/usr/", 5))
+			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/Applications/Xcode.app/", 24))
+		) {
 			*dieBlackListed = false;
 		}
 	} else {
@@ -199,7 +213,7 @@ DwarfScanner::getName(Dwarf_Die die, string *name)
 {
 	DDR_RC rc = DDR_RC_OK;
 	Dwarf_Error err = NULL;
-	char *dieName = 0;
+	char *dieName = NULL;
 	int dwarfRC = dwarf_diename(die, &dieName, &err);
 
 	if (DW_DLV_ERROR == dwarfRC) {
@@ -237,12 +251,8 @@ DwarfScanner::getName(Dwarf_Die die, string *name)
 				goto NameDone;
 			}
 			rc = getName(die, name);
-
-			if (DDR_RC_OK != rc) {
-				goto NameDone;
-			}
-
 			dwarf_dealloc(_debug, die, DW_DLA_DIE);
+			goto NameDone;
 		} else {
 			/* If the Die has no specification attribute either, check for linkage_name. */
 			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_linkage_name, &hasAttr, &err)) {
@@ -266,8 +276,9 @@ DwarfScanner::getName(Dwarf_Die die, string *name)
 				dwarf_dealloc(_debug, die, DW_DLA_DIE);
 			}
 		}
-	} else if (NULL != name) {
-		if (0 == strncmp(dieName, "<anonymous", 10)) {
+	}
+	if (NULL != name) {
+		if ((NULL == dieName) || (0 == strncmp(dieName, "<anonymous", 10))) {
 			*name = "";
 		} else {
 			*name = string(dieName);
@@ -357,14 +368,15 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 
 				/* Get the array size if it is an array. */
 				if (DW_DLV_ERROR == dwarf_child(typeDie, &child, &err)) {
+					ERRMSG("Error getting child Die of array type: %s\n", dwarf_errmsg(err));
 					rc = DDR_RC_ERROR;
 					break;
 				}
 
 				do {
-					Dwarf_Bool hasAttr;
+					Dwarf_Bool hasAttr = false;
 					if (DW_DLV_ERROR == dwarf_hasattr(child, DW_AT_upper_bound, &hasAttr, &err)) {
-						ERRMSG("Checking array for upper bound attribute:%s\n", dwarf_errmsg(err));
+						ERRMSG("Checking array for upper bound attribute: %s\n", dwarf_errmsg(err));
 						rc = DDR_RC_ERROR;
 						break;
 					}
@@ -597,18 +609,27 @@ DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, bool isS
 
 	if(DDR_RC_OK == rc) {
 		if (2 == typeNum) {
+			rc = DDR_RC_OK;
 			if (isSubUDT) {
 				UDT *udt = dynamic_cast<UDT *>(newType);
-				if (NULL != udt && NULL == udt->_outerUDT) {
+				if ((NULL != udt) && (NULL == udt->_outerUDT)) {
 					/* If this UDT has been added before when it was found as a field,
 					 * there was no way to know its an inner type at that time and it
 					 * would have gone into the main udt list.
 					 */
 					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
+
+					/* Anonymous types would have been named incorrectly if they were
+					 * found as a field before they were known to be an inner type.
+					 */
+					if ((newType->_name.length() > 9)
+						&& ("Constants" == newType->_name.substr(newType->_name.length() - 9, 9))
+					) {
+						newType->_name = "";
+						rc = getName(die, &newType->_name);
+					}
 				}
 			}
-
-			rc = DDR_RC_OK;
 		} else if ((0 == typeNum) || (1 == typeNum) || (3 == typeNum)) {
 			/* Entry is for a type that has not already been found. */
 			if ((DW_TAG_class_type == tag)
@@ -676,7 +697,7 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 	DDR_RC rc = DDR_RC_OK;
 	*typeNum = -1;
 
-	string dieName;
+	string dieName = "";
 	rc = getName(die, &dieName);
 
 	if (DDR_RC_OK != rc) {
@@ -684,7 +705,7 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 	} else {
 		string stubKey = dieName + char(tag);
 		unsigned int lineNumber = 0;
-		string fileName;
+		string fileName = "";
 		TypeKey key;
 		/* createTypeKey() succeeds if the Die has a declaration file and line number.
 		 * Use these as a map key to check for duplicates.
@@ -827,7 +848,7 @@ DwarfScanner::createType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsigned
 		*newType = new Type(BASE, typeSize);
 		break;
 	default:
-		ERRMSG("unknown symbol type %d\n", tag);
+		ERRMSG("Unknown symbol type: %d\n", tag);
 		rc = DDR_RC_ERROR;
 	}
 	if (DDR_RC_OK == rc) {
@@ -867,7 +888,7 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 			/* Set typedef's size to the size of its type. */
 			newTypedef->_sizeOf = newTypedef->_modifiers.getSize(typedefType->_sizeOf);
 			/* If the typedef's type has no associated name, let it assume the typedef's name. */
-			if (typedefType->_name.empty() && !typedefType->getFullName().empty()) {
+			if (typedefName.empty()) {
 				typedefType->_name = newTypedef->_name;
 			}
 		}
@@ -897,15 +918,7 @@ DwarfScanner::dispatchScanChildInfo(EnumUDT *const newUDT, void *data)
 		 * Iterate over Child's siblings to get remainder of fields and repeat.
 		 */
 		do {
-			string fieldName;
-			rc = getName(childDie, &fieldName);
-
-			if (DDR_RC_OK != rc) {
-				break;
-			}
-
-			Dwarf_Half childTag;
-
+			Dwarf_Half childTag = 0;
 			if (DW_DLV_ERROR == dwarf_tag(childDie, &childTag, &error)) {
 				ERRMSG("Getting tag from UDT child: %s\n", dwarf_errmsg(error));
 				rc = DDR_RC_ERROR;
@@ -952,15 +965,7 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 		 * Iterate over Child's siblings to get remainder of fields and repeat.
 		 */
 		do {
-			string fieldName;
-			rc = getName(childDie, &fieldName);
-
-			if (DDR_RC_OK != rc) {
-				break;
-			}
-
-			Dwarf_Half childTag;
-
+			Dwarf_Half childTag = 0;
 			if (DW_DLV_ERROR == dwarf_tag(childDie, &childTag, &error)) {
 				ERRMSG("Getting tag from UDT child: %s\n", dwarf_errmsg(error));
 				rc = DDR_RC_ERROR;
@@ -974,13 +979,14 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 					|| (DW_TAG_union_type == childTag)
 					|| (DW_TAG_structure_type == childTag)
 					|| (DW_TAG_enumeration_type == childTag)
+					|| (DW_TAG_namespace == childTag)
 			) {
 				/* The child is an inner type. */
 				UDT *innerUDT = NULL;
 				if (DDR_RC_OK != addType(childDie, childTag, true, (NULL != newClass), (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
-				} else if ((NULL != newClass) && NULL != innerUDT) {
+				} else if ((NULL != newClass) && (NULL != innerUDT)) {
 					innerUDT->_outerUDT = newClass;
 					newClass->_subUDTs.push_back(innerUDT);
 				}
@@ -993,6 +999,8 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 				}
 			} else if (DW_TAG_member == childTag) {
 				/* The child is a member field. */
+				string fieldName = "";
+				rc = getName(childDie, &fieldName);
 				DEBUGPRINTF("fieldName: %s", fieldName.c_str());
 				if (DDR_RC_OK != addClassField(childDie, (ClassType *)newClass, fieldName)) {
 					rc = DDR_RC_ERROR;

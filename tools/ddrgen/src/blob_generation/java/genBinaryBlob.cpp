@@ -387,7 +387,7 @@ JavaBlobGenerator::dispatchBuildBlob(EnumUDT *e, bool addFieldsOnly, string pref
 {
 	DDR_RC rc = DDR_RC_OK;
 	/* Do not add anonymous inner types as their own type. */
-	if (!e->isAnonymousType() || addFieldsOnly) {
+	if ((!e->isAnonymousType() || addFieldsOnly) && (e->_enumMembers.size() > 0)) {
 		/* Format class name */
 		string nameFormatted = e->_name;
 		if (NULL != e->_outerUDT) {
@@ -419,7 +419,7 @@ JavaBlobGenerator::dispatchBuildBlob(UnionUDT *u, bool addFieldsOnly, string pre
 {
 	DDR_RC rc = DDR_RC_OK;
 	/* Do not add anonymous inner types as their own type. */
-	if (!u->isAnonymousType() || addFieldsOnly) {
+	if ((!u->isAnonymousType() || addFieldsOnly) && (u->_fieldMembers.size() > 0)) {
 		/* Format class name */
 		string nameFormatted = u->_name;
 		if (NULL != u->_outerUDT) {
@@ -481,7 +481,7 @@ JavaBlobGenerator::dispatchBuildBlob(ClassUDT *cu, bool addFieldsOnly, string pr
 {
 	DDR_RC rc = DDR_RC_OK;
 	/* Do not add anonymous inner types as their own type. */
-	if (!cu->isAnonymousType() || addFieldsOnly) {
+	if ((!cu->isAnonymousType() || addFieldsOnly) && (cu->_fieldMembers.size() > 0)){
 		/* Format class name */
 		string nameFormatted = cu->_name;
 		if (NULL != cu->_outerUDT) {
@@ -839,7 +839,7 @@ DDR_RC
 JavaBlobGenerator::dispatchEnumerateType(EnumUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!type->isAnonymousType() || addFieldsOnly) {
+	if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
 		rc = addFieldAndConstCount(addFieldsOnly, 0, type->_enumMembers.size());
 	}
 	return rc;
@@ -859,7 +859,7 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 	size_t fieldCount = 0;
 	size_t constCount = type->_enumMembers.size();
 
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
 			if (!(*v)->_isStatic) {
 				/* Anonymous type members are added to the struct and not counted as a field themselves. */
@@ -893,7 +893,7 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 			}
 		}
 	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
 	}
 	return rc;
@@ -906,7 +906,7 @@ JavaBlobGenerator::dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly)
 	size_t fieldCount = 0;
 	size_t constCount = type->_enumMembers.size();
 
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
 			if (!(*v)->_isStatic) {
 				/* Anonymous type members are added to the struct and not counted as a field themselves. */
@@ -940,7 +940,7 @@ JavaBlobGenerator::dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly)
 			}
 		}
 	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
 	}
 	return rc;

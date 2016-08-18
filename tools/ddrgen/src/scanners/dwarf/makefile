@@ -24,6 +24,10 @@ ARTIFACT_TYPE := archive
 OBJECTS = \
   DwarfScanner$(OBJEXT)
 
+ifeq (osx,$(OMR_HOST_OS))
+  OBJECTS += DwarfParser$(OBJEXT)
+endif
+
 MODULE_INCLUDES += \
   $(ddrgen_srcdir) \
   $(ddrgen_srcdir)/scanners \

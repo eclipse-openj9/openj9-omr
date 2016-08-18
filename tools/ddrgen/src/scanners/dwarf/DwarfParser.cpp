@@ -281,10 +281,10 @@ dwarf_global_formref(Dwarf_Attribute attr, Dwarf_Off *return_offset, Dwarf_Error
 
 int
 dwarf_offdie_b(Dwarf_Debug dbg,
-    Dwarf_Off offset,
-    Dwarf_Bool is_info,
-    Dwarf_Die *return_die,
-    Dwarf_Error *error)
+	Dwarf_Off offset,
+	Dwarf_Bool is_info,
+	Dwarf_Die *return_die,
+	Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
 	if (NULL == return_die) {
@@ -370,12 +370,12 @@ dwarf_formsdata(Dwarf_Attribute attr, Dwarf_Signed *returned_val, Dwarf_Error *e
 
 int
 dwarf_next_cu_header(Dwarf_Debug dbg,
-    Dwarf_Unsigned *cu_header_length,
-    Dwarf_Half *version_stamp,
-    Dwarf_Off *abbrev_offset,
-    Dwarf_Half *address_size,
-    Dwarf_Unsigned *next_cu_header_offset,
-    Dwarf_Error *error)
+	Dwarf_Unsigned *cu_header_length,
+	Dwarf_Half *version_stamp,
+	Dwarf_Off *abbrev_offset,
+	Dwarf_Half *address_size,
+	Dwarf_Unsigned *next_cu_header_offset,
+	Dwarf_Error *error)
 {
 	/* Advance the current CU and return its properties. */
 	int ret = DW_DLV_OK;
@@ -436,11 +436,11 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 
 int
 dwarf_init(int fd,
-    Dwarf_Unsigned access,
-    Dwarf_Handler errhand,
-    Dwarf_Ptr errarg,
-    Dwarf_Debug *dbg,
-    Dwarf_Error *error)
+	Dwarf_Unsigned access,
+	Dwarf_Handler errhand,
+	Dwarf_Ptr errarg,
+	Dwarf_Debug *dbg,
+	Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
 
@@ -588,10 +588,10 @@ parseCompileUnit(char *line, size_t *lastIndent, Dwarf_Error *error)
 	 */
 	int ret = DW_DLV_OK;
 	Dwarf_Unsigned CUheaderLength = 0;
-    Dwarf_Half versionStamp = 0;
-    Dwarf_Off abbrevOffset = 0;
-    Dwarf_Half addressSize = 0;
-    Dwarf_Unsigned nextCUheaderOffset = 0;
+	Dwarf_Half versionStamp = 0;
+	Dwarf_Off abbrevOffset = 0;
+	Dwarf_Half addressSize = 0;
+	Dwarf_Unsigned nextCUheaderOffset = 0;
 
 	char *valueString = strstr(line, "length = ");
 	if (NULL == valueString) {

@@ -145,6 +145,7 @@ TEST(ThreadAbortTest, Sleeping)
 
 	createDefaultThread(&t, sleepingMain, &mythread);
 
+        mythread.started = false;
 	omrthread_monitor_enter(mythread.startSync);
 	while (!mythread.started) {
 		omrthread_monitor_wait(mythread.startSync);

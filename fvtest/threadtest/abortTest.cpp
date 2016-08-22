@@ -59,7 +59,9 @@ abortNull()
 #endif /* J9ZOS390 */
 
 typedef struct run_testdata_t {
+	omrthread_monitor_t startSync;
 	omrthread_monitor_t exitSync;
+	volatile bool started;
 	volatile bool done;
 	volatile bool rc;
 } run_testdata_t;
@@ -69,12 +71,21 @@ TEST(ThreadAbortTest, Running)
 	omrthread_t t;
 	run_testdata_t testdata;
 
+	testdata.started = false;
 	testdata.done = false;
+	testdata.rc = false;
+
+	omrthread_monitor_init(&testdata.startSync, 0);
 	omrthread_monitor_init(&testdata.exitSync, 0);
 
-
 	createDefaultThread(&t, runningMain, &testdata);
-	omrthread_sleep(START_DELAY);
+
+	/* make sure runningMain thread has started: */
+	omrthread_monitor_enter(testdata.startSync);
+	while (!testdata.started) {
+		omrthread_monitor_wait(testdata.startSync);
+	}
+	omrthread_monitor_exit(testdata.startSync);
 
 	omrthread_abort(t);
 
@@ -85,6 +96,7 @@ TEST(ThreadAbortTest, Running)
 	omrthread_monitor_exit(testdata.exitSync);
 
 	omrthread_monitor_destroy(testdata.exitSync);
+	omrthread_monitor_destroy(testdata.startSync);
 
 	EXPECT_TRUE(testdata.rc) << "Failed to abort running thread";
 }
@@ -94,6 +106,11 @@ runningMain(void *arg)
 {
 	run_testdata_t *testdata = (run_testdata_t *)arg;
 	J9AbstractThread *self = (J9AbstractThread *)omrthread_self();
+
+	omrthread_monitor_enter(testdata->startSync);
+	testdata->started = true;
+	omrthread_monitor_notify(testdata->startSync);
+	omrthread_monitor_exit(testdata->startSync);
 
 	clock_t elapsedTime = 0;
 	clock_t start = clock() * 1000 / CLOCKS_PER_SEC;
@@ -112,8 +129,10 @@ runningMain(void *arg)
 }
 
 typedef struct sleep_testdata_t {
+	omrthread_monitor_t startSync;
 	omrthread_monitor_t exitSync;
 	volatile intptr_t rc;
+	volatile bool started;
 } sleep_testdata_t;
 
 TEST(ThreadAbortTest, Sleeping)
@@ -121,10 +140,19 @@ TEST(ThreadAbortTest, Sleeping)
 	omrthread_t t;
 	sleep_testdata_t mythread;
 
+	omrthread_monitor_init(&mythread.startSync, 0);
 	omrthread_monitor_init(&mythread.exitSync, 0);
-	omrthread_monitor_enter(mythread.exitSync);
+
 	createDefaultThread(&t, sleepingMain, &mythread);
 
+        mythread.started = false;
+	omrthread_monitor_enter(mythread.startSync);
+	while (!mythread.started) {
+		omrthread_monitor_wait(mythread.startSync);
+	}
+	omrthread_monitor_exit(mythread.startSync);
+
+	omrthread_monitor_enter(mythread.exitSync);
 	omrthread_sleep(START_DELAY);
 	omrthread_abort(t);
 
@@ -132,6 +160,7 @@ TEST(ThreadAbortTest, Sleeping)
 	omrthread_monitor_exit(mythread.exitSync);
 
 	omrthread_monitor_destroy(mythread.exitSync);
+	omrthread_monitor_destroy(mythread.startSync);
 
 	EXPECT_TRUE(mythread.rc == J9THREAD_PRIORITY_INTERRUPTED) << "Failed to abort sleeping thread!";
 }
@@ -142,7 +171,12 @@ sleepingMain(void *arg)
 	sleep_testdata_t *testdata = (sleep_testdata_t *)arg;
 	intptr_t rc;
 
-	rc = omrthread_sleep_interruptable(60 * 1000, 0);
+	omrthread_monitor_enter(testdata->startSync);
+	testdata->started = true;
+	omrthread_monitor_notify(testdata->startSync);
+	omrthread_monitor_exit(testdata->startSync);
+
+	rc = omrthread_sleep_interruptable(TIMEOUT, 0);
 
 	omrthread_monitor_enter(testdata->exitSync);
 	testdata->rc = rc;

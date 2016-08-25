@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -204,6 +204,8 @@ public:
 	 * @return the dark matter, measured in bytes, in the range
 	 */
 	uintptr_t performSamplingCalculations(MM_ParallelSweepChunk *sweepChunk, uintptr_t* markMapCurrent, uintptr_t* heapSlotFreeCurrent);
+
+	virtual void postCollect(MM_EnvironmentBase* env, uintptr_t resizeType) {}
 
 	/**
 	 * Create a ParallelSweepScheme object.

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -118,7 +118,7 @@ public:
 	virtual void unlock(MM_EnvironmentBase* env);
 
 	void preCollect(MM_EnvironmentBase* env, bool systemGC, bool aggressive, uintptr_t bytesRequested);
-	virtual void postCollect(MM_EnvironmentBase* env);
+	virtual void resizeLOA(MM_EnvironmentBase* env);
 	virtual bool completeFreelistRebuildRequired(MM_EnvironmentBase* env);
 
 	virtual MM_MemoryPool* getMemoryPool(void* addr);

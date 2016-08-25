@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -40,6 +40,7 @@
 #include "MemorySpace.hpp"
 #include "MemorySubSpace.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
+#include "MemoryPoolLargeObjects.hpp"
 #include "ObjectAllocationInterface.hpp"
 #if defined(OMR_GC_OBJECT_MAP)
 #include "ObjectMap.hpp"
@@ -793,9 +794,24 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 }
 
 void
+MM_ParallelGlobalGC::tenureMemoryPoolPostCollect(MM_EnvironmentBase *env)
+{
+	MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
+	MM_MemorySubSpace *tenureMemorySubspace = defaultMemorySpace->getTenureMemorySubSpace();
+
+	if (_extensions->largeObjectArea && _sweepScheme->isSweepCompleted(env)) {
+		/* resize LOA only when the sweep is completed (to avoid concurrent sweep's confusion due to the resize) */
+		MM_MemoryPoolLargeObjects *memoryPool = (MM_MemoryPoolLargeObjects *) tenureMemorySubspace->getMemoryPool();
+		memoryPool->resizeLOA(env);
+	}
+}
+
+void
 MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace)
 {
 	MM_GlobalCollector::internalPostCollect(env, subSpace);
+
+	tenureMemoryPoolPostCollect(env);
 
 	reportGCCycleFinalIncrementEnding(env);
 	reportGlobalGCIncrementEnd(env);

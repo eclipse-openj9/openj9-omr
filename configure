@@ -719,6 +719,7 @@ OMR_EXAMPLE
 OMR_OMRSIG
 OMR_THREAD
 OMR_PORT
+OMR_JIT
 OMR_GC
 ac_ct_CXX
 CXXFLAGS
@@ -806,6 +807,7 @@ enable_fvtest_agent
 enable_tracegen
 enable_auto_build_flag
 enable_OMR_GC
+enable_OMR_JIT
 enable_OMR_PORT
 enable_OMR_THREAD
 enable_OMR_OMRSIG
@@ -1527,6 +1529,7 @@ Optional Features:
                           are not explicitly enabled or disabled. (Default:
                           yes)
   --disable-OMR_GC        Enable building the OMR GC. (Default: yes)
+  --enable-OMR_JIT        Enable building the OMR JIT. (Default: no)
   --disable-OMR_PORT      Enable building the Port library. (Default: yes)
   --disable-OMR_THREAD    Enable building the Thread library. (Default: yes)
   --disable-OMR_OMRSIG    Enable building the OMRSig library. (Default: yes)
@@ -5209,6 +5212,38 @@ else
 
 fi
 	echo "OMR_GC := 1" >> omrmakefiles/omrcfg.mk
+
+
+fi
+
+
+# Check whether --enable-OMR_JIT was given.
+if test "${enable_OMR_JIT+set}" = set; then :
+  enableval=$enable_OMR_JIT; if test "x${enableval}" = xyes; then :
+
+	if test "x" = "x"; then :
+  OMR_JIT="#define OMR_JIT"
+
+else
+  OMR_JIT="#define OMR_JIT "
+
+
+fi
+	echo "OMR_JIT := 1" >> omrmakefiles/omrcfg.mk
+
+else
+
+	OMR_JIT="#undef OMR_JIT"
+
+	echo "OMR_JIT := 0" >> omrmakefiles/omrcfg.mk
+
+
+fi
+else
+
+	OMR_JIT="#undef OMR_JIT"
+
+	echo "OMR_JIT := 0" >> omrmakefiles/omrcfg.mk
 
 
 fi

@@ -33,6 +33,7 @@ extern "C" {
 #endif
 
 @OMR_GC@
+@OMR_JIT@
 @OMR_PORT@
 @OMR_THREAD@
 @OMR_OMRSIG@

@@ -508,6 +508,18 @@ AS_IF([test "$cross_compiling" != "yes"],
 		[OMR_LIBDWARF_STATIC_LIBS="dwarf elf"])]
 )
 
+OMRCFG_DEFINE_FLAG([OMR_HAVE_CXX11_STATIC_ASSERT], [1],
+  [AC_CACHE_CHECK([for C++11 static_assert], [omr_cv_have_cxx11_static_assert],
+     [AC_LANG_PUSH([C++])
+      AC_REQUIRE_CPP
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[static_assert(true, "Must compile");]])],
+        [omr_cv_have_cxx11_static_assert=yes],
+        [omr_cv_have_cxx11_static_assert=no])
+      AC_LANG_POP([C++])])
+   AS_IF([test "$omr_cv_have_cxx11_static_assert" = "yes"],
+     [OMRCFG_ENABLE_FLAG(OMR_HAVE_CXX11_STATIC_ASSERT)],
+     [OMRCFG_DISABLE_FLAG(OMR_HAVE_CXX11_STATIC_ASSERT)])])
+
 ###
 ### Variable Substitution
 ###

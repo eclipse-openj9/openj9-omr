@@ -23,8 +23,12 @@
  */
 /* _GNU_SOURCE must be defined for CPU_SETSIZE */
 #define _GNU_SOURCE
+#include <ctype.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <inttypes.h>
 #include <sched.h>
+#include <sys/stat.h>
 #include <stdio.h>
 
 #include "omrcfg.h"
@@ -32,7 +36,10 @@
 
 static uintptr_t cpuset_subset_or_equal(cpu_set_t *subset, cpu_set_t *superset);
 static void cpuset_logical_or(cpu_set_t *destination, const cpu_set_t *source);
-
+#undef OMR_VERBOSE_NUMA_NODE_DATA
+#ifdef OMR_VERBOSE_NUMA_NODE_DATA
+ void dumpNumaInfo();
+#endif
 static BOOLEAN isNumaAvailable = FALSE;
 static uintptr_t numNodes = 0;
 static cpu_set_t defaultAffinityMask = {{0}};
@@ -134,42 +141,104 @@ initializeNumaNodeData(omrthread_library_t threadLibrary, uintptr_t numNodes)
 	} else {
 		DIR *nodes = NULL;
 		unsigned long nodeIndex = 0;
+		const char NODE_PATH[] = "/sys/devices/system/node/";
 		for (nodeIndex = 0; nodeIndex <= numNodes; nodeIndex++) {
 			CPU_ZERO(&numaNodeData[nodeIndex].cpu_set);
 			numaNodeData[nodeIndex].cpu_count = 0;
 		}
 
-		nodes = opendir("/sys/devices/system/node/");
+		nodes = opendir(NODE_PATH);
 		if (NULL == nodes) {
 			result = -1;
 		} else {
 			struct dirent *node = readdir(nodes);
-			while (NULL != node) {
-				if (1 == sscanf(node->d_name, "node%lu", &nodeIndex)) {
-					if (nodeIndex < numNodes) {
-						DIR *cpus = NULL;
-						char nodeName[sizeof("/sys/devices/system/node/") + NAME_MAX + 1] = "/sys/devices/system/node/";
-						strcat(nodeName, node->d_name);
-						cpus = opendir(nodeName);
-						if (NULL != cpus) {
-							struct dirent *cpu = readdir(cpus);
-							while (NULL != cpu) {
-								unsigned long cpuIndex = 0;
-								if (1 == sscanf(cpu->d_name, "cpu%lu", &cpuIndex)) {
-									CPU_SET(cpuIndex, &numaNodeData[nodeIndex + 1].cpu_set);
-									numaNodeData[nodeIndex + 1].cpu_count += 1;
-
-									/* add all cpus to the synthetic 0 node */
-									CPU_SET(cpuIndex, &numaNodeData[0].cpu_set);
-									numaNodeData[0].cpu_count += 1;
+			if (NULL != node) {
+				const char CPUMAP[] = "/cpumap";
+				char pathBuffer[sizeof(NODE_PATH) + sizeof(CPUMAP) + 16]; /* extra space for "node<n>" & terminating null */
+				strcpy(pathBuffer, NODE_PATH);
+				char *nodeRoot = pathBuffer + sizeof(NODE_PATH) - 1; /* shortcut to the end of the string */
+				do {
+					if (1 == sscanf(node->d_name, "node%lu", &nodeIndex)) {
+						if (nodeIndex < numNodes) {
+							strcpy(nodeRoot, node->d_name);
+							strcat(nodeRoot, CPUMAP);
+							int cpumapFile = open(pathBuffer, O_RDONLY);
+							BOOLEAN cpumapOkay = FALSE;
+							if (-1 != cpumapFile) {
+								char defaultMapBuffer[128];
+								char * mapBuffer = defaultMapBuffer;
+								size_t bufferSize = sizeof(defaultMapBuffer);
+								size_t bytesRead = read(cpumapFile, mapBuffer, bufferSize);
+								if (bytesRead == bufferSize) { /* buffer possibly not big enough */
+									bufferSize = 4096;
+									mapBuffer = malloc(bufferSize);
+									if (NULL == mapBuffer) {
+										result = -1;
+										close(cpumapFile);
+										break;
+									}
+									size_t bytesRead = read(cpumapFile, mapBuffer, bufferSize-1);
+									mapBuffer[bytesRead] = '\0';
 								}
-								cpu = readdir(cpus);
+								if ((0 != bytesRead) && (bytesRead < bufferSize-1)) { /* the buffer was too small */
+									/* scan from the end of the line (lowest numbered CPU) toward the front */
+									char *cursor = mapBuffer+strlen(mapBuffer);
+									uint32_t charCount = 0;
+									do {
+										while ((cursor > mapBuffer) && !isxdigit(*cursor)) { /* find the start of the hex string */
+											cursor -= 1;
+										}
+										uint32_t cpuIndex = 4 * charCount; /* each hex digit represents 4 CPUs.  Use the count from the last iteration */
+										while ((cursor > mapBuffer) && isxdigit(*cursor)) {
+											charCount += 1;
+											cursor -= 1;
+										}
+										uintmax_t cpuMap = strtoumax((cursor == mapBuffer)? cursor: cursor + 1, NULL, 16);
+										/* cursor points to a non-hex char if not at the front of the buffer */
+										while ((0 != cpuMap)) {
+											if (0 != (cpuMap  & 1)) {
+												CPU_SET(cpuIndex, &numaNodeData[nodeIndex + 1].cpu_set);
+												numaNodeData[nodeIndex + 1].cpu_count += 1;
+
+												/* add all cpus to the synthetic 0 node */
+												CPU_SET(cpuIndex, &numaNodeData[0].cpu_set);
+												numaNodeData[0].cpu_count += 1;
+											}
+											cpuMap >>= 1;
+											cpuIndex += 1;
+										}
+									} while (cursor > mapBuffer);
+								}
+								if (mapBuffer != defaultMapBuffer) {
+									free(mapBuffer);
+								}
+								close(cpumapFile);
+								cpumapOkay = TRUE;
 							}
-							closedir(cpus);
+							if (!cpumapOkay) { /* read the directory entries */
+								strcpy(nodeRoot, node->d_name); /* strip off "/cpulist".  Updates pathBuffer  */
+								DIR *cpus =  opendir(pathBuffer);
+								if (NULL != cpus) {
+									struct dirent *cpu = readdir(cpus);
+									while (NULL != cpu) {
+										unsigned long cpuIndex = 0;
+										if (1 == sscanf(cpu->d_name, "cpu%lu", &cpuIndex)) {
+											CPU_SET(cpuIndex, &numaNodeData[nodeIndex + 1].cpu_set);
+											numaNodeData[nodeIndex + 1].cpu_count += 1;
+
+											/* add all cpus to the synthetic 0 node */
+											CPU_SET(cpuIndex, &numaNodeData[0].cpu_set);
+											numaNodeData[0].cpu_count += 1;
+										}
+										cpu = readdir(cpus);
+									}
+									closedir(cpus);
+								}
+							}
 						}
 					}
-				}
-				node = readdir(nodes);
+					node = readdir(nodes);
+				} while (NULL != node);
 			}
 			closedir(nodes);
 		}
@@ -196,6 +265,9 @@ omrthread_numa_init(omrthread_library_t threadLibrary)
 		if (0 == initializeNumaNodeData(threadLibrary, numNodes)) {
 			isNumaAvailable = TRUE;
 		}
+#ifdef OMR_VERBOSE_NUMA_NODE_DATA
+		dumpNumaInfo();
+#endif
 	}
 	/* find our current affinity mask since we will need it when removing any affinity binding from threads, later (since we still want to honour restrictions we inherited from the environment) */
 	CPU_ZERO(&defaultAffinityMask);
@@ -434,3 +506,24 @@ omrthread_numa_get_node_affinity(omrthread_t thread, uintptr_t *numaNodes, uintp
 	*nodeCount = nodesSoFar;
 	return result;
 }
+
+#ifdef OMR_VERBOSE_NUMA_NODE_DATA
+ void
+dumpNumaInfo() {
+	uintptr_t numaMaxNode = omrthread_numa_get_max_node();
+	uint32_t node = 0;
+
+	for (node = 0; node <= numaMaxNode; node++) {
+		uint32_t i = 0;
+		printf("Node %d cpus:", node);
+		cpu_set_t *numaNodeCPUs = &numaNodeData[node].cpu_set;
+		for (i = 0; i < CPU_SETSIZE; i++) {
+			if (CPU_ISSET(i, numaNodeCPUs)) {
+				printf(" %d ", i);
+			}
+		}
+		printf("\n");
+	}
+
+}
+#endif

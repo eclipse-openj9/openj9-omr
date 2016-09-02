@@ -41,12 +41,13 @@ static wchar_t *
 buildPDBPath(struct OMRPortLibrary *portLibrary, HANDLE process)
 {
 	HMODULE hModules[128];
-	wchar_t modulePath[EsMaxPath];
+	wchar_t modulePath[EsMaxPath + 1] = {0};
 	uintptr_t pathLength = 0;
 	DWORD nModules;
 	DWORD cbNeeded;
 	uintptr_t i;
 	DWORD maxPathLength = sizeof(PPG_pdbData.searchPath) - 1;
+	DWORD modulePathLength = 0;
 
 	if (EnumProcessModules(process, hModules, sizeof(hModules), &cbNeeded) == TRUE) {
 		/* iterate over the modules and extract their paths. */
@@ -62,7 +63,8 @@ buildPDBPath(struct OMRPortLibrary *portLibrary, HANDLE process)
 		}
 
 		for (i = 0; i < nModules; i++) {
-			if (GetModuleFileNameW(hModules[i], modulePath, sizeof(modulePath)) != 0) {
+			modulePathLength = GetModuleFileNameW(hModules[i], modulePath, (EsMaxPath + 1));
+			if ((0 != modulePathLength) && (modulePathLength < (EsMaxPath + 1))) {
 				wchar_t *cursor;
 				uintptr_t j;
 				uintptr_t moduleNameLen;

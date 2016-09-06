@@ -400,7 +400,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 
-	if (!type->isAnonymousType() || addFieldsOnly) {
+	if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		if (!addFieldsOnly) {
 			string nameFormatted = getUDTname(type);
 			string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|";
@@ -450,7 +450,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnl
 	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 
-	if (!type->isAnonymousType() || addFieldsOnly) {
+	if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 		if (!addFieldsOnly) {
 			string nameFormatted = getUDTname(type);
 			string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
@@ -496,7 +496,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly
 	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 
-	if (!type->isAnonymousType() || addFieldsOnly) {
+	if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
 		if (!addFieldsOnly) {
 			string nameFormatted = getUDTname(type);
 			string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";

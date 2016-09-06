@@ -29,8 +29,12 @@ using std::tr1::unordered_map;
 #endif /* !defined(AIXPPC) */
 #include <map>
 
+#if defined(OSX)
+#include "DwarfParser.hpp"
+#else /* defined(OSX) */
 #include <dwarf.h>
 #include <libdwarf.h>
+#endif /* defined(OSX) */
 
 #include "ClassUDT.hpp"
 #include "config.hpp"

@@ -76,5 +76,8 @@ endif
 ifeq (win,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
 endif
+ifeq (osx,$(OMR_HOST_OS))
+  MODULE_SHARED_LIBS += iconv
+endif
 
 include $(top_srcdir)/omrmakefiles/rules.mk

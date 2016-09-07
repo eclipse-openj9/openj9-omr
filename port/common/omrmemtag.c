@@ -106,7 +106,7 @@ wrapBlockAndSetTags(struct OMRPortLibrary *portLibrary, void *memoryPointer, uin
 	footerTag->callSite = callSite;
 	footerTag->category = category;
 #if !defined(OMR_ENV_DATA64)
-	memset(headerTag->padding, J9MEMTAG_PADDING_BYTE, sizeof(headerTag->padding));
+	memset(footerTag->padding, J9MEMTAG_PADDING_BYTE, sizeof(footerTag->padding));
 #endif
 	setTagSumCheck(footerTag, J9MEMTAG_EYECATCHER_ALLOC_FOOTER);
 

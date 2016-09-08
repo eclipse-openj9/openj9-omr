@@ -15,10 +15,11 @@
 	   Multiple authors (IBM Corp.) - initial implementation and documentation
 -->
 <gc-config>
-	<option GCPolicy="gencon" concurrentMark="true" verboseLog="VerboseGC-gencon_GC" sizeUnit="MB" 
-			initialMemorySize="11" memoryMax="11" maxSizeDefaultMemorySpace="11" 
-			minNewSpaceSize="3" newSpaceSize="3" maxNewSpaceSize="3"
-			minOldSpaceSize="8" oldSpaceSize="8" maxOldSpaceSize="8" />
+	<option GCPolicy="gencon" concurrentMark="false" forceBackOut="true" forcePoisonEvacuate="true" 
+		verboseLog="VerboseGC-gencon_GC_backout" sizeUnit="MB" 
+		initialMemorySize="11" memoryMax="11" maxSizeDefaultMemorySpace="11" 
+		minNewSpaceSize="3" newSpaceSize="3" maxNewSpaceSize="3"
+		minOldSpaceSize="8" oldSpaceSize="8" maxOldSpaceSize="8" />
 	<allocation>
 		<garbagePolicy namePrefix="GAR" percentage="30" frequency="perRootStruct" structure="tree" />
 

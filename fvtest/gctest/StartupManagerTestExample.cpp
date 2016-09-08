@@ -83,21 +83,34 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 				} else if (0 == strcmp(attr.name(), "gcthreadCount")) {
 					/* TODO: support multi-thread GC*/
 				} else if (0 == strcmp(attr.name(), "GCPolicy")) {
+					if (0 == j9_cmdla_stricmp(attr.value(), "gencon")) {
 #if defined(OMR_GC_MODRON_SCAVENGER)
-					extensions->scavengerEnabled = (0 == j9_cmdla_stricmp(attr.value(), "gencon"));
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-					extensions->concurrentMark = extensions->scavengerEnabled || (0 == j9_cmdla_stricmp(attr.value(), "optavgpause"));
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK)*/
+						extensions->scavengerEnabled = true;
+#else
+						gcTestEnv->log(LEVEL_ERROR, "WARNING: GCPolicy=gencon ignored, requires OMR_GC_MODRON_SCAVENGER (see configure_common.mk)\n");
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+					} else  if (0 != j9_cmdla_stricmp(attr.value(), "optavgpause")) {
+						gcTestEnv->log(LEVEL_ERROR, "Failed: Unrecognized GC policy (expected gencon or optavgpause): %s\n", attr.value());
+						result = false;
+					}
+				} else if (0 == strcmp(attr.name(), "concurrentMark")) {
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+					extensions->concurrentMark = (0 == j9_cmdla_stricmp(attr.value(), "true"));
+#else
+					gcTestEnv->log(LEVEL_ERROR, "WARNING: concurrentMark=true ignored, requires OMR_GC_MODRON_CONCURRENT_MARK (see configure_common.mk)\n");
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK)*/
 				} else if (0 == strcmp(attr.name(), "forceBackOut")) {
 					extensions->fvtest_forceScavengerBackout = (0 == j9_cmdla_stricmp(attr.value(), "true"));
+				} else if (0 == strcmp(attr.name(), "forcePoisonEvacuate")) {
+					extensions->fvtest_forcePoisonEvacuate = (0 == j9_cmdla_stricmp(attr.value(), "true"));
 				} else if ((0 == strcmp(attr.name(), "verboseLog")) || (0 == strcmp(attr.name(), "numOfFiles")) || (0 == strcmp(attr.name(), "numOfCycles")) || (0 == strcmp(attr.name(), "sizeUnit"))) {
 				} else {
-					result = false;
 					gcTestEnv->log(LEVEL_ERROR, "Failed: Unrecognized option: %s\n", attr.name());
-					break;
+					result = false;
 				}
 			}
+			extensions->fvtest_forceScavengerBackout &= extensions->scavengerEnabled;
+			extensions->fvtest_forcePoisonEvacuate &= extensions->scavengerEnabled;
 		}
 	}
 	return result;

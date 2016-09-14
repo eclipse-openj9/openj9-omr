@@ -5904,35 +5904,35 @@ TR::Register *OMR::Power::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGe
 	  return inlineLongBitCount(node, cg);
 }
 
-TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
-{
-   return cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
-}
-
-void OMR::Power::TreeEvaluator::preservePTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
+void OMR::Power::TreeEvaluator::preserveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
 {
    TR::Instruction *cursor = cg->comp()->getAppendInstruction();
    TR::Compilation* comp = cg->comp();
 
-   //We need to preserve the JIT pseduo-TOC whenever we call out. We're saving this on the caller TOC slot as defined by the ABI.
-   TR::Register * grPTOCReg       = cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
+   //We need to preserve the JIT TOC whenever we call out. We're saving this on the caller TOC slot as defined by the ABI.
+   TR::Register * grTOCReg       = cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
    TR::Register * grSysStackReg   = cg->machine()->getPPCRealRegister(TR::RealRegister::gr1);
 
    int32_t callerSaveTOCOffset = (TR::Compiler->target.cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
 
-   cursor = generateMemSrc1Instruction(cg,TR::InstOpCode::Op_st, node, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg), grPTOCReg, cursor);
+   cursor = generateMemSrc1Instruction(cg,TR::InstOpCode::Op_st, node, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg), grTOCReg, cursor);
 
    comp->setAppendInstruction(cursor);
 }
 
-void OMR::Power::TreeEvaluator::restorePTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
+void OMR::Power::TreeEvaluator::restoreTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
 {
-   //Here we restore the JIT pseduo-TOC after returning from a call out. We're restoring from the caller TOC slot as defined by the ABI.
-   TR::Register * grPTOCReg       = cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
+   //Here we restore the JIT TOC after returning from a call out. We're restoring from the caller TOC slot as defined by the ABI.
+   TR::Register * grTOCReg       = cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
    TR::Register * grSysStackReg   = cg->machine()->getPPCRealRegister(TR::RealRegister::gr1);
    TR::Compilation* comp = cg->comp();
 
    int32_t callerSaveTOCOffset = (TR::Compiler->target.cpu.isBigEndian() ? 5 : 3) *  TR::Compiler->om.sizeofReferenceAddress();
 
-   generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, grPTOCReg, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg));
+   generateTrg1MemInstruction(cg,TR::InstOpCode::Op_load, node, grTOCReg, new (cg->trHeapMemory()) TR::MemoryReference(grSysStackReg, callerSaveTOCOffset, TR::Compiler->om.sizeofReferenceAddress(), cg));
+}
+
+TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
+{
+   return cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
 }

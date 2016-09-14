@@ -531,8 +531,8 @@ class TreeEvaluator: public OMR::TreeEvaluator
 
    // VM dependent routines
 
-   static void restorePTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
-   static void preservePTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
+   static void preserveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
+   static void restoreTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
    static TR::Register *retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies);
 
    static void genBranchSequence(TR::Node* node, TR::Register* src1Reg, TR::Register* src2Reg, TR::Register* trgReg,

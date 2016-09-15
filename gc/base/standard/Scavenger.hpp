@@ -513,7 +513,11 @@ public:
 		return concurrent_state_idle != _concurrentState;
 	}
 
-#endif	
+	/**
+	 * Enabled/disable approriate thread local resources when starting or finishing Concurrent Scavenger Cycle
+	 */ 
+	void switchConcurrentForThread(MM_EnvironmentBase *env);	
+#endif
 
 	/**
 	 * Determine whether the object pointer is found within the heap proper.

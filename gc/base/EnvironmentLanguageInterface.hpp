@@ -118,6 +118,10 @@ public:
 	virtual void exclusiveAccessForGCObtainedAfterBeatenByOtherThread() {}
 	virtual void releaseCriticalHeapAccess(uintptr_t *data) {}
 	virtual void reacquireCriticalHeapAccess(uintptr_t data) {}
+	
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	virtual void forceOutOfLineVMAccess() {}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	/**
 	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)

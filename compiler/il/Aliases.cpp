@@ -1,0 +1,1085 @@
+/*******************************************************************************
+ *
+ * (c) Copyright IBM Corp. 2000, 2016
+ *
+ *  This program and the accompanying materials are made available
+ *  under the terms of the Eclipse Public License v1.0 and
+ *  Apache License v2.0 which accompanies this distribution.
+ *
+ *      The Eclipse Public License is available at
+ *      http://www.eclipse.org/legal/epl-v10.html
+ *
+ *      The Apache License v2.0 is available at
+ *      http://www.opensource.org/licenses/apache2.0.php
+ *
+ * Contributors:
+ *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ ******************************************************************************/
+
+#include <assert.h>                            // for assert
+#include <stddef.h>                            // for size_t
+#include <stdint.h>                            // for int32_t, uint8_t, etc
+#include <string.h>                            // for NULL, memcpy, strchr
+#include "codegen/CodeGenerator.hpp"           // for SharedSparseBitVector, etc
+#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, etc
+#include "codegen/RecognizedMethods.hpp"
+#include "compile/Compilation.hpp"             // for Compilation, comp
+#include "compile/Method.hpp"                  // for TR_Method
+#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
+#include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable, etc
+#include "control/Options.hpp"
+#include "control/Options_inlines.hpp"         // for TR::Options, etc
+#include "control/Recompilation.hpp"
+#include "env/KnownObjectTable.hpp"            // for KnownObjectTable, etc
+#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"                      // for intptrj_t
+#include "il/AliasSetInterface.hpp"
+#include "il/DataTypes.hpp"                    // for DataTypes, etc
+#include "il/ILOpCodes.hpp"                    // for ILOpCodes::BadILOp, etc
+#include "il/ILOps.hpp"                        // for ILOpCode
+#include "il/Node.hpp"                         // for Node
+#include "il/Node_inlines.hpp"                 // for Node::getFirstChild
+#include "il/Symbol.hpp"                       // for Symbol, etc
+#include "il/SymbolReference.hpp"              // for SymbolReference, etc
+#include "il/TreeTop.hpp"                      // for TreeTop
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
+#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
+#include "il/symbol/RegisterMappedSymbol.hpp"  // for RegisterMappedSymbol, etc
+#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
+#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol
+#include "infra/Assert.hpp"                    // for TR_ASSERT
+#include "infra/BitVector.hpp"                 // for TR_BitVector, etc
+#include "infra/Flags.hpp"                     // for flags32_t
+#include "infra/List.hpp"                      // for List
+#include "runtime/Runtime.hpp"
+
+#ifdef J9_PROJECT_SPECIFIC
+#include "control/RecompilationInfo.hpp"
+#include "env/CHTable.hpp"
+#include "env/PersistentCHTable.hpp"           // for TR_PersistentCHTable
+#include "runtime/RuntimeAssumptions.hpp"
+#endif
+
+class TR_OpaqueClassBlock;
+namespace TR { class Register; }
+
+#define PEEK_THRESHOLD 50
+
+#ifdef J9_PROJECT_SPECIFIC
+static TR_BitVector * addVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol *, TR_BitVector *, List<void> *);
+#endif
+
+OMR::SymbolReference::SymbolReference(TR::SymbolReferenceTable * symRefTab, TR::SymbolReference& sr, intptrj_t o, TR::KnownObjectTable::Index knownObjectIndex)
+   {
+   _referenceNumber = symRefTab->assignSymRefNumber(self());
+   _symbol = sr._symbol;
+   _offset  = sr._offset + o;
+   _owningMethodIndex = sr._owningMethodIndex;
+   _cpIndex = sr._cpIndex;
+   _unresolvedIndex = sr._unresolvedIndex;
+   _extraInfo = 0;
+   _flags.set(sr._flags);
+   _useDefAliases = NULL;
+   _knownObjectIndex = knownObjectIndex;
+   self()->copyAliasSets(&sr, symRefTab);
+   symRefTab->aliasBuilder.updateSubSets(self());
+   }
+
+void
+OMR::SymbolReference::copyAliasSets(TR::SymbolReference * fromSymRef, TR::SymbolReferenceTable * symRefTab)
+   {
+   _useDefAliases = fromSymRef->_useDefAliases;
+   }
+
+TR_BitVector *
+OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
+   {
+   int32_t kind = _symbol->getKind();
+   switch (kind)
+      {
+      case TR::Symbol::IsMethod:
+         {
+         TR::MethodSymbol * methodSymbol = _symbol->castToMethodSymbol();
+         if (!methodSymbol->isHelper())
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+
+
+         switch (self()->getReferenceNumber())
+            {
+            case TR_asyncCheck:
+               return 0;
+
+            // helpers that don't throw have no use aliases
+            case TR_instanceOf:
+            case TR_monitorEntry:
+            case TR_transactionEntry:
+            case TR_reportMethodEnter:
+            case TR_reportStaticMethodEnter:
+            case TR_reportMethodExit:
+            case TR_acquireVMAccess:
+            case TR_throwCurrentException:
+            case TR_releaseVMAccess:
+            case TR_stackOverflow:
+            case TR_writeBarrierStore:
+            case TR_writeBarrierStoreGenerational:
+            case TR_writeBarrierStoreGenerationalAndConcurrentMark:
+            case TR_writeBarrierBatchStore:
+            case TR_typeCheckArrayStore:
+            case TR_arrayStoreException:
+            case TR_arrayBoundsCheck:
+            case TR_checkCast:
+            case TR_divCheck:
+            case TR_nullCheck:
+            case TR_methodTypeCheck:
+            case TR_aThrow:
+            case TR_aNewArray:
+            case TR_monitorExit:
+            case TR_transactionExit:
+            case TR_newObject:
+            case TR_newObjectNoZeroInit:
+            case TR_newArray:
+            case TR_multiANewArray:
+            case TR_newObjectNoTenantInit:
+            default:
+               return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+         }
+      case TR::Symbol::IsResolvedMethod:
+         {
+         TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
+         if (!TR::Options::getCmdLineOptions()->getOption(TR_EnableHCR))
+            {
+            switch (resolvedMethodSymbol->getRecognizedMethod())
+               {
+#ifdef J9_PROJECT_SPECIFIC
+               case TR::java_lang_Double_longBitsToDouble:
+               case TR::java_lang_Double_doubleToLongBits:
+               case TR::java_lang_Float_intBitsToFloat:
+               case TR::java_lang_Float_floatToIntBits:
+               case TR::java_lang_Double_doubleToRawLongBits:
+               case TR::java_lang_Float_floatToRawIntBits:
+               case TR::java_lang_Math_sqrt:
+               case TR::java_lang_StrictMath_sqrt:
+               case TR::java_lang_Math_sin:
+               case TR::java_lang_StrictMath_sin:
+               case TR::java_lang_Math_cos:
+               case TR::java_lang_StrictMath_cos:
+               case TR::java_lang_Math_max_I:
+               case TR::java_lang_Math_min_I:
+               case TR::java_lang_Math_max_L:
+               case TR::java_lang_Math_min_L:
+               case TR::java_lang_Math_abs_I:
+               case TR::java_lang_Math_abs_L:
+               case TR::java_lang_Math_abs_F:
+               case TR::java_lang_Math_abs_D:
+               case TR::java_lang_Math_pow:
+               case TR::java_lang_Math_exp:
+               case TR::java_lang_Math_floor:
+               case TR::java_lang_Math_ceil:
+               case TR::java_lang_Math_copySign_F:
+               case TR::java_lang_Math_copySign_D:
+               case TR::java_lang_StrictMath_floor:
+               case TR::java_lang_StrictMath_ceil:
+               case TR::java_lang_StrictMath_copySign_F:
+               case TR::java_lang_StrictMath_copySign_D:
+                  return NULL;
+#endif
+               default:
+               	break;
+               }
+            }
+         return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+         }
+
+      case TR::Symbol::IsAutomatic:
+      case TR::Symbol::IsParameter:
+
+         if (symRefTab->aliasBuilder.catchLocalUseSymRefs().isSet(self()->getReferenceNumber()))
+            return &symRefTab->aliasBuilder.methodsThatMayThrow();
+
+         return 0;
+
+      default:
+         //TR_ASSERT(0, "getUseOnlyAliases: unexpected symbol kind ");
+         return 0;
+      }
+   }
+
+TR_BitVector *
+OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePoint)
+   {
+   TR::Compilation *comp = TR::comp();
+
+   // allow more than one shadow for an array type.  Used by LoopAliasRefiner
+   const bool supportArrayRefinement=true;
+
+   int32_t kind = _symbol->getKind();
+   TR::SymbolReferenceTable * symRefTab = comp->getSymRefTab();
+
+   // !!! NOTE !!!
+   // THERE IS A COPY OF THIS LOGIC IN sharesSymbol
+   //
+   if (!self()->reallySharesSymbol(comp))
+      {
+      switch (kind)
+         {
+         case TR::Symbol::IsShadow:
+         case TR::Symbol::IsStatic:
+            {
+            if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+                self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
+                _symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets())
+               {
+               // getUseDefAliases might not return NULL
+               }
+            else if (!symRefTab->aliasBuilder.mutableGenericIntShadowHasBeenCreated())
+               {
+               // getUseDefAliases must return NULL
+               return NULL;
+               }
+            else if (kind == TR::Symbol::IsStatic && !symRefTab->aliasBuilder.litPoolGenericIntShadowHasBeenCreated())
+               {
+               // getUseDefAliases must return NULL
+               return NULL;
+               }
+            break;
+            }
+         }
+      }
+
+   // now do stuff for various kinds of symbols
+   //
+   switch (kind)
+      {
+      case TR::Symbol::IsMethod:
+         {
+         if (comp->getCurrentMethod()->isRuby())
+            return _useDefAliases;         // FIXME: what about non-method symbols??
+
+         TR::MethodSymbol * methodSymbol = _symbol->castToMethodSymbol();
+
+         if (!methodSymbol->isHelper())
+            return symRefTab->aliasBuilder.methodAliases(self());
+
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arraySetSymbol))
+            return &symRefTab->aliasBuilder.defaultMethodDefAliases();
+
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol))
+            return 0;
+
+         switch (self()->getReferenceNumber())
+            {
+            case TR_methodTypeCheck:
+            case TR_nullCheck:
+               return &symRefTab->aliasBuilder.defaultMethodDefAliasesWithoutImmutable();
+
+            case TR_arrayBoundsCheck:
+            case TR_checkCast:
+            case TR_divCheck:
+            case TR_typeCheckArrayStore:
+            case TR_arrayStoreException:
+            case TR_reportMethodEnter:
+            case TR_reportStaticMethodEnter:
+            case TR_reportMethodExit:
+            case TR_acquireVMAccess:
+            case TR_instanceOf:
+            case TR_throwCurrentException:
+            case TR_releaseVMAccess:
+            case TR_stackOverflow:
+            case TR_writeBarrierStore:
+            case TR_writeBarrierBatchStore:
+            case TR_jitProfileAddress:
+            case TR_jitProfileWarmCompilePICAddress:
+            case TR_jitProfileValue:
+            case TR_jitProfileLongValue:
+            case TR_jitProfileBigDecimalValue:
+            case TR_jitProfileParseBuffer:
+
+               return 0;
+
+            case TR_asyncCheck:
+            case TR_writeBarrierClassStoreRealTimeGC:
+            case TR_writeBarrierStoreRealTimeGC:
+            case TR_aNewArray:
+            case TR_newObject:
+            case TR_newObjectNoZeroInit:
+            case TR_newArray:
+            case TR_multiANewArray:
+            case TR_newObjectNoTenantInit:
+               if ((comp->generateArraylets() || comp->isDLT()) && includeGCSafePoint)
+                  return &symRefTab->aliasBuilder.gcSafePointSymRefNumbers();
+               else
+                  return 0;
+
+            case TR_aThrow:
+               return 0;
+
+            // The monitor exit symbol needs to be aliased with all fields in the
+            // current class to ensure that all references to fields are evaluated
+            // before the monitor exit
+            case TR_monitorExit:
+            case TR_monitorEntry:
+            case TR_transactionExit:
+            case TR_transactionEntry:
+
+            case TR_emilyCallGlue:
+            default:
+               // The following is the place to check for
+               // a use of killsAllMethodSymbolRef... However,
+               // it looks like the default action is sufficient.
+               //if (symRefTab->findKillsAllMethodSymbolRef() == self())
+               //   {
+               //   }
+               return &symRefTab->aliasBuilder.defaultMethodDefAliases();
+            }
+         }
+      case TR::Symbol::IsResolvedMethod:
+         {
+         TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
+
+         if (!TR::Options::getCmdLineOptions()->getOption(TR_EnableHCR))
+            {
+            switch (resolvedMethodSymbol->getRecognizedMethod())
+               {
+#ifdef J9_PROJECT_SPECIFIC
+               case TR::java_lang_System_arraycopy:
+                  {
+                  TR_BitVector * aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+                  *aliases |= symRefTab->aliasBuilder.arrayElementSymRefs();
+                  if (comp->generateArraylets())
+                     *aliases |= symRefTab->aliasBuilder.arrayletElementSymRefs();
+                  return aliases;
+                  }
+
+                  if (resolvedMethodSymbol->isPureFunction())
+                      return NULL;
+
+               case TR::java_lang_Double_longBitsToDouble:
+               case TR::java_lang_Double_doubleToLongBits:
+               case TR::java_lang_Float_intBitsToFloat:
+               case TR::java_lang_Float_floatToIntBits:
+               case TR::java_lang_Double_doubleToRawLongBits:
+               case TR::java_lang_Float_floatToRawIntBits:
+               case TR::java_lang_Math_sqrt:
+               case TR::java_lang_StrictMath_sqrt:
+               case TR::java_lang_Math_sin:
+               case TR::java_lang_StrictMath_sin:
+               case TR::java_lang_Math_cos:
+               case TR::java_lang_StrictMath_cos:
+               case TR::java_lang_Math_max_I:
+               case TR::java_lang_Math_min_I:
+               case TR::java_lang_Math_max_L:
+               case TR::java_lang_Math_min_L:
+               case TR::java_lang_Math_abs_I:
+               case TR::java_lang_Math_abs_L:
+               case TR::java_lang_Math_abs_F:
+               case TR::java_lang_Math_abs_D:
+               case TR::java_lang_Math_pow:
+               case TR::java_lang_Math_exp:
+               case TR::java_lang_Math_log:
+               case TR::java_lang_Math_floor:
+               case TR::java_lang_Math_ceil:
+               case TR::java_lang_Math_copySign_F:
+               case TR::java_lang_Math_copySign_D:
+               case TR::java_lang_StrictMath_floor:
+               case TR::java_lang_StrictMath_ceil:
+               case TR::java_lang_StrictMath_copySign_F:
+               case TR::java_lang_StrictMath_copySign_D:
+               case TR::com_ibm_Compiler_Internal__TR_Prefetch:
+               case TR::java_nio_Bits_keepAlive:
+                  if ((comp->generateArraylets() || comp->isDLT()) && includeGCSafePoint)
+                     return &symRefTab->aliasBuilder.gcSafePointSymRefNumbers();
+                  else
+                     return 0;
+
+               // no aliasing on DFP dummy stubs
+               case TR::java_math_BigDecimal_DFPPerformHysteresis:
+               case TR::java_math_BigDecimal_DFPUseDFP:
+               case TR::java_math_BigDecimal_DFPHWAvailable:
+               case TR::java_math_BigDecimal_DFPCompareTo:
+               case TR::java_math_BigDecimal_DFPUnscaledValue:
+               case TR::com_ibm_dataaccess_DecimalData_DFPFacilityAvailable:
+               case TR::com_ibm_dataaccess_DecimalData_DFPUseDFP:
+               case TR::com_ibm_dataaccess_DecimalData_DFPConvertPackedToDFP:
+               case TR::com_ibm_dataaccess_DecimalData_DFPConvertDFPToPacked:
+               case TR::com_ibm_dataaccess_DecimalData_createZeroBigDecimal:
+               case TR::com_ibm_dataaccess_DecimalData_getlaside:
+               case TR::com_ibm_dataaccess_DecimalData_setlaside:
+               case TR::com_ibm_dataaccess_DecimalData_getflags:
+               case TR::com_ibm_dataaccess_DecimalData_setflags:
+                  if (!(
+#ifdef TR_TARGET_S390
+                     TR::Compiler->target.cpu.getS390SupportsDFP() ||
+#endif
+                      TR::Compiler->target.cpu.supportsDecimalFloatingPoint()) ||
+                      comp->getOption(TR_DisableDFP))
+                     return NULL;
+#endif //J9_PROJECT_SPECIFIC
+               default:
+               	break;
+               }
+            }
+
+#ifdef J9_PROJECT_SPECIFIC
+         TR_ResolvedMethod * method = resolvedMethodSymbol->getResolvedMethod();
+         TR_PersistentMethodInfo * methodInfo = TR_PersistentMethodInfo::get(method);
+         if (methodInfo && (methodInfo->hasRefinedAliasSets() ||
+                            comp->getMethodHotness() >= veryHot ||
+                            resolvedMethodSymbol->hasVeryRefinedAliasSets()) &&
+             (method->isStatic() || method->isFinal() || isDirectCall))
+            {
+            TR_BitVector * aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            if ((comp->generateArraylets() || comp->isDLT()) && includeGCSafePoint)
+               *aliases |= symRefTab->aliasBuilder.gcSafePointSymRefNumbers();
+
+            if (methodInfo->doesntKillAnything() && !comp->getOption(TR_DisableRefinedAliases))
+               return aliases;
+
+            if ((resolvedMethodSymbol->hasVeryRefinedAliasSets() || comp->getMethodHotness() >= hot) &&
+                !debug("disableVeryRefinedCallAliasSets"))
+               {
+               TR_BitVector * exactAliases = 0;
+
+               if (resolvedMethodSymbol->hasVeryRefinedAliasSets())
+                  exactAliases = symRefTab->aliasBuilder.getVeryRefinedCallAliasSets(resolvedMethodSymbol);
+               else
+                  {
+                  resolvedMethodSymbol->setHasVeryRefinedAliasSets(true);
+                  List<void> methodsPeeked(comp->trMemory());
+                  exactAliases = addVeryRefinedCallAliasSets(resolvedMethodSymbol, aliases, &methodsPeeked);
+                  symRefTab->aliasBuilder.setVeryRefinedCallAliasSets(resolvedMethodSymbol, exactAliases);
+                  }
+               if (exactAliases)
+                  {
+                  return exactAliases;
+                  }
+               }
+
+            // From here on, we're just checking refined alias info.
+            // If refined aliases are disabled, return the conservative answer
+            // we would have returned had we never attempted to use refined
+            // aliases at all.
+            //
+            if (comp->getOption(TR_DisableRefinedAliases))
+               return symRefTab->aliasBuilder.methodAliases(self());
+
+            if (!methodInfo->doesntKillAddressArrayShadows())
+               {
+
+               symRefTab->aliasBuilder.addAddressArrayShadows(aliases);
+
+               if (comp->generateArraylets())
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Address));
+               }
+
+            if (!methodInfo->doesntKillIntArrayShadows())
+               {
+
+               symRefTab->aliasBuilder.addIntArrayShadows(aliases);
+
+               if (comp->generateArraylets())
+                  {
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Int32));
+                  }
+               }
+
+            if (!methodInfo->doesntKillNonIntPrimitiveArrayShadows())
+               {
+
+               symRefTab->aliasBuilder.addNonIntPrimitiveArrayShadows(aliases);
+
+               if (comp->generateArraylets())
+                  {
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Int8));
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Int16));
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Int32));
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Int64));
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Float));
+                  aliases->set(symRefTab->getArrayletShadowIndex(TR::Double));
+                  }
+               }
+
+            if (!methodInfo->doesntKillAddressFields())
+               *aliases |= symRefTab->aliasBuilder.addressShadowSymRefs();
+
+            if (!methodInfo->doesntKillIntFields())
+               *aliases |= symRefTab->aliasBuilder.intShadowSymRefs();
+
+            if (!methodInfo->doesntKillNonIntPrimitiveFields())
+               *aliases |= symRefTab->aliasBuilder.nonIntPrimitiveShadowSymRefs();
+
+            if (!methodInfo->doesntKillAddressStatics())
+               *aliases |= symRefTab->aliasBuilder.addressStaticSymRefs();
+
+            if (!methodInfo->doesntKillIntStatics())
+               *aliases |= symRefTab->aliasBuilder.intStaticSymRefs();
+
+            if (!methodInfo->doesntKillNonIntPrimitiveStatics())
+               *aliases |= symRefTab->aliasBuilder.nonIntPrimitiveStaticSymRefs();
+
+#ifdef J9_PROJECT_SPECIFIC
+            *aliases |= symRefTab->aliasBuilder.tenantDataMetaSymRefs();
+#endif
+
+            TR_BitVector *methodAliases = symRefTab->aliasBuilder.methodAliases(self());
+            *aliases &= *methodAliases;
+            return aliases;
+            }
+#endif
+
+         return symRefTab->aliasBuilder.methodAliases(self());
+         }
+      case TR::Symbol::IsShadow:
+         {
+         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() || self()->isFromLiteralPool() ||
+             (_symbol->isUnsafeShadowSymbol() && !self()->reallySharesSymbol()))
+            {
+            if (symRefTab->aliasBuilder.unsafeArrayElementSymRefs().get(self()->getReferenceNumber()))
+               {
+               TR_BitVector *aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+               *aliases |= comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliasesWithoutImmutable();
+               *aliases -= symRefTab->aliasBuilder.cpSymRefs();
+               return aliases;
+               }
+            else
+               return &comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliasesWithoutImmutable();
+            }
+
+         TR_BitVector *aliases = NULL;
+         if (_symbol == symRefTab->findGenericIntShadowSymbol())
+            {
+            aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            *aliases |= symRefTab->aliasBuilder.arrayElementSymRefs();
+            if (comp->generateArraylets())
+               *aliases |= symRefTab->aliasBuilder.arrayletElementSymRefs();
+            *aliases |= symRefTab->aliasBuilder.genericIntShadowSymRefs();
+            *aliases |= symRefTab->aliasBuilder.genericIntArrayShadowSymRefs();
+            *aliases |= symRefTab->aliasBuilder.genericIntNonArrayShadowSymRefs();
+            *aliases |= symRefTab->aliasBuilder.unsafeSymRefNumbers();
+#ifdef J9_PROJECT_SPECIFIC
+            *aliases |= symRefTab->aliasBuilder.unresolvedShadowSymRefs();
+#endif
+            if (symRefTab->aliasBuilder.conservativeGenericIntShadowAliasing())
+               {
+               *aliases |= symRefTab->aliasBuilder.addressShadowSymRefs();
+               *aliases |= symRefTab->aliasBuilder.intShadowSymRefs();
+               *aliases |= symRefTab->aliasBuilder.nonIntPrimitiveShadowSymRefs();
+               }
+            aliases->set(self()->getReferenceNumber());
+            return aliases;
+            }
+
+         if (self()->reallySharesSymbol(comp))
+            {
+            aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            self()->setSharedShadowAliases(aliases, symRefTab);
+            }
+
+         if (symRefTab->findGenericIntShadowSymbol())
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            self()->setLiteralPoolAliases(aliases, symRefTab);
+
+            if (symRefTab->aliasBuilder.conservativeGenericIntShadowAliasing() || self()->isUnresolved())
+               {
+               *aliases |= symRefTab->aliasBuilder.genericIntShadowSymRefs();
+               *aliases |= symRefTab->aliasBuilder.genericIntArrayShadowSymRefs();
+               *aliases |= symRefTab->aliasBuilder.genericIntNonArrayShadowSymRefs();
+               }
+            }
+
+         if (_symbol->isArrayShadowSymbol() &&
+             symRefTab->findGenericIntShadowSymbol())
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            *aliases |= symRefTab->aliasBuilder.genericIntShadowSymRefs();
+            *aliases |= symRefTab->aliasBuilder.genericIntArrayShadowSymRefs();
+
+            if (supportArrayRefinement && self()->getIndependentSymRefs())
+               *aliases -= *self()->getIndependentSymRefs();
+            }
+
+#ifdef J9_PROJECT_SPECIFIC
+         // make TR::PackedDecimal aliased with TR::Int8(byte)
+         if (_symbol->isArrayShadowSymbol() && _symbol->getDataType() == TR::PackedDecimal)
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            aliases->set(symRefTab->getArrayShadowIndex(TR::Int8));
+            }
+         //the other way around.
+         if (_symbol->isArrayShadowSymbol() && _symbol->getDataType() == TR::Int8)
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            aliases->set(symRefTab->getArrayShadowIndex(TR::PackedDecimal));
+            }
+#endif
+
+         // alias vector arrays shadows  with corresponding scalar array shadows
+         if (_symbol->isArrayShadowSymbol() && isVectorType(_symbol->getDataType()))
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            aliases->set(symRefTab->getArrayShadowIndex(vectorToScalar(_symbol->getDataType())));
+            }
+         // the other way around
+         if (_symbol->isArrayShadowSymbol() && !isVectorType(_symbol->getDataType()))
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            aliases->set(symRefTab->getArrayShadowIndex(scalarToVector(_symbol->getDataType())));
+            }
+
+
+         if (_symbol->isArrayShadowSymbol() &&
+             supportArrayRefinement &&
+             comp->getMethodSymbol()->hasVeryRefinedAliasSets())
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+
+            TR::DataTypes type = _symbol->getDataType();
+            TR_BitVectorIterator bvi(symRefTab->aliasBuilder.arrayElementSymRefs());
+            int32_t symRefNum;
+            while (bvi.hasMoreElements())
+               {
+               symRefNum = bvi.getNextElement();
+               if (symRefTab->getSymRef(symRefNum)->getSymbol()->getDataType() == type)
+                  aliases->set(symRefNum);
+               }
+
+            if (self()->getIndependentSymRefs())
+               *aliases -= *self()->getIndependentSymRefs();
+
+            return aliases;
+            }
+
+         if (aliases)
+            aliases->set(self()->getReferenceNumber());
+
+         if (symRefTab->aliasBuilder.unsafeArrayElementSymRefs().get(self()->getReferenceNumber()))
+            *aliases -= symRefTab->aliasBuilder.cpSymRefs();
+         else if (symRefTab->aliasBuilder.cpSymRefs().get(self()->getReferenceNumber()))
+            *aliases -= symRefTab->aliasBuilder.unsafeArrayElementSymRefs();
+
+         return aliases;
+         }
+      case TR::Symbol::IsStatic:
+         {
+         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
+            {
+            return &comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliases();
+            }
+
+         TR_BitVector *aliases = NULL;
+         if (self()->reallySharesSymbol(comp))
+            {
+            aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            self()->setSharedStaticAliases(aliases, symRefTab);
+            }
+
+         if (symRefTab->findGenericIntShadowSymbol())
+            {
+            if (!aliases)
+               aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
+            self()->setLiteralPoolAliases(aliases, symRefTab);
+            }
+
+         if (aliases)
+            aliases->set(self()->getReferenceNumber());
+
+         return aliases;
+         }
+      case TR::Symbol::IsMethodMetaData:
+         {
+         TR_BitVector *aliases = NULL;
+         return aliases;
+         }
+      default:
+         //TR_ASSERT(0, "getUseDefAliasing called for non method");
+         if (comp->generateArraylets() && comp->getSymRefTab()->aliasBuilder.gcSafePointSymRefNumbers().get(self()->getReferenceNumber()) && includeGCSafePoint)
+            return &comp->getSymRefTab()->aliasBuilder.gcSafePointSymRefNumbers();
+         else
+            return 0;
+
+
+      }
+   }
+
+bool
+OMR::SymbolReference::sharesSymbol(bool includingGCSafePoint)
+   {
+   TR::Compilation * c = TR::comp();
+   if (self()->reallySharesSymbol(c))
+      return true;
+
+   // At this point, we'd like to call getUseDefAliases(c, false) and return
+   // true iff that is non-NULL.  However, doing so caused floatSanity
+   // (specifically CompactNullChecks) to consume immense amounts (1GB+) of
+   // memory and run for a long, long time (half an hour or more in some
+   // cases), so we need to copy some of that logic in here as a short-circuit.
+   //
+   // !!! NOTE !!!
+   // THERE IS A COPY OF THIS LOGIC IN getUseDefAliases
+   //
+   int32_t kind = _symbol->getKind();
+   TR::SymbolReferenceTable * symRefTab = c->getSymRefTab();
+   switch (kind)
+      {
+      case TR::Symbol::IsShadow:
+      case TR::Symbol::IsStatic:
+         {
+         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+               self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
+               _symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets())
+            {
+            // getUseDefAliases might not return NULL
+            }
+         else if (!symRefTab->aliasBuilder.mutableGenericIntShadowHasBeenCreated())
+            {
+            // getUseDefAliases must return NULL
+            return false;
+            }
+         else if (kind == TR::Symbol::IsStatic && !symRefTab->aliasBuilder.litPoolGenericIntShadowHasBeenCreated())
+            {
+            // getUseDefAliases must return NULL
+            return false;
+            }
+         break;
+         }
+      }
+
+   return !self()->getUseDefAliases(false, includingGCSafePoint).isZero(c);
+   }
+
+void
+OMR::SymbolReference::setLiteralPoolAliases(TR_BitVector * aliases, TR::SymbolReferenceTable * symRefTab)
+   {
+   if (!symRefTab->findGenericIntShadowSymbol())
+      return;
+
+   TR_SymRefIterator i(symRefTab->aliasBuilder.genericIntShadowSymRefs(), symRefTab);
+   TR::SymbolReference * symRef;
+   while (symRef = i.getNext())
+      if (symRef->isLiteralPoolAddress() || symRef->isFromLiteralPool())
+         aliases->set(symRef->getReferenceNumber());
+
+   aliases->set(self()->getReferenceNumber());
+
+   *aliases |= symRefTab->aliasBuilder.unsafeSymRefNumbers();
+   }
+
+void
+OMR::SymbolReference::setSharedShadowAliases(TR_BitVector * aliases, TR::SymbolReferenceTable * symRefTab)
+   {
+   if (self()->reallySharesSymbol() && !_symbol->isUnsafeShadowSymbol())
+      {
+      TR::DataType type = self()->getSymbol()->getType();
+      TR_SymRefIterator i(type.isAddress() ? symRefTab->aliasBuilder.addressShadowSymRefs()
+                                           : (type.isInt32() ? symRefTab->aliasBuilder.intShadowSymRefs()
+                                                             : symRefTab->aliasBuilder.nonIntPrimitiveShadowSymRefs()), symRefTab);
+      TR::SymbolReference * symRef;
+      while (symRef = i.getNext())
+         if (symRef->getSymbol() == self()->getSymbol())
+            aliases->set(symRef->getReferenceNumber());
+      }
+   else
+      aliases->set(self()->getReferenceNumber());
+
+   *aliases |= symRefTab->aliasBuilder.unsafeSymRefNumbers();
+   }
+
+void
+OMR::SymbolReference::setSharedStaticAliases(TR_BitVector * aliases, TR::SymbolReferenceTable * symRefTab)
+   {
+   if (self()->reallySharesSymbol())
+      {
+      TR::DataType type = self()->getSymbol()->getType();
+      TR_SymRefIterator i(type.isAddress() ? symRefTab->aliasBuilder.addressStaticSymRefs()
+                                           : (type.isInt32() ? symRefTab->aliasBuilder.intStaticSymRefs()
+                                                             : symRefTab->aliasBuilder.nonIntPrimitiveStaticSymRefs()), symRefTab);
+      TR::SymbolReference * symRef;
+      while (symRef = i.getNext())
+         if (symRef->getSymbol() == self()->getSymbol())
+            aliases->set(symRef->getReferenceNumber());
+      }
+   else
+      aliases->set(self()->getReferenceNumber());
+
+   *aliases |= symRefTab->aliasBuilder.unsafeSymRefNumbers();
+   }
+
+#ifdef J9_PROJECT_SPECIFIC
+TR_BitVector *
+addVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol * methodSymbol, TR_BitVector * aliases, List<void> * methodsPeeked)
+   {
+   TR::Compilation *comp = TR::comp();
+
+   void * methodId = methodSymbol->getResolvedMethod()->getPersistentIdentifier();
+   if (methodsPeeked->find(methodId))
+      return aliases;
+
+   // stop if the peek is getting very deep
+   //
+   if (methodsPeeked->getSize() >= PEEK_THRESHOLD)
+      return 0;
+
+   methodsPeeked->add(methodId);
+
+   dumpOptDetails(comp, "O^O REFINING ALIASES: Peeking into the IL to refine aliases \n");
+
+   if (!methodSymbol->getResolvedMethod()->genMethodILForPeeking(methodSymbol, comp, true))
+      return 0;
+
+   TR::SymbolReferenceTable * symRefTab = comp->getSymRefTab();
+   for (TR::TreeTop * tt = methodSymbol->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
+      {
+	   TR::Node *node = tt->getNode();
+      if (node->getOpCode().isResolveCheck())
+         return 0;
+
+      if ((node->getOpCodeValue() == TR::treetop) ||
+          (node->getOpCodeValue() == TR::compressedRefs) ||
+          node->getOpCode().isCheck())
+         node = node->getFirstChild();
+
+      if (node->getOpCode().isStore())
+         {
+         TR::SymbolReference * symRefInCallee = node->getSymbolReference(), * symRefInCaller;
+         TR::Symbol * symInCallee = symRefInCallee->getSymbol();
+         TR::DataTypes type = symInCallee->getDataType();
+         if (symInCallee->isShadow())
+            {
+            if (symInCallee->isArrayShadowSymbol())
+               symRefInCaller = symRefTab->getSymRef(symRefTab->getArrayShadowIndex(type));
+
+            else if (symInCallee->isArrayletShadowSymbol())
+               symRefInCaller = symRefTab->getSymRef(symRefTab->getArrayletShadowIndex(type));
+
+            else
+               symRefInCaller = symRefTab->findShadowSymbol(symRefInCallee->getOwningMethod(comp), symRefInCallee->getCPIndex(), type);
+
+            if (symRefInCaller)
+               {
+               if (symRefInCaller->reallySharesSymbol(comp))
+                  symRefInCaller->setSharedShadowAliases(aliases, symRefTab);
+
+               aliases->set(symRefInCaller->getReferenceNumber());
+               }
+
+            }
+         else if (symInCallee->isStatic())
+            {
+            symRefInCaller = symRefTab->findStaticSymbol(symRefInCallee->getOwningMethod(comp), symRefInCallee->getCPIndex(), type);
+            if (symRefInCaller)
+               {
+               if (symRefInCaller->reallySharesSymbol(comp))
+                  symRefInCaller->setSharedStaticAliases(aliases, symRefTab);
+               else
+                  aliases->set(symRefInCaller->getReferenceNumber());
+               }
+            }
+         }
+      else if (node->getOpCode().isCall())
+         {
+         if (node->getOpCode().isCallIndirect())
+            return 0;
+         TR::ResolvedMethodSymbol * calleeSymbol = node->getSymbol()->getResolvedMethodSymbol();
+         if (!calleeSymbol)
+            return 0;
+         TR_ResolvedMethod * calleeMethod = calleeSymbol->getResolvedMethod();
+         if (!calleeMethod->isCompilable(comp->trMemory()) || calleeMethod->isJNINative())
+            return 0;
+
+         if (!addVeryRefinedCallAliasSets(calleeSymbol, aliases, methodsPeeked))
+            return 0;
+         }
+      else if (node->getOpCodeValue() == TR::monent)
+         return 0;
+      }
+
+   return aliases;
+   }
+#endif
+
+bool
+OMR::SymbolReference::willUse(TR::SymbolReference * sr2, TR::SymbolReferenceTable* symRefTab)
+   {
+   if (self()->getSymbol() == sr2->getSymbol())
+      return true;
+
+   return self()->getUseonlyAliases().contains(sr2, symRefTab->comp());
+   }
+
+bool
+OMR::SymbolReference::canKill(TR::SymbolReference * sr2)
+   {
+   TR::Compilation * comp = TR::comp();
+   if (self()->getSymbol() == sr2->getSymbol())
+      return true;
+   if (!self()->sharesSymbol())
+      return false;
+   return self()->getUseDefAliases().contains(sr2, comp);
+   }
+
+bool
+OMR::SymbolReference::storeCanBeRemoved()
+   {
+   TR::Compilation *comp = TR::comp();
+   TR::Symbol * s = self()->getSymbol();
+
+   return !s->isVolatile() &&
+     (((s->getDataType() != TR::Double) && (s->getDataType() != TR::Float)) ||
+           comp->cg()->getSupportsJavaFloatSemantics() ||
+           (self()->isTemporary(comp) && !s->behaveLikeNonTemp()));
+   }
+
+char *
+classNameToSignature(const char *name, int32_t &len, TR::Compilation * comp, TR_AllocationKind allocKind)
+   {
+   char * sig;
+
+   if (name[0] == '[')
+      {
+      sig = (char *)comp->trMemory()->allocateMemory(len+1, allocKind);
+      memcpy(sig,name,len);
+      }
+   else
+      {
+      len += 2;
+      sig = (char *)comp->trMemory()->allocateMemory(len+1, allocKind);
+      sig[0] = 'L';
+      memcpy(sig+1,name,len-2);
+      sig[len-1]=';';
+      }
+   sig[len] = 0; // null terminated string
+   return sig;
+   }
+
+const char *
+OMR::SymbolReference::getTypeSignature(int32_t & len, TR_AllocationKind allocKind, bool *isFixed)
+   {
+   TR::Compilation * comp = TR::comp();
+
+   switch (_symbol->getKind())
+      {
+      case TR::Symbol::IsParameter:
+         return _symbol->castToParmSymbol()->getTypeSignature(len);
+
+      case TR::Symbol::IsShadow:
+         return (_cpIndex > 0 ? self()->getOwningMethod(comp)->fieldSignatureChars(_cpIndex, len) : 0);
+
+      case TR::Symbol::IsStatic:
+         return self()->getOwningMethod(comp)->staticSignatureChars(_cpIndex, len);
+
+      case TR::Symbol::IsMethod:
+      case TR::Symbol::IsResolvedMethod:
+      case TR::Symbol::IsAutomatic:
+      case TR::Symbol::IsMethodMetaData:
+      case TR::Symbol::IsLabel:
+      default:
+         return 0;
+      }
+   }
+
+/**
+ * Copies the input symref reference number into this symref if such a copy is possible
+ *
+ * \parm  symRef     The source symRef
+ * \parm  symRefTab  The Symbol Reference Table pointer.
+ *
+ * \attention This function doesn't accept null pointers.
+ */
+void
+OMR::SymbolReference::copyRefNumIfPossible(TR::SymbolReference * symRef, TR::SymbolReferenceTable * symRefTab)
+   {
+   int32_t index = symRef->getReferenceNumber();
+   if ((index < symRefTab->getNonhelperIndex(symRefTab->getLastCommonNonhelperSymbol())) ||
+       (self()->getSymbol() == symRefTab->findGenericIntShadowSymbol()) ||
+       symRef->getSymbol()->isUnsafeShadowSymbol())
+      {
+      self()->setReferenceNumber(index);
+      }
+   }
+
+/**
+ * make these two array shadows independent of each other, but still aliased to
+ * all other array shadows
+ */
+void
+OMR::SymbolReference::makeIndependent(TR::SymbolReferenceTable *symRefTab,
+                                      TR::SymbolReference *symRef)
+   {
+   TR::Compilation *comp = symRefTab->comp();
+   TR_ASSERT(self()->getSymbol()->isArrayShadowSymbol(),"symref #%d is not an array shadow\n",self()->getReferenceNumber());
+   TR_ASSERT(symRef->getSymbol()->isArrayShadowSymbol(),"symref #%d is not an array shadow\n",symRef->getReferenceNumber());
+   if(NULL == self()->getIndependentSymRefs())
+      self()->setIndependentSymRefs(new(comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(),comp->trMemory(),heapAlloc,growable));
+
+   if(NULL == symRef->getIndependentSymRefs())
+      symRef->setIndependentSymRefs(new(comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(),comp->trMemory(),heapAlloc,growable));
+
+   self()->getIndependentSymRefs()->set(symRef->getReferenceNumber());
+   symRef->getIndependentSymRefs()->set(self()->getReferenceNumber());
+
+   }
+
+#undef PEEK_THRESHOLD
+
+void
+OMR::SymbolReference::setAliasedTo(TR_BitVector &bv, TR::SymbolReferenceTable *symRefTab, bool symmetric)
+   {
+   TR::Compilation *comp = symRefTab->comp();
+
+   TR_ASSERT(_useDefAliases, "this symref doesn't have its own aliasing bitvector");
+   if (!symmetric)
+      {
+      *_useDefAliases |= bv;
+      }
+   else
+      {
+      // we must process one by one to ensure symmetric aliasing
+      TR_SymRefIterator sit(bv, symRefTab);
+      for (TR::SymbolReference *symRef = sit.getNext();
+            symRef;
+            symRef = sit.getNext())
+         {
+         self()->setAliasedTo(symRef, true);
+         }
+      }
+   }
+
+TR_BitVector *
+OMR::SymbolReference::getSymRefUseDefAliasesBV(TR::Compilation *c,
+                                               bool isDirectCall,
+                                               bool gcSafe)
+   {
+   return self()->getUseDefAliasesBV(isDirectCall, gcSafe);
+   }
+
+/**
+ * \pre SymRef must be for an ArrayShadow symbol.
+ */
+void
+OMR::SymbolReference::setIndependentSymRefs(TR_BitVector *bv)
+   {
+   TR_ASSERT(_symbol->isArrayShadowSymbol(),"bad");
+   _independentSymRefs=bv;
+   }
+
+/**
+ * \pre SymRef must be for an ArrayShadow symbol.
+ */
+TR_BitVector *
+OMR::SymbolReference::getIndependentSymRefs()
+   {
+   TR_ASSERT(_symbol->isArrayShadowSymbol(),"bad");
+   return _independentSymRefs;
+   }

@@ -1,0 +1,453 @@
+/*******************************************************************************
+ *
+ * (c) Copyright IBM Corp. 2000, 2016
+ *
+ *  This program and the accompanying materials are made available
+ *  under the terms of the Eclipse Public License v1.0 and
+ *  Apache License v2.0 which accompanies this distribution.
+ *
+ *      The Eclipse Public License is available at
+ *      http://www.eclipse.org/legal/epl-v10.html
+ *
+ *      The Apache License v2.0 is available at
+ *      http://www.opensource.org/licenses/apache2.0.php
+ *
+ * Contributors:
+ *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *******************************************************************************/
+
+#ifndef OMR_X86_MEMORY_REFERENCE_INCL
+#define OMR_X86_MEMORY_REFERENCE_INCL
+
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_MEMREF_CONNECTOR
+#define OMR_MEMREF_CONNECTOR
+namespace OMR { namespace X86 { class MemoryReference; } }
+namespace OMR { typedef OMR::X86::MemoryReference MemoryReferenceConnector; }
+#endif
+
+#include "compiler/codegen/OMRMemoryReference.hpp"
+
+#include <stddef.h>                                // for NULL
+#include <stdint.h>                                // for uint8_t, int32_t, etc
+#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
+#include "codegen/Instruction.hpp"                 // for Instruction
+#include "codegen/Machine.hpp"                     // for Machine, etc
+#include "codegen/RealRegister.hpp"                // for RealRegister, etc
+#include "codegen/Register.hpp"                    // for Register
+#include "codegen/Snippet.hpp"                     // for Snippet
+#include "codegen/UnresolvedDataSnippet.hpp"
+#include "compile/Compilation.hpp"                 // for Compilation
+#include "env/TRMemory.hpp"                        // for TR_Memory, etc
+#include "env/jittypes.h"                          // for intptrj_t
+#include "il/Node.hpp"                             // for rcount_t
+#include "il/SymbolReference.hpp"                  // for SymbolReference
+#include "infra/Bit.hpp"
+#include "infra/Flags.hpp"                         // for flags16_t
+#include "x/codegen/DataSnippet.hpp"
+
+#include "x/codegen/ConstantDataSnippet.hpp" // REMOVE_THIS_LATER
+
+#define HIGHEST_STRIDE_MULTIPLIER 8
+#define HIGHEST_STRIDE_SHIFT      3
+
+#define IA32SIBPresent             0x04
+#define IA32Base                   0x00
+#define IA32BaseOffset8            0x40
+#define IA32BaseOffset32           0x80
+#define IA32Offset32               0x05
+#define IA32BaseIndex              (IA32Base         | IA32SIBPresent)
+#define IA32BaseIndexOffset8       (IA32BaseOffset8  | IA32SIBPresent)
+#define IA32BaseIndexOffset32      (IA32BaseOffset32 | IA32SIBPresent)
+#define IA32IndexOffset32          (IA32Base         | IA32SIBPresent)
+#define IA32SIBNoIndex             0x20
+#define IA32SIBIndexOffset32       0x05
+
+#define MemRef_ForceWideDisplacement              0x0001
+#define MemRef_UnresolvedDataSnippet              0x0002
+#define MemRef_NeedExternalCodeAbsoluteRelocation 0x0004
+#define MemRef_ForceSIBByte                       0x0008
+#define MemRef_UnresolvedVirtualCallSnippet       0x0010
+#define MemRef_IgnoreVolatile                     0x0020
+#define MemRef_ProcessAsFPVolatile                0x0040
+#define MemRef_ProcessAsLongVolatileLow           0x0040
+#define MemRef_ProcessAsLongVolatileHigh          0x0080
+#define MemRef_RequiresLockPrefix                 0x0100
+#define MemRef_UpcastingMode                      0x0200
+
+class TR_OpaqueClassBlock;
+class TR_ScratchRegisterManager;
+namespace TR { class LabelSymbol; }
+namespace TR { class MemoryReference; }
+
+namespace OMR
+{
+
+namespace X86
+{
+
+class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
+   {
+
+   protected:
+
+   TR::Register *_baseRegister;
+   TR::Node *_baseNode;
+   TR::Register *_indexRegister;
+   TR::Node *_indexNode;
+   TR::Snippet *_dataSnippet;
+   TR::LabelSymbol *_label;
+
+   TR::SymbolReference _symbolReference;
+   int32_t _reloKind;
+   flags16_t _flags;
+   uint8_t _stride;
+
+   static const uint8_t _multiplierToStrideMap[HIGHEST_STRIDE_MULTIPLIER + 1];
+
+   void initialize(TR::SymbolReference *symRef, TR::CodeGenerator *cg);
+
+   public:
+
+   TR_ALLOC(TR_Memory::MemoryReference)
+
+   MemoryReference(TR::CodeGenerator *cg) :  _baseRegister(NULL),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(NULL),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(0),
+                                                   _flags(0),
+                                                   _reloKind(-1) {}
+
+   MemoryReference(TR::Register        *br,
+                          TR::SymbolReference *sr,
+                          TR::Register        *ir,
+                          uint8_t             s,
+                          TR::CodeGenerator   *cg) : _baseRegister(br),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(ir),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(s),
+                                                   _flags(0),
+                                                   _reloKind(-1)
+      {
+      _symbolReference.setSymbol(sr->getSymbol());
+      _symbolReference.setOffset(sr->getOffset());
+      // TODO: Figure out what to do with the aliasing info here. Should replicate,
+      //       but may be able to get away without
+      }
+
+   MemoryReference(TR::Register        *br,
+                          TR::Register        *ir,
+                          uint8_t             s,
+                          TR::CodeGenerator   *cg) : _baseRegister(br),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(ir),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(s),
+                                                   _flags(0),
+                                                   _reloKind(-1) {}
+
+   MemoryReference(TR::Register        *br,
+                          intptrj_t           disp,
+                          TR::CodeGenerator   *cg) : _baseRegister(br),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(NULL),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(0),
+                                                   _flags(0),
+                                                   _reloKind(-1)
+      {
+      _symbolReference.setOffset(disp);
+      }
+
+   MemoryReference(intptrj_t           disp,
+                          TR::CodeGenerator   *cg) : _baseRegister(NULL),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(NULL),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(0),
+                                                   _flags(0),
+                                                   _reloKind(-1)
+      {
+      _symbolReference.setOffset(disp);
+      }
+
+   MemoryReference(TR::Register        *br,
+                          TR::Register        *ir,
+                          uint8_t             s,
+                          intptrj_t           disp,
+                          TR::CodeGenerator   *cg) : _baseRegister(br),
+                                                   _baseNode(NULL),
+                                                   _indexRegister(ir),
+                                                   _indexNode(NULL),
+                                                   _dataSnippet(NULL),
+                                                   _label(NULL),
+                                                   _symbolReference(cg->comp()->getSymRefTab()),
+                                                   _stride(s),
+                                                   _flags(0),
+                                                   _reloKind(-1)
+      {
+      _symbolReference.setOffset(disp);
+      }
+
+   MemoryReference(TR_IA32DataSnippet *cds, TR::CodeGenerator   *cg);
+
+   MemoryReference(TR::LabelSymbol *label, TR::CodeGenerator *cg);
+
+   MemoryReference(TR::Node *rootLoadOrStore, TR::CodeGenerator *cg, bool canRematerializeAddressAdds);
+
+   MemoryReference(TR::SymbolReference *symRef, TR::CodeGenerator *cg);
+
+   MemoryReference(TR::SymbolReference *symRef, intptrj_t displacement, TR::CodeGenerator *cg);
+
+   MemoryReference(TR::MemoryReference& mr, intptrj_t n, TR::CodeGenerator *cg, TR_ScratchRegisterManager *srm = NULL);
+
+   TR::Register *getBaseRegister()                {return _baseRegister;}
+   TR::Register *setBaseRegister(TR::Register *br) {return (_baseRegister = br);}
+
+   TR::Node *getBaseNode()            {return _baseNode;}
+   TR::Node *setBaseNode(TR::Node *bn) {return (_baseNode = bn);}
+
+   TR::Register *getIndexRegister() {return _indexRegister;}
+   TR::Register *setIndexRegister(TR::Register *ir) {return (_indexRegister = ir);}
+
+   TR::Node *getIndexNode()            {return _indexNode;}
+   TR::Node *setIndexNode(TR::Node *in) {return (_indexNode = in);}
+   TR::Register *getAddressRegister(){ return NULL; }
+   intptrj_t getDisplacement();
+
+   // An unresolved data snippet, unresolved virtual call snippet, and constant data snippet are mutually exclusive for
+   // a given memory reference.  Hence, they share the same pointer.
+   //
+   TR::UnresolvedDataSnippet *getUnresolvedDataSnippet();
+
+   TR::UnresolvedDataSnippet *setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s);
+
+   TR_IA32DataSnippet *getDataSnippet();
+
+   TR_IA32DataSnippet *setConstantDataSnippet(TR_IA32DataSnippet *s)
+      {
+      return ( (TR_IA32DataSnippet *) (_dataSnippet = s) );
+      }
+
+   TR::LabelSymbol *getLabel()                   { return _label; }
+   TR::LabelSymbol *setLabel(TR::LabelSymbol *l)  { return (_label = l); }
+
+   bool getFlags()          {return _flags.getValue() != 0;}
+   void setFlags(uint8_t f) {_flags.setValue(0xff, f);}
+
+   bool isForceWideDisplacement()  {return _flags.testAny(MemRef_ForceWideDisplacement);}
+   void setForceWideDisplacement() {_flags.set(MemRef_ForceWideDisplacement);}
+
+   bool isForceSIBByte()  {return _flags.testAny(MemRef_ForceSIBByte);}
+   void setForceSIBByte() {_flags.set(MemRef_ForceSIBByte);}
+
+   bool hasUnresolvedDataSnippet()  {return _flags.testAny(MemRef_UnresolvedDataSnippet);}
+   void setHasUnresolvedDataSnippet() {_flags.set(MemRef_UnresolvedDataSnippet);}
+
+   bool hasUnresolvedVirtualCallSnippet()  {return _flags.testAny(MemRef_UnresolvedVirtualCallSnippet);}
+   void setHasUnresolvedVirtualCallSnippet() {_flags.set(MemRef_UnresolvedVirtualCallSnippet);}
+
+   bool inUpcastingMode() {return _flags.testAny(MemRef_UpcastingMode);}
+   void setInUpcastingMode(bool b = true) {_flags.set(MemRef_UpcastingMode, b);}
+
+   //relevant only for 32 bit
+   //
+   bool processAsLongVolatileLow() {return _flags.testAny(MemRef_ProcessAsLongVolatileLow);}
+   void setProcessAsLongVolatileLow() {_flags.set(MemRef_ProcessAsLongVolatileLow);}
+
+   //relevant only for 32 bit
+   //
+   bool processAsLongVolatileHigh() {return _flags.testAny(MemRef_ProcessAsLongVolatileHigh);}
+   void setProcessAsLongVolatileHigh() {_flags.set(MemRef_ProcessAsLongVolatileHigh);}
+
+   //relevant only for 64 bit
+   //
+   bool processAsFPVolatile() {return _flags.testAny(MemRef_ProcessAsFPVolatile);}
+   void setProcessAsFPVolatile() {_flags.set(MemRef_ProcessAsFPVolatile);}
+
+   bool requiresLockPrefix() { return _flags.testAny(MemRef_RequiresLockPrefix);}
+   void setRequiresLockPrefix() { return _flags.set(MemRef_RequiresLockPrefix);}
+
+   bool needsCodeAbsoluteExternalRelocation()    {return _flags.testAny(MemRef_NeedExternalCodeAbsoluteRelocation);}
+   void setNeedsCodeAbsoluteExternalRelocation() {_flags.set(MemRef_NeedExternalCodeAbsoluteRelocation);}
+
+   bool ignoreVolatile()  {return _flags.testAny(MemRef_IgnoreVolatile);}
+   void setIgnoreVolatile() {_flags.set(MemRef_IgnoreVolatile);}
+
+   bool refsRegister(TR::Register *reg)
+      {
+      if (reg == _baseRegister ||
+          reg == _indexRegister)
+         {
+         return true;
+         }
+      return false;
+      }
+
+   // Call this method iteratively to get the registers that this memory reference
+   // uses. Use an argument of NULL on the first call, and after that use the
+   // result of the previous call.
+   //
+   TR::Register *getNextRegister(TR::Register *cur);
+
+   uint8_t     getStride()           {return _stride;}
+   uint8_t     setStride(uint8_t s)  {return (_stride = s);}
+   uint8_t     getStrideMultiplier() {return 1 << _stride;}
+   uint8_t     setStrideFromMultiplier(uint8_t s);
+
+   TR::SymbolReference &getSymbolReference() {return _symbolReference;}
+
+   int32_t isValidStrideMultiplier(int32_t constFactor)
+      {
+      return ((uint32_t)(constFactor-1) < HIGHEST_STRIDE_MULTIPLIER) ? isNonNegativePowerOf2(constFactor) : 0;
+      }
+
+   int32_t isValidStrideShift(int32_t shiftAmount)
+      {
+      return (uint32_t)shiftAmount <= HIGHEST_STRIDE_SHIFT;
+      }
+
+   static int32_t getStrideForNode(TR::Node *node, TR::CodeGenerator *cg);
+
+   uint32_t getBinaryLengthLowerBound(TR::CodeGenerator *cg);
+   virtual uint32_t estimateBinaryLength(TR::CodeGenerator *cg);
+   virtual OMR::X86::EnlargementResult  enlarge(TR::CodeGenerator *cg, int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
+
+   virtual void decNodeReferenceCounts(TR::CodeGenerator *cg);
+
+   virtual void stopUsingRegisters(TR::CodeGenerator *cg);
+
+   virtual void useRegisters(TR::Instruction  *instr, TR::CodeGenerator *cg);
+
+   bool needsSIBByte() {return _indexRegister ? true : false;} // more needed here for ESP base, etc
+
+   void checkAndDecReferenceCount(TR::Node *node, rcount_t refCount, TR::CodeGenerator *cg);
+
+   void populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg, TR::Node *parent = NULL);
+
+   TR::Register* evaluate(TR::Node *subTree, TR::CodeGenerator *cg, TR::Node *parent = NULL);
+
+   void consolidateRegisters(TR::Node *, TR::CodeGenerator *cg);
+
+   virtual void assignRegisters(TR::Instruction  *currentInstruction, TR::CodeGenerator *cg);
+
+   virtual uint8_t *generateBinaryEncoding(uint8_t *modRM, TR::Instruction  *containingInstruction, TR::CodeGenerator *cg);
+
+   void addMetaDataForCodeAddress(
+      uint32_t addressTypes,
+      uint8_t *cursor,
+      TR::Node *node,
+      TR::CodeGenerator *cg);
+
+   void setModField(uint8_t *modRM, uint8_t addressingMode)
+      {
+      *modRM |= addressingMode;
+      }
+
+   void setSIBPresent(uint8_t *modRM)
+      {
+      *modRM |= IA32SIBPresent;
+      }
+
+   void setStrideFieldInSIB(uint8_t *SIBByte)
+      {
+      *SIBByte |= _stride << 6;  // stride is in top two bits of SIB byte
+      }
+
+   virtual void blockRegisters()
+      {
+      if (_baseRegister)
+         {
+         _baseRegister->block();
+         }
+      if (_indexRegister)
+         {
+         _indexRegister->block();
+         }
+      }
+
+   virtual void unblockRegisters()
+      {
+      if (_baseRegister)
+         {
+         _baseRegister->unblock();
+         }
+      if (_indexRegister)
+         {
+         _indexRegister->unblock();
+         }
+      }
+
+#ifdef DEBUG
+   uint32_t getNumMRReferencedGPRegisters();
+#endif
+
+   static int32_t convertMultiplierToStride(int32_t multiplier) {return _multiplierToStrideMap[multiplier];}
+
+#if defined(TR_TARGET_64BIT)
+   uint8_t rexBits()
+      {
+      uint8_t rxbBits = 0;
+      if (_baseRegister)
+         {
+         // Handle the case where the vfp register has not been assigned yet.
+         //
+         TR::Register *baseRegister;
+         if (toRealRegister(_baseRegister)->getRegisterNumber() == TR::RealRegister::vfp)
+            baseRegister = toRealRegister(_baseRegister)->getAssignedRealRegister();
+         else
+            baseRegister = _baseRegister;
+         rxbBits |= toRealRegister(baseRegister)->rexBits(TR::RealRegister::REX_B, false);
+         }
+      if (_indexRegister)
+         rxbBits |= toRealRegister(_indexRegister)->rexBits(TR::RealRegister::REX_X, false);
+      return rxbBits? (TR::RealRegister::REX | rxbBits) : 0;
+      }
+#else
+   uint8_t rexBits(){ return 0; }
+#endif
+
+   int32_t getReloKind()               { return _reloKind;     }
+   void setReloKind(int32_t reloKind)  { _reloKind = reloKind; }
+
+   };
+}
+}
+
+///////////////////////////////////////////////////////////
+// Generate Routines
+///////////////////////////////////////////////////////////
+
+TR::MemoryReference  * generateX86MemoryReference(TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(intptrj_t, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::Register * br, intptrj_t disp, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::Register * br, TR::Register * ir, uint8_t s, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::Register * br, TR::Register * ir, uint8_t s, intptrj_t disp, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::Node *, TR::CodeGenerator *cg, bool canRematerializeAddressAdds = true);
+TR::MemoryReference  * generateX86MemoryReference(TR::MemoryReference  &, intptrj_t, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::MemoryReference  &, intptrj_t, TR_ScratchRegisterManager *, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::SymbolReference *, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::SymbolReference *, intptrj_t, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR_IA32DataSnippet *, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::LabelSymbol *, TR::CodeGenerator *cg);
+
+#endif

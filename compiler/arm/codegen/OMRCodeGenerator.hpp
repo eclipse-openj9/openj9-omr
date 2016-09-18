@@ -1,0 +1,244 @@
+/*******************************************************************************
+ *
+ * (c) Copyright IBM Corp. 2000, 2016
+ *
+ *  This program and the accompanying materials are made available
+ *  under the terms of the Eclipse Public License v1.0 and
+ *  Apache License v2.0 which accompanies this distribution.
+ *
+ *      The Eclipse Public License is available at
+ *      http://www.eclipse.org/legal/epl-v10.html
+ *
+ *      The Apache License v2.0 is available at
+ *      http://www.opensource.org/licenses/apache2.0.php
+ *
+ * Contributors:
+ *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *******************************************************************************/
+
+#ifndef OMR_ARM_CODEGENERATOR_INCL
+#define OMR_ARM_CODEGENERATOR_INCL
+
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_CODEGENERATOR_CONNECTOR
+#define OMR_CODEGENERATOR_CONNECTOR
+namespace OMR { namespace ARM { class CodeGenerator; } }
+namespace OMR { typedef OMR::ARM::CodeGenerator CodeGeneratorConnector; }
+#else
+#error OMR::ARM::CodeGenerator expected to be a primary connector, but a OMR connector is already defined
+#endif
+
+#include "compiler/codegen/OMRCodeGenerator.hpp"
+
+#include <stdint.h>
+#include "arm/codegen/ARMOps.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/ScratchRegisterManager.hpp"
+#include "env/jittypes.h"
+#include "optimizer/DataFlowAnalysis.hpp"
+
+namespace TR { class Register; }
+
+extern TR::Instruction *armLoadConstant(TR::Node     *node,
+                                    int32_t         value,
+                                    TR::Register    *targetRegister,
+                                    TR::CodeGenerator *codeGen,
+                                    TR::Instruction *cursor=NULL);
+
+extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg,
+                                    TR::Node        *node,
+                                    intptrj_t      address,
+                                    TR::Register    *targetRegister,
+                                    bool           isUnloadablePicSite=false,
+                                    TR::Instruction *cursor=NULL);
+
+extern TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg,
+                                    TR::Node        *node,
+                                    intptrj_t         value,
+                                    TR::Register    *targetRegister,
+                                    TR::Instruction *cursor=NULL,
+                                    uint8_t         *targetAddress = NULL,
+                                    uint8_t         *targetAddress2 = NULL,
+                                    int16_t         typeAddress = -1,
+                                    bool            doAOTRelocation = true);
+
+extern TR::Instruction *loadAddressConstant(TR::CodeGenerator *cg,
+                                    TR::Node        *node,
+                                    intptrj_t         value,
+                                    TR::Register    *targetRegister,
+                                    TR::Instruction *cursor=NULL,
+                                    bool            isPicSite=false,
+                                    int16_t         typeAddress = -1,
+                                    uint8_t         *targetAddress = NULL,
+                                    uint8_t         *targetAddress2 = NULL);
+
+extern int32_t findOrCreateARMHelperTrampoline(int32_t helperIndex);
+
+uint32_t encodeBranchDistance(uint32_t from, uint32_t to);
+uint32_t encodeHelperBranchAndLink(TR::SymbolReference *symRef, uint8_t *cursor, TR::Node *node, TR::CodeGenerator *cg);
+uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, uint8_t *cursor, TR_ARMConditionCode cc, TR::Node *node, TR::CodeGenerator *cg);
+
+class TR_BackingStore;
+namespace TR { class Machine; }
+namespace TR { class CodeGenerator; }
+struct TR_ARMLinkageProperties;
+class TR_ARMImmInstruction;
+class TR_ARMOpCode;
+class TR_ARMConstantDataSnippet;
+class TR_ARMLoadLabelItem;
+class TR_BitVector;
+class TR_ARMScratchRegisterManager;
+
+extern uint8_t *storeArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
+extern uint8_t *loadArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);
+
+#include "il/Node.hpp"
+#include "arm/codegen/ARMOutOfLineCodeSection.hpp"
+
+
+namespace OMR
+{
+
+namespace ARM
+{
+
+class CodeGenerator;
+
+class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
+   {
+
+   public:
+
+   typedef enum
+      {
+      Backward = 0,
+      Forward  = 1
+      } RegisterAssignmentDirection;
+
+   CodeGenerator(); /* @@ */
+   CodeGenerator(TR::Compilation * comp);
+   TR::Linkage *createLinkage(TR_LinkageConventions lc);
+
+   void beginInstructionSelection();
+   void endInstructionSelection();
+   void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
+   void doBinaryEncoding();
+
+   void emitDataSnippets(bool isWarm = 0);
+   bool hasDataSnippets();
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+
+#ifdef DEBUG
+   void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0);
+#endif
+
+   TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node);
+
+   int32_t findOrCreateAddressConstant(void *v, TR::DataTypes t,
+                  TR::Instruction *n0, TR::Instruction *n1,
+                  TR::Instruction *n2, TR::Instruction *n3,
+                  TR::Instruction *n4,
+                  TR::Node *node, bool isUnloadablePicSite);
+
+   TR::Register *gprClobberEvaluate(TR::Node *node);
+
+   const TR_ARMLinkageProperties &getProperties() { return *_linkageProperties; }
+
+   RegisterAssignmentDirection getAssignmentDirection() {return _assignmentDirection;}
+   RegisterAssignmentDirection setAssignmentDirection(RegisterAssignmentDirection d)
+      {
+      return (_assignmentDirection = d);
+      }
+
+   TR::RealRegister *getFrameRegister()                       {return _frameRegister;}
+   TR::RealRegister *setFrameRegister(TR::RealRegister *r) {return (_frameRegister = r);}
+
+   TR::RealRegister *getMethodMetaDataRegister()                       {return _methodMetaDataRegister;}
+   TR::RealRegister *setMethodMetaDataRegister(TR::RealRegister *r) {return (_methodMetaDataRegister = r);}
+
+   void buildRegisterMapForInstruction(TR_GCStackMap *map);
+   void apply24BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
+   void apply8BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol *);
+
+   // @@ bool canNullChkBeImplicit(TR::Node *node);
+
+   bool hasCall()                 {return _flags.testAny(HasCall);}
+   bool noStackFrame()            {return _flags.testAny(NoStackFrame);}
+   bool canExceptByTrap()         {return _flags.testAny(CanExceptByTrap);}
+   bool hasHardFloatReturn()      {return _flags.testAny(HasHardFloatReturn);}
+   bool isOutOfLineHotPath()      {return _flags.testAny(IsOutOfLineHotPath);}
+
+   void setHasHardFloatReturn()   { _flags.set(HasHardFloatReturn);}
+   void setHasCall()              { _flags.set(HasCall);}
+   void setNoStackFrame()         { _flags.set(NoStackFrame);}
+   void setCanExceptByTrap()      { _flags.set(CanExceptByTrap);}
+   void setIsOutOfLineHotPath(bool v)   { _flags.set(IsOutOfLineHotPath, v);}
+
+
+   // This is needed by register simulation pickRegister in CodeGenRA common code.
+   TR_GlobalRegisterNumber pickRegister(TR_RegisterCandidate *, TR::Block * *, TR_BitVector & availableRegisters, TR_GlobalRegisterNumber & globalRegisterNumber, TR_LinkHead<TR_RegisterCandidate> *candidates);
+   bool allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node * branchNode);
+   using OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge;
+   int32_t getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *);
+   int32_t getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Node *);
+   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt);
+   TR_BitVector _globalRegisterBitVectors[TR_numSpillKinds];
+   virtual TR_BitVector *getGlobalRegisters(TR_SpillKinds kind, TR_LinkageConventions lc){ return &_globalRegisterBitVectors[kind]; }
+
+   TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters], _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // these could be smaller
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type);
+
+   int32_t getMaximumNumbersOfAssignableGPRs();
+   int32_t getMaximumNumbersOfAssignableFPRs();
+
+   static uint32_t registerBitMask(int32_t reg)
+      {
+      return 1 << (reg - TR::RealRegister::FirstGPR);
+      }
+
+   // OutOfLineCodeSection List functions
+   List<TR_ARMOutOfLineCodeSection> &getARMOutOfLineCodeSectionList() {return _outOfLineCodeSectionList;}
+   TR_ARMOutOfLineCodeSection *findOutLinedInstructionsFromLabel(TR::LabelSymbol *label);
+
+
+   int32_t arrayTranslateMinimumNumberOfElements(bool isByteSource, bool isByteTarget) { return 8; } //FIXME
+   int32_t arrayTranslateAndTestMinimumNumberOfIterations() { return 8; } //FIXME
+
+
+   private:
+
+   enum // flags
+      {
+      HasCall               = 0x00000200,
+      NoStackFrame          = 0x00000400,
+      CanExceptByTrap       = 0x00000800,
+      HasHardFloatReturn    = 0x00001000,
+      IsOutOfLineColdPath   = 0x00002000, // AVAILABLE
+      IsOutOfLineHotPath    = 0x00004000,
+      DummyLastFlag
+      };
+
+   static TR_Processor            _processor;
+   flags32_t                      _flags;
+   RegisterAssignmentDirection    _assignmentDirection;
+   uint32_t                         _numGPR;
+   uint32_t                         _numFPR;
+   TR::RealRegister            *_frameRegister;
+   TR::RealRegister            *_methodMetaDataRegister;
+   TR_ARMImmInstruction          *_returnTypeInfoInstruction;
+   TR_ARMConstantDataSnippet       *_constantData;
+   TR_ARMLinkageProperties   *_linkageProperties;
+   List<TR_ARMOutOfLineCodeSection> _outOfLineCodeSectionList;
+   // Internal Control Flow Depth Counters
+   int32_t                          _internalControlFlowNestingDepth;
+   int32_t                          _internalControlFlowSafeNestingDepth;
+
+   };
+
+} // ARM
+
+} // TR
+
+#endif

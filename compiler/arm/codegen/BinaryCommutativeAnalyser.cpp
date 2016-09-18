@@ -1,0 +1,586 @@
+/*******************************************************************************
+ *
+ * (c) Copyright IBM Corp. 2000, 2016
+ *
+ *  This program and the accompanying materials are made available
+ *  under the terms of the Eclipse Public License v1.0 and
+ *  Apache License v2.0 which accompanies this distribution.
+ *
+ *      The Eclipse Public License is available at
+ *      http://www.eclipse.org/legal/epl-v10.html
+ *
+ *      The Apache License v2.0 is available at
+ *      http://www.opensource.org/licenses/apache2.0.php
+ *
+ * Contributors:
+ *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *******************************************************************************/
+
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "codegen/ARMInstruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/BinaryCommutativeAnalyser.hpp"
+
+
+void TR_ARMBinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
+                                                       TR_ARMOpCodes regToRegOpCode,
+                                                       TR_ARMOpCodes copyOpCode,
+                                                       bool          nonClobberingDestination)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   if (cg()->whichChildToEvaluate(root) == 0)
+      {
+      firstChild  = root->getFirstChild();
+      secondChild = root->getSecondChild();
+      setReversedOperands(false);
+      }
+   else
+      {
+      setReversedOperands(true);
+      firstChild  = root->getSecondChild();
+      secondChild = root->getFirstChild();
+      }
+   TR::Register *firstRegister  = firstChild->getRegister();
+   TR::Register *secondRegister = secondChild->getRegister();
+
+   setInputs(firstChild, firstRegister, secondChild, secondRegister, nonClobberingDestination);
+
+   if (getEvalChild1())
+      {
+      firstRegister = cg()->evaluate(firstChild);
+      }
+
+   if (getEvalChild2())
+      {
+      secondRegister = cg()->evaluate(secondChild);
+      }
+
+
+   if (getOpReg1Reg2())
+      {
+//      new TR_ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
+//      root->setRegister(firstRegister);
+      }
+   else if (getOpReg2Reg1())
+      {
+//      new TR_ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+   else if (getCopyReg1())
+      {
+//      TR::Register *tempReg = root->setRegister(cg()->allocateRegister());
+//      new TR_ARMRegRegInstruction(copyOpCode, tempReg, firstRegister);
+//      new TR_ARMRegRegInstruction(regToRegOpCode, tempReg, secondRegister);
+      }
+   else if (getCopyReg2())
+      {
+//      TR::Register *tempReg = root->setRegister(cg()->allocateRegister());
+//      new TR_ARMRegRegInstruction(copyOpCode, tempReg, secondRegister);
+//      new TR_ARMRegRegInstruction(regToRegOpCode, tempReg, firstRegister);
+//      notReversedOperands();
+      }
+   else if (getOpReg1Mem2())
+      {
+//      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(secondChild);
+//      new TR_ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
+//      tempMR->decNodeReferenceCounts();
+//      root->setRegister(firstRegister);
+      }
+   else
+      {
+//      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(firstChild);
+//      new TR_ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
+//      tempMR->decNodeReferenceCounts();
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+
+   return;
+
+   }
+
+void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
+                                                           TR_ARMOpCodes lowRegToRegOpCode,
+                                                           TR_ARMOpCodes highRegToRegOpCode,
+                                                           TR_ARMOpCodes lowMemToRegOpCode,
+                                                           TR_ARMOpCodes highMemToRegOpCode,
+                                                           TR_ARMOpCodes copyOpCode)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   if (cg()->whichChildToEvaluate(root) == 0)
+      {
+      firstChild  = root->getFirstChild();
+      secondChild = root->getSecondChild();
+      setReversedOperands(false);
+      }
+   else
+      {
+      setReversedOperands(true);
+      firstChild  = root->getSecondChild();
+      secondChild = root->getFirstChild();
+      }
+   TR::Register *firstRegister  = firstChild->getRegister();
+   TR::Register *secondRegister = secondChild->getRegister();
+
+   setInputs(firstChild, firstRegister, secondChild, secondRegister);
+
+   if (getEvalChild1())
+      {
+      firstRegister = cg()->evaluate(firstChild);
+      }
+
+   if (getEvalChild2())
+      {
+      secondRegister = cg()->evaluate(secondChild);
+      }
+
+
+   if (getOpReg1Reg2())
+      {
+//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//                                  firstRegister->getLowOrder(),
+//                                  secondRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//                                  firstRegister->getHighOrder(),
+//                                  secondRegister->getHighOrder());
+//      root->setRegister(firstRegister);
+      }
+   else if (getOpReg2Reg1())
+      {
+//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//                                  secondRegister->getLowOrder(),
+//                                  firstRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//                                  secondRegister->getHighOrder(),
+//                                  firstRegister->getHighOrder());
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+   else if (getCopyReg1())
+      {
+//      TR::Register *tempReg = root->setRegister(cg()->allocateRegisterPair());
+//      new TR_ARMRegRegInstruction(copyOpCode,
+//                                  tempReg->getLowOrder(),
+//                                  firstRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(copyOpCode,
+//                                  tempReg->getHighOrder(),
+//                                  firstRegister->getHighOrder());
+//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//                                  tempReg->getLowOrder(),
+//                                  secondRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//                                  tempReg->getHighOrder(),
+//                                  secondRegister->getHighOrder());
+      }
+   else if (getCopyReg2())
+      {
+//      TR::Register *tempReg = root->setRegister(cg()->allocateRegisterPair());
+//      new TR_ARMRegRegInstruction(copyOpCode,
+//                                  tempReg->getLowOrder(),
+//                                  secondRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(copyOpCode,
+//                                  tempReg->getHighOrder(),
+//                                  secondRegister->getHighOrder());
+//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//                                  tempReg->getLowOrder(),
+//                                  firstRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//                                  tempReg->getHighOrder(),
+//                                  firstRegister->getHighOrder());
+//      notReversedOperands();
+      }
+   else if (getOpReg1Mem2())
+      {
+//      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(secondChild);
+//      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
+//      new TR_ARMRegMemInstruction(lowMemToRegOpCode,
+//                                  firstRegister->getLowOrder(),
+//                                  lowMR);
+//      new TR_ARMRegMemInstruction(highMemToRegOpCode,
+//                                  firstRegister->getHighOrder(),
+//                                  highMR);
+//      lowMR->decNodeReferenceCounts();
+//      root->setRegister(firstRegister);
+      }
+   else
+      {
+//      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(firstChild);
+//      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
+//      new TR_ARMRegMemInstruction(lowMemToRegOpCode,
+//                                  secondRegister->getLowOrder(),
+//                                  lowMR);
+//      new TR_ARMRegMemInstruction(highMemToRegOpCode,
+//                                  secondRegister->getHighOrder(),
+//                                  highMR);
+//      lowMR->decNodeReferenceCounts();
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+
+   return;
+
+   }
+
+
+void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
+                                                         TR_ARMOpCodes regToRegOpCode)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   if (cg()->whichChildToEvaluate(root) == 0)
+      {
+      firstChild  = root->getFirstChild();
+      secondChild = root->getSecondChild();
+      setReversedOperands(false);
+      }
+   else
+      {
+      firstChild  = root->getSecondChild();
+      secondChild = root->getFirstChild();
+      setReversedOperands(true);
+      }
+   TR::Register *firstRegister  = firstChild->getRegister();
+   TR::Register *secondRegister = secondChild->getRegister();
+
+   setInputs(firstChild, firstRegister, secondChild, secondRegister, true);
+
+   if (getEvalChild1())
+      {
+      firstRegister = cg()->evaluate(firstChild);
+      }
+
+   if (getEvalChild2())
+      {
+      secondRegister = cg()->evaluate(secondChild);
+      }
+
+
+   if (getOpReg1Reg2())
+      {
+//      new TR_ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
+//      root->setRegister(firstRegister);
+      }
+   else if (getOpReg2Reg1())
+      {
+//      new TR_ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+   else if (getCopyRegs())
+      {
+//      TR::Register *tempReg = root->setRegister(cg()->allocateRegister());
+//      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference();
+//      tempMR->setBaseRegister(firstRegister);
+//      tempMR->setIndexRegister(secondRegister);
+//      new TR_ARMRegMemInstruction(LEA4RegMem, tempReg, tempMR);
+      }
+   else if (getOpReg1Mem2())
+      {
+//      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(secondChild);
+//      new TR_ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
+//      tempMR->decNodeReferenceCounts();
+//      root->setRegister(firstRegister);
+      }
+   else
+      {
+//      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(firstChild);
+//      new TR_ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
+//      tempMR->decNodeReferenceCounts();
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+
+   return;
+
+   }
+
+void TR_ARMBinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Node *firstChild;
+   TR::Node *secondChild;
+   if (cg()->whichChildToEvaluate(root) == 0)
+      {
+      firstChild  = root->getFirstChild();
+      secondChild = root->getSecondChild();
+      setReversedOperands(false);
+      }
+   else
+      {
+      firstChild  = root->getSecondChild();
+      secondChild = root->getFirstChild();
+      setReversedOperands(true);
+      }
+   TR::Register *firstRegister  = firstChild->getRegister();
+   TR::Register *secondRegister = secondChild->getRegister();
+
+   setInputs(firstChild, firstRegister, secondChild, secondRegister);
+
+   if (getEvalChild1())
+      {
+      firstRegister = cg()->evaluate(firstChild);
+      }
+
+   if (getEvalChild2())
+      {
+      secondRegister = cg()->evaluate(secondChild);
+      }
+
+   if (getOpReg1Reg2())
+      {
+//      new TR_ARMRegRegInstruction(ADD4RegReg, firstRegister->getLowOrder(), secondRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(ADC4RegReg, firstRegister->getHighOrder(), secondRegister->getHighOrder());
+//      root->setRegister(firstRegister);
+      }
+   else if (getOpReg2Reg1())
+      {
+//      new TR_ARMRegRegInstruction(ADD4RegReg, secondRegister->getLowOrder(), firstRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(ADC4RegReg, secondRegister->getHighOrder(), firstRegister->getHighOrder());
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+   else if (getCopyRegs())
+      {
+//      TR::Register     *lowRegister  = cg()->allocateRegister();
+//      TR::Register     *highRegister = cg()->allocateRegister();
+//      TR_RegisterPair *tempReg      = cg()->allocateRegisterPair(lowRegister, highRegister);
+//      root->setRegister(tempReg);
+//      new TR_ARMRegRegInstruction(MOV4RegReg, lowRegister, firstRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(MOV4RegReg, highRegister, firstRegister->getHighOrder());
+//      new TR_ARMRegRegInstruction(ADD4RegReg, tempReg->getLowOrder(), secondRegister->getLowOrder());
+//      new TR_ARMRegRegInstruction(ADC4RegReg, tempReg->getHighOrder(), secondRegister->getHighOrder());
+//      root->setRegister(tempReg);
+      }
+   else if (getOpReg1Mem2())
+      {
+//      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(secondChild);
+//      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
+//      new TR_ARMRegMemInstruction(ADD4RegMem, firstRegister->getLowOrder(), lowMR);
+//      new TR_ARMRegMemInstruction(ADC4RegMem, firstRegister->getHighOrder(), highMR);
+//      lowMR->decNodeReferenceCounts();
+//      root->setRegister(firstRegister);
+      }
+   else
+      {
+//      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(firstChild);
+//      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
+//      new TR_ARMRegMemInstruction(ADD4RegMem, secondRegister->getLowOrder(), lowMR);
+//      new TR_ARMRegMemInstruction(ADC4RegMem, secondRegister->getHighOrder(), highMR);
+//      lowMR->decNodeReferenceCounts();
+//      root->setRegister(secondRegister);
+//      notReversedOperands();
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+
+   return;
+
+   }
+
+
+const uint8_t TR_ARMBinaryCommutativeAnalyser::actionMap[NUM_ACTIONS] =
+   {                  // Reg1 Mem1 Clob1 Reg2 Mem2 Clob2
+   EvalChild1 |       //  0    0     0    0    0     0
+   EvalChild2 |
+   CopyReg1,
+
+   EvalChild1 |       //  0    0     0    0    0     1
+   EvalChild2 |
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    0     0    0    1     0
+   EvalChild2 |
+   CopyReg1,
+
+   EvalChild1 |       //  0    0     0    0    1     1
+   EvalChild2 |
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    0     0    1    0     0
+   CopyReg2,
+
+   EvalChild1 |       //  0    0     0    1    0     1
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    0     0    1    1     0
+   CopyReg2,
+
+   EvalChild1 |       //  0    0     0    1    1     1
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    0     1    0    0     0
+   EvalChild2 |
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    0    0     1
+   EvalChild2 |
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    0    1     0
+   EvalChild2 |
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    0    1     1
+   OpReg1Mem2,
+
+   EvalChild1 |       //  0    0     1    1    0     0
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    1    0     1
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    1    1     0
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    0     1    1    1     1
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    1     0    0    0     0
+   EvalChild2 |
+   CopyReg1,
+
+   EvalChild1 |       //  0    1     0    0    0     1
+   EvalChild2 |
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    1     0    0    1     0
+   EvalChild2 |
+   CopyReg1,
+
+   EvalChild1 |       //  0    1     0    0    1     1
+   EvalChild2 |
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    1     0    1    0     0
+   CopyReg2,
+
+   EvalChild1 |       //  0    1     0    1    0     1
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    1     0    1    1     0
+   CopyReg2,
+
+   EvalChild1 |       //  0    1     0    1    1     1
+   OpReg2Reg1,
+
+   EvalChild1 |       //  0    1     1    0    0     0
+   EvalChild2 |
+   OpReg1Reg2,
+
+   EvalChild2 |       //  0    1     1    0    0     1
+   OpReg2Mem1,
+
+   EvalChild1 |       //  0    1     1    0    1     0
+   EvalChild2 |
+   OpReg1Reg2,
+
+   EvalChild1 |       //  0    1     1    0    1     1
+   OpReg1Mem2,
+
+   EvalChild1 |       //  0    1     1    1    0     0
+   OpReg1Reg2,
+
+   OpReg2Mem1,        //  0    1     1    1    0     1
+
+   EvalChild1 |       //  0    1     1    1    1     0
+   OpReg1Reg2,
+
+   OpReg2Mem1,        //  0    1     1    1    1     1
+
+   EvalChild2 |       //  1    0     0    0    0     0
+   CopyReg1,
+
+   EvalChild2 |       //  1    0     0    0    0     1
+   OpReg2Reg1,
+
+   EvalChild2 |       //  1    0     0    0    1     0
+   CopyReg1,
+
+   EvalChild2 |       //  1    0     0    0    1     1
+   OpReg2Reg1,
+
+   CopyReg1,          //  1    0     0    1    0     0
+
+   OpReg2Reg1,        //  1    0     0    1    0     1
+
+   CopyReg1,          //  1    0     0    1    1     0
+
+   OpReg2Reg1,        //  1    0     0    1    1     1
+
+   EvalChild2 |       //  1    0     1    0    0     0
+   OpReg1Reg2,
+
+   EvalChild2 |       //  1    0     1    0    0     1
+   OpReg1Reg2,
+
+   EvalChild2 |       //  1    0     1    0    1     0
+   OpReg1Reg2,
+
+   OpReg1Mem2,        //  1    0     1    0    1     1
+
+   OpReg1Reg2,        //  1    0     1    1    0     0
+
+   OpReg1Reg2,        //  1    0     1    1    0     1
+
+   OpReg1Reg2,        //  1    0     1    1    1     0
+
+   OpReg1Reg2,        //  1    0     1    1    1     1
+
+   EvalChild2 |       //  1    1     0    0    0     0
+   CopyReg1,
+
+   EvalChild2 |       //  1    1     0    0    0     1
+   OpReg2Reg1,
+
+   EvalChild2 |       //  1    1     0    0    1     0
+   CopyReg1,
+
+   EvalChild2 |       //  1    1     0    0    1     1
+   OpReg2Reg1,
+
+   CopyReg1,          //  1    1     0    1    0     0
+
+   OpReg2Reg1,        //  1    1     0    1    0     1
+
+   CopyReg1,          //  1    1     0    1    1     0
+
+   OpReg2Reg1,        //  1    1     0    1    1     1
+
+   EvalChild2 |       //  1    1     1    0    0     0
+   OpReg1Reg2,
+
+   EvalChild2 |       //  1    1     1    0    0     1
+   OpReg1Reg2,
+
+   EvalChild2 |       //  1    1     1    0    1     0
+   OpReg1Reg2,
+
+   OpReg1Mem2,        //  1    1     1    0    1     1
+
+   OpReg1Reg2,        //  1    1     1    1    0     0
+
+   OpReg1Reg2,        //  1    1     1    1    0     1
+
+   OpReg1Reg2,        //  1    1     1    1    1     0
+
+   OpReg1Reg2         //  1    1     1    1    1     1
+   };
+

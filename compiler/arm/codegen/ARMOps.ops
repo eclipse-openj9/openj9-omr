@@ -1,0 +1,144 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!
+!! (c) Copyright IBM Corp. 2000, 2016
+!!
+!!  This program and the accompanying materials are made available
+!!  under the terms of the Eclipse Public License v1.0 and
+!!  Apache License v2.0 which accompanies this distribution.
+!!
+!!      The Eclipse Public License is available at
+!!      http://www.eclipse.org/legal/epl-v10.html
+!!
+!!      The Apache License v2.0 is available at
+!!      http://www.opensource.org/licenses/apache2.0.php
+!!
+!! Contributors:
+!!    Multiple authors (IBM Corp.) - initial implementation and documentation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!Opcode    Binary   Properties
+bad       E6000010  		                                                  // Illegal Opcode (breakpoint)
+add       00800000 HasRecordForm                                                  // Add
+adc       00A00000 HasRecordForm                                                  // Add with carry
+and       00000000 HasRecordForm                                                  // AND
+b         0A000000 BranchOp                                                       // Unconditional branch
+bl        0B000000 BranchOp                                                       // Branch and link
+bic       01C00000 HasRecordForm                                                  // Bit clear (NAND)
+cmp       01500000 IsRecordForm                                                   // Compare (rN - op2)
+cmn       01700000 IsRecordForm                                                   // Compare negated (rN + op2)
+eor       00200000 HasRecordForm                                                  // XOR
+ldfs      0D100100                                                                // Load single word from memory to coprocessor register
+ldfd      0D108100                                                                // Load double word from memory to coprocessor register
+ldm       08100000                                                                // Load multiple words
+ldr       04100000                                                                // Load dword
+ldrb      04500000                                                                // Load byte and zero extend
+ldrsb     001000D0 Arch4                                                          // Load byte and sign extend
+ldrh      001000B0 Arch4                                                          // Load word and zero extend
+ldrsh     001000F0 Arch4                                                          // Load word and sign extend
+mul       00000090 HasRecordForm                                                  // Multiply
+mla       00200090 HasRecordForm                                                  // Multiply and accumulate
+smull     00C00090 HasRecordForm                                                  // Multiply Long Signed
+umull     00800090 HasRecordForm                                                  // Multiply Long Unsigned
+smlal     00E00090 HasRecordForm                                                  // Multiply Long Signed and accumulate
+umlal     00A00090 HasRecordForm                                                  // Multiply Long Unsigned and accumulate
+mov       01A00000 HasRecordForm                                                  // Move
+mvn       01E00000 HasRecordForm                                                  // Move negated
+orr       01800000 HasRecordForm                                                  // OR
+teq       01200000 IsRecordForm                                                   // Test (XOR)
+tst       01100000 IsRecordForm                                                   // Test (AND)
+sub       00400000 HasRecordForm                                                  // Subtract
+sbc       00C00000 HasRecordForm                                                  // Subtract with carry
+rsb       00600000 HasRecordForm                                                  // Reverse Subtract
+rsc       00E00000 HasRecordForm                                                  // Reverse Subtract with carry
+stfs      0D000100                                                                // Store single word from coprocessor register to memory
+stfd      0D008100                                                                // Store double word from coprocessor register to memory
+str       04000000                                                                // Store dword
+strb      04400000                                                                // Store byte and zero extend
+strh      000000B0 Arch4                                                          // Store word and sign extend
+stm       08000000                                                                // Store multiple words
+swp       01000090                                                                // Swap dword
+fence     00000000                                                                // Fence
+ret       00000000                                                                // Return
+wrtbar    00000000                                                                // Write barrier directive
+proc      00000000                                                                // Entry to the method
+dd        00000000                                                                // define word
+dmb_v6    0E070FBA                                                                // Data memory barrier on ARMv6
+dmb       F57FF05F                                                                // Data memory barrier on ARMv7A
+dmb_st    F57FF05E                                                                // Data write memory barrier on ARMv7A
+ldrex	  01900F9F                                                                // Load exclusive
+strex     01800F90                                                                // Store exclusive(conditional)
+! The following entries are placeholders for instruction sequences that add control flow.  When using a register
+! allocator that cannot handle registers being alive across a basic block boundary use these until after registers
+! have been allocated.
+iflong    00000000                                                                // compare and branch long
+setblong  00000000                                                                // compare long and set boolean
+setbool   00000000                                                                // compare and set boolean (int or simple float)
+setbflt   00000000                                                                // compare float and set boolean (complex float)
+lcmp      00000000                                                                // compare long and set result -1,0,1
+flcmpl    00000000                                                                // compare float and set result -1(less,unordered),0(equal),1(greater)
+flcmpg    00000000                                                                // compare float and set result -1(less),0(equal),1(greater,unordered)
+idiv      00000000                                                                // integer divide
+irem      00000000                                                                // integer remainder
+label     00000000                                                                // label
+vgdnop    00000000                                                                // vgdnop
+nop       E1A00000                                                                // nop (mov r0, r0)
+! VFP Instructions
+fabsd     0EB00BC0                                                                // Absolute value double
+fabss     0EB00AC0                                                                // Absolute value single
+faddd     0E300B00                                                                // Add double
+fadds	  0E300A00                                                                // Add float
+fcmpd     0EB40B40                                                                // Compare double
+fcmps     0EB40A40                                                                // Compare float
+fcmpzd    0EB50B40                                                                // Compare double to 0.0
+fcmpzs    0EB50A40                                                                // Compare float to 0.0
+fcpyd	  0EB00B40                                                                // Copy/Move double
+fcpys     0EB00A40                                                                // Copy/Move float
+fcvtds    0EB70AC0                                                                // Convert float to double
+fcvtsd    0EB70BC0                                                                // Convert double to float
+fdivd     0E800B00                                                                // Divide double
+fdivs     0E800A00                                                                // Divide float
+fldd      0D100B00                                                                // VFP load double (coprocessor 11) = LDC cp11
+fldmd     0C100B00                                                                // VFP load multiple double
+fldms     0C100A00                                                                // VFP load multiple float
+flds      0D100A00                                                                // VFP load float (coprocessor 10) = LDC cp10
+fmacd     0E000B00                                                                // Multiply and accumulate double
+fmacs     0E000A00                                                                // Multiply and accumulate single
+fmdrr	  0C400B10                                                                // Move to double from two registers
+fmrrd     0C500B10                                                                // Move from double to two registers
+fmrrs     0C500A10                                                                // Move from single(2) to two registers
+fmrs      0E100A10                                                                // Move from single to register (VMOV)
+fmrx      0EF00A10                                                                // Move from system register to register
+fmscd     0E100B00                                                                // Multiply and subtract double
+fmscs     0E100A00                                                                // Multiply and subtract single
+fmsr      0E000A10                                                                // Move from register to single (VMOV)
+fmsrr     0C400A10                                                                // Move from two registers to single(2)
+fmstat    0EF1FA10                                                                // Move FPSCR flags to CPSR
+fmuld     0E200B00                                                                // Multiply double
+fmuls     0E200A00                                                                // Multiple float
+fmxr      0EE00A10                                                                // Move to system register to register
+fnegd     0EB10B40                                                                // Negate double
+fnegs     0EB10A40                                                                // Negate float
+fnmacd    0E000B40                                                                // Negated multiply and accumulate double
+fnmacs    0E000A40                                                                // Negated multiply and accumulate single
+fnmscd    0E100B40                                                                // Negated multiply and subtract double
+fnmscs    0E100A40                                                                // Negated multiply and subtract single
+fnmuld    0E200B40                                                                // Negated multiply double
+fnmuls    0E200A40                                                                // Negated multiply single
+fsitod    0EB80BC0                                                                // Convert signed integer to double
+fsitos    0EB80AC0                                                                // Convert signed integer to float
+fsqrtd    0EB10BC0                                                                // Square root double
+fsqrts    0EB10AC0                                                                // Square root single
+fstd      0D000B00                                                                // VFP store double (coprocessor 11) = STC cp11
+fstmd     0C000B00                                                                // VFP store multiple double
+fstms     0C000A00                                                                // VFP store multiple float
+fsts      0D000A00                                                                // VFP store float (coprocessor 10) = STC cp10
+fsubd     0E300B40                                                                // Subtract double
+fsubs     0E300A40                                                                // Subtract float
+ftosizd   0EBD0B40                                                                // Convert double to signed integer
+ftosizs   0EBD0A40                                                                // Convert float to signed integer
+ftouizd   0EBC0B40                                                                // Convert double to unsigned integer
+ftouizs   0EBC0A40                                                                // Convert float to unsigned integer
+fuitod    0EB80B40                                                                // Convert unsigned integer to double
+fuitos    0EB80A40                                                                // Convert unsigned integer to float
+
+

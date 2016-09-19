@@ -15,6 +15,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/IGNode.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/ILWalk.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/InterferenceGraph.cpp \
+    $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitor.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitorTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Random.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Timer.cpp \
@@ -210,7 +211,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_PRODUCT_DIR)/control/Jit.cpp \
     $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/JBIlGeneratorMethodDetails.cpp \
-    $(JIT_PRODUCT_DIR)/infra/JBMonitor.cpp \
     $(JIT_PRODUCT_DIR)/optimizer/JBOptimizer.cpp \
     $(JIT_PRODUCT_DIR)/runtime/JBCodeCacheManager.cpp \
     $(JIT_PRODUCT_DIR)/runtime/JBJitConfig.cpp \

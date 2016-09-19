@@ -16,62 +16,82 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "infra/TestMonitor.hpp"
+#include "infra/OMRMonitor.hpp"
 
-#include <pthread.h>
+#include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
 #include "infra/Assert.hpp"
 #include "infra/Monitor.hpp"
 #include "infra/MonitorTable.hpp"
 
-// We don't currently use a monitor table, but we still have to declare these statics
-//
 TR::MonitorTable *OMR::MonitorTable::_instance = 0;
 
-TR::Monitor *memoryAllocMonitor;
+TR::Monitor *memoryAllocMonitor = NULL;
 
 void *
-TestCompiler::Monitor::operator new(size_t size)
+OMR::Monitor::operator new(size_t size)
    {
-   return TR::globalAllocator().allocate(size);
+   return TR::Compiler->persistentAllocator().allocate(size);
    }
 
 void
-TestCompiler::Monitor::operator delete(void *p)
+OMR::Monitor::operator delete(void *p)
    {
-   TR::globalAllocator().deallocate(p, sizeof(TR::Monitor));
+   TR::Compiler->persistentAllocator().deallocate(p);
    }
 
 TR::Monitor *
-TestCompiler::Monitor::create(char *name)
+OMR::Monitor::create(char *name)
    {
-   return new TR::Monitor(name);
+   TR::Monitor * monitor = new TR::Monitor();
+   monitor->init(name);
+   return monitor;
    }
 
-TestCompiler::Monitor::Monitor(char const *name) :
-      _name(name)
-   {
-   int32_t rc = pthread_mutex_init(&_monitor, 0);
-   TR_ASSERT(rc == 0, "error initializing monitor\n");
-   }
-
-TestCompiler::Monitor::~Monitor()
+void
+OMR::Monitor::destroy()
    {
    int32_t rc = pthread_mutex_destroy(&_monitor);
    TR_ASSERT(rc == 0, "error destroying monitor\n");
    }
 
+OMR::Monitor::~Monitor()
+   {
+   self()->destroy();
+   }
+
+TR::Monitor *
+OMR::Monitor::self()
+   {
+   return static_cast<TR::Monitor*>(this);
+   }
+
+bool
+OMR::Monitor::init(char *name)
+   {
+   _name = name;
+   int32_t rc = pthread_mutex_init(&_monitor, 0);
+   TR_ASSERT(rc == 0, "error initializing monitor\n");
+   return true;
+   }
+
 void
-TestCompiler::Monitor::enter()
+OMR::Monitor::enter()
    {
    int32_t rc = pthread_mutex_lock(&_monitor);
    TR_ASSERT(rc == 0, "error locking monitor\n");
    }
 
 int32_t
-TestCompiler::Monitor::exit()
+OMR::Monitor::exit()
    {
    int32_t rc = pthread_mutex_unlock(&_monitor);
    TR_ASSERT(rc == 0, "error unlocking monitor\n");
    return rc;
+   }
+
+char const *
+OMR::Monitor::getName()
+   {
+   return _name;
    }

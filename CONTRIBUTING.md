@@ -135,13 +135,15 @@ improperly referenced, and the commit is not signed off by the author.
 
 Please read the [Eclipse Foundation policy on accepting contributions via Git](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git).
 
-Your contribution cannot be accepted unless you have an [Eclipse Foundation Contributor License Agreement](http://www.eclipse.org/legal/CLA.php) in place.
+Your contribution cannot be accepted unless you have a signed [ECA - Eclipse Foundation Contributor Agreement](http://www.eclipse.org/legal/ECA.php) in place. If you have an active signed Eclipse CLA
+([the CLA was updated by the Eclipse Foundation to become the ECA in August 2016](https://mmilinkov.wordpress.com/2016/08/15/contributor-agreement-update/)),
+then that signed CLA is sufficient. You will have to sign the ECA once your CLA expires.
 
 Here is the checklist for contributions to be _acceptable_:
 
 1. [Create an account at Eclipse](https://dev.eclipse.org/site_login/createaccount.php).
 2. Add your GitHub user name in your account settings.
-3. [Log into the project's portal](https://projects.eclipse.org/) and sign the ["Eclipse CLA"](https://projects.eclipse.org/user/sign/cla).
+3. [Log into the project's portal](https://projects.eclipse.org/) and sign the ["Eclipse ECA"](https://projects.eclipse.org/user/sign/cla).
 4. Ensure that you [_sign-off_](https://wiki.eclipse.org/Development_Resources/Contributing_via_Git#Signing_off_on_a_commit) your Git commits.
 5. Ensure that you use the _same_ email address as your Eclipse account in commits.
 6. Include the appropriate copyright notice and license at the top of each file.

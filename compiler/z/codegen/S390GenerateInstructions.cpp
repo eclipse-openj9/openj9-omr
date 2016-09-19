@@ -829,7 +829,6 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =
@@ -882,7 +881,6 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =
@@ -1005,7 +1003,6 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =
@@ -1574,7 +1571,6 @@ generateSS2Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =
@@ -1620,7 +1616,6 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =
@@ -1659,7 +1654,6 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
          //there might be cases that two or more insts generated will throw exception, and we only need one of the label.
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
-         TR_ASSERT(BCDCHKNode->getNumChildren() <= 3, "Generating DAA label error: BCDCHKNode has %d children.\n", BCDCHKNode->getNumChildren());
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
          TR_S390RestoreGPR7Snippet * restoreSnippet =

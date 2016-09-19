@@ -852,3 +852,5 @@ TraceAssert=Assert_MM_mustHaveJNICriticalRegion noEnv overhead=1 Level=1 Assert=
 TraceAssert=Assert_MM_inflateInvalidRange noEnv Overhead=1 Level=1 Assert="(0 /* MM_PhysicalSubArenaVirtualMemorySemiSpace::inflate - bad address range */)"
 
 TraceEvent=Trc_MM_ParallelDispatcher_adjustThreadCount_ReducedCPU noEnv Overhead=1 Level=2 Template="MM_ParallelDispatcher::adjustThreadCount limiting threads to %zu due to reduced CPU availability"
+
+TraceEvent=Trc_MM_Scavenger_switchConcurrent Overhead=1 Level=1 Group=scavenger Template="Concurrent switch %zu"

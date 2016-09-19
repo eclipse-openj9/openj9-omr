@@ -3802,7 +3802,24 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
+		/* About to block. A dedicated master GC thread will take over for the duration of STW phase (start or end) */
 		_masterGCThread.garbageCollect(env, allocDescription);
+		/* STW phase is complete */
+
+		/* Ensure switchConcurrentForThread is invoked for each mutator thread. It will be done indirectly,
+		 * first time a thread acquires VM access after exclusive VM access is released, through a VM access hook. */
+		GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
+		OMR_VMThread *walkThread = NULL;
+
+		while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
+			MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
+			if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+				threadEnvironment->_envLanguageInterface->forceOutOfLineVMAccess();
+			}
+		}
+
+		/* For this thread too directly */
+		switchConcurrentForThread(env);
 	}
 	else
 #endif
@@ -4546,6 +4563,22 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 
 	/* return the number of bytes scanned since the caller needs to pass it into postConcurrentUpdateStatsAndReport for stats reporting */
 	return bytesConcurrentlyScanned;
+}
+
+void
+MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
+{
+    if (concurrent_state_scan == _concurrentState) {
+    	if (!env->_concurrentScavengerInProgress) {
+    		env->_concurrentScavengerInProgress = true;
+    		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 1);
+    	}
+    } else if (concurrent_state_idle == _concurrentState) {
+    	if (env->_concurrentScavengerInProgress) {
+    		env->_concurrentScavengerInProgress = false;
+    		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 0);
+    	}
+    }
 }
 
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */

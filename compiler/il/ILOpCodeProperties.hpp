@@ -8849,6 +8849,21 @@
    },
 
    {
+   /* .opcode               = */ TR::OverflowCHK,
+   /* .name                 = */ "OverflowCHK",
+   /* .properties1          = */ ILProp1::TreeTop | ILProp1::HasSymbolRef,
+   /* .properties2          = */ ILProp2::Check | ILProp2::MayUseVMThread | ILProp2::MayUseSystemStack,
+   /* .properties3          = */ 0,
+   /* .properties4          = */ 0,
+   /* .dataType             = */ TR::NoType,
+   /* .typeProperties       = */ 0,
+   /* .swapChildrenOpCode   = */ TR::BadILOp,
+   /* .reverseBranchOpCode  = */ TR::BadILOp,
+   /* .booleanCompareOpCode = */ TR::BadILOp,
+   /* .ifCompareOpCode      = */ TR::BadILOp,
+   },
+
+   {
    /* .opcode               = */ TR::BNDCHK,
    /* .name                 = */ "BNDCHK",
    /* .properties1          = */ ILProp1::TreeTop | ILProp1::HasSymbolRef,

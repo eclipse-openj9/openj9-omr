@@ -838,6 +838,8 @@ public:
    void *                  getMonitorInfo();
    void *                  setMonitorInfo(void *info);
 
+   TR::ILOpCodes           getOverflowCHKInfo();
+   TR::ILOpCodes           setOverflowCHKInfo(TR::ILOpCodes op);
    /**
     * UnionBase functions end
     */
@@ -1568,7 +1570,6 @@ protected:
    bool hasPinningArrayPointer();
    bool hasDataType();
 
-
 // Protected inner classes and structs.
 protected:
 
@@ -1994,7 +1995,6 @@ protected:
 
       // zEmulator only?
       requiresConditionCodes                = 0x80000000,
-
       };
 
    };

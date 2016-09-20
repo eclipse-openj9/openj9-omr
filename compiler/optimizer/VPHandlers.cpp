@@ -11694,6 +11694,11 @@ TR::Node *constrainResolveNullChk(TR_ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
+TR::Node *constrainOverflowChk(TR_ValuePropagation *vp, TR::Node *node)
+   {
+   constrainChildren(vp,node);
+   return node;
+   }
 
 TR::Node *constrainDivChk(TR_ValuePropagation *vp, TR::Node *node)
    {

@@ -577,3 +577,4 @@ MethodBuilder::addBytecodeBuilderToList(TR::BytecodeBuilder* bcBuilder)
    }
 
 } // namespace OMR
+

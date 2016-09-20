@@ -100,7 +100,8 @@ public:
       _connectedTrees(false),
       _comesBack(true),
       _haveReplayName(false),
-      _rpILCpp(0)
+      _rpILCpp(0),
+      _isHandler(false)
       {
       }
    IlBuilder(TR::IlBuilder *source);
@@ -164,6 +165,7 @@ public:
    TR::IlValue *LessThan(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *GreaterThan(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
+   TR::IlValue *AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
 
    // memory
    TR::IlValue *CreateLocalArray(int32_t numElements, TR::IlType *elementType);
@@ -294,6 +296,7 @@ protected:
    bool                          _partOfSequence;
    bool                          _connectedTrees;
    bool                          _comesBack;
+   bool                          _isHandler;
 
    bool                          _haveReplayName;
    std::fstream                * _rpILCpp;
@@ -321,6 +324,7 @@ protected:
    TR::IlValue *unaryOp(TR::ILOpCodes op, TR::IlValue *v);
    void doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr);
    TR::IlValue *binaryOpFromNodes(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode);
+   TR::Node *binaryOpNodeFromNodes(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode);
    TR::IlValue *binaryOpFromOpMap(OpCodeMapper mapOp, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *binaryOpFromOpCode(TR::ILOpCodes op, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *compareOp(TR_ComparisonTypes ct, bool needUnsigned, TR::IlValue *left, TR::IlValue *right);
@@ -353,6 +357,10 @@ protected:
    virtual bool connectTrees(uint32_t *currentBlock) { return connectTrees(); }
 
    virtual bool connectTrees();
+
+   TR::Node *genOverflowCHKTreeTop(TR::Node *operationNode);
+   void appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBuilder **builder, uint32_t catchType);
+   virtual void setHandlerInfo(uint32_t catchType);
    };
 
 } // namespace OMR

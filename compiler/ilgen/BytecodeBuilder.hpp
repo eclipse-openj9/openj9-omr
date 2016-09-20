@@ -60,6 +60,7 @@ protected:
 
    void addAllSuccessorBuildersToWorklist();
    bool connectTrees();
+   virtual void setHandlerInfo(uint32_t catchType);
    };
 
 } // namespace OMR

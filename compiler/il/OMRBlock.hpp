@@ -223,6 +223,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       CanCatchMonitorExit         = 0x00000100,
       CanCatchUserThrows          = 0x00000200,
       CanCatchOSR                 = 0x00000400,
+      CanCatchOverflowCheck       = 0x00000800,
       CanCatchEverything          = 0x000007FF, // Mask for all of the above
       };
 

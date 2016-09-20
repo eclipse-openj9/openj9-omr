@@ -133,6 +133,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_arrayBoundsCheck:
             case TR_checkCast:
             case TR_divCheck:
+            case TR_overflowCheck:
             case TR_nullCheck:
             case TR_methodTypeCheck:
             case TR_aThrow:

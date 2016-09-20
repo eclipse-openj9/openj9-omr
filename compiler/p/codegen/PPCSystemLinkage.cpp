@@ -743,9 +743,7 @@ TR_PPCSystemLinkage::createPrologue(
    if(cg()->hasCall())
       {
       cg()->comp()->setAppendInstruction(cursor);
-#ifndef J9_PROJECT_SPECIFIC
-      TR::TreeEvaluator::preservePTOCRegister(firstNode, cg(), NULL);
-#endif
+      TR::TreeEvaluator::preserveTOCRegister(firstNode, cg(), NULL);
       }
 
    }
@@ -1441,11 +1439,7 @@ void TR_PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          {
          //Implies TOC needs to be restored (ie not 32bit ppc-linux-be)
          if(TR::Compiler->target.cpu.isBigEndian())
-#ifdef J9_PROJECT_SPECIFIC
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
-#else
-	 ;
-#endif
          else
             {
             //For Little Endian, load target's Global Entry Point into r12, TOC will be restored at branch target.
@@ -1461,10 +1455,8 @@ void TR_PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          (uintptrj_t)callSymbol->getMethodAddress(),
          dependencies, callSymRef?callSymRef:callNode->getSymbolReference());
 
-#ifndef J9_PROJECT_SPECIFIC
-   //Restore JIT pseudo-TOC as required by FrontEnd.
-   TR::TreeEvaluator::restorePTOCRegister(callNode, cg(), dependencies);
-#endif
+   //Restore JIT TOC as required by FrontEnd.
+   TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
    }
 
 

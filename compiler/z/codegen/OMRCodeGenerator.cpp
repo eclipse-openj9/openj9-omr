@@ -2604,17 +2604,18 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    TR::Block *currBlock = NULL;
    TR::Instruction * currBBEndInstr = instructionCursor;
 
-   if (!self()->comp()->getOption(TR_DisableOOL) && !self()->isOutOfLineColdPath())
-      {
-      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
-      self()->setSpilledRegisterList(spilledRegisterList);
-      }
    if (!self()->comp()->getOption(TR_DisableOOL))
       {
       TR::list<TR::Register*> *firstTimeLiveOOLRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
       self()->setFirstTimeLiveOOLRegisterList(firstTimeLiveOOLRegisterList);
-      }
 
+      if (!self()->isOutOfLineColdPath())
+         {
+         TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::CFGEdge*>(self()->comp()->allocator()));
+         self()->setSpilledRegisterList(spilledRegisterList);
+         }
+      }
+      
    if (!self()->isOutOfLineColdPath())
       {
       if (self()->getDebug())
@@ -2651,9 +2652,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
      {
      currBlock->setHasBeenVisited(false);
      }
-   // Allocate tables of registers spilled over BB edges
-   CS2::ArrayOf<CS2::HashTable<TR::Block *, int32_t, TR::Allocator>, TR::Allocator> spilledEntryBlockTable(self()->comp()->allocator("LocalRA"), CS2::HashTable<TR::Block *, int32_t, TR::Allocator>(self()->comp()->allocator("LocalRA")));
-   CS2::ArrayOf<CS2::HashTable<TR::Block *, int32_t, TR::Allocator>, TR::Allocator> spilledExitBlockTable(self()->comp()->allocator("LocalRA"), CS2::HashTable<TR::Block *, int32_t, TR::Allocator>(self()->comp()->allocator("LocalRA")));
 
    // Be stingy with allocating the blocked list (for HPR upgrades). Space requirement is small, but it adds up
    self()->machine()->allocateUpgradedBlockedList(new (self()->comp()->trStackMemory()) TR_Stack<TR::RealRegister *>(self()->comp()->trMemory(), 16, true, stackAlloc));
@@ -2802,19 +2800,16 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    // Done Local RA of GPRs, let make sure we don't have any live registers
    if (!self()->isOutOfLineColdPath())
       {
-      int32_t first = TR::RealRegister::FirstGPR;
-      int32_t last = TR::RealRegister::LastGPR;
-      for (uint32_t i = first; i<= last; i++)
+      for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
          {
          TR_ASSERT(self()->machine()->getS390RealRegister(i)->getState() != TR::RealRegister::Assigned,
                     "ASSERTION: GPR registers are still assigned at end of first RA pass! %s regNum=%s\n", self()->comp()->signature(), self()->getDebug()->getName(self()->machine()->getS390RealRegister(i)));
          }
-      }
 
-
-   if (!self()->isOutOfLineColdPath())
-      {
-      if (self()->getDebug()) self()->getDebug()->stopTracingRegisterAssignment();
+      if (self()->getDebug())
+         {
+         self()->getDebug()->stopTracingRegisterAssignment();
+         }
       }
    }
 

@@ -169,17 +169,8 @@ uintptrj_t TR_FrontEnd::getObjectHeaderSizeInBytes()              { notImplement
 uintptrj_t TR_FrontEnd::getOffsetOfContiguousArraySizeField()     { notImplemented("getOffsetOfContiguousArraySizeField"); return 0; }
 uintptrj_t TR_FrontEnd::getOffsetOfDiscontiguousArraySizeField()  { notImplemented("getOffsetOfDiscontiguousArraySizeField"); return 0; }
 
-uintptrj_t TR_FrontEnd::getOffsetOfIsArrayFieldFromRomClass()     { notImplemented("getOffsetOfIsArrayFieldFromRomClass"); return 0; }
-uintptrj_t TR_FrontEnd::getOffsetOfArrayComponentTypeField()      { notImplemented("getOffsetOfArrayComponentTypeField"); return 0; }
 uintptrj_t TR_FrontEnd::getOffsetOfIndexableSizeField()           { notImplemented("getOffsetOfIndexableSizeField"); return 0; }
 
-
-int32_t
-TR_FrontEnd::getLocalObjectAlignmentInBytes()
-   {
-   notImplemented("getLocalObjectAlignmentInBytes");
-   return 0;
-   }
 
 int32_t
 TR_FrontEnd::getObjectAlignmentInBytes()
@@ -387,18 +378,6 @@ TR_FrontEnd::getClassClassPointer(TR_OpaqueClassBlock *objectClassPointer)
    return 0;
    }
 
-
-void
-TR_FrontEnd::initializeLocalObjectHeader(TR::Compilation *, TR::Node *allocationNode, TR::TreeTop *allocationTreeTop)
-   {
-   notImplemented("initializeLocalObjectHeader");
-   }
-
-void
-TR_FrontEnd::initializeLocalArrayHeader(TR::Compilation *, TR::Node *allocationNode, TR::TreeTop *allocaitonTreeTop)
-   {
-   notImplemented("initializeLocalArrayHeader");
-   }
 
 TR::CodeCache *
 TR_FrontEnd::getDesignatedCodeCache(TR::Compilation *comp)

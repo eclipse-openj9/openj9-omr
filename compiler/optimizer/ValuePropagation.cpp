@@ -7680,8 +7680,7 @@ void TR_ValuePropagation::doDelayedTransformations()
       }
    _convertedGuards.setFirst(0);
 
-
-
+#ifdef J9_PROJECT_SPECIFIC
    ListIterator<TR::Node> nodesIt(&_javaLangClassGetComponentTypeCalls);
    TR::Node *getComponentCallNode;
    for (getComponentCallNode = nodesIt.getFirst();
@@ -7699,6 +7698,7 @@ void TR_ValuePropagation::doDelayedTransformations()
          }
       }
    _javaLangClassGetComponentTypeCalls.deleteAll();
+#endif
 
    // Process throws that can be turned into gotos
    //

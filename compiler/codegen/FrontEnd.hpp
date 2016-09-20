@@ -186,12 +186,7 @@ public:
    virtual uintptrj_t getOffsetOfContiguousArraySizeField(); // DM: move w/ ifdef
    virtual uintptrj_t getOffsetOfDiscontiguousArraySizeField(); // DM: move w/ ifdef
    virtual uintptrj_t getObjectHeaderSizeInBytes();
-   virtual uintptrj_t getOffsetOfArrayComponentTypeField(); // DM: move w/ ifdef
    virtual uintptrj_t getOffsetOfIndexableSizeField(); // DM: move w/ ifdef
-   virtual uintptrj_t getOffsetOfIsArrayFieldFromRomClass();
-   virtual void initializeLocalObjectHeader(TR::Compilation *, TR::Node *allocationNode, TR::TreeTop *allocationTreeTop);
-   virtual void initializeLocalArrayHeader (TR::Compilation *, TR::Node *allocationNode, TR::TreeTop *allocaitonTreeTop);
-   virtual int32_t getLocalObjectAlignmentInBytes();
 
    // --------------------------------------------------------------------------
    // J9 Classes / VM?

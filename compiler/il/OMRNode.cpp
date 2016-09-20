@@ -8477,7 +8477,7 @@ bool
 OMR::Node::chkOpsNodeRequiresConditionCodes()
    {
    TR::ILOpCode op = self()->getOpCode();
-   return op.isArithmetic() || op.isLoadConst();
+   return op.isArithmetic() || op.isLoadConst() || op.isOverflowCHK();
    }
 
 const char *

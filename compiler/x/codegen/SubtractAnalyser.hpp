@@ -46,14 +46,34 @@ class TR_X86SubtractAnalyser  : public TR_Analyser
       : _cg(cg)
       {}
 
-   void integerSubtractAnalyser(TR::Node       *root,
+   void integerSubtractAnalyser(TR::Node      *root,
                                 TR_X86OpCodes regRegOpCode,
                                 TR_X86OpCodes regMemOpCode,
                                 TR_X86OpCodes copyOpCode,
                                 bool needsEflags = false,
                                 TR::Node *borrow = 0);
 
+   void integerSubtractAnalyserWithExplicitOperands(TR::Node      *root,
+                                                    TR::Node      *firstChild,
+                                                    TR::Node      *secondChild,
+                                                    TR_X86OpCodes regRegOpCode,
+                                                    TR_X86OpCodes regMemOpCode,
+                                                    TR_X86OpCodes copyOpCode,
+                                                    bool needsEflags = false,
+                                                    TR::Node *borrow = 0);
+
+   TR::Register *integerSubtractAnalyserImpl(TR::Node      *root,
+                                         TR::Node      *firstChild,
+                                         TR::Node      *secondChild,
+                                         TR_X86OpCodes regRegOpCode,
+                                         TR_X86OpCodes regMemOpCode,
+                                         TR_X86OpCodes copyOpCode,
+                                         bool needsEflags,
+                                         TR::Node *borrow);
+
    void longSubtractAnalyser(TR::Node *root);
+   void longSubtractAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
+   TR::Register* longSubtractAnalyserImpl(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
 
    bool getEvalChild1()  {return (_actionMap[getInputs()] & EvalChild1)  ? true : false;}
    bool getEvalChild2()  {return (_actionMap[getInputs()] & EvalChild2)  ? true : false;}

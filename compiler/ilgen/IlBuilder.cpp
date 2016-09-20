@@ -1164,10 +1164,12 @@ IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node 
     * BB1:
     *    overflowCHK
     *       operation(add/sub/mul)
-    *          =>child1
-    *          =>child2
+    *          child1
+    *          child2
+    *       =>child1
+    *       =>child2
     *    store
-    *       => add
+    *       => operation
     * BB2:
     *    goto BB3 
     * Handler:

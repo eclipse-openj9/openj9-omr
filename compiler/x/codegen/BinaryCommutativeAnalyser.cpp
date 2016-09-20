@@ -70,16 +70,44 @@ zeroExtendTo32BitRegister(TR::Node          *node,
       generateRegRegInstruction(op, node, reg, reg, cg);
    }
 
-
-void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
-                                                       TR_X86OpCodes regRegOpCode,
-                                                       TR_X86OpCodes regMemOpCode,
-                                                       TR_X86OpCodes copyOpCode,
-                                                       bool           nonClobberingDestination)
+/*
+ * \brief 
+ * this API is for check nodes(like OverflowCHK) with certain operation where the operands 
+ * are given explicitly by the caller and are not the first and second child of the given root node
+ *
+ * \param root
+ *     the check node
+ * \param firstChild, secondChild 
+ *     the operands for the operation 
+ */
+void TR_X86BinaryCommutativeAnalyser::genericAnalyserWithExplicitOperands(TR::Node      *root,
+                                                                          TR::Node      *firstChild,
+                                                                          TR::Node      *secondChild,
+                                                                          TR_X86OpCodes regRegOpCode,
+                                                                          TR_X86OpCodes regMemOpCode,
+                                                                          TR_X86OpCodes copyOpCode,
+                                                                          bool          nonClobberingDestination) //false by default
    {
-   // *this    swipeable for debugging purposes
-   TR::Node *firstChild;
-   TR::Node *secondChild;
+   TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported  opcode %s for genericAnalyserWithExplicitOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
+   TR::Register *tempReg = genericAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, copyOpCode, nonClobberingDestination);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   _cg->stopUsingRegister(tempReg);
+   }
+
+/*
+ * \brief 
+ * this API is for regular operation nodes where the first child and second child are the operands by default
+ */
+void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node      *root,
+                                                      TR_X86OpCodes regRegOpCode,
+                                                      TR_X86OpCodes regMemOpCode,
+                                                      TR_X86OpCodes copyOpCode,
+                                                      bool          nonClobberingDestination) //false by default
+   {
+   TR::Node *firstChild = NULL;
+   TR::Node *secondChild = NULL;
+   TR::Register *targetRegister = NULL;
    if (_cg->whichChildToEvaluate(root) == 0)
       {
       firstChild  = root->getFirstChild();
@@ -92,6 +120,26 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
       firstChild  = root->getSecondChild();
       secondChild = root->getFirstChild();
       }
+   targetRegister = genericAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, copyOpCode, nonClobberingDestination);
+   root->setRegister(targetRegister);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   }
+
+/*
+ * users should call the genericAnalyser or genericAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ */
+TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node      *root,
+                                                                   TR::Node      *firstChild,
+                                                                   TR::Node      *secondChild,
+                                                                   TR_X86OpCodes regRegOpCode,
+                                                                   TR_X86OpCodes regMemOpCode,
+                                                                   TR_X86OpCodes copyOpCode,
+                                                                   bool           nonClobberingDestination)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Register *targetRegister;
+
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();
 
@@ -111,12 +159,12 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
    if (getOpReg1Reg2())
       {
       generateRegRegInstruction(regRegOpCode, root, firstRegister, secondRegister, _cg);
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       }
    else if (getOpReg2Reg1())
       {
       generateRegRegInstruction(regRegOpCode, root, secondRegister, firstRegister, _cg);
-      root->setRegister(secondRegister);
+      targetRegister = secondRegister;
       notReversedOperands();
       }
    else if (getCopyReg1())
@@ -124,16 +172,17 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
       TR::Register *tempReg;
       if (TR_X86OpCode::fprOp(copyOpCode) == 0)
          {
-         tempReg = root->setRegister(_cg->allocateRegister());
+         tempReg = _cg->allocateRegister();
          }
       else if (TR_X86OpCode::singleFPOp(copyOpCode))
          {
-         tempReg = root->setRegister(_cg->allocateSinglePrecisionRegister(TR_X87));
+         tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
          }
       else
          {
-         tempReg = root->setRegister(_cg->allocateRegister(TR_X87));
+         tempReg = _cg->allocateRegister(TR_X87);
          }
+      targetRegister = tempReg;
       generateRegRegInstruction(copyOpCode, root, tempReg, firstRegister, _cg);
       generateRegRegInstruction(regRegOpCode, root, tempReg, secondRegister, _cg);
       }
@@ -142,16 +191,17 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
       TR::Register *tempReg;
       if (TR_X86OpCode::fprOp(copyOpCode) == 0)
          {
-         tempReg = root->setRegister(_cg->allocateRegister());
+         tempReg = _cg->allocateRegister();
          }
       else if (TR_X86OpCode::singleFPOp(copyOpCode))
          {
-         tempReg = root->setRegister(_cg->allocateSinglePrecisionRegister(TR_X87));
+         tempReg = _cg->allocateSinglePrecisionRegister(TR_X87);
          }
       else
          {
-         tempReg = root->setRegister(_cg->allocateRegister(TR_X87));
+         tempReg = _cg->allocateRegister(TR_X87);
          }
+      targetRegister = tempReg;
       generateRegRegInstruction(copyOpCode, root, tempReg, secondRegister, _cg);
       generateRegRegInstruction(regRegOpCode, root, tempReg, firstRegister, _cg);
       notReversedOperands();
@@ -167,7 +217,7 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
          {
          generateRegMemInstruction(regMemOpCode, root, firstRegister, tempMR, _cg);
          }
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       tempMR->decNodeReferenceCounts(_cg);
       }
    else
@@ -181,13 +231,12 @@ void TR_X86BinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
          {
          generateRegMemInstruction(regMemOpCode, root, secondRegister, tempMR, _cg);
          }
-      root->setRegister(secondRegister);
+      targetRegister = secondRegister;
       tempMR->decNodeReferenceCounts(_cg);
       notReversedOperands();
       }
 
-   _cg->decReferenceCount(firstChild);
-   _cg->decReferenceCount(secondChild);
+   return targetRegister;
    }
 
 void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
@@ -649,17 +698,20 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
    _cg->decReferenceCount(secondChild);
    }
 
-void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
-                                                          TR_X86OpCodes regRegOpCode,
-                                                          TR_X86OpCodes regMemOpCode,
-                                                          bool needsEflags,     // false by default
-                                                          TR::Node       *carry) // 0 by default
+/*
+ * \brief 
+ * this API is intended for regular add operation nodes where the first child and second child are the operands by default
+ */
+void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node      *root,
+                                                         TR_X86OpCodes regRegOpCode,
+                                                         TR_X86OpCodes regMemOpCode,
+                                                         bool          needsEflags,     // false by default
+                                                         TR::Node      *carry )// 0 by default
    {
-   // *this    swipeable for debugging purposes
-   TR::Node *firstChild;
-   TR::Node *secondChild;
-   TR::Compilation* comp = TR::comp();
-   if (_cg->whichChildToEvaluate(root) == 0)
+   TR::Node *firstChild = NULL;
+   TR::Node *secondChild = NULL;
+   TR::Register *targetRegister;
+  if (_cg->whichChildToEvaluate(root) == 0)
       {
       firstChild  = root->getFirstChild();
       secondChild = root->getSecondChild();
@@ -671,6 +723,51 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
       secondChild = root->getFirstChild();
       setReversedOperands(true);
       }
+   targetRegister = integerAddAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, needsEflags, carry);
+   root->setRegister(targetRegister);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   }
+
+/*
+ * \brief 
+ * this API is for check nodes(like OverflowCHK) with an add operation where the operands 
+ * are given explicitly by the caller and are not the first and second child of the given root node
+ *
+ * \param root
+ *     the check node
+ * \param firstChild, secondChild 
+ *     the operands for the add operation 
+ */
+void TR_X86BinaryCommutativeAnalyser::integerAddAnalyserWithExplicitOperands(TR::Node      *root,
+                                                                             TR::Node      *firstChild, 
+                                                                             TR::Node      *secondChild, 
+                                                                             TR_X86OpCodes regRegOpCode,
+                                                                             TR_X86OpCodes regMemOpCode,
+                                                                             bool          needsEflags, // false by default
+                                                                             TR::Node      *carry)// 0 by default
+   {
+   TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported opcode %s for integerAddAnalyserWithGivenOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
+   TR::Register *tempReg = integerAddAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, needsEflags, carry);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   _cg->stopUsingRegister(tempReg);
+   }
+ 
+/*
+ * users should call the integerAddAnalyser or integerAddAnalyserWithGivenOperands APIs instead of calling this one directly 
+ */
+TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node      *root,
+                                                                      TR::Node      *firstChild, 
+                                                                      TR::Node      *secondChild, 
+                                                                      TR_X86OpCodes regRegOpCode,
+                                                                      TR_X86OpCodes regMemOpCode,
+                                                                      bool          needsEflags,     
+                                                                      TR::Node      *carry)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Register *targetRegister;
+   TR::Compilation* comp = TR::comp();
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();
 
@@ -753,12 +850,12 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
    if (getOpReg1Reg2())
       {
       generateRegRegInstruction(regRegOpCode, root, firstRegister, secondRegister, _cg);
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       }
    else if (getOpReg2Reg1())
       {
       generateRegRegInstruction(regRegOpCode, root, secondRegister, firstRegister, _cg);
-      root->setRegister(secondRegister);
+      targetRegister = secondRegister;
       notReversedOperands();
       }
    else if (getCopyRegs())
@@ -771,7 +868,7 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
          {
          if (root->isInternalPointer())
             {
-            tempReg = root->setRegister(_cg->allocateRegister());
+            tempReg = _cg->allocateRegister();
             if (root->getPinningArrayPointer())
                {
                tempReg->setContainsInternalPointer();
@@ -780,15 +877,16 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
             }
          else if (comp->generateArraylets() && root->getOpCodeValue() == TR::aiadd)
             // arraylets: aiadd is technically internal pointer into spine object, but isn't marked as internal pointer
-            tempReg = root->setRegister(_cg->allocateRegister());
+            tempReg = _cg->allocateRegister();
          else
-            tempReg = root->setRegister(_cg->allocateCollectedReferenceRegister());
+            tempReg = _cg->allocateCollectedReferenceRegister();
          }
       else
          {
-         tempReg = root->setRegister(_cg->allocateRegister());
+         tempReg = _cg->allocateRegister();
          }
 
+      targetRegister = tempReg;
       bool is64Bit = TR_X86OpCode::hasLongSource(regRegOpCode);
 
       // if eflags are required then we cannot use LEA as it doesn't set or use them
@@ -809,20 +907,18 @@ void TR_X86BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
       {
       TR::MemoryReference  *tempMR = generateX86MemoryReference(secondChild, _cg);
       generateRegMemInstruction(regMemOpCode, root, firstRegister, tempMR, _cg);
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       tempMR->decNodeReferenceCounts(_cg);
       }
    else
       {
       TR::MemoryReference  *tempMR = generateX86MemoryReference(firstChild, _cg);
       generateRegMemInstruction(regMemOpCode, root, secondRegister, tempMR, _cg);
-      root->setRegister(secondRegister);
+      targetRegister = secondRegister;
       tempMR->decNodeReferenceCounts(_cg);
       notReversedOperands();
       }
-
-   _cg->decReferenceCount(firstChild);
-   _cg->decReferenceCount(secondChild);
+   return targetRegister;
    }
 
 
@@ -842,18 +938,33 @@ static bool isVolatileMemoryOperand(TR::Node *node)
    return false;
    }
 
+/*
+ * \brief 
+ * this API is for check nodes(like OverflowCHK) an ladd operation where the operands 
+ * are given explicitly by the caller and are not the first and second child of the given root node
+ *
+ * \param root
+ *     the check node
+ * \param firstChild, secondChild 
+ *     the operands for the add operation 
+ */
+void TR_X86BinaryCommutativeAnalyser::longAddAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
+   {
+   TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported opcode %s for longAddAnalyserWithExplicitOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
+   TR::Register *tempReg= longAddAnalyserImpl(root, firstChild, secondChild);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   _cg->stopUsingRegister(tempReg);
+   }
+
+/*
+ * \brief 
+ * this API is intended for regular ladd operation nodes where the first child and second child are the operands by default
+ */
 void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
-   TR::Node     *firstChild   = NULL;
-   TR::Node     *secondChild  = NULL;
-   TR::Register *twoLow       = NULL;
-   TR::Register *twoHigh      = NULL;
-   TR::Register *oneLow       = NULL;
-   TR::Register *oneHigh      = NULL;
-   TR_X86OpCodes regRegOpCode = ADD4RegReg;
-   TR_X86OpCodes regMemOpCode = ADD4RegMem;
-
+   TR::Node *firstChild = NULL; 
+   TR::Node *secondChild = NULL;
    if (_cg->whichChildToEvaluate(root) == 0)
       {
       firstChild  = root->getFirstChild();
@@ -866,6 +977,25 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
       secondChild = root->getFirstChild();
       setReversedOperands(true);
       }
+   TR::Register * targetRegister = longAddAnalyserImpl(root, firstChild, secondChild);
+   root->setRegister(targetRegister);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   }
+
+/*
+ * users should call the longAddAnalyser or longAddAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ */
+TR::Register* TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Register *twoLow       = NULL;
+   TR::Register *twoHigh      = NULL;
+   TR::Register *oneLow       = NULL;
+   TR::Register *oneHigh      = NULL;
+   TR::Register *targetRegister = NULL;
+   TR_X86OpCodes regRegOpCode = ADD4RegReg;
+   TR_X86OpCodes regMemOpCode = ADD4RegMem;
 
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();
@@ -1045,7 +1175,7 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
          }
 
       TR::Register *target = _cg->allocateRegisterPair(oneLow, oneHigh);
-      root->setRegister(target);
+      targetRegister = target;
       }
    else if (getOpReg2Reg1())
       {
@@ -1096,8 +1226,7 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
          {
          generateRegRegInstruction(ADC4RegReg, root, twoHigh, oneHigh, _cg);
          }
-      TR::Register *target = _cg->allocateRegisterPair(twoLow, twoHigh);
-      root->setRegister(target);
+      targetRegister = _cg->allocateRegisterPair(twoLow, twoHigh);
       notReversedOperands();
       }
    else if (getCopyRegs())
@@ -1142,8 +1271,7 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
          {
          generateRegRegInstruction(ADC4RegReg, root, oneHigh, twoHigh, _cg);
          }
-      TR::Register *target = _cg->allocateRegisterPair(oneLow, oneHigh);
-      root->setRegister(target);
+      targetRegister = _cg->allocateRegisterPair(oneLow, oneHigh);
       }
    else
       {
@@ -1217,13 +1345,11 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
          highMR = generateX86MemoryReference(*lowMR, 4, _cg);
          generateRegMemInstruction(ADC4RegMem, root, targetHigh, highMR, _cg);
          }
-      TR::Register *target = _cg->allocateRegisterPair(targetLow, targetHigh);
-      root->setRegister(target);
+      targetRegister = _cg->allocateRegisterPair(targetLow, targetHigh);
       lowMR->decNodeReferenceCounts(_cg);
       }
 
-   _cg->decReferenceCount(firstChild);
-   _cg->decReferenceCount(secondChild);
+   return targetRegister;
    }
 
 // Multiply for:

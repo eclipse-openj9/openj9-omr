@@ -300,6 +300,7 @@ class TR_LoopStrider : public TR_LoopTransformer
 
 private:
    TR::Node* genLoad(TR::Node* node, TR::SymbolReference* symRef, bool isInternalPointer);
+   void examineOpCodesForInductionVariableUse(TR::Node* node, TR::Node* parent, int32_t &childNum, int32_t &index, TR::Node* originalNode, TR::Node* replacingNode, TR::Node* linearTerm, TR::Node* mulTerm, TR::SymbolReference **newSymbolReference, TR::Block* loopInvariantBlock, TR::AutomaticSymbol* pinningArrayPointer, int64_t differenceInAdditiveConstants, bool &isInternalPointer, bool &downcastNode, bool &usingAladd);
    void changeBranchFromIntToLong(TR::Node* branch);
    TR_VPLongRange* genVPLongRange(TR_VPConstraint* cons, int64_t coeff, int64_t additive);
    TR_VPIntRange* genVPIntRange(TR_VPConstraint* cons, int64_t coeff, int64_t additive);

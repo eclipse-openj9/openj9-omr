@@ -6326,9 +6326,121 @@ storeToStaticBaseNodeHelper(TR::Node * node, TR::Node * valueChild, TR::CodeGene
       }
    }
 
+/** \brief
+ *     Attempts to perform a direct memory-memory copy while evaluating a store node.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param storeNode
+ *     The store node to attempt to reduce to a memory-memory copy.
+ *
+ *  \return
+ *     true if the store node was reduced to a memory-memory copy; false otherwise.
+ *
+ *  \note
+ *     If this transformation succeeds the helper will decrement the reference counts of the storeNode subtree.
+ *     If this transformation fails the state of the storeNode subtree remains unchanged.
+ */
+bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
+   {
+   if (!cg->getConditionalMovesEvaluationMode())
+      {
+      if (!storeNode->getOpCode().isReverseLoadOrStore() && storeNode->getType().isIntegral())
+         {
+         TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
+
+         if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
+            {
+            if (valueNode->getOpCode().isIndirect() || !valueNode->getSymbolReference()->getSymbol()->isRegisterSymbol())
+               {
+               // Pattern match the following trees:
+               //
+               // (0) xstorei b
+               // (?)   A
+               // (1)   xloadi y
+               // (?)     X
+               //
+               // (0) xstorei b
+               // (?)   A
+               // (1)   xload y
+               //
+               // And reduce it to a memory-memory copy.
+
+               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "z/optimization/directMemoryStore/indirect");
+
+               // Force the memory references to not use an index register because MVC is an SS instruction
+               TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
+               TR::MemoryReference* sourceMemRef = generateS390MemoryReference(valueNode, cg, false);
+
+               generateSS1Instruction(cg, TR::InstOpCode::MVC, storeNode, storeNode->getSize() - 1, targetMemRef, sourceMemRef);
+
+               cg->decReferenceCount(valueNode);
+
+               return true;
+               }
+            }
+         else if (valueNode->getOpCode().isConversion() && valueNode->isSingleRefUnevaluated())
+            {
+            TR::Node* conversionNode = valueNode;
+
+            TR::Node* valueNode = conversionNode->getChild(0);
+
+            // Make sure this is a truncation conversion
+            if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
+               {
+               if (valueNode->getSize() > storeNode->getSize())
+                  {
+                  if (valueNode->getOpCode().isIndirect() || !valueNode->getSymbolReference()->getSymbol()->isRegisterSymbol())
+                     {
+                     // Pattern match the following trees:
+                     //
+                     // (0) xstorei b
+                     // (?)   A
+                     // (1)   z2x
+                     // (1)     zloadi y
+                     // (?)       X
+                     //
+                     // (0) xstorei b
+                     // (?)   A
+                     // (1)   z2x
+                     // (1)     zload y
+                     //
+                     // And reduce it to a memory-memory copy.
+
+                     TR::DebugCounter::incStaticDebugCounter(cg->comp(), "z/optimization/directMemoryStore/conversion/indirect");
+
+                     // Force the memory references to not use an index register because MVC is an SS instruction
+                     TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
+                     TR::MemoryReference* sourceMemRef = generateS390MemoryReference(valueNode, cg, false);
+
+                     // Adjust the offset to reference the truncated value
+                     sourceMemRef->setOffset(sourceMemRef->getOffset() + valueNode->getSize() - storeNode->getSize());
+
+                     generateSS1Instruction(cg, TR::InstOpCode::MVC, storeNode, storeNode->getSize() - 1, targetMemRef, sourceMemRef);
+
+                     cg->decReferenceCount(conversionNode);
+                     cg->decReferenceCount(valueNode);
+
+                     return true;
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+   return false;
+   }
+
 TR::MemoryReference *
 sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    {
+   if (directMemoryStoreHelper(cg, node))
+      {
+      return NULL;
+      }
+
    TR::Node * valueChild;
    TR::Register * sourceRegister = NULL;
    bool srcClobbered = false;
@@ -6397,7 +6509,8 @@ sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    }
 
 
-
+// TODO: The return value does not make sense here. There is no one that consumes it so it should be void. Similar
+//       occurrences can be found on other store helpers. These should be fixed as well.
 TR::MemoryReference *
 istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    {
@@ -6501,6 +6614,10 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       {
       tempMR = NULL;
       }
+   else if (directMemoryStoreHelper(cg, node))
+      {
+      return tempMR;
+      }
    else
       {
       TR::Register * sourceRegister = NULL;
@@ -6513,33 +6630,6 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             {
             sourceRegister = cg->evaluate(valueChild);
             }
-         }
-      // iload is the child and is not evaluated, then don't evaluate the child, generate MVC to move directly among memory
-      // if the child is l2i with a load child of its own that is evaluated, generate MVC to move among memory, only in 64 bit though
-      // since in 31 bit, lload returns a register pair that we cannot pass to MVC, so we take the ELSE path if it happens.
-      else if (!node->getOpCode().isIndirect() &&
-              (( valueChild->getOpCodeValue() == TR::iload && !valueChild->getRegister() && valueChild->getReferenceCount() == 1 &&
-                 !valueChild->getSymbolReference()->getSymbol()->isRegisterSymbol()) ||
-               ( valueChild->getOpCodeValue() == TR::l2i && valueChild->getFirstChild()->getOpCodeValue() == TR::lload &&
-                 !valueChild->getFirstChild()->getRegister() && TR::Compiler->target.is64Bit() && valueChild->getFirstChild()->getReferenceCount() == 1 && valueChild->getReferenceCount() == 1 &&
-                 !valueChild->getFirstChild()->getSymbolReference()->getSymbol()->isRegisterSymbol() ) ) &&
-               generateS390MemoryReference(node, cg)->getIndexRegister() == NULL &&
-               !cg->getConditionalMovesEvaluationMode() // Conditional Moves does not support MVC
-               )
-         {
-         TR::Node *valueNode = valueChild->getOpCodeValue() == TR::l2i ? valueChild->getFirstChild() : valueChild;
-         int16_t srcOffset = valueNode->getSize() - node->getSize();
-         int16_t trgtSize = node->getSize();
-
-         TR::MemoryReference * tempMRSource = generateS390MemoryReference(valueNode, cg);
-         tempMRSource->setOffset(srcOffset);
-
-         tempMR = generateS390MemoryReference(node, cg);
-         generateSS1Instruction(cg, TR::InstOpCode::MVC, node, trgtSize - 1, tempMR, tempMRSource);
-         cg->decReferenceCount(valueChild);
-         if (valueChild->getOpCodeValue() == TR::l2i)
-            cg->decReferenceCount(valueChild->getFirstChild());
-         return tempMR;
          }
       else
          {
@@ -6589,6 +6679,11 @@ TR::MemoryReference *
 lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    {
    TR_ASSERT( TR::Compiler->target.is32Bit(), "must call 64bit version: lstoreHelper64(...)");
+
+   if (directMemoryStoreHelper(cg, node))
+      {
+      return NULL;
+      }
 
    TR::Node * valueChild;
    TR::Node * addrChild = NULL;
@@ -6688,6 +6783,10 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    else if(relativeLongStoreHelper(cg, node, valueChild))
       {
       longMR = NULL;
+      }
+   else if (directMemoryStoreHelper(cg, node))
+      {
+      return longMR;
       }
    else
       {
@@ -7419,6 +7518,12 @@ TR::Register *
 OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bstore", node, cg);
+
+   if (directMemoryStoreHelper(cg, node))
+      {
+      return NULL;
+      }
+
    TR::Compilation *comp = cg->comp();
    TR::Node * valueChild, *memRefChild;
    TR::Register * sourceRegister = NULL;

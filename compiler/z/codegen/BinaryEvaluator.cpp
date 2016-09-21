@@ -810,13 +810,13 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
       {
       if (isDivision)
          {
-         genLoadConstant(cg, node, 1, dividendPair->getLowOrder());
-         genLoadConstant(cg, node, 0, dividendPair->getHighOrder());
+         generateLoad32BitConstant(cg, node, 1, dividendPair->getLowOrder(), true);
+         generateLoad32BitConstant(cg, node, 0, dividendPair->getHighOrder(), true);
          }
       else //remainder
          {
-         genLoadConstant(cg, node, 0, dividendPair->getLowOrder());
-         genLoadConstant(cg, node, 0, dividendPair->getHighOrder());
+         generateLoad32BitConstant(cg, node, 0, dividendPair->getLowOrder(), true);
+         generateLoad32BitConstant(cg, node, 0, dividendPair->getHighOrder(), true);
          }
       node->setRegister(dividendPair);
       cg->decReferenceCount(firstChild);
@@ -848,8 +848,8 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
          {
          if (!isDivision)  //remainder
             {
-            genLoadConstant(cg, node, 0, dividendPair->getLowOrder());
-            genLoadConstant(cg, node, 0, dividendPair->getHighOrder());
+            generateLoad32BitConstant(cg, node, 0, dividendPair->getLowOrder(), true);
+            generateLoad32BitConstant(cg, node, 0, dividendPair->getHighOrder(), true);
             }
          else
             {
@@ -885,8 +885,8 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
          {
          if (!isDivision) //remainder
             {
-            genLoadConstant(cg, node, 0, dividendPair->getLowOrder());
-            genLoadConstant(cg, node, 0, dividendPair->getHighOrder());
+            generateLoad32BitConstant(cg, node, 0, dividendPair->getLowOrder(), true);
+            generateLoad32BitConstant(cg, node, 0, dividendPair->getHighOrder(), true);
             }
          node->setRegister(dividendPair);
          cg->decReferenceCount(firstChild);
@@ -1245,7 +1245,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
          if (!isDivision)  //remainder
             {
-            genLoadConstant(cg, node, 0, firstRegister);
+            generateLoad32BitConstant(cg, node, 0, firstRegister, true);
             }
          else
             {
@@ -1280,7 +1280,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
          if (!isDivision) //remainder
             {
-            genLoadConstant(cg, node, 0, firstRegister);
+            generateLoad32BitConstant(cg, node, 0, firstRegister, true);
             }
          node->setRegister(firstRegister);
          cg->decReferenceCount(firstChild);
@@ -1617,7 +1617,10 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
          {
          debugObj->addInstructionComment( toS390RRInstruction(cursor),  REG_USER_DEF);
          }
-      genLoadConstant(cg, node, 0, remRegister);
+
+      // TODO: Can we allow setting the condition code here by moving the load before the compare?
+      generateLoad32BitConstant(cg, node, 0, remRegister, false);
+
       skipDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       skipDiv->setEndInternalControlFlow();
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, skipDiv);
@@ -1820,7 +1823,7 @@ genericIntShift(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemoni
           node->getFirstChild()->getRegister() == NULL)
          {
          srcReg = node->getFirstChild()->setRegister(cg->allocateRegister());
-         genLoadConstant(cg, node->getFirstChild(), node->getFirstChild()->getByte() & 0xFF, srcReg);
+         generateLoad32BitConstant(cg, node->getFirstChild(), node->getFirstChild()->getByte() & 0xFF, srcReg, true);
          }
       else
          {
@@ -4033,7 +4036,7 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             {
             useTmp = true;
             tmpReg = cg->allocateRegister();
-            genLoadConstant(cg, secondChild, value, tmpReg);
+            generateLoad32BitConstant(cg, secondChild, value, tmpReg, true);
             }
          else
             {
@@ -4191,7 +4194,7 @@ OMR::Z::TreeEvaluator::iremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          bool absDividendRegIsTemp = false;
          TR::RegisterDependencyConditions *deps = NULL;
 
-         genLoadConstant(cg, secondChild, value, tmpReg);
+         generateLoad32BitConstant(cg, secondChild, value, tmpReg, true);
 
          if (node->getOpCode().isUnsigned())
             generateRSInstruction(cg, TR::InstOpCode::SRDL, node, targetRegisterPair, 32);

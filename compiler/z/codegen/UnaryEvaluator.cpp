@@ -85,8 +85,8 @@ lconstHelper(TR::Node * node, TR::CodeGenerator * cg)
    int32_t highValue = node->getLongIntHigh();
    int32_t lowValue = node->getLongIntLow();
 
-   genLoadConstant(cg, node, lowValue, lowRegister);
-   genLoadConstant(cg, node, highValue, highRegister);
+   generateLoad32BitConstant(cg, node, lowValue, lowRegister, true);
+   generateLoad32BitConstant(cg, node, highValue, highRegister, true);
 
    return longRegister;
    }
@@ -116,14 +116,14 @@ lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
 /**
  * iconst Evaluator: load integer constant (32-bit signed 2's complement)
- * @see genLoadConstant
+ * @see generateLoad32BitConstant
  */
 TR::Register *
 OMR::Z::TreeEvaluator::iconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("iconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   genLoadConstant(cg, node, node->getInt(), tempReg);
+   generateLoad32BitConstant(cg, node, node->getInt(), tempReg, true);
    return tempReg;
    }
 
@@ -169,12 +169,12 @@ OMR::Z::TreeEvaluator::bconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   if (node->getOpCodeValue() == TR::buconst || node->isUnsignedLoad()) // PLX only supports unsigned 8 bit integer
-      genLoadConstant(cg, node, node->getByte() & 0xFF , tempReg);
+   if (node->getOpCodeValue() == TR::buconst || node->isUnsignedLoad())
+      generateLoad32BitConstant(cg, node, node->getByte() & 0xFF, tempReg, true);
    else
       {
       TR_ASSERT(1, "Should not have bconst node in the final il-tree!\n");
-      genLoadConstant(cg, node, node->getByte(), tempReg);
+      generateLoad32BitConstant(cg, node, node->getByte(), tempReg, true);
       }
    return tempReg;
    }
@@ -188,7 +188,7 @@ OMR::Z::TreeEvaluator::sconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    PRINT_ME("sconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
    int32_t value = (node->isUnsigned() || node->isUnsignedLoad()) ? node->getConst<uint16_t>() : node->getShortInt();
-   genLoadConstant(cg, node, value, tempReg);
+   generateLoad32BitConstant(cg, node, value, tempReg, true);
    return tempReg;
    }
 
@@ -200,7 +200,7 @@ OMR::Z::TreeEvaluator::cconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("cconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   genLoadConstant(cg, node, node->getConst<uint16_t>(), tempReg);
+   generateLoad32BitConstant(cg, node, node->getConst<uint16_t>(), tempReg, true);
    return tempReg;
    }
 

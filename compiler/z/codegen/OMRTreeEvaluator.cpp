@@ -210,12 +210,8 @@ void orInPlace(TR::InstOpCode::S390BranchCondition& brCond, const TR::InstOpCode
    brCond = intToBrCond(brCondToInt(brCond) | brCondToInt(other));
 }
 
-/**
- * Generate code to load a constant.
- */
-TR::Instruction *
-genLoadConstant(TR::CodeGenerator * cg, TR::Node * node, int32_t value, TR::Register * targetRegister, TR::Instruction * cursor,
-   TR::RegisterDependencyConditions * cond, TR::Register * base)
+TR::Instruction*
+generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, TR::Register* targetRegister, bool canSetConditionCode, TR::Instruction* cursor, TR::RegisterDependencyConditions* dependencies, TR::Register* literalPoolRegister)
    {
    TR::Symbol *sym = NULL;
    if (node->getOpCode().hasSymbolReference())
@@ -223,10 +219,25 @@ genLoadConstant(TR::CodeGenerator * cg, TR::Node * node, int32_t value, TR::Regi
    bool needRegPair = cg->evaluateNodeInRegPair(node) || !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit());
    bool load64bit = !needRegPair &&
                     (node->getType().isInt64() || node->force64BitLoad());
+
    if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
       {
-      // Sign-extended halfword
-      return generateRIInstruction(cg, load64bit ? TR::InstOpCode::LGHI : TR::InstOpCode::LHI, node, targetRegister, value, cursor);
+      if (load64bit)
+         {
+         return generateRIInstruction(cg, TR::InstOpCode::LGHI, node, targetRegister, value, cursor);
+         }
+      else
+         {
+         // Prefer to generate XR over LHI if possible to save 2 bytes of icache
+         if (value == 0 && canSetConditionCode && !cg->getConditionalMovesEvaluationMode())
+            {
+            return generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister, targetRegister, cursor);
+            }
+         else
+            {
+            return generateRIInstruction(cg, TR::InstOpCode::LHI, node, targetRegister, value, cursor);
+            }
+         }
       }
    else if (load64bit && value >= 0 && value <= 65535)
       {
@@ -238,9 +249,9 @@ genLoadConstant(TR::CodeGenerator * cg, TR::Node * node, int32_t value, TR::Regi
       if (sym)
          {
          if (sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DataAddress, cond, cursor, base);
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DataAddress, dependencies, cursor, literalPoolRegister);
          if (sym->isCountForRecompile())
-            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_GlobalValue, cond, cursor, base);
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_GlobalValue, dependencies, cursor, literalPoolRegister);
          }
       }
 
@@ -374,7 +385,8 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
       }
    else
       {
-      return genLoadConstant(cg, node, (int32_t) value, targetRegister, cursor, cond, base);
+      // TODO: We should update this API as well to accept a "canSetConditionCode" and forward that argument here rather than passing false blindly.
+      return generateLoad32BitConstant(cg, node, (int32_t) value, targetRegister, false, cursor, cond, base);
       }
    }
 
@@ -386,22 +398,22 @@ genLoadAddressConstantInSnippet(TR::CodeGenerator * cg, TR::Node * node, uintptr
    }
 
 static TR::Register *
-genLoadConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
+generateLoad32BitConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
    {
    TR::Register * tempReg = NULL;
    switch (constExpr->getDataType())
       {
       case TR::Int8:
          tempReg = cg->allocateRegister();
-         genLoadConstant(cg, constExpr, constExpr->getByte(), tempReg, NULL);
+         generateLoad32BitConstant(cg, constExpr, constExpr->getByte(), tempReg, false);
          break;
       case TR::Int16:
          tempReg = cg->allocateRegister();
-         genLoadConstant(cg, constExpr, constExpr->getShortInt(), tempReg, NULL);
+         generateLoad32BitConstant(cg, constExpr, constExpr->getShortInt(), tempReg, false);
          break;
       case TR::Int32:
          tempReg = cg->allocateRegister();
-         genLoadConstant(cg, constExpr, constExpr->getInt(), tempReg, NULL);
+         generateLoad32BitConstant(cg, constExpr, constExpr->getInt(), tempReg, false);
          break;
       case TR::Address:
          tempReg = cg->allocateRegister();
@@ -411,7 +423,7 @@ genLoadConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
             }
          else
             {
-            genLoadConstant(cg, constExpr, constExpr->getInt(), tempReg, NULL);
+            generateLoad32BitConstant(cg, constExpr, constExpr->getInt(), tempReg, false);
             }
 
          break;
@@ -428,8 +440,8 @@ genLoadConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
             TR::Register * highRegister = cg->allocateRegister();
 
             tempReg = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
-            genLoadConstant(cg, constExpr, constExpr->getLongIntLow(), lowRegister);
-            genLoadConstant(cg, constExpr, constExpr->getLongIntHigh(), highRegister);
+            generateLoad32BitConstant(cg, constExpr, constExpr->getLongIntLow(), lowRegister, false);
+            generateLoad32BitConstant(cg, constExpr, constExpr->getLongIntHigh(), highRegister, false);
             }
          break;
          }
@@ -1035,7 +1047,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                   {
                   cond->addPostConditionIfNotAlreadyInserted(constReg, TR::RealRegister::AssignAny);
                   }
-               cursor = genLoadConstant(cg, node, value, constReg, preced, cond, NULL);
+               cursor = generateLoad32BitConstant(cg, node, value, constReg, true, preced, cond, NULL);
                cursor = generateRRInstruction(cg, TR::InstOpCode::CLR, node, sourceRegister, constReg, cursor);
                cg->stopUsingRegister(constReg);
                return cursor;
@@ -3620,7 +3632,7 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
 
 
    // Assume the answer is TRUE
-   genLoadConstant(cg, node, 1, targetRegister);
+   generateLoad32BitConstant(cg, node, 1, targetRegister, true);
 
    // Generate compare code, find out if ops were reversed
 
@@ -3681,7 +3693,7 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
    deps->addPostConditionIfNotAlreadyInserted(targetRegister, TR::RealRegister::AssignAny);
 
    // Set the answer to FALSE
-   genLoadConstant(cg, node, 0, targetRegister, NULL, deps, NULL);
+   generateLoad32BitConstant(cg, node, 0, targetRegister, true, NULL, deps, NULL);
 
    // DONE
    cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneCmp);
@@ -3692,59 +3704,6 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
    return targetRegister;
 
    }
-
-#ifdef false
-/** Generate code to perform a comparison that returns 1 or 0
- * The comparisson type is determined by the choice of CMP operators:
- *   - fBranchOp:  Operator used for forward operation ->  A fCmp B
- *   - rBranchOp:  Operator user for reverse operation ->  B rCmp A <=> A fCmp B
- */
-TR::Register *
-generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic branchOp, TR::InstOpCode::S390BranchCondition fBranchOpCond, TR::InstOpCode::S390BranchCondition rBranchOpCond,
-   bool isUnorderedOK)
-   {
-   TR::Instruction * cursor = NULL;
-
-   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
-
-   // Create a label
-   TR::LabelSymbol * doneCmp = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   // Create a register
-   TR::Register * targetRegister = cg->allocateRegister();
-   deps->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
-
-   // Assume the answer is TRUE
-   genLoadConstant(cg, node, 1, targetRegister);
-
-   // Generate compare code, find out if ops were reversed
-   TR::InstOpCode::S390BranchCondition branchOpCond =
-       generateS390CompareOps(node, cg, fBranchOpCond, rBranchOpCond);
-
-   // Check the CC to see if TRUE is a correct assumption,
-   // branch to DONE if assumption OK
-
-   if (isUnorderedOK)
-      {
-      uint8_t branchMask = getMaskForBranchCondition(branchOpCond);
-      branchMask += 0x10;
-      branchOpCond = getBranchConditionForMask(branchMask>>4);
-      }
-
-   cursor = generateS390BranchInstruction(cg, branchOp, branchOpCond, node, doneCmp);
-   cursor->setStartInternalControlFlow();
-
-   // Set the answer to FALSE
-   genLoadConstant(cg, node, 0, targetRegister, NULL, deps, NULL);
-
-   // DONE
-   cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneCmp);
-   cursor->setDependencyConditions(deps);
-   cursor->setEndInternalControlFlow();
-
-   node->setRegister(targetRegister);
-   return targetRegister;
-   }
-#endif
 
 TR::InstOpCode::Mnemonic
 getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, TR::DataTypes dataType, bool canUseImm8 )
@@ -6714,8 +6673,8 @@ lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
       TR::Register * lowRegister = cg->allocateRegister();
       TR::RegisterPair * valueReg = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
 
-      genLoadConstant(cg, valueChild, lowValue, lowRegister);
-      genLoadConstant(cg, valueChild, highValue, highRegister);
+      generateLoad32BitConstant(cg, valueChild, lowValue, lowRegister, true);
+      generateLoad32BitConstant(cg, valueChild, highValue, highRegister, true);
       if (isReversed)
          {
          generateRXInstruction(cg, TR::InstOpCode::STRV, node, lowRegister, lowMR);
@@ -10889,7 +10848,7 @@ OMR::Z::TreeEvaluator::ixfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          result *= -1;
 
       TR::Register *resultReg = cg->allocateRegister();
-      genLoadConstant(cg, node, result, resultReg);
+      generateLoad32BitConstant(cg, node, result, resultReg, true);
 
       node->setRegister(resultReg);
       }
@@ -10983,8 +10942,8 @@ OMR::Z::TreeEvaluator::lxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR::Register * valueHighReg = cg->allocateRegister();
 
          TR::Register *valuePair = cg->allocateConsecutiveRegisterPair(valueLowReg, valueHighReg);
-         genLoadConstant(cg, node, (uint32_t)(unsignedResult >> 32), valueHighReg);
-         genLoadConstant(cg, node, (uint32_t)(unsignedResult & 0xFFFFFFFF), valueLowReg);
+         generateLoad32BitConstant(cg, node, (uint32_t)(unsignedResult >> 32), valueHighReg, true);
+         generateLoad32BitConstant(cg, node, (uint32_t)(unsignedResult & 0xFFFFFFFF), valueLowReg, true);
 
          node->setRegister(valuePair);
          }
@@ -11059,8 +11018,8 @@ OMR::Z::TreeEvaluator::lxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          TR::Register * valueHighReg = cg->allocateRegister();
 
          TR::Register *valuePair = cg->allocateConsecutiveRegisterPair(valueLowReg, valueHighReg);
-         genLoadConstant(cg, valueNode, valueNode->getLongIntLow(), valueLowReg);
-         genLoadConstant(cg, valueNode, valueNode->getLongIntHigh(), valueHighReg);
+         generateLoad32BitConstant(cg, valueNode, valueNode->getLongIntLow(), valueLowReg, true);
+         generateLoad32BitConstant(cg, valueNode, valueNode->getLongIntHigh(), valueHighReg, true);
 
          TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
@@ -12616,10 +12575,10 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
       inputLenReg = cg->allocateRegister();
       int64_t length = getIntegralValue(inputLengthNode);
       if (node->isCharToByteTranslate() || node->isCharToCharTranslate())
-         genLoadConstant(cg, inputLengthNode, length * 2, inputLenReg);
+         generateLoad32BitConstant(cg, inputLengthNode, length * 2, inputLenReg, true);
       else
-         genLoadConstant(cg, inputLengthNode, length, inputLenReg);
-      genLoadConstant(cg, inputLengthNode, length, resultReg);
+         generateLoad32BitConstant(cg, inputLengthNode, length, inputLenReg, true);
+      generateLoad32BitConstant(cg, inputLengthNode, length, resultReg, true);
       }
    else
       {
@@ -12969,7 +12928,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             else
                {
                constExprRegister = cg->allocateRegister();
-               genLoadConstant(cg, node, bv, constExprRegister);
+               generateLoad32BitConstant(cg, node, bv, constExprRegister, true);
                }
             }
 
@@ -12977,7 +12936,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             {
             uint16_t value = (uint16_t) constExpr->getShortInt();
             constExprRegister = cg->allocateRegister();
-            genLoadConstant(cg, node, value, constExprRegister);
+            generateLoad32BitConstant(cg, node, value, constExprRegister, true);
             }
 
          else if (stgCopy)
@@ -13005,7 +12964,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             }
          else
             {
-            constExprRegister = genLoadConstant(cg, constExpr);
+            constExprRegister = generateLoad32BitConstant(cg, constExpr);
             }
          }
       }
@@ -13112,7 +13071,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
       TR::Node *targetLenNode = elemsExpr ; //elemsExpr is a const
 
       TR::Register *targetReg = cg->gprClobberEvaluate(targetNode);
-      TR::Register *targetLenReg = genLoadConstant(cg, targetLenNode);
+      TR::Register *targetLenReg = generateLoad32BitConstant(cg, targetLenNode);
 
       TR::Register *sourceReg =  cg->allocateRegister(); //Reuse the target's base address
       generateRRInstruction(cg, TR::InstOpCode::LR, node, sourceReg, targetReg);
@@ -13190,7 +13149,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
          }
       else
          {
-         genLoadConstant(cg, node, iter, itersReg);
+         generateLoad32BitConstant(cg, node, iter, itersReg, true);
          }
       topOfLoop->setStartInternalControlFlow();
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop);
@@ -13327,10 +13286,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
       if (elemsExpr->getOpCode().isLoadConst())
          {
          elemsRegister = cg->allocateRegister();
-         genLoadConstant(cg, elemsExpr, elems, elemsRegister);
-         }
-      else
-         {
+         generateLoad32BitConstant(cg, elemsExpr, elems, elemsRegister, true);
          }
 
       TR::Register * strideRegister = cg->allocateRegister();
@@ -13630,7 +13586,7 @@ OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node * node, TR::CodeGenerator * c
          if (byteLenNode->getDataType() == TR::Int64)
             genLoadLongConstant(cg, byteLenNode, constantByteLength, byteLenReg, NULL, NULL);
          else
-            genLoadConstant(cg, byteLenNode, constantByteLength, byteLenReg, NULL, NULL);
+            generateLoad32BitConstant(cg, byteLenNode, constantByteLength, byteLenReg, true);
          cg->stopUsingRegister(byteLenReg);
          isConst = true;
          }
@@ -15275,7 +15231,7 @@ TR::Register *arraycmpWithPadHelper::generateConstCLCL()
    if(TR::Compiler->target.is64Bit())
       genLoadLongConstant(cg, node, lenPad, source2LenReg);
    else
-      genLoadConstant(cg, node, lenPad, source2LenReg);
+      generateLoad32BitConstant(cg, node, lenPad, source2LenReg, true);
 
    TR::Instruction *cursor = NULL;
    cursor = generateRRInstruction(cg, TR::InstOpCode::CLCL, node, source1PairReg, source2PairReg);
@@ -15520,7 +15476,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       if (TR::Compiler->target.is64Bit())
          genLoadLongConstant(cg, node, 2, paddingUnequalRetValReg);
       else
-         genLoadConstant(cg, node, 2, paddingUnequalRetValReg);
+         generateLoad32BitConstant(cg, node, 2, paddingUnequalRetValReg, true);
 
       TR::LabelSymbol *doneAssignLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       generateS390CompareAndBranchInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGR : TR::InstOpCode::CR, node, source2LenReg, source1LenReg, TR::InstOpCode::COND_BHRC, doneAssignLabel);
@@ -15530,7 +15486,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       if(TR::Compiler->target.is64Bit())
          genLoadLongConstant(cg, node, 1, paddingUnequalRetValReg);
       else
-         genLoadConstant(cg, node, 1, paddingUnequalRetValReg);
+         generateLoad32BitConstant(cg, node, 1, paddingUnequalRetValReg, true);
 
       TR::Instruction *cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneAssignLabel);
       cursor->setDependencyConditions(regDeps);
@@ -15551,7 +15507,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       if(TR::Compiler->target.is64Bit())
          genLoadLongConstant(cg, node, 0, retValReg);
       else
-         genLoadConstant(cg, node, 0, retValReg);
+         generateLoad32BitConstant(cg, node, 0, retValReg, true);
       }
 
    loopCountReg = cg->allocateRegister();
@@ -15974,7 +15930,7 @@ void arraycmpWithPadHelper::generateConstCLCPaddingLoop()
    if(TR::Compiler->target.is64Bit())
       genLoadLongConstant(cg, node, 0, retValReg);
    else
-      genLoadConstant(cg, node, 0, retValReg);
+      generateLoad32BitConstant(cg, node, 0, retValReg, true);
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK15, node, doneLabel);
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, paddingUnequalLabel);
    //IPM
@@ -16305,7 +16261,7 @@ TR::Register* arraycmpWithPadHelper::generate()
       else
          {
          source1Reg = cg->allocateRegister();
-         genLoadConstant(cg, node, addr1Const, source1Reg);
+         generateLoad32BitConstant(cg, node, addr1Const, source1Reg, true);
          }
       }
 
@@ -16319,7 +16275,7 @@ TR::Register* arraycmpWithPadHelper::generate()
       else
          {
          source2Reg = cg->allocateRegister();
-         genLoadConstant(cg, node, addr2Const, source2Reg);
+         generateLoad32BitConstant(cg, node, addr2Const, source2Reg, true);
          }
       }
 
@@ -16905,8 +16861,8 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
       {
       inputLen = cg->allocateRegister();
 
-      genLoadConstant(cg, inputLenNode, (getIntegralValue(inputLenNode)),           inputLen);
-      genLoadConstant(cg, inputLenNode, (getIntegralValue(inputLenNode) >> 4) << 4, inputLen16);
+      generateLoad32BitConstant(cg, inputLenNode, (getIntegralValue(inputLenNode)), inputLen, true);
+      generateLoad32BitConstant(cg, inputLenNode, (getIntegralValue(inputLenNode) >> 4) << 4, inputLen16, true);
       }
    else
       {
@@ -17200,8 +17156,8 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
       {
       inputLen = cg->allocateRegister();
 
-      genLoadConstant(cg, inputLenNode, (getIntegralValue(inputLenNode)),           inputLen);
-      genLoadConstant(cg, inputLenNode, (getIntegralValue(inputLenNode) >> 4) << 4, inputLen16);
+      generateLoad32BitConstant(cg, inputLenNode, (getIntegralValue(inputLenNode)), inputLen, true);
+      generateLoad32BitConstant(cg, inputLenNode, (getIntegralValue(inputLenNode) >> 4) << 4, inputLen16, true);
       }
    else
       {
@@ -17927,8 +17883,8 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
       inputLen = cg->allocateRegister();
 
       // Convert input length in number of characters to number of bytes
-      genLoadConstant(cg, inputLenNode, ((getIntegralValue(inputLenNode) * 2)),           inputLen);
-      genLoadConstant(cg, inputLenNode, ((getIntegralValue(inputLenNode) * 2) >> 4) << 4, inputLen16);
+      generateLoad32BitConstant(cg, inputLenNode, ((getIntegralValue(inputLenNode) * 2)), inputLen, true);
+      generateLoad32BitConstant(cg, inputLenNode, ((getIntegralValue(inputLenNode) * 2) >> 4) << 4, inputLen16, true);
       }
    else
       {

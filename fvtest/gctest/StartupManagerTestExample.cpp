@@ -99,10 +99,12 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 #else
 					gcTestEnv->log(LEVEL_ERROR, "WARNING: concurrentMark=true ignored, requires OMR_GC_MODRON_CONCURRENT_MARK (see configure_common.mk)\n");
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK)*/
+#if defined(OMR_GC_MODRON_SCAVENGER)
 				} else if (0 == strcmp(attr.name(), "forceBackOut")) {
 					extensions->fvtest_forceScavengerBackout = (0 == j9_cmdla_stricmp(attr.value(), "true"));
 				} else if (0 == strcmp(attr.name(), "forcePoisonEvacuate")) {
 					extensions->fvtest_forcePoisonEvacuate = (0 == j9_cmdla_stricmp(attr.value(), "true"));
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 				} else if ((0 == strcmp(attr.name(), "verboseLog")) || (0 == strcmp(attr.name(), "numOfFiles")) || (0 == strcmp(attr.name(), "numOfCycles")) || (0 == strcmp(attr.name(), "sizeUnit"))) {
 				} else {
 					gcTestEnv->log(LEVEL_ERROR, "Failed: Unrecognized option: %s\n", attr.name());

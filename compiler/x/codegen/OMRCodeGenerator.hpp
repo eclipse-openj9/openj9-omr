@@ -324,9 +324,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    public:
 
-   TR::Linkage *createLinkage(TR_LinkageConventions lc) { return NULL; }
-   void beginInstructionSelection() {}
-   void endInstructionSelection() {}
+   TR::Linkage *createLinkage(TR_LinkageConventions lc);
+   void beginInstructionSelection();
+   void endInstructionSelection();
 
 
    static TR_X86ProcessorInfo &getX86ProcessorInfo() {return _targetProcessorInfo;}

@@ -39,7 +39,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/x/codegen/OMRRegisterIterator.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/env/OMRDebugEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/env/OMRCPU.cpp \
-    $(JIT_PRODUCT_DIR)/x/codegen/JBCodeGenerator.cpp \
     $(JIT_PRODUCT_DIR)/x/codegen/Evaluator.cpp
 
 include $(JIT_MAKE_DIR)/files/target/$(TARGET_SUBARCH).mk

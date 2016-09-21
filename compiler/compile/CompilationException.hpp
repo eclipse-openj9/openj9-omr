@@ -71,22 +71,6 @@ struct InsufficientlyAggressiveCompilation : public virtual CompilationException
    virtual const char* what() const throw() { return "Insufficiently Aggressive Compilation"; }
    };
 
-// For:
-//    COMPILATION_NULL_SUBSTITUTE_CODE_CACHE
-//    COMPILATION_CODE_MEMORY_EXHAUSTED
-struct CodeCacheError : public virtual CompilationException
-   {
-   virtual const char* what() const throw() { return "Code Cache Error"; }
-   };
-
-// For:
-//    COMPILATION_ALL_CODE_CACHES_RESERVED
-//    COMPILATION_ILLEGAL_CODE_CACHE_SWITCH
-struct RecoverableCodeCacheError : public virtual CodeCacheError
-   {
-   virtual const char* what() const throw() { return "Recoverable Code Cache Error"; }
-   };
-
 // For COMPILATION_GCRPATCH_FAILURE
 struct GCRPatchFailure : public virtual CompilationException
    {

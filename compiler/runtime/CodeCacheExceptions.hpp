@@ -24,6 +24,8 @@
 #include <exception>
 #include <new>
 
+namespace TR {
+
 // For:
 //    COMPILATION_NULL_SUBSTITUTE_CODE_CACHE
 //    COMPILATION_CODE_MEMORY_EXHAUSTED
@@ -39,5 +41,7 @@ struct RecoverableCodeCacheError : public virtual std::bad_alloc
    {
    virtual const char* what() const throw() { return "Recoverable Code Cache Error"; }
    };
+
+}
 
 #endif // CODECACHEEXCEPTIONS_HPP

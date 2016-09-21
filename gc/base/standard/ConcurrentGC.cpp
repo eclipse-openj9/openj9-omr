@@ -3422,6 +3422,7 @@ MM_ConcurrentGC::completeTracing(MM_EnvironmentStandard *env)
 	/* ..and amount traced */
 	_stats->incCompleteTracingCount(bytesTraced);
 
+	flushLocalBuffers(env);
 }
 
 

@@ -54,10 +54,6 @@
 .PHONY: iwyu
 iwyu::
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-$(call REQUIRE_VARS,J9SRC)
-
 
 # default paths, unless overriden
 export CC_PATH?=include-what-you-use

@@ -16,22 +16,15 @@ cleanobjs: ; @echo SUCCESS - All objects are cleaned
 cleandeps: ; @echo SUCCESS - All dependencies are cleaned
 cleandll: ; @echo SUCCESS - All shared libraries are cleaned
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-
-# Verify SDK pointer for non-cleaning targets
-ifeq (,$(filter clean cleandeps cleandll,$(MAKECMDGOALS)))
-    $(call REQUIRE_VARS,J9SRC)
-endif
-
 #
 # First setup some important paths
 # Personally, I feel it's best to default to out-of-tree build but who knows, there may be
 # differing opinions on that.
 #
+TRSRC?=$(CURDIR)/../../..
 JIT_SRCBASE?=$(TRSRC)
-JIT_OBJBASE?=$(TRSRC)/objs/compilertest_$(BUILD_CONFIG)
-JIT_DLL_DIR?=$(JIT_OBJBASE)
+JIT_OBJBASE?=$(TRSRC)/omr/objs/compilertest_$(BUILD_CONFIG)
+JIT_DLL_DIR?=$(TRSRC)/omr
 
 #
 # Windows users will likely use backslashes, but Make tends to not like that so much

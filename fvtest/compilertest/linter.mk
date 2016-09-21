@@ -8,10 +8,6 @@
 .PHONY: linter
 linter::
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-$(call REQUIRE_VARS,J9SRC)
-
 ifeq ($(PLATFORM),ppc64-linux64-clangLinter)
     export LLVM_CONFIG?=/tr/llvm_checker/ppc-64/sles11/bin/llvm-config
     export CC_PATH?=/tr/llvm_checker/ppc-64/sles11/bin/clang

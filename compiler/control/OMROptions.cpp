@@ -624,6 +624,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableDowngradeOnHugeQSZ",           "M\tdowngrade first time compilations when the compilation queue is huge (1000+ entries)", SET_OPTION_BIT(TR_EnableDowngradeOnHugeQSZ), "F", NOT_IN_SUBSET},
    {"enableDualTLH",                      "D\tEnable use of non-zero initialized TLH. TR_EnableBatchClear must be set too.", RESET_OPTION_BIT(TR_DisableDualTLH), "F"},
    {"enableDupRetTree",                   "O\tEnable duplicate return tree",                  SET_OPTION_BIT(TR_EnableDupRetTree), "F"},
+   {"enableDynamicRIBufferProcessing",    "O\tenable disabling buffer processing", RESET_OPTION_BIT(TR_DisableDynamicRIBufferProcessing), "F", NOT_IN_SUBSET},
    {"enableDynamicSamplingWindow",        "M\t", RESET_OPTION_BIT(TR_DisableDynamicSamplingWindow), "F", NOT_IN_SUBSET},
    {"enableEarlyCompilationDuringIdleCpu","M\t", SET_OPTION_BIT(TR_EnableEarlyCompilationDuringIdleCpu), "F", NOT_IN_SUBSET},
    {"enableEBBCCInfo",                    "C\tenable tracking CCInfo in Extended Basic Block scope",  SET_OPTION_BIT(TR_EnableEBBCCInfo), "F"},

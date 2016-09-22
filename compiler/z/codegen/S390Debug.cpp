@@ -182,11 +182,10 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       return;
       }
 
-#ifndef DESIGN_RATRACE
    //  dump the inst's pre deps
    if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, true, false);
-#endif
+
    switch (instr->getKind())
       {
       case TR::Instruction::IsLabel:
@@ -383,15 +382,11 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
             }
          }
       }
-#ifdef DESIGN_RATRACE
-   //  dump pre and post register dependencies after the instruction itself
-   if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
-      dumpDependencies(pOutFile, instr, true, true);
-#else
+
    //  dump the inst's post deps
    if (instr->getOpCodeValue() != TR::InstOpCode::ASSOCREGS && _comp->cg()->getCodeGeneratorPhase() <= TR::CodeGenPhase::BinaryEncodingPhase)
       dumpDependencies(pOutFile, instr, false, true);
-#endif
+
    if(instr->isStartInternalControlFlow())
       {
       trfprintf(pOutFile, "\t# (Start of internal control flow)");
@@ -464,11 +459,7 @@ TR_Debug::dumpDependencies(TR::FILE *pOutFile, TR::Instruction * instr, bool pre
 
    if (pOutFile == NULL || !deps || _comp->getOption(TR_DisableTraceRegDeps))
       return;
-#ifdef DESIGN_RATRACE
-   if (_registerAssignmentTraceFlags & TRACERA_IN_PROGRESS  &&
-       !_comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRADependencies))
-      return;
-#endif
+
    if (pre)
       {
       if (deps->getNumPreConditions() > 0)

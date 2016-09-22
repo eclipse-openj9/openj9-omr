@@ -1521,15 +1521,6 @@ generateCmpResult(TR::CodeGenerator * cg, TR::Node * rootNode, TR::Register * ds
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, rootNode, trueLabel);
    getConditionCode(rootNode, cg, resultReg);
 
-#ifdef false
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNERC, rootNode, falseLabel);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, rootNode, trueLabel);
-   generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), rootNode, resultReg, 1);
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, rootNode, doneLabel);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, rootNode, falseLabel);
-   generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), rootNode, resultReg, resultReg);
-#endif
-
    TR::Instruction * cursor;
    cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, rootNode, doneLabel);
 

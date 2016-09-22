@@ -26,7 +26,7 @@
 #include "codegen/RealRegister.hpp"                // for RealRegister, etc
 #include "codegen/Register.hpp"                    // for Register
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/TreeEvaluator.hpp"               // for genLoadConstant, etc
+#include "codegen/TreeEvaluator.hpp"               // for generateLoad32BitConstant, etc
 #include "codegen/S390Evaluator.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
@@ -373,7 +373,7 @@ MemToMemConstLenMacroOp::generateLoop()
 
       TR::Node *targetAddress = _dstNode;
       TR::Register *targetOddRegister = _cg->allocateRegister();
-      genLoadConstant(_cg, _rootNode, len, targetOddRegister);
+      generateLoad32BitConstant(_cg, _rootNode, len, targetOddRegister, true);
 
       if (_srcReg == NULL)
          genSrcLoadAddress(0, NULL);
@@ -381,7 +381,7 @@ MemToMemConstLenMacroOp::generateLoop()
 
       TR::Node *sourceAddress = _srcNode;
       TR::Register *sourceOddRegister = _cg->allocateRegister();
-      genLoadConstant(_cg, _rootNode, len, sourceOddRegister);
+      generateLoad32BitConstant(_cg, _rootNode, len, sourceOddRegister, true);
 
       TR::RegisterPair * sourcePairRegister = _cg->allocateConsecutiveRegisterPair(sourceOddRegister,sourceEvenRegister);
       TR::RegisterPair * targetPairRegister = _cg->allocateConsecutiveRegisterPair(targetOddRegister,targetEvenRegister);
@@ -425,7 +425,7 @@ MemToMemConstLenMacroOp::generateLoop()
    if (TR::Compiler->target.is64Bit())
       cursor = genLoadLongConstant(_cg, _rootNode, largeCopies, _itersReg, cursor, NULL, NULL);
    else
-      cursor = genLoadConstant(_cg, _rootNode, largeCopies, _itersReg, cursor, NULL, NULL);
+      cursor = generateLoad32BitConstant(_cg, _rootNode, largeCopies, _itersReg, true, cursor, NULL, NULL);
 
    _startControlFlow = cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop, cursor);
 
@@ -550,7 +550,7 @@ MemInitConstLenMacroOp::generateLoop()
    if (TR::Compiler->target.is64Bit())
       cursor = genLoadLongConstant(_cg, _rootNode, largeCopies, _itersReg, cursor, NULL, NULL);
    else
-      cursor = genLoadConstant(_cg, _rootNode, largeCopies, _itersReg, cursor, NULL, NULL);
+      cursor = generateLoad32BitConstant(_cg, _rootNode, largeCopies, _itersReg, true, cursor, NULL, NULL);
 
    _startControlFlow = cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop, cursor);
 

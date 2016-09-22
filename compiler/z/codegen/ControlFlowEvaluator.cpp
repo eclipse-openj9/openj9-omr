@@ -476,7 +476,7 @@ generateS390lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
       targetRegister = cg->allocateRegister();
 
       // Assume the condition is true.
-      genLoadConstant(cg, node, 1, targetRegister);
+      generateLoad32BitConstant(cg, node, 1, targetRegister, true);
 
       trueTarget = isTrue;
       falseTarget = isFalse;
@@ -601,7 +601,7 @@ generateS390lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
       if (!internalControlFlowStarted)
         isFalse->setStartInternalControlFlow();
 
-      genLoadConstant(cg, node, 0, targetRegister);
+      generateLoad32BitConstant(cg, node, 0, targetRegister, true);
 
       // Force early assignment of bool value to avoid spills in control flow.
       // We don't need an equivalent dep on the gra deps as it is by defn not generated
@@ -700,16 +700,19 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    brCond = generateS390CompareOps(node, cg, TR::InstOpCode::COND_BHRC, TR::InstOpCode::COND_BLRC);
    branchOp = TR::InstOpCode::BRC;
 
-   //Assume A==B, set targetRegister value to 0
-   genLoadConstant(cg, node, 0, targetRegister);
+   // Assume A == B, set targetRegister value to 0
+   // TODO: Can we allow setting the condition code here by moving the load before the compare?
+   generateLoad32BitConstant(cg, node, 0, targetRegister, false);
+
    // done if A==B
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
    deps->addPostCondition(targetRegister,TR::RealRegister::AssignAny);
    TR::Instruction *cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BERC, node, doneCmp);
    cursor->setStartInternalControlFlow();
 
-   //found A!=B, assume A>B, set targetRegister value to 1
-   genLoadConstant(cg, node, 1, targetRegister);
+   // Found A != B, assume A > B, set targetRegister value to 1
+   generateLoad32BitConstant(cg, node, 1, targetRegister, false);
+
    //done if A>B
    generateS390BranchInstruction(cg, branchOp, brCond, node, doneCmp);
    //found either A<B or either of A and B is NaN
@@ -722,7 +725,7 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    //Got here? means either A<B or (TR::fcmpl instruction and (A==NaN || B==NaN))
    //set targetRegister value to -1
-   genLoadConstant(cg, node, -1, targetRegister);
+   generateLoad32BitConstant(cg, node, -1, targetRegister, true);
 
    // DONE
    doneCmp->setEndInternalControlFlow();

@@ -16,7 +16,7 @@
 ##    Multiple authors (IBM Corp.) - initial implementation and documentation
 ################################################################################
 
-# omr/fvtest/compilertest/build Makefile
+# fvtest/compilertest/build Makefile
 
 ifeq (,$(TRSRC))
     $(error Must set TRSRC)

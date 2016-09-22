@@ -1,6 +1,9 @@
 J9_VERSION?=29
 
-OMR_DIR?=$(J9SRC)/omr
+ifdef J9SRC
+   OMR_DIR?=$(J9SRC)/omr
+endif
+OMR_DIR?=../..
 top_srcdir=$(OMR_DIR)
 include $(OMR_DIR)/omrmakefiles/configure.mk
 
@@ -11,16 +14,14 @@ PRODUCT_INCLUDES=\
     $(FIXED_SRCBASE)/$(JIT_PRODUCT_DIR)/$(TARGET_ARCH)/$(TARGET_SUBARCH) \
     $(FIXED_SRCBASE)/$(JIT_PRODUCT_DIR)/$(TARGET_ARCH) \
     $(FIXED_SRCBASE)/$(JIT_PRODUCT_DIR) \
-    $(FIXED_SRCBASE)/omr/fvtest \
+    $(FIXED_SRCBASE)/fvtest \
     $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/$(TARGET_ARCH)/$(TARGET_SUBARCH) \
     $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/$(TARGET_ARCH) \
     $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR) \
-    $(FIXED_SRCBASE)/omr \
+    $(FIXED_SRCBASE) \
     $(FIXED_SRCBASE) \
     $(GTEST_PATH) \
-    $(GTEST_PATH)/include \
-    $(J9SRC)/oti \
-    $(J9SRC)/include
+    $(GTEST_PATH)/include
 
 PRODUCT_DEFINES+=\
     BITVECTOR_BIT_NUMBERING_MSB \

@@ -16,22 +16,14 @@ cleanobjs: ; @echo SUCCESS - All objects are cleaned
 cleandeps: ; @echo SUCCESS - All dependencies are cleaned
 cleandll: ; @echo SUCCESS - All shared libraries are cleaned
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-
-# Verify SDK pointer for non-cleaning targets
-ifeq (,$(filter clean cleandeps cleandll,$(MAKECMDGOALS)))
-    $(call REQUIRE_VARS,J9SRC)
-endif
-
 #
 # First setup some important paths
 # Personally, I feel it's best to default to out-of-tree build but who knows, there may be
 # differing opinions on that.
 #
-JIT_SRCBASE?=$(TRSRC)
-JIT_OBJBASE?=$(TRSRC)/objs/compilertest_$(BUILD_CONFIG)
-JIT_DLL_DIR?=$(JIT_OBJBASE)
+JIT_SRCBASE?=../..
+JIT_OBJBASE?=../../objs/compilertest_$(BUILD_CONFIG)
+JIT_DLL_DIR?=../..
 
 #
 # Windows users will likely use backslashes, but Make tends to not like that so much
@@ -49,14 +41,14 @@ BUILD_CONFIG?=prod
 # It just makes sense since source and build dirs may be in different places 
 # in the filesystem :)
 #
-JIT_OMR_DIRTY_DIR?=omr/compiler
-JIT_PRODUCT_DIR?=omr/fvtest/compilertest
+JIT_OMR_DIRTY_DIR?=compiler
+JIT_PRODUCT_DIR?=fvtest/compilertest
 
 #
 # Dirs used internally by the makefiles
 #
-JIT_MAKE_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build
-JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build/scripts
+JIT_MAKE_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build
+JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build/scripts
 
 #
 # First we set a bunch of tokens about the platform that the rest of the

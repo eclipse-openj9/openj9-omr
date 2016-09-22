@@ -54,10 +54,6 @@
 .PHONY: iwyu
 iwyu::
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-$(call REQUIRE_VARS,J9SRC)
-
 
 # default paths, unless overriden
 export CC_PATH?=include-what-you-use
@@ -68,8 +64,8 @@ export CXX_PATH?=include-what-you-use
 # Personally, I feel it's best to default to out-of-tree build but who knows, there may be
 # differing opinions on that.
 #
-JIT_SRCBASE?=..
-JIT_OBJBASE?=../objs/trj9_$(BUILD_CONFIG)
+JIT_SRCBASE?=../..
+JIT_OBJBASE?=../../objs/trj9_$(BUILD_CONFIG)
 JIT_DLL_DIR?=$(JIT_OBJBASE)
 
 #
@@ -88,14 +84,14 @@ BUILD_CONFIG?=prod
 # It just makes sense since source and build dirs may be in different places
 # in the filesystem :)
 #
-JIT_OMR_DIRTY_DIR?=omr/compiler
-JIT_PRODUCT_DIR?=omr/fvtest/compilertest
+JIT_OMR_DIRTY_DIR?=compiler
+JIT_PRODUCT_DIR?=fvtest/compilertest
 
 #
 # Dirs used internally by the makefiles
 #
-JIT_MAKE_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build
-JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build/scripts
+JIT_MAKE_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build
+JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build/scripts
 
 #
 # First we set a bunch of tokens about the platform that the rest of the

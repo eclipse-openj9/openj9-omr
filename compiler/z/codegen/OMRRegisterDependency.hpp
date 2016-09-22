@@ -320,7 +320,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    void unionNoRegPostCondition(TR::Register *reg, TR::CodeGenerator *cg)
       {
-      TR_ASSERT(0, "unionNoRegPostCondition not implemented");
+      addPostCondition(reg, TR::RealRegister::AssignAny);
       }
 
    uint32_t getNumPreConditions() {return _numPreConditions;}

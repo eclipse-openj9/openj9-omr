@@ -18,7 +18,7 @@
 
 # Sample makefile using g++ may need additional compile options to work in any particular environment
 
-CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/omr/compiler -I./include/omr -I./include
+CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 

@@ -15,9 +15,6 @@ clean:
 cleandeps:
 cleandll:
 
-# Handy macro to check to make sure variables are set
-REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
-
 #
 # First setup some important paths
 # Personally, I feel it's best to default to out-of-tree build but who knows, there may be
@@ -25,7 +22,14 @@ REQUIRE_VARS=$(foreach VAR,$(1),$(if $($(VAR)),,$(error $(VAR) must be set)))
 #
 JIT_SRCBASE?=..
 JIT_OBJBASE?=../build
-JIT_DLL_DIR?=$(JIT_OBJBASE)
+JIT_DLL_DIR?=../jitbuilder/release
+
+#
+# Now we need to cleanup these variables on Windows
+#
+FIXED_SRCBASE=$(subst \,/,$(JIT_SRCBASE))
+FIXED_OBJBASE=$(subst \,/,$(JIT_OBJBASE))
+FIXED_DLL_DIR=$(subst \,/,$(JIT_DLL_DIR))
 
 # TODO - "debug" as default?
 BUILD_CONFIG?=prod
@@ -36,8 +40,8 @@ BUILD_CONFIG?=prod
 # It just makes sense since source and build dirs may be in different places 
 # in the filesystem :)
 #
-JIT_OMR_DIRTY_DIR?=omr/compiler
-JIT_PRODUCT_DIR?=omr/jitbuilder
+JIT_OMR_DIRTY_DIR?=compiler
+JIT_PRODUCT_DIR?=jitbuilder
 
 #
 # Dirs used internally by the makefiles

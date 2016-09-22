@@ -33,21 +33,6 @@ endif
 SUBMAKE_EXTRAARGS+=ASSUMES=1
 
 #
-# Also convert between old TRSRC variable and new ones
-#
-TRSRC?=$(J9SRC)
-JIT_SRCBASE?=$(TRSRC)
-JIT_OBJBASE?=$(TRSRC)/../build
-JIT_DLL_DIR?=$(TRSRC)/omr/jitbuilder/release
-
-#
-# Now we need to cleanup these variables on Windows
-#
-FIXED_SRCBASE=$(subst \,/,$(JIT_SRCBASE))
-FIXED_OBJBASE=$(subst \,/,$(JIT_OBJBASE))
-FIXED_DLL_DIR=$(subst \,/,$(JIT_DLL_DIR))
-
-#
 # Add JitTest to base targets and lint targets
 #
 all: jitbuilder
@@ -61,14 +46,14 @@ cleandll: jitbuilder_cleandll
 .phony: jitbuilder jitbuilder_clean jitbuilder_cleandeps jitbuilder_cleandll
 
 jitbuilder:
-	$(MAKE) -f jitbuilder.mk JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+	$(MAKE) -f jitbuilder.mk $(SUBMAKE_EXTRAARGS)
 
 jitbuilder_clean:
-	$(MAKE) -f jitbuilder.mk clean JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+	$(MAKE) -f jitbuilder.mk clean $(SUBMAKE_EXTRAARGS)
 
 jitbuilder_cleandeps:
-	$(MAKE) -f jitbuilder.mk cleandeps JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+	$(MAKE) -f jitbuilder.mk cleandeps $(SUBMAKE_EXTRAARGS)
 
 jitbuilder_cleandll:
-	$(MAKE) -f jitbuilder.mk cleandll JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+	$(MAKE) -f jitbuilder.mk cleandll $(SUBMAKE_EXTRAARGS)
 

@@ -902,12 +902,16 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
 
 }
 
+// Note: optimizer_name array needs to match Optimizations enum defined
+// in compiler/optimizer/Optimizations.hpp
 static const char * optimizer_name[] =
    {
    #define OPTIMIZATION(name) #name,
    #define OPTIMIZATION_ENUM_ONLY(entry) "****",
       #include "optimizer/Optimizations.enum"
+      OPTIMIZATION_ENUM_ONLY(numOpts)
       #include "optimizer/OptimizationGroups.enum"
+      OPTIMIZATION_ENUM_ONLY(numGroups)
    #undef OPTIMIZATION
    #undef OPTIMIZATION_ENUM_ONLY
     };

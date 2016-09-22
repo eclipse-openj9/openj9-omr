@@ -735,7 +735,7 @@ enum TR_CompilationOptions
    TR_DisableRedundantBCDSignElimination              = 0x00080000 + 21,
    // Available                                       = 0x00100000 + 21,
    TR_AllowVPRangeNarrowingBasedOnDeclaredType        = 0x00200000 + 21,
-   TR_DisableTieredCodeCache                          = 0x00400000 + 21,
+   TR_EnableTieredCodeCache                           = 0x00400000 + 21,
    // Available                                       = 0x00800000 + 21,
    TR_DisableConverterReducer                         = 0x01000000 + 21,
    // Available                                       = 0x02000000 + 21,

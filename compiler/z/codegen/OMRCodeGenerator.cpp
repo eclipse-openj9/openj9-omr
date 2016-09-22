@@ -5714,7 +5714,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       // the cold section will have the same amount of padding for the estimate
       // and the actual code allocation.
       //
-      if (data.cursorInstruction->isLastWarmInstruction() && !self()->comp()->getOption(TR_AOT) && !self()->comp()->getOption(TR_DisableTieredCodeCache))
+      if (data.cursorInstruction->isLastWarmInstruction() && !self()->comp()->getOption(TR_AOT) && self()->comp()->getOption(TR_EnableTieredCodeCache))
          {
          // Estimate Warm Snippets.
          data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate, true);
@@ -5869,7 +5869,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          // and set up to generate code in the cold code range.
          //
          if (data.cursorInstruction->isLastWarmInstruction() && !self()->comp()->getOption(TR_AOT) && self()->allowSplitWarmAndColdBlocks()
-               && !self()->comp()->getOption(TR_DisableTieredCodeCache))
+               && self()->comp()->getOption(TR_EnableTieredCodeCache))
             {
             self()->emitSnippets(true);
             self()->setWarmCodeEnd(self()->getBinaryBufferCursor());

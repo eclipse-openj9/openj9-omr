@@ -1537,6 +1537,343 @@ TR::Node* TR_LoopStrider::genLoad(TR::Node* node, TR::SymbolReference* symRef, b
    return result;
    }
 
+void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::Node* parent, int32_t &childNum, int32_t &index, TR::Node* originalNode, TR::Node* replacingNode, TR::Node* linearTerm, TR::Node* mulTerm, TR::SymbolReference **newSymbolReference, TR::Block* loopInvariantBlock, TR::AutomaticSymbol* pinningArrayPointer, int64_t differenceInAdditiveConstants, bool &isInternalPointer, bool &downcastNode, bool &usingAladd)
+   {
+   if ((replacingNode->getOpCodeValue() == TR::iload ||
+         replacingNode->getOpCodeValue() == TR::lload) &&
+         (differenceInAdditiveConstants == 0))
+      {
+      bool nodeRememberedInLoadUsed = false;
+      if (isInternalPointer)
+         {
+         node = originalNode;
+         TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aload);
+         }
+
+      if (_usesLoadUsedInLoopIncrement)
+         {
+         TR::Node *newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
+         //traceMsg(comp(), "33 newLoad %p load %p index %d\n", newLoad, _storeTreeInfoForLoopIncrement->_load, index);
+         if (newLoad)
+            {
+            TR::Node *oldNode = parent->getChild(childNum);
+
+
+            if ((newLoad->getOpCodeValue() == TR::lload) && downcastNode)
+               {
+               // We are replacing oldNode(node) with newLoad. Must recursivelyDec all children of oldNode
+               for (int i = 0; i < oldNode->getNumChildren(); i++)
+                  {
+                  oldNode->getChild(i)->recursivelyDecReferenceCount();
+                  }
+               node->setAndIncChild(0, newLoad);
+               TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+               node->setNumChildren(1);
+               node->setReferenceCount(oldNode->getReferenceCount());
+               downcastNode = false;
+               }
+            else
+               {
+               oldNode->recursivelyDecReferenceCount();
+               node = newLoad;
+               parent->setAndIncChild(childNum, node);
+               }
+            }
+         else
+            {
+            int32_t i=0;
+            for (;i<node->getNumChildren();i++)
+               node->getChild(i)->recursivelyDecReferenceCount();
+            _loadUsedInNewLoopIncrement[index] = node;
+            if (_storeTreeInfoForLoopIncrement)
+               addLoad(_storeTreeInfoForLoopIncrement, node, index);
+            nodeRememberedInLoadUsed = true;
+            TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+            node->setSymbolReference(*newSymbolReference);
+            node->setNumChildren(0);
+            }
+         }
+      else
+         {
+         int32_t i=0;
+         for (;i<node->getNumChildren();i++)
+            node->getChild(i)->recursivelyDecReferenceCount();
+         TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+         node->setSymbolReference(*newSymbolReference);
+         node->setNumChildren(0);
+         }
+      // downcast if required
+      if (downcastNode && node->getOpCodeValue() == TR::lload)
+         {
+         TR::Node *l2iNode = node->duplicateTree();
+         node->setNumChildren(1);
+         l2iNode->setNumChildren(0);
+         TR::Node::recreateAndCopyValidProperties(l2iNode, node->getOpCodeValue());
+         l2iNode->setReferenceCount(1);
+         node->setChild(0, l2iNode);
+         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         // check if the parent is a long before adding an l2i
+         //
+         if (parent &&
+            parent->getType().isInt64() &&
+            // Exclude these guys, even though they're long typed their children shouldn't be
+            // For shifts, only the 2nd child shouldn't be long
+            (!parent->getOpCode().isShift() || node != parent->getSecondChild()) &&
+            !parent->getOpCode().isCall() &&
+            !parent->getOpCode().isConversion() &&
+            parent->getOpCodeValue() != TR::lternary)
+            {
+            TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, node);
+            node->decReferenceCount();
+            parent->setAndIncChild(childNum, i2lNode);
+            }
+         if (nodeRememberedInLoadUsed)
+            {
+            nodeRememberedInLoadUsed = false;
+            _loadUsedInNewLoopIncrement[index] = node->getFirstChild();
+            if (_storeTreeInfoForLoopIncrement)
+               addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild(), index);
+            }
+         }
+      }
+   else
+      {
+      bool canHoistAdditiveTerm = false;
+      bool nodeRememberedInLoadUsed = false;
+      TR::Node *newLoad = NULL;
+      if (_usesLoadUsedInLoopIncrement)
+         {
+         newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
+         //traceMsg(comp(), "22 at node %p newLoad %p load %p index %d\n", node, newLoad, _storeTreeInfoForLoopIncrement->_load, index);
+         if (!newLoad)
+            {
+            newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
+            nodeRememberedInLoadUsed = true;
+            _loadUsedInNewLoopIncrement[index] = newLoad;
+            if (_storeTreeInfoForLoopIncrement)
+               addLoad(_storeTreeInfoForLoopIncrement, newLoad, index);
+            }
+         }
+      else
+         {
+         newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
+         }
+
+      TR::Node *adjustmentNode = NULL;
+      if (replacingNode->getOpCodeValue() != TR::iload &&
+         replacingNode->getOpCodeValue() != TR::lload)
+         {
+         TR::Node *mulNode, *constantNode, *indexNode;
+         mulNode = constantNode = indexNode = NULL;
+
+         if (usingAladd)
+            {
+            mulNode = TR::Node::create(node, TR::lmul, 2);
+            indexNode = linearTerm;
+            if (indexNode->getOpCodeValue() == TR::i2l)
+               indexNode = indexNode->getFirstChild()->getSecondChild();
+            else
+               indexNode = indexNode->getSecondChild();
+
+            if (/* debug("enableRednIndVarElim") && */
+               indexNode->getOpCode().isLoadVarDirect() &&
+               indexNode->getSymbol()->isAutoOrParm() &&
+               _neverWritten->get(indexNode->getSymbolReference()->getReferenceNumber()))
+               {
+               canHoistAdditiveTerm = true;
+               }
+
+            if (!mulTerm->getOpCode().isLoadConst())
+               canHoistAdditiveTerm = true;
+
+            // sign-extension required on 64-bit
+            if (!indexNode->getType().isInt64())
+               {
+               TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, indexNode);
+               indexNode = i2lNode;
+               }
+            constantNode = duplicateMulTermNode(index, node, TR::Int64);
+            }
+         else
+            {
+            indexNode = linearTerm->getSecondChild();
+            if (/* debug("enableRednIndVarElim") && */
+               indexNode->getOpCode().isLoadVarDirect() &&
+               indexNode->getSymbol()->isAutoOrParm() &&
+               _neverWritten->get(indexNode->getSymbolReference()->getReferenceNumber()))
+               {
+               canHoistAdditiveTerm = true;
+               }
+
+            if (!mulTerm->getOpCode().isLoadConst())
+               canHoistAdditiveTerm = true;
+
+            mulNode = TR::Node::create(node,
+               replacingNode->getType().isInt64() ? TR::lmul : TR::imul, 2);
+            constantNode = duplicateMulTermNode(index, node, replacingNode->getDataType());
+            }
+
+
+
+         mulNode->setChild(0, indexNode);
+         mulNode->getFirstChild()->incReferenceCount();
+         mulNode->setChild(1, constantNode);
+         mulNode->getSecondChild()->setReferenceCount(1);
+         mulNode->setSideTableIndex(~0);
+         mulNode->getSecondChild()->setSideTableIndex(~0);
+         adjustmentNode = mulNode;
+         }
+
+      if (isInternalPointer)
+         {
+         node = originalNode;
+         if (usingAladd)
+            {
+            if (replacingNode->getOpCodeValue() == TR::lsub)
+               {
+               TR::Node *negateConstantNode = TR::Node::create(node, TR::lconst);
+               negateConstantNode->setLongInt(-1);
+               adjustmentNode = TR::Node::create(TR::lmul, 2, adjustmentNode, negateConstantNode);
+               adjustmentNode->setSideTableIndex(~0);
+               adjustmentNode->getSecondChild()->setSideTableIndex(~0);
+               }
+            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aladd);
+            replacingNode->setIsInternalPointer(true);
+            }
+         else
+            {
+            if (replacingNode->getOpCodeValue() == TR::isub)
+               {
+               adjustmentNode = TR::Node::create(TR::imul, 2, adjustmentNode,
+                  TR::Node::create(node, TR::iconst, 0, -1));
+               adjustmentNode->setSideTableIndex(~0);
+               adjustmentNode->getSecondChild()->setSideTableIndex(~0);
+               }
+            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aiadd);
+            replacingNode->setIsInternalPointer(true);
+            }
+         }
+      else if (replacingNode->getOpCodeValue() == TR::iload ||
+         replacingNode->getOpCodeValue() == TR::lload)
+         {
+         if (usingAladd || (replacingNode->getOpCodeValue() == TR::lload))
+            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::ladd);
+         else
+            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::iadd);
+         }
+
+      if (differenceInAdditiveConstants != 0)
+         {
+         TR::Node *differenceInAdditiveConstantsNode;
+         TR::ILOpCodes op;
+         if (adjustmentNode)
+            {
+            if (usingAladd || (adjustmentNode->getType().isInt64()))
+               {
+               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::lconst);
+               differenceInAdditiveConstantsNode->setLongInt((int64_t) differenceInAdditiveConstants);
+               op = replacingNode->getOpCode().isAdd() ? TR::ladd : TR::lsub;
+               }
+            else
+               {
+               differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, differenceInAdditiveConstants);
+               op = replacingNode->getOpCode().isAdd() ? TR::iadd : TR::isub;
+               }
+            adjustmentNode = TR::Node::create(op, 2, adjustmentNode, differenceInAdditiveConstantsNode);
+            }
+         else
+            {
+            if (usingAladd || (replacingNode->getType().isInt64()))
+               {
+               adjustmentNode = TR::Node::create(node, TR::lconst);
+               adjustmentNode->setLongInt((int64_t) differenceInAdditiveConstants);
+               }
+            else
+               adjustmentNode = TR::Node::create(node, TR::iconst, 0,
+                  differenceInAdditiveConstants);
+            }
+         }
+
+      int32_t i=0;
+      for (;i<node->getNumChildren();i++)
+         node->getChild(i)->recursivelyDecReferenceCount();
+
+      TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+      if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd)
+         {
+         node->setIsInternalPointer(true);
+         if (comp()->isPinningNeeded())
+            {
+            if (!pinningArrayPointer->isInternalPointer())
+               {
+               node->setPinningArrayPointer(pinningArrayPointer);
+               pinningArrayPointer->setPinningArrayPointer();
+               }
+            else
+               node->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
+            }
+         }
+
+      node->setNumChildren(2);
+      node->setChild(0, newLoad);
+      newLoad->incReferenceCount();
+
+      if (canHoistAdditiveTerm)
+         {
+         TR::SymbolReference *newLoopInvariant = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), adjustmentNode->getDataType(), false);
+         TR::Node *newLoad = TR::Node::createLoad(node, newLoopInvariant);
+         newLoad->setSideTableIndex(~0);
+         TR::Node *newStore = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(adjustmentNode->getDataType()), 1, 1, adjustmentNode->duplicateTree(), newLoopInvariant);
+
+         TR::TreeTop *placeHolderTree = loopInvariantBlock->getLastRealTreeTop();
+         if (!placeHolderTree->getNode()->getOpCode().isBranch())
+            placeHolderTree = loopInvariantBlock->getExit();
+         TR::TreeTop *prevTree = placeHolderTree->getPrevTreeTop();
+
+         newStore->setSideTableIndex(~0);
+         TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
+         prevTree->join(newStoreTreeTop);
+         newStoreTreeTop->join(placeHolderTree);
+
+         //printf("Reached here in %s\n", comp()->signature());
+         dumpOptDetails(comp(), "\nO^O INDUCTION VARIABLE ANALYSIS: Induction variable analysis inserted initialization tree : %p for new loop invariant symRef #%d\n", newStoreTreeTop->getNode(), newLoopInvariant->getReferenceNumber());
+         int32_t childNum;
+         for (childNum=0; childNum < adjustmentNode->getNumChildren(); childNum++)
+            adjustmentNode->getChild(childNum)->recursivelyDecReferenceCount();
+         adjustmentNode = newLoad;
+         }
+
+      node->setChild(1, adjustmentNode);
+      adjustmentNode->setReferenceCount(1);
+      // downcast if required
+      if (downcastNode && newLoad->getType().isInt64())
+         {
+         TR::Node *oldFirstChild = node->getFirstChild();
+         TR::Node *l2iNode = node->duplicateTree();
+         l2iNode->setReferenceCount(1);
+         // dec the reference counts of the node's children
+         node->getFirstChild()->decReferenceCount();
+         node->getSecondChild()->recursivelyDecReferenceCount();
+         node->setNumChildren(1);
+         node->setChild(0, l2iNode);
+         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         if (nodeRememberedInLoadUsed)
+            {
+            nodeRememberedInLoadUsed = false;
+            _loadUsedInNewLoopIncrement[index] = node->getFirstChild()->getFirstChild();
+            if (_storeTreeInfoForLoopIncrement)
+               addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild()->getFirstChild(), index);
+            }
+         else
+            {
+            TR::Node *newFirstChild = node->getFirstChild()->getFirstChild();
+            node->getFirstChild()->setAndIncChild(0, oldFirstChild);
+            newFirstChild->recursivelyDecReferenceCount();
+            }
+         }
+      }
+   }
+
 bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariantBlock, TR::Node *parent, int32_t childNum, TR::Node *node, vcount_t visitCount, TR::SymbolReference **newSymbolReference)
    {
    static const char *onlyConstStride = feGetEnv("TR_onlyConstStride");
@@ -1708,345 +2045,8 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
                      differenceInAdditiveConstants = (-1*additiveConstant) - getAdditiveTermConst(index);
                   }
 
-               if ((replacingNode->getOpCodeValue() == TR::iload ||
-                    replacingNode->getOpCodeValue() == TR::lload) &&
-                    differenceInAdditiveConstants == 0)
-                  {
-                  bool nodeRememberedInLoadUsed = false;
-                  if (isInternalPointer)
-                     {
-                     node = originalNode;
-                     TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aload);
-                     }
+               examineOpCodesForInductionVariableUse(node, parent, childNum, index, originalNode, replacingNode, linearTerm, mulTerm, newSymbolReference, loopInvariantBlock, pinningArrayPointer, differenceInAdditiveConstants, isInternalPointer, downcastNode, usingAladd);
 
-                  if (_usesLoadUsedInLoopIncrement)
-                     {
-                     TR::Node *newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
-                     //traceMsg(comp(), "at node %p newLoad %p load %p index %d\n", node, newLoad, _storeTreeInfoForLoopIncrement->_load, index);
-                     if (newLoad)
-                        {
-                        TR::Node *oldNode = parent->getChild(childNum);
-
-                        if ((newLoad->getOpCodeValue() == TR::lload) && downcastNode)
-                           {
-                           // We are replacing oldNode(node) with newLoad. Must recursivelyDec all children of oldNode
-                           for (int i = 0; i < oldNode->getNumChildren(); i++)
-                              {
-                              oldNode->getChild(i)->recursivelyDecReferenceCount();
-                              }
-                           node->setAndIncChild(0, newLoad);
-                           TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-                           node->setNumChildren(1);
-                           node->setReferenceCount(oldNode->getReferenceCount());
-                           downcastNode = false;
-                           }
-                        else
-                           {
-                           oldNode->recursivelyDecReferenceCount();
-                           node = newLoad;
-                           parent->setAndIncChild(childNum, node);
-                           }
-                        }
-                     else
-                        {
-                        int32_t i=0;
-                        for (;i<node->getNumChildren();i++)
-                           node->getChild(i)->recursivelyDecReferenceCount();
-                        _loadUsedInNewLoopIncrement[index] = node;
-                        if (_storeTreeInfoForLoopIncrement)
-                           addLoad(_storeTreeInfoForLoopIncrement, node, index);
-                        nodeRememberedInLoadUsed = true;
-                        TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-                        node->setSymbolReference(*newSymbolReference);
-                        node->setNumChildren(0);
-                        }
-                     }
-                  else
-                     {
-                     int32_t i=0;
-                     for (;i<node->getNumChildren();i++)
-                        node->getChild(i)->recursivelyDecReferenceCount();
-                     TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-                     node->setSymbolReference(*newSymbolReference);
-                     node->setNumChildren(0);
-                     }
-
-                  // downcast if required - this is required for example when a long symref is
-                  // created on 64-bit
-                  // and it is passed to a BNDCHK which does not like longs.
-                  if (downcastNode && node->getOpCodeValue() == TR::lload)
-                     {
-                     TR::Node *l2iNode = node->duplicateTree();
-                     node->setNumChildren(1);
-                     l2iNode->setNumChildren(0);
-                     TR::Node::recreateAndCopyValidProperties(l2iNode, node->getOpCodeValue());
-                     l2iNode->setReferenceCount(1);
-                     node->setChild(0, l2iNode);
-                     TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-                     // check if the parent is a long before adding an l2i
-                     //
-                     if (parent &&
-                         parent->getType().isInt64() &&
-                         // Exclude these guys, even though they're long typed their children shouldn't be
-                         // For shifts, only the 2nd child shouldn't be long
-                         (!parent->getOpCode().isShift() || node != parent->getSecondChild()) &&
-                         !parent->getOpCode().isCall() &&
-                         !parent->getOpCode().isConversion() &&
-                         parent->getOpCodeValue() != TR::lternary)
-                        {
-                        TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, node);
-                        node->decReferenceCount();
-                        parent->setAndIncChild(childNum, i2lNode);
-                        }
-                     // replace the node remembered in _loadUsedInNewLoopIncrement
-                     // as it is now replaced with this tree:
-                     // l2i
-                     //   node
-                     if (nodeRememberedInLoadUsed)
-                        {
-                        nodeRememberedInLoadUsed = false;
-                        _loadUsedInNewLoopIncrement[index] = node->getFirstChild();
-                        if (_storeTreeInfoForLoopIncrement)
-                           addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild(), index);
-                        }
-                     }
-                  }
-               else
-                  {
-                  bool canHoistAdditiveTerm = false;
-                  bool nodeRememberedInLoadUsed = false;
-                  TR::Node *newLoad = NULL;
-                  if (_usesLoadUsedInLoopIncrement)
-                     {
-                     newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
-                     //traceMsg(comp(), "22 at node %p newLoad %p load %p index %d\n", node, newLoad, _storeTreeInfoForLoopIncrement->_load, index);
-                     if (!newLoad)
-                        {
-                        newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
-                        nodeRememberedInLoadUsed = true;
-                        _loadUsedInNewLoopIncrement[index] = newLoad;
-                         if (_storeTreeInfoForLoopIncrement)
-                           addLoad(_storeTreeInfoForLoopIncrement, newLoad, index);
-                        }
-                     }
-                  else
-                     {
-                     newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
-                     }
-
-                  TR::Node *adjustmentNode = NULL;
-                  if (replacingNode->getOpCodeValue() != TR::iload &&
-                      replacingNode->getOpCodeValue() != TR::lload)
-                     {
-                     TR::Node *mulNode, *constantNode;
-                     mulNode = constantNode = NULL;
-
-                     if (usingAladd)
-                        {
-                        mulNode = TR::Node::create(node, TR::lmul, 2);
-                        TR::Node *indexNode = linearTerm;
-                        // fetch the correct value of index if hidden under an i2l
-                        if (indexNode->getOpCodeValue() == TR::i2l)
-                           indexNode = indexNode->getFirstChild();
-
-                        if (/* debug("enableRednIndVarElim") && */
-                            indexNode->getSecondChild()->getOpCode().isLoadVarDirect() &&
-                            indexNode->getSecondChild()->getSymbol()->isAutoOrParm() &&
-                            _neverWritten->get(indexNode->getSecondChild()->getSymbolReference()->getReferenceNumber()))
-                           {
-                           canHoistAdditiveTerm = true;
-                           }
-
-                        if (!mulTerm->getOpCode().isLoadConst())
-                           canHoistAdditiveTerm = true;
-
-
-                        // generate a sign extension on 64-bit (required)
-                        if (!indexNode->getType().isInt64())
-                           {
-                           TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, indexNode->getSecondChild());
-                           mulNode->setChild(0, i2lNode);
-                           }
-                        else
-                           mulNode->setChild(0, indexNode->getSecondChild());
-                        constantNode = duplicateMulTermNode(index, node, TR::Int64);
-                        }
-                     else
-                        {
-                        if (/* debug("enableRednIndVarElim") && */
-                            linearTerm->getSecondChild()->getOpCode().isLoadVarDirect() &&
-                            linearTerm->getSecondChild()->getSymbol()->isAutoOrParm() &&
-                            _neverWritten->get(linearTerm->getSecondChild()->getSymbolReference()->getReferenceNumber()))
-                           {
-                           canHoistAdditiveTerm = true;
-                           }
-
-                        if (!mulTerm->getOpCode().isLoadConst())
-                           canHoistAdditiveTerm = true;
-
-
-                        mulNode = TR::Node::create(node,
-                           node->getType().isInt32() ? TR::imul : TR::lmul, 2);
-                        mulNode->setChild(0, linearTerm->getSecondChild());
-                        constantNode = duplicateMulTermNode(index, node, node->getDataType());
-                        }
-
-                     mulNode->getFirstChild()->incReferenceCount();
-                     mulNode->setChild(1, constantNode);
-                     mulNode->getSecondChild()->setReferenceCount(1);
-                     mulNode->setSideTableIndex(~0);
-                     mulNode->getSecondChild()->setSideTableIndex(~0);
-                     adjustmentNode = mulNode;
-                     }
-
-                   if (isInternalPointer)
-                     {
-                     node = originalNode;
-                     if (usingAladd)
-                        {
-                        if (replacingNode->getOpCodeValue() == TR::lsub)
-                           {
-                           TR::Node *negateConstantNode = TR::Node::create(node, TR::lconst);
-                           negateConstantNode->setLongInt(-1);
-                           adjustmentNode = TR::Node::create(TR::lmul, 2, adjustmentNode, negateConstantNode);
-                           adjustmentNode->setSideTableIndex(~0);
-                           adjustmentNode->getSecondChild()->setSideTableIndex(~0);
-                           }
-
-                        TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aladd);
-                        }
-                     else
-                        {
-                        if (replacingNode->getOpCodeValue() == TR::isub)
-                           {
-                           adjustmentNode = TR::Node::create(TR::imul, 2, adjustmentNode,
-                              TR::Node::create(node, TR::iconst, 0, -1));
-                           adjustmentNode->setSideTableIndex(~0);
-                           adjustmentNode->getSecondChild()->setSideTableIndex(~0);
-                           }
-
-                        TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aiadd);
-                        }
-                     }
-                  else if (replacingNode->getOpCodeValue() == TR::iload ||
-                           replacingNode->getOpCodeValue() == TR::lload)
-                     {
-                     if (usingAladd || (replacingNode->getOpCodeValue() == TR::lload))
-                        TR::Node::recreateAndCopyValidProperties(replacingNode, TR::ladd);
-                     else
-                        TR::Node::recreateAndCopyValidProperties(replacingNode, TR::iadd);
-                     }
-
-                  if (differenceInAdditiveConstants != 0)
-                     {
-                     if (adjustmentNode)
-                        {
-                        TR::Node *differenceInAdditiveConstantsNode;
-                        TR::ILOpCodes op;
-                        if (usingAladd || (adjustmentNode->getType().isInt64()))
-                           {
-                           differenceInAdditiveConstantsNode = TR::Node::create(node, TR::lconst);
-                           differenceInAdditiveConstantsNode->setLongInt((int64_t) differenceInAdditiveConstants);
-                           op = replacingNode->getOpCode().isAdd() ? TR::ladd : TR::lsub;
-                           }
-                        else
-                           {
-                           differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, differenceInAdditiveConstants);
-                           op = replacingNode->getOpCode().isAdd() ? TR::iadd : TR::isub;
-                           }
-                        adjustmentNode = TR::Node::create(op, 2, adjustmentNode, differenceInAdditiveConstantsNode);
-                        }
-                     else
-                        {
-                        if (usingAladd || (replacingNode->getType().isInt64()))
-                           {
-                           adjustmentNode = TR::Node::create(node, TR::lconst);
-                           adjustmentNode->setLongInt(differenceInAdditiveConstants);
-                           }
-                        else
-                           {
-                           adjustmentNode = TR::Node::create(node, TR::iconst, 0, (int32_t)differenceInAdditiveConstants);
-                           }
-                        }
-                     }
-
-                  int32_t i=0;
-                  for (;i<node->getNumChildren();i++)
-                     node->getChild(i)->recursivelyDecReferenceCount();
-
-                  TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-                  if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd)
-                     {
-                     node->setIsInternalPointer(true);
-                     if (comp()->isPinningNeeded())
-                        {
-                        if (!pinningArrayPointer->isInternalPointer())
-                           {
-                           node->setPinningArrayPointer(pinningArrayPointer);
-                           pinningArrayPointer->setPinningArrayPointer();
-                           }
-                        else
-                           node->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
-                        }
-                     }
-
-                  node->setNumChildren(2);
-                  node->setChild(0, newLoad);
-                  newLoad->incReferenceCount();
-
-                  if (canHoistAdditiveTerm)
-                     {
-                     TR::SymbolReference *newLoopInvariant = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), adjustmentNode->getDataType(), false);
-                     TR::Node *newLoad = TR::Node::createLoad(node, newLoopInvariant);
-                     newLoad->setSideTableIndex(~0);
-                     TR::Node *newStore = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(adjustmentNode->getDataType()), 1, 1, adjustmentNode->duplicateTree(), newLoopInvariant);
-
-                     TR::TreeTop *placeHolderTree = loopInvariantBlock->getLastRealTreeTop();
-                     if (!placeHolderTree->getNode()->getOpCode().isBranch())
-                        placeHolderTree = loopInvariantBlock->getExit();
-                     TR::TreeTop *prevTree = placeHolderTree->getPrevTreeTop();
-
-                     newStore->setSideTableIndex(~0);
-                     TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
-                     prevTree->join(newStoreTreeTop);
-                     newStoreTreeTop->join(placeHolderTree);
-
-                     //printf("Reached here in %s\n", comp()->signature());
-                     dumpOptDetails(comp(), "\nO^O INDUCTION VARIABLE ANALYSIS: Induction variable analysis inserted initialization tree : %p for new loop invariant symRef #%d\n", newStoreTreeTop->getNode(), newLoopInvariant->getReferenceNumber());
-                     int32_t childNum;
-                     for (childNum=0; childNum < adjustmentNode->getNumChildren(); childNum++)
-                     adjustmentNode->getChild(childNum)->recursivelyDecReferenceCount();
-                     adjustmentNode = newLoad;
-                     }
-
-                  node->setChild(1, adjustmentNode);
-                  adjustmentNode->setReferenceCount(1);
-                  // downcast if required
-                  if (downcastNode && newLoad->getType().isInt64())
-                     {
-		     TR::Node *oldFirstChild = node->getFirstChild();
-                     TR::Node *l2iNode = node->duplicateTree();
-                     node->getFirstChild()->decReferenceCount();
-                     node->getSecondChild()->recursivelyDecReferenceCount();
-                     l2iNode->setReferenceCount(1);
-                     node->setNumChildren(1);
-                     node->setChild(0, l2iNode);
-                     TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-                     if (nodeRememberedInLoadUsed)
-                        {
-                        nodeRememberedInLoadUsed = false;
-                        _loadUsedInNewLoopIncrement[index] = node->getFirstChild()->getFirstChild();
-                       if (_storeTreeInfoForLoopIncrement)
-                           addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild()->getFirstChild(), index);
-                        }
-                     else
-		        {
-			TR::Node *newFirstChild = node->getFirstChild()->getFirstChild();
-			node->getFirstChild()->setAndIncChild(0, oldFirstChild);
-                        newFirstChild->recursivelyDecReferenceCount();
-			}
-                     }
-                  }
 
                dumpOptDetails(comp(), "O^O INDUCTION VARIABLE ANALYSIS: (add/sub) Replaced node : %p "
                               "to (%s) by load of symbol #%d\n",
@@ -2165,339 +2165,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
          if (isAdditiveTermConst(index))
             differenceInAdditiveConstants = (int32_t)(-1*getAdditiveTermConst(index));
 
-         if ((replacingNode->getOpCodeValue() == TR::iload ||
-               replacingNode->getOpCodeValue() == TR::lload) &&
-            (differenceInAdditiveConstants == 0))
-            {
-            bool nodeRememberedInLoadUsed = false;
-            if (isInternalPointer)
-               {
-               node = originalNode;
-               TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aload);
-               }
-
-            if (_usesLoadUsedInLoopIncrement)
-               {
-               TR::Node *newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
-               //traceMsg(comp(), "33 newLoad %p load %p index %d\n", newLoad, _storeTreeInfoForLoopIncrement->_load, index);
-               if (newLoad)
-                  {
-                  TR::Node *oldNode = parent->getChild(childNum);
-
-
-                  if ((newLoad->getOpCodeValue() == TR::lload) && downcastNode)
-                     {
-                     // We are replacing oldNode(node) with newLoad. Must recursivelyDec all children of oldNode
-                     for (int i = 0; i < oldNode->getNumChildren(); i++)
-                        {
-                        oldNode->getChild(i)->recursivelyDecReferenceCount();
-                        }
-                     node->setAndIncChild(0, newLoad);
-                     TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-                     node->setNumChildren(1);
-                     node->setReferenceCount(oldNode->getReferenceCount());
-                     downcastNode = false;
-                     }
-                  else
-                     {
-                     oldNode->recursivelyDecReferenceCount();
-                     node = newLoad;
-                     parent->setAndIncChild(childNum, node);
-                     }
-                  }
-               else
-                  {
-                  int32_t i=0;
-                  for (;i<node->getNumChildren();i++)
-                     node->getChild(i)->recursivelyDecReferenceCount();
-                  _loadUsedInNewLoopIncrement[index] = node;
-                  if (_storeTreeInfoForLoopIncrement)
-                     addLoad(_storeTreeInfoForLoopIncrement, node, index);
-                  nodeRememberedInLoadUsed = true;
-                  TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-                  node->setSymbolReference(*newSymbolReference);
-                  node->setNumChildren(0);
-                  }
-               }
-            else
-               {
-               int32_t i=0;
-               for (;i<node->getNumChildren();i++)
-                  node->getChild(i)->recursivelyDecReferenceCount();
-               TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-               node->setSymbolReference(*newSymbolReference);
-               node->setNumChildren(0);
-               }
-            // downcast if required
-            if (downcastNode && node->getOpCodeValue() == TR::lload)
-               {
-               TR::Node *l2iNode = node->duplicateTree();
-               node->setNumChildren(1);
-               l2iNode->setNumChildren(0);
-               TR::Node::recreateAndCopyValidProperties(l2iNode, node->getOpCodeValue());
-               l2iNode->setReferenceCount(1);
-               node->setChild(0, l2iNode);
-               TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-               // check if the parent is a long before adding an l2i
-               //
-               if (parent &&
-                  parent->getType().isInt64() &&
-                  // Exclude these guys, even though they're long typed their children shouldn't be
-                  // For shifts, only the 2nd child shouldn't be long
-                  (!parent->getOpCode().isShift() || node != parent->getSecondChild()) &&
-                  !parent->getOpCode().isCall() &&
-                  !parent->getOpCode().isConversion() &&
-                  parent->getOpCodeValue() != TR::lternary)
-                  {
-                  TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, node);
-                  node->decReferenceCount();
-                  parent->setAndIncChild(childNum, i2lNode);
-                  }
-               if (nodeRememberedInLoadUsed)
-                  {
-                  nodeRememberedInLoadUsed = false;
-                  _loadUsedInNewLoopIncrement[index] = node->getFirstChild();
-                  if (_storeTreeInfoForLoopIncrement)
-                     addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild(), index);
-                  }
-               }
-            }
-         else
-            {
-            bool canHoistAdditiveTerm = false;
-            bool nodeRememberedInLoadUsed = false;
-            TR::Node *newLoad = NULL;
-            if (_usesLoadUsedInLoopIncrement)
-               {
-               newLoad = getNewLoopIncrement(_storeTreeInfoForLoopIncrement, index);
-               //traceMsg(comp(), "22 at node %p newLoad %p load %p index %d\n", node, newLoad, _storeTreeInfoForLoopIncrement->_load, index);
-               if (!newLoad)
-                  {
-                  newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
-                  nodeRememberedInLoadUsed = true;
-                  _loadUsedInNewLoopIncrement[index] = newLoad;
-                  if (_storeTreeInfoForLoopIncrement)
-                     addLoad(_storeTreeInfoForLoopIncrement, newLoad, index);
-                  }
-               }
-            else
-               {
-               newLoad = genLoad(node, *newSymbolReference, isInternalPointer);
-               }
-
-            TR::Node *adjustmentNode = NULL;
-            if (replacingNode->getOpCodeValue() != TR::iload &&
-               replacingNode->getOpCodeValue() != TR::lload)
-               {
-               TR::Node *mulNode, *constantNode, *indexNode;
-               mulNode = constantNode = indexNode = NULL;
-
-               if (usingAladd)
-                  {
-                  mulNode = TR::Node::create(node, TR::lmul, 2);
-                  indexNode = linearTerm;
-                  if (indexNode->getOpCodeValue() == TR::i2l)
-                     indexNode = indexNode->getFirstChild()->getSecondChild();
-                  else
-                     indexNode = indexNode->getSecondChild();
-
-                  if (/* debug("enableRednIndVarElim") && */
-                     indexNode->getOpCode().isLoadVarDirect() &&
-                     indexNode->getSymbol()->isAutoOrParm() &&
-                     _neverWritten->get(indexNode->getSymbolReference()->getReferenceNumber()))
-                     {
-                     canHoistAdditiveTerm = true;
-                     }
-
-                  if (!mulTerm->getOpCode().isLoadConst())
-                     canHoistAdditiveTerm = true;
-
-                  // sign-extension required on 64-bit
-                  if (!indexNode->getType().isInt64())
-                     {
-                     TR::Node *i2lNode = TR::Node::create(TR::i2l, 1, indexNode);
-                     indexNode = i2lNode;
-                     }
-                  constantNode = duplicateMulTermNode(index, node, TR::Int64);
-                  }
-               else
-                  {
-                  indexNode = linearTerm->getSecondChild();
-                  if (/* debug("enableRednIndVarElim") && */
-                     indexNode->getOpCode().isLoadVarDirect() &&
-                     indexNode->getSymbol()->isAutoOrParm() &&
-                     _neverWritten->get(indexNode->getSymbolReference()->getReferenceNumber()))
-                     {
-                     canHoistAdditiveTerm = true;
-                     }
-
-                  if (!mulTerm->getOpCode().isLoadConst())
-                     canHoistAdditiveTerm = true;
-
-                  mulNode = TR::Node::create(node,
-                     replacingNode->getType().isInt64() ? TR::lmul : TR::imul, 2);
-                  constantNode = duplicateMulTermNode(index, node, replacingNode->getDataType());
-                  }
-
-
-
-               mulNode->setChild(0, indexNode);
-               mulNode->getFirstChild()->incReferenceCount();
-               mulNode->setChild(1, constantNode);
-               mulNode->getSecondChild()->setReferenceCount(1);
-               mulNode->setSideTableIndex(~0);
-               mulNode->getSecondChild()->setSideTableIndex(~0);
-               adjustmentNode = mulNode;
-               }
-
-            if (isInternalPointer)
-               {
-               node = originalNode;
-               if (usingAladd)
-                  {
-                  if (replacingNode->getOpCodeValue() == TR::lsub)
-                     {
-                     TR::Node *negateConstantNode = TR::Node::create(node, TR::lconst);
-                     negateConstantNode->setLongInt(-1);
-                     adjustmentNode = TR::Node::create(TR::lmul, 2, adjustmentNode, negateConstantNode);
-                     adjustmentNode->setSideTableIndex(~0);
-                     adjustmentNode->getSecondChild()->setSideTableIndex(~0);
-                     }
-                  TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aladd);
-                  replacingNode->setIsInternalPointer(true);
-                  }
-               else
-                  {
-                  if (replacingNode->getOpCodeValue() == TR::isub)
-                     {
-                     adjustmentNode = TR::Node::create(TR::imul, 2, adjustmentNode,
-                        TR::Node::create(node, TR::iconst, 0, -1));
-                     adjustmentNode->setSideTableIndex(~0);
-                     adjustmentNode->getSecondChild()->setSideTableIndex(~0);
-                     }
-                  TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aiadd);
-                  replacingNode->setIsInternalPointer(true);
-                  }
-               }
-            else if (replacingNode->getOpCodeValue() == TR::iload ||
-               replacingNode->getOpCodeValue() == TR::lload)
-               {
-               if (usingAladd || (replacingNode->getOpCodeValue() == TR::lload))
-                  TR::Node::recreateAndCopyValidProperties(replacingNode, TR::ladd);
-               else
-                  TR::Node::recreateAndCopyValidProperties(replacingNode, TR::iadd);
-               }
-
-            if (differenceInAdditiveConstants != 0)
-               {
-               TR::Node *differenceInAdditiveConstantsNode;
-               TR::ILOpCodes op;
-               if (adjustmentNode)
-                  {
-                  if (usingAladd || (adjustmentNode->getType().isInt64()))
-                     {
-                     differenceInAdditiveConstantsNode = TR::Node::create(node, TR::lconst);
-                     differenceInAdditiveConstantsNode->setLongInt((int64_t) differenceInAdditiveConstants);
-                     op = replacingNode->getOpCode().isAdd() ? TR::ladd : TR::lsub;
-                     }
-                  else
-                     {
-                     differenceInAdditiveConstantsNode = TR::Node::create(node, TR::iconst, 0, differenceInAdditiveConstants);
-                     op = replacingNode->getOpCode().isAdd() ? TR::iadd : TR::isub;
-                     }
-                  adjustmentNode = TR::Node::create(op, 2, adjustmentNode, differenceInAdditiveConstantsNode);
-                  }
-               else
-                  {
-                  if (usingAladd || (replacingNode->getType().isInt64()))
-                     {
-                     adjustmentNode = TR::Node::create(node, TR::lconst);
-                     adjustmentNode->setLongInt((int64_t) differenceInAdditiveConstants);
-                     }
-                  else
-                     adjustmentNode = TR::Node::create(node, TR::iconst, 0,
-                        differenceInAdditiveConstants);
-                  }
-               }
-
-            int32_t i=0;
-            for (;i<node->getNumChildren();i++)
-               node->getChild(i)->recursivelyDecReferenceCount();
-
-            TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
-            if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd)
-               {
-               node->setIsInternalPointer(true);
-               if (comp()->isPinningNeeded())
-                  {
-                  if (!pinningArrayPointer->isInternalPointer())
-                     {
-                     node->setPinningArrayPointer(pinningArrayPointer);
-                     pinningArrayPointer->setPinningArrayPointer();
-                     }
-                  else
-                     node->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
-                  }
-               }
-
-            node->setNumChildren(2);
-            node->setChild(0, newLoad);
-            newLoad->incReferenceCount();
-
-            if (canHoistAdditiveTerm)
-               {
-               TR::SymbolReference *newLoopInvariant = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), adjustmentNode->getDataType(), false);
-               TR::Node *newLoad = TR::Node::createLoad(node, newLoopInvariant);
-               newLoad->setSideTableIndex(~0);
-               TR::Node *newStore = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(adjustmentNode->getDataType()), 1, 1, adjustmentNode->duplicateTree(), newLoopInvariant);
-
-               TR::TreeTop *placeHolderTree = loopInvariantBlock->getLastRealTreeTop();
-               if (!placeHolderTree->getNode()->getOpCode().isBranch())
-                  placeHolderTree = loopInvariantBlock->getExit();
-               TR::TreeTop *prevTree = placeHolderTree->getPrevTreeTop();
-
-               newStore->setSideTableIndex(~0);
-               TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
-               prevTree->join(newStoreTreeTop);
-               newStoreTreeTop->join(placeHolderTree);
-
-               //printf("Reached here in %s\n", comp()->signature());
-               dumpOptDetails(comp(), "\nO^O INDUCTION VARIABLE ANALYSIS: Induction variable analysis inserted initialization tree : %p for new loop invariant symRef #%d\n", newStoreTreeTop->getNode(), newLoopInvariant->getReferenceNumber());
-               int32_t childNum;
-               for (childNum=0; childNum < adjustmentNode->getNumChildren(); childNum++)
-                  adjustmentNode->getChild(childNum)->recursivelyDecReferenceCount();
-               adjustmentNode = newLoad;
-               }
-
-            node->setChild(1, adjustmentNode);
-            adjustmentNode->setReferenceCount(1);
-            // downcast if required
-            if (downcastNode && newLoad->getType().isInt64())
-               {
-               TR::Node *oldFirstChild = node->getFirstChild();
-               TR::Node *l2iNode = node->duplicateTree();
-               l2iNode->setReferenceCount(1);
-               // dec the reference counts of the node's children
-               node->getFirstChild()->decReferenceCount();
-               node->getSecondChild()->recursivelyDecReferenceCount();
-               node->setNumChildren(1);
-               node->setChild(0, l2iNode);
-               TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
-               if (nodeRememberedInLoadUsed)
-                  {
-                  nodeRememberedInLoadUsed = false;
-                  _loadUsedInNewLoopIncrement[index] = node->getFirstChild()->getFirstChild();
-                  if (_storeTreeInfoForLoopIncrement)
-                     addLoad(_storeTreeInfoForLoopIncrement, node->getFirstChild()->getFirstChild(), index);
-                  }
-               else
-                  {
-                  TR::Node *newFirstChild = node->getFirstChild()->getFirstChild();
-                  node->getFirstChild()->setAndIncChild(0, oldFirstChild);
-                  newFirstChild->recursivelyDecReferenceCount();
-                  }
-               }
-            }
+         examineOpCodesForInductionVariableUse(node, parent, childNum, index, originalNode, replacingNode, linearTerm, mulTerm, newSymbolReference, loopInvariantBlock, pinningArrayPointer, differenceInAdditiveConstants, isInternalPointer, downcastNode, usingAladd);
 
          dumpOptDetails(comp(), "O^O INDUCTION VARIABLE ANALYSIS: (mul/shl) Replaced node : "
                         "%p to (%s) by load of symbol #%d\n",

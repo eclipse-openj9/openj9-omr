@@ -4255,6 +4255,9 @@ esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OMR_TOOLCHAIN" >&5
 $as_echo "$OMR_TOOLCHAIN" >&6; }
 
+# Default OMRGLUE to example/glue if it was not specified
+OMRGLUE=${OMRGLUE:-"./example/glue"}
+
 as_ac_File=`$as_echo "ac_cv_file_$OMRGLUE/objectdescription.h" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $OMRGLUE/objectdescription.h" >&5
 $as_echo_n "checking for $OMRGLUE/objectdescription.h... " >&6; }

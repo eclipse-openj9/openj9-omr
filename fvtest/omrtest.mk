@@ -43,6 +43,9 @@ omr_algotest:
 	
 omr_gctest:
 	./omrgctest -configListFile=fvtest/gctest/configuration/fvConfigListFile.txt
+
+omr_jittest:
+	./testjit
 	
 omr_porttest:
 	./omrporttest
@@ -84,6 +87,9 @@ omr_vmtest:
 test: omr_algotest omr_utiltest
 ifeq (1,$(OMR_EXAMPLE))
 test: omr_vmtest omr_gctest omr_rastest omr_subscriberforktest
+endif
+ifeq (1,$(OMR_JIT))
+test: omr_jittest
 endif
 ifeq (1,$(OMR_PORT))
 test: omr_porttest

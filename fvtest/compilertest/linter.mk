@@ -24,8 +24,8 @@ endif
 # Personally, I feel it's best to default to out-of-tree build but who knows, there may be
 # differing opinions on that.
 #
-JIT_SRCBASE?=..
-JIT_OBJBASE?=../objs/ruby_$(BUILD_CONFIG)
+JIT_SRCBASE?=../..
+JIT_OBJBASE?=../../objs/ruby_$(BUILD_CONFIG)
 JIT_DLL_DIR?=$(JIT_OBJBASE)
 
 #
@@ -44,14 +44,14 @@ BUILD_CONFIG?=prod
 # It just makes sense since source and build dirs may be in different places 
 # in the filesystem :)
 #
-JIT_OMR_DIRTY_DIR?=omr/compiler
-JIT_PRODUCT_DIR?=omr/fvtest/compilertest
+JIT_OMR_DIRTY_DIR?=compiler
+JIT_PRODUCT_DIR?=fvtest/compilertest
 
 #
 # Dirs used internally by the makefiles
 #
-JIT_MAKE_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build
-JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/omr/fvtest/compilertest/build/scripts
+JIT_MAKE_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build
+JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build/scripts
 
 #
 # First we set a bunch of tokens about the platform that the rest of the
@@ -83,7 +83,7 @@ include $(JIT_MAKE_DIR)/toolcfg/common.mk
 # exists in that repo, but in the mean time, this is fine. 
 # 
 
-OMRCHECKER_DIR?=$(JIT_SRCBASE)/omr/tools/compiler/OMRChecker
+OMRCHECKER_DIR?=$(JIT_SRCBASE)/tools/compiler/OMRChecker
 
 OMRCHECKER_OBJECT=$(OMRCHECKER_DIR)/OMRChecker.so
 

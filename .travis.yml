@@ -44,7 +44,7 @@ before_script:
 # apport is available in apt whitelist
 
 env:
-  - SPEC=osx_x86-64
+  - SPEC=osx_x86-64 EXTRA_CONFIGURE_ARGS="--disable-OMR_JIT"
   - SPEC=linux_x86-64
   - SPEC=linux_x86-64_cmprssptrs
   - SPEC=linux_x86
@@ -52,7 +52,7 @@ env:
 matrix:
   exclude:
     - os: linux
-      env: SPEC=osx_x86-64
+      env: SPEC=osx_x86-64 EXTRA_CONFIGURE_ARGS="--disable-OMR_JIT"
     - os: osx
       env: SPEC=linux_x86-64
     - os: osx

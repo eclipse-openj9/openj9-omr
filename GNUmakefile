@@ -152,6 +152,8 @@ test_targets += fvtest/vmtest
 # OMR JIT
 ifeq (1,$(OMR_JIT))
 test_targets += fvtest/compilertest
+main_targets += jitbuilder
+test_targets += jitbuilder/release
 endif
 
 DO_TEST_TARGET := yes

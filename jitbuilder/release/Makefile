@@ -24,6 +24,21 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 goal: call dotproduct iterfib linkedlist localarray mandelbrot nestedloop pointer recfib simple switch pow2
 
+all: goal
+
+test: goal
+	./call
+	./dotproduct
+	./iterfib
+	./linkedlist
+	./localarray
+	./nestedloop
+	./pointer
+	./recfib
+	./simple
+	./switch
+	./pow2
+
 call : libjitbuilder.a Call.o
 	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
 

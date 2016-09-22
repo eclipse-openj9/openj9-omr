@@ -90,6 +90,7 @@
 #include "p/codegen/PPCHelperCallSnippet.hpp"
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
+#include "p/codegen/PPCSystemLinkage.hpp"
 #include "p/codegen/PPCTableOfConstants.hpp"
 #include "ras/Debug.hpp"                            // for TR_DebugBase
 #include "ras/DebugCounter.hpp"
@@ -1945,12 +1946,56 @@ void OMR::Power::CodeGenerator::deleteInst(TR::Instruction* old)
    nxt->setPrev(prv);
    }
 
+TR::Linkage *
+OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Linkage *linkage = NULL;
+
+   switch (lc)
+      {
+      case TR_System:
+         linkage = new (self()->trHeapMemory()) TR_PPCSystemLinkage(self());
+         break;
+
+      default:
+         linkage = new (self()->trHeapMemory()) TR_PPCSystemLinkage(self());
+      }
+
+   self()->setLinkage(lc, linkage);
+   return linkage;
+   }
+
 void OMR::Power::CodeGenerator::generateBinaryEncodingPrologue(
       TR_PPCBinaryEncodingData *data)
    {
-   // Default implementation
-   //
-   return;
+   TR::Compilation *comp = self()->comp();
+   data->recomp = NULL;
+   data->cursorInstruction = comp->getFirstInstruction();
+   data->preProcInstruction = data->cursorInstruction;
+
+   data->jitTojitStart = data->cursorInstruction;
+   data->cursorInstruction = NULL;
+
+   self()->getLinkage()->loadUpArguments(data->cursorInstruction);
+
+   data->cursorInstruction = comp->getFirstInstruction();
+
+   while (data->cursorInstruction && data->cursorInstruction->getOpCodeValue() != TR::InstOpCode::proc)
+      {
+      data->estimate          = data->cursorInstruction->estimateBinaryLength(data->estimate);
+      data->cursorInstruction = data->cursorInstruction->getNext();
+      }
+
+   int32_t boundary = comp->getOptions()->getJitMethodEntryAlignmentBoundary(self());
+   if (boundary && (boundary > 4) && ((boundary & (boundary - 1)) == 0))
+      {
+      comp->getOptions()->setJitMethodEntryAlignmentBoundary(boundary);
+      self()->setPreJitMethodEntrySize(data->estimate);
+      data->estimate += (boundary - 4);
+      }
+
+   self()->getLinkage()->createPrologue(data->cursorInstruction);
    }
 
 void OMR::Power::CodeGenerator::doBinaryEncoding()

@@ -28,7 +28,5 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/codegen/OMRRegisterIterator.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/env/OMRCPU.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/env/OMRDebugEnv.cpp \
-    $(JIT_PRODUCT_DIR)/p/codegen/JBCodeGenerator.cpp \
-    $(JIT_PRODUCT_DIR)/p/codegen/SystemLinkage.cpp \
     $(JIT_PRODUCT_DIR)/p/codegen/Evaluator.cpp
 

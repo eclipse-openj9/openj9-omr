@@ -8,7 +8,8 @@
 # Try and guess platform if user didn't give it
 #
 ifeq (,$(PLATFORM))
-    PLATFORM:=$(shell $(TRSRC)/ibm/codegen/makefiles/guess-platform.sh)
+    # TODO: move guess-platform.sh into a common directory
+    PLATFORM:=$(shell $(SHELL) ../fvtest/compilertest/build/scripts/guess-platform.sh)
     $(warning PLATFORM not set. Guessing '$(PLATFORM)')
 endif
 

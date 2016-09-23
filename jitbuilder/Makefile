@@ -1,3 +1,14 @@
+#
+# For a full explanation of the conventions used in this makefile, please
+# check out the post and FAQ on TRTalk
+#
+# Remember the golden rule -- If you're not sure, ask on TRTalk
+#
+
+#
+#
+# "all" should be the first target to appear so it's the default
+#
 .phony: all clean cleandeps cleandll
 all:
 clean:
@@ -26,19 +37,20 @@ ifeq ($(PLATFORM),arm-linux-gcc-cross)
     export CC_PATH?=arm-bcm2708hardfp-linux-gnueabi-gcc
     export CXX_PATH?=arm-bcm2708hardfp-linux-gnueabi-g++
     export AS_PATH?=arm-bcm2708hardfp-linux-gnueabi-as
-    SUBMAKE_EXTRAARGS=PLATFORM=arm-linux-gcc
+    PLATFORM=arm-linux-gcc
 endif
 
 
-SUBMAKE_EXTRAARGS+=ASSUMES=1
+ASSUMES=1
 
 #
-# Also convert between old TRSRC variable and new ones
+# First setup some important paths
+# Personally, I feel it's best to default to out-of-tree build but who knows, there may be
+# differing opinions on that.
 #
-TRSRC?=$(J9SRC)
-JIT_SRCBASE?=$(TRSRC)
-JIT_OBJBASE?=$(TRSRC)/../build
-JIT_DLL_DIR?=$(TRSRC)/omr/jitbuilder/release
+JIT_SRCBASE?=..
+JIT_OBJBASE?=../build
+JIT_DLL_DIR?=../jitbuilder/release
 
 #
 # Now we need to cleanup these variables on Windows
@@ -47,28 +59,48 @@ FIXED_SRCBASE=$(subst \,/,$(JIT_SRCBASE))
 FIXED_OBJBASE=$(subst \,/,$(JIT_OBJBASE))
 FIXED_DLL_DIR=$(subst \,/,$(JIT_DLL_DIR))
 
-#
-# Add JitTest to base targets and lint targets
-#
-all: jitbuilder
-clean: jitbuilder_clean
-cleandeps: jitbuilder_cleandeps
-cleandll: jitbuilder_cleandll
+# TODO - "debug" as default?
+BUILD_CONFIG?=prod
 
 #
-# Add JitBuilder targets
+# This is where we setup our component dirs
+# Note these are all relative to JIT_SRCBASE and JIT_OBJBASE
+# It just makes sense since source and build dirs may be in different places 
+# in the filesystem :)
 #
-.phony: jitbuilder jitbuilder_clean jitbuilder_cleandeps jitbuilder_cleandll
+JIT_OMR_DIRTY_DIR?=compiler
+JIT_PRODUCT_DIR?=jitbuilder
 
-jitbuilder:
-	$(MAKE) -f jitbuilder.mk JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+#
+# Dirs used internally by the makefiles
+#
+JIT_MAKE_DIR?=$(JIT_SRCBASE)/$(JIT_PRODUCT_DIR)/build
+JIT_SCRIPT_DIR?=$(JIT_SRCBASE)/$(JIT_PRODUCT_DIR)/build/scripts
 
-jitbuilder_clean:
-	$(MAKE) -f jitbuilder.mk clean JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+#
+# First we set a bunch of tokens about the platform that the rest of the
+# makefile will use as conditionals
+#
+include $(JIT_MAKE_DIR)/platform/common.mk
 
-jitbuilder_cleandeps:
-	$(MAKE) -f jitbuilder.mk cleandeps JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+#
+# Now we include the names of all the files that will go into building the JIT
+# Will automatically include files needed from HOST and TARGET platform
+#
+include $(JIT_MAKE_DIR)/files/common.mk
 
-jitbuilder_cleandll:
-	$(MAKE) -f jitbuilder.mk cleandll JIT_SRCBASE=$(FIXED_SRCBASE) JIT_OBJBASE=$(FIXED_OBJBASE) JIT_DLL_DIR=$(FIXED_DLL_DIR) $(SUBMAKE_EXTRAARGS)
+#
+# Now we configure all the tooling we will use to build the files
+#
+# There is quite a bit of shared stuff, but the overwhelming majority of this
+# is toolchain-dependent.
+#
+# That makes sense - You can't expect XLC and GCC to take the same arguments
+#
+include $(JIT_MAKE_DIR)/toolcfg/common.mk
 
+#
+# Here's where everything has been setup and we lay down the actual targets and
+# recipes that Make will use to build them
+#
+include $(JIT_MAKE_DIR)/rules/common.mk

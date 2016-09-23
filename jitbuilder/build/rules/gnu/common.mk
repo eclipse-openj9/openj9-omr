@@ -7,18 +7,18 @@
 include $(JIT_MAKE_DIR)/rules/gnu/filetypes.mk
 
 # Convert the source file names to object file names
-JIT_PRODUCT_BACKEND_OBJECTS=$(patsubst %,$(JIT_OBJBASE)/%.o,$(basename $(JIT_PRODUCT_BACKEND_SOURCES)))
-JIT_PRODUCT_OBJECTS=$(patsubst %,$(JIT_OBJBASE)/%.o,$(basename $(JIT_PRODUCT_SOURCE_FILES)))
+JIT_PRODUCT_BACKEND_OBJECTS=$(patsubst %,$(FIXED_OBJBASE)/%.o,$(basename $(JIT_PRODUCT_BACKEND_SOURCES)))
+JIT_PRODUCT_OBJECTS=$(patsubst %,$(FIXED_OBJBASE)/%.o,$(basename $(JIT_PRODUCT_SOURCE_FILES)))
 
 # build the jitbuilder library with all the object files
-JIT_PRODUCT_BACKEND_LIBRARY=$(JIT_DLL_DIR)/$(LIBPREFIX)$(PRODUCT_NAME).a
+JIT_PRODUCT_BACKEND_LIBRARY=$(FIXED_DLL_DIR)/$(LIBPREFIX)$(PRODUCT_NAME).a
 
 # Figure out the name of the executable file
-JIT_PRODUCT_SONAME=$(JIT_DLL_DIR)/$(PRODUCT_NAME)
+JIT_PRODUCT_SONAME=$(FIXED_DLL_DIR)/$(PRODUCT_NAME)
 
 # Add build name to test
-JIT_PRODUCT_BUILDNAME_SRC=$(JIT_OBJBASE)/$(JIT_OMR_DIRTY_DIR)/env/TRBuildName.cpp
-JIT_PRODUCT_BUILDNAME_OBJ=$(JIT_OBJBASE)/$(JIT_OMR_DIRTY_DIR)/env/TRBuildName.o
+JIT_PRODUCT_BUILDNAME_SRC=$(FIXED_OBJBASE)/$(JIT_OMR_DIRTY_DIR)/env/TRBuildName.cpp
+JIT_PRODUCT_BUILDNAME_OBJ=$(FIXED_OBJBASE)/$(JIT_OMR_DIRTY_DIR)/env/TRBuildName.o
 JIT_PRODUCT_BACKEND_OBJECTS+=$(JIT_PRODUCT_BUILDNAME_OBJ)
 
 jit: $(JIT_PRODUCT_BACKEND_LIBRARY)
@@ -49,9 +49,9 @@ $(call RULE.cpp,$(GTEST_OBJ),$(GTEST_CC))
 # This part calls the "RULE.x" macros for each source file
 #
 $(foreach SRCFILE,$(JIT_PRODUCT_BACKEND_SOURCES),\
-    $(call RULE$(suffix $(SRCFILE)),$(JIT_OBJBASE)/$(basename $(SRCFILE))$(OBJSUFF),$(JIT_SRCBASE)/$(SRCFILE)) \
+    $(call RULE$(suffix $(SRCFILE)),$(FIXED_OBJBASE)/$(basename $(SRCFILE))$(OBJSUFF),$(FIXED_SRCBASE)/$(SRCFILE)) \
  )
 
 $(foreach SRCFILE,$(JIT_PRODUCT_SOURCE_FILES),\
-    $(call RULE$(suffix $(SRCFILE)),$(JIT_OBJBASE)/$(basename $(SRCFILE))$(OBJSUFF),$(JIT_SRCBASE)/$(SRCFILE)) \
+    $(call RULE$(suffix $(SRCFILE)),$(FIXED_OBJBASE)/$(basename $(SRCFILE))$(OBJSUFF),$(FIXED_SRCBASE)/$(SRCFILE)) \
  )

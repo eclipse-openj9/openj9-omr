@@ -51,6 +51,49 @@ public:
       }
    };
 
+
+/**
+ * The scratch register manager addresses a peculiarity of internal control flow
+ * regions: all virtual registers used inside internal control flow must appear in
+ * postconditions on the end-of-control-flow label in order for the local register
+ * assigner to behave properly. Before the scratch register manager, If you had
+ * complex logic in your internal control flow, requiring many short-lived
+ * virtual registers, you had only two choices:
+ * 
+ * A. Add all these registers to the end-of-control-flow label. This causes all
+ *    the registers to be live at the same time, increasing register pressure and
+ *    causing unnecessary spills. It also stops working as soon as you need more
+ *    virtuals than you have real registers in the processor.
+ * 
+ * B. Re-use virtuals. This is a very awkward ad-hoc approach that had a terrible
+ *    effect on the tree evaluator code. Often, the logic for a particular evaluator
+ *    (like checkcast or write barriers) is split among several functions, so to
+ *    reuse these temporary virtuals, they must be passed from one function to
+ *    another as parameters. Some functions ended up with three or four such
+ *    parameters with increasingly obscure names, and it became hard to tell
+ *    when register reuse decisions were for correctness or for efficiency.
+ * 
+ * Neither of these choices is very appealing. B has the potential for generating
+ * good code, but the functions that implement B quickly become very hard to
+ * maintain.
+ * 
+ * What the scratch register manager (SRM) does is to keep track of which virtuals
+ * are available for reuse. The steps look like this:
+ * 
+ * 1. The code that creates an internal control flow region also creates an SRM The
+ * 2. SRM is passed around to all the tree evaluator code implementing the internal
+ *    control flow.
+ * 3. Any code that wants a temporary register requests one from the SRM
+ * 4. When the temporary register is no longer needed, it is returned to the SRM
+ * 5. At the end, SRM is asked to add all its managed registers as
+ *    postconditions to a given regdeps object.
+ * 6. The end-of-control-flow label is created using those regdeps
+ *
+ * The effect is that you get the benefits of an optimally-implemented version of
+ * B but with maintainability on par with ordinary virtual register allocation
+ * outside an internal control flow region (where you’d just use allocateRegister
+ * and stopUsingRegister).
+ */
 class TR_ScratchRegisterManager
    {
 
@@ -58,12 +101,12 @@ protected:
 
    TR::CodeGenerator *_cg;
 
-   // No more than '_capacity' scratch registers will be allowed to be created.
-   //
+   /// No more than '_capacity' scratch registers will be allowed to be created.
+   ///
    int32_t _capacity;
 
-   // Number of scratch registers available so far.
-   //
+   /// Number of scratch registers available so far.
+   ///
    int32_t _cursor;
 
    List<TR_ManagedScratchRegister> _msrList;

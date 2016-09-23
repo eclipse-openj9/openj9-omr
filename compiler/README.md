@@ -67,7 +67,7 @@ doc/compiler | Additional documentation
 
 ## Namespaces
 
-The `OMR::`, `Test::`, and `JitBuilder::` namespaces are used to isolate compiler technology for those particular environments.  Processor architecture specialized namespaces (e.g., `X86::`, `Power::`, `Z::`, and `ARM::`) can be nested within them.  If you extend the Eclipse OMR technology you should choose a unique namespace for your project.
+The `OMR::`, `TestCompiler::`, and `JitBuilder::` namespaces are used to isolate compiler technology for those particular environments.  Processor architecture specialized namespaces (e.g., `X86::`, `Power::`, `Z::`, and `ARM::`) can be nested within them.  If you extend the Eclipse OMR technology you should choose a unique namespace for your project.
 
 In general, the `TR::` namespace (short for Testarossa) is the canonical namespace for all of the compiler technology that is visible across multiple projects.
 

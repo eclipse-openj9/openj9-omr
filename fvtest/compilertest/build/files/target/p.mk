@@ -29,7 +29,5 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/p/env/OMRCPU.cpp
 
 JIT_PRODUCT_SOURCE_FILES+=\
-    $(JIT_PRODUCT_DIR)/p/codegen/TestCodeGenerator.cpp \
-    $(JIT_PRODUCT_DIR)/p/codegen/SystemLinkage.cpp \
     $(JIT_PRODUCT_DIR)/p/codegen/Evaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/p/env/OMRDebugEnv.cpp

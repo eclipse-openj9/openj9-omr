@@ -62,6 +62,5 @@ matrix:
 
 script:
   - make -f run_configure.mk OMRGLUE=./example/glue
-  - make 
-  - make test
+  - make && make test
 

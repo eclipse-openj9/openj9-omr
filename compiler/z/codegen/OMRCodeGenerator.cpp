@@ -142,7 +142,6 @@ bool compareNodes(TR::Node * node1, TR::Node * node2, TR::CodeGenerator *cg);
 bool isMatchingStoreRestore(TR::Instruction *cursorLoad, TR::Instruction *cursorStore, TR::CodeGenerator *cg);
 void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg);
 
-
 void
 OMR::Z::CodeGenerator::preLowerTrees()
    {
@@ -787,6 +786,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SRK] = TR::InstOpCode::SR;
      _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SGRK] = TR::InstOpCode::SGR;
      }
+   
+   self()->getS390Linkage()->initS390RealRegisterLinkage();
+   self()->setAccessStaticsIndirectly(true);
    }
 
 TR_GlobalRegisterNumber
@@ -7807,6 +7809,35 @@ OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataTypes dt, int64_t v
    TR_ASSERT( dt == TR::Int64, "create64BitLiteralPoolSnippet is only for data constants\n");
 
    return self()->findOrCreate8ByteConstant(0, value);
+   }
+
+TR::Linkage *
+OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
+   {
+   // *this    swipeable for debugging purposes
+   TR::Linkage * linkage;
+   TR::Compilation *comp = self()->comp();
+   switch (lc)
+      {
+      case TR_Helper:
+         linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
+         break;
+
+      case TR_Private:
+        // no private linkage, fall through to system
+
+      case TR_System:
+         if (TR::Compiler->target.isLinux())
+            linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
+         else
+            linkage = new (self()->trHeapMemory()) TR_S390zOSSystemLinkage(self());
+         break;
+
+      default :
+         TR_ASSERT(0, "\nTestarossa error: Illegal linkage convention %d\n", lc);
+      }
+   self()->setLinkage(lc, linkage);
+   return linkage;
    }
 
 TR_S390ConstantDataSnippet *

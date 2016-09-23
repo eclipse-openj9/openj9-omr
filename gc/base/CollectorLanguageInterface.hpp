@@ -315,6 +315,13 @@ public:
 	 */
 	virtual void scavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew) = 0;
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/**
+	 * Enable/disable language specific thread local resource on Concurrent Scavenger cycle start/end 
+	 * @param[in] env The environment for the calling thread.
+	 */	 
+	virtual void scavenger_switchConcurrentForThread(MM_EnvironmentBase *env) = 0;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)

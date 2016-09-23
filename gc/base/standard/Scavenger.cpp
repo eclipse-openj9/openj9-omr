@@ -4572,11 +4572,13 @@ MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
     	if (!env->_concurrentScavengerInProgress) {
     		env->_concurrentScavengerInProgress = true;
     		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 1);
+    		_cli->scavenger_switchConcurrentForThread(env);
     	}
     } else if (concurrent_state_idle == _concurrentState) {
     	if (env->_concurrentScavengerInProgress) {
     		env->_concurrentScavengerInProgress = false;
     		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 0);
+    		_cli->scavenger_switchConcurrentForThread(env);
     	}
     }
 }

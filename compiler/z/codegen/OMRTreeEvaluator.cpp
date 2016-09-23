@@ -6345,8 +6345,8 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
 
             TR::Node* valueNode = conversionNode->getChild(0);
 
-            // Make sure this is a truncation conversion
-            if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
+            // Make sure this is an integral truncation conversion
+            if (valueNode->getOpCode().isIntegralLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
                {
                if (valueNode->getSize() > storeNode->getSize())
                   {

@@ -1340,7 +1340,7 @@ TR_VPConstString *TR_VPConstString::create(TR_ValuePropagation *vp, TR::SymbolRe
 
       // since vmaccess has been acquired already, chars cannot be null
       //
-      int32_t len = vp->comp()->fe()->getStringLength((uintptrj_t)string);
+      int32_t len = vp->comp()->fej9()->getStringLength((uintptrj_t)string);
       int32_t i = 0;
       uint32_t hashValue = 0;
       for (int32_t i = 0; i < len && i < TR_MAX_CHARS_FOR_HASH; i++)
@@ -1377,7 +1377,7 @@ uint16_t TR_VPConstString::charAt(int32_t i, TR::Compilation * comp)
    if (charAtCriticalSection.hasVMAccess())
       {
       uintptrj_t string = *(uintptrj_t*)_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
-      int32_t len = comp->fe()->getStringLength(string);
+      int32_t len = comp->fej9()->getStringLength(string);
       bool canRead = true;
       if (i < 0 || i >= len)
          canRead = false;
@@ -5806,7 +5806,7 @@ void TR_VPConstString::print(TR::Compilation * comp, TR::FILE *outFile)
       if (vpConstStringPrintCriticalSection.hasVMAccess())
          {
          uintptrj_t string = *(uintptrj_t*) _symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
-         int32_t len = comp->fe()->getStringLength(string);
+         int32_t len = comp->fej9()->getStringLength(string);
          for (int32_t i = 0; i < len; ++i)
             trfprintf(outFile, "%c", TR::Compiler->cls.getStringCharacter(comp, string, i));
          trfprintf(outFile, "\" ");

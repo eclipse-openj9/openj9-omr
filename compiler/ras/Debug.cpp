@@ -96,6 +96,7 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"                            // for TR_CHTable, etc
 #include "env/VMAccessCriticalSection.hpp"            // for VMAccessCriticalSection
+#include "env/VMJ9.h"
 #endif
 
 #ifdef AIXPPC
@@ -1938,9 +1939,9 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
             if (stringLocation)
                {
                uintptrj_t string = *stringLocation;
-               length = comp()->fe()->getStringUTF8Length(string);
+               length = comp()->fej9()->getStringUTF8Length(string);
                contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
-               comp()->fe()->getStringUTF8(string, contents, length+1);
+               comp()->fej9()->getStringUTF8(string, contents, length+1);
 
                //
                // We don't want to mess up the logs too much.  Make sure the

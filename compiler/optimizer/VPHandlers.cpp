@@ -1186,7 +1186,7 @@ bool simplifyJ9ClassFlags(TR_ValuePropagation *vp, TR::Node *node, bool isLong)
          if (baseObject && baseObject->getClassType() &&
                baseObject->getClassType()->asFixedClass())
             {
-            cdfValue = vp->fe()->getClassDepthAndFlagsValue(baseObject->getClassType()->getClass());
+            cdfValue = vp->comp()->fej9()->getClassDepthAndFlagsValue(baseObject->getClassType()->getClass());
             // if the type is a java.lang.Object, make the control branch to the call
             //
             if (baseObject->getClassType()->asFixedClass()->isJavaLangObject(vp))

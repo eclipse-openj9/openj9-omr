@@ -183,10 +183,10 @@ public:
    virtual int32_t getArrayletMask(int32_t);
    virtual int32_t getArrayletLeafIndex(int32_t, int32_t);
    virtual int32_t getObjectAlignmentInBytes();
-   virtual uintptrj_t getOffsetOfContiguousArraySizeField(); // DM: move w/ ifdef
-   virtual uintptrj_t getOffsetOfDiscontiguousArraySizeField(); // DM: move w/ ifdef
+   virtual uintptrj_t getOffsetOfContiguousArraySizeField();
+   virtual uintptrj_t getOffsetOfDiscontiguousArraySizeField();
    virtual uintptrj_t getObjectHeaderSizeInBytes();
-   virtual uintptrj_t getOffsetOfIndexableSizeField(); // DM: move w/ ifdef
+   virtual uintptrj_t getOffsetOfIndexableSizeField();
 
    // --------------------------------------------------------------------------
    // J9 Classes / VM?
@@ -197,22 +197,24 @@ public:
    virtual TR_OpaqueClassBlock * getClassClassPointer(TR_OpaqueClassBlock *objectClassPointer);
    virtual TR_OpaqueClassBlock * getClassFromMethodBlock(TR_OpaqueMethodBlock *mb);
    virtual int32_t getNewArrayTypeFromClass(TR_OpaqueClassBlock *clazz);
-   virtual TR_OpaqueClassBlock * getClassFromStatic(void *p);
 
    // VM+Shared
    virtual TR_OpaqueClassBlock * getArrayClassFromComponentClass(TR_OpaqueClassBlock * componentClass);
-   virtual uintptrj_t getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer);
    virtual TR_OpaqueClassBlock * getClassFromNewArrayType(int32_t arrayType);
    virtual TR_OpaqueClassBlock * getClassFromSignature(const char * sig, int32_t length, TR_ResolvedMethod *method, bool callSiteVettedForAOT=false);
    virtual TR_OpaqueClassBlock * getClassFromSignature(const char * sig, int32_t length, TR_OpaqueMethodBlock *method, bool callSiteVettedForAOT=false);
    virtual TR_OpaqueClassBlock * getClassOfMethod(TR_OpaqueMethodBlock *method);
    virtual TR_OpaqueClassBlock * getComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
-   virtual TR_OpaqueClassBlock * getLeafComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass); // DM: move w/ minor
+   virtual TR_OpaqueClassBlock * getLeafComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
 
-
+   // to J9
+   virtual uintptrj_t getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer);
+   virtual TR_OpaqueClassBlock * getClassFromStatic(void *p);
    virtual int32_t getStringLength(uintptrj_t objectPointer);
-   virtual char *getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize); // DM: move w/ ifdef    Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.
-   virtual intptrj_t getStringUTF8Length(uintptrj_t objectPointer); // DM: move w/ ifdef
+
+   // Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.
+   virtual char *getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize);
+   virtual intptrj_t getStringUTF8Length(uintptrj_t objectPointer);
 
    // --------------------------------------------------------------------------
    // Code cache

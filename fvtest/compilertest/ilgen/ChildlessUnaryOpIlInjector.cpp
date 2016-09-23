@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "ilgen/ChildlessUnaryOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -36,4 +36,4 @@ ChildlessUnaryOpIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

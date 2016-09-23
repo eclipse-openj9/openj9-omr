@@ -23,7 +23,7 @@
 #include "ilgen/IlBuilder.hpp"
 #include "ilgen/MethodBuilder.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 class BuilderTest;
@@ -292,6 +292,6 @@ class ForLoopBreakAndContinueMethod : public TR::MethodBuilder
    BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(BUILDERTEST_INCL)

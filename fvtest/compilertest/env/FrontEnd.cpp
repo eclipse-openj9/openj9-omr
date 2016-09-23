@@ -39,9 +39,9 @@
 
 #define RANGE_NEEDS_FOUR_BYTE_OFFSET(r) (((r) >= (USHRT_MAX   )) ? 1 : 0)
 
-#define notImplemented(A) TR_ASSERT(0, "This function is not defined for Test::FrontEnd %s", (A) )
+#define notImplemented(A) TR_ASSERT(0, "This function is not defined for TestCompiler::FrontEnd %s", (A) )
 
-namespace Test
+namespace TestCompiler
 {
 
 FrontEnd *FrontEnd::_instance = 0;
@@ -260,4 +260,4 @@ FrontEnd::calculateSizeOfStackAtlas(
    return atlasSize;
    }
 
-} //namespace Test
+} //namespace TestCompiler

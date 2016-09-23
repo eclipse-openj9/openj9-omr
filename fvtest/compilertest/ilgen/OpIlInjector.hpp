@@ -27,7 +27,7 @@
 namespace TR { class Node; }
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 typedef enum ParmType { ParmInteger, ParmLong, ParmShort, ParmByte, ParmAddress, ParmDouble, ParmFloat } ParmType;
 
@@ -138,6 +138,6 @@ class OpIlInjector : public TR::IlInjector
    void setDataType();
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_OPILINJECTOR_INCL)

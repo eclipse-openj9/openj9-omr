@@ -25,7 +25,7 @@
 #include "ilgen/TypeDictionary.hpp"
 #include "tests/BuilderTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 RecursiveFibFunctionType *BuilderTest::_recursiveFibMethod = 0;
@@ -2085,24 +2085,24 @@ ForLoopBreakAndContinueMethod::buildIL()
 
    return true;
    }
-} // namespace Test
+} // namespace TestCompiler
 
 TEST(JITTest, BuilderTest)
    {
-   ::Test::BuilderTest _builderTest;
+   ::TestCompiler::BuilderTest _builderTest;
    _builderTest.RunTest();
    }
 
 TEST(JITILBuilderTest, ControlFlowTest)
    {
-   ::Test::BuilderTest _controlFlowTest;
+   ::TestCompiler::BuilderTest _controlFlowTest;
    _controlFlowTest.compileControlFlowTestMethods();
    _controlFlowTest.invokeControlFlowTests();
    }
 
 TEST(JITILBuilderTest, NestedControlFlowLoopTest)
    {
-   ::Test::BuilderTest _nestedControlFlowLoopTest;
+   ::TestCompiler::BuilderTest _nestedControlFlowLoopTest;
    _nestedControlFlowLoopTest.compileNestedControlFlowLoopTestMethods();
    _nestedControlFlowLoopTest.invokeNestedControlFlowLoopTests();
    }

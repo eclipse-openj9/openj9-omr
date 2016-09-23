@@ -53,7 +53,7 @@ initHelper(void *helper, TR_RuntimeHelper id)
    }
 
 static void
-initializeAllHelpers(Test::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
+initializeAllHelpers(TestCompiler::JitConfig *jitConfig, TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t numHelpers)
    {
    initializeJitRuntimeHelperTable(false);
 
@@ -74,7 +74,7 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
    TR::CodeCacheConfig &codeCacheConfig = codeCacheManager.codeCacheConfig();
    codeCacheConfig._codeCacheKB = 128;
 
-   // setupCodeCacheParameters must stay before Test::CodeCacheManager::initialize() because it needs trampolineCodeSize
+   // setupCodeCacheParameters must stay before TestCompiler::CodeCacheManager::initialize() because it needs trampolineCodeSize
    setupCodeCacheParameters(&codeCacheConfig._trampolineCodeSize,
                             &codeCacheConfig._mccCallbacks,
                             &codeCacheConfig._numOfRuntimeHelpers,
@@ -156,7 +156,7 @@ initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddresses, int32_t n
    TR::Compiler->initialize();
 
    // --------------------------------------------------------------------------
-   static Test::FrontEnd fe;
+   static TestCompiler::FrontEnd fe;
    auto jitConfig = fe.jitConfig();
 
    initializeAllHelpers(jitConfig, helperIDs, helperAddresses, numHelpers);
@@ -187,7 +187,7 @@ extern "C"
 void
 shutdownJit()
    {
-   auto fe = Test::FrontEnd::instance();
+   auto fe = TestCompiler::FrontEnd::instance();
 
    TR::CodeCacheManager &codeCacheManager = fe->codeCacheManager();
    codeCacheManager.destroy();

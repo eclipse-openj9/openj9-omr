@@ -21,8 +21,8 @@
 
 #ifndef TEST_CODECACHEMANAGER_COMPOSED
 #define TEST_CODECACHEMANAGER_COMPOSED
-namespace Test { class CodeCacheManager; }
-namespace Test { typedef CodeCacheManager CodeCacheManagerConnector; }
+namespace TestCompiler { class CodeCacheManager; }
+namespace TestCompiler { typedef CodeCacheManager CodeCacheManagerConnector; }
 #endif
 
 #include <stddef.h>
@@ -33,7 +33,7 @@ namespace TR { class CodeCacheMemorySegment; }
 namespace TR { class CodeCache; }
 namespace TR { class CodeCacheManager; }
 
-namespace Test
+namespace TestCompiler
 {
 
 class JitConfig;
@@ -70,6 +70,6 @@ private :
    //static TR::GlobalAllocator & _allocator;
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // TEST_CODECACHEMANAGER_INCL

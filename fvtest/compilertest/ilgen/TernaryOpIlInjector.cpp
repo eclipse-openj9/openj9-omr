@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "ilgen/TernaryOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 bool
 TernaryOpIlInjector::injectIL()
@@ -36,4 +36,4 @@ TernaryOpIlInjector::injectIL()
    return true;
    }
 
-} /* namespace Test */
+} /* namespace TestCompiler */

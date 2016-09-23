@@ -28,19 +28,19 @@ namespace TR { class ResolvedMethod; }
 namespace TR
 {
 
-class OMR_EXTENSIBLE IlGeneratorMethodDetails : public Test::IlGeneratorMethodDetailsConnector
+class OMR_EXTENSIBLE IlGeneratorMethodDetails : public TestCompiler::IlGeneratorMethodDetailsConnector
    {
 
 public:
 
    IlGeneratorMethodDetails() :
-      Test::IlGeneratorMethodDetailsConnector() {}
+      TestCompiler::IlGeneratorMethodDetailsConnector() {}
 
    IlGeneratorMethodDetails(TR::ResolvedMethod *method) :
-      Test::IlGeneratorMethodDetailsConnector(method) {}
+      TestCompiler::IlGeneratorMethodDetailsConnector(method) {}
 
    IlGeneratorMethodDetails(TR_ResolvedMethod *method) :
-      Test::IlGeneratorMethodDetailsConnector(method) {}
+      TestCompiler::IlGeneratorMethodDetailsConnector(method) {}
 
    };
 }

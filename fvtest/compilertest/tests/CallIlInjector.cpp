@@ -23,7 +23,7 @@
 #include "tests/CallIlInjector.hpp"
 #include "tests/OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -41,4 +41,4 @@ CallIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

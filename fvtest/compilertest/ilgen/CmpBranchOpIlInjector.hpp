@@ -23,7 +23,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class CmpBranchOpIlInjector : public OpIlInjector
    {
@@ -39,6 +39,6 @@ class CmpBranchOpIlInjector : public OpIlInjector
 
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_CMPBRANCHOPILINJECTOR_INCL)

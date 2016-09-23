@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "tests/Qux2IlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -40,4 +40,4 @@ Qux2IlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

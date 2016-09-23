@@ -30,24 +30,24 @@
 // A value of -2 (or less) means that no reservation is requested
 
 
-TR::CodeCacheManager *Test::CodeCacheManager::_codeCacheManager = NULL;
-Test::JitConfig *Test::CodeCacheManager::_jitConfig = NULL;
+TR::CodeCacheManager *TestCompiler::CodeCacheManager::_codeCacheManager = NULL;
+TestCompiler::JitConfig *TestCompiler::CodeCacheManager::_jitConfig = NULL;
 
 
 TR::CodeCacheManager *
-Test::CodeCacheManager::self()
+TestCompiler::CodeCacheManager::self()
    {
    return static_cast<TR::CodeCacheManager *>(this);
    }
 
-Test::FrontEnd *
-Test::CodeCacheManager::pyfe()
+TestCompiler::FrontEnd *
+TestCompiler::CodeCacheManager::pyfe()
    {
    return reinterpret_cast<FrontEnd *>(self()->fe());
    }
 
 TR::CodeCache *
-Test::CodeCacheManager::initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup)
+TestCompiler::CodeCacheManager::initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup)
    {
    _jitConfig = self()->pyfe()->jitConfig();
    //_allocator = TR::globalAllocator("CodeCache");
@@ -55,25 +55,25 @@ Test::CodeCacheManager::initialize(bool useConsolidatedCache, uint32_t numberOfC
    }
 
 void *
-Test::CodeCacheManager::getMemory(size_t sizeInBytes)
+TestCompiler::CodeCacheManager::getMemory(size_t sizeInBytes)
    {
    void * ptr = malloc(sizeInBytes);
-   //fprintf(stderr,"Test::CodeCacheManager::getMemory(%d) allocated %p\n", sizeInBytes, ptr);
+   //fprintf(stderr,"TestCompiler::CodeCacheManager::getMemory(%d) allocated %p\n", sizeInBytes, ptr);
 
    return ptr;
    //return _allocator.allocate(sizeInBytes);
    }
 
 void
-Test::CodeCacheManager::freeMemory(void *memoryToFree)
+TestCompiler::CodeCacheManager::freeMemory(void *memoryToFree)
    {
-   //fprintf(stderr,"Test::CodeCacheManager::free(%p)\n", memoryToFree);
+   //fprintf(stderr,"TestCompiler::CodeCacheManager::free(%p)\n", memoryToFree);
    free(memoryToFree);
    //return _allocator.deallocate(memoryToFree, 0);
    }
 
 TR::CodeCacheMemorySegment *
-Test::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
+TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
                                               size_t &codeCacheSizeToAllocate,
                                               void *preferredStartAddress)
    {

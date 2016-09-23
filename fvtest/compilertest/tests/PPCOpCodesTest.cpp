@@ -25,7 +25,7 @@
 
 #include "tests/PPCOpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 void
@@ -5190,62 +5190,62 @@ PPCOpCodesTest::invokeDisabledDirectCallTest()
       EXPECT_EQ(aUnaryDataArr[i], _acall(aUnaryDataArr[i]));
       }
    }
-} // namespace Test
+} // namespace TestCompiler
 
 #if defined(TR_TARGET_POWER)
 //groups by testname
 TEST(JITPPCOpCodesTest, UnaryTest)
    {
-   ::Test::PPCOpCodesTest PPCUnaryTest;
+   ::TestCompiler::PPCOpCodesTest PPCUnaryTest;
    PPCUnaryTest.compileUnaryTestMethods();
    PPCUnaryTest.invokeUnaryTests();
    }
 
 TEST(JITPPCOpCodesTest, MemoryOperationTest)
    {
-   ::Test::PPCOpCodesTest PPCMemoryOperationTest;
+   ::TestCompiler::PPCOpCodesTest PPCMemoryOperationTest;
    PPCMemoryOperationTest.compileMemoryOperationTestMethods();
    PPCMemoryOperationTest.invokeMemoryOperationTests();
    }
 
 TEST(JITPPCOpCodesTest, TernaryTest)
    {
-   ::Test::PPCOpCodesTest PPCTernaryTest;
+   ::TestCompiler::PPCOpCodesTest PPCTernaryTest;
    PPCTernaryTest.compileTernaryTestMethods();
    PPCTernaryTest.invokeTernaryTests();
    }
 
 TEST(JITPPCOpCodesTest, CompareTest)
    {
-   ::Test::PPCOpCodesTest PPCCompareTest;
+   ::TestCompiler::PPCOpCodesTest PPCCompareTest;
    PPCCompareTest.compileCompareTestMethods();
    PPCCompareTest.invokeCompareTests();
    }
 
 TEST(JITPPCOpCodesTest, ShiftOrRolTest)
    {
-   ::Test::PPCOpCodesTest PPCShiftOrRolTest;
+   ::TestCompiler::PPCOpCodesTest PPCShiftOrRolTest;
    PPCShiftOrRolTest.compileShiftOrRolTestMethods();
    PPCShiftOrRolTest.invokeShiftOrRolTests();
    }
 
 TEST(JITPPCOpCodesTest, BitwiseTest)
    {
-   ::Test::PPCOpCodesTest PPCBitwiseTest;
+   ::TestCompiler::PPCOpCodesTest PPCBitwiseTest;
    PPCBitwiseTest.compileBitwiseTestMethods();
    PPCBitwiseTest.invokeBitwiseTests();
    }
 
 TEST(JITPPCOpCodesTest, PPCAddressTest)
    {
-   ::Test::PPCOpCodesTest PPCAddressTest;
+   ::TestCompiler::PPCOpCodesTest PPCAddressTest;
    PPCAddressTest.compileAddressTestMethods();
    PPCAddressTest.invokeAddressTests();
    }
 
 TEST(JITPPCOpCodesTest, UnsupportedOpCodesTest)
    {
-   ::Test::PPCOpCodesTest PPCUnsupportedOpcodesTest;
+   ::TestCompiler::PPCOpCodesTest PPCUnsupportedOpcodesTest;
    PPCUnsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
@@ -5253,7 +5253,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEConvertTests)
    {
    //Jazz103 Work Item 109976
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::PPCOpCodesTest disabledPPCLEConvertTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEConvertTest;
    disabledPPCLEConvertTest.compileDisabledConvertTestMethods();
    disabledPPCLEConvertTest.invokeDisabledConvertTests();
    }
@@ -5262,7 +5262,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLECompareTests)
    {
    //Jazz103 Work Item 106531
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::PPCOpCodesTest disabledPPCLECompareTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLECompareTest;
    disabledPPCLECompareTest.compileDisabledCompareTestMethods();
    disabledPPCLECompareTest.invokeDisabledCompareTests();
    }
@@ -5272,7 +5272,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEIntegerArithmeticTest)
    //Jazz103 Work Item 101901
    //Jazz103 Work Item 103809
    //Testrossa Work Item 121966
-   ::Test::PPCOpCodesTest disabledPPCLEIntegerArithmeticTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEIntegerArithmeticTest;
    disabledPPCLEIntegerArithmeticTest.compileDisabledIntegerArithmeticTestMethods();
    disabledPPCLEIntegerArithmeticTest.invokeDisabledIntegerArithmeticTests();
    }
@@ -5280,7 +5280,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEIntegerArithmeticTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEFloatArithmeticTest)
    {
    //Jazz103 Work Item 110358
-   ::Test::PPCOpCodesTest disabledPPCLEFloatArithmeticTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEFloatArithmeticTest;
    disabledPPCLEFloatArithmeticTest.compileDisabledFloatArithmeticTestMethods();
    disabledPPCLEFloatArithmeticTest.invokeDisabledFloatArithmeticTests();
    }
@@ -5288,7 +5288,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEFloatArithmeticTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEMemoryOperationTest)
    {
    //Jazz103 Work Item 110360, 111411
-   ::Test::PPCOpCodesTest disabledPPCLEMemoryOperationTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEMemoryOperationTest;
    disabledPPCLEMemoryOperationTest.compileDisabledMemoryOperationTestMethods();
    disabledPPCLEMemoryOperationTest.invokeDisabledMemoryOperationTests();
    //
@@ -5297,7 +5297,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEMemoryOperationTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEUnaryTest)
    {
    //Jazz103 Work Item 109977
-   ::Test::PPCOpCodesTest disabledPPCLEUnaryTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEUnaryTest;
    disabledPPCLEUnaryTest.compileDisabledUnaryTestMethods();
    disabledPPCLEUnaryTest.invokeDisabledUnaryTests();
    }
@@ -5305,7 +5305,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEUnaryTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEShiftOrRolTest)
    {
    //Jazz103 Work Item 110361
-   ::Test::PPCOpCodesTest disabledPPCLEShiftOrRolTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEShiftOrRolTest;
    disabledPPCLEShiftOrRolTest.compileDisabledShiftOrRolTestMethods();
    disabledPPCLEShiftOrRolTest.invokeDisabledShiftOrRolTests();
    }
@@ -5313,7 +5313,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEShiftOrRolTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEBitwiseTest)
    {
    //Jazz103 Work Item 110362
-   ::Test::PPCOpCodesTest disabledPPCLEBitwiseTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLEBitwiseTest;
    disabledPPCLEBitwiseTest.compileDisabledBitwiseTestMethods();
    disabledPPCLEBitwiseTest.invokeDisabledBitwiseTests();
    }
@@ -5321,7 +5321,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLEBitwiseTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLETernaryTest)
    {
    //Jazz103 Work Item 109979
-   ::Test::PPCOpCodesTest disabledPPCLETernaryTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCLETernaryTest;
    disabledPPCLETernaryTest.compileDisabledTernaryTestMethods();
    disabledPPCLETernaryTest.invokeDisabledTernaryTest();
    }
@@ -5329,7 +5329,7 @@ TEST(JITPPCOpCodesTest, DISABLED_PPCLETernaryTest)
 TEST(JITPPCOpCodesTest, DISABLED_PPCLEDirectCallTest)
    {
    //Jazz103 Work item 115240
-   ::Test::PPCOpCodesTest disabledPPCDirectCallTest;
+   ::TestCompiler::PPCOpCodesTest disabledPPCDirectCallTest;
    disabledPPCDirectCallTest.compileDisabledDirectCallTestMethods();
    disabledPPCDirectCallTest.invokeDisabledDirectCallTest();
    }

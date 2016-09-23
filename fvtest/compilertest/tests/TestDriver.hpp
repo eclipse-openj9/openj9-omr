@@ -28,7 +28,7 @@ namespace TR { class MethodBuilder; }
 typedef uint8_t * (*CompileFunctionType)(TR::IlGeneratorMethodDetails &, TR_Hotness);
 extern "C" uint8_t *compileMethod(TR::IlGeneratorMethodDetails &, TR_Hotness, int32_t &);
 
-namespace Test
+namespace TestCompiler
 {
 #define TOSTR(x)     #x
 #define LINETOSTR(x) TOSTR(x)
@@ -56,6 +56,6 @@ class TestDriver
 
    };
 
-}// namespace Test
+}// namespace TestCompiler
 
 #endif

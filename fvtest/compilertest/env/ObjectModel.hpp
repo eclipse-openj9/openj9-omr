@@ -25,11 +25,11 @@
 namespace TR
 {
 
-class ObjectModel : public Test::ObjectModelConnector
+class ObjectModel : public TestCompiler::ObjectModelConnector
    {
    public:
 
-   ObjectModel() : Test::ObjectModelConnector() {}
+   ObjectModel() : TestCompiler::ObjectModelConnector() {}
    };
 
 }

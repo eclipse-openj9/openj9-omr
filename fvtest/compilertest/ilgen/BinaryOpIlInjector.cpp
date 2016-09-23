@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "ilgen/BinaryOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -38,4 +38,4 @@ BinaryOpIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

@@ -23,7 +23,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class ChildlessUnaryOpIlInjector : public UnaryOpIlInjector
    {
@@ -38,6 +38,6 @@ class ChildlessUnaryOpIlInjector : public UnaryOpIlInjector
    bool injectIL();
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_CHILDLESSUNARYOPILINJECTOR_INCL)

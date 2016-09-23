@@ -18,7 +18,7 @@
 
 #include "OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 class PPCOpCodesTest : public OpCodesTest
    {
@@ -63,4 +63,4 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void invokeDisabledDirectCallTest();
    };
 
-} // namespace Test
+} // namespace TestCompiler

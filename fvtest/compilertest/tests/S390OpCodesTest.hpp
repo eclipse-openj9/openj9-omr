@@ -18,7 +18,7 @@
 
 #include "OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 class S390OpCodesTest : public OpCodesTest
    {
@@ -66,4 +66,4 @@ class S390OpCodesTest : public OpCodesTest
    virtual void invokeDisabledS390ConvertToAddressOpCodesTests();
    };
 
-} // namespace Test
+} // namespace TestCompiler

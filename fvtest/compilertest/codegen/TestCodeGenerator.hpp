@@ -24,14 +24,14 @@
  */
 #ifndef TEST_CODEGENERATORBASE_CONNECTOR
 #define TEST_CODEGENERATORBASE_CONNECTOR
-namespace Test { class CodeGenerator; }
-namespace Test { typedef CodeGenerator CodeGeneratorConnector; }
+namespace TestCompiler { class CodeGenerator; }
+namespace TestCompiler { typedef CodeGenerator CodeGeneratorConnector; }
 #endif
 
 
 #include "codegen/OMRCodeGenerator.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGeneratorConnector

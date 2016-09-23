@@ -27,7 +27,7 @@
 
 namespace TR { class ResolvedMethod; }
 
-namespace Test
+namespace TestCompiler
 {
 //unsigned signatureChars
 typedef int32_t (unsignedSignatureCharS_I_testMethodType)(uint16_t);
@@ -742,4 +742,4 @@ class OpCodesTest : public TestDriver
    template <typename C, typename T> static T ternary(C a, T b, T c) {return a ? b : c;}
    };
 
-} // namespace Test
+} // namespace TestCompiler

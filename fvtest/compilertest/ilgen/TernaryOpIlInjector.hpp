@@ -23,7 +23,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class TernaryOpIlInjector : public OpIlInjector
    {
@@ -39,6 +39,6 @@ class TernaryOpIlInjector : public OpIlInjector
    bool injectIL();
    };
 
-} /* namespace Test */
+} /* namespace TestCompiler */
 
 #endif // !define (TEST_TERNARYOPILINJECTOR_INCL)

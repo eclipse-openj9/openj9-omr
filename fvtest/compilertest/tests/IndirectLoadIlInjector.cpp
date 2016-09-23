@@ -26,7 +26,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -43,4 +43,4 @@ IndirectLoadIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

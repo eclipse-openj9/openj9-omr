@@ -33,9 +33,9 @@ class TR_ResolvedMethod;
 namespace TR
 {
 
-template <> struct FETraits<Test::FrontEnd>
+template <> struct FETraits<TestCompiler::FrontEnd>
    {
-   typedef Test::JitConfig      JitConfig;
+   typedef TestCompiler::JitConfig      JitConfig;
    typedef TR::CodeCacheManager CodeCacheManager;
    typedef TR::CodeCache        CodeCache;
    static const size_t  DEFAULT_SEG_SIZE = (128 * 1024); // 128kb
@@ -43,7 +43,7 @@ template <> struct FETraits<Test::FrontEnd>
 
 }
 
-namespace Test
+namespace TestCompiler
 {
 
 class FrontEnd : public TR::FEBase<FrontEnd>
@@ -103,11 +103,11 @@ class FrontEnd : public TR::FEBase<FrontEnd>
 
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 namespace TR
 {
-class FrontEnd : public Test::FrontEnd
+class FrontEnd : public TestCompiler::FrontEnd
    {
    public:
    FrontEnd();

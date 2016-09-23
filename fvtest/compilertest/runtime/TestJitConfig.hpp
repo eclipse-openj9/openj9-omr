@@ -23,10 +23,10 @@
 #include "env/FEBase.hpp"
 #include "env/JitConfig.hpp"
 
-namespace Test { class FrontEnd; }
+namespace TestCompiler { class FrontEnd; }
 
-// Singleton JitConfig. The only instance of this is Test::FrontEnd::_jitConfig
-namespace Test
+// Singleton JitConfig. The only instance of this is TestCompiler::FrontEnd::_jitConfig
+namespace TestCompiler
 {
 struct JitConfig : public TR::JitConfig
    {
@@ -34,6 +34,6 @@ struct JitConfig : public TR::JitConfig
    friend class TR::FEBase<FrontEnd>;
    JitConfig() : TR::JitConfig() {}
    };
-} // namespace Test
+} // namespace TestCompiler
 
 #endif

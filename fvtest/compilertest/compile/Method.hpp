@@ -40,7 +40,7 @@ namespace TR { class FrontEnd; }
 // quick and dirty implementation to get up and running
 // needs major overhaul
 
-namespace Test
+namespace TestCompiler
 {
 
 class Method : public TR_Method
@@ -181,17 +181,17 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
    };
 
 
-} // namespace Test
+} // namespace TestCompiler
 
 #if defined(PUT_TEST_RESOLVEDMETHOD_INTO_TR)
 
 namespace TR
 {
-   class ResolvedMethod : public Test::ResolvedMethod
+   class ResolvedMethod : public TestCompiler::ResolvedMethod
       {
       public:
          ResolvedMethod(TR_OpaqueMethodBlock *method)
-            : Test::ResolvedMethod(method)
+            : TestCompiler::ResolvedMethod(method)
             { }
 
          ResolvedMethod(char            * fileName,
@@ -202,13 +202,13 @@ namespace TR
                         TR::IlType      * returnType,
                         void            * entryPoint,
                         TR::IlInjector  * ilInjector)
-            : Test::ResolvedMethod(fileName, lineNumber, name, numArgs,
+            : TestCompiler::ResolvedMethod(fileName, lineNumber, name, numArgs,
                                    parmTypes, returnType,
                                    entryPoint, ilInjector)
             { }
 
          ResolvedMethod(TR::MethodBuilder *methodBuilder)
-            : Test::ResolvedMethod(methodBuilder)
+            : TestCompiler::ResolvedMethod(methodBuilder)
             { }
       };
 } // namespace TR

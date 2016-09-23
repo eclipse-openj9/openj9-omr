@@ -35,13 +35,13 @@
 #define OPT_DETAILS "O^O ILGEN: "
 
 void
-Test::IlInjector::setMethodAndTest(TR::IlInjector *source)
+TestCompiler::IlInjector::setMethodAndTest(TR::IlInjector *source)
    {
    setMethodAndTest(source->_method, source->_test);
    }
 
 void
-Test::IlInjector::initialize(TR::IlGeneratorMethodDetails * details,
+TestCompiler::IlInjector::initialize(TR::IlGeneratorMethodDetails * details,
                              TR::ResolvedMethodSymbol     * methodSymbol,
                              TR::FrontEnd                 * fe,
                              TR::SymbolReferenceTable     * symRefTab)
@@ -51,7 +51,7 @@ Test::IlInjector::initialize(TR::IlGeneratorMethodDetails * details,
    }
 
 TR::Node *
-Test::IlInjector::callFunction(TR::ResolvedMethod *resolvedMethod, TR::IlType *returnType, int32_t numArgs, TR::Node *firstArg)
+TestCompiler::IlInjector::callFunction(TR::ResolvedMethod *resolvedMethod, TR::IlType *returnType, int32_t numArgs, TR::Node *firstArg)
    {
    TR_ASSERT(numArgs == 1, "Hack alert: currently only supports single argument function calls!");
 

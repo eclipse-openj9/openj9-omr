@@ -24,10 +24,10 @@
 namespace TR
 {
 
-class OMR_EXTENSIBLE CodeCacheManager : public Test::CodeCacheManagerConnector
+class OMR_EXTENSIBLE CodeCacheManager : public TestCompiler::CodeCacheManagerConnector
    {
    public:
-   CodeCacheManager(TR_FrontEnd *fe) : Test::CodeCacheManagerConnector(fe) { }
+   CodeCacheManager(TR_FrontEnd *fe) : TestCompiler::CodeCacheManagerConnector(fe) { }
    };
 
 } // namespace TR

@@ -22,7 +22,7 @@
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/StoreOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -40,4 +40,4 @@ StoreOpIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

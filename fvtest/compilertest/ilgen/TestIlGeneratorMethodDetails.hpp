@@ -24,8 +24,8 @@
  */
 #ifndef TEST_ILGENERATOR_METHOD_DETAILS_CONNECTOR
 #define TEST_ILGENERATOR_METHOD_DETAILS_CONNECTOR
-namespace Test { class IlGeneratorMethodDetails; }
-namespace Test { typedef Test::IlGeneratorMethodDetails IlGeneratorMethodDetailsConnector; }
+namespace TestCompiler { class IlGeneratorMethodDetails; }
+namespace TestCompiler { typedef TestCompiler::IlGeneratorMethodDetails IlGeneratorMethodDetailsConnector; }
 #endif
 
 #include "ilgen/OMRIlGeneratorMethodDetails.hpp"
@@ -41,7 +41,7 @@ namespace TR { class ResolvedMethod; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
 
-namespace Test
+namespace TestCompiler
 {
 
 class ResolvedMethod;

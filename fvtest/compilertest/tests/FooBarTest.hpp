@@ -18,7 +18,7 @@
 
 #include "TestDriver.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 typedef int32_t (FooMethodType)(int32_t);
@@ -51,4 +51,4 @@ class FooBarTest : public TestDriver
    static int32_t bar(int32_t);
    };
 
-} // namespace Test
+} // namespace TestCompiler

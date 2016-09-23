@@ -26,7 +26,7 @@
 #include "compile/InlineBlock.hpp"
 #include "env/IO.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 IlGeneratorMethodDetails::IlGeneratorMethodDetails(TR_ResolvedMethod *method) :

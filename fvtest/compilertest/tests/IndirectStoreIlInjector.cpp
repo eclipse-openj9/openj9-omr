@@ -23,7 +23,7 @@
 #include "tests/IndirectStoreIlInjector.hpp"
 #include "tests/OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -39,4 +39,4 @@ IndirectStoreIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

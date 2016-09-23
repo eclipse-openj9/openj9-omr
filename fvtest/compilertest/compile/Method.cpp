@@ -27,7 +27,7 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 // needs major overhaul
@@ -189,4 +189,4 @@ ResolvedMethod::returnType()
    {
    return _returnType->getPrimitiveType();
    }
-} // namespace Test
+} // namespace TestCompiler

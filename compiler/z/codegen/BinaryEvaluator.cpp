@@ -77,10 +77,6 @@ extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
 #define PRINT_ME(string,node,cg)
 #endif
 
-#if 1
-#define SPECIALDIVCASES
-#endif
-
 #define ENABLE_ZARCH_FOR_32    1
 
 /**
@@ -803,7 +799,6 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
 
    TR::RegisterPair * dividendPair = (TR::RegisterPair *) cg->gprClobberEvaluate(firstChild);
 
-#ifdef SPECIALDIVCASES
    int32_t shiftAmnt;
    //case: A/A Q=1, R=0
    if (secondChild == firstChild)
@@ -977,7 +972,6 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
          return dividendPair;
          }
       }
-#endif
 
    if (performTransformation(comp, "O^O Using 64bit ldiv on 32bit driver.\n"))
       {

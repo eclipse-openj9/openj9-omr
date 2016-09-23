@@ -5377,14 +5377,25 @@ OMR::Z::CodeGenerator::replaceInst(TR::Instruction* old, TR::Instruction* curr)
       }
    }
 
+// TODO (Issue #254): This should really be a common code generator API. Push this up to the common code generator.
 void
 OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
    {
    TR::Instruction* prv = old->getPrev();
    TR::Instruction* nxt = old->getNext();
    prv->setNext(nxt);
-   if (nxt != NULL)      //don't try to dereference if old is the last instruction
+
+   // The next instruction could be the append instruction
+   if (nxt != NULL)
+      {
       nxt->setPrev(prv);
+      }
+
+   // Update the append instruction if we are deleting the last instruction in the stream
+   if (self()->comp()->getAppendInstruction() == old)
+      {
+      self()->comp()->setAppendInstruction(prv);
+      }
    }
 
 

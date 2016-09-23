@@ -1312,6 +1312,14 @@ private:
    bool tryMoveImmediate();
    bool isBarrierToPeepHoleLookback(TR::Instruction *current);
 
+   /** \brief
+    *     Attempts to reduce LHI R,0 instructions to XR R,R instruction to save 2 bytes of icache.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool ReduceLHIToXR();
+
    // DAA related Peephole optimizations
    bool DAARemoveOutlinedLabelNop   (bool hasPadding);
    bool DAARemoveOutlinedLabelNopCVB(bool hasPadding);

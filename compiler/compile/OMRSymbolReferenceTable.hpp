@@ -285,7 +285,6 @@ class SymbolReferenceTable
 
    TR::SymbolReference * findOrCreateMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod *, TR::MethodSymbol::Kinds, bool = false);
    TR::SymbolReference * findJavaLangClassFromClassSymbolRef();
-   TR::SymbolReference * findOrCreateClassIsArraySymbolRef();
 
    // FE, CG, optimizer
    TR::SymbolReference * findOrCreateNullCheckSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
@@ -327,7 +326,6 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateSymRefWithKnownObject(TR::SymbolReference *original, TR::KnownObjectTable::Index objectIndex);
    TR::SymbolReference * findOrCreateThisRangeExtensionSymRef(TR::ResolvedMethodSymbol *owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateContiguousArraySizeSymbolRef();
-   TR::SymbolReference * findOrCreateArrayComponentTypeSymbolRef();
    TR::SymbolReference * findOrCreateNewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);

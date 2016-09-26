@@ -297,20 +297,6 @@ OMR::SymbolReferenceTable::findAddressOfClassOfMethodSymbolRef()
    return element(addressOfClassOfMethodSymbol);
    }
 
-
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateClassIsArraySymbolRef()
-   {
-   if (!element(isArraySymbol))
-      {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Int32);
-      element(isArraySymbol) = new (trHeapMemory()) TR::SymbolReference(self(), isArraySymbol, sym);
-      element(isArraySymbol)->setOffset(fe()->getOffsetOfIsArrayFieldFromRomClass());
-      }
-   return element(isArraySymbol);
-   }
-
-
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findClassIsArraySymbolRef()
    {
@@ -331,26 +317,12 @@ OMR::SymbolReferenceTable::findClassFlagsSymbolRef()
    return element(isClassFlagsSymbol);
    }
 
-TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateArrayComponentTypeSymbolRef()
-   {
-   if (!element(componentClassSymbol))
-      {
-      TR::Symbol * sym = TR::Symbol::createShadow(trHeapMemory(), TR::Address);
-      element(componentClassSymbol) = new (trHeapMemory()) TR::SymbolReference(self(), componentClassSymbol, sym);
-      element(componentClassSymbol)->setOffset(fe()->getOffsetOfArrayComponentTypeField());
-      if (!TR::Compiler->cls.classObjectsMayBeCollected())
-         sym->setNotCollected();
-      }
-   return element(componentClassSymbol);
-   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findArrayComponentTypeSymbolRef()
    {
    return element(componentClassSymbol);
    }
-
 
 
 TR::SymbolReference *

@@ -50,6 +50,7 @@
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Structure.hpp"             // for TR_StructureSubGraphNode, etc
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "optimizer/VPConstraint.hpp"          // for TR_VPConstraint
 #include "optimizer/AsyncCheckInsertion.hpp"
 
@@ -324,7 +325,7 @@ int32_t TR_RedundantAsyncCheckRemoval::processBlockStructure(TR_BlockStructure *
                   {
                   prev = treeTop->getPrevTreeTop();
                   optimizer()->prepareForTreeRemoval(treeTop);
-                  comp()->removeTree(treeTop);
+                  TR::TransformUtil::removeTree(comp(), treeTop);
                   treeTop = prev;
                   }
                hadAYieldPoint = true;

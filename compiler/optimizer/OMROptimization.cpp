@@ -43,6 +43,7 @@
 #include "optimizer/Optimization_inlines.hpp"  // for Optimization::self
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Simplifier.hpp"            // for TR::Simplifier
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 
 #define MAX_DEPTH_FOR_SMART_ANCHORING 3
 
@@ -372,7 +373,7 @@ OMR::Optimization::changeConditionalToUnconditional(TR::Node*& node, TR::Block* 
            treeTop = prevTreeTop)
          {
          prevTreeTop = treeTop->getPrevRealTreeTop();
-         self()->comp()->removeTree(treeTop);
+         TR::TransformUtil::removeTree(self()->comp(), treeTop);
          blocksWereRemoved = true;
          }
       }

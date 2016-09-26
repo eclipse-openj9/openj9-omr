@@ -46,6 +46,7 @@
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Structure.hpp"             // for TR_RegionStructure, etc
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
 #define OPT_DETAILS "O^O GENERAL LOOP UNROLLER: "
@@ -979,7 +980,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          gotoNode->setBranchDestination(destBlock->getEntry());
          gotoNode->setSideTableIndex(CREATED_BY_GLU);
 
-         comp()->removeTree(branchBlock->getLastRealTreeTop());
+         TR::TransformUtil::removeTree(comp(), branchBlock->getLastRealTreeTop());
          branchBlock->append(gotoTree);
          oldLoopEntryTree = branchBlock->getExit()->getNextTreeTop();
 

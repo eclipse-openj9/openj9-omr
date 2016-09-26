@@ -35,6 +35,7 @@
 #include "infra/TRCfgEdge.hpp"                 // for CFGEdge
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "ras/DebugCounter.hpp"
 
 #define OPT_DETAILS "O^O VG HEAD MERGE: "
@@ -332,7 +333,7 @@ void TR_VirtualGuardHeadMerger::tailSplitBlock(TR::Block * block, TR::Block * co
    cold1->getExit()->join(tailSplitBlock->getEntry());
 
    // remove cold1's goto
-   comp()->removeTree(cold1->getExit()->getPrevRealTreeTop());
+   TR::TransformUtil::removeTree(comp(), cold1->getExit()->getPrevRealTreeTop());
 
    // copy the exception edges
    for (auto e = block->getNextBlock()->getExceptionSuccessors().begin(); e != block->getNextBlock()->getExceptionSuccessors().end(); ++e)

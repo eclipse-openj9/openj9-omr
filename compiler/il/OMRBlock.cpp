@@ -63,6 +63,7 @@
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/RegisterCandidate.hpp"     // for TR_GlobalRegister
 #include "optimizer/Structure.hpp"             // for TR_BlockStructure, etc
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
 class TR_Memory;
@@ -612,7 +613,7 @@ OMR::Block::removeFromCFG(TR::Compilation *c)
       for (TR::TreeTop *treeTop = _pEntry, *next; ; treeTop = next)
          {
          next = treeTop->getNextTreeTop();
-         c->removeTree(treeTop);
+         TR::TransformUtil::removeTree(c, treeTop);
          if (treeTop == _pExit)
             break;
          }
@@ -651,7 +652,7 @@ OMR::Block::removeBranch(TR::Compilation *c)
    TR::TreeTop * tt = self()->getLastRealTreeTop();
    TR_ASSERT(tt->getNode()->getOpCode().isBranch(), "OMR::Block::removeBranch, block doesn't have a branch");
    c->getFlowGraph()->removeEdge(self(), tt->getNode()->getBranchDestination()->getNode()->getBlock());
-   c->removeTree(tt);
+   TR::TransformUtil::removeTree(c, tt);
    }
 
 TR::Block *

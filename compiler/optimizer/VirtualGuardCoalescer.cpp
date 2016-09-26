@@ -46,6 +46,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                 // for Optimizer
 #include "optimizer/Structure.hpp"                 // for TR_BlockStructure, etc
+#include "optimizer/TransformUtil.hpp"             // for TransformUtil
 #include "optimizer/ValueNumberInfo.hpp"
 #include "optimizer/LocalOpts.hpp"
 #ifdef J9_PROJECT_SPECIFIC
@@ -199,7 +200,7 @@ void TR_VirtualGuardTailSplitter::eliminateColdVirtualGuards(TR::TreeTop *treeto
 
          //dumpOptDetails(comp(), "%s remove guard from cold block_%d\n", OPT_DETAILS, block->getNumber());
 
-         comp()->removeTree(block->getLastRealTreeTop());
+         TR::TransformUtil::removeTree(comp(), block->getLastRealTreeTop());
 
          TR::Node *gotoNode = TR::Node::create(block->getLastRealTreeTop()->getNode(), TR::Goto);
          TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
@@ -546,7 +547,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
 
       //if (call->getLastRealTreeTop()->getNode()->getOpCode().isBranch())
       if (call->getLastRealTreeTop()->getNode()->getOpCodeValue() == TR::Goto)
-         comp()->removeTree(call->getLastRealTreeTop());
+         TR::TransformUtil::removeTree(comp(), call->getLastRealTreeTop());
 
       VGInfo *info = getVirtualGuardInfo(next);
       if (info)
@@ -555,7 +556,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
          _cfg->addEdge(clone, dest);
          _cfg->removeEdge(call, next);
 
-         comp()->removeTree(clone->getLastRealTreeTop());
+         TR::TransformUtil::removeTree(comp(), clone->getLastRealTreeTop());
 
          TR::Node *gotoNode = TR::Node::create(next->getLastRealTreeTop()->getNode(), TR::Goto);
          TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
@@ -629,7 +630,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
                   // A special case: "if (blah) goto 3; else goto 3;"
                   // replace the if by a goto
                   //
-                  comp()->removeTree(lastTree);
+                  TR::TransformUtil::removeTree(comp(), lastTree);
                   TR::Node *gotoNode = TR::Node::create(lastTree->getNode(), TR::Goto);
                   gotoNode->setBranchDestination(dest->getEntry());
                   clone->append(TR::TreeTop::create(comp(), gotoNode));
@@ -641,7 +642,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
             // A special case, all cases go the same place
             // replace the switch by a goto
             //
-            comp()->removeTree(lastTree);
+            TR::TransformUtil::removeTree(comp(), lastTree);
             TR::Node *gotoNode = TR::Node::create( lastTree->getNode(), TR::Goto);
             gotoNode->setBranchDestination(dest->getEntry());
             clone->append(TR::TreeTop::create(comp(), gotoNode));

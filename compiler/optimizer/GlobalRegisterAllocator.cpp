@@ -67,6 +67,7 @@
 #include "optimizer/Optimizer.hpp"                  // for Optimizer
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
+#include "optimizer/TransformUtil.hpp"              // for TransformUtil
 #include "optimizer/DataFlowAnalysis.hpp"           // for TR_Liveness
 #include "optimizer/UseDefInfo.hpp"                 // for TR_UseDefInfo, etc
 #include "ras/Debug.hpp"                            // for TR_DebugBase
@@ -612,7 +613,7 @@ TR_GlobalRegisterAllocator::perform()
             if (!rc->getValueModified())
                for (; store; store = stores.getNext())
                   {
-                  comp()->removeTree(store);
+                  TR::TransformUtil::removeTree(comp(), store);
                   }
            else
               {
@@ -709,7 +710,7 @@ TR_GlobalRegisterAllocator::perform()
                      !nonSplittingCopyStored.isSet(tt->getNode()->getFirstChild()->getRegLoadStoreSymbolReference()->getReferenceNumber()))
                      {
                      if (trace) traceMsg(comp(), "Remove a redundant store %p\n", tt->getNode());
-                        comp()->removeTree(tt);
+                     TR::TransformUtil::removeTree(comp(), tt);
                      }
                   }
 

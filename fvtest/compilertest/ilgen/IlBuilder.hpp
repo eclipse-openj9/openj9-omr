@@ -28,7 +28,7 @@
 
 #include "compiler/ilgen/IlBuilder.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 class TestDriver;
@@ -49,32 +49,32 @@ public:
    IlBuilder(TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
       : OMR::IlBuilder(methodBuilder, types)
       {
-      // need to explicitly initialize Test::IlInjector layer because
+      // need to explicitly initialize TestCompiler::IlInjector layer because
       // it's hiding behind our OMR::IlBuilder base class
       setMethodAndTest((TR::ResolvedMethod *)NULL, test);
       }
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 
 #ifdef PUT_TEST_ILBUILDER_INTO_TR
 
 namespace TR
 {
-   class IlBuilder : public Test::IlBuilder
+   class IlBuilder : public TestCompiler::IlBuilder
       {
       public:
          IlBuilder(TR::MethodBuilder *methodBuilder, TypeDictionary *types)
-            : Test::IlBuilder(methodBuilder, types)
+            : TestCompiler::IlBuilder(methodBuilder, types)
             { }
 
          IlBuilder(TR::IlBuilder *source)
-            : Test::IlBuilder(source)
+            : TestCompiler::IlBuilder(source)
             { }
 
-         IlBuilder(Test::TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-            : Test::IlBuilder(test, methodBuilder, types)
+         IlBuilder(TestCompiler::TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
+            : TestCompiler::IlBuilder(test, methodBuilder, types)
             { }
       };
 

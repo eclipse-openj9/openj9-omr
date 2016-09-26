@@ -21,15 +21,15 @@
 
 #ifndef TEST_MONITOR_CONNECTOR
 #define TEST_MONITOR_CONNECTOR
-namespace Test { class Monitor; }
-namespace Test { typedef Test::Monitor MonitorConnector; }
+namespace TestCompiler { class Monitor; }
+namespace TestCompiler { typedef TestCompiler::Monitor MonitorConnector; }
 #endif
 
 #include "infra/OMRMonitor.hpp"
 
 #include <pthread.h>
 
-namespace Test
+namespace TestCompiler
 {
 
 class Monitor : public OMR::MonitorConnector

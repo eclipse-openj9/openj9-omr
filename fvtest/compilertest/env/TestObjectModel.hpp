@@ -24,14 +24,14 @@
  */
 #ifndef TEST_OBJECTMODEL_CONNECTOR
 #define TEST_OBJECTMODEL_CONNECTOR
-namespace Test { class ObjectModel; }
-namespace Test { typedef Test::ObjectModel ObjectModelConnector; }
+namespace TestCompiler { class ObjectModel; }
+namespace TestCompiler { typedef TestCompiler::ObjectModel ObjectModelConnector; }
 #endif
 
 
 #include "env/OMRObjectModel.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 class ObjectModel : public OMR::ObjectModelConnector

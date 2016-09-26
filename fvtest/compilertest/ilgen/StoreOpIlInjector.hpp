@@ -20,7 +20,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class StoreOpIlInjector : public OpIlInjector
    {
@@ -38,4 +38,4 @@ class StoreOpIlInjector : public OpIlInjector
 //   TR::Node *parameter1() { return parameter(0, _dataType); }
    };
 
-} // namespace Test
+} // namespace TestCompiler

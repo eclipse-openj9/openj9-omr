@@ -18,10 +18,10 @@
 
 #include "env/FrontEnd.hpp"
 
-// translate Test::FrontEnd into the OMR namespace as the frontend so that everyone
+// translate TestCompiler::FrontEnd into the OMR namespace as the frontend so that everyone
 // can use that
 namespace OMR
 {
-typedef Test::FrontEnd FrontEnd;
+typedef TestCompiler::FrontEnd FrontEnd;
 }
 

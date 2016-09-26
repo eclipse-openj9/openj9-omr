@@ -24,12 +24,12 @@
 namespace TR
 {
 
-class Monitor : public Test::MonitorConnector
+class Monitor : public TestCompiler::MonitorConnector
    {
    public:
 
    Monitor(char const *name) :
-      Test::MonitorConnector(name) {}
+      TestCompiler::MonitorConnector(name) {}
    };
 }
 

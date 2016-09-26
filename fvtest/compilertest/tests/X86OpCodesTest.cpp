@@ -25,7 +25,7 @@
 
 #include "tests/X86OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 void
 X86OpCodesTest::compileIntegerArithmeticTestMethods()
@@ -5365,76 +5365,76 @@ X86OpCodesTest::invokeDisabledMemoryOpCodesTest()
       }
 
    }
-} // namespace Test
+} // namespace TestCompiler
 
 #if defined(TR_TARGET_X86)
 //groups by testname
 TEST(JITX86OpCodesTest, UnaryTest)
    {
-   ::Test::X86OpCodesTest X86UnaryTest;
+   ::TestCompiler::X86OpCodesTest X86UnaryTest;
    X86UnaryTest.compileUnaryTestMethods();
    X86UnaryTest.invokeUnaryTests();
    }
 
 TEST(JITX86OpCodesTest, IntegerArithmeticTest)
    {
-   ::Test::X86OpCodesTest X86IntegerArithmeticTest;
+   ::TestCompiler::X86OpCodesTest X86IntegerArithmeticTest;
    X86IntegerArithmeticTest.compileIntegerArithmeticTestMethods();
    X86IntegerArithmeticTest.invokeIntegerArithmeticTests();
    }
 
 TEST(JITX86OpCodesTest, FloatArithmeticTest)
    {
-   ::Test::X86OpCodesTest X86FloatArithmeticTest;
+   ::TestCompiler::X86OpCodesTest X86FloatArithmeticTest;
    X86FloatArithmeticTest.compileFloatArithmeticTestMethods();
    X86FloatArithmeticTest.invokeFloatArithmeticTests();
    }
 
 TEST(JITX86OpCodesTest, MemoryOperationTest)
    {
-   ::Test::X86OpCodesTest X86MemoryOperationTest;
+   ::TestCompiler::X86OpCodesTest X86MemoryOperationTest;
    X86MemoryOperationTest.compileMemoryOperationTestMethods();
    X86MemoryOperationTest.invokeMemoryOperationTests();
    }
 
 TEST(JITX86OpCodesTest, ShiftOrRolTest)
    {
-   ::Test::X86OpCodesTest shiftOrRolTest;
+   ::TestCompiler::X86OpCodesTest shiftOrRolTest;
    shiftOrRolTest.compileShiftOrRolTestMethods();
    shiftOrRolTest.invokeShiftOrRolTests();
    }
 
 TEST(JITX86OpCodesTest, BitwiseTest)
    {
-   ::Test::X86OpCodesTest BitwiseTest;
+   ::TestCompiler::X86OpCodesTest BitwiseTest;
    BitwiseTest.compileBitwiseTestMethods();
    BitwiseTest.invokeBitwiseTests();
    }
 
 TEST(JITX86OpCodesTest, DirectCallTest)
    {
-   ::Test::X86OpCodesTest X86DirectCallTest;
+   ::TestCompiler::X86OpCodesTest X86DirectCallTest;
    X86DirectCallTest.compileDirectCallTestMethods();
    X86DirectCallTest.invokeDirectCallTests();
    }
 
 TEST(JITX86OpCodesTest, CompareTest)
    {
-   ::Test::X86OpCodesTest X86CompareTest;
+   ::TestCompiler::X86OpCodesTest X86CompareTest;
    X86CompareTest.compileCompareTestMethods();
    X86CompareTest.invokeCompareTests();
    }
 
 TEST(JITX86OpCodesTest, TernaryTest)
    {
-   ::Test::X86OpCodesTest X86TernaryTest;
+   ::TestCompiler::X86OpCodesTest X86TernaryTest;
    X86TernaryTest.compileTernaryTestMethods();
    X86TernaryTest.invokeTernaryTests();
    }
 
 TEST(JITX86OpCodesTest, X86AddressTest)
    {
-   ::Test::X86OpCodesTest X86AddressTest;
+   ::TestCompiler::X86OpCodesTest X86AddressTest;
    X86AddressTest.compileAddressTestMethods();
    X86AddressTest.invokeAddressTests();
    }
@@ -5443,14 +5443,14 @@ TEST(JITX86OpCodesTest, DISABLED_X86IntegerArithmeticTest)
    {
    //Jazz103 Work Item 103809
    //Testrossa Work Item 121966
-   ::Test::X86OpCodesTest X86IntegerArithmeticTest;
+   ::TestCompiler::X86OpCodesTest X86IntegerArithmeticTest;
    X86IntegerArithmeticTest.compileDisabledIntegerArithmeticTestMethods();
    X86IntegerArithmeticTest.invokeDisabledIntegerArithmeticTests();
    }
 
 TEST(JITX86OpCodesTest, UnsupportedOpCodesTest)
    {
-   ::Test::X86OpCodesTest X86UnsupportedOpcodesTest;
+   ::TestCompiler::X86OpCodesTest X86UnsupportedOpcodesTest;
    X86UnsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
@@ -5459,7 +5459,7 @@ TEST(JITX86OpCodesTest, DISABLED_X86UnaryTest)
    //Jazz103 Work Item 110363
    //This defect is related to 97974: Separate group to temporarily disable crashed (will work on) testcases
    //Please move this test and recover f2i testcase number from 3 to 5.
-   ::Test::X86OpCodesTest disabledUnaryTest;
+   ::TestCompiler::X86OpCodesTest disabledUnaryTest;
    disabledUnaryTest.invokeNoHelperUnaryTests();
    }
 
@@ -5469,7 +5469,7 @@ TEST(JITX86OpCodesTest, DISABLED_X86UnaryTest)
 TEST(JITX86OpCodesTest, DISABLED_X86CompareOpCodesTests)
    {
    //Jazz103 Work Item 109672
-   ::Test::X86OpCodesTest disabledX86OpcodesTest;
+   ::TestCompiler::X86OpCodesTest disabledX86OpcodesTest;
    disabledX86OpcodesTest.compileDisabledCompareOpCodesTest();
    disabledX86OpcodesTest.invokeDisabledCompareOpCodesTest();
    }
@@ -5477,7 +5477,7 @@ TEST(JITX86OpCodesTest, DISABLED_X86CompareOpCodesTests)
 TEST(JITX86OpCodesTest, DISABLED_X86ConvertOpCodesTests)
    {
    //Jazz103 Work Item 109672
-   ::Test::X86OpCodesTest disabledX86OpcodesTest;
+   ::TestCompiler::X86OpCodesTest disabledX86OpcodesTest;
    disabledX86OpcodesTest.compileDisabledConvertOpCodesTest();
    disabledX86OpcodesTest.invokeDisabledConvertOpCodesTest();
    }
@@ -5485,7 +5485,7 @@ TEST(JITX86OpCodesTest, DISABLED_X86ConvertOpCodesTests)
 TEST(JITX86OpCodesTest, DISABLED_X86MemoryOpCodesTests)
    {
    //Jazz103 111413
-   ::Test::X86OpCodesTest disabledX86MemoryOpcodesTest;
+   ::TestCompiler::X86OpCodesTest disabledX86MemoryOpcodesTest;
    disabledX86MemoryOpcodesTest.compileDisabledMemoryOpCodesTest();
    disabledX86MemoryOpcodesTest.invokeDisabledMemoryOpCodesTest();
    }

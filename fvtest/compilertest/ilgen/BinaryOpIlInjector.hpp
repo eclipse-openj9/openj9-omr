@@ -23,7 +23,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class BinaryOpIlInjector : public OpIlInjector
    {
@@ -38,6 +38,6 @@ class BinaryOpIlInjector : public OpIlInjector
    bool injectIL();
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_BINARYOPILINJECTOR_INCL)

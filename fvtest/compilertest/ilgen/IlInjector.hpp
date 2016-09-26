@@ -35,7 +35,7 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
 namespace TR { class IlType; }
 
-namespace Test
+namespace TestCompiler
 {
 
 class TestDriver;
@@ -96,30 +96,30 @@ protected:
    TR::ResolvedMethod        * _method;
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 
 #if defined(PUT_TEST_ILINJECTOR_INTO_TR)
 
 namespace TR
 {
-   class IlInjector : public Test::IlInjector
+   class IlInjector : public TestCompiler::IlInjector
       {
       public:
          IlInjector(TR::TypeDictionary *types) 
-            : Test::IlInjector(types)
+            : TestCompiler::IlInjector(types)
             { }
 
-         IlInjector(TR::TypeDictionary *types, Test::TestDriver *test)
-            : Test::IlInjector(types, test)
+         IlInjector(TR::TypeDictionary *types, TestCompiler::TestDriver *test)
+            : TestCompiler::IlInjector(types, test)
             { }
 
-         IlInjector(TR::ResolvedMethod *method, TR::TypeDictionary *types, Test::TestDriver *test)
-            : Test::IlInjector(method, types, test)
+         IlInjector(TR::ResolvedMethod *method, TR::TypeDictionary *types, TestCompiler::TestDriver *test)
+            : TestCompiler::IlInjector(method, types, test)
             { }
 
          IlInjector(TR::IlInjector *source)
-            : Test::IlInjector(source)
+            : TestCompiler::IlInjector(source)
             { }
       };
 

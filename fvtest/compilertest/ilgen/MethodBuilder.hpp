@@ -30,7 +30,7 @@
 
 class TR_Memory;
 
-namespace Test
+namespace TestCompiler
 {
 
 class TestDriver;
@@ -48,27 +48,27 @@ public:
    MethodBuilder(TR::TypeDictionary *types, TestDriver *test)
       : OMR::MethodBuilder(types)
       {
-      // need to explicitly initialize Test::IlInjector layer
+      // need to explicitly initialize TestCompiler::IlInjector layer
       setMethodAndTest(NULL, test);
       }
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 
 #if defined(PUT_TEST_METHODBUILDER_INTO_TR)
 
 namespace TR
 {
-   class MethodBuilder : public Test::MethodBuilder
+   class MethodBuilder : public TestCompiler::MethodBuilder
       {
       public:
          MethodBuilder(TR::TypeDictionary *types)
-            : Test::MethodBuilder(types)
+            : TestCompiler::MethodBuilder(types)
             { }
 
-         MethodBuilder(TR::TypeDictionary *types, Test::TestDriver *test)
-            : Test::MethodBuilder(types, test)
+         MethodBuilder(TR::TypeDictionary *types, TestCompiler::TestDriver *test)
+            : TestCompiler::MethodBuilder(types, test)
             { }
       };
 

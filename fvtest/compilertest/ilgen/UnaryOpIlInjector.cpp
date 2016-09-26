@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "ilgen/UnaryOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -36,4 +36,4 @@ UnaryOpIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

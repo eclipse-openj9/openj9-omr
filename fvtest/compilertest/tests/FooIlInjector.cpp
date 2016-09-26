@@ -23,7 +23,7 @@
 #include "tests/FooIlInjector.hpp"
 #include "tests/FooBarTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 bool
@@ -59,4 +59,4 @@ FooIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

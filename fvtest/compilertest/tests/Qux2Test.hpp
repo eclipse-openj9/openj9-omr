@@ -18,7 +18,7 @@
 
 #include "TestDriver.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 class Qux2IlInjector;
 typedef int32_t (testMethodType)(int32_t);
@@ -40,4 +40,4 @@ class Qux2Test : public TestDriver
    static int32_t qux2(int32_t);
    };
 
-} // namespace Test
+} // namespace TestCompiler

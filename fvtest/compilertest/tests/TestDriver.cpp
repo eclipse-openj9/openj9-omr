@@ -38,7 +38,7 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "gtest/gtest.h"
 
-namespace Test
+namespace TestCompiler
 {
 void
 TestDriver::RunTest()
@@ -60,4 +60,4 @@ TestDriver::compileMethodBuilder(TR::MethodBuilder *m, uint8_t ** entry)
    return rc;
    }
 
-} //namespace Test
+} //namespace TestCompiler

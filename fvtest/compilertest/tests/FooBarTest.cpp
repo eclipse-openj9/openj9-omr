@@ -26,7 +26,7 @@
 #include "gtest/gtest.h"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 
 
@@ -130,17 +130,17 @@ FooBarTest::invokeTests()
    ASSERT_EQ(-1, _foo(INT_MAX));
    }
 
-} // namespace Test
+} // namespace TestCompiler
 
 // This test will get assertion on S390-64, because of
 // "compiler/codegen/FrontEnd.cpp" TR_FrontEnd::methodTrampolineLookup is "notImplemented("methodTrampolineLookup");" and
-// "test/env/FrontEnd.cpp"  Test::FrontEnd::methodTrampolineLookup is "methodTrampolineLookup not implemented yet".
+// "test/env/FrontEnd.cpp"  TestCompiler::FrontEnd::methodTrampolineLookup is "methodTrampolineLookup not implemented yet".
 // This test also failed intermittent (segfault) on PPCLE, temporarily disabled this test on PPCLE, under track of Work Item
 // Please remove this #ifdef after those functions are implemented.
 #if defined(TR_TARGET_X86) || defined(TR_TARGET_S390) && !defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
 TEST(JITTest, FooBarTest)
    {
-   ::Test::FooBarTest _fooBarTest;
+   ::TestCompiler::FooBarTest _fooBarTest;
    _fooBarTest.RunTest();
    }
 #endif

@@ -18,7 +18,7 @@
 
 #include "OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 class X86OpCodesTest : public OpCodesTest
    {
@@ -58,4 +58,4 @@ class X86OpCodesTest : public OpCodesTest
    virtual void invokeNoHelperUnaryTests();
    };
 
-} // namespace Test
+} // namespace TestCompiler

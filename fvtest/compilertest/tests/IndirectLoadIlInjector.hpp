@@ -23,7 +23,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class IndirectLoadIlInjector : public UnaryOpIlInjector
    {
@@ -38,6 +38,6 @@ class IndirectLoadIlInjector : public UnaryOpIlInjector
 
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_INDIRECTLOADIILINJECTOR_INCL)

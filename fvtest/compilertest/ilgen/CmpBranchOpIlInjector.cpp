@@ -21,7 +21,7 @@
 #include "compile/Method.hpp"
 #include "ilgen/CmpBranchOpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 bool
 CmpBranchOpIlInjector::injectIL()
@@ -49,4 +49,4 @@ CmpBranchOpIlInjector::injectIL()
    return true;
    }
 
-} // namespace Test
+} // namespace TestCompiler

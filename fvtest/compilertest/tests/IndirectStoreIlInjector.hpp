@@ -22,7 +22,7 @@
 #include "ilgen/BinaryOpIlInjector.hpp"
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class IndirectStoreIlInjector : public BinaryOpIlInjector
    {
@@ -37,6 +37,6 @@ class IndirectStoreIlInjector : public BinaryOpIlInjector
 
    };
 
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_INDIRECTSTOREIILINJECTOR_INCL)

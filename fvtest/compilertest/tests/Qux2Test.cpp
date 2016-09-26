@@ -25,7 +25,7 @@
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 class Qux2IlInjector;
 testMethodType  * Qux2Test::_qux2 = 0;
@@ -73,10 +73,10 @@ Qux2Test::invokeTests()
 //   EXPECT_EQ(qux2(INT_MIN), _qux2(INT_MIN));
    }
 
-} // namespace Test
+} // namespace TestCompiler
 
 TEST(JITQuxTest, QuxTest2)
    {
-   ::Test::Qux2Test qux2Test;
+   ::TestCompiler::Qux2Test qux2Test;
    qux2Test.RunTest();
    }

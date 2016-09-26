@@ -43,7 +43,7 @@
 
 extern "C" uint8_t *compileMethod(TR::IlGeneratorMethodDetails &, TR_Hotness, int32_t &);
 
-namespace Test
+namespace TestCompiler
 {
 //common variables definitions
 const int64_t OpCodesTest::LONG_NEG = -9;
@@ -2879,68 +2879,68 @@ OpCodesTest::invokeAddressTests()
       }
    }
 
-} // namespace Test
+} // namespace TestCompiler
 
 //groups by testname
 TEST(JITCrossPlatformsOpCodesTest, UnaryTest)
    {
-   ::Test::OpCodesTest unaryTest;
+   ::TestCompiler::OpCodesTest unaryTest;
    unaryTest.compileUnaryTestMethods();
    unaryTest.invokeUnaryTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, IntegerArithmeticTest)
    {
-   ::Test::OpCodesTest integerArithmeticTest;
+   ::TestCompiler::OpCodesTest integerArithmeticTest;
    integerArithmeticTest.compileIntegerArithmeticTestMethods();
    integerArithmeticTest.invokeIntegerArithmeticTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, MemoryOperationTest)
    {
-   ::Test::OpCodesTest memoryOperationTest;
+   ::TestCompiler::OpCodesTest memoryOperationTest;
    memoryOperationTest.compileMemoryOperationTestMethods();
    memoryOperationTest.invokeMemoryOperationTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, ShiftOrRolTest)
    {
-   ::Test::OpCodesTest shiftOrRolTest;
+   ::TestCompiler::OpCodesTest shiftOrRolTest;
    shiftOrRolTest.compileShiftOrRolTestMethods();
    shiftOrRolTest.invokeShiftOrRolTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, BitwiseTest)
    {
-   ::Test::OpCodesTest bitwiseTest;
+   ::TestCompiler::OpCodesTest bitwiseTest;
    bitwiseTest.compileBitwiseMethods();
    bitwiseTest.invokeBitwiseTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, CompareTest)
    {
-   ::Test::OpCodesTest compareTest;
+   ::TestCompiler::OpCodesTest compareTest;
    compareTest.compileCompareTestMethods();
    compareTest.invokeCompareTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, TernaryTest)
    {
-   ::Test::OpCodesTest ternaryTest;
+   ::TestCompiler::OpCodesTest ternaryTest;
    ternaryTest.compileTernaryTestMethods();
    ternaryTest.invokeTernaryTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, AddressTest)
    {
-   ::Test::OpCodesTest addressTest;
+   ::TestCompiler::OpCodesTest addressTest;
    addressTest.compileAddressTestMethods();
    addressTest.invokeAddressTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, UnsupportedOpCodesTest)
    {
-   ::Test::OpCodesTest unsupportedOpcodesTest;
+   ::TestCompiler::OpCodesTest unsupportedOpcodesTest;
    unsupportedOpcodesTest.UnsupportedOpCodesTests();
    }
 
@@ -2948,7 +2948,7 @@ TEST(JITCrossPlatformsOpCodesTest, DISABLED_OpCodesTests)
    {
    //Jazz103 Work item 110364
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::OpCodesTest disabledOpCodesTest;
+   ::TestCompiler::OpCodesTest disabledOpCodesTest;
    disabledOpCodesTest.compileDisabledOpCodesTests();
    disabledOpCodesTest.invokeDisabledOpCodesTests();
    }
@@ -2959,7 +2959,7 @@ TEST(JITCrossPlatformsOpCodesTest, DISABLED_UnaryTest)
    //Jazz103 Work Item 110363
    //This defect is related to 97974: Separate group to temporarily disable crashed (will work on) testcases
    //Please move this test and recover f2i testcase number from 3 to 5.
-   ::Test::OpCodesTest disabledUnaryTest;
+   ::TestCompiler::OpCodesTest disabledUnaryTest;
    disabledUnaryTest.invokeNoHelperUnaryTests();
    }
 

@@ -20,7 +20,7 @@
 
 namespace TR { class TypeDictionary; }
 
-namespace Test
+namespace TestCompiler
 {
 class FooIlInjector : public TR::IlInjector
    {
@@ -37,4 +37,4 @@ class FooIlInjector : public TR::IlInjector
 
    };
 
-} // namespace Test
+} // namespace TestCompiler

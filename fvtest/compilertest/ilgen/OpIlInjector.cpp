@@ -23,7 +23,7 @@
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/OpIlInjector.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 void
 OpIlInjector::setDataType()
@@ -344,4 +344,4 @@ OpIlInjector::parm(uint32_t slot)
 
    return parameter(index, _types->PrimitiveType(_dataType));
    }
-} // namespace Test
+} // namespace TestCompiler

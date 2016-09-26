@@ -25,7 +25,7 @@
 
 #include "tests/S390OpCodesTest.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 void
 S390OpCodesTest::compileIntegerArithmeticTestMethods()
@@ -5901,76 +5901,76 @@ S390OpCodesTest::invokeDisabledS390ConvertToAddressOpCodesTests()
       }
 #endif
    }
-} // namespace Test
+} // namespace TestCompiler
 
 #if defined(TR_TARGET_S390)
 //groups by testname
 TEST(JITS390OpCodesTest, UnaryTest)
    {
-   ::Test::S390OpCodesTest S390UnaryTest;
+   ::TestCompiler::S390OpCodesTest S390UnaryTest;
    S390UnaryTest.compileUnaryTestMethods();
    S390UnaryTest.invokeUnaryTests();
    }
 
 TEST(JITS390OpCodesTest, IntegerArithmeticTest)
    {
-   ::Test::S390OpCodesTest S390IntegerArithmeticTest;
+   ::TestCompiler::S390OpCodesTest S390IntegerArithmeticTest;
    S390IntegerArithmeticTest.compileIntegerArithmeticTestMethods();
    S390IntegerArithmeticTest.invokeIntegerArithmeticTests();
    }
 
 TEST(JITS390OpCodesTest, FloatArithmeticTest)
    {
-   ::Test::S390OpCodesTest S390FloatArithmeticTest;
+   ::TestCompiler::S390OpCodesTest S390FloatArithmeticTest;
    S390FloatArithmeticTest.compileFloatArithmeticTestMethods();
    S390FloatArithmeticTest.invokeFloatArithmeticTests();
    }
 
 TEST(JITS390OpCodesTest, MemoryOperationTest)
    {
-   ::Test::S390OpCodesTest S390MemoryOperationTest;
+   ::TestCompiler::S390OpCodesTest S390MemoryOperationTest;
    S390MemoryOperationTest.compileMemoryOperationTestMethods();
    S390MemoryOperationTest.invokeMemoryOperationTests();
    }
 
 TEST(JITS390OpCodesTest, ShiftOrRolTest)
    {
-   ::Test::S390OpCodesTest shiftOrRolTest;
+   ::TestCompiler::S390OpCodesTest shiftOrRolTest;
    shiftOrRolTest.compileShiftOrRolTestMethods();
    shiftOrRolTest.invokeShiftOrRolTests();
    }
 
 TEST(JITS390OpCodesTest, BitwiseTest)
    {
-   ::Test::S390OpCodesTest BitwiseTest;
+   ::TestCompiler::S390OpCodesTest BitwiseTest;
    BitwiseTest.compileBitwiseTestMethods();
    BitwiseTest.invokeBitwiseTests();
    }
 
 TEST(JITS390OpCodesTest, TernaryTest)
    {
-   ::Test::S390OpCodesTest S390TernaryTest;
+   ::TestCompiler::S390OpCodesTest S390TernaryTest;
    S390TernaryTest.compileTernaryTestMethods();
    S390TernaryTest.invokeTernaryTests();
    }
 
 TEST(JITS390OpCodesTest, CompareTest)
    {
-   ::Test::S390OpCodesTest S390CompareTest;
+   ::TestCompiler::S390OpCodesTest S390CompareTest;
    S390CompareTest.compileCompareTestMethods();
    S390CompareTest.invokeCompareTests();
    }
 
 TEST(JITS390OpCodesTest, DirectCallTest)
    {
-   ::Test::S390OpCodesTest S390DirectCallTest;
+   ::TestCompiler::S390OpCodesTest S390DirectCallTest;
    S390DirectCallTest.compileDirectCallTestMethods();
    S390DirectCallTest.invokeDirectCallTests();
    }
 
 TEST(JITS390OpCodesTest, S390AddressTest)
    {
-   ::Test::S390OpCodesTest S390AddressTest;
+   ::TestCompiler::S390OpCodesTest S390AddressTest;
    S390AddressTest.compileAddressTestMethods();
    S390AddressTest.invokeAddressTests();
    }
@@ -5982,7 +5982,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390CompareTests)
    {
    //Jazz103 Work Item 106447
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::S390OpCodesTest disabledS390CompareTest;
+   ::TestCompiler::S390OpCodesTest disabledS390CompareTest;
    disabledS390CompareTest.compileDisabledCompareOpCodesTestMethods();
    disabledS390CompareTest.invokeDisabledCompareOpCodesTests();
    }
@@ -5993,7 +5993,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390IntegerArithmeticTests)
    //Jazz103 Work Item 103809
    //Testrossa Work Item 121966
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::S390OpCodesTest disabledS390CompareTest;
+   ::TestCompiler::S390OpCodesTest disabledS390CompareTest;
    disabledS390CompareTest.compileDisabledIntegerArithmeticTestMethods();
    disabledS390CompareTest.invokeDisabledIntegerArithmeticTests();
    }
@@ -6001,7 +6001,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390UnaryTests)
    {
    //Jazz103 Work Item 108753
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::S390OpCodesTest disabledS390CompareTest;
+   ::TestCompiler::S390OpCodesTest disabledS390CompareTest;
    disabledS390CompareTest.compileDisabledUnaryTestMethods();
    disabledS390CompareTest.invokeDisabledUnaryTests();
    }
@@ -6010,7 +6010,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390ShiftOrRolTests)
    {
    //Jazz103 Work Item 109995
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::S390OpCodesTest disabledS390CompareTest;
+   ::TestCompiler::S390OpCodesTest disabledS390CompareTest;
    disabledS390CompareTest.compileDisabledShiftOrRolTestMethods();
    disabledS390CompareTest.invokeDisabledShiftOrRolTests();
    }
@@ -6020,7 +6020,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390TernaryTests)
    //Jazz103 WI 104092
    //Jazz103 WI 109994
    //To temporarily enable "DISABLED" test, append " --gtest_also_run_disabled_tests" in the command line.
-   ::Test::S390OpCodesTest disabledS390CompareTest;
+   ::TestCompiler::S390OpCodesTest disabledS390CompareTest;
    disabledS390CompareTest.compileDisabledTernaryTestMethods();
    disabledS390CompareTest.invokeDisabledTernaryTests();
    }
@@ -6028,7 +6028,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390TernaryTests)
 TEST(JITS390OpCodesTest, DISABLED_S390MemoryOperationTest)
    {
    //Jazz103 Work Item 111018, 111410
-   ::Test::S390OpCodesTest S390MemoryOperationTest;
+   ::TestCompiler::S390OpCodesTest S390MemoryOperationTest;
    S390MemoryOperationTest.compileDisabledMemoryOperationTestMethods();
    S390MemoryOperationTest.invokeDisabledMemoryOperationTests();
    }
@@ -6036,7 +6036,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390MemoryOperationTest)
 TEST(JITS390OpCodesTest, DISABLED_S390BitwiseTest)
    {
    //Jazz103 Work Item 111019
-   ::Test::S390OpCodesTest S390BitwiseTest;
+   ::TestCompiler::S390OpCodesTest S390BitwiseTest;
    S390BitwiseTest.compileDisabledBitwiseTestMethods();
    S390BitwiseTest.invokeDisabledBitwiseTests();
    }
@@ -6044,7 +6044,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390BitwiseTest)
 TEST(JITS390OpCodesTest, DISABLED_S390DirectCallTest)
    {
    //Jazz103 Work Item 103419
-   ::Test::S390OpCodesTest S390DirectCallTest;
+   ::TestCompiler::S390OpCodesTest S390DirectCallTest;
    S390DirectCallTest.compileDisabledDirectCallTestMethods();
    S390DirectCallTest.invokeDisabledDirectCallTests();
    }
@@ -6052,7 +6052,7 @@ TEST(JITS390OpCodesTest, DISABLED_S390DirectCallTest)
 TEST(JITS390OpCodesTest, DISABLED_S390ConvertToAddressTest)
    {
    //Jazz103 Work Item 107711
-   ::Test::S390OpCodesTest S390ConvertToAddressTest;
+   ::TestCompiler::S390OpCodesTest S390ConvertToAddressTest;
    S390ConvertToAddressTest.compileDisabledS390ConvertToAddressOpCodesTests();
    S390ConvertToAddressTest.invokeDisabledS390ConvertToAddressOpCodesTests();
    }

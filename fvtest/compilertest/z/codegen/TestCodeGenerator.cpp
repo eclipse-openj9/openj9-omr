@@ -21,13 +21,13 @@
 #include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
 
-namespace Test
+namespace TestCompiler
 {
 namespace Z
 {
 
 CodeGenerator::CodeGenerator() :
-   Test::CodeGenerator()
+   TestCompiler::CodeGenerator()
    {
    self()->getS390Linkage()->initS390RealRegisterLinkage();
 
@@ -65,4 +65,4 @@ CodeGenerator::createLinkage(TR_LinkageConventions lc)
    }
 
 } // namespace Z
-} // namespace Test
+} // namespace TestCompiler

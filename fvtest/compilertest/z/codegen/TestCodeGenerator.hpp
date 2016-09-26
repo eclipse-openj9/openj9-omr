@@ -25,11 +25,11 @@
 #ifndef TEST_CODEGENERATORBASE_CONNECTOR
 #define TEST_CODEGENERATORBASE_CONNECTOR
 
-namespace Test { namespace Z { class CodeGenerator; } }
-namespace Test { typedef Z::CodeGenerator CodeGeneratorConnector; }
+namespace TestCompiler { namespace Z { class CodeGenerator; } }
+namespace TestCompiler { typedef Z::CodeGenerator CodeGeneratorConnector; }
 
 #else
-#error Test::Z::CodeGenerator expected to be a primary connector, but a Test connector is already defined
+#error TestCompiler::Z::CodeGenerator expected to be a primary connector, but a TestCompiler connector is already defined
 #endif
 
 
@@ -37,12 +37,12 @@ namespace Test { typedef Z::CodeGenerator CodeGeneratorConnector; }
 #include "codegen/LinkageConventionsEnum.hpp"
 
 
-namespace Test
+namespace TestCompiler
 {
 namespace Z
 {
 
-class OMR_EXTENSIBLE CodeGenerator : public Test::CodeGenerator
+class OMR_EXTENSIBLE CodeGenerator : public TestCompiler::CodeGenerator
    {
    public:
 
@@ -53,7 +53,7 @@ class OMR_EXTENSIBLE CodeGenerator : public Test::CodeGenerator
    };
 
 } // namespace Z
-} // namespace Test
+} // namespace TestCompiler
 
 #endif // !defined(TEST_Z_CODEGENERATORBASE_INCL)
 

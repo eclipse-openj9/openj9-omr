@@ -188,6 +188,13 @@ AS_CASE([$OMR_TOOLCHAIN],
 )
 AC_MSG_RESULT([$OMR_TOOLCHAIN])
 
+# Default OMRGLUE to example/glue if it was not specified
+OMRGLUE=${OMRGLUE:-"./example/glue"}
+
+AC_CHECK_FILE([$OMRGLUE/objectdescription.h],
+	[],
+	[AC_MSG_ERROR([Unable to find OMR glue header files.  These should be in the directory specified by the variable OMRGLUE.])])
+
 ## Default Variables
 
 # Set program defaults if they are undefined

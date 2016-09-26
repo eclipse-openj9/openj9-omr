@@ -38,17 +38,6 @@ namespace TR { class Block; }
 namespace TR { class CFGEdge; }
 namespace TR { class Node; }
 
-// The algorithm for minimizing the number of async checks in a given loop attempts to
-// achieve its goal by adopting two distinct methods:
-// 1. Check if the loop is known to be short running (either based on induction variable
-//    information obtained from value propagation) or if the special versioning test for
-//    short running loops is found. In either case, since the loop is provably
-//    not long running and does not require an async check at all.
-// 2. If async checks cannot be skipped completely for the loop, attempt to place the sync
-//    checks at points within the loop such that there is minimal redundancy (two async
-//    checks along a control flow path are avoided as far as possible). Note that
-//    non-INL calls are implicit async checks and the placement algorithm takes them
-//    into account as well.
 
 class TR_LoopEstimator
    {
@@ -162,6 +151,30 @@ class TR_LoopEstimator
       TR::ILOpCodes _opCode;
       };
    };
+
+
+/**
+ * Class TR_RedundantAsyncCheckRemoval
+ * ===================================
+ *
+ * The redundant async check removal optimization minimizes the number of 
+ * async checks in a given loop. It uses an algorithm that attempts to 
+ * achieve its goal by adopting two distinct methods:
+ *
+ * 1. Check if the loop is known to be short running (either based on 
+ * induction * variable information obtained from value propagation) or 
+ * if the special versioning test for short running loops is found. In 
+ * either case, since the loop is provably not long running and does not 
+ * require an async check at all.
+ *
+ * 2. If async checks cannot be skipped completely for the loop, attempt to
+ * place the sync checks at points within the loop such that there is minimal 
+ * redundancy (two async checks along a control flow path are avoided as far 
+ * as possible). Note that non-INL (Internal Native Library) calls are 
+ * implicit async checks and the placement algorithm takes them into account 
+ * as well. INL calls are native methods inside the JVM (Java Virtual 
+ * Machine) that are not implemented using JNI (Java Native Interface).
+ */
 
 class TR_RedundantAsyncCheckRemoval : public TR::Optimization
    {

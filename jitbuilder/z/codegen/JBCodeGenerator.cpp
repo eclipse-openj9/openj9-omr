@@ -16,6 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/TRSystemLinkage.hpp"
 #include "compile/Compilation.hpp"
@@ -29,39 +30,6 @@ namespace Z
 CodeGenerator::CodeGenerator() :
    JitBuilder::CodeGenerator()
    {
-   self()->getS390Linkage()->initS390RealRegisterLinkage();
-
-   self()->setAccessStaticsIndirectly(true);
-   }
-
-
-TR::Linkage *
-CodeGenerator::createLinkage(TR_LinkageConventions lc)
-   {
-   // *this    swipeable for debugging purposes
-   TR::Linkage * linkage;
-   TR::Compilation *comp = self()->comp();
-   switch (lc)
-      {
-      case TR_Helper:
-         linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
-         break;
-
-      case TR_Private:
-        // no private linkage, fall through to system
-
-      case TR_System:
-         if (TR::Compiler->target.isLinux())
-            linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
-         else
-            linkage = new (self()->trHeapMemory()) TR_S390zOSSystemLinkage(self());
-         break;
-
-      default :
-         TR_ASSERT(0, "\nJitBuilder error: Illegal linkage convention %d\n", lc);
-      }
-   self()->setLinkage(lc, linkage);
-   return linkage;
    }
 
 } // namespace Z

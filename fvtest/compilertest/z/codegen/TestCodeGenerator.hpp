@@ -48,8 +48,6 @@ class OMR_EXTENSIBLE CodeGenerator : public TestCompiler::CodeGenerator
 
    CodeGenerator();
 
-   TR::Linkage *createLinkage(TR_LinkageConventions lc);
-
    };
 
 } // namespace Z

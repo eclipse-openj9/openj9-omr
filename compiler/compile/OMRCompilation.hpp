@@ -248,7 +248,7 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 
    #define traceMsgVarArgs(comp, msg, arg) \
       ((comp)->getDebug() ? \
-            (comp)->getDebug()->trace(msg, arg) : \
+            (comp)->getDebug()->vtrace(msg, arg) : \
             (void)0)
 
    #if defined(_MSC_VER)

@@ -601,22 +601,20 @@ TR_Debug::trace(const char * format, ...)
    {
    if (_file != NULL)
       {
-      char buffer[256];
       va_list args;
       va_start(args,format);
-      TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)/sizeof(char)), args);
+      vtrace(format, args);
       va_end(args);
-      trfflush(_file);
       }
    }
 
 void
-TR_Debug::trace(const char * format, va_list arg)
+TR_Debug::vtrace(const char * format, va_list args)
    {
    if (_file != NULL)
       {
       char buffer[256];
-      TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)), arg);
+      TR::IO::vfprintf(_file, getDiagnosticFormat(format, buffer, sizeof(buffer)), args);
       trfflush(_file);
       }
    }

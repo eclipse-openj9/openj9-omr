@@ -370,7 +370,7 @@ private:
 	 *
 	 * @return the value of _conHelperRequest.
 	 */
-	ConHelperRequest getConHelperRequest();
+	ConHelperRequest getConHelperRequest(MM_EnvironmentBase *env);
 
 protected:
 	bool initialize(MM_EnvironmentBase *env);

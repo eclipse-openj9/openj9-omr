@@ -15,7 +15,7 @@
 	   Multiple authors (IBM Corp.) - initial implementation and documentation
 -->
 <gc-config>
-	<option GCPolicy="optavgpause" verboseLog="VerboseGC-optavgpause_GC" sizeUnit="MB" 
+	<option GCPolicy="optavgpause" concurrentMark="true" verboseLog="VerboseGC-optavgpause_GC" sizeUnit="MB" 
 			initialMemorySize="2" memoryMax="11" maxSizeDefaultMemorySpace="11" />
 	<allocation>
 		<garbagePolicy namePrefix="GAR" percentage="30" frequency="perRootStruct" structure="tree" />

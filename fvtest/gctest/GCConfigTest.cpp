@@ -16,12 +16,14 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#include "CollectorLanguageInterface.hpp"
+#include "EnvironmentLanguageInterface.hpp"
 #include "GCConfigTest.hpp"
+#include "ObjectModel.hpp"
 #include "omrExampleVM.hpp"
 #include "omrgc.h"
 #include "SlotObject.hpp"
 #include "VerboseWriterChain.hpp"
-#include "CollectorLanguageInterface.hpp"
 
 //#define OMRGCTEST_PRINTFILE
 
@@ -40,6 +42,7 @@ GCConfigTest::SetUp()
 
 	printMemUsed("Setup()", gcTestEnv->portLib);
 
+	gcTestEnv->log("Configuration File: %s\n", GetParam());
 	MM_StartupManagerTestExample startupManager(exampleVM->_omrVM, GetParam());
 
 	/* Initialize heap and collector */
@@ -47,7 +50,6 @@ GCConfigTest::SetUp()
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "Setup(): OMR_GC_IntializeHeapAndCollector failed, rc=" << rc;
 
 	/* Attach calling thread to the VM */
-	exampleVM->_omrVMThread = NULL;
 	rc = OMR_Thread_Init(exampleVM->_omrVM, NULL, &exampleVM->_omrVMThread, "OMRTestThread");
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "Setup(): OMR_Thread_Init failed, rc=" << rc;
 
@@ -63,7 +65,6 @@ GCConfigTest::SetUp()
 	}
 
 	/* load config file */
-	gcTestEnv->log("Configuration File: %s\n", GetParam());
 #if defined(OMRGCTEST_PRINTFILE)
 	printFile(GetParam());
 #endif
@@ -109,19 +110,26 @@ GCConfigTest::TearDown()
 	OMRPORT_ACCESS_FROM_OMRPORT(gcTestEnv->portLib);
 
 	/* Free root hash table */
-	hashTableFree(exampleVM->rootTable);
-	exampleVM->rootTable = NULL;
+	if (NULL != exampleVM->rootTable) {
+		hashTableFree(exampleVM->rootTable);
+		exampleVM->rootTable = NULL;
+	}
 
 	/* Free object hash table */
-	hashTableForEachDo(exampleVM->objectTable, objectTableFreeFn, exampleVM);
-	hashTableFree(exampleVM->objectTable);
-	exampleVM->objectTable = NULL;
+	if (NULL != exampleVM->objectTable) {
+		hashTableForEachDo(exampleVM->objectTable, objectTableFreeFn, exampleVM);
+		hashTableFree(exampleVM->objectTable);
+		exampleVM->objectTable = NULL;
+	}
 
 	/* close verboseManager and clean up verbose files */
-	verboseManager->closeStreams(env);
-	verboseManager->disableVerboseGC();
-	verboseManager->kill(env);
-	if (false == gcTestEnv->keepLog) {
+	if (NULL != verboseManager) {
+		verboseManager->closeStreams(env);
+		verboseManager->disableVerboseGC();
+		verboseManager->kill(env);
+		verboseManager = NULL;
+	}
+	if ((NULL != verboseFile) && (false == gcTestEnv->keepLog)) {
 		if (0 == numOfFiles) {
 			J9FileStat buf;
 			int32_t fileStatRC = -1;
@@ -148,6 +156,7 @@ GCConfigTest::TearDown()
 		}
 	}
 	omrmem_free_memory((void *)verboseFile);
+	verboseFile = NULL;
 
 	/* Shut down the dispatcher threads */
 	omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
@@ -164,6 +173,8 @@ GCConfigTest::TearDown()
 	/* Shut down heap */
 	rc = OMR_GC_ShutdownHeap(exampleVM->_omrVM);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownHeap failed, rc=" << rc;
+
+	exampleVM->_omrVMThread = NULL;
 
 	printMemUsed("TearDown()", gcTestEnv->portLib);
 }
@@ -264,39 +275,25 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 ObjectEntry *
 GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 {
-	MM_ObjectAllocationInterface *allocationInterface = env->_objectAllocationInterface;
-	MM_GCExtensionsBase *extensions = env->getExtensions();
-	uintptr_t allocatedFlags = 0;
-	uintptr_t sizeAdjusted = extensions->objectModel.adjustSizeInBytes(size);
-	MM_AllocateDescription mm_allocdescription(sizeAdjusted, allocatedFlags, true, true);
-
 	ObjectEntry objEntry;
-	objEntry.name = objName;
-	objEntry.objPtr = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), false);
 	objEntry.numOfRef = 0;
+	objEntry.name = objName;
+	objEntry.objPtr = OMR_GC_AllocateNoGC(exampleVM->_omrVMThread, size, OMR_GC_THREAD_AT_SAFEPOINT | OMR_GC_ALLOCATE_ZERO_MEMORY);
 
-	ObjectEntry *hashedEntry = NULL;
 	if (NULL == objEntry.objPtr) {
 		gcTestEnv->log("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
-		objEntry.objPtr = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), true);
-		env->unwindExclusiveVMAccessForGC();
-		if (NULL == objEntry.objPtr) {
-			gcTestEnv->log(LEVEL_ERROR, "%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);
-			goto done;
-		}
-		verboseManager->getWriterChain()->endOfCycle(env);
-	}
-	if (NULL != objEntry.objPtr) {
-		/* set size in header */
-		uintptr_t actualSize = mm_allocdescription.getBytesRequested();
-		memset(objEntry.objPtr, 0, actualSize);
-		extensions->objectModel.setObjectSize(objEntry.objPtr, actualSize);
-		gcTestEnv->log(LEVEL_VERBOSE, "Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, actualSize);
-		hashedEntry = add(&objEntry);
+		objEntry.objPtr = OMR_GC_Allocate(exampleVM->_omrVMThread, size, OMR_GC_THREAD_AT_SAFEPOINT | OMR_GC_ALLOCATE_ZERO_MEMORY);
 	}
 
-done:
-	return hashedEntry;
+	ObjectEntry *newEntry = NULL;
+	if (NULL != objEntry.objPtr) {
+		gcTestEnv->log(LEVEL_VERBOSE, "Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, env->getExtensions()->objectModel.getConsumedSizeInBytesWithHeader(objEntry.objPtr));
+		newEntry = add(&objEntry);
+	} else {
+		gcTestEnv->log(LEVEL_ERROR, "%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);
+	}
+
+	return newEntry;
 }
 
 ObjectEntry *

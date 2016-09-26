@@ -1747,10 +1747,10 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
          //       iconst strideShift
          //
 
-         int32_t shift = TR::Compilation::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
+         int32_t shift = TR::TransformUtil::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
          TR::Node *shiftNode = TR::Node::create(node, TR::iconst, 0, (int32_t)shift);
 
-         int32_t strideShift = TR::Compilation::convertWidthToShift(elementSize);
+         int32_t strideShift = TR::TransformUtil::convertWidthToShift(elementSize);
          TR::Node *strideShiftNode = strideShift ? TR::Node::create(node, TR::iconst, 0, (int32_t)strideShift) : NULL;
 
          TR::Node *srcOff = srcOffNode->createLongIfNeeded();
@@ -2656,8 +2656,8 @@ void TR_ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *
    TR::Node *spineShiftNode = TR::Node::create(node, TR::iconst, 0, (int32_t)fe()->getArraySpineShift(elementSize));
    TR::Node *strideShiftNode = NULL;
    TR::Node *shiftNode = NULL;
-   int32_t shift = TR::Compilation::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
-   int32_t strideShift = TR::Compilation::convertWidthToShift(elementSize);
+   int32_t shift = TR::TransformUtil::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
+   int32_t strideShift = TR::TransformUtil::convertWidthToShift(elementSize);
 
    shiftNode = TR::Node::create(node, TR::iconst, 0, (int32_t)shift);
    if (strideShift)

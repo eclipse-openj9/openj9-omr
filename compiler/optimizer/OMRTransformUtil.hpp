@@ -71,6 +71,8 @@ class OMR_EXTENSIBLE TransformUtil
          TR::SymbolReference *ref,
          bool store);
 
+   static uint32_t convertWidthToShift(int32_t i) { return _widthToShift[i]; }
+   
    static bool isNoopConversion(TR::Compilation *, TR::Node *node);
    
    static void recursivelySetNodeVisitCount(TR::Node *node, vcount_t);
@@ -89,6 +91,11 @@ class OMR_EXTENSIBLE TransformUtil
    static bool transformIndirectLoadChainAt(TR::Compilation *, TR::Node *node, TR::Node *baseExpression, uintptrj_t *baseReferenceLocation, TR::Node **removedNode);
 
    static bool fieldShouldBeCompressed(TR::Node *node, TR::Compilation *comp);
+   
+   private:
+
+   static uint32_t _widthToShift[];
+
    };
 
 }

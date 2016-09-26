@@ -284,6 +284,8 @@ OMR::TransformUtil::scalarizeAddressParameter(
    }
 
 
+uint32_t OMR::TransformUtil::_widthToShift[] = { 0, 0, 1, 0, 2, 0, 0, 0, 3};
+
 TR::Node *
 OMR::TransformUtil::transformIndirectLoad(TR::Compilation *, TR::Node *node)
    {

@@ -2270,6 +2270,9 @@ OMR::Compilation::getSymRefCount()
    return self()->getSymRefTab()->getNumSymRefs();
    }
 
+/**
+  * @deprecated Use TransformUtil::removeTree
+  */
 void
 OMR::Compilation::removeTree(TR::TreeTop * tt)
    {

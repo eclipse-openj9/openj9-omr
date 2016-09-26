@@ -91,6 +91,8 @@ class OMR_EXTENSIBLE TransformUtil
    static bool transformIndirectLoadChainAt(TR::Compilation *, TR::Node *node, TR::Node *baseExpression, uintptrj_t *baseReferenceLocation, TR::Node **removedNode);
 
    static bool fieldShouldBeCompressed(TR::Node *node, TR::Compilation *comp);
+
+   static void removeTree(TR::Compilation *, TR::TreeTop * tt);
    
    private:
 

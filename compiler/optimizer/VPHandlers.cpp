@@ -4025,7 +4025,7 @@ TR::Node *constrainVariableNewArray(TR_ValuePropagation *vp, TR::Node *node)
      {
      if (TR::Compiler->cls.isPrimitiveClass(vp->comp(), elementType))
         {
-        TR::Node::recreate(node, TR::newarray, node->getNumChildren(), vp->comp()->getSymRefTab()->findOrCreateNewArraySymbolRef(typeNode->getSymbolReference()->getOwningMethodSymbol(vp->comp())));
+        TR::Node::recreateWithoutProperties(node, TR::newarray, node->getNumChildren(), vp->comp()->getSymRefTab()->findOrCreateNewArraySymbolRef(typeNode->getSymbolReference()->getOwningMethodSymbol(vp->comp())));
 	TR::Node *typeConst = TR::Node::create(TR::iconst, 0, vp->comp()->fe()->getNewArrayTypeFromClass(constraint->getClass()));
 	vp->_curTree->insertBefore(OMR::TreeTop::create(vp->comp(), TR::Node::create(TR::treetop, 1, typeNode)));
 	node->setAndIncChild(1, typeConst);
@@ -4034,7 +4034,7 @@ TR::Node *constrainVariableNewArray(TR_ValuePropagation *vp, TR::Node *node)
 #ifdef J9_PROJECT_SPECIFIC
      else
 	{
-         TR::Node::recreate(node, TR::anewarray, node->getNumChildren(), vp->comp()->getSymRefTab()->findOrCreateANewArraySymbolRef(typeNode->getSymbolReference()->getOwningMethodSymbol(vp->comp())));
+         TR::Node::recreateWithoutProperties(node, TR::anewarray, node->getNumChildren(), vp->comp()->getSymRefTab()->findOrCreateANewArraySymbolRef(typeNode->getSymbolReference()->getOwningMethodSymbol(vp->comp())));
 	if (typeNode->getOpCodeValue() != TR::loadaddr)
 	   {
 	   TR::Node *loadaddr = TR::Node::createWithSymRef(TR::loadaddr, 0,

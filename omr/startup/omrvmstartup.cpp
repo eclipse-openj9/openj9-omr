@@ -17,6 +17,7 @@
  *******************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "omrport.h"
 #if defined(OMR_GC)

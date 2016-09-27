@@ -193,7 +193,7 @@ class TR_LoopStrider : public TR_LoopTransformer
    void detectLoopsForIndVarConversion(TR_Structure *, TR::NodeChecklist &);
    void extendIVsOnLoopEntry(const TR::list<std::pair<int32_t, int32_t> > &, TR::Block *);
    void truncateIVsOnLoopExit(const TR::list<std::pair<int32_t, int32_t> > &, TR_RegionStructure *);
-   void convertIV(TR::TreeTop *, int32_t, int32_t, TR::ILOpCodes);
+   void convertIV(TR::Node *, TR::TreeTop *, int32_t, int32_t, TR::ILOpCodes);
    void createConstraintsForNewInductionVariable(TR_Structure *, TR::SymbolReference *, TR::SymbolReference *);
    bool checkExpressionForInductionVariable(TR::Node *);
    bool checkStoreOfIndVar(TR::Node *);

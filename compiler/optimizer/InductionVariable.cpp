@@ -100,7 +100,7 @@ int32_t TR_LoopStrider::perform()
    bool usingAladd = (TR::Compiler->target.is64Bit()) ?
                      true : false;
 
-   static char *enableSignExtn = feGetEnv("TR_enableSelIndVar");
+   static char *disableSignExtn = feGetEnv("TR_disableSelIndVar");
 
    _registersScarce = cg()->areAssignableGPRsScarce();
 
@@ -113,7 +113,7 @@ int32_t TR_LoopStrider::perform()
    //_loadUsedInNewLoopIncrementList = NULL;
 
    // 64-bit sign-extension elimination
-   if (usingAladd && enableSignExtn)
+   if (usingAladd && !disableSignExtn)
       {
       TR_UseDefInfo *info = optimizer()->getUseDefInfo();
 
@@ -4360,8 +4360,9 @@ void TR_LoopStrider::extendIVsOnLoopEntry(
    if (!tt->getNode()->getOpCode().isBranch())
       tt = tt->getNextTreeTop();
 
+   TR::Node *bciNode = preheader->getExit()->getNode();
    for (auto iv = ivs.begin(); iv != ivs.end(); ++iv)
-      convertIV(tt, iv->first, iv->second, TR::i2l);
+      convertIV(bciNode, tt, iv->first, iv->second, TR::i2l);
    }
 
 /**
@@ -4420,8 +4421,9 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
          // would be rejected by detectLoopsForIndVarConversion. So dest will
          // always have an entry tree.
          TR::TreeTop *tt = dest->getEntry()->getNextTreeTop();
+         TR::Node *bciNode = dest->getEntry()->getNode();
          for (auto iv = ivs.begin(); iv != ivs.end(); ++iv)
-            convertIV(tt, iv->second, iv->first, TR::l2i);
+            convertIV(bciNode, tt, iv->second, iv->first, TR::l2i);
          }
       }
    }
@@ -4429,12 +4431,14 @@ void TR_LoopStrider::truncateIVsOnLoopExit(
 /**
  * Emit a variable conversion tree: \p ivOut <- \p op \p ivIn.
  *
- * \param nextTT the treetop before which the conversion is inserted
- * \param ivIn   the symbol reference number of the input variable
- * \param ivOut  the symbol reference number of the output variable
- * \param op     the conversion operation
+ * \param bciNode the node whose bci to copy onto the newly created nodes
+ * \param nextTT  the treetop before which the conversion is inserted
+ * \param ivIn    the symbol reference number of the input variable
+ * \param ivOut   the symbol reference number of the output variable
+ * \param op      the conversion operation
  */
 void TR_LoopStrider::convertIV(
+   TR::Node *bciNode,
    TR::TreeTop *nextTT,
    int32_t ivIn,
    int32_t ivOut,
@@ -4449,9 +4453,9 @@ void TR_LoopStrider::convertIV(
       TR::ILOpCode(op).getName(),
       ivIn,
       nextTT->getEnclosingBlock()->getNumber());
-   TR::Node *conv = TR::Node::createStore(
+   TR::Node *conv = TR::Node::createStore(bciNode,
       out,
-      TR::Node::create(op, 1, TR::Node::createLoad(in)));
+      TR::Node::create(bciNode, op, 1, TR::Node::createLoad(bciNode, in)));
    nextTT->insertBefore(TR::TreeTop::create(comp(), conv));
    }
 
@@ -4645,7 +4649,7 @@ void TR_LoopStrider::walkTreesAndFixUseDefs(
       _loopDrivingInductionVar);
 
    TR::Node *newIntValue = storeNode->getFirstChild();
-   storeNode->setAndIncChild(0, TR::Node::create(TR::i2l, 1, newIntValue));
+   storeNode->setAndIncChild(0, TR::Node::create(storeNode, TR::i2l, 1, newIntValue));
    newIntValue->decReferenceCount();
    storeNode->setSymbolReference(newSymbolReference);
    TR::Node::recreate(storeNode, TR::lstore);
@@ -4714,7 +4718,7 @@ void TR_LoopStrider::replaceLoadsInSubtree(
    if (node->getOpCodeValue() == TR::iload
        && node->getSymbolReference()->getReferenceNumber() == iv)
       {
-      TR::Node *lload = TR::Node::createLoad(newSR);
+      TR::Node *lload = TR::Node::createLoad(node, newSR);
       TR::Node::recreate(node, TR::l2i);
       node->setNumChildren(1);
       node->setAndIncChild(0, lload);
@@ -4931,7 +4935,7 @@ TR::Node *TR_LoopStrider::signExtend(
    switch (node->getOpCodeValue())
       {
       case TR::iconst:
-         ext = TR::Node::lconst((int64_t)node->getConst<int32_t>());
+         ext = TR::Node::lconst(node, (int64_t)node->getConst<int32_t>());
          break;
 
       case TR::l2i:
@@ -4995,7 +4999,7 @@ TR::Node *TR_LoopStrider::signExtendBinOp(
    if (extRight == NULL)
       return NULL;
 
-   TR::Node *longNode = TR::Node::create(op64, 2, extLeft, extRight);
+   TR::Node *longNode = TR::Node::create(node, op64, 2, extLeft, extRight);
    longNode->setFlags(node->getFlags());
    return longNode;
    }

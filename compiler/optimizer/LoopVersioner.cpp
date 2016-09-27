@@ -6043,11 +6043,11 @@ void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *nullChe
             hdrSize = TR::Node::create(spineCheckNode, TR::iconst, 0, (int32_t)TR::Compiler->om.discontiguousArrayHeaderSizeInBytes());
 
 
-         int32_t shift = TR::Compilation::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
+         int32_t shift = TR::TransformUtil::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
          TR::Node *shiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)shift) :
                                               TR::Node::iconst(spineCheckNode, shift);
 
-         int32_t strideShift = TR::Compilation::convertWidthToShift(elementSize);
+         int32_t strideShift = TR::TransformUtil::convertWidthToShift(elementSize);
          TR::Node *strideShiftNode = NULL;
          if (strideShift)
             strideShiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)strideShift) :
@@ -7469,7 +7469,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       if (comp()->useCompressedPointers() &&
             node->getDataType() == TR::Address)
          dataWidth = TR::Compiler->om.sizeofReferenceField();
-      int32_t shiftWidth = TR::Compilation::convertWidthToShift(dataWidth);
+      int32_t shiftWidth = TR::TransformUtil::convertWidthToShift(dataWidth);
 
       if (childInRequiredForm)
          {

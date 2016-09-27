@@ -965,6 +965,7 @@ public:
 #endif
 
    // To TransformUtil
+   // @deprecated Use TransformUtil::convertWidthToShift
    static uint32_t convertWidthToShift(int32_t i) { return _widthToShift[i]; }
    void removeTree(TR::TreeTop * tt);
    void setStartTree(TR::TreeTop * tt);

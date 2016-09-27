@@ -54,6 +54,10 @@
 #include "optimizer/ValueNumberInfo.hpp"
 #include "optimizer/TransformUtil.hpp"
 
+#ifdef J9_PROJECT_SPECIFIC
+#include "env/VMJ9.h"
+#endif
+
 #define OP_PLUS  0
 #define OP_MINUS 1
 #define CLEARBIT32 0x7FFFFFFF
@@ -5677,17 +5681,20 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          somePackedOp = somePackedAddress->getOpCodeValue();
          }
 
+#ifdef J9_PROJECT_SPECIFIC
       if (nodeSymref == s->getSymRefTab()->findClassAndDepthFlagsSymbolRef()
             && somePackedOp == TR::loadaddr && !somePackedAddress->getSymbolReference()->isUnresolved())
          {
          TR::SymbolReference *childSymref = somePackedAddress->getSymbolReference();
          TR_OpaqueClassBlock* clazz = (TR_OpaqueClassBlock *)childSymref->getSymbol()->getStaticSymbol()->getStaticAddress();
-         uintptrj_t konst = s->fe()->getClassDepthAndFlagsValue(clazz);
+         uintptrj_t konst = s->comp()->fej9()->getClassDepthAndFlagsValue(clazz);
          TR::Node *konstNode = nodeOp == TR::iloadi ? TR::Node::iconst(node, konst) :
                               nodeOp == TR::lloadi ? TR::Node::lconst( node, konst) :
                                                     NULL;
          return s->replaceNode(node, konstNode, s->_curTree);
          }
+#endif
+
       }
 
    if (

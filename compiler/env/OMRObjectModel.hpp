@@ -87,6 +87,16 @@ class ObjectModel
    int64_t maxArraySizeInElementsForAllocation(TR::Node *newArray, TR::Compilation *comp);
    int64_t maxArraySizeInElements(int32_t knownMinElementSize, TR::Compilation *comp);
    bool nativeAddressesCanChangeSize() { return false; }
+
+   int32_t arraySpineShift(int32_t width) { return 0; }
+   int32_t arrayletMask(int32_t width) { return 0; }
+   int32_t arrayletLeafIndex(int32_t index, int32_t elementSize) { return 0; }
+   int32_t objectAlignmentInBytes() { return 0; }
+   uintptrj_t offsetOfContiguousArraySizeField() { return 0; }
+   uintptrj_t offsetOfDiscontiguousArraySizeField() { return 0; }
+   uintptrj_t objectHeaderSizeInBytes() { return 0; }
+   uintptrj_t offsetOfIndexableSizeField() { return 0; }
+
    };
 }
 

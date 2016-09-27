@@ -3912,6 +3912,10 @@ void TR_ValuePropagation::getParmValues()
             }
          else
             {
+            // Constraining the receiver's type here should be fine, even if
+            // its declared type is an interface (i.e. for a default method
+            // implementation). The receiver must always be an instance of (a
+            // subtype of) the type that declares the method.
             TR_OpaqueClassBlock *jlKlass = fe()->getClassClassPointer(classObject);
             if (jlKlass)
                {
@@ -4010,8 +4014,11 @@ void TR_ValuePropagation::getParmValues()
                   TR_ASSERT(constraint, "Cannot intersect constraints");
                   }
                }
-            else
+            else if (!TR::Compiler->cls.isInterfaceClass(comp(), opaqueClass)
+                     || comp()->getOption(TR_TrustAllInterfaceTypeInfo))
                {
+               // Interface-typed parameters are not handled here because they
+               // will accept arbitrary objects.
                TR_OpaqueClassBlock *jlKlass = fe()->getClassClassPointer(opaqueClass);
                if (jlKlass)
                   {

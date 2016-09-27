@@ -305,7 +305,6 @@ signatureCharJJ_J_testMethodType  * OpCodesTest::_lMul = 0;
 signatureCharJJ_J_testMethodType  * OpCodesTest::_lDiv = 0;
 signatureCharJJ_J_testMethodType  * OpCodesTest::_lRem = 0;
 unsignedSignatureCharJJ_J_testMethodType  * OpCodesTest::_luDiv = 0;
-unsignedSignatureCharJJ_J_testMethodType  * OpCodesTest::_luRem = 0;
 
 //Float Arithmetic
 signatureCharFF_F_testMethodType  * OpCodesTest::_fAdd = 0;

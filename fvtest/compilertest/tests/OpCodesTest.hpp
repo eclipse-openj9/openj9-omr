@@ -403,7 +403,6 @@ class OpCodesTest : public TestDriver
    static signatureCharJJ_J_testMethodType *_lDiv;
    static signatureCharJJ_J_testMethodType *_lRem;
    static unsignedSignatureCharJJ_J_testMethodType *_luDiv;
-   static unsignedSignatureCharJJ_J_testMethodType *_luRem;
 
    //Float Arithmetic
    static signatureCharFF_F_testMethodType *_fAdd;

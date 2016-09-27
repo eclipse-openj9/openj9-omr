@@ -38,7 +38,6 @@ S390OpCodesTest::compileIntegerArithmeticTestMethods()
    _lDiv = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::ldiv, "lDiv", _argTypesBinaryLong, TR::Int64, rc));
    _lRem = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lrem, "lRem", _argTypesBinaryLong, TR::Int64, rc));
    _luDiv = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::ludiv, "luDiv", _argTypesBinaryLong, TR::Int64, rc));
-   _luRem = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lurem, "luRem", _argTypesBinaryLong, TR::Int64, rc));
    }
 
 void
@@ -428,28 +427,6 @@ S390OpCodesTest::invokeIntegerArithmeticTests()
       EXPECT_EQ(div(ulongDivArr[i][0], ulongDivArr[i][1]), luBinaryCons(ulongDivArr[i][0], LONG_PLACEHOLDER_2));
       }
 
-   //lurem
-   //TODO: _lurem(ULONG_INT, 0)
-   testCaseArrLength = sizeof(ulongRemArr) / sizeof(ulongRemArr[0]);
-   for(uint32_t i = 0; i < testCaseArrLength; ++i)
-      {
-      EXPECT_EQ(rem(ulongRemArr[i][0], ulongRemArr[i][1]), _luRem(ulongRemArr[i][0], ulongRemArr[i][1]));
-
-      sprintf(resolvedMethodName, "luRemConst1_Testcase%d", i);
-      luBinaryCons = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(
-            _numberOfBinaryArgs, TR::lurem, resolvedMethodName, _argTypesBinaryLong, TR::Int64, rc, 4, 1, &ulongRemArr[i][0], 2, &ulongRemArr[i][1]));
-      EXPECT_EQ(rem(ulongRemArr[i][0], ulongRemArr[i][1]), luBinaryCons(LONG_PLACEHOLDER_1, LONG_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "luRemConst2_Testcase%d", i);
-      luBinaryCons = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(
-            _numberOfBinaryArgs, TR::lurem, resolvedMethodName, _argTypesBinaryLong, TR::Int64, rc, 2, 1, &ulongRemArr[i][0]));
-      EXPECT_EQ(rem(ulongRemArr[i][0], ulongRemArr[i][1]), luBinaryCons(LONG_PLACEHOLDER_1, ulongRemArr[i][1]));
-
-      sprintf(resolvedMethodName, "luRemConst3_Testcase%d", i);
-      luBinaryCons = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(
-            _numberOfBinaryArgs, TR::lurem, resolvedMethodName, _argTypesBinaryLong, TR::Int64, rc, 2, 2, &ulongRemArr[i][1]));
-      EXPECT_EQ(rem(ulongRemArr[i][0], ulongRemArr[i][1]), luBinaryCons(ulongRemArr[i][0], LONG_PLACEHOLDER_2));
-      }
    }
 
 void

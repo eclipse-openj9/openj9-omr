@@ -527,7 +527,7 @@ public:
 #endif
 
    virtual void         trace(const char *, ...);
-   virtual void         trace(const char *, va_list arg);
+   virtual void         vtrace(const char *, va_list args);
    virtual void         traceLnFromLogTracer(const char *);
    virtual bool         performTransformationImpl(bool, const char *, ...);
 

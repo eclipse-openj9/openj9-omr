@@ -697,9 +697,7 @@ IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *objec
 
   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
   TR::DataTypes fieldType = symRef->getSymbol()->getDataType();
-  TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getCPIndex(),
-
-  object->getCPIndex());
+  TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getCPIndex(), object->getCPIndex());
   TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
   genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
   }
@@ -1119,7 +1117,7 @@ IlBuilder::Xor(TR::IlValue *left, TR::IlValue *right)
 TR::IlValue *
 IlBuilder::ShiftL(TR::IlValue *v, TR::IlValue *amount)
    {
-   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::shiftRightOpCode, v, amount);
+   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::shiftLeftOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is shr %d << %d\n", this, returnValue->getCPIndex(), v->getCPIndex(), amount->getCPIndex());
    ILB_REPLAY("%s = %s->ShiftL(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;

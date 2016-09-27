@@ -19,7 +19,7 @@
 CONFIGURE_ARGS += \
   --enable-OMR_EXAMPLE \
   --enable-OMR_GC \
-  --enable-OMR_JIT \
+  --disable-OMR_JIT \
   --enable-OMR_PORT \
   --enable-OMR_THREAD \
   --enable-OMR_OMRSIG \

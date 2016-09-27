@@ -80,6 +80,7 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc_cuda, $(SPEC))
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
+    --enable-OMR_JIT \
     --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
     --enable-OMR_INTERP_SMALL_MONITOR_SLOT \
     --enable-OMR_OPT_CUDA \
@@ -97,6 +98,7 @@ ifeq (linux_ppc-64_cmprssptrs_le_gcc, $(SPEC))
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
     --enable-OMR_GC_COMPRESSED_POINTERS \
+    --enable-OMR_JIT \
     --enable-OMR_INTERP_COMPRESSED_OBJECT_HEADER \
     --enable-OMR_INTERP_SMALL_MONITOR_SLOT \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
@@ -145,6 +147,7 @@ ifeq (linux_ppc-64_le_gcc_cuda, $(SPEC))
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
+    --enable-OMR_JIT \
     --enable-OMR_OPT_CUDA \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_PORT_NUMA_SUPPORT \
@@ -159,6 +162,7 @@ ifeq (linux_ppc-64_le_gcc, $(SPEC))
     --enable-OMR_ENV_DATA64 \
     --enable-OMR_ENV_GCC \
     --enable-OMR_ENV_LITTLE_ENDIAN \
+    --enable-OMR_JIT \
     --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
     --enable-OMR_PORT_NUMA_SUPPORT \
     --enable-OMR_THR_FORK_SUPPORT \

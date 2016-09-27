@@ -23,7 +23,6 @@ include $(CONFIG_INCL_DIR)/configure_common.mk
 CONFIGURE_ARGS += \
   --enable-OMR_EXAMPLE \
   --enable-OMR_GC \
-  --disable-OMR_JIT \
   --enable-OMR_PORT \
   --enable-OMR_THREAD \
   --enable-OMR_OMRSIG \

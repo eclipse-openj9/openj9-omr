@@ -3892,7 +3892,12 @@ TR_LocalValuePropagation::TR_LocalValuePropagation(TR::OptimizationManager *mana
 
 int32_t TR_LocalValuePropagation::perform()
    {
-   if ((_firstUnresolvedSymbolValueNumber - 1) > comp()->getNodeCount())
+   if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
+      {
+      dumpOptDetails(comp(),
+         "Can't do Local Value Propagation - too many nodes\n");
+      }
+   else
       {
       // Walk the trees and process each block
       //
@@ -3916,7 +3921,13 @@ int32_t TR_LocalValuePropagation::performOnBlock(TR::Block *block)
    {
    // Walk the trees and process
    //
-   if ((_firstUnresolvedSymbolValueNumber - 1) > comp()->getNodeCount())
+   if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
+      {
+      dumpOptDetails(comp(),
+         "Can't do Local Value Propagation on block %d - too many nodes\n",
+         block->getNumber());
+      }
+   else
       {
       TR::TreeTop *treeTop = block->getEntry();
       while (treeTop)

@@ -3716,6 +3716,7 @@ int32_t TR_GlobalValuePropagation::perform()
 
    if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
       {
+      dumpOptDetails(comp(), "Can't do Global Value Propagation - too many nodes\n");
       return 0;
       }
 

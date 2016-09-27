@@ -328,8 +328,15 @@ static void constrainBaseObjectOfIndirectAccess(TR::ValuePropagation *vp, TR::No
       }
    }
 
-static bool constrainCompileTimeLoad(TR::ValuePropagation *vp, TR::Node *node)
+// When node is successfully folded, isGlobal is set to true iff all
+// constraints in the chain were global, and false otherwise.
+static bool tryFoldCompileTimeLoad(
+   TR::ValuePropagation *vp,
+   TR::Node *node,
+   bool &isGlobal)
    {
+   isGlobal = true;
+
    if (!node->getOpCode().isLoad())
       return false;
    else if (node->getOpCode().isLoadReg())
@@ -347,8 +354,10 @@ static bool constrainCompileTimeLoad(TR::ValuePropagation *vp, TR::Node *node)
       TR::KnownObjectTable::Index baseKnownObject = TR::KnownObjectTable::UNKNOWN;
       for (TR::Node *curNode = node->getFirstChild(); !baseExpression; curNode = curNode->getFirstChild())
          {
-         bool isGlobal;
-         TR::VPConstraint *constraint = vp->getConstraint(curNode, isGlobal);
+         bool curIsGlobal;
+         TR::VPConstraint *constraint = vp->getConstraint(curNode, curIsGlobal);
+         if (!curIsGlobal)
+            isGlobal = false;
          if (!constraint)
             {
             if (vp->trace())
@@ -472,7 +481,16 @@ static bool constrainCompileTimeLoad(TR::ValuePropagation *vp, TR::Node *node)
    return true; // Safe default
    }
 
+static bool constrainCompileTimeLoad(TR::ValuePropagation *vp, TR::Node *node)
+   {
+   bool isGlobal;
+   if (!tryFoldCompileTimeLoad(vp, node, isGlobal))
+      return false;
 
+   // Add a constraint so that VP can continue with the constant value.
+   constrainNewlyFoldedConst(vp, node, isGlobal);
+   return true;
+   }
 
 static bool findConstant(TR::ValuePropagation *vp, TR::Node *node)
    {
@@ -753,7 +771,7 @@ bool reduceLongOpToIntegerOp(TR::ValuePropagation *vp, TR::Node *node, TR::VPCon
    return false;
    }
 
-TR::Node *constrainAConst(TR::ValuePropagation *vp, TR::Node *node)
+static void constrainAConst(TR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
    {
    TR::VPConstraint *constraint = NULL;
    if (node->getAddress() == 0)
@@ -770,14 +788,19 @@ TR::Node *constrainAConst(TR::ValuePropagation *vp, TR::Node *node)
          TR::VPConstraint *typeConstraint = TR::VPClass::create(vp, TR::VPFixedClass::create(vp, (TR_OpaqueClassBlock *) node->getAddress()),
                                                               NULL, NULL, NULL,
                                                               TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
-         vp->addGlobalConstraint(node, typeConstraint);
+         vp->addBlockOrGlobalConstraint(node, typeConstraint, isGlobal);
          }
       }
-   vp->addGlobalConstraint(node, constraint);
+   vp->addBlockOrGlobalConstraint(node, constraint, isGlobal);
+   }
+
+TR::Node *constrainAConst(TR::ValuePropagation *vp, TR::Node *node)
+   {
+   constrainAConst(vp, node, true /* isGlobal */);
    return node;
    }
 
-TR::Node *constrainIntAndFloatConstHelper(TR::ValuePropagation *vp, TR::Node *node, int32_t value)
+static void constrainIntAndFloatConstHelper(TR::ValuePropagation *vp, TR::Node *node, int32_t value, bool isGlobal)
    {
 
    if (value)
@@ -795,23 +818,29 @@ TR::Node *constrainIntAndFloatConstHelper(TR::ValuePropagation *vp, TR::Node *no
       node->setIsNonPositive(true);
       }
 
-   vp->addGlobalConstraint(node, TR::VPIntConst::create(vp, value));
-   return node;
+   vp->addBlockOrGlobalConstraint(node, TR::VPIntConst::create(vp, value), isGlobal);
+   }
+
+static void constrainIntConst(TR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
+   {
+   int32_t value = node->getInt();
+   constrainIntAndFloatConstHelper(vp, node, value, isGlobal);
    }
 
 TR::Node *constrainIntConst(TR::ValuePropagation *vp, TR::Node *node)
    {
-   int32_t value = node->getInt();
-   return constrainIntAndFloatConstHelper(vp,node,value);
+   constrainIntConst(vp, node, true /* isGlobal */);
+   return node;
    }
+
 TR::Node *constrainFloatConst(TR::ValuePropagation *vp, TR::Node *node)
    {
    int32_t value = node->getFloatBits();
-   return constrainIntAndFloatConstHelper(vp,node,value);
+   constrainIntAndFloatConstHelper(vp, node, value, true /* isGlobal */);
+   return node;
    }
 
-
-TR::Node *constrainLongConst(TR::ValuePropagation *vp, TR::Node *node)
+static void constrainLongConst(TR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
    {
    int64_t value = node->getLongInt();
    if (value)
@@ -829,7 +858,12 @@ TR::Node *constrainLongConst(TR::ValuePropagation *vp, TR::Node *node)
       node->setIsNonPositive(true);
       }
 
-   vp->addGlobalConstraint(node, TR::VPLongConst::create(vp, value));
+   vp->addBlockOrGlobalConstraint(node, TR::VPLongConst::create(vp, value), isGlobal);
+   }
+
+TR::Node *constrainLongConst(TR::ValuePropagation *vp, TR::Node *node)
+   {
+   constrainLongConst(vp, node, true /* isGlobal */);
    return node;
    }
 
@@ -1265,6 +1299,9 @@ TR::Node *constrainLload(TR::ValuePropagation *vp, TR::Node *node)
       // then don't inject a constraint
       if (containsUnsafeSymbolReference(vp, node))
          return node;
+
+      if (constrainCompileTimeLoad(vp, node))
+         return node;
       }
 
    int64_t lo, hi;
@@ -1476,8 +1513,13 @@ TR::Node *constrainAload(TR::ValuePropagation *vp, TR::Node *node)
       return node;
 
    // before undertaking aload specific handling see if the default load transformation helps
-   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node))
+   // But even if it does help, node may still be an aload that we can constrain.
+   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node)
+       && node->getOpCodeValue() != TR::aload)
+      {
+      constrainNewlyFoldedConst(vp, node, false /* !isGlobal, conservative */);
       return node;
+      }
 
    TR::VPConstraint *constraint = NULL;
 #ifdef J9_PROJECT_SPECIFIC
@@ -11239,6 +11281,35 @@ TR::Node *constrainCase(TR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
+static void constrainClassObjectLoadaddr(
+   TR::ValuePropagation *vp,
+   TR::Node *node,
+   bool isGlobal)
+   {
+   TR_ASSERT(
+      node->getOpCodeValue() == TR::loadaddr,
+      "constrainClassObjectLoadaddr: n%un %s is not a loadaddr\n",
+      node->getGlobalIndex(),
+      node->getOpCode().getName());
+
+   TR::SymbolReference *symRef = node->getSymbolReference();
+
+   TR_ASSERT(
+      symRef->getSymbol()->isClassObject(),
+      "constrainClassObjectLoadaddr: n%un loadaddr is not for a class\n",
+      node->getGlobalIndex());
+
+   TR::VPConstraint *constraint = TR::VPClass::create(
+      vp,
+      TR::VPClassType::create(vp, symRef, true),
+      TR::VPNonNullObject::create(vp),
+      NULL,
+      NULL,
+      TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
+
+   vp->addBlockOrGlobalConstraint(node, constraint, isGlobal);
+   }
+
 TR::Node *constrainLoadaddr(TR::ValuePropagation *vp, TR::Node *node)
    {
    // If this is loading the address of a class object or the address of a
@@ -11260,14 +11331,7 @@ TR::Node *constrainLoadaddr(TR::ValuePropagation *vp, TR::Node *node)
       }
    else if (symbol->isClassObject())
       {
-      //add a ClassObject property
-      TR::VPConstraint *constraint = TR::VPClass::create(vp, TR::VPClassType::create(vp, symRef, true),
-                                                         NULL, NULL, NULL,
-                                                         TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
-      vp->addGlobalConstraint(node, constraint);
-      //vp->addGlobalConstraint(node, TR::VPClassType::create(vp, symRef, false));
-      //
-      vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+      constrainClassObjectLoadaddr(vp, node, true /* isGlobal */);
       }
 
    else if (symbol->isLocalObject())
@@ -11317,6 +11381,40 @@ TR::Node *constrainLoadaddr(TR::ValuePropagation *vp, TR::Node *node)
          }
       }
    return node;
+   }
+
+void constrainNewlyFoldedConst(TR::ValuePropagation *vp, TR::Node *node, bool isGlobal)
+   {
+   switch (node->getOpCodeValue())
+      {
+      case TR::iconst:
+         constrainIntConst(vp, node, isGlobal);
+         break;
+
+      case TR::lconst:
+         constrainLongConst(vp, node, isGlobal);
+         break;
+
+      case TR::aconst:
+         constrainAConst(vp, node, isGlobal);
+         break;
+
+      case TR::loadaddr:
+         if (node->getSymbolReference()->getSymbol()->isClassObject())
+            constrainClassObjectLoadaddr(vp, node, isGlobal);
+         break;
+
+      default:
+         if (vp->trace())
+            {
+            traceMsg(
+               vp->comp(),
+               "constrainNewlyFoldedConst does not recognize n%un %s\n",
+               node->getGlobalIndex(),
+               node->getOpCode().getName());
+            }
+         break;
+      }
    }
 
 // Perform null check processing (used by TR::NULLCHK and TR::ResolveAndNULLCHK).

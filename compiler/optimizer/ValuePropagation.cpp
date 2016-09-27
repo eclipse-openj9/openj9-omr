@@ -2772,6 +2772,9 @@ void TR::ValuePropagation::replaceByConstant(TR::Node *node, TR::VPConstraint *c
          break;
       }
 
+   // Make an effort to set flags as appropriate for the constant
+   constrainNewlyFoldedConst(this, node, isGlobal);
+
    setEnableSimplifier();
    }
 

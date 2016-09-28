@@ -33,7 +33,7 @@ namespace JitBuilder { typedef Z::CodeGenerator CodeGeneratorConnector; }
 #endif
 
 
-#include "codegen/JBCodeGenerator.hpp"
+#include "jitbuilder/codegen/JBCodeGenerator.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 
 

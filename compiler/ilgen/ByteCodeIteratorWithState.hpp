@@ -22,7 +22,7 @@
 #include "compile/Compilation.hpp"      // for Compilation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                // for ArrayOf
+#include "infra/deque.hpp"              // for TR::deque
 #include "env/TRMemory.hpp"             // for Allocator
 #include "il/Block.hpp"                 // for Block
 #include "infra/Assert.hpp"             // for TR_ASSERT
@@ -190,7 +190,8 @@ protected:
       genBBStart(end + 1);
       genBBStart(handler);
 
-      _tryCatchInfo[index].initialize(start, end, handler, type);
+      TR_ASSERT(_tryCatchInfo.begin() + index == _tryCatchInfo.end(), "Unexpected insertion order");
+      _tryCatchInfo.insert(_tryCatchInfo.begin() + index, typename ByteCodeIterator::TryCatchInfo(start, end, handler, type));
 
       for (int32_t j = start; j <= end; ++j)
          setIsInExceptionRange(j);
@@ -424,5 +425,5 @@ protected:
    flags8_t *                                     _flags;
 
    uint8_t                                        _unimplementedOpcode;  ///< (255 if opcode unknown)
-   CS2::ArrayOf<class ByteCodeIterator::TryCatchInfo, TR::Allocator> _tryCatchInfo;
+   TR::deque<class ByteCodeIterator::TryCatchInfo> _tryCatchInfo;
    };

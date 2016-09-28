@@ -38,7 +38,6 @@
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #include "cs2/allocator.h"                     // for shared_allocator
-#include "cs2/arrayof.h"                       // for ArrayOf, etc
 #include "cs2/bitvectr.h"                      // for ABitVector, etc
 #include "cs2/hashtab.h"                       // for HashTable<>::Cursor, etc
 #include "cs2/sparsrbit.h"

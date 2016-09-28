@@ -666,6 +666,12 @@ OMR::Node::createOnStack(TR::Node * originatingByteCodeNode, TR::ILOpCodes op, u
 TR::Node *
 OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::SymbolReference * symRef)
    {
+   return recreateWithoutProperties(originalNode, op, numChildren, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::SymbolReference * symRef)
+   {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    TR::Node *node = TR::Node::createInternal(0, op, numChildren, originalNode);
    if (symRef != NULL || node->hasSymbolReference() || node->hasRegLoadStoreSymbolReference())
@@ -888,58 +894,158 @@ OMR::Node::create(TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::N
    }
 
 
-
 TR::Node *
 OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, sixth);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, sixth, seventh);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, sixth, seventh, eighth);
+   }
+
+
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, sixth, symRef);
+   }
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::SymbolReference * symRef)
+   {
+   return TR::Node::recreateWithoutProperties(originalNode, op, numChildren, first, second, third, fourth, fifth, sixth, seventh, symRef);
+   }
+
+
+TR::Node *
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth, TR::SymbolReference * symRef)
+   {
+   TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
+   return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 8, first, second, third, fourth, fifth, sixth, seventh, eighth, symRef);
+   }
+
+
+TR::Node *
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 1, first);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 2, first, second);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 3, first, second, third);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 4, first, second, third, fourth);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 5, first, second, third, fourth, fifth);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 6, first, second, third, fourth, fifth, sixth);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 7, first, second, third, fourth, fifth, sixth, seventh);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithoutSymRef(originalNode, op, numChildren, 8, first, second, third, fourth, fifth, sixth, seventh, eighth);
@@ -948,56 +1054,56 @@ OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildr
 
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 1, first, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 2, first, second, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 3, first, second, third, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 4, first, second, third, fourth, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 5, first, second, third, fourth, fifth, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 6, first, second, third, fourth, fifth, sixth, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 7, first, second, third, fourth, fifth, sixth, seventh, symRef);
    }
 
 TR::Node *
-OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth, TR::SymbolReference * symRef)
+OMR::Node::recreateWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth, TR::Node *sixth, TR::Node *seventh, TR::Node *eighth, TR::SymbolReference * symRef)
    {
    TR_ASSERT(TR::Node::isLegalCallToCreate(op), "assertion failure");
    return TR::Node::recreateWithSymRef(originalNode, op, numChildren, 8, first, second, third, fourth, fifth, sixth, seventh, eighth, symRef);

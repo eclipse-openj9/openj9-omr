@@ -5740,7 +5740,7 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          if (loadDataType != addrDataType)
             {
             uint8_t precision = node->getType().isAddress() ? (TR::Compiler->target.is64Bit() ? 8 : 4) : 0;
-            TR::Node::recreate(node, convOpCode, 1);
+            TR::Node::recreateWithoutProperties(node, convOpCode, 1);
 
             loadNode = TR::Node::create(node, TR::BadILOp, 0);
             node->setAndIncChild(0, loadNode);
@@ -5749,7 +5749,7 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          if (!newOType && addrDataType == TR::Aggregate && node->getDataType() != TR::Aggregate)
             addrDataType = node->getDataType();
 
-         TR::Node::recreate(loadNode, s->comp()->il.opCodeForDirectLoad(addrDataType), 0, childRef);
+         TR::Node::recreateWithoutProperties(loadNode, s->comp()->il.opCodeForDirectLoad(addrDataType), 0, childRef);
 
          dumpOptDetails(s->comp(),"%s [" POINTER_PRINTF_FORMAT "] (load %s [" POINTER_PRINTF_FORMAT "])\n",
              node->getOpCode().getName(), node, loadNode->getOpCode().getName(), loadNode);
@@ -6600,7 +6600,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          TR::Node * newSecondChild = (secondChild->getReferenceCount() == 1) ? secondChild : TR::Node::create(secondChild, TR::iconst, 0);
          newSecondChild->setInt(-secondChild->getInt());
-         TR::Node::recreate(node, TR::isub, 2, firstChild, newSecondChild);
+         TR::Node::recreateWithoutProperties(node, TR::isub, 2, firstChild, newSecondChild);
          firstChild->recursivelyDecReferenceCount();
          secondChild->recursivelyDecReferenceCount();
          node->setVisitCount(0);

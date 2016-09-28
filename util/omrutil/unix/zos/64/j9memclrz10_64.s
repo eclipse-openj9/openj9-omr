@@ -1,6 +1,6 @@
 ***********************************************************************
 *
-* (c) Copyright IBM Corp. 1991, 2010
+* (c) Copyright IBM Corp. 1991, 2016
 *
 *  This program and the accompanying materials are made available
 *  under the terms of the Eclipse Public License v1.0 and
@@ -36,13 +36,14 @@ r12      EQU      12
 r13      EQU      13
 r14      EQU      14
 r15      EQU      15
-         LTR      r2,r2                               
-         JE       @2L3                                
-         AHI      r2,-1
-         LR       r0,r2                               
-         SRA      r0,8                                
-         LGR      r3,r1                               
-         JE       @2L20                               
+         LTGR     r2,r2
+         JE       @2L3
+         AGHI     r2,-1
+         LGR      r0,r2
+         SRLG     r0,r0,8
+         LTR      r0,r0
+         LGR      r3,r1
+         JE       @2L20
 * must be greater than 256 bytes
 * Check if Greater than 1024 bytes to clear
          CHI      r0,3

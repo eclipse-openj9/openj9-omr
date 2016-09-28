@@ -1529,7 +1529,7 @@ Optional Features:
                           are not explicitly enabled or disabled. (Default:
                           yes)
   --disable-OMR_GC        Enable building the OMR GC. (Default: yes)
-  --disable-OMR_JIT       Enable building the OMR JIT. (Default: yes)
+  --enable-OMR_JIT        Enable building the OMR JIT. (Default: no)
   --disable-OMR_PORT      Enable building the Port library. (Default: yes)
   --disable-OMR_THREAD    Enable building the Thread library. (Default: yes)
   --disable-OMR_OMRSIG    Enable building the OMRSig library. (Default: yes)
@@ -5245,15 +5245,9 @@ else
 fi
 else
 
-	if test "x" = "x"; then :
-  OMR_JIT="#define OMR_JIT"
+	OMR_JIT="#undef OMR_JIT"
 
-else
-  OMR_JIT="#define OMR_JIT "
-
-
-fi
-	echo "OMR_JIT := 1" >> omrmakefiles/omrcfg.mk
+	echo "OMR_JIT := 0" >> omrmakefiles/omrcfg.mk
 
 
 fi

@@ -361,7 +361,7 @@ echo "" >> omrmakefiles/omrcfg.mk
 
 ############### Top-Level Components
 OMRCFG_DEFINE_FLAG_ON([OMR_GC], [], [Enable building the OMR GC. (Default: yes)])
-OMRCFG_DEFINE_FLAG_ON([OMR_JIT], [], [Enable building the OMR JIT. (Default: yes)])
+OMRCFG_DEFINE_FLAG_OFF([OMR_JIT], [], [Enable building the OMR JIT. (Default: no)])
 OMRCFG_DEFINE_FLAG_ON([OMR_PORT], [], [Enable building the Port library. (Default: yes)])
 OMRCFG_DEFINE_FLAG_ON([OMR_THREAD], [], [Enable building the Thread library. (Default: yes)])
 OMRCFG_DEFINE_FLAG_ON([OMR_OMRSIG], [], [Enable building the OMRSig library. (Default: yes)])

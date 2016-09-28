@@ -658,7 +658,7 @@ void TR_ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *endT
          {
          if (_curTree == treeTop)
             _curTree = treeTop->getPrevTreeTop();
-         comp()->removeTree(treeTop);
+         TR::TransformUtil::removeTree(comp(), treeTop);
          }
 
       if (_reachedMaxRelationDepth)
@@ -3414,7 +3414,7 @@ void TR_ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *rt
                                           extraChild1,
                                           extraChild2,
                                           helperSymRef);
-   comp()->removeTree(vcallTree);
+   TR::TransformUtil::removeTree(comp(), vcallTree);
    TR::TreeTop *newCallTree = TR::TreeTop::create(comp(), prevTree,
          TR::Node::create(TR::treetop, 1, newCallNode));
 

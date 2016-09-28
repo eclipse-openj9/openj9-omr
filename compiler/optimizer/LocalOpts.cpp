@@ -359,7 +359,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
          if (!performTransformation(comp(), "%sMerge blocks %d and %d\n", optDetailString(), prevBlock->getNumber(), block->getNumber()))
             continue;
          optimizer()->prepareForTreeRemoval(tt);
-         comp()->removeTree(tt);
+         TR::TransformUtil::removeTree(comp(), tt);
          }
       else if ((firstNonFenceTree == lastNonFenceTree) &&
                (lastNonFenceTree->getNode()->getOpCodeValue() == TR::Goto)
@@ -731,7 +731,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithFrequencyInfo()
                if (node->getOpCodeValue() == TR::Goto)
                   {
                   optimizer()->prepareForTreeRemoval(treeTop);
-                  comp()->removeTree(treeTop);
+                  TR::TransformUtil::removeTree(comp(), treeTop);
                   }
                }
             }
@@ -1211,7 +1211,7 @@ int32_t TR_BlockManipulator::performChecksAndTreesMovement(TR::Block *newBlock, 
       else if (prevNode->getOpCodeValue() == TR::Goto)
          {
          optimizer->prepareForTreeRemoval(tt);
-         comp()->removeTree(tt);
+         TR::TransformUtil::removeTree(comp(), tt);
          }
 
       return cursorNext ? 2 : 1;
@@ -1253,7 +1253,7 @@ int32_t TR_BlockManipulator::performChecksAndTreesMovement(TR::Block *newBlock, 
       else
          {
          optimizer->prepareForTreeRemoval(tt);
-         comp()->removeTree(tt);
+         TR::TransformUtil::removeTree(comp(), tt);
          }
       return followingTree ? 2 : 1;
       */
@@ -1296,7 +1296,7 @@ int32_t TR_BlockManipulator::performChecksAndTreesMovement(TR::Block *newBlock, 
          else
             {
             optimizer->prepareForTreeRemoval(tt);
-            comp()->removeTree(tt);
+            TR::TransformUtil::removeTree(comp(), tt);
             }
 
          if (!nextTree)
@@ -1829,7 +1829,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
 
                   if (tt->getNode()->getOpCode().isBranch())
                      {
-                     comp()->removeTree(tt);
+                     TR::TransformUtil::removeTree(comp(), tt);
                      }
 
                   bool needToRemoveEdge = true;
@@ -3049,7 +3049,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                             nextBlock->getEntry()->join(nextBlock->getExit());
 
                             optimizer()->prepareForTreeRemoval(lastRealTree);
-                            comp()->removeTree(lastRealTree);
+                            TR::TransformUtil::removeTree(comp(), lastRealTree);
 
                             TR::CFGEdge* currentSucc = block->getSuccessors().front();
                             TR::CFGNode *succBlock = currentSucc->getTo();
@@ -3807,7 +3807,7 @@ int32_t TR_CleanseTrees::process(TR::TreeTop *startTree, TR::TreeTop *endTreeTop
             else
                {
                optimizer()->prepareForTreeRemoval(lastNonFenceTree);
-               comp()->removeTree(lastNonFenceTree);
+               TR::TransformUtil::removeTree(comp(), lastNonFenceTree);
                }
             }
          }
@@ -6920,7 +6920,7 @@ TR::Block *TR_BlockSplitter::splitBlock(TR::Block *pred, TR_LinkHeadAndTail<Bloc
             }
          else if (lastRealNode->getOpCode().isGoto())
             {
-            comp()->removeTree(pred->getExit()->getPrevRealTreeTop());
+            TR::TransformUtil::removeTree(comp(), pred->getExit()->getPrevRealTreeTop());
             }
          }
       }

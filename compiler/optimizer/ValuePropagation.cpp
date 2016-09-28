@@ -2786,7 +2786,7 @@ void TR_ValuePropagation::removeRestOfBlock()
       {
       removeNode(treeTop->getNode(), false);
       next = treeTop->getNextTreeTop();
-      comp()->removeTree(treeTop);
+      TR::TransformUtil::removeTree(comp(), treeTop);
       }
    }
 
@@ -7031,7 +7031,7 @@ void TR_ValuePropagation::transformStringConcats(TR_VPStringCached *stringCached
   stringNode->setAndIncChild(0, appendedString[0]);
   stringNode->setAndIncChild(1, appendedString[1]);
   stringNode->setAndIncChild(2, indexNode);
-  comp()->removeTree(newTree);
+  TR::TransformUtil::removeTree(comp(), newTree);
   }
 
 TR::SymbolReference * TR_ValuePropagation::getStringCacheRef()

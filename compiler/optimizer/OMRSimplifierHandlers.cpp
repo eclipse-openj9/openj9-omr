@@ -15678,7 +15678,7 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
           (lastTree->getNode()->getOpCode().isJumpWithMultipleTargets() && lastTree->getNode()->getOpCode().hasBranchChildren()))
          {
          s->prepareToStopUsingNode(lastTree->getNode(), s->_curTree);
-         s->comp()->removeTree(lastTree);
+         TR::TransformUtil::removeTree(s->comp(), lastTree);
          }
 
       TR::CFGEdge *e = (*inEdgeIter);
@@ -15753,7 +15753,7 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    nextBlock->getExit()->getNode()->setBlock(block);
    block->setExit(nextBlock->getExit());
    s->prepareToStopUsingNode(bbStartTree->getNode(), s->_curTree);
-   s->comp()->removeTree(bbStartTree);
+   TR::TransformUtil::removeTree(s->comp(), bbStartTree);
    s->prepareToStopUsingNode(node, s->_curTree);
    s->requestOpt(OMR::basicBlockPeepHole);
    return NULL;
@@ -16194,7 +16194,7 @@ static void removeRestOfBlock(TR::TreeTop *curTree, TR::Compilation *compilation
       {
       //s->removeNode(treeTop->getNode(), s->_curTree, false);
       next = treeTop->getNextTreeTop();
-      compilation->removeTree(treeTop);
+      TR::TransformUtil::removeTree(compilation, treeTop);
       }
    }
 

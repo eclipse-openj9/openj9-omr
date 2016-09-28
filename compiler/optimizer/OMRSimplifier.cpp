@@ -74,6 +74,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Structure.hpp"             // for TR_BlockStructure, etc
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "ras/Debug.hpp"                       // for TR_DebugBase, etc
 
 extern const SimplifierPtr simplifierOpts[];
@@ -470,7 +471,7 @@ OMR::Simplifier::simplify(TR::TreeTop * treeTop, TR::Block * block)
    if (node == NULL &&
        (!block->getPredecessors().empty() ||
         !block->getExceptionPredecessors().empty()))
-      comp()->removeTree(treeTop);
+      TR::TransformUtil::removeTree(comp(), treeTop);
 
    return next;
    }

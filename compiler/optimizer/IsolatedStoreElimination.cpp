@@ -54,6 +54,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Structure.hpp"             // for TR_RegionStructure, etc
+#include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "optimizer/UseDefInfo.hpp"            // for TR_UseDefInfo, etc
 #include "optimizer/VPConstraint.hpp"          // for TR_VPConstraint
 #include "ras/Debug.hpp"                       // for TR_DebugBase
@@ -1369,7 +1370,7 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
          for (TR::TreeTop *treeTop = entryBlock->getEntry()->getNextTreeTop(), *next; (treeTop != entryBlock->getExit()); treeTop = next)
             {
             next = treeTop->getNextTreeTop();
-            comp()->removeTree(treeTop);
+            TR::TransformUtil::removeTree(comp(), treeTop);
             if (next == entryBlock->getExit())
                break;
             }

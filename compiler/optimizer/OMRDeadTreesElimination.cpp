@@ -513,7 +513,7 @@ void OMR::DeadTreesElimination::prePerformOnBlocks()
       if (node->getOpCodeValue() == TR::treetop &&
           node->getFirstChild()->getVisitCount() == visitCount &&
           performTransformation(comp(), "%sRemove trivial dead tree: %p\n", optDetailString(), node))
-         comp()->removeTree(tt);
+         TR::TransformUtil::removeTree(comp(), tt);
       else
          {
          if (node->getOpCode().isCheck() &&
@@ -522,7 +522,7 @@ void OMR::DeadTreesElimination::prePerformOnBlocks()
              node->getFirstChild()->getSymbolReference()->getSymbol()->isResolvedMethod() &&
              node->getFirstChild()->getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->isSideEffectFree() &&
              performTransformation(comp(), "%sRemove dead check of side-effect free call: %p\n", optDetailString(), node))
-            comp()->removeTree(tt);
+            TR::TransformUtil::removeTree(comp(), tt);
          }
 
       if (node->getVisitCount() >= visitCount)

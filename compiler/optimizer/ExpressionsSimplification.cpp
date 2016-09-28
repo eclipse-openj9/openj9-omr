@@ -45,6 +45,7 @@
 #include "optimizer/Optimization.hpp"            // for Optimization
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Structure.hpp"               // for TR_RegionStructure, etc
+#include "optimizer/TransformUtil.hpp"           // for TransformUtil
 #include "optimizer/VPConstraint.hpp"            // for TR_VPConstraint
 #include "ras/Debug.hpp"                         // for TR_DebugBase
 
@@ -430,7 +431,7 @@ bool TR_ExpressionsSimplification::tranformSummationReductionCandidate(TR::TreeT
                   newNode->getFirstChild()->setAndIncChild(expChildNumber, expNode);
                transformNode(newNode, preheaderBlock);
                }
-            comp()->removeTree(treeTop);
+            TR::TransformUtil::removeTree(comp(), treeTop);
             }
          }
       }
@@ -468,7 +469,7 @@ void TR_ExpressionsSimplification::tranformStoreMotionCandidate(TR::TreeTop *tre
          {
          TR::Node *newNode = node->duplicateTree();
          transformNode(newNode, preheaderBlock);
-         comp()->removeTree(treeTop);
+         TR::TransformUtil::removeTree(comp(), treeTop);
          }
       }
    else

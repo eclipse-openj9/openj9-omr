@@ -30,6 +30,7 @@
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "optimizer/OMRSimplifierHelpers.hpp"
+#include "optimizer/TransformUtil.hpp"
 
 TR_YesNoMaybe TR_TrivialDeadBlockRemover::evaluateTakeBranch (TR::Node* ifNode)
    {
@@ -111,7 +112,7 @@ bool TR_TrivialDeadBlockRemover::foldIf (TR::Block* b)
       }
 
    if (!ifNode)
-      comp()->removeTree(ifTree);
+      TR::TransformUtil::removeTree(comp(), ifTree);
 
    return blocksWereRemoved;
    }

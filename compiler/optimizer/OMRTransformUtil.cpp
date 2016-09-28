@@ -377,3 +377,9 @@ OMR::TransformUtil::fieldShouldBeCompressed(TR::Node *node, TR::Compilation *com
    {
    return false;
    }
+
+void
+OMR::TransformUtil::removeTree(TR::Compilation *comp, TR::TreeTop * tt)
+   {
+   comp->getJittedMethodSymbol()->removeTree(tt);
+   }

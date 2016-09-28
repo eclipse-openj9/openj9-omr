@@ -198,22 +198,6 @@ public:
 	 */
 	virtual bool isExclusiveAccessRequestWaiting() = 0;
 
-
-	/**
-	 * Saves the given object in the calling VMThread's allocateObjectSavePrivate1 field so that it will be kept alive and can be updated if moved during a GC.
-	 *
-	 * @param objectPtr The pointer to store (note that this MUST be an OBJECT POINTER and not a HEAP POINTER)
-	 * @return true if the object was stored, false if the slot was already in use
-	 */
-	virtual bool saveObjects(omrobjectptr_t objectPtr) = 0;
-
-	/**
-	 * Fetches and clears the calling VMThread's allocateObjectSavePrivate1 field stored by a previous call to saveObjects.
-	 *
-	 * @param objectPtrIndirect The pointer to the slot which would be restored (note that the restored slot will be an OBJECT POINTER and not a HEAP POINTER)
-	 */
-	virtual void restoreObjects(omrobjectptr_t *objectPtrIndirect) = 0;
-
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 	/**
 	 * Disable inline TLH allocates by hiding the real heap allocation address from

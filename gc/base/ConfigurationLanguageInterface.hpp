@@ -22,11 +22,9 @@
 #include "BaseVirtual.hpp"
 #include "omrcomp.h"
 
-class MM_ArrayAllocationModel;
 class MM_EnvironmentBase;
 class MM_EnvironmentLanguageInterface;
 class MM_GlobalCollector;
-class MM_MixedObjectAllocationModel;
 class MM_ObjectAllocationInterface;
 
 /**

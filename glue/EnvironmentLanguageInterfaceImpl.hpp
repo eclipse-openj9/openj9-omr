@@ -44,9 +44,6 @@ public:
 
 	static MM_EnvironmentLanguageInterfaceImpl *getInterface(MM_EnvironmentLanguageInterface *linterface) { return (MM_EnvironmentLanguageInterfaceImpl *)linterface; }
 
-	virtual bool saveObjects(omrobjectptr_t objectPtr);
-	virtual void restoreObjects(omrobjectptr_t *objectPtrIndirect);
-
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 	virtual void disableInlineTLHAllocate();
 	virtual void enableInlineTLHAllocate();

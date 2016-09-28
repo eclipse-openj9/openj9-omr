@@ -32,22 +32,34 @@
 #include "ForwardedHeader.hpp"
 #include "HeapLinkedFreeHeader.hpp"
 
+class MM_AllocateInitialization;
+class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
 
 #define J9_GC_OBJECT_ALIGNMENT_IN_BYTES 0x8
 #define J9_GC_MINIMUM_OBJECT_SIZE 0x10
 
-/*
+/**
+ * Define object allocation categories. These are represented in MM_AllocateInitialization
+ * objects and are used in GC_ObjectModel::initializeAllocation() to determine how to
+ * initialize the header of a newly allocated object.
+ *
+ * A similar categorization is required for each client language.
+ */
+#define OMR_EXAMPLE_ALLOCATION_CATEGORY 0x0
+
+/**
  * Define structure of object slot that is to be used to represent an object's metadata. In this slot, one byte
  * must be reserved to hold flags and object age (4 bits age, 4 bits flags). The remaining bytes in this slot may
  * be used by the client language for other purposes and will not be altered by OMR.
  */
 #define OMR_OBJECT_METADATA_SLOT_OFFSET		0 /* fomrobject_t offset from object header address to metadata slot */
+#define OMR_OBJECT_METADATA_FLAGS_SHIFT		0
+#define OMR_OBJECT_METADATA_SIZE_SHIFT		8
+#define OMR_OBJECT_METADATA_FLAGS_MASK		0xFF
+#define OMR_OBJECT_METADATA_AGE_MASK		0xF0
+#define OMR_OBJECT_METADATA_AGE_SHIFT		4
 #define OMR_OBJECT_METADATA_SLOT_EA(object)	((fomrobject_t*)(object) + OMR_OBJECT_METADATA_SLOT_OFFSET) /* fomrobject_t* pointer to metadata slot */
-#define OMR_OBJECT_METADATA_SIZE_SHIFT		((uintptr_t) 8)
-#define OMR_OBJECT_METADATA_FLAGS_MASK		((uintptr_t) 0xFF)
-#define OMR_OBJECT_METADATA_AGE_MASK		((uintptr_t) 0xF0)
-#define OMR_OBJECT_METADATA_AGE_SHIFT		((uintptr_t) 4)
 #define OMR_OBJECT_AGE(object)				((*(OMR_OBJECT_METADATA_SLOT_EA(object)) & OMR_OBJECT_METADATA_AGE_MASK) >> OMR_OBJECT_METADATA_AGE_SHIFT)
 #define OMR_OBJECT_FLAGS(object)			(*(OMR_OBJECT_METADATA_SLOT_EA(object)) & OMR_OBJECT_METADATA_FLAGS_MASK)
 #define OMR_OBJECT_SIZE(object)				(*(OMR_OBJECT_METADATA_SLOT_EA(object)) >> OMR_OBJECT_METADATA_SIZE_SHIFT)
@@ -110,6 +122,11 @@ public:
 
 		return sizeInBytes;
 	}
+
+	/**
+	 * Set the object size in the object header.
+	 */
+	omrobjectptr_t initializeAllocation(MM_EnvironmentBase *env, void *allocatedBytes, MM_AllocateInitialization *allocateInitialization);
 
 	/**
 	 * Returns TRUE if an object is indexable, FALSE otherwise.
@@ -242,12 +259,6 @@ public:
 	postMove(OMR_VMThread* vmThread, omrobjectptr_t objectPtr)
 	{
 		/* do nothing */
-	}
-
-	MMINLINE void
-	initializeObject(omrobjectptr_t objectPtr, uintptr_t sizeInBytesWithHeader)
-	{
-		setObjectSize(objectPtr, sizeInBytesWithHeader, false);
 	}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)

@@ -323,11 +323,32 @@ public:
 	 * state so it can be restored later
 	 */
 	uintptr_t pushVMstate(uintptr_t newState);
+
 	/**
 	 * Restore the vmState to that supplied (which should have
 	 * been previously obtained through a call to @ref pushVMstate()
 	 */
 	void popVMstate(uintptr_t newState);
+
+	/**
+	 * Temporarily save a reference to an object that has been allocated but
+	 * not yet linked into the object reference tree. The object will be
+	 * treated as a root reference if a GC occurs while the object is
+	 * saved here.
+	 *
+	 * Must be balanced with an equal number of calls to restore objects.
+	 */
+	bool saveObjects(omrobjectptr_t objectPtr);
+
+	/**
+	 * Restore a reference to an object that has been allocated but
+	 * not yet linked into the object reference tree. It is presumed that
+	 * the object will be linked into the mutator's reference tree after
+	 * it is received from this call.
+	 *
+	 * Object must previously have been saved via saveObjects().
+	 */
+	void restoreObjects(omrobjectptr_t *objectPtrIndirect);
 
 	/**
 	 *	Verbose: allocation Failure Start Report if required

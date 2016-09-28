@@ -52,16 +52,25 @@ class MM_WorkPackets;
 class MM_CollectorLanguageInterface : public MM_BaseVirtual {
 
 private:
+
 protected:
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	MM_ConcurrentGCStats _concurrentStats;
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+
 public:
 
 private:
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	MMINLINE void generationalWriteBarrierStore(MM_EnvironmentStandard* env, omrobjectptr_t parentObject, omrobjectptr_t childObject);
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	MMINLINE void concurrentWriteBarrierStore(MM_EnvironmentBase* env, omrobjectptr_t parentObject);
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
+
 protected:
+
 public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;

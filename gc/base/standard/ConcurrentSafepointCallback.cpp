@@ -54,8 +54,13 @@ MM_ConcurrentSafepointCallback::registerCallback(MM_EnvironmentBase *env, Safepo
 void
 MM_ConcurrentSafepointCallback::requestCallback(MM_EnvironmentStandard *env)
 {
-	/* In the case of languages without safepoints, registerCallback should never be called because we're always at a safepoint */
-	Assert_MM_unreachable();
+	/* In uncomplicated cases that always call the concurrent write barrier
+	 * (MM_CollectorLanguageInterface::writeBarrierStore/Update()) this can
+	 * be a no-op.
+	 *
+	 * To optimize card table maintenance, language can implement this and
+	 * call MM_CollectorLanguageInterface::signalThreadsToDirtyCards() here.
+	 */
 }
 
 

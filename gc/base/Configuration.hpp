@@ -27,7 +27,6 @@
 #include "ConfigurationLanguageInterface.hpp"
 #include "InitializationParameters.hpp"
 
-class MM_ArrayAllocationModel;
 class MM_Dispatcher;
 class MM_EnvironmentLanguageInterface;
 class MM_EnvironmentBase;
@@ -37,7 +36,6 @@ class MM_GlobalCollector;
 class MM_Heap;
 class MM_HeapRegionManager;
 class MM_MemorySpace;
-class MM_MixedObjectAllocationModel;
 class MM_ObjectAllocationInterface;
 
 struct OMR_VM;

@@ -1034,7 +1034,7 @@ OMR::CodeGenerator::spillLiveReferencesToTemps(TR::TreeTop *insertionTree, std::
             }
 
          // Rewrite the original reference as an aload of the temp.
-         TR::Node::recreateAndCopyValidProperties(originalReference, TR::aload);
+         TR::Node::recreate(originalReference, TR::aload);
          originalReference->setNumChildren(0);
          originalReference->setSymbolReference(tempSymRef);
          }

@@ -122,12 +122,12 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   {
                   if (isInteger)
                      {
-                     TR::Node::recreateAndCopyValidProperties(parent, TR::ishl);
+                     TR::Node::recreate(parent, TR::ishl);
                      }
                   else
                      {
-                     TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
-                     TR::Node::recreateAndCopyValidProperties(parent, TR::lshl);
+                     TR::Node::recreate(secondChild, TR::iconst);
+                     TR::Node::recreate(parent, TR::lshl);
                      }
                   secondChild->setInt(shftAmnt);
                   }
@@ -137,7 +137,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getSecondChild()->decReferenceCount();
                   parent->setSecond(newChild);
                   parent->getSecondChild()->incReferenceCount();
-                  isInteger ? TR::Node::recreateAndCopyValidProperties(parent, TR::ishl) : TR::Node::recreateAndCopyValidProperties(parent, TR::lshl);
+                  isInteger ? TR::Node::recreate(parent, TR::ishl) : TR::Node::recreate(parent, TR::lshl);
                   }
                }
             else //negative value of the multiply constant
@@ -156,12 +156,12 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   newChild->setSecond(secondChild);
                   if (isInteger)
                      {
-                     TR::Node::recreateAndCopyValidProperties(parent, TR::ineg);
+                     TR::Node::recreate(parent, TR::ineg);
                      }
                   else
                      {
-                     TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
-                     TR::Node::recreateAndCopyValidProperties(parent, TR::lneg);
+                     TR::Node::recreate(secondChild, TR::iconst);
+                     TR::Node::recreate(parent, TR::lneg);
                      }
                   secondChild->setInt(shftAmnt);
                   parent->setNumChildren(1);
@@ -179,7 +179,7 @@ OMR::CodeGenerator::lowerTreesPreChildrenVisit(TR::Node * parent, TR::TreeTop * 
                   parent->getFirstChild()->decReferenceCount();
                   parent->getSecondChild()->decReferenceCount();
                   parent->setNumChildren(1);
-                  isInteger ? TR::Node::recreateAndCopyValidProperties(parent, TR::ineg) : TR::Node::recreateAndCopyValidProperties(parent, TR::lneg);
+                  isInteger ? TR::Node::recreate(parent, TR::ineg) : TR::Node::recreate(parent, TR::lneg);
                   parent->setFirst(newChild2);
                   parent->getFirstChild()->incReferenceCount();
                   }
@@ -213,7 +213,7 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
          {
          TR::Node *idivChild = TR::Node::create(TR::idiv, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
 
-         TR::Node::recreateAndCopyValidProperties(node, TR::iu2l);
+         TR::Node::recreate(node, TR::iu2l);
          node->setNumChildren(1);
          node->setChild(0, idivChild);
          idivChild->incReferenceCount();
@@ -436,7 +436,7 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::Tr
                     child->getFirstChild()->getOpCodeValue() == TR::iuRegLoad ) &&
                    performTransformation(self()->comp(), "%sChanging b2i node %p to unsigned conversion\n", OPT_DETAILS, child))
                   {
-                  TR::Node::recreateAndCopyValidProperties(child, (storeType == TR::Int8 ? TR::bu2i : TR::su2i));
+                  TR::Node::recreate(child, (storeType == TR::Int8 ? TR::bu2i : TR::su2i));
                   }
                else if (performTransformation(self()->comp(), "%sMarking i2b/b2i node %p as unneeded\n", OPT_DETAILS, child))
                   child->setUnneededConversion(true);

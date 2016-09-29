@@ -284,7 +284,7 @@ static void changeHeapBaseConstToLoad(TR::Compilation *comp, TR::SymbolReference
          tt->join(nextTree);
          }
 
-      TR::Node::recreateAndCopyValidProperties(node, TR::lload);
+      TR::Node::recreate(node, TR::lload);
       node->setSymbolReference(autoSymRef);
       }
 
@@ -1323,7 +1323,7 @@ TR_GlobalRegisterAllocator::transformNode(
              (oldValue->getOpCodeValue() == TR::iload) &&
              (value->getOpCodeValue() == TR::iRegLoad))
             {
-            TR::Node::recreateAndCopyValidProperties(oldValue, TR::iRegLoad);
+            TR::Node::recreate(oldValue, TR::iRegLoad);
             oldValue->setGlobalRegisterNumber(value->getGlobalRegisterNumber());
             }
 
@@ -1547,7 +1547,7 @@ TR_GlobalRegisterAllocator::transformNode(
                origStoreToMetaData = NULL;
                   {
                   TR::DataTypes regStoreType = node->getDataType();
-                  TR::Node::recreateAndCopyValidProperties(node, comp()->il.opCodeForRegisterStore(regStoreType));
+                  TR::Node::recreate(node, comp()->il.opCodeForRegisterStore(regStoreType));
                   }
 
                if (node->needsSignExtension())

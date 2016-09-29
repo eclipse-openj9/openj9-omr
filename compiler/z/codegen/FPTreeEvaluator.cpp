@@ -1639,7 +1639,7 @@ OMR::Z::TreeEvaluator::l2fEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 #else
    else
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::fcall);
+      TR::Node::recreate(node, TR::fcall);
       node->setSymbolReference(cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390jitMathHelperConvertLongToFloat, false, false, false));
       return cg->evaluate(node);
       }

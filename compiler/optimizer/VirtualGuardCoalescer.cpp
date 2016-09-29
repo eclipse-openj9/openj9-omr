@@ -898,7 +898,7 @@ void TR_VirtualGuardTailSplitter::remergeGuard(TR_BlockCloner &cloner, VGInfo *i
    //
    TR::TreeTop *ifTree = cloneG->getLastRealTreeTop();
    ifTree->getNode()->removeAllChildren();
-   TR::Node::recreateAndCopyValidProperties(ifTree->getNode(), TR::Goto);
+   TR::Node::recreate(ifTree->getNode(), TR::Goto);
 
    // Fix the if tree in G
    //
@@ -1166,7 +1166,7 @@ int32_t TR_VirtualGuardTailSplitter::rematerializeThis()
          #endif
 
          TR::Node *origThis = callNode->getFirstChild()->getFirstChild();
-         //TR::Node::recreateAndCopyValidProperties(origThis, thisExpr->getOpCodeValue());
+         //TR::Node::recreate(origThis, thisExpr->getOpCodeValue());
          //origThis->setSymbolReference(thisExpr->getSymbolReference());
 
          numGuardsChanged++;
@@ -1218,7 +1218,7 @@ int32_t TR_VirtualGuardTailSplitter::rematerializeThis()
          if (origThis != callNode->getSecondChild())
             {
             TR::Node *secondChild = callNode->getSecondChild();
-            TR::Node::recreateAndCopyValidProperties(secondChild, thisExpr->getOpCodeValue());
+            TR::Node::recreate(secondChild, thisExpr->getOpCodeValue());
             secondChild->setSymbolReference(thisExpr->getSymbolReference());
 
             int32_t i;
@@ -1265,7 +1265,7 @@ void TR_VirtualGuardTailSplitter::canonicalizeTree(TR::Node *node, List<TR_SymNo
          if (symRef == pair->_symRef)
             {
               //dumpOptDetails(comp(), "Matched for node %p\n", node);
-            TR::Node::recreateAndCopyValidProperties(node, pair->_node->getOpCodeValue());
+            TR::Node::recreate(node, pair->_node->getOpCodeValue());
             node->setSymbolReference(pair->_node->getSymbolReference());
              node->setNumChildren(pair->_node->getNumChildren());
             canonicalized = true;

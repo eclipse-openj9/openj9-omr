@@ -2059,7 +2059,7 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
                 if (replacedPassThroughNode &&
                     (cursorNode->getOpCodeValue() == TR::NULLCHK) &&
                     (cursorNode->getNullCheckReference() == prevNode->getNullCheckReference()))
-                   TR::Node::recreateAndCopyValidProperties(cursorNode, TR::treetop);
+                   TR::Node::recreate(cursorNode, TR::treetop);
 
                 // set flag to remove tree if treetop contains vcall and ivcall
                 if (replacedPassThroughNode &&
@@ -2288,7 +2288,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
             {
             ///printf("\n---found opportunity for checkcastAndNULLCHK in %s---\n", comp()->signature());
             ///fflush(stdout);
-            TR::Node::recreateAndCopyValidProperties(cursorNode, TR::treetop);
+            TR::Node::recreate(cursorNode, TR::treetop);
             if (cursorNode->getFirstChild()->getOpCodeValue() == TR::PassThrough)
                {
                TR::Node *nullChkRef = cursorNode->getFirstChild()->getFirstChild();
@@ -2319,7 +2319,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
             //      aload #1
             if (!compactionDone)
                {
-               TR::Node::recreateAndCopyValidProperties(prevNode, TR::checkcastAndNULLCHK);
+               TR::Node::recreate(prevNode, TR::checkcastAndNULLCHK);
                compactionDone = true;
                TR_Pair<TR_ByteCodeInfo, TR::Node> *bcInfo = new (trHeapMemory()) TR_Pair<TR_ByteCodeInfo, TR::Node> (&prevNode->getByteCodeInfo(), cursorNode);
                comp()->getCheckcastNullChkInfo().push_front(bcInfo);
@@ -3086,7 +3086,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             if (newOrOpcode != TR::BadILOp)
                {
                // Modify first ificmpeq
-               TR::Node::recreateAndCopyValidProperties(andNode, andNode->getOpCode().getOpCodeForReverseBranch());
+               TR::Node::recreate(andNode, andNode->getOpCode().getOpCodeForReverseBranch());
                TR::Node *orNode = TR::Node::create(newOrOpcode, 2,
                                                     lastRealNode->getFirstChild()->getSecondChild(),
                                                     andNode->getFirstChild()->getSecondChild());
@@ -3160,7 +3160,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
 
                   // The current BNDCHKwithSpineCHK node now becomes a spine check.
                   //
-                  TR::Node::recreateAndCopyValidProperties(lastRealNode, TR::SpineCHK);
+                  TR::Node::recreate(lastRealNode, TR::SpineCHK);
 
                   // The index is the third child of a spine check.
                   //
@@ -3182,7 +3182,7 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                   optimizer()->prepareForNodeRemoval(prevNode->getSecondChild());
                   prevNode->getSecondChild()->recursivelyDecReferenceCount();
                   prevNode->setChild(1, lastRealNode->getSecondChild());
-                  TR::Node::recreateAndCopyValidProperties(lastRealNode, TR::treetop);
+                  TR::Node::recreate(lastRealNode, TR::treetop);
                   lastRealNode->setNumChildren(1);
                   }
                else
@@ -4031,7 +4031,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                      TR::TreeTop::create(comp(), slowTree, TR::Node::createStore(newObjectPointer, variableSizeNew));
                      TR::TreeTop::create(comp(), fastTree, TR::Node::createStore(newObjectPointer, fixedSizeNew));
                      node->removeAllChildren();
-                     TR::Node::recreateAndCopyValidProperties(node, comp()->il.opCodeForDirectLoad(newObjectPointer->getSymbol()->getDataType()));
+                     TR::Node::recreate(node, comp()->il.opCodeForDirectLoad(newObjectPointer->getSymbol()->getDataType()));
                      node->setSymbolReference(newObjectPointer);
 
                      // Set block frequencies
@@ -7780,9 +7780,9 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
 
                   node->devirtualizeCall(treeTop);
                   if (treeTop->getNode()->getOpCodeValue() == TR::ResolveCHK)
-                     TR::Node::recreateAndCopyValidProperties(treeTop->getNode(), TR::treetop);
+                     TR::Node::recreate(treeTop->getNode(), TR::treetop);
                   else if (treeTop->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-                     TR::Node::recreateAndCopyValidProperties(treeTop->getNode(), TR::NULLCHK);
+                     TR::Node::recreate(treeTop->getNode(), TR::NULLCHK);
 
                   bool doInc = comp()->getCHTable()->recompileOnNewClassExtend(comp(), receiverInfo.getClass());
 

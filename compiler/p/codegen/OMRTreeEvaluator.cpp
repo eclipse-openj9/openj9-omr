@@ -944,18 +944,18 @@ TR::Register *OMR::Power::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::Cod
          if (node->getOpCode().isIndirect())
             {
             node->setChild(1, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::fstorei);
+            TR::Node::recreate(node, TR::fstorei);
             fstoreEvaluator(node, cg);
             node->setChild(1, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::istorei);
+            TR::Node::recreate(node, TR::istorei);
             }
          else
             {
             node->setChild(0, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::fstore);
+            TR::Node::recreate(node, TR::fstore);
             fstoreEvaluator(node, cg);
             node->setChild(0, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::istore);
+            TR::Node::recreate(node, TR::istore);
             }
          cg->decReferenceCount(valueChild);
          return NULL;
@@ -1125,18 +1125,18 @@ TR::Register *OMR::Power::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::Cod
          if (node->getOpCode().isIndirect())
             {
             node->setChild(1, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstorei);
+            TR::Node::recreate(node, TR::dstorei);
             dstoreEvaluator(node, cg);
             node->setChild(1, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstorei);
+            TR::Node::recreate(node, TR::lstorei);
             }
          else
             {
             node->setChild(0, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstore);
+            TR::Node::recreate(node, TR::dstore);
             dstoreEvaluator(node, cg);
             node->setChild(0, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstore);
+            TR::Node::recreate(node, TR::lstore);
             }
          cg->decReferenceCount(valueChild);
          return NULL;
@@ -2470,7 +2470,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdlogEvaluator(TR::Node *node, TR::Code
     {
     TR::SymbolReference *helper = cg->comp()->getSymRefTab()->findOrCreateRuntimeHelper(TR_PPCVectorLogDouble, false, false, true);
     helper->getSymbol()->castToMethodSymbol()->setLinkage(TR_System);
-    TR::Node::recreateAndCopyValidProperties(node, TR::vcall);
+    TR::Node::recreate(node, TR::vcall);
     node->setSymbolReference(helper);
 
     return directCallEvaluator(node, cg);
@@ -4193,9 +4193,9 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    if (debug("noArrayCopy"))
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
-      TR::Node::recreateAndCopyValidProperties(node, TR::call);
+      TR::Node::recreate(node, TR::call);
       TR::Register *targetRegister = directCallEvaluator(node, cg);
-      TR::Node::recreateAndCopyValidProperties(node, opCode);
+      TR::Node::recreate(node, opCode);
       return targetRegister;
       }
 

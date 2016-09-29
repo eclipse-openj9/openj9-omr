@@ -102,7 +102,7 @@ OMR::CodeGenerator::eliminateLoadsOfLocalsThatAreNotStored(
        performTransformation(self()->comp(), "%sRemoving dead load of sym ref %d at %p\n", OPT_DETAILS, node->getSymbolReference()->getReferenceNumber(), node))
 
       {
-      TR::Node::recreateAndCopyValidProperties(node, self()->comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
+      TR::Node::recreate(node, self()->comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
       node->setLongInt(0);
       return;
       }

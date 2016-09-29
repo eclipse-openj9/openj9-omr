@@ -188,7 +188,7 @@ OMR::TransformUtil::scalarizeArrayCopy(
             cg->recursivelyDecReferenceCount(node->getChild(c));
          }
 
-      TR::Node::recreateAndCopyValidProperties(node, store->getOpCodeValue());
+      TR::Node::recreate(node, store->getOpCodeValue());
       node->setSymbolReference(store->getSymbolReference());
 
       if (store->getOpCode().isStoreIndirect())

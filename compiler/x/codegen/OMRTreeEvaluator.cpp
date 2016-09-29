@@ -1108,18 +1108,18 @@ TR::Register *OMR::X86::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeG
          if (node->getOpCode().isIndirect())
             {
             node->setChild(1, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::fstorei);
+            TR::Node::recreate(node, TR::fstorei);
             floatingPointStoreEvaluator(node, cg);
             node->setChild(1, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::istorei);
+            TR::Node::recreate(node, TR::istorei);
             }
          else
             {
             node->setChild(0, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::fstore);
+            TR::Node::recreate(node, TR::fstore);
             floatingPointStoreEvaluator(node, cg);
             node->setChild(0, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::istore);
+            TR::Node::recreate(node, TR::istore);
             }
          cg->decReferenceCount(valueChild);
          return NULL;
@@ -3470,11 +3470,11 @@ OMR::X86::TreeEvaluator::performHelperCall(
       TR::CodeGenerator *cg)
    {
    TR::ILOpCodes opCode = node->getOpCodeValue();
-   TR::Node::recreateAndCopyValidProperties(node, helperCallOpCode);
+   TR::Node::recreate(node, helperCallOpCode);
    if(helperSymRef)
       node->setSymbolReference(helperSymRef);
    TR::Register *targetReg = performCall(node, false, spillFPRegs, cg);
-   TR::Node::recreateAndCopyValidProperties(node, opCode);
+   TR::Node::recreate(node, opCode);
    return targetReg;
    }
 

@@ -136,14 +136,14 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
          return NULL;
 
       cannotInline = true;
-      TR::Node::recreateAndCopyValidProperties(firstChild, TR::icall);
+      TR::Node::recreate(firstChild, TR::icall);
       }
 
    src1Reg = cg->evaluate(firstChild);
 
    if (cannotInline)
       {
-      TR::Node::recreateAndCopyValidProperties(firstChild, TR::instanceof);
+      TR::Node::recreate(firstChild, TR::instanceof);
       }
 
    bool foundConst = false;
@@ -242,14 +242,14 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
          return NULL;
 
       cannotInline = true;
-      TR::Node::recreateAndCopyValidProperties(firstChild, TR::icall);
+      TR::Node::recreate(firstChild, TR::icall);
       }
 
    src1Reg = cg->evaluate(firstChild);
 
    if (cannotInline)
       {
-      TR::Node::recreateAndCopyValidProperties(firstChild, TR::instanceof);
+      TR::Node::recreate(firstChild, TR::instanceof);
       }
 
    bool foundConst = false;
@@ -763,9 +763,9 @@ TR::Register *OMR::ARM::TreeEvaluator::iflucmpleEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::ARM::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::ificmpeq);
+   TR::Node::recreate(node, TR::ificmpeq);
    ificmpeqEvaluator(node, cg);
-   TR::Node::recreateAndCopyValidProperties(node, TR::ifacmpeq);
+   TR::Node::recreate(node, TR::ifacmpeq);
    return NULL;
    }
 
@@ -943,9 +943,9 @@ TR::Register *OMR::ARM::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGen
 
 TR::Register *OMR::ARM::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::icmpeq);
+   TR::Node::recreate(node, TR::icmpeq);
    TR::Register *trgReg = icmpeqEvaluator(node, cg);
-   TR::Node::recreateAndCopyValidProperties(node, TR::acmpeq);
+   TR::Node::recreate(node, TR::acmpeq);
    return trgReg;
    }
 

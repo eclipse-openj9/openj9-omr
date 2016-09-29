@@ -2508,11 +2508,11 @@ OMR::CodeGenerator::convertMultiplyToShift(TR::Node * node)
    node->setAndIncChild(1, secondChild);
 
    if (node->getOpCodeValue() == TR::imul || node->getOpCodeValue() == TR::iumul)
-      TR::Node::recreateAndCopyValidProperties(node, TR::ishl);
+      TR::Node::recreate(node, TR::ishl);
    else
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::lshl);
-      TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+      TR::Node::recreate(node, TR::lshl);
+      TR::Node::recreate(secondChild, TR::iconst);
       }
    secondChild->setInt(shiftAmount);
    return true;

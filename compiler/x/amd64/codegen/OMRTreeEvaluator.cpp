@@ -90,18 +90,18 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
          if (node->getOpCode().isIndirect())
             {
             node->setChild(1, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstorei);
+            TR::Node::recreate(node, TR::dstorei);
             floatingPointStoreEvaluator(node, cg);
             node->setChild(1, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstorei);
+            TR::Node::recreate(node, TR::lstorei);
             }
          else
             {
             node->setChild(0, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstore);
+            TR::Node::recreate(node, TR::dstore);
             floatingPointStoreEvaluator(node, cg);
             node->setChild(0, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstore);
+            TR::Node::recreate(node, TR::lstore);
             }
          cg->decReferenceCount(valueChild);
          return NULL;

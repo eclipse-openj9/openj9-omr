@@ -2598,7 +2598,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
                      adjustmentConstChild->setLongInt(additiveConstant);
 
                   nodeSetUp = true;
-                  TR::Node::recreateAndCopyValidProperties(node, _derivedInductionVarStoreInBlock->getFirstChild()->getOpCodeValue());
+                  TR::Node::recreate(node, _derivedInductionVarStoreInBlock->getFirstChild()->getOpCodeValue());
                   node->setNumChildren(2);
                   node->setAndIncChild(0, loadOfPrimaryInductionVar);
                   node->setAndIncChild(1, adjustmentConstChild);
@@ -2622,7 +2622,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
                      adjustmentConstChild->setLongInt(-1*additiveConstant);
 
                   nodeSetUp = true;
-                  TR::Node::recreateAndCopyValidProperties(node, _primaryInductionVarStoreInBlock->getFirstChild()->getOpCodeValue());
+                  TR::Node::recreate(node, _primaryInductionVarStoreInBlock->getFirstChild()->getOpCodeValue());
                   node->setNumChildren(2);
                   node->setAndIncChild(0, loadOfPrimaryInductionVar);
                   node->setAndIncChild(1, adjustmentConstChild);
@@ -2652,7 +2652,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
 
 
                   nodeSetUp = true;
-                  TR::Node::recreateAndCopyValidProperties(node, ((dataType == TR::Int32) ? TR::iadd : TR::ladd));
+                  TR::Node::recreate(node, ((dataType == TR::Int32) ? TR::iadd : TR::ladd));
                   node->setNumChildren(2);
                   node->setAndIncChild(0, loadOfPrimaryInductionVar);
                   node->setAndIncChild(1, adjustmentConstChild);
@@ -2679,7 +2679,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
 
 
                   nodeSetUp = true;
-                  TR::Node::recreateAndCopyValidProperties(node, ((dataType == TR::Int32) ? TR::iadd : TR::ladd));
+                  TR::Node::recreate(node, ((dataType == TR::Int32) ? TR::iadd : TR::ladd));
                   node->setNumChildren(2);
                   node->setAndIncChild(0, loadOfPrimaryInductionVar);
                   node->setAndIncChild(1, adjustmentConstChild);
@@ -2689,7 +2689,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
 
          if (!nodeSetUp)
             {
-            TR::Node::recreateAndCopyValidProperties(node, loadOfPrimaryInductionVar->getOpCodeValue());
+            TR::Node::recreate(node, loadOfPrimaryInductionVar->getOpCodeValue());
             node->setNumChildren(2);
             node->setChild(0, loadOfPrimaryInductionVar->getFirstChild());
             node->setChild(1, loadOfPrimaryInductionVar->getSecondChild());
@@ -4130,7 +4130,7 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
                 loopTestNode->getOpCodeValue() == TR::ificmple)
                {
                testValue += 1;
-               TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ificmplt);
+               TR::Node::recreate(loopTestNode, TR::ificmplt);
                }
 
             int initValue = testValue - entryValue;
@@ -4159,21 +4159,21 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
          if (storeNode->getFirstChild()->getOpCode().isAdd())
             {
             origOpCodeWasAdd = true;
-            TR::Node::recreateAndCopyValidProperties(storeNode->getFirstChild(), TR::isub);
+            TR::Node::recreate(storeNode->getFirstChild(), TR::isub);
             }
          else
-            TR::Node::recreateAndCopyValidProperties(storeNode->getFirstChild(), TR::iadd);
+            TR::Node::recreate(storeNode->getFirstChild(), TR::iadd);
 
          loopTestNode = _loopTestTree->getNode();
          if (loopTestNode->getOpCodeValue() == TR::ificmplt)
-            TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ificmpgt);
+            TR::Node::recreate(loopTestNode, TR::ificmpgt);
          else if (loopTestNode->getOpCodeValue() == TR::ificmple)
-            TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ificmpge);
+            TR::Node::recreate(loopTestNode, TR::ificmpge);
          /*
            else if (loopTestNode->getOpCodeValue() == TR::ificmpgt)
-           TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ificmplt);
+           TR::Node::recreate(loopTestNode, TR::ificmplt);
            else if (loopTestNode->getOpCodeValue() == TR::ificmpge)
-           TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ificmple);
+           TR::Node::recreate(loopTestNode, TR::ificmple);
          */
 
          loopTestNode->getSecondChild()->recursivelyDecReferenceCount();

@@ -872,7 +872,7 @@ void TR_PartialRedundancy::processReusedNode(TR::Node *node, TR::ILOpCodes newOp
    if (newSymRef)
       node = TR::Node::recreateWithSymRefAndCopyValidProperties(node, newOpCode, newSymRef);
    else
-      node = TR::Node::recreateAndCopyValidProperties(node, newOpCode);
+      node = TR::Node::recreate(node, newOpCode);
 
    if(node->getOpCode().isLoadVarDirect()) node->setIsNodeCreatedByPRE();
 
@@ -1131,7 +1131,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                          }
 
                       if (notLastInsertionInBlock)
-                         TR::Node::recreateAndCopyValidProperties(notLastInsertionInBlock->getNode(), TR::treetop);
+                         TR::Node::recreate(notLastInsertionInBlock->getNode(), TR::treetop);
                       lastInsertionMade = placeToInsertOptimalComputations;
                       if (optimalNode->getSideTableIndex() != nextOptimalComputation)
                          lastInsertionCanBeRemoved = false;
@@ -1232,7 +1232,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                isOriginallyTreeTop = true;
 
             if (isOriginallyTreeTop)
-               TR::Node::recreateAndCopyValidProperties(nextOptimalNode, TR::NULLCHK);
+               TR::Node::recreate(nextOptimalNode, TR::NULLCHK);
 
             vcount_t visitCount1 = comp()->incOrResetVisitCount();
             TR_ScratchList<TR::Node> seenNodes(trMemory()), duplicateNodes(trMemory());
@@ -1284,7 +1284,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
 
             duplicateOptimalNode->setReferenceCount(0);
             if (isOriginallyTreeTop)
-               TR::Node::recreateAndCopyValidProperties(nextOptimalNode, TR::treetop);
+               TR::Node::recreate(nextOptimalNode, TR::treetop);
 
             TR::SymbolReference *newSymRef = nextOptimalNode->getSymbolReference();
             TR::Node *passThroughNode = TR::Node::create(TR::PassThrough, 1, duplicateOptimalNode);
@@ -1666,12 +1666,12 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                   if (0 && performTransformation(comp(), "%sEliminating redundant check computation (resolve or null check) : %p\n", OPT_DETAILS, currentTree->getNode())) // Look at check-in comment for version 1.296
                      {
                      if (firstOpCodeInTree.getOpCodeValue() == TR::NULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::treetop);
+                        TR::Node::recreate(currentTree->getNode(), TR::treetop);
                      else if (firstOpCodeInTree.getOpCodeValue() == TR::ResolveAndNULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::ResolveCHK);
+                        TR::Node::recreate(currentTree->getNode(), TR::ResolveCHK);
 
                      if (firstOpCodeInTree.getOpCodeValue() == TR::ResolveCHK)
-                        TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::treetop);
+                        TR::Node::recreate(currentTree->getNode(), TR::treetop);
 
                      currentTree->getNode()->setSideTableIndex(-1);
                      currentTree->getNode()->setNumChildren(1);
@@ -1786,12 +1786,12 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                   if (performTransformation(comp(), "%sEliminating redundant check computation (resolve or null check) : %p\n", OPT_DETAILS, currentTree->getNode()))
                      {
                      if (firstOpCodeInTree.getOpCodeValue() == TR::NULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::treetop);
+                        TR::Node::recreate(currentTree->getNode(), TR::treetop);
                      else if (firstOpCodeInTree.getOpCodeValue() == TR::ResolveAndNULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::ResolveCHK);
+                        TR::Node::recreate(currentTree->getNode(), TR::ResolveCHK);
 
                     if (firstOpCodeInTree.getOpCodeValue() == TR::ResolveCHK)
-                       TR::Node::recreateAndCopyValidProperties(currentTree->getNode(), TR::treetop);
+                       TR::Node::recreate(currentTree->getNode(), TR::treetop);
 
                      currentTree->getNode()->setNumChildren(1);
 
@@ -1924,7 +1924,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
          // check to a treetop
          //
          if (parent->getOpCode().isNullCheck())
-            TR::Node::recreateAndCopyValidProperties(parent, TR::treetop);
+            TR::Node::recreate(parent, TR::treetop);
          }
       return true;
       }
@@ -2125,7 +2125,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
                manager()->setAlteredCode(true);
 
                if (parent->getOpCode().isNullCheck())
-                  TR::Node::recreateAndCopyValidProperties(parent, TR::treetop);
+                  TR::Node::recreate(parent, TR::treetop);
                }
             }
          }
@@ -2193,7 +2193,7 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
             if (trace())
                traceMsg(comp(), "Duplicate parent %p had its old child %p replaced by %p with symRef #%d\n", duplicateParent, duplicateOptimalNode, newLoad, newLoad->getSymbolReference()->getReferenceNumber());
             if (duplicateParent->getOpCode().isNullCheck())
-               TR::Node::recreateAndCopyValidProperties(duplicateParent, TR::treetop);
+               TR::Node::recreate(duplicateParent, TR::treetop);
             }
          else
             {

@@ -1058,9 +1058,9 @@ TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::Cod
    if (TR::comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
-      TR::Node::recreateAndCopyValidProperties(node, TR::acall);
+      TR::Node::recreate(node, TR::acall);
       TR::Register *targetRegister = directCallEvaluator(node, cg);
-      TR::Node::recreateAndCopyValidProperties(node, opCode);
+      TR::Node::recreate(node, opCode);
       return targetRegister;
       }
    else
@@ -1074,9 +1074,9 @@ TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::Co
    if (TR::comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
-      TR::Node::recreateAndCopyValidProperties(node, TR::acall);
+      TR::Node::recreate(node, TR::acall);
       TR::Register *targetRegister = directCallEvaluator(node, cg);
-      TR::Node::recreateAndCopyValidProperties(node, opCode);
+      TR::Node::recreate(node, opCode);
       return targetRegister;
       }
    else
@@ -1089,9 +1089,9 @@ TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::Co
 TR::Register *OMR::ARM::TreeEvaluator::multianewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::ILOpCodes opCode = node->getOpCodeValue();
-   TR::Node::recreateAndCopyValidProperties(node, TR::acall);
+   TR::Node::recreate(node, TR::acall);
    TR::Register *targetRegister = directCallEvaluator(node, cg);
-   TR::Node::recreateAndCopyValidProperties(node, opCode);
+   TR::Node::recreate(node, opCode);
    return targetRegister;
    }
 

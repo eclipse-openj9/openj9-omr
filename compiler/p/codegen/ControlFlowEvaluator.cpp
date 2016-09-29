@@ -1346,14 +1346,14 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForEquality(TR::InstOpCode::
        cannotInline = true;
        if(!(comp->isOptServer()))
           {
-          TR::Node::recreateAndCopyValidProperties(firstChild, TR::icall);
+          TR::Node::recreate(firstChild, TR::icall);
           }
        }
 
     src1Reg   = cg->evaluate(firstChild);
     if (cannotInline)
        {
-       TR::Node::recreateAndCopyValidProperties(firstChild, TR::instanceof);
+       TR::Node::recreate(firstChild, TR::instanceof);
        }
     condReg = cg->allocateRegister(TR_CCR);
 
@@ -1602,11 +1602,11 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode:
             secondChild->setRegister(secondShiftResultReg);
             if (node->getOpCode().isIf())
                {
-               TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().isCompareTrueIfEqual() ? TR::ificmpeq : TR::ificmpne);
+               TR::Node::recreate(node, node->getOpCode().isCompareTrueIfEqual() ? TR::ificmpeq : TR::ificmpne);
                }
             else
                {
-               TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().isCompareTrueIfEqual() ? TR::icmpeq : TR::icmpne);
+               TR::Node::recreate(node, node->getOpCode().isCompareTrueIfEqual() ? TR::icmpeq : TR::icmpne);
                }
             return compareIntsForEquality(branchOp, dstLabel, node, cg, isHint, likeliness);
             }
@@ -1788,15 +1788,15 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::C
    {
    if (TR::Compiler->target.is64Bit())
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iflcmpeq);
+      TR::Node::recreate(node, TR::iflcmpeq);
       iflcmpeqEvaluator(node, cg);
       }
    else
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ificmpeq);
+      TR::Node::recreate(node, TR::ificmpeq);
       ificmpeqEvaluator(node, cg);
       }
-   TR::Node::recreateAndCopyValidProperties(node, TR::ifacmpeq);
+   TR::Node::recreate(node, TR::ifacmpeq);
    return NULL;
    }
 
@@ -1804,15 +1804,15 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpneEvaluator(TR::Node *node, TR::C
    {
    if (TR::Compiler->target.is64Bit())
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iflcmpne);
+      TR::Node::recreate(node, TR::iflcmpne);
       iflcmpeqEvaluator(node, cg);
       }
    else
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ificmpne);
+      TR::Node::recreate(node, TR::ificmpne);
       ificmpeqEvaluator(node, cg);
       }
-   TR::Node::recreateAndCopyValidProperties(node, TR::ifacmpne);
+   TR::Node::recreate(node, TR::ifacmpne);
    return NULL;
    }
 

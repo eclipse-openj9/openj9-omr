@@ -369,7 +369,7 @@ TR::Node *foldRedundantAND(TR::Node * node, TR::ILOpCodes andOpCode, TR::ILOpCod
     performTransformation(s->comp(), "%sFolding redundant AND node [%s] and its children [%s, %s]\n",
                            s->optDetailString(), node->getName(s->getDebug()), lhsChild->getName(s->getDebug()), constChild->getName(s->getDebug())))
       {
-      TR::Node::recreateAndCopyValidProperties(andChild, andChild->getFirstChild()->getOpCodeValue());
+      TR::Node::recreate(andChild, andChild->getFirstChild()->getOpCodeValue());
       node->setAndIncChild(0, andChild->getFirstChild());
       s->prepareToStopUsingNode(andChild, s->_curTree);
       andChild->recursivelyDecReferenceCount();
@@ -415,7 +415,7 @@ void makeConstantTheRightChildAndSetOpcode(TR::Node * node, TR::Node * & firstCh
       TR_ASSERT(node->getOpCode().getOpCodeForSwapChildren() != TR::BadILOp,
              "cannot swap children of irreversible op");
       if (swapChildren(node, firstChild, secondChild, s))
-         TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().getOpCodeForSwapChildren());
+         TR::Node::recreate(node, node->getOpCode().getOpCodeForSwapChildren());
       }
    }
 

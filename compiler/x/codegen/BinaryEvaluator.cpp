@@ -2626,7 +2626,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
                 grandChild->getReferenceCount() == 1 &&
                 grandChild->getRegister() == 0)
                {
-               TR::Node::recreateAndCopyValidProperties(grandChild, TR::bloadi);
+               TR::Node::recreate(grandChild, TR::bloadi);
                secondChild->decReferenceCount();
                secondChild = grandChild;
                if (reportShiftAmount)
@@ -2637,7 +2637,7 @@ TR::X86RegInstruction  *OMR::X86::TreeEvaluator::generateRegisterShift(TR::Node 
                      grandChild->getReferenceCount() == 1 &&
                      grandChild->getRegister() == 0)
                {
-               TR::Node::recreateAndCopyValidProperties(grandChild, TR::bload);
+               TR::Node::recreate(grandChild, TR::bload);
                secondChild->decReferenceCount();
                secondChild = grandChild;
                if (reportShiftAmount)
@@ -2739,7 +2739,7 @@ TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *n
                 grandChild->getReferenceCount() == 1 &&
                 grandChild->getRegister() == 0)
                {
-               TR::Node::recreateAndCopyValidProperties(grandChild, TR::bloadi);
+               TR::Node::recreate(grandChild, TR::bloadi);
                secondChild->decReferenceCount();
                secondChild = grandChild;
                if (reportShiftAmount)
@@ -2749,7 +2749,7 @@ TR::X86MemInstruction  *OMR::X86::TreeEvaluator::generateMemoryShift(TR::Node *n
                      grandChild->getReferenceCount() == 1 &&
                      grandChild->getRegister() == 0)
                {
-               TR::Node::recreateAndCopyValidProperties(grandChild, TR::bload);
+               TR::Node::recreate(grandChild, TR::bload);
                secondChild->decReferenceCount();
                secondChild = grandChild;
                if (reportShiftAmount)

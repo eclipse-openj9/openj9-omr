@@ -941,30 +941,30 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
       if (branch->getOpCodeValue() == TR::ificmpne)
          {
          if (isIncreasingLoop())
-            TR::Node::recreateAndCopyValidProperties(branch, TR::ificmplt);
+            TR::Node::recreate(branch, TR::ificmplt);
          else
-            TR::Node::recreateAndCopyValidProperties(branch, TR::ificmpgt);
+            TR::Node::recreate(branch, TR::ificmpgt);
          }
       else  if (branch->getOpCodeValue() == TR::ifiucmpne)
          {
          if (isIncreasingLoop())
-            TR::Node::recreateAndCopyValidProperties(branch, TR::ifiucmplt);
+            TR::Node::recreate(branch, TR::ifiucmplt);
          else
-            TR::Node::recreateAndCopyValidProperties(branch, TR::ifiucmpgt);
+            TR::Node::recreate(branch, TR::ifiucmpgt);
          }
       else if (branch->getOpCodeValue() == TR::iflcmpne)
          {
          if (isIncreasingLoop())
-            TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmplt);
+            TR::Node::recreate(branch, TR::iflcmplt);
          else
-            TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmpgt);
+            TR::Node::recreate(branch, TR::iflcmpgt);
          }
       else if (branch->getOpCodeValue() == TR::iflucmpne)
          {
          if (isIncreasingLoop())
-            TR::Node::recreateAndCopyValidProperties(branch, TR::iflucmplt);
+            TR::Node::recreate(branch, TR::iflucmplt);
          else
-            TR::Node::recreateAndCopyValidProperties(branch, TR::iflucmpgt);
+            TR::Node::recreate(branch, TR::iflucmpgt);
          }
       }
    else if (_unrollKind == CompleteUnroll) /*GGLU*/
@@ -1204,7 +1204,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
 
             if (spillLoop->contains(branchDestination->getStructureOf(), parent))
                {
-               TR::Node::recreateAndCopyValidProperties(newIfTree->getNode(),
+               TR::Node::recreate(newIfTree->getNode(),
                   newIfTree->getNode()->getOpCode().getOpCodeForReverseBranch());
                newIfTree->getNode()->setBranchDestination(origExitBlock->getEntry());
                }
@@ -1426,7 +1426,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
 
             if (spillLoop->contains(branchDestination->getStructureOf(), parent))
                {
-                TR::Node::recreateAndCopyValidProperties(newIfTree->getNode(),
+                TR::Node::recreate(newIfTree->getNode(),
                    newIfTree->getNode()->getOpCode().getOpCodeForReverseBranch());
                 newIfTree->getNode()->setBranchDestination(origExitBlock->getEntry());
                }
@@ -2192,7 +2192,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
       {
       TR_ASSERT(_spillBranchBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch(),
              "expecting a branch in the spill loop branch block");
-      TR::Node::recreateAndCopyValidProperties(_spillBranchBlock->getLastRealTreeTop()->getNode(), _origLoopCondition);
+      TR::Node::recreate(_spillBranchBlock->getLastRealTreeTop()->getNode(), _origLoopCondition);
       }
    }
 
@@ -3511,7 +3511,7 @@ TR_LoopUnroller::unroll(TR::Compilation *comp, TR_RegionStructure *loop,
             {
             unroller._wasEQorNELoop = true;
             unroller._origLoopCondition = branch->getOpCodeValue();
-            TR::Node::recreateAndCopyValidProperties(branch, opCode);
+            TR::Node::recreate(branch, opCode);
             }
          }
 

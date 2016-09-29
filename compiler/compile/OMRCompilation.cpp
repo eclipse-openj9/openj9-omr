@@ -1977,9 +1977,6 @@ void OMR::Compilation::registerResolvedMethodSymbolReference(TR::SymbolReference
    }
 
 
-
-uint32_t OMR::Compilation::_widthToShift[] = { 0, 0, 1, 0, 2, 0, 0, 0, 3};
-
 bool OMR::Compilation::notYetRunMeansCold()
    {
    if (_optimizer && !((TR::Optimizer*)_optimizer)->isIlGenOpt())

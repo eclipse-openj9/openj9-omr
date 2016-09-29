@@ -965,8 +965,6 @@ public:
 #endif
 
    // To TransformUtil
-   // @deprecated Use TransformUtil::convertWidthToShift
-   static uint32_t convertWidthToShift(int32_t i) { return _widthToShift[i]; }
    void removeTree(TR::TreeTop * tt);
    void setStartTree(TR::TreeTop * tt);
 
@@ -976,9 +974,6 @@ public:
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
-
-   static uint32_t _widthToShift[];
-
 
 protected:
    TR::Options *_options;

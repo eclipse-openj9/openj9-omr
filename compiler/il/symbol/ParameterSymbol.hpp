@@ -28,7 +28,7 @@
 namespace TR
 {
 
-class ParameterSymbol : public OMR::ParameterSymbolConnector
+class OMR_EXTENSIBLE ParameterSymbol : public OMR::ParameterSymbolConnector
    {
 
 protected:

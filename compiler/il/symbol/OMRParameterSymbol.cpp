@@ -28,6 +28,12 @@
 #include "il/symbol/ParameterSymbol.hpp"  // for ParameterSymbol
 #include "infra/Flags.hpp"                // for flags32_t
 
+TR::ParameterSymbol *
+OMR::ParameterSymbol::self()
+   {
+   return static_cast<TR::ParameterSymbol*>(this);
+   }
+
 OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot) :
    TR::RegisterMappedSymbol(d),
    _registerIndex(-1),
@@ -39,8 +45,8 @@ OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t 
    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
    {
    _flags.setValue(KindMask, IsParameter);
-   _addressSize = convertTypeToSize(TR::Address);
-   setOffset(slot * convertTypeToSize(TR::Address));
+   _addressSize = TR::ParameterSymbol::convertTypeToSize(TR::Address);
+   self()->setOffset(slot * TR::ParameterSymbol::convertTypeToSize(TR::Address));
    }
 
 OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size) :
@@ -54,10 +60,21 @@ OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t 
    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
    {
    _flags.setValue(KindMask, IsParameter);
-   _addressSize = convertTypeToSize(TR::Address);
-   setOffset(slot * convertTypeToSize(TR::Address));
+   _addressSize = TR::ParameterSymbol::convertTypeToSize(TR::Address);
+   self()->setOffset(slot * TR::ParameterSymbol::convertTypeToSize(TR::Address));
    }
 
+void
+OMR::ParameterSymbol::setParameterOffset(int32_t o)
+   {
+   self()->setOffset(o);
+   }
+
+int32_t
+OMR::ParameterSymbol::getSlot()
+   {
+   return self()->getParameterOffset() / (uint32_t)_addressSize; // cast _addressSize explicity
+   }
 
 template <typename AllocatorType>
 TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataTypes d, bool isUnsigned, int32_t slot)

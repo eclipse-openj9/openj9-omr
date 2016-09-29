@@ -35,7 +35,7 @@ OMR::MethodSymbol::MethodSymbol(TR_LinkageConventions lc, TR_Method * m) :
 bool
 OMR::MethodSymbol::firstArgumentIsReceiver()
    {
-   if (isSpecial() || isVirtual() || isInterface() || isComputedVirtual())
+   if (self()->isSpecial() || self()->isVirtual() || self()->isInterface() || self()->isComputedVirtual())
       return true;
 
    return false;
@@ -48,6 +48,11 @@ OMR::MethodSymbol::self()
    return static_cast<TR::MethodSymbol *>(this);
    }
 
+bool
+OMR::MethodSymbol::isComputed()
+   {
+   return self()->isComputedStatic() || self()->isComputedVirtual();
+   }
 
 /**
  * Method Symbol Factory.

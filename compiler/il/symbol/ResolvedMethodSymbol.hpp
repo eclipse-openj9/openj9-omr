@@ -27,7 +27,7 @@ namespace TR { class Compilation; }
 namespace TR
 {
 
-class ResolvedMethodSymbol : public OMR::ResolvedMethodSymbolConnector
+class OMR_EXTENSIBLE ResolvedMethodSymbol : public OMR::ResolvedMethodSymbolConnector
    {
 
 protected:

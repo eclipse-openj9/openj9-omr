@@ -44,7 +44,7 @@ namespace OMR
 /**
  * A symbol with an adress
  */
-class StaticSymbol : public TR::Symbol
+class OMR_EXTENSIBLE StaticSymbol : public TR::Symbol
    {
 
 public:

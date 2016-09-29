@@ -556,14 +556,8 @@
    lnegSimplifier,          // TR::luneg
    ishlSimplifier,          // TR::iushl
    lshlSimplifier,          // TR::lushl
-   // 156923: Temporary workaround for X86 GCC bug
-#ifdef TR_HOST_X86
-   dftSimplifier,           // TR::f2iu
-   dftSimplifier,           // TR::f2lu
-#else
-   f2iSimplifier,
-   f2lSimplifier,
-#endif
+   f2iSimplifier,           // TR::f2iu
+   f2lSimplifier,           // TR::f2iu
    f2bSimplifier,           // TR::f2bu
    f2cSimplifier,           // TR::f2c
    d2iSimplifier,           // TR::d2iu

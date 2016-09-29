@@ -109,7 +109,6 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::brem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::srem
    TR::TreeEvaluator::integerDivOrRemEvaluator,         // TR::iurem
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::lurem
    TR::TreeEvaluator::integerNegEvaluator,              // TR::ineg
    TR::TreeEvaluator::integerPairNegEvaluator,         // TR::lneg
    TR::TreeEvaluator::fnegEvaluator,                    // TR::fneg

@@ -6723,7 +6723,7 @@ TR::Node *removeRedundantREM(TR_ValuePropagation *vp, TR::Node *node, TR_VPConst
          //    child prec=3 (i.e. max value is 999)
          //    iconst 1000
          //
-         // this doesn't work for unsigned (iurem/lurem) as these ops treat the operands as unsigned so, for example, a prec=1 dividend that is negative
+         // this doesn't work for unsigned (iurem) as these ops treat the operands as unsigned so, for example, a prec=1 dividend that is negative
          // when interpreted as unsigned will actually have 10 digits of precision (-1 would be 0xFFffFFff = 4,294,967,295)
          //
          return vp->replaceNode(node, node->getFirstChild(), vp->_curTree);
@@ -6860,66 +6860,6 @@ TR::Node *constrainLrem(TR_ValuePropagation *vp, TR::Node *node)
 
    return node;
    }
-
-TR::Node *constrainLurem(TR_ValuePropagation *vp, TR::Node *node)
-   {
-   if (findConstant(vp, node))
-      {
-      return node;
-      }
-   constrainChildren(vp, node);
-
-   bool lhsGlobal, rhsGlobal;
-   TR_VPConstraint *lhs = vp->getConstraint(node->getFirstChild(), lhsGlobal);
-   TR_VPConstraint *rhs = vp->getConstraint(node->getSecondChild(), rhsGlobal);
-   TR_VPConstraint *constraint = NULL;
-   lhsGlobal &= rhsGlobal;
-   if (lhs && lhs->asLongConst() &&
-       rhs && rhs->asLongConst())
-      {
-      //
-      // REMOVED AS IT WOULD LEAD TO AN ASSERT POST FORK
-      //
-      TR_ASSERT(0, "constrainLurem not supported");
-      }
-   else if (rhs && rhs->asLongConst() && lhs && lhs->asLongConstraint())
-      {
-      uint64_t lhsLow = lhs->asLongConstraint()->getUnsignedLowLong();
-      uint64_t lhsHigh = lhs->asLongConstraint()->getUnsignedHighLong();
-      uint64_t rhsConst = rhs->asLongConst()->getUnsignedLong();
-      if(lhsHigh > rhsConst)
-         constraint = TR_VPLongRange::create(vp,0,rhsConst);
-      else
-         constraint = TR_VPLongRange::create(vp,0,lhsHigh);
-
-      if (constraint)
-         {
-         bool didReduction = reduceLongOpToIntegerOp(vp, node, constraint);
-         vp->addBlockOrGlobalConstraint(node, constraint ,lhsGlobal);
-
-         if (didReduction)
-            return node;
-         }
-      }
-
-   if (vp->isHighWordZero(node))
-      node->setIsHighWordZero(true);
-
-   if (constraint && lhs && lhs->asLongConstraint() && rhs && rhs->asLongConstraint())
-      {
-      TR::Node *newNode = removeRedundantREM(vp, node, constraint, lhs, rhs);
-      if (NULL != newNode)
-         node = newNode;
-      }
-
-   checkForNonNegativeAndOverflowProperties(vp, node);
-
-   return node;
-   }
-
-
-
-
 
 TR::Node *constrainIneg(TR_ValuePropagation *vp, TR::Node *node)
    {

@@ -100,7 +100,6 @@ TR::Node *constrainLongConst(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLongStore(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLor(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLrem(TR_ValuePropagation *vp, TR::Node *node);
-TR::Node *constrainLurem(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLshl(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLshr(TR_ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainLushr(TR_ValuePropagation *vp, TR::Node *node);
@@ -246,7 +245,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::brem
    constrainChildren,        // TR::srem
    constrainIrem,            // TR::iurem
-   constrainLurem,            // TR::lurem
    constrainIneg,            // TR::ineg
    constrainLneg,            // TR::lneg
    constrainChildren,        // TR::fneg

@@ -490,9 +490,18 @@ OMR::Node::copyValidProperties(TR::Node *fromNode, TR::Node *toNode)
    }
 
 TR::Node *
-OMR::Node::recreateAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op)
+OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op)
    {
    return TR::Node::recreateAndCopyValidPropertiesImpl(originalNode, op, NULL);
+   }
+
+/**
+  * @deprecated Use TR::Node::recreate instead
+  */
+TR::Node *
+OMR::Node::recreateAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op)
+   {
+   return TR::Node::recreate(originalNode, op);
    }
 
 TR::Node *
@@ -502,7 +511,7 @@ OMR::Node::recreateWithSymRefAndCopyValidProperties(TR::Node *originalNode, TR::
    }
 
 /**
- * OMR::Node::recreateAndCopyValidProperties
+ * OMR::Node::recreate
  *
  * creates a new node with a new op, based on the originalNode, reusing the memory occupied by originalNode and returning the
  * same address as it.
@@ -3832,7 +3841,7 @@ OMR::Node::printIsReferenceArrayCopy()
 
 
 
-// OMR::Node::setOpCodeValue is now private, and deprecated. Use OMR::Node::recreateAndCopyValidProperties instead.
+// OMR::Node::setOpCodeValue is now private, and deprecated. Use OMR::Node::recreate instead.
 TR::ILOpCodes
 OMR::Node::setOpCodeValue(TR::ILOpCodes op)
    {

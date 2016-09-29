@@ -163,6 +163,7 @@ public:
    static TR::Node *copy(TR::Node *);
    static TR::Node *copy(TR::Node *, int32_t numChildren);
 
+   static TR::Node *recreate(TR::Node *originalNode, TR::ILOpCodes op);
    static TR::Node *recreateAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op);
    static TR::Node *recreateWithSymRefAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef);
 
@@ -1537,7 +1538,7 @@ public:
 // Protected functions
 protected:
 
-   /** setOpCodeValue is now private, and deprecated. Use recreateAndCopyValidProperties instead. */
+   /** setOpCodeValue is now private, and deprecated. Use recreate instead. */
    TR::ILOpCodes setOpCodeValue(TR::ILOpCodes op);
 
    // Misc helpers

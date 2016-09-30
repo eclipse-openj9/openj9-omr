@@ -111,7 +111,7 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::localCSE                                                                 },
    { OMR::treeSimplification,                        OMR::MarkLastRun              },
 #ifdef TR_HOST_S390
-   { OMR::longRegA llocation                                                       },
+   { OMR::longRegAllocation                                                        },
 #endif
    { OMR::andSimplification,                         OMR::IfEnabled                },  //clean up after versioner
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end

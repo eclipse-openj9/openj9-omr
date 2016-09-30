@@ -541,6 +541,18 @@ public:
 		/* check if the object in cached allocate (from GC perspective, evacuate) ranges */
 		return ((void *)objectPtr >= _evacuateSpaceBase) && ((void *)objectPtr < _evacuateSpaceTop);
 	}
+	
+	MMINLINE void *
+	getEvacuateBase()
+	{
+		return _evacuateSpaceBase;
+	}
+	
+	MMINLINE void *
+	getEvacuateTop()
+	{
+		return _evacuateSpaceTop;
+	}
 
 	void workThreadGarbageCollect(MM_EnvironmentStandard *env);
 

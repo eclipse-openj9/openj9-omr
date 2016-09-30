@@ -66,9 +66,9 @@ protected:
 
    RegisterMappedSymbol(int32_t o = 0);
 
-   RegisterMappedSymbol(TR::DataTypes d);
+   RegisterMappedSymbol(TR::DataType d);
 
-   RegisterMappedSymbol(TR::DataTypes d, uint32_t s);
+   RegisterMappedSymbol(TR::DataType d, uint32_t s);
 
    TR::RegisterMappedSymbol * self();
 
@@ -78,10 +78,10 @@ public:
    static TR::RegisterMappedSymbol * create(AllocatorType t, int32_t o = 0);
 
    template <typename AllocatorType>
-   static TR::RegisterMappedSymbol * create(AllocatorType m, TR::DataTypes d);
+   static TR::RegisterMappedSymbol * create(AllocatorType m, TR::DataType d);
 
    template <typename AllocatorType>
-   static TR::RegisterMappedSymbol * create(AllocatorType m, TR::DataTypes d, uint32_t s);
+   static TR::RegisterMappedSymbol * create(AllocatorType m, TR::DataType d, uint32_t s);
 
    int32_t getOffset()          {return _mappedOffset;}
    void    setOffset(int32_t o) {_mappedOffset = o;}

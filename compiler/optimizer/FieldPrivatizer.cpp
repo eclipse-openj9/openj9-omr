@@ -715,7 +715,7 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
 
    TR::ILOpCode &opCode = node->getOpCode();
    TR::DataType nodeType = node->getType();
-   TR::DataTypes nodeDataType = node->getDataType();
+   TR::DataType nodeDataType = node->getDataType();
 
    // privatize
    if (opCode.isStore() || opCode.isLoadVar())
@@ -1569,7 +1569,7 @@ void TR_FieldPrivatizer::privatizeElementCandidates()
          tempMap.Add(candidate.valueNum,tempSymRef);
          }
 
-      TR::DataTypes storedt = candidate.node->getDataType();
+      TR::DataType storedt = candidate.node->getDataType();
 
       // step 1, anchor the original store address calculation child
 

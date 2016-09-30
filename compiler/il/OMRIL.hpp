@@ -61,23 +61,23 @@ class OMR_EXTENSIBLE IL
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);
 
-   TR::ILOpCodes opCodeForConst(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForDirectLoad(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForDirectStore(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIndirectLoad(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIndirectStore(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIndirectArrayLoad(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIndirectArrayStore(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForRegisterLoad(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForRegisterStore(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForCompareEquals(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIfCompareEquals(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForCompareNotEquals(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIfCompareNotEquals(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForCompareLessThan(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIfCompareLessThan(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForCompareGreaterThan(TR::DataTypes dt);
-   TR::ILOpCodes opCodeForIfCompareGreaterThan(TR::DataTypes dt);
+   TR::ILOpCodes opCodeForConst(TR::DataType dt);
+   TR::ILOpCodes opCodeForDirectLoad(TR::DataType dt);
+   TR::ILOpCodes opCodeForDirectStore(TR::DataType dt);
+   TR::ILOpCodes opCodeForIndirectLoad(TR::DataType dt);
+   TR::ILOpCodes opCodeForIndirectStore(TR::DataType dt);
+   TR::ILOpCodes opCodeForIndirectArrayLoad(TR::DataType dt);
+   TR::ILOpCodes opCodeForIndirectArrayStore(TR::DataType dt);
+   TR::ILOpCodes opCodeForRegisterLoad(TR::DataType dt);
+   TR::ILOpCodes opCodeForRegisterStore(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareEquals(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareEquals(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareNotEquals(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareNotEquals(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareLessThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareLessThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareGreaterThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareGreaterThan(TR::DataType dt);
 
    };
 

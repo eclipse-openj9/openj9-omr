@@ -146,7 +146,7 @@ void OMR::X86::TreeEvaluator::insertPrecisionAdjustment(TR::Register      *reg,
                                                     TR::Node          *root,
                                                     TR::CodeGenerator *cg)
    {
-   TR::DataTypes    dt;
+   TR::DataType    dt;
    TR_X86OpCodes  opStore, opLoad;
    TR::Node        *node = root;
 

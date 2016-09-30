@@ -304,7 +304,7 @@ protected:
 
    bool alreadySaved(TR::RealRegister::RegNum regNum) { return false; }
 
-   static bool needsAlignment(TR::DataTypes dt, TR::CodeGenerator * cg);
+   static bool needsAlignment(TR::DataType dt, TR::CodeGenerator * cg);
    static int32_t getFirstMaskedBit(int16_t mask, int32_t from , int32_t to);
    static int32_t getLastMaskedBit(int16_t mask, int32_t from , int32_t to);
    static int32_t getFirstMaskedBit(int16_t mask);
@@ -425,8 +425,8 @@ enum TR_DispatchType
    virtual int64_t addFECustomizedReturnRegDependency(int64_t killMask, TR::Linkage* linkage, TR::DataType resType, TR::RegisterDependencyConditions * dependencies) {return killMask; }
    virtual int32_t buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, bool isFastJNI, int64_t killMask, TR::Register* &vftReg, bool PassReceiver = true);
    TR::Instruction * storeArgumentOnStack(TR::Node * callNode, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
-   TR::Instruction * storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataTypes argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
-   void loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataTypes argType, int32_t stackOffset, int32_t argsSize, int32_t numIntegerArgs, TR::Register* stackRegister);
+   TR::Instruction * storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataType argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
+   void loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataType argType, int32_t stackOffset, int32_t argsSize, int32_t numIntegerArgs, TR::Register* stackRegister);
 
    void setStrictestAutoSymbolAlignment(int32_t alignment, bool force=false)
       {
@@ -451,7 +451,7 @@ enum TR_DispatchType
    virtual bool isAggregateReturnedInIntRegistersAndMemory(int32_t aggregateLenth)   { return false; }
    virtual bool isAggregateReturnedInRegistersAndMemoryCall(TR::Node *callNode) { return false; }
 
-   virtual bool canDataTypeBePassedByReference(TR::DataTypes type);
+   virtual bool canDataTypeBePassedByReference(TR::DataType type);
    virtual bool isSymbolPassedByReference(TR::Symbol *sym);
 
    int32_t  isSpecialArgumentRegisters() { return ((_properties & SpecialArgumentRegisters) != 0) && (_numSpecialArgumentRegisters > 0); }

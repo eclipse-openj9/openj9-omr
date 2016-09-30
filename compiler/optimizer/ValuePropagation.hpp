@@ -107,7 +107,7 @@ class TR_ArraycopyTransformation : public TR::Optimization
    int64_t arraycopyHighFrequencySpecificLength(TR::Node* byteLenNode);
    TR::TreeTop* createPointerCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef);
    TR::TreeTop* createRangeCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef);
-//   int shiftAmount(TR::DataTypes type, TR::Node* node);
+//   int shiftAmount(TR::DataType type, TR::Node* node);
 
    TR::TreeTop* createMultipleArrayNodes(TR::TreeTop* arrayTreeTop, TR::Node* node);
    TR::TreeTop* tryToSpecializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode);
@@ -522,7 +522,7 @@ class TR_ValuePropagation : public TR::Optimization
    void mustTakeException();
    void processTrees(TR::TreeTop *startTree, TR::TreeTop *endTree);
    void transformArrayCopyCall(TR::Node *node);
-   bool canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &stride, TR::DataTypes &type );
+   bool canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &stride, TR::DataType &type );
    int32_t getPrimitiveArrayType(char primitiveArrayChar);
 
    bool canRunTransformToArrayCopy();
@@ -600,13 +600,13 @@ class TR_ValuePropagation : public TR::Optimization
       {
       TR_ALLOC(TR_Memory::ValuePropagation)
 
-      TR_RealTimeArrayCopy(TR::TreeTop *vcall, TR::DataTypes type, uint8_t b)
+      TR_RealTimeArrayCopy(TR::TreeTop *vcall, TR::DataType type, uint8_t b)
          : _treetop(vcall), _flag(b), _type(type)
          {}
 
       TR::TreeTop  *_treetop;
       uint8_t      _flag;
-      TR::DataTypes _type;
+      TR::DataType _type;
       };
 
    struct TR_ArrayCopySpineCheck
@@ -947,12 +947,12 @@ class TR_ValuePropagation : public TR::Optimization
  #if (defined(LINUX) && ( defined(TR_TARGET_X86) || defined(TR_TARGET_S390)))
   #if __GNUC__ > 4 || \
    (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataTypes dt) __attribute__((optimize(1)));
+   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt) __attribute__((optimize(1)));
   #else
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataTypes dt);
+   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
   #endif
  #else
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataTypes dt);
+   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
  #endif
    TR_UseDefInfo      *_useDefInfo;      // Cached use/def info
    TR_ValueNumberInfo *_valueNumberInfo; // Cached value number info
@@ -1098,7 +1098,7 @@ class TR_LocalValuePropagation : public TR_ValuePropagation
    TR::TreeTop *processBlock(TR::TreeTop *start);
    };
 
-TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataTypes type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode,TR::Node *strideShiftNode, TR::Node *hdrSize);
+TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataType type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode,TR::Node *strideShiftNode, TR::Node *hdrSize);
 TR::Node *generateArrayAddressTree(TR::Compilation* comp, TR::Node *node, int32_t offHigh, TR::Node *offNode, TR::Node *objNode, int32_t elementSize, TR::Node * &stride, TR::Node *hdrSize);
 TR::Node * createHdrSizeNode(TR::Compilation *comp, TR::Node *n);
 

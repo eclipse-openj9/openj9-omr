@@ -1999,7 +1999,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
 
                if (canCreateNewSymRef)
                   {
-                  TR::DataTypes dataType = findDataType(replacingNode, usingAladd, isInternalPointer);
+                  TR::DataType dataType = findDataType(replacingNode, usingAladd, isInternalPointer);
                   TR_ASSERT(dataType, "dataType cannot be NoType\n");
 
                   *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType, isInternalPointer);
@@ -2125,7 +2125,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
          if (canCreateNewSymRef)
             {
 
-            TR::DataTypes dataType = findDataType(replacingNode, usingAladd, isInternalPointer);
+            TR::DataType dataType = findDataType(replacingNode, usingAladd, isInternalPointer);
             TR_ASSERT(dataType, "dataType cannot be TR::NoType\n");
 
             *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType, isInternalPointer);
@@ -2310,9 +2310,9 @@ TR::Node *TR_LoopStrider::findReplacingNode(TR::Node *node, bool usingAladd, int
    }
 
 
-TR::DataTypes TR_LoopStrider::findDataType(TR::Node *node, bool usingAladd, bool isInternalPointer)
+TR::DataType TR_LoopStrider::findDataType(TR::Node *node, bool usingAladd, bool isInternalPointer)
    {
-   TR::DataTypes dataType = TR::NoType;
+   TR::DataType dataType = TR::NoType;
    if (!isInternalPointer)
       {
       // generate long symRefs if on 64-bit
@@ -4293,7 +4293,7 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
                // Only consider 32-bit integer autos. In particular note that
                // any temps newly created by the above recursive calls are
                // Int64, and their stores are all lstore.
-               TR::DataTypes ivType = storeTree->getNode()->getDataType();
+               TR::DataType ivType = storeTree->getNode()->getDataType();
                if (ivType != TR::Int32)
                   continue;
 
@@ -5171,7 +5171,7 @@ bool TR_LoopStrider::isAdditiveTermEquivalentTo(int32_t k, TR::Node * node)
    }
 
 
-TR::Node *TR_LoopStrider::duplicateMulTermNode(int32_t k, TR::Node *node, TR::DataTypes type)
+TR::Node *TR_LoopStrider::duplicateMulTermNode(int32_t k, TR::Node *node, TR::DataType type)
    {
    TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs);
    TR::Node *new_node = ((TR::Node*)(intptrj_t)_linearEquations[k][2])->duplicateTree();
@@ -6774,7 +6774,7 @@ TR_InductionVariableAnalysis::getEntryValue(TR::Block *block,
       {
       if (comp()->isLoopTransferDone())
          {
-         TR::DataTypes dataType = symRef->getSymbol()->getDataType();
+         TR::DataType dataType = symRef->getSymbol()->getDataType();
 
          TR::Node *dummyNode = TR::Node::create(NULL,
                                                 ((dataType == TR::Int32) ? TR::iconst : TR::lconst),

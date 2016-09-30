@@ -34,7 +34,7 @@ OMR::ParameterSymbol::self()
    return static_cast<TR::ParameterSymbol*>(this);
    }
 
-OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot) :
+OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot) :
    TR::RegisterMappedSymbol(d),
    _registerIndex(-1),
    _allocatedHigh(-1),
@@ -49,7 +49,7 @@ OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t 
    self()->setOffset(slot * TR::ParameterSymbol::convertTypeToSize(TR::Address));
    }
 
-OMR::ParameterSymbol::ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size) :
+OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size) :
    TR::RegisterMappedSymbol(d, (uint32_t)size), // cast argument size explicitly \TODO: Document why?
    _registerIndex(-1),
    _allocatedHigh(-1),
@@ -77,21 +77,21 @@ OMR::ParameterSymbol::getSlot()
    }
 
 template <typename AllocatorType>
-TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataTypes d, bool isUnsigned, int32_t slot)
+TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, bool isUnsigned, int32_t slot)
    {
    return new (m) TR::ParameterSymbol(d, isUnsigned, slot);
    }
 
 template <typename AllocatorType>
-TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size)
+TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, bool isUnsigned, int32_t slot, size_t size)
    {
    return new (m) TR::ParameterSymbol(d, isUnsigned, slot, size);
    }
 
 
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataTypes, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataTypes, bool, int32_t, size_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataTypes, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataTypes, bool, int32_t, size_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataTypes, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataTypes, bool, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, bool, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, bool, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, bool, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, bool, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, bool, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, bool, int32_t, size_t);

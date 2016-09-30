@@ -60,10 +60,10 @@ public:
    Symbol() :
       OMR::SymbolConnector() {}
 
-   Symbol(TR::DataTypes d) :
+   Symbol(TR::DataType d) :
       OMR::SymbolConnector(d) {}
 
-   Symbol(TR::DataTypes d, uint32_t s) :
+   Symbol(TR::DataType d, uint32_t s) :
       OMR::SymbolConnector(d,s) {}
 
    };

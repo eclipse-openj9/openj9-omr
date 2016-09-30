@@ -4081,7 +4081,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool max)
    {
    TR::Node *child  = node->getFirstChild();
-   TR::DataTypes data_type = child->getDataType();
+   TR::DataType data_type = child->getDataType();
    TR::DataType type = child->getType();
    TR::InstOpCode::Mnemonic move_op = type.isIntegral() ? TR::InstOpCode::mr : TR::InstOpCode::fmr;
    TR::InstOpCode::Mnemonic cmp_op;

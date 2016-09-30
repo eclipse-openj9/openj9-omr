@@ -44,7 +44,7 @@ class TR_IA32SystemLinkage : public TR_X86SystemLinkage
    int32_t layoutParm(TR::ParameterSymbol*, int32_t&, uint16_t&, uint16_t&, parmLayoutResult&);
    virtual TR::Register *buildVolatileAndReturnDependencies(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
    private:
-   virtual uint32_t getAlignment(TR::DataTypes);
+   virtual uint32_t getAlignment(TR::DataType);
    };
 
 #if 0

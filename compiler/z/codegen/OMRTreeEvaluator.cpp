@@ -1875,7 +1875,7 @@ generateS390FloatCompareAndBranchOps(TR::Node *node,
                                      TR::InstOpCode::S390BranchCondition &retBranchOpCond,
                                      TR::LabelSymbol *branchTarget)
    {
-   TR::DataTypes dataType = node->getFirstChild()->getDataType();
+   TR::DataType dataType = node->getFirstChild()->getDataType();
    TR_ASSERT(dataType == TR::Float ||
            dataType == TR::Double,
            "only floats are supported by this function");
@@ -2132,7 +2132,7 @@ generateS390DFPLongDoubleCompareAndBranchOps(TR::Node * node, TR::CodeGenerator 
    TR::Compilation *comp = cg->comp();
    bool isBranchGenerated = false;
 
-   TR::DataTypes dataType = node->getFirstChild()->getDataType();
+   TR::DataType dataType = node->getFirstChild()->getDataType();
    TR::InstOpCode::Mnemonic cmpOp = TR::InstOpCode::BAD;
    if (dataType == TR::DecimalDouble)
       cmpOp = TR::InstOpCode::CDTR;
@@ -3043,7 +3043,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
    TR::Instruction * returnInstruction = NULL;
    bool isBranchGenerated = false;
 
-   TR::DataTypes dataType = firstChild->getDataType();
+   TR::DataType dataType = firstChild->getDataType();
 
    if (TR::Float == dataType || TR::Double == dataType)
       return generateS390FloatCompareAndBranchOps(node, cg, fBranchOpCond, rBranchOpCond, retBranchOpCond, branchTarget);
@@ -3120,7 +3120,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
          isForward = true;
          }
 
-      TR::DataTypes constType = constNode->getDataType();
+      TR::DataType constType = constNode->getDataType();
 
       bool byteAddress = false;
       bool is64BitData = dataType == TR::Int64;
@@ -3477,7 +3477,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       // Answer:The only case where it can be different is in the compressed refs
       // build. an aload of a class pointer is 32-bits only.
       //
-      TR::DataTypes childType = secondChild->getDataType();
+      TR::DataType childType = secondChild->getDataType();
       if (childType == TR::Address)
          {
          isUnsignedCmp = true;
@@ -3706,7 +3706,7 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
    }
 
 TR::InstOpCode::Mnemonic
-getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, TR::DataTypes dataType, bool canUseImm8 )
+getOpCodeIfSuitableForCompareAndBranch(TR::CodeGenerator * cg, TR::Node * node, TR::DataType dataType, bool canUseImm8 )
    {
    // be pessimistic and signal we can't use compare and branch until we
    // determine otherwise.
@@ -3809,7 +3809,7 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
    if (isBranchToNodeWithDifferentHotnessLevel)
       return NULL;
 
-   TR::DataTypes dataType = constNode->getDataType();
+   TR::DataType dataType = constNode->getDataType();
    if (canUseImm8)
         {
 
@@ -4662,7 +4662,7 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
          {
          opBranchCond = generateS390CompareOps(node, cg, fBranchOpCond, rBranchOpCond);
          }
-      TR::DataTypes dataType = node->getFirstChild()->getDataType();
+      TR::DataType dataType = node->getFirstChild()->getDataType();
 
       // take care of global reg deps if we have them
       if (thirdChild)
@@ -11775,7 +11775,7 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             TR::ParameterSymbol * sym = child->getChild(i)->getSymbol()->getParmSymbol();
             if (sym != NULL)
                {
-               TR::DataTypes dt = sym->getDataType();
+               TR::DataType dt = sym->getDataType();
                TR::DataType type = dt;
 
                if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit() || !type.isInt64()) &&
@@ -12814,7 +12814,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
       return NULL;
       }
 
-   TR::DataTypes constType = constExpr->getDataType();
+   TR::DataType constType = constExpr->getDataType();
 
 
    if (constType == TR::Address)
@@ -19243,7 +19243,7 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg, vectorReg, memRef, getVectorElementSizeMask(vectorChild));
 
-   TR::DataTypes dt = vectorChild->getDataType();
+   TR::DataType dt = vectorChild->getDataType();
    bool isUnsigned = (!node->getType().isInt64() && node->isUnsigned());
    if (dt == TR::VectorDouble)
       {

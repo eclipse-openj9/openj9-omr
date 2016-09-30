@@ -342,7 +342,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    TR_RegisterKinds movRegisterKind(TR_MovDataTypes mdt);
 
-   TR_MovDataTypes movType(TR::DataTypes type)
+   TR_MovDataTypes movType(TR::DataType type)
       {
       switch(type)
          {

@@ -37,13 +37,13 @@ protected:
    AutomaticSymbol(int32_t o = 0) :
       OMR::AutomaticSymbolConnector() { }
 
-   AutomaticSymbol(TR::DataTypes d) :
+   AutomaticSymbol(TR::DataType d) :
       OMR::AutomaticSymbolConnector(d) { }
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s) :
+   AutomaticSymbol(TR::DataType d, uint32_t s) :
       OMR::AutomaticSymbolConnector(d, s) { }
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s, const char * name) :
+   AutomaticSymbol(TR::DataType d, uint32_t s, const char * name) :
       OMR::AutomaticSymbolConnector(d, s, name) { }
 
 private:

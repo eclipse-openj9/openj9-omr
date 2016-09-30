@@ -499,7 +499,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
    uint32_t  numFloatArgs = 0;
    uint32_t  numMemArgs = 0;
    uint32_t  firstArgumentChild = callNode->getFirstArgumentIndex();
-   TR::DataTypes callNodeDataType = callNode->getDataType();
+   TR::DataType callNodeDataType = callNode->getDataType();
    TR::DataType resType = callNode->getType();
    TR::MethodSymbol *callSymbol = callNode->getSymbol()->castToMethodSymbol();
 
@@ -641,7 +641,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
    for (i = from; (isHelper && i > to) || (!isHelper && i < to); i += step)
       {
       TR::Node               *child = callNode->getChild(i);
-      TR::DataTypes           childType = child->getDataType();
+      TR::DataType            childType = child->getDataType();
       TR::Register           *reg;
       TR::Register           *tempReg;
       TR::MemoryReference *tempMR;

@@ -109,10 +109,10 @@ public:
    uint32_t calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method);
 
    static uint32_t shiftFloatParmDescriptorFlag(uint32_t fieldVal, int32_t floatParmNum)  { return (fieldVal) << (6*(3-floatParmNum)); } // accepts floatParmNum values 0,1,2,3
-   bool updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataTypes dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset);
+   bool updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataType dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset);
 
    static uint32_t getFloatParmDescriptorFlag(uint32_t descriptorFields, int32_t floatParmNum)  { return  (descriptorFields >> (6*(3-floatParmNum))) & 0x3F; }
-   uint32_t calculateReturnValueAdjustFlag(TR::DataTypes dataType, int32_t aggregateLength);
+   uint32_t calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength);
    static uint32_t isFloatDescriptorFlagUnprototyped(uint32_t flag)  { return flag == 0; }
 
    virtual bool isEnvironmentSpecialArgumentRegister(int8_t linkageRegisterIndex)
@@ -173,7 +173,7 @@ public:
 
    virtual FrameType checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction = 0);
 
-   virtual bool canDataTypeBePassedByReference(TR::DataTypes type);
+   virtual bool canDataTypeBePassedByReference(TR::DataType type);
    virtual bool isSymbolPassedByReference(TR::Symbol *sym);
    };
 

@@ -93,7 +93,7 @@ class TR_ARMConstantDataSnippet
    uint8_t *setSnippetBinaryStart(uint8_t *p) {return _snippetBinaryStart=p;}
 
    int32_t addConstantRequest(void              *v,
-                           TR::DataTypes       type,
+                           TR::DataType       type,
                            TR::Instruction *nibble0,
                            TR::Instruction *nibble1,
                            TR::Instruction *nibble2,

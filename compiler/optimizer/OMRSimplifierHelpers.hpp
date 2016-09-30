@@ -107,7 +107,7 @@ void convertStringToZonedSeparate(char *result, int32_t resultLen, char *source,
 void convertStringToUnicode(char *result, int32_t resultLen, char *source, int32_t sourceLen);
 void convertStringToUnicodeSeparate(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading);
 TR::Node *removeOperandWidening(TR::Node *node, TR::Node *parent, TR::Block *block, TR::Simplifier * s);
-bool decodeConversionOpcode(TR::ILOpCode op, TR::DataTypes nodeDataType, TR::DataTypes &sourceDataType, TR::DataTypes &targetDataType);
+bool decodeConversionOpcode(TR::ILOpCode op, TR::DataType nodeDataType, TR::DataType &sourceDataType, TR::DataType &targetDataType);
 int32_t floatToInt(float value, bool roundUp);
 int32_t doubleToInt(double value, bool roundUp);
 void removePaddingNode(TR::Node *node, TR::Simplifier *s);

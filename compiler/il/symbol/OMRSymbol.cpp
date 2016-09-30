@@ -60,18 +60,18 @@ TR::Symbol * OMR::Symbol::create(AllocatorType m)
    }
 
 template <typename AllocatorType>
-TR::Symbol * OMR::Symbol::create(AllocatorType m, TR::DataTypes d)
+TR::Symbol * OMR::Symbol::create(AllocatorType m, TR::DataType d)
    {
    return new (m) TR::Symbol(d);
    }
 
 template <typename AllocatorType>
-TR::Symbol * OMR::Symbol::create(AllocatorType m, TR::DataTypes d, uint32_t s)
+TR::Symbol * OMR::Symbol::create(AllocatorType m, TR::DataType d, uint32_t s)
    {
    return new (m) TR::Symbol(d,s);
    }
 
-OMR::Symbol::Symbol(TR::DataTypes d) :
+OMR::Symbol::Symbol(TR::DataType d) :
    _size(0),
    _name(0),
    _flags(0),
@@ -82,7 +82,7 @@ OMR::Symbol::Symbol(TR::DataTypes d) :
    self()->setDataType(d);
    }
 
-OMR::Symbol::Symbol(TR::DataTypes d, uint32_t size) :
+OMR::Symbol::Symbol(TR::DataType d, uint32_t size) :
    _name(0),
    _flags(0),
    _flags2(0),
@@ -118,7 +118,7 @@ OMR::Symbol::getNumberOfSlots()
    return (numSlots? numSlots : 1);
    }
 
-TR::DataTypes
+TR::DataType
 OMR::Symbol::convertSigCharToType(char sigChar)
    {
    switch (sigChar)
@@ -143,7 +143,7 @@ OMR::Symbol::convertSigCharToType(char sigChar)
  * from the data type.
  */
 void
-OMR::Symbol::setDataType(TR::DataTypes dt)
+OMR::Symbol::setDataType(TR::DataType dt)
    {
    uint32_t inferredSize = TR::DataType::getSize(dt);
    if (inferredSize)
@@ -161,14 +161,14 @@ OMR::Symbol::getRoundedSize()
    }
 
 uint32_t
-OMR::Symbol::convertTypeToSize(TR::DataTypes dt)
+OMR::Symbol::convertTypeToSize(TR::DataType dt)
    {
    //TR_ASSERT(dt != TR::Aggregate, "Cannot be called for aggregates");
    return TR::DataType::getSize(dt);
    }
 
 uint32_t
-OMR::Symbol::convertTypeToNumberOfSlots(TR::DataTypes dt)
+OMR::Symbol::convertTypeToNumberOfSlots(TR::DataType dt)
    {
    return (dt == TR::Int64 || dt == TR::Double)? 2 : 1;
    }
@@ -948,7 +948,7 @@ TR::Symbol * OMR::Symbol::createShadow(AllocatorType m)
    }
 
 template <typename AllocatorType>
-TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataTypes d)
+TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataType d)
    {
    TR::Symbol * sym = new (m) TR::Symbol(d);
    sym->_flags.setValue(KindMask, IsShadow);
@@ -956,7 +956,7 @@ TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataTypes d)
    }
 
 template <typename AllocatorType>
-TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataTypes d, uint32_t s)
+TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataType d, uint32_t s)
    {
    TR::Symbol * sym = new (m) TR::Symbol(d,s);
    sym->_flags.setValue(KindMask, IsShadow);
@@ -964,7 +964,7 @@ TR::Symbol * OMR::Symbol::createShadow(AllocatorType m, TR::DataTypes d, uint32_
    }
 
 template <typename AllocatorType>
-TR::Symbol * OMR::Symbol::createNamedShadow(AllocatorType m, TR::DataTypes d, uint32_t s, char *name)
+TR::Symbol * OMR::Symbol::createNamedShadow(AllocatorType m, TR::DataType d, uint32_t s, char *name)
    {
    auto * sym = createShadow(m,d,s);
    sym->_name = name;
@@ -980,26 +980,26 @@ template TR::Symbol * OMR::Symbol::create(TR_StackMemory);
 template TR::Symbol * OMR::Symbol::create(TR_HeapMemory);
 template TR::Symbol * OMR::Symbol::create(PERSISTENT_NEW_DECLARE);
 
-template TR::Symbol * OMR::Symbol::create(TR_StackMemory, TR::DataTypes);
-template TR::Symbol * OMR::Symbol::create(TR_HeapMemory, TR::DataTypes);
-template TR::Symbol * OMR::Symbol::create(PERSISTENT_NEW_DECLARE, TR::DataTypes);
+template TR::Symbol * OMR::Symbol::create(TR_StackMemory, TR::DataType);
+template TR::Symbol * OMR::Symbol::create(TR_HeapMemory, TR::DataType);
+template TR::Symbol * OMR::Symbol::create(PERSISTENT_NEW_DECLARE, TR::DataType);
 
-template TR::Symbol * OMR::Symbol::create(TR_StackMemory, TR::DataTypes, uint32_t);
-template TR::Symbol * OMR::Symbol::create(TR_HeapMemory, TR::DataTypes, uint32_t);
-template TR::Symbol * OMR::Symbol::create(PERSISTENT_NEW_DECLARE, TR::DataTypes, uint32_t);
+template TR::Symbol * OMR::Symbol::create(TR_StackMemory, TR::DataType, uint32_t);
+template TR::Symbol * OMR::Symbol::create(TR_HeapMemory, TR::DataType, uint32_t);
+template TR::Symbol * OMR::Symbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, uint32_t);
 
 template TR::Symbol * OMR::Symbol::createShadow(TR_StackMemory);
 template TR::Symbol * OMR::Symbol::createShadow(TR_HeapMemory);
 template TR::Symbol * OMR::Symbol::createShadow(PERSISTENT_NEW_DECLARE);
 
-template TR::Symbol * OMR::Symbol::createShadow(TR_StackMemory,         TR::DataTypes);
-template TR::Symbol * OMR::Symbol::createShadow(TR_HeapMemory,          TR::DataTypes);
-template TR::Symbol * OMR::Symbol::createShadow(PERSISTENT_NEW_DECLARE, TR::DataTypes);
+template TR::Symbol * OMR::Symbol::createShadow(TR_StackMemory,         TR::DataType);
+template TR::Symbol * OMR::Symbol::createShadow(TR_HeapMemory,          TR::DataType);
+template TR::Symbol * OMR::Symbol::createShadow(PERSISTENT_NEW_DECLARE, TR::DataType);
 
-template TR::Symbol * OMR::Symbol::createShadow(TR_StackMemory,         TR::DataTypes, uint32_t);
-template TR::Symbol * OMR::Symbol::createShadow(TR_HeapMemory,          TR::DataTypes, uint32_t);
-template TR::Symbol * OMR::Symbol::createShadow(PERSISTENT_NEW_DECLARE, TR::DataTypes, uint32_t);
+template TR::Symbol * OMR::Symbol::createShadow(TR_StackMemory,         TR::DataType, uint32_t);
+template TR::Symbol * OMR::Symbol::createShadow(TR_HeapMemory,          TR::DataType, uint32_t);
+template TR::Symbol * OMR::Symbol::createShadow(PERSISTENT_NEW_DECLARE, TR::DataType, uint32_t);
 
-template TR::Symbol * OMR::Symbol::createNamedShadow(TR_StackMemory,         TR::DataTypes, uint32_t, char *);
-template TR::Symbol * OMR::Symbol::createNamedShadow(TR_HeapMemory,          TR::DataTypes, uint32_t, char *);
-template TR::Symbol * OMR::Symbol::createNamedShadow(PERSISTENT_NEW_DECLARE, TR::DataTypes, uint32_t, char *);
+template TR::Symbol * OMR::Symbol::createNamedShadow(TR_StackMemory,         TR::DataType, uint32_t, char *);
+template TR::Symbol * OMR::Symbol::createNamedShadow(TR_HeapMemory,          TR::DataType, uint32_t, char *);
+template TR::Symbol * OMR::Symbol::createNamedShadow(PERSISTENT_NEW_DECLARE, TR::DataType, uint32_t, char *);

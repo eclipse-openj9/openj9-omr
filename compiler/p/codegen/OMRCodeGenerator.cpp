@@ -2409,7 +2409,7 @@ void OMR::Power::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *ma
    }
 
 
-int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataTypes t,
+int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3)
    {
@@ -2418,7 +2418,7 @@ int32_t OMR::Power::CodeGenerator::findOrCreateFloatConstant(void *v, TR::DataTy
    return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, NULL, false));
    }
 
-int32_t OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTypes t,
+int32_t OMR::Power::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3,
                              TR::Node *node, bool isUnloadablePicSite)
@@ -2634,7 +2634,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
    bool gprCandidate = true;
    if ((sym->getDataType() == TR::Float) ||
        (sym->getDataType() == TR::Double) ||
-       isVectorType(sym->getDataType()))
+       sym->getDataType().isVector())
       gprCandidate = false;
 
    if (gprCandidate)
@@ -2692,7 +2692,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::pickRegister(TR_RegisterCandi
             bool gprCandidate = true;
             if ((prev->getSymbol()->getDataType() == TR::Float) ||
                 (prev->getSymbol()->getDataType() == TR::Double) ||
-                isVectorType(sym->getDataType()))
+                sym->getDataType().isVector())
                gprCandidate = false;
             if (gprCandidate && prev->getBlocksLiveOnEntry().get(liveBlockNum))
                {
@@ -2854,7 +2854,7 @@ int32_t OMR::Power::CodeGenerator::getMaximumNumberOfFPRsAllowedAcrossEdge(TR::N
    return 32; // pickRegister will ensure that the number of free registers isn't exceeded
    }
 
-TR_GlobalRegisterNumber OMR::Power::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type)
+TR_GlobalRegisterNumber OMR::Power::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)
    {
    TR_GlobalRegisterNumber result;
    if (type == TR::Float || type == TR::Double)
@@ -2864,7 +2864,7 @@ TR_GlobalRegisterNumber OMR::Power::CodeGenerator::getLinkageGlobalRegisterNumbe
       else
          result = _fprLinkageGlobalRegisterNumbers[linkageRegisterIndex];
       }
-   else if (isVectorType(type))
+   else if (type.isVector())
       TR_ASSERT(false, "assertion failure");    // TODO
    else
       {
@@ -3459,7 +3459,7 @@ TR::Instruction *OMR::Power::CodeGenerator::generateDebugCounterBump(TR::Instruc
    }
 
 
-bool OMR::Power::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt)
+bool OMR::Power::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
    return self()->machine()->getPPCRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;
    }
@@ -3516,7 +3516,7 @@ OMR::Power::CodeGenerator::freeAndResetTransientLongs()
 
 
 
-bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataTypes dt)
+bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
 
    // alignment issues

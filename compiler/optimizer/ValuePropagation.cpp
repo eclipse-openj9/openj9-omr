@@ -2722,7 +2722,7 @@ void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *con
    invalidateValueNumberInfo();
    invalidateUseDefInfo();
 
-   TR::DataTypes type = node->getDataType();
+   TR::DataType type = node->getDataType();
    TR_VPConstraint * shortConstraint = constraint->asShortConstraint();
    switch (type)
       {
@@ -3943,7 +3943,7 @@ void TR_ValuePropagation::getParmValues()
    for ( ; p; p = parms.getNext())
       {
       TR_ASSERT(!parmIterator->atEnd(), "Ran out of parameters unexpectedly.");
-      TR::DataTypes dataType = parmIterator->getDataType();
+      TR::DataType dataType = parmIterator->getDataType();
       if ((dataType == TR::Int8 || dataType == TR::Int16)
           && comp()->getOption(TR_AllowVPRangeNarrowingBasedOnDeclaredType))
          {
@@ -8068,7 +8068,7 @@ void TR_ValuePropagation::doDelayedTransformations()
 
      if (!recognizedStatic)
         {
-        TR::DataTypes dataType = origFirst->getDataType();
+        TR::DataType dataType = origFirst->getDataType();
         TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType, false, 0);
 
         TR::Node *astoreNode = TR::Node::createWithSymRef(TR::astore, 1, 1, ifNode->getFirstChild(), newSymbolReference);

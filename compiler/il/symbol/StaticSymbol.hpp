@@ -35,13 +35,13 @@ class OMR_EXTENSIBLE StaticSymbol : public OMR::StaticSymbolConnector
 
 protected:
 
-   StaticSymbol(TR::DataTypes d) :
+   StaticSymbol(TR::DataType d) :
       OMR::StaticSymbolConnector(d) { }
 
-   StaticSymbol(TR::DataTypes d, void * address) :
+   StaticSymbol(TR::DataType d, void * address) :
       OMR::StaticSymbolConnector(d,address) { }
 
-   StaticSymbol(TR::DataTypes d, uint32_t s) :
+   StaticSymbol(TR::DataType d, uint32_t s) :
       OMR::StaticSymbolConnector(d, s) { }
 
 private:

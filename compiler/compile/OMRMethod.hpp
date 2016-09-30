@@ -94,7 +94,7 @@ class TR_MethodParameterIterator
    {
 public:
    TR_ALLOC(TR_Memory::Method)
-   virtual TR::DataTypes getDataType() = 0;
+   virtual TR::DataType getDataType() = 0;
    virtual TR_OpaqueClassBlock * getOpaqueClass() = 0; //  if getDataType() == TR::Aggregate
    virtual bool isArray() = 0; // refines getOpaqueClass
    virtual bool isClass() = 0; // refines getOpaqueClass
@@ -116,12 +116,12 @@ class TR_Method
    enum Type {J9, Python, Ruby, Test, JitBuilder};
 
 
-   virtual TR::DataTypes parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
+   virtual TR::DataType parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
    virtual bool isConstructor(); // returns true if this method is object constructor.
    virtual TR::ILOpCodes directCallOpCode();
    virtual TR::ILOpCodes indirectCallOpCode();
 
-   virtual TR::DataTypes returnType();
+   virtual TR::DataType returnType();
    virtual uint32_t returnTypeWidth();
    virtual bool returnTypeIsUnsigned();
    virtual TR::ILOpCodes returnOpCode();

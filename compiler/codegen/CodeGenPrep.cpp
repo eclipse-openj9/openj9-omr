@@ -361,7 +361,7 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
  * will be thrownaway as part of the store.  Thus, we can mark the convert an unneeded.  Codegen can then
  * avoid generating the associated code.
  */
-void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::TreeTop * treeTop, vcount_t visitCount, TR::DataTypes storeType)
+void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::TreeTop * treeTop, vcount_t visitCount, TR::DataType storeType)
    {
    // *this    swipeable for debugging purposes
    parent->setVisitCount(visitCount);

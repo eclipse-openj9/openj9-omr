@@ -2638,7 +2638,7 @@ MemCpyAtomicMacroOp::generateLoop()
 
    return cursor;
    }
-MemCpyAtomicMacroOp::MemCpyAtomicMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator* cg, TR::DataTypes destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward , bool unroll , int32_t constLength): MemToMemTypedVarLenMacroOp(rootNode, dstNode, srcNode, cg, destType, lenReg, lenNode, isForward)
+MemCpyAtomicMacroOp::MemCpyAtomicMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator* cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward , bool unroll , int32_t constLength): MemToMemTypedVarLenMacroOp(rootNode, dstNode, srcNode, cg, destType, lenReg, lenNode, isForward)
    {
       static char * unrollFactor = feGetEnv("TR_ArrayCopyUnrollFactor");
       static char * trace = feGetEnv("TR_ArrayCopyTrace");

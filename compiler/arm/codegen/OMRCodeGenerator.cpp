@@ -681,7 +681,7 @@ void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
    }
 #endif
 
-int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTypes t,
+int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataType t,
                              TR::Instruction *n0, TR::Instruction *n1,
                              TR::Instruction *n2, TR::Instruction *n3,
                              TR::Instruction *n4,
@@ -924,7 +924,7 @@ int32_t OMR::ARM::CodeGenerator::getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Nod
    }
 
 #if 1
-TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type)
+TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)
    {
    TR_GlobalRegisterNumber result;
    if (type == TR::Float || type == TR::Double)
@@ -955,7 +955,7 @@ int32_t OMR::ARM::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
    return TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR  + 1;
    }
 
-bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt)
+bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
    return self()->machine()->getARMRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;
    }

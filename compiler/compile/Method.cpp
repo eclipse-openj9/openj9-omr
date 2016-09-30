@@ -257,10 +257,10 @@ bool TR_ResolvedMethod::isDAAIntrinsicMethod()
 #define notImplemented(A) TR_ASSERT(0, "TR_Method::%s is undefined", (A) )
 
 uint32_t              TR_Method::numberOfExplicitParameters() { notImplemented("numberOfExplicitParameters"); return 0; }
-TR::DataTypes        TR_Method::parmType(uint32_t)           { notImplemented("parmType"); return TR::NoType; }
+TR::DataType        TR_Method::parmType(uint32_t)           { notImplemented("parmType"); return TR::NoType; }
 TR::ILOpCodes          TR_Method::directCallOpCode()           { notImplemented("directCallOpCode"); return TR::BadILOp; }
 TR::ILOpCodes          TR_Method::indirectCallOpCode()         { notImplemented("indirectCallOpCode"); return TR::BadILOp; }
-TR::DataTypes        TR_Method::returnType()                 { notImplemented("returnType"); return TR::NoType; }
+TR::DataType        TR_Method::returnType()                 { notImplemented("returnType"); return TR::NoType; }
 bool                  TR_Method::returnTypeIsUnsigned()       { notImplemented("returnTypeIsUnsigned"); return TR::NoType;}
 uint32_t              TR_Method::returnTypeWidth()            { notImplemented("returnTypeWidth"); return 0; }
 TR::ILOpCodes          TR_Method::returnOpCode()               { notImplemented("returnOpCode"); return TR::BadILOp; }
@@ -316,10 +316,10 @@ TR_Method::isBigDecimalConvertersMethod(TR::Compilation * comp)
 TR_Method *  TR_ResolvedMethod::convertToMethod()                          { notImplemented("convertToMethod"); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfParameters()                       { notImplemented("numberOfParameters"); return 0; }
 uint32_t     TR_ResolvedMethod::numberOfExplicitParameters()               { notImplemented("numberOfExplicitParameters"); return 0; }
-TR::DataTypes TR_ResolvedMethod::parmType(uint32_t)                         { notImplemented("parmType"); return TR::NoType; }
+TR::DataType TR_ResolvedMethod::parmType(uint32_t)                         { notImplemented("parmType"); return TR::NoType; }
 TR::ILOpCodes TR_ResolvedMethod::directCallOpCode()                         { notImplemented("directCallOpCode"); return TR::BadILOp; }
 TR::ILOpCodes TR_ResolvedMethod::indirectCallOpCode()                       { notImplemented("indirectCallOpCode"); return TR::BadILOp; }
-TR::DataTypes TR_ResolvedMethod::returnType()                               { notImplemented("returnType"); return TR::NoType; }
+TR::DataType TR_ResolvedMethod::returnType()                               { notImplemented("returnType"); return TR::NoType; }
 uint32_t     TR_ResolvedMethod::returnTypeWidth()                          { notImplemented("returnTypeWidth"); return 0; }
 bool         TR_ResolvedMethod::returnTypeIsUnsigned()                     { notImplemented("returnTypeIsUnsigned"); return 0; }
 TR::ILOpCodes TR_ResolvedMethod::returnOpCode()                             { notImplemented("returnOpCode"); return TR::BadILOp; }
@@ -373,7 +373,7 @@ uint32_t     TR_ResolvedMethod::maxBytecodeIndex()                         { not
 void *       TR_ResolvedMethod::ramConstantPool()                          { notImplemented("ramConstantPool"); return 0; }
 void *       TR_ResolvedMethod::constantPool()                             { notImplemented("constantPool"); return 0; }
 
-TR::DataTypes TR_ResolvedMethod::getLDCType(int32_t)                        { notImplemented("getLDCType"); return TR::NoType; }
+TR::DataType TR_ResolvedMethod::getLDCType(int32_t)                        { notImplemented("getLDCType"); return TR::NoType; }
 bool         TR_ResolvedMethod::isClassConstant(int32_t cpIndex)           { notImplemented("isClassConstant"); return false; }
 bool         TR_ResolvedMethod::isStringConstant(int32_t cpIndex)          { notImplemented("isStringConstant"); return false; }
 bool         TR_ResolvedMethod::isMethodTypeConstant(int32_t cpIndex)      { notImplemented("isMethodTypeConstant"); return false; }
@@ -453,14 +453,14 @@ TR_ResolvedMethod::getUnresolvedVirtualMethodInCP(int32_t)
    }
 
 bool
-TR_ResolvedMethod::fieldAttributes(TR::Compilation *, int32_t, uint32_t *, TR::DataTypes *, bool *, bool *, bool *, bool, bool *, bool)
+TR_ResolvedMethod::fieldAttributes(TR::Compilation *, int32_t, uint32_t *, TR::DataType *, bool *, bool *, bool *, bool, bool *, bool)
    {
    notImplemented("fieldAttributes");
    return false;
    }
 
 bool
-TR_ResolvedMethod::staticAttributes(TR::Compilation *, int32_t, void * *, TR::DataTypes *, bool *, bool *, bool *, bool, bool *, bool)
+TR_ResolvedMethod::staticAttributes(TR::Compilation *, int32_t, void * *, TR::DataType *, bool *, bool *, bool *, bool, bool *, bool)
    {
    notImplemented("staticAttributes");
    return false;
@@ -574,7 +574,7 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
    uint32_t parmSlots = numberOfParameterSlots();
    for (int32_t parmIndex = 0; slot < parmSlots; ++parmIndex)
       {
-      TR::DataTypes type = parmType(parmIndex);
+      TR::DataType type = parmType(parmIndex);
       int32_t size = methodSym->convertTypeToSize(type);
       if (size < 4) type = TR::Int32;
 

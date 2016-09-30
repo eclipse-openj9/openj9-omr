@@ -192,7 +192,7 @@ public:
    // J9 Classes / VM?
    // --------------------------------------------------------------------------
 
-   virtual TR::DataTypes dataTypeForLoadOrStore(TR::DataTypes dt) { return dt; }
+   virtual TR::DataType dataTypeForLoadOrStore(TR::DataType dt) { return dt; }
 
    virtual TR_OpaqueClassBlock * getClassClassPointer(TR_OpaqueClassBlock *objectClassPointer);
    virtual TR_OpaqueClassBlock * getClassFromMethodBlock(TR_OpaqueMethodBlock *mb);

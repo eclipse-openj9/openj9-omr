@@ -227,7 +227,7 @@ public:
    TR_BitVector &          getBlocksLiveWithinGenSetsOnly() { return _liveWithinGenSetsOnly; }
    TR::Symbol *            getSymbol();
 
-   TR::DataTypes           getDataType();
+   TR::DataType           getDataType();
    TR::DataType            getType();
    bool                    rcNeeds2Regs(TR::Compilation *);
    TR_RegisterKinds        getRegisterKinds();

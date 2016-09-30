@@ -166,7 +166,7 @@ class TR_LoopStrider : public TR_LoopTransformer
    void createParmAutoPair(TR::SymbolReference *parmSymRef, TR::SymbolReference *autoSymRef);
 
    TR::Node *findReplacingNode(TR::Node *node, bool usingAladd, int32_t k);
-   TR::DataTypes findDataType(TR::Node *node, bool usingAladd, bool isInternalPointer);
+   TR::DataType findDataType(TR::Node *node, bool usingAladd, bool isInternalPointer);
    void placeStore(TR::Node *newStore, TR::Block *loopInvariantBlock);
    void setInternalPointer(TR::Symbol *symbol, TR::AutomaticSymbol *pinningArrayPointer);
    void populateLinearEquation(TR::Node *node, int32_t loopDrivingInductionVar, int32_t derivedInductionVar, int32_t internalPointerSymbol, TR::Node *invariantMultiplicationTerm);
@@ -241,7 +241,7 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    void    setAdditiveTermNode (TR::Node *node, int32_t k) { TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs); _linearEquations[k][3] = (intptrj_t) node; }
    TR::Node *getAdditiveTermNode(int32_t k) { TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs); return (TR::Node*)(intptrj_t)_linearEquations[k][3]; }
-   TR::Node *duplicateAdditiveTermNode(int32_t k, TR::Node *node, TR::DataTypes type)
+   TR::Node *duplicateAdditiveTermNode(int32_t k, TR::Node *node, TR::DataType type)
       {
       TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs);
       TR::Node *new_node = ((TR::Node*)(intptrj_t)_linearEquations[k][3])->duplicateTree();
@@ -266,7 +266,7 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    void    setMulTermNode (TR::Node *node, int32_t k) { TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs); _linearEquations[k][2] = (intptrj_t) node; }
    TR::Node *getMulTermNode(int32_t k) { TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",k,_numberOfLinearExprs); return (TR::Node*)(intptrj_t)_linearEquations[k][2]; }
-   TR::Node *duplicateMulTermNode(int32_t k, TR::Node *node, TR::DataTypes type);
+   TR::Node *duplicateMulTermNode(int32_t k, TR::Node *node, TR::DataType type);
    bool isMulTermConst(int32_t k)
       {
       TR_ASSERT(k < _numberOfLinearExprs, "index k %d exceeds _numberOfLinearExprs %d!\n",

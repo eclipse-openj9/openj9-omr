@@ -71,7 +71,7 @@ TR::TreeTop *
 OMR::TreeTop::createIncTree(TR::Compilation * comp, TR::Node *node, TR::SymbolReference * symRef, int32_t incAmount, TR::TreeTop *precedingTreeTop, bool isRecompCounter)
    {
    TR::StaticSymbol * symbol = symRef->getSymbol()->castToStaticSymbol();
-   TR::DataTypes type = symbol->getDataType();
+   TR::DataType type = symbol->getDataType();
    TR::Node * storeNode;
    if (comp->cg()->getAccessStaticsIndirectly() && !symRef->isUnresolved() && type != TR::Address)
       {
@@ -100,7 +100,7 @@ TR::TreeTop *
 OMR::TreeTop::createResetTree(TR::Compilation * comp, TR::Node *node, TR::SymbolReference * symRef, int32_t resetAmount, TR::TreeTop *precedingTreeTop, bool isRecompCounter)
    {
    TR::StaticSymbol * symbol = symRef->getSymbol()->castToStaticSymbol();
-   TR::DataTypes type = symbol->getDataType();
+   TR::DataType type = symbol->getDataType();
    TR::Node * storeNode;
    if (comp->cg()->getAccessStaticsIndirectly() && !symRef->isUnresolved() && type != TR::Address)
       {

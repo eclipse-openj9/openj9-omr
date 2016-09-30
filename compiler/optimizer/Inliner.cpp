@@ -182,9 +182,9 @@ OMR_InlinerPolicy::getInitialBytecodeSize(TR_ResolvedMethod *feMethod, TR::Resol
    return size;
    }
 
-TR::DataTypes getStoreType(TR::Node *store, TR::Symbol *addrSymbol, TR::Compilation *comp)
+TR::DataType getStoreType(TR::Node *store, TR::Symbol *addrSymbol, TR::Compilation *comp)
    {
-   TR::DataTypes storeType = addrSymbol->getDataType();
+   TR::DataType storeType = addrSymbol->getDataType();
    return storeType;
    }
 
@@ -2772,7 +2772,7 @@ TR_TransformInlinedFunction::transform()
    // walking the trees [this is possible, for example if the callee ends with a 'throw'
    // instead of returning a value]; then create a zero const node (of the return type of the
    // callee) and make this the result
-   TR::DataTypes returnType = _calleeSymbol->getMethod()->returnType();
+   TR::DataType returnType = _calleeSymbol->getMethod()->returnType();
    if (!_resultNode && returnType != TR::NoType && !_simpleCallReferenceTreeTop &&
          _callNode->getReferenceCount() > 1)
       {
@@ -3131,7 +3131,7 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
    for (MultiplyReferencedNode * ref = _multiplyReferencedNodes.getFirst(); ref; ref = ref->getNext())
       {
       TR::ILOpCode opcode = ref->_node->getOpCode();
-      TR::DataTypes nodeDataType = ref->_node->getDataType();
+      TR::DataType nodeDataType = ref->_node->getDataType();
 
       ref->_replacementSymRef = 0;
       ref->_isConst = false;
@@ -3343,7 +3343,7 @@ TR::TreeTop * OMR_InlinerUtil::storeValueInATemp(
    List<TR::SymbolReference> * availableTemps2, bool behavesLikeTemp, TR::TreeTop ** newStoreValueTreeTop,
    bool isIndirect, int32_t offset)
    {
-   TR::DataTypes dataType = value->getDataType();
+   TR::DataType dataType = value->getDataType();
 
    bool internalPtrHasPinningArrayPtr = false;
 

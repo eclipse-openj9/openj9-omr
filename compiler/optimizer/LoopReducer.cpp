@@ -1051,9 +1051,9 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
          src = TR::Node::create(op_add, 2, src, TR::Node::create(src, op_const, 0, offset));
 
       arraycopy = TR::Node::createArraycopy(src, dst, imul->duplicateTree());
-      TR::DataTypes arraycopyElementType = storeNode->getDataType();
+      TR::DataType arraycopyElementType = storeNode->getDataType();
 #ifdef J9_PROJECT_SPECIFIC
-      if (isBCDType(arraycopyElementType))
+      if (arraycopyElementType.isBCD())
          {
          switch (storeNode->getSize())
             {

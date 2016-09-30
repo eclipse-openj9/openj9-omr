@@ -239,7 +239,7 @@ bool TR_GlobalRegisterAllocator::isSymRefAvailable(TR::SymbolReference *symRef, 
    return true;
    }
 
-bool TR_GlobalRegisterAllocator::allocateForType(TR::DataTypes dt)
+bool TR_GlobalRegisterAllocator::allocateForType(TR::DataType dt)
    {
    return true;
    }
@@ -971,7 +971,7 @@ TR_GlobalRegisterAllocator::transformBlock(TR::TreeTop * tt)
 
 
 TR::Node *
-TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::DataTypes oldType, TR::Node *newNode)
+TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::DataType oldType, TR::Node *newNode)
    {
    return resolveTypeMismatch(oldType, NULL, newNode);
    }
@@ -983,7 +983,7 @@ TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::Node *oldNode, TR::Node *new
    }
 
 TR::Node *
-TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::DataTypes inputOldType, TR::Node *oldNode, TR::Node *newNode)
+TR_GlobalRegisterAllocator::resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode)
    {
    return newNode;
    }
@@ -1524,7 +1524,7 @@ TR_GlobalRegisterAllocator::transformNode(
                TR::Node * child = node->getFirstChild();
                TR::Node *newNode = NULL;
                   {
-                  TR::DataTypes regStoreType = node->getDataType();
+                  TR::DataType regStoreType = node->getDataType();
                   newNode = TR::Node::create(comp()->il.opCodeForRegisterStore(regStoreType), 1, child);
                   newNode->setRegLoadStoreSymbolReference(symRef);
                   }
@@ -1546,7 +1546,7 @@ TR_GlobalRegisterAllocator::transformNode(
                {
                origStoreToMetaData = NULL;
                   {
-                  TR::DataTypes regStoreType = node->getDataType();
+                  TR::DataType regStoreType = node->getDataType();
                   TR::Node::recreate(node, comp()->il.opCodeForRegisterStore(regStoreType));
                   }
 
@@ -2988,7 +2988,7 @@ TR::Node *
 TR_GlobalRegister::createLoadFromRegister(TR::Node * n, TR::Compilation *comp)
    {
    TR_RegisterCandidate * rc = getCurrentRegisterCandidate();
-   TR::DataTypes dt = rc->getDataType();
+   TR::DataType dt = rc->getDataType();
    if (dt == TR::Aggregate)
       {
       switch (rc->getSymbol()->getSize())
@@ -3028,7 +3028,7 @@ TR_GlobalRegister::createStoreToRegister(TR::TreeTop * prevTreeTop, TR::Node *no
    TR_RegisterCandidate * rc = getCurrentRegisterCandidate();
    TR::Node * load = NULL;
 
-   TR::DataTypes dt = rc->getDataType();
+   TR::DataType dt = rc->getDataType();
    if (dt == TR::Aggregate)
       {
       switch (rc->getSymbol()->getSize())
@@ -5278,7 +5278,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
 
                if (candidateIsLiveOnExit)
                   {
-                  TR::DataTypes dt = symRef->getSymbol()->getDataType();
+                  TR::DataType dt = symRef->getSymbol()->getDataType();
                   bool isFloat = (dt == TR::Float
                                   || dt == TR::Double
 #ifdef J9_PROJECT_SPECIFIC
@@ -5388,7 +5388,7 @@ TR_LiveRangeSplitter::replaceAutosUsedIn(
          TR::SymbolReference *origSymRef = symRef;
          if (!correspondingSymRefCandidate)
             {
-            TR::DataTypes dt = symRef->getSymbol()->getDataType();
+            TR::DataType dt = symRef->getSymbol()->getDataType();
             bool isFloat = (dt == TR::Float
                             || dt == TR::Double
 #ifdef J9_PROJECT_SPECIFIC

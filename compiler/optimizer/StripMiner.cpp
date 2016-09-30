@@ -1767,7 +1767,7 @@ void TR_StripMiner::examineNode(LoopInfo *li, TR::Node *parent, TR::Node *node,
             }
          if (foundArrayAccess)
             {
-            TR::DataTypes type = symbol->getDataType();
+            TR::DataType type = symbol->getDataType();
             intptrj_t dataSize = TR::Symbol::convertTypeToSize(type);
             if (comp()->useCompressedPointers() && (type == TR::Address))
                dataSize = TR::Compiler->om.sizeofReferenceField();

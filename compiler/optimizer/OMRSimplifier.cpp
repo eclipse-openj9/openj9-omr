@@ -553,8 +553,8 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
 
       if (node->hasSourcePrecision())
          childP = node->getSourcePrecision();
-      else if (TR::DataType::canGetMaxPrecisionFromType(firstChild->getDataType()))
-         childP = TR::DataType::getMaxPrecisionFromType(firstChild->getDataType());
+      else if (firstChild->getDataType().canGetMaxPrecisionFromType())
+         childP = firstChild->getDataType().getMaxPrecisionFromType();
 
       if (childP < nodeP && childP < grandChildP)
          {
@@ -570,8 +570,8 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
       //   l2dd
       //     lX
       // Folding could give an incorrect result because the max precision of a dd is 16 and the max precision of an l is 19
-      if (TR::DataType::canGetMaxPrecisionFromType(node->getDataType()) && TR::DataType::canGetMaxPrecisionFromType(firstChild->getDataType()) &&
-          TR::DataType::getMaxPrecisionFromType(node->getDataType()) > TR::DataType::getMaxPrecisionFromType(firstChild->getDataType()))
+      if (node->getDataType().canGetMaxPrecisionFromType() && firstChild->getDataType().canGetMaxPrecisionFromType() &&
+          node->getDataType().getMaxPrecisionFromType() > firstChild->getDataType().getMaxPrecisionFromType())
          {
          if (trace())
             traceMsg(comp(),"disallow unaryCancel of node %p and firstChild %p due to intermediate truncation of node\n",node,firstChild);
@@ -709,9 +709,9 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
          int32_t childP = firstChild->getDecimalPrecision();
          int32_t grandChildP = TR::DataType::getMaxPackedDecimalPrecision();
 
-         if (TR::DataType::canGetMaxPrecisionFromType(node->getDataType()))
+         if (node->getDataType().canGetMaxPrecisionFromType())
             {
-            nodeP = TR::DataType::getMaxPrecisionFromType(node->getDataType());
+            nodeP = node->getDataType().getMaxPrecisionFromType();
             grandChildP = nodeP;
             }
          if (firstChild->hasSourcePrecision())

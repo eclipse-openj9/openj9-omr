@@ -1002,7 +1002,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerStoreEvaluator(TR::Node *node, TR:
                {
                TR_RematerializableTypes type;
 
-               // This is why we should use TR::DataTypes in place of TR_RematerializableTypes...
+               // This is why we should use TR::DataType in place of TR_RematerializableTypes...
                //
                switch (node->getDataType())
                   {
@@ -2730,7 +2730,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
 
    // Call the appropriate helper entry point
    //
-   TR::DataTypes dt = node->getArrayCopyElementType();
+   TR::DataType dt = node->getArrayCopyElementType();
    uint32_t elementSize;
    if (dt == TR::Address)
       elementSize = TR::Compiler->om.sizeofReferenceField();

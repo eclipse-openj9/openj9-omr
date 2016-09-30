@@ -796,7 +796,7 @@ OMR::Power::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
       }
    }
 
-TR_ReturnInfo OMR::Power::Linkage::getReturnInfoFromReturnType(TR::DataTypes returnType)
+TR_ReturnInfo OMR::Power::Linkage::getReturnInfoFromReturnType(TR::DataType returnType)
    {
    switch (returnType)
       {

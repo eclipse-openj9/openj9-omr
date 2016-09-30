@@ -85,10 +85,10 @@ public:
    static TR::Symbol * create(AllocatorType);
 
    template <typename AllocatorType>
-   static TR::Symbol * create(AllocatorType, TR::DataTypes);
+   static TR::Symbol * create(AllocatorType, TR::DataType);
 
    template <typename AllocatorType>
-   static TR::Symbol * create(AllocatorType, TR::DataTypes, uint32_t);
+   static TR::Symbol * create(AllocatorType, TR::DataType, uint32_t);
 
 protected:
 
@@ -108,13 +108,13 @@ protected:
     * Create symbol of specified data type, inferring size
     * from type.
     */
-   Symbol(TR::DataTypes d);
+   Symbol(TR::DataType d);
 
    /**
     * Create symbol of specified data type, inferring size
     * from type.
     */
-   Symbol(TR::DataTypes d, uint32_t size);
+   Symbol(TR::DataType d, uint32_t size);
 
 public:
    /**
@@ -177,11 +177,11 @@ public:
 
    bool isReferenced();
 
-   static uint32_t convertTypeToSize(TR::DataTypes dt);
+   static uint32_t convertTypeToSize(TR::DataType dt);
 
-   static uint32_t convertTypeToNumberOfSlots(TR::DataTypes dt);
+   static uint32_t convertTypeToNumberOfSlots(TR::DataType dt);
 
-   static TR::DataTypes convertSigCharToType(char sigChar);
+   static TR::DataType convertSigCharToType(char sigChar);
 
    /**
     * Field functions
@@ -207,8 +207,8 @@ public:
     * Flag functions
     */
 
-   void          setDataType(TR::DataTypes dt);
-   TR::DataTypes getDataType() { return (TR::DataTypes)_flags.getValue(DataTypeMask);}
+   void          setDataType(TR::DataType dt);
+   TR::DataType  getDataType() { return (TR::DataTypes)_flags.getValue(DataTypeMask);}
    TR::DataType  getType();
 
    int32_t getKind()             { return _flags.getValue(KindMask);}
@@ -579,10 +579,10 @@ public:
    static TR::Symbol * createShadow(AllocatorType m);
 
    template <typename AllocatorType>
-   static TR::Symbol * createShadow(AllocatorType m, TR::DataTypes d);
+   static TR::Symbol * createShadow(AllocatorType m, TR::DataType d);
 
    template <typename AllocatorType>
-   static TR::Symbol * createShadow(AllocatorType m, TR::DataTypes d, uint32_t );
+   static TR::Symbol * createShadow(AllocatorType m, TR::DataType d, uint32_t );
 
    /**
     * TR_NamedShadowSymbol
@@ -594,7 +594,7 @@ public:
 public:
 
    template <typename AllocatorType>
-   static TR::Symbol * createNamedShadow(AllocatorType m, TR::DataTypes d, uint32_t s, char *name = NULL);
+   static TR::Symbol * createNamedShadow(AllocatorType m, TR::DataType d, uint32_t s, char *name = NULL);
 
    /** @} */
 

@@ -229,7 +229,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
    TR::Node *fillNode = node->getSecondChild();
    TR::Node *lenNode = node->getChild(2);
    uint32_t fillNodeSize = fillNode->getSize();
-   TR::DataTypes fillNodeType = fillNode->getDataType();
+   TR::DataType fillNodeType = fillNode->getDataType();
    bool constLength = lenNode->getOpCode().isLoadConst();
    int32_t length = constLength ? lenNode->getInt() : 0;
    bool constFill = fillNode->getOpCode().isLoadConst();
@@ -894,7 +894,7 @@ static void arraysetConstLen(TR::Node *node, TR::Node *addrNode, TR::Node *elemN
    TR::Register *elemReg;
    int elemSize = getElementSize(elemNode, cg);
    int elemIsConst = elemNode->getOpCode().isLoadConst();
-   TR::DataTypes data_type = elemNode->getDataType();
+   TR::DataType data_type = elemNode->getDataType();
    TR::DataType type = elemNode->getType();
    if (data_type == TR::Address)
       data_type = TR::Compiler->target.is64Bit() ? TR_SInt64 : TR_SInt32;
@@ -1132,7 +1132,7 @@ static void arraysetConstElemAlign8(TR::Node *node, TR::Node *addrNode, TR::Node
    TR::Register *fp2Reg = cg->allocateRegister(TR_FPR);
    TR::Register *constBaseReg = cg->allocateRegister(TR_GPR);
 
-   TR::DataTypes data_type = elemNode->getDataType();
+   TR::DataType data_type = elemNode->getDataType();
    TR::DataType type = elemNode->getType();
    if (data_type == TR::Address)
       data_type = TR::Compiler->target.is64Bit() ? TR_SInt64 : TR_SInt32;
@@ -1352,7 +1352,7 @@ static void arraysetGeneric(TR::Node *node, TR::Node *addrNode, TR::Node *elemNo
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *tmpReg=cg->allocateRegister();
 
-   TR::DataTypes data_type = elemNode->getDataType();
+   TR::DataType data_type = elemNode->getDataType();
    TR::DataType type = elemNode->getType();
    if (data_type == TR::Address)
       data_type = TR::Compiler->target.is64Bit() ? TR_SInt64 : TR_SInt32;
@@ -6823,7 +6823,7 @@ static int arraycmpEstimateElementSize(TR::Node *lenNode, TR::CodeGenerator *cg)
 static int getElementSize(TR::Node *elemNode, TR::CodeGenerator *cg)
    {
    int sz;
-   TR::DataTypes data_type = elemNode->getDataType();
+   TR::DataType data_type = elemNode->getDataType();
    if (data_type == TR::Address)
       data_type = TR::Compiler->target.is64Bit() ? TR_SInt64 : TR_SInt32;
    switch (data_type)

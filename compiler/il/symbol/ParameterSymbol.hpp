@@ -33,10 +33,10 @@ class OMR_EXTENSIBLE ParameterSymbol : public OMR::ParameterSymbolConnector
 
 protected:
 
-   ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot) :
+   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot) :
       OMR::ParameterSymbolConnector(d, isUnsigned, slot) { }
 
-   ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size) :
+   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size) :
       OMR::ParameterSymbolConnector(d, isUnsigned, slot, size) { }
 
 private:

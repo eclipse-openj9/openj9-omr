@@ -392,7 +392,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool hasComplexAddressingMode() { return false; } // no virt, default
    void removeUnusedLocals();
 
-   void identifyUnneededByteConvNodes(TR::Node*, TR::TreeTop *, vcount_t, TR::DataTypes);
+   void identifyUnneededByteConvNodes(TR::Node*, TR::TreeTop *, vcount_t, TR::DataType);
    void identifyUnneededByteConvNodes();
 
    bool afterRA() { return _afterRA; }
@@ -846,8 +846,8 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // GRA
    //
-   void addSymbolAndDataTypeToMap(TR::Symbol *symbol, TR::DataTypes dt);
-   TR::DataTypes getDataTypeFromSymbolMap(TR::Symbol *symbol);
+   void addSymbolAndDataTypeToMap(TR::Symbol *symbol, TR::DataType dt);
+   TR::DataType getDataTypeFromSymbolMap(TR::Symbol *symbol);
 
    bool prepareForGRA(); // no virt, cast
 
@@ -935,7 +935,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool is8BitGlobalGPR(TR_GlobalRegisterNumber n) {return n <= _last8BitGlobalGPR;}
 
-   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type){ return -1; } // no virt, cast
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type){ return -1; } // no virt, cast
    TR_BitVector *getGlobalGPRsPreservedAcrossCalls(){ return NULL; } // no virt, cast
    TR_BitVector *getGlobalFPRsPreservedAcrossCalls(){ return NULL; } // no virt, cast
 
@@ -957,7 +957,7 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t getMaximumNumbersOfAssignableFPRs() { return INT_MAX; } // no virt, cast
    int32_t getMaximumNumbersOfAssignableVRs()  { return INT_MAX; } // no virt, cast
    virtual bool willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR::Compilation *comp){ return true;}
-   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber, TR::DataTypes) { return true; } // no virt
+   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber, TR::DataType) { return true; } // no virt
 
    bool areAssignableGPRsScarce(); // no virt, 1 impl
 
@@ -978,7 +978,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool needToAvoidCommoningInGRA() {return false;} // no virt
 
    bool considerTypeForGRA(TR::Node *node) {return true;} // no virt
-   bool considerTypeForGRA(TR::DataTypes dt) {return true;} // no virt
+   bool considerTypeForGRA(TR::DataType dt) {return true;} // no virt
    bool considerTypeForGRA(TR::SymbolReference *symRef) {return true;} // no virt
 
    void enableLiteralPoolRegisterForGRA () {} // no virt
@@ -1082,7 +1082,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
 
 
-   TR::SymbolReference * allocateLocalTemp(TR::DataTypes dt = TR::Int32, bool isInternalPointer = false);
+   TR::SymbolReference * allocateLocalTemp(TR::DataType dt = TR::Int32, bool isInternalPointer = false);
 
    // --------------------------------------------------------------------------
    // Relocations
@@ -1387,7 +1387,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportsNativeLongOperations();
 
 
-   TR::DataTypes IntJ() { return TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32; }
+   TR::DataType IntJ() { return TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32; }
 
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; } // no virt
@@ -1563,7 +1563,7 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsAutoSIMD() { return _flags4.testAny(SupportsAutoSIMD);}
    void setSupportsAutoSIMD() { _flags4.set(SupportsAutoSIMD);}
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataTypes) { return false; }
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType) { return false; }
 
    bool removeRegisterHogsInLowerTreesWalk() { return _flags3.testAny(RemoveRegisterHogsInLowerTreesWalk);}
    void setRemoveRegisterHogsInLowerTreesWalk() { _flags3.set(RemoveRegisterHogsInLowerTreesWalk);}
@@ -2063,7 +2063,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 
-   CS2::HashTable<TR::Symbol*, TR::DataTypes, TR::Allocator> _symbolDataTypeMap;
+   CS2::HashTable<TR::Symbol*, TR::DataType, TR::Allocator> _symbolDataTypeMap;
    };
 
 }

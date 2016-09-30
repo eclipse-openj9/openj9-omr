@@ -3875,7 +3875,7 @@ void OMR::X86::CodeGenerator::dumpPostGPRegisterAssignment(TR::Instruction * ins
 #endif
 
 bool
-OMR::X86::CodeGenerator::useSSEFor(TR::DataTypes type)
+OMR::X86::CodeGenerator::useSSEFor(TR::DataType type)
    {
    if (type == TR::Float)
       return self()->useSSEForSinglePrecision();

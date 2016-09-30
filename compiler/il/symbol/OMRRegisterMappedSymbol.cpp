@@ -36,13 +36,13 @@ TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, in
    }
 
 template <typename AllocatorType>
-TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, TR::DataTypes d)
+TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, TR::DataType d)
    {
    return new (m) TR::RegisterMappedSymbol(d);
    }
 
 template <typename AllocatorType>
-TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, TR::DataTypes d, uint32_t s)
+TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, TR::DataType d, uint32_t s)
    {
    return new (m) TR::RegisterMappedSymbol(d,s);
    }
@@ -55,7 +55,7 @@ OMR::RegisterMappedSymbol::RegisterMappedSymbol(int32_t o) :
    self()->setLiveLocalIndexUninitialized();
    }
 
-OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataTypes d) :
+OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataType d) :
    TR::Symbol(d),
    _mappedOffset(0),
    _GCMapIndex(-1)
@@ -63,7 +63,7 @@ OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataTypes d) :
    self()->setLiveLocalIndexUninitialized();
    }
 
-OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataTypes d, uint32_t s) :
+OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataType d, uint32_t s) :
    TR::Symbol(d, s),
    _mappedOffset(0),
    _GCMapIndex(-1)
@@ -116,16 +116,16 @@ OMR::RegisterMappedSymbol::createMethodMetaDataSymbol(AllocatorType m, const cha
  */
 
 template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_HeapMemory m, int32_t o);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_HeapMemory m, TR::DataTypes d);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_HeapMemory m, TR::DataTypes d, uint32_t s);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_HeapMemory m, TR::DataType d);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_HeapMemory m, TR::DataType d, uint32_t s);
 
 template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_StackMemory m, int32_t o);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_StackMemory m, TR::DataTypes d);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_StackMemory m, TR::DataTypes d, uint32_t s);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_StackMemory m, TR::DataType d);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(TR_StackMemory m, TR::DataType d, uint32_t s);
 
 template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(PERSISTENT_NEW_DECLARE m, int32_t o);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(PERSISTENT_NEW_DECLARE m, TR::DataTypes d);
-template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(PERSISTENT_NEW_DECLARE m, TR::DataTypes d, uint32_t s);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(PERSISTENT_NEW_DECLARE m, TR::DataType d);
+template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(PERSISTENT_NEW_DECLARE m, TR::DataType d, uint32_t s);
 
 template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::createMethodMetaDataSymbol(TR_HeapMemory m, const char *name, TR_MethodMetaDataType type);
 template TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::createMethodMetaDataSymbol(TR_StackMemory m, const char *name, TR_MethodMetaDataType type);

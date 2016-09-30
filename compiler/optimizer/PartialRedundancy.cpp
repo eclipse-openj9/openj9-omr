@@ -538,7 +538,7 @@ int32_t TR_PartialRedundancy::perform()
                   traceMsg(comp(), "Creating new symbol for optimal expr number %d node %p\n", nextOptimalComputation, nextOptimalNode);
 
                   }
-               TR::DataTypes dataType = nextOptimalNode->getDataType();
+               TR::DataType dataType = nextOptimalNode->getDataType();
                // set the datatype of the temporary created below to
                // be at least OMR::Int ; otherwise the opcode used to create
                // the store (to initialize) and the datatype on the symbol
@@ -1245,7 +1245,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
             // optimally.
             //
             TR::ILOpCode &nullCheckReferenceOpCode = duplicateOptimalNode->getOpCode();
-            TR::DataTypes nullCheckReferenceDataType = duplicateOptimalNode->getDataType();
+            TR::DataType nullCheckReferenceDataType = duplicateOptimalNode->getDataType();
 
             TR::Node *nullCheckReferenceNode = nextOptimalNode->getNullCheckReference();
             if (isSupportedOpCode(nullCheckReferenceNode, NULL) && !nullCheckReferenceOpCode.isLoadVarDirect())
@@ -1421,7 +1421,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
             convertedOptimalNode = TR::Node::create(conversionOpCode, 1, duplicateOptimalNode);
             }
 
-         TR::DataTypes type = nextOptimalNode->getDataType();
+         TR::DataType type = nextOptimalNode->getDataType();
          TR::ILOpCodes storeOp = type == TR::NoType ? TR::treetop : comp()->il.opCodeForDirectStore(type);
 
          TR::Node *storeForCommonedNode = TR::Node::createWithSymRef(storeOp, 1, 1, convertedOptimalNode, newSymbolReference);
@@ -1933,7 +1933,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
 
    bool flag = firstComputation;
    TR::ILOpCode &opCode = node->getOpCode();
-   TR::DataTypes nodeDataType = node->getDataType();
+   TR::DataType nodeDataType = node->getDataType();
 
    int32_t i;
    for (i = 0; i < node->getNumChildren(); i++)
@@ -2158,7 +2158,7 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
    node->setVisitCount(visitCount);
 
    TR::ILOpCode &opCode = node->getOpCode();
-   TR::DataTypes nodeDataType = node->getDataType();
+   TR::DataType nodeDataType = node->getDataType();
 
    if (isSupportedOpCode(node, parent) &&
        (!(opCode.isLoadVarDirect() &&
@@ -3968,7 +3968,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
       }
 
    TR::ILOpCode &opCode = node->getOpCode();
-   TR::DataTypes nodeDataType = node->getDataType();
+   TR::DataType nodeDataType = node->getDataType();
 
    if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) /* && (!opCode.isStore()) */)
       {

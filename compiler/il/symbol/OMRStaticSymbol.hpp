@@ -50,17 +50,17 @@ class OMR_EXTENSIBLE StaticSymbol : public TR::Symbol
 public:
 
    template <typename AllocatorType>
-   static TR::StaticSymbol * create(AllocatorType t, TR::DataTypes d);
+   static TR::StaticSymbol * create(AllocatorType t, TR::DataType d);
 
    template <typename AllocatorType>
-   static TR::StaticSymbol * createWithAddress(AllocatorType t, TR::DataTypes d, void * address);
+   static TR::StaticSymbol * createWithAddress(AllocatorType t, TR::DataType d, void * address);
 
    template <typename AllocatorType>
-   static TR::StaticSymbol * createWithSize(AllocatorType t, TR::DataTypes d, uint32_t s);
+   static TR::StaticSymbol * createWithSize(AllocatorType t, TR::DataType d, uint32_t s);
 
 protected:
 
-   StaticSymbol(TR::DataTypes d) :
+   StaticSymbol(TR::DataType d) :
       TR::Symbol(d),
       _staticAddress(0),
       _assignedTOCIndex(0)
@@ -68,7 +68,7 @@ protected:
       _flags.setValue(KindMask, IsStatic);
       }
 
-   StaticSymbol(TR::DataTypes d, void * address) :
+   StaticSymbol(TR::DataType d, void * address) :
       TR::Symbol(d),
       _staticAddress(address),
       _assignedTOCIndex(0)
@@ -76,7 +76,7 @@ protected:
       _flags.setValue(KindMask, IsStatic);
       }
 
-   StaticSymbol(TR::DataTypes d, uint32_t s) :
+   StaticSymbol(TR::DataType d, uint32_t s) :
       TR::Symbol(d, s),
       _staticAddress(0),
       _assignedTOCIndex(0)
@@ -117,10 +117,10 @@ private:
 public:
 
    template <typename AllocatorType>
-   static TR::StaticSymbol * createNamed(AllocatorType m, TR::DataTypes d, const char * name);
+   static TR::StaticSymbol * createNamed(AllocatorType m, TR::DataType d, const char * name);
 
    template <typename AllocatorType>
-   static TR::StaticSymbol * createNamed(AllocatorType m, TR::DataTypes d, void * addr, const char * name);
+   static TR::StaticSymbol * createNamed(AllocatorType m, TR::DataType d, void * addr, const char * name);
 
    const char *getName()
       {

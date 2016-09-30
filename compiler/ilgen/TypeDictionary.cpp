@@ -49,7 +49,7 @@ static const char *signatureNameForType[] =
 char *
 IlType::getSignatureName()
    {
-   TR::DataTypes dt = getPrimitiveType();
+   TR::DataType dt = getPrimitiveType();
    if (dt == TR::Address)
       return (char *)_name;
    return (char *) signatureNameForType[dt];
@@ -88,12 +88,12 @@ class PrimitiveType : public TR::IlType
 public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
-   PrimitiveType(const char * name, TR::DataTypes type) :
+   PrimitiveType(const char * name, TR::DataType type) :
       TR::IlType(name),
       _type(type)
       { }
 
-   virtual TR::DataTypes getPrimitiveType()
+   virtual TR::DataType getPrimitiveType()
       {
       return _type;
       }
@@ -101,7 +101,7 @@ public:
   virtual char *getSignatureName() { return (char *) signatureNameForType[_type]; }
 
 protected:
-   TR::DataTypes _type;
+   TR::DataType _type;
    };
 
 
@@ -124,7 +124,7 @@ public:
 
    TR::IlType *getType()                         { return _type; }
 
-   TR::DataTypes getPrimitiveType()             { return _type->getPrimitiveType(); }
+   TR::DataType getPrimitiveType()             { return _type->getPrimitiveType(); }
 
    uint32_t getOffset()                          { return _offset; }
 
@@ -153,7 +153,7 @@ public:
       _closed(false)
       { }
 
-   TR::DataTypes getPrimitiveType()                 { return TR::Address; }
+   TR::DataType getPrimitiveType()                 { return TR::Address; }
    void Close()                                      { _closed = true; };
 
    void AddField(const char *name, TR::IlType *fieldType);
@@ -178,7 +178,7 @@ StructType::AddField(const char *name, TR::IlType *typeInfo)
    if (_closed)
       return;
 
-   TR::DataTypes primitiveType = typeInfo->getPrimitiveType();
+   TR::DataType primitiveType = typeInfo->getPrimitiveType();
    uint32_t align = primitiveTypeAlignment[primitiveType] - 1;
    _size = (_size + align) & (~align);
 
@@ -225,7 +225,7 @@ StructType::getFieldSymRef(const char *fieldName)
       {
       TR::Compilation *comp = TR::comp();
 
-      TR::DataTypes type = info->getPrimitiveType();
+      TR::DataType type = info->getPrimitiveType();
 
       TR::Symbol *symbol = NULL;
       if (TR::Int32 == type)
@@ -285,7 +285,7 @@ public:
 
    virtual const char *getName() { return _name; }
 
-   virtual TR::DataTypes getPrimitiveType() { return TR::Address; }
+   virtual TR::DataType getPrimitiveType() { return TR::Address; }
 
    TR::SymbolReference *getSymRef();
 

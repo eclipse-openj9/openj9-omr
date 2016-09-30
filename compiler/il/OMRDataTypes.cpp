@@ -23,6 +23,7 @@
 #include <stdint.h>                   // for int32_t, intptrj_t
 #include <string.h>                   // for strlen
 #include "env/jittypes.h"             // for intptrj_t
+#include "il/DataTypes.hpp"           // for DataType
 #include "infra/Assert.hpp"           // for TR_ASSERT
 
 // When adding new types also update pDataTypeNames[] in ras/Tree.cpp
@@ -55,31 +56,96 @@ static TR::ILOpCodes conversionMap[TR::NumOMRTypes][TR::NumOMRTypes] =
 
 } // namespace OMR
 
-TR::ILOpCodes
-OMR::DataType::getDataTypeConversion(TR::DataTypes t1, TR::DataTypes t2)
+TR::DataType&
+OMR::DataType::operator=(const TR::DataType& rhs)
    {
-   TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %d requested", t1);
-   TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %d requested", t2);
-   return OMR::conversionMap[t1][t2];
+   _type = rhs._type;
+   return *(static_cast<TR::DataType *>(this));
    }
 
-TR::DataTypes
-OMR::DataType::getFloatTypeFromSize(int32_t size)
+TR::DataType&
+OMR::DataType::operator=(TR::DataTypes rhs)
    {
-   TR::DataTypes type = TR::NoType;
-   switch (size)
-      {
-      case 4:  type = TR::Float; break;
-      case 8:  type = TR::Double; break;
-      default: TR_ASSERT(false,"unexpected size %d for float type\n",size);
-      }
-   return type;
+   _type = rhs;
+   return *(static_cast<TR::DataType *>(this));
    }
 
 bool
-OMR::DataType::canGetMaxPrecisionFromType(TR::DataTypes type)
+OMR::DataType::operator==(const TR::DataType& rhs)
    {
-   switch (type)
+   return _type == rhs._type;
+   }
+
+bool
+OMR::DataType::operator==(TR::DataTypes rhs)
+   {
+   return _type == rhs;
+   }
+
+bool
+OMR::DataType::operator!=(const TR::DataType& rhs)
+   {
+   return _type != rhs._type;
+   }
+
+bool
+OMR::DataType::operator!=(TR::DataTypes rhs)
+   {
+   return _type != rhs;
+   }
+
+bool
+OMR::DataType::operator<=(const TR::DataType& rhs)
+   {
+   return _type <= rhs._type;
+   }
+
+bool
+OMR::DataType::operator<=(TR::DataTypes rhs)
+   {
+   return _type <= rhs;
+   }
+
+bool
+OMR::DataType::operator<(const TR::DataType& rhs)
+   {
+   return _type < rhs._type;
+   }
+
+bool
+OMR::DataType::operator<(TR::DataTypes rhs)
+   {
+   return _type < rhs;
+   }
+
+bool
+OMR::DataType::operator>=(const TR::DataType& rhs)
+   {
+   return _type >= rhs._type;
+   }
+
+bool
+OMR::DataType::operator>=(TR::DataTypes rhs)
+   {
+   return _type >= rhs;
+   }
+
+bool
+OMR::DataType::operator>(const TR::DataType& rhs)
+   {
+   return _type > rhs._type;
+   }
+
+bool
+OMR::DataType::operator>(TR::DataTypes rhs)
+   {
+   return _type > rhs;
+   }
+
+bool
+OMR::DataType::canGetMaxPrecisionFromType()
+   {
+   switch (getDataType())
       {
       case TR::Int8:
       case TR::Int16:
@@ -92,9 +158,9 @@ OMR::DataType::canGetMaxPrecisionFromType(TR::DataTypes type)
    }
 
 int32_t
-OMR::DataType::getMaxPrecisionFromType(TR::DataTypes type)
+OMR::DataType::getMaxPrecisionFromType()
    {
-   switch (type)
+   switch (getDataType())
       {
       case TR::Int8: return TR::getMaxSignedPrecision<TR::Int8>();
       case TR::Int16: return TR::getMaxSignedPrecision<TR::Int16>();
@@ -104,6 +170,120 @@ OMR::DataType::getMaxPrecisionFromType(TR::DataTypes type)
          TR_ASSERT(false, "Unsupported data type in getMaxPrecisionFromType\n");
          return 0;
       }
+   }
+
+TR::DataType
+OMR::DataType::getVectorIntegralType()
+   {
+   switch(getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+      case TR::VectorInt32:
+      case TR::VectorInt64: return getDataType();
+      case TR::VectorFloat: return TR::VectorInt32;
+      case TR::VectorDouble: return TR::VectorInt64;
+      default:
+         return TR::NoType;
+         break;
+      }
+   }
+
+TR::DataType
+OMR::DataType::getVectorElementType()
+   {
+   switch(getDataType())
+      {
+      case TR::VectorInt8: return TR::Int8;
+      case TR::VectorInt16: return TR::Int16;
+      case TR::VectorInt32: return TR::Int32;
+      case TR::VectorInt64: return TR::Int64;
+      case TR::VectorFloat: return TR::Float;
+      case TR::VectorDouble: return TR::Double;
+      default:
+         return TR::NoType;
+         break;
+      }
+   }
+
+TR::DataType
+OMR::DataType::vectorToScalar()
+   {
+   switch (getDataType())
+      {
+      case TR::VectorInt8:
+         return TR::Int8;
+      case TR::VectorInt16:
+         return TR::Int16;
+      case TR::VectorInt32:
+         return TR::Int32;
+      case TR::VectorInt64:
+         return TR::Int64;
+      case TR::VectorFloat:
+         return TR::Float;
+      case TR::VectorDouble:
+         return TR::Double;
+      default:
+         return TR::NoType;
+      }
+   }
+
+TR::DataType
+OMR::DataType::scalarToVector()
+   {
+   switch (getDataType())
+      {
+      case TR::Int8:
+         return TR::VectorInt8;
+      case TR::Int16:
+         return TR::VectorInt16;
+      case TR::Int32:
+         return TR::VectorInt32;
+      case TR::Int64:
+         return TR::VectorInt64;
+      case TR::Float:
+         return TR::VectorFloat;
+      case TR::Double:
+         return TR::VectorDouble;
+      default:
+         return TR::NoType;
+      }
+   }
+
+TR::DataType
+OMR::DataType::getIntegralTypeFromPrecision(int32_t precision)
+   {
+   if (precision < 1 || precision >= TR::getMaxSignedPrecision<TR::Int64>())
+      return TR::NoType;
+   else if (precision < TR::getMaxSignedPrecision<TR::Int8>())
+      return TR::Int8;
+   else if (precision < TR::getMaxSignedPrecision<TR::Int16>())
+      return TR::Int16;
+   else if (precision < TR::getMaxSignedPrecision<TR::Int32>())
+      return TR::Int32;
+   else
+      return TR::Int64;
+   }
+
+TR::DataType
+OMR::DataType::getFloatTypeFromSize(int32_t size)
+   {
+   TR::DataType type = TR::NoType;
+   switch (size)
+      {
+      case 4:  type = TR::Float; break;
+      case 8:  type = TR::Double; break;
+      default: TR_ASSERT(false,"unexpected size %d for float type\n",size);
+      }
+   return type;
+   }
+
+TR::ILOpCodes
+OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
+   {
+   TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %d requested", t1);
+   TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %d requested", t2);
+   return OMR::conversionMap[t1][t2];
    }
 
 static int32_t OMRDataTypeSizes[] =
@@ -128,14 +308,14 @@ static int32_t OMRDataTypeSizes[] =
 static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypeSizes) / sizeof(OMRDataTypeSizes[0])), "OMRDataTypeSizes is not the correct size");
 
 const int32_t
-OMR::DataType::getSize(TR::DataTypes dt)
+OMR::DataType::getSize(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "dataTypeSizeMap called on unrecognized data type");
    return OMRDataTypeSizes[dt];
    }
 
 void
-OMR::DataType::setSize(TR::DataTypes dt, int32_t newSize)
+OMR::DataType::setSize(TR::DataType dt, int32_t newSize)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "setDataTypeSizeInMap called on unrecognized data type");
    OMRDataTypeSizes[dt] = newSize;
@@ -164,7 +344,7 @@ static const char * OMRDataTypeNames[] =
 static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypeNames) / sizeof(OMRDataTypeNames[0])), "OMRDataTypeNames is not the correct size");
 
 const char *
-OMR::DataType::getName(TR::DataTypes dt)
+OMR::DataType::getName(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "Name requested for unknown datatype");
    return OMRDataTypeNames[dt];
@@ -193,7 +373,7 @@ static const char *OMRDataTypePrefixes[] =
 static_assert(TR::NumOMRTypes == (sizeof(OMRDataTypePrefixes) / sizeof(OMRDataTypePrefixes[0])), "OMRDataTypePrefixes is not the correct size");
 
 const char *
-OMR::DataType::getPrefix(TR::DataTypes dt)
+OMR::DataType::getPrefix(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "Prefix requested for unknown datatype");
    return OMRDataTypePrefixes[dt];

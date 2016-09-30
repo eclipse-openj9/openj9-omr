@@ -3650,7 +3650,7 @@ generateS390MemoryReference(TR::CodeGenerator * cg)
    }
 
 TR::MemoryReference *
-generateS390MemoryReference(int32_t iValue, TR::DataTypes type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
+generateS390MemoryReference(int32_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
    TR_S390ConstantDataSnippet * targetsnippet = cg->findOrCreate4ByteConstant(node, iValue);
 
@@ -3658,14 +3658,14 @@ generateS390MemoryReference(int32_t iValue, TR::DataTypes type, TR::CodeGenerato
    }
 
 TR::MemoryReference *
-generateS390MemoryReference(int64_t iValue, TR::DataTypes type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
+generateS390MemoryReference(int64_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
    TR_S390ConstantDataSnippet * targetsnippet = cg->findOrCreate8ByteConstant(node, iValue);
    return generateS390MemoryReference(targetsnippet, cg, treg, node);
    }
 
 TR::MemoryReference *
-generateS390MemoryReference(float fValue, TR::DataTypes type, TR::CodeGenerator * cg, TR::Node * node)
+generateS390MemoryReference(float fValue, TR::DataType type, TR::CodeGenerator * cg, TR::Node * node)
    {
    union
       {
@@ -3678,7 +3678,7 @@ generateS390MemoryReference(float fValue, TR::DataTypes type, TR::CodeGenerator 
    }
 
 TR::MemoryReference *
-generateS390MemoryReference(double dValue, TR::DataTypes type, TR::CodeGenerator * cg, TR::Node * node)
+generateS390MemoryReference(double dValue, TR::DataType type, TR::CodeGenerator * cg, TR::Node * node)
    {
    union
       {

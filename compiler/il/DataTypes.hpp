@@ -28,6 +28,7 @@ class DataType : public OMR::DataTypeConnector
    { 
 
 public:
+   DataType() : OMR::DataTypeConnector() { }
    DataType(TR::DataTypes t) : OMR::DataTypeConnector(t) { }
 
    };

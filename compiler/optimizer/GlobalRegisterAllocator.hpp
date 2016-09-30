@@ -163,9 +163,9 @@ public:
          _signExtAdjustmentNotReqd->reset(regNum);
       }
 
-   TR::Node *           resolveTypeMismatch(TR::DataTypes oldType, TR::Node *newNode);
+   TR::Node *           resolveTypeMismatch(TR::DataType oldType, TR::Node *newNode);
    TR::Node *           resolveTypeMismatch(TR::Node *oldNode, TR::Node *newNode);
-   TR::Node *           resolveTypeMismatch(TR::DataTypes inputOldType, TR::Node *oldNode, TR::Node *newNode);
+   TR::Node *           resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode);
 
 private:
 
@@ -186,7 +186,7 @@ private:
    bool                allocateForSymRef(TR::SymbolReference *symRef);
    bool                isSymRefAvailable(TR::SymbolReference *symRef);
    bool                isSymRefAvailable(TR::SymbolReference *symRef, List<TR::Block> *blocksInLoop);
-   bool                allocateForType(TR::DataTypes dt);
+   bool                allocateForType(TR::DataType dt);
    bool                isNodeAvailable(TR::Node *node);
    bool                isTypeAvailable(TR::SymbolReference *symref);
 

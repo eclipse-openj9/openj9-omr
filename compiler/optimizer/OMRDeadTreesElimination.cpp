@@ -49,6 +49,7 @@
 #include "infra/ILWalk.hpp"
 #include "infra/List.hpp"                       // for TR_ScratchList, etc
 #include "optimizer/Optimization.hpp"           // for Optimization
+#include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"              // for Optimizer
@@ -75,7 +76,7 @@ static OMR::TreeInfo *findOrCreateTreeInfo(TR::TreeTop *treeTop, List<OMR::TreeI
 
 // temporarily revert this fix
 //static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector &seenNodes, bool &highGlobalIndex, TR::Compilation *comp, vcount_t oldCompVisitCount)
-static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector &seenNodes, bool &highGlobalIndex, TR::Compilation *comp)
+static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector &seenNodes, bool &highGlobalIndex, TR::Optimization *opt)
    {
    bool containsFloatingPoint = false;
    bool anchorLoadaddr = true;
@@ -106,10 +107,18 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
        anchorLoadaddr &&
        anchorArrayCmp)
       {
-      if (!comp->getOption(TR_ProcessHugeMethods)&& (comp->getNodeCount() > (3*USHRT_MAX/4)))
+      if (!opt->comp()->getOption(TR_ProcessHugeMethods))
          {
-         highGlobalIndex = true;
-         return containsFloatingPoint;
+         int32_t nodeCount = opt->comp()->getNodeCount();
+         int32_t nodeCountLimit = 3 * USHRT_MAX / 4;
+         if (nodeCount > nodeCountLimit)
+            {
+            dumpOptDetails(opt->comp(),
+               "%snode count %d exceeds limit %d\n",
+               opt->optDetailString(), nodeCount, nodeCountLimit);
+            highGlobalIndex = true;
+            return containsFloatingPoint;
+            }
          }
 
       seenNodes[node->getGlobalIndex()] = 1;
@@ -117,7 +126,7 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
         containsFloatingPoint = true;
       TR::TreeTop *nextTree = treeTop->getNextTreeTop();
       node->incFutureUseCount();
-      TR::TreeTop *anchorTreeTop = TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node));
+      TR::TreeTop *anchorTreeTop = TR::TreeTop::create(opt->comp(), TR::Node::create(TR::treetop, 1, node));
       anchorTreeTop->getNode()->setFutureUseCount(0);
       treeTop->join(anchorTreeTop);
       anchorTreeTop->join(nextTree);
@@ -129,7 +138,7 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
          TR::Node *child = node->getChild(i);
          // temporarily rever this fix
          //if (fixUpTree(child, treeTop, seenNodes, highGlobalIndex, comp, oldCompVisitCount))
-         if (fixUpTree(child, treeTop, seenNodes, highGlobalIndex, comp))
+         if (fixUpTree(child, treeTop, seenNodes, highGlobalIndex, opt))
             containsFloatingPoint = true;
          }
       }
@@ -626,8 +635,14 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
       if (node->getOpCodeValue() == TR::BBStart)
          block = node->getBlock();
 
-      if (comp()->getVisitCount() > (MAX_VCOUNT - 3))
+      int vcountLimit = MAX_VCOUNT - 3;
+      if (comp()->getVisitCount() > vcountLimit)
+         {
+         dumpOptDetails(comp(),
+            "%sVisit count %d exceeds limit %d; stopping\n",
+            optDetailString(), comp()->getVisitCount(), vcountLimit);
          return 0;
+         }
 
       // correct at all intermediate stages
       //
@@ -779,10 +794,15 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                bool highGlobalIndex = false;
                // temporarily revert this fix
                //if (fixUpTree(child->getChild(i), iter.currentTree(), seenNodes, highGlobalIndex, comp(), compVisitCount))
-               if (fixUpTree(child->getChild(i), iter.currentTree(), seenNodes, highGlobalIndex, comp()))
+               if (fixUpTree(child->getChild(i), iter.currentTree(), seenNodes, highGlobalIndex, self()))
                   containsFloatingPoint = true;
                if (highGlobalIndex)
+                  {
+                  dumpOptDetails(comp(),
+                     "%sGlobal index limit exceeded; stopping\n",
+                     optDetailString());
                   return 0;
+                  }
                }
 
             if (seenConditionalBranch &&

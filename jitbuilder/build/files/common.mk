@@ -111,7 +111,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/LoopReplicator.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/LoopVersioner.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRLocalCSE.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRLocalDeadStoreElimination.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/LocalDeadStoreElimination.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/LocalOpts.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMROptimization.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMROptimizationManager.cpp \

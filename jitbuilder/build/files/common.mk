@@ -79,7 +79,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/CopyPropagation.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/DataFlowAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/DeadStoreElimination.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRDeadTreesElimination.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/DeadTreesElimination.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/DebuggingCounters.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Delayedness.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Dominators.cpp \

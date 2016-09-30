@@ -3744,8 +3744,8 @@ void OMR::Options::openLogFile(int32_t idSuffix)
             getTRPID(buf);
             sprintf(filename, "%s.%s", fn, buf);
             getTimeInSeconds(buf);
-            strncat(filename, ".", 1025);
-            strncat(filename, buf, 1025);
+            strncat(filename, ".", 1);
+            strncat(filename, buf, 20);
             fn = filename;
             }
 

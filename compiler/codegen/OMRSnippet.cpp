@@ -21,10 +21,7 @@
 #include "codegen/Snippet.hpp"
 #include "codegen/CodeGenerator.hpp"
 
-namespace OMR
-{
-
-Snippet::Snippet(
+OMR::Snippet::Snippet(
       TR::CodeGenerator *cg,
       TR::Node *node,
       TR::LabelSymbol *label,
@@ -42,7 +39,7 @@ Snippet::Snippet(
    }
 
 
-Snippet::Snippet(
+OMR::Snippet::Snippet(
       TR::CodeGenerator *cg,
       TR::Node *node,
       TR::LabelSymbol *label) :
@@ -53,13 +50,13 @@ Snippet::Snippet(
    }
 
 TR::Snippet *
-Snippet::self()
+OMR::Snippet::self()
    {
    return static_cast<TR::Snippet *>(this);
    }
 
 void
-Snippet::setSnippetLabel(TR::LabelSymbol *label)
+OMR::Snippet::setSnippetLabel(TR::LabelSymbol *label)
    {
    if (_snippetLabel)
       {
@@ -72,24 +69,23 @@ Snippet::setSnippetLabel(TR::LabelSymbol *label)
 
 
 int32_t
-Snippet::setEstimatedCodeLocation(int32_t p)
+OMR::Snippet::setEstimatedCodeLocation(int32_t p)
    {
    return self()->getSnippetLabel()->setEstimatedCodeLocation(p);
    }
 
 
 uint8_t *
-Snippet::emitSnippet()
+OMR::Snippet::emitSnippet()
    {
    return self()->emitSnippetBody();
    }
 
 void
-Snippet::prepareSnippetForGCSafePoint()
+OMR::Snippet::prepareSnippetForGCSafePoint()
    {
    self()->gcMap().setGCSafePoint();
    self()->setBlock(self()->cg()->getCurrentEvaluationBlock());
    self()->setNeedsExceptionTableEntry();
    }
 
-}

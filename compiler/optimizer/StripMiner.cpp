@@ -984,7 +984,7 @@ TR::Block *TR_StripMiner::createStartOffsetLoop(LoopInfo *li, TR::Block *outerHe
 
    newLtNode->setAndIncChild(0, iAndNode);
    newLtNode->setAndIncChild(1, zeroNode);
-   TR::Node::recreateAndCopyValidProperties(newLtNode, isInt32 ? TR::ificmple : TR::iflcmple);
+   TR::Node::recreate(newLtNode, isInt32 ? TR::ificmple : TR::iflcmple);
 
    // now fixup the edges
    //
@@ -1247,7 +1247,7 @@ TR::Block *TR_StripMiner::stripMineLoop(LoopInfo *li, TR::Block *outerHeader)
    //constNode is L-1-pre-post
    jNode = jNode->duplicateTree();
    constNode = constNode->duplicateTree();
-   TR::Node::recreateAndCopyValidProperties(mainLtTree->getNode(), cmpOpCode);
+   TR::Node::recreate(mainLtTree->getNode(), cmpOpCode);
    mainLtTree->getNode()->getChild(0)->recursivelyDecReferenceCount();
    mainLtTree->getNode()->setAndIncChild(0, jNode);
    mainLtTree->getNode()->getChild(1)->recursivelyDecReferenceCount();

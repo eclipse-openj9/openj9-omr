@@ -3002,7 +3002,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
 
    if (convertToSignExtension)
       {
-      TR::Node::recreateAndCopyValidProperties(regNode, TR::s2i);
+      TR::Node::recreate(regNode, TR::s2i);
       regNode->setUnneededConversion(false); // it is definitely needed now
       }
 
@@ -14743,9 +14743,9 @@ TR::Register *OMR::Z::TreeEvaluator::deallocaEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Z::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (node->getOpCode().isFloat())
-      TR::Node::recreateAndCopyValidProperties(node, TR::fcall);
+      TR::Node::recreate(node, TR::fcall);
    else if (node->getOpCode().isDouble())
-      TR::Node::recreateAndCopyValidProperties(node, TR::dcall);
+      TR::Node::recreate(node, TR::dcall);
    else
       TR_ASSERT(false, "Invalid type for libmFuncEvaluator.\n");
 
@@ -14783,7 +14783,7 @@ TR::Register *OMR::Z::TreeEvaluator::libxloptFuncEvaluator(TR::Node *node, TR::C
        }
      }
 
-   TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getDirectCall(node->getDataType()));
+   TR::Node::recreate(node, TR::ILOpCode::getDirectCall(node->getDataType()));
    node->setSymbolReference(callSymRef);
 
    // And finally evaluate the tree

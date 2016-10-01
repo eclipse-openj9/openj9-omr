@@ -1019,21 +1019,21 @@ TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::Power::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::dcall);
+   TR::Node::recreate(node, TR::dcall);
    TR::Register *trgReg = directCallEvaluator(node, cg);
    return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::strcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::icall);
+   TR::Node::recreate(node, TR::icall);
    TR::Register *trgReg = directCallEvaluator(node, cg);
    return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::strcFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::acall);
+   TR::Node::recreate(node, TR::acall);
    TR::Register *trgReg = directCallEvaluator(node, cg);
    return trgReg;
    }

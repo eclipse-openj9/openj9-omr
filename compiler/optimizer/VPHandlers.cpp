@@ -2224,7 +2224,7 @@ TR::Node *constrainIaload(TR_ValuePropagation *vp, TR::Node *node)
                         if (targetConstraint && targetConstraint->getKnownObject())
                            targetKOI = targetConstraint->getKnownObject()->getIndex();
                         vp->removeChildren(node);
-                        TR::Node::recreateAndCopyValidProperties(node, TR::aload);
+                        TR::Node::recreate(node, TR::aload);
                         node->setNumChildren(0);
                         node->setSymbolReference(vp->comp()->getSymRefTab()->createKnownStaticRefereneceSymbolRef(bypassLocation, targetKOI));
                         return node;
@@ -2742,7 +2742,7 @@ void canRemoveWrtBar(TR_ValuePropagation *vp, TR::Node *node)
                if (node->getChild(2) != node->getFirstChild())
                   invalidateInfo = true;
 
-               TR::Node::recreateAndCopyValidProperties(node, TR::astorei);
+               TR::Node::recreate(node, TR::astorei);
                node->getChild(2)->recursivelyDecReferenceCount();
                node->setNumChildren(2);
                node->setIsNull(true);
@@ -2757,7 +2757,7 @@ void canRemoveWrtBar(TR_ValuePropagation *vp, TR::Node *node)
             {
             if (performTransformation(vp->comp(), "%sChanging write barrier store into astore [%p]\n", OPT_DETAILS, node))
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::astore);
+               TR::Node::recreate(node, TR::astore);
                node->getChild(1)->recursivelyDecReferenceCount();
                node->setNumChildren(1);
                node->setIsNull(true);
@@ -3409,7 +3409,7 @@ TR::Node *constrainInstanceOf(TR_ValuePropagation *vp, TR::Node *node)
                }
             else
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::acmpne);
+               TR::Node::recreate(node, TR::acmpne);
                vp->removeNode(node->getChild(1), true);
                node->setAndIncChild(1, TR::Node::create(node, TR::aconst, 0, 0));
                }
@@ -3504,7 +3504,7 @@ TR::Node *constrainInstanceOf(TR_ValuePropagation *vp, TR::Node *node)
                      }
                   else
                      {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::acmpne);
+                  TR::Node::recreate(node, TR::acmpne);
                   vp->removeNode(node->getChild(1), true);
                   node->setAndIncChild(1, TR::Node::create(node, TR::aconst, 0, 0));
                      }
@@ -3713,7 +3713,7 @@ TR::Node *constrainCheckcast(TR_ValuePropagation *vp, TR::Node *node)
       TR::Node *classNode = node->getSecondChild();
       vp->optimizer()->getEliminatedCheckcastNodes().add(node);
       vp->optimizer()->getClassPointerNodes().add(classNode);
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       node->setNumChildren(1);
       vp->removeNode(classNode);
       vp->setChecksRemoved();
@@ -4992,7 +4992,7 @@ static void devirtualizeCall(TR_ValuePropagation *vp, TR::Node *node)
          // getResolvedInterfaceMethod.
          if (methodSymbol->isInterface())
             methodSymbol = refineMethodSymbolInCall(vp, node, symRef, resolvedMethod, offset);
-         TR::Node::recreateAndCopyValidProperties(node, methodSymbol->getMethod()->directCallOpCode());
+         TR::Node::recreate(node, methodSymbol->getMethod()->directCallOpCode());
 
          // remove the generated first argument
          //
@@ -5368,7 +5368,7 @@ TR::Node *constrainCall(TR_ValuePropagation *vp, TR::Node *node)
                vp->_curTree->insertBefore(helpersCallTT);
 
                method = hashCodeMethodSymRef->getSymbol()->castToMethodSymbol()->getMethod();
-               TR::Node::recreateAndCopyValidProperties(node, method->directCallOpCode());
+               TR::Node::recreate(node, method->directCallOpCode());
                TR::Node *removedChild = node->getFirstChild();
                //vp->removeNode(removedChild);
                removedChild->recursivelyDecReferenceCount();
@@ -5519,7 +5519,7 @@ void transformToOptimizedCloneCall(TR_ValuePropagation *vp, TR::Node *node, bool
         vp->_curTree->insertBefore(helpersCallTT);
 
         method = optimizedCloneSymRef->getSymbol()->castToMethodSymbol()->getMethod();
-        TR::Node::recreateAndCopyValidProperties(node, method->directCallOpCode());
+        TR::Node::recreate(node, method->directCallOpCode());
         TR::Node *firstChild = node->getFirstChild();
         firstChild->decReferenceCount();
         node->setNumChildren(2);
@@ -6555,7 +6555,7 @@ TR::Node *constrainLdiv(TR_ValuePropagation *vp, TR::Node *node)
           performTransformation(vp->comp(), "%sChange node [" POINTER_PRINTF_FORMAT "] ldiv->i2l of idiv\n",OPT_DETAILS, node))
          {
          // Change node into i2l to be used by any commoned references
-         TR::Node::recreateAndCopyValidProperties(node, TR::i2l);
+         TR::Node::recreate(node, TR::i2l);
          node->setNumChildren(1);
 
          TR::Node *lhsNode = TR::Node::create(TR::l2i, 1, firstChild);
@@ -7351,10 +7351,10 @@ TR::Node *constrainIshr(TR_ValuePropagation *vp, TR::Node *node)
    if(firstChild->isNonNegative() /*&& firstChild->getType().isSignedInt()*/ && vp->lastTimeThrough() &&
       performTransformation(vp->comp(), "%sChange node [" POINTER_PRINTF_FORMAT "] ishr->iushr\n",OPT_DETAILS, node))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iushr);
+      TR::Node::recreate(node, TR::iushr);
       //TR::Node *lhs = node->getFirstChild();
       //TR::Node *rhs = node->getSecondChild();
-      //TR::Node::recreateAndCopyValidProperties(node, TR::iu2i);
+      //TR::Node::recreate(node, TR::iu2i);
       //node->setNumChildren(1);
       //TR::Node *newIushrNode = TR::Node::create(vp->comp(), TR::iushr, 2, lhs, rhs);
       //node->setAndIncChild(0, newIushrNode);
@@ -7928,10 +7928,10 @@ TR::Node *constrainIand(TR_ValuePropagation *vp, TR::Node *node)
          performTransformation(vp->comp(), "%s Node [" POINTER_PRINTF_FORMAT "]: ishr -> iushr (parent ignores sign bits)\n",
                                 OPT_DETAILS, firstChild))
          {
-         TR::Node::recreateAndCopyValidProperties(firstChild, TR::iushr);
+         TR::Node::recreate(firstChild, TR::iushr);
          //TR::Node *lhs = firstChild->getFirstChild();
          //TR::Node *rhs = firstChild->getSecondChild();
-         //TR::Node::recreateAndCopyValidProperties(firstChild, TR::iu2i);
+         //TR::Node::recreate(firstChild, TR::iu2i);
          //firstChild->setNumChildren(1);
          //TR::Node *newIushrNode = TR::Node::create(vp->comp(), TR::iushr, 2, lhs, rhs);
          //firstChild->setAndIncChild(0, newIushrNode);
@@ -8294,8 +8294,8 @@ void replaceWithSmallerType(TR_ValuePropagation *vp, TR::Node *node)
       value->recursivelyDecReferenceCount();
 
       // change opcode of the def and use nodes to store and load smaller type
-      TR::Node::recreateAndCopyValidProperties(defNode, comp->il.opCodeForDirectStore(newType));
-      TR::Node::recreateAndCopyValidProperties(node, comp->il.opCodeForDirectLoad(newType));
+      TR::Node::recreate(defNode, comp->il.opCodeForDirectStore(newType));
+      TR::Node::recreate(node, comp->il.opCodeForDirectLoad(newType));
       node->getFirstChild()->recursivelyDecReferenceCount();
       node->setNumChildren(0);
 
@@ -8778,7 +8778,7 @@ static void changeConditionalToGoto(TR_ValuePropagation *vp, TR::Node *node, TR:
    // Remove the children and change the node to a goto,
    //
    vp->removeChildren(node, false);
-   TR::Node::recreateAndCopyValidProperties(node, TR::Goto);
+   TR::Node::recreate(node, TR::Goto);
    vp->setEnableSimplifier();
 
    // Remember that the fall-through edge is to be removed
@@ -10825,7 +10825,7 @@ static TR::Node *constrainCmpeqne(TR_ValuePropagation *vp, TR::Node *node, bool 
          {
          vp->removeChildren(node);
          TR::ILOpCodes op = /*isUnsigned ? TR::iuconst : */TR::iconst;
-         TR::Node::recreateAndCopyValidProperties(node, op);
+         TR::Node::recreate(node, op);
          node->setInt(result);
          vp->invalidateValueNumberInfo();
          return node;
@@ -11007,7 +11007,7 @@ static TR::Node *constrainCmplessthan(TR_ValuePropagation *vp, TR::Node *node, T
          {
          vp->removeChildren(node);
          TR::ILOpCodes op = /*isUnsigned ? TR::iuconst : */TR::iconst;
-         TR::Node::recreateAndCopyValidProperties(node, op);
+         TR::Node::recreate(node, op);
          node->setInt(result);
          vp->invalidateValueNumberInfo();
          return node;
@@ -11464,7 +11464,7 @@ TR::Node *constrainNullChk(TR_ValuePropagation *vp, TR::Node *node)
          if (vp->comp()->useCompressedPointers() &&
                child->getOpCode().isStoreIndirect())
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+            TR::Node::recreate(node, TR::treetop);
             }
          else
             {
@@ -11479,7 +11479,7 @@ TR::Node *constrainNullChk(TR_ValuePropagation *vp, TR::Node *node)
          }
       else
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
          }
       vp->setChecksRemoved();
       }
@@ -11504,7 +11504,7 @@ TR::Node *constrainZeroChk(TR_ValuePropagation *vp, TR::Node *node)
             {
             for (int32_t i = 1; i < node->getNumChildren(); i++)
                node->getChild(i)->recursivelyDecReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+            TR::Node::recreate(node, TR::treetop);
             node->setNumChildren(1);
             vp->setChecksRemoved();
             }
@@ -11538,7 +11538,7 @@ TR::Node *constrainResolveChk(TR_ValuePropagation *vp, TR::Node *node)
    // Processing the child could have caused it to be removed
    if (node->getNumChildren()==0)
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       return node;
       }
 
@@ -11566,7 +11566,7 @@ TR::Node *constrainResolveChk(TR_ValuePropagation *vp, TR::Node *node)
          if (vp->comp()->useCompressedPointers() &&
                child->getOpCode().isStoreIndirect())
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+            TR::Node::recreate(node, TR::treetop);
             }
          else
             {
@@ -11582,7 +11582,7 @@ TR::Node *constrainResolveChk(TR_ValuePropagation *vp, TR::Node *node)
          }
       else
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
          }
       vp->setChecksRemoved();
       }
@@ -11643,7 +11643,7 @@ TR::Node *constrainResolveNullChk(TR_ValuePropagation *vp, TR::Node *node)
          {
          if (performTransformation(vp->comp(), "%sChanging ResolveAndNULLCHK node into a treetop node [%p]\n", OPT_DETAILS, node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+            TR::Node::recreate(node, TR::treetop);
             vp->setChecksRemoved();
             }
          }
@@ -11651,7 +11651,7 @@ TR::Node *constrainResolveNullChk(TR_ValuePropagation *vp, TR::Node *node)
          {
          if (performTransformation(vp->comp(), "%sChanging ResolveAndNULLCHK node into a ResolveCHK node [%p]\n", OPT_DETAILS, node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::ResolveCHK);
+            TR::Node::recreate(node, TR::ResolveCHK);
             vp->setChecksRemoved();
             }
          }
@@ -11660,7 +11660,7 @@ TR::Node *constrainResolveNullChk(TR_ValuePropagation *vp, TR::Node *node)
       {
       if (performTransformation(vp->comp(), "%sChanging ResolveAndNULLCHK node into a NULLCHK node [%p]\n", OPT_DETAILS, node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::NULLCHK);
+         TR::Node::recreate(node, TR::NULLCHK);
          node->setSymbolReference(vp->comp()->getSymRefTab()->findOrCreateNullCheckSymbolRef(vp->comp()->getMethodSymbol()));
          vp->setChecksRemoved();
          }
@@ -11765,7 +11765,7 @@ TR::Node *constrainDivChk(TR_ValuePropagation *vp, TR::Node *node)
 
    if (removeDivCheck &&
        performTransformation(vp->comp(), "%sRemoving redundant div check node [%p]\n", OPT_DETAILS, node))
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
    else
       {
       if (!complexDivCheck)
@@ -11813,7 +11813,7 @@ TR::Node *constrainBndChk(TR_ValuePropagation *vp, TR::Node *node)
          // Change this node to a treetop containing the index (which is
          // currently the second child of the bounds check).
          //
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
          vp->removeNode(sizeNode);
          node->setChild(0, indexNode);
          node->setChild(1, NULL);
@@ -11832,7 +11832,7 @@ TR::Node *constrainBndChk(TR_ValuePropagation *vp, TR::Node *node)
       // Change this node to a treetop containing the index (which is
       // currently the second child of the bounds check).
       //
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       vp->removeNode(sizeNode);
       node->setChild(0, indexNode);
       node->setChild(1, NULL);
@@ -12044,7 +12044,7 @@ TR::Node *constrainBndChkWithSpineChk(TR_ValuePropagation *vp, TR::Node *node)
       {
       // Change this node to a treetop containing the index.
       //
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
 
       TR::Node *arrayElement = node->getChild(0);
       TR::Node *baseArray = node->getChild(1);
@@ -12080,7 +12080,7 @@ TR::Node *constrainBndChkWithSpineChk(TR_ValuePropagation *vp, TR::Node *node)
       {
       // Convert the node to a spine check.
       //
-      TR::Node::recreateAndCopyValidProperties(node, TR::SpineCHK);
+      TR::Node::recreate(node, TR::SpineCHK);
 
       vp->removeNode(sizeNode);
       node->setChild(2, indexNode);
@@ -12093,7 +12093,7 @@ TR::Node *constrainBndChkWithSpineChk(TR_ValuePropagation *vp, TR::Node *node)
       {
       // Convert the node to a bound check.
       //
-      TR::Node::recreateAndCopyValidProperties(node, TR::BNDCHK);
+      TR::Node::recreate(node, TR::BNDCHK);
       TR::Node *arrayElement = node->getChild(0);
       TR::Node *baseArray = node->getChild(1);
       vp->removeNode(baseArray);
@@ -12505,7 +12505,7 @@ TR::Node *constrainArrayStoreChk(TR_ValuePropagation *vp, TR::Node *node)
          {
          // Child is the iastore. Just change this node to a treetop
          //
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
          //DemandLiteralPool can add extra aload to arraystore check node, but treetop can only have one child
          if (vp->comp()->cg()->supportsOnDemandLiteralPool() && node->getNumChildren() > 1)
             {

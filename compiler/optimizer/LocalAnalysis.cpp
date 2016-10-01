@@ -528,17 +528,17 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
             {
             if (seenWriteBarrier)
                {
-               TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForIndirectArrayLoad(node->getDataType()));
+               TR::Node::recreate(node, _compilation->il.opCodeForIndirectArrayLoad(node->getDataType()));
                }
             else
                {
-               TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForCorrespondingIndirectStore(node->getOpCodeValue()));
+               TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectStore(node->getOpCodeValue()));
                }
             node->setNumChildren(1);
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForDirectLoad(node->getDataType()));
+            TR::Node::recreate(node, _compilation->il.opCodeForDirectLoad(node->getDataType()));
             node->setNumChildren(0);
             }
 
@@ -578,17 +578,17 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
                {
                if (seenOtherWriteBarrier)
                   {
-                  TR::Node::recreateAndCopyValidProperties(other, _compilation->il.opCodeForIndirectArrayLoad(other->getDataType()));
+                  TR::Node::recreate(other, _compilation->il.opCodeForIndirectArrayLoad(other->getDataType()));
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(other, _compilation->il.opCodeForCorrespondingIndirectStore(other->getOpCodeValue()));
+                  TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingIndirectStore(other->getOpCodeValue()));
                   }
                other->setNumChildren(1);
                }
             else
                {
-               TR::Node::recreateAndCopyValidProperties(other, _compilation->il.opCodeForDirectLoad(other->getDataType()));
+               TR::Node::recreate(other, _compilation->il.opCodeForDirectLoad(other->getDataType()));
                other->setNumChildren(0);
                }
 
@@ -610,9 +610,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
             other->setNumChildren(otherStoreNumChildren);
 
             if (otherStoreNumChildren == 3)
-               TR::Node::recreateAndCopyValidProperties(other, TR::wrtbari);
+               TR::Node::recreate(other, TR::wrtbari);
             else
-               TR::Node::recreateAndCopyValidProperties(other, TR::wrtbar);
+               TR::Node::recreate(other, TR::wrtbar);
             }
          else if (seenOtherIndirectStore)
             {
@@ -624,9 +624,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #endif
 
             if (other->getOpCode().isIndirect())
-               TR::Node::recreateAndCopyValidProperties(other, _compilation->il.opCodeForCorrespondingIndirectLoad(other->getOpCodeValue()));
+               TR::Node::recreate(other, _compilation->il.opCodeForCorrespondingIndirectLoad(other->getOpCodeValue()));
             else
-               TR::Node::recreateAndCopyValidProperties(other, _compilation->il.opCodeForDirectStore(other->getDataType()));
+               TR::Node::recreate(other, _compilation->il.opCodeForDirectStore(other->getDataType()));
             }
 
          if (areSame)
@@ -636,9 +636,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
                node->setNumChildren(storeNumChildren);
 
                if (storeNumChildren == 3)
-                  TR::Node::recreateAndCopyValidProperties(node, TR::wrtbari);
+                  TR::Node::recreate(node, TR::wrtbari);
                else
-                  TR::Node::recreateAndCopyValidProperties(node, TR::wrtbar);
+                  TR::Node::recreate(node, TR::wrtbar);
                }
             else if (seenIndirectStore)
                {
@@ -650,9 +650,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #endif
 
                if (node->getOpCode().isIndirect())
-                  TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
+                  TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
                else
-                  TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
+                  TR::Node::recreate(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
                }
 
             return other->getSideTableIndex();
@@ -673,9 +673,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
       node->setNumChildren(storeNumChildren);
 
       if (storeNumChildren == 3)
-         TR::Node::recreateAndCopyValidProperties(node, TR::wrtbari);
+         TR::Node::recreate(node, TR::wrtbari);
       else
-         TR::Node::recreateAndCopyValidProperties(node, TR::wrtbar);
+         TR::Node::recreate(node, TR::wrtbar);
       }
    else if (seenIndirectStore)
       {
@@ -687,9 +687,9 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
 #endif
 
       if (node->getOpCode().isIndirect())
-         TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
+         TR::Node::recreate(node, _compilation->il.opCodeForCorrespondingIndirectLoad(node->getOpCodeValue()));
       else
-         TR::Node::recreateAndCopyValidProperties(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
+         TR::Node::recreate(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
       }
 
    return -1;

@@ -1170,17 +1170,17 @@ TR::Node *TR_LoopStrider::getNewLoopIncrement(TR_StoreTreeInfo *info, int32_t k)
 void TR_LoopStrider::changeBranchFromIntToLong(TR::Node* branch)
    {
    if (branch->getOpCodeValue() == TR::ificmplt)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmplt);
+      TR::Node::recreate(branch, TR::iflcmplt);
    else if (branch->getOpCodeValue() == TR::ificmpgt)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmpgt);
+      TR::Node::recreate(branch, TR::iflcmpgt);
    else if (branch->getOpCodeValue() == TR::ificmpge)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmpge);
+      TR::Node::recreate(branch, TR::iflcmpge);
    else if (branch->getOpCodeValue() == TR::ificmple)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmple);
+      TR::Node::recreate(branch, TR::iflcmple);
    else if (branch->getOpCodeValue() == TR::ificmpeq)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmpeq);
+      TR::Node::recreate(branch, TR::iflcmpeq);
    else if (branch->getOpCodeValue() == TR::ificmpne)
-      TR::Node::recreateAndCopyValidProperties(branch, TR::iflcmpne);
+      TR::Node::recreate(branch, TR::iflcmpne);
    }
 
 
@@ -1406,7 +1406,7 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
             changeBranchFromIntToLong(loopTestNode);
             }
 
-         TR::Node::recreateAndCopyValidProperties(loopTestNode, TR::ILOpCode::convertSignedCmpToUnsignedCmp(loopTestNode->getOpCodeValue()));
+         TR::Node::recreate(loopTestNode, TR::ILOpCode::convertSignedCmpToUnsignedCmp(loopTestNode->getOpCodeValue()));
          }
 
      // on 64-bit, change the loop test condition to equivalent longs
@@ -1461,12 +1461,12 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
       prevFirst->recursivelyDecReferenceCount();
    if (prevSecond)
       prevSecond->recursivelyDecReferenceCount();
-   //TR::Node::recreateAndCopyValidProperties(_storeTrees[_loopDrivingInductionVar]->getNode(), TR::treetop);
+   //TR::Node::recreate(_storeTrees[_loopDrivingInductionVar]->getNode(), TR::treetop);
 
    // In a case of negative stride, exit branch needs to be reversed
    if (getMulTermConst(bestCandidate) < 0)
       {
-      TR::Node::recreateAndCopyValidProperties(loopTestNode, loopTestNode->getOpCode().getOpCodeForSwapChildren());
+      TR::Node::recreate(loopTestNode, loopTestNode->getOpCode().getOpCodeForSwapChildren());
       }
    }
 
@@ -1547,7 +1547,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
       if (isInternalPointer)
          {
          node = originalNode;
-         TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aload);
+         TR::Node::recreate(replacingNode, TR::aload);
          }
 
       if (_usesLoadUsedInLoopIncrement)
@@ -1567,7 +1567,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                   oldNode->getChild(i)->recursivelyDecReferenceCount();
                   }
                node->setAndIncChild(0, newLoad);
-               TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+               TR::Node::recreate(node, TR::l2i);
                node->setNumChildren(1);
                node->setReferenceCount(oldNode->getReferenceCount());
                downcastNode = false;
@@ -1588,7 +1588,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
             if (_storeTreeInfoForLoopIncrement)
                addLoad(_storeTreeInfoForLoopIncrement, node, index);
             nodeRememberedInLoadUsed = true;
-            TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+            TR::Node::recreate(node, replacingNode->getOpCodeValue());
             node->setSymbolReference(*newSymbolReference);
             node->setNumChildren(0);
             }
@@ -1598,7 +1598,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          int32_t i=0;
          for (;i<node->getNumChildren();i++)
             node->getChild(i)->recursivelyDecReferenceCount();
-         TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+         TR::Node::recreate(node, replacingNode->getOpCodeValue());
          node->setSymbolReference(*newSymbolReference);
          node->setNumChildren(0);
          }
@@ -1608,10 +1608,10 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          TR::Node *l2iNode = node->duplicateTree();
          node->setNumChildren(1);
          l2iNode->setNumChildren(0);
-         TR::Node::recreateAndCopyValidProperties(l2iNode, node->getOpCodeValue());
+         TR::Node::recreate(l2iNode, node->getOpCodeValue());
          l2iNode->setReferenceCount(1);
          node->setChild(0, l2iNode);
-         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         TR::Node::recreate(node, TR::l2i);
          // check if the parent is a long before adding an l2i
          //
          if (parent &&
@@ -1737,7 +1737,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                adjustmentNode->setSideTableIndex(~0);
                adjustmentNode->getSecondChild()->setSideTableIndex(~0);
                }
-            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aladd);
+            TR::Node::recreate(replacingNode, TR::aladd);
             replacingNode->setIsInternalPointer(true);
             }
          else
@@ -1749,7 +1749,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                adjustmentNode->setSideTableIndex(~0);
                adjustmentNode->getSecondChild()->setSideTableIndex(~0);
                }
-            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::aiadd);
+            TR::Node::recreate(replacingNode, TR::aiadd);
             replacingNode->setIsInternalPointer(true);
             }
          }
@@ -1757,9 +1757,9 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          replacingNode->getOpCodeValue() == TR::lload)
          {
          if (usingAladd || (replacingNode->getOpCodeValue() == TR::lload))
-            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::ladd);
+            TR::Node::recreate(replacingNode, TR::ladd);
          else
-            TR::Node::recreateAndCopyValidProperties(replacingNode, TR::iadd);
+            TR::Node::recreate(replacingNode, TR::iadd);
          }
 
       if (differenceInAdditiveConstants != 0)
@@ -1798,7 +1798,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
       for (;i<node->getNumChildren();i++)
          node->getChild(i)->recursivelyDecReferenceCount();
 
-      TR::Node::recreateAndCopyValidProperties(node, replacingNode->getOpCodeValue());
+      TR::Node::recreate(node, replacingNode->getOpCodeValue());
       if (node->getOpCodeValue() == TR::aiadd || node->getOpCodeValue() == TR::aladd)
          {
          node->setIsInternalPointer(true);
@@ -1856,7 +1856,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          node->getSecondChild()->recursivelyDecReferenceCount();
          node->setNumChildren(1);
          node->setChild(0, l2iNode);
-         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         TR::Node::recreate(node, TR::l2i);
          if (nodeRememberedInLoadUsed)
             {
             nodeRememberedInLoadUsed = false;
@@ -2639,7 +2639,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
       TR::Node *newConstNode = constNode->duplicateTree();
       if (constNode->getOpCode().isLoadConst())
          {
-         TR::Node::recreateAndCopyValidProperties(newConstNode, TR::lconst);
+         TR::Node::recreate(newConstNode, TR::lconst);
          newConstNode->setLongInt(GET64BITINT(constNode));
          if (constNode->getType().isInt32())
             {
@@ -2658,7 +2658,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
          i2lNode->setReferenceCount(1);
          newConstNode->setNumChildren(1);
          newConstNode->setChild(0, i2lNode);
-         TR::Node::recreateAndCopyValidProperties(newConstNode, TR::i2l);
+         TR::Node::recreate(newConstNode, TR::i2l);
          }
       newMulNode = TR::Node::create(TR::lmul, 2, newConstNode, multiplicativeConstant);
       newConstNode->setSideTableIndex(~0);
@@ -2737,7 +2737,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
             TR::Node *changedConstNode = constNode->duplicateTree();
             if (usingAladd)
                {
-               TR::Node::recreateAndCopyValidProperties(changedConstNode, TR::lconst);
+               TR::Node::recreate(changedConstNode, TR::lconst);
                changedConstNode->setLongInt(-1*GET64BITINT(constNode));
                }
             else
@@ -3532,7 +3532,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
 
          originalNode->getFirstChild()->recursivelyDecReferenceCount();
          originalNode->getSecondChild()->recursivelyDecReferenceCount();
-         TR::Node::recreateAndCopyValidProperties(originalNode, TR::aload);
+         TR::Node::recreate(originalNode, TR::aload);
          originalNode->setSymbolReference(internalPointerSymRef);
          originalNode->setNumChildren(0);
          originalNode->setSideTableIndex(~0);
@@ -4648,7 +4648,7 @@ void TR_LoopStrider::walkTreesAndFixUseDefs(
    storeNode->setAndIncChild(0, TR::Node::create(TR::i2l, 1, newIntValue));
    newIntValue->decReferenceCount();
    storeNode->setSymbolReference(newSymbolReference);
-   TR::Node::recreateAndCopyValidProperties(storeNode, TR::lstore);
+   TR::Node::recreate(storeNode, TR::lstore);
 
    TR::NodeChecklist visited(comp());
    replaceLoadsInStructure(
@@ -4715,7 +4715,7 @@ void TR_LoopStrider::replaceLoadsInSubtree(
        && node->getSymbolReference()->getReferenceNumber() == iv)
       {
       TR::Node *lload = TR::Node::createLoad(newSR);
-      TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+      TR::Node::recreate(node, TR::l2i);
       node->setNumChildren(1);
       node->setAndIncChild(0, lload);
       exLoads.add(node);
@@ -5065,7 +5065,7 @@ void TR_LoopStrider::transmuteDescendantsIntoTruncations(
       intNode->setChild(i, NULL);
       }
 
-   TR::Node::recreateAndCopyValidProperties(intNode, TR::l2i);
+   TR::Node::recreate(intNode, TR::l2i);
    intNode->setNumChildren(1);
    intNode->setAndIncChild(0, longNode);
    }

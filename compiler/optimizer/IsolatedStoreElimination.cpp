@@ -359,7 +359,7 @@ int32_t TR_IsolatedStoreElimination::perform()
                   TR::Node *child = node->getChild(0);
                   usr.anchorIfSafe(child, treeTop);
                   child->recursivelyDecReferenceCount();
-                  TR::Node::recreateAndCopyValidProperties(node, comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
+                  TR::Node::recreate(node, comp()->il.opCodeForConst(node->getSymbolReference()->getSymbol()->getDataType()));
                   node->setFlags(0);
                   node->setNumChildren(0);
                   }
@@ -385,9 +385,9 @@ int32_t TR_IsolatedStoreElimination::perform()
                   // Set opcode to nop
                   //
                   if (node->getReferenceCount() >= 1)
-                     TR::Node::recreateAndCopyValidProperties(node, TR::PassThrough);
+                     TR::Node::recreate(node, TR::PassThrough);
                   else
-                     TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+                     TR::Node::recreate(node, TR::treetop);
                   }
 
                node->setFlags(0);
@@ -436,10 +436,10 @@ int32_t TR_IsolatedStoreElimination::perform()
              if (node->getReferenceCount() < 1)
                 {
                 node->setFlags(0);
-                TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+                TR::Node::recreate(node, TR::treetop);
                 }
              else
-                TR::Node::recreateAndCopyValidProperties(node, TR::PassThrough);
+                TR::Node::recreate(node, TR::PassThrough);
              node->setFlags(0);
              eliminatedStore = true;
              dumpOptDetails(comp(), "%p \n",node);
@@ -481,10 +481,10 @@ int32_t TR_IsolatedStoreElimination::perform()
             if (node->getReferenceCount() < 1)
                {
                node->setFlags(0);
-               TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+               TR::Node::recreate(node, TR::treetop);
                }
             else
-               TR::Node::recreateAndCopyValidProperties(node, TR::PassThrough);
+               TR::Node::recreate(node, TR::PassThrough);
             node->setFlags(0);
             eliminatedStore = true;
             }
@@ -586,7 +586,7 @@ void TR_IsolatedStoreElimination::removeRedundantSpills()
                if (redundantStore &&
                    performTransformation(comp(), "%s Removing redundant spill:  (%p)\n", optDetailString(), node))
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+                  TR::Node::recreate(node, TR::treetop);
                   node->setFlags(0);
                   }
             }

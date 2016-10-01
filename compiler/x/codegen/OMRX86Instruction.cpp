@@ -3602,7 +3602,7 @@ bool TR::X86FPCompareRegRegInstruction::swapOperands()
    // Communicate to FCMPEVAL what the new opcode is.
    // This cobbles the tree node; probably not a good idea if
    // the IL is still needed after register assignment.
-   TR::Node::recreateAndCopyValidProperties(node, swappedOp);
+   TR::Node::recreate(node, swappedOp);
 
    if (debug("dumpFPRA"))
       diagnostic("%s, ", node->getOpCode().getName());

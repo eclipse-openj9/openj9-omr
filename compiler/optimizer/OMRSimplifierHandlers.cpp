@@ -690,7 +690,7 @@ static TR::Node *addSimplifierCommon(TR::Node* node, TR::Block * block, TR::Simp
 
             node->setAndIncChild(0, newFirstChild);
             node->setAndIncChild(1, firstChild->getSecondChild());
-            TR::Node::recreateAndCopyValidProperties(node, subOps[node->getDataType()]);
+            TR::Node::recreate(node, subOps[node->getDataType()]);
 
             firstChild->recursivelyDecReferenceCount();
             secondChild->recursivelyDecReferenceCount();
@@ -723,7 +723,7 @@ static TR::Node *addSimplifierCommon(TR::Node* node, TR::Block * block, TR::Simp
             newSecondChild->setAndIncChild(0, firstChild->getSecondChild());
             newSecondChild->setAndIncChild(1, secondChild->getSecondChild());
 
-            TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCodeValue());
+            TR::Node::recreate(node, firstChild->getOpCodeValue());
             node->setAndIncChild(0, newFirstChild);
             node->setAndIncChild(1, newSecondChild);
             firstChild->recursivelyDecReferenceCount();
@@ -870,7 +870,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
       {
       if (performTransformation(s->comp(), "%sNormalized xadd of xconst > 0 in node [%s] to xsub of -xconst\n", s->optDetailString(), node->getName(s->getDebug())))
          {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getSubOpCode<T>());
+      TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setConst<T>(-secondChild->getConst<T>());
@@ -898,7 +898,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
          if (performTransformation(s->comp(), "%sReduced xadd of -1 and an xneg in node [%s] to bitwise complement\n", s->optDetailString(), node->getName(s->getDebug())))
             {
             s->anchorChildren(node, s->_curTree);
-            TR::Node::recreateAndCopyValidProperties(node, TR::ixor);
+            TR::Node::recreate(node, TR::ixor);
             node->setAndIncChild(0, newFirstChild);
             firstChild->recursivelyDecReferenceCount();
             node->setVisitCount(0);
@@ -910,7 +910,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
       else if (performTransformation(s->comp(), "%sReduced iadd with negated first child in node [%s] to isub\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          s->anchorChildren(node, s->_curTree);
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getSubOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
          node->setAndIncChild(1, newFirstChild);
          node->setChild(0, secondChild);
          firstChild->recursivelyDecReferenceCount();
@@ -926,7 +926,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
          {
          s->anchorChildren(node, s->_curTree);
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getSubOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
          node->setAndIncChild(1, newSecondChild);
          secondChild->recursivelyDecReferenceCount();
          s->_alteredBlock = true;
@@ -950,7 +950,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
 
          if (iMulDecomposeReport)
             dumpOptDetails(s->comp(), "Putting the node back to imul with %d, for node [%s]. \n", iMulComposerValue, iMulComposerChild->getName(s->getDebug()));
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getMulOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getMulOpCode<T>());
 
          node->setAndIncChild(0, iMulComposerChild);
          constNode = TR::Node::create(node, TR::ILOpCode::getConstOpCode<T>(), 0, iMulComposerValue);
@@ -1017,9 +1017,9 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getMulOpCode<T>());
+            TR::Node::recreate(node, TR::ILOpCode::getMulOpCode<T>());
             node->setChild(0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::ILOpCode::getAddOpCode<T>());
+            TR::Node::recreate(secondChild, TR::ILOpCode::getAddOpCode<T>());
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -1067,7 +1067,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
                if (value > 0)
                   {
                   value = -value;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getSubOpCode<T>());
+                  TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -1094,8 +1094,8 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
             // move constants up the tree so they will tend to get merged together
             node->setChild(1, lrChild);
             firstChild->setChild(1, secondChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp.getOpCodeValue());
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::ILOpCode::getAddOpCode<T>());
+            TR::Node::recreate(node, firstChildOp.getOpCodeValue());
+            TR::Node::recreate(firstChild, TR::ILOpCode::getAddOpCode<T>());
             node->setVisitCount(0);
             s->_alteredBlock = true;
             }
@@ -1216,7 +1216,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             node->setChild(0, 0);
             node->setChild(1, 0);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getConstOpCode<T>());
+            TR::Node::recreate(node, TR::ILOpCode::getConstOpCode<T>());
             if (secondChildOp.isAdd())
                node->setConst<T>(-1*rrChild->getConst<T>());
             else
@@ -1236,7 +1236,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized isub of iconst > 0 in node [%s] to iadd of -iconst \n", s->optDetailString(), node->getName(s->getDebug())))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getAddOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getAddOpCode<T>());
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setConst<T>(-secondChild->getConst<T>());
@@ -1259,7 +1259,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced xsub with negated second child in node [%s] to xadd\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getAddOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getAddOpCode<T>());
          node->setAndIncChild(1, newSecondChild);
          secondChild->recursivelyDecReferenceCount();
          node->setVisitCount(0);
@@ -1273,7 +1273,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced xsub with negated first child in node [%s] to ineg of xadd\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * newFirstChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getNegOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getNegOpCode<T>());
          TR::Node * newNode = TR::Node::create(node, TR::ILOpCode::getAddOpCode<T>(), 2);
          newNode->setAndIncChild(0, newFirstChild);
          newNode->setChild(1, secondChild);
@@ -1294,7 +1294,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced isub of bitwise complement and iconst -1 in node [%s] to 2s complement negation\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * firstGrandChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getNegOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getNegOpCode<T>());
          node->setAndIncChild(0, firstGrandChild);
          node->setNumChildren(1);
          secondChild->recursivelyDecReferenceCount();
@@ -1319,7 +1319,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
          if (iMulDecomposeReport)
             dumpOptDetails(s->comp(), "Putting the node back to imul with %d, for node [%s]. \n", MulComposerValue, MulComposerChild->getName(s->getDebug()));
-         TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getMulOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getMulOpCode<T>());
 
          node->setAndIncChild(0, MulComposerChild);
          constNode = TR::Node::create(node, TR::ILOpCode::getConstOpCode<T>(), 0, MulComposerValue);
@@ -1387,9 +1387,9 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getMulOpCode<T>());
+            TR::Node::recreate(node, TR::ILOpCode::getMulOpCode<T>());
             node->setChild(factorChild->getOpCode().isLoadConst() ? 1:0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::ILOpCode::getSubOpCode<T>());
+            TR::Node::recreate(secondChild, TR::ILOpCode::getSubOpCode<T>());
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -1446,7 +1446,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getAddOpCode<T>());
+                  TR::Node::recreate(node, TR::ILOpCode::getAddOpCode<T>());
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -1475,8 +1475,8 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             // move constants up the tree so they will tend to get merged together
             node->setChild(1, lrChild);
             firstChild->setChild(1, secondChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp.getOpCodeValue());
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::ILOpCode::getSubOpCode<T>());
+            TR::Node::recreate(node, firstChildOp.getOpCodeValue());
+            TR::Node::recreate(firstChild, TR::ILOpCode::getSubOpCode<T>());
             node->setVisitCount(0);
             s->_alteredBlock = true;
             }
@@ -1486,7 +1486,7 @@ TR::Node *subSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             firstChild->getConst<T>() == 0 &&
             performTransformation(s->comp(), "%sReduce xsub from 0 [%s] to xneg \n",s->optDetailString(),node->getName(s->getDebug())))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::negateOpCode(node->getDataType()));
+      TR::Node::recreate(node, TR::ILOpCode::negateOpCode(node->getDataType()));
       node->setVisitCount(0);
       node->getFirstChild()->recursivelyDecReferenceCount();
       node->setChild(0, node->getSecondChild());
@@ -1609,7 +1609,7 @@ static TR::Node *foldDemotionConversion(TR::Node * node, TR::ILOpCodes opcode, T
                               s->optDetailString(), node->getName(s->getDebug()), node->getOpCode().getName(),
                               firstChild->getName(s->getDebug()), firstChild->getOpCode().getName()))
       {
-      TR::Node::recreateAndCopyValidProperties(node, foldedOpCode);
+      TR::Node::recreate(node, foldedOpCode);
       node->setAndIncChild(0, firstChild->getFirstChild());
       s->prepareToStopUsingNode(firstChild, s->_curTree);
       firstChild->recursivelyDecReferenceCount();
@@ -1675,7 +1675,7 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
                // shift by > 31 bits gets constant 0
                if (newConversionOp == TR::BadILOp)
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, isUnsigned ? TR::iuconst : TR::iconst);
+                  TR::Node::recreate(node, isUnsigned ? TR::iuconst : TR::iconst);
                   firstChild->recursivelyDecReferenceCount();
                   node->setNumChildren(0);
                   node->setChild(0, 0);
@@ -1683,14 +1683,14 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(firstChild, isUnsigned ? TR::iuconst : TR::iconst);
+                  TR::Node::recreate(firstChild, isUnsigned ? TR::iuconst : TR::iconst);
                   firstChild->getFirstChild()->recursivelyDecReferenceCount();
                   firstChild->getSecondChild()->recursivelyDecReferenceCount();
                   firstChild->setInt(0);
                   firstChild->setNumChildren(0);
                   firstChild->setChild(0, 0);
                   firstChild->setChild(1, 0);
-                  TR::Node::recreateAndCopyValidProperties(node, newConversionOp);
+                  TR::Node::recreate(node, newConversionOp);
                   }
                s->_alteredBlock = true;
                simplifyChildren(node, block, s);
@@ -1705,16 +1705,16 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
             return false;
          if (newConversionOp == TR::BadILOp)
             {
-            TR::Node::recreateAndCopyValidProperties(node, isUnsigned ? TR::iuneg : TR::ineg);
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::l2i);
+            TR::Node::recreate(node, isUnsigned ? TR::iuneg : TR::ineg);
+            TR::Node::recreate(firstChild, TR::l2i);
             }
          else
             {
             TR::Node * temp = TR::Node::create(TR::l2i, 1, firstChild->getFirstChild());
             firstChild->getFirstChild()->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(firstChild, isUnsigned ? TR::iuneg : TR::ineg);
+            TR::Node::recreate(firstChild, isUnsigned ? TR::iuneg : TR::ineg);
             firstChild->setAndIncChild(0, temp);
-            TR::Node::recreateAndCopyValidProperties(node, newConversionOp);
+            TR::Node::recreate(node, newConversionOp);
             }
          s->_alteredBlock = true;
          simplifyChildren(node, block, s);
@@ -1736,21 +1736,21 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
    //
    if (newConversionOp == TR::BadILOp)
       {
-      TR::Node::recreateAndCopyValidProperties(node, newOp);
+      TR::Node::recreate(node, newOp);
       node->setNumChildren(2);
       node->setAndIncChild(1, convertSecondChild ?
             TR::Node::create(TR::l2i, 1, firstChild->getSecondChild()) :
             firstChild->getSecondChild());
       firstChild->getSecondChild()->decReferenceCount();
-      TR::Node::recreateAndCopyValidProperties(firstChild, TR::l2i);
+      TR::Node::recreate(firstChild, TR::l2i);
       firstChild->setNumChildren(1);
       firstChild->setChild(1, 0);
       firstChild->setIsNonNegative(false);
       }
    else
       {
-      TR::Node::recreateAndCopyValidProperties(node, newConversionOp);
-      TR::Node::recreateAndCopyValidProperties(firstChild, newOp);
+      TR::Node::recreate(node, newConversionOp);
+      TR::Node::recreate(firstChild, newOp);
       TR::Node * firstFirst  = firstChild->getFirstChild();
       TR::Node * firstSecond = firstChild->getSecondChild();
       TR::Node * temp0 = TR::Node::create(TR::l2i, 1, firstFirst);
@@ -2237,7 +2237,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
             (secondOp == TR::a2i))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, addresOp);
+            TR::Node::recreate(node, addresOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::a2i)
                {
@@ -2256,7 +2256,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::aconst);
+                  TR::Node::recreate(secondChild, TR::aconst);
                   secondChild->setIsClassPointerConstant(false);
                   }
                   dumpOptDetails(s->comp(), "Address Compare Conversion: found child 1 a2i and child 2 iconst in node %p\n", node);
@@ -2272,7 +2272,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
             (secondOp == TR::a2l))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, addresOp);
+            TR::Node::recreate(node, addresOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::a2l)
                {
@@ -2291,7 +2291,7 @@ static void addressCompareConversion(TR::Node * node, TR::Simplifier * s)
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::aconst);
+                  TR::Node::recreate(secondChild, TR::aconst);
                   secondChild->setIsClassPointerConstant(false);
                   }
                dumpOptDetails(s->comp(), "Address Compare Conversion: found child 1 a2l and child 2 lconst in node %p\n", node);
@@ -2319,7 +2319,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
               secondChild->getLongInt() <= INT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, intOp);
+            TR::Node::recreate(node, intOp);
             node->notifyChangeToValueOfNode();
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::i2l)
@@ -2335,7 +2335,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                {
                if (secondChild->getReferenceCount()==1)
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+                  TR::Node::recreate(secondChild, TR::iconst);
                   secondChild->setInt((int32_t)secondChild->getLongInt());
                   secondChild->notifyChangeToValueOfNode();
                   }
@@ -2367,7 +2367,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
              (val2 & 0xffffffff00000000ull) == 0 &&
              performTransformation(s->comp(), "%sLong compare narrower: equality with no upper bits [%p]\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, intOp);
+            TR::Node::recreate(node, intOp);
             node->notifyChangeToValueOfNode();
             TR::Node* ival1 = TR::Node::create(node, TR::iconst, 0);
             ival1->setInt((int)val1);
@@ -2395,7 +2395,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                  secondChild->getLongInt() <= USHRT_MAX))
                {
                node->setAndIncChild(0, firstChild->getFirstChild());
-               TR::Node::recreateAndCopyValidProperties(node, charOp);
+               TR::Node::recreate(node, charOp);
                node->notifyChangeToValueOfNode();
                firstChild->recursivelyDecReferenceCount();
                if (secondOp == TR::su2l)
@@ -2411,7 +2411,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                   {
                   if (secondChild->getReferenceCount()==1)
                      {
-                     TR::Node::recreateAndCopyValidProperties(secondChild, TR::cconst);
+                     TR::Node::recreate(secondChild, TR::cconst);
                      secondChild->setConst<uint16_t>((uint16_t)secondChild->getLongInt());
                      secondChild->notifyChangeToValueOfNode();
                      }
@@ -2440,7 +2440,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                  secondChild->getLongInt() <= SHRT_MAX))
                {
                node->setAndIncChild(0, firstChild->getFirstChild());
-               TR::Node::recreateAndCopyValidProperties(node, shortOp);
+               TR::Node::recreate(node, shortOp);
                node->notifyChangeToValueOfNode();
                firstChild->recursivelyDecReferenceCount();
                if (secondOp == TR::s2l)
@@ -2456,7 +2456,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                   {
                   if (secondChild->getReferenceCount()==1)
                      {
-                     TR::Node::recreateAndCopyValidProperties(secondChild, TR::sconst);
+                     TR::Node::recreate(secondChild, TR::sconst);
                      secondChild->setShortInt((int16_t)secondChild->getLongInt());
                      secondChild->notifyChangeToValueOfNode();
                      }
@@ -2486,7 +2486,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                  secondChild->getLongInt() <= SCHAR_MAX))
                {
                node->setAndIncChild(0, firstChild->getFirstChild());
-               TR::Node::recreateAndCopyValidProperties(node, byteOp);
+               TR::Node::recreate(node, byteOp);
                node->notifyChangeToValueOfNode();
                firstChild->recursivelyDecReferenceCount();
                if (secondOp == TR::b2l)
@@ -2502,7 +2502,7 @@ static void longCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCod
                   {
                   if (secondChild->getReferenceCount()==1)
                      {
-                     TR::Node::recreateAndCopyValidProperties(secondChild, TR::bconst);
+                     TR::Node::recreate(secondChild, TR::bconst);
                      secondChild->setByte((int8_t)secondChild->getLongInt());
                      secondChild->notifyChangeToValueOfNode();
                      }
@@ -3186,7 +3186,7 @@ static void decomposeMultiply(TR::Node *node, TR::Simplifier *s, bool isLong)
 
       TR::Node * decomposedMulNode = generateDecomposedTree(node, firstChild, s, bitPosition, operationType, 0, count, 0, isLong);
 
-      TR::Node::recreateAndCopyValidProperties(node, decomposedMulNode->getOpCodeValue());
+      TR::Node::recreate(node, decomposedMulNode->getOpCodeValue());
       node->setChild(0, decomposedMulNode->getFirstChild());
       if (decomposedMulNode->getNumChildren() == 2)
          {
@@ -3410,7 +3410,7 @@ static void changeConverts2Unsigned(TR::Node *node, TR::ILOpCodes searchOp,TR::S
 
       if (performTransformation(s->comp(), "%sConverted x2i [%s] to unsigned xu2i\n", s->optDetailString(), node->getName(s->getDebug())))
          {
-         TR::Node::recreateAndCopyValidProperties(node, newOp);
+         TR::Node::recreate(node, newOp);
          return;
          }
       }
@@ -4403,7 +4403,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
               secondChild->getInt() <= USHRT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, ushortOp);
+            TR::Node::recreate(node, ushortOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::su2i)
                {
@@ -4424,7 +4424,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::cconst);
+                  TR::Node::recreate(secondChild, TR::cconst);
                   secondChild->setConst<uint16_t>((uint16_t)secondChild->getInt());
                   }
                if (reportCompareDemotions)
@@ -4446,7 +4446,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
               secondChild->getInt() <= SHRT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, shortOp);
+            TR::Node::recreate(node, shortOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::s2i)
                {
@@ -4468,7 +4468,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::sconst);
+                  TR::Node::recreate(secondChild, TR::sconst);
                   secondChild->setShortInt((int16_t)secondChild->getInt());
                   }
                if (reportCompareDemotions)
@@ -4490,7 +4490,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
               secondChild->getInt() <= SCHAR_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, byteOp);
+            TR::Node::recreate(node, byteOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::b2i)
                {
@@ -4511,7 +4511,7 @@ static void intCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::ILOpCode
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::bconst);
+                  TR::Node::recreate(secondChild, TR::bconst);
                   secondChild->setByte((int8_t)secondChild->getInt());
                   }
 
@@ -4545,7 +4545,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
               secondChild->getUnsignedInt() <= USHRT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, ushortOp);
+            TR::Node::recreate(node, ushortOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::su2i)
                {
@@ -4566,7 +4566,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::cconst);
+                  TR::Node::recreate(secondChild, TR::cconst);
                   secondChild->setConst<uint16_t>((uint16_t)secondChild->getUnsignedInt());
                   }
                if (reportCompareDemotions)
@@ -4587,7 +4587,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
               secondChild->getUnsignedInt() <= SHRT_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, ushortOp);
+            TR::Node::recreate(node, ushortOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::s2i)
                {
@@ -4608,7 +4608,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::sconst);
+                  TR::Node::recreate(secondChild, TR::sconst);
                   secondChild->setShortInt((int16_t)secondChild->getInt());
                   }
                if (reportCompareDemotions)
@@ -4629,7 +4629,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
               secondChild->getUnsignedInt() <= SCHAR_MAX))
             {
             node->setAndIncChild(0, firstChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, ubyteOp);
+            TR::Node::recreate(node, ubyteOp);
             firstChild->recursivelyDecReferenceCount();
             if (secondOp == TR::b2i)
                {
@@ -4650,7 +4650,7 @@ static void unsignedIntCompareNarrower(TR::Node * node, TR::Simplifier * s, TR::
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(secondChild, TR::bconst);
+                  TR::Node::recreate(secondChild, TR::bconst);
                   secondChild->setByte((int8_t)secondChild->getInt());
                   }
 
@@ -4890,7 +4890,7 @@ static bool checkAndReplaceRotation(TR::Node *node,TR::Block *block, TR::Simplif
          TR_ASSERT(0, "Data Type of node %p not supported in checkAndReplaceRotation!\n",mulConstNode);
       }
 
-   TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::getRotateOpCodeFromDt(mulConstNode->getDataType())); // this line will have to change based on T
+   TR::Node::recreate(node, TR::ILOpCode::getRotateOpCodeFromDt(mulConstNode->getDataType())); // this line will have to change based on T
 
    // Set the common nonconst node (child of mul and shift) as the child of rol node,
    // and then recursively decrement both mul and shift node.
@@ -5069,7 +5069,7 @@ static bool convertToSinglePrecisionSQRT(TR::Simplifier *s,TR::Node *sqrtCall)
    TR_ASSERT(callTreeTop != NULL, "should have been able to find this tree top (call %p) in block %d",
            sqrtCall, s->_curTree->getEnclosingBlock()->getNumber());
 
-   TR::Node::recreateAndCopyValidProperties(sqrtCall, TR::fcall);
+   TR::Node::recreate(sqrtCall, TR::fcall);
    sqrtCall->setSymbolReference(fsqrtSymRef);
 
    // replace child
@@ -5080,7 +5080,7 @@ static bool convertToSinglePrecisionSQRT(TR::Simplifier *s,TR::Node *sqrtCall)
    if (callTreeNode->getOpCode().isResolveCheck())
       {
       if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-         TR::Node::recreateAndCopyValidProperties(callTreeNode, TR::treetop);
+         TR::Node::recreate(callTreeNode, TR::treetop);
       else
          TR_ASSERT(0, "Null check not expected in call to static method sqrt\n");
       }
@@ -5513,7 +5513,7 @@ static void bitwiseToLogical(TR::Node * node, TR::Block * block, TR::Simplifier 
       isZero = !isZero;
 
    // fixup current tree to do the first compare
-   TR::Node::recreateAndCopyValidProperties(node, (disjunctive) ?
+   TR::Node::recreate(node, (disjunctive) ?
                         cmp1->getOpCode().convertCmpToIfCmp() :
                         TR::ILOpCode(cmp1->getOpCode().getOpCodeForReverseBranch()).convertCmpToIfCmp());
    node->setAndIncChild(0, cmp1->getFirstChild ());
@@ -5876,7 +5876,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
             node->setChild(0, secondChild);
             }
 
-         TR::Node::recreateAndCopyValidProperties(node, s->comp()->il.opCodeForDirectStore(addrDataType));
+         TR::Node::recreate(node, s->comp()->il.opCodeForDirectStore(addrDataType));
          node->setSymbolReference(firstChild->getSymbolReference());
          firstChild->recursivelyDecReferenceCount();
          node->setNumChildren(1);
@@ -5934,7 +5934,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
          if (removeWrtBar && !s->comp()->getOptions()->realTimeGC() &&
              performTransformation(s->comp(), "%sFolded indirect write barrier to iastore because GC could not have occurred enough times to require iwrtbar [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::astorei);
+            TR::Node::recreate(node, TR::astorei);
             node->getChild(2)->recursivelyDecReferenceCount();
             node->setNumChildren(2);
             }
@@ -6269,7 +6269,7 @@ TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
             TR::Node* divConstNode = TR::Node::create(node, TR::lconst);
             divConstNode->setLongInt(divisor);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::ldiv);
+            TR::Node::recreate(node, TR::ldiv);
             node->setNumChildren(2);
             node->setAndIncChild(0, lcallNode);
 
@@ -6279,7 +6279,7 @@ TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
             if (callTreeNode->getOpCode().isResolveCheck())
                {
                if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-                  TR::Node::recreateAndCopyValidProperties(callTreeNode, TR::treetop);
+                  TR::Node::recreate(callTreeNode, TR::treetop);
                else
                   TR_ASSERT(0, "Null check not expected in call to static method in class System\n");
                }
@@ -6306,7 +6306,7 @@ TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
             TR::Node* mulConstNode = TR::Node::create(node, TR::lconst);
             mulConstNode->setLongInt(multiplier);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::lmul);
+            TR::Node::recreate(node, TR::lmul);
             node->setNumChildren(2);
             node->setAndIncChild(0, lcallNode);
 
@@ -6316,7 +6316,7 @@ TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
             if (callTreeNode->getOpCode().isResolveCheck())
                {
                if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-                  TR::Node::recreateAndCopyValidProperties(callTreeNode, TR::treetop);
+                  TR::Node::recreate(callTreeNode, TR::treetop);
                else
                   TR_ASSERT(0, "Null check not expected in call to static method in class System\n");
                }
@@ -6440,7 +6440,7 @@ TR::Node *acallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
       for (i = 0; i < node->getNumChildren(); i++)
          node->getChild(i)->recursivelyDecReferenceCount();
 
-      TR::Node::recreateAndCopyValidProperties(node, TR::PassThrough);
+      TR::Node::recreate(node, TR::PassThrough);
       node->setNumChildren(1);
       }
 #endif
@@ -6525,7 +6525,7 @@ TR::Node *anchorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+            TR::Node::recreate(node, TR::treetop);
             ////firstChild->decReferenceCount();
             secondChild->decReferenceCount();
             node->setNumChildren(1);
@@ -6618,7 +6618,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if (performTransformation(s->comp(), "%sReduced iadd of -1 and an ineg in node [%s] to bitwise complement\n", s->optDetailString(), node->getName(s->getDebug())))
             {
             s->anchorChildren(node, s->_curTree);
-            TR::Node::recreateAndCopyValidProperties(node, TR::ixor);
+            TR::Node::recreate(node, TR::ixor);
             node->setAndIncChild(0, newFirstChild);
             firstChild->recursivelyDecReferenceCount();
             node->setVisitCount(0);
@@ -6630,7 +6630,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       else if (performTransformation(s->comp(), "%sReduced iadd with negated first child in node [%s] to isub\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          s->anchorChildren(node, s->_curTree);
-         TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+         TR::Node::recreate(node, TR::isub);
          node->setAndIncChild(1, newFirstChild);
          node->setChild(0, secondChild);
          firstChild->recursivelyDecReferenceCount();
@@ -6646,7 +6646,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          s->anchorChildren(node, s->_curTree);
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+         TR::Node::recreate(node, TR::isub);
          node->setAndIncChild(1, newSecondChild);
          secondChild->recursivelyDecReferenceCount();
          s->_alteredBlock = true;
@@ -6669,7 +6669,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
          if (iMulDecomposeReport)
             dumpOptDetails(s->comp(), "Putting the node back to imul with %d, for node [%s]. \n", iMulComposerValue, iMulComposerChild->getName(s->getDebug()));
-         TR::Node::recreateAndCopyValidProperties(node, TR::imul);
+         TR::Node::recreate(node, TR::imul);
 
          node->setAndIncChild(0, iMulComposerChild);
          constNode = TR::Node::create(node, TR::iconst, 0, iMulComposerValue);
@@ -6737,9 +6737,9 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::imul);
+            TR::Node::recreate(node, TR::imul);
             node->setChild(0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::iadd);
+            TR::Node::recreate(secondChild, TR::iadd);
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -6787,7 +6787,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                if (value > 0)
                   {
                   value = -value;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+                  TR::Node::recreate(node, TR::isub);
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -6814,8 +6814,8 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             // move constants up the tree so they will tend to get merged together
             node->setChild(1, lrChild);
             firstChild->setChild(1, secondChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::iadd);
+            TR::Node::recreate(node, firstChildOp);
+            TR::Node::recreate(firstChild, TR::iadd);
             firstChild->setIsNonZero(false);
             firstChild->setIsZero(false);
             firstChild->setIsNonNegative(false);
@@ -6972,7 +6972,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       int64_t val2 = (secondChild->getDataType() == TR::Address) ? secondChild->getAddress() : secondChild->getLongInt();
       foldLongIntConstant(node, val1 + val2, s, false /* !anchorChildren */);
       if (node->getOpCodeValue() == TR::aladd)
-         TR::Node::recreateAndCopyValidProperties(node, TR::aconst);
+         TR::Node::recreate(node, TR::aconst);
 
       return node;
       }
@@ -6999,7 +6999,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized ladd of lconst > 0 in node [" POINTER_PRINTF_FORMAT "] to lsub of -lconst\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+         TR::Node::recreate(node, TR::lsub);
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setLongInt(-secondChild->getLongInt());
@@ -7027,7 +7027,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if (performTransformation(s->comp(), "%sReduced ladd of -1 and an lneg in node [" POINTER_PRINTF_FORMAT "] to bitwise complement\n", s->optDetailString(), node))
             {
             s->anchorChildren(node, s->_curTree);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lxor);
+            TR::Node::recreate(node, TR::lxor);
             node->setAndIncChild(0, newFirstChild);
             firstChild->recursivelyDecReferenceCount();
             node->setVisitCount(0);
@@ -7040,7 +7040,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if (performTransformation(s->comp(), "%sReduced ladd with negated first child in node [" POINTER_PRINTF_FORMAT "] to lsub\n", s->optDetailString(), node))
             {
             s->anchorChildren(node, s->_curTree);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+            TR::Node::recreate(node, TR::lsub);
             node->setAndIncChild(1, newFirstChild);
             node->setChild(0, secondChild);
             firstChild->recursivelyDecReferenceCount();
@@ -7057,7 +7057,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          s->anchorChildren(node, s->_curTree);
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+         TR::Node::recreate(node, TR::lsub);
          node->setAndIncChild(1, newSecondChild);
          secondChild->recursivelyDecReferenceCount();
          node->setVisitCount(0);
@@ -7100,9 +7100,9 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          if (factorChild)
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::lmul);
+            TR::Node::recreate(node, TR::lmul);
             node->setChild(0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::ladd);
+            TR::Node::recreate(secondChild, TR::ladd);
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -7146,7 +7146,7 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                if (value > 0)
                   {
                   value = -value;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+                  TR::Node::recreate(node, TR::lsub);
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -7172,8 +7172,8 @@ TR::Node *laddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                {
                node->setChild(1, lrChild);
                firstChild->setChild(1, secondChild);
-               TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
-               TR::Node::recreateAndCopyValidProperties(firstChild, TR::ladd);
+               TR::Node::recreate(node, firstChildOp);
+               TR::Node::recreate(firstChild, TR::ladd);
                node->setVisitCount(0);
                s->_alteredBlock = true;
                }
@@ -7398,7 +7398,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             node->setChild(0, 0);
             node->setChild(1, 0);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+            TR::Node::recreate(node, TR::iconst);
             if (secondChildOp == TR::iadd)
                node->setInt(-1*rrChild->getInt());
             else
@@ -7418,7 +7418,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized isub of iconst > 0 in node [%s] to iadd of -iconst \n", s->optDetailString(), node->getName(s->getDebug())))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+         TR::Node::recreate(node, TR::iadd);
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setInt(-secondChild->getInt());
@@ -7441,7 +7441,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced isub with negated second child in node [%s] to iadd\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+         TR::Node::recreate(node, TR::iadd);
          node->setAndIncChild(1, newSecondChild);
          secondChild->recursivelyDecReferenceCount();
          node->setVisitCount(0);
@@ -7455,7 +7455,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced isub with negated first child in node [%s] to ineg of iadd\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * newFirstChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ineg);
+         TR::Node::recreate(node, TR::ineg);
          TR::Node * newNode = TR::Node::create(node, TR::iadd, 2);
          newNode->setAndIncChild(0, newFirstChild);
          newNode->setChild(1, secondChild);
@@ -7476,7 +7476,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced isub of bitwise complement and iconst -1 in node [%s] to 2s complement negation\n", s->optDetailString(), node->getName(s->getDebug())))
          {
          TR::Node * firstGrandChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ineg);
+         TR::Node::recreate(node, TR::ineg);
          node->setAndIncChild(0, firstGrandChild);
          node->setNumChildren(1);
          secondChild->recursivelyDecReferenceCount();
@@ -7500,7 +7500,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
          if (iMulDecomposeReport)
             dumpOptDetails(s->comp(), "Putting the node back to imul with %d, for node [%s]. \n", iMulComposerValue, iMulComposerChild->getName(s->getDebug()));
-         TR::Node::recreateAndCopyValidProperties(node, TR::imul);
+         TR::Node::recreate(node, TR::imul);
 
          node->setAndIncChild(0, iMulComposerChild);
          constNode = TR::Node::create(node, TR::iconst, 0, iMulComposerValue);
@@ -7568,9 +7568,9 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::imul);
+            TR::Node::recreate(node, TR::imul);
             node->setChild(factorChild->getOpCode().isLoadConst() ? 1:0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::isub);
+            TR::Node::recreate(secondChild, TR::isub);
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -7627,7 +7627,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+                  TR::Node::recreate(node, TR::iadd);
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -7656,8 +7656,8 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             // move constants up the tree so they will tend to get merged together
             node->setChild(1, lrChild);
             firstChild->setChild(1, secondChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::isub);
+            TR::Node::recreate(node, firstChildOp);
+            TR::Node::recreate(firstChild, TR::isub);
 
             // conservatively reset flags -- a future pass of VP will set them up
             // again if needed
@@ -7677,7 +7677,7 @@ TR::Node *isubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             node->getFirstChild()->get64bitIntegralValue() == 0 &&
             performTransformation(s->comp(), "%sReduce isub from 0 [%s] to ineg \n",s->optDetailString(),node->getName(s->getDebug())))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ILOpCode::negateOpCode(node->getDataType()));
+      TR::Node::recreate(node, TR::ILOpCode::negateOpCode(node->getDataType()));
       node->setVisitCount(0);
       node->getFirstChild()->recursivelyDecReferenceCount();
       node->setChild(0, node->getSecondChild());
@@ -7812,7 +7812,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             node->setChild(0, 0);
             node->setChild(1, 0);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::lconst);
+            TR::Node::recreate(node, TR::lconst);
             if (secondChildOp == TR::ladd)
                node->setLongInt(-1*rrChild->getLongInt());
             else
@@ -7832,7 +7832,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sNormalized lsub of lconst > 0 in node [" POINTER_PRINTF_FORMAT "] to ladd of -lconst \n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+         TR::Node::recreate(node, TR::ladd);
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setLongInt(-secondChild->getLongInt());
@@ -7856,7 +7856,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced lsub with negated second child in node [" POINTER_PRINTF_FORMAT "] to ladd\n", s->optDetailString(), node))
          {
          TR::Node * newSecondChild = secondChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+         TR::Node::recreate(node, TR::ladd);
          node->setChild(1, newSecondChild);
          if (secondChild->decReferenceCount() != 0)
             {
@@ -7873,7 +7873,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced lsub with negated first child in node [" POINTER_PRINTF_FORMAT "] to lneg of ladd\n", s->optDetailString(), node))
          {
          TR::Node * newFirstChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::lneg);
+         TR::Node::recreate(node, TR::lneg);
          TR::Node * newNode = TR::Node::create(node, TR::ladd, 2);
          newNode->setChild(0, newFirstChild);
          newNode->setChild(1, secondChild);
@@ -7897,7 +7897,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (performTransformation(s->comp(), "%sReduced lsub of bitwise complement and lconst -1 in node [" POINTER_PRINTF_FORMAT "] to 2s complement negation\n", s->optDetailString(), node))
          {
          TR::Node * firstGrandChild = firstChild->getFirstChild();
-         TR::Node::recreateAndCopyValidProperties(node, TR::lneg);
+         TR::Node::recreate(node, TR::lneg);
          node->setAndIncChild(0, firstGrandChild);
          node->setNumChildren(1);
          secondChild->recursivelyDecReferenceCount();
@@ -7943,9 +7943,9 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          if (factorChild)
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::lmul);
+            TR::Node::recreate(node, TR::lmul);
             node->setChild(0, factorChild)->decReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(secondChild, TR::lsub);
+            TR::Node::recreate(secondChild, TR::lsub);
             firstChild->decReferenceCount();
             secondChild->setVisitCount(0);
             node->setVisitCount(0);
@@ -7991,7 +7991,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+                  TR::Node::recreate(node, TR::ladd);
                   }
                if (secondChild->getReferenceCount() == 1)
                   {
@@ -8017,8 +8017,8 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                {
                node->setChild(1, lrChild);
                firstChild->setChild(1, secondChild);
-               TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
-               TR::Node::recreateAndCopyValidProperties(firstChild, TR::lsub);
+               TR::Node::recreate(node, firstChildOp);
+               TR::Node::recreate(firstChild, TR::lsub);
                node->setVisitCount(0);
                s->_alteredBlock = true;
                }
@@ -8039,7 +8039,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
           (lSubValue & (lSubValue + 1)) == 0 &&
           lAndValue <= lSubValue)
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::lxor);
+         TR::Node::recreate(node, TR::lxor);
          node->setVisitCount(0);
          s->_alteredBlock = true;
          node = s->simplify(node, block);
@@ -8214,7 +8214,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                         }
                      else
                         {
-                        TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+                        TR::Node::recreate(node, TR::ladd);
                         }
 
                      if (secondChild->getReferenceCount() == 1)
@@ -8304,7 +8304,7 @@ TR::Node *lsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (((mask + 1) & mask) == 0 && // mask + 1 power of two?
           performTransformation(s->comp(), "%sNext lower pwr of 2 using land [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
          {
-         node->recreateAndCopyValidProperties(node, TR::land);
+         node->recreate(node, TR::land);
          TR::Node* maskNode = TR::Node::create(node, TR::lconst, 0);
          mask = ~mask;
          maskNode->setLongInt(mask);
@@ -8441,7 +8441,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
        secondChild->getInt() != TR::getMinSigned<TR::Int32>() &&
        performTransformation(s->comp(), "%sFound a*(-c) = -(a*c) in imul [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::ineg);
+      TR::Node::recreate(node, TR::ineg);
       node->setNumChildren(1);
       if (secondChild->getReferenceCount() == 1)
          {
@@ -8529,12 +8529,12 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if (product > 0)
             {
             productNode->setInt((int32_t)-product);
-            TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+            TR::Node::recreate(node, TR::isub);
             }
          else
             {
             productNode->setInt((int32_t)product);
-            TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+            TR::Node::recreate(node, TR::iadd);
             }
          if (firstChild->getReferenceCount() != 1)
             {
@@ -8548,7 +8548,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::imul);
+            TR::Node::recreate(firstChild, TR::imul);
             }
          if (lrChild->getReferenceCount() != 1)
             {
@@ -8593,7 +8593,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          TR::Node *firstChild = node->getFirstChild();
          TR::Node *secondChild = node->getSecondChild();
 
-         TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+         TR::Node::recreate(node, TR::iand);
 
          TR::Node * newConst = TR::Node::create(node, TR::iconst, 0);
          newConst->setInt(~(size-1));
@@ -8647,11 +8647,11 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sApplied reassociation rule 11 to node 0x%p\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+         TR::Node::recreate(node, TR::iadd);
          TR::Node *newSecondChild = TR::Node::create(node, TR::imul, 2);
          newSecondChild->setChild(0, node->getFirstChild()->getSecondChild());
          newSecondChild->setAndIncChild(1, node->getSecondChild());
-         TR::Node::recreateAndCopyValidProperties(node->getFirstChild(), TR::imul);
+         TR::Node::recreate(node->getFirstChild(), TR::imul);
          node->getFirstChild()->setChild(1, node->getSecondChild());
          node->setAndIncChild(1, newSecondChild);
 
@@ -8671,7 +8671,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sApplied reassociation rule 13 to node 0x%p\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+         TR::Node::recreate(node, TR::iadd);
          TR::Node *firstChild = node->getFirstChild();
          TR::Node *secondChild = node->getSecondChild();
 
@@ -8705,7 +8705,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sApplied reassociation rule 15 to node 0x%p\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+         TR::Node::recreate(node, TR::isub);
          TR::Node *firstChild = node->getFirstChild();
          TR::Node *secondChild = node->getSecondChild();
 
@@ -8720,7 +8720,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          // if e2 is const, convert node to TR::iadd
          if (mul2->getFirstChild()->getOpCodeValue() == TR::iconst)
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+            TR::Node::recreate(node, TR::iadd);
             TR::Node * newConst = TR::Node::create(node, TR::iconst, 0);
             newConst->setInt(-mul2->getFirstChild()->getInt());
             mul2->getFirstChild()->recursivelyDecReferenceCount();
@@ -8729,7 +8729,7 @@ TR::Node *imulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          // if c is const, convert node to TR::iadd
          else if (mul2->getSecondChild()->getOpCodeValue() == TR::iconst)
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+            TR::Node::recreate(node, TR::iadd);
             TR::Node * newConst = TR::Node::create(node, TR::iconst, 0);
             newConst->setInt(-mul2->getSecondChild()->getInt());
             mul2->getSecondChild()->recursivelyDecReferenceCount();
@@ -8835,12 +8835,12 @@ TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if (product > 0)
             {
             productNode->setLongInt((int64_t)-product);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+            TR::Node::recreate(node, TR::lsub);
             }
          else
             {
             productNode->setLongInt((int64_t)product);
-            TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+            TR::Node::recreate(node, TR::ladd);
             }
 
          TR::Node *newFirst = TR::Node::create(firstChild, TR::lmul, 2);
@@ -8895,12 +8895,12 @@ TR::Node *lmulSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             if (product > 0)
                {
                productNode->setLongInt((int64_t)-product);
-               TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+               TR::Node::recreate(node, TR::lsub);
                }
             else
                {
                productNode->setLongInt((int64_t)product);
-               TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+               TR::Node::recreate(node, TR::ladd);
                }
 
 
@@ -9156,7 +9156,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                firstChild->incReferenceCount();
 
                s->prepareToReplaceNode(node);
-               TR::Node::recreateAndCopyValidProperties(node, TR::ineg);
+               TR::Node::recreate(node, TR::ineg);
                node->setChild(0, firstChild);
                node->setNumChildren(1);
                }
@@ -9190,7 +9190,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             newNode3->getSecondChild()->incReferenceCount();
             if (divisor>0)
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::ishr);
+               TR::Node::recreate(node, TR::ishr);
                node->setFirst(newNode3);
                node->setSecond(TR::Node::create(node, TR::iconst, 0, shftAmnt));
                node->getSecondChild()->incReferenceCount();
@@ -9202,7 +9202,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                newNode4->setSecond(TR::Node::create(node, TR::iconst, 0, shftAmnt));
                newNode4->getFirstChild()->incReferenceCount();
                newNode4->getSecondChild()->incReferenceCount();
-               TR::Node::recreateAndCopyValidProperties(node, TR::ineg);
+               TR::Node::recreate(node, TR::ineg);
                node->setNumChildren(1);
                node->setFirst(newNode4);
                }
@@ -9256,7 +9256,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                           TR::Node::create(node3, TR::iconst, 0, 31));
 
              s->prepareToReplaceNode(node);
-             TR::Node::recreateAndCopyValidProperties(node, TR::iadd);
+             TR::Node::recreate(node, TR::iadd);
              node->setAndIncChild(0, node3);
              node->setAndIncChild(1, node4);
              node->setNumChildren(2);
@@ -9283,7 +9283,7 @@ TR::Node *idivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             // Replace 'node' with our calculation.
             s->prepareToReplaceNode(node);
-            TR::Node::recreateAndCopyValidProperties(node, quotient->getOpCodeValue());
+            TR::Node::recreate(node, quotient->getOpCodeValue());
             // Note that we don't have to incRef since the function call
             // already took care of this for us.
             node->setFirst(quotient->getFirstChild());
@@ -9337,7 +9337,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                firstChild->incReferenceCount();
 
                s->prepareToReplaceNode(node);
-               TR::Node::recreateAndCopyValidProperties(node, TR::lneg);
+               TR::Node::recreate(node, TR::lneg);
                node->setChild(0, firstChild);
                node->setNumChildren(1);
                }
@@ -9365,7 +9365,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
                      TR::Node * node1 = TR::Node::create(TR::lshr, 2, firstChild, newChild);
                      s->prepareToReplaceNode(node);
-                     TR::Node::recreateAndCopyValidProperties(node, TR::lneg);
+                     TR::Node::recreate(node, TR::lneg);
                      node->setAndIncChild(0, node1);
                      node->setNumChildren(1);
                      }
@@ -9374,7 +9374,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   {
                   if (performTransformation(s->comp(), "%sReduced ldiv power of 2 with lshr in node [%p]\n", s->optDetailString(), node))
                      {
-                     TR::Node::recreateAndCopyValidProperties(node, TR::lshr);
+                     TR::Node::recreate(node, TR::lshr);
                      if (secondChild->getReferenceCount() > 1)
                         {
                         secondChild->decReferenceCount();
@@ -9384,7 +9384,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                         }
                      else
                         {
-                        TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+                        TR::Node::recreate(secondChild, TR::iconst);
                         }
                      secondChild->setInt(shiftAmount);
                      s->_alteredBlock = true;
@@ -9403,7 +9403,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                      node1 = TR::Node::create(TR::lneg, 1, firstChild );
 
                      s->prepareToReplaceNode(node);
-                     TR::Node::recreateAndCopyValidProperties(node, TR::lshr);
+                     TR::Node::recreate(node, TR::lshr);
                      node->setAndIncChild(0, node1);
                      node->setAndIncChild(1, shiftNode);
                      node->setNumChildren(2);
@@ -9420,7 +9420,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
                         node1 = TR::Node::create(TR::ladd, 2, firstChild, newChild);
                         s->prepareToReplaceNode(node);
-                        TR::Node::recreateAndCopyValidProperties(node, TR::lshr);
+                        TR::Node::recreate(node, TR::lshr);
                         node->setAndIncChild(0, node1);
                         node->setAndIncChild(1, shiftNode);
                         node->setNumChildren(2);
@@ -9428,7 +9428,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                      else
                         {
                         s->prepareToReplaceNode(node);
-                        TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+                        TR::Node::recreate(node, TR::ladd);
                         node->setAndIncChild(0, TR::Node::create(TR::lshr, 2, firstChild, shiftNode));
 
                         // This is a convulted way of expressing:
@@ -9480,7 +9480,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                newNode3->getSecondChild()->incReferenceCount();
                if (divisor>0)
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::lshr);
+                  TR::Node::recreate(node, TR::lshr);
                   node->setFirst(newNode3);
                   node->setSecond(TR::Node::create(node, TR::iconst, 0, shftAmnt));
                   node->getSecondChild()->incReferenceCount();
@@ -9492,7 +9492,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   newNode4->setSecond(TR::Node::create(node, TR::iconst, 0, shftAmnt));
                   newNode4->getFirstChild()->incReferenceCount();
                   newNode4->getSecondChild()->incReferenceCount();
-                  TR::Node::recreateAndCopyValidProperties(node, TR::lneg);
+                  TR::Node::recreate(node, TR::lneg);
                   node->setNumChildren(1);
                   node->setFirst(newNode4);
                   }
@@ -9551,7 +9551,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                                         TR::Node::create(node3, TR::iconst, 0, 63));
                 }
              s->prepareToReplaceNode(node);
-             TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+             TR::Node::recreate(node, TR::ladd);
              node->setAndIncChild(0, node3);
              node->setAndIncChild(1, node4);
              node->setNumChildren(2);
@@ -9578,7 +9578,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          secondChild->recursivelyDecReferenceCount();
 
          //s->prepareToReplaceNode(node);
-         TR::Node::recreateAndCopyValidProperties(node, TR::i2l);
+         TR::Node::recreate(node, TR::i2l);
          node->setAndIncChild(0, divNode);
          node->setNumChildren(1);
 
@@ -9602,7 +9602,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             divCheckParent = curTree->getNode();
 
          transformToLongDivBy10Bitwise(node, node, s);
-         TR::Node::recreateAndCopyValidProperties(node, TR::ladd);
+         TR::Node::recreate(node, TR::ladd);
          firstChild->recursivelyDecReferenceCount();
          secondChild->recursivelyDecReferenceCount();
 
@@ -9639,7 +9639,7 @@ TR::Node *fdivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
       if (isNZFloatPowerOfTwo(secondChild->getFloat()))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::fmul);
+         TR::Node::recreate(node, TR::fmul);
          float multiplier = floatRecip(secondChild->getFloat());
          if (secondChild->getReferenceCount() > 1)
             {
@@ -9697,7 +9697,7 @@ TR::Node *ddivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
       if (isNZDoublePowerOfTwo(secondChild->getDouble()))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::dmul);
+         TR::Node::recreate(node, TR::dmul);
          double multiplier = doubleRecip(secondChild->getDouble());
          if (secondChild->getReferenceCount() > 1)
             {
@@ -9796,7 +9796,7 @@ TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                {
                secondChild->decReferenceCount();
                TR::Node *newNode = TR::Node::create(node, TR::iconst, 0, ((uint32_t)divisor) - 1);
-               TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+               TR::Node::recreate(node, TR::iand);
                node->setSecond(newNode);
                node->getSecondChild()->incReferenceCount();
                return node;
@@ -9829,7 +9829,7 @@ TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                newNode4->setSecond(TR::Node::create(node, TR::iconst, 0, divisor>0 ? -divisor : divisor));
                newNode4->getFirstChild()->incReferenceCount();
                newNode4->getSecondChild()->incReferenceCount();
-               TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+               TR::Node::recreate(node, TR::isub);
                node->setFirst(firstChild);
                node->setSecond(newNode4);
                node->getFirstChild()->incReferenceCount();
@@ -9871,7 +9871,7 @@ TR::Node *iremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             // Replace 'node' with our calculation.
             s->prepareToReplaceNode(node);
-            TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+            TR::Node::recreate(node, TR::isub);
             // Note that we have to incRef here since we haven't already
             // accounted for these references.
             node->setAndIncChild(0,firstChild);
@@ -9954,7 +9954,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             newNode4->getSecondChild()->setLongInt(negDivisor);
             newNode4->getFirstChild()->incReferenceCount();
             newNode4->getSecondChild()->incReferenceCount();
-            TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+            TR::Node::recreate(node, TR::lsub);
             node->setFirst(firstChild);
             node->setSecond(newNode4);
             node->getFirstChild()->incReferenceCount();
@@ -9988,7 +9988,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             // Replace 'node' with our calculation.
             s->prepareToReplaceNode(node);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+            TR::Node::recreate(node, TR::lsub);
             // We need to incRef here because we've not accounted for these 2
             // references yet.
             node->setAndIncChild(0,firstChild);
@@ -10019,7 +10019,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          firstChild->recursivelyDecReferenceCount();
          secondChild->recursivelyDecReferenceCount();
 
-         TR::Node::recreateAndCopyValidProperties(node, TR::i2l);
+         TR::Node::recreate(node, TR::i2l);
          node->setAndIncChild(0, remNode);
          node->setNumChildren(1);
 
@@ -10048,7 +10048,7 @@ TR::Node *lremSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          transformToLongDivBy10Bitwise(node, ldivNode, s);
 
          // Modify the lrem node
-         TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+         TR::Node::recreate(node, TR::lsub);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild);
          node->setAndIncChild(1, TR::Node::create(TR::lmul, 2, ldivNode, secondChild));
@@ -10185,7 +10185,7 @@ TR::Node *inegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sReduced ineg with isub child in node [" POINTER_PRINTF_FORMAT "] to isub\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::isub);
+         TR::Node::recreate(node, TR::isub);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild->getSecondChild());
          node->setAndIncChild(1, firstChild->getFirstChild());
@@ -10205,7 +10205,7 @@ TR::Node *inegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          TR::Node* shift = TR::Node::create(node, TR::lshr, 2);
          shift->setAndIncChild(0, firstFirst->getFirstChild());
          shift->setAndIncChild(1, firstFirst->getSecondChild());
-         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         TR::Node::recreate(node, TR::l2i);
          node->setAndIncChild(0, shift);
          firstChild->recursivelyDecReferenceCount();
          }
@@ -10240,7 +10240,7 @@ TR::Node *lnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       if (performTransformation(s->comp(), "%sReduced lneg with lsub child in node [" POINTER_PRINTF_FORMAT "]\n to lsub", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::lsub);
+         TR::Node::recreate(node, TR::lsub);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild->getSecondChild());
          node->setAndIncChild(1, firstChild->getFirstChild());
@@ -10474,7 +10474,7 @@ TR::Node *ishlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       // Normalize shift by a constant into multiply by a constant
       //
-      TR::Node::recreateAndCopyValidProperties(node, node->getOpCodeValue() == TR::iushl ? TR::iumul : TR::imul);
+      TR::Node::recreate(node, node->getOpCodeValue() == TR::iushl ? TR::iumul : TR::imul);
       int32_t multiplier = 1 << (secondChild->getInt() & INT_SHIFT_MASK);
       if (secondChild->getReferenceCount() > 1)
          {
@@ -10512,7 +10512,7 @@ TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       // Canonicalize shift by a constant into multiply by a constant
       //
       performTransformation(s->comp(), "%sCanonicalize long left shift by constant in node [" POINTER_PRINTF_FORMAT "] to long multiply by power of 2\n", s->optDetailString(), node);
-      TR::Node::recreateAndCopyValidProperties(node, TR::lmul);
+      TR::Node::recreate(node, TR::lmul);
       int64_t multiplier = (int64_t)CONSTANT64(1) << (secondChild->getInt() & LONG_SHIFT_MASK);
       if (secondChild->getReferenceCount() > 1)
          {
@@ -10523,7 +10523,7 @@ TR::Node *lshlSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
       else
          {
-         TR::Node::recreateAndCopyValidProperties(secondChild, TR::lconst);
+         TR::Node::recreate(secondChild, TR::lconst);
          }
       secondChild->setLongInt(multiplier);
       s->_alteredBlock = true;
@@ -10679,7 +10679,7 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
                {
                if (performTransformation(s->comp(), "%sReduced left shift followed by iushr equivalent to zero extend short in node [" POINTER_PRINTF_FORMAT "] to su2i\n", s->optDetailString(), node))
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::su2i);
+                  TR::Node::recreate(node, TR::su2i);
                   foundZeroExtension = true;
                   }
                }
@@ -10687,7 +10687,7 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
                {
                if (performTransformation(s->comp(), "%sReduced left shift followed by iushr equivalent to zero extend byte in node [" POINTER_PRINTF_FORMAT "] to bu2i\n", s->optDetailString(), node))
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::bu2i);
+                  TR::Node::recreate(node, TR::bu2i);
                   foundZeroExtension = true;
                   }
                }
@@ -10707,7 +10707,7 @@ TR::Node *iushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
          //
          if (performTransformation(s->comp(), "%sReduced left shift followed by iushr in node [" POINTER_PRINTF_FORMAT "] to iand with mask\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+            TR::Node::recreate(node, TR::iand);
             uint32_t mask = (UINT_MAX >> rightShiftValue);
             if (secondChild->getReferenceCount() == 1)
                secondChild->setInt(mask);
@@ -10807,7 +10807,7 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
                if (performTransformation(s->comp(), "%sReduced left shift followed by lushr equivalent to zero extend int in node [" POINTER_PRINTF_FORMAT "] to iu2l\n", s->optDetailString(), node))
                   {
                   foundZeroExtension = true;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::iu2l);
+                  TR::Node::recreate(node, TR::iu2l);
                   }
                }
             else if (opCode == TR::s2l && rightShiftValue == 48)
@@ -10815,7 +10815,7 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
                if (performTransformation(s->comp(), "%sReduced left shift followed by lushr equivalent to zero extend byte in node [" POINTER_PRINTF_FORMAT "] to bu2l\n", s->optDetailString(), node))
                   {
                   foundZeroExtension = true;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::su2l);
+                  TR::Node::recreate(node, TR::su2l);
                   }
                }
             else if (opCode == TR::b2l && rightShiftValue == 56)
@@ -10823,7 +10823,7 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
                if (performTransformation(s->comp(), "%sReduced left shift followed by lushr equivalent to zero extend byte in node [" POINTER_PRINTF_FORMAT "] to bu2l\n", s->optDetailString(), node))
                   {
                   foundZeroExtension = true;
-                  TR::Node::recreateAndCopyValidProperties(node, TR::bu2l);
+                  TR::Node::recreate(node, TR::bu2l);
                   }
                }
             if (foundZeroExtension)
@@ -10842,11 +10842,11 @@ TR::Node *lushrSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s
          //
          if (performTransformation(s->comp(), "%sReduced left shift followed by lushr in node [" POINTER_PRINTF_FORMAT "] to land with mask\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::land);
+            TR::Node::recreate(node, TR::land);
             uint64_t mask = (uint64_t) ((uint64_t) -1) >> rightShiftValue;
             if (secondChild->getReferenceCount() == 1)
                {
-               TR::Node::recreateAndCopyValidProperties(secondChild, TR::lconst);
+               TR::Node::recreate(secondChild, TR::lconst);
                secondChild->setLongInt(mask);
                }
             else
@@ -10984,7 +10984,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             TR::Node *orNode    = TR::Node::create(TR::ior, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
             TR::Node * constNode = firstChild->getSecondChild();
-            TR::Node::recreateAndCopyValidProperties(node, TR::ixor);
+            TR::Node::recreate(node, TR::ixor);
             node->setAndIncChild(0, orNode);
             node->setAndIncChild(1, constNode);
             firstChild->recursivelyDecReferenceCount();
@@ -11041,7 +11041,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced iand with iconst 255 in node [%s] to bu2i\n", s->optDetailString(), node->getName(s->getDebug())))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::bu2i);
+            TR::Node::recreate(node, TR::bu2i);
             foundZeroExtension = true;
             }
          }
@@ -11049,7 +11049,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced iand with iconst 65536 in node [%s] to %s\n", s->optDetailString(), node->getName(s->getDebug()), "su2i"))
             {
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp == TR::s2i ? TR::su2i : TR::su2i);
+            TR::Node::recreate(node, firstChildOp == TR::s2i ? TR::su2i : TR::su2i);
             foundZeroExtension = true;
             }
          }
@@ -11082,7 +11082,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if ((secondChild->getInt() & 0x1) == 0x1)
             {
             // (A cmp B) & 0x1 ==> A cmp B
-            TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCodeValue());
+            TR::Node::recreate(node, firstChild->getOpCodeValue());
             node->setNumChildren(2);
             node->setAndIncChild(0, firstChild->getFirstChild());
             node->setAndIncChild(1, firstChild->getSecondChild());
@@ -11127,7 +11127,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             TR::Node *orNode    = TR::Node::create(TR::lor, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
             TR::Node * constNode = firstChild->getSecondChild();
-            TR::Node::recreateAndCopyValidProperties(node, TR::lxor);
+            TR::Node::recreate(node, TR::lxor);
             node->setAndIncChild(0, orNode);
             node->setAndIncChild(1, constNode);
             firstChild->recursivelyDecReferenceCount();
@@ -11186,7 +11186,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             if (performTransformation(s->comp(), "%sReduced land with lconst 255 in node [" POINTER_PRINTF_FORMAT "] to bu2l\n", s->optDetailString(), node))
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::bu2l);
+               TR::Node::recreate(node, TR::bu2l);
                foundZeroExtension = true;
                }
             }
@@ -11194,7 +11194,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             if (performTransformation(s->comp(), "%sReduced land with lconst 65536 in node [" POINTER_PRINTF_FORMAT "] to su2l\n", s->optDetailString(), node))
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::su2l);
+               TR::Node::recreate(node, TR::su2l);
                foundZeroExtension = true;
                }
             }
@@ -11202,7 +11202,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             if (performTransformation(s->comp(), "%sReduced land with lconst 0xffffffff in node [" POINTER_PRINTF_FORMAT "] to iu2l\n", s->optDetailString(), node))
                {
-               TR::Node::recreateAndCopyValidProperties(node, TR::iu2l);
+               TR::Node::recreate(node, TR::iu2l);
                foundZeroExtension = true;
                }
             }
@@ -11233,7 +11233,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             if (secondChild->getReferenceCount()==1)
                {
-               TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+               TR::Node::recreate(secondChild, TR::iconst);
                secondChild->setInt(secondChild->getLongIntLow());
                constChild = secondChild;
                }
@@ -11243,7 +11243,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                constChild->setInt(secondChild->getLongIntLow());
                }
             TR::Node * iandChild = TR::Node::create(TR::iand, 2, firstChild->getFirstChild(), constChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
+            TR::Node::recreate(node, firstChildOp);
             node->setNumChildren(1);
             node->setAndIncChild(0, iandChild);
 
@@ -11276,7 +11276,7 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          if ((secondChild->getLongInt() & 0x1) == 1)
             {
             // i2ul(A cmp B) & 0x1 ==> i2ul(A cmp B)
-            TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCodeValue());
+            TR::Node::recreate(node, firstChild->getOpCodeValue());
             node->setNumChildren(1);
             node->setAndIncChild(0, firstChild->getFirstChild());
 
@@ -11493,7 +11493,7 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             TR::Node * andNode   = TR::Node::create(TR::iand, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
             TR::Node * constNode = firstChild->getSecondChild();
-            TR::Node::recreateAndCopyValidProperties(node, TR::ixor);
+            TR::Node::recreate(node, TR::ixor);
             node->setAndIncChild(0, andNode);
             node->setAndIncChild(1, constNode);
             firstChild->recursivelyDecReferenceCount();
@@ -11625,7 +11625,7 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                    (addr = getUnsafeBaseAddr(byte4, -3)) && addr == byte1 &&
                    performTransformation(s->comp(), "%sconvert ior to iiload node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::iloadi);
+                  TR::Node::recreate(node, TR::iloadi);
                   node->setNumChildren(1);
                   node->setSymbolReference(s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int32));
                   node->setAndIncChild(0, byte1);
@@ -11677,7 +11677,7 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             (loadVal->getOpCode().isLoadVar() || loadVal->getOpCode().isLoadReg()) &&
             performTransformation(s->comp(), "%sTransform ior to lcmp [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::lcmp);
+            TR::Node::recreate(node, TR::lcmp);
             TR::Node * constZero = TR::Node::create(secondChild, TR::lconst, 0);
             constZero->setLongInt(0);
             node->setFirst(s->replaceNode(firstChild,loadVal, s->_curTree));
@@ -11741,7 +11741,7 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             {
             TR::Node * andNode   = TR::Node::create(TR::land, 2, firstChild->getFirstChild(), secondChild->getFirstChild());
             TR::Node * constNode = firstChild->getSecondChild();
-            TR::Node::recreateAndCopyValidProperties(node, TR::lxor);
+            TR::Node::recreate(node, TR::lxor);
             node->setAndIncChild(0, andNode);
             node->setAndIncChild(1, constNode);
             firstChild->recursivelyDecReferenceCount();
@@ -11813,7 +11813,7 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             if (secondChild->getReferenceCount()==1)
                {
-               TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+               TR::Node::recreate(secondChild, TR::iconst);
                secondChild->setInt(secondChild->getLongIntLow());
                constChild = secondChild;
                }
@@ -11823,7 +11823,7 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                constChild->setInt(secondChild->getLongIntLow());
                }
             TR::Node * iorChild = TR::Node::create(TR::ior, 2, firstChild->getFirstChild(), constChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
+            TR::Node::recreate(node, firstChildOp);
             node->setNumChildren(1);
             node->setAndIncChild(0, iorChild);
 
@@ -12134,7 +12134,7 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
             if (secondChild->getReferenceCount()==1)
                {
-               TR::Node::recreateAndCopyValidProperties(secondChild, TR::iconst);
+               TR::Node::recreate(secondChild, TR::iconst);
                secondChild->setInt(secondChild->getLongIntLow());
                constChild = secondChild;
                }
@@ -12144,7 +12144,7 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                constChild->setInt(secondChild->getLongIntLow());
                }
             TR::Node * ixorChild = TR::Node::create(TR::ixor, 2, firstChild->getFirstChild(), constChild);
-            TR::Node::recreateAndCopyValidProperties(node, firstChildOp);
+            TR::Node::recreate(node, firstChildOp);
             node->setNumChildren(1);
             node->setAndIncChild(0, ixorChild);
 
@@ -12230,7 +12230,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced i2l with su2i child in node [" POINTER_PRINTF_FORMAT "] to su2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::su2l);
+            TR::Node::recreate(node, TR::su2l);
             foundFoldableConversion = true;
             }
          }
@@ -12238,7 +12238,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced i2l with su2i child in node [" POINTER_PRINTF_FORMAT "] to su2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::bu2l);
+            TR::Node::recreate(node, TR::bu2l);
             foundFoldableConversion = true;
             }
          }
@@ -12246,7 +12246,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced i2l with s2i child in node [" POINTER_PRINTF_FORMAT "] to s2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::s2l);
+            TR::Node::recreate(node, TR::s2l);
             foundFoldableConversion = true;
             }
          }
@@ -12254,7 +12254,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced i2l with b2i child in node [" POINTER_PRINTF_FORMAT "] to b2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::b2l);
+            TR::Node::recreate(node, TR::b2l);
             foundFoldableConversion = true;
             }
          }
@@ -12277,7 +12277,7 @@ TR::Node *i2lSimplifier(TR::Node * node, TR::Block *  block, TR::Simplifier * s)
       if (shiftBy >= 57 &&
           performTransformation(s->comp(), "%sRemove i2l/l2i from lshr node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::lshr);
+         TR::Node::recreate(node, TR::lshr);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstFirst->getFirstChild());
          node->setAndIncChild(1, firstFirst->getSecondChild());
@@ -12375,7 +12375,7 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
        (address = isOrOfTwoConsecutiveBytes(firstChild, s)) &&
        performTransformation(s->comp(), "%sconvert ior to isload node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::sloadi);
+      TR::Node::recreate(node, TR::sloadi);
       node->setSymbolReference(s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int16));
       node->setChild(0, address);
       }
@@ -12430,7 +12430,7 @@ TR::Node *i2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
        performTransformation(s->comp(), "%sTransforming iu2a  [%s] to aiadd\n", s->optDetailString(), node->getName(s->getDebug()))
       )
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::aiadd);
+      TR::Node::recreate(node, TR::aiadd);
       node->setAndIncChild(0, firstChild->getFirstChild()->getFirstChild());
       node->setNumChildren(2);
       int32_t newVal = (firstChild->getOpCodeValue() == TR::isub) ? -firstChild->getSecondChild()->getInt() : firstChild->getSecondChild()->getInt();
@@ -12477,7 +12477,7 @@ TR::Node *iu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced iu2l with su2i child in node [" POINTER_PRINTF_FORMAT "] to su2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::su2l);
+            TR::Node::recreate(node, TR::su2l);
             foundFoldableConversion = true;
             }
          }
@@ -12485,7 +12485,7 @@ TR::Node *iu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced iu2l with bu2i child in node [" POINTER_PRINTF_FORMAT "] to bu2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::bu2l);
+            TR::Node::recreate(node, TR::bu2l);
             foundFoldableConversion = true;
             }
          }
@@ -12638,7 +12638,7 @@ TR::Node *l2aSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
           performTransformation(s->comp(), "%sTransforming %s [%s] to address add\n", s->optDetailString(), node->getOpCode().getName(), node->getName(s->getDebug()))
          )
          {
-         TR::Node::recreateAndCopyValidProperties(node, addressAddOp);
+         TR::Node::recreate(node, addressAddOp);
 
          node->setNumChildren(2);  // upto 2 children do not require node extension. this should suffice. Any more requires Node::addChildren
          node->setAndIncChild(0, firstChild->getFirstChild()->getFirstChild());    // aload
@@ -13026,7 +13026,7 @@ TR::Node *bu2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (shiftBy >= 56 &&
           performTransformation(s->comp(), "%sReplace bu2i/l2b of lushr with l2i node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
          {
-         node->recreateAndCopyValidProperties(node, TR::l2i);
+         node->recreate(node, TR::l2i);
          node->setAndIncChild(0, firstChild->getFirstChild());
          firstChild->recursivelyDecReferenceCount();
          return node;
@@ -13079,7 +13079,7 @@ TR::Node *bu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          //       x
          //       iconst 0-255
          TR::Node * grandChild = firstChild->getFirstChild();
-         node->recreateAndCopyValidProperties(node, TR::i2l);
+         node->recreate(node, TR::i2l);
          grandChild->incReferenceCount();
          firstChild->recursivelyDecReferenceCount();
          node->setChild(0, grandChild);
@@ -13093,7 +13093,7 @@ TR::Node *bu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             performTransformation(s->comp(), "%sRemove bu2l [" POINTER_PRINTF_FORMAT "] with i2b child [" POINTER_PRINTF_FORMAT "] of compare [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node, firstChild, firstChild->getFirstChild()))
       {
       TR::Node * grandChild = firstChild->getFirstChild();
-      node->recreateAndCopyValidProperties(node, TR::i2l);
+      node->recreate(node, TR::i2l);
       grandChild->incReferenceCount();
       firstChild->recursivelyDecReferenceCount();
       node->setChild(0, grandChild);
@@ -13106,7 +13106,7 @@ TR::Node *bu2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       if (shiftBy >= 56 &&
           performTransformation(s->comp(), "%sReplace bu2l/l2b of lushr with lushr node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
          {
-         node->recreateAndCopyValidProperties(node, TR::lushr);
+         node->recreate(node, TR::lushr);
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild->getFirstChild()->getFirstChild());
          node->setAndIncChild(1, firstChild->getFirstChild()->getSecondChild());
@@ -13179,7 +13179,7 @@ TR::Node *s2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced s2i with bu2s child in node [" POINTER_PRINTF_FORMAT "] to bu2i\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::bu2i);
+            TR::Node::recreate(node, TR::bu2i);
             foundFoldableConversion = true;
             }
          }
@@ -13187,7 +13187,7 @@ TR::Node *s2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced s2i with b2s child in node [" POINTER_PRINTF_FORMAT "] to b2i\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::b2i);
+            TR::Node::recreate(node, TR::b2i);
             foundFoldableConversion = true;
             }
          }
@@ -13221,7 +13221,7 @@ TR::Node *s2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced s2l with bu2s child in node [" POINTER_PRINTF_FORMAT "] to bu2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::bu2l);
+            TR::Node::recreate(node, TR::bu2l);
             foundFoldableConversion = true;
             }
          }
@@ -13229,7 +13229,7 @@ TR::Node *s2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced s2l with b2s child in node [" POINTER_PRINTF_FORMAT "] to b2l\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::b2l);
+            TR::Node::recreate(node, TR::b2l);
             foundFoldableConversion = true;
             }
          }
@@ -13426,7 +13426,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       )
       {
       //Change if type
-      TR::Node::recreateAndCopyValidProperties(node, TR::ifiucmplt);
+      TR::Node::recreate(node, TR::ifiucmplt);
 
       TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
       node->setAndIncChild(1, newSecondChild);
@@ -13448,11 +13448,11 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
        (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
        performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCode().convertCmpToIfCmp());
+      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       if (secondChild->getInt() == 0)
-         TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().getOpCodeForReverseBranch());
+         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
       firstChild->recursivelyDecReferenceCount();
       secondChild->recursivelyDecReferenceCount();
       return node;
@@ -13464,7 +13464,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
             secondChild->getInt() == 0) &&
          performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iflcmpeq); //change to iflcmp since operands are longs
+      TR::Node::recreate(node, TR::iflcmpeq); //change to iflcmp since operands are longs
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       firstChild->recursivelyDecReferenceCount();
@@ -13478,7 +13478,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
             secondChild->getInt() == 0) &&
          performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmpeq\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iflcmpne); //change to iflcmpne since operands are longs
+      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmpne since operands are longs
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       firstChild->recursivelyDecReferenceCount();
@@ -13545,7 +13545,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       )
       {
       //Change if type
-      TR::Node::recreateAndCopyValidProperties(node, TR::ifiucmpge);
+      TR::Node::recreate(node, TR::ifiucmpge);
 
       TR::Node *newSecondChild = TR::Node::create(node, TR::iconst, 0, 1 << firstChild->getSecondChild()->getInt());
       node->setAndIncChild(1, newSecondChild);
@@ -13567,11 +13567,11 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
        (s->comp()->cg()->getSupportsJavaFloatSemantics() || !(firstChild->getNumChildren()>1 && firstChild->getFirstChild()->getOpCode().isFloatingPoint())) &&
        performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is a comparison opcode\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCode().convertCmpToIfCmp());
+      TR::Node::recreate(node, firstChild->getOpCode().convertCmpToIfCmp());
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       if (secondChild->getInt() == 1)
-         TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().getOpCodeForReverseBranch());
+         TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
       firstChild->recursivelyDecReferenceCount();
       secondChild->recursivelyDecReferenceCount();
       return node;
@@ -13582,7 +13582,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
             secondChild->getInt() == 0) &&
          performTransformation(s->comp(), "%sChanging if opcode %p because first child %p is an lcmp\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::iflcmpne); //change to iflcmp since operands are longs
+      TR::Node::recreate(node, TR::iflcmpne); //change to iflcmp since operands are longs
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       firstChild->recursivelyDecReferenceCount();
@@ -14031,7 +14031,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToFloatOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::create(node, TR::fconst, 0);
                newSecondChild->setFloat(fValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
@@ -14047,7 +14047,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToIntegerOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::create(node, TR::iconst, 0);
                newSecondChild->setInt(iValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
@@ -14063,7 +14063,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToLongOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::create(node, TR::lconst, 0);
                newSecondChild->setLongInt(lValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
@@ -14079,7 +14079,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToShortOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::sconst(node, sValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14094,7 +14094,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToCharOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::cconst(node, cValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14109,7 +14109,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = doubleToByteOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::bconst(node, bValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14136,7 +14136,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = floatToIntegerOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::create(node, TR::iconst, 0);
                newSecondChild->setInt(iValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
@@ -14152,7 +14152,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = floatToLongOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::create(node, TR::lconst, 0);
                newSecondChild->setLongInt(lValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
@@ -14168,7 +14168,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = floatToShortOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::sconst(node, sValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14183,7 +14183,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = floatToCharOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::cconst(node, cValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14198,7 +14198,7 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
             op = floatToByteOp(node->getOpCodeValue());
             if (op != TR::BadILOp)
                {
-               TR::Node::recreateAndCopyValidProperties(node, op);
+               TR::Node::recreate(node, op);
                TR::Node * newSecondChild = TR::Node::bconst(node, bValue);
                node->setAndIncChild(0, firstChild->getFirstChild());
                node->setAndIncChild(1, newSecondChild);
@@ -14361,8 +14361,8 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
          if (op != TR::BadILOp &&
              performTransformation(s->comp(), "%sFolding ifbcmpeq of bconst 0 to boolean compare at node [" POINTER_PRINTF_FORMAT "] to equivalent if?cmp??\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, op);
-            TR::Node::recreateAndCopyValidProperties(node, node->getOpCode().getOpCodeForReverseBranch());
+            TR::Node::recreate(node, op);
+            TR::Node::recreate(node, node->getOpCode().getOpCodeForReverseBranch());
             secondChild->recursivelyDecReferenceCount();
             node->setAndIncChild(0, firstChild->getFirstChild());
             node->setAndIncChild(1, firstChild->getSecondChild());
@@ -14460,7 +14460,7 @@ TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR:
          if (op != TR::BadILOp &&
              performTransformation(s->comp(), "%sFolding ifbcmpeq of bconst 0 to boolean compare at node [" POINTER_PRINTF_FORMAT "] to equivalent if?cmp??\n", s->optDetailString(), node))
             {
-            TR::Node::recreateAndCopyValidProperties(node, op);
+            TR::Node::recreate(node, op);
             secondChild->recursivelyDecReferenceCount();
             node->setAndIncChild(0, firstChild->getFirstChild());
             node->setAndIncChild(1, firstChild->getSecondChild());
@@ -14503,7 +14503,7 @@ TR::Node *icmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
         secondChild->getInt() == 0) &&
        performTransformation(s->comp(), "%sChanging icmpeq opcode %p because first child %p is an int compare\n", s->optDetailString(), node, firstChild))
       {
-      TR::Node::recreateAndCopyValidProperties(node, firstChild->getOpCode().getOpCodeForReverseBranch());
+      TR::Node::recreate(node, firstChild->getOpCode().getOpCodeForReverseBranch());
       node->setAndIncChild(0, firstChild->getFirstChild());
       node->setAndIncChild(1, firstChild->getSecondChild());
       firstChild->recursivelyDecReferenceCount();
@@ -14591,7 +14591,7 @@ TR::Node *icmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
            performTransformation(s->comp(), "%sChanging icmpeq opcode %p because first child %p is an %s opcode\n", s->optDetailString(), node, firstChild, firstChild->getOpCode().getName())
          )
          {
-         TR::Node::recreateAndCopyValidProperties(node, newOpCode);
+         TR::Node::recreate(node, newOpCode);
          node->setAndIncChild(0, firstChild->getFirstChild());
          node->setAndIncChild(1, firstChild->getSecondChild());
          firstChild->recursivelyDecReferenceCount();
@@ -14614,7 +14614,7 @@ TR::Node *icmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          TR::Node* shiftNode = TR::Node::create(TR::iushr, 2);
          shiftNode->setAndIncChild(0, firstChild->getFirstChild());
          shiftNode->setAndIncChild(1, byNode);
-         TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+         TR::Node::recreate(node, TR::iand);
          TR::Node* one = TR::Node::create(node, TR::iconst, 0);
          one->setInt(1);
          node->setAndIncChild(0, shiftNode);
@@ -14771,7 +14771,7 @@ TR::Node *lcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
       int64_t val2 = secondChild->getLongInt() & 0xffffffff80000000ull;
       if (val1 == 0 && val2 == 0 && performTransformation(s->comp(), "%sChanging lcmpeq %p to icmpeq because there are no upper bits\n", s->optDetailString(), node))
          {
-         node->recreateAndCopyValidProperties(node, TR::icmpeq);
+         node->recreate(node, TR::icmpeq);
          TR::Node * newSecondChild = TR::Node::create(node, TR::iconst, 0);
          newSecondChild->setInt(secondChild->getLongInt());
          TR::Node * newFirstChild = TR::Node::create(node, TR::l2i, 1);
@@ -14803,7 +14803,7 @@ TR::Node *lcmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          one->setLongInt(1);
          landNode->setAndIncChild(0, shiftNode);
          landNode->setAndIncChild(1, one);
-         TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+         TR::Node::recreate(node, TR::l2i);
          node->setAndIncChild(0, landNode);
          node->setNumChildren(1);
          firstChild->recursivelyDecReferenceCount();
@@ -14841,7 +14841,7 @@ TR::Node *lcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
       if (secondChild->getOpCode().isLoadConst() && (secondChild->getLongInt() == 0))
          {
          // i2l(A cmp B) != 0 ==> A cmp B
-         TR::Node::recreateAndCopyValidProperties(node, firstChild->getFirstChild()->getOpCodeValue());
+         TR::Node::recreate(node, firstChild->getFirstChild()->getOpCodeValue());
          node->setNumChildren(2);
          node->setAndIncChild(0, firstChild->getFirstChild()->getFirstChild());
          node->setAndIncChild(1, firstChild->getFirstChild()->getSecondChild());
@@ -14863,7 +14863,7 @@ TR::Node *lcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
           firstSecond->getFirstChild()->getLongInt() == 1 &&
           performTransformation(s->comp(), "%slcmpne of x & (1 << y) to 0 opt node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+         TR::Node::recreate(node, TR::iand);
          TR::Node* one = TR::Node::create(node, TR::iconst, 0);
          one->setInt(1);
 
@@ -14897,7 +14897,7 @@ TR::Node *lcmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
             TR::Node* one = TR::Node::create(node, TR::iconst, 0);
             one->setInt(1);
 
-            TR::Node::recreateAndCopyValidProperties(node, TR::iand);
+            TR::Node::recreate(node, TR::iand);
             node->setAndIncChild(0, conv);
             node->setAndIncChild(1, one);
             firstChild->recursivelyDecReferenceCount();
@@ -14932,9 +14932,9 @@ TR::Node *lcmpltSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
       {
       TR::Node* shiftBy = TR::Node::create(node, TR::iconst, 0);
       shiftBy->setInt(63);
-      // TR::Node::recreateAndCopyValidProperties(node, TR::lushr);
+      // TR::Node::recreate(node, TR::lushr);
       TR::Node* shift = TR::Node::create(TR::lushr, 2, firstChild, shiftBy);
-      TR::Node::recreateAndCopyValidProperties(node, TR::l2i);
+      TR::Node::recreate(node, TR::l2i);
       node->setAndIncChild(0, shift);
       node->setNumChildren(1);
       firstChild->recursivelyDecReferenceCount();
@@ -16004,7 +16004,7 @@ TR::Node *switchSimplifier(TR::Node * node, TR::Block * block, bool isTableSwitc
 
       s->anchorChildren(node, s->_curTree);
       s->prepareToReplaceNode(node);
-      TR::Node::recreateAndCopyValidProperties(node, TR::Goto);
+      TR::Node::recreate(node, TR::Goto);
       node->setBranchDestination(target);
       return s->simplify(node, block);
       }
@@ -16365,7 +16365,7 @@ TR::Node *variableNewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifi
       && node->getFirstChild()->getOpCodeValue() == TR::loadaddr
       && performTransformation(s->comp(), "%sReplacing TR::variableNew %p with TR::New\n", s->optDetailString(), node))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::New);
+      TR::Node::recreate(node, TR::New);
       }
 
    return node;
@@ -16436,7 +16436,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
             uint64_t product = src1 * src2;
             uint64_t high = product >> 32;
             uint32_t result = high;
-            TR::Node::recreateAndCopyValidProperties(node, TR::iuconst);
+            TR::Node::recreate(node, TR::iuconst);
             node->setUnsignedInt(result);
             }
          else
@@ -16446,7 +16446,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
             int64_t product = src1 * src2;
             int64_t high = product >> 32;
             int32_t result = high;
-            TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+            TR::Node::recreate(node, TR::iconst);
             node->setInt(result);
             }
          }
@@ -16458,7 +16458,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
          && performTransformation(s->comp(), "%ssecond child [%p] of node [%p] is 0, setting the result of imulh to 0\n",s->optDetailString(), secondChild, node))
          {
          s->prepareToReplaceNode(node);
-         TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+         TR::Node::recreate(node, TR::iconst);
          node->setInt(0);
          }
       else if (src2 == 1 || src2 == 2)
@@ -16467,14 +16467,14 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
             && performTransformation(s->comp(), "%sfirst child [%p] of node [%p] is negative, setting the result of imulh to -1\n",s->optDetailString(), firstChild, node))
             {
             s->prepareToReplaceNode(node);
-            TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+            TR::Node::recreate(node, TR::iconst);
             node->setInt(-1);
             }
          else if (firstChild->isNonNegative()
                   && performTransformation(s->comp(), "%sfirst child [%p] of node [%p] is non-negative, setting the result of imulh to 0\n",s->optDetailString(), firstChild, node))
             {
                s->prepareToReplaceNode(node);
-               TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+               TR::Node::recreate(node, TR::iconst);
                node->setInt(0);
             }
          }
@@ -16488,7 +16488,7 @@ TR::Node * imulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s
          // Calculate log2(src2), which is 32-msb
          int32_t msb = 0;
          while (src2 >>= 1) msb++;
-         TR::Node::recreateAndCopyValidProperties(node, TR::ishr);
+         TR::Node::recreate(node, TR::ishr);
          TR::Node * newSecondChild = TR::Node::create(TR::iconst, 0); // Create a new node because changing the value of the node might affect trees referencing this node
          newSecondChild->setInt(32-msb);
          secondChild->recursivelyDecReferenceCount();
@@ -16523,12 +16523,12 @@ TR::Node *lmulhSimplifier(TR::Node * node, TR::Block *block, TR::Simplifier * s)
 
          if (node->getOpCode().isUnsigned())
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::lconst);
+            TR::Node::recreate(node, TR::lconst);
             node->setUnsignedLongInt(lmulhu(firstChild->getUnsignedLongInt(), secondChild->getUnsignedLongInt()));
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::lconst);
+            TR::Node::recreate(node, TR::lconst);
             node->setLongInt(lmulh(firstChild->getLongInt(), secondChild->getLongInt()));
             }
          }
@@ -16592,7 +16592,7 @@ TR::Node *ibits2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
    if (firstChild->getOpCodeValue() == TR::iconst)
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::fconst);
+      TR::Node::recreate(node, TR::fconst);
       node->setNumChildren(0);
       node->setFloatBits(firstChild->getInt());
       firstChild->recursivelyDecReferenceCount();
@@ -16608,7 +16608,7 @@ TR::Node *lbits2dSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
    if (firstChild->getOpCodeValue() == TR::lconst)
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::dconst);
+      TR::Node::recreate(node, TR::dconst);
       node->setNumChildren(0);
       node->setDouble(firstChild->getDouble());
       firstChild->recursivelyDecReferenceCount();
@@ -16631,7 +16631,7 @@ TR::Node *fbits2iSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
          intValue = FLOAT_NAN;
       else
          intValue = firstChild->getFloatBits();
-      TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+      TR::Node::recreate(node, TR::iconst);
       node->setInt(intValue);
       node->setNumChildren(0);
       firstChild->recursivelyDecReferenceCount();
@@ -16654,7 +16654,7 @@ TR::Node *dbits2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
          longValue = DOUBLE_NAN;
       else
          longValue = firstChild->getLongInt();
-      TR::Node::recreateAndCopyValidProperties(node, TR::lconst);
+      TR::Node::recreate(node, TR::lconst);
       node->setLongInt(longValue);
       node->setNumChildren(0);
       firstChild->recursivelyDecReferenceCount();
@@ -16735,7 +16735,7 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
        nullCheckRefOp == TR::anewarray ||
        nullCheckRefOp == TR::multianewarray)
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       simplifyChildren(node, block, s);
       return node;
       }
@@ -16745,7 +16745,7 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
    if (node->getFirstChild()->getNumChildren() == 0)
       {
       dumpOptDetails(s->comp(), "%sRemoving nullchk with no grandchildren in node [%s]\n", s->optDetailString(), node->getName(s->getDebug()));
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       s->_alteredBlock = true;
       }
    else
@@ -16753,7 +16753,7 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
       TR::Node * refNode = node->getNullCheckReference();
 
       if (refNode->isNonNull() && performTransformation(s->comp(), "%sRemoving redundant NULLCHK in node [%s]\n", s->optDetailString(), node->getName(s->getDebug())))
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
 
       if ((refNode->isNull() ||
           ((refNode->getOpCodeValue() == TR::aconst) &&
@@ -16822,7 +16822,7 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
    if (child != originalChild ||
        !(child->getOpCode().isDiv() || child->getOpCode().isRem()))
       {
-      TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+      TR::Node::recreate(node, TR::treetop);
       node->setFirst(child);
       return node;
       }
@@ -16839,7 +16839,7 @@ TR::Node *divchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
          {
          //s->removeNode(node, s->_curTree);
          //return NULL;
-         TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+         TR::Node::recreate(node, TR::treetop);
          return node;
          }
       }
@@ -17227,7 +17227,7 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node * node, TR::Block * block, TR::S
       baseChild->incReferenceCount();
 
       s->prepareToReplaceNode(node);
-      TR::Node::recreateAndCopyValidProperties(node, TR::SpineCHK);
+      TR::Node::recreate(node, TR::SpineCHK);
       node->setChild(0, elementChild);
       node->setChild(1, baseChild);
       node->setChild(2, indexChild);
@@ -17242,7 +17242,7 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node * node, TR::Block * block, TR::S
       boundChild->incReferenceCount();
 
       s->prepareToReplaceNode(node);
-      TR::Node::recreateAndCopyValidProperties(node, TR::BNDCHK);
+      TR::Node::recreate(node, TR::BNDCHK);
       node->setChild(0, boundChild);
       node->setChild(1, indexChild);
       node->setNumChildren(2);

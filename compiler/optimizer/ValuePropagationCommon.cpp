@@ -1711,7 +1711,7 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
       TR::Node *stride = NULL;
 
       node->setNodeIsRecognizedArrayCopyCall(false); // flag conflicts with isForwardArrayCopy
-      TR::Node::recreateAndCopyValidProperties(node, TR::arraycopy);
+      TR::Node::recreate(node, TR::arraycopy);
 
       if (!comp()->generateArraylets())
          {
@@ -2252,7 +2252,7 @@ void TR_ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR::T
 
 /*
    TR::Node* arrayTranslateNode = arrayTranslateTree->getNode()->getFirstChild();
-   TR::Node::recreateAndCopyValidProperties(arrayTranslateNode, TR::arraytranslate);
+   TR::Node::recreate(arrayTranslateNode, TR::arraytranslate);
    arrayTranslateNode->setNumChildren(6);
 */
    arrayTranslateNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateArrayTranslateSymbol());
@@ -2671,7 +2671,7 @@ void TR_ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *
    //   TR::Node* arraycopyNode = TR::Node::createArraycopy(srcOff, dstOff, len);
    TR::Node* arraycopyNode = dupArraycopyTree->getNode()->getFirstChild();
    arraycopyNode->setNodeIsRecognizedArrayCopyCall(false); // flag conflicts with isForwardArrayCopy
-   TR::Node::recreateAndCopyValidProperties(arraycopyNode, TR::arraycopy);
+   TR::Node::recreate(arraycopyNode, TR::arraycopy);
    if (primitive)
       {
       arraycopyNode->setAndIncChild(0, srcOff);
@@ -3464,7 +3464,7 @@ void TR_ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR_Val
       TR_ASSERT(callTree->getNode()->getOpCodeValue() == TR::NULLCHK, "it only makes sense to do this object clone transform for checks with a NULLCHK - how did we get here otherwise??");
       TR::Node *passthrough = TR::Node::create(callNode, TR::PassThrough, 1, callNode->getChild(0));
       callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, callTree->getNode()->getOpCodeValue(), 1, passthrough, callTree->getNode()->getSymbolReference())));
-      TR::Node::recreateAndCopyValidProperties(callTree->getNode(), TR::treetop);
+      TR::Node::recreate(callTree->getNode(), TR::treetop);
       }
    else
       {
@@ -3562,7 +3562,7 @@ void TR_ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opaq
       TR_ASSERT(callTree->getNode()->getOpCodeValue() == TR::NULLCHK, "it only makes sense to do this array clone transform for checks with a NULLCHK - how did we get here otherwise??");
       TR::Node *passthrough = TR::Node::create(callNode, TR::PassThrough, 1, callNode->getChild(0));
       callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, callTree->getNode()->getOpCodeValue(), 1, passthrough, callTree->getNode()->getSymbolReference())));
-      TR::Node::recreateAndCopyValidProperties(callTree->getNode(), TR::treetop);
+      TR::Node::recreate(callTree->getNode(), TR::treetop);
       }
    else
       {
@@ -3760,7 +3760,7 @@ void TR_ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    TR::SymbolReference *symRefConvert =
       getSymRefTab()->createTemporary(comp()->getMethodSymbol(), callNode->getDataType(), false);
 
-   TR::Node::recreateAndCopyValidProperties(callNode, TR::iload);
+   TR::Node::recreate(callNode, TR::iload);
    callNode->setSymbolReference(symRefConvert);
    callNode->setFlags(0);
    callNode->removeAllChildren();

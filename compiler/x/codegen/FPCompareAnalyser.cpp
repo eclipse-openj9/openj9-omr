@@ -310,7 +310,7 @@ TR::Register *TR_X86FPCompareAnalyser::fpCompareAnalyser(TR::Node       *root,
    if (getReversedOperands())
       {
       cmpOp = TR::ILOpCode(cmpOp).getOpCodeForSwapChildren();
-      TR::Node::recreateAndCopyValidProperties(root, cmpOp);
+      TR::Node::recreate(root, cmpOp);
       }
 
    if (useFCOMIInstructions && !targetRegisterForFTST)
@@ -683,7 +683,7 @@ TR::Register *TR_IA32XMMCompareAnalyser::xmmCompareAnalyser(TR::Node       *root
    if (getReversedOperands())
       {
       cmpOp = TR::ILOpCode(cmpOp).getOpCodeForSwapChildren();
-      TR::Node::recreateAndCopyValidProperties(root, cmpOp);
+      TR::Node::recreate(root, cmpOp);
       }
 
    return NULL;

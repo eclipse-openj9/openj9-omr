@@ -179,7 +179,7 @@ OMR::Optimization::prepareToReplaceNode(TR::Node * node)
 void
 OMR::Optimization::prepareToReplaceNode(TR::Node * node, TR::ILOpCodes opcode)
    {
-   TR::Node::recreateAndCopyValidProperties(node, opcode);
+   TR::Node::recreate(node, opcode);
    self()->prepareToReplaceNode(node);
    }
 
@@ -299,7 +299,7 @@ OMR::Optimization::removeOrconvertIfToGoto(TR::Node* &node, TR::Block* block, in
          return false;
       self()->anchorChildren(node, curTree);
       self()->prepareToReplaceNode(node);
-      TR::Node::recreateAndCopyValidProperties(node, TR::Goto);
+      TR::Node::recreate(node, TR::Goto);
       reachableTarget = node->getBranchDestination();
       unreachableTarget = block->getExit()->getNextTreeTop();
       }

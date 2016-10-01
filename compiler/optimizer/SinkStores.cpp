@@ -2323,7 +2323,7 @@ void TR_SinkStores::doSinking()
          //originalStore->getPrevTreeTop()->setNextTreeTop(originalNext);
          //originalStore->getNextTreeTop()->setPrevTreeTop(originalPrev);
          //originalStore->getNode()->recursivelyDecReferenceCount();
-         TR::Node::recreateAndCopyValidProperties(originalStore->getNode(), TR::treetop);
+         TR::Node::recreate(originalStore->getNode(), TR::treetop);
          //requestOpt(deadTreesElimination, true, originalStore->getEnclosingBlock()->startOfExtendedBlock());
          }
       }

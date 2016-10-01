@@ -866,10 +866,10 @@ TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::Cod
          node->setAndIncChild(childIndex, child->getFirstChild());
       else
          node->setChild(childIndex, child->getFirstChild());
-      TR::Node::recreateAndCopyValidProperties(node, indirect?TR::istorei:TR::istore);
+      TR::Node::recreate(node, indirect?TR::istorei:TR::istore);
       istoreEvaluator(node, cg);
       node->setChild(childIndex, child);
-      TR::Node::recreateAndCopyValidProperties(node, indirect?TR::fstorei:TR::fstore);
+      TR::Node::recreate(node, indirect?TR::fstorei:TR::fstore);
       cg->decReferenceCount(child);
       return NULL;
       }
@@ -912,10 +912,10 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
          node->setAndIncChild(childIndex, child->getFirstChild());
       else
          node->setChild(childIndex, child->getFirstChild());
-      TR::Node::recreateAndCopyValidProperties(node, indirect?TR::lstorei:TR::lstore);
+      TR::Node::recreate(node, indirect?TR::lstorei:TR::lstore);
       lstoreEvaluator(node, cg);
       node->setChild(childIndex, child);
-      TR::Node::recreateAndCopyValidProperties(node, indirect?TR::dstorei:TR::dstore);
+      TR::Node::recreate(node, indirect?TR::dstorei:TR::dstore);
       cg->decReferenceCount(child);
       return NULL;
       }

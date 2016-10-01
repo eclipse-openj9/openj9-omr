@@ -2727,33 +2727,33 @@ void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *con
    switch (type)
       {
       case TR::Int32:
-         TR::Node::recreateAndCopyValidProperties(node, TR::iconst);
+         TR::Node::recreate(node, TR::iconst);
          node->setInt(constraint->asIntConst()->getInt());
          dumpOptDetails(comp(), " to iconst %d\n", node->getInt());
          break;
       case TR::Int8:
-         TR::Node::recreateAndCopyValidProperties(node, TR::bconst);
+         TR::Node::recreate(node, TR::bconst);
          node->setByte(constraint->asIntConst()->getInt());
          dumpOptDetails(comp(), " to bconst %d\n", node->getByte());
          break;
       case TR::Int16:
-         TR::Node::recreateAndCopyValidProperties(node, TR::sconst);
+         TR::Node::recreate(node, TR::sconst);
          (shortConstraint == NULL) ? node->setShortInt(constraint->asIntConst()->getInt()) :
              node->setShortInt(constraint->asShortConst()->getShort());
          dumpOptDetails(comp(), " to sconst %d\n", node->getShortInt());
          break;
       case TR::Int64:
-         TR::Node::recreateAndCopyValidProperties(node, TR::lconst);
+         TR::Node::recreate(node, TR::lconst);
          node->setLongInt(constraint->asLongConst()->getLong());
          dumpOptDetails(comp(), " to lconst " INT64_PRINTF_FORMAT "\n", node->getLongInt());
          break;
       case TR::Float:
-         TR::Node::recreateAndCopyValidProperties(node, TR::fconst);
+         TR::Node::recreate(node, TR::fconst);
          node->setFloatBits(constraint->asIntConst()->getInt());
          dumpOptDetails(comp(), " to fconst [float const]\n");
          break;
       case TR::Double:
-         TR::Node::recreateAndCopyValidProperties(node, TR::dconst);
+         TR::Node::recreate(node, TR::dconst);
          node->setLongInt(constraint->asLongConst()->getLong());
          dumpOptDetails(comp(), " to dconst [double const]\n");
          break;
@@ -2762,7 +2762,7 @@ void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *con
             {
             node->setIsDontMoveUnderBranch(false);
             }
-         TR::Node::recreateAndCopyValidProperties(node, TR::aconst);
+         TR::Node::recreate(node, TR::aconst);
          node->setAddress(0);
          TR_ASSERT(constraint->isNullObject(), "Only null address constant supported");
          dumpOptDetails(comp(), " to aconst " UINT64_PRINTF_FORMAT_HEX "\n", (uint64_t)node->getAddress());
@@ -6498,7 +6498,7 @@ void TR_ValuePropagation::removeBndChecksFromFastVersion(BlockVersionInfo *block
             for (TR::Node *bndchk = iter.getFirst(); bndchk; bndchk = iter.getNext())
                {
                dumpOptDetails(comp(), "blockVersioner: removing bndchk %p\n", bndchk);
-               TR::Node::recreateAndCopyValidProperties(bndchk, TR::treetop);
+               TR::Node::recreate(bndchk, TR::treetop);
                removeNode(bndchk->getFirstChild(),false);
                bndchk->setChild(0, bndchk->getSecondChild());
                bndchk->setChild(1, NULL);
@@ -6969,7 +6969,7 @@ void TR_ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *ar
 static void changeBranchToGoto(TR_ValuePropagation *vp, TR::Node *guardNode, TR::Block *guard)
    {
    // change the if to goto
-   TR::Node::recreateAndCopyValidProperties(guardNode, TR::Goto);
+   TR::Node::recreate(guardNode, TR::Goto);
    guardNode->getFirstChild()->recursivelyDecReferenceCount();
    guardNode->getSecondChild()->recursivelyDecReferenceCount();
    guardNode->setNumChildren(0);
@@ -7011,7 +7011,7 @@ void TR_ValuePropagation::transformStringConcats(TR_VPStringCached *stringCached
      if (appendTree[i])
         {
         appendTree[i]->getNode()->recursivelyDecReferenceCount();
-        TR::Node::recreateAndCopyValidProperties(appendTree[i]->getNode(), TR::treetop);
+        TR::Node::recreate(appendTree[i]->getNode(), TR::treetop);
         appendTree[i]->getNode()->setNumChildren(1);
         appendTree[i]->getNode()->setAndIncChild(0, appendedString[i]);
         }
@@ -7022,10 +7022,10 @@ void TR_ValuePropagation::transformStringConcats(TR_VPStringCached *stringCached
 
 
   // vCall to cachedConstantStringArray
-  TR::Node::recreateAndCopyValidProperties(toStringTree->getNode(), TR::treetop);
+  TR::Node::recreate(toStringTree->getNode(), TR::treetop);
   stringNode = toStringTree->getNode()->getFirstChild();
   stringNode->getFirstChild()->recursivelyDecReferenceCount();
-  TR::Node::recreateAndCopyValidProperties(stringNode, TR::acall);
+  TR::Node::recreate(stringNode, TR::acall);
   stringNode->setNumChildren(3);
   TR::SymbolReference *symRef = getStringCacheRef() ? comp()->getSymRefTab()->findOrCreateMethodSymbol(stringNode->getSymbolReference()->getOwningMethodIndex(), -1, getStringCacheRef()->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod(), TR::MethodSymbol::Static) : 0;
   stringNode->setSymbolReference(symRef);
@@ -7125,7 +7125,7 @@ void TR_ValuePropagation::transformStringCtors(TR_VPTreeTopPair *treeTopPair)
   */
 
   treeTopPair->_treetop2->getNode()->getFirstChild()->getFirstChild()->decReferenceCount();
-  TR::Node::recreateAndCopyValidProperties(treeTopPair->_treetop2->getNode()->getFirstChild(), TR::acall);
+  TR::Node::recreate(treeTopPair->_treetop2->getNode()->getFirstChild(), TR::acall);
   treeTopPair->_treetop2->getNode()->getFirstChild()->setNumChildren(3);
   TR::SymbolReference *symRef = getStringCacheRef() ? comp()->getSymRefTab()->findOrCreateMethodSymbol(treeTopPair->_treetop2->getNode()->getFirstChild()->getSymbolReference()->getOwningMethodIndex(), -1, getStringCacheRef()->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod(), TR::MethodSymbol::Static) : 0;
   treeTopPair->_treetop2->getNode()->getFirstChild()->setSymbolReference(symRef);
@@ -7687,7 +7687,7 @@ void TR_ValuePropagation::doDelayedTransformations()
    for (getComponentCallNode = nodesIt.getFirst();
         getComponentCallNode; getComponentCallNode = nodesIt.getNext())
       {
-      TR::Node::recreateAndCopyValidProperties(getComponentCallNode, TR::aloadi);
+      TR::Node::recreate(getComponentCallNode, TR::aloadi);
       getComponentCallNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
       if (getComponentCallNode->getNumChildren() > 1)
          {
@@ -7756,17 +7756,17 @@ void TR_ValuePropagation::doDelayedTransformations()
             }
          if (treeTop->getNode()->getOpCodeValue() == TR::NULLCHK)
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::PassThrough);
+            TR::Node::recreate(node, TR::PassThrough);
             treeTop = TR::TreeTop::create(comp(), treeTop, TR::Node::createWithSymRef(TR::astore, 1, 1, node->getFirstChild(), firstNode->getSymbolReference()));
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(node, TR::astore);
+            TR::Node::recreate(node, TR::astore);
             node->setSymbolReference(firstNode->getSymbolReference());
             }
          }
       else if (!firstReferenceOfCatchObject)
-         TR::Node::recreateAndCopyValidProperties(node, node->getReferenceCount() == 0 ? TR::treetop : TR::PassThrough);
+         TR::Node::recreate(node, node->getReferenceCount() == 0 ? TR::treetop : TR::PassThrough);
       else
          firstTT = 0;
 
@@ -7965,7 +7965,7 @@ void TR_ValuePropagation::doDelayedTransformations()
                //  clnCallNode->setNumChildren(2);
                //  }
                clnCallNode->setAndIncChild(1, nullNode);
-               TR::Node::recreateAndCopyValidProperties(clnCallNode, TR::acall);
+               TR::Node::recreate(clnCallNode, TR::acall);
                clnCallNode->setSymbolReference(optClnClassSymRef);
                }
             }
@@ -8003,7 +8003,7 @@ void TR_ValuePropagation::doDelayedTransformations()
       else
          {
          TR::Block *newBlock = block->breakFallThrough(comp(), block, nextBlock);
-         TR::Node::recreateAndCopyValidProperties(ifNode, TR::ifacmpne);
+         TR::Node::recreate(ifNode, TR::ifacmpne);
 
          newBlock->getLastRealTreeTop()->getNode()->setBranchDestination(ifNode->getBranchDestination());
 

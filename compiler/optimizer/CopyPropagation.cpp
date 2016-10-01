@@ -1164,7 +1164,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                   }
 
                // Recreate after all children and symRefs have been set
-               TR::Node::recreateAndCopyValidProperties(node, origNode->getOpCodeValue());
+               TR::Node::recreate(node, origNode->getOpCodeValue());
                }
             else if (origNode->getOpCode().isConversion() &&
                      origNode->getNumChildren() == 1)
@@ -1176,7 +1176,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                node->setFlags(origNode->getFlags());
 
                // Recreate after all children and symRefs have been set
-               TR::Node::recreateAndCopyValidProperties(node, origNode->getOpCodeValue());
+               TR::Node::recreate(node, origNode->getOpCodeValue());
 
                firstChild->setVisitCount(curVisit);
                }
@@ -1194,7 +1194,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
 
                // BCD tracing might be misleading after this
                if (!origNode->getOpCode().isStore())
-                  TR::Node::recreateAndCopyValidProperties(node, origNode->getOpCodeValue());
+                  TR::Node::recreate(node, origNode->getOpCodeValue());
 
                int32_t newPrecision = 0;
                int32_t currentPrecision = 0;
@@ -1300,7 +1300,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                         }
                      else
                         {
-                        TR::Node::recreateAndCopyValidProperties(node, modPrecOp);
+                        TR::Node::recreate(node, modPrecOp);
 
                         node->setAndIncChild(0, nodeCopy);
                         node->setNumChildren(1);
@@ -1318,7 +1318,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                      // can only clean up to maxPackedPrec -- case allow should have been guaranteed by isCorrectToPropagate
                      TR_ASSERT(node->getDecimalPrecision() <= TR::DataType::getMaxPackedDecimalPrecision(),
                              "node %p prec %d must be <= max %d\n", node, node->getDecimalPrecision(), TR::DataType::getMaxPackedDecimalPrecision());
-                     TR::Node::recreateAndCopyValidProperties(node, cleanOp);
+                     TR::Node::recreate(node, cleanOp);
 
                      node->setAndIncChild(0, nodeCopy);
                      node->setNumChildren(1);
@@ -1351,7 +1351,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
             else
                {
                if (!origNode->getOpCode().isStore())
-                  TR::Node::recreateAndCopyValidProperties(node, origNode->getOpCodeValue());
+                  TR::Node::recreate(node, origNode->getOpCodeValue());
 
                if (origNode->getOpCode().hasSymbolReference() && node->getOpCode().hasSymbolReference())
                   node->setSymbolReference(origNode->getSymbolReference());

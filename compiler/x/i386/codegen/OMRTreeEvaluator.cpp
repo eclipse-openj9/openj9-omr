@@ -392,18 +392,18 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
          if (node->getOpCode().isIndirect())
             {
             node->setChild(1, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstorei);
+            TR::Node::recreate(node, TR::dstorei);
             dstoreEvaluator(node, cg);
             node->setChild(1, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstorei);
+            TR::Node::recreate(node, TR::lstorei);
             }
          else
             {
             node->setChild(0, valueChild->getFirstChild());
-            TR::Node::recreateAndCopyValidProperties(node, TR::dstore);
+            TR::Node::recreate(node, TR::dstore);
             dstoreEvaluator(node, cg);
             node->setChild(0, valueChild);
-            TR::Node::recreateAndCopyValidProperties(node, TR::lstore);
+            TR::Node::recreate(node, TR::lstore);
             }
          cg->decReferenceCount(valueChild);
          return NULL;
@@ -2552,9 +2552,9 @@ TR::Register *OMR::X86::i386::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::X86::i386::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::ificmpeq);
+   TR::Node::recreate(node, TR::ificmpeq);
    integerIfCmpeqEvaluator(node, cg);
-   TR::Node::recreateAndCopyValidProperties(node, TR::ifacmpeq);
+   TR::Node::recreate(node, TR::ifacmpeq);
    return NULL;
    }
 
@@ -2562,9 +2562,9 @@ TR::Register *OMR::X86::i386::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, T
 
 TR::Register *OMR::X86::i386::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node::recreateAndCopyValidProperties(node, TR::icmpeq);
+   TR::Node::recreate(node, TR::icmpeq);
    TR::Register *targetRegister = integerCmpeqEvaluator(node, cg);
-   TR::Node::recreateAndCopyValidProperties(node, TR::acmpeq);
+   TR::Node::recreate(node, TR::acmpeq);
    return targetRegister;
    }
 
@@ -2992,7 +2992,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR:
       //
       TR::Node *longValueChild = valueChild->getFirstChild();
       static TR::ILOpCodes longOpCodes[2] = { TR::lstore, TR::lstorei };
-      TR::Node::recreateAndCopyValidProperties(node, longOpCodes[nodeIsIndirect]);
+      TR::Node::recreate(node, longOpCodes[nodeIsIndirect]);
       node->setChild(nodeIsIndirect, longValueChild);
       longValueChild->incReferenceCount();
 

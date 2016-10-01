@@ -387,7 +387,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
       //
       TR::Node *integerValueChild = valueChild->getFirstChild();
       static TR::ILOpCodes integerOpCodes[2][2] = { {TR::istore, TR::lstore}, {TR::istorei, TR::lstorei} };
-      TR::Node::recreateAndCopyValidProperties(node, integerOpCodes[nodeIsIndirect][(valueChild->getOpCodeValue() == TR::ibits2f ? 0 : 1)]);
+      TR::Node::recreate(node, integerOpCodes[nodeIsIndirect][(valueChild->getOpCodeValue() == TR::ibits2f ? 0 : 1)]);
       node->setChild(nodeIsIndirect, integerValueChild);
       integerValueChild->incReferenceCount();
 
@@ -1141,7 +1141,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       TR::Register *targetRegister = cg->allocateRegisterPair(lowReg, highReg);
       TR::SymbolReference *d2l = comp->getSymRefTab()->findOrCreateRuntimeHelper(TR_IA32double2LongSSE,false,false,false);
       d2l->getSymbol()->getMethodSymbol()->setLinkage(TR_Helper);
-      TR::Node::recreateAndCopyValidProperties(node, TR::lcall);
+      TR::Node::recreate(node, TR::lcall);
       node->setSymbolReference(d2l);
       TR_OutlinedInstructions *outlinedHelperCall = new (cg->trHeapMemory()) TR_OutlinedInstructions(node, TR::lcall, targetRegister, CallLabel, reStartLabel, cg);
       cg->getOutlinedInstructionsList().push_front(outlinedHelperCall);

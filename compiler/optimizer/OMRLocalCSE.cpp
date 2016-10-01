@@ -803,7 +803,7 @@ void OMR::LocalCSE::doCommoningAgainIfPreviouslyCommoned(TR::Node *node, TR::Nod
 
          if (parent->getOpCode().isResolveOrNullCheck() || ((parent->getOpCodeValue() == TR::compressedRefs) && (childNum == 0)))
             {
-            TR::Node::recreateAndCopyValidProperties(parent, TR::treetop);
+            TR::Node::recreate(parent, TR::treetop);
             for (int32_t index =1;index < parent->getNumChildren(); index++)
                parent->getChild(index)->recursivelyDecReferenceCount() ;
             parent->setNumChildren(1);
@@ -860,7 +860,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                int32_t endIndex = _treeBeingExamined->getNode()->getNumChildren();
                if (parent->getOpCodeValue() == TR::compressedRefs)
                   {
-                  TR::Node::recreateAndCopyValidProperties(parent, TR::treetop);
+                  TR::Node::recreate(parent, TR::treetop);
                   for (int32_t index =1;index < parent->getNumChildren(); index++)
                      parent->getChild(index)->recursivelyDecReferenceCount() ;
                   parent->setNumChildren(1);
@@ -893,7 +893,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                   {
                   if ((comp()->useAnchors() && node->getFirstChild()->getOpCode().isStoreIndirect()))
                      {
-                     TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+                     TR::Node::recreate(node, TR::treetop);
                      }
                   else
                      {
@@ -908,7 +908,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                   }
                else
                   {
-                  TR::Node::recreateAndCopyValidProperties(node, TR::treetop);
+                  TR::Node::recreate(node, TR::treetop);
                   }
                }
             else
@@ -1004,7 +1004,7 @@ bool OMR::LocalCSE::doCopyPropagationIfPossible(TR::Node *node, TR::Node *parent
 
       if (parent->getOpCode().isResolveOrNullCheck() || ((parent->getOpCodeValue() == TR::compressedRefs) && (childNum == 0)))
          {
-         TR::Node::recreateAndCopyValidProperties(parent, TR::treetop);
+         TR::Node::recreate(parent, TR::treetop);
          for (int32_t index =1;index < parent->getNumChildren(); index++)
             parent->getChild(index)->recursivelyDecReferenceCount() ;
          parent->setNumChildren(1);

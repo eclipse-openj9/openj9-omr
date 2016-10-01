@@ -4264,7 +4264,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          if (child->getOpCodeValue() == TR::wrtbari && comp()->getOptions()->getGcMode() == TR_WrtbarNone &&
             performTransformation(comp(), "%sChanging iwrtbar node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
             {
-            TR::Node::recreateAndCopyValidProperties(child, TR::astorei);
+            TR::Node::recreate(child, TR::astorei);
             child->getChild(2)->recursivelyDecReferenceCount();
             child->setNumChildren(2);
             }
@@ -4278,7 +4278,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          if (child->getOpCodeValue() == TR::wrtbari && comp()->getOptions()->getGcMode() == TR_WrtbarNone &&
              performTransformation(comp(), "%sChanging iwrtbar node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
             {
-            TR::Node::recreateAndCopyValidProperties(child, TR::astorei);
+            TR::Node::recreate(child, TR::astorei);
             child->getChild(2)->recursivelyDecReferenceCount();
             child->setNumChildren(2);
             }
@@ -4356,7 +4356,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (firstComparisonNode)
          {
          firstComparisonNode = false;
-         //////TR::Node::recreateAndCopyValidProperties(actualComparisonNode, actualComparisonNode->getOpCode().getOpCodeForReverseBranch());
+         //////TR::Node::recreate(actualComparisonNode, actualComparisonNode->getOpCode().getOpCodeForReverseBranch());
          //////actualComparisonNode->setBranchDestination(invariantBlock->getEntry());
          //////lastComparisonBlock = comparisonBlock;
          }
@@ -4874,9 +4874,9 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
          dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", nextComparisonNode);
 
          if (nextTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-            TR::Node::recreateAndCopyValidProperties(nextTree->getData()->getNode(), TR::treetop);
+            TR::Node::recreate(nextTree->getData()->getNode(), TR::treetop);
          else if (nextTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-            TR::Node::recreateAndCopyValidProperties(nextTree->getData()->getNode(), TR::ResolveCHK);
+            TR::Node::recreate(nextTree->getData()->getNode(), TR::ResolveCHK);
 
          if (trace())
             {
@@ -5010,7 +5010,7 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
          comparisonTrees->add(ifNode);
          dumpOptDetails(comp(), "The node %p has been created for testing if div check is required\n", ifNode);
          }
-      TR::Node::recreateAndCopyValidProperties(divCheckNode, TR::treetop);
+      TR::Node::recreate(divCheckNode, TR::treetop);
       nextTree = nextTree->getNextElement();
       }
    }
@@ -5114,7 +5114,7 @@ void TR_LoopVersioner::convertSpecializedLongsToInts(TR::Node *node, vcount_t vi
       TR::SymbolReference *tempSymRef = symRefs[node->getSymbolReference()->getReferenceNumber()];
       if (tempSymRef)
          {
-         TR::Node::recreateAndCopyValidProperties(node, TR::iu2l);
+         TR::Node::recreate(node, TR::iu2l);
          TR::Node *newLoad = TR::Node::createWithSymRef(node, TR::iload, 0, tempSymRef);
          node->setNumChildren(1);
          node->setAndIncChild(0, newLoad);
@@ -5277,11 +5277,11 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
                   for (childNum=0;childNum<otherInvariantNode->getNumChildren(); childNum++)
                      otherInvariantNode->getChild(childNum)->recursivelyDecReferenceCount();
                   otherInvariantNode->setNumChildren(0);
-                  TR::Node::recreateAndCopyValidProperties(otherInvariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
+                  TR::Node::recreate(otherInvariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
                   otherInvariantNode->setSymbolReference(newSymbolReference);
                   if (otherInvariantNodeElem->getData()->_parent &&
                       otherInvariantNodeElem->getData()->_parent->getOpCode().isNullCheck())
-                     TR::Node::recreateAndCopyValidProperties(otherInvariantNodeElem->getData()->_parent, TR::treetop);
+                     TR::Node::recreate(otherInvariantNodeElem->getData()->_parent, TR::treetop);
 
                   if (prevOtherInvariantNodeElem)
                      prevOtherInvariantNodeElem->setNextElement(otherInvariantNodeElem->getNextElement());
@@ -5300,12 +5300,12 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          for (childNum=0;childNum<invariantNode->getNumChildren(); childNum++)
             invariantNode->getChild(childNum)->recursivelyDecReferenceCount();
          invariantNode->setNumChildren(0);
-         TR::Node::recreateAndCopyValidProperties(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
+         TR::Node::recreate(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
          invariantNode->setSymbolReference(newSymbolReference);
 
          if (nextInvariantNode->getData()->_parent &&
              nextInvariantNode->getData()->_parent->getOpCode().isNullCheck())
-             TR::Node::recreateAndCopyValidProperties(nextInvariantNode->getData()->_parent, TR::treetop);
+             TR::Node::recreate(nextInvariantNode->getData()->_parent, TR::treetop);
          */
 
          optimizer()->setRequestOptimization(OMR::globalValuePropagation, true);
@@ -5324,7 +5324,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          {
          if (nextInvariantNode->getData()->_parent &&
             nextInvariantNode->getData()->_parent->getOpCode().isNullCheck())
-            TR::Node::recreateAndCopyValidProperties(nextInvariantNode->getData()->_parent, TR::treetop);
+            TR::Node::recreate(nextInvariantNode->getData()->_parent, TR::treetop);
 
          //invariant expressions might be the part of checks we already versioned.
          //if buildXXX already removed the nodes representing the expressions
@@ -5339,7 +5339,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
             for (childNum=0;childNum<invariantNode->getNumChildren(); childNum++)
                invariantNode->getChild(childNum)->recursivelyDecReferenceCount();
             invariantNode->setNumChildren(0);
-            TR::Node::recreateAndCopyValidProperties(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
+            TR::Node::recreate(invariantNode, comp()->il.opCodeForDirectLoad(invariantNode->getDataType()));
             invariantNode->setSymbolReference(nextInvariantNode->getData()->_symRef);
             }
          else
@@ -5450,7 +5450,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
                   loopInvariantBlock->prepend(TR::TreeTop::create(comp(), newStore));
                   }
 
-               TR::Node::recreateAndCopyValidProperties(specializedNode, TR::iu2l);
+               TR::Node::recreate(specializedNode, TR::iu2l);
                TR::Node *newLoad = TR::Node::createWithSymRef(specializedNode, TR::iload, 0, tempSymRef);
                specializedNode->setNumChildren(1);
                specializedNode->setAndIncChild(0, newLoad);
@@ -5462,7 +5462,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(specializedNode, TR::iconst);
+            TR::Node::recreate(specializedNode, TR::iconst);
             specializedNode->setNumChildren(0);
             specializedNode->setInt(value);
             }
@@ -5921,7 +5921,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
             conditionalNode->setChild(1, constNode);
             constNode->incReferenceCount();
 
-            TR::Node::recreateAndCopyValidProperties(conditionalNode, TR::ificmpeq);
+            TR::Node::recreate(conditionalNode, TR::ificmpeq);
             conditionalNode->resetIsTheVirtualGuardForAGuardedInlinedCall();
 
             if (changeConditionalToUnconditionalInBothVersions)
@@ -5947,7 +5947,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
                _duplicateConditionalTree->setChild(1, constNode);
                constNode->incReferenceCount();
 
-               TR::Node::recreateAndCopyValidProperties(_duplicateConditionalTree, TR::ificmpne);
+               TR::Node::recreate(_duplicateConditionalTree, TR::ificmpne);
                _duplicateConditionalTree->resetIsTheVirtualGuardForAGuardedInlinedCall();
                }
             }
@@ -6287,7 +6287,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
             if (boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK)
                {
 
-		       TR::Node::recreateAndCopyValidProperties(boundCheckNode, TR::SpineCHK);
+		       TR::Node::recreate(boundCheckNode, TR::SpineCHK);
 		       boundCheckNode->getChild(2)->recursivelyDecReferenceCount();
 	           boundCheckNode->setAndIncChild(2, boundCheckNode->getChild(3));
 		       boundCheckNode->getChild(3)->recursivelyDecReferenceCount();
@@ -7185,7 +7185,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
                   if (trace())
                      traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
 
-                  TR::Node::recreateAndCopyValidProperties(duplicateMulHNode,TR::imulh);
+                  TR::Node::recreate(duplicateMulHNode,TR::imulh);
                   nextComparisonNode = TR::Node::createif(TR::ifiucmpgt, duplicateMulHNode, TR::Node::create(boundCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
                   nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
                   if (comp()->requiresSpineChecks())
@@ -7210,7 +7210,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
 
             if (boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK)
                {
-			TR::Node::recreateAndCopyValidProperties(boundCheckNode, TR::SpineCHK);
+			TR::Node::recreate(boundCheckNode, TR::SpineCHK);
 			boundCheckNode->getChild(2)->recursivelyDecReferenceCount();
 	        boundCheckNode->setAndIncChild(2, boundCheckNode->getChild(3));
 			boundCheckNode->getChild(3)->recursivelyDecReferenceCount();
@@ -7281,9 +7281,9 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
                if (nullCheckNode->getNullCheckReference() == node->getFirstChild())
                   {
                   if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-                     TR::Node::recreateAndCopyValidProperties(nullCheckTree->getData()->getNode(), TR::treetop);
+                     TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::treetop);
                   else if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-                     TR::Node::recreateAndCopyValidProperties(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
+                     TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
                   eliminatedNullCheck = true;
                   break;
                   }
@@ -7303,9 +7303,9 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
                   if (nullCheckNode->getNullCheckReference() == node->getFirstChild())
                      {
                      if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(nullCheckTree->getData()->getNode(), TR::treetop);
+                        TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::treetop);
                      else if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-                        TR::Node::recreateAndCopyValidProperties(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
+                        TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
                      eliminatedNullCheck = true;
                      break;
                      }
@@ -7545,7 +7545,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             {
             if (divCheckNode->getFirstChild() == node)
                {
-               TR::Node::recreateAndCopyValidProperties(divCheckTree->getData()->getNode(), TR::treetop);
+               TR::Node::recreate(divCheckTree->getData()->getNode(), TR::treetop);
                eliminatedDivCheck = true;
                break;
                }
@@ -7564,7 +7564,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
               {
               if (divCheckNode->getFirstChild() == node)
                  {
-                 TR::Node::recreateAndCopyValidProperties(divCheckTree->getData()->getNode(), TR::treetop);
+                 TR::Node::recreate(divCheckTree->getData()->getNode(), TR::treetop);
                  break;
                  }
               }
@@ -8331,7 +8331,7 @@ void TR_LoopVersioner::findAndReplaceContigArrayLen(TR::Node *parent, TR::Node *
       return;
 
    if ((node->getOpCodeValue() == TR::contigarraylength))  //future: || (node->getOpCodeValue() == TR::discontigarraylength))
-	  TR::Node::recreateAndCopyValidProperties(node, TR::arraylength);
+	  TR::Node::recreate(node, TR::arraylength);
 
 
    int32_t i;

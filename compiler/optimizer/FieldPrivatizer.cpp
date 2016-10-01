@@ -766,12 +766,12 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
                if (opCode.isStore())
                   {
                   _needToStoreBack->set(autoForField->getReferenceNumber());
-                  TR::Node::recreateAndCopyValidProperties(node, comp()->il.opCodeForDirectStore(nodeDataType));
+                  TR::Node::recreate(node, comp()->il.opCodeForDirectStore(nodeDataType));
                   newFirstChild = node->getSecondChild();
                   newFirstChildNum = 1;
                   }
                else
-                  TR::Node::recreateAndCopyValidProperties(node, comp()->il.opCodeForDirectLoad(nodeDataType));
+                  TR::Node::recreate(node, comp()->il.opCodeForDirectLoad(nodeDataType));
 
                int32_t j;
                for (j=0;j<node->getNumChildren();j++)
@@ -933,12 +933,12 @@ void TR_FieldPrivatizer::placeInitializersInLoopInvariantBlock(TR::Block *block)
 	 {
            if (duplicateNode->getOpCode().isIndirect())
               {
-              TR::Node::recreateAndCopyValidProperties(duplicateNode, comp()->il.opCodeForCorrespondingIndirectStore(duplicateNode->getOpCodeValue()));
+              TR::Node::recreate(duplicateNode, comp()->il.opCodeForCorrespondingIndirectStore(duplicateNode->getOpCodeValue()));
               duplicateNode->setNumChildren(1);
               }
            else
               {
-              TR::Node::recreateAndCopyValidProperties(duplicateNode, comp()->il.opCodeForDirectLoad(duplicateNode->getDataType()));
+              TR::Node::recreate(duplicateNode, comp()->il.opCodeForDirectLoad(duplicateNode->getDataType()));
               duplicateNode->setNumChildren(0);
               }
 	 }
@@ -1152,7 +1152,7 @@ void TR_FieldPrivatizer::placeStoresBackInExit(TR::Block *block, bool placeAtEnd
             {
             if (!duplicateNode->getOpCode().isStore())
                {
-               TR::Node::recreateAndCopyValidProperties(duplicateNode, comp()->il.opCodeForCorrespondingIndirectLoad(duplicateNode->getOpCodeValue()));
+               TR::Node::recreate(duplicateNode, comp()->il.opCodeForCorrespondingIndirectLoad(duplicateNode->getOpCodeValue()));
                }
 
             if (duplicateNode->getOpCode().isWrtBar())
@@ -1166,7 +1166,7 @@ void TR_FieldPrivatizer::placeStoresBackInExit(TR::Block *block, bool placeAtEnd
          else
             {
             if (!duplicateNode->getOpCode().isStore())
-               TR::Node::recreateAndCopyValidProperties(duplicateNode, comp()->il.opCodeForDirectStore(duplicateNode->getDataType()));
+               TR::Node::recreate(duplicateNode, comp()->il.opCodeForDirectStore(duplicateNode->getDataType()));
             if (duplicateNode->getOpCode().isWrtBar())
                duplicateNode->setNumChildren(2);
             else
@@ -1455,7 +1455,7 @@ void TR_FieldPrivatizer::cleanupStringPeephole()
 
    if (prevNode->getOpCode().isStore())
       {
-      TR::Node::recreateAndCopyValidProperties(prevNode, TR::treetop);
+      TR::Node::recreate(prevNode, TR::treetop);
       TR::Node *firstChild = prevNode->getFirstChild();
       TR::TreeTop *cursorTree = prevTree->getPrevTreeTop();
       while(cursorTree)
@@ -1474,7 +1474,7 @@ void TR_FieldPrivatizer::cleanupStringPeephole()
 
        if (firstChild->getOpCodeValue() == TR::New)
           {
-          TR::Node::recreateAndCopyValidProperties(firstChild, TR::acall);
+          TR::Node::recreate(firstChild, TR::acall);
 
           TR::SymbolReference *appendSymRef = _appendSymRef ? comp()->getSymRefTab()->findOrCreateMethodSymbol(firstChild->getSymbolReference()->getOwningMethodIndex(), -1, _appendSymRef->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod(), TR::MethodSymbol::Special) : 0;
 
@@ -1580,7 +1580,7 @@ void TR_FieldPrivatizer::privatizeElementCandidates()
 
       TR_ASSERT(candidate.node->getReferenceCount() == 1, "Candidate store node %p has refcount > 1... How is this possible?\n",candidate.node);
 
-      TR::Node::recreateAndCopyValidProperties(candidate.node, comp()->il.opCodeForDirectStore(storedt));
+      TR::Node::recreate(candidate.node, comp()->il.opCodeForDirectStore(storedt));
       candidate.node->setSymbolReference(tempSymRef);
       candidate.node->setFirst(candidate.node->getSecondChild());
       candidate.node->setNumChildren(1);

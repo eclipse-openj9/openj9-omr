@@ -128,11 +128,11 @@ TR::Register *OMR::X86::TreeEvaluator::i2bEvaluator(TR::Node *node, TR::CodeGene
          {
          if (firstChild->getOpCode().isLoadIndirect())
             {
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::bloadi);
+            TR::Node::recreate(firstChild, TR::bloadi);
             }
          else
             {
-            TR::Node::recreateAndCopyValidProperties(firstChild, TR::bload);
+            TR::Node::recreate(firstChild, TR::bload);
             }
          }
       }

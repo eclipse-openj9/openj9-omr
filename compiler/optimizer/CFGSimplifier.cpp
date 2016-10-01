@@ -351,7 +351,7 @@ bool TR_CFGSimplifier::simplifyBooleanStore()
          }
       // Set up the new opcode for the compare node
       //
-      TR::Node::recreateAndCopyValidProperties(compareNode, compareNode->getOpCode().getOpCodeForReverseBranch());
+      TR::Node::recreate(compareNode, compareNode->getOpCode().getOpCodeForReverseBranch());
       }
    else
       {
@@ -368,7 +368,7 @@ bool TR_CFGSimplifier::simplifyBooleanStore()
       }
    TR::Node *value = storeNode->getChild(valueIndex);
 
-   TR::Node::recreateAndCopyValidProperties(compareNode, compareNode->getOpCode().convertIfCmpToCmp());
+   TR::Node::recreate(compareNode, compareNode->getOpCode().convertIfCmpToCmp());
 
    TR::Node *node1;
    TR::ILOpCodes convertOpCode = TR::BadILOp;

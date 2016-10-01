@@ -184,9 +184,9 @@ static TR::Register *optimizeIU2L(TR::Node *child, TR::ILOpCodes origOp, TR::Cod
       }
    if (op != TR::BadILOp)
       {
-      TR::Node::recreateAndCopyValidProperties(child, op);
+      TR::Node::recreate(child, op);
       reg = cg->evaluate(child);
-      TR::Node::recreateAndCopyValidProperties(child, origOp);
+      TR::Node::recreate(child, origOp);
       }
    else
       {

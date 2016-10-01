@@ -5215,7 +5215,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       {
       if (parent->getOpCode().isResolveCheck())
          {
-         TR::Node::recreateAndCopyValidProperties(parent, TR::NULLCHK);
+         TR::Node::recreate(parent, TR::NULLCHK);
          }
       nullCheckTreeTop = parent->extractTheNullCheck(prevTreeTop);
       }

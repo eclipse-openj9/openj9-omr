@@ -965,6 +965,7 @@ public:
 #endif
 
    // To TransformUtil
+   void removeTree(TR::TreeTop * tt);
    void setStartTree(TR::TreeTop * tt);
 
 

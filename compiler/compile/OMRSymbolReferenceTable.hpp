@@ -28,8 +28,8 @@ namespace OMR { class SymbolReferenceTable; }
 namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector; }
 #endif
 
-#include "infra/HashTab.hpp"  // REMOVE_THIS_LATER
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // REMOVE_THIS_LATER
+#include "infra/HashTab.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
 
 #include <stddef.h>                            // for NULL, size_t
 #include <stdint.h>                            // for int32_t, etc

@@ -38,7 +38,7 @@
 #include "infra/TRCfgEdge.hpp"      // for CFGEdge
 #include "infra/TRCfgNode.hpp"      // for CFGNode
 
-#include "optimizer/VPConstraint.hpp" // REMOVE_THIS_LATER
+#include "optimizer/VPConstraint.hpp"
 
 class TR_BasicInductionVariable;
 class TR_BlockStructure;

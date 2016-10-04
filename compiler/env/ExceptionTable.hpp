@@ -19,7 +19,7 @@
 #ifndef EXCEPTIONTABLE_INCL
 #define EXCEPTIONTABLE_INCL
 
-#include "infra/Array.hpp" // REMOVE_THIS_LATER
+#include "infra/Array.hpp"
 
 #include <stdint.h>          // for uint32_t, uint16_t, int32_t
 #include "env/TRMemory.hpp"  // for TR_Memory, etc

@@ -50,7 +50,7 @@
 #include "optimizer/Optimizations.hpp"      // for Optimizations
 #include "runtime/Runtime.hpp"              // for TR_CCPreLoadedCode
 
-#include "codegen/RegisterRematerializationInfo.hpp" // REMOVE_THIS_LATER
+#include "codegen/RegisterRematerializationInfo.hpp"
 
 class TR_Debug;
 class TR_BlockStructure;

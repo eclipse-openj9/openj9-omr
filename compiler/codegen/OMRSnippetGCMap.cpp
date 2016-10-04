@@ -17,7 +17,7 @@
  *******************************************************************************/
 
 #include <stdint.h>
-#include "codegen/GCStackAtlas.hpp" // REMOVE_THIS_LATER
+#include "codegen/GCStackAtlas.hpp"
 #include "codegen/SnippetGCMap.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"

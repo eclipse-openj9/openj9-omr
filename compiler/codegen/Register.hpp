@@ -19,7 +19,7 @@
 #ifndef TR_REGISTER_INCL
 #define TR_REGISTER_INCL
 
-#include "infra/List.hpp" // REMOVE_THIS_LATER
+#include "infra/List.hpp"
 
 #include "codegen/OMRRegister.hpp"
 

@@ -19,7 +19,7 @@
 #ifndef GCSTACKMAP_INCL
 #define GCSTACKMAP_INCL
 
-#include "il/symbol/LabelSymbol.hpp" // REMOVE_THIS_LATER
+#include "il/symbol/LabelSymbol.hpp"
 
 #include <stddef.h>                         // for size_t
 #include <stdint.h>                         // for uint8_t

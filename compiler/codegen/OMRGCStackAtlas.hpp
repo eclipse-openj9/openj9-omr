@@ -28,7 +28,7 @@ namespace OMR { class GCStackAtlas; }
 namespace OMR { typedef OMR::GCStackAtlas GCStackAtlasConnector; }
 #endif
 
-#include "codegen/GCStackMap.hpp" // REMOVE_THIS_LATER
+#include "codegen/GCStackMap.hpp"
 
 #include <stddef.h>               // for NULL
 #include <stdint.h>               // for uint32_t, int32_t, uint8_t

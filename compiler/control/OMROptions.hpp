@@ -46,7 +46,7 @@ namespace OMR { typedef OMR::Options OptionsConnector; }
 #include "optimizer/Optimizations.hpp"   // for Optimizations, etc
 #include "ras/DebugCounter.hpp"          // for TR::DebugCounter, etc
 
-namespace TR { class CFGNode; } // REMOVE_THIS_LATER
+namespace TR { class CFGNode; }
 
 class TR_CompilationFilters;
 class TR_Debug;

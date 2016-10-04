@@ -44,7 +44,7 @@
 #include "p/codegen/PPCOpsDefines.hpp"           // for PPCOpProp_NoHint
 #include "runtime/Runtime.hpp"
 
-#include "codegen/GCStackMap.hpp" // REMOVE_THIS_LATER
+#include "codegen/GCStackMap.hpp"
 
 class TR_VirtualGuardSite;
 namespace TR { class SymbolReference; }

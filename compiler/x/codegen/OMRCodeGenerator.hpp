@@ -50,12 +50,12 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include <sys/time.h>                          // for timeval
 #endif
 
-#include "codegen/Instruction.hpp" // REMOVE_THIS_LATER
-#include "il/symbol/LabelSymbol.hpp" // REMOVE_THIS_LATER
-#include "il/symbol/StaticSymbol.hpp" // REMOVE_THIS_LATER
-#include "x/codegen/OutlinedInstructions.hpp" // REMOVE_THIS_LATER
-#include "codegen/GCStackMap.hpp" // REMOVE_THIS_LATER
-#include "codegen/GCStackAtlas.hpp" // REMOVE_THIS_LATER
+#include "codegen/Instruction.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "x/codegen/OutlinedInstructions.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/GCStackAtlas.hpp"
 
 class TR_GCStackMap;
 class TR_IA32ConstantDataSnippet;

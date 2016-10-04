@@ -30,7 +30,7 @@
 #ifndef INLINER_INCL
 #define INLINER_INCL
 
-#include "optimizer/CallInfo.hpp" // REMOVE_THIS_LATER
+#include "optimizer/CallInfo.hpp"
 
 #include <stddef.h>                            // for NULL
 #include <stdint.h>                            // for int32_t, uint32_t, etc

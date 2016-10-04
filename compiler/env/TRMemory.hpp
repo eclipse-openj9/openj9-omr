@@ -68,11 +68,11 @@
 #include "infra/ReferenceWrapper.hpp"   // for reference_wrapper
 #include "env/Region.hpp"               // for Region
 
-#include <stdlib.h> // REMOVE_THIS_LATER
-#include "cs2/bitmanip.h" // REMOVE_THIS_LATER
-#include "cs2/hashtab.h" // REMOVE_THIS_LATER
-#include "cs2/llistof.h" // REMOVE_THIS_LATER
-#include "env/jittypes.h" // REMOVE_THIS_LATER
+#include <stdlib.h>
+#include "cs2/bitmanip.h"
+#include "cs2/hashtab.h"
+#include "cs2/llistof.h"
+#include "env/jittypes.h"
 
 #include "env/TypedAllocator.hpp"
 

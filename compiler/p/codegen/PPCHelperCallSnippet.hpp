@@ -26,7 +26,7 @@
 #include "codegen/RealRegister.hpp"  // for RealRegister, etc
 #include "il/SymbolReference.hpp"    // for SymbolReference
 
-#include "codegen/GCStackAtlas.hpp" // REMOVE_THIS_LATER
+#include "codegen/GCStackAtlas.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }

@@ -23,7 +23,7 @@
 #include "env/defines.h"   // for TR_HOST_X86, TR_HOST_64BIT
 #include "env/jittypes.h"  // for intptrj_t
 
-#include "env/Processors.hpp" // REMOVE_THIS_LATER
+#include "env/Processors.hpp"
 
 #ifdef RUBY_PROJECT_SPECIFIC
 #include "ruby/config.h"

@@ -460,11 +460,6 @@ class TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *arraytranslateEncodeSIMDEvaluator(TR::Node *node, TR::CodeGenerator *cg, ArrayTranslateFlavor convType);
    static TR::Register *arraytranslateDecodeSIMDEvaluator(TR::Node *node, TR::CodeGenerator *cg, ArrayTranslateFlavor convType);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *countDigitsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static void         countDigitsHelper(TR::Node * node, TR::CodeGenerator * cg,
-                                           int32_t memRefIndex, TR::MemoryReference * memRef,
-                                           TR::Register* inputReg, TR::Register* countReg,
-                                           TR::LabelSymbol *doneLabel, bool isLong);
    static TR::Register *long2StringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bitOpMemEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *rsloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);

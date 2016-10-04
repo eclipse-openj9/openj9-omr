@@ -48,13 +48,6 @@ OMR::Monitor::create(char *name)
    return monitor;
    }
 
-void
-OMR::Monitor::destroy()
-   {
-   int32_t rc = pthread_mutex_destroy(&_monitor);
-   TR_ASSERT(rc == 0, "error destroying monitor\n");
-   }
-
 OMR::Monitor::~Monitor()
    {
    self()->destroy();
@@ -70,24 +63,51 @@ bool
 OMR::Monitor::init(char *name)
    {
    _name = name;
-   int32_t rc = pthread_mutex_init(&_monitor, 0);
-   TR_ASSERT(rc == 0, "error initializing monitor\n");
+   MUTEX_INIT(_monitor);
+   bool rc = MUTEX_INIT(_monitor);
+   TR_ASSERT(rc == true, "error initializing monitor\n");
    return true;
+   }
+
+void
+OMR::Monitor::destroy(TR::Monitor *monitor)
+   {
+   delete monitor;
+   }
+
+void
+OMR::Monitor::destroy()
+   {
+#ifdef WIN32
+   MUTEX_DESTROY(_monitor);
+#else
+   int32_t rc = MUTEX_DESTROY(_monitor);
+   TR_ASSERT(rc == 0, "error destroying monitor\n");
+#endif
    }
 
 void
 OMR::Monitor::enter()
    {
-   int32_t rc = pthread_mutex_lock(&_monitor);
+#ifdef WIN32
+   MUTEX_ENTER(_monitor);
+#else
+   int32_t rc = MUTEX_ENTER(_monitor);
    TR_ASSERT(rc == 0, "error locking monitor\n");
+#endif
    }
 
 int32_t
 OMR::Monitor::exit()
    {
-   int32_t rc = pthread_mutex_unlock(&_monitor);
+#ifdef WIN32
+   MUTEX_EXIT(_monitor);
+   return 0;
+#else
+   int32_t rc = MUTEX_EXIT(_monitor);
    TR_ASSERT(rc == 0, "error unlocking monitor\n");
    return rc;
+#endif
    }
 
 char const *

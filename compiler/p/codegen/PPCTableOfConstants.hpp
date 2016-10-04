@@ -118,7 +118,7 @@ class TR_PPCTableOfConstants : public TableOfConstants
          }
       if(_tocMonitor != 0)
          {
-         delete _tocMonitor;
+         TR::Monitor::destroy(_tocMonitor);
          }
       }
 

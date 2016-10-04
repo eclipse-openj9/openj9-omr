@@ -25,9 +25,9 @@ namespace OMR { class Monitor; }
 namespace OMR { typedef OMR::Monitor MonitorConnector; }
 #endif
 
-#include <pthread.h>         // for pthread_mutex_t
 #include <stdint.h>          // for int32_t, int64_t
 #include "infra/Assert.hpp"  // for TR_ASSERT
+#include "omrmutex.h"        // for MUTEX
 
 namespace TR { class Monitor; }
 
@@ -41,12 +41,11 @@ class Monitor
    {
    public:
 
-   static void operator delete(void *p);
-
    ~Monitor();
 
    TR::Monitor *self();
    static TR::Monitor *create(char *name);
+   static void destroy(TR::Monitor *monitor);
    void enter();
    int32_t try_enter() NOT_IMPL;
    int32_t exit(); // returns 0 on success
@@ -62,9 +61,10 @@ class Monitor
    private:
 
    void *operator new(size_t size);
+   void operator delete(void *p);
 
    char const *_name;
-   pthread_mutex_t _monitor;
+   MUTEX _monitor;
    };
 
 }

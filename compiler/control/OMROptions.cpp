@@ -1048,7 +1048,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"stopOnFailure",      "D\tstop compilation if exceed memory threshold", SET_OPTION_BIT(TR_StopOnFailure), "P"},
    {"stopThrottlingTime=", "M<nnn>\tTime when compilation throttling should stop (ms since JVM start)",
                              TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_stopThrottlingTime, 0, "F%d", NOT_IN_SUBSET },
-   {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), -1 , "F%d"},
+   {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptrj_t>(-1) , "F%d"},
    {"strictFPCompares",   "C\tassume strictFP semantics for floating point compares only", SET_OPTION_BIT(TR_StrictFPCompares), "F" },
    {"subtractLoopyMethodCounts",   "C\tSubtract loopy method counts instead of dividing", SET_OPTION_BIT(TR_SubtractLoopyMethodCounts), "F", NOT_IN_SUBSET},
    {"subtractMethodCountsWhenIprofilerIsOff",   "C\tSubtract method counts instead of dividing when Iprofiler is off", SET_OPTION_BIT(TR_SubtractMethodCountsWhenIprofilerIsOff), "F", NOT_IN_SUBSET},

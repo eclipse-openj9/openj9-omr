@@ -87,7 +87,7 @@ struct OptionTable
     * Parameters to be passed to the processing method.
     */
    intptrj_t parm1;
-   intptrj_t parm2;
+   uintptrj_t parm2;
 
    /**
     * Message information to be printed if this option is in effect

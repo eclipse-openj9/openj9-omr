@@ -45,7 +45,7 @@ namespace OMR
 /**
  * Symbol for methods, along with information about the method
  */
-class MethodSymbol : public TR::Symbol
+class OMR_EXTENSIBLE MethodSymbol : public TR::Symbol
    {
 
 protected:
@@ -133,7 +133,7 @@ public:
 
    bool isComputedStatic()                     { return _methodFlags.testValue(MethodKindMask, ComputedStatic);}
    bool isComputedVirtual()                    { return _methodFlags.testValue(MethodKindMask, ComputedVirtual);}
-   bool isComputed()                           { return isComputedStatic() || isComputedVirtual(); }
+   bool isComputed();
 
    void setStatic()                            { _methodFlags.setValue(MethodKindMask, Static);}
    bool isStatic()                             { return _methodFlags.testValue(MethodKindMask, Static);}

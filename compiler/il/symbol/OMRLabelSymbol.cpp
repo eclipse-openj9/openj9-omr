@@ -132,11 +132,11 @@ OMR::LabelSymbol::makeRelativeLabelSymbol(intptr_t offset)
    // Is this assert here purely to ensure that the label size doesn't blow the buffer?
    TR_ASSERT(offset*2 > -9999999 && offset*2 < +9999999, "assertion failure");
 
-   setRelativeLabel();
+   self()->setRelativeLabel();
    _offset = offset;
    char * name = (char*)calloc(10,sizeof(char));  // FIXME: Leaked.
    sprintf(name, "%d", (int)(offset*2));
-   setName(name);
+   self()->setName(name);
    }
 
 TR::LabelSymbol *

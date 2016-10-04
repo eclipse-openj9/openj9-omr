@@ -34,19 +34,49 @@ class TR_FrontEnd;
 namespace TR { class Node; }
 namespace TR { class SymbolReference; }
 
+OMR::AutomaticSymbol::AutomaticSymbol() :
+   TR::RegisterMappedSymbol()
+   {
+   self()->init();
+   }
+
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d) :
+   TR::RegisterMappedSymbol(d)
+   {
+   self()->init();
+   }
+
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d, uint32_t s) :
+   TR::RegisterMappedSymbol(d, s)
+   {
+   self()->init();
+   }
+
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d, uint32_t s, const char *name) :
+   TR::RegisterMappedSymbol(d, s)
+   {
+   self()->init(); _name = name;
+   }
+
+TR::AutomaticSymbol *
+OMR::AutomaticSymbol::self()
+   {
+   return static_cast<TR::AutomaticSymbol*>(this);
+   }
+
 rcount_t
 OMR::AutomaticSymbol::setReferenceCount(rcount_t i)
    {
-   if (isVariableSizeSymbol() && i > 0)
-      castToVariableSizeSymbol()->setIsReferenced();
+   if (self()->isVariableSizeSymbol() && i > 0)
+      self()->castToVariableSizeSymbol()->setIsReferenced();
    return (_referenceCount = i);
    }
 
 rcount_t
 OMR::AutomaticSymbol::incReferenceCount()
    {
-   if (isVariableSizeSymbol())
-      castToVariableSizeSymbol()->setIsReferenced();
+   if (self()->isVariableSizeSymbol())
+      self()->castToVariableSizeSymbol()->setIsReferenced();
    return ++_referenceCount;
    }
 

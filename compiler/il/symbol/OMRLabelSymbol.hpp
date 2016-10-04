@@ -58,7 +58,7 @@ namespace OMR
  *
  * A label has an instruction, a code location...
  */
-class LabelSymbol : public TR::Symbol
+class OMR_EXTENSIBLE LabelSymbol : public TR::Symbol
    {
 public:
    TR::LabelSymbol * self();

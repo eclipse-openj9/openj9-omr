@@ -67,7 +67,7 @@ namespace OMR
 /**
  * Class for resolved method symbols
  */
-class ResolvedMethodSymbol : public TR::MethodSymbol
+class OMR_EXTENSIBLE ResolvedMethodSymbol : public TR::MethodSymbol
    {
 
 protected:
@@ -162,8 +162,7 @@ public:
    bool induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder);
    TR::TreeTop *induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint);
 
-   int32_t incTempIndex(TR_FrontEnd * fe)
-      { return setTempIndex(_tempIndex+1, fe); }
+   int32_t incTempIndex(TR_FrontEnd * fe);
 
    void setFirstJitTempIndex(int32_t index) { _firstJitTempIndex = index; }
    int32_t getFirstJitTempIndex() { TR_ASSERT(_tempIndex >= 0, "assertion failure"); return _firstJitTempIndex; }
@@ -221,7 +220,7 @@ public:
    bool hasDememoizationOpportunities()      {return _methodFlags2.testAny(HasDememoizationOpportunities); }
    void setHasDememoizationOpportunities(bool b) { _methodFlags2.set(HasDememoizationOpportunities, b); }
 
-   bool hasEscapeAnalysisOpportunities()     { return hasNews() || hasDememoizationOpportunities(); }
+   bool hasEscapeAnalysisOpportunities();
 
    bool mayHaveIndirectCalls()               { return _methodFlags.testAny(MayHaveIndirectCalls); }
    void setMayHaveIndirectCalls(bool b)      { _methodFlags.set(MayHaveIndirectCalls, b); }
@@ -231,7 +230,7 @@ public:
 
    bool hasMethodHandleInvokes()             {return _methodFlags2.testAny(HasMethodHandleInvokes); }
    void setHasMethodHandleInvokes(bool b)    { _methodFlags2.set(HasMethodHandleInvokes, b); }
-   bool doJSR292PerfTweaks()                 { return hasMethodHandleInvokes(); }
+   bool doJSR292PerfTweaks();
 
    bool hasCheckCasts()                      { return _methodFlags2.testAny(HasCheckCasts); }
    void setHasCheckCasts(bool b)             { _methodFlags2.set(HasCheckCasts, b); }
@@ -294,12 +293,7 @@ public:
       }
 
    int32_t getTempIndex() { return _tempIndex; }
-   int32_t getArrayCopyTempSlot(TR_FrontEnd * fe)
-      {
-      if (_arrayCopyTempSlot == -1)
-         _arrayCopyTempSlot = incTempIndex(fe);
-      return _arrayCopyTempSlot;
-      }
+   int32_t getArrayCopyTempSlot(TR_FrontEnd * fe);
 
    TR::SymbolReference *getPythonConstsSymbolRef() { return _pythonConstsSymRef; }
 

@@ -46,7 +46,7 @@ namespace TR { class SymbolReference; }
 namespace OMR
 {
 
-class AutomaticSymbol : public TR::RegisterMappedSymbol
+class OMR_EXTENSIBLE AutomaticSymbol : public TR::RegisterMappedSymbol
    {
 
 public:
@@ -65,23 +65,17 @@ public:
 
 protected:
 
-   AutomaticSymbol() :
-      TR::RegisterMappedSymbol()
-      { init(); }
+   AutomaticSymbol();
 
-   AutomaticSymbol(TR::DataTypes d) :
-      TR::RegisterMappedSymbol(d)
-      { init(); }
+   AutomaticSymbol(TR::DataTypes d);
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s) :
-      TR::RegisterMappedSymbol(d, s)
-      { init(); }
+   AutomaticSymbol(TR::DataTypes d, uint32_t s);
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s, const char *name) :
-      TR::RegisterMappedSymbol(d, s)
-      { init(); _name = name; }
+   AutomaticSymbol(TR::DataTypes d, uint32_t s, const char *name);
 
    void init();
+
+   TR::AutomaticSymbol * self();
 
 public:
 

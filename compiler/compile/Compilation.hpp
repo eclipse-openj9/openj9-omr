@@ -33,7 +33,7 @@ struct OMR_VMThread;
 
 namespace TR
 {
-class Compilation : public OMR::CompilationConnector
+class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
    {
    public:
 

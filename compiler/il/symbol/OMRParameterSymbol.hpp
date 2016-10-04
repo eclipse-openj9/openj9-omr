@@ -40,7 +40,7 @@ namespace TR { class ParameterSymbol; }
 namespace OMR
 {
 
-class ParameterSymbol : public TR::RegisterMappedSymbol
+class OMR_EXTENSIBLE ParameterSymbol : public TR::RegisterMappedSymbol
    {
 
 protected:
@@ -48,6 +48,8 @@ protected:
    ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot);
 
    ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size);
+
+   TR::ParameterSymbol * self();
 
 public:
 
@@ -58,9 +60,9 @@ public:
    static TR::ParameterSymbol * create(AllocatorType, TR::DataTypes, bool, int32_t, size_t);
 
    int32_t  getParameterOffset()               { return _mappedOffset; }
-   void     setParameterOffset(int32_t o)      { setOffset(o); }
+   void     setParameterOffset(int32_t o);
 
-   int32_t  getSlot()                          { return getParameterOffset() / (uint32_t)_addressSize;} // cast _addressSize explicity
+   int32_t  getSlot();
 
    int32_t  getOrdinal()                       { return _ordinal; }
    void     setOrdinal(int32_t o)              { _ordinal = o; }

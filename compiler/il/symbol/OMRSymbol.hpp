@@ -44,6 +44,7 @@ namespace OMR { typedef OMR::Symbol SymbolConnector; }
 
 #include <stddef.h>                 // for size_t
 #include <stdint.h>                 // for uint32_t, uint16_t, uint8_t, etc
+#include "infra/Annotations.hpp"    // for OMR_EXTENSIBLE
 #include "env/TRMemory.hpp"         // for TR_Memory, etc
 #include "il/DataTypes.hpp"         // for TR::DataType, DataTypes
 #include "infra/Assert.hpp"         // for TR_ASSERT
@@ -69,7 +70,7 @@ namespace OMR {
  * A Symbol object contains data type, size and attribute
  * information for a symbol.
  */
-class Symbol
+class OMR_EXTENSIBLE Symbol
    {
 
 public:
@@ -107,31 +108,13 @@ protected:
     * Create symbol of specified data type, inferring size
     * from type.
     */
-   Symbol(TR::DataTypes d) :
-      _size(0),
-      _name(0),
-      _flags(0),
-      _flags2(0),
-      _sideTableIndex(0),
-      _restrictedRegisterNumber(-1)
-      {
-      setDataType(d);
-      }
+   Symbol(TR::DataTypes d);
 
    /**
     * Create symbol of specified data type, inferring size
     * from type.
     */
-   Symbol(TR::DataTypes d, uint32_t size) :
-      _name(0),
-      _flags(0),
-      _flags2(0),
-      _sideTableIndex(0),
-      _restrictedRegisterNumber(-1)
-      {
-      setDataType(d);
-      _size = size;
-      }
+   Symbol(TR::DataTypes d, uint32_t size);
 
 public:
    /**
@@ -140,27 +123,28 @@ public:
     */
    virtual ~Symbol() {}
 
-   // If the symbol is of the correct type the inline get method downcasts the
-   // symbol to the correct type otherwise it returns 0.
-   //
-   inline TR::RegisterMappedSymbol            *getRegisterMappedSymbol();
-   inline TR::AutomaticSymbol                 *getAutoSymbol();
-   inline TR::ParameterSymbol                 *getParmSymbol();
-   inline TR::AutomaticSymbol                 *getInternalPointerAutoSymbol();
-   inline TR::AutomaticSymbol                 *getLocalObjectSymbol();
-   inline TR::StaticSymbol                    *getStaticSymbol();
-   inline TR::ResolvedMethodSymbol            *getResolvedMethodSymbol();
-   inline TR::MethodSymbol                    *getMethodSymbol();
-   inline TR::Symbol                          *getShadowSymbol();
-   inline TR::Symbol                          *getNamedShadowSymbol();
-   inline TR::RegisterMappedSymbol            *getMethodMetaDataSymbol();
-   inline TR::LabelSymbol                     *getLabelSymbol();
-   inline TR::ResolvedMethodSymbol            *getJittedMethodSymbol();
-   inline TR::StaticSymbol                    *getRecognizedStaticSymbol();
-   inline TR::AutomaticSymbol                 *getVariableSizeSymbol();
-   inline TR::StaticSymbol                    *getCallSiteTableEntrySymbol();
-   inline TR::StaticSymbol                    *getMethodTypeTableEntrySymbol();
-   inline TR::AutomaticSymbol                 *getRegisterSymbol();
+   /**
+    * If the symbol is of the correct type the get method downcasts the
+    * symbol to the correct type otherwise it returns 0.
+    */
+   TR::RegisterMappedSymbol                   *getRegisterMappedSymbol();
+   TR::AutomaticSymbol                        *getAutoSymbol();
+   TR::ParameterSymbol                        *getParmSymbol();
+   TR::AutomaticSymbol                        *getInternalPointerAutoSymbol();
+   TR::AutomaticSymbol                        *getLocalObjectSymbol();
+   TR::StaticSymbol                           *getStaticSymbol();
+   TR::ResolvedMethodSymbol                   *getResolvedMethodSymbol();
+   TR::MethodSymbol                           *getMethodSymbol();
+   TR::Symbol                                 *getShadowSymbol();
+   TR::Symbol                                 *getNamedShadowSymbol();
+   TR::RegisterMappedSymbol                   *getMethodMetaDataSymbol();
+   TR::LabelSymbol                            *getLabelSymbol();
+   TR::ResolvedMethodSymbol                   *getJittedMethodSymbol();
+   TR::StaticSymbol                           *getRecognizedStaticSymbol();
+   TR::AutomaticSymbol                        *getVariableSizeSymbol();
+   TR::StaticSymbol                           *getCallSiteTableEntrySymbol();
+   TR::StaticSymbol                           *getMethodTypeTableEntrySymbol();
+   TR::AutomaticSymbol                        *getRegisterSymbol();
 
    // The inline To methods perform an explicit (debug) assume that the symbol is a correct type
    // and then return the symbol explicitly cast to the type.
@@ -225,7 +209,7 @@ public:
 
    void          setDataType(TR::DataTypes dt);
    TR::DataTypes getDataType() { return (TR::DataTypes)_flags.getValue(DataTypeMask);}
-   TR::DataType  getType()     { return getDataType(); }
+   TR::DataType  getType();
 
    int32_t getKind()             { return _flags.getValue(KindMask);}
 
@@ -233,19 +217,19 @@ public:
    bool isParm()                 { return _flags.testValue(KindMask, IsParameter); }
    bool isMethodMetaData()       { return _flags.testValue(KindMask, IsMethodMetaData); }
    bool isResolvedMethod()       { return _flags.testValue(KindMask, IsResolvedMethod); }
-   bool isMethod()               { return getKind() == IsMethod || getKind() == IsResolvedMethod; }
+   bool isMethod();
    bool isStatic()               { return _flags.testValue(KindMask, IsStatic); }
    bool isShadow()               { return _flags.testValue(KindMask, IsShadow); }
    bool isLabel()                { return _flags.testValue(KindMask, IsLabel); }
    void setIsLabel()             { _flags.setValue(KindMask, IsLabel);}
 
-   bool isRegisterMappedSymbol() { return getKind() <= LastRegisterMapped; }
+   bool isRegisterMappedSymbol();
 
-   bool isAutoOrParm()           { return getKind() <= IsParameter; }
+   bool isAutoOrParm();
    bool isAutoField()            { return false; }
    bool isParmField()            { return false; }
    bool isWeakSymbol()           { return false; }
-   bool isRegularShadow()        { return isShadow() && !isAutoField() && !isParmField(); }
+   bool isRegularShadow();
 
    void setIsInGlobalRegister(bool b)       { _flags.set(IsInGlobalRegister, b); }
    bool isInGlobalRegister()                { return _flags.testAny(IsInGlobalRegister); }
@@ -256,7 +240,7 @@ public:
    void setVolatile()                       { _flags.set(Volatile); }
    void resetVolatile()                     { _flags.reset(Volatile); }
    bool isVolatile()                        { return _flags.testAny(Volatile); }
-   bool isSyncVolatile()                    { return isVolatile(); }
+   bool isSyncVolatile();
 
    void setInitializedReference()           { _flags.set(InitializedReference); }
    void setUninitializedReference()         { _flags.reset(InitializedReference); }
@@ -618,20 +602,10 @@ public:
 }
 
 // If these implementations are to be moved, they need to be un-defined as inline.
-TR::RegisterMappedSymbol * OMR::Symbol::getRegisterMappedSymbol()
-   {
-   return isRegisterMappedSymbol() ? (TR::RegisterMappedSymbol *)this : 0;
-   }
-
 TR::RegisterMappedSymbol * OMR::Symbol::castToRegisterMappedSymbol()
    {
    TR_ASSERT(isRegisterMappedSymbol(), "OMR::Symbol::castToRegisterMappedSymbol, symbol is not a register mapped symbol");
    return (TR::RegisterMappedSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::getAutoSymbol()
-   {
-   return isAuto() ? (TR::AutomaticSymbol *)this : 0;
    }
 
 TR::AutomaticSymbol * OMR::Symbol::castToAutoSymbol()
@@ -640,20 +614,10 @@ TR::AutomaticSymbol * OMR::Symbol::castToAutoSymbol()
    return (TR::AutomaticSymbol *)this;
    }
 
-TR::ParameterSymbol * OMR::Symbol::getParmSymbol()
-   {
-   return isParm() ? (TR::ParameterSymbol *)this : 0;
-   }
-
 TR::ParameterSymbol * OMR::Symbol::castToParmSymbol()
    {
    TR_ASSERT(isParm(), "OMR::Symbol::castToParmSymbol, symbol is not a parameter symbol");
    return (TR::ParameterSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::getInternalPointerAutoSymbol()
-   {
-   return isInternalPointerAuto() ? (TR::AutomaticSymbol *)this : 0;
    }
 
 TR::AutomaticSymbol * OMR::Symbol::castToInternalPointerAutoSymbol()
@@ -662,20 +626,10 @@ TR::AutomaticSymbol * OMR::Symbol::castToInternalPointerAutoSymbol()
    return (TR::AutomaticSymbol *)this;
    }
 
-TR::AutomaticSymbol * OMR::Symbol::getLocalObjectSymbol()
-   {
-   return isLocalObject() ? (TR::AutomaticSymbol *)this : 0;
-   }
-
 TR::AutomaticSymbol * OMR::Symbol::castToLocalObjectSymbol()
    {
    TR_ASSERT(isLocalObject(), "OMR::Symbol::castToLocalObjectSymbol, symbol is not an internal pointer automatic symbol");
    return (TR::AutomaticSymbol *)this;
-   }
-
-TR::StaticSymbol * OMR::Symbol::getStaticSymbol()
-   {
-   return isStatic() ? (TR::StaticSymbol *)this : 0;
    }
 
 TR::StaticSymbol * OMR::Symbol::castToStaticSymbol()
@@ -690,21 +644,11 @@ TR::StaticSymbol * OMR::Symbol::castToNamedStaticSymbol()
    return (TR::StaticSymbol *)this;
    }
 
-TR::MethodSymbol * OMR::Symbol::getMethodSymbol()
-   {
-   return isMethod() ? (TR::MethodSymbol *)this : 0;
-   }
-
 TR::MethodSymbol * OMR::Symbol::castToMethodSymbol()
    {
    TR_ASSERT(isMethod(), "OMR::Symbol::castToMethodSymbol, symbol[%p] is not a method symbol",
          this);
    return (TR::MethodSymbol *)this;
-   }
-
-TR::ResolvedMethodSymbol * OMR::Symbol::getResolvedMethodSymbol()
-   {
-   return isResolvedMethod() ? (TR::ResolvedMethodSymbol *)this : 0;
    }
 
 TR::ResolvedMethodSymbol * OMR::Symbol::castToResolvedMethodSymbol()
@@ -713,20 +657,10 @@ TR::ResolvedMethodSymbol * OMR::Symbol::castToResolvedMethodSymbol()
    return (TR::ResolvedMethodSymbol *)this;
    }
 
-TR::Symbol * OMR::Symbol::getShadowSymbol()
-   {
-   return isShadow() ? (TR::Symbol *)this : 0;
-   }
-
 TR::Symbol * OMR::Symbol::castToShadowSymbol()
    {
    TR_ASSERT(isShadow(), "OMR::Symbol::castToShadowSymbol, symbol is not a shadow symbol");
    return (TR::Symbol *)this;
-   }
-
-TR::RegisterMappedSymbol * OMR::Symbol::getMethodMetaDataSymbol()
-   {
-   return isMethodMetaData() ? (TR::RegisterMappedSymbol *)this : 0;
    }
 
 TR::RegisterMappedSymbol * OMR::Symbol::castToMethodMetaDataSymbol()
@@ -735,20 +669,10 @@ TR::RegisterMappedSymbol * OMR::Symbol::castToMethodMetaDataSymbol()
    return (TR::RegisterMappedSymbol *)this;
    }
 
-TR::LabelSymbol * OMR::Symbol::getLabelSymbol()
-   {
-   return isLabel() ? (TR::LabelSymbol *)this : 0;
-   }
-
 TR::LabelSymbol * OMR::Symbol::castToLabelSymbol()
    {
    TR_ASSERT(isLabel(), "OMR::Symbol::castToLabelSymbol, symbol is not a label symbol");
    return (TR::LabelSymbol *)this;
-   }
-
-TR::ResolvedMethodSymbol * OMR::Symbol::getJittedMethodSymbol()
-   {
-   return isJittedMethod() ? (TR::ResolvedMethodSymbol *)this : 0;
    }
 
 TR::ResolvedMethodSymbol * OMR::Symbol::castToJittedMethodSymbol()
@@ -763,32 +687,12 @@ TR::StaticSymbol *OMR::Symbol::castToCallSiteTableEntrySymbol()
    return (TR::StaticSymbol*)this;
    }
 
-TR::StaticSymbol *OMR::Symbol::getCallSiteTableEntrySymbol()
-   {
-   return isCallSiteTableEntry()? castToCallSiteTableEntrySymbol() : NULL;
-   }
-
 TR::StaticSymbol *OMR::Symbol::castToMethodTypeTableEntrySymbol()
    {
    TR_ASSERT(isMethodTypeTableEntry(), "OMR::Symbol::castToMethodTypeTableEntrySymbol expected a method type table entry symbol");
    return (TR::StaticSymbol*)this;
    }
 
-TR::StaticSymbol *OMR::Symbol::getMethodTypeTableEntrySymbol()
-   {
-   return isMethodTypeTableEntry()? castToMethodTypeTableEntrySymbol() : NULL;
-   }
-
-
-TR::Symbol * OMR::Symbol::getNamedShadowSymbol()
-   {
-   return isNamedShadowSymbol() ? (TR::Symbol *)this : 0;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::getRegisterSymbol()
-   {
-   return isRegisterSymbol() ? (TR::AutomaticSymbol *)this : 0;
-   }
 
 TR::AutomaticSymbol *OMR::Symbol::castToRegisterSymbol()
    {
@@ -796,20 +700,10 @@ TR::AutomaticSymbol *OMR::Symbol::castToRegisterSymbol()
    return (TR::AutomaticSymbol*)this;
    }
 
-TR::StaticSymbol * OMR::Symbol::getRecognizedStaticSymbol()
-   {
-   return isRecognizedStatic() ? (TR::StaticSymbol*)this : 0;
-   }
-
 TR::AutomaticSymbol * OMR::Symbol::castToAutoMarkerSymbol()
    {
    TR_ASSERT(isAutoMarkerSymbol(), "OMR::Symbol::castToAutoMarkerSymbol, symbol is not a auto marker symbol");
    return (TR::AutomaticSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::getVariableSizeSymbol()
-   {
-   return isVariableSizeSymbol() ? (TR::AutomaticSymbol *)this : 0;
    }
 
 TR::AutomaticSymbol * OMR::Symbol::castToVariableSizeSymbol()

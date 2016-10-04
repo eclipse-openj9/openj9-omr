@@ -47,11 +47,41 @@ TR::RegisterMappedSymbol * OMR::RegisterMappedSymbol::create(AllocatorType m, TR
    return new (m) TR::RegisterMappedSymbol(d,s);
    }
 
+OMR::RegisterMappedSymbol::RegisterMappedSymbol(int32_t o) :
+   TR::Symbol(),
+   _mappedOffset(o),
+   _GCMapIndex(-1)
+   {
+   self()->setLiveLocalIndexUninitialized();
+   }
+
+OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataTypes d) :
+   TR::Symbol(d),
+   _mappedOffset(0),
+   _GCMapIndex(-1)
+   {
+   self()->setLiveLocalIndexUninitialized();
+   }
+
+OMR::RegisterMappedSymbol::RegisterMappedSymbol(TR::DataTypes d, uint32_t s) :
+   TR::Symbol(d, s),
+   _mappedOffset(0),
+   _GCMapIndex(-1)
+   {
+   self()->setLiveLocalIndexUninitialized();
+   }
+
+TR::RegisterMappedSymbol *
+OMR::RegisterMappedSymbol::self()
+   {
+   return static_cast<TR::RegisterMappedSymbol*>(this);
+   }
+
 void
 OMR::RegisterMappedSymbol::setLiveLocalIndex(uint16_t i, TR_FrontEnd * fe)
    {
    _liveLocalIndex = i;
-   if (isLiveLocalIndexUninitialized())
+   if (self()->isLiveLocalIndexUninitialized())
       {
       TR_ASSERT(0, "OMR::RegisterMappedSymbol::_liveLocalIndex == USHRT_MAX");
       fe->outOfMemory(0, "OMR::RegisterMappedSymbol::_liveLocalIndex == USHRT_MAX");

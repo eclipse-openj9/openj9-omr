@@ -59,34 +59,18 @@ namespace OMR
  *
  * \todo Concept doesn't have the best name, and should likely be renamed
  */
-class RegisterMappedSymbol : public TR::Symbol
+class OMR_EXTENSIBLE RegisterMappedSymbol : public TR::Symbol
    {
 
 protected:
 
-   RegisterMappedSymbol(int32_t o = 0) :
-      TR::Symbol(),
-      _mappedOffset(o),
-      _GCMapIndex(-1)
-      {
-      setLiveLocalIndexUninitialized();
-      }
+   RegisterMappedSymbol(int32_t o = 0);
 
-   RegisterMappedSymbol(TR::DataTypes d) :
-      TR::Symbol(d),
-      _mappedOffset(0),
-      _GCMapIndex(-1)
-      {
-      setLiveLocalIndexUninitialized();
-      }
+   RegisterMappedSymbol(TR::DataTypes d);
 
-   RegisterMappedSymbol(TR::DataTypes d, uint32_t s) :
-      TR::Symbol(d, s),
-      _mappedOffset(0),
-      _GCMapIndex(-1)
-      {
-      setLiveLocalIndexUninitialized();
-      }
+   RegisterMappedSymbol(TR::DataTypes d, uint32_t s);
+
+   TR::RegisterMappedSymbol * self();
 
 public:
 

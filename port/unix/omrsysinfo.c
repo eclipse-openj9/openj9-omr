@@ -1050,16 +1050,23 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		int32_t error = sched_getaffinity(mainProcess, size, &cpuSet);
 
 		if (0 == error) {
-			int32_t count = 0;
-			int32_t i;
-
-			/* Traversing each bit in cpuSet */
-			for (i = 0; i < size * 8; i++) {
-				count += CPU_ISSET(i, &cpuSet);
-			}
-			toReturn = count;
+			toReturn = CPU_COUNT(&cpuSet);
 		} else {
 			toReturn = 0;
+			if (EINVAL == errno) {
+				/* Too many CPUs for the fixed cpu_set_t structure */
+				int32_t numCPUs = sysconf(_SC_NPROCESSORS_CONF);
+				cpu_set_t *allocatedCpuSet = CPU_ALLOC(numCPUs);
+				if (NULL != allocatedCpuSet) {
+					size_t size = CPU_ALLOC_SIZE(numCPUs);
+					CPU_ZERO_S(size, allocatedCpuSet);
+					error = sched_getaffinity(mainProcess, size, allocatedCpuSet);
+					if (0 == error) {
+						toReturn = CPU_COUNT_S(size, allocatedCpuSet);
+					}
+					CPU_FREE(allocatedCpuSet);
+				}
+			}
 		}
 
 		if (0 == toReturn) {

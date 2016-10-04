@@ -1,6 +1,6 @@
 ################################################################################
 #
-# (c) Copyright IBM Corp. 1991, 2014
+# (c) Copyright IBM Corp. 1991, 2016
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -83,11 +83,12 @@
 .align 8
        START _j9Z10Zero
 
-         ltr      CARG2,CARG2
+         ltgr     CARG2,CARG2
          je       L2L3
-         ahi      CARG2,-1
-         lr       r0,CARG2
-         sra      r0,8
+         aghi     CARG2,-1
+         lgr      r0,CARG2
+         srlg     r0,r0,8
+         ltr      r0,r0
          lgr      r4,CARG1
          je       L2L20
 ## must be greater than 256 bytes

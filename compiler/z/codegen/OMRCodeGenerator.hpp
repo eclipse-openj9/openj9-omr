@@ -77,10 +77,10 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 #include "env/IO.hpp"
 
 
-#include "il/symbol/LabelSymbol.hpp" // REMOVE_THIS_LATER
-#include "z/codegen/S390OutOfLineCodeSection.hpp" // REMOVE_THIS_LATER
-#include "codegen/BackingStore.hpp" // REMOVE_THIS_LATER
-#include "codegen/Relocation.hpp" // REMOVE_THIS_LATER
+#include "il/symbol/LabelSymbol.hpp"
+#include "z/codegen/S390OutOfLineCodeSection.hpp"
+#include "codegen/BackingStore.hpp"
+#include "codegen/Relocation.hpp"
 
 #include "infra/TRlist.hpp"
 class TR_BackingStore;

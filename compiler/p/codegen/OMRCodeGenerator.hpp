@@ -46,8 +46,8 @@ namespace OMR { typedef OMR::Power::CodeGenerator CodeGeneratorConnector; }
 #include "infra/TRlist.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 
-#include "codegen/RegisterPair.hpp" // REMOVE_THIS_LATER
-#include "codegen/MemoryReference.hpp" // REMOVE_THIS_LATER
+#include "codegen/RegisterPair.hpp"
+#include "codegen/MemoryReference.hpp"
 
 class TR_BackingStore;
 class TR_PPCLoadLabelItem;

@@ -67,7 +67,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 
 #include "omr.h"
 
-#include "il/symbol/ResolvedMethodSymbol.hpp" // REMOVE_THIS_LATER
+#include "il/symbol/ResolvedMethodSymbol.hpp"
 
 
 class TR_AOTGuardSite;

@@ -19,7 +19,7 @@
 #ifndef METHOD_INCL
 #define METHOD_INCL
 
-#include "compile/InlineBlock.hpp" // REMOVE_THIS_LATER
+#include "compile/InlineBlock.hpp"
 
 #include <limits.h>                         // for INT_MAX
 #include <stddef.h>                         // for NULL, size_t

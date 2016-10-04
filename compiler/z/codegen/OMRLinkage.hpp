@@ -43,7 +43,7 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 #include "il/DataTypes.hpp"                    // for TR::DataType, DataTypes
 #include "infra/Assert.hpp"                    // for TR_ASSERT
 
-#include "codegen/RegisterDependency.hpp" // REMOVE_THIS_LATER
+#include "codegen/RegisterDependency.hpp"
 
 class TR_FrontEnd;
 class TR_S390JNICallDataSnippet;

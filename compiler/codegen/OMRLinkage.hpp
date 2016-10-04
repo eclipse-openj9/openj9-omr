@@ -28,8 +28,8 @@ namespace OMR { class Linkage; }
 namespace OMR { typedef OMR::Linkage LinkageConnector; }
 #endif
 
-#include "infra/List.hpp" // REMOVE_THIS_LATER
-#include "il/symbol/ParameterSymbol.hpp" // REMOVE_THIS_LATER
+#include "infra/List.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 
 #include <stddef.h>                            // for NULL
 #include <stdint.h>                            // for uint32_t, uint8_t, etc

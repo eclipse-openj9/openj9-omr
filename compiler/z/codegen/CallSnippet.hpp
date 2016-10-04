@@ -26,7 +26,7 @@
 #include "runtime/Runtime.hpp"        // for TR_RuntimeHelper
 #include "codegen/Snippet.hpp"  // for TR_S390Snippet, etc
 
-#include "z/codegen/S390Instruction.hpp" // REMOVE_THIS_LATER
+#include "z/codegen/S390Instruction.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }

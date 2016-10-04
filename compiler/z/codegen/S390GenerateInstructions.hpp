@@ -26,7 +26,7 @@
 #include "env/jittypes.h"          // for uintptrj_t
 #include "il/Symbol.hpp"           // for Symbol, etc
 
-#include "z/codegen/S390Instruction.hpp" // REMOVE_THIS_LATER
+#include "z/codegen/S390Instruction.hpp"
 
 class TR_VirtualGuardSite;
 namespace TR { class CodeGenerator; }

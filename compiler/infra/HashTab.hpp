@@ -25,7 +25,7 @@
 #include "env/jittypes.h"    // for uintptrj_t, intptrj_t
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
-#include "infra/Bit.hpp" // REMOVE_THIS_LATER
+#include "infra/Bit.hpp"
 
 class TR_HashTab;
 namespace TR { class Compilation; }

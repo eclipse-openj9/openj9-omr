@@ -48,7 +48,7 @@ namespace OMR { typedef OMR::X86::MemoryReference MemoryReferenceConnector; }
 #include "infra/Flags.hpp"                         // for flags16_t
 #include "x/codegen/DataSnippet.hpp"
 
-#include "x/codegen/ConstantDataSnippet.hpp" // REMOVE_THIS_LATER
+#include "x/codegen/ConstantDataSnippet.hpp"
 
 #define HIGHEST_STRIDE_MULTIPLIER 8
 #define HIGHEST_STRIDE_SHIFT      3

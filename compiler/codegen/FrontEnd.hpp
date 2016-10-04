@@ -19,8 +19,8 @@
 #ifndef FRONTEND_INCL
 #define FRONTEND_INCL
 
-#include "infra/List.hpp" // REMOVE_THIS_LATER
-#include "infra/Random.hpp" // REMOVE_THIS_LATER
+#include "infra/List.hpp"
+#include "infra/Random.hpp"
 
 #include <stdarg.h>                              // for va_list
 #include <stddef.h>                              // for size_t

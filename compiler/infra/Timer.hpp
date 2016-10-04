@@ -24,7 +24,7 @@
 #include "env/TRMemory.hpp"  // for TR_Memory, etc
 #include "infra/Array.hpp"   // for TR_Array
 
-#include "infra/HashTab.hpp" //REMOVE_THIS_LATER
+#include "infra/HashTab.hpp"
 
 namespace TR { class Compilation; }
 

@@ -19,7 +19,7 @@
 #ifndef OPTIMIZATION_PLAN_INCL
 #define OPTIMIZATION_PLAN_INCL
 
-#include "optimizer/Optimizer.hpp" // REMOVE_THIS_LATER
+#include "optimizer/Optimizer.hpp"
 
 #include <stddef.h>                      // for size_t
 #include <stdint.h>                      // for int32_t, uint32_t

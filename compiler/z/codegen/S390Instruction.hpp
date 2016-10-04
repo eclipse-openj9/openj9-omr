@@ -41,7 +41,7 @@
 #include "infra/Flags.hpp"                    // for flags8_t, flags32_t
 #include "ras/Debug.hpp"                      // for TR_DebugBase
 
-#include "codegen/RegisterDependency.hpp" // REMOVE_THIS_LATER
+#include "codegen/RegisterDependency.hpp"
 
 class TR_AsmData;
 class TR_VirtualGuardSite;

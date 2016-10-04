@@ -33,7 +33,7 @@ namespace OMR { typedef OMR::IO IOConnector; }
 #include "env/FilePointerDecl.hpp"  // for FILE
 #include "infra/Annotations.hpp"    // for OMR_EXTENSIBLE
 
-#include "env/FilePointer.hpp" // REMOVE_THIS_LATER
+#include "env/FilePointer.hpp"
 
 /* All compilers now use the same format string for signed/unsigned 64-bit values.
  *

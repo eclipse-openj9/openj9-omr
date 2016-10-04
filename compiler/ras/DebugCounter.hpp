@@ -19,7 +19,7 @@
 #ifndef DEBUGCOUNTER_INCL
 #define DEBUGCOUNTER_INCL
 
-#include "ras/Debug.hpp" // REMOVE_THIS_LATER
+#include "ras/Debug.hpp"
 
 #include <stdarg.h>          // for va_list
 #include <stddef.h>          // for NULL

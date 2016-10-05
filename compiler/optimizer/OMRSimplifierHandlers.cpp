@@ -2026,9 +2026,7 @@ static void partialRedundantCompareElimination(TR::Node * node, TR::Block * bloc
    if (comp->getOption(TR_DisablePRBE)) return;
 
    //Don't do it after GRA
-   if (comp->cg()->getGRACompleted() ||
-       comp->cg()->getLimitedGRACompleted() ||
-       comp->cg()->getGRAForShortLoopsCompleted())
+   if (comp->cg()->getGRACompleted())
       return;
 
 #if defined(ENABLE_SPMD_SIMD)

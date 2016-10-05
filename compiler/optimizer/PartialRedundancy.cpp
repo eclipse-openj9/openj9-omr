@@ -193,9 +193,6 @@ bool TR_PartialRedundancy::ignoreNode (TR::Node *node)
    TR::SparseBitVector seenNodes(comp()->allocator());
    if (ignoreValueOfMultipleReturnNode(node, seenNodes)) return true;
 
-   if (cg->ignoreNodeForPRE(node))  return true;
-
-
    if (op == TR::loadaddr)
       {
       if (_loadaddrPRE)

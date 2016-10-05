@@ -576,7 +576,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Optimizer, code generator capabilities
    //
    int32_t getPreferredLoopUnrollFactor() {return -1;} // no virt, default
-   bool ignoreNodeForPRE(TR::Node *) {return false;} // no virt, default
    bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method) {return false;} // no virt, default
    bool isMethodInAtomicLongGroup (TR::RecognizedMethod rm);
 
@@ -585,10 +584,7 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    bool getGRACompleted() { return _flags4.testAny(GRACompleted); }
    void setGRACompleted() { _flags4.set(GRACompleted); }
-   bool getGRAForShortLoopsCompleted() { return _flags4.testAny(GRAForShortLoopsCompleted); }
-   void setGRAForShortLoopsCompleted() { _flags4.set(GRAForShortLoopsCompleted); }
-   bool getLimitedGRACompleted() { return _flags4.testAny(LimitedGRACompleted); }
-   void setLimitedGRACompleted() { _flags4.set(LimitedGRACompleted); }
+
    bool getSupportsProfiledInlining() { return _flags4.testAny(SupportsProfiledInlining);}
    void setSupportsProfiledInlining() { _flags4.set(SupportsProfiledInlining);}
    bool supportsInliningOfIsInstance() {return false;} // no virt, default
@@ -600,8 +596,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // transactional lock elision.
    int32_t getMinimumNumberOfNodesBetweenMonitorsForTLE() { return 15; } // no virt, default
 
-
-
    bool doRematerialization() {return false;} // no virt, default
 
    // --------------------------------------------------------------------------
@@ -609,16 +603,15 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    int16_t getMinShortForLongCompareNarrower() { return SHRT_MIN; } // no virt, default
    int8_t getMinByteForLongCompareNarrower() { return SCHAR_MIN; } // no virt, default
-   bool getSimpleAddressingForBitwiseOps() { return _flags4.testAny(SimpleAddressingForBitwiseOps);}
-   void setSimpleAddressingForBitwiseOps() { _flags4.set(SimpleAddressingForBitwiseOps);}
-   bool supportsBitCopyByRotateOpt() { return false; } // no virt, default
+
    bool branchesAreExpensive() { return true; } // no virt, default
    bool opCodeIsNoOp(TR::ILOpCode &opCode); // no virt, 1 impl
    bool opCodeIsNoOpOnThisPlatform(TR::ILOpCode &opCode) {return false;} // no virt
+
    bool supportsSinglePrecisionSQRT() {return false;} // no virt
    bool supportsFusedMultiplyAdd() {return false;} // no virt
    bool supportsNegativeFusedMultiplyAdd() {return false;} // no virt
-   bool supportsPrefetch() { return true; } // no virt
+
    bool supportsComplexAddressing() {return false;} // no virt
    bool canBeAffectedByStoreTagStalls() { return false; } // no virt, default
 
@@ -634,13 +627,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t getNumberBytesReadInaccessible() { return _numberBytesReadInaccessible; }
    uint32_t getNumberBytesWriteInaccessible() { return _numberBytesWriteInaccessible; }
 
-   // maximum displacement support on load/store instructions--useful when emitting
-   // code for a constant pool
-   int32_t maxPositiveDisplacement() { return 0; }  // no virt
-
-   // NOT USED
-   int32_t maxNegativeDisplacement() { return 0; } // no virt
-
    bool codegenSupportsUnsignedIntegerDivide() {return false;} // no virt
    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value); // no virt
 
@@ -649,8 +635,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // called to determine if multiply decomposition exists in platform codegen so that codegen sequences are used
    // instead of the IL transformed multiplies
    bool codegenMulDecomposition(int64_t multiplier) {return false;} // no virt
-
-
 
    // --------------------------------------------------------------------------
    // FrontEnd, not code generator
@@ -963,18 +947,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_Array<TR::Register *>& getRegisterArray() {return _registerArray;}
 
-   // NECESSARY?
-   void setOnDemandSystemStackRun(bool answer) {} // no virt, 1 impl
-   bool isSystemStackOnDemandOn () { return false; } // no virt
-
-   bool supportsOnDemandSystemStack() { return false; } // no virt, 1 impl
-   void enableSystemStackRegisterForGRA () {} // no virt, 1 impl
-
-   void setOnDemandVMThreadRun(bool answer) {} // no virt, 1 impl
-   bool isVMThreadOnDemandOn () { return false; } // no virt
-   bool supportsOnDemandVMThread() { return false; } // no virt
-   void enableVMThreadRegisterForGRA () {} // no virt, 1 impl
-
    bool needToAvoidCommoningInGRA() {return false;} // no virt
 
    bool considerTypeForGRA(TR::Node *node) {return true;} // no virt
@@ -1277,8 +1249,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_StorageOverlapKind storageMayOverlap(TR::Node *node1, size_t length1, TR::Node *node2, size_t length2);
 
-   #define OPT_DETAILS_SCALARIZE "O^O SCALARIZE ARRAYOPS: "
-
    // arrayTranslateTableRequiresAlignment returns a mask if alignent required, otherwise 0
    // For example, if a page is 4096 bytes and array translation required page alignment, 4095 would
    // be returned.
@@ -1386,28 +1356,19 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportVMInternalNatives();
    bool supportsNativeLongOperations();
 
-
    TR::DataType IntJ() { return TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32; }
 
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; } // no virt
-
 
    bool supportsLengthMinusOneForMemoryOpts() {return false;} // no virt, cast
 
    // Java, likely Z
    bool supportsTrapsInTMRegion() { return true; } // no virt
 
-
    // Allows a platform code generator to assert that a particular node operation will use 64 bit values
    // that are not explicitly present in the node datatype.
    bool usesImplicit64BitGPRs(TR::Node *node) { return false; } // no virt
-
-
-
-
-
-
 
    // General utility?
    static bool treeContainsCall(TR::TreeTop * treeTop);
@@ -1422,7 +1383,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);
 
    void addCountersToEdges(TR::Block *block);
-
 
    bool getSupportsBitOpCodes() {return false;} // no virt, default
 
@@ -1658,9 +1618,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsReadOnlyLocks() {return _flags2.testAny(SupportsReadOnlyLocks);}
    void setSupportsReadOnlyLocks() {_flags2.set(SupportsReadOnlyLocks);}
 
-   bool getSupportsFPMethodsWithSmallJIT() {return _flags2.testAny(SupportsFPMethodsWithSmallJIT);}
-   void setSupportsFPMethodsWithSmallJIT() {_flags2.set(SupportsFPMethodsWithSmallJIT);}
-
    bool getSupportsPostProcessArrayCopy() {return _flags2.testAny(SupportsPostProcessArrayCopy);}
    void setSupportsPostProcessArrayCopy() {_flags2.set(SupportsPostProcessArrayCopy);}
 
@@ -1776,7 +1733,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReadOnlyLocks                               = 0x00000400,
       SupportsArrayTranslateAndTest                       = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
-      SupportsFPMethodsWithSmallJIT                       = 0x00002000,
+      // AVAILABLE                                        = 0x00002000,
       SupportsVMThreadGRA                                 = 0x00004000,
       SupportsPostProcessArrayCopy                        = 0x00008000,
       //                                                  = 0x00010000,   AVAILABLE FOR USE!!!
@@ -1849,7 +1806,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsEfficientNarrowUnsignedIntComputation       = 0x00000400,
       SupportsAtomicLoadAndAdd                            = 0x00000800,
       //                                                  = 0x00001000, AVAILABLE FOR USE!
-      SimpleAddressingForBitwiseOps                       = 0x00002000,
+      // AVAILABLE                                        = 0x00002000,
       HasSignCleans                                       = 0x00004000,
       SupportsArrayTranslateTRTO255                       = 0x00008000, //if (ca[i] < 256) ba[i] = (byte) ca[i]
       SupportsArrayTranslateTROTNoBreak                   = 0x00010000, //ca[i] = (char) ba[i]
@@ -1858,8 +1815,8 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsTM                                          = 0x00080000,
       SupportsProfiledInlining                            = 0x00100000,
       SupportsAutoSIMD                                = 0x00200000,  //vector support for autoVectorizatoon
-      GRAForShortLoopsCompleted                           = 0x00400000,
-      LimitedGRACompleted                                 = 0x00800000,
+      // AVAILABLE                                        = 0x00400000,
+      // AVAILABLE                                        = 0x00800000,
       //                                                  = 0x01000000,  NOW AVAILABLE
       //                                                  = 0x02000000,  NOW AVAILABLE
       //                                                  = 0x04000000,  NOW AVAILABLE
@@ -1949,9 +1906,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Node*> _nodesToUncommonList;
    TR::list<TR::Node*> _nodesSpineCheckedList;
 
-
-
-
    TR::list<TR_Pair<TR_ResolvedMethod, TR::Instruction> *> _jniCallSites; // list of instrutions representing direct jni call sites
 
    TR_Array<void *> _monitorMapping;
@@ -1959,7 +1913,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Node*> _compressedRefs;
 
    int32_t _lowestSavedReg;
-
 
    uint32_t _vmThreadLiveCount;
    uint32_t _largestOutgoingArgSize;
@@ -2011,7 +1964,6 @@ class OMR_EXTENSIBLE CodeGenerator
    public:
    static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
 
-
    protected:
 
 #ifdef DEBUG
@@ -2045,7 +1997,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint8_t *emitSnippets(bool isWarm = 0);
 
-
    void addAllocatedRegisterPair(TR::RegisterPair * temp);
    void addAllocatedRegister(TR::Register * temp);
 
@@ -2054,12 +2005,8 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_BitVector *_blocksWithCalls;
    void computeBlocksWithCalls();
 
-
-
-
    TR::CodeCache * _codeCache;
    bool _committedToCodeCache;
-
 
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 

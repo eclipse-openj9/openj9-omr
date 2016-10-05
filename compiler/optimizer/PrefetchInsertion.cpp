@@ -57,11 +57,11 @@ TR_PrefetchInsertion::TR_PrefetchInsertion(TR::OptimizationManager *manager)
 
 int32_t TR_PrefetchInsertion::perform()
    {
-   if (comp()->requiresSpineChecks() || !comp()->cg()->supportsPrefetch())
+   if (comp()->requiresSpineChecks())
       {
       // see 172692
       if (trace())
-         traceMsg(comp(), "Disabled for WCode -- returning from prefetch insertion.\n");
+         traceMsg(comp(), "Spine checks required for array element accesses -- returning from prefetch insertion.\n");
       return 0;
       }
 

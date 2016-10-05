@@ -27,6 +27,7 @@ namespace OMR { typedef OMR::Monitor MonitorConnector; }
 
 #include <stdint.h>          // for int32_t, int64_t
 #include "infra/Assert.hpp"  // for TR_ASSERT
+#include "omrmutex.h"        // for MUTEX
 
 namespace TR { class Monitor; }
 
@@ -40,16 +41,30 @@ class Monitor
    {
    public:
 
-   static TR::Monitor *create(char *name) { TR_ASSERT(false, "not implemented by project"); return 0; }
-   void enter() NOT_IMPL_VOID;
+   ~Monitor();
+
+   TR::Monitor *self();
+   static TR::Monitor *create(char *name);
+   static void destroy(TR::Monitor *monitor);
+   void enter();
    int32_t try_enter() NOT_IMPL;
-   int32_t exit() NOT_IMPL; // returns 0 on success
-   void destroy() NOT_IMPL_VOID;
+   int32_t exit(); // returns 0 on success
+   void destroy();
    void wait() NOT_IMPL_VOID;
    intptr_t wait_timed(int64_t millis, int32_t nanos) NOT_IMPL;
    void notify() NOT_IMPL_VOID;
    void notifyAll() NOT_IMPL_VOID;
    int32_t num_waiting() NOT_IMPL;
+   char const *getName();
+   bool init(char *name);
+
+   private:
+
+   void *operator new(size_t size);
+   void operator delete(void *p);
+
+   char const *_name;
+   MUTEX _monitor;
    };
 
 }

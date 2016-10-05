@@ -553,6 +553,18 @@ public:
 	{
 		return _evacuateSpaceTop;
 	}
+	
+	MMINLINE void *
+	getSurvivorBase()
+	{
+		return _survivorSpaceBase;
+	}
+	
+	MMINLINE void *
+	getSurvivorTop()
+	{
+		return _survivorSpaceTop;
+	}
 
 	void workThreadGarbageCollect(MM_EnvironmentStandard *env);
 

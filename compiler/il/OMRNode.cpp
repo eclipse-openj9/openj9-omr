@@ -495,15 +495,6 @@ OMR::Node::recreate(TR::Node *originalNode, TR::ILOpCodes op)
    return TR::Node::recreateAndCopyValidPropertiesImpl(originalNode, op, NULL);
    }
 
-/**
-  * @deprecated Use TR::Node::recreate instead
-  */
-TR::Node *
-OMR::Node::recreateAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op)
-   {
-   return TR::Node::recreate(originalNode, op);
-   }
-
 TR::Node *
 OMR::Node::recreateWithSymRefAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef)
    {

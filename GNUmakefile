@@ -183,12 +183,12 @@ targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perft
 
 postbuild: $(postbuild_targets)
 	$(TRACEMERGE_COMMAND)
-	
+
 tests: staticlib
 ifeq (yes,$(DO_TEST_TARGET))
 	@$(MAKE) -f GNUmakefile $(test_targets)
 endif
-	
+
 staticlib: mainbuild
 	@$(MAKE) -f GNUmakefile omr_static_lib
 

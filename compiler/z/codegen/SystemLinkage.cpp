@@ -1134,7 +1134,7 @@ TR_S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR:
          TR::SymbolReference *callSymRef = callNode->getSymbolReference();
          TR::Symbol *callSymbol = callSymRef->getSymbol();
          TR::Register * fpReg = systemReturnAddressRegister;
-         TR::Instruction * callInstr = new (trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, fpReg, callSymbol, callSymRef, codeGen);
+         TR::Instruction * callInstr = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, fpReg, callSymbol, callSymRef, codeGen);
          callInstr->setDependencyConditions(deps);
          }
       }
@@ -2008,7 +2008,7 @@ void TR_S390SystemLinkage::createPrologue(TR::Instruction * cursor)
    // Literal Pool for Ruby and Python and test
    firstSnippet = cg()->getFirstSnippet();
    if ( cg()->isLiteralPoolOnDemandOn() != true && firstSnippet != NULL )
-      cursor = new (trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::LARL, firstNode, lpReg, firstSnippet, cursor, cg());
+      cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, firstNode, lpReg, firstSnippet, cursor, cg());
 #endif
 
 
@@ -2327,8 +2327,8 @@ void TR_S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
 
    cursor = generateS390RegInstruction(cg(), TR::InstOpCode::BCR, nextNode,
           getS390RealRegister(REGNUM(TR::RealRegister::GPR14)), cursor);
-   ((TR_S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
-   ((TR_S390RegInstruction *)cursor)->setJITExit();
+   ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
+   ((TR::S390RegInstruction *)cursor)->setJITExit();
    }
 
 void TR_S390SystemLinkage::notifyHasalloca()
@@ -2562,7 +2562,7 @@ void OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstru
 
    TR::Instruction *replacementInst =0 ;
 
-   replacementInst = new (self()->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
+   replacementInst = new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, (uint32_t)0xf, callSymbol, callSymRef, self()->cg());
 
    if(self()->comp()->getOption(TR_TraceCG))
       traceMsg(self()->comp(), "Replacing instruction %p to a jump %p !\n",callInstruction, replacementInst);

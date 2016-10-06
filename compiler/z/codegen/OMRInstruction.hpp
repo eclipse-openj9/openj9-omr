@@ -46,7 +46,7 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 #include "infra/Flags.hpp"                             // for flags16_t
 
 class TR_Debug;
-class TR_S390ImmInstruction;
+namespace TR { class S390ImmInstruction; }
 class TR_S390RegisterDependencyGroup;
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -268,7 +268,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    /** The following safe virtual downcast method is used under debug only for assertion checking */
-   virtual TR_S390ImmInstruction *getS390ImmInstruction();
+   virtual TR::S390ImmInstruction *getS390ImmInstruction();
    #endif
 
 

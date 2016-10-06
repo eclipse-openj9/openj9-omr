@@ -364,7 +364,7 @@ OMR::Z::Linkage::removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* 
 
       if (current->isLoad())
          {
-         TR::Register            *tReg    = ((TR_S390RXInstruction*)current)->getRegisterOperand(1);
+         TR::Register            *tReg    = ((TR::S390RXInstruction*)current)->getRegisterOperand(1);
          TR::MemoryReference *mr      = current->getMemoryReference();
          TR::SymbolReference     *symRef  = mr->getSymbolReference();
          TR::Symbol               *sym     = symRef->getSymbol();

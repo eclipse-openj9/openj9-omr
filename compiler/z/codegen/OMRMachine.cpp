@@ -1441,8 +1441,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            // special case for RISBG, we can change the rotate amount to shuffle low word/ high word
             if (currInst->getOpCodeValue() == TR::InstOpCode::RISBG || currInst->getOpCodeValue() == TR::InstOpCode::RISBGN)
                {
-               uint8_t rotateAmnt = ((TR_S390RIEInstruction* )currInst)->getSourceImmediate8();
-               ((TR_S390RIEInstruction* )currInst)->setSourceImmediate8(rotateAmnt+32);
+               uint8_t rotateAmnt = ((TR::S390RIEInstruction* )currInst)->getSourceImmediate8();
+               ((TR::S390RIEInstruction* )currInst)->setSourceImmediate8(rotateAmnt+32);
                }
             else
                {

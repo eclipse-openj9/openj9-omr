@@ -92,7 +92,7 @@ class TR_S390ConstantDataSnippet;
 class TR_S390ConstantInstructionSnippet;
 class TR_S390DeclTrampSnippet;
 class TR_S390EyeCatcherDataSnippet;
-class TR_S390ImmInstruction;
+namespace TR { class S390ImmInstruction; }
 class TR_S390LabelTableSnippet;
 class TR_S390LookupSwitchSnippet;
 class TR_S390OutOfLineCodeSection;
@@ -1140,7 +1140,7 @@ public:
     * on, due to user specified options.
     */
    TR_S390ProcessorInfo            _processorInfo;
-   TR_S390ImmInstruction          *_returnTypeInfoInstruction;
+   TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    RegisterAssignmentDirection     assignmentDirection;
    int32_t                        _extentOfLitPool;  // excludes snippets
    uint64_t                       _availableHPRSpillMask;

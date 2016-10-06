@@ -267,6 +267,7 @@ ifeq (yes,$(ENABLE_FVTEST))
 	$(MAKE) -f fvtest/omrtest.mk test
 else
 	@echo Functional verification tests are disabled.
+	@echo Enable by configuring with --enable-fvtest
 endif
 .PHONY: test
 

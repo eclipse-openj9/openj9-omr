@@ -111,8 +111,10 @@ MM_StartupManagerTestExample::parseLanguageOptions(MM_GCExtensionsBase *extensio
 					result = false;
 				}
 			}
+#if defined(OMR_GC_MODRON_SCAVENGER)
 			extensions->fvtest_forceScavengerBackout &= extensions->scavengerEnabled;
 			extensions->fvtest_forcePoisonEvacuate &= extensions->scavengerEnabled;
+#endif /* OMR_GC_MODRON_SCAVENGER */
 		}
 	}
 	return result;

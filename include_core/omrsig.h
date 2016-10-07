@@ -105,9 +105,13 @@ sighandler_t bsd_signal(int signum, sighandler_t handler) __THROW;
 sighandler_t sysv_signal(int signum, sighandler_t handler) __THROW;
 #if !defined(AIXPPC)
 #if defined(OSX)
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
 int sigvec(int sig, struct sigvec *, struct sigvec *);
+#endif /* OMR_OMRSIG_HAS_SIGVEC */
 #else /* defined(OSX) */
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
 int sigvec(int sig, const struct sigvec *vec, struct sigvec *ovec) __THROW;
+#endif /* OMR_OMRSIG_HAS_SIGVEC */
 #endif /* defined(OSX) */
 #endif /* !defined(AIXPPC) */
 #endif /* !defined(J9ZOS390) */
@@ -128,5 +132,7 @@ int __sigactionset(size_t newct, const __sigactionset_t newsets[], size_t *oldct
 #endif  /* __cplusplus */
 
 #if defined(AIXPPC)
+#if defined(OMR_OMRSIG_HAS_SIGVEC)
 int sigvec(int sig, const struct sigvec *vec, struct sigvec *ovec) __THROW;
+#endif /* OMR_OMRSIG_HAS_SIGVEC */
 #endif /* defined(AIXPPC) */

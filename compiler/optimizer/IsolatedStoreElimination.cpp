@@ -876,9 +876,9 @@ int32_t TR_IsolatedStoreElimination::performWithoutUseDefInfo()
          if (sym)
             {
             if (sym->isParm() || sym->isAuto())
-               sym->setSideTableIndex(numSymbols++);
+               sym->setLocalIndex(numSymbols++);
             else
-               sym->setSideTableIndex(0);
+               sym->setLocalIndex(0);
             }
          }
       }
@@ -904,7 +904,7 @@ int32_t TR_IsolatedStoreElimination::performWithoutUseDefInfo()
    for (i = _storeNodes->size()-1; i >= 0; --i)
       {
       TR::Node *node = _storeNodes->element(i);
-      if (node && _usedSymbols->get(node->getSymbolReference()->getSymbol()->getSideTableIndex()))
+      if (node && _usedSymbols->get(node->getSymbolReference()->getSymbol()->getLocalIndex()))
          _storeNodes->element(i) = NULL;
       }
 
@@ -928,7 +928,7 @@ void TR_IsolatedStoreElimination::examineNode(TR::Node *node, vcount_t visitCoun
       }
 
    // Now process this node. We are looking for stores or uses of a symbol to
-   // which we've assigned a non-zero side table index (i.e. a local or a parm)
+   // which we've assigned a non-zero local index (i.e. a local or a parm)
    //
    if (!node->getOpCode().hasSymbolReference())
       return;
@@ -936,14 +936,14 @@ void TR_IsolatedStoreElimination::examineNode(TR::Node *node, vcount_t visitCoun
    if (symRef == NULL)
       return;
    TR::Symbol *sym = symRef->getSymbol();
-   if (!sym || !sym->getSideTableIndex())
+   if (!sym || !sym->getLocalIndex())
       return;
 
    // This is a reference to a symbol we're interested in.
    //
    if (node->getOpCode().isStore())
       {
-      if (!_usedSymbols->get(sym->getSideTableIndex()))
+      if (!_usedSymbols->get(sym->getLocalIndex()))
          {
          // Store to a local or parm that is (as yet) unused
          //
@@ -959,7 +959,7 @@ void TR_IsolatedStoreElimination::examineNode(TR::Node *node, vcount_t visitCoun
           {
           // Use of a local or parm
           //
-          _usedSymbols->set(sym->getSideTableIndex());
+          _usedSymbols->set(sym->getLocalIndex());
           }
       //else
       //         printf("Ignoring load in same tree as store in %s\n", signature(comp()->getCurrentMethod()));

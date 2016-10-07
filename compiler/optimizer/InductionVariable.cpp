@@ -936,7 +936,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                }
 
             TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, arrayRefNode, reassociatedAuto);
-            newStore->setSideTableIndex(~0);
+            newStore->setLocalIndex(~0);
             TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
             placeHolderTree->getPrevTreeTop()->join(newStoreTreeTop);
             newStoreTreeTop->join(placeHolderTree);
@@ -1004,7 +1004,7 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                   }
 
                TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, arrayRefNode, symRefPair->_derivedSymRef);
-               newStore->setSideTableIndex(~0);
+               newStore->setLocalIndex(~0);
                TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
                placeHolderTree->getPrevTreeTop()->join(newStoreTreeTop);
                newStoreTreeTop->join(placeHolderTree);
@@ -1248,8 +1248,8 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
       mulNode = TR::Node::create(TR::imul, 2, secondChildOfLoopTestNode->duplicateTree(),
                 duplicateMulTermNode(bestCandidate, secondChildOfLoopTestNode, TR::Int32));
 
-   mulNode->setSideTableIndex(~0);
-   mulNode->getSecondChild()->setSideTableIndex(~0);
+   mulNode->setLocalIndex(~0);
+   mulNode->getSecondChild()->setLocalIndex(~0);
    TR::Node *addNode = NULL;
    if (getAdditiveTermNode(bestCandidate) != 0)
       {
@@ -1257,8 +1257,8 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
       addNode = TR::Node::create(mulNode->getType().isInt64() ? TR::ladd : TR::iadd, 2, mulNode,
 	       	                duplicateAdditiveTermNode(bestCandidate, secondChildOfLoopTestNode,mulNode->getDataType()));
 
-      addNode->setSideTableIndex(~0);
-      addNode->getSecondChild()->setSideTableIndex(~0);
+      addNode->setLocalIndex(~0);
+      addNode->getSecondChild()->setLocalIndex(~0);
       }
    else
       addNode = mulNode;
@@ -1271,7 +1271,7 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
        (comp()->getSymRefTab()->getNumInternalPointers() < maxInternalPointersAtPointTooLateToBackOff()))
       {
       TR::Node *newAload = TR::Node::createLoad(secondChildOfLoopTestNode, symRefTab->getSymRef((int32_t)_linearEquations[bestCandidate][4]));
-      newAload->setSideTableIndex(~0);
+      newAload->setLocalIndex(~0);
       if (usingAladd)
          addNode = TR::Node::create(TR::aladd, 2, newAload, addNode);
       else
@@ -1289,8 +1289,8 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
             addNode->setPinningArrayPointer(newAload->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
          }
 
-      addNode->setSideTableIndex(~0);
-      addNode->getSecondChild()->setSideTableIndex(~0);
+      addNode->setLocalIndex(~0);
+      addNode->getSecondChild()->setLocalIndex(~0);
       newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), TR::Address, true);
       _newTempsCreated = true;
       _numInternalPointers++;
@@ -1389,7 +1389,7 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
          //else
       //secondChildOfLoopTestNode->recursivelyDecReferenceCount();
 
-      addNode->setSideTableIndex(~0);
+      addNode->setLocalIndex(~0);
       TR::Node *secondOperand = TR::Node::createWithSymRef(secondChildOfLoopTestNode, comp()->il.opCodeForDirectLoad(newStore->getDataType()), 0, newSymbolReference);
 
       if (firstOperand->getDataType() == TR::Address)
@@ -1532,7 +1532,7 @@ TR::Node* TR_LoopStrider::genLoad(TR::Node* node, TR::SymbolReference* symRef, b
       isInternalPointer ? TR::aload : (symRef->getSymbol()->getType().isInt64() ? TR::lload : TR::iload),
       0, symRef);
 
-   result->setSideTableIndex(~0);
+   result->setLocalIndex(~0);
    result->setReferenceCount(0);
    return result;
    }
@@ -1719,8 +1719,8 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          mulNode->getFirstChild()->incReferenceCount();
          mulNode->setChild(1, constantNode);
          mulNode->getSecondChild()->setReferenceCount(1);
-         mulNode->setSideTableIndex(~0);
-         mulNode->getSecondChild()->setSideTableIndex(~0);
+         mulNode->setLocalIndex(~0);
+         mulNode->getSecondChild()->setLocalIndex(~0);
          adjustmentNode = mulNode;
          }
 
@@ -1734,8 +1734,8 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                TR::Node *negateConstantNode = TR::Node::create(node, TR::lconst);
                negateConstantNode->setLongInt(-1);
                adjustmentNode = TR::Node::create(TR::lmul, 2, adjustmentNode, negateConstantNode);
-               adjustmentNode->setSideTableIndex(~0);
-               adjustmentNode->getSecondChild()->setSideTableIndex(~0);
+               adjustmentNode->setLocalIndex(~0);
+               adjustmentNode->getSecondChild()->setLocalIndex(~0);
                }
             TR::Node::recreate(replacingNode, TR::aladd);
             replacingNode->setIsInternalPointer(true);
@@ -1746,8 +1746,8 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
                {
                adjustmentNode = TR::Node::create(TR::imul, 2, adjustmentNode,
                   TR::Node::create(node, TR::iconst, 0, -1));
-               adjustmentNode->setSideTableIndex(~0);
-               adjustmentNode->getSecondChild()->setSideTableIndex(~0);
+               adjustmentNode->setLocalIndex(~0);
+               adjustmentNode->getSecondChild()->setLocalIndex(~0);
                }
             TR::Node::recreate(replacingNode, TR::aiadd);
             replacingNode->setIsInternalPointer(true);
@@ -1822,7 +1822,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
          {
          TR::SymbolReference *newLoopInvariant = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), adjustmentNode->getDataType(), false);
          TR::Node *newLoad = TR::Node::createLoad(node, newLoopInvariant);
-         newLoad->setSideTableIndex(~0);
+         newLoad->setLocalIndex(~0);
          TR::Node *newStore = TR::Node::createWithSymRef(comp()->il.opCodeForDirectStore(adjustmentNode->getDataType()), 1, 1, adjustmentNode->duplicateTree(), newLoopInvariant);
 
          TR::TreeTop *placeHolderTree = loopInvariantBlock->getLastRealTreeTop();
@@ -1830,7 +1830,7 @@ void TR_LoopStrider::examineOpCodesForInductionVariableUse(TR::Node* node, TR::N
             placeHolderTree = loopInvariantBlock->getExit();
          TR::TreeTop *prevTree = placeHolderTree->getPrevTreeTop();
 
-         newStore->setSideTableIndex(~0);
+         newStore->setLocalIndex(~0);
          TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
          prevTree->join(newStoreTreeTop);
          newStoreTreeTop->join(placeHolderTree);
@@ -2011,9 +2011,9 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
                      createParmAutoPair(comp()->getSymRefTab()->getSymRef(internalPointerSymbol), newPinningArray);
 
                      TR::Node *newAload = TR::Node::createLoad(node, comp()->getSymRefTab()->getSymRef(internalPointerSymbol));
-                     newAload->setSideTableIndex(~0);
+                     newAload->setLocalIndex(~0);
                      TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, newAload, newPinningArray);
-                     newStore->setSideTableIndex(~0);
+                     newStore->setLocalIndex(~0);
                      internalPointerSymbol = newPinningArray->getReferenceNumber();
                      placeStore(newStore, loopInvariantBlock);
                      dumpOptDetails(comp(), "\nO^O INDUCTION VARIABLE ANALYSIS: Induction variable analysis inserted initialization tree : %p for new symRef #%d\n", newStore, newPinningArray->getReferenceNumber());
@@ -2137,10 +2137,10 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
                createParmAutoPair(comp()->getSymRefTab()->getSymRef(internalPointerSymbol), newPinningArray);
 
                TR::Node *newAload = TR::Node::createLoad(node, comp()->getSymRefTab()->getSymRef(internalPointerSymbol));
-               newAload->setSideTableIndex(~0);
+               newAload->setLocalIndex(~0);
                TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, newAload, newPinningArray);
                internalPointerSymbol = newPinningArray->getReferenceNumber();
-               newStore->setSideTableIndex(~0);
+               newStore->setLocalIndex(~0);
                placeStore(newStore, loopInvariantBlock);
                dumpOptDetails(comp(), "\nO^O INDUCTION VARIABLE ANALYSIS: Induction variable analysis inserted initialization tree : %p for new symRef #%d\n", newStore, newPinningArray->getReferenceNumber());
                _numInternalPointerOrPinningArrayTempsInitialized++;
@@ -2386,7 +2386,7 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
 
    TR::Node *placeHolderNode = placeHolderTree->getNode();
    TR::Node *newLoad = TR::Node::createLoad(placeHolderNode, inductionVarSymRef);
-   newLoad->setSideTableIndex(~0);
+   newLoad->setLocalIndex(~0);
 
    // Create the multiply node first; e.g. 4*i
    //
@@ -2409,8 +2409,8 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
       mulNode = TR::Node::create(newLoad->getType().isInt64() ? TR::lmul : TR::imul, 2, newLoad,
          duplicateMulTermNode(k, placeHolderNode, newLoad->getDataType()));
       }
-   mulNode->setSideTableIndex(~0);
-   mulNode->getSecondChild()->setSideTableIndex(~0);
+   mulNode->setLocalIndex(~0);
+   mulNode->getSecondChild()->setLocalIndex(~0);
    TR::Node *addNode = NULL;
    if (getAdditiveTermNode(k) != NULL)
       {
@@ -2424,8 +2424,8 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
   	 addNode = TR::Node::create(mulNode->getType().isInt64() ? TR::ladd : TR::iadd, 2, mulNode,
                                    duplicateAdditiveTermNode(k, placeHolderNode, mulNode->getDataType()));
          }
-      addNode->setSideTableIndex(~0);
-      addNode->getSecondChild()->setSideTableIndex(~0);
+      addNode->setLocalIndex(~0);
+      addNode->getSecondChild()->setLocalIndex(~0);
       }
    else
       addNode = mulNode;
@@ -2436,7 +2436,7 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
    if (_linearEquations[k][4] > -1)
       {
       TR::Node *newAload = TR::Node::createLoad(placeHolderNode, symRefTab->getSymRef((int32_t)_linearEquations[k][4]));
-      newAload->setSideTableIndex(~0);
+      newAload->setLocalIndex(~0);
       addNode = (usingAladd) ?
                    TR::Node::create(TR::aladd, 2, newAload, addNode) :
                    TR::Node::create(TR::aiadd, 2, newAload, addNode);
@@ -2453,8 +2453,8 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
             addNode->setPinningArrayPointer(newAload->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
          }
 
-      addNode->setSideTableIndex(~0);
-      addNode->getSecondChild()->setSideTableIndex(~0);
+      addNode->setLocalIndex(~0);
+      addNode->getSecondChild()->setLocalIndex(~0);
       newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, addNode, newSymbolReference);
       }
    else
@@ -2465,7 +2465,7 @@ TR::Node *TR_LoopStrider::placeInitializationTreeInLoopInvariantBlock(TR_BlockSt
 
    // Insert the initialization tree
    //
-   newStore->setSideTableIndex(~0);
+   newStore->setLocalIndex(~0);
    TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
    placeHolderTree->getPrevTreeTop()->join(newStoreTreeTop);
    newStoreTreeTop->join(placeHolderTree);
@@ -2566,7 +2566,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
                newLoad = TR::Node::createLoad(placeHolderNode, newSymbolReference);
             else
                newLoad = TR::Node::createLoad(placeHolderNode, newSymbolReference);
-            newLoad->setSideTableIndex(~0);
+            newLoad->setLocalIndex(~0);
             // remember this load here in case the loop test tree needs to refer back to this load
             // instead of the new incremented/decremented value
 
@@ -2605,7 +2605,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
             newLoad = TR::Node::createLoad(placeHolderNode, newSymbolReference);
          else
             newLoad = TR::Node::createLoad(placeHolderNode, newSymbolReference);
-         newLoad->setSideTableIndex(~0);
+         newLoad->setLocalIndex(~0);
          // remember this load here in case the loop test tree needs to refer back to this load
          // instead of the new incremented/decremented value
          _loadUsedInNewLoopIncrement[k] = newLoad;
@@ -2661,7 +2661,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
          TR::Node::recreate(newConstNode, TR::i2l);
          }
       newMulNode = TR::Node::create(TR::lmul, 2, newConstNode, multiplicativeConstant);
-      newConstNode->setSideTableIndex(~0);
+      newConstNode->setLocalIndex(~0);
       //_constNode->incReferenceCount();
       }
    else
@@ -2670,9 +2670,9 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
          2, constNode, duplicateMulTermNode(k, placeHolderNode, newLoad->getDataType()));
       }
 
-   newMulNode->setSideTableIndex(~0);
-   constNode->setSideTableIndex(~0);
-   newMulNode->getSecondChild()->setSideTableIndex(~0);
+   newMulNode->setLocalIndex(~0);
+   constNode->setLocalIndex(~0);
+   newMulNode->getSecondChild()->setLocalIndex(~0);
 
    if (constNode->getOpCode().isLoadConst())
       {
@@ -2759,7 +2759,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
             {
             TR::ILOpCodes op = (usingAladd || newMulNode->getType().isInt64()) ? TR::lneg : TR::ineg;
             newMulNode = TR::Node::create(op, 1, newMulNode);
-            newMulNode->setSideTableIndex(~0);
+            newMulNode->setLocalIndex(~0);
             }
 
          //traceMsg(comp(), "constNode : %x has value %d\n", constNode, constNode->getInt());
@@ -2797,7 +2797,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
          }
       }
 
-   loopIncrementer->setSideTableIndex(~0);
+   loopIncrementer->setLocalIndex(~0);
 
    TR::Node *newStore = NULL;
    //
@@ -2811,7 +2811,7 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
       newStore = TR::Node::createWithSymRef(op, 1, 1, loopIncrementer, newSymbolReference);
       }
 
-   newStore->setSideTableIndex(~0);
+   newStore->setLocalIndex(~0);
    TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
    newStoreTreeTop->join(insertionTreeTop->getNextTreeTop());
    insertionTreeTop->join(newStoreTreeTop);
@@ -3202,7 +3202,7 @@ TR::Node *TR_LoopStrider::isExpressionLinearInInductionVariable(TR::Node *node, 
              else
                 returnedNode = TR::Node::create(node, TR::lload);
              }
-          returnedNode->setSideTableIndex(~0);
+          returnedNode->setLocalIndex(~0);
           }
        }
    else if ((node->getOpCodeValue() == TR::iadd) ||
@@ -3229,7 +3229,7 @@ TR::Node *TR_LoopStrider::isExpressionLinearInInductionVariable(TR::Node *node, 
                 else
                    returnedNode = TR::Node::create(node, TR::ladd, 2);
                 }
-             returnedNode->setSideTableIndex(~0);
+             returnedNode->setLocalIndex(~0);
              }
           }
        }
@@ -3257,7 +3257,7 @@ TR::Node *TR_LoopStrider::isExpressionLinearInInductionVariable(TR::Node *node, 
                 else
                    returnedNode = TR::Node::create(node, TR::lsub, 2);
                 }
-             returnedNode->setSideTableIndex(~0);
+             returnedNode->setLocalIndex(~0);
              }
           }
        }
@@ -3474,12 +3474,12 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                createParmAutoPair(comp()->getSymRefTab()->getSymRef(internalPointerSymbol), newPinningArray);
 
                TR::Node *newAload = TR::Node::createLoad(node, comp()->getSymRefTab()->getSymRef(internalPointerSymbol));
-               newAload->setSideTableIndex(~0);
+               newAload->setLocalIndex(~0);
                TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, newAload, newPinningArray);
                internalPointerSymbol = newPinningArray->getReferenceNumber();
                TR::TreeTop *placeHolderTree = loopInvariantBlock->getEntry();
                TR::TreeTop *nextTree = placeHolderTree->getNextTreeTop();
-               newStore->setSideTableIndex(~0);
+               newStore->setLocalIndex(~0);
                TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
                placeHolderTree->join(newStoreTreeTop);
                newStoreTreeTop->join(nextTree);
@@ -3535,7 +3535,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
          TR::Node::recreate(originalNode, TR::aload);
          originalNode->setSymbolReference(internalPointerSymRef);
          originalNode->setNumChildren(0);
-         originalNode->setSideTableIndex(~0);
+         originalNode->setLocalIndex(~0);
          reassociatedComputation = true;
          examineChildren = false;
          }
@@ -3578,12 +3578,12 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                   createParmAutoPair(comp()->getSymRefTab()->getSymRef(internalPointerSymbol), newPinningArray);
 
                   TR::Node *newAload = TR::Node::createLoad(node, comp()->getSymRefTab()->getSymRef(internalPointerSymbol));
-                  newAload->setSideTableIndex(~0);
+                  newAload->setLocalIndex(~0);
                   TR::Node *newStore = TR::Node::createWithSymRef(TR::astore, 1, 1, newAload, newPinningArray);
                   internalPointerSymbol = newPinningArray->getReferenceNumber();
                   TR::TreeTop *placeHolderTree = loopInvariantBlock->getEntry();
                   TR::TreeTop *nextTree = placeHolderTree->getNextTreeTop();
-                  newStore->setSideTableIndex(~0);
+                  newStore->setLocalIndex(~0);
                   TR::TreeTop *newStoreTreeTop = TR::TreeTop::create(comp(), newStore);
                   placeHolderTree->join(newStoreTreeTop);
                   newStoreTreeTop->join(nextTree);
@@ -3625,7 +3625,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                }
 
             TR::Node *newLoad = TR::Node::createWithSymRef(node, TR::aload, 0, internalPointerSymRef);
-            newLoad->setSideTableIndex(~0);
+            newLoad->setLocalIndex(~0);
             originalNode->setAndIncChild(0, newLoad);
             originalNode->setAndIncChild(1, node->getFirstChild());
             reassociatedComputation = true;
@@ -5370,7 +5370,7 @@ void TR_InductionVariableAnalysis::analyzeNaturalLoop(TR_RegionStructure *loop)
    loop->setPrimaryInductionVariable(NULL);
    loop->getBasicInductionVariables().init();
 
-   // For each of the candidates, assign a side table index
+   // For each of the candidates, assign a local index
    //
    int32_t index = 0;
    TR_BitVectorIterator it(*candidates);
@@ -5378,7 +5378,7 @@ void TR_InductionVariableAnalysis::analyzeNaturalLoop(TR_RegionStructure *loop)
       {
       int32_t i = it.getNextElement();
       TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(i);
-      symRef->getSymbol()->setSideTableIndex(index++);
+      symRef->getSymbol()->setLocalIndex(index++);
       }
 
    // Initialize empty info for the loop entry blocks
@@ -5407,14 +5407,14 @@ void TR_InductionVariableAnalysis::analyzeNaturalLoop(TR_RegionStructure *loop)
 
    analyzeLoopExpressions(loop, loopSet);
 
-   // For each of the candidates, clear the side table index to avoid polluting analyses of later loops
+   // For each of the candidates, clear the local index to avoid polluting analyses of later loops
    //
    TR_BitVectorIterator clear_it(*candidates);
    while (clear_it.hasMoreElements())
       {
       int32_t i = clear_it.getNextElement();
       TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(i);
-      symRef->getSymbol()->setSideTableIndex(~0);
+      symRef->getSymbol()->setLocalIndex(~0);
       }
 
    } // scope of the stack memory region
@@ -5503,7 +5503,7 @@ void TR_InductionVariableAnalysis::analyzeBlock(TR_BlockStructure *structure, TR
           {
           int32_t refNum = it.getNextElement();
           TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(refNum);
-          int32_t refIndex = symRef->getSymbol()->getSideTableIndex();
+          int32_t refIndex = symRef->getSymbol()->getLocalIndex();
           DeltaInfo *inSymbol = inSet[refIndex];
           traceMsg(comp(), "\t%d %d %p symRef=%p symbol=%p: ",
                   refNum, refIndex, inSymbol, symRef, symRef->getSymbol());
@@ -5530,7 +5530,7 @@ void TR_InductionVariableAnalysis::analyzeBlock(TR_BlockStructure *structure, TR
          {
          TR::SymbolReference *symRef = node->getSymbolReference();
          uint32_t refNum   = symRef->getReferenceNumber();
-         uint32_t refIndex = symRef->getSymbol()->getSideTableIndex();
+         uint32_t refIndex = symRef->getSymbol()->getLocalIndex();
 
          if (candidates->isSet(refNum))
             {
@@ -5612,7 +5612,7 @@ void TR_InductionVariableAnalysis::analyzeCyclicRegion(TR_RegionStructure *regio
       if (loopLocalDefs->isSet(refNum))
          {
          TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(refNum);
-         int32_t refIndex = symRef->getSymbol()->getSideTableIndex();
+         int32_t refIndex = symRef->getSymbol()->getLocalIndex();
 
          DeltaInfo *inSymbol = inSet[refIndex];
          if (!inSymbol)
@@ -5913,7 +5913,7 @@ TR_InductionVariableAnalysis::analyzeLoopExpressions(
       {
       int32_t refNum = it.getNextElement();
       TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(refNum);
-      int32_t refIndex = symRef->getSymbol()->getSideTableIndex();
+      int32_t refIndex = symRef->getSymbol()->getLocalIndex();
 
       DeltaInfo *info = loopSet[refIndex];
       //TR_ASSERT(info, "missing store/delta information for definitly written symref");
@@ -6271,7 +6271,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
 
       TR_ASSERT(kind != Geometric, "geometric not implemented yet");
 
-      int32_t index = symRef->getSymbol()->getSideTableIndex();
+      int32_t index = symRef->getSymbol()->getLocalIndex();
       TR_BasicInductionVariable *biv = basicIVs[index];
       if (!biv)
          {
@@ -6313,7 +6313,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
    TR_BasicInductionVariable * iv;
    for (iv = it.getFirst(); iv; iv = it.getNext())
       {
-      int32_t index = iv->getSymRef()->getSymbol()->getSideTableIndex();
+      int32_t index = iv->getSymRef()->getSymbol()->getLocalIndex();
       DeltaInfo *exitInfo = exitSet[index];
 
       if (!exitInfo)
@@ -6688,7 +6688,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
       {
       if (iv != piv)
          {
-         int32_t index = iv->getSymRef()->getSymbol()->getSideTableIndex();
+         int32_t index = iv->getSymRef()->getSymbol()->getLocalIndex();
          TR_DerivedInductionVariable *div = new (trHeapMemory()) TR_DerivedInductionVariable(comp(), iv, piv);
          basicIVs[index] = div;
 

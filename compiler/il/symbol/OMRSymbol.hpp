@@ -100,7 +100,7 @@ protected:
       _name(0),
       _flags(0),
       _flags2(0),
-      _sideTableIndex(0),
+      _localIndex(0),
       _restrictedRegisterNumber(-1)
    { }
 
@@ -198,8 +198,8 @@ public:
    uint32_t getFlags2()                     { return _flags2.getValue(); }
    void setFlagValue(uint32_t v, bool b)    { _flags.setValue(v, b); }
 
-   uint16_t getSideTableIndex()             { return _sideTableIndex; }
-   uint16_t setSideTableIndex(uint16_t sti) { return (_sideTableIndex = sti); }
+   uint16_t getLocalIndex()                 { return _localIndex; }
+   uint16_t setLocalIndex(uint16_t li)      { return (_localIndex = li); }
 
    uint8_t getRestrictedRegisterNumber()    { return _restrictedRegisterNumber; }
 
@@ -564,7 +564,7 @@ protected:
    const char *  _name;
    flags32_t     _flags;
    flags32_t     _flags2;
-   uint16_t      _sideTableIndex;
+   uint16_t      _localIndex;
    uint8_t       _restrictedRegisterNumber;
 
 

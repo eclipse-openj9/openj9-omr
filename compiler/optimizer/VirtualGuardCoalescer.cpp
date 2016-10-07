@@ -677,7 +677,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
    TR::list<TR::CFGEdge*> &succ = block->getSuccessors();
    if (!(succ.size() == 2))
       {
-      block->getLastRealTreeTop()->getNode()->setSideTableIndex(MALFORMED_GUARD);
+      block->getLastRealTreeTop()->getNode()->setLocalIndex(MALFORMED_GUARD);
       return 0;
       }
 
@@ -729,7 +729,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
 
       if (!allowSplit)
          {
-         guardNode->setSideTableIndex(MALFORMED_GUARD);
+         guardNode->setLocalIndex(MALFORMED_GUARD);
          return 0;
          }
       }
@@ -741,7 +741,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
    /////if (!call /* || !call->getExceptionSuccessors().empty() */)
    if (!call || !(call->getSuccessors().size() == 1))
       {
-      block->getLastRealTreeTop()->getNode()->setSideTableIndex(MALFORMED_GUARD);
+      block->getLastRealTreeTop()->getNode()->setLocalIndex(MALFORMED_GUARD);
       return 0;
       }
 
@@ -753,7 +753,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
    bool invalidMergeBlock = ( merge == _cfg->getEnd() || merge->getPredecessors().size() > 2);
    if (invalidMergeBlock)
       {
-      block->getLastRealTreeTop()->getNode()->setSideTableIndex(MALFORMED_GUARD);
+      block->getLastRealTreeTop()->getNode()->setLocalIndex(MALFORMED_GUARD);
       return 0;
       }
 
@@ -802,7 +802,7 @@ void TR_VirtualGuardTailSplitter::putGuard(uint32_t index, VGInfo *info)
    TR::Block *branch = info->getBranchBlock();
    TR::Node  *node   = branch->getLastRealTreeTop()->getNode();
 
-   node->setSideTableIndex(index);
+   node->setLocalIndex(index);
    _table[index] = info;
    }
 

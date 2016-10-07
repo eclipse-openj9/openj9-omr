@@ -89,7 +89,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _onceWrittenSymbolsIndices(c->allocator("UseDefAux"), TR::SparseBitVector(c->allocator("UseDefAux"))),
              _onceReadSymbolsIndices(c->allocator("UseDefAux"), TR::SparseBitVector(c->allocator("UseDefAux"))),
              _nodeSideTableToSymRefNumMap(c->allocator("UseDefAux")),
-             _symRefToSideTableIndexMap(c->allocator("UseDefAux")),
+             _symRefToLocalIndexMap(c->allocator("UseDefAux")),
              _expandedAtoms(c->allocator("UseDefAux"), CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
              _sideTableToUseDefMap(c->allocator("UseDefAux")),
              _numAliases(c->allocator("UseDefAux")),
@@ -102,7 +102,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       CS2::ArrayOf<BitVector,TR::Allocator> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
       CS2::ArrayOf<BitVector, TR::Allocator> _defsForSymbol;
-      CS2::ArrayOf<TR::SparseBitVector, TR::Allocator> _symsKilledByMustKills;    // symbol sideTableIndex killed by function call due to mustDef
+      CS2::ArrayOf<TR::SparseBitVector, TR::Allocator> _symsKilledByMustKills;    // symbol localIndex killed by function call due to mustDef
       TR::BitVector _neverReadSymbols;
       TR::BitVector _neverReferencedSymbols;
       TR::BitVector _neverWrittenSymbols;
@@ -111,7 +111,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       CS2::ArrayOf<TR::SparseBitVector, TR::Allocator> _onceReadSymbolsIndices;
 
       CS2::ArrayOf<int32_t, TR::Allocator>             _nodeSideTableToSymRefNumMap;
-      CS2::ArrayOf<uint32_t, TR::Allocator>            _symRefToSideTableIndexMap;
+      CS2::ArrayOf<uint32_t, TR::Allocator>            _symRefToLocalIndexMap;
       CS2::ArrayOf<CS2::Pair<TR::Node *, TR::TreeTop *>, TR::Allocator> _expandedAtoms;    //TR::Node            **_expandedNodes;
 
 
@@ -364,9 +364,9 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       {
       uint32_t         _size;
       uint32_t         _offset;
-      int32_t          _sideTableIndex;
+      int32_t          _localIndex;
 
-      MemorySymbol(uint32_t size, uint32_t offset, int32_t sideTableIndex) : _size(size), _offset(offset), _sideTableIndex(sideTableIndex) {}
+      MemorySymbol(uint32_t size, uint32_t offset, int32_t localIndex) : _size(size), _offset(offset), _localIndex(localIndex) {}
 
       friend class TR_UseDefInfo;
       };

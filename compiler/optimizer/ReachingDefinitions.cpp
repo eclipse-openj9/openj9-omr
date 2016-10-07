@@ -190,7 +190,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, 
       }
 
    bool irrelevantStore = false;
-   scount_t nodeIndex = node->getSideTableIndex();
+   scount_t nodeIndex = node->getLocalIndex();
    if (nodeIndex <= 0)
       {
       if (node->getOpCode().isStore() &&
@@ -226,7 +226,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, 
       {
       symRef = node->getSymbolReference();
       sym = symRef->getSymbol();
-      symIndex = symRef->getSymbol()->getSideTableIndex();
+      symIndex = symRef->getSymbol()->getLocalIndex();
       num_aliases = _useDefInfo->getNumAliases(symRef, _aux);
       }
 
@@ -320,7 +320,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, 
       }
    else // fake up the method entry def as the def index to "gen" to avoid a use without a def completely
       {
-      _regularGenSetInfo[blockNum]->set(sym->getSideTableIndex());
-      _exceptionGenSetInfo[blockNum]->set(sym->getSideTableIndex());
+      _regularGenSetInfo[blockNum]->set(sym->getLocalIndex());
+      _exceptionGenSetInfo[blockNum]->set(sym->getLocalIndex());
       }
    }

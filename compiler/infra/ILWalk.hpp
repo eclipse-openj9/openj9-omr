@@ -367,7 +367,7 @@ class ILValidator
    class LiveNodeWindow
       {
       // This is like a NodeChecklist, but more compact.  Rather than track
-      // node global indexes, which can be sparse, this tracks side table
+      // node global indexes, which can be sparse, this tracks local
       // indexes, which are relatively dense.  Furthermore, the _basis field
       // allows us not to waste space on nodes we saw in prior blocks.
 

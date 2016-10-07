@@ -79,13 +79,13 @@ TR::LocalDeadStoreElimination::LocalDeadStoreElimination(TR::OptimizationManager
 void
 TR::LocalDeadStoreElimination::setIsFirstReferenceToNode(TR::Node *parent, int32_t index, TR::Node *node)
    {
-   parent ? node->setSideTableIndex(1) : node->setSideTableIndex(0);
+   parent ? node->setLocalIndex(1) : node->setLocalIndex(0);
    }
 
 bool
 TR::LocalDeadStoreElimination::isFirstReferenceToNode(TR::Node *parent, int32_t index, TR::Node *node)
    {
-   return (node->getSideTableIndex() <= 1);
+   return (node->getLocalIndex() <= 1);
    }
 
 int32_t TR::LocalDeadStoreElimination::perform()
@@ -132,8 +132,8 @@ void TR::LocalDeadStoreElimination::prePerformOnBlocks()
    TR::TreeTop *currentTree = comp()->getStartTree();
    comp()->incVisitCount();
    //
-   // Side table index is set to reference count below
-   // As we walk backwards in the main analysis, the side table index will keep getting decremented
+   // Local index is set to reference count below
+   // As we walk backwards in the main analysis, the local index will keep getting decremented
    // giving us an idea about how many more references exist to a particular node
    //
    while (currentTree)
@@ -626,7 +626,7 @@ void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childN
    {
    if (!isFirstReferenceToNode(parent, childNum, node))
       {
-      node->setSideTableIndex(node->getSideTableIndex()-1);
+      node->setLocalIndex(node->getLocalIndex()-1);
       return;
       }
 
@@ -886,12 +886,12 @@ TR::Node* TR::LocalDeadStoreElimination::getAnchorNode(TR::Node *parentNode, int
          else
             {
             //  child->decReferenceCount();
-            if (child->getSideTableIndex() > 1)
+            if (child->getLocalIndex() > 1)
                {
                // A tree commoned node (> 1 ref in same tree) must have its future use count decremented here
                // so the anchored node previously created in this function will be correctly recognized as a first
                // reference in examineNode()
-               child->decSideTableIndex();
+               child->decLocalIndex();
                }
             }
          }
@@ -903,7 +903,7 @@ TR::Node* TR::LocalDeadStoreElimination::getAnchorNode(TR::Node *parentNode, int
 void TR::LocalDeadStoreElimination::setupReferenceCounts(TR::Node *node)
    {
    node->setVisitCount(comp()->getVisitCount());
-   node->setSideTableIndex(node->getReferenceCount());
+   node->setLocalIndex(node->getReferenceCount());
 
    for (int i = 0; i < node->getNumChildren(); i++)
       {
@@ -935,9 +935,9 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
             {
             if (sym->isLocalObject() &&
                 sym->getLocalObjectSymbol()->getKind() == TR::New)
-               sym->setSideTableIndex(numSymbols++);
+               sym->setLocalIndex(numSymbols++);
             else
-               sym->setSideTableIndex(0);
+               sym->setLocalIndex(0);
             }
          }
       }
@@ -973,7 +973,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
          if (storeNode->getFirstChild()->getOpCode().hasSymbolReference() &&
              storeNode->getFirstChild()->getSymbolReference()->getSymbol()->isLocalObject() &&
              (storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
-             !usedLocalObjectSymbols.ValueAt(storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getSideTableIndex()))
+             !usedLocalObjectSymbols.ValueAt(storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalIndex()))
             removableLocalObjectStore = true;
          else if (currentNews.find(storeNode->getFirstChild()) ||
                   (storeNode->getFirstChild()->getOpCode().isArrayRef() &&
@@ -1082,7 +1082,7 @@ void TR::LocalDeadStoreElimination::findLocallyAllocatedObjectUses(LDSBitVector 
         node->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
        !(parent->getOpCode().isStoreIndirect() && childNum == 0 &&
          ( (uint32_t) parent->getSymbolReference()->getOffset() < fe()->getObjectHeaderSizeInBytes())))
-       usedLocalObjectSymbols[node->getSymbolReference()->getSymbol()->getSideTableIndex()] = true;
+       usedLocalObjectSymbols[node->getSymbolReference()->getSymbol()->getLocalIndex()] = true;
 
    if (node->getVisitCount() == visitCount)
       return;

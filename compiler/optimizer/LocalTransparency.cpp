@@ -196,7 +196,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
          if (currentNode->getFirstChild()->getOpCode().isStore())
             {
             _isStoreTree = true;
-            if (currentNode->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+            if (currentNode->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
 	       storeTreeParticipatesInAnalysis = false;
             storeNode = currentNode->getFirstChild();
             }
@@ -207,7 +207,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
          if (currentNode->getFirstChild()->getOpCode().isStore())
             {
             _isStoreTree = true;
-            if (currentNode->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+            if (currentNode->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
                storeTreeParticipatesInAnalysis = false;
             storeNode = currentNode->getFirstChild();
             }
@@ -218,7 +218,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
          if (currentNode->getFirstChild()->getOpCode().isStore())
             {
             _isStoreTree = true;
-            if (currentNode->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+            if (currentNode->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
                storeTreeParticipatesInAnalysis = false;
             storeNode = currentNode->getFirstChild();
             }
@@ -226,7 +226,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
       else if (firstOpCodeInTree.isStore())
          {
          _isStoreTree = true;
-         if (currentNode->getSideTableIndex() == MAX_SCOUNT)
+         if (currentNode->getLocalIndex() == MAX_SCOUNT)
 	    storeTreeParticipatesInAnalysis = false;
          storeNode = currentNode;
          }
@@ -261,7 +261,7 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
             {
             TR_LocalAnalysisInfo::LAInfo *binfo = _info+(blockNumber);
             if (binfo->_block)
-               binfo->_analysisInfo->set(storeNode->getSideTableIndex());
+               binfo->_analysisInfo->set(storeNode->getLocalIndex());
             }
 
          ContainerType::Cursor bvi(*globalDefinedSymbolReferences);
@@ -278,9 +278,9 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
                {
                if (allSymbolReferencesInStore->get(newDefinedSymbolReference))
                   {
-                  _transparencyInfo[newDefinedSymbolReference]->reset(storeNode->getSideTableIndex());
+                  _transparencyInfo[newDefinedSymbolReference]->reset(storeNode->getLocalIndex());
                   if (trace())
-                     traceMsg(comp(), "75757Expression %d killed (%x) by symRef #%d  %d\n", storeNode->getSideTableIndex(), storeNode, newDefinedSymbolReference, true);
+                     traceMsg(comp(), "75757Expression %d killed (%x) by symRef #%d  %d\n", storeNode->getLocalIndex(), storeNode, newDefinedSymbolReference, true);
                   }
                }
 
@@ -295,9 +295,9 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
                   if (allSymbolReferencesInNullCheckReference->get(newDefinedSymbolReference))
                      {
                       if (trace())
-                         traceMsg(comp(), "76767Expression %d killed (%x) by symRef #%d  %d\n", currentNode->getSideTableIndex(), currentNode, newDefinedSymbolReference, true);
+                         traceMsg(comp(), "76767Expression %d killed (%x) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode, newDefinedSymbolReference, true);
 
-                      _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getSideTableIndex());
+                      _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getLocalIndex());
                      }
                   }
                }
@@ -322,9 +322,9 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
             if (symbolReferencesInCheck->get(newDefinedSymbolReference))
                {
                if (trace())
-                  traceMsg(comp(), "777Expression %d killed (%x) by symRef #%d  %d\n", currentNode->getSideTableIndex(), currentNode, newDefinedSymbolReference, true);
+                  traceMsg(comp(), "777Expression %d killed (%x) by symRef #%d  %d\n", currentNode->getLocalIndex(), currentNode, newDefinedSymbolReference, true);
 
-               _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getSideTableIndex());
+               _transparencyInfo[newDefinedSymbolReference]->reset(currentNode->getLocalIndex());
                }
             }
          }
@@ -412,9 +412,9 @@ TR_LocalTransparency::TR_LocalTransparency(TR_LocalAnalysisInfo &info, bool t)
                      if (supportedNodesAsArray[storeNode]->getOpCode().isIndirect())
                         {
                         TR::Node *child = supportedNodesAsArray[storeNode]->getFirstChild();
-                        if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0))
+                        if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0))
                            {
-                           if (!_transparencyInfo[nextDefinedSymbolReference]->get(child->getSideTableIndex()))
+                           if (!_transparencyInfo[nextDefinedSymbolReference]->get(child->getLocalIndex()))
                               childKilled = true;
                            }
                         else
@@ -678,32 +678,32 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
 
       updateInfoForSupportedNodes(child, allSymbolReferences, allSymbolReferencesInNullCheckReference, allSymbolReferencesInStore, seenDefinedSymbolReferences, seenStoredSymRefs, allStoredSymRefsInMethod, visitCount);
 
-      if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) && (!(opCode.isStore() || opCode.isCheck())))
+      if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) && (!(opCode.isStore() || opCode.isCheck())))
          {
          bool childHasSupportedOpCode = false;
          TR::ILOpCode &childOpCode = child->getOpCode();
 
-         if (((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0)) && (!(childOpCode.isStore() || childOpCode.isCheck())))
+         if (((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0)) && (!(childOpCode.isStore() || childOpCode.isCheck())))
             childHasSupportedOpCode = true;
 
          if (childHasSupportedOpCode)
             {
-            if (!_supportedNodes->get(child->getSideTableIndex()))
-               _supportedNodes->reset(node->getSideTableIndex());
+            if (!_supportedNodes->get(child->getLocalIndex()))
+               _supportedNodes->reset(node->getLocalIndex());
             else
                {
                int32_t i;
                for (i=0;i<comp()->getMaxAliasIndex();i++)
                   {
-                  if (!_transparencyInfo[i]->get(child->getSideTableIndex()) ||
+                  if (!_transparencyInfo[i]->get(child->getLocalIndex()) ||
                       (child->getOpCode().hasSymbolReference() &&
                        !child->getOpCode().isCall() &&
                        (i == child->getSymbolReference()->getReferenceNumber()) &&
                        seenStoredSymRefs->get(child->getSymbolReference()->getReferenceNumber())))
                      {
-                     _transparencyInfo[i]->reset(node->getSideTableIndex());
+                     _transparencyInfo[i]->reset(node->getLocalIndex());
                       if (trace())
-                         traceMsg(comp(), "Expression %d killed by symRef #%d because child %d is already killed by the symRef\n", node->getSideTableIndex(), i, child->getSideTableIndex());
+                         traceMsg(comp(), "Expression %d killed by symRef #%d because child %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
                      }
                   }
                }
@@ -720,7 +720,7 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                   if (seenDefinedSymbolReferences->get(childSymRefNum) ||
                       seenStoredSymRefs->get(childSymRefNum))
                      {
-                     _transparencyInfo[childSymRefNum]->reset(node->getSideTableIndex());
+                     _transparencyInfo[childSymRefNum]->reset(node->getLocalIndex());
 
                      TR::SparseBitVector aliases(comp()->allocator());
                      child->mayKill(true).getAliases(aliases);
@@ -729,14 +729,14 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                      for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
                         {
                         int32_t nextAlias = aliasesCursor;
-                        _transparencyInfo[nextAlias]->reset(node->getSideTableIndex());
+                        _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
                         if (trace())
-                           traceMsg(comp(), "9999Expression %d killed (%x) by symRef #%d  %d\n", node->getSideTableIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
+                           traceMsg(comp(), "9999Expression %d killed (%x) by symRef #%d  %d\n", node->getLocalIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
 
                         }
 
                 if (trace())
-                        traceMsg(comp(), "Expression %d killed by symRef #%d (loaded in child)\n", node->getSideTableIndex(), childSymRefNum);
+                        traceMsg(comp(), "Expression %d killed by symRef #%d (loaded in child)\n", node->getLocalIndex(), childSymRefNum);
                      }
                   }
                }
@@ -751,9 +751,9 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
                   }
                else
                   {
-                  _supportedNodes->reset(node->getSideTableIndex());
+                  _supportedNodes->reset(node->getLocalIndex());
                   if (trace())
-                     traceMsg(comp(), "Expression %d killed (non supported opcode)\n", node->getSideTableIndex());
+                     traceMsg(comp(), "Expression %d killed (non supported opcode)\n", node->getLocalIndex());
                   }
                }
             }
@@ -807,7 +807,7 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
          _inStoreLhsTree = false;
       }
 
-   if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) && (!(opCode.isStore() || opCode.isCheck())))
+   if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) && (!(opCode.isStore() || opCode.isCheck())))
       {
       // If any symbol used in this subtree is defined in this block
       // then not transparent
@@ -820,8 +820,8 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
              seenStoredSymRefs->get(symRef->getReferenceNumber()))
             {
             if (trace())
-               traceMsg(comp(), "Expression %d killed (%x) by symRef #%d  %d\n", node->getSideTableIndex(), node, symRef->getReferenceNumber(), seenDefinedSymbolReferences->get(symRef->getReferenceNumber()));
-            _transparencyInfo[symRef->getReferenceNumber()]->reset(node->getSideTableIndex());
+               traceMsg(comp(), "Expression %d killed (%x) by symRef #%d  %d\n", node->getLocalIndex(), node, symRef->getReferenceNumber(), seenDefinedSymbolReferences->get(symRef->getReferenceNumber()));
+            _transparencyInfo[symRef->getReferenceNumber()]->reset(node->getLocalIndex());
 
             TR::SparseBitVector aliases(comp()->allocator());
             node->mayKill(true).getAliases(aliases);
@@ -830,9 +830,9 @@ void TR_LocalTransparency::updateInfoForSupportedNodes(TR::Node *node, Container
             for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
                {
                int32_t nextAlias = aliasesCursor;
-               _transparencyInfo[nextAlias]->reset(node->getSideTableIndex());
+               _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "888Expression %d killed (%x) by symRef #%d  %d\n", node->getSideTableIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
+                  traceMsg(comp(), "888Expression %d killed (%x) by symRef #%d  %d\n", node->getLocalIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
 
                }
             }
@@ -849,27 +849,27 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
 
    TR::ILOpCode &childOpCode = child->getOpCode();
 
-   if (((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0)) && (!(childOpCode.isStore() || childOpCode.isCheck())))
+   if (((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0)) && (!(childOpCode.isStore() || childOpCode.isCheck())))
       childHasSupportedOpCode = true;
 
    if (childHasSupportedOpCode)
       {
-      if (!_supportedNodes->get(child->getSideTableIndex()))
-         _supportedNodes->reset(node->getSideTableIndex());
+      if (!_supportedNodes->get(child->getLocalIndex()))
+         _supportedNodes->reset(node->getLocalIndex());
       else
          {
          int32_t i;
          for (i=0;i<comp()->getMaxAliasIndex();i++)
             {
-            if (!_transparencyInfo[i]->get(child->getSideTableIndex()))
+            if (!_transparencyInfo[i]->get(child->getLocalIndex()))
                {
-               _transparencyInfo[i]->reset(node->getSideTableIndex());
+               _transparencyInfo[i]->reset(node->getLocalIndex());
                if (trace())
                   {
                   if (TR::Compiler->target.is64Bit())
-                     traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aladd) %d is already killed by the symRef\n", node->getSideTableIndex(), i, child->getSideTableIndex());
+                     traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aladd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
                   else
-                     traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aiadd) %d is already killed by the symRef\n", node->getSideTableIndex(), i, child->getSideTableIndex());
+                     traceMsg(comp(), "Expression %d killed by symRef #%d because grandchild (child of aiadd) %d is already killed by the symRef\n", node->getLocalIndex(), i, child->getLocalIndex());
                   }
                }
             }
@@ -886,7 +886,7 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
             if (seenDefinedSymbolReferences->get(childSymRef->getReferenceNumber()) ||
                 seenStoredSymRefs->get(childSymRef->getReferenceNumber()))
                {
-               _transparencyInfo[childSymRef->getReferenceNumber()]->reset(node->getSideTableIndex());
+               _transparencyInfo[childSymRef->getReferenceNumber()]->reset(node->getLocalIndex());
 
                TR::SparseBitVector aliases(comp()->allocator());
                child->mayKill(true).getAliases(aliases);
@@ -895,21 +895,21 @@ void TR_LocalTransparency::adjustInfoForAddressAdd(TR::Node *node, TR::Node *chi
                for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
                   {
                   int32_t nextAlias = aliasesCursor;
-                  _transparencyInfo[nextAlias]->reset(node->getSideTableIndex());
+                  _transparencyInfo[nextAlias]->reset(node->getLocalIndex());
                   if (trace())
-                     traceMsg(comp(), "999Expression %d killed (%x) by symRef #%d  %d\n", node->getSideTableIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
+                     traceMsg(comp(), "999Expression %d killed (%x) by symRef #%d  %d\n", node->getLocalIndex(), node, nextAlias, seenDefinedSymbolReferences->get(nextAlias));
 
                   }
                if (trace())
-                  traceMsg(comp(), "Expression %d killed by symRef #%d (loaded in grandchild)\n", node->getSideTableIndex(), childSymRef->getReferenceNumber());
+                  traceMsg(comp(), "Expression %d killed by symRef #%d (loaded in grandchild)\n", node->getLocalIndex(), childSymRef->getReferenceNumber());
                }
             }
          }
       else
          {
-         _supportedNodes->reset(node->getSideTableIndex());
+         _supportedNodes->reset(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "Expression %d killed (non supported opcode)\n", node->getSideTableIndex());
+            traceMsg(comp(), "Expression %d killed (non supported opcode)\n", node->getLocalIndex());
          }
       }
    }

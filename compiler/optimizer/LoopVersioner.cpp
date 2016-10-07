@@ -109,13 +109,13 @@ void printNode(TR::Node *node, TR_BitVector &visitedNodes, int32_t indentation)
    if (visitedNodes.isSet(node->getGlobalIndex()))
       {
       traceMsg(comp(), "\t\t\t%p %5d %*s ==>%s\n",  node,
-              node->getSideTableIndex(), indentation, " ",
+              node->getLocalIndex(), indentation, " ",
               comp()->getDebug()->getName(node->getOpCode()));
       }
    else
       {
       traceMsg(comp(), "\t\t\t%p %5d %*s %s %s\n", node,
-              node->getSideTableIndex(),
+              node->getLocalIndex(),
               indentation, " ", comp()->getDebug()->getName(node->getOpCode()),
               node->getOpCode().hasSymbolReference() ?
               comp()->getDebug()->getName(node->getSymbolReference()): "");

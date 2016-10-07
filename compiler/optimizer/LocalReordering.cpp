@@ -290,12 +290,12 @@ void TR_LocalReordering::moveStoresEarlierIfRhsAnchored(TR::Block *block, TR::Tr
    {
    if (node->getVisitCount() >= visitCount)
       {
-      node->setSideTableIndex(node->getSideTableIndex()-1);
+      node->setLocalIndex(node->getLocalIndex()-1);
       return;
       }
 
    node->setVisitCount(visitCount);
-   node->setSideTableIndex(node->getReferenceCount()-1);
+   node->setLocalIndex(node->getReferenceCount()-1);
 
    if (node->getReferenceCount() > 1)
       {
@@ -335,7 +335,7 @@ void TR_LocalReordering::moveStoresEarlierIfRhsAnchored(TR::Block *block, TR::Tr
       {
       TR::Node *child = node->getChild(j);
       moveStoresEarlierIfRhsAnchored(block, treeTop, child, node, visitCount);
-      if ((child->getSideTableIndex() == 0) &&
+      if ((child->getLocalIndex() == 0) &&
           (child->getReferenceCount() > 1) &&
           (!child->getOpCode().isLoadConst()))
         {
@@ -366,9 +366,9 @@ void TR_LocalReordering::moveStoresEarlierIfRhsAnchored(TR::Block *block, TR::Tr
          (parent->getOpCodeValue() != TR::fadd || node->getOpCodeValue() != TR::fmul))) &&
        !noReordering)
       {
-      node->setSideTableIndex(node->getSideTableIndex()+1);
+      node->setLocalIndex(node->getLocalIndex()+1);
       TR::TreeTop *anchorTreeTop = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, node));
-      anchorTreeTop->getNode()->setSideTableIndex(0);
+      anchorTreeTop->getNode()->setLocalIndex(0);
       TR::TreeTop *origPrev = treeTop->getPrevTreeTop();
       if (origPrev)
         origPrev->join(anchorTreeTop);

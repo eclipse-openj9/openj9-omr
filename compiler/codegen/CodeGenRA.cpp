@@ -125,8 +125,8 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
    {
    if (node->getVisitCount() == visitCount)
       {
-      node->setSideTableIndex(node->getSideTableIndex()-1);
-      if (node->getSideTableIndex() == 0)
+      node->setLocalIndex(node->getLocalIndex()-1);
+      if (node->getLocalIndex() == 0)
          {
 
          if (node->getOpCode().isLoadVar() &&
@@ -161,9 +161,9 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
 
    node->setVisitCount(visitCount);
    if (node->getReferenceCount() > 0)
-      node->setSideTableIndex(node->getReferenceCount()-1);
+      node->setLocalIndex(node->getReferenceCount()-1);
    else
-      node->setSideTableIndex(0);
+      node->setLocalIndex(0);
 
    int32_t childCount;
    for (childCount = node->getNumChildren()-1; childCount >= 0; childCount--)
@@ -191,7 +191,7 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
    // Allow these call-like opcodes in cold blocks
    // as we can afford to spill in cold blocks
    //
-   if (node->getSideTableIndex() > 0)
+   if (node->getLocalIndex() > 0)
       {
       if (node->getOpCode().isLoadVar() &&
           node->getSymbol()->isAutoOrParm() &&

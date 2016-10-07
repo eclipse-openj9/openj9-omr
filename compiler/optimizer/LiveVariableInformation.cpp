@@ -274,7 +274,7 @@ void TR_LiveVariableInformation::initializeGenAndKillSetInfo(TR_BitVector **regu
             if (localIndex != INVALID_LIVENESS_INDEX)
                {
                if (traceLiveVarInfo())
-               traceMsg(comp(), "\n Killing symbol with side table index %d in block_%d\n", localIndex, blockNum);
+               traceMsg(comp(), "\n Killing symbol with local index %d in block_%d\n", localIndex, blockNum);
 
                if (regularKillSetInfo[blockNum] == NULL)
                   regularKillSetInfo[blockNum] = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);
@@ -582,7 +582,7 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
              //!blockKillSetInfo->get(localIndex))
             {
             if (traceLiveVarInfo() && local)
-               traceMsg(comp(), "            Gening symbol with side table index %d\n", localIndex);
+               traceMsg(comp(), "            Gening symbol with local index %d\n", localIndex);
 
             if (*blockGenSetInfo == NULL)
                *blockGenSetInfo = new (trStackMemory()) TR_BitVector(_numLocals,trMemory(), stackAlloc);

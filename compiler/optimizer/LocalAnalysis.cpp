@@ -238,7 +238,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
       // This loop counts all the nodes that are going to take part in PRE.
       // This is a computation intensive loop as we check if the node that
       // is syntactically equivalent to a given node has been seen before
-      // and if so we use the side table index of the original node (that
+      // and if so we use the local index of the original node (that
       // is syntactically equivalent to the given node). Could be improved
       // in complexity with value numbering at some stage.
       //
@@ -252,9 +252,9 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
               (comp()->useAnchors() && firstNodeInTree->getOpCode().isAnchor())) &&
              (firstNodeInTree->getFirstChild()->getOpCode().isStore()))
             {
-            firstNodeInTree->setSideTableIndex(-1);
+            firstNodeInTree->setLocalIndex(-1);
             if (comp()->useAnchors() && firstNodeInTree->getOpCode().isAnchor())
-               firstNodeInTree->getSecondChild()->setSideTableIndex(-1);
+               firstNodeInTree->getSecondChild()->setLocalIndex(-1);
 
             firstNodeInTree = firstNodeInTree->getFirstChild();
             opCode = &firstNodeInTree->getOpCode();
@@ -281,7 +281,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
             //
             // Any other return value (should be positive always) denotes that
             // the node can participate in PRE and has been matched with a seen
-            // expression having side table index == return value
+            // expression having local index == return value
             //
             if (oldExpressionOnRhs == -1)
                {
@@ -291,10 +291,10 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                   comp()->getDebug()->print(comp()->getOutFile(), firstNodeInTree, 6, true);
                   }
 
-               firstNodeInTree->setSideTableIndex(_numNodes++);
+               firstNodeInTree->setLocalIndex(_numNodes++);
                }
             else
-               firstNodeInTree->setSideTableIndex(oldExpressionOnRhs);
+               firstNodeInTree->setLocalIndex(oldExpressionOnRhs);
 
             if (opCode->isCheck() &&
                 (firstNodeInTree->getFirstChild()->getOpCode().isStore() &&
@@ -310,14 +310,14 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
                      comp()->getDebug()->print(comp()->getOutFile(), firstNodeInTree->getFirstChild(), 6, true);
                      }
 
-                  firstNodeInTree->getFirstChild()->setSideTableIndex(_numNodes++);
+                  firstNodeInTree->getFirstChild()->setLocalIndex(_numNodes++);
                   }
                else
-                  firstNodeInTree->getFirstChild()->setSideTableIndex(oldExpressionOnRhs);
+                  firstNodeInTree->getFirstChild()->setLocalIndex(oldExpressionOnRhs);
                }
             }
          else
-            firstNodeInTree->setSideTableIndex(-1);
+            firstNodeInTree->setLocalIndex(-1);
 
          currentTree = currentTree->getNextTreeTop();
          }
@@ -330,7 +330,7 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
    //_checkExpressions.init(_numNodes, trMemory(), stackAlloc);
 
    // This loop goes through the trees and collects the nodes
-   // that would take part in PRE. Each node has its side table index set to
+   // that would take part in PRE. Each node has its local index set to
    // the bit position that it occupies in the bit vector analyses.
    //
    currentTree = comp()->getStartTree();
@@ -356,17 +356,17 @@ TR_LocalAnalysisInfo::TR_LocalAnalysisInfo(TR::Compilation *c, bool t)
         if (opCode->isCheck())
             {
             _checkSymbolReferences->set(firstNodeInTree->getSymbolReference()->getReferenceNumber());
-            _checkExpressions->set(firstNodeInTree->getSideTableIndex());
+            _checkExpressions->set(firstNodeInTree->getLocalIndex());
             }
 
-         if (!_supportedNodesAsArray[firstNodeInTree->getSideTableIndex()])
-            _supportedNodesAsArray[firstNodeInTree->getSideTableIndex()] = firstNodeInTree;
+         if (!_supportedNodesAsArray[firstNodeInTree->getLocalIndex()])
+            _supportedNodesAsArray[firstNodeInTree->getLocalIndex()] = firstNodeInTree;
 
          if (opCode->isCheck() &&
              firstNodeInTree->getFirstChild()->getOpCode().isStore() &&
              !firstNodeInTree->getFirstChild()->getSymbolReference()->getSymbol()->isAutoOrParm() &&
-             !_supportedNodesAsArray[firstNodeInTree->getFirstChild()->getSideTableIndex()])
-            _supportedNodesAsArray[firstNodeInTree->getFirstChild()->getSideTableIndex()] = firstNodeInTree->getFirstChild();
+             !_supportedNodesAsArray[firstNodeInTree->getFirstChild()->getLocalIndex()])
+            _supportedNodesAsArray[firstNodeInTree->getFirstChild()->getLocalIndex()] = firstNodeInTree->getFirstChild();
          }
 
       currentTree = currentTree->getNextTreeTop();
@@ -500,7 +500,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
          if (!(_nullCheckNodesAsArray[k] == NULL))
             {
             if (areSyntacticallyEquivalent(_nullCheckNodesAsArray[k]->getNullCheckReference(), node->getNullCheckReference()))
-               return _nullCheckNodesAsArray[k]->getSideTableIndex();
+               return _nullCheckNodesAsArray[k]->getLocalIndex();
             }
          }
 
@@ -655,7 +655,7 @@ int TR_LocalAnalysisInfo::hasOldExpressionOnRhs(TR::Node *node, bool recalcConta
                   TR::Node::recreate(node, _compilation->il.opCodeForDirectStore(node->getDataType()));
                }
 
-            return other->getSideTableIndex();
+            return other->getLocalIndex();
             }
          }
 
@@ -834,11 +834,11 @@ bool TR_LocalAnalysisInfo::areSyntacticallyEquivalent(TR::Node *node1, TR::Node 
    int32_t i;
    for (i = 0;i < node1->getNumChildren();i++)
       {
-      if (node1->getChild(i)->getSideTableIndex() != node2->getChild(i)->getSideTableIndex())
+      if (node1->getChild(i)->getLocalIndex() != node2->getChild(i)->getLocalIndex())
          return false;
       else
          {
-         if (node1->getChild(i)->getSideTableIndex() == MAX_SCOUNT)
+         if (node1->getChild(i)->getLocalIndex() == MAX_SCOUNT)
             {
             if ((node1->getChild(i)->getOpCode().isLoadConst() || node1->getChild(i)->getOpCode().isLoadVarDirect()) && (node2->getChild(i)->getOpCode().isLoadConst() || node2->getChild(i)->getOpCode().isLoadVarDirect()))
                {
@@ -852,11 +852,11 @@ bool TR_LocalAnalysisInfo::areSyntacticallyEquivalent(TR::Node *node1, TR::Node 
                   TR::Node *grandChild1 = node1->getChild(i)->getChild(j);
                   TR::Node *grandChild2 = node2->getChild(i)->getChild(j);
 
-                  if (grandChild1->getSideTableIndex() != grandChild2->getSideTableIndex())
+                  if (grandChild1->getLocalIndex() != grandChild2->getLocalIndex())
                      return false;
                   else
                      {
-                     if (grandChild1->getSideTableIndex() == MAX_SCOUNT)
+                     if (grandChild1->getLocalIndex() == MAX_SCOUNT)
                         {
                         if ((grandChild1->getOpCode().isLoadConst() || grandChild1->getOpCode().isLoadVarDirect()) && (grandChild2->getOpCode().isLoadConst() || grandChild2->getOpCode().isLoadVarDirect()))
                            {
@@ -866,7 +866,7 @@ bool TR_LocalAnalysisInfo::areSyntacticallyEquivalent(TR::Node *node1, TR::Node 
                         else
                            return false;
                         }
-                     else if (grandChild1->getSideTableIndex() == 0)
+                     else if (grandChild1->getLocalIndex() == 0)
                         return false;
                      }
                   }
@@ -874,7 +874,7 @@ bool TR_LocalAnalysisInfo::areSyntacticallyEquivalent(TR::Node *node1, TR::Node 
             else
                return false;
             }
-         else if (node1->getChild(i)->getSideTableIndex() == 0)
+         else if (node1->getChild(i)->getLocalIndex() == 0)
             return false;
          }
       }
@@ -995,14 +995,14 @@ bool TR_LocalAnalysisInfo::countSupportedNodes(TR::Node *node, TR::Node *parent,
             }
 
          flag = true;
-         node->setSideTableIndex(_numNodes);
+         node->setLocalIndex(_numNodes);
          _numNodes++;
          }
       else
-        node->setSideTableIndex(oldExpressionOnRhs);
+        node->setLocalIndex(oldExpressionOnRhs);
       }
    else
-      node->setSideTableIndex(-1);
+      node->setLocalIndex(-1);
 
    return flag;
    }
@@ -1055,13 +1055,13 @@ bool TR_LocalAnalysisInfo::collectSupportedNodes(TR::Node *node, TR::Node *paren
       if (collectSupportedNodes(child, node))
          flag = true;
 
-      if (_checkExpressions->get(child->getSideTableIndex()))
+      if (_checkExpressions->get(child->getLocalIndex()))
          childRelevant = true;
       }
 
    if (TR_LocalAnalysis::isSupportedNode(node, _compilation, parent))
       {
-      _supportedNodesAsArray[node->getSideTableIndex()] = node;
+      _supportedNodesAsArray[node->getLocalIndex()] = node;
 
       bool indirectionSafe = true;
       if (opCode.isIndirect() && (opCode.isLoadVar() || opCode.isStore()))
@@ -1103,7 +1103,7 @@ bool TR_LocalAnalysisInfo::collectSupportedNodes(TR::Node *node, TR::Node *paren
          (node->getOpCode().isArrayRef()) ||
          (opCode.hasSymbolReference() && (node->getSymbolReference()->isUnresolved() || node->getSymbol()->isArrayShadowSymbol())) ||
          (opCode.isDiv() || opCode.isRem()))
-         _checkExpressions->set(node->getSideTableIndex());
+         _checkExpressions->set(node->getLocalIndex());
       }
 
    return flag;

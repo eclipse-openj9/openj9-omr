@@ -158,7 +158,7 @@ int32_t TR_CompactLocals::perform()
 
    for (p = locals.getFirst(); p != NULL; p = locals.getNext())
       {
-      p->setSideTableIndex(0);
+      p->setLocalIndex(0);
       (*_localIndexToSymbolMap)[p->getLiveLocalIndex()] = p;
 
       if (eligibleLocal(p))
@@ -316,7 +316,7 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
    if (node->getVisitCount() != visitCount)
       {
       node->setVisitCount(visitCount);
-      node->setSideTableIndex(node->getReferenceCount());
+      node->setLocalIndex(node->getReferenceCount());
       }
 
    if (trace())
@@ -341,7 +341,7 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
          // This local is killed only if the live range of any loads of this symbol do not overlap
          // with this store.
          //
-         if (local->getSideTableIndex() == 0)
+         if (local->getLocalIndex() == 0)
             {
             _liveVars->reset(localIndex);
             if (trace())
@@ -362,12 +362,12 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
 
          // First visit to this node.
          //
-         if (node->getSideTableIndex() == node->getReferenceCount())
+         if (node->getLocalIndex() == node->getReferenceCount())
             {
-            local->setSideTableIndex(local->getSideTableIndex() + node->getReferenceCount());
+            local->setLocalIndex(local->getLocalIndex() + node->getReferenceCount());
             }
 
-         if ((node->getSideTableIndex() == 1 || node->getOpCodeValue() == TR::loadaddr) && !_liveVars->isSet(localIndex))
+         if ((node->getLocalIndex() == 1 || node->getOpCodeValue() == TR::loadaddr) && !_liveVars->isSet(localIndex))
             {
             // First evaluation point of this node or loadaddr.
             //
@@ -389,14 +389,14 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
                }
             }
 
-         local->setSideTableIndex(local->getSideTableIndex()-1);
-         node->setSideTableIndex(node->getSideTableIndex()-1);
+         local->setLocalIndex(local->getLocalIndex()-1);
+         node->setLocalIndex(node->getLocalIndex()-1);
 
          return;
          }
       }
    else if (node->exceptionsRaised() &&
-           (node->getSideTableIndex() <= 1))
+           (node->getLocalIndex() <= 1))
       {
       TR::Block *succ;
       for (auto edge = block->getExceptionSuccessors().begin(); edge != block->getExceptionSuccessors().end(); ++edge)
@@ -412,14 +412,14 @@ void TR_CompactLocals::processNodeInPreorder(TR::Node *node,
          createInterferenceBetween(_liveVars);
       }
 
-   if (node->getSideTableIndex() != 0)
+   if (node->getLocalIndex() != 0)
       {
-      node->setSideTableIndex(node->getSideTableIndex()-1);
+      node->setLocalIndex(node->getLocalIndex()-1);
       }
 
    // This is not the first evaluation point of this node.
    //
-   if (node->getSideTableIndex() > 0)
+   if (node->getLocalIndex() > 0)
       {
       return;
       }

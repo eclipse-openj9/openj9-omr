@@ -446,11 +446,11 @@ OMR::CodeGenerator::lowerTreesPropagateBlockToNode(TR::Node *node)
 
    if (self()->comp()->getFlowGraph()->getNextNodeNumber() < SHRT_MAX)
       {
-      node->setSideTableIndex(self()->getCurrentBlock()->getNumber());
+      node->setLocalIndex(self()->getCurrentBlock()->getNumber());
       }
    else
       {
-      node->setSideTableIndex(-1);
+      node->setLocalIndex(-1);
       }
 
    }

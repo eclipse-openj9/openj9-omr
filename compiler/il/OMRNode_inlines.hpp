@@ -309,26 +309,26 @@ OMR::Node::decReferenceCount()
    }
 
 scount_t
-OMR::Node::getSideTableIndex()
+OMR::Node::getLocalIndex()
    {
    return self()->getOptAttributes()->_localIndex;
    }
 
 scount_t
-OMR::Node::setSideTableIndex(scount_t sti)
+OMR::Node::setLocalIndex(scount_t li)
    {
-   return (self()->getOptAttributes()->_localIndex = sti);
+   return (self()->getOptAttributes()->_localIndex = li);
    }
 
 scount_t
-OMR::Node::incSideTableIndex()
+OMR::Node::incLocalIndex()
    {
    ++self()->getOptAttributes()->_localIndex;
    TR_ASSERT(self()->getOptAttributes()->_localIndex>0, "assertion failure"); return self()->getOptAttributes()->_localIndex;
    }
 
 scount_t
-OMR::Node::decSideTableIndex()
+OMR::Node::decLocalIndex()
    {
    TR_ASSERT(self()->getOptAttributes()->_localIndex > 0, "assertion failure"); return --self()->getOptAttributes()->_localIndex;
    }
@@ -340,9 +340,9 @@ OMR::Node::getFutureUseCount()
    }
 
 scount_t
-OMR::Node::setFutureUseCount(scount_t sti)
+OMR::Node::setFutureUseCount(scount_t li)
    {
-   return (self()->getOptAttributes()->_localIndex = (scount_t)sti);
+   return (self()->getOptAttributes()->_localIndex = (scount_t)li);
    }
 
 scount_t

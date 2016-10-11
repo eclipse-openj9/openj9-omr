@@ -4,6 +4,26 @@
 #include "omrcfg.h"
 
 /**
+ * OMR_TOKEN_PASTE(token, token)
+ *
+ * Expand both tokens and paste them together, forming a new C token.
+ */
+#define OMR_TOKEN_PASTE_(a, b) a ## b
+#define OMR_TOKEN_PASTE(a, b) OMR_TOKEN_PASTE_(a, b)
+
+/**
+ * OMR_UNIQUE
+ *
+ * Expands to a unique value. May be unsafe to use multiple times on a single
+ * line. Use with OMR_TOKEN_PASTE to ensure correct pasting.
+ */
+#if defined(__COUNTER__)
+#  define OMR_UNIQUE __COUNTER__
+#else
+#  define OMR_UNIQUE __LINE__
+#endif
+
+/**
  * OMR_STATIC_ASSERT(assert)
  * OMR_STATIC_ASSERT_MSG(assert, msg)
  *
@@ -18,9 +38,8 @@
 #  define OMR_STATIC_ASSERT(assert) static_assert(assert, #assert)
 #  define OMR_STATIC_ASSERT_MSG(assert, msg) static_assert(assert, msg)
 #else
-/* disable */
-#define OMR_STATIC_ASSERT(assert)
-#define OMR_STATIC_ASSERT_MSG(assert, msg)
+#  define OMR_STATIC_ASSERT(assert) enum { OMR_TOKEN_PASTE(OMR_ASSERT_FAIL, OMR_UNIQUE) = 1/(int)(!!(assert)) }
+#  define OMR_STATIC_ASSERT_MSG(assert, msg) OMR_STATIC_ASSERT(assert)
 #endif
 
 #endif /* defined(OMR_STATIC_ASSERT_HPP_) */

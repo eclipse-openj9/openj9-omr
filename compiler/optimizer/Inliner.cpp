@@ -45,7 +45,6 @@
 #include "control/Options_inlines.hpp"                    // for TR::Options, etc
 #include "control/Recompilation.hpp"
 #include "cs2/allocator.h"
-#include "cs2/arrayof.h"                                  // for ArrayOf
 #include "cs2/bitvectr.h"
 #include "cs2/sparsrbit.h"
 #include "env/ClassEnv.hpp"
@@ -5570,32 +5569,25 @@ void TR_CallSite::tagcalltarget(int32_t index, TR_InlinerTracer *tracer, TR_Inli
          _callNode,_comp->getLineNumber(_callNode));
       }
 
-   _mytargets[index]->_failureReason=reason;
+   getTarget(index)->_failureReason = reason;
 
-   if(index >= _numtargets)
-      TR_ASSERT(0, "Index is greater or equal to the number of targets");
-   else
-      {
-      // do nothing
-      }
+   TR_ASSERT(index < _mytargets.size(), "Index is greater or equal to the number of targets");
    }
 
 void TR_CallSite::tagcalltarget(TR_CallTarget *calltarget, TR_InlinerTracer *tracer, TR_InlinerFailureReason reason)
    {
-   int32_t i,j=0;
-   for(i=0; i<_numtargets; i++)
+   bool foundCallTarget = false;
+   for(int32_t i = 0; i < _mytargets.size(); i++)
       {
       if(_mytargets[i] == calltarget)
          {
          tagcalltarget(i,tracer,reason);
-         j=1;
+         foundCallTarget = true;
          break;
          }
 
       }
-   if(!j)
-      TR_ASSERT(0, "Call Target not found in CallSite when trying to remove it.\n");
-
+   TR_ASSERT(foundCallTarget, "Call Target not found in CallSite when trying to remove it.\n");
    }
 
 void TR_CallSite::removecalltarget(int32_t index, TR_InlinerTracer *tracer, TR_InlinerFailureReason reason)
@@ -5609,23 +5601,14 @@ void TR_CallSite::removecalltarget(int32_t index, TR_InlinerTracer *tracer, TR_I
          _callNode,_comp->getLineNumber(_callNode));
       }
 
-   _mytargets[index]->_failureReason=reason;
+   getTarget(index)->_failureReason = reason;
 
-   if(index >= _numtargets)
-      TR_ASSERT(0, "Index is greater or equal to the number of targets");
-   else
+   TR_ASSERT(index < _mytargets.size(), "Index is greater or equal to the number of targets");
+   if (index < _mytargets.size())
       {
       //for getting counters to work
-      _myRemovedTargets[_numRemovedTargets++] = _mytargets[index];
-
-      for(int32_t i=index; i<_numtargets; i++)
-         {
-         if(i+1 < _numtargets)
-            _mytargets[i]=_mytargets[i+1];
-         else
-            _mytargets[i]=0;
-         }
-      _numtargets--;
+      _myRemovedTargets.push_back(_mytargets[index]);
+      _mytargets.erase(_mytargets.begin() + index);
       }
 
    // don't need to worry too much about freeing memory as it is Stack Memory
@@ -5633,27 +5616,23 @@ void TR_CallSite::removecalltarget(int32_t index, TR_InlinerTracer *tracer, TR_I
 
 void TR_CallSite::removecalltarget(TR_CallTarget *calltarget, TR_InlinerTracer *tracer, TR_InlinerFailureReason reason)
    {
-   int32_t i,j=0;
-   for(i=0; i<_numtargets; i++)
+   bool foundCallTarget = false;
+   for(int32_t i = 0; i < _mytargets.size(); ++i)
       {
       if(_mytargets[i] == calltarget)
          {
          removecalltarget(i,tracer,reason);
-         j=1;
+         foundCallTarget = 1;
          break;
          }
-
       }
-   if(!j)
-      TR_ASSERT(0, "Call Target not found in CallSite when trying to remove it.\n");
-
+   TR_ASSERT(foundCallTarget, "Call Target not found in CallSite when trying to remove it.\n");
    }
 
 
 void TR_CallSite::removeTargets(TR_InlinerTracer *tracer, int index, TR_InlinerFailureReason reason)
    {
-   int num = _numtargets - index;
-   while(num-- > 0)
+   for (int num = _mytargets.size() - index; num > 0; --num)
       {
       removecalltarget(index,tracer,reason);
       }
@@ -5746,16 +5725,10 @@ TR_CallSite::TR_CallSite(TR_ResolvedMethod *callerResolvedMethod,
    _forceInline(false),
    _isBackEdge(false),
    _allConsts(allConsts),
-   _mytargets(comp->allocator()),
-   _myRemovedTargets(comp->allocator()),
+   _mytargets(0, comp->allocator()),
+   _myRemovedTargets(0, comp->allocator()),
    _ecsPrexArgInfo(0)
    {
-   _numtargets=0;
-   _numRemovedTargets=0;
-
-   _mytargets.ShrinkTo(0);
-   _myRemovedTargets.ShrinkTo(0);
-
    _visitCount=0;
    _failureReason=InlineableTarget;
    _byteCodeIndex = bcInfo.getByteCodeIndex();
@@ -5793,13 +5766,13 @@ TR_CallSite::addTarget(TR_Memory* mem, TR_InlinerBase *inliner, TR_VirtualGuardS
 
    TR_CallTarget *result = new (mem,allocKind) TR_CallTarget(this,_initialCalleeSymbol,implementer,guard,receiverClass,myPrexArgInfo,ratio);
 
-   _mytargets[_numtargets++] = result;
+   addTarget(result);
 
    if(inliner->tracer()->heuristicLevel())
       {
       char name[1024];
       heuristicTrace(inliner->tracer(),"Creating a call target %p for callsite %p using a %s and %s .  Signature %s",
-         _mytargets[_numtargets-1],this,inliner->tracer()->getGuardKindString(guard),inliner->tracer()->getGuardTypeString(guard),
+         result,this,inliner->tracer()->getGuardKindString(guard),inliner->tracer()->getGuardTypeString(guard),
          _comp->fe()->sampleSignature(implementer->getPersistentIdentifier(), name, 1024, _comp->trMemory()));
       }
 
@@ -6100,7 +6073,7 @@ TR_InlinerTracer::dumpCallSite(TR_CallSite *callsite, const char *fmt, ...)
       traceMsg(comp(), "\t_isIndirectCall = %d",callsite->_isIndirectCall);
       traceMsg(comp(), "\n\t_isInterface = %d",callsite->_isInterface);
 
-      traceMsg(comp(), "\t_numtargets = %d",callsite->_numtargets);
+      traceMsg(comp(), "\tnumtargets() = %d",callsite->numTargets());
 
       traceMsg(comp(), "\t failureReason = %d %s\n",callsite->_failureReason,getFailureReasonString(callsite->_failureReason));
 
@@ -6119,10 +6092,10 @@ TR_InlinerTracer::dumpCallSite(TR_CallSite *callsite, const char *fmt, ...)
       if(callsite->_initialCalleeSymbol)
          traceMsg(comp(), "\t initial CALLEE signature from initial symbol = %s\n",callsite->_initialCalleeSymbol->signature(trMemory()));
 
-      for(int32_t i=0; i<callsite->_numtargets; i++)
+      for(int32_t i=0; i<callsite->numTargets(); i++)
          dumpCallTarget(callsite->getTarget(i), "Call Target %d",i);
 
-      for(int32_t i=0; i<callsite->_numRemovedTargets; i++)
+      for(int32_t i=0; i<callsite->numRemovedTargets(); i++)
          dumpCallTarget(callsite->getRemovedTarget(i), "Dead Target %d", i);
 
       traceMsg(comp(),"\n");

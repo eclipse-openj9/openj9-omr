@@ -28,12 +28,12 @@
 #include <stddef.h>                            // for NULL
 #include <stdint.h>                            // for int32_t
 #include "compile/Compilation.hpp"             // for Compilation
-#include "cs2/arrayof.h"                       // for ArrayOf
 #include "env/TRMemory.hpp"                    // for TR_Memory, etc
 #include "env/jittypes.h"
 #include "il/Node.hpp"                         // for vcount_t
 #include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
 #include "infra/Assert.hpp"                    // for TR_ASSERT
+#include "infra/deque.hpp"
 #include "infra/Link.hpp"                      // for TR_LinkHead, TR_Link
 #include "infra/List.hpp"                      // for List, etc
 #include "optimizer/InlinerFailureReason.hpp"
@@ -282,10 +282,8 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
          _isBackEdge (other._isBackEdge),
          _isIndirectCall (other._isIndirectCall),
          _isInterface (other._isInterface),
-         _myRemovedTargets (other._comp->allocator()),
-         _mytargets (other._comp->allocator()),
-         _numRemovedTargets (0),
-         _numtargets (0),
+         _mytargets (0, other._comp->allocator()),
+         _myRemovedTargets(0, other._comp->allocator()),
          _parent (other._parent),
          _receiverClass (other._receiverClass),
          _stmtNo (other._stmtNo),
@@ -294,8 +292,6 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
          _vftSlot (other._vftSlot),
          _visitCount (other._visitCount)
          {
-         _mytargets.ShrinkTo(0);
-         _myRemovedTargets.ShrinkTo(0);
          }
 
       TR_InlinerFailureReason getCallSiteFailureReason() { return _failureReason; }
@@ -305,8 +301,8 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       void                    setIsBackEdge()            {  _isBackEdge = true; }
       bool                    isIndirectCall()           { return _isIndirectCall; }
       bool                    isInterface()              { return _isInterface; }
-      int32_t                 numTargets()               { return _numtargets; }
-      int32_t                 numRemovedTargets()        { return _numRemovedTargets; }
+      int32_t                 numTargets()               { return _mytargets.size(); }
+      int32_t                 numRemovedTargets()        { return _myRemovedTargets.size(); }
 
       bool                    isForceInline()            { return _forceInline; }
 
@@ -318,13 +314,13 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       void                    removeTargets(TR_InlinerTracer *tracer, int index, TR_InlinerFailureReason reason);
       TR_CallTarget *         getTarget(int32_t i)
          {
-         TR_ASSERT(i>=0 && i<_numtargets, "indexing a target out of range.");
+         TR_ASSERT(i>=0 && i<_mytargets.size(), "indexing a target out of range.");
          return _mytargets[i];
          }
 
      void                     setTarget(int32_t i, TR_CallTarget * ct)
          {
-         TR_ASSERT(i>=0 && i<_numtargets, "indexing a target out of range.");
+         TR_ASSERT(i>=0 && i<_mytargets.size(), "indexing a target out of range.");
          _mytargets[i] = ct;
          }
 
@@ -332,25 +328,16 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       bool                    addTarget0(TR_Memory*, TR_InlinerTracer *, TR_VirtualGuardSelection *, TR_ResolvedMethod *, TR_OpaqueClassBlock *,TR_AllocationKind allocKind=stackAlloc,float ratio=1.0);
       void                    addTarget(TR_CallTarget *target)
          {
-         _mytargets[_numtargets++] = target;
+         _mytargets.push_back(target);
          }
       void                    addTargetToFront(TR_CallTarget *target)
          {
-         int i;
-         TR_CallTarget *toInsert = target;
-         TR_CallTarget *tmp;
-         for (i=0; i<_numtargets; i++)
-            {
-            tmp = _mytargets[i];
-            _mytargets[i] = toInsert;
-            toInsert = tmp;
-            }
-         _mytargets[_numtargets++] = toInsert;
+         _mytargets.push_front(target);
          }
 
       TR_CallTarget *         getRemovedTarget(int32_t i)
          {
-         TR_ASSERT(i>=0 && i<_numRemovedTargets, "indexing a target out of range.");
+         TR_ASSERT( i >= 0 && i<_myRemovedTargets.size(), "indexing a target out of range.");
          return _myRemovedTargets[i];
          }
 
@@ -416,10 +403,8 @@ struct TR_CallSite : public TR_Link<TR_CallSite>
       TR_FrontEnd* fe()                   {return _comp->fe(); }
 
    private:
-      int32_t                      _numtargets;
-      CS2::ArrayOf<TR_CallTarget *, TR::Allocator> _mytargets;
-      CS2::ArrayOf<TR_CallTarget *, TR::Allocator> _myRemovedTargets;
-      int32_t                      _numRemovedTargets;
+      TR::deque<TR_CallTarget *> _mytargets;
+      TR::deque<TR_CallTarget *> _myRemovedTargets;
 
       //Partial Inlining Stuff
    public:

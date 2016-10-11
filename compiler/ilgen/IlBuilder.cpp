@@ -55,6 +55,7 @@
 #define REPLAY_VALUE(v)      ((v)->getSymbol()->getAutoSymbol()->getName())
 #define REPLAY_TYPE(t)       ((t)->getName())
 #define REPLAY_BUILDER(b)    ((b)->getName())
+#define REPLAY_BOOL(b)       ( b? "true" : "false")
 
 
 // IlBuilder is a class designed to help build Testarossa IL quickly without
@@ -516,7 +517,6 @@ IlBuilder::appendBlock(TR::Block *newBlock, bool addEdge)
    _currentBlock = newBlock;
    }
 
-
 void
 IlBuilder::AppendBuilder(TR::IlBuilder *builder)
    {
@@ -538,7 +538,6 @@ IlBuilder::AppendBuilder(TR::IlBuilder *builder)
    appendNoFallThroughBlock();
    cfg()->addEdge(builder->getExit(), _currentBlock);
    }
-
 
 TR::Node *
 IlBuilder::loadValue(TR::IlValue *v)
@@ -935,10 +934,10 @@ IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
       *leftPtr = TR::Node::create(TR::vsplats, 1, left);
    }
 
-TR::IlValue *
-IlBuilder::binaryOpFromNodes(TR::ILOpCodes op,
+TR::Node*
+IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                              TR::Node *leftNode,
-                             TR::Node *rightNode)
+                             TR::Node *rightNode) 
    {
    TR::DataTypes leftType = leftNode->getDataType();
    TR::DataTypes rightType = rightNode->getDataType();
@@ -954,13 +953,20 @@ IlBuilder::binaryOpFromNodes(TR::ILOpCodes op,
       leftNode = rightNode;
       rightNode = save;
       }
+   
+   return TR::Node::create(op, 2, leftNode, rightNode);
+   }
 
-   TR::Node *result = TR::Node::create(op, 2, leftNode, rightNode);
-
+TR::IlValue *
+IlBuilder::binaryOpFromNodes(TR::ILOpCodes op,
+                             TR::Node *leftNode,
+                             TR::Node *rightNode) 
+   {
+   TR::Node *result = binaryOpNodeFromNodes(op, leftNode, rightNode);
    TR::IlValue *returnValue = newValue(result->getDataType());
    storeNode(returnValue, result);
    return returnValue;
-   }
+   } 
 
 TR::IlValue *
 IlBuilder::binaryOpFromOpMap(OpCodeMapper mapOp,
@@ -1076,6 +1082,107 @@ IlBuilder::Add(TR::IlValue *left, TR::IlValue *right)
    TraceIL("IlBuilder[ %p ]::%d is Add %d + %d\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->Add(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
+   }
+
+/*
+ * blockThrowsException:
+ * ....
+ * goto blockAfterExceptionHandler 
+ * Handler:
+ * ....
+ * goto blockAfterExceptionHandler 
+ * blockAfterExceptionHandler:
+ */
+void
+IlBuilder::appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBuilder **handler, uint32_t catchType)
+   {
+   //split block after overflowCHK, and add an goto to blockAfterExceptionHandler
+   appendBlock();
+   TR::Block *blockWithGoto = _currentBlock;
+   TR::Node *gotoNode = TR::Node::create(NULL, TR::Goto);
+   genTreeTop(gotoNode);
+   _currentBlock = NULL;
+   _currentBlockNumber = -1;
+ 
+   //append handler, add exception edge and merge edge
+   *handler = createBuilderIfNeeded(*handler);
+   TR_ASSERT(*handler != NULL, "exception handler cannot be NULL\n");
+   (*handler)->_isHandler = true;
+   cfg()->addExceptionEdge(blockThrowsException, (*handler)->getEntry());
+   AppendBuilder(*handler);
+   (*handler)->setHandlerInfo(catchType);
+
+   TR::Block *blockAfterExceptionHandler = _currentBlock;
+   TraceIL("blockAfterExceptionHandler block_%d, blockWithGoto block_%d \n", blockAfterExceptionHandler->getNumber(), blockWithGoto->getNumber());
+   gotoNode->setBranchDestination(blockAfterExceptionHandler->getEntry());
+   cfg()->addEdge(blockWithGoto, blockAfterExceptionHandler);
+   }
+
+void
+IlBuilder::setHandlerInfo(uint32_t catchType)
+   {
+   TR::Block *catchBlock = getEntry();
+   catchBlock->setIsCold();
+   catchBlock->setHandlerInfoWithOutBCInfo(catchType, comp()->getInlineDepth(), -1, _methodSymbol->getResolvedMethod(), comp());
+   }
+
+TR::Node*
+IlBuilder::genOverflowCHKTreeTop(TR::Node *operationNode)
+   {
+   TR::Node *overflowChkNode = TR::Node::createWithRoomForOneMore(TR::OverflowCHK, 3, symRefTab()->findOrCreateOverflowCheckSymbolRef(_methodSymbol), operationNode, operationNode->getFirstChild(), operationNode->getSecondChild());
+   overflowChkNode->setOverflowCHKInfo(operationNode->getOpCodeValue());
+   genTreeTop(overflowChkNode);
+   return overflowChkNode;
+   }
+
+TR::IlValue *
+IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   /*
+    * BB1:
+    *    overflowCHK
+    *       add
+    *          =>child1
+    *          =>child2
+    *    store
+    *       => add
+    * BB2:
+    *    goto BB3 
+    * Handler:
+    *    ...
+    * BB3:
+    *    continue
+    */
+   TR::IlValue *addValue = NULL;
+   TR::Node *addNode = NULL;
+
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::ILOpCodes op;
+   if (left->getSymbol()->getDataType() == TR::Address)
+      {
+      if (right->getSymbol()->getDataType() == TR::Int32)
+         op = TR::aiadd;
+      else if (right->getSymbol()->getDataType() == TR::Int64)
+         op = TR::aladd;
+      else
+         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
+      }
+   else op = addOpCode(leftNode->getDataType());
+   addNode = binaryOpNodeFromNodes(op, leftNode, rightNode);
+   TR::Node *overflowChkNode = genOverflowCHKTreeTop(addNode);
+
+   TR::Block *blockWithOverflowCHK = _currentBlock;
+   addValue = newValue(addNode->getDataType());
+   genTreeTop(TR::Node::createStore(addValue, addNode));
+
+   appendExceptionHandler(blockWithOverflowCHK, handler, TR::Block::CanCatchOverflowCheck);
+
+   TraceIL("IlBuilder[ %p ]::%d is AddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   //ILB_REPLAY("%s = %s->AddWithOverflow(%s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_BUILDER(*handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return addValue;
    }
 
 TR::IlValue *

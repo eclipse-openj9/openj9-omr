@@ -822,6 +822,17 @@ OMR::SymbolReferenceTable::findOrCreateDivCheckSymbolRef(TR::ResolvedMethodSymbo
    return findOrCreateRuntimeHelper(TR_divCheck, false, true, true);
    }
 
+/*
+ * The overflowCheck symbol reference is for use only aliasing set in OMR::SymbolReference::getUseonlyAliasesBV. 
+ * we want to make sure defs are not moved across the overflowCHK in case an exception is thrown and the 
+ * catch block might get stale values.
+ */
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateOverflowCheckSymbolRef(TR::ResolvedMethodSymbol *)
+   {
+   return findOrCreateRuntimeHelper(TR_overflowCheck, false, true, true);
+   }
+
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateArrayStoreExceptionSymbolRef(TR::ResolvedMethodSymbol *)
    {

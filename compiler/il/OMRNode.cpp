@@ -4673,7 +4673,19 @@ OMR::Node::setArrayComponentClassInNode(TR_OpaqueClassBlock *c)
    info->arrayComponentClass = c;
    }
 
+TR::ILOpCodes
+OMR::Node::setOverflowCHKInfo(TR::ILOpCodes op)
+   {
+   TR_ASSERT(self()->getOpCodeValue() == TR::OverflowCHK, "set OverflowCHK operation info for no OverflowCHK node");
+   return _unionBase._extension.getExtensionPtr()->setElem<TR::ILOpCodes>(3, op);
+   }
 
+TR::ILOpCodes
+OMR::Node::getOverflowCHKInfo()
+   {
+   TR_ASSERT(self()->getOpCodeValue() == TR::OverflowCHK, "get OverflowCHK operation info for no OverflowCHK node ");
+   return _unionBase._extension.getExtensionPtr()->getElem<TR::ILOpCodes>(3);
+   }
 
 bool
 OMR::Node::hasArrayStoreCheckInfo()

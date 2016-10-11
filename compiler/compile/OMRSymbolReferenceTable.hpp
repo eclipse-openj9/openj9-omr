@@ -275,6 +275,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateAThrowSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateCheckCastSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateDivCheckSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
+   TR::SymbolReference * findOrCreateOverflowCheckSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateInstanceOfSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
 
    // symbol

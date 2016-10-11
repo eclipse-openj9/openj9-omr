@@ -147,3 +147,12 @@ OMR::BytecodeBuilder::AddSuccessorBuilders(uint32_t numExits, ...)
       }
    va_end(exits);
    }
+
+void
+OMR::BytecodeBuilder::setHandlerInfo(uint32_t catchType)
+   {
+   TR::Block *catchBlock = getEntry();
+   catchBlock->setIsCold();
+   catchBlock->setHandlerInfo(catchType, comp()->getInlineDepth(), -1, _methodSymbol->getResolvedMethod(), comp());
+   }
+

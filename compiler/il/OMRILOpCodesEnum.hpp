@@ -658,6 +658,7 @@
    ResolveCHK, // Resolve check a static, field or method. child 1 is reference to be resolved. Symbolref indicates failure action/destination
    ResolveAndNULLCHK, // Resolve check a static, field or method and Null check the underlying pointer.  child 1 is reference to be resolved. Symbolref indicates failure action/destination
    DIVCHK,   // Divide by zero check. child 1 is the divide. Symbolref indicates failure action/destination
+   OverflowCHK, // Overflow check. child 1 is the operation node(add, mul, sub). Child 2 and child 3 are the operands. Symbolref indicates failure action/destination
    BNDCHK,    // Array bounds check, checks that child 1 > child 2 >= 0 (child 1 is bound, 2 is index). Symbolref indicates failure action/destination
    ArrayCopyBNDCHK, // Array copy bounds check, checks that child 1 >= child 2. Symbolref indicates failure action/destination
    BNDCHKwithSpineCHK,  // Array bounds check and spine check

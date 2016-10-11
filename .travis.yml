@@ -35,6 +35,9 @@ addons:
        - bison
        - gcc-multilib
        - g++-multilib
+       - clang-3.4
+       - libclang-3.4-dev
+       - llvm-3.4
 
 before_script:
   - ulimit -c unlimited
@@ -62,5 +65,5 @@ matrix:
 
 script:
   - make -f run_configure.mk OMRGLUE=./example/glue
-  - make && make test
+  - make && make test && ([ "$SPEC" != "linux_x86-64" ] || make lint)
 

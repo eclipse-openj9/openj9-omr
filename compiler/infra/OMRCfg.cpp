@@ -46,6 +46,7 @@
 #include "infra/Assert.hpp"                    // for TR_ASSERT
 #include "infra/Cfg.hpp"                       // for CFG
 #include "infra/CfgFrequencyCompletion.hpp"
+#include "infra/deque.hpp"
 #include "infra/Link.hpp"                      // for TR_LinkHead1
 #include "infra/List.hpp"                      // for ListIterator, List
 #include "infra/Stack.hpp"                     // for TR_Stack
@@ -1375,7 +1376,7 @@ class LoopInfo
 void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
    {
    int32_t numberOfBlocks = getNextNodeNumber();
-   CS2::ArrayOf<int32_t, TR::Allocator> seenIndex(numberOfBlocks, comp()->allocator());
+   TR::deque<int32_t> seenIndex(numberOfBlocks, comp()->allocator());
    CS2::ArrayOf<TR::Block *, TR::Allocator> stack(256, comp()->allocator());
    CS2::TableOf<LoopInfo, TR::Allocator> loops(8, comp()->allocator());
    int32_t i, j;

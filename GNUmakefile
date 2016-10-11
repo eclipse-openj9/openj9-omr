@@ -33,6 +33,7 @@ help:
 	@echo "all    Build OMR."
 	@echo "clean  Clean OMR build artifacts."
 	@echo "test   Run functional verification tests."
+	@echo "lint   Run the OMR linter."
 .PHONY: help
 
 ###
@@ -261,6 +262,10 @@ clean: $(targets_clean) hook_definition_sentinel_clean
 $(targets_clean)::
 	$(MAKE) -C $(patsubst %_clean,%,$@) clean
 .PHONY: $(targets_clean)
+
+lint:
+	$(MAKE) -C fvtest/compilertest -f linter.mk
+.PHONY: lint
 
 test:
 ifeq (yes,$(ENABLE_FVTEST))

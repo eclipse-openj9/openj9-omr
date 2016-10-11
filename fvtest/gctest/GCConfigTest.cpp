@@ -20,6 +20,7 @@
 #include "EnvironmentBase.hpp"
 #include "EnvironmentLanguageInterface.hpp"
 #include "GCConfigTest.hpp"
+#include "ObjectAllocationModel.hpp"
 #include "ObjectModel.hpp"
 #include "omrExampleVM.hpp"
 #include "omrgc.h"
@@ -281,16 +282,29 @@ GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 	ObjectEntry objEntry;
 	objEntry.numOfRef = 0;
 	objEntry.name = objName;
-	objEntry.objPtr = OMR_GC_AllocateNoGC(exampleVM->_omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, size, 0);
+	objEntry.objPtr = NULL;
+
+	uint8_t objectAllocationModelSpace[sizeof(MM_ObjectAllocationModel)];
+	MM_ObjectAllocationModel *noGc = new(objectAllocationModelSpace)
+			MM_ObjectAllocationModel(env, size, MM_ObjectAllocationModel::selectObjectAllocationFlags(false, false, false, true));
+	objEntry.objPtr = OMR_GC_AllocateObject(exampleVM->_omrVMThread, noGc);
 
 	if (NULL == objEntry.objPtr) {
 		gcTestEnv->log("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
-		objEntry.objPtr = OMR_GC_Allocate(exampleVM->_omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, size, 0);
+		MM_ObjectAllocationModel *withGc = new(objectAllocationModelSpace)
+				MM_ObjectAllocationModel(env, size, MM_ObjectAllocationModel::selectObjectAllocationFlags(false, false, false, false));
+		objEntry.objPtr = OMR_GC_AllocateObject(exampleVM->_omrVMThread, withGc);
 	}
 
 	ObjectEntry *newEntry = NULL;
 	if (NULL != objEntry.objPtr) {
-		gcTestEnv->log(LEVEL_VERBOSE, "Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, env->getExtensions()->objectModel.getConsumedSizeInBytesWithHeader(objEntry.objPtr));
+		uintptr_t consumedSize = env->getExtensions()->objectModel.getConsumedSizeInBytesWithHeader(objEntry.objPtr);
+		uintptr_t adjustedSize = env->getExtensions()->objectModel.adjustSizeInBytes(size);
+		if (consumedSize == adjustedSize) {
+			gcTestEnv->log(LEVEL_VERBOSE, "Allocate object name: %s(%p[0x%llx])\n", objEntry.name, objEntry.objPtr, consumedSize);
+		} else {
+			gcTestEnv->log(LEVEL_ERROR, "Consumed size for allocated object name: %s(%p[0x%llx]) != adjusted request size [0x%llx].\n", objEntry.name, objEntry.objPtr, consumedSize, adjustedSize);
+		}
 		newEntry = add(&objEntry);
 	} else {
 		gcTestEnv->log(LEVEL_ERROR, "%s:%d No free memory after a GC. Failed to allocate object %s of size 0x%llx.\n", __FILE__, __LINE__, objName, size);

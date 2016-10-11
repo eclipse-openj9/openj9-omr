@@ -21,6 +21,7 @@
 
 #include "omrcfg.h"
 #include "omrcomp.h"
+#include "omrgcconsts.h"
 
 #include "Base.hpp"
 #include "EnvironmentBase.hpp"
@@ -32,10 +33,6 @@
 #include "MemorySubSpace.hpp"
 #include "LargeObjectAllocateStats.hpp"
 #include "MemoryPool.hpp"
-
-#define NO_FRAGMENTATION 0
-#define MICRO_FRAGMENTATION 1
-#define MACRO_FRAGMENTATION 2
 
 /**
  * A collection of interesting statistics for the Heap.

@@ -111,7 +111,7 @@ public:
 				ObjectEntry *objectEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
 				while (NULL != objectEntry) {
 					if (_scavenger->isObjectInEvacuateMemory(objectEntry->objPtr)) {
-						MM_ForwardedHeader fwdHeader(objectEntry->objPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+						MM_ForwardedHeader fwdHeader(objectEntry->objPtr);
 						if (fwdHeader.isForwardedPointer()) {
 							objectEntry->objPtr = fwdHeader.getForwardedObject();
 						} else {

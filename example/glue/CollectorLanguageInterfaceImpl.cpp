@@ -339,8 +339,8 @@ MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_Environme
 		omrobjectptr_t forwardedObject = forwardedHeader->getForwardedObject();
 
 		/* Restore the original object header from the forwarded object */
-		_extensions->objectModel.setObjectSize(originalObject, _extensions->objectModel.getSizeInBytesWithHeader(forwardedObject));
-		_extensions->objectModel.setFlags(originalObject, OMR_OBJECT_METADATA_FLAGS_MASK, OMR_OBJECT_FLAGS(forwardedObject));
+		GC_ObjectModel *objectModel = &(env->getExtensions()->objectModel);
+		objectModel->setObjectSizeAndFlags(originalObject, objectModel->getConsumedSizeInBytesWithHeader(forwardedObject), objectModel->getObjectFlags(forwardedObject));
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 		/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed
@@ -372,7 +372,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBa
 			void *topOfObject = (void *)((uintptr_t *)survivingCopyAddress + 1);
 			if (subSpaceNew->isObjectInNewSpace(survivingCopyAddress, topOfObject) || extensions->isOld(survivingCopyAddress, topOfObject)) {
 				/* if the slot points to a reverse-forwarded object, restore the original location (in evacuate space) */
-				MM_ForwardedHeader reverseForwardedHeader(survivingCopyAddress, OMR_OBJECT_METADATA_SLOT_OFFSET);
+				MM_ForwardedHeader reverseForwardedHeader(survivingCopyAddress);
 				if (reverseForwardedHeader.isReverseForwardedPointer()) {
 					/* overlapped slot must be fixed up */
 					fomrobject_t fixupSlot = 0;

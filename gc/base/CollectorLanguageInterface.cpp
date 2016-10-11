@@ -37,7 +37,7 @@ MM_CollectorLanguageInterface::writeBarrier(OMR_VMThread *omrThread, omrobjectpt
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->scavengerEnabled) {
 		if (extensions->isOld(parentObject) && !extensions->isOld(childObject)) {
-			if (extensions->objectModel.atomicSetRemembered(parentObject)) {
+			if (extensions->objectModel.atomicSetRememberedState(parentObject, STATE_REMEMBERED)) {
 				/* The object has been successfully marked as REMEMBERED - allocate an entry in the remembered set */
 				extensions->scavenger->addToRememberedSetFragment(env, parentObject);
 			}

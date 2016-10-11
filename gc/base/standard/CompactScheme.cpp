@@ -63,6 +63,9 @@
 #undef UT_MODULE_UNLOADED
 #include "ut_omrmm.h"
 
+#if !defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
+#define getConsumedSizeInBytesWithHeaderForMove getConsumedSizeInBytesWithHeader
+#endif /* !defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
 
 /**
  * Allocate and initialize a new instance of the receiver.
@@ -1228,7 +1231,9 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 		nobjects++;
 		nbytes += objectSizeAfterMove;
 
+#if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
 		_extensions->objectModel.preMove(env->getOmrVMThread(), objectPtr);
+#endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
 
 		if (evacuate) {
 			deadObjectSize -= objectSizeAfterMove;
@@ -1238,7 +1243,9 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 			memmove(deadObject, objectPtr, objectSize);
 		}
 
+#if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
 		_extensions->objectModel.postMove(env->getOmrVMThread(), deadObject);
+#endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
 
 		deadObject = (omrobjectptr_t)((uintptr_t)deadObject+objectSizeAfterMove);
 	}

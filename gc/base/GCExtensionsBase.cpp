@@ -76,7 +76,6 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 #else /* OMR_GC_MODRON_SCAVENGER */
 	configurationOptions._gcPolicy = gc_policy_optthruput;
 #endif /* OMR_GC_MODRON_SCAVENGER */
-
 #elif defined(OMR_GC_REALTIME)
 	configurationOptions._gcPolicy = gc_policy_metronome;
 #elif defined(OMR_GC_VLHGC)

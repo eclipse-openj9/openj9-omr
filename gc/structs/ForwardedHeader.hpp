@@ -67,7 +67,7 @@ private:
 
 	omrobjectptr_t _objectPtr;					/**< the object on which to act */
 	MutableHeaderFields _preserved; 			/**< a backup copy of the header fields which may be modified by this class */
-	const uintptr_t _forwardingSlotOffset;		/**< uintptr_t offset from _objectPtr to uintptr_t slot that will hold the forwarding pointer */
+	const uintptr_t _forwardingSlotOffset;		/**< fomrobject_t offset from _objectPtr to fomrobject_t slot that will hold the forwarding pointer */
 	static const uintptr_t _forwardedTag = 2;	/**< bit mask used to mark forwarding slot value as forwarding pointer */
 
 /*
@@ -224,10 +224,11 @@ public:
 	 * @param[in] objectPtr pointer to the object, which may or may not have been forwarded
 	 * @param[in] forwardingSlotOffset fomrobject_t offset to uintptr_t size slot that will hold the forwarding pointer
 	 */
-	MM_ForwardedHeader(omrobjectptr_t objectPtr, uintptr_t forwardingSlotOffset)
+	MM_ForwardedHeader(omrobjectptr_t objectPtr)
 	: _objectPtr(objectPtr)
-	, _forwardingSlotOffset(forwardingSlotOffset)
+	, _forwardingSlotOffset(0)
 	{
+		/* TODO: Fix the constraint that the object header/forwarding slot offset must be zero. */
 		volatile MutableHeaderFields* originalHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
 		*(uintptr_t *)&_preserved.slot = *((uintptr_t *)&originalHeader->slot);
 	}

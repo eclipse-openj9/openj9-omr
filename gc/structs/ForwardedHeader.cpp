@@ -70,7 +70,7 @@ MM_ForwardedHeader::setForwardedObject(omrobjectptr_t destinationObjectPtr)
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 
 	if (MM_AtomicOperations::lockCompareExchange((volatile uintptr_t*)&objectHeader->slot, oldValue, newValue) != oldValue) {
-		MM_ForwardedHeader forwardedObject(_objectPtr, _forwardingSlotOffset);
+		MM_ForwardedHeader forwardedObject(_objectPtr);
 		ForwardedHeaderAssert(forwardedObject.isForwardedPointer());
 		destinationObjectPtr = forwardedObject.getForwardedObject();
 	}

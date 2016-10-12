@@ -714,7 +714,9 @@ bool TR_LocalAnalysisInfo::isCallLike(TR::Node *node) {
 
    if (node->getOpCode().hasSymbolReference())
       {
-      if (node->getSymbolReference()->getSymbol()->isVolatile() || node->getSymbolReference()->getSymbol()->isMethodMetaData())
+      if (node->getSymbolReference()->getSymbol()->isVolatile() || 
+          (node->getSymbolReference()->getSymbol()->isMethodMetaData() &&
+           !node->getSymbolReference()->getSymbol()->isImmutableField()))
          return true;
 
       if (node->getSymbolReference()->isSideEffectInfo() ||

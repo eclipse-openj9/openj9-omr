@@ -522,7 +522,8 @@ int32_t TR_PartialRedundancy::perform()
               !(nextOptimalNode->getOpCodeValue() == TR::treetop))
             {
             if (nextOptimalNode->getOpCode().isLoadVarDirect() &&
-                !nextOptimalNode->getSymbol()->isStatic())
+                !nextOptimalNode->getSymbol()->isStatic() &&
+                !nextOptimalNode->getSymbol()->isMethodMetaData())
                {
                TR::SymbolReference *optimalSymRef = nextOptimalNode->getSymbolReference();
                _newSymbols[nextOptimalComputation] = optimalSymRef->getSymbol();
@@ -530,7 +531,7 @@ int32_t TR_PartialRedundancy::perform()
                _newSymbolReferences[nextOptimalComputation] = optimalSymRef;
                }
             else if ((nextOptimalNode->getOpCode().isLoadVarDirect() &&
-                      nextOptimalNode->getSymbol()->isStatic()) ||
+                      (nextOptimalNode->getSymbol()->isStatic() || nextOptimalNode->getSymbol()->isMethodMetaData())) ||
                      !isNodeAnImplicitNoOp(nextOptimalNode))
                {
                if (trace())
@@ -935,7 +936,8 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
       TR::Node *nextOptimalNode = (*supportedNodesAsArray)[nextOptimalComputation];
       if (
           (nextOptimalNode->getOpCode().isLoadVarDirect() &&
-           !nextOptimalNode->getSymbol()->isStatic())
+           !nextOptimalNode->getSymbol()->isStatic() &&
+           !nextOptimalNode->getSymbol()->isMethodMetaData())
             ||
           (ignoreNode(nextOptimalNode))
           )
@@ -2014,7 +2016,8 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
       // then there is nothing to do
       //
       if ((node->getOpCode().isLoadVarDirect() &&
-          !node->getSymbol()->isStatic())
+          !node->getSymbol()->isStatic() &&
+          !node->getSymbol()->isMethodMetaData())
             ||
           (ignoreNode(node))
           )
@@ -2162,7 +2165,7 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
 
    if (isSupportedOpCode(node, parent) &&
        (!(opCode.isLoadVarDirect() &&
-          !node->getSymbol()->isStatic())) &&
+          !node->getSymbol()->isStatic() && !node->getSymbol()->isMethodMetaData())) &&
        (!isNodeAnImplicitNoOp(node)))
       {
       if (trace())

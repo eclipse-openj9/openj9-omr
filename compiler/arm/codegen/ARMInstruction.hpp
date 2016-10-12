@@ -32,9 +32,9 @@
 
 class TR_VirtualGuardSite;
 
-class TR_ARMDepImmInstruction;
-class TR_ARMImmInstruction;
-class TR_ARMConditionalBranchInstruction;
+namespace TR { class ARMDepImmInstruction; }
+namespace TR { class ARMImmInstruction; }
+namespace TR { class ARMConditionalBranchInstruction; }
 
 #define ARM_INSTRUCTION_LENGTH 4
 
@@ -93,7 +93,9 @@ inline bool isSinglePrecision(TR::RealRegister::RegNum registerNumber)
 #endif
    }
 
-class TR_ARMImmInstruction : public TR::Instruction
+namespace TR {
+
+class ARMImmInstruction : public TR::Instruction
    {
    uint32_t _sourceImmediate;
    TR_ExternalRelocationTargetKind _reloKind;
@@ -101,81 +103,81 @@ class TR_ARMImmInstruction : public TR::Instruction
 
    public:
 
-   TR_ARMImmInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMImmInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
 
-   TR_ARMImmInstruction(TR_ARMOpCodes op, TR::Node *node, uint32_t imm, TR::CodeGenerator *cg)
+   ARMImmInstruction(TR_ARMOpCodes op, TR::Node *node, uint32_t imm, TR::CodeGenerator *cg)
       : TR::Instruction(node, cg), _sourceImmediate(imm), _reloKind(TR_NoRelocation), _symbolReference(NULL)
       {
       setOpCodeValue(op);
       }
 
-   TR_ARMImmInstruction(TR_ARMOpCodes                       op,
-                        TR::Node                            *node,
-                        TR::RegisterDependencyConditions *cond,
-                        uint32_t                            imm,
-                        TR::CodeGenerator                   *cg)
+   ARMImmInstruction(TR_ARMOpCodes                       op,
+                     TR::Node                            *node,
+                     TR::RegisterDependencyConditions *cond,
+                     uint32_t                            imm,
+                     TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _sourceImmediate(imm), _reloKind(TR_NoRelocation), _symbolReference(NULL)
       {
       }
 
-   TR_ARMImmInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        uint32_t          imm,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     uint32_t          imm,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _sourceImmediate(imm), _reloKind(TR_NoRelocation), _symbolReference(NULL)
       {
       }
 
-   TR_ARMImmInstruction(TR::Instruction                     *precedingInstruction,
-                        TR_ARMOpCodes                       op,
-                        TR::Node                            *node,
-                        TR::RegisterDependencyConditions *cond,
-                        uint32_t                            imm,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR::Instruction                     *precedingInstruction,
+                     TR_ARMOpCodes                       op,
+                     TR::Node                            *node,
+                     TR::RegisterDependencyConditions *cond,
+                     uint32_t                            imm,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cond, cg), _sourceImmediate(imm), _reloKind(TR_NoRelocation), _symbolReference(NULL)
       {
       }
 
-   TR_ARMImmInstruction(TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        uint32_t          imm,
-                        TR_ExternalRelocationTargetKind relocationKind,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     uint32_t          imm,
+                     TR_ExternalRelocationTargetKind relocationKind,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
       {
       setNeedsAOTRelocation(true);
       }
 
-   TR_ARMImmInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        uint32_t          imm,
-                        TR_ExternalRelocationTargetKind relocationKind,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     uint32_t          imm,
+                     TR_ExternalRelocationTargetKind relocationKind,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(NULL)
       {
       setNeedsAOTRelocation(true);
       }
 
-   TR_ARMImmInstruction(TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        uint32_t          imm,
-                        TR_ExternalRelocationTargetKind relocationKind,
-                        TR::SymbolReference *sr,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     uint32_t          imm,
+                     TR_ExternalRelocationTargetKind relocationKind,
+                     TR::SymbolReference *sr,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
       {
       setNeedsAOTRelocation(true);
       }
 
-   TR_ARMImmInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        uint32_t          imm,
-                        TR_ExternalRelocationTargetKind relocationKind,
-                        TR::SymbolReference *sr,
-                        TR::CodeGenerator *cg)
+   ARMImmInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     uint32_t          imm,
+                     TR_ExternalRelocationTargetKind relocationKind,
+                     TR::SymbolReference *sr,
+                     TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _sourceImmediate(imm), _reloKind(relocationKind), _symbolReference(sr)
       {
       setNeedsAOTRelocation(true);
@@ -205,12 +207,12 @@ class TR_ARMImmInstruction : public TR::Instruction
 // The following safe virtual downcast method is used under debug only
 // for assertion checking
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-   virtual TR_ARMImmInstruction *getARMImmInstruction();
+   virtual TR::ARMImmInstruction *getARMImmInstruction();
 #endif
    };
 
 
-class TR_ARMLabelInstruction : public TR::Instruction
+class ARMLabelInstruction : public TR::Instruction
    {
    TR::LabelSymbol *_symbol;
    TR::Register    *_t1reg;
@@ -218,11 +220,11 @@ class TR_ARMLabelInstruction : public TR::Instruction
 
    public:
 
-   TR_ARMLabelInstruction(TR::Node *node, TR::CodeGenerator *cg)
+   ARMLabelInstruction(TR::Node *node, TR::CodeGenerator *cg)
       : TR::Instruction(node, cg), _symbol(NULL), _t1reg(NULL), _s1reg(NULL) {}
 
-   TR_ARMLabelInstruction(TR_ARMOpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::CodeGenerator *cg,
-                          TR::Register *t1reg = NULL, TR::Register *s1reg = NULL)
+   ARMLabelInstruction(TR_ARMOpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::CodeGenerator *cg,
+                       TR::Register *t1reg = NULL, TR::Register *s1reg = NULL)
       : TR::Instruction(node, cg), _symbol(sym), _t1reg(t1reg), _s1reg(s1reg)
       {
       setOpCodeValue(op);
@@ -232,24 +234,24 @@ class TR_ARMLabelInstruction : public TR::Instruction
          sym->setInstruction(this);
       }
 
-   TR_ARMLabelInstruction(TR_ARMOpCodes                       op,
-                          TR::Node                            *node,
-                          TR::RegisterDependencyConditions *cond,
-                          TR::LabelSymbol                     *sym,
-                          TR::CodeGenerator                   *cg)
+   ARMLabelInstruction(TR_ARMOpCodes                       op,
+                       TR::Node                            *node,
+                       TR::RegisterDependencyConditions *cond,
+                       TR::LabelSymbol                     *sym,
+                       TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
       if (sym!=NULL && op==ARMOp_label)
          sym->setInstruction(this);
       }
 
-   TR_ARMLabelInstruction(TR::Instruction   *precedingInstruction,
-                          TR_ARMOpCodes     op,
-                          TR::Node          *node,
-                          TR::LabelSymbol   *sym,
-                          TR::CodeGenerator *cg,
-                          TR::Register      *t1reg = NULL,
-                          TR::Register      *s1reg = NULL)
+   ARMLabelInstruction(TR::Instruction   *precedingInstruction,
+                       TR_ARMOpCodes     op,
+                       TR::Node          *node,
+                       TR::LabelSymbol   *sym,
+                       TR::CodeGenerator *cg,
+                       TR::Register      *t1reg = NULL,
+                       TR::Register      *s1reg = NULL)
       : TR::Instruction(precedingInstruction, op, node, cg), _symbol(sym), _t1reg(t1reg), _s1reg(s1reg)
       {
       if (t1reg) t1reg->incTotalUseCount();
@@ -258,12 +260,12 @@ class TR_ARMLabelInstruction : public TR::Instruction
          sym->setInstruction(this);
       }
 
-   TR_ARMLabelInstruction(TR::Instruction                     *precedingInstruction,
-                          TR_ARMOpCodes                       op,
-                          TR::Node                            *node,
-                          TR::RegisterDependencyConditions *cond,
-                          TR::LabelSymbol                     *sym,
-                          TR::CodeGenerator                   *cg)
+   ARMLabelInstruction(TR::Instruction                     *precedingInstruction,
+                       TR_ARMOpCodes                       op,
+                       TR::Node                            *node,
+                       TR::RegisterDependencyConditions *cond,
+                       TR::LabelSymbol                     *sym,
+                       TR::CodeGenerator                   *cg)
       : TR::Instruction(precedingInstruction, op, node, cond, cg), _symbol(sym), _t1reg(NULL), _s1reg(NULL)
       {
       if (sym!=NULL && op==ARMOp_label)
@@ -299,68 +301,68 @@ class TR_ARMLabelInstruction : public TR::Instruction
    };
 
 
-class TR_ARMConditionalBranchInstruction : public TR_ARMLabelInstruction
+class ARMConditionalBranchInstruction : public TR::ARMLabelInstruction
    {
    int32_t             _estimatedBinaryLocation;
    bool                _farRelocation;
 
    public:
 
-   TR_ARMConditionalBranchInstruction(TR::Node *node, TR::CodeGenerator *cg)
-      : TR_ARMLabelInstruction(node, cg),
+   ARMConditionalBranchInstruction(TR::Node *node, TR::CodeGenerator *cg)
+      : TR::ARMLabelInstruction(node, cg),
         _estimatedBinaryLocation(0),
         _farRelocation(false)
       {
       setConditionCode(ARMConditionCodeIllegal);
       }
 
-   TR_ARMConditionalBranchInstruction(TR_ARMOpCodes        op,
-                                      TR::Node             *node,
-                                      TR::LabelSymbol      *sym,
-                                      TR_ARMConditionCode  cc,
-                                      TR::CodeGenerator    *cg)
-      : TR_ARMLabelInstruction(op, node, sym, cg),
+   ARMConditionalBranchInstruction(TR_ARMOpCodes        op,
+                                   TR::Node             *node,
+                                   TR::LabelSymbol      *sym,
+                                   TR_ARMConditionCode  cc,
+                                   TR::CodeGenerator    *cg)
+      : TR::ARMLabelInstruction(op, node, sym, cg),
         _estimatedBinaryLocation(0),
         _farRelocation(false)
       {
       setConditionCode(cc);
       }
 
-   TR_ARMConditionalBranchInstruction(TR_ARMOpCodes                       op,
-                                      TR::Node                            *node,
-                                      TR::RegisterDependencyConditions *cond,
-                                      TR::LabelSymbol                     *sym,
-                                      TR_ARMConditionCode                 cc,
-                                      TR::CodeGenerator                   *cg)
-      : TR_ARMLabelInstruction(op, node, cond, sym, cg),
+   ARMConditionalBranchInstruction(TR_ARMOpCodes                       op,
+                                   TR::Node                            *node,
+                                   TR::RegisterDependencyConditions *cond,
+                                   TR::LabelSymbol                     *sym,
+                                   TR_ARMConditionCode                 cc,
+                                   TR::CodeGenerator                   *cg)
+      : TR::ARMLabelInstruction(op, node, cond, sym, cg),
         _estimatedBinaryLocation(0),
         _farRelocation(false)
       {
       setConditionCode(cc);
       }
 
-   TR_ARMConditionalBranchInstruction(TR::Instruction      *precedingInstruction,
-                                      TR_ARMOpCodes        op,
-                                      TR::Node             *node,
-                                      TR::LabelSymbol      *sym,
-                                      TR_ARMConditionCode  cc,
-                                      TR::CodeGenerator    *cg)
+   ARMConditionalBranchInstruction(TR::Instruction      *precedingInstruction,
+                                   TR_ARMOpCodes        op,
+                                   TR::Node             *node,
+                                   TR::LabelSymbol      *sym,
+                                   TR_ARMConditionCode  cc,
+                                   TR::CodeGenerator    *cg)
 
-      : TR_ARMLabelInstruction(precedingInstruction, op, node, sym, cg),
+      : TR::ARMLabelInstruction(precedingInstruction, op, node, sym, cg),
         _estimatedBinaryLocation(0),
         _farRelocation(false)
       {
       setConditionCode(cc);
       }
 
-   TR_ARMConditionalBranchInstruction(TR::Instruction                     *precedingInstruction,
-                                      TR_ARMOpCodes                       op,
-                                      TR::Node                            *node,
-                                      TR::RegisterDependencyConditions *cond,
-                                      TR::LabelSymbol                     *sym,
-                                      TR_ARMConditionCode                 cc,
-                                      TR::CodeGenerator                   *cg)
-      : TR_ARMLabelInstruction(precedingInstruction, op, node, cond, sym, cg),
+   ARMConditionalBranchInstruction(TR::Instruction                     *precedingInstruction,
+                                   TR_ARMOpCodes                       op,
+                                   TR::Node                            *node,
+                                   TR::RegisterDependencyConditions *cond,
+                                   TR::LabelSymbol                     *sym,
+                                   TR_ARMConditionCode                 cc,
+                                   TR::CodeGenerator                   *cg)
+      : TR::ARMLabelInstruction(precedingInstruction, op, node, cond, sym, cg),
         _estimatedBinaryLocation(0),
         _farRelocation(false)
       {
@@ -377,7 +379,7 @@ class TR_ARMConditionalBranchInstruction : public TR_ARMLabelInstruction
    bool getFarRelocation() {return _farRelocation;}
    bool setFarRelocation(bool b) {return (_farRelocation = b);}
 
-   virtual TR_ARMConditionalBranchInstruction *getARMConditionalBranchInstruction();
+   virtual TR::ARMConditionalBranchInstruction *getARMConditionalBranchInstruction();
 
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
@@ -393,30 +395,30 @@ class TR_ARMConditionalBranchInstruction : public TR_ARMLabelInstruction
    };
 
 #ifdef J9_PROJECT_SPECIFIC
-class TR_ARMVirtualGuardNOPInstruction : public TR_ARMLabelInstruction
+class ARMVirtualGuardNOPInstruction : public TR::ARMLabelInstruction
    {
    private:
    TR_VirtualGuardSite     *_site;
 
    public:
 
-   TR_ARMVirtualGuardNOPInstruction(TR::Node                         *node,
-                                    TR_VirtualGuardSite              *site,
-                                    TR::RegisterDependencyConditions *cond,
-                                    TR::LabelSymbol                  *sym,
-                                    TR::CodeGenerator                *cg)
-      : TR_ARMLabelInstruction(ARMOp_vgdnop, node, cond, sym, cg),
+   ARMVirtualGuardNOPInstruction(TR::Node                         *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::CodeGenerator                *cg)
+      : TR::ARMLabelInstruction(ARMOp_vgdnop, node, cond, sym, cg),
         _site(site)
       {
       }
 
-   TR_ARMVirtualGuardNOPInstruction(TR::Node                         *node,
-                                    TR_VirtualGuardSite              *site,
-                                    TR::RegisterDependencyConditions *cond,
-                                    TR::LabelSymbol                  *sym,
-                                    TR::Instruction                *precedingInstruction,
-                                    TR::CodeGenerator                *cg)
-      : TR_ARMLabelInstruction(precedingInstruction, ARMOp_vgdnop, node, cond, sym, cg),
+   ARMVirtualGuardNOPInstruction(TR::Node                         *node,
+                                 TR_VirtualGuardSite              *site,
+                                 TR::RegisterDependencyConditions *cond,
+                                 TR::LabelSymbol                  *sym,
+                                 TR::Instruction                *precedingInstruction,
+                                 TR::CodeGenerator                *cg)
+      : TR::ARMLabelInstruction(precedingInstruction, ARMOp_vgdnop, node, cond, sym, cg),
         _site(site)
       {
       }
@@ -432,38 +434,38 @@ class TR_ARMVirtualGuardNOPInstruction : public TR_ARMLabelInstruction
    };
 #endif
 
-class TR_ARMAdminInstruction : public TR::Instruction
+class ARMAdminInstruction : public TR::Instruction
    {
    TR::Node *_fenceNode;
 
    public:
 
-   TR_ARMAdminInstruction(TR_ARMOpCodes     op,
-                          TR::Node          *node,
-                          TR::Node          *fenceNode,
-                          TR::CodeGenerator *cg)
+   ARMAdminInstruction(TR_ARMOpCodes     op,
+                       TR::Node          *node,
+                       TR::Node          *fenceNode,
+                       TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _fenceNode(fenceNode) {}
 
-   TR_ARMAdminInstruction(TR_ARMOpCodes                       op,
-                          TR::Node                            *node,
-                          TR::Node                            *fenceNode,
-                          TR::RegisterDependencyConditions *cond,
-                          TR::CodeGenerator                   *cg)
+   ARMAdminInstruction(TR_ARMOpCodes                       op,
+                       TR::Node                            *node,
+                       TR::Node                            *fenceNode,
+                       TR::RegisterDependencyConditions *cond,
+                       TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _fenceNode(fenceNode) {}
 
-   TR_ARMAdminInstruction(TR::Instruction   *precedingInstruction,
-                          TR_ARMOpCodes     op,
-                          TR::Node          *node,
-                          TR::Node          *fenceNode,
-                          TR::CodeGenerator *cg)
+   ARMAdminInstruction(TR::Instruction   *precedingInstruction,
+                       TR_ARMOpCodes     op,
+                       TR::Node          *node,
+                       TR::Node          *fenceNode,
+                       TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _fenceNode(fenceNode) {}
 
-   TR_ARMAdminInstruction(TR::Instruction                     *precedingInstruction,
-                          TR_ARMOpCodes                       op,
-                          TR::Node                            *node,
-                          TR::Node                            *fenceNode,
-                          TR::RegisterDependencyConditions *cond,
-                          TR::CodeGenerator                   *cg)
+   ARMAdminInstruction(TR::Instruction                     *precedingInstruction,
+                       TR_ARMOpCodes                       op,
+                       TR::Node                            *node,
+                       TR::Node                            *fenceNode,
+                       TR::RegisterDependencyConditions *cond,
+                       TR::CodeGenerator                   *cg)
       : TR::Instruction(precedingInstruction, op, node, cond, cg), _fenceNode(fenceNode) {}
 
    TR::Node *getFenceNode() { return _fenceNode; }
@@ -476,33 +478,33 @@ class TR_ARMAdminInstruction : public TR::Instruction
    };
 
 
-class TR_ARMImmSymInstruction : public TR_ARMImmInstruction
+class ARMImmSymInstruction : public TR::ARMImmInstruction
    {
    TR::SymbolReference *_symbolReference;
    TR::Snippet         *_snippet;
 
    public:
 
-   TR_ARMImmSymInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMImmInstruction(node, cg), _symbolReference(NULL), _snippet(NULL) {}
+   ARMImmSymInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMImmInstruction(node, cg), _symbolReference(NULL), _snippet(NULL) {}
 
-   TR_ARMImmSymInstruction(TR_ARMOpCodes                          op,
-                              TR::Node                            *node,
-                              uint32_t                            imm,
-                              TR::RegisterDependencyConditions *cond,
-                              TR::SymbolReference                 *sr,
-                              TR::CodeGenerator                   *cg,
-                              TR::Snippet                         *s=NULL,
-                              TR_ARMConditionCode                cc=ARMConditionCodeAL);
+   ARMImmSymInstruction(TR_ARMOpCodes                          op,
+                        TR::Node                            *node,
+                        uint32_t                            imm,
+                        TR::RegisterDependencyConditions *cond,
+                        TR::SymbolReference                 *sr,
+                        TR::CodeGenerator                   *cg,
+                        TR::Snippet                         *s=NULL,
+                        TR_ARMConditionCode                cc=ARMConditionCodeAL);
 
-   TR_ARMImmSymInstruction(TR::Instruction                        *precedingInstruction,
-                              TR_ARMOpCodes                       op,
-                              TR::Node                            *node,
-                              uint32_t                            imm,
-                              TR::RegisterDependencyConditions *cond,
-                              TR::SymbolReference                 *sr,
-                              TR::CodeGenerator                   *cg,
-                              TR::Snippet                         *s=NULL,
-                              TR_ARMConditionCode                cc=ARMConditionCodeAL);
+   ARMImmSymInstruction(TR::Instruction                        *precedingInstruction,
+                        TR_ARMOpCodes                       op,
+                        TR::Node                            *node,
+                        uint32_t                            imm,
+                        TR::RegisterDependencyConditions *cond,
+                        TR::SymbolReference                 *sr,
+                        TR::CodeGenerator                   *cg,
+                        TR::Snippet                         *s=NULL,
+                        TR_ARMConditionCode                cc=ARMConditionCodeAL);
 
    virtual Kind getKind() { return IsImmSym; }
 
@@ -519,7 +521,7 @@ class TR_ARMImmSymInstruction : public TR_ARMImmInstruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
-class TR_ARMTrg1Src2Instruction : public TR::Instruction
+class ARMTrg1Src2Instruction : public TR::Instruction
    {
    TR::Register    *_target1Register;
    TR::Register    *_source1Register;
@@ -527,35 +529,35 @@ class TR_ARMTrg1Src2Instruction : public TR::Instruction
 
    public:
 
-   TR_ARMTrg1Src2Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMTrg1Src2Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
 
-   TR_ARMTrg1Src2Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _target1Register(0), _source1Register(0), _source2Operand(0)
       {
       }
 
-   TR_ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _target1Register(0), _source1Register(0), _source2Operand(0)
       {
       }
 
-   TR_ARMTrg1Src2Instruction(TR_ARMOpCodes                       op,
-                             TR::Node                            *node,
-                             TR::RegisterDependencyConditions *cond,
-                             TR::CodeGenerator                   *cg)
+   ARMTrg1Src2Instruction(TR_ARMOpCodes                       op,
+                          TR::Node                            *node,
+                          TR::RegisterDependencyConditions *cond,
+                          TR::CodeGenerator                   *cg)
       : TR::Instruction(op, node, cond, cg), _target1Register(0), _source1Register(0), _source2Operand(0)
       {
       }
 
-   TR_ARMTrg1Src2Instruction(TR_ARMOpCodes    op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *s1reg,
-                             TR_ARMOperand2   *s2op,
-                             TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR_ARMOpCodes    op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *s1reg,
+                          TR_ARMOperand2   *s2op,
+                          TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _target1Register(treg), _source1Register(s1reg), _source2Operand(s2op)
       {
       treg->incTotalUseCount();
@@ -563,13 +565,13 @@ class TR_ARMTrg1Src2Instruction : public TR::Instruction
       s2op->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *s1reg,
-                             TR_ARMOperand2   *s2op,
-                             TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *s1reg,
+                          TR_ARMOperand2   *s2op,
+                          TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg),  _target1Register(treg), _source1Register(s1reg), _source2Operand(s2op)
       {
       treg->incTotalUseCount();
@@ -579,12 +581,12 @@ class TR_ARMTrg1Src2Instruction : public TR::Instruction
 
 // The following are for convenience so one doesn't need to build a
 // TR_ARMOperand2 by hand each time
-   TR_ARMTrg1Src2Instruction(TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *s1reg,
-                             TR::Register      *s2reg,
-                             TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *s1reg,
+                          TR::Register      *s2reg,
+                          TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _target1Register(treg), _source1Register(s1reg)
       {
       TR_ARMOperand2 *s2op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
@@ -594,13 +596,13 @@ class TR_ARMTrg1Src2Instruction : public TR::Instruction
       s2op->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *s1reg,
-                             TR::Register      *s2reg,
-                             TR::CodeGenerator *cg)
+   ARMTrg1Src2Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *s1reg,
+                          TR::Register      *s2reg,
+                          TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg), _target1Register(treg), _source1Register(s1reg)
       {
       TR_ARMOperand2 *s2op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, s2reg);
@@ -688,27 +690,27 @@ class TR_ARMTrg1Src2Instruction : public TR::Instruction
    virtual bool defsRealRegister(TR::Register *reg);
    };
 
-class TR_ARMLoadStartPCInstruction : public TR_ARMTrg1Src2Instruction
+class ARMLoadStartPCInstruction : public TR::ARMTrg1Src2Instruction
    {
    TR::SymbolReference           *_symbolReference;
 
    public:
-   TR_ARMLoadStartPCInstruction(TR::Node          *node,
+   ARMLoadStartPCInstruction(TR::Node          *node,
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(ARMOp_sub, node, treg, cg->machine()->getARMRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(ARMOp_sub, node, treg, cg->machine()->getARMRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 24), cg), /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
       }
 
-   TR_ARMLoadStartPCInstruction(TR::Instruction   *precedingInstruction,
+   ARMLoadStartPCInstruction(TR::Instruction   *precedingInstruction,
                              TR::Node          *node,
                              TR::Register      *treg,
                              TR::SymbolReference *symRef,
                              TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(precedingInstruction, ARMOp_sub, node, treg, cg->machine()->getARMRealRegister(TR::RealRegister::gr15),
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_sub, node, treg, cg->machine()->getARMRealRegister(TR::RealRegister::gr15),
          new (cg->trHeapMemory()) TR_ARMOperand2(0xde, 0), cg),  /* The value 0xde does not mean anything. It will be replaced in the binary encoding phase. */
         _symbolReference(symRef)
       {
@@ -718,19 +720,19 @@ class TR_ARMLoadStartPCInstruction : public TR_ARMTrg1Src2Instruction
    virtual uint8_t *generateBinaryEncoding();
    };
 
-class TR_ARMSrc2Instruction : public TR_ARMTrg1Src2Instruction
+class ARMSrc2Instruction : public TR::ARMTrg1Src2Instruction
    {
 
    public:
 
-   TR_ARMSrc2Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMTrg1Src2Instruction(node, cg) {}
+   ARMSrc2Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMTrg1Src2Instruction(node, cg) {}
 
-   TR_ARMSrc2Instruction(TR_ARMOpCodes     op,
-                         TR::Node          *node,
-                         TR::Register      *s1reg,
-                         TR_ARMOperand2   *s2op,
-                         TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cg)
+   ARMSrc2Instruction(TR_ARMOpCodes     op,
+                      TR::Node          *node,
+                      TR::Register      *s1reg,
+                      TR_ARMOperand2   *s2op,
+                      TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cg)
       {
       setSource1Register(s1reg);
       setSource2Operand(s2op);
@@ -738,13 +740,13 @@ class TR_ARMSrc2Instruction : public TR_ARMTrg1Src2Instruction
       s2op->incTotalUseCount();
       }
 
-   TR_ARMSrc2Instruction(TR::Instruction   *precedingInstruction,
-                         TR_ARMOpCodes     op,
-                         TR::Node          *node,
-                         TR::Register      *s1reg,
-                         TR_ARMOperand2   *s2op,
-                         TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
+   ARMSrc2Instruction(TR::Instruction   *precedingInstruction,
+                      TR_ARMOpCodes     op,
+                      TR::Node          *node,
+                      TR::Register      *s1reg,
+                      TR_ARMOperand2   *s2op,
+                      TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
       {
       setSource1Register(s1reg);
       setSource2Operand(s2op);
@@ -756,19 +758,19 @@ class TR_ARMSrc2Instruction : public TR_ARMTrg1Src2Instruction
    };
 
 
-class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
+class ARMTrg1Src1Instruction : public TR::ARMTrg1Src2Instruction
    {
 
    public:
 
-   TR_ARMTrg1Src1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMTrg1Src2Instruction(node, cg) {}
+   ARMTrg1Src1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMTrg1Src2Instruction(node, cg) {}
 
-   TR_ARMTrg1Src1Instruction(TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR_ARMOperand2   *sop,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cg)
+   ARMTrg1Src1Instruction(TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR_ARMOperand2   *sop,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cg)
       {
       setTarget1Register(treg);
       setSource2Operand(sop);
@@ -776,13 +778,13 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
       sop->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src1Instruction(TR_ARMOpCodes                       op,
-                             TR::Node                            *node,
-                             TR::RegisterDependencyConditions *cond,
-                             TR::Register                        *treg,
-                             TR_ARMOperand2                     *sop,
-                             TR::CodeGenerator                   *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cond, cg)
+   ARMTrg1Src1Instruction(TR_ARMOpCodes                       op,
+                          TR::Node                            *node,
+                          TR::RegisterDependencyConditions *cond,
+                          TR::Register                        *treg,
+                          TR_ARMOperand2                     *sop,
+                          TR::CodeGenerator                   *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cond, cg)
       {
       setTarget1Register(treg);
       setSource2Operand(sop);
@@ -790,13 +792,13 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
       sop->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src1Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR_ARMOperand2   *sop,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
+   ARMTrg1Src1Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR_ARMOperand2   *sop,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
       {
       setTarget1Register(treg);
       setSource2Operand(sop);
@@ -806,13 +808,13 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
 
    // The following are for convenience so one doesn't need to build a
    // TR_ARMOperand2 by hand each time
-   TR_ARMTrg1Src1Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *sreg,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
+   ARMTrg1Src1Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *sreg,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, op, node, cg)
       {
       TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
@@ -821,12 +823,12 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
       sop->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src1Instruction(TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *treg,
-                             TR::Register      *sreg,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cg)
+   ARMTrg1Src1Instruction(TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *treg,
+                          TR::Register      *sreg,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cg)
       {
       TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
@@ -835,13 +837,13 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
       sop->incTotalUseCount();
       }
 
-   TR_ARMTrg1Src1Instruction(TR_ARMOpCodes                       op,
-                             TR::Node                            *node,
-                             TR::RegisterDependencyConditions *cond,
-                             TR::Register                        *treg,
-                             TR::Register                        *sreg,
-                             TR::CodeGenerator                   *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cond, cg)
+   ARMTrg1Src1Instruction(TR_ARMOpCodes                       op,
+                          TR::Node                            *node,
+                          TR::RegisterDependencyConditions *cond,
+                          TR::Register                        *treg,
+                          TR::Register                        *sreg,
+                          TR::CodeGenerator                   *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cond, cg)
       {
       TR_ARMOperand2 *sop = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2Reg, sreg);
       setTarget1Register(treg);
@@ -854,30 +856,30 @@ class TR_ARMTrg1Src1Instruction : public TR_ARMTrg1Src2Instruction
    };
 
 
-class TR_ARMTrg1Instruction : public TR::Instruction
+class ARMTrg1Instruction : public TR::Instruction
    {
    TR::Register *_target1Register;
 
    public:
 
-   TR_ARMTrg1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMTrg1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
 
 
-   TR_ARMTrg1Instruction(TR_ARMOpCodes     op,
-                         TR::Node          *node,
-                         TR::Register      *treg,
-                         TR::CodeGenerator *cg)
+   ARMTrg1Instruction(TR_ARMOpCodes     op,
+                      TR::Node          *node,
+                      TR::Register      *treg,
+                      TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg),
         _target1Register(treg)
       {
       treg->incTotalUseCount();
       }
 
-   TR_ARMTrg1Instruction(TR::Instruction   *precedingInstruction,
-                         TR_ARMOpCodes     op,
-                         TR::Node          *node,
-                         TR::Register      *treg,
-                         TR::CodeGenerator *cg)
+   ARMTrg1Instruction(TR::Instruction   *precedingInstruction,
+                      TR_ARMOpCodes     op,
+                      TR::Node          *node,
+                      TR::Register      *treg,
+                      TR::CodeGenerator *cg)
       : TR::Instruction(precedingInstruction, op, node, cg),
         _target1Register(treg)
       {
@@ -917,22 +919,22 @@ class TR_ARMTrg1Instruction : public TR::Instruction
    };
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-class TR_ARMTrg2Src1Instruction : public TR_ARMTrg1Src2Instruction
+class ARMTrg2Src1Instruction : public TR::ARMTrg1Src2Instruction
    {
    // For fmrrd
    TR::Register *_target2Register;
 
    public:
 
-   TR_ARMTrg2Src1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMTrg1Src2Instruction(node, cg), _target2Register(0) {}
+   ARMTrg2Src1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMTrg1Src2Instruction(node, cg), _target2Register(0) {}
 
-   TR_ARMTrg2Src1Instruction(TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *t1reg,
-                             TR::Register      *t2reg,
-                             TR::Register      *sreg,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(op, node, cg), _target2Register(t2reg)
+   ARMTrg2Src1Instruction(TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *t1reg,
+                          TR::Register      *t2reg,
+                          TR::Register      *sreg,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(op, node, cg), _target2Register(t2reg)
       {
       setTarget1Register(t1reg);
       setSource1Register(sreg);
@@ -941,14 +943,14 @@ class TR_ARMTrg2Src1Instruction : public TR_ARMTrg1Src2Instruction
       sreg->incTotalUseCount();
       }
 
-   TR_ARMTrg2Src1Instruction(TR::Instruction   *precedingInstruction,
-                             TR_ARMOpCodes     op,
-                             TR::Node          *node,
-                             TR::Register      *t1reg,
-                             TR::Register      *t2reg,
-                             TR::Register      *sreg,
-                             TR::CodeGenerator *cg)
-      : TR_ARMTrg1Src2Instruction(precedingInstruction, op, node, cg), _target2Register(t2reg)
+   ARMTrg2Src1Instruction(TR::Instruction   *precedingInstruction,
+                          TR_ARMOpCodes     op,
+                          TR::Node          *node,
+                          TR::Register      *t1reg,
+                          TR::Register      *t2reg,
+                          TR::Register      *sreg,
+                          TR::CodeGenerator *cg)
+      : TR::ARMTrg1Src2Instruction(precedingInstruction, op, node, cg), _target2Register(t2reg)
       {
       setTarget1Register(t1reg);
       setSource1Register(sreg);
@@ -991,7 +993,7 @@ class TR_ARMTrg2Src1Instruction : public TR_ARMTrg1Src2Instruction
    };
 #endif
 
-class TR_ARMMulInstruction : public TR::Instruction
+class ARMMulInstruction : public TR::Instruction
    {
    TR::Register    *_targetLoRegister;  // for mul only targetLoRegister is used
    TR::Register    *_targetHiRegister;  // for mull instructions only, NULL for mul instructions
@@ -1000,11 +1002,11 @@ class TR_ARMMulInstruction : public TR::Instruction
 
    public:
 
-   TR_ARMMulInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMMulInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
 
-   TR_ARMMulInstruction(TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cg),
            _targetLoRegister(0),
            _targetHiRegister(0),
@@ -1013,10 +1015,10 @@ class TR_ARMMulInstruction : public TR::Instruction
          {
          }
 
-   TR_ARMMulInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(precedingInstruction, op, node, cg),
            _targetLoRegister(0),
            _targetHiRegister(0),
@@ -1025,10 +1027,10 @@ class TR_ARMMulInstruction : public TR::Instruction
          {
          }
 
-   TR_ARMMulInstruction(TR_ARMOpCodes                       op,
-                        TR::Node                            *node,
-                        TR::RegisterDependencyConditions *cond,
-                        TR::CodeGenerator                   *cg)
+   ARMMulInstruction(TR_ARMOpCodes                       op,
+                     TR::Node                            *node,
+                     TR::RegisterDependencyConditions *cond,
+                     TR::CodeGenerator                   *cg)
          : TR::Instruction(op, node, cond, cg),
            _targetLoRegister(0),
            _targetHiRegister(0),
@@ -1037,12 +1039,12 @@ class TR_ARMMulInstruction : public TR::Instruction
          {
          }
 
-   TR_ARMMulInstruction(TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        TR::Register      *tregLo,
-                        TR::Register      *s1reg,
-                        TR::Register      *s2reg,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     TR::Register      *tregLo,
+                     TR::Register      *s1reg,
+                     TR::Register      *s2reg,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cg),
            _targetLoRegister(tregLo),
            _targetHiRegister(0),
@@ -1054,13 +1056,13 @@ class TR_ARMMulInstruction : public TR::Instruction
          s2reg->incTotalUseCount();
          }
 
-   TR_ARMMulInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        TR::Register      *tregLo,
-                        TR::Register      *s1reg,
-                        TR::Register      *s2reg,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     TR::Register      *tregLo,
+                     TR::Register      *s1reg,
+                     TR::Register      *s2reg,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(precedingInstruction, op, node, cg),
            _targetLoRegister(tregLo),
            _targetHiRegister(0),
@@ -1072,13 +1074,13 @@ class TR_ARMMulInstruction : public TR::Instruction
          s2reg->incTotalUseCount();
          }
 // below 2 for mull instructions
- TR_ARMMulInstruction(TR_ARMOpCodes       op,
-                        TR::Node          *node,
-                        TR::Register      *tregHi,
-                        TR::Register      *tregLo,
-                        TR::Register      *s1reg,
-                        TR::Register      *s2reg,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR_ARMOpCodes       op,
+                     TR::Node          *node,
+                     TR::Register      *tregHi,
+                     TR::Register      *tregLo,
+                     TR::Register      *s1reg,
+                     TR::Register      *s2reg,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cg),
            _targetLoRegister(tregLo),
            _targetHiRegister(tregHi),
@@ -1091,14 +1093,14 @@ class TR_ARMMulInstruction : public TR::Instruction
          s2reg->incTotalUseCount();
          }
 
-   TR_ARMMulInstruction(TR::Instruction   *precedingInstruction,
-                        TR_ARMOpCodes     op,
-                        TR::Node          *node,
-                        TR::Register      *tregHi,
-                        TR::Register      *tregLo,
-                        TR::Register      *s1reg,
-                        TR::Register      *s2reg,
-                        TR::CodeGenerator *cg)
+   ARMMulInstruction(TR::Instruction   *precedingInstruction,
+                     TR_ARMOpCodes     op,
+                     TR::Node          *node,
+                     TR::Register      *tregHi,
+                     TR::Register      *tregLo,
+                     TR::Register      *s1reg,
+                     TR::Register      *s2reg,
+                     TR::CodeGenerator *cg)
          : TR::Instruction(precedingInstruction, op, node, cg),
            _targetLoRegister(tregLo),
            _targetHiRegister(tregHi),
@@ -1165,34 +1167,34 @@ class TR_ARMMulInstruction : public TR::Instruction
    };
 
 // superclass of both ldr and str
-class TR_ARMMemInstruction : public TR_ARMTrg1Instruction
+class ARMMemInstruction : public TR::ARMTrg1Instruction
    {
    TR::MemoryReference *_memoryReference;
    bool                   _memoryRead;
 
    public:
 
-   TR_ARMMemInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMTrg1Instruction(node, cg) {}
+   ARMMemInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMTrg1Instruction(node, cg) {}
 
-   TR_ARMMemInstruction(TR_ARMOpCodes          op,
-                        TR::Node               *node,
-                        TR::Register           *treg,
-                        TR::MemoryReference *mf,
-                        bool                   memRead,
-                        TR::CodeGenerator *cg)
-         : TR_ARMTrg1Instruction(op, node, treg, cg), _memoryReference(mf), _memoryRead(memRead)
+   ARMMemInstruction(TR_ARMOpCodes          op,
+                     TR::Node               *node,
+                     TR::Register           *treg,
+                     TR::MemoryReference *mf,
+                     bool                   memRead,
+                     TR::CodeGenerator *cg)
+         : TR::ARMTrg1Instruction(op, node, treg, cg), _memoryReference(mf), _memoryRead(memRead)
       {
       mf->incRegisterTotalUseCounts(cg);
       }
 
-   TR_ARMMemInstruction(TR::Instruction         *precedingInstruction,
-                        TR_ARMOpCodes          op,
-                        TR::Node                *node,
-                        TR::Register            *treg,
-                        TR::MemoryReference  *mf,
-                        bool                   memRead,
-                        TR::CodeGenerator *cg)
-         : TR_ARMTrg1Instruction(precedingInstruction, op, node, treg, cg), _memoryReference(mf), _memoryRead(memRead)
+   ARMMemInstruction(TR::Instruction         *precedingInstruction,
+                     TR_ARMOpCodes          op,
+                     TR::Node                *node,
+                     TR::Register            *treg,
+                     TR::MemoryReference  *mf,
+                     bool                   memRead,
+                     TR::CodeGenerator *cg)
+         : TR::ARMTrg1Instruction(precedingInstruction, op, node, treg, cg), _memoryReference(mf), _memoryRead(memRead)
       {
       mf->incRegisterTotalUseCounts(cg);
       }
@@ -1221,28 +1223,28 @@ class TR_ARMMemInstruction : public TR_ARMTrg1Instruction
    virtual bool usesRegister(TR::Register *reg);
    };
 
-class TR_ARMMemSrc1Instruction : public TR_ARMMemInstruction
+class ARMMemSrc1Instruction : public TR::ARMMemInstruction
    {
    public:
 
-   TR_ARMMemSrc1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMMemInstruction(node, cg) {}
+   ARMMemSrc1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMMemInstruction(node, cg) {}
 
-   TR_ARMMemSrc1Instruction(TR_ARMOpCodes         op,
-                            TR::Node               *node,
-                            TR::MemoryReference *mf,
-                            TR::Register           *sreg,
-                            TR::CodeGenerator *cg)
-         : TR_ARMMemInstruction(op, node, sreg, mf, true, cg)
+   ARMMemSrc1Instruction(TR_ARMOpCodes         op,
+                         TR::Node               *node,
+                         TR::MemoryReference *mf,
+                         TR::Register           *sreg,
+                         TR::CodeGenerator *cg)
+         : TR::ARMMemInstruction(op, node, sreg, mf, true, cg)
       {
       }
 
-   TR_ARMMemSrc1Instruction(TR::Instruction        *precedingInstruction,
-                            TR_ARMOpCodes         op,
-                            TR::Node               *node,
-                            TR::MemoryReference *mf,
-                            TR::Register           *sreg,
-                            TR::CodeGenerator *cg)
-         : TR_ARMMemInstruction(precedingInstruction, op, node, sreg, mf, true, cg)
+   ARMMemSrc1Instruction(TR::Instruction        *precedingInstruction,
+                         TR_ARMOpCodes         op,
+                         TR::Node               *node,
+                         TR::MemoryReference *mf,
+                         TR::Register           *sreg,
+                         TR::CodeGenerator *cg)
+         : TR::ARMMemInstruction(precedingInstruction, op, node, sreg, mf, true, cg)
       {
       }
 
@@ -1262,27 +1264,27 @@ class TR_ARMMemSrc1Instruction : public TR_ARMMemInstruction
    };
 
 
-class TR_ARMTrg1MemInstruction : public TR_ARMMemInstruction
+class ARMTrg1MemInstruction : public TR::ARMMemInstruction
    {
    public:
 
 
-   TR_ARMTrg1MemInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMMemInstruction(node, cg) {}
+   ARMTrg1MemInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMMemInstruction(node, cg) {}
 
-   TR_ARMTrg1MemInstruction(TR_ARMOpCodes          op,
-                            TR::Node               *node,
-                            TR::Register           *sreg,
-                            TR::MemoryReference *mf,
-                            TR::CodeGenerator      *cg)
-      : TR_ARMMemInstruction(op, node, sreg, mf, false, cg) {}
+   ARMTrg1MemInstruction(TR_ARMOpCodes          op,
+                         TR::Node               *node,
+                         TR::Register           *sreg,
+                         TR::MemoryReference *mf,
+                         TR::CodeGenerator      *cg)
+      : TR::ARMMemInstruction(op, node, sreg, mf, false, cg) {}
 
-   TR_ARMTrg1MemInstruction(TR::Instruction        *precedingInstruction,
-                            TR_ARMOpCodes          op,
-                            TR::Node               *node,
-                            TR::Register           *sreg,
-                            TR::MemoryReference *mf,
-                            TR::CodeGenerator      *cg)
-      : TR_ARMMemInstruction(precedingInstruction, op, node, sreg, mf, false, cg) {}
+   ARMTrg1MemInstruction(TR::Instruction        *precedingInstruction,
+                         TR_ARMOpCodes          op,
+                         TR::Node               *node,
+                         TR::Register           *sreg,
+                         TR::MemoryReference *mf,
+                         TR::CodeGenerator      *cg)
+      : TR::ARMMemInstruction(precedingInstruction, op, node, sreg, mf, false, cg) {}
 
    virtual Kind getKind() { return IsTrg1Mem; }
 
@@ -1293,30 +1295,30 @@ class TR_ARMTrg1MemInstruction : public TR_ARMMemInstruction
    virtual bool usesRegister(TR::Register *reg);
    };
 
-class TR_ARMTrg1MemSrc1Instruction : public TR_ARMMemInstruction
+class ARMTrg1MemSrc1Instruction : public TR::ARMMemInstruction
    {
    TR::Register *_source1Register;
 
    public:
 
-   TR_ARMTrg1MemSrc1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR_ARMMemInstruction(node, cg) {}
+   ARMTrg1MemSrc1Instruction(TR::Node *node, TR::CodeGenerator *cg) : TR::ARMMemInstruction(node, cg) {}
 
-   TR_ARMTrg1MemSrc1Instruction(TR_ARMOpCodes          op,
-                                TR::Node               *node,
-                                TR::Register           *treg,
-                                TR::MemoryReference *mf,
-                                TR::Register           *sreg,
-                                TR::CodeGenerator      *cg)
-      : TR_ARMMemInstruction(op, node, treg, mf, false, cg), _source1Register(sreg) {}
+   ARMTrg1MemSrc1Instruction(TR_ARMOpCodes          op,
+                             TR::Node               *node,
+                             TR::Register           *treg,
+                             TR::MemoryReference *mf,
+                             TR::Register           *sreg,
+                             TR::CodeGenerator      *cg)
+      : TR::ARMMemInstruction(op, node, treg, mf, false, cg), _source1Register(sreg) {}
 
-   TR_ARMTrg1MemSrc1Instruction(TR::Instruction        *precedingInstruction,
-                                TR_ARMOpCodes          op,
-                                TR::Node               *node,
-                                TR::Register           *treg,
-                                TR::MemoryReference *mf,
-                                TR::Register           *sreg,
-                                TR::CodeGenerator      *cg)
-      : TR_ARMMemInstruction(precedingInstruction, op, node, treg, mf, false, cg), _source1Register(sreg) {}
+   ARMTrg1MemSrc1Instruction(TR::Instruction        *precedingInstruction,
+                             TR_ARMOpCodes          op,
+                             TR::Node               *node,
+                             TR::Register           *treg,
+                             TR::MemoryReference *mf,
+                             TR::Register           *sreg,
+                             TR::CodeGenerator      *cg)
+      : TR::ARMMemInstruction(precedingInstruction, op, node, treg, mf, false, cg), _source1Register(sreg) {}
 
    virtual Kind getKind() { return IsTrg1MemSrc1; }
 
@@ -1337,10 +1339,10 @@ class TR_ARMTrg1MemSrc1Instruction : public TR_ARMMemInstruction
    };
 
 // If we are using a register allocator that cannot handle registers being alive across basic block
-// boundaries then we use TR_ARMControlFlowInstruction as a placeholder.  It contains a summary of
+// boundaries then we use TR::ARMControlFlowInstruction as a placeholder.  It contains a summary of
 // register usage information and enough other information to generate the correct instruction
 // sequence.
-class TR_ARMControlFlowInstruction : public TR::Instruction
+class ARMControlFlowInstruction : public TR::Instruction
    {
    TR::Register *_sourceRegisters[8];
    TR::Register *_targetRegisters[5];
@@ -1353,13 +1355,13 @@ class TR_ARMControlFlowInstruction : public TR::Instruction
 
    public:
 
-   TR_ARMControlFlowInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
-   TR_ARMControlFlowInstruction(TR_ARMOpCodes  op, TR::Node *node, TR::CodeGenerator *cg)
+   ARMControlFlowInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMControlFlowInstruction(TR_ARMOpCodes  op, TR::Node *node, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
       {
       }
 
-   TR_ARMControlFlowInstruction(TR_ARMOpCodes  op, TR::Node *node, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
+   ARMControlFlowInstruction(TR_ARMOpCodes  op, TR::Node *node, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, deps, cg), _numSources(0), _numTargets(0), _label(NULL), _opCode2(ARMOp_bad)
       {
       }
@@ -1423,7 +1425,7 @@ class TR_ARMControlFlowInstruction : public TR::Instruction
    virtual bool defsRealRegister(TR::Register *reg);
    };
 
-class TR_ARMMultipleMoveInstruction : public TR::Instruction
+class ARMMultipleMoveInstruction : public TR::Instruction
    {
    TR::Register    *_memoryBaseRegister;
    uint16_t       _registerList;
@@ -1433,45 +1435,45 @@ class TR_ARMMultipleMoveInstruction : public TR::Instruction
 
    public:
 
-   TR_ARMMultipleMoveInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
+   ARMMultipleMoveInstruction(TR::Node *node, TR::CodeGenerator *cg) : TR::Instruction(node, cg) {}
 
-   TR_ARMMultipleMoveInstruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
+   ARMMultipleMoveInstruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cg), _memoryBaseRegister(0), _registerList(0), _writeBack(false), _increment(false), _preIndex(false)
          {
          }
 
-   TR_ARMMultipleMoveInstruction(TR::Instruction * precedingInstruction,
-                                 TR_ARMOpCodes    op,
-                                 TR::Node *node,
-                                 TR::CodeGenerator *cg)
+   ARMMultipleMoveInstruction(TR::Instruction * precedingInstruction,
+                              TR_ARMOpCodes    op,
+                              TR::Node *node,
+                              TR::CodeGenerator *cg)
          : TR::Instruction(precedingInstruction, op, node, cg), _memoryBaseRegister(0), _registerList(0), _writeBack(false), _increment(false), _preIndex(false)
          {
          }
 
-   TR_ARMMultipleMoveInstruction(TR_ARMOpCodes                        op,
-                                 TR::Node                            * node,
-                                 TR::RegisterDependencyConditions * cond,
-                                 TR::CodeGenerator *cg)
+   ARMMultipleMoveInstruction(TR_ARMOpCodes                        op,
+                              TR::Node                            * node,
+                              TR::RegisterDependencyConditions * cond,
+                              TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cond, cg), _memoryBaseRegister(0), _registerList(0), _writeBack(false), _increment(false), _preIndex(false)
          {
          }
 
-   TR_ARMMultipleMoveInstruction(TR_ARMOpCodes    op,
-                                 TR::Node        * node,
-                                 TR::Register    * mbr,
-                                 uint16_t         rl,
-                                 TR::CodeGenerator *cg)
+   ARMMultipleMoveInstruction(TR_ARMOpCodes    op,
+                              TR::Node        * node,
+                              TR::Register    * mbr,
+                              uint16_t         rl,
+                              TR::CodeGenerator *cg)
          : TR::Instruction(op, node, cg), _memoryBaseRegister(mbr), _registerList(rl), _writeBack(false), _increment(false), _preIndex(false)
          {
          mbr->incTotalUseCount();
          }
 
-   TR_ARMMultipleMoveInstruction(TR::Instruction * precedingInstruction,
-                                 TR_ARMOpCodes    op,
-                                 TR::Node        * node,
-                                 TR::Register    * mbr,
-                                 uint16_t         rl,
-                                 TR::CodeGenerator *cg)
+   ARMMultipleMoveInstruction(TR::Instruction * precedingInstruction,
+                              TR_ARMOpCodes    op,
+                              TR::Node        * node,
+                              TR::Register    * mbr,
+                              uint16_t         rl,
+                              TR::CodeGenerator *cg)
          : TR::Instruction(precedingInstruction, op, node, cg), _memoryBaseRegister(mbr), _registerList(rl), _writeBack(false), _increment(false), _preIndex(false)
          {
          mbr->incTotalUseCount();
@@ -1526,5 +1528,27 @@ class TR_ARMMultipleMoveInstruction : public TR::Instruction
 
    virtual bool defsRealRegister(TR::Register *reg);
    };
+
+}
+
+typedef TR::ARMImmInstruction TR_ARMImmInstruction;
+typedef TR::ARMLabelInstruction TR_ARMLabelInstruction;
+typedef TR::ARMConditionalBranchInstruction TR_ARMConditionalBranchInstruction;
+typedef TR::ARMVirtualGuardNOPInstruction TR_ARMVirtualGuardNOPInstruction;
+typedef TR::ARMAdminInstruction TR_ARMAdminInstruction;
+typedef TR::ARMImmSymInstruction TR_ARMImmSymInstruction;
+typedef TR::ARMTrg1Src2Instruction TR_ARMTrg1Src2Instruction;
+typedef TR::ARMLoadStartPCInstruction TR_ARMLoadStartPCInstruction;
+typedef TR::ARMSrc2Instruction TR_ARMSrc2Instruction;
+typedef TR::ARMTrg1Src1Instruction TR_ARMTrg1Src1Instruction;
+typedef TR::ARMTrg1Instruction TR_ARMTrg1Instruction;
+typedef TR::ARMTrg2Src1Instruction TR_ARMTrg2Src1Instruction;
+typedef TR::ARMMulInstruction TR_ARMMulInstruction;
+typedef TR::ARMMemInstruction TR_ARMMemInstruction;
+typedef TR::ARMMemSrc1Instruction TR_ARMMemSrc1Instruction;
+typedef TR::ARMTrg1MemInstruction TR_ARMTrg1MemInstruction;
+typedef TR::ARMTrg1MemSrc1Instruction TR_ARMTrg1MemSrc1Instruction;
+typedef TR::ARMControlFlowInstruction TR_ARMControlFlowInstruction;
+typedef TR::ARMMultipleMoveInstruction TR_ARMMultipleMoveInstruction;
 
 #endif

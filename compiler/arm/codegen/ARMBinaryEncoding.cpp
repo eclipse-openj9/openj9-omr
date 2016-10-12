@@ -88,7 +88,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
    return (isBranchAndLink ? 0x0B000000 : 0x0A000000) | encodeBranchDistance((uintptr_t) cursor, target) | (((uint32_t) cc) << 28);
    }
 
-uint8_t *TR_ARMLabelInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMLabelInstruction::generateBinaryEncoding()
    {
    uint8_t        *instructionStart = cg()->getBinaryBufferCursor();
    TR::LabelSymbol *label            = getLabelSymbol();
@@ -128,7 +128,7 @@ uint8_t *TR_ARMLabelInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-int32_t TR_ARMLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    if (getOpCode().isLabel()) // LABEL
       {
@@ -145,17 +145,17 @@ int32_t TR_ARMLabelInstruction::estimateBinaryLength(int32_t currentEstimate)
 // Conditional branches are just like label instructions but have their
 // CC set - for now, simply forward - TODO remove entirely.
 
-uint8_t *TR_ARMConditionalBranchInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMConditionalBranchInstruction::generateBinaryEncoding()
    {
-   return TR_ARMLabelInstruction::generateBinaryEncoding();
+   return TR::ARMLabelInstruction::generateBinaryEncoding();
    }
 
-int32_t TR_ARMConditionalBranchInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMConditionalBranchInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   return TR_ARMLabelInstruction::estimateBinaryLength(currentEstimate);
+   return TR::ARMLabelInstruction::estimateBinaryLength(currentEstimate);
    }
 
-uint8_t *TR_ARMAdminInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMAdminInstruction::generateBinaryEncoding()
    {
    uint8_t  *instructionStart = cg()->getBinaryBufferCursor();
    uint32_t i;
@@ -196,13 +196,13 @@ uint8_t *TR_ARMAdminInstruction::generateBinaryEncoding()
    return instructionStart;
    }
 
-int32_t TR_ARMAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMAdminInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    setEstimatedBinaryLength(0);
    return currentEstimate;
    }
 
-uint8_t *TR_ARMImmInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
    {
    TR::Compilation *comp = cg()->comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -244,7 +244,7 @@ uint8_t *TR_ARMImmInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR_ARMImmSymInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
    {
    TR::Compilation *comp = TR::comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -359,7 +359,7 @@ uint8_t *TR_ARMImmSymInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-int32_t TR_ARMImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this   swipeable for debugging purposes
    int32_t length;
@@ -375,7 +375,7 @@ int32_t TR_ARMImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
    return(currentEstimate + length);
    }
 
-uint8_t *TR_ARMTrg1Instruction::generateBinaryEncoding()
+uint8_t *TR::ARMTrg1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -388,7 +388,7 @@ uint8_t *TR_ARMTrg1Instruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR_ARMTrg1Src2Instruction::generateBinaryEncoding()
+uint8_t *TR::ARMTrg1Src2Instruction::generateBinaryEncoding()
    {
    TR::Compilation *comp = cg()->comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
@@ -416,7 +416,7 @@ uint8_t *TR_ARMTrg1Src2Instruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR_ARMLoadStartPCInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMLoadStartPCInstruction::generateBinaryEncoding()
    {
    /* Calculates the offset from the current instruction to startPCAddr, then set it to the operand2 */
    uint8_t *startPCAddr = (uint8_t *)getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
@@ -434,7 +434,7 @@ uint8_t *TR_ARMLoadStartPCInstruction::generateBinaryEncoding()
       getNext()->remove();
       getNext()->remove();
 
-      return TR_ARMTrg1Src2Instruction::generateBinaryEncoding();
+      return TR::ARMTrg1Src2Instruction::generateBinaryEncoding();
       }
    else
       {
@@ -447,14 +447,14 @@ uint8_t *TR_ARMLoadStartPCInstruction::generateBinaryEncoding()
          TR_ARMOperand2 *op2_1 = new (cg()->trHeapMemory()) TR_ARMOperand2((base >> 8) & 0x000000FF, 8 + bitTrailing);
          TR_ARMOperand2 *op2_0 = new (cg()->trHeapMemory()) TR_ARMOperand2(base & 0x000000FF, bitTrailing);
          setSource2Operand(op2_1);
-         TR_ARMTrg1Src2Instruction *secondInstruction = (TR_ARMTrg1Src2Instruction *)getNext();
+         TR::ARMTrg1Src2Instruction *secondInstruction = (TR::ARMTrg1Src2Instruction *)getNext();
          secondInstruction->setSource2Operand(op2_0);
 
          /* Remove the trailing 2 Trg1Src2Instructions */
          secondInstruction->getNext()->remove();
          secondInstruction->getNext()->remove();
 
-         return TR_ARMTrg1Src2Instruction::generateBinaryEncoding();
+         return TR::ARMTrg1Src2Instruction::generateBinaryEncoding();
          }
       else
          {
@@ -465,22 +465,22 @@ uint8_t *TR_ARMLoadStartPCInstruction::generateBinaryEncoding()
          TR_ARMOperand2 *op2_0 = new (cg()->trHeapMemory()) TR_ARMOperand2(localVal.getByte0(), 0);
 
          setSource2Operand(op2_3);
-         TR_ARMTrg1Src2Instruction *secondInstruction = (TR_ARMTrg1Src2Instruction *)getNext();
+         TR::ARMTrg1Src2Instruction *secondInstruction = (TR::ARMTrg1Src2Instruction *)getNext();
          secondInstruction->setSource2Operand(op2_2);
 
-         TR_ARMTrg1Src2Instruction *thirdInstruction = (TR_ARMTrg1Src2Instruction *)secondInstruction->getNext();
+         TR::ARMTrg1Src2Instruction *thirdInstruction = (TR::ARMTrg1Src2Instruction *)secondInstruction->getNext();
          thirdInstruction->setSource2Operand(op2_1);
 
-         TR_ARMTrg1Src2Instruction *fourthInstruction = (TR_ARMTrg1Src2Instruction *)thirdInstruction->getNext();
+         TR::ARMTrg1Src2Instruction *fourthInstruction = (TR::ARMTrg1Src2Instruction *)thirdInstruction->getNext();
          fourthInstruction->setSource2Operand(op2_0);
 
-         return TR_ARMTrg1Src2Instruction::generateBinaryEncoding();
+         return TR::ARMTrg1Src2Instruction::generateBinaryEncoding();
          }
       }
    }
 
 #if defined(__VFP_FP__) && !defined(__SOFTFP__)
-uint8_t *TR_ARMTrg2Src1Instruction::generateBinaryEncoding()
+uint8_t *TR::ARMTrg2Src1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -496,7 +496,7 @@ uint8_t *TR_ARMTrg2Src1Instruction::generateBinaryEncoding()
    }
 #endif
 
-uint8_t *TR_ARMMulInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMMulInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -511,7 +511,7 @@ uint8_t *TR_ARMMulInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR_ARMMemInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMMemInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -525,13 +525,13 @@ uint8_t *TR_ARMMemInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-int32_t TR_ARMMemInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMMemInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(getOpCodeValue()));
    return(currentEstimate + getEstimatedBinaryLength());
    }
 
-uint8_t *TR_ARMTrg1MemSrc1Instruction::generateBinaryEncoding()
+uint8_t *TR::ARMTrg1MemSrc1Instruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -546,7 +546,7 @@ uint8_t *TR_ARMTrg1MemSrc1Instruction::generateBinaryEncoding()
    return cursor;
    }
 
-uint8_t *TR_ARMControlFlowInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMControlFlowInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -556,7 +556,7 @@ uint8_t *TR_ARMControlFlowInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-int32_t TR_ARMControlFlowInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMControlFlowInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    switch(getOpCodeValue())
       {
@@ -581,7 +581,7 @@ int32_t TR_ARMControlFlowInstruction::estimateBinaryLength(int32_t currentEstima
    return currentEstimate + getEstimatedBinaryLength();
    }
 
-uint8_t *TR_ARMMultipleMoveInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMMultipleMoveInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
@@ -602,7 +602,7 @@ uint8_t *TR_ARMMultipleMoveInstruction::generateBinaryEncoding()
    }
 
 #ifdef J9_PROJECT_SPECIFIC
-uint8_t *TR_ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
+uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
    {
    uint8_t    *cursor           = cg()->getBinaryBufferCursor();
    TR::LabelSymbol *label        = getLabelSymbol();
@@ -645,7 +645,7 @@ uint8_t *TR_ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
    return cursor+length;
    }
 
-int32_t TR_ARMVirtualGuardNOPInstruction::estimateBinaryLength(int32_t currentEstimate)
+int32_t TR::ARMVirtualGuardNOPInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // This is a conservative estimation for reserving NOP space.
    setEstimatedBinaryLength(ARM_INSTRUCTION_LENGTH);

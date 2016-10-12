@@ -791,7 +791,7 @@ class X86RegInstruction : public TR::Instruction
           reg->isDiscardable() &&
           getOpCode().modifiesTarget())
          {
-         TR_ClobberingInstruction *clob = new (cg->trHeapMemory()) TR_ClobberingInstruction(this, cg->trMemory());
+         TR::ClobberingInstruction *clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
          clob->addClobberedRegister(reg);
          cg->addClobberingInstruction(clob);
          cg->removeLiveDiscardableRegister(reg);
@@ -833,7 +833,7 @@ class X86RegInstruction : public TR::Instruction
           reg->isDiscardable() &&
           getOpCode().modifiesTarget())
          {
-         TR_ClobberingInstruction *clob = new (cg->trHeapMemory()) TR_ClobberingInstruction(this, cg->trMemory());
+         TR::ClobberingInstruction *clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
          clob->addClobberedRegister(reg);
          cg->addClobberingInstruction(clob);
          cg->removeLiveDiscardableRegister(reg);

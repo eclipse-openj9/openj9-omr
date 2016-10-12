@@ -290,7 +290,7 @@ TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue
    uintptrj_t             helperAddr = (uintptrj_t)helperSymRef->getMethodAddress();
 
    // gr4 must contain the saved LR; see Recompilation.s
-   cursor = new (self()->trHeapMemory()) TR_ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
+   cursor = new (self()->trHeapMemory()) TR::ARMTrg1Src1Instruction(cursor, ARMOp_mov, node, gr4, lr, self());
    cursor = self()->getLinkage()->flushArguments(cursor);
    cursor = generateImmSymInstruction(self(), ARMOp_bl, node, (uintptrj_t)revertToInterpreterSymRef->getMethodAddress(), new (self()->trHeapMemory()) TR::RegisterDependencyConditions((uint8_t)0,0, self()->trMemory()), revertToInterpreterSymRef, NULL, cursor);
    cursor = generateImmInstruction(self(), ARMOp_dd, node, (int32_t)ramMethod, TR_RamMethod, cursor);
@@ -313,7 +313,7 @@ static void removeGhostRegistersFromGCMaps(TR::CodeGenerator *cg, TR::Instructio
    // If there are any GC points between the top of the hot path and the first use the real reg holding the virtual will be included,
    // so we need to fix this.
    TR::Instruction *instr = branchOOL->getNext();
-   while (!instr->isLabel() || !((TR_ARMLabelInstruction*)instr)->getLabelSymbol()->isEndOfColdInstructionStream())
+   while (!instr->isLabel() || !((TR::ARMLabelInstruction*)instr)->getLabelSymbol()->isEndOfColdInstructionStream())
       {
       if (instr->needsGCMap())
          {
@@ -360,17 +360,17 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
       if (methodSymbol->isJNI())
          {
          uintptrj_t JNIMethodAddress = (uintptrj_t) methodSymbol->getResolvedMethod()->startAddressForJNIMethod(comp);
-         cursor = new (self()->trHeapMemory()) TR_ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
+         cursor = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, (int32_t)JNIMethodAddress, self());
          }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR_ARMImmInstruction(cursor, ARMOp_dd, startNode, 0, self());
-      new (self()->trHeapMemory()) TR_ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARMImmInstruction(cursor, ARMOp_dd, startNode, 0, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction(_returnTypeInfoInstruction, ARMOp_proc, startNode, NULL, self());
 
       }
    else
       {
       _returnTypeInfoInstruction = NULL;
-      new (self()->trHeapMemory()) TR_ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
+      new (self()->trHeapMemory()) TR::ARMAdminInstruction((TR::Instruction *)NULL, ARMOp_proc, startNode, NULL, self());
       }
    }
 
@@ -415,7 +415,7 @@ void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
       // Track internal control flow on labels
       if (instructionCursor->isLabel())
          {
-         TR_ARMLabelInstruction *li = (TR_ARMLabelInstruction *)instructionCursor;
+         TR::ARMLabelInstruction *li = (TR::ARMLabelInstruction *)instructionCursor;
 
          if (li->getLabelSymbol() != NULL)
             {
@@ -431,7 +431,7 @@ void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
          }
       else if (instructionCursor->getKind() == TR::Instruction::IsConditionalBranch)
          {
-         TR_ARMConditionalBranchInstruction *bi = (TR_ARMConditionalBranchInstruction *)instructionCursor;
+         TR::ARMConditionalBranchInstruction *bi = (TR::ARMConditionalBranchInstruction *)instructionCursor;
 
          if (bi->getLabelSymbol() && bi->getLabelSymbol()->isStartOfColdInstructionStream())
             {
@@ -610,7 +610,7 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
          {
          uint32_t magicWord = ((self()->getBinaryBufferCursor()-self()->getCodeStart())<<16) | static_cast<uint32_t>(comp->getReturnInfo());
          TR_ASSERT(_returnTypeInfoInstruction && _returnTypeInfoInstruction->getOpCodeValue() == ARMOp_dd, "assertion failure");
-         ((TR_ARMImmInstruction *)_returnTypeInfoInstruction)->setSourceImmediate(magicWord);
+         ((TR::ARMImmInstruction *)_returnTypeInfoInstruction)->setSourceImmediate(magicWord);
          *(uint32_t *)(_returnTypeInfoInstruction->getBinaryEncoding()) = magicWord;
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -726,12 +726,12 @@ TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg)
    {
-   TR_Array<TR_ARMConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
+   TR_Array<TR::ARMConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
    TR::Instruction *cursorInstruction = TR::comp()->getFirstInstruction();
 
    while (cursorInstruction)
       {
-      TR_ARMConditionalBranchInstruction *branch = cursorInstruction->getARMConditionalBranchInstruction();
+      TR::ARMConditionalBranchInstruction *branch = cursorInstruction->getARMConditionalBranchInstruction();
       if (branch != NULL)
          {
          if (abs(branch->getEstimatedBinaryLocation() - branch->getLabelSymbol()->getEstimatedCodeLocation()) > 16384)

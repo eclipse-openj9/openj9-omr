@@ -183,58 +183,58 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
    switch (instr->getKind())
       {
       case OMR::Instruction::IsImm:
-         print(pOutFile, (TR_ARMImmInstruction *)instr);
+         print(pOutFile, (TR::ARMImmInstruction *)instr);
          break;
       case OMR::Instruction::IsImmSym:
-         print(pOutFile, (TR_ARMImmSymInstruction *)instr);
+         print(pOutFile, (TR::ARMImmSymInstruction *)instr);
          break;
       case OMR::Instruction::IsLabel:
-         print(pOutFile, (TR_ARMLabelInstruction *)instr);
+         print(pOutFile, (TR::ARMLabelInstruction *)instr);
          break;
       case OMR::Instruction::IsConditionalBranch:
-         print(pOutFile, (TR_ARMConditionalBranchInstruction *)instr);
+         print(pOutFile, (TR::ARMConditionalBranchInstruction *)instr);
          break;
 #ifdef J9_PROJECT_SPECIFIC
       case OMR::Instruction::IsVirtualGuardNOP:
-         print(pOutFile, (TR_ARMVirtualGuardNOPInstruction *)instr);
+         print(pOutFile, (TR::ARMVirtualGuardNOPInstruction *)instr);
          break;
 #endif
       case OMR::Instruction::IsAdmin:
-         print(pOutFile, (TR_ARMAdminInstruction *)instr);
+         print(pOutFile, (TR::ARMAdminInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1Src2:
       case OMR::Instruction::IsSrc2:
       case OMR::Instruction::IsTrg1Src1:
-         print(pOutFile, (TR_ARMTrg1Src2Instruction *)instr);
+         print(pOutFile, (TR::ARMTrg1Src2Instruction *)instr);
          break;
       case OMR::Instruction::IsTrg1:
-         print(pOutFile, (TR_ARMTrg1Instruction *)instr);
+         print(pOutFile, (TR::ARMTrg1Instruction *)instr);
          break;
       case OMR::Instruction::IsMem:
-         print(pOutFile, (TR_ARMMemInstruction *)instr);
+         print(pOutFile, (TR::ARMMemInstruction *)instr);
          break;
       case OMR::Instruction::IsMemSrc1:
-         print(pOutFile, (TR_ARMMemSrc1Instruction *)instr);
+         print(pOutFile, (TR::ARMMemSrc1Instruction *)instr);
          break;
       case OMR::Instruction::IsTrg1Mem:
-         print(pOutFile, (TR_ARMTrg1MemInstruction *)instr);
+         print(pOutFile, (TR::ARMTrg1MemInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1MemSrc1:
-         print(pOutFile, (TR_ARMTrg1MemSrc1Instruction *)instr);
+         print(pOutFile, (TR::ARMTrg1MemSrc1Instruction *)instr);
          break;
 #if defined(__VFP_FP__) && !defined(__SOFTFP__)
       case OMR::Instruction::IsTrg2Src1:
-         print(pOutFile, (TR_ARMTrg2Src1Instruction *)instr);
+         print(pOutFile, (TR::ARMTrg2Src1Instruction *)instr);
          break;
 #endif
       case OMR::Instruction::IsMul:
-         print(pOutFile, (TR_ARMMulInstruction *)instr);
+         print(pOutFile, (TR::ARMMulInstruction *)instr);
          break;
       case OMR::Instruction::IsControlFlow:
-         print(pOutFile, (TR_ARMControlFlowInstruction *)instr);
+         print(pOutFile, (TR::ARMControlFlowInstruction *)instr);
          break;
       case OMR::Instruction::IsMultipleMove:
-         print(pOutFile, (TR_ARMMultipleMoveInstruction *)instr);
+         print(pOutFile, (TR::ARMMultipleMoveInstruction *)instr);
          break;
       default:
          TR_ASSERT( 0, "unexpected instruction kind");
@@ -303,7 +303,7 @@ TR_Debug::dumpDependencies(TR::FILE *pOutFile, TR::Instruction *instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMLabelInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMLabelInstruction * instr)
    {
    printPrefix(pOutFile, instr);
 
@@ -344,7 +344,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMLabelInstruction * instr)
 
 #ifdef J9_PROJECT_SPECIFIC
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMVirtualGuardNOPInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMVirtualGuardNOPInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s Site:" POINTER_PRINTF_FORMAT ", ", getOpCodeName(&instr->getOpCode()), instr->getSite());
@@ -356,7 +356,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMVirtualGuardNOPInstruction * instr)
 #endif
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMAdminInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMAdminInstruction * instr)
    {
    // Omit admin instructions from post-binary dumps unless they mark basic block boundaries.
    if (instr->getBinaryEncoding() &&
@@ -397,7 +397,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMAdminInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMImmInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t0x%08x", fullOpCodeName(instr), instr->getSourceImmediate());
@@ -406,7 +406,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMImmInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMImmSymInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
    {
    uint8_t *bufferPos = instr->getBinaryEncoding();
    int32_t  imm       = instr->getSourceImmediate();
@@ -466,7 +466,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMImmSymInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1Src2Instruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Src2Instruction * instr)
    {
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
    TR_RegisterSizes targetSize = instr->doubleFPOp() ? TR_DoubleReg : TR_WordReg;
@@ -567,7 +567,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1Src2Instruction * instr)
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg2Src1Instruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg2Src1Instruction * instr)
    {
    // fmrrd
    TR_RegisterSizes size = TR_WordReg;
@@ -593,7 +593,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg2Src1Instruction * instr)
 #endif
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMMulInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMMulInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
@@ -615,7 +615,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMMulInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMMemSrc1Instruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMMemSrc1Instruction * instr)
    {
    if(instr->getBinaryEncoding() &&
       instr->getMemoryReference()->hasDelayedOffset() &&
@@ -650,7 +650,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMMemSrc1Instruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1Instruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1Instruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
@@ -660,7 +660,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1Instruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMMemInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMMemInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
@@ -670,7 +670,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMMemInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1MemInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1MemInstruction * instr)
    {
    if(instr->getBinaryEncoding() &&
       instr->getMemoryReference()->hasDelayedOffset() &&
@@ -715,7 +715,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1MemInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1MemSrc1Instruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMTrg1MemSrc1Instruction * instr)
    {
    // strex
    printPrefix(pOutFile, instr);
@@ -730,7 +730,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMTrg1MemSrc1Instruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMControlFlowInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMControlFlowInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
@@ -768,7 +768,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMControlFlowInstruction * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMMultipleMoveInstruction * instr)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMMultipleMoveInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", fullOpCodeName(instr));
@@ -1537,7 +1537,7 @@ TR_Debug::printARM(TR::FILE *pOutFile, uint8_t* instrStart, uint8_t* instrEnd)
    }
 
 void
-TR_Debug::printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR_ARMMemInstruction *instr)
+TR_Debug::printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstruction *instr)
    {
    bool regSpilled;
    uint8_t *bufferPos   = instr->getBinaryEncoding();

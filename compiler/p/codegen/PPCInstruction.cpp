@@ -48,7 +48,7 @@
 namespace TR { class SymbolReference; }
 
 
-// TR_LabelInstruction function
+// TR::LabelInstruction function
 void TR::PPCLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Compilation *comp = cg()->comp();

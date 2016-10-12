@@ -933,7 +933,7 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
             }
          else
             {
-            new (cg->trHeapMemory()) TR_ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getHighOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, 31), cg);
+            new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getHighOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, 31), cg);
             }
          if (shiftAmount == 32)
             {
@@ -941,7 +941,7 @@ static TR::Register *longRightShiftEvaluator(TR::Node *node, bool isLogical, TR:
             }
          else
             {
-            new (cg->trHeapMemory()) TR_ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount-32), cg);
+            new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(ARMOp_mov, node, trgReg->getLowOrder(), new (cg->trHeapMemory()) TR_ARMOperand2(shiftType, srcHighReg, shiftAmount-32), cg);
             }
          }
       else // (shiftAmount < 32)
@@ -1161,13 +1161,13 @@ static inline TR::Register *lbooleanTypeEvaluator(TR::Node *node,
          {
          trgLow = cg->allocateRegister();
          armLoadConstant(node, (int32_t)imm64, trgLow, cg);
-         new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(regOp, node, trgLow, src1Reg->getLowOrder(), trgLow, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgLow, src1Reg->getLowOrder(), trgLow, cg);
          }
       if (!(trgHigh = ibooleanTypeImmediateEvaluator(firstChild, regOp, src1Reg->getHighOrder(), (int32_t)(imm64>>32), cg)))
          {
          trgHigh = cg->allocateRegister();
          armLoadConstant(node, (int32_t)(imm64>>32), trgHigh, cg);
-         new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(regOp, node, trgHigh, src1Reg->getHighOrder(), trgHigh, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgHigh, src1Reg->getHighOrder(), trgHigh, cg);
          }
       trgReg = cg->allocateRegisterPair(trgLow, trgHigh);
       }
@@ -1176,8 +1176,8 @@ static inline TR::Register *lbooleanTypeEvaluator(TR::Node *node,
       trgReg = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
       src2Reg = cg->evaluate(secondChild);
 
-      new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(regOp, node, trgReg->getLowOrder(), src2Reg->getLowOrder(), src1Reg->getLowOrder(), cg);
-      new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(regOp, node, trgReg->getHighOrder(), src2Reg->getHighOrder(), src1Reg->getHighOrder(), cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getLowOrder(), src2Reg->getLowOrder(), src1Reg->getLowOrder(), cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(regOp, node, trgReg->getHighOrder(), src2Reg->getHighOrder(), src1Reg->getHighOrder(), cg);
       }
    node->setRegister(trgReg);
    firstChild->decReferenceCount();

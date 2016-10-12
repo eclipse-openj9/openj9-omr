@@ -474,7 +474,7 @@ OMR::X86::CodeGenerator::CodeGenerator() :
    _spilledIntRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
    _liveDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
    _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
-   _clobberingInstructions(getTypedAllocator<TR_ClobberingInstruction*>(TR::comp()->allocator())),
+   _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(TR::comp()->allocator())),
    _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(TR::comp()->allocator())),
    _deferredSplits(getTypedAllocator<TR::X86LabelInstruction*>(TR::comp()->allocator())),
    _flags(0)
@@ -712,7 +712,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
 
    if (symbol)
       {
-      TR_ClobberingInstruction  * clob = NULL;
+      TR::ClobberingInstruction  * clob = NULL;
       TR_IGNode                 *IGNodeSym = NULL;
 
       if (self()->getLocalsIG())
@@ -735,7 +735,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                {
                if (!clob)
                   {
-                  clob = new (self()->trHeapMemory()) TR_ClobberingInstruction(instr, self()->trMemory());
+                  clob = new (self()->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
                   self()->addClobberingInstruction(clob);
                   }
 
@@ -762,7 +762,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                   {
                   if (!clob)
                      {
-                     clob = new (self()->trHeapMemory()) TR_ClobberingInstruction(instr, self()->trMemory());
+                     clob = new (self()->trHeapMemory()) TR::ClobberingInstruction(instr, self()->trMemory());
                      self()->addClobberingInstruction(clob);
                      }
 
@@ -807,7 +807,7 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
 // register, we iteratively deactivate all registers that depend on registers
 // that have been clobbered/deactivated.
 //
-void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR_ClobberingInstruction * clob,
+void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::ClobberingInstruction * clob,
                                                                     TR::Register              * baseReg)
    {
    TR_Stack<TR::Register *> worklist(self()->trMemory());
@@ -1324,7 +1324,7 @@ void OMR::X86::CodeGenerator::prepareForNonLinearRegisterAssignmentAtMerge(
    }
 
 
-void OMR::X86::CodeGenerator::processClobberingInstructions(TR_ClobberingInstruction * clobInstructionCursor, TR::Instruction *instructionCursor)
+void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstruction * clobInstructionCursor, TR::Instruction *instructionCursor)
    {
    // Activate any discardable registers that this instruction may have clobbered.
    //
@@ -1453,7 +1453,7 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
          self()->dumpPostGPRegisterAssignment(instructionCursor, origNextInstruction);
 #endif
       self()->tracePostRAInstruction(instructionCursor);
-      TR_ClobberingInstruction * clobInst;
+      TR::ClobberingInstruction * clobInst;
       if(_clobIterator == self()->getClobberingInstructions().end())
     	  clobInst = 0;
       else

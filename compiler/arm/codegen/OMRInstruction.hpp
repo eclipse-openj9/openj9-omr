@@ -37,9 +37,9 @@
 #include "codegen/GCStackMap.hpp"
 #include "codegen/RegisterConstants.hpp"
 
-class TR_ARMConditionalBranchInstruction;
-class TR_ARMDepImmInstruction;
-class TR_ARMImmInstruction;
+namespace TR { class ARMConditionalBranchInstruction; }
+namespace TR { class ARMDepImmInstruction; }
+namespace TR { class ARMImmInstruction; }
 namespace TR { class CodeGenerator; }
 namespace TR { class MemoryReference; }
 namespace TR { class RegisterDependencyConditions; }
@@ -112,14 +112,14 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    virtual bool dependencyRefsRegister(TR::Register *reg);
 
-   virtual TR_ARMConditionalBranchInstruction *getARMConditionalBranchInstruction();
+   virtual TR::ARMConditionalBranchInstruction *getARMConditionalBranchInstruction();
 
    virtual TR::Register *getPrimaryTargetRegister() {return NULL;}
 
 // The following safe virtual downcast method is used under debug only
 // for assertion checking
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-   virtual TR_ARMImmInstruction *getARMImmInstruction();
+   virtual TR::ARMImmInstruction *getARMImmInstruction();
 #endif
 
 

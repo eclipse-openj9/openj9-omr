@@ -298,7 +298,7 @@ TR::Instruction *generateConditionalBranchInstruction(TR::CodeGenerator         
                                                      TR::RegisterDependencyConditions *cond,
                                                      TR::Instruction                     *prev = NULL);
 
-TR_ARMControlFlowInstruction *generateControlFlowInstruction(TR::CodeGenerator                   *cg,
+TR::ARMControlFlowInstruction *generateControlFlowInstruction(TR::CodeGenerator                   *cg,
                                                              TR_ARMOpCodes                       op,
                                                              TR::Node                            *node,
                                                              TR::RegisterDependencyConditions *cond);

@@ -344,7 +344,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
       // Check the live discardable register list to see if this is the first
       // instruction that kills the rematerialisable range of a register.
       //
-      TR_ClobberingInstruction *clob = NULL;
+      TR::ClobberingInstruction *clob = NULL;
       TR_X86RegisterDependencyGroup *post = self()->getDependencyConditions()->getPostConditions();
       for (uint32_t i = 0; i < self()->getDependencyConditions()->getNumPostConditions(); i++)
          {
@@ -353,7 +353,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
             {
             if (!clob)
                {
-               clob = new (self()->cg()->trHeapMemory()) TR_ClobberingInstruction(self(), self()->cg()->trMemory());
+               clob = new (self()->cg()->trHeapMemory()) TR::ClobberingInstruction(self(), self()->cg()->trMemory());
                self()->cg()->addClobberingInstruction(clob);
                }
             clob->addClobberedRegister(reg);

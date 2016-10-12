@@ -664,7 +664,7 @@ public:
          case TR::Int64:   return TR::labs;
          case TR::Float:   return TR::fabs;
          case TR::Double:  return TR::dabs;
-         default: TR_ASSERT(false, "no abs opcode for this datatype %d",type);
+         default: TR_ASSERT(false, "no abs opcode for this datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -777,7 +777,7 @@ public:
          case TR::Int16:  return TR::sand;
          case TR::Int32:  return TR::iand;
          case TR::Int64:  return TR::land;
-         default: TR_ASSERT(false, "no and opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no and opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -790,7 +790,7 @@ public:
          case TR::Int16:  return TR::sor;
          case TR::Int32:  return TR::ior;
          case TR::Int64:  return TR::lor;
-         default: TR_ASSERT(false, "no or opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no or opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -803,7 +803,7 @@ public:
          case TR::Int16:  return TR::sxor;
          case TR::Int32:  return TR::ixor;
          case TR::Int64:  return TR::lxor;
-         default: TR_ASSERT(false, "no xor opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no xor opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -816,7 +816,7 @@ public:
          case TR::Int16:  return TR::sshl;
          case TR::Int32:  return TR::ishl;
          case TR::Int64:  return TR::lshl;
-         default: TR_ASSERT(false, "no shl opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no shl opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -827,7 +827,7 @@ public:
          {
          case TR::Int32:  return TR::iushl;
          case TR::Int64:  return TR::lushl;
-         default: TR_ASSERT(false, "no ushl opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no ushl opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -840,7 +840,7 @@ public:
          case TR::Int16:  return TR::sshr;
          case TR::Int32:  return TR::ishr;
          case TR::Int64:  return TR::lshr;
-         default: TR_ASSERT(false, "no shr opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no shr opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -851,7 +851,7 @@ public:
          {
          case TR::Int32:  return TR::iushr;
          case TR::Int64:  return TR::lushr;
-         default: TR_ASSERT(false, "no ushr opcode for datatype %d",type);
+         default: TR_ASSERT(false, "no ushr opcode for datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -1011,7 +1011,7 @@ public:
          case TR::Address:  return TR::ifacmpeq;
          case TR::Float:    return TR::iffcmpeq;
          case TR::Double:   return TR::ifdcmpeq;
-         default: TR_ASSERT(0, "no ifcmpeq opcode for this datatype %d",type);
+         default: TR_ASSERT(0, "no ifcmpeq opcode for this datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -1027,7 +1027,7 @@ public:
          case TR::Address:  return TR::ifacmpne;
          case TR::Float:    return TR::iffcmpne;
          case TR::Double:   return TR::ifdcmpne;
-         default: TR_ASSERT(0, "no ifcmpne opcode for this datatype %d",type);
+         default: TR_ASSERT(0, "no ifcmpne opcode for this datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -1043,7 +1043,7 @@ public:
          case TR::Address:  return TR::acmpeq;
          case TR::Float:    return TR::fcmpeq;
          case TR::Double:   return TR::dcmpeq;
-         default: TR_ASSERT(0, "no cmpeq opcode for this datatype %d",type);
+         default: TR_ASSERT(0, "no cmpeq opcode for this datatype %s",type.toString());
          }
       return TR::BadILOp;
       }
@@ -1091,7 +1091,7 @@ public:
          case TR::Address:  return TR::aconst;
          case TR::Float:    return TR::fconst;
          case TR::Double:   return TR::dconst;
-         default: TR_ASSERT(0, "no const opcode for this datatype %d",type);
+         default: TR_ASSERT(0, "no const opcode for this datatype %s",type.toString());
          }
       return TR::BadILOp;
       }

@@ -646,7 +646,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
          else
             {
             TR_ASSERT(rootLoadOrStore->getDataType() == TR::Address || rootLoadOrStore->getOpCode().isLoadConst(),
-               "rootLoadOrStore %s %p should be an address type or const op and not dt %d\n", rootLoadOrStore->getOpCode().getName(), rootLoadOrStore,rootLoadOrStore->getDataType());
+               "rootLoadOrStore %s %p should be an address type or const op and not dt %s\n", rootLoadOrStore->getOpCode().getName(), rootLoadOrStore,rootLoadOrStore->getDataType().toString());
             //TR_ASSERT(rootLoadOrStore->getDataType() == TR::Address,
             //   "rootLoadOrStore %s %p should be an address type and not dt %d\n",rootLoadOrStore->getOpCode().getName(),rootLoadOrStore,rootLoadOrStore->getDataType());
 

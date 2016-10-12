@@ -1163,7 +1163,7 @@ OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol 
    if (symbol->getType().isAggregate())
       {
       dt = TR::comp()->cg()->getDataTypeFromSymbolMap(symbol);
-      traceMsg(TR::comp(), "\nxxx2, rcSymbol %p is aggregate but found better dt = %d\n",symbol,dt);
+      traceMsg(TR::comp(), "\nxxx2, rcSymbol %p is aggregate but found better dt = %s\n",symbol,dt.toString());
       }
 
    if (dt == TR::NoType)

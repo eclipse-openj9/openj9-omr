@@ -311,9 +311,9 @@ class TR_ExpressionPropagation
                   {
                   TR::ILOpCodes modPrecOp = TR::ILOpCode::modifyPrecisionOpCode(_parentOfTargetNode->getChild(_targetChildIndex)->getDataType());
 
-                  TR_ASSERT(modPrecOp != TR::BadILOp, "no bcd modify precision opcode found for node %p type %d\n",
+                  TR_ASSERT(modPrecOp != TR::BadILOp, "no bcd modify precision opcode found for node %p type %s\n",
                           _parentOfTargetNode->getChild(_targetChildIndex),
-                          _parentOfTargetNode->getChild(_targetChildIndex)->getDataType());
+                          _parentOfTargetNode->getChild(_targetChildIndex)->getDataType().toString());
 
                   TR::Node * pdModPrecNode = TR::Node::create(modPrecOp, 1, _parentOfTargetNode->getChild(_targetChildIndex));
                   pdModPrecNode->setDecimalPrecision(oldPrecision); // set to existing node's precision
@@ -325,9 +325,9 @@ class TR_ExpressionPropagation
                   {
                   TR::ILOpCodes cleanOp = TR::ILOpCode::cleanOpCode(_parentOfTargetNode->getChild(_targetChildIndex)->getDataType());
 
-                  TR_ASSERT(cleanOp != TR::BadILOp, "no bcd clean opcode found for node %p type %d\n",
+                  TR_ASSERT(cleanOp != TR::BadILOp, "no bcd clean opcode found for node %p type %s\n",
                           _parentOfTargetNode->getChild(_targetChildIndex),
-                          _parentOfTargetNode->getChild(_targetChildIndex)->getDataType());
+                          _parentOfTargetNode->getChild(_targetChildIndex)->getDataType().toString());
 
                   TR::Node * pdCleanNode = TR::Node::create(cleanOp, 1, _parentOfTargetNode->getChild(_targetChildIndex));
 
@@ -348,8 +348,8 @@ class TR_ExpressionPropagation
             //                                                     /* source */            /* target */
             TR::ILOpCodes convOp = TR::ILOpCode::getProperConversion(newNode->getDataType(), oldNode->getDataType(), true);
 
-            TR_ASSERT(convOp != TR::BadILOp, "no conversion opcode found for old type %d to new type %d!\n",
-                    oldNode->getDataType(), newNode->getDataType());
+            TR_ASSERT(convOp != TR::BadILOp, "no conversion opcode found for old type %s to new type %s!\n",
+                    oldNode->getDataType().toString(), newNode->getDataType().toString());
 
             TR::Node * convNode = TR::Node::create(convOp, 1, _parentOfTargetNode->getChild(_targetChildIndex));
 
@@ -527,8 +527,8 @@ int32_t TR_CopyPropagation::perform()
 #ifdef J9_PROJECT_SPECIFIC
                   if (prevDefNode->getType().isBCD())
                      {
-                     TR_ASSERT(defNode->getType().isBCD(),"expecting defNode to be a BCD type (dt=%d) when prevDefNode is a BCD type (dt=%d)\n",
-                        defNode->getDataType(),prevDefNode->getDataType());
+                     TR_ASSERT(defNode->getType().isBCD(),"expecting defNode to be a BCD type (dt=%s) when prevDefNode is a BCD type (dt=%s)\n",
+                        defNode->getDataType().toString(),prevDefNode->getDataType().toString());
                      if (defNode->getType().isBCD() &&
                          defNode->getDataType() == prevDefNode->getDataType() &&
                          prevDefNode->getDecimalPrecision() == defNode->getDecimalPrecision() &&
@@ -1289,7 +1289,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                   if (needsPrecisionCorrection)
                      {
                      TR::ILOpCodes modPrecOp = TR::ILOpCode::modifyPrecisionOpCode(nodeCopy->getDataType());
-                     TR_ASSERT(modPrecOp != TR::BadILOp,"no bcd modify precision opcode found\n",nodeCopy,nodeCopy->getDataType());
+                     TR_ASSERT(modPrecOp != TR::BadILOp,"no bcd modify precision opcode found for node %p with type %s\n",nodeCopy,nodeCopy->getDataType().toString());
                      if (needsClean) // i.e. if a clean will be generated below then do not modify node op yet, let the top level op (the coming clean) do this
                         {
                         TR::Node *pdModPrecNode = TR::Node::create(modPrecOp, 1, nodeCopy);
@@ -1314,7 +1314,7 @@ void TR_CopyPropagation::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                   if (needsClean)
                      {
                      TR::ILOpCodes cleanOp = TR::ILOpCode::cleanOpCode(nodeCopy->getDataType());
-                     TR_ASSERT(cleanOp != TR::BadILOp,"no bcd modify precision cleanOp found for node %p with type %d\n",nodeCopy,nodeCopy->getDataType());
+                     TR_ASSERT(cleanOp != TR::BadILOp,"no bcd modify precision cleanOp found for node %p with type %s\n",nodeCopy,nodeCopy->getDataType().toString());
                      // can only clean up to maxPackedPrec -- case allow should have been guaranteed by isCorrectToPropagate
                      TR_ASSERT(node->getDecimalPrecision() <= TR::DataType::getMaxPackedDecimalPrecision(),
                              "node %p prec %d must be <= max %d\n", node, node->getDecimalPrecision(), TR::DataType::getMaxPackedDecimalPrecision());

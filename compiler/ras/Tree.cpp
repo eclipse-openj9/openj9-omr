@@ -293,7 +293,7 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
          break;
 
       default:
-         output.append(" Bad Type %d", node->getDataType());
+         output.append(" Bad Type %s", node->getDataType().toString());
          break;
       }
    }

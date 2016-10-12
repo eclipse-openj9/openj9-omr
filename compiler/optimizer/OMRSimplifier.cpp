@@ -680,8 +680,8 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
             {
             TR::Node *origGrandChild = grandChild;
             TR::ILOpCodes setSignOp = TR::ILOpCode::setSignOpCode(grandChild->getDataType());
-            TR_ASSERT(setSignOp != TR::BadILOp,"could not find setSignOp for type %d on %s (%p)\n",
-                    grandChild->getDataType(),grandChild->getOpCode().getName(),grandChild);
+            TR_ASSERT(setSignOp != TR::BadILOp,"could not find setSignOp for type %s on %s (%p)\n",
+                    grandChild->getDataType().toString(),grandChild->getOpCode().getName(),grandChild);
             grandChild = TR::Node::create(setSignOp, 2,
                                          origGrandChild,
                                          TR::Node::iconst(origGrandChild, TR::DataType::getValue(alwaysGeneratedSign)));

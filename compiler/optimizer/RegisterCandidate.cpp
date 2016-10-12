@@ -319,7 +319,7 @@ TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
    if (_candidateForSymRefs)
       _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
 
-   TR_ASSERT(comp()->cg()->considerTypeForGRA(symRef),"should create a registerCandidate for symRef #%d with datatype %d\n",symRef->getReferenceNumber(),rc->getDataType());
+   TR_ASSERT(comp()->cg()->considerTypeForGRA(symRef),"should create a registerCandidate for symRef #%d with datatype %s\n",symRef->getReferenceNumber(),rc->getDataType().toString());
 
    return rc;
    }

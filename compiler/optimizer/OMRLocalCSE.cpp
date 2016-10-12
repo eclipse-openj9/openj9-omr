@@ -1144,8 +1144,8 @@ TR::Node *OMR::LocalCSE::replaceCopySymbolReferenceByOriginalIn(TR::SymbolRefere
                    defNode->getOpCode().isStore() &&
                    defNode->mustCleanSignInPDStoreEvaluator())
                   {
-                  TR_ASSERT(rhsOfStoreDefNode->getDataType() == TR::PackedDecimal,"rhsOfStoreDefNode %p (type %d) must be pd type if defNode %p is pd\n",
-                     rhsOfStoreDefNode,rhsOfStoreDefNode->getDataType(),defNode);
+                  TR_ASSERT(rhsOfStoreDefNode->getDataType() == TR::PackedDecimal,"rhsOfStoreDefNode %p (type %s) must be pd type if defNode %p is pd\n",
+                     rhsOfStoreDefNode,rhsOfStoreDefNode->getDataType().toString(),defNode);
                   // clean should only have been folded into defNode if rhsOfStoreDefNode prec <= 31
                   TR_ASSERT(rhsOfStoreDefNode->getDecimalPrecision() <= TR::DataType::getMaxPackedDecimalPrecision(),
                      "rhsOfStoreDefNode %p prec %d must be <= max %d\n", rhsOfStoreDefNode, rhsOfStoreDefNode->getDecimalPrecision(), TR::DataType::getMaxPackedDecimalPrecision());

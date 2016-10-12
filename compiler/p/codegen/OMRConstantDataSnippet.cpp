@@ -149,7 +149,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
          break;
 
       default:
-         TR_ASSERT(0, "Only float and address constants are supported. Data type is %d.\n", type);
+         TR_ASSERT(0, "Only float and address constants are supported. Data type is %s.\n", type.toString());
       }
 
    return(ret);

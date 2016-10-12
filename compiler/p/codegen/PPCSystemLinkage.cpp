@@ -963,7 +963,7 @@ int32_t TR_PPCSystemLinkage::buildArgs(TR::Node *callNode,
             }
             break;
          default:
-            TR_ASSERT(false, "Argument type %d is not supported\n", child->getDataType());
+            TR_ASSERT(false, "Argument type %s is not supported\n", child->getDataType().toString());
          }
       }
 

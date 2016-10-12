@@ -164,7 +164,6 @@ public:
    static TR::Node *copy(TR::Node *, int32_t numChildren);
 
    static TR::Node *recreate(TR::Node *originalNode, TR::ILOpCodes op);
-   static TR::Node *recreateAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op);
    static TR::Node *recreateWithSymRefAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef);
 
    // create methods from everywhere other than the ilGenerator need

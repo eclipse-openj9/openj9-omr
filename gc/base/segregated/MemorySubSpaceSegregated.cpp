@@ -65,9 +65,9 @@ MM_MemorySubSpaceSegregated::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_Al
 	/* spine object refers to the barrier-safe "object" reference, as opposed to the internal "heap address" represented by the spine variable */
 	omrobjectptr_t spineObject = (omrobjectptr_t) spine;
 	void *leaf = NULL;
-	if(env->_envLanguageInterface->saveObjects(spineObject)) {
+	if(env->saveObjects(spineObject)) {
 		leaf = allocateMixedObjectOrArraylet(env, allocDescription, arrayletLeaf);
-		env->_envLanguageInterface->restoreObjects(&spineObject);
+		env->restoreObjects(&spineObject);
 		spine = (omrarrayptr_t)spineObject;
 		allocDescription->setSpine(spine);
 	}

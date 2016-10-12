@@ -178,7 +178,8 @@ typedef struct OMR_VMThread {
 
 	int32_t _attachCount;
 
-	void *_savedObject; /**< holds new object allocation until object can be attached to reference graph (see MM_AllocationDescription::save/restoreObjects()) */
+	void *_savedObject1; /**< holds new object allocation until object can be attached to reference graph (see MM_AllocationDescription::save/restoreObjects()) */
+	void *_savedObject2; /**< holds new object allocation until object can be attached to reference graph (see MM_AllocationDescription::save/restoreObjects()) */
 } OMR_VMThread;
 
 /**

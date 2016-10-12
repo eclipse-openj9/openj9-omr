@@ -152,8 +152,11 @@ MM_CollectorLanguageInterfaceImpl::markingScheme_scanRoots(MM_EnvironmentBase *e
 	OMR_VMThread *walkThread;
 	GC_OMRVMThreadListIterator threadListIterator(env->getOmrVM());
 	while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
-		if (NULL != walkThread->_savedObject) {
-			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject);
+		if (NULL != walkThread->_savedObject1) {
+			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject1);
+		}
+		if (NULL != walkThread->_savedObject2) {
+			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject2);
 		}
 	}
 }

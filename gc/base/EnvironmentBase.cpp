@@ -523,7 +523,7 @@ MM_EnvironmentBase::unwindExclusiveVMAccessForGC()
 		_envLanguageInterface->releaseExclusiveVMAccess();
 	}
 	if (0 < _omrVMThread->exclusiveCount) {
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
+		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
 		Assert_MM_true(extensions->gcExclusiveAccessThreadId == _omrVMThread);
 
 		omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
@@ -634,4 +634,52 @@ MM_MemorySubSpace *
 MM_EnvironmentBase::getTenureMemorySubSpace()
 {
 	return getMemorySpace()->getTenureMemorySubSpace();
+}
+
+bool
+MM_EnvironmentBase::saveObjects(omrobjectptr_t objectPtr)
+{
+	void *heapBase = getExtensions()->heap->getHeapBase();
+	void *heapTop = getExtensions()->heap->getHeapTop();
+
+	Assert_MM_true((heapBase <= objectPtr) && (heapTop > objectPtr));
+	Assert_MM_true((heapBase <= objectPtr) && (heapTop > objectPtr));
+	Assert_MM_true(_omrVMThread->_savedObject1 != objectPtr);
+	Assert_MM_true(_omrVMThread->_savedObject2 != objectPtr);
+
+	if (NULL == _omrVMThread->_savedObject1) {
+		_omrVMThread->_savedObject1 = objectPtr;
+		return true;
+	} else {
+		Assert_MM_true((heapBase <= _omrVMThread->_savedObject1) && (heapTop > _omrVMThread->_savedObject1));
+	}
+
+	if (NULL == _omrVMThread->_savedObject2) {
+		_omrVMThread->_savedObject2 = objectPtr;
+		return true;
+	} else {
+		Assert_MM_true((heapBase <= _omrVMThread->_savedObject2) && (heapTop > _omrVMThread->_savedObject2));
+	}
+
+	Assert_MM_unreachable();
+	return false;
+}
+
+void
+MM_EnvironmentBase::restoreObjects(omrobjectptr_t *objectPtrIndirect)
+{
+	void *heapBase = getExtensions()->heap->getHeapBase();
+	void *heapTop = getExtensions()->heap->getHeapTop();
+
+	if (NULL != _omrVMThread->_savedObject2) {
+		Assert_MM_true((heapBase <= _omrVMThread->_savedObject2) && (heapTop > _omrVMThread->_savedObject2));
+		*objectPtrIndirect = (omrobjectptr_t)_omrVMThread->_savedObject2;
+		_omrVMThread->_savedObject2 = NULL;
+	} else if (NULL != _omrVMThread->_savedObject1) {
+		Assert_MM_true((heapBase <= _omrVMThread->_savedObject1) && (heapTop > _omrVMThread->_savedObject1));
+		*objectPtrIndirect = (omrobjectptr_t)_omrVMThread->_savedObject1;
+		_omrVMThread->_savedObject1 = NULL;
+	} else {
+		Assert_MM_unreachable();
+	}
 }

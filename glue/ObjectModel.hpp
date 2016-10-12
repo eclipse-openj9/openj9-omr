@@ -29,6 +29,8 @@
 #include "Bits.hpp"
 #include "HeapLinkedFreeHeader.hpp"
 
+class MM_MM_AllocateInitialization;
+class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
 
 #define J9_GC_OBJECT_ALIGNMENT_IN_BYTES 0x8
@@ -81,6 +83,22 @@ public:
 #endif /* OMR_GC_MINIMUM_OBJECT_SIZE */
 
 		return sizeInBytes;
+	}
+
+	/**
+	 * This method must be implemented to initialize the object header for a new allocation
+	 * of heap memory. The MM_AllocateInitialization instance provided allows access to the
+	 * MM_AllocateDescription instance used to allocate the heap memory and language-specific
+	 * metadata required to initialize the object header.
+	 *
+	 * @param[in] env Pointer to environment for calling thread.
+	 * @param[in] allocatedBytes Pointer to allocated heap space
+	 * @param[in] allocateInitialization Pointer to the allocation metadata
+	 */
+	omrobjectptr_t
+	initializeAllocation(MM_EnvironmentBase *env, void *allocatedBytes, MM_AllocateInitialization *allocateInitialization)
+	{
+#error GC_ObjectModel::initializeAllocation() must be implemented.
 	}
 
 	/**

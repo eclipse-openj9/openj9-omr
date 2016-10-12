@@ -17,6 +17,7 @@
  *******************************************************************************/
 
 #include "CollectorLanguageInterface.hpp"
+#include "EnvironmentBase.hpp"
 #include "EnvironmentLanguageInterface.hpp"
 #include "GCConfigTest.hpp"
 #include "ObjectModel.hpp"
@@ -275,14 +276,16 @@ GCConfigTest::parseObjectType(pugi::xml_node node)
 ObjectEntry *
 GCConfigTest::allocateHelper(const char *objName, uintptr_t size)
 {
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(exampleVM->_omrVMThread);
+
 	ObjectEntry objEntry;
 	objEntry.numOfRef = 0;
 	objEntry.name = objName;
-	objEntry.objPtr = OMR_GC_AllocateNoGC(exampleVM->_omrVMThread, size, OMR_GC_THREAD_AT_SAFEPOINT | OMR_GC_ALLOCATE_ZERO_MEMORY);
+	objEntry.objPtr = OMR_GC_AllocateNoGC(exampleVM->_omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, size, 0);
 
 	if (NULL == objEntry.objPtr) {
 		gcTestEnv->log("No free memory to allocate %s of size 0x%llx, GC start.\n", objName, size);
-		objEntry.objPtr = OMR_GC_Allocate(exampleVM->_omrVMThread, size, OMR_GC_THREAD_AT_SAFEPOINT | OMR_GC_ALLOCATE_ZERO_MEMORY);
+		objEntry.objPtr = OMR_GC_Allocate(exampleVM->_omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, size, 0);
 	}
 
 	ObjectEntry *newEntry = NULL;

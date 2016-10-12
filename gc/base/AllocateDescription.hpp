@@ -23,24 +23,26 @@
 #include "omrcomp.h"
 #include "modronbase.h"
 #include "objectdescription.h"
+#include "omrthread_generated.h"
+#include "thread_api.h"
 
-#include "BaseVirtual.hpp"
+#include "Base.hpp"
+#include "EnvironmentLanguageInterface.hpp"
 #include "MemorySubSpace.hpp"
 
 class MM_MemoryPool;
 class MM_MemorySpace;
 
-/**
- * @todo Provide class documentation
- * @ingroup GC_Base_Core
+/* NOTE: This class should only define non-VM specific properties of the
+ * allocation request. Any VM specific properties should be defined
+ * in MM_AllocateInitialization
  */
-class MM_AllocateDescription : public MM_BaseVirtual {
-	/* N.B This class should only define non-VM specific properties of the 
-	 * allocation request. Any VM specific properties should be defined 
-	 * in MM_AllocateDescription
-	 */ 
+class MM_AllocateDescription : public MM_Base {
+	/**
+	 * Data members
+	 */
+private:
 protected:
-
 	uintptr_t _bytesRequested;
 
 	uintptr_t _allocateFlags;
@@ -69,7 +71,16 @@ protected:
 	bool  _collectAndClimb;
 	bool  _climb;				/* indicates that current attempt to allocate should try parent, if current subspace failed */
 	bool  _completedFromTlh;
-		
+
+public:
+
+	/**
+	 * Function members
+	 */
+private:
+
+protected:
+
 public:
 
 	MMINLINE uint32_t getObjectFlags() { return _objectFlags; }
@@ -115,7 +126,54 @@ public:
 
 	MMINLINE void setAllocationTaxSize(uintptr_t size)	{ _allocationTaxSize = size; }
 	MMINLINE uintptr_t getAllocationTaxSize() 			{ return _allocationTaxSize; }
-	MMINLINE void payAllocationTax(MM_EnvironmentBase *env) { _memorySubSpace->payAllocationTax(env, this); }
+
+	/**
+	 * Save the spine to this thread's "saved object" slot so that it will be used as a root and will be updated if the spine moves.
+	 * NOTE:  This call must be balanced by a following restoreObjects call
+	 */
+	MMINLINE void
+	saveObjects(MM_EnvironmentBase* env)
+	{
+		if ((NULL != _spine) && !(env->saveObjects((omrobjectptr_t)_spine))) {
+			Assert_MM_unreachable();
+		}
+	}
+
+	/**
+	 * Restore the spine from this thread's "saved object" slot where it was stored for safe marking and update.
+	 * NOTE:  This call must be balanced by a preceding saveObjects call
+	 */
+	MMINLINE void
+	restoreObjects(MM_EnvironmentBase* env)
+	{
+		if (NULL != _spine) {
+			env->restoreObjects((omrobjectptr_t*)&_spine);
+		}
+	}
+
+	MMINLINE void payAllocationTax(MM_EnvironmentBase *env)
+	{
+		if (0 != _allocationTaxSize) {
+			/* alloctor should have set this to point to subspace that spine came from */
+			Assert_MM_true(NULL != _memorySubSpace);
+
+			omrthread_t mutator = omrthread_self();
+			uintptr_t category = omrthread_get_category(mutator);
+			MM_GCExtensionsBase *extensions = env->getExtensions();
+
+			if (extensions->trackMutatorThreadCategory) {
+				/* this thread is doing concurrent GC work, charge time spent against the GC category */
+				omrthread_set_category(mutator, J9THREAD_CATEGORY_SYSTEM_GC_THREAD, J9THREAD_TYPE_SET_GC);
+			}
+
+			_memorySubSpace->payAllocationTax(env, this);
+
+			if (extensions->trackMutatorThreadCategory) {
+				/* done doing concurrent GC work, restore the thread category */
+				omrthread_set_category(mutator, category, J9THREAD_TYPE_SET_GC);
+			}
+		}
+	}
 
 	MMINLINE void setTLHAllocation(bool tlhAlloc) 						{ _tlhAllocation = tlhAlloc; }
 	MMINLINE bool isTLHAllocation()										{ return _tlhAllocation; }
@@ -157,26 +215,14 @@ public:
 	 */
 	MMINLINE bool getAllocationSucceeded() {return _allocationSucceeded;}
 
-
-	/**
-	 * Save the spine to this thread's "saved object" slot so that it will be used as a root and will be updated if the spine moves.
-	 * NOTE:  This call must be balanced by a following restoreObjects call
-	 */
-	virtual void saveObjects(MM_EnvironmentBase* env);
-
-	/**
-	 * Restore the spine from this thread's "saved object" slot where it was stored for safe marking and update.
-	 * NOTE:  This call must be balanced by a preceding saveObjects call
-	 */
-	virtual void restoreObjects(MM_EnvironmentBase* env);
-
 	/**
 	 * Create an AllocateDescriptionCore object.
 	 */
 	MM_AllocateDescription(uintptr_t bytesRequested, uintptr_t allocateFlags, bool collectAndClimb, bool threadAtSafePoint) :
-		MM_BaseVirtual()
+		MM_Base()
 		, _bytesRequested(bytesRequested)
 		, _allocateFlags(allocateFlags)
+		, _objectFlags(0)
 		, _allocationSucceeded(false)
 		,_memorySpace(NULL)
 		,_memorySubSpace(NULL)
@@ -196,9 +242,7 @@ public:
 		, _collectAndClimb(collectAndClimb)
 		, _climb(false)
 		, _completedFromTlh(false)
-	{
-		_typeId = __FUNCTION__;
-	};
+	{}
 };
 
 #endif /* ALLOCATEDESCRIPTION_HPP_ */

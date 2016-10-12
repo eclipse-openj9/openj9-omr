@@ -71,22 +71,6 @@ MM_EnvironmentLanguageInterfaceImpl::tearDown(MM_EnvironmentBase *env)
 {
 }
 
-bool
-MM_EnvironmentLanguageInterfaceImpl::saveObjects(omrobjectptr_t objectPtr)
-{
-	Assert_MM_true(NULL == _omrThread->_savedObject);
-	_omrThread->_savedObject = (void *)objectPtr;
-	return true;
-}
-
-void
-MM_EnvironmentLanguageInterfaceImpl::restoreObjects(omrobjectptr_t *objectPtrIndirect)
-{
-	Assert_MM_true(NULL != _omrThread->_savedObject);
-	*objectPtrIndirect = (omrobjectptr_t)_omrThread->_savedObject;
-	_omrThread->_savedObject = NULL;
-}
-
 #if defined (OMR_GC_THREAD_LOCAL_HEAP)
 /**
  * Disable inline TLH allocates by hiding the real heap allocation address from

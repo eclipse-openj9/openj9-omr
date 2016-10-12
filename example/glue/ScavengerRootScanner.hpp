@@ -87,8 +87,11 @@ public:
 			OMR_VMThread *walkThread;
 			GC_OMRVMThreadListIterator threadListIterator(env->getOmrVM());
 			while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
-				if (NULL != walkThread->_savedObject) {
-					_scavenger->copyObjectSlot(envStd, (volatile omrobjectptr_t *) &walkThread->_savedObject);
+				if (NULL != walkThread->_savedObject1) {
+					_scavenger->copyObjectSlot(envStd, (volatile omrobjectptr_t *) &walkThread->_savedObject1);
+				}
+				if (NULL != walkThread->_savedObject2) {
+					_scavenger->copyObjectSlot(envStd, (volatile omrobjectptr_t *) &walkThread->_savedObject2);
 				}
 			}
 			env->_currentTask->releaseSynchronizedGCThreads(env);

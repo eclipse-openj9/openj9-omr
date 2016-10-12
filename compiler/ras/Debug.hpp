@@ -259,63 +259,63 @@ class TR_ARMStackCheckFailureSnippet;
 class TR_ARMRecompilationSnippet;
 class TR_ARMRegisterDependencyGroup;
 
-class TR_S390LabelInstruction;
-class TR_S390BranchInstruction;
-class TR_S390BranchOnCountInstruction;
-class TR_S390VirtualGuardNOPInstruction;
-class TR_S390BranchOnIndexInstruction;
-class TR_S390AnnotationInstruction;
-class TR_S390PseudoInstruction;
-class TR_S390ImmInstruction;
-class TR_S390ImmSnippetInstruction;
-class TR_S390ImmSymInstruction;
-class TR_S390Imm2Instruction;
-class TR_S390RegInstruction;
-class TR_S390RRInstruction;
-class TR_S390TranslateInstruction;
-class TR_S390RRFInstruction;
-class TR_S390RRRInstruction;
-class TR_S390RXFInstruction;
-class TR_S390RIInstruction;
-class TR_S390RILInstruction;
-class TR_S390RSInstruction;
-class TR_S390RSLInstruction;
-class TR_S390RSLbInstruction;
-class TR_S390RXEInstruction;
-class TR_S390RXInstruction;
-class TR_S390MemInstruction;
-class TR_S390SS1Instruction;
-class TR_S390MIIInstruction;
-class TR_S390SMIInstruction;
-class TR_S390SS2Instruction;
-class TR_S390SS4Instruction;
-class TR_S390SSEInstruction;
-class TR_S390SSFInstruction;
-class TR_S390VRIInstruction;
-class TR_S390VRIaInstruction;
-class TR_S390VRIbInstruction;
-class TR_S390VRIcInstruction;
-class TR_S390VRIdInstruction;
-class TR_S390VRIeInstruction;
-class TR_S390VRRInstruction;
-class TR_S390VRRaInstruction;
-class TR_S390VRRbInstruction;
-class TR_S390VRRcInstruction;
-class TR_S390VRRdInstruction;
-class TR_S390VRReInstruction;
-class TR_S390VRRfInstruction;
-class TR_S390VRSaInstruction;
-class TR_S390VRSbInstruction;
-class TR_S390VRScInstruction;
-class TR_S390VRVInstruction;
-class TR_S390VRXInstruction;
-class TR_S390VStorageInstruction;
-class TR_S390OpCodeOnlyInstruction;
-class TR_S390IInstruction;
-class TR_S390SInstruction;
-class TR_S390SIInstruction;
-class TR_S390SILInstruction;
-class TR_S390NOPInstruction;
+namespace TR { class S390LabelInstruction; }
+namespace TR { class S390BranchInstruction; }
+namespace TR { class S390BranchOnCountInstruction; }
+namespace TR { class S390VirtualGuardNOPInstruction; }
+namespace TR { class S390BranchOnIndexInstruction; }
+namespace TR { class S390AnnotationInstruction; }
+namespace TR { class S390PseudoInstruction; }
+namespace TR { class S390ImmInstruction; }
+namespace TR { class S390ImmSnippetInstruction; }
+namespace TR { class S390ImmSymInstruction; }
+namespace TR { class S390Imm2Instruction; }
+namespace TR { class S390RegInstruction; }
+namespace TR { class S390RRInstruction; }
+namespace TR { class S390TranslateInstruction; }
+namespace TR { class S390RRFInstruction; }
+namespace TR { class S390RRRInstruction; }
+namespace TR { class S390RXFInstruction; }
+namespace TR { class S390RIInstruction; }
+namespace TR { class S390RILInstruction; }
+namespace TR { class S390RSInstruction; }
+namespace TR { class S390RSLInstruction; }
+namespace TR { class S390RSLbInstruction; }
+namespace TR { class S390RXEInstruction; }
+namespace TR { class S390RXInstruction; }
+namespace TR { class S390MemInstruction; }
+namespace TR { class S390SS1Instruction; }
+namespace TR { class S390MIIInstruction; }
+namespace TR { class S390SMIInstruction; }
+namespace TR { class S390SS2Instruction; }
+namespace TR { class S390SS4Instruction; }
+namespace TR { class S390SSEInstruction; }
+namespace TR { class S390SSFInstruction; }
+namespace TR { class S390VRIInstruction; }
+namespace TR { class S390VRIaInstruction; }
+namespace TR { class S390VRIbInstruction; }
+namespace TR { class S390VRIcInstruction; }
+namespace TR { class S390VRIdInstruction; }
+namespace TR { class S390VRIeInstruction; }
+namespace TR { class S390VRRInstruction; }
+namespace TR { class S390VRRaInstruction; }
+namespace TR { class S390VRRbInstruction; }
+namespace TR { class S390VRRcInstruction; }
+namespace TR { class S390VRRdInstruction; }
+namespace TR { class S390VRReInstruction; }
+namespace TR { class S390VRRfInstruction; }
+namespace TR { class S390VRSaInstruction; }
+namespace TR { class S390VRSbInstruction; }
+namespace TR { class S390VRScInstruction; }
+namespace TR { class S390VRVInstruction; }
+namespace TR { class S390VRXInstruction; }
+namespace TR { class S390VStorageInstruction; }
+namespace TR { class S390OpCodeOnlyInstruction; }
+namespace TR { class S390IInstruction; }
+namespace TR { class S390SInstruction; }
+namespace TR { class S390SIInstruction; }
+namespace TR { class S390SILInstruction; }
+namespace TR { class S390NOPInstruction; }
 class TR_S390WarmToColdTrampolineSnippet;
 class TR_S390RestoreGPR7Snippet;
 class TR_S390CallSnippet;
@@ -329,10 +329,10 @@ class TR_S390JNICallDataSnippet;
 class TR_S390StackCheckFailureSnippet;
 class TR_S390HeapAllocSnippet;
 class TR_S390RegisterDependencyGroup;
-class TR_S390RRSInstruction;
-class TR_S390RIEInstruction;
-class TR_S390RISInstruction;
-class TR_S390IEInstruction;
+namespace TR { class S390RRSInstruction; }
+namespace TR { class S390RIEInstruction; }
+namespace TR { class S390RISInstruction; }
+namespace TR { class S390IEInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
 class TR_S390ForceRecompilationSnippet;
@@ -993,54 +993,54 @@ public:
    void printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr);
    void printz(TR::FILE *, TR::Instruction *);
    void printz(TR::FILE *, TR::Instruction *, const char *);
-   void print(TR::FILE *, TR_S390LabelInstruction *);
-   void print(TR::FILE *, TR_S390BranchInstruction *);
-   void print(TR::FILE *, TR_S390BranchOnCountInstruction *);
+   void print(TR::FILE *, TR::S390LabelInstruction *);
+   void print(TR::FILE *, TR::S390BranchInstruction *);
+   void print(TR::FILE *, TR::S390BranchOnCountInstruction *);
 #ifdef J9_PROJECT_SPECIFIC
-   void print(TR::FILE *, TR_S390VirtualGuardNOPInstruction *);
+   void print(TR::FILE *, TR::S390VirtualGuardNOPInstruction *);
 #endif
-   void print(TR::FILE *, TR_S390BranchOnIndexInstruction *);
-   void print(TR::FILE *, TR_S390ImmInstruction *);
-   void print(TR::FILE *, TR_S390ImmSnippetInstruction *);
-   void print(TR::FILE *, TR_S390ImmSymInstruction *);
-   void print(TR::FILE *, TR_S390Imm2Instruction *);
-   void print(TR::FILE *, TR_S390RegInstruction *);
-   void print(TR::FILE *, TR_S390TranslateInstruction *);
-   void print(TR::FILE *, TR_S390RRInstruction *);
-   void print(TR::FILE *, TR_S390RRFInstruction *);
-   void print(TR::FILE *, TR_S390RRRInstruction *);
-   void print(TR::FILE *, TR_S390RIInstruction *);
-   void print(TR::FILE *, TR_S390RILInstruction *);
-   void print(TR::FILE *, TR_S390RSInstruction *);
-   void print(TR::FILE *, TR_S390RSLInstruction *);
-   void print(TR::FILE *, TR_S390RSLbInstruction *);
-   void print(TR::FILE *, TR_S390MemInstruction *);
-   void print(TR::FILE *, TR_S390SS1Instruction *);
-   void print(TR::FILE *, TR_S390SS2Instruction *);
-   void print(TR::FILE *, TR_S390SMIInstruction *);
-   void print(TR::FILE *, TR_S390MIIInstruction *);
-   void print(TR::FILE *, TR_S390SS4Instruction *);
-   void print(TR::FILE *, TR_S390SSFInstruction *);
-   void print(TR::FILE *, TR_S390SSEInstruction *);
-   void print(TR::FILE *, TR_S390SIInstruction *);
-   void print(TR::FILE *, TR_S390SILInstruction *);
-   void print(TR::FILE *, TR_S390SInstruction *);
-   void print(TR::FILE *, TR_S390RXInstruction *);
-   void print(TR::FILE *, TR_S390RXEInstruction *);
-   void print(TR::FILE *, TR_S390RXFInstruction *);
-   void print(TR::FILE *, TR_S390AnnotationInstruction *);
-   void print(TR::FILE *, TR_S390PseudoInstruction *);
-   void print(TR::FILE *, TR_S390NOPInstruction *);
+   void print(TR::FILE *, TR::S390BranchOnIndexInstruction *);
+   void print(TR::FILE *, TR::S390ImmInstruction *);
+   void print(TR::FILE *, TR::S390ImmSnippetInstruction *);
+   void print(TR::FILE *, TR::S390ImmSymInstruction *);
+   void print(TR::FILE *, TR::S390Imm2Instruction *);
+   void print(TR::FILE *, TR::S390RegInstruction *);
+   void print(TR::FILE *, TR::S390TranslateInstruction *);
+   void print(TR::FILE *, TR::S390RRInstruction *);
+   void print(TR::FILE *, TR::S390RRFInstruction *);
+   void print(TR::FILE *, TR::S390RRRInstruction *);
+   void print(TR::FILE *, TR::S390RIInstruction *);
+   void print(TR::FILE *, TR::S390RILInstruction *);
+   void print(TR::FILE *, TR::S390RSInstruction *);
+   void print(TR::FILE *, TR::S390RSLInstruction *);
+   void print(TR::FILE *, TR::S390RSLbInstruction *);
+   void print(TR::FILE *, TR::S390MemInstruction *);
+   void print(TR::FILE *, TR::S390SS1Instruction *);
+   void print(TR::FILE *, TR::S390SS2Instruction *);
+   void print(TR::FILE *, TR::S390SMIInstruction *);
+   void print(TR::FILE *, TR::S390MIIInstruction *);
+   void print(TR::FILE *, TR::S390SS4Instruction *);
+   void print(TR::FILE *, TR::S390SSFInstruction *);
+   void print(TR::FILE *, TR::S390SSEInstruction *);
+   void print(TR::FILE *, TR::S390SIInstruction *);
+   void print(TR::FILE *, TR::S390SILInstruction *);
+   void print(TR::FILE *, TR::S390SInstruction *);
+   void print(TR::FILE *, TR::S390RXInstruction *);
+   void print(TR::FILE *, TR::S390RXEInstruction *);
+   void print(TR::FILE *, TR::S390RXFInstruction *);
+   void print(TR::FILE *, TR::S390AnnotationInstruction *);
+   void print(TR::FILE *, TR::S390PseudoInstruction *);
+   void print(TR::FILE *, TR::S390NOPInstruction *);
    void print(TR::FILE *, TR::MemoryReference *, TR::Instruction *);
-   void print(TR::FILE *, TR_S390RRSInstruction *);
-   void print(TR::FILE *, TR_S390RIEInstruction *);
-   void print(TR::FILE *, TR_S390RISInstruction *);
-   void print(TR::FILE *, TR_S390OpCodeOnlyInstruction *);
-   void print(TR::FILE *, TR_S390IInstruction *);
-   void print(TR::FILE *, TR_S390IEInstruction *);
-   void print(TR::FILE *, TR_S390VRIInstruction *);
-   void print(TR::FILE *, TR_S390VRRInstruction *);
-   void print(TR::FILE *, TR_S390VStorageInstruction *);
+   void print(TR::FILE *, TR::S390RRSInstruction *);
+   void print(TR::FILE *, TR::S390RIEInstruction *);
+   void print(TR::FILE *, TR::S390RISInstruction *);
+   void print(TR::FILE *, TR::S390OpCodeOnlyInstruction *);
+   void print(TR::FILE *, TR::S390IInstruction *);
+   void print(TR::FILE *, TR::S390IEInstruction *);
+   void print(TR::FILE *, TR::S390VRIInstruction *);
+   void print(TR::FILE *, TR::S390VRRInstruction *);
+   void print(TR::FILE *, TR::S390VStorageInstruction *);
 
 
    const char * getS390RegisterName(uint32_t regNum, bool isVRF = false);

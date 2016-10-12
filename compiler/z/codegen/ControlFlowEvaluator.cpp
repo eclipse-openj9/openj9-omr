@@ -1065,7 +1065,7 @@ OMR::Z::TreeEvaluator::igotoEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    else
       cursor = generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, dest);
 
-   ((TR_S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
+   ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
 
    cg->decReferenceCount(child);
 
@@ -1150,13 +1150,13 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          dependencies->addPostCondition(returnValRegister, linkage->getIntegerReturnRegister());
          comp->setReturnInfo(TR_IntReturn);
          if (linkage->isNeedsWidening())
-            new (cg->trHeapMemory()) TR_S390RRInstruction(TR::InstOpCode::LGFR, node, returnValRegister, returnValRegister, cg);
+            new (cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LGFR, node, returnValRegister, returnValRegister, cg);
          break;
       case TR::iureturn:
          comp->setReturnInfo(TR_IntReturn);
          dependencies->addPostCondition(returnValRegister, linkage->getIntegerReturnRegister());
          if (linkage->isNeedsWidening())
-            new (cg->trHeapMemory()) TR_S390RRInstruction(TR::InstOpCode::LLGFR, node, returnValRegister, returnValRegister, cg);
+            new (cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LLGFR, node, returnValRegister, returnValRegister, cg);
          break;
       case TR::lreturn:
       case TR::lureturn:
@@ -2320,14 +2320,14 @@ void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::C
       TR_ASSERT(reg1, "Java must have allocated a temp reg");
       TR_ASSERT( tableKindToBeEvaluated == AddressTable32bit || tableKindToBeEvaluated == AddressTable64bitIntLookup || tableKindToBeEvaluated == AddressTable64bitLongLookup, "For Java, must be using Address Table");
 
-      new (cg->trHeapMemory()) TR_S390RIInstruction(TR::InstOpCode::BRAS, node, reg1, (4 + (sizeof(uintptrj_t) * numBranchTableEntries)) / 2, cg);
+      new (cg->trHeapMemory()) TR::S390RIInstruction(TR::InstOpCode::BRAS, node, reg1, (4 + (sizeof(uintptrj_t) * numBranchTableEntries)) / 2, cg);
 
       // Generate the data constants with the target label addresses.
       for (int32_t i = 0; i < numBranchTableEntries; ++i)
          {
          TR::Node * caseNode = node->getChild(i + 2);
          TR::LabelSymbol * label = caseNode->getBranchDestination()->getNode()->getLabel();
-         new (cg->trHeapMemory()) TR_S390LabelInstruction(TR::InstOpCode::DC, node, label, cg);
+         new (cg->trHeapMemory()) TR::S390LabelInstruction(TR::InstOpCode::DC, node, label, cg);
          }
 
       TR::MemoryReference * tempMR = generateS390MemoryReference(reg1, selectorReg, 0, cg);
@@ -2482,7 +2482,7 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    tableEvaluatorCaseLabelHelper(node,cg, tableKindToBeEvaluated, numBranchTableEntries, selectorReg, branchTableReg, reg1);
 
    TR::Instruction *cursor = generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, selectorReg, deps);
-   ((TR_S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
+   ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
 
 
    for (i = 0; i < node->getNumChildren(); ++i)
@@ -3214,7 +3214,7 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
       {
       case TR::Instruction::IsRX: //CVB, CVD
          {
-         TR_S390RXInstruction * instr = (TR_S390RXInstruction *)daaInstr;
+         TR::S390RXInstruction * instr = (TR::S390RXInstruction *)daaInstr;
          TR::MemoryReference * mr = instr->getMemoryReference();
 
          addToRegDep(daaDeps, instr->getRegisterOperand(1), false);
@@ -3228,7 +3228,7 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
          }
       case TR::Instruction::IsRXY: //CVBY, CVBG
          {
-         TR_S390RXYInstruction * instr = (TR_S390RXYInstruction *)daaInstr;
+         TR::S390RXYInstruction * instr = (TR::S390RXYInstruction *)daaInstr;
          TR::MemoryReference * mr = instr->getMemoryReference();
 
          addToRegDep(daaDeps, instr->getRegisterOperand(1), true);
@@ -3241,7 +3241,7 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
          }
       case TR::Instruction::IsSS2: //ZAP, Arithmetics
          {
-         TR_S390SS2Instruction * instr = (TR_S390SS2Instruction *)daaInstr;
+         TR::S390SS2Instruction * instr = (TR::S390SS2Instruction *)daaInstr;
          TR::MemoryReference * mr1 = instr->getMemoryReference ();
          TR::MemoryReference * mr2 = instr->getMemoryReference2();
 
@@ -3802,13 +3802,13 @@ TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *c
    // ** Generate a NOP LR R0,R0.  The signal handler has to walk backwards to pattern match
    // the trap instructions.  All trap instructions besides CRT/CLRT are 6-bytes in length.
    // Insert 2-byte NOP in front of the 4-byte CLRT to ensure we do not mismatch accidentally.
-   TR::Instruction *cursor = new (cg->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cg);
+   TR::Instruction *cursor = new (cg->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cg);
 
    TR::Register *zeroReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *regDeps =
          new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
    regDeps->addPostCondition(zeroReg, TR::RealRegister::AssignAny);
-   cursor = new (cg->trHeapMemory()) TR_S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BERC)>>4, true, cg);
+   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BERC)>>4, true, cg);
    cursor->setDependencyConditions(regDeps);
 
    cg->stopUsingRegister(zeroReg);

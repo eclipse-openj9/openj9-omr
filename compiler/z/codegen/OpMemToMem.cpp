@@ -1017,7 +1017,7 @@ MemToMemVarLenMacroOp::generateRemainder()
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
-         _cursor = new (_cg->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::EXRL, _rootNode, _regLen, _EXTargetLabel, _cg);
+         _cursor = new (_cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _rootNode, _regLen, _EXTargetLabel, _cg);
          }
          else
          {

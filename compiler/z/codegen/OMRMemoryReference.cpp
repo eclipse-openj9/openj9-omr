@@ -2669,7 +2669,7 @@ OMR::Z::MemoryReference::canUseTargetRegAsScratchReg (TR::Instruction * instr)
            {
            TR::RealRegister * base  = (memref->getBaseRegister() ? toRealRegister(memref->getBaseRegister()) : 0);
            TR::RealRegister * index = (memref->getIndexRegister() ? toRealRegister(memref->getIndexRegister()) : 0);
-           TR::RealRegister * targetReg = (TR::RealRegister * )((TR_S390RegInstruction *)instr)->getRegisterOperand(1);
+           TR::RealRegister * targetReg = (TR::RealRegister * )((TR::S390RegInstruction *)instr)->getRegisterOperand(1);
            if ( targetReg != base && targetReg != index && targetReg->getRegisterNumber() != TR::RealRegister::GPR0)
               return true;
            else
@@ -3109,7 +3109,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          }
       else if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
          {
-         scratchReg = (TR::RealRegister * )((TR_S390RegInstruction *)instr)->getRegisterOperand(1);
+         scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)instr)->getRegisterOperand(1);
          spillNeeded = false;
          }
       else
@@ -3510,7 +3510,7 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
       }
    else if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
       {
-      scratchReg = (TR::RealRegister * )((TR_S390RegInstruction *)instr)->getRegisterOperand(1);
+      scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)instr)->getRegisterOperand(1);
       spillNeeded = false;
       }
    else

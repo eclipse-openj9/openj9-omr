@@ -623,7 +623,7 @@ bool OMR::Z::Instruction::startOfLiveRange(TR::Register * reg)
      }
    if(self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN || self()->getOpCodeValue() == TR::InstOpCode::RISBHG || self()->getOpCodeValue() == TR::InstOpCode::RISBLG)
      {
-      uint8_t endBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8Two();
+      uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
       if(_targetReg[0] == reg && (endBit & 128) != 0)
         return true;
       }
@@ -833,7 +833,7 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
         {
         if(i==0 && (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN || self()->getOpCodeValue() == TR::InstOpCode::RISBHG || self()->getOpCodeValue() == TR::InstOpCode::RISBLG))
           {
-          uint8_t endBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8Two();
+          uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
           if((endBit & 128) != 0)
             continue;       // Zeroing out unused bits therefore the first operand is not used
           else
@@ -1185,7 +1185,7 @@ static bool isInternalControlFlowOneEntryOneExit(TR::Instruction *regionEnd, TR:
     {
     if(curr->isBranchOp())
       {
-      TR_S390LabeledInstruction *labeledInstr=(TR_S390LabeledInstruction *)curr;
+      TR::S390LabeledInstruction *labeledInstr=(TR::S390LabeledInstruction *)curr;
       TR::LabelSymbol *targetLabel=labeledInstr->getLabelSymbol();
       int32_t i;
       bool found=false;
@@ -1213,7 +1213,7 @@ OMR::Z::Instruction::getOutOfLineEXInstr()
       {
       case TR::InstOpCode::EX:
       {
-         TR::MemoryReference * tempMR = ((TR_S390RXInstruction *)self())->getMemoryReference();
+         TR::MemoryReference * tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
          TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
          TR_ASSERT( cis != NULL, "Out of line EX instruction doesn't have a constantInstructionSnippet\n");
          return cis->getInstruction();
@@ -1221,7 +1221,7 @@ OMR::Z::Instruction::getOutOfLineEXInstr()
       case TR::InstOpCode::EXRL:
       {
          TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *)
-            ((TR_S390RILInstruction *)self())->getTargetSnippet();
+            ((TR::S390RILInstruction *)self())->getTargetSnippet();
          TR_ASSERT( cis != NULL, "Out of line EXRL instruction doesn't have a constantInstructionSnippet\n");
          return cis->getInstruction();
       }
@@ -1281,7 +1281,7 @@ OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::Me
 // The following safe virtual downcast method is only used in an assertion
 // check within "toS390ImmInstruction"
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-TR_S390ImmInstruction *
+TR::S390ImmInstruction *
 OMR::Z::Instruction::getS390ImmInstruction()
    {
    // *this    swipeable for debugging purposes
@@ -1459,8 +1459,8 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       // GRSM occupies the top 8 bits of the immediate field.  Need to
       // preserve the lower 8 bits, which has controls for AR, Floating
       // Point and Program Interruption Filtering.
-      uint16_t originalGRSM = ((TR_S390SILInstruction*)self())->getSourceImmediate();
-      ((TR_S390SILInstruction*)self())->setSourceImmediate((grsm << 8) | (originalGRSM & 0xFF));
+      uint16_t originalGRSM = ((TR::S390SILInstruction*)self())->getSourceImmediate();
+      ((TR::S390SILInstruction*)self())->setSourceImmediate((grsm << 8) | (originalGRSM & 0xFF));
       }
 
 
@@ -1593,9 +1593,9 @@ OMR::Z::Instruction::useSourceRegister(TR::Register * reg)
          {
          if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
             {
-            uint8_t startBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8One();
-            uint8_t endBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8Two();
-            uint8_t rotateAmnt = ((TR_S390RIEInstruction* )self())->getSourceImmediate8();
+            uint8_t startBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8One();
+            uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
+            uint8_t rotateAmnt = ((TR::S390RIEInstruction* )self())->getSourceImmediate8();
             if ((startBit + rotateAmnt) < 32 &&
                 (endBit - rotateAmnt) > 63)
                {
@@ -1699,7 +1699,7 @@ bool OMR::Z::Instruction::containsRegister(TR::Register *reg)
       {
       if (self()->getOpCodeValue() == TR::InstOpCode::EX)
          {
-         TR::MemoryReference * tempMR = ((TR_S390RXInstruction *)self())->getMemoryReference();
+         TR::MemoryReference * tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
          TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
          TR_ASSERT( cis != NULL, "Out of line EX instruction doesn't have a constantInstructionSnippet\n");
          if (cis->getInstruction()->containsRegister(reg))
@@ -1707,7 +1707,7 @@ bool OMR::Z::Instruction::containsRegister(TR::Register *reg)
          }
       else if (self()->getOpCodeValue() == TR::InstOpCode::EXRL)
          {
-         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) ((TR_S390RILInstruction *)self())->getTargetSnippet();
+         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) ((TR::S390RILInstruction *)self())->getTargetSnippet();
          TR_ASSERT( cis != NULL, "Out of line EXRL instruction doesn't have a constantInstructionSnippet\n");
          if (cis->getInstruction()->containsRegister(reg))
             return true;
@@ -2005,8 +2005,8 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
       bool skipBookkeeping = false;
       if (self()->getOpCodeValue() == TR::InstOpCode::BCR &&
           toRealRegister(reg)->getRegisterNumber() == TR::RealRegister::GPR0 &&
-          (((TR_S390RegInstruction*)self())->getBranchCondition() == TR::InstOpCode::COND_MASK14 ||
-           ((TR_S390RegInstruction*)self())->getBranchCondition() == TR::InstOpCode::COND_MASK15))
+          (((TR::S390RegInstruction*)self())->getBranchCondition() == TR::InstOpCode::COND_MASK14 ||
+           ((TR::S390RegInstruction*)self())->getBranchCondition() == TR::InstOpCode::COND_MASK15))
          skipBookkeeping = true;
 
       if (!skipBookkeeping && realReg->getState() != TR::RealRegister::Locked &&
@@ -2352,7 +2352,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
                {
                if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
                   {
-                  uint8_t endBit = ((TR_S390RIEInstruction *)self())->getSourceImmediate8Two();
+                  uint8_t endBit = ((TR::S390RIEInstruction *)self())->getSourceImmediate8Two();
                   if (endBit & 0x80) // if the zero bit is set, target reg will be 64bit
                      {
                      _targetReg[i]->setIs64BitReg(true);
@@ -2364,9 +2364,9 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
                   }
                }
             if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
-                ((TR_S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
+                ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
                {
-               if (((TR_S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum))
+               if (((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum))
                   _targetReg[i]->setAssignToHPR(true);
                else
                   _targetReg[i]->setAssignToHPR(false);
@@ -2463,9 +2463,9 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
                {
                if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
                   {
-                  uint8_t startBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8One();
-                  uint8_t endBit = ((TR_S390RIEInstruction* )self())->getSourceImmediate8Two();
-                  uint8_t rotateAmnt = ((TR_S390RIEInstruction* )self())->getSourceImmediate8();
+                  uint8_t startBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8One();
+                  uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
+                  uint8_t rotateAmnt = ((TR::S390RIEInstruction* )self())->getSourceImmediate8();
                   if ((startBit + rotateAmnt) < 32 &&
                       (endBit - rotateAmnt) > 63)
                      {
@@ -2480,9 +2480,9 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
                }
 
             if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
-                ((TR_S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
+                ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
                {
-               firstNonPairSourceRegister->setAssignToHPR(((TR_S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum));
+               firstNonPairSourceRegister->setAssignToHPR(((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum));
                }
             else
                firstNonPairSourceRegister->setAssignToHPR(_opcode.isOperandHW(registerOperandNum));
@@ -2575,12 +2575,12 @@ OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAss
 
    // RIE for CompareAndBranch
    if (self()->getOpCode().isBranchOp() && self()->getKind() == IsRIE &&
-       ((TR_S390RIEInstruction*)self())->getLabelSymbol()->isStartOfColdInstructionStream())
+       ((TR::S390RIEInstruction*)self())->getLabelSymbol()->isStartOfColdInstructionStream())
       {
       // Switch to the outlined instruction stream and assign registers.
       //
-      TR_S390OutOfLineCodeSection *oi = self()->cg()->findS390OutOfLineCodeSectionFromLabel(((TR_S390RIEInstruction*)self())->getLabelSymbol());
-      TR_ASSERT(oi, "Could not find S390OutOfLineCodeSection stream from label.  instr=%p, label=%p\n", self(), ((TR_S390RIEInstruction*)self())->getLabelSymbol());
+      TR_S390OutOfLineCodeSection *oi = self()->cg()->findS390OutOfLineCodeSectionFromLabel(((TR::S390RIEInstruction*)self())->getLabelSymbol());
+      TR_ASSERT(oi, "Could not find S390OutOfLineCodeSection stream from label.  instr=%p, label=%p\n", self(), ((TR::S390RIEInstruction*)self())->getLabelSymbol());
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
       }

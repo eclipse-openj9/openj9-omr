@@ -5805,7 +5805,7 @@ TR::Register *
 aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR)
    {
    TR::Snippet * firstSnippet = NULL;
-   TR_S390RILInstruction * LARLinst;
+   TR::S390RILInstruction * LARLinst;
    TR::Compilation *comp = cg->comp();
 
 
@@ -10652,7 +10652,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             source2MemRef= generateS390MemoryReference(source2Reg, 0, cg);
 
             if (!comp->getOption(TR_DisableInlineEXTarget))
-               cursor = new (cg->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
+               cursor = new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
             else
                {
                cursor = generateSS1Instruction(cg, TR::InstOpCode::CLC, node, 0, source1MemRef, source2MemRef);
@@ -11494,8 +11494,8 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
       TR_S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
       litpool->setUnresolvedDataSnippet(uds);
 
-      TR_S390RILInstruction * LRLinst;
-      LRLinst = (TR_S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, 0xBABE, 0);
+      TR::S390RILInstruction * LRLinst;
+      LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, 0xBABE, 0);
       uds->setDataReferenceInstruction(LRLinst);
       LRLinst->setSymbolReference(uds->getDataSymbolReference());
       LRLinst->setTargetSnippet(litpool);
@@ -11567,7 +11567,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
          }
       else if (node->getSymbol()->isLabel() || node->getSymbol()->isMethod())
          {
-         new (cg->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::LARL, node, targetRegister, symRef->getSymbol(), symRef, cg);
+         new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, targetRegister, symRef->getSymbol(), symRef, cg);
          }
       else
          {
@@ -12652,7 +12652,7 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
    TR::LabelSymbol * afterLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    afterLoop->setEndInternalControlFlow();
 
-   new (cg->trHeapMemory()) TR_S390TranslateInstruction(opCode, node, outputPair, inputReg, tableReg, termCharReg, 0, cg, node->getTermCharNodeIsHint() && (opCode != TR::InstOpCode::TRTO) ? 1 : 0 );
+   new (cg->trHeapMemory()) TR::S390TranslateInstruction(opCode, node, outputPair, inputReg, tableReg, termCharReg, 0, cg, node->getTermCharNodeIsHint() && (opCode != TR::InstOpCode::TRTO) ? 1 : 0 );
 
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BORC, node, topOfLoop); // repeat if CPU-defined limit hit
    // LL: Only have to do this if not Golden Eagle when termination character is a guess.
@@ -17754,7 +17754,7 @@ TR::Register* inlineStringHashCodeUnrolled(TR::Node* node, TR::CodeGenerator* cg
    // Branch to the correct case label
    generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempRegister, generateS390MemoryReference(tempRegister, 0, cg));
 
-   static_cast <TR_S390RegInstruction*> (generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, tempRegister))->setBranchCondition(TR::InstOpCode::COND_MASK15);
+   static_cast <TR::S390RegInstruction*> (generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, tempRegister))->setBranchCondition(TR::InstOpCode::COND_MASK15);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, switchTableLabel);
 

@@ -82,9 +82,9 @@ generateS390LabelInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390LabelInstruction(op, n, sym, preced, cg);
+      return new (INSN_HEAP) TR::S390LabelInstruction(op, n, sym, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390LabelInstruction(op, n, sym, cg);
+   return new (INSN_HEAP) TR::S390LabelInstruction(op, n, sym, cg);
    }
 
 TR::Instruction *
@@ -93,9 +93,9 @@ generateS390LabelInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390LabelInstruction(op, n, sym, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390LabelInstruction(op, n, sym, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390LabelInstruction(op, n, sym, cond, cg);
+   return new (INSN_HEAP) TR::S390LabelInstruction(op, n, sym, cond, cg);
    }
 
 TR::Instruction *
@@ -104,9 +104,9 @@ generateS390LabelInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390LabelInstruction(op, n, s, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390LabelInstruction(op, n, s, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390LabelInstruction(op, n, s, cond, cg);
+   return new (INSN_HEAP) TR::S390LabelInstruction(op, n, s, cond, cg);
    }
 
 TR::Instruction *
@@ -114,9 +114,9 @@ generateS390LabelInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390LabelInstruction(op, n, s, preced, cg);
+      return new (INSN_HEAP) TR::S390LabelInstruction(op, n, s, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390LabelInstruction(op, n, s, cg);
+   return new (INSN_HEAP) TR::S390LabelInstruction(op, n, s, cg);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,11 +126,11 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::InstOpCode::S390BranchCondition brCond,
                               TR::Node * n, TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   TR_S390BranchInstruction * cursor ;
+   TR::S390BranchInstruction * cursor ;
    if (preced)
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, sym, preced, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, sym, preced, cg);
    else
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, sym, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, sym, cg);
    return cursor;
    }
 
@@ -148,9 +148,9 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
       }
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390BranchOnCountInstruction(op, n, targetReg, sym, preced, cg);
+      return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, sym, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390BranchOnCountInstruction(op, n, targetReg, sym, cg);
+   return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, sym, cg);
    }
 
 TR::Instruction *
@@ -167,9 +167,9 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
       }
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390BranchOnCountInstruction(op, n, targetReg, cond, sym, preced, cg);
+      return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, cond, sym, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390BranchOnCountInstruction(op, n, targetReg, cond, sym, cg);
+   return new (INSN_HEAP) TR::S390BranchOnCountInstruction(op, n, targetReg, cond, sym, cg);
    }
 
 TR::Instruction *
@@ -178,9 +178,9 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, preced, cg);
+      return new (INSN_HEAP) TR::S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, cg);
+   return new (INSN_HEAP) TR::S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, cg);
    }
 
 TR::Instruction *
@@ -189,20 +189,20 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, preced, cg);
+      return new (INSN_HEAP) TR::S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, cg);
+   return new (INSN_HEAP) TR::S390BranchOnIndexInstruction(op, n, sourceReg, targetReg, sym, cg);
    }
 
 TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::InstOpCode::S390BranchCondition brCond,
                               TR::Node * n, TR::LabelSymbol * sym, TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
    {
-   TR_S390BranchInstruction * cursor ;
+   TR::S390BranchInstruction * cursor ;
    if (preced)
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, sym, cond, preced, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, sym, cond, preced, cg);
    else
-      cursor =  new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, sym, cond, cg);
+      cursor =  new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, sym, cond, cg);
    return cursor;
    }
 
@@ -210,11 +210,11 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::InstOpCode::S390BranchCondition brCond,
                               TR::Node * n, TR::Snippet * s, TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
    {
-   TR_S390BranchInstruction * cursor ;
+   TR::S390BranchInstruction * cursor ;
    if (preced)
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, s, cond, preced, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, s, cond, preced, cg);
    else
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, s, cond, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, s, cond, cg);
    return cursor;
    }
 
@@ -222,11 +222,11 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::InstOpCode::S390BranchCondition brCond,
                               TR::Node * n, TR::Snippet * s, TR::Instruction * preced)
    {
-   TR_S390BranchInstruction * cursor ;
+   TR::S390BranchInstruction * cursor ;
    if (preced)
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, s, preced, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, s, preced, cg);
    else
-      cursor = new (INSN_HEAP) TR_S390BranchInstruction(op, brCond, n, s, cg);
+      cursor = new (INSN_HEAP) TR::S390BranchInstruction(op, brCond, n, s, cg);
    return cursor;
    }
 
@@ -312,13 +312,13 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
            cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
       // generate a compare and branch.
-      returnInstruction = (TR_S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, second, branchDestination, bc);
+      returnInstruction = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, second, branchDestination, bc);
 
       // Generate a temporary warm trampoline for warm -> cold code cache branches.
       if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
          {
          TR_S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR_S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
-         ((TR_S390RIEInstruction*)returnInstruction)->setWarmToColdTrampolineSnippet(trampolineSnippet);
+         ((TR::S390RIEInstruction*)returnInstruction)->setWarmToColdTrampolineSnippet(trampolineSnippet);
          cg->addSnippet(trampolineSnippet);
          }
       }
@@ -414,12 +414,12 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
            replacementOpCode != TR::InstOpCode::BAD &&
            cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
-      cursor = (TR_S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, (int8_t) second, branchDestination, bc, preced);
+      cursor = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, (int8_t) second, branchDestination, bc, preced);
       // Generate a temporary warm trampoline for warm -> cold code cache branches.
       if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
          {
          TR_S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR_S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
-         ((TR_S390RIEInstruction*)cursor)->setWarmToColdTrampolineSnippet(trampolineSnippet);
+         ((TR::S390RIEInstruction*)cursor)->setWarmToColdTrampolineSnippet(trampolineSnippet);
          cg->addSnippet(trampolineSnippet);
          }
       }
@@ -443,9 +443,9 @@ generateS390RegInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, 
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RegInstruction(op, n, treg, preced, cg);
+      return new (INSN_HEAP) TR::S390RegInstruction(op, n, treg, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RegInstruction(op, n, treg, cg);
+   return new (INSN_HEAP) TR::S390RegInstruction(op, n, treg, cg);
    }
 
 TR::Instruction *
@@ -454,9 +454,9 @@ generateS390RegInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, 
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RegInstruction(op, n, treg, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390RegInstruction(op, n, treg, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RegInstruction(op, n, treg, cond, cg);
+   return new (INSN_HEAP) TR::S390RegInstruction(op, n, treg, cond, cg);
    }
 
 TR::Instruction *
@@ -556,9 +556,9 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, sreg, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, sreg, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, sreg, cg);
+      instr = new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, sreg, cg);
 
    return instr;
    }
@@ -569,9 +569,9 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, secondConstant, preced, cg);
+      return new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, secondConstant, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, secondConstant, cg);
+   return new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, secondConstant, cg);
    }
 
 TR::Instruction *
@@ -580,9 +580,9 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRInstruction(op, n, firstConstant, secondConstant, preced, cg);
+      return new (INSN_HEAP) TR::S390RRInstruction(op, n, firstConstant, secondConstant, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRInstruction(op, n, firstConstant, secondConstant, cg);
+   return new (INSN_HEAP) TR::S390RRInstruction(op, n, firstConstant, secondConstant, cg);
    }
 
 TR::Instruction *
@@ -591,9 +591,9 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRInstruction(op, n, firstConstant, sreg, preced, cg);
+      return new (INSN_HEAP) TR::S390RRInstruction(op, n, firstConstant, sreg, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRInstruction(op, n, firstConstant, sreg, cg);
+   return new (INSN_HEAP) TR::S390RRInstruction(op, n, firstConstant, sreg, cg);
    }
 
 TR::Instruction *
@@ -603,9 +603,9 @@ generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    TR::Instruction *instr;
 
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, sreg, cond, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, sreg, cond, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RRInstruction(op, n, treg, sreg, cond, cg);
+      instr = new (INSN_HEAP) TR::S390RRInstruction(op, n, treg, sreg, cond, cg);
 
    return instr;
    }
@@ -617,9 +617,9 @@ generateRRDInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    bool encodeAsRRD = true;
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRFInstruction(encodeAsRRD, op, n, treg, sreg, sreg2, preced, cg);
+      return new (INSN_HEAP) TR::S390RRFInstruction(encodeAsRRD, op, n, treg, sreg, sreg2, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRFInstruction(encodeAsRRD, op, n, treg, sreg, sreg2, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(encodeAsRRD, op, n, treg, sreg, sreg2, cg);
    }
 
 TR::Instruction *
@@ -628,37 +628,37 @@ generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, sreg2, preced, cg);
+      return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, sreg2, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, sreg2, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, sreg2, cg);
    }
 
 TR::Instruction *
 generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                        uint8_t mask, bool isMask3, TR::Instruction * preced)
    {
-   return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, mask, isMask3, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, mask, isMask3, cg);
    }
 
 TR::Instruction *
 generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                        uint8_t mask, bool isMask3, TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
    {
-   return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, mask, isMask3, cond, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, mask, isMask3, cond, cg);
    }
 
 TR::Instruction *
 generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                        TR::Register * sreg2, uint8_t mask, TR::Instruction * preced)
    {
-   return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, sreg2, mask, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, sreg2, mask, cg);
    }
 
 TR::Instruction *
 generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg,
                        TR::Register * sreg, uint8_t mask3, uint8_t mask4, TR::Instruction * preced)
    {
-   return new (INSN_HEAP) TR_S390RRFInstruction(op, n, treg, sreg, mask3, mask4, cg);
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, treg, sreg, mask3, mask4, cg);
    }
 
 TR::Instruction *
@@ -667,9 +667,9 @@ generateRRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRRInstruction(op, n, treg, sreg, sreg2, preced, cg);
+      return new (INSN_HEAP) TR::S390RRRInstruction(op, n, treg, sreg, sreg2, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRRInstruction(op, n, treg, sreg, sreg2, cg);
+   return new (INSN_HEAP) TR::S390RRRInstruction(op, n, treg, sreg, sreg2, cg);
    }
 
 /**
@@ -773,9 +773,9 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXInstruction(op, n, treg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXInstruction(op, n, treg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX)
@@ -794,7 +794,7 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          TR_S390RestoreGPR7Snippet * restoreSnippet =
                         new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
-         TR::Instruction * nop = new (INSN_HEAP) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
+         TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
          //generate register deps for CVB so that we will not see spills between CVB and the following branch
@@ -813,9 +813,9 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    TR::Instruction * instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXInstruction(op, n, treg, constForMR, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, constForMR, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXInstruction(op, n, treg, constForMR, cg);
+      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, constForMR, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX)
@@ -834,7 +834,7 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          TR_S390RestoreGPR7Snippet * restoreSnippet =
                         new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
-         TR::Instruction * nop = new (INSN_HEAP) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
+         TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
          //generate register deps for CVB so that we will not see spills between CVB and the following branch
@@ -852,9 +852,9 @@ generateRXEInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    TR::Instruction * instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXEInstruction(op, n, treg, mf, mask3, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXEInstruction(op, n, treg, mf, mask3, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXEInstruction(op, n, treg, mf, mask3, cg);
+      instr = new (INSN_HEAP) TR::S390RXEInstruction(op, n, treg, mf, mask3, cg);
 
    return instr;
    }
@@ -865,9 +865,9 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, regp, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, regp, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, regp, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, regp, mf, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
@@ -937,9 +937,9 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, treg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, treg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
@@ -975,9 +975,9 @@ generateRXYbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXYbInstruction(op, n, mask, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXYbInstruction(op, n, mask, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, cg);
 
    return instr;
    }
@@ -987,9 +987,9 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction * instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, treg, constForMR, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, constForMR, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RXYInstruction(op, n, treg, constForMR, cg);
+      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, constForMR, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
@@ -1024,9 +1024,9 @@ generateRXFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RXFInstruction(op, n, treg, sreg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RXFInstruction(op, n, treg, sreg, mf, preced, cg);
    else
-   	  instr = new (INSN_HEAP) TR_S390RXFInstruction(op, n, treg, sreg, mf, cg);
+   	  instr = new (INSN_HEAP) TR::S390RXFInstruction(op, n, treg, sreg, mf, cg);
 
    return instr;
    }
@@ -1036,9 +1036,9 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
     {
     if (preced)
        {
-       return new (INSN_HEAP) TR_S390RIInstruction(op, n, preced, cg);
+       return new (INSN_HEAP) TR::S390RIInstruction(op, n, preced, cg);
        }
-    return new (INSN_HEAP) TR_S390RIInstruction(op, n, cg);
+    return new (INSN_HEAP) TR::S390RIInstruction(op, n, cg);
     }
 
 TR::Instruction *
@@ -1046,9 +1046,9 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
     {
     if (preced)
        {
-       return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, preced, cg);
+       return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, preced, cg);
        }
-    return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, cg);
+    return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, cg);
     }
 
 TR::Instruction *
@@ -1071,9 +1071,9 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       }
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, imm, preced, cg);
+      return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, imm, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, imm, cg);
+   return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, imm, cg);
    }
 
 TR::Instruction *
@@ -1081,9 +1081,9 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
     {
     if (preced)
        {
-       return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, data, preced, cg);
+       return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, data, preced, cg);
        }
-    return new (INSN_HEAP) TR_S390RIInstruction(op, n, treg, data, cg);
+    return new (INSN_HEAP) TR::S390RIInstruction(op, n, treg, data, cg);
     }
 
 TR::Instruction *
@@ -1091,17 +1091,17 @@ generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, imm, sr, preced, cg);
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, sr, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, imm, sr, cg);
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, sr, cg);
    }
 
 TR::Instruction *
 generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::LabelSymbol * label, TR::Instruction * preced)
    {
    if (preced)
-      return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, label, preced, cg);
-   return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, label, cg);
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, label, preced, cg);
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, label, cg);
    }
 
 TR::Instruction *
@@ -1120,9 +1120,9 @@ generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
       }
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, imm, preced, cg);
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, imm, cg);
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, cg);
    }
 
 TR::Instruction *
@@ -1130,9 +1130,9 @@ generateRILInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, ts, preced, cg);
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, ts, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RILInstruction(op, n, treg, ts, cg);
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, ts, cg);
    }
 
 
@@ -1141,9 +1141,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, imm, preced, cg);
+      return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, imm, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, imm, cg);
+   return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, imm, cg);
    }
 
 TR::Instruction *
@@ -1152,9 +1152,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, imm, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, imm, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, imm, cond, cg);
+   return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, imm, cond, cg);
    }
 
 TR::Instruction *
@@ -1166,9 +1166,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, cg);
 
    return instr;
    }
@@ -1182,9 +1182,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, mask, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, mask, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, cg);
 
    return instr;
    }
@@ -1198,9 +1198,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, sreg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, sreg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, cg);
 
    return instr;
    }
@@ -1215,9 +1215,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, freg, lreg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, freg, lreg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, cg);
 
    return instr;
    }
@@ -1231,9 +1231,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, regp, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSInstruction(op, n, regp, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, cg);
 
    return instr;
    }
@@ -1244,9 +1244,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, sreg, imm, preced, cg);
+      return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, imm, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RSInstruction(op, n, treg, sreg, imm, cg);
+   return new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, imm, cg);
    }
 
 
@@ -1259,9 +1259,9 @@ generateRSWithImplicitPairStoresInstruction(TR::CodeGenerator * cg, TR::InstOpCo
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSWithImplicitPairStoresInstruction(op, n, treg, sreg, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSWithImplicitPairStoresInstruction(op, n, treg, sreg, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSWithImplicitPairStoresInstruction(op, n, treg, sreg, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSWithImplicitPairStoresInstruction(op, n, treg, sreg, mf, cg);
 
    return instr;
    }
@@ -1275,9 +1275,9 @@ generateRSYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSYInstruction(op, n, treg, mask, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSYInstruction(op, n, treg, mask, mf, cg);
+      instr = new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, cg);
 
    return instr;
    }
@@ -1290,9 +1290,9 @@ generateRRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RRSInstruction(op, n, treg, sreg, branch, cond, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RRSInstruction(op, n, treg, sreg, branch, cond, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RRSInstruction(op, n, treg, sreg, branch, cond, cg);
+      instr = new (INSN_HEAP) TR::S390RRSInstruction(op, n, treg, sreg, branch, cond, cg);
 
    return instr;
    }
@@ -1303,9 +1303,9 @@ generateRREInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, cg);
    return instr;
    }
 
@@ -1315,9 +1315,9 @@ generateRREInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, sreg, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, sreg, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, sreg, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, sreg, cg);
 
 
    return instr;
@@ -1329,9 +1329,9 @@ generateRREInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, sreg, cond, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, sreg, cond, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RREInstruction(op, n, treg, sreg, cond, cg);
+      instr = new (INSN_HEAP) TR::S390RREInstruction(op, n, treg, sreg, cond, cg);
 
 
    return instr;
@@ -1341,45 +1341,45 @@ TR::Instruction * generateRIEInstruction(TR::CodeGenerator * cg, TR::InstOpCode:
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, branch, mask, preced, cg);
+      return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, branch, mask, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, branch, mask, cg);
+   return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, branch, mask, cg);
    }
 
 TR::Instruction * generateRIEInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, int8_t immCompare, TR::LabelSymbol * branch, TR::InstOpCode::S390BranchCondition mask, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, immCompare, branch, mask, preced, cg);
+      return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, immCompare, branch, mask, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, immCompare, branch, mask, cg);
+   return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, immCompare, branch, mask, cg);
    }
 
 TR::Instruction * generateRIEInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg, int8_t immOne, int8_t immTwo, int8_t immThree, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, immOne, immTwo, immThree, preced, cg);
+      return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, immOne, immTwo, immThree, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, immOne, immTwo, immThree, cg);
+   return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, immOne, immTwo, immThree, cg);
    }
 
 TR::Instruction * generateRIEInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::Register * treg, int16_t sourceImmediate, TR::InstOpCode::S390BranchCondition branchCondition, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sourceImmediate, branchCondition, preced, cg);
+      return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sourceImmediate, branchCondition, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sourceImmediate, branchCondition, cg);
+   return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sourceImmediate, branchCondition, cg);
    }
 
 TR::Instruction * generateRIEInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg, int16_t imm, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, imm, preced, cg);
+      return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, imm, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RIEInstruction(op, n, treg, sreg, imm, cg);
+   return new (INSN_HEAP) TR::S390RIEInstruction(op, n, treg, sreg, imm, cg);
    }
 
 TR::Instruction * generateRISInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * leftSide, int8_t immCompare, TR::MemoryReference * branch, TR::InstOpCode::S390BranchCondition cond, TR::Instruction * preced)
@@ -1388,9 +1388,9 @@ TR::Instruction * generateRISInstruction(TR::CodeGenerator * cg, TR::InstOpCode:
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RISInstruction(op, n, leftSide, immCompare, branch, cond, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RISInstruction(op, n, leftSide, immCompare, branch, cond, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RISInstruction(op, n, leftSide, immCompare, branch, cond, cg);
+      instr = new (INSN_HEAP) TR::S390RISInstruction(op, n, leftSide, immCompare, branch, cond, cg);
 
    return instr;
    }
@@ -1401,9 +1401,9 @@ generateS390MemInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, 
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390MemInstruction(op, n, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390MemInstruction(op, n, mf, preced, cg);
    else
-      instr =new (INSN_HEAP) TR_S390MemInstruction(op, n, mf, cg);
+      instr =new (INSN_HEAP) TR::S390MemInstruction(op, n, mf, cg);
 
    return instr;
    }
@@ -1414,9 +1414,9 @@ generateS390MemInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, 
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390MemInstruction(op, n, memAccessMode, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390MemInstruction(op, n, memAccessMode, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390MemInstruction(op, n, memAccessMode, mf, cg);
+      instr = new (INSN_HEAP) TR::S390MemInstruction(op, n, memAccessMode, mf, cg);
 
    return instr;
    }
@@ -1427,9 +1427,9 @@ generateS390MemInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, 
    {
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390MemInstruction(op, n, constantField, memAccessMode, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390MemInstruction(op, n, constantField, memAccessMode, mf, preced, cg);
    else
-   	  instr = new (INSN_HEAP) TR_S390MemInstruction(op, n, constantField, memAccessMode, mf, cg);
+   	  instr = new (INSN_HEAP) TR::S390MemInstruction(op, n, constantField, memAccessMode, mf, cg);
 
    return instr;
    }
@@ -1442,9 +1442,9 @@ generateRSLInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSLInstruction(op, n, len, mf1, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSLInstruction(op, n, len, mf1, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSLInstruction(op, n, len, mf1, cg);
+      instr = new (INSN_HEAP) TR::S390RSLInstruction(op, n, len, mf1, cg);
 
    return instr;
    }
@@ -1463,9 +1463,9 @@ generateRSLbInstruction(TR::CodeGenerator * cg,
 
    TR::Instruction *instr = NULL;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RSLbInstruction(op, n, reg, length, mf1, mask, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RSLbInstruction(op, n, reg, length, mf1, mask, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RSLbInstruction(op, n, reg, length, mf1, mask, cg);
+      instr = new (INSN_HEAP) TR::S390RSLbInstruction(op, n, reg, length, mf1, mask, cg);
 
    return instr;
    }
@@ -1483,9 +1483,9 @@ generateSS1Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
       mf2->setBaseRegister(mf1->getBaseRegister(), cg);
 
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS1Instruction(op, n, len, mf1, mf2, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS1Instruction(op, n, len, mf1, mf2, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS1Instruction(op, n, len, mf1, mf2, cg);
+      instr = new (INSN_HEAP) TR::S390SS1Instruction(op, n, len, mf1, mf2, cg);
 
    return instr;
    }
@@ -1507,9 +1507,9 @@ generateSS1Instruction(TR::CodeGenerator * cg,
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS1Instruction(op, n, len, mf1, mf2, cond, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS1Instruction(op, n, len, mf1, mf2, cond, preced, cg);
    else
-   	  instr = new (INSN_HEAP) TR_S390SS1Instruction(op, n, len, mf1, mf2, cond, cg);
+   	  instr = new (INSN_HEAP) TR::S390SS1Instruction(op, n, len, mf1, mf2, cond, cg);
 
    return instr;
    }
@@ -1535,9 +1535,9 @@ generateSS1WithImplicitGPRsInstruction(TR::CodeGenerator * cg,
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS1WithImplicitGPRsInstruction(op, n, len, mf1, mf2, cond, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS1WithImplicitGPRsInstruction(op, n, len, mf1, mf2, cond, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS1WithImplicitGPRsInstruction(op, n, len, mf1, mf2, cond, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS1WithImplicitGPRsInstruction(op, n, len, mf1, mf2, cond, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
 
    return instr;
    }
@@ -1555,9 +1555,9 @@ generateSS2Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len1, mf1, len2, mf2, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len1, mf1, len2, mf2, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len1, mf1, len2, mf2, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len1, mf1, len2, mf2, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::ZAP || op == TR::InstOpCode::CP || op == TR::InstOpCode::AP || op == TR::InstOpCode::SP || op == TR::InstOpCode::MP || op == TR::InstOpCode::DP)
@@ -1600,9 +1600,9 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len, mf1, roundAmount, mf2, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len, mf1, roundAmount, mf2, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len, mf1, roundAmount, mf2, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len, mf1, roundAmount, mf2, cg);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::SRP)
@@ -1639,9 +1639,9 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len, mf1, shiftAmount, roundAmount, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len, mf1, shiftAmount, roundAmount, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS2Instruction(op, n, len, mf1, shiftAmount, roundAmount, cg);
+      instr = new (INSN_HEAP) TR::S390SS2Instruction(op, n, len, mf1, shiftAmount, roundAmount, cg);
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::SRP)
       {
@@ -1682,9 +1682,9 @@ generateSS4Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS4Instruction(op, n, lengthReg, mf1, mf2, sourceKeyReg, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SS4Instruction(op, n, lengthReg, mf1, mf2, sourceKeyReg, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS4Instruction(op, n, lengthReg, mf1, mf2, sourceKeyReg, cg);
+      instr = new (INSN_HEAP) TR::S390SS4Instruction(op, n, lengthReg, mf1, mf2, sourceKeyReg, cg);
 
    return instr;
    }
@@ -1732,9 +1732,9 @@ generateSS5WithImplicitGPRsInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mn
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, op3Reg, mf4, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, op3Reg, mf4, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, op3Reg, mf4, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, op3Reg, mf4, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
 
    return instr;
    }
@@ -1751,9 +1751,9 @@ generateSS5WithImplicitGPRsInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mn
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, NULL, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, NULL, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, NULL, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, NULL, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
 
    return instr;
    }
@@ -1777,9 +1777,9 @@ generateSS5WithImplicitGPRsInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mn
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, mf4, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, mf4, preced, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, mf4, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
+      instr = new (INSN_HEAP) TR::S390SS5WithImplicitGPRsInstruction(op, n, op1Reg, mf2, NULL, mf4, implicitRegSrc0, implicitRegSrc1, implicitRegTrg0, implicitRegTrg1, cg);
 
    return instr;
    }
@@ -1797,9 +1797,9 @@ generateSSEInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SSEInstruction(op, n, mf1, mf2, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SSEInstruction(op, n, mf1, mf2, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SSEInstruction(op, n, mf1, mf2, cg);
+      instr = new (INSN_HEAP) TR::S390SSEInstruction(op, n, mf1, mf2, cg);
 
    return instr;
    }
@@ -1817,9 +1817,9 @@ generateSSFInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SSFInstruction(op, n, regp, mf1, mf2, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SSFInstruction(op, n, regp, mf1, mf2, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SSFInstruction(op, n, regp, mf1, mf2, cg);
+      instr = new (INSN_HEAP) TR::S390SSFInstruction(op, n, regp, mf1, mf2, cg);
 
    return instr;
    }
@@ -1833,9 +1833,9 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SIInstruction(op, n, mf, imm, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SIInstruction(op, n, mf, imm, cg);
+      instr = new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, cg);
 
    return instr;
    }
@@ -1848,9 +1848,9 @@ generateSIYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SIYInstruction(op, n, mf, imm, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SIYInstruction(op, n, mf, imm, cg);
+      instr = new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, cg);
 
    return instr;
    }
@@ -1873,9 +1873,9 @@ generateSILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SILInstruction(op, n, mf, imm, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SILInstruction(op, n, mf, imm, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SILInstruction(op, n, mf, imm, cg);
+      instr = new (INSN_HEAP) TR::S390SILInstruction(op, n, mf, imm, cg);
 
    return instr;
    }
@@ -1887,9 +1887,9 @@ generateSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::No
 
    TR::Instruction *instr;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390SInstruction(op, n, mf, preced, cg);
+      instr = new (INSN_HEAP) TR::S390SInstruction(op, n, mf, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390SInstruction(op, n, mf, cg);
+      instr = new (INSN_HEAP) TR::S390SInstruction(op, n, mf, cg);
 
    return instr;
    }
@@ -1901,11 +1901,11 @@ generateSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::No
 
    if (preced)
       {
-      instr = new (INSN_HEAP) TR_S390OpCodeOnlyInstruction(op, n, preced, cg);
+      instr = new (INSN_HEAP) TR::S390OpCodeOnlyInstruction(op, n, preced, cg);
       }
    else
       {
-      instr = new (INSN_HEAP) TR_S390OpCodeOnlyInstruction(op, n, cg);
+      instr = new (INSN_HEAP) TR::S390OpCodeOnlyInstruction(op, n, cg);
       }
 
    return instr;
@@ -1916,9 +1916,9 @@ generateRRInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::No
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390OpCodeOnlyInstruction(op, n, preced, cg);
+      return new (INSN_HEAP) TR::S390OpCodeOnlyInstruction(op, n, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390OpCodeOnlyInstruction(op, n, cg);
+   return new (INSN_HEAP) TR::S390OpCodeOnlyInstruction(op, n, cg);
    }
 
 /*********************************** Vector Instructions *******************************************/
@@ -1946,35 +1946,35 @@ TR::Instruction *
 generateVRIaInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, uint16_t constantImm2 /* 16 bits */,
                         uint8_t mask3)
    {
-   return new (INSN_HEAP) TR_S390VRIaInstruction(cg, op, n, targetReg, constantImm2, mask3);
+   return new (INSN_HEAP) TR::S390VRIaInstruction(cg, op, n, targetReg, constantImm2, mask3);
    }
 
 TR::Instruction *
 generateVRIbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                         uint8_t constantImm2 /* 8 or 16 bits */, uint8_t constantImm3 /* 12 bits */, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRIbInstruction(cg, op, n, targetReg, constantImm2, constantImm3, mask4);
+   return new (INSN_HEAP) TR::S390VRIbInstruction(cg, op, n, targetReg, constantImm2, constantImm3, mask4);
    }
 
 TR::Instruction *
 generateVRIcInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg3,
                         uint16_t constantImm2 /* 8 or 16 bits */, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRIcInstruction(cg, op, n, targetReg, sourceReg3, constantImm2, mask4);
+   return new (INSN_HEAP) TR::S390VRIcInstruction(cg, op, n, targetReg, sourceReg3, constantImm2, mask4);
    }
 
 TR::Instruction *
 generateVRIdInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         TR::Register * sourceReg3, uint8_t constantImm4 /* 8 bit */, uint8_t mask5 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRIdInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, constantImm4, mask5);
+   return new (INSN_HEAP) TR::S390VRIdInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, constantImm4, mask5);
    }
 
 TR::Instruction *
 generateVRIeInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         uint16_t constantImm3 /* 12 bits */, uint8_t mask5 /* 4 bits */, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRIeInstruction(cg, op, n, targetReg, sourceReg2, constantImm3, mask5, mask4);
+   return new (INSN_HEAP) TR::S390VRIeInstruction(cg, op, n, targetReg, sourceReg2, constantImm3, mask5, mask4);
    }
 
 /****** VRR ******/
@@ -1984,9 +1984,9 @@ generateVRRaInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
                         TR::Instruction * preced)
    {
    if (preced)
-      return new (INSN_HEAP) TR_S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, mask5, mask4, mask3, preced);
+      return new (INSN_HEAP) TR::S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, mask5, mask4, mask3, preced);
    else
-      return new (INSN_HEAP) TR_S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, mask5, mask4, mask3);
+      return new (INSN_HEAP) TR::S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, mask5, mask4, mask3);
    }
 
 TR::Instruction *
@@ -1994,37 +1994,37 @@ generateVRRaInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
                         TR::Instruction * preced)
    {
    if (preced)
-      return new (INSN_HEAP) TR_S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, 0 /* mask5 */, 0 /* mask4 */, 0 /* mask3 */, preced);
+      return new (INSN_HEAP) TR::S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, 0 /* mask5 */, 0 /* mask4 */, 0 /* mask3 */, preced);
    else
-      return new (INSN_HEAP) TR_S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, 0 /* mask5 */, 0 /* mask4 */, 0 /* mask3 */);
+      return new (INSN_HEAP) TR::S390VRRaInstruction(cg, op, n, targetReg, sourceReg2, 0 /* mask5 */, 0 /* mask4 */, 0 /* mask3 */);
    }
 
 TR::Instruction *
 generateVRRbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         TR::Register * sourceReg3, uint8_t mask5 /* 4 bits */, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRRbInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, mask5, mask4);
+   return new (INSN_HEAP) TR::S390VRRbInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, mask5, mask4);
    }
 
 TR::Instruction *
 generateVRRcInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         TR::Register * sourceReg3, uint8_t mask6 /* 4 bits */, uint8_t mask5 /* 4 bits */, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRRcInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, mask6, mask5, mask4);
+   return new (INSN_HEAP) TR::S390VRRcInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, mask6, mask5, mask4);
    }
 
 TR::Instruction *
 generateVRRcInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         TR::Register * sourceReg3, uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRRcInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, 0, 0, mask4);
+   return new (INSN_HEAP) TR::S390VRRcInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, 0, 0, mask4);
    }
 
 TR::Instruction *
 generateVRRdInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2,
                         TR::Register * sourceReg3, TR::Register * sourceReg4, uint8_t mask6 /* 4 bits */, uint8_t mask5 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRRdInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, sourceReg4, mask6, mask5);
+   return new (INSN_HEAP) TR::S390VRRdInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, sourceReg4, mask6, mask5);
    }
 
 TR::Instruction *
@@ -2032,14 +2032,14 @@ generateVRReInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
                         TR::Register * sourceReg3, TR::Register * sourceReg4, uint8_t mask6 /* 4 bits */, uint8_t mask5 /* 4 bits */)
 
    {
-   return new (INSN_HEAP) TR_S390VRReInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, sourceReg4, mask6, mask5);
+   return new (INSN_HEAP) TR::S390VRReInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, sourceReg4, mask6, mask5);
    }
 
 TR::Instruction *
 generateVRRfInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg2 /* GPR */,
                         TR::Register * sourceReg3 /* GPR */)
    {
-   return new (INSN_HEAP) TR_S390VRRfInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3);
+   return new (INSN_HEAP) TR::S390VRRfInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3);
    }
 
 /****** VRS ******/
@@ -2048,21 +2048,21 @@ TR::Instruction *
 generateVRSaInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
                         uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRSaInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   return new (INSN_HEAP) TR::S390VRSaInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 TR::Instruction *
 generateVRSbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
                         uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   return new (INSN_HEAP) TR::S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 TR::Instruction *
 generateVRScInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
                         uint8_t mask4 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   return new (INSN_HEAP) TR::S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 /****** VRV ******/
@@ -2070,7 +2070,7 @@ TR::Instruction *
 generateVRVInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register *sourceReg, TR::MemoryReference * mr,
                        uint8_t mask3 /* 4 bits */)
    {
-   return new (INSN_HEAP) TR_S390VRVInstruction(cg, op, n, sourceReg, mr, mask3);
+   return new (INSN_HEAP) TR::S390VRVInstruction(cg, op, n, sourceReg, mr, mask3);
    }
 
 /****** VRX ******/
@@ -2081,25 +2081,25 @@ generateVRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    if (memRef) preced = memRef->enforceVRXFormatLimits(n, cg, preced);
 
    if (preced)
-      return new (INSN_HEAP) TR_S390VRXInstruction(cg, op, n, reg, memRef, mask3, preced);
+      return new (INSN_HEAP) TR::S390VRXInstruction(cg, op, n, reg, memRef, mask3, preced);
    else
-      return new (INSN_HEAP) TR_S390VRXInstruction(cg, op, n, reg, memRef, mask3);
+      return new (INSN_HEAP) TR::S390VRXInstruction(cg, op, n, reg, memRef, mask3);
    }
 
 /************************************************************ Misc Instructions ************************************************************/
 TR::Instruction *
 generateS390PseudoInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Node * fenceNode, TR::Instruction * preced)
    {
-   TR_S390PseudoInstruction *instr;
+   TR::S390PseudoInstruction *instr;
    TR::Compilation *comp = cg->comp();
 
    if (preced)
    {
-     instr= new (INSN_HEAP) TR_S390PseudoInstruction(op, n, fenceNode, preced, cg);
+     instr= new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, preced, cg);
    }
    else
    {
-     instr= new (INSN_HEAP) TR_S390PseudoInstruction(op, n, fenceNode, cg);
+     instr= new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, cg);
    }
 
 
@@ -2110,16 +2110,16 @@ TR::Instruction *
 generateS390PseudoInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::RegisterDependencyConditions * cond,
                               TR::Node * fenceNode, TR::Instruction * preced)
    {
-   TR_S390PseudoInstruction *instr;
+   TR::S390PseudoInstruction *instr;
    TR::Compilation *comp = cg->comp();
 
    if (preced)
       {
-      instr=new (INSN_HEAP) TR_S390PseudoInstruction(op, n, fenceNode, cond, preced, cg);
+      instr=new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, cond, preced, cg);
       }
    else
    	  {
-      instr= new (INSN_HEAP) TR_S390PseudoInstruction(op, n, fenceNode, cond, cg);
+      instr= new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, cond, cg);
       }
 
    return instr;
@@ -2145,9 +2145,9 @@ generateRegRegInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, T
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390RRInstruction(op, n, sreg, treg, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390RRInstruction(op, n, sreg, treg, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390RRInstruction(op, n, sreg, treg, cond, cg);
+   return new (INSN_HEAP) TR::S390RRInstruction(op, n, sreg, treg, cond, cg);
    }
 
 TR::Instruction *
@@ -2156,9 +2156,9 @@ generateS390ImmSymInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390ImmSymInstruction(op, n, imm, sr, cond, preced, cg);
+      return new (INSN_HEAP) TR::S390ImmSymInstruction(op, n, imm, sr, cond, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390ImmSymInstruction(op, n, imm, sr, cond, cg);
+   return new (INSN_HEAP) TR::S390ImmSymInstruction(op, n, imm, sr, cond, cg);
    }
 
 TR::Instruction *
@@ -2167,18 +2167,18 @@ generateLogicalImmediate(TR::CodeGenerator * cg, TR::Node * node, TR::InstOpCode
    {
    if ((imm & 0x0000FFFF) == 0x0000FFFF)
       {
-      return new (INSN_HEAP) TR_S390RIInstruction(lhOp, node, reg, ((imm & 0xFFFF0000) >> 16), cg);
+      return new (INSN_HEAP) TR::S390RIInstruction(lhOp, node, reg, ((imm & 0xFFFF0000) >> 16), cg);
       }
 
    if ((imm & 0xFFFF0000) == 0xFFFF0000)
       {
-      return new (INSN_HEAP) TR_S390RIInstruction(llOp, node, reg, imm, cg);
+      return new (INSN_HEAP) TR::S390RIInstruction(llOp, node, reg, imm, cg);
       }
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Int32, cg, 0);
 
    TR::Instruction *instr;
-   instr = (new (INSN_HEAP) TR_S390RXInstruction(defaultOp, node, reg, dataref, cg));
+   instr = (new (INSN_HEAP) TR::S390RXInstruction(defaultOp, node, reg, dataref, cg));
 
    return instr;
    }
@@ -2200,11 +2200,11 @@ TR::Instruction *
 generateVirtualGuardNOPInstruction(TR::CodeGenerator * cg, TR::Node * n, TR_VirtualGuardSite * site,
                                    TR::RegisterDependencyConditions * cond, TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   TR_S390BranchInstruction * cursor ;
+   TR::S390BranchInstruction * cursor ;
    if (preced)
-      cursor = new (INSN_HEAP) TR_S390VirtualGuardNOPInstruction(n, site, cond, sym, preced, cg);
+      cursor = new (INSN_HEAP) TR::S390VirtualGuardNOPInstruction(n, site, cond, sym, preced, cg);
    else
-      cursor =  new (INSN_HEAP) TR_S390VirtualGuardNOPInstruction(n, site, cond, sym, cg);
+      cursor =  new (INSN_HEAP) TR::S390VirtualGuardNOPInstruction(n, site, cond, sym, cg);
    return cursor;
    }
 #endif
@@ -2262,7 +2262,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
    // instruction and calculate the address in generateBinary phase
    if (myself)
       {
-      TR::Instruction * instr = new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, sym, callSymRef, cg);
+      TR::Instruction * instr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, sym, callSymRef, cg);
       instr->setJITExit();
 
       return instr;
@@ -2287,8 +2287,8 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
          }
 
-      TR_S390RILInstruction *tempInst =
-            (new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
+      TR::S390RILInstruction *tempInst =
+            (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
 
       AOTcgDiag1(comp, "\ntempInst=%p\n", tempInst);
       return tempInst;
@@ -2312,8 +2312,8 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
             }
 
-         TR_S390RILInstruction *tempInst =
-            new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
+         TR::S390RILInstruction *tempInst =
+            new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
          tempInst->setJITExit();
 
          if (isHelper)
@@ -2324,7 +2324,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
       else
          {
          genLoadAddressConstant(cg, callNode, imm, RegEP, preced, cond);
-         TR::Instruction * instr = new (INSN_HEAP) TR_S390RRInstruction(TR::InstOpCode::BASR, callNode, RegRA, RegEP, cg);
+         TR::Instruction * instr = new (INSN_HEAP) TR::S390RRInstruction(TR::InstOpCode::BASR, callNode, RegRA, RegEP, cg);
          instr->setJITExit();
 
          return instr;
@@ -2360,7 +2360,7 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
       // In particular, we use the this pointer reg, which  has a preDep to GPR1
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, callNode, TR::LabelSymbol::create(INSN_HEAP, cg), preDeps);
 
-      callInstr = new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, killRegRA, s,
+      callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, killRegRA, s,
          postDeps, callSymRef, cg);
       callInstr->setJITExit();
 
@@ -2369,7 +2369,7 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
       }
    else
       {
-      callInstr = new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, s, cond, callSymRef, cg);
+      callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, s, cond, callSymRef, cg);
       callInstr->setJITExit();
       }
 
@@ -2393,7 +2393,7 @@ generateLoadLiteralPoolAddress(TR::CodeGenerator * cg, TR::Node * node, TR::Regi
    TR::Instruction *cursor;
 
    //support f/w only so far
-   TR_S390RILInstruction *LARLinst = (TR_S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LARL, node, treg, 0xBABE, 0);
+   TR::S390RILInstruction *LARLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LARL, node, treg, 0xBABE, 0);
    LARLinst->setIsLiteralPoolAddress();
    cursor = LARLinst;
 
@@ -2419,13 +2419,13 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Instruction * cursor;
    TR_S390ConstantDataSnippet * targetsnippet = 0;
    TR::MemoryReference * dataref = 0;
-   TR_S390RILInstruction *LRLinst = 0;
+   TR::S390RILInstruction *LRLinst = 0;
    if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
       if (op == TR::InstOpCode::L)
          {
          targetsnippet = cg->findOrCreate4ByteConstant(node, imm);
-         LRLinst = (TR_S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LRL, node, treg, targetsnippet, 0);
+         LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LRL, node, treg, targetsnippet, 0);
          cursor = LRLinst;
          }
       else
@@ -2447,7 +2447,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       {
       dataref = generateS390MemoryReference(imm, TR::Int32, cg, base);
       targetsnippet = dataref->getConstantDataSnippet();
-      cursor = new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+      cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
       }
    // HCR in generateRegLitRefInstruction 32-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
@@ -2507,7 +2507,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n",
          targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
 
-      cursor = (TR_S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
+      cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
       return cursor;
       }
 
@@ -2540,7 +2540,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       dataref->getSymbolReference()->getSymbol(), reloType);
    dataref->getConstantDataSnippet()->setSymbolReference(dataref->getSymbolReference());
    dataref->getConstantDataSnippet()->setReloType(reloType);
-   cursor = new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+   cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2575,7 +2575,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       base = NULL;
       }
    TR::MemoryReference * dataref = generateS390MemoryReference(snippet, cg, base, node);
-   cursor = new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+   cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2596,7 +2596,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Instruction * cursor;
    TR_S390ConstantDataSnippet * targetsnippet = 0;
    TR::MemoryReference * dataref = 0;
-   TR_S390RILInstruction *LGRLinst = 0;
+   TR::S390RILInstruction *LGRLinst = 0;
    TR::Compilation *comp = cg->comp();
 
    if (TR::InstOpCode(op).getInstructionFormat() == RIL_FORMAT)
@@ -2627,7 +2627,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
             }
          }
 
-      cursor = new (INSN_HEAP) TR_S390RILInstruction(op, node, treg, constDataSnip, cg);
+      cursor = new (INSN_HEAP) TR::S390RILInstruction(op, node, treg, constDataSnip, cg);
 
       return cursor;
       }
@@ -2636,7 +2636,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       if (op == TR::InstOpCode::LG)
          {
          targetsnippet = cg->findOrCreate8ByteConstant(node, imm);
-         LGRLinst = (TR_S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LGRL, node, treg, targetsnippet, 0);
+         LGRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LGRL, node, treg, targetsnippet, 0);
          cursor = LGRLinst;
          }
       else
@@ -2684,7 +2684,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
 
    if (!LGRLinst)
-      cursor = new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+      cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2722,7 +2722,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Float, cg, node);
-   return new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+   return new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
    }
 
 /**
@@ -2734,7 +2734,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Double, cg, node);
-   return new (INSN_HEAP) TR_S390RXInstruction(op, node, treg, dataref, cg);
+   return new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2772,7 +2772,7 @@ generateRegUnresolvedSym(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR
 
    TR::Register * treg2 = (tempReg2->getRegisterPair() != NULL) ? tempReg2->getLowOrder() : tempReg2;
    //Since N3 instructions supportted, only need a single BRCL instr.
-   gcPoint = new (INSN_HEAP) TR_S390RILInstruction(TR::InstOpCode::BRCL, node, 0xF, uds, deps, cg);
+   gcPoint = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRCL, node, 0xF, uds, deps, cg);
 
    gcPoint->setNeedsGCMap(0xFFFFFFFF);
    cg->stopUsingRegister(tempReg);
@@ -2953,9 +2953,9 @@ generateS390EInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390EInstruction(op, n, preced, cg);
+      return new (INSN_HEAP) TR::S390EInstruction(op, n, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390EInstruction(op, n,  cg);
+   return new (INSN_HEAP) TR::S390EInstruction(op, n,  cg);
    }
 
 TR::Instruction *
@@ -2965,9 +2965,9 @@ TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390EInstruction(op, n, preced, cg, tgt, tgt2, src, src2 ,cond);
+      return new (INSN_HEAP) TR::S390EInstruction(op, n, preced, cg, tgt, tgt2, src, src2 ,cond);
       }
-   return new (INSN_HEAP) TR_S390EInstruction(op, n,  cg, tgt, tgt2, src, src2, cond);
+   return new (INSN_HEAP) TR::S390EInstruction(op, n,  cg, tgt, tgt2, src, src2, cond);
    }
 
 TR::Instruction *
@@ -2975,9 +2975,9 @@ generateS390IInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, uin
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390IInstruction(op, n, im, preced, cg);
+      return new (INSN_HEAP) TR::S390IInstruction(op, n, im, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390IInstruction(op,n,im,cg);
+   return new (INSN_HEAP) TR::S390IInstruction(op,n,im,cg);
    }
 
 TR::Instruction *
@@ -2985,14 +2985,14 @@ generateRuntimeInstrumentationInstruction(TR::CodeGenerator *cg, TR::InstOpCode:
    {
    if (preced != NULL)
       if (target != NULL)
-         return new (INSN_HEAP) TR_S390RIInstruction(op, node, target, preced, cg);
+         return new (INSN_HEAP) TR::S390RIInstruction(op, node, target, preced, cg);
       else
-         return new (INSN_HEAP) TR_S390RIInstruction(op, node, preced, cg);
+         return new (INSN_HEAP) TR::S390RIInstruction(op, node, preced, cg);
    else
       if (target != NULL)
-         return new (INSN_HEAP) TR_S390RIInstruction(op, node, target, cg);
+         return new (INSN_HEAP) TR::S390RIInstruction(op, node, target, cg);
       else
-         return new (INSN_HEAP) TR_S390RIInstruction(op, node, cg);
+         return new (INSN_HEAP) TR::S390RIInstruction(op, node, cg);
    }
 
 TR::Instruction *
@@ -3000,9 +3000,9 @@ generateS390IEInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, ui
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390IEInstruction(op, n, im1, im2, preced, cg);
+      return new (INSN_HEAP) TR::S390IEInstruction(op, n, im1, im2, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390IEInstruction(op, n, im1, im2, cg);
+   return new (INSN_HEAP) TR::S390IEInstruction(op, n, im1, im2, cg);
    }
 
 TR::Instruction *
@@ -3011,9 +3011,9 @@ generateS390BranchPredictionRelativePreloadInstruction(TR::CodeGenerator * cg, T
    {
    if (preced)
       {
-      return new (cg->trHeapMemory()) TR_S390MIIInstruction(op, n, mask, sym, sym3, preced, cg);
+      return new (cg->trHeapMemory()) TR::S390MIIInstruction(op, n, mask, sym, sym3, preced, cg);
       }
-   return new (cg->trHeapMemory()) TR_S390MIIInstruction(op, n, mask, sym, sym3, cg);
+   return new (cg->trHeapMemory()) TR::S390MIIInstruction(op, n, mask, sym, sym3, cg);
    }
 
 TR::Instruction *
@@ -3022,9 +3022,9 @@ generateS390BranchPredictionPreloadInstruction(TR::CodeGenerator * cg, TR::InstO
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR_S390SMIInstruction(op, n, mask, sym, mf3, preced, cg);
+      return new (INSN_HEAP) TR::S390SMIInstruction(op, n, mask, sym, mf3, preced, cg);
       }
-   return new (INSN_HEAP) TR_S390SMIInstruction(op, n, mask, sym, mf3, cg);
+   return new (INSN_HEAP) TR::S390SMIInstruction(op, n, mask, sym, mf3, cg);
    }
 
 TR::Instruction *
@@ -3041,9 +3041,9 @@ generateSerializationInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Inst
 
    TR::Instruction * instr = NULL;
    if (preced)
-      instr = new (INSN_HEAP) TR_S390RegInstruction(TR::InstOpCode::BCR, node, cond, gpr0, preced, cg);
+      instr = new (INSN_HEAP) TR::S390RegInstruction(TR::InstOpCode::BCR, node, cond, gpr0, preced, cg);
    else
-      instr = new (INSN_HEAP) TR_S390RegInstruction(TR::InstOpCode::BCR, node, cond, gpr0, cg);
+      instr = new (INSN_HEAP) TR::S390RegInstruction(TR::InstOpCode::BCR, node, cond, gpr0, cg);
 
    return instr;
    }
@@ -3224,7 +3224,7 @@ generateExtendedHighWordInstruction(TR::Node * node, TR::CodeGenerator *cg, TR::
             break;
          }
 
-      ((TR_S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
+      ((TR::S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
 
       if (debugObj)
          {

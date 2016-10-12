@@ -1299,7 +1299,7 @@ OMR::Z::CodeGenerator::isUsing32BitEvaluator(TR::Node *node)
 TR::Instruction *
 OMR::Z::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPKind nopKind)
    {
-   return new (self()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
+   return new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
    }
 
 void
@@ -1318,16 +1318,16 @@ OMR::Z::CodeGenerator::insertPad(TR::Node * theNode, TR::Instruction * insertion
    switch (padSize)
       {
       case 4:
-         (void) new (self()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
+         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
          break;
 
       case 6:
-         (void) new (self()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
-         (void) new (self()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
+         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
          break;
 
       case 2:
-         (void) new (self()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
          break;
 
       default:
@@ -1356,14 +1356,14 @@ OMR::Z::CodeGenerator::beginInstructionSelection()
         intptrj_t jniMethodTargetAddress = (intptrj_t)methodSymbol->getResolvedMethod()->startAddressForJNIMethod(self()->comp());
         if(TR::Compiler->target.is64Bit())
           {
-          cursor = new (self()->trHeapMemory()) TR_S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
-          cursor = new (self()->trHeapMemory()) TR_S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
+          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, LOWER_4_BYTES(jniMethodTargetAddress), cursor, self());
           }
        else
-          cursor = new (self()->trHeapMemory()) TR_S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
+          cursor = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, UPPER_4_BYTES(jniMethodTargetAddress), cursor, self());
        }
 
-      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR_S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::S390ImmInstruction(TR::InstOpCode::DC, startNode, 0, NULL, cursor, self());
       generateS390PseudoInstruction(self(), TR::InstOpCode::PROC, startNode);
       }
    else
@@ -1784,7 +1784,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
             TR::MemoryReference * tempMR;
             TR::Register * tempReg = self()->allocateRegister();
 
-            cursor =  new (self()->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),data->_callSymRef, cursor, self());
+            cursor =  new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),data->_callSymRef, cursor, self());
 
             tempMR = generateS390MemoryReference(tempReg, 0, self());
             cursor = generateS390BranchPredictionPreloadInstruction(self(), TR::InstOpCode::BPP, node, data->_callLabel, (int8_t) 0xD, tempMR, cursor);
@@ -1809,7 +1809,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
          {
          TR::Register * tempReg = self()->allocateRegister();
 
-         cursor =  new (self()->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),  data->_callSymRef, cursor, self());
+         cursor =  new (self()->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, node, tempReg, (data->_callSymRef)->getSymbol(),  data->_callSymRef, cursor, self());
          TR::MemoryReference * tempMR = generateS390MemoryReference(tempReg, 0, self());
          tempMR->setCreatedDuringInstructionSelection();
          cursor = generateS390BranchPredictionPreloadInstruction(self(), TR::InstOpCode::BPP, node, data->_callLabel, (int8_t) 0xD, tempMR, cursor);
@@ -1962,7 +1962,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::AHI:
          case TR::InstOpCode::AFI:
             newOpCode = TR::InstOpCode::AIH;
-            immValue = ((TR_S390RIInstruction*)inst)->getSourceImmediate();
+            immValue = ((TR::S390RIInstruction*)inst)->getSourceImmediate();
             // signed extend 32-bit
             newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue,inst->getPrev());
             targetReg->decTotalUseCount();
@@ -1970,7 +1970,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::BRCT:
             newOpCode = TR::InstOpCode::BRCTH;
             //BRCTH has extended immediate
-            newInst= generateS390BranchInstruction(self(), TR::InstOpCode::BRCTH, node, targetReg, ((TR_S390LabeledInstruction*)inst)->getLabelSymbol(), inst->getPrev());
+            newInst= generateS390BranchInstruction(self(), TR::InstOpCode::BRCTH, node, targetReg, ((TR::S390LabeledInstruction*)inst)->getLabelSymbol(), inst->getPrev());
             targetReg->decTotalUseCount();
             break;
          case TR::InstOpCode::CR:
@@ -2001,7 +2001,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             break;
          case TR::InstOpCode::C:
          case TR::InstOpCode::CY:
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CHF;
@@ -2019,7 +2019,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             break;
          case TR::InstOpCode::CL:
          case TR::InstOpCode::CLY:
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CLHF;
@@ -2036,20 +2036,20 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
                }
             break;
          case TR::InstOpCode::CFI:
-            immValue = ((TR_S390RILInstruction*)inst)->getSourceImmediate();
+            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
             newOpCode = TR::InstOpCode::CIH;
             newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
             targetReg->decTotalUseCount();
             break;
          case TR::InstOpCode::CLFI:
-            immValue = ((TR_S390RILInstruction*)inst)->getSourceImmediate();
+            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
             newOpCode = TR::InstOpCode::CLIH;
             newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
             targetReg->decTotalUseCount();
             break;
          case TR::InstOpCode::LB:
             newOpCode = TR::InstOpCode::LBH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2067,7 +2067,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::LH:
          case TR::InstOpCode::LHY:
             newOpCode = TR::InstOpCode::LHH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2085,7 +2085,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::L:
          case TR::InstOpCode::LY:
             newOpCode = TR::InstOpCode::LFH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2102,7 +2102,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             break;
          case TR::InstOpCode::LAT:
             newOpCode = TR::InstOpCode::LFHAT;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2119,7 +2119,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             break;
          case TR::InstOpCode::LLC:
             newOpCode = TR::InstOpCode::LLCH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2136,7 +2136,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             break;
          case TR::InstOpCode::LLH:
             newOpCode = TR::InstOpCode::LLHH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2194,7 +2194,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::LHI:
             //IIHF need to be sign-extend
             newOpCode = TR::InstOpCode::IIHF;
-            immValue = ((TR_S390RIInstruction*)inst)->getSourceImmediate();
+            immValue = ((TR::S390RIInstruction*)inst)->getSourceImmediate();
             newInst = generateRILInstruction(self(), newOpCode, node, targetReg, immValue, inst->getPrev());
             targetReg->decTotalUseCount();
             break;
@@ -2242,7 +2242,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::ST:
          case TR::InstOpCode::STY:
             newOpCode = TR::InstOpCode::STFH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2260,7 +2260,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::STC:
          case TR::InstOpCode::STCY:
             newOpCode = TR::InstOpCode::STCH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2278,7 +2278,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::STH:
          case TR::InstOpCode::STHY:
             newOpCode = TR::InstOpCode::STHH;
-            mr = ((TR_S390RXInstruction *)inst)->getMemoryReference();
+            mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
@@ -2324,7 +2324,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          case TR::InstOpCode::SLFI:
             //ALSIH
             newOpCode = TR::InstOpCode::ALSIH;
-            immValue = ((TR_S390RILInstruction*)inst)->getSourceImmediate();
+            immValue = ((TR::S390RILInstruction*)inst)->getSourceImmediate();
             newInst = generateRILInstruction(self(), newOpCode, node, targetReg, -immValue, inst->getPrev());
             targetReg->decTotalUseCount();
             break;
@@ -2428,7 +2428,7 @@ static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
     // Track internal control flow on labels
     if (insertInstr->getOpCodeValue() == TR::InstOpCode::LABEL)
       {
-      TR_S390LabelInstruction *li = toS390LabelInstruction(insertInstr);
+      TR::S390LabelInstruction *li = toS390LabelInstruction(insertInstr);
       TR::LabelSymbol *ls=li->getLabelSymbol();
       if (ls->isStartInternalControlFlow())
         {
@@ -2672,7 +2672,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
         }
      else if(instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGIN || instructionCursor->getOpCodeValue() == TR::InstOpCode::TBEGINC)
         {
-        uint16_t immValue = ((TR_S390SILInstruction*)instructionCursor)->getSourceImmediate();
+        uint16_t immValue = ((TR::S390SILInstruction*)instructionCursor)->getSourceImmediate();
         uint8_t regMask = 0;
         for(int8_t i = TR::RealRegister::GPR0; i != TR::RealRegister::GPR15 + 1; i++)
            {
@@ -2680,7 +2680,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
               regMask |= (1 << (7 - ((i - 1) >> 1))); // bit 0 = GPR0/1, GPR0=1, GPR15=16. 'Or' with bit [(i-1)>>1]
            }
         immValue = immValue | (regMask<<8);
-        ((TR_S390SILInstruction*)instructionCursor)->setSourceImmediate(immValue);
+        ((TR::S390SILInstruction*)instructionCursor)->setSourceImmediate(immValue);
         }
 
       self()->tracePreRAInstruction(instructionCursor);
@@ -2725,7 +2725,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       // Track internal control flow on labels
       if (instructionCursor->getOpCode().getOpCodeValue() == TR::InstOpCode::LABEL)
          {
-         TR_S390LabelInstruction *li = toS390LabelInstruction(instructionCursor);
+         TR::S390LabelInstruction *li = toS390LabelInstruction(instructionCursor);
 
          if (li->getLabelSymbol() != NULL)
             {
@@ -2940,8 +2940,8 @@ TR_S390Peephole::AGIReduction()
    if (disableRenaming!=NULL)
       return false;
 
-   TR::Register *lgrTargetReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(1);
-   TR::Register *lgrSourceReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
+   TR::Register *lgrSourceReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(2);
 
    TR::RealRegister *gpr0 = _cg->machine()->getS390RealRegister(TR::RealRegister::GPR0);
 
@@ -3138,7 +3138,7 @@ TR_S390Peephole::ICMReduction()
    bool performed = false;
    bool isICMOpportunity = false;
 
-   TR_S390RXInstruction* load= (TR_S390RXInstruction*) _cursor;
+   TR::S390RXInstruction* load= (TR::S390RXInstruction*) _cursor;
 
    TR::MemoryReference* mem = load->getMemoryReference();
 
@@ -3156,7 +3156,7 @@ TR_S390Peephole::ICMReduction()
       //        LTR    GPRX, GPRY
       // it is wrong to transform the above sequence into
       //        ICM    GPRX, MEM
-      if (next->getRegisterOperand(1) != ((TR_S390RRInstruction*)next)->getRegisterOperand(2)) return false;
+      if (next->getRegisterOperand(1) != ((TR::S390RRInstruction*)next)->getRegisterOperand(2)) return false;
       isICMOpportunity = true;
       }
    else
@@ -3166,7 +3166,7 @@ TR_S390Peephole::ICMReduction()
       //      CHI  GPRX, '0'
       // reduce to:
       //      ICM GPRX,...
-      TR_S390RIInstruction* chi = (TR_S390RIInstruction*) next;
+      TR::S390RIInstruction* chi = (TR::S390RIInstruction*) next;
 
       // CHI must be comparing against '0' (i.e. NULLCHK) or else our
       // condition codes will be wrong.
@@ -3196,7 +3196,7 @@ TR_S390Peephole::ICMReduction()
          }
 
       // Do the reduction - create the icm instruction
-      TR_S390RSInstruction* icm = new (_cg->trHeapMemory()) TR_S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, _cg);
+      TR::S390RSInstruction* icm = new (_cg->trHeapMemory()) TR::S390RSInstruction(TR::InstOpCode::ICM, load->getNode(), load->getRegisterOperand(1), 0xF, memcp, prev, _cg);
       _cursor = icm;
 
       // Check if the load has an implicit NULLCHK.  If so, we need to ensure a GCmap is copied.
@@ -3286,8 +3286,8 @@ TR_S390Peephole::duplicateNILHReduction()
           (nb->getKind() == TR::Instruction::IsRI))
          {
          // NILH == generateRIInstruction
-         TR_S390RIInstruction * cast_na = (TR_S390RIInstruction *)na;
-         TR_S390RIInstruction * cast_nb = (TR_S390RIInstruction *)nb;
+         TR::S390RIInstruction * cast_na = (TR::S390RIInstruction *)na;
+         TR::S390RIInstruction * cast_nb = (TR::S390RIInstruction *)nb;
 
          if (cast_na->isImm() == cast_nb->isImm())
             {
@@ -3334,7 +3334,7 @@ TR_S390Peephole::clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register
 
       if (inst->getOpCodeValue() == TR::InstOpCode::NILH)
          {
-         TR_S390RIInstruction * NILH_RI = (TR_S390RIInstruction *)inst;
+         TR::S390RIInstruction * NILH_RI = (TR::S390RIInstruction *)inst;
          if (NILH_RI->isImm() &&
              NILH_RI->getSourceImmediate() == 0x7FFF)
             {
@@ -3556,8 +3556,8 @@ TR_S390Peephole::LRReduction()
    //The _defRegs in the instruction records virtual def reg till now that needs to be reset to real reg.
    _cursor->setUseDefRegisters(false);
 
-   TR::Register *lgrSourceReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(2);
-   TR::Register *lgrTargetReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(1);
+   TR::Register *lgrSourceReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
    TR::InstOpCode lgrOpCode = _cursor->getOpCode();
 
    if (lgrTargetReg == lgrSourceReg &&
@@ -3600,8 +3600,8 @@ TR_S390Peephole::LRReduction()
       if((prev->getOpCodeValue() == TR::InstOpCode::LR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTR) ||
          (prev->getOpCodeValue() == TR::InstOpCode::LGR && lgrOpCode.getOpCodeValue() == TR::InstOpCode::LTGR))
         {
-        TR::Register *prevTargetReg = ((TR_S390RRInstruction*)prev)->getRegisterOperand(1);
-        TR::Register *prevSourceReg = ((TR_S390RRInstruction*)prev)->getRegisterOperand(2);
+        TR::Register *prevTargetReg = ((TR::S390RRInstruction*)prev)->getRegisterOperand(1);
+        TR::Register *prevSourceReg = ((TR::S390RRInstruction*)prev)->getRegisterOperand(2);
         if((lgrTargetReg == prevTargetReg || lgrTargetReg == prevSourceReg) &&
            performTransformation(comp(), "\nO^O S390 PEEPHOLE: Transforming load register into load and test register and removing current at %p\n", _cursor))
           {
@@ -3633,16 +3633,16 @@ TR_S390Peephole::LRReduction()
       //checks that the prev instruction is an add/sub logical operation that sets the same target register as the LTR/LTGR insn, and that we branch immediately after
       if (prev->getOpCode().setsCC() && prev->getOpCode().setsCarryFlag() && prev->getRegisterOperand(1) == lgrTargetReg && next->getOpCodeValue() == TR::InstOpCode::BRC)
          {
-         TR::InstOpCode::S390BranchCondition branchCond = ((TR_S390BranchInstruction *) next)->getBranchCondition();
+         TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) next)->getBranchCondition();
 
          if ((branchCond == TR::InstOpCode::COND_BERC || branchCond == TR::InstOpCode::COND_BNERC) &&
             performTransformation(comp(), "\nO^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n",_cursor, prev))
             {
             _cg->deleteInst(_cursor);
             if (branchCond == TR::InstOpCode::COND_BERC)
-               ((TR_S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK10);
+               ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK10);
             else if (branchCond == TR::InstOpCode::COND_BNERC)
-               ((TR_S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK5);
+               ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK5);
             performed = true;
             return performed;
             }
@@ -3659,7 +3659,7 @@ TR_S390Peephole::LRReduction()
    while ((current != NULL) &&
             !isBarrierToPeepHoleLookback(current) &&
            !(current->isBranchOp() && current->getKind() == TR::Instruction::IsRIL &&
-              ((TR_S390RILInstruction *)  current)->getTargetSnippet() ) &&
+              ((TR::S390RILInstruction *)  current)->getTargetSnippet() ) &&
            windowSize < maxWindowSize)
       {
 
@@ -3680,8 +3680,8 @@ TR_S390Peephole::LRReduction()
             ((curOpCode.is32bit() && lgrOpCode.is32bit()) ||
              (curOpCode.is64bit() && lgrOpCode.is64bit())))
          {
-         TR::Register *curTargetReg=((TR_S390RIInstruction*)current)->getRegisterOperand(1);
-         int32_t srcImm = ((TR_S390RIInstruction*)current)->getSourceImmediate();
+         TR::Register *curTargetReg=((TR::S390RIInstruction*)current)->getRegisterOperand(1);
+         int32_t srcImm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
          if(curTargetReg == lgrTargetReg && (srcImm == 0) && !(setCC || useCC))
             {
             if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
@@ -3719,8 +3719,8 @@ TR_S390Peephole::LRReduction()
       if (curOpCode.getOpCodeValue() == lgrOpCode.getOpCodeValue() &&
           current->getKind() == TR::Instruction::IsRR)
          {
-         TR::Register *curSourceReg = ((TR_S390RRInstruction*)current)->getRegisterOperand(2);
-         TR::Register *curTargetReg = ((TR_S390RRInstruction*)current)->getRegisterOperand(1);
+         TR::Register *curSourceReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(2);
+         TR::Register *curTargetReg = ((TR::S390RRInstruction*)current)->getRegisterOperand(1);
 
          if ( ((curSourceReg == lgrTargetReg && curTargetReg == lgrSourceReg) ||
               (curSourceReg == lgrSourceReg && curTargetReg == lgrTargetReg)))
@@ -3803,10 +3803,10 @@ TR_S390Peephole::LLCReduction()
 
    if (curOpCode == TR::InstOpCode::LGFR || curOpCode == TR::InstOpCode::LLGTR)
       {
-      TR::Register *llcTgtReg = ((TR_S390RRInstruction *) _cursor)->getRegisterOperand(1);
+      TR::Register *llcTgtReg = ((TR::S390RRInstruction *) _cursor)->getRegisterOperand(1);
 
-      TR::Register *curSrcReg = ((TR_S390RRInstruction *) current)->getRegisterOperand(2);
-      TR::Register *curTgtReg = ((TR_S390RRInstruction *) current)->getRegisterOperand(1);
+      TR::Register *curSrcReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(2);
+      TR::Register *curTgtReg = ((TR::S390RRInstruction *) current)->getRegisterOperand(1);
 
       if (llcTgtReg == curSrcReg && llcTgtReg == curTgtReg)
          {
@@ -3829,7 +3829,7 @@ TR_S390Peephole::LLCReduction()
             _cg->deleteInst(current);
             // Replace the LLC with LLGC
             TR::Instruction *oldCursor = _cursor;
-            TR::MemoryReference* memRef = ((TR_S390RXInstruction *) oldCursor)->getMemoryReference();
+            TR::MemoryReference* memRef = ((TR::S390RXInstruction *) oldCursor)->getMemoryReference();
             memRef->resetMemRefUsedBefore();
             _cursor = generateRXInstruction(_cg, TR::InstOpCode::LLGC, comp()->getStartTree()->getNode(), llcTgtReg, memRef, _cursor->getPrev());
             _cg->replaceInst(oldCursor, _cursor);
@@ -3864,8 +3864,8 @@ TR_S390Peephole::LGFRReduction()
 
    if (disableLGFRRemoval != NULL) return false;
 
-   TR::Register *lgrSourceReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(2);
-   TR::Register *lgrTargetReg = ((TR_S390RRInstruction*)_cursor)->getRegisterOperand(1);
+   TR::Register *lgrSourceReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(2);
+   TR::Register *lgrTargetReg = ((TR::S390RRInstruction*)_cursor)->getRegisterOperand(1);
 
    // We cannot do anything if both target and source are the same,
    // which can happen with LTR and LTGR
@@ -3876,8 +3876,8 @@ TR_S390Peephole::LGFRReduction()
 
    if (curOpCode == TR::InstOpCode::LGFR)
       {
-      TR::Register *curSourceReg=((TR_S390RRInstruction*)current)->getRegisterOperand(2);
-      TR::Register *curTargetReg=((TR_S390RRInstruction*)current)->getRegisterOperand(1);
+      TR::Register *curSourceReg=((TR::S390RRInstruction*)current)->getRegisterOperand(2);
+      TR::Register *curTargetReg=((TR::S390RRInstruction*)current)->getRegisterOperand(1);
 
       if (curSourceReg == lgrTargetReg && curTargetReg == lgrTargetReg)
          {
@@ -3893,7 +3893,7 @@ TR_S390Peephole::LGFRReduction()
                printInfo(tmp);
                }
 
-            ((TR_S390RRInstruction*)current)->setRegisterOperand(2,lgrSourceReg);
+            ((TR::S390RRInstruction*)current)->setRegisterOperand(2,lgrSourceReg);
 
             // Removing redundant LR.
             _cg->deleteInst(_cursor);
@@ -3929,7 +3929,7 @@ TR_S390Peephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPRep
    if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z13) || disabled)
       return false;
 
-   TR_S390RIEInstruction* branchInst = static_cast<TR_S390RIEInstruction*> (_cursor);
+   TR::S390RIEInstruction* branchInst = static_cast<TR::S390RIEInstruction*> (_cursor);
 
    TR::Instruction* currInst = _cursor;
    TR::Instruction* nextInst = _cursor->getNext();
@@ -3967,7 +3967,7 @@ TR_S390Peephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPRep
             break;
 
          // Because of the previous checks, LHI or LGHI instruction is guaranteed to be here
-         TR_S390RIInstruction* RIInst = static_cast<TR_S390RIInstruction*> (currInst);
+         TR::S390RIInstruction* RIInst = static_cast<TR::S390RIInstruction*> (currInst);
 
          // Conditionalize from "Load Immediate" to "Load Immediate on Condition"
          _cg->replaceInst(RIInst, _cursor = generateRIEInstruction(_cg, RIInst->getOpCode().getOpCodeValue() == TR::InstOpCode::LHI ? TR::InstOpCode::LOCHI : TR::InstOpCode::LOCGHI, RIInst->getNode(), RIInst->getRegisterOperand(1), RIInst->getSourceImmediate(), cond, RIInst->getPrev()));
@@ -4033,8 +4033,8 @@ TR_S390Peephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
 
    if (_cursor->getNext()->getOpCodeValue() == TR::InstOpCode::NILL)
       {
-      TR_S390RXInstruction* loadInst = static_cast<TR_S390RXInstruction*> (_cursor);
-      TR_S390RIInstruction* nillInst = static_cast<TR_S390RIInstruction*> (_cursor->getNext());
+      TR::S390RXInstruction* loadInst = static_cast<TR::S390RXInstruction*> (_cursor);
+      TR::S390RIInstruction* nillInst = static_cast<TR::S390RIInstruction*> (_cursor->getNext());
 
       if (!nillInst->isImm() || nillInst->getSourceImmediate() != 0xFF00)
          return false;
@@ -4068,35 +4068,35 @@ bool swapOperands(TR::Register * trueReg, TR::Register * compReg, TR::Instructio
    switch (curr->getKind())
       {
       case TR::Instruction::IsRR:
-         branchCond = ((TR_S390RRInstruction *) curr)->getBranchCondition();
-         ((TR_S390RRInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
-         ((TR_S390RRInstruction *) curr)->setRegisterOperand(2,trueReg);
-         ((TR_S390RRInstruction *) curr)->setRegisterOperand(1,compReg);
+         branchCond = ((TR::S390RRInstruction *) curr)->getBranchCondition();
+         ((TR::S390RRInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
+         ((TR::S390RRInstruction *) curr)->setRegisterOperand(2,trueReg);
+         ((TR::S390RRInstruction *) curr)->setRegisterOperand(1,compReg);
          break;
       case TR::Instruction::IsRIE:
-         branchCond = ((TR_S390RIEInstruction *) curr)->getBranchCondition();
-         ((TR_S390RIEInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
-         ((TR_S390RIEInstruction *) curr)->setRegisterOperand(2,trueReg);
-         ((TR_S390RIEInstruction *) curr)->setRegisterOperand(1,compReg);
+         branchCond = ((TR::S390RIEInstruction *) curr)->getBranchCondition();
+         ((TR::S390RIEInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
+         ((TR::S390RIEInstruction *) curr)->setRegisterOperand(2,trueReg);
+         ((TR::S390RIEInstruction *) curr)->setRegisterOperand(1,compReg);
          break;
       case TR::Instruction::IsRRS:
-         branchCond = ((TR_S390RRSInstruction *) curr)->getBranchCondition();
-         ((TR_S390RRSInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
-         ((TR_S390RRSInstruction *) curr)->setRegisterOperand(2,trueReg);
-         ((TR_S390RRSInstruction *) curr)->setRegisterOperand(1,compReg);
+         branchCond = ((TR::S390RRSInstruction *) curr)->getBranchCondition();
+         ((TR::S390RRSInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
+         ((TR::S390RRSInstruction *) curr)->setRegisterOperand(2,trueReg);
+         ((TR::S390RRSInstruction *) curr)->setRegisterOperand(1,compReg);
          break;
       case TR::Instruction::IsRRD: // RRD is encoded use RRF
       case TR::Instruction::IsRRF:
-         branchCond = ((TR_S390RRFInstruction *) curr)->getBranchCondition();
-         ((TR_S390RRFInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
-         ((TR_S390RRFInstruction *) curr)->setRegisterOperand(2,trueReg);
-         ((TR_S390RRFInstruction *) curr)->setRegisterOperand(1,compReg);
+         branchCond = ((TR::S390RRFInstruction *) curr)->getBranchCondition();
+         ((TR::S390RRFInstruction *) curr)->setBranchCondition(getReverseBranchCondition(branchCond));
+         ((TR::S390RRFInstruction *) curr)->setRegisterOperand(2,trueReg);
+         ((TR::S390RRFInstruction *) curr)->setRegisterOperand(1,compReg);
          break;
       case TR::Instruction::IsRRF2:
-         mask = ((TR_S390RRFInstruction *) curr)->getMask3();
-         ((TR_S390RRFInstruction *) curr)->setMask3(getReverseBranchMask(mask));
-         ((TR_S390RRFInstruction *) curr)->setRegisterOperand(2,trueReg);
-         ((TR_S390RRFInstruction *) curr)->setRegisterOperand(1,compReg);
+         mask = ((TR::S390RRFInstruction *) curr)->getMask3();
+         ((TR::S390RRFInstruction *) curr)->setMask3(getReverseBranchMask(mask));
+         ((TR::S390RRFInstruction *) curr)->setRegisterOperand(2,trueReg);
+         ((TR::S390RRFInstruction *) curr)->setRegisterOperand(1,compReg);
          break;
       default:
          // unsupport instruction type, bail
@@ -4110,10 +4110,10 @@ void insertLoad(TR::Compilation * comp, TR::CodeGenerator * cg, TR::Instruction 
    switch(r->getKind())
      {
      case TR_FPR:
-       new (comp->trHeapMemory()) TR_S390RRInstruction(TR::InstOpCode::LDR, i->getNode(), r, r, i, cg);
+       new (comp->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LDR, i->getNode(), r, r, i, cg);
        break;
      default:
-       new (comp->trHeapMemory()) TR_S390RRInstruction(TR::InstOpCode::LR, i->getNode(), r, r, i, cg);
+       new (comp->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::LR, i->getNode(), r, r, i, cg);
        break;
      }
    }
@@ -4175,7 +4175,7 @@ TR_S390Peephole::DAARemoveOutlinedLabelNop(bool hasPadding)
       if ((nextInst ->getOpCodeValue() == TR::InstOpCode::BRC || nextInst ->getOpCodeValue() == TR::InstOpCode::BRCL) &&
           (nextInst2->getOpCodeValue() == TR::InstOpCode::BRC || nextInst2->getOpCodeValue() == TR::InstOpCode::BRCL))
          {
-         TR_S390RegInstruction* OOLbranchInst = static_cast<TR_S390RegInstruction*> (nextInst2);
+         TR::S390RegInstruction* OOLbranchInst = static_cast<TR::S390RegInstruction*> (nextInst2);
 
          if (OOLbranchInst->getBranchCondition() == TR::InstOpCode::COND_MASK0)
             if (performTransformation(comp(), "O^O S390 PEEPHOLE: Eliminating redundant DAA NOP BRC/BRCL to OOL path %p.\n", OOLbranchInst))
@@ -4238,7 +4238,7 @@ TR_S390Peephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
             currInst = _cursor;
             nextInst = _cursor->getNext();
 
-            TR_S390BranchInstruction* OOLbranchInst;
+            TR::S390BranchInstruction* OOLbranchInst;
 
             // Find the OOL Branch Instruction
             while (currInst != NULL)
@@ -4246,7 +4246,7 @@ TR_S390Peephole::DAAHandleMemoryReferenceSpill(bool hasPadding)
                if (currInst->getOpCodeValue() == TR::InstOpCode::BRC || currInst->getOpCodeValue() == TR::InstOpCode::BRCL)
                   {
                   // Convert the instruction to a Branch Instruction to access the Label Symbol
-                  OOLbranchInst = static_cast<TR_S390BranchInstruction*> (currInst);
+                  OOLbranchInst = static_cast<TR::S390BranchInstruction*> (currInst);
 
                   // We have found the correct BRC/BRCL
                   if (OOLbranchInst->getLabelSymbol()->isStartOfColdInstructionStream())
@@ -4309,7 +4309,7 @@ TR_S390Peephole::revertTo32BitShift()
          return false;
       }
 
-   TR_S390RSInstruction * instr = (TR_S390RSInstruction *) _cursor;
+   TR::S390RSInstruction * instr = (TR::S390RSInstruction *) _cursor;
 
    // The shift is supposed to be an integer shift when reducing 64bit shifts.
    // Note the NOT in front of second boolean expr. pair
@@ -4352,17 +4352,17 @@ TR_S390Peephole::revertTo32BitShift()
             break;
          }
 
-      TR_S390RSInstruction* newInstr = NULL;
+      TR::S390RSInstruction* newInstr = NULL;
 
       if (instr->getSourceImmediate())
          {
-         newInstr = new (_cg->trHeapMemory()) TR_S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), instr->getSourceImmediate(), instr->getPrev(), _cg);
+         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), instr->getSourceImmediate(), instr->getPrev(), _cg);
          }
       else if (instr->getMemoryReference())
          {
          TR::MemoryReference* memRef = instr->getMemoryReference();
          memRef->resetMemRefUsedBefore();
-         newInstr = new (_cg->trHeapMemory()) TR_S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), memRef, instr->getPrev(), _cg);
+         newInstr = new (_cg->trHeapMemory()) TR::S390RSInstruction(newOpCode, instr->getNode(), instr->getRegisterOperand(1), memRef, instr->getPrev(), _cg);
          }
       else
          {
@@ -4414,7 +4414,7 @@ TR_S390Peephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * i
 
          if (iterator->getOpCodeValue() == TR::InstOpCode::LARL)
             {
-            TR_S390RILInstruction* LARLInst = reinterpret_cast<TR_S390RILInstruction*> (iterator);
+            TR::S390RILInstruction* LARLInst = reinterpret_cast<TR::S390RILInstruction*> (iterator);
 
             // Make sure the register we load the literal pool address in is the same register referenced by the EX instruction
             if (LARLInst->isLiteralPoolAddress() && LARLInst->getRegisterOperand(1) == _cursor->getMemoryReference()->getBaseRegister())
@@ -4444,7 +4444,7 @@ TR_S390Peephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * i
       cnstDataInstr->setPrev(labelInstr);
 
       // generate EXRL
-      TR_S390RILInstruction * newEXRLInst = new (_cg->trHeapMemory()) TR_S390RILInstruction(TR::InstOpCode::EXRL, _cursor->getNode(), _cursor->getRegisterOperand(1), ssInstrLabel, _cursor->getPrev(), _cg);
+      TR::S390RILInstruction * newEXRLInst = new (_cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, _cursor->getNode(), _cursor->getRegisterOperand(1), ssInstrLabel, _cursor->getPrev(), _cg);
 
       // Replace the EX with EXRL
       TR::Instruction * oldCursor = _cursor;
@@ -4486,7 +4486,7 @@ TR_S390Peephole::inlineEXtarget()
 
          // check if the label is following an unconditional branch
          if (inst && inst->getOpCode().getOpCodeValue() == TR::InstOpCode::BRC &&
-             ((TR_S390BranchInstruction *)inst)->getBranchCondition() == TR::InstOpCode::COND_BRC)
+             ((TR::S390BranchInstruction *)inst)->getBranchCondition() == TR::InstOpCode::COND_BRC)
            {
            return inlineEXtargetHelper(inst,_cursor->getPrev());
            }
@@ -4669,13 +4669,13 @@ TR_S390Peephole::attemptZ7distinctOperants()
                   }
                case TR::InstOpCode::AHI:
                   {
-                  int16_t imm = ((TR_S390RIInstruction*)current)->getSourceImmediate();
+                  int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
                   newInstr = generateRIEInstruction(_cg, TR::InstOpCode::AHIK, node, lgrTargetReg, lgrSourceReg, imm, prevInstr);
                   break;
                   }
                case TR::InstOpCode::AGHI:
                   {
-                  int16_t imm = ((TR_S390RIInstruction*)current)->getSourceImmediate();
+                  int16_t imm = ((TR::S390RIInstruction*)current)->getSourceImmediate();
                   newInstr = generateRIEInstruction(_cg, TR::InstOpCode::AGHIK, node, lgrTargetReg, lgrSourceReg, imm, prevInstr);
                   break;
                   }
@@ -4711,8 +4711,8 @@ TR_S390Peephole::attemptZ7distinctOperants()
                   }
                case TR::InstOpCode::SLA:
                   {
-                  int16_t imm = ((TR_S390RSInstruction*)current)->getSourceImmediate();
-                  TR::MemoryReference * mf = ((TR_S390RSInstruction*)current)->getMemoryReference();
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
                   if(mf != NULL)
                   {
                     mf->resetMemRefUsedBefore();
@@ -4724,8 +4724,8 @@ TR_S390Peephole::attemptZ7distinctOperants()
                   }
                case TR::InstOpCode::SLL:
                   {
-                  int16_t imm = ((TR_S390RSInstruction*)current)->getSourceImmediate();
-                  TR::MemoryReference * mf = ((TR_S390RSInstruction*)current)->getMemoryReference();
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
                   if(mf != NULL)
                   {
                    mf->resetMemRefUsedBefore();
@@ -4738,8 +4738,8 @@ TR_S390Peephole::attemptZ7distinctOperants()
 
                case TR::InstOpCode::SRA:
                   {
-                  int16_t imm = ((TR_S390RSInstruction*)current)->getSourceImmediate();
-                  TR::MemoryReference * mf = ((TR_S390RSInstruction *)current)->getMemoryReference();
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction *)current)->getMemoryReference();
                   if(mf != NULL)
                   {
                     mf->resetMemRefUsedBefore();
@@ -4751,8 +4751,8 @@ TR_S390Peephole::attemptZ7distinctOperants()
                   }
                case TR::InstOpCode::SRL:
                   {
-                  int16_t imm = ((TR_S390RSInstruction*)current)->getSourceImmediate();
-                  TR::MemoryReference * mf = ((TR_S390RSInstruction*)current)->getMemoryReference();
+                  int16_t imm = ((TR::S390RSInstruction*)current)->getSourceImmediate();
+                  TR::MemoryReference * mf = ((TR::S390RSInstruction*)current)->getMemoryReference();
                   if(mf != NULL)
                   {
                     mf->resetMemRefUsedBefore();
@@ -4869,7 +4869,7 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
       if ((_cg->getLinkage())->setupLiteralPoolRegister(firstSnippet) > 0)
          {
          // the imm. operand will be patched when the actual address of the literal pool is known at binary encoding phase
-         TR_S390RILInstruction * inst = (TR_S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), 0xBABE, _cursor);
+         TR::S390RILInstruction * inst = (TR::S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), 0xBABE, _cursor);
          inst->setIsLiteralPoolAddress();
          }
       }
@@ -4923,7 +4923,7 @@ TR_S390Peephole::tryMoveImmediate()
  */
 bool TR_S390Peephole::ReduceLHIToXR()
   {
-  TR_S390RIInstruction* lhiInstruction = static_cast<TR_S390RIInstruction*>(_cursor);
+  TR::S390RIInstruction* lhiInstruction = static_cast<TR::S390RIInstruction*>(_cursor);
 
   if (lhiInstruction->getSourceImmediate() == 0)
      {
@@ -5048,13 +5048,13 @@ TR_S390Peephole::perform()
          {
          case TR::InstOpCode::LOCK:
             {
-            int32_t regNum = ((TR_S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
+            int32_t regNum = ((TR::S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
             if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->set(regNum);
             break;
             }
          case TR::InstOpCode::UNLOCK:
             {
-            int32_t regNum = ((TR_S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
+            int32_t regNum = ((TR::S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
             if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->reset(regNum);
             break;
             }
@@ -5296,8 +5296,8 @@ TR_S390Peephole::perform()
                    (nb->getKind() == TR::Instruction::IsRIL))
                   {
                   // NILF == generateRILInstruction
-                  TR_S390RILInstruction * cast_na = (TR_S390RILInstruction *)na;
-                  TR_S390RILInstruction * cast_nb = (TR_S390RILInstruction *)nb;
+                  TR::S390RILInstruction * cast_na = (TR::S390RILInstruction *)na;
+                  TR::S390RILInstruction * cast_nb = (TR::S390RILInstruction *)nb;
 
                   bool instructionsMatch =
                      (cast_na->getTargetPtr() == cast_nb->getTargetPtr()) &&
@@ -5365,8 +5365,8 @@ TR_S390Peephole::perform()
                    (nb->getKind() == TR::Instruction::IsRS))
                   {
                   // SRL == SLL == generateRSInstruction
-                  TR_S390RSInstruction * cast_na = (TR_S390RSInstruction *)na;
-                  TR_S390RSInstruction * cast_nb = (TR_S390RSInstruction *)nb;
+                  TR::S390RSInstruction * cast_na = (TR::S390RSInstruction *)na;
+                  TR::S390RSInstruction * cast_nb = (TR::S390RSInstruction *)nb;
 
                   bool instrMatch =
                         (cast_na->getFirstRegister() == cast_nb->getFirstRegister()) &&
@@ -5752,7 +5752,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
                      {
                      if (self()->comp()->getOption(TR_TraceLabelTargetNOPs))
                         traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,self()->comp()->getDebug()->getOpCodeName(&s390Inst->getOpCode()));
-                     TR_S390LabelInstruction *labelInst = (TR_S390LabelInstruction*)s390Inst;
+                     TR::S390LabelInstruction *labelInst = (TR::S390LabelInstruction*)s390Inst;
                      labelInst->setSkipForLabelTargetNOPs();
                      }
                   }
@@ -5883,10 +5883,10 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
          if (self()->comp()->cg()->isBranchInstruction(data.cursorInstruction))
             {
-            TR::LabelSymbol * branchLabelSymbol = ((TR_S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
+            TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
             if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
-                (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR_S390RIEInstruction::RIE_RR ||
-                 toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR_S390RIEInstruction::RIE_RI8))
+                (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RR ||
+                 toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RI8))
                {
                branchLabelSymbol = toS390RIEInstruction(data.cursorInstruction)->getBranchDestinationLabel();
                }
@@ -5898,16 +5898,16 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             }
          else if (data.cursorInstruction->getKind() == TR::Instruction::IsRIL) // e.g. LARL/EXRL
             {
-            if (((TR_S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
+            if (((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
                {
-               TR::LabelSymbol * targetLabel = ((TR_S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
+               TR::LabelSymbol * targetLabel = ((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
                TR_HashId hashIndex = 0;
                branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
                }
             }
          else if (self()->comp()->cg()->isLabelInstruction(data.cursorInstruction))
             {
-            TR::LabelSymbol * labelSymbol = ((TR_S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
+            TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
             TR_HashId hashIndex = 0;
             labelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
             }
@@ -8386,7 +8386,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
          }
       case TR::Instruction::IsRR:
          {
-         if (((TR_S390RRInstruction *)s390Instr)->getFirstConstant() >= 0)
+         if (((TR::S390RRInstruction *)s390Instr)->getFirstConstant() >= 0)
             ; //nothing to do
          else
             {
@@ -8410,11 +8410,11 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
                }
             }
 
-         if (((TR_S390RRInstruction *)s390Instr)->getSecondConstant() >= 0)
+         if (((TR::S390RRInstruction *)s390Instr)->getSecondConstant() >= 0)
             ; //nothing to do
          else
             {
-            TR::Register * sourceRegister = ((TR_S390RRInstruction *)instr)->getRegisterOperand(2);
+            TR::Register * sourceRegister = ((TR::S390RRInstruction *)instr)->getRegisterOperand(2);
             TR::RegisterPair *regPair = sourceRegister->getRegisterPair();
             int32_t srcRegNum = 0;
             if (regPair)
@@ -8465,7 +8465,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
       case TR::Instruction::IsRRF4:
       case TR::Instruction::IsRRF5:
          {
-         TR_S390RRFInstruction *s = (TR_S390RRFInstruction *)s390Instr;
+         TR::S390RRFInstruction *s = (TR::S390RRFInstruction *)s390Instr;
          int32_t tgtRegNum = toRealRegister(s->getRegisterOperand(1))->getRegisterNumber();
          if (traceIt)
             traceMsg(self()->comp(), "RRF instr [%p] USES register [%d]\n", s, tgtRegNum);
@@ -8485,7 +8485,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
          }
       case TR::Instruction::IsRRR:
          {
-         TR_S390RRRInstruction *s = (TR_S390RRRInstruction *)s390Instr;
+         TR::S390RRRInstruction *s = (TR::S390RRRInstruction *)s390Instr;
          int32_t tgtRegNum = toRealRegister(s->getRegisterOperand(1))->getRegisterNumber();
          registerUsageInfo[blockNum]->set(tgtRegNum);
 
@@ -8512,7 +8512,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
       case TR::Instruction::IsRS:
       case TR::Instruction::IsRSY:
          {
-         TR_S390RSInstruction *s = (TR_S390RSInstruction *)s390Instr;
+         TR::S390RSInstruction *s = (TR::S390RSInstruction *)s390Instr;
          if (s->getSourceImmediate())
             {
             if (s->getRegisterOperand(1)->getRegisterPair())
@@ -8782,7 +8782,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
          }
       case TR::Instruction::IsSS4:
          {
-         TR_S390SS4Instruction *s = (TR_S390SS4Instruction *)s390Instr;
+         TR::S390SS4Instruction *s = (TR::S390SS4Instruction *)s390Instr;
          int32_t lenRegNum = toRealRegister(s->getLengthReg())->getRegisterNumber();
          int32_t srcKeyRegNum = toRealRegister(s->getSourceKeyReg())->getRegisterNumber();
          registerUsageInfo[blockNum]->set(lenRegNum);
@@ -8808,7 +8808,7 @@ OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
          }
       case TR::Instruction::IsSSF:
          {
-         TR_S390SSFInstruction *s = (TR_S390SSFInstruction *)s390Instr;
+         TR::S390SSFInstruction *s = (TR::S390SSFInstruction *)s390Instr;
          int32_t firstRegNum = toRealRegister(s->getFirstRegister())->getRegisterNumber();
          registerUsageInfo[blockNum]->set(firstRegNum);
          if (traceIt)
@@ -8964,7 +8964,7 @@ OMR::Z::CodeGenerator::splitEdge(TR::Instruction *instr,
       newLabel = generateLabelSymbol(self());
    else
       {
-      newLabel = ((TR_S390LabelInstruction *)newSplitLabel)->getLabelSymbol();
+      newLabel = ((TR::S390LabelInstruction *)newSplitLabel)->getLabelSymbol();
       }
    TR::LabelSymbol *targetLabel = NULL;
    TR::Instruction *location = NULL;
@@ -8977,14 +8977,14 @@ OMR::Z::CodeGenerator::splitEdge(TR::Instruction *instr,
       // compare and branch
       if (instr->getKind() == TR::Instruction::IsRIE)
          {
-         TR_S390RIEInstruction *labelInstr = (TR_S390RIEInstruction *)instr;
+         TR::S390RIEInstruction *labelInstr = (TR::S390RIEInstruction *)instr;
          targetLabel = labelInstr->getBranchDestinationLabel();
          labelInstr->setBranchDestinationLabel(newLabel);
          location = targetLabel->getInstruction()->getPrev();
          }
       else
          {
-         TR_S390LabeledInstruction *labelInstr = (TR_S390LabeledInstruction *)instr;
+         TR::S390LabeledInstruction *labelInstr = (TR::S390LabeledInstruction *)instr;
          targetLabel = labelInstr->getLabelSymbol();
          labelInstr->setLabelSymbol(newLabel);
          location = targetLabel->getInstruction()->getPrev();
@@ -8994,7 +8994,7 @@ OMR::Z::CodeGenerator::splitEdge(TR::Instruction *instr,
       //
       for (auto jmpItr = jmpInstrs->begin(); jmpItr != jmpInstrs->end(); ++jmpItr)
          {
-         TR_S390LabeledInstruction *l = (TR_S390LabeledInstruction *)(*jmpItr);
+         TR::S390LabeledInstruction *l = (TR::S390LabeledInstruction *)(*jmpItr);
          if (l->getLabelSymbol() == targetLabel)
             {
             traceMsg(self()->comp(), "split edge fixing jmp instr %p\n", *jmpItr);
@@ -9078,7 +9078,7 @@ OMR::Z::CodeGenerator::updateSnippetMapWithRSD(TR::Instruction *instr, int32_t r
    // determine if it branches to a snippet and if so
    // mark the maps in the snippet with the right rsd
    //
-   TR_S390LabelInstruction *labelInstr = (TR_S390LabelInstruction *)instr;
+   TR::S390LabelInstruction *labelInstr = (TR::S390LabelInstruction *)instr;
    TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
 
    TR_S390OutOfLineCodeSection *oiCursor = self()->findOutLinedInstructionsFromLabel(targetLabel);
@@ -9120,7 +9120,7 @@ OMR::Z::CodeGenerator::findOutLinedInstructionsFromLabel(TR::LabelSymbol *label)
 bool
 OMR::Z::CodeGenerator::isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end)
    {
-   TR_S390LabelInstruction *labelInstr = (TR_S390LabelInstruction *)instr;
+   TR::S390LabelInstruction *labelInstr = (TR::S390LabelInstruction *)instr;
    TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
    TR_S390OutOfLineCodeSection *oiCursor = self()->findOutLinedInstructionsFromLabel(targetLabel);
    if (oiCursor)
@@ -10852,7 +10852,7 @@ bool TR_S390Peephole::forwardBranchTarget()
    TR::LabelSymbol *targetLabelSym = NULL;
    switch(_cursor->getOpCodeValue())
       {
-      case TR::InstOpCode::BRC: targetLabelSym = ((TR_S390BranchInstruction*)_cursor)->getLabelSymbol(); break;
+      case TR::InstOpCode::BRC: targetLabelSym = ((TR::S390BranchInstruction*)_cursor)->getLabelSymbol(); break;
       case TR::InstOpCode::CRJ:
       case TR::InstOpCode::CGRJ:
       case TR::InstOpCode::CIJ:
@@ -10875,14 +10875,14 @@ bool TR_S390Peephole::forwardBranchTarget()
       tmp = tmp->getNext();
    if (tmp->getOpCodeValue() == TR::InstOpCode::BRC)
       {
-      auto firstBranch = (TR_S390BranchInstruction*)tmp;
+      auto firstBranch = (TR::S390BranchInstruction*)tmp;
       if (firstBranch->getBranchCondition() == TR::InstOpCode::COND_BRC &&
           performTransformation(comp(), "\nO^O S390 PEEPHOLE: forwarding branch target in %p\n", _cursor))
          {
          auto newTargetLabelSym = firstBranch->getLabelSymbol();
          switch(_cursor->getOpCodeValue())
             {
-            case TR::InstOpCode::BRC: ((TR_S390BranchInstruction*)_cursor)->setLabelSymbol(newTargetLabelSym); break;
+            case TR::InstOpCode::BRC: ((TR::S390BranchInstruction*)_cursor)->setLabelSymbol(newTargetLabelSym); break;
             case TR::InstOpCode::CRJ:
             case TR::InstOpCode::CGRJ:
             case TR::InstOpCode::CIJ:

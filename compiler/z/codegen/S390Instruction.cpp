@@ -72,7 +72,7 @@
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 
 void
-TR_S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR::Register *lReg)
+TR::S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR::Register *lReg)
    {
 
    int32_t firstRegNum = toRealRegister(fReg)->getRegisterNumber();
@@ -95,7 +95,7 @@ TR_S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR:
    }
 
 uint8_t *
-TR_S390EInstruction::generateBinaryEncoding()
+TR::S390EInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -113,7 +113,7 @@ TR_S390EInstruction::generateBinaryEncoding()
    }
 
 uint8_t *
-TR_S390IEInstruction::generateBinaryEncoding()
+TR::S390IEInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -157,7 +157,7 @@ bool isLoopEntryAlignmentEnabled(TR::Compilation *comp)
  * Determines whether the given instruction should be aligned with NOPs.
  * Currently, it supports alignment of loop entry blocks.
  */
-bool TR_S390LabeledInstruction::isNopCandidate()
+bool TR::S390LabeledInstruction::isNopCandidate()
    {
    TR::Compilation *comp = cg()->comp();
    if (!isLoopEntryAlignmentEnabled(comp))
@@ -248,7 +248,7 @@ bool TR_S390LabeledInstruction::isNopCandidate()
 
 
 ////////////////////////////////////////////////////////
-// TR_S390LabelInstruction:: member functions
+// TR::S390LabelInstruction:: member functions
 ////////////////////////////////////////////////////////
 
 /**
@@ -262,7 +262,7 @@ bool TR_S390LabeledInstruction::isNopCandidate()
  *
  */
 uint8_t *
-TR_S390LabelInstruction::generateBinaryEncoding()
+TR::S390LabelInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -294,7 +294,7 @@ TR_S390LabelInstruction::generateBinaryEncoding()
             {
             TR::Instruction *thisInst = this;
             TR::Instruction *prevInst = getPrev();
-            traceMsg(comp,"\tTR_S390LabeledInstruction %p (%s) at cursor %p (skipThisOne=%s, offset = %p, codeStart %p)\n",
+            traceMsg(comp,"\tTR::S390LabeledInstruction %p (%s) at cursor %p (skipThisOne=%s, offset = %p, codeStart %p)\n",
                this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()),instructionStart,isSkipForLabelTargetNOPs()?"true":"false",
                offsetForLabelTargetNOPs,cg()->getCodeStart());
             traceMsg(comp,"\tprev %p (%s)\n",
@@ -431,21 +431,21 @@ TR_S390LabelInstruction::generateBinaryEncoding()
          uint8_t *curBeforeNOPs = cursor;
          if(offset<=250)
             {
-            instr = new (cg()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), prevInstr, cg());
+            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 6, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 6 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(6);
             }
          else if(offset<=252)
             {
-            instr = new (cg()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), prevInstr, cg());
+            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 4 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(4);
             }
          else if(offset<=254)
             {
-            instr = new (cg()->trHeapMemory()) TR_S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), prevInstr, cg());
+            instr = new (cg()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, getNode(), prevInstr, cg());
             if (doUseLabelTargetNOPs && traceLabelTargetNOPs)
                traceMsg(comp,"\tgen 2 byte NOP at offset %lld\n",offset);
             instr->setEstimatedBinaryLength(2);
@@ -487,7 +487,7 @@ TR_S390LabelInstruction::generateBinaryEncoding()
    }
 
 bool
-TR_S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
+TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
    {
    TR::Compilation *comp = cg()->comp();
    TR::Instruction *thisInst = this;
@@ -533,7 +533,7 @@ TR_S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
 
 
 int32_t
-TR_S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    if (getLabelSymbol() != NULL)
@@ -592,7 +592,7 @@ TR_S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 void
-TR_S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
+TR::S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
    {
    // *this    swipeable for debugging purposes
    //
@@ -633,11 +633,11 @@ TR_S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToB
    }
 
 ////////////////////////////////////////////////////////
-// TR_S390BranchInstruction:: member functions
+// TR::S390BranchInstruction:: member functions
 ////////////////////////////////////////////////////////
 
 void
-TR_S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
+TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
    {
    // *this    swipeable for debugging purposes
    //
@@ -732,7 +732,7 @@ TR_S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
  *     since they don't have long branch equivalents for themselves.
  */
 uint8_t *
-TR_S390BranchInstruction::generateBinaryEncoding()
+TR::S390BranchInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -830,7 +830,7 @@ TR_S390BranchInstruction::generateBinaryEncoding()
    }
 
 int32_t
-TR_S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    int32_t length = 6;
@@ -842,7 +842,7 @@ TR_S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
 
 
 ////////////////////////////////////////////////////////
-// TR_S390BranchOnCountInstruction:: member functions
+// TR::S390BranchOnCountInstruction:: member functions
 ////////////////////////////////////////////////////////
 
 /**
@@ -866,7 +866,7 @@ TR_S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
  *     BCRL 0xf, label
  */
 uint8_t *
-TR_S390BranchOnCountInstruction::generateBinaryEncoding()
+TR::S390BranchOnCountInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -974,7 +974,7 @@ TR_S390BranchOnCountInstruction::generateBinaryEncoding()
    }
 
 int32_t
-TR_S390BranchOnCountInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390BranchOnCountInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
@@ -984,7 +984,7 @@ TR_S390BranchOnCountInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 bool
-TR_S390BranchOnCountInstruction::refsRegister(TR::Register * reg)
+TR::S390BranchOnCountInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesAnyRegister(reg, getRegisterOperand(1)))
@@ -1018,7 +1018,7 @@ TR_S390BranchOnCountInstruction::refsRegister(TR::Register * reg)
  *     LD: could do better for long displacement on N3 and 64bit--TODO
  */
 uint8_t *
-TR_S390BranchOnIndexInstruction::generateBinaryEncoding()
+TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1067,7 +1067,7 @@ TR_S390BranchOnIndexInstruction::generateBinaryEncoding()
    else
       {
       TR_ASSERT(cg()->isExtCodeBaseFreeForAssignment() == false,
-         "TR_S390BranchOnIndexInstruction::generateBinaryEncoding -- Ext Code Base was wrongly released\n");
+         "TR::S390BranchOnIndexInstruction::generateBinaryEncoding -- Ext Code Base was wrongly released\n");
 
       TR::InstOpCode::Mnemonic opCode = getOpCodeValue();
       TR_ASSERT((opCode == TR::InstOpCode::BRXLE) || (opCode == TR::InstOpCode::BRXH) || (opCode == TR::InstOpCode::BRXLG) || (opCode == TR::InstOpCode::BRXHG),
@@ -1144,7 +1144,7 @@ TR_S390BranchOnIndexInstruction::generateBinaryEncoding()
    }
 
 int32_t
-TR_S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
@@ -1162,7 +1162,7 @@ TR_S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 bool
-TR_S390BranchOnIndexInstruction::refsRegister(TR::Register * reg)
+TR::S390BranchOnIndexInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesAnyRegister(reg, getRegisterOperand(1), getRegisterOperand(2)))
@@ -1177,11 +1177,11 @@ TR_S390BranchOnIndexInstruction::refsRegister(TR::Register * reg)
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390FenceInstruction:: member functions
+// TR::S390FenceInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
 uint8_t *
-TR_S390PseudoInstruction::generateBinaryEncoding()
+TR::S390PseudoInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1261,7 +1261,7 @@ TR_S390PseudoInstruction::generateBinaryEncoding()
 
 
 int32_t
-TR_S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
+TR::S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    int32_t estimate = (getOpCodeValue() == TR::InstOpCode::XPCALLDESC) ? 18 : 0;
 
@@ -1269,13 +1269,13 @@ TR_S390PseudoInstruction::estimateBinaryLength(int32_t currentEstimate)
    return currentEstimate + estimate;
    }
 
-// TR_S390ImmInstruction:: member functions
+// TR::S390ImmInstruction:: member functions
 /**
  * This instruction is used to generate a constant value in JIT code
  * so the valid opcode is TR::InstOpCode::DC
  */
 uint8_t *
-TR_S390ImmInstruction::generateBinaryEncoding()
+TR::S390ImmInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1332,21 +1332,21 @@ TR_S390ImmInstruction::generateBinaryEncoding()
  * The following safe virtual downcast method is only used in an assertion
  * check within "toS390ImmInstruction"
  */
-TR_S390ImmInstruction *
-TR_S390ImmInstruction::getS390ImmInstruction()
+TR::S390ImmInstruction *
+TR::S390ImmInstruction::getS390ImmInstruction()
    {
    // *this    swipeable for debugging purposes
    return this;
    }
 #endif
 
-// TR_S390ImmInstruction:: member functions
+// TR::S390ImmInstruction:: member functions
 /**
  * This instruction is used to generate a constant value in JIT code
  * so the valid opcode is TR::InstOpCode::DC
  */
 uint8_t *
-TR_S390Imm2Instruction::generateBinaryEncoding()
+TR::S390Imm2Instruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1381,9 +1381,9 @@ TR_S390Imm2Instruction::generateBinaryEncoding()
    return cursor;
    }
 
-// TR_S390ImmSnippetInstruction:: member functions
+// TR::S390ImmSnippetInstruction:: member functions
 uint8_t *
-TR_S390ImmSnippetInstruction::generateBinaryEncoding()
+TR::S390ImmSnippetInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1400,10 +1400,10 @@ TR_S390ImmSnippetInstruction::generateBinaryEncoding()
    }
 
 ///////////////////////////////////////////////////////////
-// TR_S390ImmSymInstruction:: member functions
+// TR::S390ImmSymInstruction:: member functions
 ///////////////////////////////////////////////////////////
 uint8_t *
-TR_S390ImmSymInstruction::generateBinaryEncoding()
+TR::S390ImmSymInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1422,10 +1422,10 @@ TR_S390ImmSymInstruction::generateBinaryEncoding()
    }
 
 ///////////////////////////////////////////////////////
-// TR_S390RegInstruction:: member functions
+// TR::S390RegInstruction:: member functions
 ///////////////////////////////////////////////////////
 bool
-TR_S390RegInstruction::refsRegister(TR::Register * reg)
+TR::S390RegInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg))
@@ -1440,7 +1440,7 @@ TR_S390RegInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390RegInstruction::generateBinaryEncoding()
+TR::S390RegInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1467,7 +1467,7 @@ TR_S390RegInstruction::generateBinaryEncoding()
    }
 
 void
-TR_S390RegInstruction::assignRegistersNoDependencies(TR_RegisterKinds kindToBeAssigned)
+TR::S390RegInstruction::assignRegistersNoDependencies(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine *machine = cg()->machine();
    setRegisterOperand(1,machine->assignBestRegister(getRegisterOperand(1), this, BOOKKEEPING));
@@ -1475,10 +1475,10 @@ TR_S390RegInstruction::assignRegistersNoDependencies(TR_RegisterKinds kindToBeAs
    return;
    }
 
-// TR_S390RRInstruction:: member functions /////////////////////////////////////////
+// TR::S390RRInstruction:: member functions /////////////////////////////////////////
 
 bool
-TR_S390RRInstruction::refsRegister(TR::Register * reg)
+TR::S390RRInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)))
@@ -1493,7 +1493,7 @@ TR_S390RRInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390RRInstruction::generateBinaryEncoding()
+TR::S390RRInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1546,7 +1546,7 @@ TR_S390RRInstruction::generateBinaryEncoding()
 //  TranslateInstruction
 
 bool
-TR_S390TranslateInstruction::refsRegister(TR::Register * reg)
+TR::S390TranslateInstruction::refsRegister(TR::Register * reg)
    {
    if (matchesAnyRegister(reg, getRegisterOperand(1)) ||
       matchesAnyRegister(reg, getTableRegister()) ||
@@ -1563,7 +1563,7 @@ TR_S390TranslateInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390TranslateInstruction::generateBinaryEncoding()
+TR::S390TranslateInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1590,10 +1590,10 @@ TR_S390TranslateInstruction::generateBinaryEncoding()
    }
 
 
-// TR_S390RRFInstruction:: member functions /////////////////////////////////////////
+// TR::S390RRFInstruction:: member functions /////////////////////////////////////////
 
 bool
-TR_S390RRFInstruction::refsRegister(TR::Register * reg)
+TR::S390RRFInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)) ||
@@ -1609,7 +1609,7 @@ TR_S390RRFInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390RRFInstruction::generateBinaryEncoding()
+TR::S390RRFInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1748,10 +1748,10 @@ TR_S390RRFInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-// TR_S390RRRInstruction:: member functions /////////////////////////////////////////
+// TR::S390RRRInstruction:: member functions /////////////////////////////////////////
 
 bool
-TR_S390RRRInstruction::refsRegister(TR::Register * reg)
+TR::S390RRRInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)) ||
@@ -1767,7 +1767,7 @@ TR_S390RRRInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390RRRInstruction::generateBinaryEncoding()
+TR::S390RRRInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1805,7 +1805,7 @@ TR_S390RRRInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////
-// TR_S390RIInstruction:: member functions
+// TR::S390RIInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1817,7 +1817,7 @@ TR_S390RRRInstruction::generateBinaryEncoding()
  *
  */
 uint8_t *
-TR_S390RIInstruction::generateBinaryEncoding()
+TR::S390RIInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -1853,7 +1853,7 @@ TR_S390RIInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////
-// TR_S390RILInstruction:: member functions
+// TR::S390RILInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1864,7 +1864,7 @@ TR_S390RIInstruction::generateBinaryEncoding()
  *   0         8   12   16                            47
  */
 bool
-TR_S390RILInstruction::refsRegister(TR::Register * reg)
+TR::S390RILInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    if (reg == getRegisterOperand(1))
@@ -1879,7 +1879,7 @@ TR_S390RILInstruction::refsRegister(TR::Register * reg)
    }
 
 int32_t
-TR_S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    int32_t delta = 0;
    TR::Compilation *comp = cg()->comp();
@@ -1952,7 +1952,7 @@ TR_S390RILInstruction::estimateBinaryLength(int32_t  currentEstimate)
  * @return offset to target address in half words
  */
 int32_t
-TR_S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t * currentInst)
+TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t * currentInst)
    {
    int32_t offsetHalfWords = offset;
 
@@ -1978,7 +1978,7 @@ TR_S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t * 
    }
 
 uint8_t *
-TR_S390RILInstruction::generateBinaryEncoding()
+TR::S390RILInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -2053,14 +2053,14 @@ TR_S390RILInstruction::generateBinaryEncoding()
                   getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL  ||
                   getOpCode().getOpCodeValue() == TR::InstOpCode::LLGFRL )
             {
-            scratchReg = (TR::RealRegister * )((TR_S390RegInstruction *)this)->getRegisterOperand(1);
+            scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
             }
          else if (getOpCode().getOpCodeValue() == TR::InstOpCode::STGRL ||
                   getOpCode().getOpCodeValue() == TR::InstOpCode::STRL ||
                   getOpCode().getOpCodeValue() == TR::InstOpCode::LRL)
             {
             scratchReg  = assignBestSpillRegister();
-            sourceReg  = (TR::RealRegister * )((TR_S390RegInstruction *)this)->getRegisterOperand(1);
+            sourceReg  = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
 
             spillNeeded = true;
             }
@@ -2507,7 +2507,7 @@ TR_S390RILInstruction::generateBinaryEncoding()
  *       targetReg => R1,                                            sourceImm => D2  ... (SLL,...)
  */
 int32_t
-TR_S390RSInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RSInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    if (getMemoryReference() != NULL)
@@ -2521,7 +2521,7 @@ TR_S390RSInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RSInstruction::generateBinaryEncoding()
+TR::S390RSInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -2584,7 +2584,7 @@ TR_S390RSInstruction::generateBinaryEncoding()
    }
 
 
-// TR_S390RRSInstruction:: member functions
+// TR::S390RRSInstruction:: member functions
 
 /**
  * RRS Format
@@ -2594,7 +2594,7 @@ TR_S390RSInstruction::generateBinaryEncoding()
  * 0         8   12   16   20           32   36   40       47
  */
 uint8_t *
-TR_S390RRSInstruction::generateBinaryEncoding()
+TR::S390RRSInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
 
@@ -2650,7 +2650,7 @@ TR_S390RRSInstruction::generateBinaryEncoding()
    }
 
 
-// TR_S390RIEInstruction:: member functions
+// TR::S390RIEInstruction:: member functions
 /**
  *    RIE Format
  *
@@ -2690,7 +2690,7 @@ TR_S390RRSInstruction::generateBinaryEncoding()
  *    0         8   12   16                32  36    40       47
  */
 int32_t
-TR_S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // *this    swipeable for debugging purposes
    if (getBranchDestinationLabel())
@@ -2701,18 +2701,18 @@ TR_S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RIEInstruction::generateBinaryEncoding()
+TR::S390RIEInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
 
 
    // let's determine what form of RIE we are dealing with
-   bool RIE1 = (getRieForm() == TR_S390RIEInstruction::RIE_RR);
-   bool RIE2 = (getRieForm() == TR_S390RIEInstruction::RIE_RI8);
-   bool RIE3 = (getRieForm() == TR_S390RIEInstruction::RIE_RI16A);
-   bool RIE4 = (getRieForm() == TR_S390RIEInstruction::RIE_RRI16);
-   bool RIE5 = (getRieForm() == TR_S390RIEInstruction::RIE_IMM);
-   bool RIE6 = (getRieForm() == TR_S390RIEInstruction::RIE_RI16G);
+   bool RIE1 = (getRieForm() == TR::S390RIEInstruction::RIE_RR);
+   bool RIE2 = (getRieForm() == TR::S390RIEInstruction::RIE_RI8);
+   bool RIE3 = (getRieForm() == TR::S390RIEInstruction::RIE_RI16A);
+   bool RIE4 = (getRieForm() == TR::S390RIEInstruction::RIE_RRI16);
+   bool RIE5 = (getRieForm() == TR::S390RIEInstruction::RIE_IMM);
+   bool RIE6 = (getRieForm() == TR::S390RIEInstruction::RIE_RI16G);
 
    // acquire the current cursor location so we can start generating our
    // instruction there.
@@ -2994,7 +2994,7 @@ TR_S390RIEInstruction::generateBinaryEncoding()
  * like its done for JAVA
  */
 uint8_t *
-TR_S390RIEInstruction::splitIntoCompareAndLongBranch(void)
+TR::S390RIEInstruction::splitIntoCompareAndLongBranch(void)
    {
 
    //Generate equivalent Compare instruction
@@ -3089,7 +3089,7 @@ TR_S390RIEInstruction::splitIntoCompareAndLongBranch(void)
  * the combined compare and branch instruction.
  */
 void
-TR_S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchAfterThis)
+TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchAfterThis)
    {
 
    //Generate equivalent Compare instruction
@@ -3163,7 +3163,7 @@ TR_S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchAf
    }
 
 
-// TR_S390RISInstruction:: member functions
+// TR::S390RISInstruction:: member functions
 /**
  *    RIS Format
  *
@@ -3173,7 +3173,7 @@ TR_S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchAf
  *    0         8   12   16   20           32        40       47
  */
 uint8_t *
-TR_S390RISInstruction::generateBinaryEncoding()
+TR::S390RISInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
 
@@ -3230,10 +3230,10 @@ TR_S390RISInstruction::generateBinaryEncoding()
 
 
 
-// TR_S390MemInstruction:: member functions
+// TR::S390MemInstruction:: member functions
 
 bool
-TR_S390MemInstruction::refsRegister(TR::Register * reg)
+TR::S390MemInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
@@ -3266,7 +3266,7 @@ TR_S390MemInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390MemInstruction::generateBinaryEncoding()
+TR::S390MemInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3289,9 +3289,9 @@ TR_S390MemInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-// TR_S390RXInstruction:: member functions
+// TR::S390RXInstruction:: member functions
 bool
-TR_S390RXInstruction::refsRegister(TR::Register * reg)
+TR::S390RXInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
@@ -3328,7 +3328,7 @@ TR_S390RXInstruction::refsRegister(TR::Register * reg)
    }
 
 int32_t
-TR_S390RXInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RXInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -3341,7 +3341,7 @@ TR_S390RXInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RXInstruction::generateBinaryEncoding()
+TR::S390RXInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3359,7 +3359,7 @@ TR_S390RXInstruction::generateBinaryEncoding()
       }
    else
       {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR_S390RXInstruction::_constForMRField greater than 0x000FFFFF for instruction 0x%x", this);
+      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXInstruction::_constForMRField greater than 0x000FFFFF for instruction 0x%x", this);
       (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
       }
 
@@ -3390,7 +3390,7 @@ TR_S390RXInstruction::generateBinaryEncoding()
    }
 
 int32_t
-TR_S390RXEInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RXEInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -3403,7 +3403,7 @@ TR_S390RXEInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RXEInstruction::generateBinaryEncoding()
+TR::S390RXEInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3419,7 +3419,7 @@ TR_S390RXEInstruction::generateBinaryEncoding()
       }
    else
       {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR_S390RXEInstruction::_constForMRField greater than 0x000FFFFF");
+      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXEInstruction::_constForMRField greater than 0x000FFFFF");
       (*(uint32_t *) cursor) &= boi(0xFF000000);
       (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
       }
@@ -3440,7 +3440,7 @@ TR_S390RXEInstruction::generateBinaryEncoding()
    }
 
 int32_t
-TR_S390RXYInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RXYInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -3453,7 +3453,7 @@ TR_S390RXYInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RXYInstruction::generateBinaryEncoding()
+TR::S390RXYInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3470,7 +3470,7 @@ TR_S390RXYInstruction::generateBinaryEncoding()
       }
    else
       {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR_S390RXYInstruction::_constForMRField greater than 0x000FFFFF");
+      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXYInstruction::_constForMRField greater than 0x000FFFFF");
       (*(uint32_t *) cursor) &= boi(0xFF000000);
       (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
       }
@@ -3501,16 +3501,16 @@ TR_S390RXYInstruction::generateBinaryEncoding()
    return cursor;
    }
 
-// TR_S390RXFInstruction:: member functions /////////////////////////////////////////
+// TR::S390RXFInstruction:: member functions /////////////////////////////////////////
 
 int32_t
-TR_S390RXFInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RXFInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    return getMemoryReference()->estimateBinaryLength(currentEstimate, cg(), this);
    }
 
 bool
-TR_S390RXFInstruction::refsRegister(TR::Register * reg)
+TR::S390RXFInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
@@ -3543,7 +3543,7 @@ TR_S390RXFInstruction::refsRegister(TR::Register * reg)
    }
 
 uint8_t *
-TR_S390RXFInstruction::generateBinaryEncoding()
+TR::S390RXFInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3615,14 +3615,14 @@ getOpCodeName(TR::InstOpCode * opCode)
    return TR::InstOpCode::opCodeToNameMap[opCode->getOpCodeValue()];
    }
 
-TR_S390VInstruction::~TR_S390VInstruction()
+TR::S390VInstruction::~S390VInstruction()
    {
    if (_opCodeBuffer)
       TR::Instruction::jitPersistentFree((char *)_opCodeBuffer);
    }
 
 int32_t
-TR_S390VInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390VInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
 
@@ -3630,7 +3630,7 @@ TR_S390VInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 char *
-TR_S390VInstruction::setOpCodeBuffer(char *c)
+TR::S390VInstruction::setOpCodeBuffer(char *c)
    {
    if (_opCodeBuffer)
       TR_ASSERT(false, "trying to set OpCodeBuffer after it has already been set!\n");
@@ -3641,7 +3641,7 @@ TR_S390VInstruction::setOpCodeBuffer(char *c)
 
 /**** VRI ***/
 const char *
-TR_S390VRIInstruction::getExtendedMnemonicName()
+TR::S390VRIInstruction::getExtendedMnemonicName()
    {
    if (getOpCodeBuffer())
       return getOpCodeBuffer();
@@ -3692,7 +3692,7 @@ TR_S390VRIInstruction::getExtendedMnemonicName()
    }
 
 uint8_t *
-TR_S390VRIInstruction::generateBinaryEncoding()
+TR::S390VRIInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -3736,47 +3736,47 @@ TR_S390VRIInstruction::generateBinaryEncoding()
  * VRI-a
  */
 uint8_t *
-TR_S390VRIaInstruction::generateBinaryEncoding()
+TR::S390VRIaInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRIInstruction::generateBinaryEncoding();
+   return TR::S390VRIInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRI-b
  */
 uint8_t *
-TR_S390VRIbInstruction::generateBinaryEncoding()
+TR::S390VRIbInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRIInstruction::generateBinaryEncoding();
+   return TR::S390VRIInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRI-c
  */
 uint8_t *
-TR_S390VRIcInstruction::generateBinaryEncoding()
+TR::S390VRIcInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRIInstruction::generateBinaryEncoding();
+   return TR::S390VRIInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRI-d
  */
 uint8_t *
-TR_S390VRIdInstruction::generateBinaryEncoding()
+TR::S390VRIdInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -3784,28 +3784,28 @@ TR_S390VRIdInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRIInstruction::generateBinaryEncoding();
+   return TR::S390VRIInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRI-e
  */
 uint8_t *
-TR_S390VRIeInstruction::generateBinaryEncoding()
+TR::S390VRIeInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRIInstruction::generateBinaryEncoding();
+   return TR::S390VRIInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR
  */
 const char *
-TR_S390VRRInstruction::getExtendedMnemonicName()
+TR::S390VRRInstruction::getExtendedMnemonicName()
    {
    if (getOpCodeBuffer())
       return getOpCodeBuffer();
@@ -3949,7 +3949,7 @@ TR_S390VRRInstruction::getExtendedMnemonicName()
    }
 
 uint8_t *
-TR_S390VRRInstruction::generateBinaryEncoding()
+TR::S390VRRInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4001,21 +4001,21 @@ TR_S390VRRInstruction::generateBinaryEncoding()
  * VRR-a
  */
 uint8_t *
-TR_S390VRRaInstruction::generateBinaryEncoding()
+TR::S390VRRaInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR-b
  */
 uint8_t *
-TR_S390VRRbInstruction::generateBinaryEncoding()
+TR::S390VRRbInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -4023,14 +4023,14 @@ TR_S390VRRbInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR-c
  */
 uint8_t *
-TR_S390VRRcInstruction::generateBinaryEncoding()
+TR::S390VRRcInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -4038,14 +4038,14 @@ TR_S390VRRcInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR-d
  */
 uint8_t *
-TR_S390VRRdInstruction::generateBinaryEncoding()
+TR::S390VRRdInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -4054,14 +4054,14 @@ TR_S390VRRdInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(4) != NULL, "4th Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR-e
  */
 uint8_t *
-TR_S390VRReInstruction::generateBinaryEncoding()
+TR::S390VRReInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -4070,14 +4070,14 @@ TR_S390VRReInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(4) != NULL, "4th Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRR-f
  */
 uint8_t *
-TR_S390VRRfInstruction::generateBinaryEncoding()
+TR::S390VRRfInstruction::generateBinaryEncoding()
    {
    // Error Checking
    TR_ASSERT(getRegisterOperand(1) != NULL, "First Operand should not be NULL!");
@@ -4085,14 +4085,14 @@ TR_S390VRRfInstruction::generateBinaryEncoding()
    TR_ASSERT(getRegisterOperand(3) != NULL, "3rd Operand should not be NULL!");
 
    // Generate Binary Encoding
-   return TR_S390VRRInstruction::generateBinaryEncoding();
+   return TR::S390VRRInstruction::generateBinaryEncoding();
    }
 
 /**
  * VStorage
  */
 const char *
-TR_S390VStorageInstruction::getExtendedMnemonicName()
+TR::S390VStorageInstruction::getExtendedMnemonicName()
    {
    if (getOpCodeBuffer())
       return getOpCodeBuffer();
@@ -4110,7 +4110,7 @@ TR_S390VStorageInstruction::getExtendedMnemonicName()
    }
 
 uint8_t *
-TR_S390VStorageInstruction::generateBinaryEncoding()
+TR::S390VStorageInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4177,34 +4177,34 @@ TR_S390VStorageInstruction::generateBinaryEncoding()
  * VRS-a
  */
 uint8_t *
-TR_S390VRSaInstruction::generateBinaryEncoding()
+TR::S390VRSaInstruction::generateBinaryEncoding()
    {
-   return TR_S390VStorageInstruction::generateBinaryEncoding();
+   return TR::S390VStorageInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRS-b
  */
 uint8_t *
-TR_S390VRSbInstruction::generateBinaryEncoding()
+TR::S390VRSbInstruction::generateBinaryEncoding()
    {
-   return TR_S390VStorageInstruction::generateBinaryEncoding();
+   return TR::S390VStorageInstruction::generateBinaryEncoding();
    }
 
 /**
  * VRS-c
  */
 uint8_t *
-TR_S390VRScInstruction::generateBinaryEncoding()
+TR::S390VRScInstruction::generateBinaryEncoding()
    {
-   return TR_S390VStorageInstruction::generateBinaryEncoding();
+   return TR::S390VStorageInstruction::generateBinaryEncoding();
    }
 
 /**** VRV ****/
 uint8_t *
-TR_S390VRVInstruction::generateBinaryEncoding()
+TR::S390VRVInstruction::generateBinaryEncoding()
    {
-   return TR_S390VStorageInstruction::generateBinaryEncoding();
+   return TR::S390VStorageInstruction::generateBinaryEncoding();
    }
 
 /**** VRX ***/
@@ -4212,13 +4212,13 @@ TR_S390VRVInstruction::generateBinaryEncoding()
 TR::Instruction * breakInst = NULL;
 
 uint8_t *
-TR_S390VRXInstruction::generateBinaryEncoding()
+TR::S390VRXInstruction::generateBinaryEncoding()
    {
-   return TR_S390VStorageInstruction::generateBinaryEncoding();
+   return TR::S390VStorageInstruction::generateBinaryEncoding();
    }
 
 int32_t
-TR_S390VRXInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390VRXInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4231,10 +4231,10 @@ TR_S390VRXInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390MemMemInstruction:: member functions
+// TR::S390MemMemInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390MemMemInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390MemMemInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    int32_t length = 0;
    if (getMemoryReference() != NULL)
@@ -4248,7 +4248,7 @@ TR_S390MemMemInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390MemMemInstruction::generateBinaryEncoding()
+TR::S390MemMemInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4291,10 +4291,10 @@ TR_S390MemMemInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SS1Instruction:: member functions
+// TR::S390SS1Instruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390SS1Instruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SS1Instruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    int32_t length = 0;
    if (getMemoryReference() != NULL)
@@ -4308,7 +4308,7 @@ TR_S390SS1Instruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SS1Instruction::generateBinaryEncoding()
+TR::S390SS1Instruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4362,10 +4362,10 @@ TR_S390SS1Instruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SS2Instruction:: member functions
+// TR::S390SS2Instruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 uint8_t *
-TR_S390SS2Instruction::generateBinaryEncoding()
+TR::S390SS2Instruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4430,10 +4430,10 @@ TR_S390SS2Instruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SS2Instruction:: member functions
+// TR::S390SS2Instruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 uint8_t *
-TR_S390SS4Instruction::generateBinaryEncoding()
+TR::S390SS4Instruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4488,10 +4488,10 @@ TR_S390SS4Instruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SSFInstruction:: member functions
+// TR::S390SSFInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 bool
-TR_S390SSFInstruction::refsRegister(TR::Register * reg)
+TR::S390SSFInstruction::refsRegister(TR::Register * reg)
    {
    // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
@@ -4535,7 +4535,7 @@ TR_S390SSFInstruction::refsRegister(TR::Register * reg)
    }
 
 int32_t
-TR_S390SSFInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SSFInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4548,7 +4548,7 @@ TR_S390SSFInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SSFInstruction::generateBinaryEncoding()
+TR::S390SSFInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4592,10 +4592,10 @@ TR_S390SSFInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390RSLInstruction:: member functions
+// TR::S390RSLInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390RSLInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RSLInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4608,7 +4608,7 @@ TR_S390RSLInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RSLInstruction::generateBinaryEncoding()
+TR::S390RSLInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4650,10 +4650,10 @@ TR_S390RSLInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390RSLbInstruction:: member functions
+// TR::S390RSLbInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390RSLbInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390RSLbInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4666,7 +4666,7 @@ TR_S390RSLbInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390RSLbInstruction::generateBinaryEncoding()
+TR::S390RSLbInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4723,10 +4723,10 @@ TR_S390RSLbInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SIInstruction:: member functions
+// TR::S390SIInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390SIInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4739,7 +4739,7 @@ TR_S390SIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SIInstruction::generateBinaryEncoding()
+TR::S390SIInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4779,10 +4779,10 @@ TR_S390SIInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LL: TR_S390SIYInstruction:: member functions
+// LL: TR::S390SIYInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390SIYInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SIYInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4795,7 +4795,7 @@ TR_S390SIYInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SIYInstruction::generateBinaryEncoding()
+TR::S390SIYInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4833,11 +4833,11 @@ TR_S390SIYInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SILInstruction:: member functions
+// TR::S390SILInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
 int32_t
-TR_S390SILInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SILInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4857,7 +4857,7 @@ TR_S390SILInstruction::estimateBinaryLength(int32_t  currentEstimate)
  *   0               16    20           32              47
  */
 uint8_t *
-TR_S390SILInstruction::generateBinaryEncoding()
+TR::S390SILInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4896,10 +4896,10 @@ TR_S390SILInstruction::generateBinaryEncoding()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SInstruction:: member functions
+// TR::S390SInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-TR_S390SInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    if (getMemoryReference() != NULL)
       {
@@ -4912,7 +4912,7 @@ TR_S390SInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SInstruction::generateBinaryEncoding()
+TR::S390SInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -4950,11 +4950,11 @@ TR_S390SInstruction::generateBinaryEncoding()
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390NOPInstruction:: member functions
+// TR::S390NOPInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
 int32_t
-TR_S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    // could have 2 byte, 4 byte or 6 byte NOP
    setEstimatedBinaryLength(6);
@@ -4965,7 +4965,7 @@ TR_S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390NOPInstruction::generateBinaryEncoding()
+TR::S390NOPInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
@@ -5039,7 +5039,7 @@ TR_S390NOPInstruction::generateBinaryEncoding()
    }
 
 // ////////////////////////////////////////////////////////////////////////////////
-// TR_S390MIIInstruction:: member functions
+// TR::S390MIIInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -5051,7 +5051,7 @@ TR_S390NOPInstruction::generateBinaryEncoding()
  *    0         8   12              24                       47
  */
 int32_t
-TR_S390MIIInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390MIIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
    //TODO:for now use instruction length (for case 0(R14), later need to add support for longer disposition
    //potentially reuse Memoryreference->estimateBinaryLength
@@ -5060,7 +5060,7 @@ TR_S390MIIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390MIIInstruction::generateBinaryEncoding()
+TR::S390MIIInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
 
@@ -5130,7 +5130,7 @@ TR_S390MIIInstruction::generateBinaryEncoding()
    }
 
 // ////////////////////////////////////////////////////////////////////////////////
-// TR_S390SMIInstruction:: member functions
+// TR::S390SMIInstruction:: member functions
 ////////////////////////////////////////////////////////////////////////////////
 /**
  *    SMI Format
@@ -5140,7 +5140,7 @@ TR_S390MIIInstruction::generateBinaryEncoding()
  *    0         8   12   16   20           32        40       47
  */
 int32_t
-TR_S390SMIInstruction::estimateBinaryLength(int32_t  currentEstimate)
+TR::S390SMIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
   //TODO:for now use instruction length (for case 0(R14), later need to add support for longer disposition
   //potentially reuse Memoryreference->estimateBinaryLength
@@ -5149,7 +5149,7 @@ TR_S390SMIInstruction::estimateBinaryLength(int32_t  currentEstimate)
    }
 
 uint8_t *
-TR_S390SMIInstruction::generateBinaryEncoding()
+TR::S390SMIInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
 
@@ -5218,7 +5218,7 @@ TR_S390SMIInstruction::generateBinaryEncoding()
  * BRC or BRCL depending on the range.
  */
 uint8_t *
-TR_S390VirtualGuardNOPInstruction::generateBinaryEncoding()
+TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    {
    // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();

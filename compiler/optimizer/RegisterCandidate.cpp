@@ -3944,9 +3944,6 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
           ((i != comp()->cg()->getVMThreadGlobalRegisterNumber()) || !rc->dontAssignVMThreadRegister()))
          {
          availableRegisters->set(i);
-         // for zPDT since we are not doing register pressure simulation we can break out as soon as we have found a candidate
-         if (comp()->getOption(TR_DisableRegisterPressureSimulation))
-            break;
          }
       }
    }

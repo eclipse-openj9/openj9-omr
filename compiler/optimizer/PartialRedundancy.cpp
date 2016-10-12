@@ -973,7 +973,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                TR::Node *nextNode = placeToInsertOptimalComputations->getNode();
                if (nextNode->getOpCode().isCheck())
                    {
-                   if (nextNode->getSideTableIndex() == nextOptimalComputation)
+                   if (nextNode->getLocalIndex() == nextOptimalComputation)
                       {
                       if (nextNode->getOpCode().isNullCheck())
                          {
@@ -990,7 +990,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                             TR::Node *passThroughNode = TR::Node::create(TR::PassThrough, 1, nextNode->getNullCheckReference());
                             TR::Node *nodeInTreeTop = TR::Node::createWithSymRef(TR::NULLCHK, 1, 1, passThroughNode, newSymRef);
                             TR::TreeTop *duplicateOptimalTree = TR::TreeTop::create(comp(), nodeInTreeTop);
-                            nodeInTreeTop->setSideTableIndex(nextOptimalNode->getSideTableIndex());
+                            nodeInTreeTop->setLocalIndex(nextOptimalNode->getLocalIndex());
 
                             if (!shouldAllowLimitingOfOptimalPlacement(comp()) || performTransformation(comp(), "%sPlacing NULLCHK optimally : %p\n", OPT_DETAILS, nodeInTreeTop))
                                {
@@ -1039,7 +1039,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                   continue;
 
                 if (optimalNode &&
-                    ((optimalNode->getSideTableIndex() != nextOptimalComputation) ||
+                    ((optimalNode->getLocalIndex() != nextOptimalComputation) ||
                      rhsOfStore ||
                      !lastInsertionMade))
                    {
@@ -1133,7 +1133,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
                       if (notLastInsertionInBlock)
                          TR::Node::recreate(notLastInsertionInBlock->getNode(), TR::treetop);
                       lastInsertionMade = placeToInsertOptimalComputations;
-                      if (optimalNode->getSideTableIndex() != nextOptimalComputation)
+                      if (optimalNode->getLocalIndex() != nextOptimalComputation)
                          lastInsertionCanBeRemoved = false;
                       else
                          lastInsertionCanBeRemoved = true;
@@ -1205,7 +1205,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
          ////TR::TreeTop *duplicateOptimalTree = TR::TreeTop::create(comp(), duplicateOptimalNode, NULL, NULL);
          ////dumpOptDetails(comp(), "%sPlacing store optimally : %p\n", OPT_DETAILS, duplicateOptimalNode);
          ////setAlteredCode(true);
-         ////duplicateOptimalTree->getNode()->setSideTableIndex(nextOptimalNode->getSideTableIndex());
+         ////duplicateOptimalTree->getNode()->setLocalIndex(nextOptimalNode->getLocalIndex());
          ////TR::TreeTop *secondTreeInBlock = placeToInsertOptimalComputations->getNextTreeTop();
          ////placeToInsertOptimalComputations->join(duplicateOptimalTree);
          ////duplicateOptimalTree->join(secondTreeInBlock);
@@ -1250,18 +1250,18 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
             TR::Node *nullCheckReferenceNode = nextOptimalNode->getNullCheckReference();
             if (isSupportedOpCode(nullCheckReferenceNode, NULL) && !nullCheckReferenceOpCode.isLoadVarDirect())
                {
-               if (((nullCheckReferenceNode->getSideTableIndex() != MAX_SCOUNT) && (nullCheckReferenceNode->getSideTableIndex() != 0)))
+               if (((nullCheckReferenceNode->getLocalIndex() != MAX_SCOUNT) && (nullCheckReferenceNode->getLocalIndex() != 0)))
                   {
-                  if ((_newSymbolsMap[nullCheckReferenceNode->getSideTableIndex()] > -1) &&
-                     (((!_unavailableSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getSideTableIndex())) &&
-                        (_rednSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getSideTableIndex()) || _optSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getSideTableIndex()))) ||
+                  if ((_newSymbolsMap[nullCheckReferenceNode->getLocalIndex()] > -1) &&
+                     (((!_unavailableSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getLocalIndex())) &&
+                        (_rednSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getLocalIndex()) || _optSetInfo[block->getNumber()]->get(nullCheckReferenceNode->getLocalIndex()))) ||
                        (comp()->requiresSpineChecks() && nullCheckReferenceNode->getOpCode().hasSymbolReference() && nullCheckReferenceNode->getSymbol()->isArrayShadowSymbol())))
                      {
                      replacedNullCheckReference = true;
-                     TR::SymbolReference *newSymbolReference = _newSymbolReferences[nullCheckReferenceNode->getSideTableIndex()];
+                     TR::SymbolReference *newSymbolReference = _newSymbolReferences[nullCheckReferenceNode->getLocalIndex()];
                      TR::Node *newLoad = NULL;
                      newLoad = TR::Node::createWithSymRef(nullCheckReferenceNode, comp()->il.opCodeForDirectLoad(nullCheckReferenceDataType), 0, newSymbolReference);
-                     newLoad->setSideTableIndex(-1);
+                     newLoad->setLocalIndex(-1);
 
                      if (trace())
                         traceMsg(comp(), "Duplicate null check had its new null check reference %p replaced by %p with symRef #%d\n", duplicateOptimalNode, newLoad, newLoad->getSymbolReference()->getReferenceNumber());
@@ -1290,7 +1290,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
             TR::Node *passThroughNode = TR::Node::create(TR::PassThrough, 1, duplicateOptimalNode);
             TR::Node *nodeInTreeTop = TR::Node::createWithSymRef(TR::NULLCHK, 1, 1, passThroughNode, newSymRef);
             TR::TreeTop *duplicateOptimalTree = TR::TreeTop::create(comp(), nodeInTreeTop);
-            nodeInTreeTop->setSideTableIndex(nextOptimalNode->getSideTableIndex());
+            nodeInTreeTop->setLocalIndex(nextOptimalNode->getLocalIndex());
 
             if (!shouldAllowLimitingOfOptimalPlacement(comp()) || performTransformation(comp(), "%sPlacing NULLCHK optimally : %p\n", OPT_DETAILS, duplicateOptimalNode))
                {
@@ -1352,7 +1352,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
 
             duplicateOptimalNode->setReferenceCount(0);
             TR::TreeTop *duplicateOptimalTree = TR::TreeTop::create(comp(), duplicateOptimalNode, NULL, NULL);
-            duplicateOptimalNode->setSideTableIndex(nextOptimalNode->getSideTableIndex());
+            duplicateOptimalNode->setLocalIndex(nextOptimalNode->getLocalIndex());
 
             if (!shouldAllowLimitingOfOptimalPlacement(comp()) || performTransformation(comp(), "%sPlacing %s optimally : %p\n", OPT_DETAILS, duplicateOptimalTree->getNode()->getOpCode().getName(), duplicateOptimalTree->getNode()))
                {
@@ -1437,7 +1437,7 @@ TR::TreeTop *TR_PartialRedundancy::placeComputationsOptimally(TR::Block *block, 
 
          manager()->setAlteredCode(true);
 
-         convertedOptimalNode->setSideTableIndex(nextOptimalNode->getSideTableIndex());
+         convertedOptimalNode->setLocalIndex(nextOptimalNode->getLocalIndex());
 
          TR::TreeTop *secondTreeInBlock = placeToInsertOptimalComputations->getNextTreeTop();
 
@@ -1504,7 +1504,7 @@ TR::Node *TR_PartialRedundancy::getAlreadyPresentOptimalNode(TR::Node *node, int
 
    node->setVisitCount(visitCount);
 
-   if (node->getSideTableIndex() == nextOptimalComputation)
+   if (node->getLocalIndex() == nextOptimalComputation)
       {
       if (node->getOpCode().isStoreIndirect())
          {
@@ -1540,12 +1540,12 @@ static bool isExpressionRedundant(TR::Node *node, TR_PartialRedundancy::Containe
        preIndex2 = atoi(c1);
 
    if (redundantComputations &&
-       node->getSideTableIndex() != MAX_SCOUNT &&
-       node->getSideTableIndex() != 0 &&
-       redundantComputations->get(node->getSideTableIndex()) &&
-       (node->getOpCode().isStore() || anticipatable->get(node->getSideTableIndex())))
+       node->getLocalIndex() != MAX_SCOUNT &&
+       node->getLocalIndex() != 0 &&
+       redundantComputations->get(node->getLocalIndex()) &&
+       (node->getOpCode().isStore() || anticipatable->get(node->getLocalIndex())))
      {
-     if (node->getSideTableIndex() < preIndex2)
+     if (node->getLocalIndex() < preIndex2)
         return true;
      }
    return false;
@@ -1655,7 +1655,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
             //
             if (isExpressionRedundant(currentTree->getNode(), redundantComputations, anticipatabilityInfo))
                {
-               scount_t nodeIndex = currentTree->getNode()->getSideTableIndex();
+               scount_t nodeIndex = currentTree->getNode()->getLocalIndex();
                TR::Node *redundantNode = supportedNodesAsArray[nodeIndex];
 
                //
@@ -1673,7 +1673,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                      if (firstOpCodeInTree.getOpCodeValue() == TR::ResolveCHK)
                         TR::Node::recreate(currentTree->getNode(), TR::treetop);
 
-                     currentTree->getNode()->setSideTableIndex(-1);
+                     currentTree->getNode()->setLocalIndex(-1);
                      currentTree->getNode()->setNumChildren(1);
 
                      //dumpOptDetails(comp(), "%sEliminating redundant check computation (resolve or null check) : %p\n", OPT_DETAILS, currentTree->getNode());
@@ -1717,7 +1717,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                      if (storeForCommonedNode->getDataType() != TR::Address)
                         optimizer()->setRequestOptimization(OMR::loopVersionerGroup, true);
 
-                     storeForCommonedNode->setSideTableIndex(-1);
+                     storeForCommonedNode->setLocalIndex(-1);
                      currentTree->join(duplicateOptimalTree);
                      duplicateOptimalTree->join(nextTree);
                      currentTree = duplicateOptimalTree;
@@ -1730,7 +1730,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                 isExpressionRedundant(currentTree->getNode()->getFirstChild(), redundantComputations, anticipatabilityInfo) &&
                 currentTree->getNode()->getFirstChild()->getOpCode().isStore())
               {
-              scount_t nodeIndex = currentTree->getNode()->getFirstChild()->getSideTableIndex();
+              scount_t nodeIndex = currentTree->getNode()->getFirstChild()->getLocalIndex();
               TR::Node *redundantNode = supportedNodesAsArray[nodeIndex];
 
               TR::SymbolReference *newSymbolReference = _newSymbolReferences[nodeIndex];
@@ -1767,7 +1767,7 @@ void TR_PartialRedundancy::eliminateRedundantComputations(TR::Block *block, TR::
                  if (storeForCommonedNode->getDataType() != TR::Address)
                     optimizer()->setRequestOptimization(OMR::loopVersionerGroup, true);
 
-                 storeForCommonedNode->setSideTableIndex(-1);
+                 storeForCommonedNode->setLocalIndex(-1);
                  currentTree->join(duplicateOptimalTree);
                  duplicateOptimalTree->join(nextTree);
                  currentTree = duplicateOptimalTree;
@@ -1949,7 +1949,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
 #ifdef J9_PROJECT_SPECIFIC
       if (_profilingWalk &&
           ((_exceptionCheckMotion &&
-            _exceptionCheckMotion->getOptimisticRednSetInfo()[blockNum]->get(node->getSideTableIndex())) ||
+            _exceptionCheckMotion->getOptimisticRednSetInfo()[blockNum]->get(node->getLocalIndex())) ||
             isExpressionRedundant(node, redundantComputations, anticipatabilityInfo)))
          {
          // Nodes that can be commoned may be useful to profile as they may
@@ -2023,7 +2023,7 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
 
       if (isExpressionRedundant(node, redundantComputations, anticipatabilityInfo))
          {
-         scount_t nodeIndex = node->getSideTableIndex();
+         scount_t nodeIndex = node->getLocalIndex();
          TR::Node *nextRedundantNode = supportedNodesAsArray[nodeIndex];
 
 
@@ -2167,7 +2167,7 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
       {
       if (trace())
          traceMsg(comp(), "Node %p has parent %p and we are considering replacing it\n", node, parent);
-      if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) && !(isNullCheck && (_nullCheckNode->getNullCheckReference() == node)))
+      if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) && !(isNullCheck && (_nullCheckNode->getNullCheckReference() == node)))
          {
          // We do not want to do optimal subnode replacement under tracePRE because it can cause spurious failures as a result
          // of earlier optimal node placement not having been done (because of opt transformation index) that interfere with last opt transformation index based search.
@@ -2178,15 +2178,15 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
          // optimal sub node replacement in the unlikely event that this is the cause of some failure)
          //
          if (shouldAllowOptimalSubNodeReplacement(comp()) &&
-             (((_newSymbolsMap[node->getSideTableIndex()] > -1)  && ((/* _optSetInfo[blockNum]->get(node->getSideTableIndex()) || */  ((!parent || !parent->getOpCode().isSpineCheck() || (childNum != 0)) && comp()->requiresSpineChecks() && node->getOpCode().hasSymbolReference() && node->getSymbol()->isArrayShadowSymbol()) || !_unavailableSetInfo[blockNum]->get(node->getSideTableIndex()))))))
+             (((_newSymbolsMap[node->getLocalIndex()] > -1)  && ((/* _optSetInfo[blockNum]->get(node->getLocalIndex()) || */  ((!parent || !parent->getOpCode().isSpineCheck() || (childNum != 0)) && comp()->requiresSpineChecks() && node->getOpCode().hasSymbolReference() && node->getSymbol()->isArrayShadowSymbol()) || !_unavailableSetInfo[blockNum]->get(node->getLocalIndex()))))))
             {
-            TR::SymbolReference *newSymbolReference = _newSymbolReferences[node->getSideTableIndex()];
+            TR::SymbolReference *newSymbolReference = _newSymbolReferences[node->getLocalIndex()];
             TR::Node *newLoad = TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(nodeDataType), 0, newSymbolReference);
             if (fe()->dataTypeForLoadOrStore(node->getDataType()) != node->getDataType())
                newLoad = TR::Node::create(TR::ILOpCode::getProperConversion(newLoad->getDataType(), node->getDataType(), false /* !wantZeroExtension */), 1, newLoad);
 
             newLoad->setReferenceCount(1);
-            newLoad->setSideTableIndex(-1);
+            newLoad->setLocalIndex(-1);
             duplicateOptimalNode->recursivelyDecReferenceCount();
             duplicateParent->setChild(childNum, newLoad);
 
@@ -2566,8 +2566,8 @@ int32_t TR_ExceptionCheckMotion::perform()
                for (j=size;j<orderedListSize;j++)
                   {
                   if (trace())
-                     traceMsg(comp(), "Affected by order <%d>\n", nextElement->getData()->getSideTableIndex());
-                  _orderedOptNumbersList[i][j] = nextElement->getData()->getSideTableIndex();
+                     traceMsg(comp(), "Affected by order <%d>\n", nextElement->getData()->getLocalIndex());
+                  _orderedOptNumbersList[i][j] = nextElement->getData()->getLocalIndex();
                   nextElement = nextElement->getNextElement();
                   }
                TR_ASSERT(orderedListSize <= numElements2  , "Overwriting elements! orderedListSize = %d numElements2 = %d\n",orderedListSize,numElements2 );
@@ -2707,7 +2707,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
       while (oldNode &&
              !oldNode->getData()->getOpCode().isCheck())
          {
-         _composeHelper->set(oldNode->getData()->getSideTableIndex());
+         _composeHelper->set(oldNode->getData()->getLocalIndex());
          if (!markerNode)
             markerNode = oldNode;
 
@@ -2727,7 +2727,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
          while (newNode &&
                 !newNode->getData()->getOpCode().isCheck())
             {
-            if (!_composeHelper->get(newNode->getData()->getSideTableIndex()))
+            if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
                {
                ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
                newSourceNode->setNextElement(NULL);
@@ -2743,20 +2743,20 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
                newSourceNode->setData(newNode->getData());
                }
             else
-               _definitelyNotKilled->set(newNode->getData()->getSideTableIndex());
+               _definitelyNotKilled->set(newNode->getData()->getLocalIndex());
             newNode = newNode->getNextElement();
             }
 
-         if ((oldNode == NULL) || (newNode ==  NULL) || (oldNode->getData()->getSideTableIndex() != newNode->getData()->getSideTableIndex()))
+         if ((oldNode == NULL) || (newNode ==  NULL) || (oldNode->getData()->getLocalIndex() != newNode->getData()->getLocalIndex()))
             {
             ListElement<TR::Node> *prevCursorNode = cutoffNode;
             ListElement<TR::Node> *cursorNode = cutoffNode ? cutoffNode->getNextElement() : markerNode;
             while (cursorNode)
                {
-               if (_definitelyNotKilled->get(cursorNode->getData()->getSideTableIndex()) ||
+               if (_definitelyNotKilled->get(cursorNode->getData()->getLocalIndex()) ||
                    ((cursorNode->getData()->getOpCode().isIndirect() ||
                      cursorNode->getData()->getOpCode().isArrayLength()) &&
-                    availableExprs->get(cursorNode->getData()->getFirstChild()->getSideTableIndex())))
+                    availableExprs->get(cursorNode->getData()->getFirstChild()->getLocalIndex())))
                   prevCursorNode = cursorNode;
                else
                   {
@@ -2777,12 +2777,12 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
             while (oldNode &&
                    ((oldNode->getData()->getOpCode().isIndirect() ||
                      oldNode->getData()->getOpCode().isArrayLength()) &&
-                     availableExprs->get(oldNode->getData()->getFirstChild()->getSideTableIndex())))
+                     availableExprs->get(oldNode->getData()->getFirstChild()->getLocalIndex())))
                {
                ListElement<TR::Node> *nextOldNode = oldNode->getNextElement();
-               if (!_composeHelper->get(oldNode->getData()->getSideTableIndex()))
+               if (!_composeHelper->get(oldNode->getData()->getLocalIndex()))
                   {
-                  _composeHelper->set(oldNode->getData()->getSideTableIndex());
+                  _composeHelper->set(oldNode->getData()->getLocalIndex());
                   oldNode->setNextElement(NULL);
                   if (prevCursorNode)
                      {
@@ -2802,9 +2802,9 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
             while (newNode &&
                    ((newNode->getData()->getOpCode().isIndirect() ||
                      newNode->getData()->getOpCode().isArrayLength()) &&
-                    availableExprs->get(newNode->getData()->getFirstChild()->getSideTableIndex())))
+                    availableExprs->get(newNode->getData()->getFirstChild()->getLocalIndex())))
                {
-               if (!_composeHelper->get(newNode->getData()->getSideTableIndex()))
+               if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
                   {
                   ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
                   newSourceNode->setNextElement(NULL);
@@ -2823,7 +2823,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
             }
 
          prevNode = oldNode;
-         _composeHelper->set(oldNode->getData()->getSideTableIndex());
+         _composeHelper->set(oldNode->getData()->getLocalIndex());
          cutoffNode = oldNode;
          oldNode = oldNode->getNextElement();
          markerNode = oldNode;
@@ -2831,7 +2831,7 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
          while (oldNode &&
                 !oldNode->getData()->getOpCode().isCheck())
             {
-            _composeHelper->set(oldNode->getData()->getSideTableIndex());
+            _composeHelper->set(oldNode->getData()->getLocalIndex());
             prevNode = oldNode;
             oldNode = oldNode->getNextElement();
             }
@@ -2855,10 +2855,10 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
       while (oldNode &&
              ((oldNode->getData()->getOpCode().isIndirect() ||
                oldNode->getData()->getOpCode().isArrayLength()) &&
-               availableExprs->get(oldNode->getData()->getFirstChild()->getSideTableIndex())))
+               availableExprs->get(oldNode->getData()->getFirstChild()->getLocalIndex())))
          {
          ListElement<TR::Node> *nextOldNode = oldNode->getNextElement();
-         //if (!_composeHelper->get(oldNode->getData()->getSideTableIndex()))
+         //if (!_composeHelper->get(oldNode->getData()->getLocalIndex()))
             {
             oldNode->setNextElement(NULL);
             if (prevCursorNode)
@@ -2880,9 +2880,9 @@ void TR_ExceptionCheckMotion::composeLists(List<TR::Node> *targetList, List<TR::
       while (newNode &&
              ((newNode->getData()->getOpCode().isIndirect() ||
                newNode->getData()->getOpCode().isArrayLength()) &&
-               availableExprs->get(newNode->getData()->getFirstChild()->getSideTableIndex())))
+               availableExprs->get(newNode->getData()->getFirstChild()->getLocalIndex())))
          {
-           //if (!_composeHelper->get(newNode->getData()->getSideTableIndex()))
+           //if (!_composeHelper->get(newNode->getData()->getLocalIndex()))
             {
             ListElement<TR::Node> *newSourceNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newSourceNode->setNextElement(NULL);
@@ -2922,13 +2922,13 @@ void TR_ExceptionCheckMotion::appendLists(List<TR::Node> *firstList, List<TR::No
       for (;firstNode != NULL;firstNode = firstNode->getNextElement())
           {
           lastElementInFirstList = firstNode;
-          _appendHelper->set(firstNode->getData()->getSideTableIndex());
+          _appendHelper->set(firstNode->getData()->getLocalIndex());
           }
 
       ListElement<TR::Node> *prevNode = lastElementInFirstList;
       for (;secondNode != NULL;)
          {
-         if (!_appendHelper->get(secondNode->getData()->getSideTableIndex()))
+         if (!_appendHelper->get(secondNode->getData()->getLocalIndex()))
             {
             newFirstNode = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newFirstNode->setNextElement(NULL);
@@ -2938,7 +2938,7 @@ void TR_ExceptionCheckMotion::appendLists(List<TR::Node> *firstList, List<TR::No
                firstList->setListHead(newFirstNode);
 
             newFirstNode->setData(secondNode->getData());
-            _appendHelper->set(secondNode->getData()->getSideTableIndex());
+            _appendHelper->set(secondNode->getData()->getLocalIndex());
 
             prevNode = newFirstNode;
             }
@@ -2965,7 +2965,7 @@ bool TR_ExceptionCheckMotion::compareLists(List<TR::Node> *firstList, List<TR::N
          TR::Node *secondNode;
          for (secondNode = secondListIt.getFirst(); secondNode != NULL;)
             {
-            if (firstNode->getSideTableIndex() != secondNode->getSideTableIndex())
+            if (firstNode->getLocalIndex() != secondNode->getLocalIndex())
                {
                same = false;
                break;
@@ -3223,7 +3223,7 @@ void TR_ExceptionCheckMotion::initializeGenAndKillSetInfo()
             {
             ListElement<TR::Node> *listElem;
             for (listElem = _regularGenSetInfo[blockNum]->getListHead(); listElem != NULL; listElem = listElem->getNextElement())
-               traceMsg(comp(), "Expr %d (representative) Node %p in Block : %d\n", listElem->getData()->getSideTableIndex(), listElem->getData(), blockNum);
+               traceMsg(comp(), "Expr %d (representative) Node %p in Block : %d\n", listElem->getData()->getLocalIndex(), listElem->getData(), blockNum);
             }
          else
             traceMsg(comp(), "Block : %d has NO expr gened\n", blockNum);
@@ -3277,24 +3277,24 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                   _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                   _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  //markNodeAsSurvivor(node->getNullCheckReference(), _indirectAccessesThatSurvive);
                  }
               }
 
-           if (((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+           if (((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                  _nullCheckKilled->get(blockNum) ||
                  nodeKilledByChild) &&
 	      !checkIfNodeCanSurvive(node->getNullCheckReference(), _indirectAccessesThatSurvive))
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _resolveCheckKilled->set(blockNum);
               _boundCheckKilled->set(blockNum);
               _divCheckKilled->set(blockNum);
@@ -3351,23 +3351,23 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  //markNodeAsSurvivor(node->getFirstChild(), _unresolvedAccessesThatSurvive);
                  }
               }
 
-           if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())*/ ||
+           if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())*/ ||
                 _resolveCheckKilled->get(blockNum) ||
 		nodeKilledByChild))
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _nullCheckKilled->set(blockNum);
               _boundCheckKilled->set(blockNum);
               _divCheckKilled->set(blockNum);
@@ -3418,22 +3418,22 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  }
               }
 
-           if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+           if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                  _boundCheckKilled->get(blockNum) ||
                  nodeKilledByChild)
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _nullCheckKilled->set(blockNum);
               _resolveCheckKilled->set(blockNum);
               _divCheckKilled->set(blockNum);
@@ -3463,24 +3463,24 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  //markNodeAsSurvivor(node->getFirstChild()->getSecondChild(), _dividesThatSurvive);
                  }
               }
 
-           if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */ ||
+           if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */ ||
                  _divCheckKilled->get(blockNum) ||
                  nodeKilledByChild) &&
                 !checkIfNodeCanSurvive(node->getFirstChild()->getSecondChild(), _dividesThatSurvive))
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _nullCheckKilled->set(blockNum);
               _resolveCheckKilled->set(blockNum);
               _boundCheckKilled->set(blockNum);
@@ -3510,22 +3510,22 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
           if (!_atLeastOneExceptionPoint)
              {
-             if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                      _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                   (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                   (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                   (!_genSetHelper->get(node->getSideTableIndex())))
+             if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                      _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                   (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                   (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                   (!_genSetHelper->get(node->getLocalIndex())))
                 {
                 createAndAddListElement(node, blockNum);
                 }
              }
 
-          if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                    !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+          if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                    !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                 _arrayStoreCheckKilled->get(blockNum) ||
                 nodeKilledByChild)
              {
-             _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+             _killedGenExprs[blockNum]->set(node->getLocalIndex());
              _resolveCheckKilled->set(blockNum);
              _nullCheckKilled->set(blockNum);
              _boundCheckKilled->set(blockNum);
@@ -3549,22 +3549,22 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  }
               }
 
-           if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+           if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                  _arrayCheckKilled->get(blockNum) ||
                  nodeKilledByChild)
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _resolveCheckKilled->set(blockNum);
               _nullCheckKilled->set(blockNum);
               _boundCheckKilled->set(blockNum);
@@ -3588,23 +3588,23 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (!_atLeastOneExceptionPoint)
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  }
               }
 
            bool alreadyKilled = false;
-           if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+           if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                     !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                  _checkCastKilled->get(blockNum) ||
                  nodeKilledByChild)
               {
-              _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+              _killedGenExprs[blockNum]->set(node->getLocalIndex());
               _resolveCheckKilled->set(blockNum);
               _nullCheckKilled->set(blockNum);
               _boundCheckKilled->set(blockNum);
@@ -3618,14 +3618,14 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
 
            if (node->getOpCodeValue() == TR::checkcastAndNULLCHK)
               {
-              if ((!_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) /* &&
-                                                                                        !_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()) */) ||
+              if ((!_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) /* &&
+                                                                                        !_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()) */) ||
                     _nullCheckKilled->get(blockNum) ||
                     nodeKilledByChild)
                  {
                  if (!alreadyKilled)
                     {
-                    _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+                    _killedGenExprs[blockNum]->set(node->getLocalIndex());
                     _resolveCheckKilled->set(blockNum);
                     _boundCheckKilled->set(blockNum);
                     _divCheckKilled->set(blockNum);
@@ -3669,11 +3669,11 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
               (!node->getFirstChild()->isThisPointer() ||
                !node->getFirstChild()->isNonNull()))
               {
-              if ((_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-                       _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-                    (!_genSetHelper->get(node->getSideTableIndex())))
+              if ((_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+                       _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
+                    (!_genSetHelper->get(node->getLocalIndex())))
                  {
                  createAndAddListElement(node, blockNum);
                  }
@@ -3710,26 +3710,26 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
                 (child->getVisitCount() != visitCount))
                {
                child->setVisitCount(visitCount);
-               if (((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0)))
-                  _relevantNodes->set(child->getSideTableIndex());
+               if (((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0)))
+                  _relevantNodes->set(child->getLocalIndex());
                }
             }
          }
       }
 
 #if 0
-   if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) && node->getOpCode().isStore())
+   if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) && node->getOpCode().isStore())
       {
       if (!childRelevant)
          {
-         _exprsUnaffectedByOrder->set(node->getSideTableIndex());
+         _exprsUnaffectedByOrder->set(node->getLocalIndex());
          //if (node->getOpCode().isIndirect())
-         //   _indirectAccessesThatSurvive->set(node->getFirstChild()->getSideTableIndex());
+         //   _indirectAccessesThatSurvive->set(node->getFirstChild()->getLocalIndex());
          //else
-         _indirectAccessesThatSurvive->set(node->getSideTableIndex());
-         _arrayAccessesThatSurvive->set(node->getSideTableIndex());
-         _unresolvedAccessesThatSurvive->set(node->getSideTableIndex());
-         _dividesThatSurvive->set(node->getSideTableIndex());
+         _indirectAccessesThatSurvive->set(node->getLocalIndex());
+         _arrayAccessesThatSurvive->set(node->getLocalIndex());
+         _unresolvedAccessesThatSurvive->set(node->getLocalIndex());
+         _dividesThatSurvive->set(node->getLocalIndex());
          }
       else
          {
@@ -3741,52 +3741,52 @@ void TR_ExceptionCheckMotion::analyzeNodeToInitializeGenAndKillSets(TR::TreeTop 
                 {
                TR::Node *firstChild = child->getFirstChild();
                TR::Node *secondChild = child->getSecondChild();
-               if (((firstChild->getSideTableIndex() != MAX_SCOUNT) && (firstChild->getSideTableIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
+               if (((firstChild->getLocalIndex() != MAX_SCOUNT) && (firstChild->getLocalIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
                   {
-                  if (_exprsContainingIndirectAccess->get(firstChild->getSideTableIndex()))
+                  if (_exprsContainingIndirectAccess->get(firstChild->getLocalIndex()))
                      containsIndirectAccess = true;
-                  if (_exprsContainingArrayAccess->get(firstChild->getSideTableIndex()))
+                  if (_exprsContainingArrayAccess->get(firstChild->getLocalIndex()))
                      containsArrayAccess = true;
-                  if (_exprsContainingDivide->get(firstChild->getSideTableIndex()))
+                  if (_exprsContainingDivide->get(firstChild->getLocalIndex()))
                      containsDivide = true;
-                  if (_exprsContainingUnresolvedAccess->get(firstChild->getSideTableIndex()))
+                  if (_exprsContainingUnresolvedAccess->get(firstChild->getLocalIndex()))
                      containsUnresolvedAccess = true;
                   }
 
-               if (((secondChild->getSideTableIndex() != MAX_SCOUNT) && (secondChild->getSideTableIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
+               if (((secondChild->getLocalIndex() != MAX_SCOUNT) && (secondChild->getLocalIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
                   {
-                  if (_exprsContainingIndirectAccess->get(secondChild->getSideTableIndex()))
+                  if (_exprsContainingIndirectAccess->get(secondChild->getLocalIndex()))
                      containsIndirectAccess = true;
-                  if (_exprsContainingArrayAccess->get(secondChild->getSideTableIndex()))
+                  if (_exprsContainingArrayAccess->get(secondChild->getLocalIndex()))
                      containsArrayAccess = true;
-                  if (_exprsContainingDivide->get(secondChild->getSideTableIndex()))
+                  if (_exprsContainingDivide->get(secondChild->getLocalIndex()))
                      containsDivide = true;
-                  if (_exprsContainingUnresolvedAccess->get(secondChild->getSideTableIndex()))
+                  if (_exprsContainingUnresolvedAccess->get(secondChild->getLocalIndex()))
                      containsUnresolvedAccess = true;
                   }
                }
             else
                {
-               if (_exprsContainingIndirectAccess->get(child->getSideTableIndex()))
+               if (_exprsContainingIndirectAccess->get(child->getLocalIndex()))
                   containsIndirectAccess = true;
-               if (_exprsContainingArrayAccess->get(child->getSideTableIndex()))
+               if (_exprsContainingArrayAccess->get(child->getLocalIndex()))
                   containsArrayAccess = true;
-               if (_exprsContainingDivide->get(child->getSideTableIndex()))
+               if (_exprsContainingDivide->get(child->getLocalIndex()))
                   containsDivide = true;
-               if (_exprsContainingUnresolvedAccess->get(child->getSideTableIndex()))
+               if (_exprsContainingUnresolvedAccess->get(child->getLocalIndex()))
                   containsUnresolvedAccess = true;
                }
             }
 
-         _relevantNodes->set(node->getSideTableIndex());
+         _relevantNodes->set(node->getLocalIndex());
          if (containsIndirectAccess)
-            _exprsContainingIndirectAccess->set(node->getSideTableIndex());
+            _exprsContainingIndirectAccess->set(node->getLocalIndex());
          if (containsArrayAccess)
-            _exprsContainingArrayAccess->set(node->getSideTableIndex());
+            _exprsContainingArrayAccess->set(node->getLocalIndex());
          if (containsDivide)
-           _exprsContainingDivide->set(node->getSideTableIndex());
+           _exprsContainingDivide->set(node->getLocalIndex());
          if (containsUnresolvedAccess)
-            _exprsContainingUnresolvedAccess->set(node->getSideTableIndex());
+            _exprsContainingUnresolvedAccess->set(node->getLocalIndex());
          }
       }
 #endif
@@ -3811,7 +3811,7 @@ void TR_ExceptionCheckMotion::createAndAddListElement(TR::Node *node, int32_t bl
    else
       _regularGenSetInfo[blockNum]->setListHead(newElement);
 
-   _genSetHelper->set(node->getSideTableIndex());
+   _genSetHelper->set(node->getLocalIndex());
    _lastGenSetElement = newElement;
    }
 
@@ -3826,11 +3826,11 @@ bool TR_ExceptionCheckMotion::isNodeKilledByChild(TR::Node *parent, TR::Node *ch
    {
    bool parentKilled = false;
 
-   if (((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0)) /* && (!child->getOpCode().isStore()) */)
+   if (((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0)) /* && (!child->getOpCode().isStore()) */)
       {
-      if (_exprsContainingIndirectAccess->get(child->getSideTableIndex()))
+      if (_exprsContainingIndirectAccess->get(child->getLocalIndex()))
          {
-         _exprsContainingIndirectAccess->set(parent->getSideTableIndex());
+         _exprsContainingIndirectAccess->set(parent->getLocalIndex());
          if (_indirectAccessesKilled->get(blockNum))
             {
             if (!checkIfNodeCanSomehowSurvive(child, _indirectAccessesThatSurvive))
@@ -3838,9 +3838,9 @@ bool TR_ExceptionCheckMotion::isNodeKilledByChild(TR::Node *parent, TR::Node *ch
             }
          }
 
-      if (_exprsContainingArrayAccess->get(child->getSideTableIndex()))
+      if (_exprsContainingArrayAccess->get(child->getLocalIndex()))
          {
-         _exprsContainingArrayAccess->set(parent->getSideTableIndex());
+         _exprsContainingArrayAccess->set(parent->getLocalIndex());
          if (_arrayAccessesKilled->get(blockNum))
             {
             if (!checkIfNodeCanSomehowSurvive(child, _arrayAccessesThatSurvive))
@@ -3848,9 +3848,9 @@ bool TR_ExceptionCheckMotion::isNodeKilledByChild(TR::Node *parent, TR::Node *ch
             }
          }
 
-      if (_exprsContainingDivide->get(child->getSideTableIndex()))
+      if (_exprsContainingDivide->get(child->getLocalIndex()))
          {
-         _exprsContainingDivide->set(parent->getSideTableIndex());
+         _exprsContainingDivide->set(parent->getLocalIndex());
          if (_dividesKilled->get(blockNum))
             {
             if (!checkIfNodeCanSomehowSurvive(child, _dividesThatSurvive))
@@ -3858,9 +3858,9 @@ bool TR_ExceptionCheckMotion::isNodeKilledByChild(TR::Node *parent, TR::Node *ch
             }
          }
 
-      if (_exprsContainingUnresolvedAccess->get(child->getSideTableIndex()))
+      if (_exprsContainingUnresolvedAccess->get(child->getLocalIndex()))
          {
-         _exprsContainingUnresolvedAccess->set(parent->getSideTableIndex());
+         _exprsContainingUnresolvedAccess->set(parent->getLocalIndex());
          if (_unresolvedAccessesKilled->get(blockNum))
             {
             if (!checkIfNodeCanSomehowSurvive(child, _unresolvedAccessesThatSurvive))
@@ -3885,24 +3885,24 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
    {
    if (node->getVisitCount() == visitCount)
       {
-      if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) /* && (!node->getOpCode().isStore()) */)
+      if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) /* && (!node->getOpCode().isStore()) */)
          {
-         if (_relevantNodes->get(node->getSideTableIndex()))
+         if (_relevantNodes->get(node->getLocalIndex()))
             return true;
          }
       else if (node->getOpCode().isTwoChildrenAddress())
          {
          TR::Node *firstChild = node->getFirstChild();
          TR::Node *secondChild = node->getSecondChild();
-         if (((firstChild->getSideTableIndex() != MAX_SCOUNT) && (firstChild->getSideTableIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
+         if (((firstChild->getLocalIndex() != MAX_SCOUNT) && (firstChild->getLocalIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
             {
-            if (_relevantNodes->get(firstChild->getSideTableIndex()))
+            if (_relevantNodes->get(firstChild->getLocalIndex()))
                return true;
             }
 
-         if (((secondChild->getSideTableIndex() != MAX_SCOUNT) && (secondChild->getSideTableIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
+         if (((secondChild->getLocalIndex() != MAX_SCOUNT) && (secondChild->getLocalIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
             {
-            if (_relevantNodes->get(secondChild->getSideTableIndex()))
+            if (_relevantNodes->get(secondChild->getLocalIndex()))
                return true;
             }
          }
@@ -3929,39 +3929,39 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
             {
             TR::Node *firstChild = child->getFirstChild();
             TR::Node *secondChild = child->getSecondChild();
-            if (((firstChild->getSideTableIndex() != MAX_SCOUNT) && (firstChild->getSideTableIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
+            if (((firstChild->getLocalIndex() != MAX_SCOUNT) && (firstChild->getLocalIndex() != 0)) /* && (!firstChild->getOpCode().isStore()) */)
                {
-               if (_exprsContainingIndirectAccess->get(firstChild->getSideTableIndex()))
+               if (_exprsContainingIndirectAccess->get(firstChild->getLocalIndex()))
                   containsIndirectAccess = true;
-               if (_exprsContainingArrayAccess->get(firstChild->getSideTableIndex()))
+               if (_exprsContainingArrayAccess->get(firstChild->getLocalIndex()))
                   containsArrayAccess = true;
-               if (_exprsContainingDivide->get(firstChild->getSideTableIndex()))
+               if (_exprsContainingDivide->get(firstChild->getLocalIndex()))
                   containsDivide = true;
-               if (_exprsContainingUnresolvedAccess->get(firstChild->getSideTableIndex()))
+               if (_exprsContainingUnresolvedAccess->get(firstChild->getLocalIndex()))
                   containsUnresolvedAccess = true;
                }
 
-            if (((secondChild->getSideTableIndex() != MAX_SCOUNT) && (secondChild->getSideTableIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
+            if (((secondChild->getLocalIndex() != MAX_SCOUNT) && (secondChild->getLocalIndex() != 0)) /* && (!secondChild->getOpCode().isStore()) */)
                {
-               if (_exprsContainingIndirectAccess->get(secondChild->getSideTableIndex()))
+               if (_exprsContainingIndirectAccess->get(secondChild->getLocalIndex()))
                   containsIndirectAccess = true;
-               if (_exprsContainingArrayAccess->get(secondChild->getSideTableIndex()))
+               if (_exprsContainingArrayAccess->get(secondChild->getLocalIndex()))
                   containsArrayAccess = true;
-               if (_exprsContainingDivide->get(secondChild->getSideTableIndex()))
+               if (_exprsContainingDivide->get(secondChild->getLocalIndex()))
                   containsDivide = true;
-               if (_exprsContainingUnresolvedAccess->get(secondChild->getSideTableIndex()))
+               if (_exprsContainingUnresolvedAccess->get(secondChild->getLocalIndex()))
                   containsUnresolvedAccess = true;
                }
             }
          else
             {
-            if (_exprsContainingIndirectAccess->get(child->getSideTableIndex()))
+            if (_exprsContainingIndirectAccess->get(child->getLocalIndex()))
                containsIndirectAccess = true;
-            if (_exprsContainingArrayAccess->get(child->getSideTableIndex()))
+            if (_exprsContainingArrayAccess->get(child->getLocalIndex()))
                containsArrayAccess = true;
-            if (_exprsContainingDivide->get(child->getSideTableIndex()))
+            if (_exprsContainingDivide->get(child->getLocalIndex()))
                containsDivide = true;
-            if (_exprsContainingUnresolvedAccess->get(child->getSideTableIndex()))
+            if (_exprsContainingUnresolvedAccess->get(child->getLocalIndex()))
                containsUnresolvedAccess = true;
             }
          }
@@ -3970,10 +3970,10 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
    TR::ILOpCode &opCode = node->getOpCode();
    TR::DataType nodeDataType = node->getDataType();
 
-   if (((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0)) /* && (!opCode.isStore()) */)
+   if (((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0)) /* && (!opCode.isStore()) */)
       {
-      if ((!_actualRednSetInfo[blockNum]->get(node->getSideTableIndex())) &&
-          (!_actualOptSetInfo[blockNum]->get(node->getSideTableIndex())) &&
+      if ((!_actualRednSetInfo[blockNum]->get(node->getLocalIndex())) &&
+          (!_actualOptSetInfo[blockNum]->get(node->getLocalIndex())) &&
           (childRelevant ||
            ((opCode.isIndirect() && (opCode.isLoadVar() || opCode.isStore()) &&
              (!(opCode.hasSymbolReference() &&
@@ -3985,11 +3985,11 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
               (opCode.hasSymbolReference() && node->getSymbolReference()->isUnresolved()) ||
               (opCode.isDiv() || opCode.isRem())))
          {
-         _relevantNodes->set(node->getSideTableIndex());
+         _relevantNodes->set(node->getLocalIndex());
          bool relevantNodeKilled = false;
          if (containsIndirectAccess || ((opCode.isIndirect() && (opCode.isLoadVar() || opCode.isStore())) || (opCode.isArrayLength())))
             {
-            _exprsContainingIndirectAccess->set(node->getSideTableIndex());
+            _exprsContainingIndirectAccess->set(node->getLocalIndex());
             if (_indirectAccessesKilled->get(blockNum))
                {
                if (!checkIfNodeCanSomehowSurvive(node, _indirectAccessesThatSurvive))
@@ -3999,7 +3999,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
 
          if (containsArrayAccess || node->getOpCode().isTwoChildrenAddress())
             {
-            _exprsContainingArrayAccess->set(node->getSideTableIndex());
+            _exprsContainingArrayAccess->set(node->getLocalIndex());
             if (_arrayAccessesKilled->get(blockNum))
                {
                //if (!checkIfNodeCanSomehowSurvive(node, _indirectAccessesThatSurvive))
@@ -4009,7 +4009,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
 
          if (containsDivide || (opCode.isDiv() || opCode.isRem()))
             {
-            _exprsContainingDivide->set(node->getSideTableIndex());
+            _exprsContainingDivide->set(node->getLocalIndex());
             if (_dividesKilled->get(blockNum))
                {
                if (!checkIfNodeCanSomehowSurvive(node, _dividesThatSurvive))
@@ -4019,7 +4019,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
 
          if (containsUnresolvedAccess || (opCode.hasSymbolReference() && node->getSymbolReference()->isUnresolved()))
             {
-            _exprsContainingUnresolvedAccess->set(node->getSideTableIndex());
+            _exprsContainingUnresolvedAccess->set(node->getLocalIndex());
             if (_unresolvedAccessesKilled->get(blockNum))
                {
                if (!checkIfNodeCanSomehowSurvive(node, _unresolvedAccessesThatSurvive))
@@ -4028,11 +4028,11 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
             }
 
          if (relevantNodeKilled)
-            _killedGenExprs[blockNum]->set(node->getSideTableIndex());
+            _killedGenExprs[blockNum]->set(node->getLocalIndex());
 
-         if  (!_genSetHelper->get(node->getSideTableIndex()) &&
-             (_optimisticRednSetInfo[blockNum]->get(node->getSideTableIndex()) ||
-              _optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex())))
+         if  (!_genSetHelper->get(node->getLocalIndex()) &&
+             (_optimisticRednSetInfo[blockNum]->get(node->getLocalIndex()) ||
+              _optimisticOptSetInfo[blockNum]->get(node->getLocalIndex())))
             {
             ListElement<TR::Node> *newElement = (ListElement<TR::Node>*)trMemory()->allocateStackMemory(sizeof(ListElement<TR::Node>));
             newElement->setData(node);
@@ -4042,7 +4042,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
             else
                _regularGenSetInfo[blockNum]->setListHead(newElement);
 
-            _genSetHelper->set(node->getSideTableIndex());
+            _genSetHelper->set(node->getLocalIndex());
             _lastGenSetElement = newElement;
             }
          return true;
@@ -4059,30 +4059,30 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
              (opCode.hasSymbolReference() && node->getSymbolReference()->isUnresolved()) ||
              (opCode.isDiv() || opCode.isRem())))
             {
-            _exprsUnaffectedByOrder->set(node->getSideTableIndex());
+            _exprsUnaffectedByOrder->set(node->getLocalIndex());
 
             /*
             if (opCode.isIndirect())
-               _indirectAccessesThatSurvive->set(node->getFirstChild()->getSideTableIndex());
+               _indirectAccessesThatSurvive->set(node->getFirstChild()->getLocalIndex());
             else
-               _indirectAccessesThatSurvive->set(node->getSideTableIndex());
+               _indirectAccessesThatSurvive->set(node->getLocalIndex());
 
-            _arrayAccessesThatSurvive->set(node->getSideTableIndex());
-            _unresolvedAccessesThatSurvive->set(node->getSideTableIndex());
-            _dividesThatSurvive->set(node->getSideTableIndex());
+            _arrayAccessesThatSurvive->set(node->getLocalIndex());
+            _unresolvedAccessesThatSurvive->set(node->getLocalIndex());
+            _dividesThatSurvive->set(node->getLocalIndex());
             */
             }
          else
             {
-            _relevantNodes->set(node->getSideTableIndex());
+            _relevantNodes->set(node->getLocalIndex());
             if (containsIndirectAccess || ((opCode.isIndirect() && (opCode.isLoadVar() || opCode.isStore())) || opCode.isArrayLength()))
-               _exprsContainingIndirectAccess->set(node->getSideTableIndex());
+               _exprsContainingIndirectAccess->set(node->getLocalIndex());
             if (containsArrayAccess || node->getOpCode().isTwoChildrenAddress())
-               _exprsContainingArrayAccess->set(node->getSideTableIndex());
+               _exprsContainingArrayAccess->set(node->getLocalIndex());
             if (containsDivide || (opCode.isDiv() || opCode.isRem()))
-               _exprsContainingDivide->set(node->getSideTableIndex());
+               _exprsContainingDivide->set(node->getLocalIndex());
             if (containsUnresolvedAccess || (opCode.hasSymbolReference() && node->getSymbolReference()->isUnresolved()))
-               _exprsContainingUnresolvedAccess->set(node->getSideTableIndex());
+               _exprsContainingUnresolvedAccess->set(node->getLocalIndex());
 
             return true;
             }
@@ -4415,7 +4415,7 @@ bool TR_ExceptionCheckMotion::analyzeNodeIfSuccessorsAnalyzed(TR::CFGNode *cfgNo
                TR::Node *listNode;
                for (listNode = outListIt.getFirst(); listNode != NULL;)
                   {
-                  traceMsg(comp(), " ,%d ", listNode->getSideTableIndex());
+                  traceMsg(comp(), " ,%d ", listNode->getLocalIndex());
                   listNode = outListIt.getNext();
                   }
                traceMsg(comp(), "\n");
@@ -4430,7 +4430,7 @@ bool TR_ExceptionCheckMotion::analyzeNodeIfSuccessorsAnalyzed(TR::CFGNode *cfgNo
             TR::Node *listNode;
             for (listNode = inListIt.getFirst(); listNode != NULL;)
                {
-               traceMsg(comp(), " ,%d ", listNode->getSideTableIndex());
+               traceMsg(comp(), " ,%d ", listNode->getLocalIndex());
                listNode = inListIt.getNext();
                }
             traceMsg(comp(), "\n");
@@ -4532,7 +4532,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
       if (opCode.getOpCodeValue() == TR::NULLCHK)
          {
-         _composeHelper->set(nextAvailableNode->getNullCheckReference()->getSideTableIndex());
+         _composeHelper->set(nextAvailableNode->getNullCheckReference()->getLocalIndex());
          }
       }
 
@@ -4685,7 +4685,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       // also mark this expression as one that will kill its parent (because it was
       // killed) if the parent is a check taking part in this analysis
       //
-      if (_exprsContainingIndirectAccess->get(node->getSideTableIndex()))
+      if (_exprsContainingIndirectAccess->get(node->getLocalIndex()))
          {
          if (indirectAccessesKilled)
             {
@@ -4700,7 +4700,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
       // Do the same as above for expressions containing unresolved access
       //
-      if (_exprsContainingUnresolvedAccess->get(node->getSideTableIndex()))
+      if (_exprsContainingUnresolvedAccess->get(node->getLocalIndex()))
          {
          if (unresolvedAccessesKilled)
             {
@@ -4715,7 +4715,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
       // Do the same as above for expressions containing array access
       //
-      if (_exprsContainingArrayAccess->get(node->getSideTableIndex()))
+      if (_exprsContainingArrayAccess->get(node->getLocalIndex()))
          {
          if (arrayAccessesKilled)
             {
@@ -4730,7 +4730,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
       // Do the same as above for expressions containing division
       //
-      if (_exprsContainingDivide->get(node->getSideTableIndex()))
+      if (_exprsContainingDivide->get(node->getLocalIndex()))
          {
          if (dividesKilled)
             {
@@ -4912,7 +4912,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
            TR::Node *listNode;
            for (listNode = workListIt.getFirst(); listNode != NULL;)
               {
-              traceMsg(comp(), " ,%d ", listNode->getSideTableIndex());
+              traceMsg(comp(), " ,%d ", listNode->getLocalIndex());
               listNode = workListIt.getNext();
               }
            traceMsg(comp(), "\n");
@@ -5079,7 +5079,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          checkElement = true;
          }
 
-      if (!_optimisticOptSetInfo[blockNum]->get(node->getSideTableIndex()))
+      if (!_optimisticOptSetInfo[blockNum]->get(node->getLocalIndex()))
          {
          //
          // This expression is NOT an opt candidate for this block
@@ -5098,7 +5098,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
             // then kill this expression if it contains an indirect access as it is not
             // allowed to cross this block (it is not allowed to move past the check)
             //
-            if (_exprsContainingIndirectAccess->get(node->getSideTableIndex()))
+            if (_exprsContainingIndirectAccess->get(node->getLocalIndex()))
                {
                if (indirectAccessesKilled)
                   {
@@ -5113,7 +5113,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
             // Similar logic as above for resolve check and unresolved access
             //
-            if (_exprsContainingUnresolvedAccess->get(node->getSideTableIndex()))
+            if (_exprsContainingUnresolvedAccess->get(node->getLocalIndex()))
                {
                if (unresolvedAccessesKilled)
                   {
@@ -5128,7 +5128,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
             // Similar logic as above for array bound check and array access
             //
-            if (_exprsContainingArrayAccess->get(node->getSideTableIndex()))
+            if (_exprsContainingArrayAccess->get(node->getLocalIndex()))
                {
                if (arrayAccessesKilled)
                   {
@@ -5143,7 +5143,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
 
             // Similar logic as above for div check and division expression
             //
-            if (_exprsContainingDivide->get(node->getSideTableIndex()))
+            if (_exprsContainingDivide->get(node->getLocalIndex()))
                {
                if (dividesKilled)
                   {
@@ -5333,13 +5333,13 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          // ACCESSKilled flags (which are really used to limit which expressions can stay
          // in the out list for this block eventually)
          //
-         if (_exprsContainingIndirectAccess->get(listElem->getData()->getSideTableIndex()) && optimalIndirectAccessesKilled)
+         if (_exprsContainingIndirectAccess->get(listElem->getData()->getLocalIndex()) && optimalIndirectAccessesKilled)
             canPlaceOptimally = false;
-         else if (_exprsContainingArrayAccess->get(listElem->getData()->getSideTableIndex()) && optimalArrayAccessesKilled)
+         else if (_exprsContainingArrayAccess->get(listElem->getData()->getLocalIndex()) && optimalArrayAccessesKilled)
             canPlaceOptimally = false;
-         else if (_exprsContainingDivide->get(listElem->getData()->getSideTableIndex()) && optimalDividesKilled)
+         else if (_exprsContainingDivide->get(listElem->getData()->getLocalIndex()) && optimalDividesKilled)
             canPlaceOptimally = false;
-         else if (_exprsContainingUnresolvedAccess->get(listElem->getData()->getSideTableIndex()) && optimalUnresolvedAccessesKilled)
+         else if (_exprsContainingUnresolvedAccess->get(listElem->getData()->getLocalIndex()) && optimalUnresolvedAccessesKilled)
             canPlaceOptimally = false;
 
          if (checkElement)
@@ -5426,11 +5426,11 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          // Actually add this expression into the optimal list for this block
          // in the correct order
          //
-         if (canPlaceOptimally && !_actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+         if (canPlaceOptimally && !_actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             _tryAnotherIteration = true;
             if (trace())
-               traceMsg(comp(), "IN ORDER Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getSideTableIndex(), listElem->getData(), listElem, blockNum);
+               traceMsg(comp(), "IN ORDER Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getLocalIndex(), listElem->getData(), listElem, blockNum);
 
             if (checkElement)
                {
@@ -5513,7 +5513,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
                   }
                }
 
-            _actualOptSetInfo[blockNum]->set(listElem->getData()->getSideTableIndex());
+            _actualOptSetInfo[blockNum]->set(listElem->getData()->getLocalIndex());
 
             if (!_orderedOptList[blockNum])
                _orderedOptList[blockNum] = new (trStackMemory())TR_ScratchList<TR::Node>(trMemory());
@@ -5579,10 +5579,10 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       TR::ILOpCode &opCode = listElem->getData()->getOpCode();
       bool checkKilledByChild = false;
       bool genExprThatIsKilled = false;
-      if (_killedGenExprs[blockNum]->get(listElem->getData()->getSideTableIndex()))
+      if (_killedGenExprs[blockNum]->get(listElem->getData()->getLocalIndex()))
          genExprThatIsKilled = true;
 
-      if (_exprsContainingIndirectAccess->get(listElem->getData()->getSideTableIndex()))
+      if (_exprsContainingIndirectAccess->get(listElem->getData()->getLocalIndex()))
          {
          if (indirectAccessesKilledByOptList ||
              genExprThatIsKilled)
@@ -5599,7 +5599,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          }
 
 
-      if (_exprsContainingUnresolvedAccess->get(listElem->getData()->getSideTableIndex()))
+      if (_exprsContainingUnresolvedAccess->get(listElem->getData()->getLocalIndex()))
          {
          if (unresolvedAccessesKilledByOptList ||
              genExprThatIsKilled)
@@ -5616,7 +5616,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          }
 
 
-      if (_exprsContainingArrayAccess->get(listElem->getData()->getSideTableIndex()))
+      if (_exprsContainingArrayAccess->get(listElem->getData()->getLocalIndex()))
          {
          if (arrayAccessesKilledByOptList ||
              genExprThatIsKilled)
@@ -5632,7 +5632,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
             }
          }
 
-      if (_exprsContainingDivide->get(listElem->getData()->getSideTableIndex()))
+      if (_exprsContainingDivide->get(listElem->getData()->getLocalIndex()))
          {
          if (dividesKilledByOptList ||
              genExprThatIsKilled)
@@ -5649,7 +5649,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       if (opCode.getOpCodeValue() == TR::NULLCHK)
          {
          if (nullCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             boundCheckKilledByOptList = true;
@@ -5673,7 +5673,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
             }
 
          if (nodeKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             boundCheckKilledByOptList = true;
@@ -5695,7 +5695,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       else if (opCode.isBndCheck() || opCode.isSpineCheck())
          {
          if (boundCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             nullCheckKilledByOptList = true;
@@ -5710,7 +5710,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       else if (opCode.getOpCodeValue() == TR::DIVCHK)
          {
          if (divCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             nullCheckKilledByOptList = true;
@@ -5727,7 +5727,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       else if (opCode.getOpCodeValue() == TR::ArrayStoreCHK)
          {
          if (arrayStoreCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             nullCheckKilledByOptList = true;
@@ -5741,7 +5741,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
       else if (opCode.getOpCodeValue() == TR::ArrayCHK)
          {
          if (arrayStoreCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             nullCheckKilledByOptList = true;
@@ -5756,7 +5756,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          {
    bool alreadyRemoved = false;
          if (checkCastKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-             _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+             _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
             {
             removeFromList(listElem, _blockInfo[blockNum], prevElem);
             nullCheckKilledByOptList = true;
@@ -5772,7 +5772,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          if (opCode.getOpCodeValue() == TR::checkcastAndNULLCHK)
       {
             if (nullCheckKilledByOptList || checkKilledByChild || genExprThatIsKilled ||
-                _actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))
+                _actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))
                {
          if (!alreadyRemoved)
       {
@@ -5818,7 +5818,7 @@ bool TR_ExceptionCheckMotion::analyzeBlockStructure(TR_BlockStructure *blockStru
          TR::Node *listNode;
          for (listNode = genListIt.getFirst(); listNode != NULL;)
             {
-            traceMsg(comp(), " ,%d ", listNode->getSideTableIndex());
+            traceMsg(comp(), " ,%d ", listNode->getLocalIndex());
             listNode = genListIt.getNext();
             }
          traceMsg(comp(), "\n");
@@ -5837,7 +5837,7 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSomehowSurvive(TR::Node *node, Conta
       return true;
       }
 
-   if (!_exprsUnaffectedByOrder->get(node->getSideTableIndex()))
+   if (!_exprsUnaffectedByOrder->get(node->getLocalIndex()))
       {
       TR::ILOpCode &opCode = node->getOpCode();
 
@@ -5882,7 +5882,7 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSomehowSurvive(TR::Node *node, Conta
          break;
          }
       /*
-      else if (!_exprsUnaffectedByOrder->get(node->getSideTableIndex()))
+      else if (!_exprsUnaffectedByOrder->get(node->getLocalIndex()))
          {
          if (!checkIfNodeCanSurvive(child, nodesThatSurvive))
             {
@@ -5901,7 +5901,7 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSomehowSurvive(TR::Node *node, Conta
    if ((allChildrenSurvive) &&
        (node->getNumChildren() > 0))
       {
-      nodesThatSurvive->set(node->getSideTableIndex());
+      nodesThatSurvive->set(node->getLocalIndex());
       }
 
    return allChildrenSurvive;
@@ -5911,7 +5911,7 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSomehowSurvive(TR::Node *node, Conta
 
 bool TR_ExceptionCheckMotion::checkIfNodeCanSurvive(TR::Node *node, ContainerType *nodesThatSurvive)
    {
-   if ((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0))
+   if ((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0))
       {
       //
       //Survival cannot guaranteed when divisor is 0;
@@ -5922,7 +5922,7 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSurvive(TR::Node *node, ContainerTyp
            node->getOpCode().isRem()) &&
            isNodeValueZero(node->getSecondChild()))
          return false;
-      else if (nodesThatSurvive->get(node->getSideTableIndex()))
+      else if (nodesThatSurvive->get(node->getLocalIndex()))
          {
          return true;
          }
@@ -5946,9 +5946,9 @@ bool TR_ExceptionCheckMotion::checkIfNodeCanSurvive(TR::Node *node, ContainerTyp
 
 void TR_ExceptionCheckMotion::markNodeAsSurvivor(TR::Node *node, ContainerType *nodesThatSurvive)
    {
-   if ((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0))
+   if ((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0))
       {
-      nodesThatSurvive->set(node->getSideTableIndex());
+      nodesThatSurvive->set(node->getLocalIndex());
       }
    }
 
@@ -6260,23 +6260,23 @@ bool TR_RedundantExpressionAdjustment::analyzeBlockStructure(TR_BlockStructure *
          // blocks where this expression is redundant
          //
          if (trace())
-               traceMsg(comp(), "CONSIDERING Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getSideTableIndex(), listElem->getData(), listElem, blockNum);
-         if (/*_optSetHelper->get(listElem->getData()->getSideTableIndex()) || */
-             ((optimisticRednSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex())) &&
-             (!_currentInSetInfo->get(listElem->getData()->getSideTableIndex())) &&
-             (!actualOptSetInfo[blockNum]->get(listElem->getData()->getSideTableIndex()))))
+               traceMsg(comp(), "CONSIDERING Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getLocalIndex(), listElem->getData(), listElem, blockNum);
+         if (/*_optSetHelper->get(listElem->getData()->getLocalIndex()) || */
+             ((optimisticRednSetInfo[blockNum]->get(listElem->getData()->getLocalIndex())) &&
+             (!_currentInSetInfo->get(listElem->getData()->getLocalIndex())) &&
+             (!actualOptSetInfo[blockNum]->get(listElem->getData()->getLocalIndex()))))
             {
             if (trace())
-               traceMsg(comp(), "IN ORDER Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getSideTableIndex(), listElem->getData(), listElem, blockNum);
+               traceMsg(comp(), "IN ORDER Expr %d (representative) Node %p (listElem %p) in Block : %d\n", listElem->getData()->getLocalIndex(), listElem->getData(), listElem, blockNum);
 
-            actualOptSetInfo[blockNum]->set(listElem->getData()->getSideTableIndex());
-            _regularGenSetInfo[blockNum]->set(listElem->getData()->getSideTableIndex());
-            _exceptionGenSetInfo[blockNum]->set(listElem->getData()->getSideTableIndex());
-            _optSetHelper->reset(listElem->getData()->getSideTableIndex());
+            actualOptSetInfo[blockNum]->set(listElem->getData()->getLocalIndex());
+            _regularGenSetInfo[blockNum]->set(listElem->getData()->getLocalIndex());
+            _exceptionGenSetInfo[blockNum]->set(listElem->getData()->getLocalIndex());
+            _optSetHelper->reset(listElem->getData()->getLocalIndex());
 
             if (trace())
-               traceMsg(comp(), "Affected by order <%d> will be at index %d\n", listElem->getData()->getSideTableIndex(), j);
-            orderedOptNumbersList[blockNum][j++] = listElem->getData()->getSideTableIndex();
+               traceMsg(comp(), "Affected by order <%d> will be at index %d\n", listElem->getData()->getLocalIndex(), j);
+            orderedOptNumbersList[blockNum][j++] = listElem->getData()->getLocalIndex();
             }
 
          if ((prevElem && (prevElem->getNextElement() == listElem)) || (genSetInfo[blockNum]->getListHead() == listElem))
@@ -6338,7 +6338,7 @@ bool TR_RedundantExpressionAdjustment::analyzeBlockStructure(TR_BlockStructure *
           (branch->getSecondChild()->getAddress() == 0))
          {
          TR::Node *nullCheckReference = branch->getFirstChild();
-         scount_t nullCheckReferenceIndex = nullCheckReference->getSideTableIndex();
+         scount_t nullCheckReferenceIndex = nullCheckReference->getLocalIndex();
          if (((nullCheckReferenceIndex != MAX_SCOUNT) && (nullCheckReferenceIndex != 0)))
             {
             if (_regularInfo->get(nullCheckReferenceIndex))
@@ -6351,7 +6351,7 @@ bool TR_RedundantExpressionAdjustment::analyzeBlockStructure(TR_BlockStructure *
                   TR::Node *nextOptimalNode = supportedNodesAsArray[j];
                   if (nextOptimalNode->getOpCodeValue() == TR::NULLCHK)
                      {
-                     if (nextOptimalNode->getNullCheckReference()->getSideTableIndex() == nullCheckReferenceIndex)
+                     if (nextOptimalNode->getNullCheckReference()->getLocalIndex() == nullCheckReferenceIndex)
                         {
                         nullCheckNumber = j;
                         if (branch->getOpCodeValue() == TR::ifacmpne)

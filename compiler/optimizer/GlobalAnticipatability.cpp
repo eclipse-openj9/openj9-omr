@@ -173,7 +173,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
       TR::Node *firstChild = nextNode->getFirstChild();
       if (lastNodeFirstChild)
          {
-         if (lastNodeFirstChild->getFirstChild()->getSideTableIndex() == firstChild->getSideTableIndex())
+         if (lastNodeFirstChild->getFirstChild()->getLocalIndex() == firstChild->getLocalIndex())
             {
             similarOffset = lastNodeFirstChild->getSymbolReference()->getOffset();
             seenSimilarAccess = true;
@@ -182,7 +182,7 @@ static bool nodeCanSurvive(TR::Node *nextNode, TR::Node *lastNodeFirstChild, TR:
 
       if (lastNodeSecondChild)
          {
-         if (lastNodeSecondChild->getFirstChild()->getSideTableIndex() == firstChild->getSideTableIndex())
+         if (lastNodeSecondChild->getFirstChild()->getLocalIndex() == firstChild->getLocalIndex())
             {
             if (similarOffset < lastNodeSecondChild->getSymbolReference()->getOffset())
                similarOffset = lastNodeSecondChild->getSymbolReference()->getOffset();
@@ -249,8 +249,8 @@ bool TR_GlobalAnticipatability::isExceptionalInBlock(TR::Node * node, int32_t bl
          }
       }
 
-   if (node->getSideTableIndex() != -1 &&
-       alreadyInBlock->get(node->getSideTableIndex()))
+   if (node->getLocalIndex() != -1 &&
+       alreadyInBlock->get(node->getLocalIndex()))
       return false;
 
    if (isExceptional(comp(), node))

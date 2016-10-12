@@ -100,7 +100,7 @@ class TR_VirtualGuardTailSplitter : public TR::Optimization
 
       VGInfo *getParent() { return _parent; }
 
-      scount_t getIndex() { return _branch->getLastRealTreeTop()->getNode()->getSideTableIndex(); }
+      scount_t getIndex() { return _branch->getLastRealTreeTop()->getNode()->getLocalIndex(); }
       uint32_t getNumber() { return _branch->getNumber(); }
 
       private:
@@ -146,7 +146,7 @@ class TR_VirtualGuardTailSplitter : public TR::Optimization
    vcount_t  _visitCount;
    VGInfo *getGuard(uint32_t index)   { return index == MALFORMED_GUARD ? NULL : _table[index]; }
    VGInfo *getGuard(TR::Block *branch) { return getGuard(branch->getLastRealTreeTop()->getNode()); }
-   VGInfo *getGuard(TR::Node  *branch) { return getGuard(branch->getSideTableIndex()); }
+   VGInfo *getGuard(TR::Node  *branch) { return getGuard(branch->getLocalIndex()); }
    void    putGuard(uint32_t index, VGInfo *info);
    VGInfo **_table;
    bool _splitDone;

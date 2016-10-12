@@ -76,7 +76,7 @@ OMR::Symbol::Symbol(TR::DataType d) :
    _name(0),
    _flags(0),
    _flags2(0),
-   _sideTableIndex(0),
+   _localIndex(0),
    _restrictedRegisterNumber(-1)
    {
    self()->setDataType(d);
@@ -86,7 +86,7 @@ OMR::Symbol::Symbol(TR::DataType d, uint32_t size) :
    _name(0),
    _flags(0),
    _flags2(0),
-   _sideTableIndex(0),
+   _localIndex(0),
    _restrictedRegisterNumber(-1)
    {
    self()->setDataType(d);

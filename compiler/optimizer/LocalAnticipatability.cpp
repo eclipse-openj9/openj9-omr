@@ -176,7 +176,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
          if (currentTree->getNode()->getFirstChild()->getOpCode().isStore())
             {
             _isStoreTree = true;
-            if (currentTree->getNode()->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+            if (currentTree->getNode()->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
                storeTreeParticipatesInAnalysis = false;
             storeSymRef = currentTree->getNode()->getFirstChild()->getSymbolReference();
             storeSymRefNode = currentTree->getNode()->getFirstChild();
@@ -188,7 +188,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
          _checkTree = currentTree;
          if (currentTree->getNode()->getFirstChild()->getOpCode().isStore())
             {
-            if (currentTree->getNode()->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+            if (currentTree->getNode()->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
                storeTreeParticipatesInAnalysis = false;
             _isStoreTree = true;
             storeSymRef = currentTree->getNode()->getFirstChild()->getSymbolReference();
@@ -202,7 +202,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
          if (currentTree->getNode()->getFirstChild()->getOpCode().isStore())
             {
             _isStoreTree = true;
-             if (currentTree->getNode()->getFirstChild()->getSideTableIndex() == MAX_SCOUNT)
+             if (currentTree->getNode()->getFirstChild()->getLocalIndex() == MAX_SCOUNT)
              storeTreeParticipatesInAnalysis = false;
              storeSymRef = currentTree->getNode()->getFirstChild()->getSymbolReference();
              storeSymRefNode = currentTree->getNode()->getFirstChild();
@@ -212,7 +212,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
       else if (firstOpCodeInTree.isStore())
          {
          _isStoreTree = true;
-         if (currentTree->getNode()->getSideTableIndex() == MAX_SCOUNT)
+         if (currentTree->getNode()->getLocalIndex() == MAX_SCOUNT)
             storeTreeParticipatesInAnalysis = false;
          storeSymRef = currentTree->getNode()->getSymbolReference();
          storeSymRefNode = currentTree->getNode();
@@ -268,7 +268,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                if (!tempContainer->isEmpty())
                   {
                   if (storeTreeParticipatesInAnalysis &&
-                      !storeNodes->get(node->getSideTableIndex()))
+                      !storeNodes->get(node->getLocalIndex()))
                       isCurrentTreeTopAnticipatable = false;
                   }
                }
@@ -287,42 +287,42 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
             {
              bool downwardExposed = true;
              if (node->getOpCode().isIndirect() &&
-                 ((node->getFirstChild()->getSideTableIndex() != MAX_SCOUNT && node->getFirstChild()->getSideTableIndex() != 0) &&
-                   ((_downwardExposedBeforeButNotAnymore->get(node->getFirstChild()->getSideTableIndex()) &&
+                 ((node->getFirstChild()->getLocalIndex() != MAX_SCOUNT && node->getFirstChild()->getLocalIndex() != 0) &&
+                   ((_downwardExposedBeforeButNotAnymore->get(node->getFirstChild()->getLocalIndex()) &&
                      _visitedNodes->get(node->getFirstChild()->getGlobalIndex())) ||
-                    !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getFirstChild()->getSideTableIndex()))))
+                    !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getFirstChild()->getLocalIndex()))))
                 downwardExposed = false;
 
             if (downwardExposed)
                {
-               _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getSideTableIndex());
+               _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Store Definition #%d is computed in block_%d\n",node->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Store Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
 
-               _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getSideTableIndex());
+               _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
                }
             }
 
          if (isCurrentTreeTopAnticipatable)
             {
-            if (!killedExpressions->get(node->getSideTableIndex()) ||
+            if (!killedExpressions->get(node->getLocalIndex()) ||
                 // if store appears in the block and is in its localTransparency set,
                 // it has to be locally anticipatable.
-                _localTransparency->getAnalysisInfo(block->getNumber())->get(node->getSideTableIndex()))
+                _localTransparency->getAnalysisInfo(block->getNumber())->get(node->getLocalIndex()))
                {
-               _info[block->getNumber()]._analysisInfo->set(node->getSideTableIndex());
+               _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
                if (trace())
-                   traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",node->getSideTableIndex(),block->getNumber());
+                   traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
                }
             }
          else if (storeTreeParticipatesInAnalysis)
             {
-            _info[block->getNumber()]._analysisInfo->reset(node->getSideTableIndex());
-            killedExpressions->set(node->getSideTableIndex());
+            _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
+            killedExpressions->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",node->getSideTableIndex(),block->getNumber());
+               traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
             }
 
          // Above we updated anticipatability info for the store; now we will
@@ -345,7 +345,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                }
 
             TR::Node *nullCheckReference = treeTopNode->getNullCheckReference();
-            if ((nullCheckReference->getSideTableIndex() != MAX_SCOUNT) && (nullCheckReference->getSideTableIndex() != 0))
+            if ((nullCheckReference->getLocalIndex() != MAX_SCOUNT) && (nullCheckReference->getLocalIndex() != 0))
                {
                tempContainer->empty();
                *tempContainer |= *seenStoredSymbolReferences;
@@ -353,11 +353,11 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                *tempContainer &= *allSymbolReferencesInNullCheckReference;
                if (!tempContainer->isEmpty())
                   {
-                  if (!storeNodes->get(nullCheckReference->getSideTableIndex()))
+                  if (!storeNodes->get(nullCheckReference->getLocalIndex()))
                      isCurrentTreeTopAnticipatable = false;
                   }
 
-               if (killedExpressions->get(nullCheckReference->getSideTableIndex()))
+               if (killedExpressions->get(nullCheckReference->getLocalIndex()))
                   isCurrentTreeTopAnticipatable = false;
                }
             else
@@ -367,34 +367,34 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                }
 
             bool downwardExposed = true;
-            if (((nullCheckReference->getSideTableIndex() != MAX_SCOUNT) && (nullCheckReference->getSideTableIndex() != 0)) &&
-                ((_downwardExposedBeforeButNotAnymore->get(nullCheckReference->getSideTableIndex()) && _visitedNodes->get(nullCheckReference->getGlobalIndex())) ||
-                 _notDownwardExposed->get(nullCheckReference->getSideTableIndex()) ||
-                 !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(nullCheckReference->getSideTableIndex())))
+            if (((nullCheckReference->getLocalIndex() != MAX_SCOUNT) && (nullCheckReference->getLocalIndex() != 0)) &&
+                ((_downwardExposedBeforeButNotAnymore->get(nullCheckReference->getLocalIndex()) && _visitedNodes->get(nullCheckReference->getGlobalIndex())) ||
+                 _notDownwardExposed->get(nullCheckReference->getLocalIndex()) ||
+                 !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(nullCheckReference->getLocalIndex())))
                downwardExposed = false;
 
-            if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(treeTopNode->getSideTableIndex()) && !_notDownwardExposed->get(node->getSideTableIndex()))
+            if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(treeTopNode->getLocalIndex()) && !_notDownwardExposed->get(node->getLocalIndex()))
                {
-               _info[block->getNumber()]._downwardExposedAnalysisInfo->set(treeTopNode->getSideTableIndex());
+               _info[block->getNumber()]._downwardExposedAnalysisInfo->set(treeTopNode->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d is computed in block_%d\n",node->getLocalIndex(),block->getNumber());
                }
 
             if (isCurrentTreeTopAnticipatable)
                {
-               if (!killedExpressions->get(treeTopNode->getSideTableIndex()))
+               if (!killedExpressions->get(treeTopNode->getLocalIndex()))
                   {
-                  _info[block->getNumber()]._analysisInfo->set(treeTopNode->getSideTableIndex());
+                  _info[block->getNumber()]._analysisInfo->set(treeTopNode->getLocalIndex());
                   if (trace())
-                     traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",treeTopNode->getSideTableIndex(),block->getNumber());
+                     traceMsg(comp(), "\n11Definition #%d is locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(),block->getNumber());
                   }
                }
             else
                {
-               killedExpressions->set(treeTopNode->getSideTableIndex());
-               _info[block->getNumber()]._analysisInfo->reset(treeTopNode->getSideTableIndex());
+               killedExpressions->set(treeTopNode->getLocalIndex());
+               _info[block->getNumber()]._analysisInfo->reset(treeTopNode->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",treeTopNode->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n11Definition #%d is NOT locally anticipatable in block_%d\n",treeTopNode->getLocalIndex(),block->getNumber());
                }
             }
          }
@@ -412,7 +412,7 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
          //
          bool isCurrentTreeTopAnticipatable = true;
 
-         //dumpOptDetails(comp(), "\nFor Check Node %p with side table index %d\n", node, node->getSideTableIndex());
+         //dumpOptDetails(comp(), "\nFor Check Node %p with local index %d\n", node, node->getLocalIndex());
          tempContainer->empty();
          *tempContainer |= *seenDefinedSymbolReferences;
          *tempContainer -= *_seenCallSymbolReferences;
@@ -428,9 +428,9 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                for (childNum=0; childNum < node->getNumChildren(); childNum++)
                   {
                   TR::Node *child = node->getChild(childNum);
-                  if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0))
+                  if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0))
                      {
-                     if (killedExpressions->get(child->getSideTableIndex()))
+                     if (killedExpressions->get(child->getLocalIndex()))
                         {
                         isCurrentTreeTopAnticipatable = false;
                         break;
@@ -450,9 +450,9 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
             else
                {
                TR::Node *nullCheckReference = node->getNullCheckReference();
-               if ((nullCheckReference->getSideTableIndex() != MAX_SCOUNT) && (nullCheckReference->getSideTableIndex() != 0))
+               if ((nullCheckReference->getLocalIndex() != MAX_SCOUNT) && (nullCheckReference->getLocalIndex() != 0))
                    {
-                   if (killedExpressions->get(nullCheckReference->getSideTableIndex()))
+                   if (killedExpressions->get(nullCheckReference->getLocalIndex()))
                       isCurrentTreeTopAnticipatable = false;
                    }
                 else if (!nullCheckReference->getOpCode().isLoadConst())
@@ -469,11 +469,11 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
                {
                TR::Node *child = node->getChild(childNum);
                bool childIsDownwardExposed = true;
-               if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0))
+               if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0))
                    {
-                   if ((_downwardExposedBeforeButNotAnymore->get(child->getSideTableIndex()) && _visitedNodes->get(child->getGlobalIndex())) ||
-                       _notDownwardExposed->get(child->getSideTableIndex()) ||
-                       !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(child->getSideTableIndex()))
+                   if ((_downwardExposedBeforeButNotAnymore->get(child->getLocalIndex()) && _visitedNodes->get(child->getGlobalIndex())) ||
+                       _notDownwardExposed->get(child->getLocalIndex()) ||
+                       !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(child->getLocalIndex()))
                       childIsDownwardExposed = false;
                    }
 
@@ -488,35 +488,35 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
             {
             downwardExposed = true;
             TR::Node *nullCheckReference = node->getNullCheckReference();
-            if (((nullCheckReference->getSideTableIndex() != MAX_SCOUNT) && (nullCheckReference->getSideTableIndex() != 0)) &&
-                ((_downwardExposedBeforeButNotAnymore->get(nullCheckReference->getSideTableIndex()) && _visitedNodes->get(nullCheckReference->getGlobalIndex())) ||
-                 _notDownwardExposed->get(nullCheckReference->getSideTableIndex()) ||
-                 !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(nullCheckReference->getSideTableIndex())))
+            if (((nullCheckReference->getLocalIndex() != MAX_SCOUNT) && (nullCheckReference->getLocalIndex() != 0)) &&
+                ((_downwardExposedBeforeButNotAnymore->get(nullCheckReference->getLocalIndex()) && _visitedNodes->get(nullCheckReference->getGlobalIndex())) ||
+                 _notDownwardExposed->get(nullCheckReference->getLocalIndex()) ||
+                 !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(nullCheckReference->getLocalIndex())))
                downwardExposed = false;
             }
 
-         if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(node->getSideTableIndex()) && !_notDownwardExposed->get(node->getSideTableIndex()))
+         if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(node->getLocalIndex()) && !_notDownwardExposed->get(node->getLocalIndex()))
             {
-            _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getSideTableIndex());
+            _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n11Definition #%d is seen in block_%d\n",node->getSideTableIndex(),block->getNumber());
+               traceMsg(comp(), "\n11Definition #%d is seen in block_%d\n",node->getLocalIndex(),block->getNumber());
             }
 
          if (isCurrentTreeTopAnticipatable)
             {
-            if (!killedExpressions->get(node->getSideTableIndex()))
+            if (!killedExpressions->get(node->getLocalIndex()))
                {
-               _info[block->getNumber()]._analysisInfo->set(node->getSideTableIndex());
+               _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
                if (trace())
-                  traceMsg(comp(), "\n22Definition #%d is locally anticipatable in block_%d\n",node->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n22Definition #%d is locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
                }
             }
          else
             {
             if (trace())
-               traceMsg(comp(), "\n22Definition #%d is NOT locally anticipatable in block_%d\n",node->getSideTableIndex(),block->getNumber());
-            killedExpressions->set(node->getSideTableIndex());
-            _info[block->getNumber()]._analysisInfo->reset(node->getSideTableIndex());
+               traceMsg(comp(), "\n22Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+            killedExpressions->set(node->getLocalIndex());
+            _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             }
          }
 
@@ -536,23 +536,23 @@ void TR_LocalAnticipatability::analyzeBlock(TR::Block *block, vcount_t visitCoun
    while (i < getNumNodes())
       {
       TR::Node *node = supportedNodesAsArray[i];
-      if (node && _info[block->getNumber()]._analysisInfo->get(node->getSideTableIndex()))
+      if (node && _info[block->getNumber()]._analysisInfo->get(node->getLocalIndex()))
          {
          int32_t numChildren = node->getNumChildren();
          int32_t j = 0;
          while (j < numChildren)
 	        {
 	        TR::Node *child = node->getChild(j);
-	        if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0))
+	        if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0))
  	           {
-	           if (killedExpressions->get(child->getSideTableIndex()) &&
+	           if (killedExpressions->get(child->getLocalIndex()) &&
                    // see comment about localTransparency above
-                   !_localTransparency->getAnalysisInfo(block->getNumber())->get(node->getSideTableIndex()))
+                   !_localTransparency->getAnalysisInfo(block->getNumber())->get(node->getLocalIndex()))
                   {
                   if (trace())
-                     traceMsg(comp(), "\n55Definition #%d is NOT locally anticipatable in block_%d\n",node->getSideTableIndex(),block->getNumber());
-                  killedExpressions->set(node->getSideTableIndex());
-                  _info[block->getNumber()]._analysisInfo->reset(node->getSideTableIndex());
+                     traceMsg(comp(), "\n55Definition #%d is NOT locally anticipatable in block_%d\n",node->getLocalIndex(),block->getNumber());
+                  killedExpressions->set(node->getLocalIndex());
+                  _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
                   break;
    	              }
                }
@@ -572,7 +572,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
 
    if (visitCount <= node->getVisitCount())
       {
-      if ((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0) &&
+      if ((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0) &&
           !(opCode.isStore() || opCode.isCheck()))
          {
          if (opCode.hasSymbolReference()  &&
@@ -582,7 +582,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
                return false;
             }
 
-         if (!_info[block->getNumber()]._analysisInfo->get(node->getSideTableIndex()))
+         if (!_info[block->getNumber()]._analysisInfo->get(node->getLocalIndex()))
             return false;
          }
       else
@@ -689,7 +689,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
       }
 
    bool flagToBeReturned = true;
-   if ((node->getSideTableIndex() != MAX_SCOUNT) && (node->getSideTableIndex() != 0) &&
+   if ((node->getLocalIndex() != MAX_SCOUNT) && (node->getLocalIndex() != 0) &&
        !(opCode.isStore() || opCode.isCheck()))
       {
       bool isCurrentTreeTopAnticipatable = true;
@@ -702,7 +702,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
 
          if (seenStoredSymbolReferences->get(node->getSymbolReference()->getReferenceNumber()))
              {
-             if (!storeNodes->get(node->getSideTableIndex()))
+             if (!storeNodes->get(node->getLocalIndex()))
                 isCurrentTreeTopAnticipatable = false;
              flagToBeReturned = false;
              }
@@ -714,11 +714,11 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
          {
          TR::Node *child = node->getChild(childNum);
          bool childIsDownwardExposed = true;
-         if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0))
+         if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0))
             {
-            if ((_downwardExposedBeforeButNotAnymore->get(child->getSideTableIndex()) && _visitedNodes->get(child->getGlobalIndex())) ||
-                _notDownwardExposed->get(child->getSideTableIndex()) ||
-                !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(child->getSideTableIndex()))
+            if ((_downwardExposedBeforeButNotAnymore->get(child->getLocalIndex()) && _visitedNodes->get(child->getGlobalIndex())) ||
+                _notDownwardExposed->get(child->getLocalIndex()) ||
+                !_info[block->getNumber()]._downwardExposedAnalysisInfo->get(child->getLocalIndex()))
                 childIsDownwardExposed = false;
             }
 
@@ -729,36 +729,36 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
             }
          }
 
-      if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(node->getSideTableIndex()) && !_notDownwardExposed->get(node->getSideTableIndex()))
+      if (downwardExposed && !_downwardExposedBeforeButNotAnymore->get(node->getLocalIndex()) && !_notDownwardExposed->get(node->getLocalIndex()))
          {
-         _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getSideTableIndex());
+         _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "\n33Definition #%d is seen in block_%d\n",node->getSideTableIndex(),block->getNumber());
+            traceMsg(comp(), "\n33Definition #%d is seen in block_%d\n",node->getLocalIndex(),block->getNumber());
          }
 
       if (isCurrentTreeTopAnticipatable)
          {
-         if ((!killedExpressions->get(node->getSideTableIndex())) && flag)
+         if ((!killedExpressions->get(node->getLocalIndex())) && flag)
             {
-            _info[block->getNumber()]._analysisInfo->set(node->getSideTableIndex());
+            _info[block->getNumber()]._analysisInfo->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n33Definition #%d is locally anticipatable in block_%d\n", node->getSideTableIndex(),block->getNumber());
+               traceMsg(comp(), "\n33Definition #%d is locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
             }
          else if (!flag)
             {
-            killedExpressions->set(node->getSideTableIndex());
+            killedExpressions->set(node->getLocalIndex());
             if (trace())
-               traceMsg(comp(), "\n330Definition #%d is NOT locally anticipatable in block_%d\n", node->getSideTableIndex(),block->getNumber());
-            _info[block->getNumber()]._analysisInfo->reset(node->getSideTableIndex());
+               traceMsg(comp(), "\n330Definition #%d is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+            _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
             }
          }
       else
          {
          flag = false;
-         killedExpressions->set(node->getSideTableIndex());
+         killedExpressions->set(node->getLocalIndex());
          if (trace())
-            traceMsg(comp(), "\n331Definition #%d is NOT locally anticipatable in block_%d\n", node->getSideTableIndex(),block->getNumber());
-         _info[block->getNumber()]._analysisInfo->reset(node->getSideTableIndex());
+            traceMsg(comp(), "\n331Definition #%d is NOT locally anticipatable in block_%d\n", node->getLocalIndex(),block->getNumber());
+         _info[block->getNumber()]._analysisInfo->reset(node->getLocalIndex());
          }
       }
    else
@@ -772,7 +772,7 @@ bool TR_LocalAnticipatability::updateAnticipatabilityForSupportedNodes(TR::Node 
                 return false;
             if (seenStoredSymbolReferences->get(node->getSymbolReference()->getReferenceNumber()))
                {
-               if (!storeNodes->get(node->getSideTableIndex()))
+               if (!storeNodes->get(node->getLocalIndex()))
                   return false;
                flagToBeReturned = false;
                }
@@ -806,19 +806,19 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
 
    TR::ILOpCode &childOpCode = child->getOpCode();
 
-   if ((child->getSideTableIndex() != MAX_SCOUNT) && (child->getSideTableIndex() != 0) &&
+   if ((child->getLocalIndex() != MAX_SCOUNT) && (child->getLocalIndex() != 0) &&
        !(childOpCode.isStore() || childOpCode.isCheck()))
       childHasSupportedOpCode = true;
 
    if (childHasSupportedOpCode)
       {
-      if (killedExpressions->get(child->getSideTableIndex()))
+      if (killedExpressions->get(child->getLocalIndex()))
          {
          if (trace())
             (TR::Compiler->target.is64Bit()
              ) ?
-               traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getSideTableIndex(),block->getNumber())
-               : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getSideTableIndex(),block->getNumber());
+               traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
+               : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
          return false;
          }
       }
@@ -831,15 +831,15 @@ bool TR_LocalAnticipatability::adjustInfoForAddressAdd(TR::Node *node, TR::Node 
             {
             if (seenDefinedSymbolReferences->get(child->getSymbolReference()->getReferenceNumber()) ||
                 (seenStoredSymbolReferences->get(child->getSymbolReference()->getReferenceNumber()) &&
-                 ((child->getSideTableIndex() == MAX_SCOUNT) ||
-                  (child->getSideTableIndex() == 0) ||
-                  !storeNodes->get(child->getSideTableIndex()))))
+                 ((child->getLocalIndex() == MAX_SCOUNT) ||
+                  (child->getLocalIndex() == 0) ||
+                  !storeNodes->get(child->getLocalIndex()))))
                {
                if (trace())
                   (TR::Compiler->target.is64Bit()
                    ) ?
-                  traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getSideTableIndex(),block->getNumber())
-                  : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getSideTableIndex(),block->getNumber());
+                  traceMsg(comp(), "\n330Definition #%d (aladd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber())
+                  : traceMsg(comp(), "\n330Definition #%d (aiadd) is NOT locally anticipatable in block_%d because of child\n", node->getLocalIndex(),block->getNumber());
                return false;
                }
             }
@@ -939,13 +939,13 @@ void TR_LocalAnticipatability::updateUsesAndDefs(TR::Node *node, TR::Block *bloc
                {
                if (!seenStoredSymbolReferences->get(symReference->getReferenceNumber()))
                   {
-                  if (node->getSideTableIndex() != MAX_SCOUNT)
-                     storeNodes->set(node->getSideTableIndex());
+                  if (node->getLocalIndex() != MAX_SCOUNT)
+                     storeNodes->set(node->getLocalIndex());
                   seenStoredSymbolReferences->set(symReference->getReferenceNumber());
                   }
                else
                   {
-                  if (!storeNodes->get(node->getSideTableIndex()))
+                  if (!storeNodes->get(node->getLocalIndex()))
                      seenDefinedSymbolReferences->set(symReference->getReferenceNumber());
                   }
 
@@ -967,7 +967,7 @@ void TR_LocalAnticipatability::updateUsesAndDefs(TR::Node *node, TR::Block *bloc
                }
             else
                {
-               storeNodes->set(node->getSideTableIndex());
+               storeNodes->set(node->getLocalIndex());
                seenStoredSymbolReferences->set(symReference->getReferenceNumber());
                killDownwardExposedExprs(block, node);
                }
@@ -986,12 +986,12 @@ void TR_LocalAnticipatability::killDownwardExposedExprs(TR::Block *block, Contai
    ContainerType::Cursor iter(*tempContainer);
    bool nodeBitShouldBeOn = false;
    bool storeNodeBitShouldBeOn = false;
-   if (node && (node->getSideTableIndex() != MAX_SCOUNT))
+   if (node && (node->getLocalIndex() != MAX_SCOUNT))
       {
-      if (_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getSideTableIndex()))
+      if (_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getLocalIndex()))
          nodeBitShouldBeOn = true;
 
-      if (_info[block->getNumber()]._downwardExposedStoreAnalysisInfo->get(node->getSideTableIndex()))
+      if (_info[block->getNumber()]._downwardExposedStoreAnalysisInfo->get(node->getLocalIndex()))
          storeNodeBitShouldBeOn = true;
       }
 
@@ -1006,10 +1006,10 @@ void TR_LocalAnticipatability::killDownwardExposedExprs(TR::Block *block, Contai
       }
 
    if (nodeBitShouldBeOn)
-     _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getSideTableIndex());
+     _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
 
    if (storeNodeBitShouldBeOn)
-      _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getSideTableIndex());
+      _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getLocalIndex());
 
    *_temp -= *(_info[block->getNumber()]._downwardExposedAnalysisInfo);
    *_downwardExposedBeforeButNotAnymore |= *_temp;
@@ -1021,12 +1021,12 @@ void TR_LocalAnticipatability::killDownwardExposedExprs(TR::Block *block, TR::No
    {
    bool nodeBitShouldBeOn = false;
    bool storeNodeBitShouldBeOn = false;
-   if (node && (node->getSideTableIndex() != MAX_SCOUNT))
+   if (node && (node->getLocalIndex() != MAX_SCOUNT))
       {
-      if (_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getSideTableIndex()))
+      if (_info[block->getNumber()]._downwardExposedAnalysisInfo->get(node->getLocalIndex()))
          nodeBitShouldBeOn = true;
 
-      if (_info[block->getNumber()]._downwardExposedStoreAnalysisInfo->get(node->getSideTableIndex()))
+      if (_info[block->getNumber()]._downwardExposedStoreAnalysisInfo->get(node->getLocalIndex()))
           storeNodeBitShouldBeOn = true;
       }
 
@@ -1040,10 +1040,10 @@ void TR_LocalAnticipatability::killDownwardExposedExprs(TR::Block *block, TR::No
       }
 
    if (nodeBitShouldBeOn)
-      _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getSideTableIndex());
+      _info[block->getNumber()]._downwardExposedAnalysisInfo->set(node->getLocalIndex());
 
    if (storeNodeBitShouldBeOn)
-      _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getSideTableIndex());
+      _info[block->getNumber()]._downwardExposedStoreAnalysisInfo->set(node->getLocalIndex());
 
    *_temp -= *(_info[block->getNumber()]._downwardExposedAnalysisInfo);
    *_downwardExposedBeforeButNotAnymore |= *_temp;

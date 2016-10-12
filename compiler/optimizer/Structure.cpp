@@ -2434,7 +2434,7 @@ TR_SequenceStructure::hoistInvariantsOutOfNestedLoops(
                            {
                            if (currentTree->getNode()->getOpCode().isCheck())
                               {
-                              if (currentTree->getNode()->getSideTableIndex() == nextOptimalComputation)
+                              if (currentTree->getNode()->getLocalIndex() == nextOptimalComputation)
                                  {
                                  treeToBeHoisted = currentTree;
                                  break;
@@ -2446,7 +2446,7 @@ TR_SequenceStructure::hoistInvariantsOutOfNestedLoops(
 
                               if (currentNode->getSymbolReference()->getSymbol()->isAuto())
                                  {
-                                 if (currentNode->getFirstChild()->getSideTableIndex() == nextOptimalComputation)
+                                 if (currentNode->getFirstChild()->getLocalIndex() == nextOptimalComputation)
                                     {
                                     treeToBeHoisted = currentTree;
                                     break;
@@ -2572,7 +2572,7 @@ TR_RegionStructure::hoistInvariantsOutOfNestedLoops(
                             {
                             if (currentTree->getNode()->getOpCode().isCheck())
                                {
-                               if (currentTree->getNode()->getSideTableIndex() == nextOptimalComputation)
+                               if (currentTree->getNode()->getLocalIndex() == nextOptimalComputation)
                                   {
                                   treeToBeHoisted = currentTree;
                                   break;
@@ -2584,7 +2584,7 @@ TR_RegionStructure::hoistInvariantsOutOfNestedLoops(
 
                                if (currentNode->getSymbolReference()->getSymbol()->isAuto())
                                    {
-                                  if (currentNode->getFirstChild()->getSideTableIndex() == nextOptimalComputation)
+                                  if (currentNode->getFirstChild()->getLocalIndex() == nextOptimalComputation)
                                      {
                                      treeToBeHoisted = currentTree;
                                      break;

@@ -78,7 +78,7 @@ extern int32_t addressWidth;
 void
 TR_Debug::printTopLegend(TR::FILE *pOutFile)
    {
-   //-index--|--------------------------------------node---------------------------------------|--address---|-----bci-----|-rc-|-vc-|-vn-|--sti--|-udi-|-nc-|--sa--
+   //-index--|--------------------------------------node---------------------------------------|--address---|-----bci-----|-rc-|-vc-|-vn-|--li--|-udi-|-nc-|--sa--
 
    if (pOutFile == NULL) return;
 
@@ -104,7 +104,7 @@ TR_Debug::printBottomLegend(TR::FILE *pOutFile)
    trfprintf(pOutFile,    "rc:          reference count\n"
                               "vc:          visit count\n"
                               "vn:          value number\n"
-                              "sti:         side table index\n"
+                              "li:          local index\n"
                               "udi:         use/def index\n"
                               "nc:          number of children\n"
                               "addr:        address size in bytes\n"
@@ -1558,10 +1558,10 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
    else
       output.append(" vn=-");
 
-   if ((node->hasOptAttributes()) && (node->getSideTableIndex()))
-      output.append(" sti=%d", node->getSideTableIndex());
+   if ((node->hasOptAttributes()) && (node->getLocalIndex()))
+      output.append(" li=%d", node->getLocalIndex());
    else
-      output.append(" sti=-");
+      output.append(" li=-");
 
    if (node->hasOptAttributes() && node->getUseDefIndex())
       output.append(" udi=%d", node->getUseDefIndex());
@@ -3608,7 +3608,7 @@ TR_Debug::verifyTrees(TR::ResolvedMethodSymbol *methodSymbol)
    for (tt = firstTree; tt; tt = tt->getNextTreeTop())
       {
       TR::Node * node = tt->getNode();
-      node->setSideTableIndex(0);
+      node->setLocalIndex(0);
       verifyTreesPass1(node);
       }
 
@@ -3624,7 +3624,7 @@ TR_Debug::verifyTrees(TR::ResolvedMethodSymbol *methodSymbol)
    }
 
 // Node verification. This is done in 2 passes. In pass 1 the reference count is
-// accumulated in the node's sideTableIndex. In pass 2 the reference count is checked.
+// accumulated in the node's localIndex. In pass 2 the reference count is checked.
 //
 void
 TR_Debug::verifyTreesPass1(TR::Node *node)
@@ -3642,12 +3642,12 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
          if (_nodeChecklist.isSet(child->getGlobalIndex()))
             {
             // Just inc simulated ref count
-            child->incSideTableIndex();
+            child->incLocalIndex();
             }
          else
             {
             // Initialize simulated ref count and visit it
-            child->setSideTableIndex(1);
+            child->setLocalIndex(1);
             verifyTreesPass1(child);
             }
 
@@ -3698,7 +3698,7 @@ TR_Debug::verifyTreesPass2(TR::Node *node, bool isTreeTop)
    {
    // *this    swipeable for debugging purposes
 
-   // Verify the reference count. Pass 1 should have set the sideTableIndex to the
+   // Verify the reference count. Pass 1 should have set the localIndex to the
    // reference count.
    //
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -3729,15 +3729,15 @@ TR_Debug::verifyTreesPass2(TR::Node *node, bool isTreeTop)
          TR_ASSERT( debug("fixTrees"), "Tree verification error");
          }
 
-      if (node->getReferenceCount() != node->getSideTableIndex())
+      if (node->getReferenceCount() != node->getLocalIndex())
          {
          if (getFile() != NULL)
             trfprintf(getFile(), "TREE VERIFICATION ERROR -- node [%s] ref count is %d and should be %d\n",
-                 getName(node), node->getReferenceCount(), node->getSideTableIndex());
+                 getName(node), node->getReferenceCount(), node->getLocalIndex());
          TR_ASSERT(debug("fixTrees"), "Tree verification error");
          // if there is logging, don't fix the ref count!
          if (getFile() == NULL)
-            node->setReferenceCount(node->getSideTableIndex());
+            node->setReferenceCount(node->getLocalIndex());
          }
       }
    }
@@ -3821,13 +3821,13 @@ TR_Debug::verifyBlocks(TR::ResolvedMethodSymbol * methodSymbol)
          {
          TR_ASSERT( tt, "TreeTop problem in verifyBlocks");
          TR::Node *node = tt->getNode();
-         node->setSideTableIndex(node->getReferenceCount());
+         node->setLocalIndex(node->getReferenceCount());
          verifyBlocksPass1(node);
          }
 
       _nodeChecklist.empty();
 
-      // go back to the start of the block, and check the sideTableIndex to make sure it is 0
+      // go back to the start of the block, and check the localIndex to make sure it is 0
       // do not walk the tree backwards as this causes huge stack usage in verifyBlocksPass2
       _nodeChecklist.empty();
       for (tt = firstTreeTop; tt != exitTreeTop->getNextTreeTop(); tt = tt->getNextTreeTop())
@@ -3855,12 +3855,12 @@ TR_Debug::verifyBlocksPass1(TR::Node *node)
          if (_nodeChecklist.isSet(child->getGlobalIndex()))
             {
             // If the child has already been visited, decrement its verifyRefCount.
-            child->decSideTableIndex();
+            child->decLocalIndex();
             }
          else
             {
-            // If the child has not yet been visited, set its sideTableIndex and visit it
-            child->setSideTableIndex(child->getReferenceCount() - 1);
+            // If the child has not yet been visited, set its localIndex and visit it
+            child->setLocalIndex(child->getReferenceCount() - 1);
             verifyBlocksPass1(child);
             }
          }
@@ -3872,7 +3872,7 @@ TR_Debug::verifyBlocksPass2(TR::Node *node)
    {
    // *this    swipeable for debugging purposes
 
-   // Pass through and make sure that the sideTableIndex == 0 for each child
+   // Pass through and make sure that the localIndex == 0 for each child
    //
 
    if (!_nodeChecklist.isSet(node->getGlobalIndex()))
@@ -3881,11 +3881,11 @@ TR_Debug::verifyBlocksPass2(TR::Node *node)
       for (int32_t i = node->getNumChildren() - 1; i >= 0; --i)
          verifyBlocksPass2(node->getChild(i));
 
-      if (node->getSideTableIndex() != 0)
+      if (node->getLocalIndex() != 0)
          {
          char buffer[100];
          sprintf(buffer, "BLOCK VERIFICATION ERROR -- node [%s] accessed outside of its (extended) basic block: %d time(s)",
-                 getName(node), node->getSideTableIndex());
+                 getName(node), node->getLocalIndex());
          if (getFile() != NULL)
             trfprintf(getFile(), buffer);
          TR_ASSERT( debug("fixTrees"), buffer);

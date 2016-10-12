@@ -1648,7 +1648,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
          //
          if (!candidates.isSet(refNum))
             {
-            symRef->getSymbol()->setSideTableIndex(index);
+            symRef->getSymbol()->setLocalIndex(index);
             candidates.set(refNum);
             index++;
             }
@@ -1659,7 +1659,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
 
          if (trace())
             traceMsg(comp(), "found candidate symbol #%d (%d) in condition block_%d\n",
-                        refNum, symRef->getSymbol()->getSideTableIndex(), edge->getFrom()->getNumber());
+                        refNum, symRef->getSymbol()->getLocalIndex(), edge->getFrom()->getNumber());
          }
       else
          {
@@ -1709,7 +1709,7 @@ uint32_t TR_LoopEstimator::estimateLoopIterationsUpperBound()
    for (ExitCondition *cond = it.getCurrent(); cond; cond = it.getNext())
       {
       uint32_t refNum = cond->_local->getReferenceNumber();
-      uint32_t refIndex = cond->_local->getSymbol()->getSideTableIndex();
+      uint32_t refIndex = cond->_local->getSymbol()->getLocalIndex();
 
       // make sure this is still a candidate
       //
@@ -1930,7 +1930,7 @@ void TR_LoopEstimator::processBlock(TR::Block *block, TR_BitVector &candidates)
          {
          TR::SymbolReference *symRef = node->getSymbolReference();
          uint32_t refNum = symRef->getReferenceNumber();
-         uint32_t refIndex = symRef->getSymbol()->getSideTableIndex();
+         uint32_t refIndex = symRef->getSymbol()->getLocalIndex();
 
          if (candidates.isSet(refNum))
             {

@@ -114,7 +114,7 @@ class TR_PartialRedundancy : public TR::Optimization
    bool _loadaddrPRE;
    bool _ignoreLoadaddrOfLitPool;
 
-   private: // side table index -> common node
+   private: // local index -> common node
 
   };
 

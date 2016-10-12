@@ -846,7 +846,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
             doneCommoning = true;
             manager()->setAlteredCode(true);
 
-            if (node->getSideTableIndex() != REPLACE_MARKER)
+            if (node->getLocalIndex() != REPLACE_MARKER)
                collectAllReplacedNodes(node, availableExpression);
 
             if ((!parent->getOpCode().isResolveOrNullCheck() &&
@@ -913,7 +913,7 @@ void OMR::LocalCSE::doCommoningIfAvailable(TR::Node *node, TR::Node *parent, int
                }
             else
                {
-               if (node->getSideTableIndex() != REPLACE_MARKER)
+               if (node->getLocalIndex() != REPLACE_MARKER)
                   collectAllReplacedNodes(node, availableExpression);
 
                doneCommoning = true;
@@ -1205,7 +1205,7 @@ void OMR::LocalCSE::getNumberOfNodes(TR::Node *node)
       return;
    node->setVisitCount(comp()->getVisitCount());
 
-   node->setSideTableIndex(0);
+   node->setLocalIndex(0);
 
    if (node->getOpCode().hasSymbolReference())
       {
@@ -1952,7 +1952,7 @@ void OMR::LocalCSE::collectAllReplacedNodes(TR::Node *node, TR::Node *replacingN
       if (trace())
          traceMsg(comp(), "Replaced node : %p Replacing node : %p\n", node, replacingNode);
 
-      node->setSideTableIndex(REPLACE_MARKER);
+      node->setLocalIndex(REPLACE_MARKER);
       }
    }
 

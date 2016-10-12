@@ -499,16 +499,16 @@ void TR_UseDefInfo::fillInDataStructures(AuxiliaryData &aux)
    //
    comp()->incVisitCount();
    TR::Block * block = NULL;
-   TR::SparseBitVector expandedSTIndexes(comp()->allocator()); //expanded sideTableIndex for variables defined by function
+   TR::SparseBitVector expandedLIndexes(comp()->allocator()); //expanded localIndex for variables defined by function
    for (TR::TreeTop* treeTop = comp()->getStartTree(); treeTop != NULL; treeTop = treeTop->getNextTreeTop())
       {
       if (treeTop->getNode()->getOpCodeValue() == TR::BBStart)
          {
          block = treeTop->getNode()->getBlock();
          }
-      insertData(block, treeTop->getNode(), NULL, treeTop, aux, expandedSTIndexes);
+      insertData(block, treeTop->getNode(), NULL, treeTop, aux, expandedLIndexes);
       }
-   //If function foo defined variable a, then the expanded sideTableIndex of a related to foo
+   //If function foo defined variable a, then the expanded localIndex of a related to foo
    //must be in defsForSymbol of all functions aliased to a
 
    // Set the bit if defs on entry kill anything
@@ -538,7 +538,7 @@ void TR_UseDefInfo::fillInDataStructures(AuxiliaryData &aux)
             if (excludedGlobals(aliasedSymRef->getSymbol()))
                continue;
 
-            int32_t j = aliasedSymRef->getSymbol()->getSideTableIndex();
+            int32_t j = aliasedSymRef->getSymbol()->getLocalIndex();
             if (j == NULL_USEDEF_SYMBOL_INDEX)
                continue;
 
@@ -824,7 +824,7 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
          _valueNumbersToMemorySymbolsMap[valueNumber].Push(MemorySymbol(size, offset, _numMemorySymbols++));
 
       if (trace())
-         traceMsg(comp(), "Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber].Head()->_sideTableIndex, valueNumber, size, offset);
+         traceMsg(comp(), "Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber].Head()->_localIndex, valueNumber, size, offset);
       }
    }
 
@@ -847,7 +847,7 @@ int32_t TR_UseDefInfo::getMemorySymbolIndex(TR::Node * node)
       {
       MemorySymbol &memorySymbol = *cursor;
       if ((memorySymbol._size == size) && (memorySymbol._offset == offset))
-         return memorySymbol._sideTableIndex;
+         return memorySymbol._localIndex;
       }
    TR_ASSERT(false, "Could not find memory symbol index for node %p (%d:%d:%d)", node, valueNumber, size, offset);
    return -1;
@@ -863,7 +863,7 @@ bool TR_UseDefInfo::shouldIndexVolatileSym(TR::SymbolReference*ref, AuxiliaryDat
 
 /**
  * Find all symbols whose uses and defs are to be tracked and give them a
- * side table index. This index is used to index into the array of bit vectors
+ * local index. This index is used to index into the array of bit vectors
  * that show which nodes define which symbols.
  *
  * At the same time count the number of defs on entry to the method.
@@ -984,7 +984,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             {
             // Initialize all symbols with null usedef index
             //
-            sym->setSideTableIndex(NULL_USEDEF_SYMBOL_INDEX);
+            sym->setLocalIndex(NULL_USEDEF_SYMBOL_INDEX);
 
             // Volatile symbols must not be considered since they don't have
             // any specifiable def points.
@@ -1009,7 +1009,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             if (trace())
                traceMsg(comp(), "Symbol [%p] has index %d\n", sym, _numSymbols);
             _sideTableToSymRefNumMap[_numSymbols] = symRefNumber;
-            sym->setSideTableIndex(_numSymbols++);
+            sym->setLocalIndex(_numSymbols++);
          if (!isTrivialUseDefSymRef(symRef, aux) &&
              ((sym->isParm() && !aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber())) ||
               (aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].IsNull() &&
@@ -1046,9 +1046,9 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
          sym = symRef->getSymbol();
          if (trace())
             {
-               traceMsg(comp(), "   sym=%p sideTableIndex=%d \n", sym, sym->getSideTableIndex());
+               traceMsg(comp(), "   sym=%p localIndex=%d \n", sym, sym->getLocalIndex());
             }
-         if (sym && sym->getSideTableIndex() == NULL_USEDEF_SYMBOL_INDEX)
+         if (sym && sym->getLocalIndex() == NULL_USEDEF_SYMBOL_INDEX)
             {
             if (!shouldIndexVolatileSym(symRef,aux))
                continue;
@@ -1073,7 +1073,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
                   traceMsg(comp(), "Non Trivial symbol [%p] has index %d\n", sym, _numSymbols);
                }
             _sideTableToSymRefNumMap[_numSymbols] = symRefNumber;
-            sym->setSideTableIndex(_numSymbols++);
+            sym->setLocalIndex(_numSymbols++);
             _numNonTrivialSymbols++;
             }
          }
@@ -1096,7 +1096,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             !aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].IsNull()))
          {
          sym = symRef->getSymbol();
-         if (sym && sym->getSideTableIndex() == NULL_USEDEF_SYMBOL_INDEX)
+         if (sym && sym->getLocalIndex() == NULL_USEDEF_SYMBOL_INDEX)
             {
             if (!shouldIndexVolatileSym(symRef,aux))
                continue;
@@ -1113,7 +1113,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             //
             if (trace())
                traceMsg(comp(), "Trivial symbol [%p] has index %d\n", sym, _numSymbols);
-            sym->setSideTableIndex(_numSymbols++);
+            sym->setLocalIndex(_numSymbols++);
             }
          }
       }
@@ -1132,7 +1132,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    // for the normal set where there is one index per node.
    // The expanded set is used during reaching definitions analysis and the normal
    // set is used to build the final use/def info.<
-   // The expanded index is kept in the node's side table index and the normal
+   // The expanded index is kept in the node's local index and the normal
    // index is kept in the node's use/def index.
    // Reserve the initial node index slots for the definitions coming from the
    // method entry.
@@ -1154,10 +1154,10 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    TR::TreeTop *treeTop = NULL;
    TR::Block *block = NULL;
 
-   // a cleared _symRefToSideTableIndexMap is required for each call to indexSymbolsAndNodes - would be better to create as a local variable here,
+   // a cleared _symRefToLocalIndexMap is required for each call to indexSymbolsAndNodes - would be better to create as a local variable here,
    // and pass down to findUseDefNodes, but findUseDefNodes is recursive, and don't want to increase stack size, so keep in aux
-   aux._symRefToSideTableIndexMap.MakeEmpty();
-   aux._symRefToSideTableIndexMap.GrowTo(comp()->getSymRefCount());
+   aux._symRefToLocalIndexMap.MakeEmpty();
+   aux._symRefToLocalIndexMap.GrowTo(comp()->getSymRefCount());
 
    for (treeTop = comp()->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
       {
@@ -1220,7 +1220,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       traceMsg(comp(), "      def/use combinations    = %d\n", getNumDefNodes()*getNumUseNodes());
       traceMsg(comp(), "      expanded use nodes      = %d\n", getNumExpandedUseNodes());
       traceMsg(comp(), "      expanded def nodes      = %d\n", getNumExpandedDefNodes());
-      traceMsg(comp(), "      side table index level  = %d\n", _numExpandedDefUseNodes);
+      traceMsg(comp(), "      local index level  = %d\n", _numExpandedDefUseNodes);
       traceMsg(comp(), "      use/def index level     = %d\n", _numDefOnlyNodes);
       }
    return true;
@@ -1265,7 +1265,7 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
    TR::SymbolReference *symRef;
    uint32_t symIndex;
    uint32_t num_aliases;
-   int32_t sideTableIndex = 0;
+   int32_t localIndex = 0;
    int32_t useDefIndex = 0;
 
    if (_useDefForRegs &&
@@ -1282,12 +1282,12 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
       symRef = node->getOpCode().hasSymbolReference() ? node->getSymbolReference() : NULL;
       if (symRef == NULL)
          {
-         node->setSideTableIndex(0);
+         node->setLocalIndex(0);
          node->setUseDefIndex(0);
          return true;
          }
       num_aliases = aux._numAliases[symRef->getReferenceNumber()];
-      symIndex = symRef->getSymbol()->getSideTableIndex();
+      symIndex = symRef->getSymbol()->getLocalIndex();
       }
 
    if (symIndex != NULL_USEDEF_SYMBOL_INDEX)
@@ -1295,7 +1295,7 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
       if (parent && parent->getOpCode().isResolveCheck() &&
           num_aliases > 1)
          {
-         sideTableIndex = _numExpandedDefOnlyNodes;
+         localIndex = _numExpandedDefOnlyNodes;
          _numExpandedDefOnlyNodes += num_aliases;
          useDefIndex = _numDefOnlyNodes++;
          }
@@ -1303,10 +1303,10 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
          {
          if (!skipAnalyzingForCompileTime(node, block, comp(), aux))
             {
-            sideTableIndex = _numExpandedDefUseNodes++;
+            localIndex = _numExpandedDefUseNodes++;
             }
          //else
-         //   sideTableIndex = 0;
+         //   localIndex = 0;
 
          useDefIndex = _numDefUseNodes++;
          }
@@ -1315,9 +1315,9 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
                (_useDefForRegs && opCode.isLoadReg()))
          {
          if (!skipAnalyzingForCompileTime(node, block, comp(), aux))
-            sideTableIndex = _numExpandedUseOnlyNodes++;
+            localIndex = _numExpandedUseOnlyNodes++;
          //else
-         //   sideTableIndex = 0;
+         //   localIndex = 0;
 
          useDefIndex = _numUseOnlyNodes++;
          //       traceMsg(comp(), "UDI: setting useDefIndex to %d _numUseOnlyNodes = %d\n",useDefIndex,_numUseOnlyNodes);
@@ -1326,25 +1326,25 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
          {
          if (num_aliases > 0)
             {
-            if (aux._symRefToSideTableIndexMap[symRef->getReferenceNumber()] == 0)
+            if (aux._symRefToLocalIndexMap[symRef->getReferenceNumber()] == 0)
                {
-               sideTableIndex = _numExpandedDefUseNodes;
+               localIndex = _numExpandedDefUseNodes;
                _numExpandedDefUseNodes += num_aliases;
                //traceMsg(comp(), "num_aliases #%d  %d %d %d\n", node->getSymbolReference()->getReferenceNumber(), num_aliases, opCode.isFence(), node->getSymbolReference()->getSymbol()->isMethod());
                useDefIndex = _numDefUseNodes++;
                //             traceMsg(comp(), "UDI: setting useDefIndex to %d _numDefUseNodes = %d\n",useDefIndex,_numDefUseNodes);
 
-               aux._symRefToSideTableIndexMap[symRef->getReferenceNumber()] = sideTableIndex;
+               aux._symRefToLocalIndexMap[symRef->getReferenceNumber()] = localIndex;
                }
             else
                {
-               sideTableIndex = aux._symRefToSideTableIndexMap[symRef->getReferenceNumber()];
+               localIndex = aux._symRefToLocalIndexMap[symRef->getReferenceNumber()];
                useDefIndex = _numDefUseNodes++;
                }
             }
          //else
          //   {
-         //   node->setSideTableIndex(0);
+         //   node->setLocalIndex(0);
          //   node->setUseDefIndex(0);
          //   }
          }
@@ -1354,12 +1354,12 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
          {
          if (!isTrivialUseDefNode(node, aux))
             {
-            sideTableIndex = _numExpandedDefOnlyNodes;
+            localIndex = _numExpandedDefOnlyNodes;
             _numExpandedDefOnlyNodes += num_aliases;
             }
          //else
          //   {
-         //   node->setSideTableIndex(0);
+         //   node->setLocalIndex(0);
          //   }
 
          useDefIndex = _numDefOnlyNodes++;
@@ -1375,7 +1375,7 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
          }
       //else
       //   {
-      //   node->setSideTableIndex(0);
+      //   node->setLocalIndex(0);
       //   node->setUseDefIndex(0);
       //   }
       }
@@ -1383,7 +1383,7 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
       {
       if (!aux._volatileOrAliasedToVolatileSymbols[symRef->getReferenceNumber()])
          {
-         sideTableIndex = _numExpandedDefOnlyNodes;
+         localIndex = _numExpandedDefOnlyNodes;
          _numExpandedDefOnlyNodes += _numStaticsAndFields;
          useDefIndex = _numDefOnlyNodes++;
          }
@@ -1391,20 +1391,20 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
    else if (_indexFields && node->isGCSafePointWithSymRef() &&
             comp()->getOptions()->realTimeGC())
       {
-      sideTableIndex = _numExpandedDefOnlyNodes;
+      localIndex = _numExpandedDefOnlyNodes;
       _numExpandedDefOnlyNodes += TR::NumTypes + 1; // == arraylet shadows + read barrier....encode this where?  SymRefTab probably
       useDefIndex = _numDefOnlyNodes++;
       }
    //else
    //   {
-   //   node->setSideTableIndex(0);
+   //   node->setLocalIndex(0);
    //   node->setUseDefIndex(0);
    //   }
 
    // Make sure there is no overflow in either index before setting them
-   if (sideTableIndex > MAX_SCOUNT)
+   if (localIndex > MAX_SCOUNT)
       {
-      dumpOptDetails(comp(), "   use/def failed, side table index overflow (%d)\n", sideTableIndex);
+      dumpOptDetails(comp(), "   use/def failed, local index overflow (%d)\n", localIndex);
       return false;
       }
    if (useDefIndex > SIDE_TABLE_LIMIT)
@@ -1412,7 +1412,7 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
       dumpOptDetails(comp(), "   use/def failed, use/def index overflow (%d)\n", useDefIndex);
       return false;
       }
-   node->setSideTableIndex(sideTableIndex);
+   node->setLocalIndex(localIndex);
 
    // traceMsg(comp(), "UDI: For node %p setting useDefIndex to %d\n",node,useDefIndex);
    node->setUseDefIndex(useDefIndex);
@@ -1459,7 +1459,7 @@ bool TR_UseDefInfo::assignAdjustedNodeIndex(TR::Block *block, TR::Node *node, TR
       if (!symRef)
          return true;
 
-      symIndex = symRef->getSymbol()->getSideTableIndex();
+      symIndex = symRef->getSymbol()->getLocalIndex();
       num_aliases = aux._numAliases[symRef->getReferenceNumber()];
       }
 
@@ -1553,12 +1553,12 @@ bool TR_UseDefInfo::assignAdjustedNodeIndex(TR::Block *block, TR::Node *node, TR
       }
    //   traceMsg(comp(), "UDI: Adjusting node %p index to %d\n",node,nodeIndex+adjustment);
    node->setUseDefIndex(nodeIndex + adjustment);
-   if (node->getSideTableIndex() + expandedAdjustment > MAX_SCOUNT)
+   if (node->getLocalIndex() + expandedAdjustment > MAX_SCOUNT)
       {
-      dumpOptDetails(comp(), "   use/def failed, side table index overflow (%d)\n", node->getSideTableIndex()+expandedAdjustment);
+      dumpOptDetails(comp(), "   use/def failed, local index overflow (%d)\n", node->getLocalIndex()+expandedAdjustment);
       return false;
       }
-   node->setSideTableIndex(node->getSideTableIndex() + expandedAdjustment);
+   node->setLocalIndex(node->getLocalIndex() + expandedAdjustment);
    return true;
    }
 
@@ -1567,7 +1567,7 @@ bool TR_UseDefInfo::childIndexIndicatesImplicitStore(TR::Node *node, int32_t chi
    return false;
    }
 
-void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, TR::SparseBitVector &expandedSTIndexes, bool considerImplicitStores)
+void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, TR::SparseBitVector &expandedLIndexes, bool considerImplicitStores)
    {
    // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
@@ -1581,7 +1581,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
    for (int32_t i = 0; i < node->getNumChildren(); i++)
       {
       bool shouldConsiderLoadAddrChildrenImplicitStores = parentCouldHaveImplicitStoreChildren && childIndexIndicatesImplicitStore(node, i);
-      insertData(block, node->getChild(i), node, treeTop, aux, expandedSTIndexes, shouldConsiderLoadAddrChildrenImplicitStores);
+      insertData(block, node->getChild(i), node, treeTop, aux, expandedLIndexes, shouldConsiderLoadAddrChildrenImplicitStores);
       }
 
    TR::ILOpCode &opCode = node->getOpCode();
@@ -1606,7 +1606,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
       if (!symRef)
          return;
 
-      symIndex = symRef->getSymbol()->getSideTableIndex();
+      symIndex = symRef->getSymbol()->getLocalIndex();
       num_aliases = aux._numAliases[symRef->getReferenceNumber()];
       }
 
@@ -1683,20 +1683,20 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
    else
       return;
 
-   aux._sideTableToUseDefMap[node->getSideTableIndex()] = node->getUseDefIndex();
+   aux._sideTableToUseDefMap[node->getLocalIndex()] = node->getUseDefIndex();
    _atoms[node->getUseDefIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
    if (!isTrivialUseDefNode(node, aux) && adjustArray)
-      aux._expandedAtoms[node->getSideTableIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+      aux._expandedAtoms[node->getLocalIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
 
    if (trace())
       {
       if (!definesMultipleSymbols )
-         traceMsg(comp(), "Node : %p   opCode = %s useDefIndex = %d sideTableIndex = %d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getSideTableIndex(), definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
+         traceMsg(comp(), "Node : %p   opCode = %s useDefIndex = %d localIndex = %d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
       else
-         traceMsg(comp(), "Node : %p   opCode = %s useDefIndex = %d sideTableIndex = %d-%d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getSideTableIndex(), node->getSideTableIndex()+num_aliases-1, definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
+         traceMsg(comp(), "Node : %p   opCode = %s useDefIndex = %d localIndex = %d-%d definesMultipleSymbols=%d isTrivialUseDefNode=%d adjustArray=%d \n", node, opCode.getName(), node->getUseDefIndex(), node->getLocalIndex(), node->getLocalIndex()+num_aliases-1, definesMultipleSymbols, isTrivialUseDefNode(node, aux), adjustArray);
       }
 
-   nodeIndex = node->getSideTableIndex();
+   nodeIndex = node->getLocalIndex();
 
    if (definesMultipleSymbols &&
        !isTrivialUseDefNode(node, aux) && adjustArray)
@@ -1734,7 +1734,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          if (excludedGlobals(aliasedSymRef->getSymbol()))
             continue;
 
-         int32_t j = aliasedSymRef->getSymbol()->getSideTableIndex();
+         int32_t j = aliasedSymRef->getSymbol()->getLocalIndex();
          if (j == NULL_USEDEF_SYMBOL_INDEX) continue;
 
          if (aux._neverReferencedSymbols.ValueAt(aliasedSymRef->getReferenceNumber()))
@@ -1786,7 +1786,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          aux._nodeSideTableToSymRefNumMap[k] = aliasedSymRef->getReferenceNumber();
 
          if (trace())
-            traceMsg(comp(), "    symbol (u/d index=%d) is defined by node with sideTableIndex %d \n",j, k);
+            traceMsg(comp(), "    symbol (u/d index=%d) is defined by node with localIndex %d \n",j, k);
          }
 
       if (restrictRegLoadVar)
@@ -1801,7 +1801,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          int32_t num = num_aliases;
          for (i = 0; i < num; i++)
             {
-             aux._defsForSymbol[symRef->getSymbol()->getSideTableIndex()][nodeIndex+i] = true;
+             aux._defsForSymbol[symRef->getSymbol()->getLocalIndex()][nodeIndex+i] = true;
             aux._expandedAtoms[nodeIndex+i] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
             }
          }
@@ -2402,12 +2402,12 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
       {
       TR::SymbolReference *symRef = node->getSymbolReference();
       sym = symRef->getSymbol();
-      symIndex = sym->getSideTableIndex();
+      symIndex = sym->getLocalIndex();
       memSymIndex = getMemorySymbolIndex(node);
       num_aliases = aux._numAliases[symRef->getReferenceNumber()];
       }
 
-   scount_t expandedNodeIndex = node->getSideTableIndex();
+   scount_t expandedNodeIndex = node->getLocalIndex();
 
    // If this node is a use node set up its def information.
    // If it has more than one def node and some of them are use nodes too,
@@ -2487,7 +2487,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
 
                if (memSymIndex == -1 ||
                    getMemorySymbolIndex(defNode) != memSymIndex ||
-                   i == defNode->getSideTableIndex())
+                   i == defNode->getLocalIndex())
                   {
                   //              traceMsg(comp(), "UDI: setting _useDefInfo[realIndex=%d][j=%d] to true\n",realIndex,j);
                   _useDefInfo[realIndex][j] = true;

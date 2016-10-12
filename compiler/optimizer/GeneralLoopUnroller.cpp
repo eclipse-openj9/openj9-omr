@@ -978,7 +978,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          TR::Node *gotoNode = TR::Node::create(branch, TR::Goto);
          TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
          gotoNode->setBranchDestination(destBlock->getEntry());
-         gotoNode->setSideTableIndex(CREATED_BY_GLU);
+         gotoNode->setLocalIndex(CREATED_BY_GLU);
 
          TR::TransformUtil::removeTree(comp(), branchBlock->getLastRealTreeTop());
          branchBlock->append(gotoTree);
@@ -2325,7 +2325,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
    clonedBranchBlock->append(gotoTree);
    gotoNode->setBranchDestination(newBranchBlock->getEntry());
-   gotoNode->setSideTableIndex(CREATED_BY_GLU);
+   gotoNode->setLocalIndex(CREATED_BY_GLU);
 
    processSwingQueue();
 
@@ -2418,7 +2418,7 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
             {
             TR::Node *gotoNode = TR::Node::create(lastNode, TR::Goto);
             gotoNode->setBranchDestination(newTo->getEntry());
-            gotoNode->setSideTableIndex(CREATED_BY_GLU);
+            gotoNode->setLocalIndex(CREATED_BY_GLU);
             newFrom->append(TR::TreeTop::create(comp(), gotoNode));
             }
          }
@@ -2453,10 +2453,10 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
             TR::Node *gotoNode = TR::Node::create(lastNode, TR::Goto);
             TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
             gotoNode->setBranchDestination(newTo->getEntry());
-            gotoNode->setSideTableIndex(CREATED_BY_GLU);
+            gotoNode->setLocalIndex(CREATED_BY_GLU);
             TR::Block *gotoBlock = TR::Block::createEmptyBlock(lastNode, comp(), newFrom->getFrequency(), newFrom);
             gotoBlock->append(gotoTree);
-            gotoBlock->getEntry()->getNode()->setSideTableIndex(CREATED_BY_GLU);
+            gotoBlock->getEntry()->getNode()->setLocalIndex(CREATED_BY_GLU);
             _cfg->addNode(gotoBlock);
 
 
@@ -2639,10 +2639,10 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
                   TR::Node *gotoNode = TR::Node::create(lastNode, TR::Goto);
                   TR::TreeTop *gotoTree = TR::TreeTop::create(comp(), gotoNode);
                   gotoNode->setBranchDestination(newTo->getEntry());
-                  gotoNode->setSideTableIndex(CREATED_BY_GLU);
+                  gotoNode->setLocalIndex(CREATED_BY_GLU);
                   TR::Block *gotoBlock = TR::Block::createEmptyBlock(lastNode, comp(), newTo->getFrequency(), newTo);
                   gotoBlock->append(gotoTree);
-                  gotoBlock->getEntry()->getNode()->setSideTableIndex(CREATED_BY_GLU);
+                  gotoBlock->getEntry()->getNode()->setLocalIndex(CREATED_BY_GLU);
                   _cfg->addNode(gotoBlock);
 
                   //fix the tree tops: insert the goto block in place
@@ -2756,7 +2756,7 @@ void TR_LoopUnroller::addEdgeAndFixEverything(TR_RegionStructure *region,
             gotoTree->join(lastTreeTop->getNextTreeTop());
             lastTreeTop->join(gotoTree);
             gotoNode->setBranchDestination(newTo->getEntry());
-            gotoNode->setSideTableIndex(CREATED_BY_GLU);
+            gotoNode->setLocalIndex(CREATED_BY_GLU);
             }
          }
       //SWITCH
@@ -2829,8 +2829,8 @@ bool TR_LoopUnroller::cfgEdgeAlreadyExists(TR::Block *from, TR::Block *to, EdgeC
             // to the loop entry, so just checking the goto node is insufficient
             //
             if (dest->getNumber() == to->getNumber() &&
-                lastRealTree->getNode()->getSideTableIndex() == CREATED_BY_GLU &&
-                succ->getEntry()->getNode()->getSideTableIndex() == CREATED_BY_GLU)
+                lastRealTree->getNode()->getLocalIndex() == CREATED_BY_GLU &&
+                succ->getEntry()->getNode()->getLocalIndex() == CREATED_BY_GLU)
                return true;
             }
          }
@@ -3187,7 +3187,7 @@ TR_LoopUnroller::prepareLoopStructure(TR_RegionStructure *loop)
       {
       TR::TreeTop *tt = block->getLastRealTreeTop();
       if (tt->getNode()->getOpCodeValue() == TR::Goto)
-         tt->getNode()->setSideTableIndex(-1);
+         tt->getNode()->setLocalIndex(-1);
       }
    }
 

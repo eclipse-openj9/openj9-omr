@@ -79,12 +79,12 @@ typedef uint32_t    ncount_t;
 typedef uint32_t    rcount_t;
 #define MAX_RCOUNT  UINT_MAX
 
-/// Node side table indexes
+/// Node local indexes
 ///
 typedef uint32_t    scount_t;
 #define MAX_SCOUNT  UINT_MAX
 #define SCOUNT_HIGH_BIT          0x80000000
-#define NULL_USEDEF_SYMBOL_INDEX 0xFFFF  //TODO: should be 0xFFFF until we change the date type of _sideTableIndex in Symbol.hpp
+#define NULL_USEDEF_SYMBOL_INDEX 0xFFFF  //TODO: should be 0xFFFF until we change the date type of _localIndex in Symbol.hpp
 
 /// Visit counts
 ///
@@ -677,13 +677,13 @@ public:
    rcount_t        recursivelyDecReferenceCount();
    void            recursivelyDecReferenceCountFromCodeGen();
 
-   inline scount_t getSideTableIndex();
-   inline scount_t setSideTableIndex(scount_t sti);
-   inline scount_t incSideTableIndex();
-   inline scount_t decSideTableIndex();
+   inline scount_t getLocalIndex();
+   inline scount_t setLocalIndex(scount_t li);
+   inline scount_t incLocalIndex();
+   inline scount_t decLocalIndex();
 
    inline scount_t getFutureUseCount();
-   inline scount_t setFutureUseCount(scount_t sti);
+   inline scount_t setFutureUseCount(scount_t li);
    inline scount_t incFutureUseCount();
    inline scount_t decFutureUseCount();
 

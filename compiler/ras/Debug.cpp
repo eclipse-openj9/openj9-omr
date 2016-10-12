@@ -4626,7 +4626,7 @@ void TR_Debug::dumpSimulatedNode(TR::Node *node, char tagChar)
       }
    else if (node->getReferenceCount() >= 1)
       {
-      trfprintf(_file, "%2d/%-2d", node->getSideTableIndex(), node->getReferenceCount());
+      trfprintf(_file, "%2d/%-2d", node->getLocalIndex(), node->getReferenceCount());
       }
    else
       {

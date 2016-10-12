@@ -151,7 +151,7 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
       self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
       self()->setReferenceCount(0);
       self()->setVisitCount(0);
-      self()->setSideTableIndex(0);
+      self()->setLocalIndex(0);
       memset( &(self()->getOptAttributes()->_unionA), 0, sizeof( self()->getOptAttributes()->_unionA ) );
       if (self()->getGlobalIndex() == MAX_NODE_COUNT)
          {
@@ -241,7 +241,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
    // opt attributes are separate, and need separate initialization.
    self()->setReferenceCount(from->getReferenceCount());
    self()->setVisitCount(from->getVisitCount());
-   self()->setSideTableIndex(from->getSideTableIndex());
+   self()->setLocalIndex(from->getLocalIndex());
    self()->getOptAttributes()->_unionA = from->getOptAttributes()->_unionA;
 
    if (self()->getGlobalIndex() == MAX_NODE_COUNT)

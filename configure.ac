@@ -266,25 +266,19 @@ AC_ARG_ENABLE([auto-build-flag],
 )
 
 ############### Enable a build flag
-# OMRCFG_ENABLE_FLAG(<flag name>, [<value>])
+# OMRCFG_ENABLE_FLAG(<flag name>)
 # #define the flag in omrcfg.h
 # Set the flag to 1 in omrcfg.mk
-AC_DEFUN([OMRCFG_ENABLE_FLAG], [
-	AS_IF([test "x$2" = "x"],
-		[AC_SUBST([$1], [["#define $1"]])],
-		[AC_SUBST([$1], [["#define $1 $2"]])]
-	)
-	echo "$1 := 1" >> omrmakefiles/omrcfg.mk
-])
+AC_DEFUN([OMRCFG_ENABLE_FLAG],
+  [AC_SUBST([$1], [1])
+   AC_DEFINE([$1], [1])])
 
 ############### Disable a build flag
 # OMRCFG_DISABLE_FLAG(<flag name>)
 # The flag is undefined in omrcfg.h
 # Set the flag to 0 in omrcfg.mk
-AC_DEFUN([OMRCFG_DISABLE_FLAG], [
-	AC_SUBST([$1], [["#undef $1"]])
-	echo "$1 := 0" >> omrmakefiles/omrcfg.mk
-])
+AC_DEFUN([OMRCFG_DISABLE_FLAG],
+  [AC_SUBST([$1], [0])])
 
 ############### Define the configurable omrcfg.h build flags
 # OMRCFG_DEFINE_FLAG(<flag name>, [<value>], [<default action>], [<help message>])
@@ -297,8 +291,7 @@ AC_DEFUN([OMRCFG_DEFINE_FLAG],
 	[AC_ARG_ENABLE([$1], AS_HELP_STRING([--enable-$1], [$4]),
 		[AS_IF([test "x${enableval}" = xyes],
 			[OMRCFG_ENABLE_FLAG([$1],[$2])],
-			[OMRCFG_DISABLE_FLAG([$1])]
-		)],
+			[OMRCFG_DISABLE_FLAG([$1])])],
 		[AS_IF([test "x${enable_auto_build_flag}" = xyes],
 			[AS_IF([test "$#" -gt 2],
 				[
@@ -311,6 +304,7 @@ AC_DEFUN([OMRCFG_DEFINE_FLAG],
 		)]
 	)]
 )
+
 ############### Define a configurable build flag which defaults to on
 # OMRCFG_DEFINE_FLAG_ON(<flag name>, [<value>], [<help message>])
 # where <flag name> is the name of the flag that will be undefined in omrcfg.h if
@@ -607,7 +601,6 @@ cross_compiling=$save_cross_compiling
 
 AC_CONFIG_FILES([
 	include_core/omrversionstrings.h:include_core/omrversionstrings.h.in
-	include_core/omrcfg.h:include_core/omrcfg.h.in
 	omrmakefiles/configure.mk:omrmakefiles/configure.mk.in
 ])
 
@@ -623,5 +616,7 @@ AC_CONFIG_COMMANDS([toolconfigure],
 	[(cd toolconfig && sh ./configure $OMR_HOSTCONFIG_ENV)],
 	[AS_IF([test "$cross_compiling" = "yes"],
 		[OMR_HOSTCONFIG_ENV="CC= CXX="])])
+
+AC_CONFIG_HEADERS([include_core/omrcfg.inc:include_core/omrcfg.inc.in])
 
 AC_OUTPUT

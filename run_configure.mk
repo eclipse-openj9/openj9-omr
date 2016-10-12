@@ -124,8 +124,8 @@ touch $(CONFIGURE_OUTPUT_FILES)
 endef
 
 CONFIGURE_DEPENDENCIES := SPEC config.guess config.sub configure toolconfig/configure
-CONFIGURE_OUTPUT_FILES := include_core/omrcfg.h include_core/omrversionstrings.h omrmakefiles/omrcfg.mk omrmakefiles/configure.mk omrmakefiles/toolconfigure.mk CONFIGURE_SENTINEL_FILE
-CONFIGURE_INPUT_FILES := include_core/omrcfg.h.in include_core/omrversionstrings.h.in omrmakefiles/configure.mk.in omrmakefiles/toolconfigure.mk.in
+CONFIGURE_OUTPUT_FILES := include_core/omrcfg.inc include_core/omrversionstrings.h omrmakefiles/configure.mk omrmakefiles/toolconfigure.mk CONFIGURE_SENTINEL_FILE
+CONFIGURE_INPUT_FILES := include_core/omrcfg.inc.in include_core/omrversionstrings.h.in omrmakefiles/configure.mk.in omrmakefiles/toolconfigure.mk.in
 CONFIGURE_BYPRODUCTS := config.cache config.status config.log autom4te.cache toolconfig/config.cache toolconfig/config.status toolconfig/config.log toolconfig/autom4te.cache
 
 all: check-environment-variables CONFIGURE_SENTINEL_FILE

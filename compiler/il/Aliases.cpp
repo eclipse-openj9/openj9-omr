@@ -178,7 +178,11 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
                case TR::java_lang_Math_abs_F:
                case TR::java_lang_Math_abs_D:
                case TR::java_lang_Math_pow:
+               case TR::java_lang_StrictMath_pow:
                case TR::java_lang_Math_exp:
+               case TR::java_lang_StrictMath_exp:
+               case TR::java_lang_Math_log:
+               case TR::java_lang_StrictMath_log:
                case TR::java_lang_Math_floor:
                case TR::java_lang_Math_ceil:
                case TR::java_lang_Math_copySign_F:
@@ -380,8 +384,11 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
                case TR::java_lang_Math_abs_F:
                case TR::java_lang_Math_abs_D:
                case TR::java_lang_Math_pow:
+               case TR::java_lang_StrictMath_pow:
                case TR::java_lang_Math_exp:
+               case TR::java_lang_StrictMath_exp:
                case TR::java_lang_Math_log:
+               case TR::java_lang_StrictMath_log:
                case TR::java_lang_Math_floor:
                case TR::java_lang_Math_ceil:
                case TR::java_lang_Math_copySign_F:

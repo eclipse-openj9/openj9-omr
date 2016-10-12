@@ -136,7 +136,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node);
 
-   int32_t findOrCreateAddressConstant(void *v, TR::DataTypes t,
+   int32_t findOrCreateAddressConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3,
                   TR::Instruction *n4,
@@ -183,12 +183,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    using OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge;
    int32_t getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *);
    int32_t getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Node *);
-   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt);
+   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);
    TR_BitVector _globalRegisterBitVectors[TR_numSpillKinds];
    virtual TR_BitVector *getGlobalRegisters(TR_SpillKinds kind, TR_LinkageConventions lc){ return &_globalRegisterBitVectors[kind]; }
 
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters], _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // these could be smaller
-   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type);
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type);
 
    int32_t getMaximumNumbersOfAssignableGPRs();
    int32_t getMaximumNumbersOfAssignableFPRs();

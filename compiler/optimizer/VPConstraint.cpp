@@ -561,7 +561,7 @@ TR_VPObjectLocation *TR_VPObjectLocation::getObjectLocation()
    return this;
    }
 
-TR::DataTypes TR_VPClassType::getPrimitiveArrayDataType()
+TR::DataType TR_VPClassType::getPrimitiveArrayDataType()
    {
    if (_sig[0] != '[')
       return TR::NoType;
@@ -1003,7 +1003,7 @@ TR_VPIntConstraint *TR_VPIntRange::create(TR_ValuePropagation *vp, TR::DataTypes
    return TR_VPIntRange::createWithPrecision(vp, dt, VP_UNDEFINED_PRECISION, isUnsigned);
    }
 
-TR_VPIntConstraint *TR_VPIntRange::createWithPrecision(TR_ValuePropagation *vp, TR::DataTypes dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative)
+TR_VPIntConstraint *TR_VPIntRange::createWithPrecision(TR_ValuePropagation *vp, TR::DataType dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative)
    {
    TR_ASSERT(dt > TR::NoType && dt < TR::Int64, "Bad range for datatype in integerLoad constant propagation\n");
 
@@ -1468,7 +1468,7 @@ TR_VPArrayInfo *TR_VPArrayInfo::create(TR_ValuePropagation *vp, int32_t lowBound
 TR_VPArrayInfo *TR_VPArrayInfo::create(TR_ValuePropagation *vp, char *sig)
    {
    TR_ASSERT(*sig == '[', "expecting array signature");
-   TR::DataTypes d = TR::Symbol::convertSigCharToType(sig[1]);
+   TR::DataType d = TR::Symbol::convertSigCharToType(sig[1]);
    int32_t stride;
    if (d == TR::Address)
       stride = TR::Compiler->om.sizeofReferenceField();
@@ -4432,17 +4432,17 @@ TR_VPConstraint *TR_VPEqual::intersect1(TR_VPConstraint *other, TR_ValuePropagat
 
 
 
-TR_VPConstraint *TR_VPConstraint::add(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPConstraint::add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp)
    {
    return NULL;
    }
 
-TR_VPConstraint *TR_VPConstraint::subtract(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPConstraint::subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp)
    {
    return NULL;
    }
 
-TR_VPConstraint *TR_VPShortConstraint::add(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPShortConstraint::add(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation *vp)
    {
     TR_VPShortConstraint *otherShort = other->asShortConstraint();
     if(!otherShort)
@@ -4464,7 +4464,7 @@ TR_VPConstraint *TR_VPShortConstraint::add(TR_VPConstraint *other, TR::DataTypes
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
 
-TR_VPConstraint *TR_VPIntConstraint::add(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPIntConstraint::add(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation *vp)
    {
    // TODO - handle add and subtract for merged constraints
    //
@@ -4549,7 +4549,7 @@ TR_VPConstraint *TR_VPIntConstraint::add(TR_VPConstraint *other, TR::DataTypes d
 //    return range;
 //    }
 
-TR_VPConstraint *TR_VPShortConstraint::subtract(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation * vp)
+TR_VPConstraint *TR_VPShortConstraint::subtract(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation * vp)
    {
    TR_VPShortConstraint *otherShort = other->asShortConstraint();
 
@@ -4572,7 +4572,7 @@ TR_VPConstraint *TR_VPShortConstraint::subtract(TR_VPConstraint *other, TR::Data
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
 
-TR_VPConstraint *TR_VPIntConstraint::subtract(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPIntConstraint::subtract(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation *vp)
    {
    TR_VPIntConstraint *otherInt = other->asIntConstraint();
    if (!otherInt)
@@ -4673,7 +4673,7 @@ TR_VPConstraint *TR_VPIntConstraint::getRange(int32_t low, int32_t high, bool lo
    return TR_VPIntRange::create(vp, low, high, TR_no);
    }
 
-TR_VPConstraint *TR_VPLongConstraint::add(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPLongConstraint::add(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation *vp)
    {
    // TODO - handle add and subtract for merged constraints
    //
@@ -4696,7 +4696,7 @@ TR_VPConstraint *TR_VPLongConstraint::add(TR_VPConstraint *other, TR::DataTypes 
    return getRange(low, high, lowOverflow, highOverflow, vp);
    }
 
-TR_VPConstraint *TR_VPLongConstraint::subtract(TR_VPConstraint *other, TR::DataTypes dt, TR_ValuePropagation *vp)
+TR_VPConstraint *TR_VPLongConstraint::subtract(TR_VPConstraint *other, TR::DataType dt, TR_ValuePropagation *vp)
    {
    TR_VPLongConstraint *otherLong = other->asLongConstraint();
    if (!otherLong)

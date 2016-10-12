@@ -115,8 +115,8 @@ class TR_VPConstraint
 
    // Arithmetic operations
    //
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
    virtual TR_YesNoMaybe canOverflow();
    virtual void setCanOverflow(TR_YesNoMaybe v) {}
 
@@ -330,8 +330,8 @@ class TR_VPShortConstraint: public TR_VPConstraint
    virtual bool mustBeLessThan (TR_VPConstraint * other, TR_ValuePropagation *vp);
    virtual bool mustBeLessThanOrEqual (TR_VPConstraint * other, TR_ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint * other, TR::DataTypes type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation * vp);
+   virtual TR_VPConstraint *add(TR_VPConstraint * other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation * vp);
 
    virtual TR_YesNoMaybe canOverflow() {return _overflow;}
    virtual void setCanOverflow(TR_YesNoMaybe v) {_overflow = v;}
@@ -405,8 +405,8 @@ class TR_VPIntConstraint : public TR_VPConstraint
    virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
    virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
    // unsigned add
    //TR_VPConstraint *add(TR_VPIntConstraint *other, TR_ValuePropagation *vp, bool isUnsigned);
    // unsigned subtract
@@ -449,8 +449,8 @@ class TR_VPIntRange : public TR_VPIntConstraint
    TR_VPIntRange(int32_t low, int32_t high) : TR_VPIntConstraint(low), _high(high) {}
    //static TR_VPIntConstraint *create(TR_ValuePropagation *vp, int32_t low, int32_t high);
    static TR_VPIntConstraint *create(TR_ValuePropagation *vp, int32_t low, int32_t high, TR_YesNoMaybe canOverflow = TR_no);
-   static TR_VPIntConstraint *create(TR_ValuePropagation *vp, TR::DataTypes dt, TR_YesNoMaybe isUnsigned);
-   static TR_VPIntConstraint *createWithPrecision(TR_ValuePropagation *vp, TR::DataTypes dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative = false);
+   static TR_VPIntConstraint *create(TR_ValuePropagation *vp, TR::DataTypes dt, TR_YesNoMaybe isUnsigned); // Takes a TR::DataTypes instead of TR::DataType to work around ambiguous overloads
+   static TR_VPIntConstraint *createWithPrecision(TR_ValuePropagation *vp, TR::DataType dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative = false);
    virtual TR_VPIntRange *asIntRange();
    virtual int32_t getHigh() {return _high;}
 
@@ -483,8 +483,8 @@ class TR_VPLongConstraint : public TR_VPConstraint
    virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
    virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataTypes type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
 
    virtual TR_YesNoMaybe canOverflow() {return _overflow;}
    virtual void setCanOverflow(TR_YesNoMaybe v) {_overflow = v;}
@@ -606,7 +606,7 @@ class TR_VPClassType : public TR_VPConstraint
    virtual bool isCloneableOrSerializable();
 
 
-   TR::DataTypes getPrimitiveArrayDataType();
+   TR::DataType getPrimitiveArrayDataType();
 
    virtual TR_YesNoMaybe isClassObject();
    virtual TR_YesNoMaybe isJavaLangClassObject();

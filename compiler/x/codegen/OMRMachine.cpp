@@ -2332,7 +2332,7 @@ void OMR::X86::Machine::purgeDeadRegistersFromRegisterFile()
 // These reusable temporaries are intended for use whenever a temporary store to a
 // memory location is required.
 
-TR::MemoryReference *OMR::X86::Machine::getDummyLocalMR(TR::DataTypes dt)
+TR::MemoryReference *OMR::X86::Machine::getDummyLocalMR(TR::DataType dt)
    {
    if (_dummyLocal[dt] == NULL)
       {

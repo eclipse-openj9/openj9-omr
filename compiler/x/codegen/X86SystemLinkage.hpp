@@ -73,9 +73,9 @@ class TR_X86SystemLinkage : public TR::Linkage
 
    int32_t computeMemoryArgSize(TR::Node *callNode, int32_t first, int32_t last, int8_t direction);
    int32_t getParameterStartingPos(int32_t &dataCursor, uint32_t align);
-   int32_t layoutTypeOnStack(TR::DataTypes, int32_t&, parmLayoutResult&);
+   int32_t layoutTypeOnStack(TR::DataType, int32_t&, parmLayoutResult&);
    virtual int32_t buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *deps) = 0;
-   virtual uint32_t getAlignment(TR::DataTypes) = 0;
+   virtual uint32_t getAlignment(TR::DataType) = 0;
    virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult) = 0;
    virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, parmLayoutResult&) = 0;
 

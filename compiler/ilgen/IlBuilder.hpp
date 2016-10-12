@@ -50,7 +50,7 @@ template <class T> class ListAppender;
 namespace OMR
 {
 
-typedef TR::ILOpCodes (*OpCodeMapper)(TR::DataTypes);
+typedef TR::ILOpCodes (*OpCodeMapper)(TR::DataType);
 
 
 class IlBuilder : public TR::IlInjector
@@ -307,7 +307,7 @@ protected:
 
    TR::IlValue *lookupSymbol(const char *name);
    void defineSymbol(const char *name, TR::IlValue *v);
-   TR::IlValue *newValue(TR::DataTypes dt);
+   TR::IlValue *newValue(TR::DataType dt);
    TR::IlValue *newValue(TR::IlType *dt);
    void defineValue(const char *name, TR::IlType *dt);
 
@@ -316,7 +316,7 @@ protected:
    void indirectStoreNode(TR::Node *addr, TR::Node *v);
    TR::IlValue *indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad=false);
 
-   TR::Node *zero(TR::DataTypes dt);
+   TR::Node *zero(TR::DataType dt);
    TR::Node *zero(TR::IlType *dt);
    TR::Node *zeroNodeForValue(TR::IlValue *v);
    TR::IlValue *zeroForValue(TR::IlValue *v);

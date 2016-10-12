@@ -218,11 +218,11 @@ TR_RegisterCandidate::getType()
    {
    return getSymbol()->getType();
    }
-TR::DataTypes
+TR::DataType
 TR_RegisterCandidate::getDataType()
    {
    TR::Symbol *rcSymbol = getSymbol();
-   TR::DataTypes dtype = rcSymbol->getDataType();
+   TR::DataType dtype = rcSymbol->getDataType();
 
    return dtype;
    }
@@ -230,7 +230,7 @@ TR_RegisterCandidate::getDataType()
 TR_RegisterKinds
 TR_RegisterCandidate::getRegisterKinds()
   {
-  TR::DataTypes dt = getDataType();
+  TR::DataType dt = getDataType();
   if(dt == TR::Float
      || dt == TR::Double
 #ifdef J9_PROJECT_SPECIFIC
@@ -240,7 +240,7 @@ TR_RegisterCandidate::getRegisterKinds()
 #endif
      )
     return TR_FPR;
-  else if (isVectorType(dt))
+  else if (dt.isVector())
     return TR_VRF;
   else
     return TR_GPR;
@@ -2467,7 +2467,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                       || rc->getDataType() == TR::DecimalLongDouble
 #endif
                       );
-      bool isVector = isVectorType(rc->getDataType());
+      bool isVector = rc->getDataType().isVector();
       bool needs2Regs = false;
       bool isARCandidate = false;
 
@@ -2679,7 +2679,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          }
 
       TR::DataType type = rc->getType();
-      TR::DataTypes dt = rc->getDataType();
+      TR::DataType dt = rc->getDataType();
 
       if (type.isInt64() && cg->getDisableLongGRA())
          {
@@ -2712,7 +2712,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          continue;
          }
 
-      if (isVectorType(dt) && !comp()->cg()->hasGlobalVRF())
+      if (dt.isVector() && !comp()->cg()->hasGlobalVRF())
          {
          if (trace)
             traceMsg(comp(),"Leaving candidate because it has vector type but no global vector registers provided\n");
@@ -2755,7 +2755,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                       || dt == TR::DecimalLongDouble
 #endif
                       );
-      bool isVector = isVectorType(dt);
+      bool isVector = dt.isVector();
       int32_t firstRegister, lastRegister;
       bool isARCandidate = false;
 

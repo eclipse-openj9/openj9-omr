@@ -225,11 +225,6 @@ enum DataTypes
    };
 }
 
-inline bool isAnyIntegralType(TR::DataTypes type)              { return (type == TR::Int8 || type == TR::Int16 || type == TR::Int32 || type == TR::Int64); }
-inline bool isAnyAggregateType(TR::DataTypes type)             { return (type == TR::Aggregate); }
-inline bool isVectorType(TR::DataTypes type)                   { return (type == TR::VectorInt8 || type == TR::VectorInt16 || type == TR::VectorInt32 || type == TR::VectorInt64 ||
-                                                                          type == TR::VectorFloat || type == TR::VectorDouble); }
-
 /**
  * @name OMRDataTypeIntegerLimits
  *
@@ -291,82 +286,69 @@ namespace OMR
 class DataType
    {
 public:
+   DataType() : _type(TR::DataTypes::NoType) { }
    DataType(TR::DataTypes t) : _type(t) { }
 
-   TR::DataTypes getDataType() { return _type; }
+   TR::DataTypes getDataType() const { return _type; }
 
-   bool isInt8()  { return _type == TR::Int8; }
-   bool isInt16() { return _type == TR::Int16; }
-   bool isInt32() { return _type == TR::Int32; }
-   bool isInt64() { return _type == TR::Int64; }
+   TR::DataType& operator=(const TR::DataType& rhs);
+   TR::DataType& operator=(TR::DataTypes rhs);
+
+   bool operator==(const TR::DataType& rhs);
+   bool operator==(TR::DataTypes rhs);
+
+   bool operator!=(const TR::DataType& rhs);
+   bool operator!=(TR::DataTypes rhs);
+
+   bool operator<=(const TR::DataType& rhs);
+   bool operator<=(TR::DataTypes rhs);
+
+   bool operator<(const TR::DataType& rhs);
+   bool operator<(TR::DataTypes rhs);
+
+   bool operator>=(const TR::DataType& rhs);
+   bool operator>=(TR::DataTypes rhs);
+
+   bool operator>(const TR::DataType& rhs);
+   bool operator>(TR::DataTypes rhs);
+
+   operator int() { return getDataType(); }
+
+   bool isInt8()  { return getDataType() == TR::Int8; }
+   bool isInt16() { return getDataType() == TR::Int16; }
+   bool isInt32() { return getDataType() == TR::Int32; }
+   bool isInt64() { return getDataType() == TR::Int64; }
 
    bool isIntegral() { return isInt8() || isInt16() || isInt32() || isInt64(); }
 
    bool isFloatingPoint() { return isBFPorHFP(); }
-   bool isVector() { return _type == TR::VectorInt8 || _type == TR::VectorInt16 || _type == TR::VectorInt32 || _type == TR::VectorInt64 ||
-                            _type == TR::VectorFloat || _type == TR::VectorDouble; }
-   bool isBFPorHFP() { return _type == TR::Float || _type == TR::Double; }
-   bool isDouble() { return _type == TR::Double; }
+   bool isVector() { return getDataType() == TR::VectorInt8 || getDataType() == TR::VectorInt16 || getDataType() == TR::VectorInt32 || getDataType() == TR::VectorInt64 ||
+                            getDataType() == TR::VectorFloat || getDataType() == TR::VectorDouble; }
+   bool isBFPorHFP() { return getDataType() == TR::Float || getDataType() == TR::Double; }
+   bool isDouble() { return getDataType() == TR::Double; }
 
-   bool isAddress() { return _type == TR::Address; }
-   bool isAggregate() { return _type == TR::Aggregate; }
+   bool isAddress() { return getDataType() == TR::Address; }
+   bool isAggregate() { return getDataType() == TR::Aggregate; }
 
-   static TR::DataTypes getIntegralTypeFromPrecision(int32_t precision)
-      {
-      if (precision < 1 || precision >= TR::getMaxSignedPrecision<TR::Int64>())
-         return  TR::NoType;
-      else if (precision < TR::getMaxSignedPrecision<TR::Int8>())
-         return  TR::Int8;
-      else if (precision < TR::getMaxSignedPrecision<TR::Int16>())
-         return  TR::Int16;
-      else if (precision < TR::getMaxSignedPrecision<TR::Int32>())
-         return  TR::Int32;
-      else
-         return  TR::Int64;
-      }
+   bool canGetMaxPrecisionFromType();
+   int32_t getMaxPrecisionFromType();
 
-   static bool canGetMaxPrecisionFromType(TR::DataTypes type);
-   static int32_t getMaxPrecisionFromType(TR::DataTypes type);
+   TR::DataType getVectorIntegralType();
+   TR::DataType getVectorElementType();
 
-   static TR::DataTypes getVectorIntegralType(TR::DataTypes dt)
-      {
-      switch(dt)
-         {
-         case TR::VectorInt8:
-         case TR::VectorInt16:
-         case TR::VectorInt32:
-         case TR::VectorInt64: return dt;
-         case TR::VectorFloat: return TR::VectorInt32;
-         case TR::VectorDouble: return TR::VectorInt64;
-         default:
-            return TR::NoType;
-            break;
-         }
-      }
+   TR::DataType vectorToScalar();
+   TR::DataType scalarToVector();
 
-   static TR::DataTypes getVectorElementType(TR::DataTypes dt)
-      {
-      switch(dt)
-         {
-         case TR::VectorInt8: return TR::Int8;
-         case TR::VectorInt16: return TR::Int16;
-         case TR::VectorInt32: return TR::Int32;
-         case TR::VectorInt64: return TR::Int64;
-         case TR::VectorFloat: return TR::Float;
-         case TR::VectorDouble: return TR::Double;
-         default:
-            return TR::NoType;
-            break;
-         }
-      }
-    static TR::DataTypes getFloatTypeFromSize(int32_t size);
+   static TR::DataType getIntegralTypeFromPrecision(int32_t precision);
 
-   static const char    * getName(TR::DataTypes dt);
-   static const int32_t   getSize(TR::DataTypes dt);
-   static void            setSize(TR::DataTypes dt, int32_t newValue);
-   static const char    * getPrefix(TR::DataTypes dt);
+   static TR::DataType getFloatTypeFromSize(int32_t size);
 
-   static TR::ILOpCodes getDataTypeConversion(TR::DataTypes t1, TR::DataTypes t2);
+   static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);
+
+   static const char    * getName(TR::DataType dt);
+   static const int32_t   getSize(TR::DataType dt);
+   static void            setSize(TR::DataType dt, int32_t newValue);
+   static const char    * getPrefix(TR::DataType dt);
 
    template <typename T> static bool isSignedInt8()  { return false; }
    template <typename T> static bool isSignedInt16() { return false; }
@@ -397,47 +379,5 @@ template <> inline bool OMR::DataType::isUnsignedInt32<uint32_t>() { return true
 template <> inline bool OMR::DataType::isUnsignedInt64<uint64_t>() { return true; }
 
 } // namespace OMR
-
-inline TR::DataTypes vectorToScalar(TR::DataTypes type)
-   {
-   switch (type)
-      {
-      case TR::VectorInt8:
-         return TR::Int8;
-      case TR::VectorInt16:
-         return TR::Int16;
-      case TR::VectorInt32:
-         return TR::Int32;
-      case TR::VectorInt64:
-         return TR::Int64;
-      case TR::VectorFloat:
-         return TR::Float;
-      case TR::VectorDouble:
-         return TR::Double;
-      default:
-         return TR::NoType;
-      }
-   }
-
-inline TR::DataTypes scalarToVector(TR::DataTypes type)
-   {
-   switch (type)
-      {
-      case TR::Int8:
-         return TR::VectorInt8;
-      case TR::Int16:
-         return TR::VectorInt16;
-      case TR::Int32:
-         return TR::VectorInt32;
-      case TR::Int64:
-         return TR::VectorInt64;
-      case TR::Float:
-         return TR::VectorFloat;
-      case TR::Double:
-         return TR::VectorDouble;
-      default:
-         return TR::NoType;
-      }
-   }
 
 #endif

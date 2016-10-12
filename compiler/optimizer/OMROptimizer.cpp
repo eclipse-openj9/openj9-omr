@@ -2500,7 +2500,7 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
             default:
                {
 #ifdef J9_PROJECT_SPECIFIC
-               if (isBCDType(node1->getDataType()))
+               if (node1->getDataType().isBCD())
                   {
                   if (!areBCDAggrConstantNodesEquivalent(node1, node2, _comp))
                      return false;
@@ -2647,8 +2647,8 @@ bool OMR::Optimizer::areNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::C
 #ifdef J9_PROJECT_SPECIFIC
 bool OMR::Optimizer::areBCDAggrConstantNodesEquivalent(TR::Node *node1, TR::Node *node2,  TR::Compilation *_comp)
    {
-   size_t size1 = (isBCDType(node1->getDataType())) ? node1->getDecimalPrecision() : 0;
-   size_t size2 = (isBCDType(node2->getDataType())) ? node2->getDecimalPrecision() : 0;
+   size_t size1 = (node1->getDataType().isBCD()) ? node1->getDecimalPrecision() : 0;
+   size_t size2 = (node2->getDataType().isBCD()) ? node2->getDecimalPrecision() : 0;
 
    if (size1 != size2)
       {

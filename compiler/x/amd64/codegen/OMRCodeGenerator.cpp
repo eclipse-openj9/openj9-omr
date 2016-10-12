@@ -132,7 +132,7 @@ OMR::X86::AMD64::CodeGenerator::longClobberEvaluate(TR::Node *node)
 TR_GlobalRegisterNumber
 OMR::X86::AMD64::CodeGenerator::getLinkageGlobalRegisterNumber(
       int8_t linkageRegisterIndex,
-      TR::DataTypes type)
+      TR::DataType type)
    {
 
    TR_GlobalRegisterNumber result;

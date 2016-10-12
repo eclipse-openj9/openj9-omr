@@ -438,7 +438,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    //
    virtual uintptr_t calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p) { return o; }
 
-   TR_ReturnInfo getReturnInfoFromReturnType(TR::DataTypes);
+   TR_ReturnInfo getReturnInfoFromReturnType(TR::DataType);
 
 protected:
 

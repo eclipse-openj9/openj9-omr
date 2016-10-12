@@ -79,7 +79,7 @@ ResolvedMethod::signature(TR_Memory * trMemory, TR_AllocationKind allocKind)
       return _signature;
    }
 
-TR::DataTypes
+TR::DataType
 ResolvedMethod::parmType(uint32_t slot)
    {
    TR_ASSERT((slot < _numParms), "Invalid slot provided for Parameter Type");
@@ -128,7 +128,7 @@ ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
    for (int32_t parmIndex = 0; parmIndex < parmSlots; ++parmIndex)
       {
       TR::IlType *type = _parmTypes[parmIndex];
-      TR::DataTypes dt = type->getPrimitiveType();
+      TR::DataType dt = type->getPrimitiveType();
       int32_t size = methodSym->convertTypeToSize(dt);
 
       parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type->getPrimitiveType(), false);
@@ -184,7 +184,7 @@ ResolvedMethod::getInjector (TR::IlGeneratorMethodDetails * details,
    return _ilInjector;
    }
 
-TR::DataTypes
+TR::DataType
 ResolvedMethod::returnType()
    {
    return _returnType->getPrimitiveType();

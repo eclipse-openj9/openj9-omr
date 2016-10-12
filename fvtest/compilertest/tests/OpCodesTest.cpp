@@ -126,37 +126,37 @@ const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_1 = (uintptrj_t)100;
 const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_2 = (uintptrj_t)200;
 const uintptrj_t OpCodesTest::ADDRESS_PLACEHOLDER_3 = (uintptrj_t)300;
 
-TR::DataTypes OpCodesTest::_argTypesUnaryByte[_numberOfUnaryArgs] = {TR::Int8};
-TR::DataTypes OpCodesTest::_argTypesUnaryShort[_numberOfUnaryArgs] = {TR::Int16};
-TR::DataTypes OpCodesTest::_argTypesUnaryInt[_numberOfUnaryArgs] = {TR::Int32};
-TR::DataTypes OpCodesTest::_argTypesUnaryLong[_numberOfUnaryArgs] = {TR::Int64};
-TR::DataTypes OpCodesTest::_argTypesUnaryFloat[_numberOfUnaryArgs] = {TR::Float};
-TR::DataTypes OpCodesTest::_argTypesUnaryDouble[_numberOfUnaryArgs] = {TR::Double};
-TR::DataTypes OpCodesTest::_argTypesUnaryAddress[_numberOfUnaryArgs] = {TR::Address};
+TR::DataType OpCodesTest::_argTypesUnaryByte[_numberOfUnaryArgs] = {TR::Int8};
+TR::DataType OpCodesTest::_argTypesUnaryShort[_numberOfUnaryArgs] = {TR::Int16};
+TR::DataType OpCodesTest::_argTypesUnaryInt[_numberOfUnaryArgs] = {TR::Int32};
+TR::DataType OpCodesTest::_argTypesUnaryLong[_numberOfUnaryArgs] = {TR::Int64};
+TR::DataType OpCodesTest::_argTypesUnaryFloat[_numberOfUnaryArgs] = {TR::Float};
+TR::DataType OpCodesTest::_argTypesUnaryDouble[_numberOfUnaryArgs] = {TR::Double};
+TR::DataType OpCodesTest::_argTypesUnaryAddress[_numberOfUnaryArgs] = {TR::Address};
 
-TR::DataTypes OpCodesTest::_argTypesBinaryByte[_numberOfBinaryArgs] = {TR::Int8, TR::Int8};
-TR::DataTypes OpCodesTest::_argTypesBinaryShort[_numberOfBinaryArgs] = {TR::Int16, TR::Int16};
-TR::DataTypes OpCodesTest::_argTypesBinaryInt[_numberOfBinaryArgs] = {TR::Int32, TR::Int32};
-TR::DataTypes OpCodesTest::_argTypesBinaryLong[_numberOfBinaryArgs] = {TR::Int64, TR::Int64};
-TR::DataTypes OpCodesTest::_argTypesBinaryFloat[_numberOfBinaryArgs] = {TR::Float, TR::Float};
-TR::DataTypes OpCodesTest::_argTypesBinaryDouble[_numberOfBinaryArgs] = {TR::Double, TR::Double};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddress[_numberOfBinaryArgs] = {TR::Address, TR::Address};
+TR::DataType OpCodesTest::_argTypesBinaryByte[_numberOfBinaryArgs] = {TR::Int8, TR::Int8};
+TR::DataType OpCodesTest::_argTypesBinaryShort[_numberOfBinaryArgs] = {TR::Int16, TR::Int16};
+TR::DataType OpCodesTest::_argTypesBinaryInt[_numberOfBinaryArgs] = {TR::Int32, TR::Int32};
+TR::DataType OpCodesTest::_argTypesBinaryLong[_numberOfBinaryArgs] = {TR::Int64, TR::Int64};
+TR::DataType OpCodesTest::_argTypesBinaryFloat[_numberOfBinaryArgs] = {TR::Float, TR::Float};
+TR::DataType OpCodesTest::_argTypesBinaryDouble[_numberOfBinaryArgs] = {TR::Double, TR::Double};
+TR::DataType OpCodesTest::_argTypesBinaryAddress[_numberOfBinaryArgs] = {TR::Address, TR::Address};
 
-TR::DataTypes OpCodesTest::_argTypesTernaryByte[_numberOfTernaryArgs] = {TR::Int32,TR::Int8, TR::Int8};
-TR::DataTypes OpCodesTest::_argTypesTernaryShort[_numberOfTernaryArgs] = {TR::Int32,TR::Int16, TR::Int16};
-TR::DataTypes OpCodesTest::_argTypesTernaryInt[_numberOfTernaryArgs] = {TR::Int32,TR::Int32, TR::Int32};
-TR::DataTypes OpCodesTest::_argTypesTernaryLong[_numberOfTernaryArgs] = {TR::Int32,TR::Int64, TR::Int64};
-TR::DataTypes OpCodesTest::_argTypesTernaryFloat[_numberOfTernaryArgs] = {TR::Int32,TR::Float, TR::Float};
-TR::DataTypes OpCodesTest::_argTypesTernaryDouble[_numberOfTernaryArgs] = {TR::Int32,TR::Double, TR::Double};
-TR::DataTypes OpCodesTest::_argTypesTernaryAddress[_numberOfTernaryArgs] = {TR::Int32,TR::Address, TR::Address};
+TR::DataType OpCodesTest::_argTypesTernaryByte[_numberOfTernaryArgs] = {TR::Int32,TR::Int8, TR::Int8};
+TR::DataType OpCodesTest::_argTypesTernaryShort[_numberOfTernaryArgs] = {TR::Int32,TR::Int16, TR::Int16};
+TR::DataType OpCodesTest::_argTypesTernaryInt[_numberOfTernaryArgs] = {TR::Int32,TR::Int32, TR::Int32};
+TR::DataType OpCodesTest::_argTypesTernaryLong[_numberOfTernaryArgs] = {TR::Int32,TR::Int64, TR::Int64};
+TR::DataType OpCodesTest::_argTypesTernaryFloat[_numberOfTernaryArgs] = {TR::Int32,TR::Float, TR::Float};
+TR::DataType OpCodesTest::_argTypesTernaryDouble[_numberOfTernaryArgs] = {TR::Int32,TR::Double, TR::Double};
+TR::DataType OpCodesTest::_argTypesTernaryAddress[_numberOfTernaryArgs] = {TR::Int32,TR::Address, TR::Address};
 
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressByte[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressShort[_numberOfBinaryArgs] = {TR::Address,TR::Int16};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressInt[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressLong[_numberOfBinaryArgs] = {TR::Address, TR::Int64};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressFloat[_numberOfBinaryArgs] = {TR::Address, TR::Float};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressDouble[_numberOfBinaryArgs] = {TR::Address, TR::Double};
-TR::DataTypes OpCodesTest::_argTypesBinaryAddressAddress[_numberOfBinaryArgs] = {TR::Address, TR::Address};
+TR::DataType OpCodesTest::_argTypesBinaryAddressByte[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
+TR::DataType OpCodesTest::_argTypesBinaryAddressShort[_numberOfBinaryArgs] = {TR::Address,TR::Int16};
+TR::DataType OpCodesTest::_argTypesBinaryAddressInt[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
+TR::DataType OpCodesTest::_argTypesBinaryAddressLong[_numberOfBinaryArgs] = {TR::Address, TR::Int64};
+TR::DataType OpCodesTest::_argTypesBinaryAddressFloat[_numberOfBinaryArgs] = {TR::Address, TR::Float};
+TR::DataType OpCodesTest::_argTypesBinaryAddressDouble[_numberOfBinaryArgs] = {TR::Address, TR::Double};
+TR::DataType OpCodesTest::_argTypesBinaryAddressAddress[_numberOfBinaryArgs] = {TR::Address, TR::Address};
 
 //Neg
 signatureCharB_B_testMethodType  * OpCodesTest::_bNeg = 0;
@@ -548,8 +548,8 @@ uint8_t *
 OpCodesTest::compileOpCodeMethod(int32_t opCodeArgsNum,
       TR::ILOpCodes opCode,
       char * resolvedMethodName,
-      TR::DataTypes * argTypes,
-      TR::DataTypes returnType,
+      TR::DataType * argTypes,
+      TR::DataType returnType,
       int32_t & returnCode,
       uint16_t numArgs,
       ...)
@@ -688,8 +688,8 @@ OpCodesTest::compileDirectCallOpCodeMethod(int32_t opCodeArgsNum,
       TR::ILOpCodes opCode,
       char * compileeResolvedMethodName,
       char * testResolvedMethodName,
-      TR::DataTypes * argTypes,
-      TR::DataTypes returnType,
+      TR::DataType * argTypes,
+      TR::DataType returnType,
       int32_t & returnCode)
    {
    TR::TypeDictionary types;
@@ -743,8 +743,8 @@ void
 OpCodesTest::addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
       TR::ILOpCodes opCode,
       char * resolvedMethodName,
-      TR::DataTypes * argTypes,
-      TR::DataTypes returnType)
+      TR::DataType * argTypes,
+      TR::DataType returnType)
    {
    int32_t returnCode = 0;
    compileOpCodeMethod(opCodeArgsNum, opCode, resolvedMethodName, argTypes, returnType, returnCode);
@@ -752,7 +752,7 @@ OpCodesTest::addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
    }
 
 TR::ResolvedMethod *
-OpCodesTest::resolvedMethod(TR::DataTypes dataType)
+OpCodesTest::resolvedMethod(TR::DataType dataType)
    {
    switch (dataType)
       {

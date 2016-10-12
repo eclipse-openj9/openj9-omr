@@ -1755,7 +1755,7 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       bool isParentGlRegDep = getCurrentParent() ? (getCurrentParent()->getOpCodeValue() == TR::GlRegDeps) : false;
       if (isParentGlRegDep)
          {
-         TR::DataTypes t = node->getDataType();
+         TR::DataType t = node->getDataType();
          // This is a half-hearted attempt at getting better register sizes, I know
          TR_RegisterSizes size;
          if (t == TR::Int8)       size = TR_ByteReg;
@@ -2292,7 +2292,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_VPConstraint *info)
    }
 
 const char *
-TR_Debug::getName(TR::DataTypes type)
+TR_Debug::getName(TR::DataType type)
    {
    return TR::DataType::getName(type);
    }
@@ -3672,7 +3672,7 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
             // Temporarily allow known cases to succeed
             //
             TR::ILOpCodes conversionOp = TR::BadILOp;
-            TR::DataTypes childType = child->getDataType();
+            TR::DataType childType = child->getDataType();
             if (childType != expectedType &&
                 childType != TR::NoType &&
                 !((node->getOpCodeValue() == TR::imul || node->getOpCodeValue() == TR::ishl) && child->getOpCodeValue() == TR::loadaddr))
@@ -3680,11 +3680,11 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
                if (getFile() != NULL)
                   {
                   trfprintf(getFile(),
-                                "TREE VERIFICATION ERROR -- node [%s] has wrong type for child [%s] (%s), expected %s\n",
-                                getName(node),
-                                getName(child),
-                                getName(childType),
-                                getName((TR::DataTypes)expectedType));
+                            "TREE VERIFICATION ERROR -- node [%s] has wrong type for child [%s] (%s), expected %s\n",
+                            getName(node),
+                            getName(child),
+                            getName(childType),
+                            getName((TR::DataTypes)expectedType));
                   }
                TR_ASSERT( debug("fixTrees"), "Tree verification error");
                }

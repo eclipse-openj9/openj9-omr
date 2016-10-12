@@ -1778,7 +1778,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ArrayCHKEvaluator(TR::Node *node, TR::Cod
 static TR::Register *generateMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool max)
    {
    TR::Node *child  = node->getFirstChild();
-   TR::DataTypes data_type = child->getDataType();
+   TR::DataType data_type = child->getDataType();
    TR::DataType type = child->getType();
    bool two_reg = type.isInt64();
    bool isUnsigned = false;

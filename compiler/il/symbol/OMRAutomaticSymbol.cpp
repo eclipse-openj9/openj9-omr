@@ -40,19 +40,19 @@ OMR::AutomaticSymbol::AutomaticSymbol() :
    self()->init();
    }
 
-OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d) :
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataType d) :
    TR::RegisterMappedSymbol(d)
    {
    self()->init();
    }
 
-OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d, uint32_t s) :
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataType d, uint32_t s) :
    TR::RegisterMappedSymbol(d, s)
    {
    self()->init();
    }
 
-OMR::AutomaticSymbol::AutomaticSymbol(TR::DataTypes d, uint32_t s, const char *name) :
+OMR::AutomaticSymbol::AutomaticSymbol(TR::DataType d, uint32_t s, const char *name) :
    TR::RegisterMappedSymbol(d, s)
    {
    self()->init(); _name = name;
@@ -117,19 +117,19 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t)
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataTypes d)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataType d)
    {
    return new (t) TR::AutomaticSymbol(d);
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataTypes d, uint32_t s)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataType d, uint32_t s)
    {
    return new (t) TR::AutomaticSymbol(d,s);
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataTypes d, uint32_t s, const char * n)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::create(AllocatorType t,  TR::DataType d, uint32_t s, const char * n)
    {
    return new (t) TR::AutomaticSymbol(d,s,n);
    }
@@ -144,7 +144,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createMarker(AllocatorType m, const 
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(AllocatorType m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(AllocatorType m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataType d, uint32_t s, TR_FrontEnd * fe)
    {
    TR::AutomaticSymbol * sym = new (m) TR::AutomaticSymbol(d,s);
    sym->_regKind = regKind;
@@ -154,7 +154,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(AllocatorType m
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, int32_t arrayType, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, int32_t arrayType, TR::DataType d, uint32_t s, TR_FrontEnd * fe)
    {
    TR::AutomaticSymbol * sym   = new (m) TR::AutomaticSymbol(d, s);
 
@@ -168,7 +168,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, i
 
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(AllocatorType m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataType d, uint32_t s, TR_FrontEnd * fe)
    {
    TR_ASSERT(kind == TR::newarray     ||
              kind == TR::New          ||
@@ -192,7 +192,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType 
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType m, TR::DataTypes d, TR::AutomaticSymbol *pinningArrayPointer)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType m, TR::DataType d, TR::AutomaticSymbol *pinningArrayPointer)
    {
    TR::AutomaticSymbol * sym = new (m) TR::AutomaticSymbol(d);
    sym->setInternalPointer();
@@ -201,7 +201,7 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType 
    }
 
 template <typename AllocatorType>
-TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType m, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe)
+TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(AllocatorType m, TR::DataType d, uint32_t s, TR_FrontEnd * fe)
    {
    TR::AutomaticSymbol * sym = new (m) TR::AutomaticSymbol(d,s);
    sym->setInternalPointer();
@@ -226,44 +226,44 @@ TR::AutomaticSymbol * OMR::AutomaticSymbol::createVariableSized(AllocatorType m,
 
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createMarker(TR_HeapMemory m, const char * name) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(TR_HeapMemory m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_HeapMemory m, int32_t arrayType, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_HeapMemory m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(TR_HeapMemory m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataType d, uint32_t s, TR_FrontEnd * fe) ;
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_HeapMemory m, int32_t arrayType, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_HeapMemory m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_HeapMemory m, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_HeapMemory m, TR::DataTypes d, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_HeapMemory m, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_HeapMemory m, TR::DataType d, TR::AutomaticSymbol *pinningArrayPointer);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_HeapMemory m, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createVariableSized(TR_HeapMemory m, uint32_t s);
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createMarker(TR_StackMemory m, const char * name) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(TR_StackMemory m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_StackMemory m, int32_t arrayType, TR::DataTypes   d, uint32_t s, TR_FrontEnd * fe);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_StackMemory m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(TR_StackMemory m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataType d, uint32_t s, TR_FrontEnd * fe) ;
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_StackMemory m, int32_t arrayType, TR::DataType   d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(TR_StackMemory m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_StackMemory m, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_StackMemory m, TR::DataTypes d, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_StackMemory m, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_StackMemory m, TR::DataType d, TR::AutomaticSymbol *pinningArrayPointer);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(TR_StackMemory m, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createVariableSized(TR_StackMemory m, uint32_t s);
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createMarker(PERSISTENT_NEW_DECLARE m, const char * name) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(PERSISTENT_NEW_DECLARE m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe) ;
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(PERSISTENT_NEW_DECLARE m, int32_t arrayType, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(PERSISTENT_NEW_DECLARE m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createRegisterSymbol(PERSISTENT_NEW_DECLARE m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataType d, uint32_t s, TR_FrontEnd * fe) ;
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(PERSISTENT_NEW_DECLARE m, int32_t arrayType, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createLocalObject(PERSISTENT_NEW_DECLARE m, TR::ILOpCodes kind, TR::SymbolReference * classSymRef, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(PERSISTENT_NEW_DECLARE m, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(PERSISTENT_NEW_DECLARE m, TR::DataTypes d, TR::AutomaticSymbol *pinningArrayPointer);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(PERSISTENT_NEW_DECLARE m, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(PERSISTENT_NEW_DECLARE m, TR::DataType d, TR::AutomaticSymbol *pinningArrayPointer);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::createInternalPointer(PERSISTENT_NEW_DECLARE m, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::createVariableSized(PERSISTENT_NEW_DECLARE m, uint32_t s);
 
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataTypes);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataTypes, uint32_t);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataTypes, uint32_t, const char *);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataType);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataType, uint32_t);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_StackMemory,  TR::DataType, uint32_t, const char *);
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataTypes);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataTypes, uint32_t);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataTypes, uint32_t, const char *);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataType);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataType, uint32_t);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(TR_HeapMemory,  TR::DataType, uint32_t, const char *);
 
 template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataTypes);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataTypes, uint32_t);
-template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataTypes, uint32_t, const char *);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataType);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataType, uint32_t);
+template TR::AutomaticSymbol * OMR::AutomaticSymbol::create(PERSISTENT_NEW_DECLARE,  TR::DataType, uint32_t, const char *);

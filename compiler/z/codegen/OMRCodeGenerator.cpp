@@ -1150,11 +1150,11 @@ OMR::Z::CodeGenerator::considerTypeForGRA(TR::Node *node)
    }
 
 bool
-OMR::Z::CodeGenerator::considerTypeForGRA(TR::DataTypes dt)
+OMR::Z::CodeGenerator::considerTypeForGRA(TR::DataType dt)
    {
    if (
 #ifdef J9_PROJECT_SPECIFIC
-       isBCDType(dt) ||
+       dt.isBCD() ||
 #endif
        dt == TR::Aggregate)
       return false;
@@ -1174,7 +1174,7 @@ OMR::Z::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
       if (self()->isAddressOfPrivateStaticSymRefWithLockedReg(symRef))
          return false;
 #ifdef J9_PROJECT_SPECIFIC
-      if (isBCDType(symRef->getSymbol()->getDataType()))
+      if (symRef->getSymbol()->getDataType().isBCD())
          return false;
       else
 #endif
@@ -6380,7 +6380,7 @@ OMR::Z::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
 ////////////////////////////////////////////////////////////////////////////////
 //  Tactical GRA
 TR_GlobalRegisterNumber
-OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type)
+OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)
    {
    TR_GlobalRegisterNumber result;
    bool isFloat = (type == TR::Float
@@ -6408,7 +6408,7 @@ OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterInde
       {
       result = self()->machine()->getLastLinkageFPR() - linkageRegisterIndex;
       }
-   else if (isVectorType(type))
+   else if (type.isVector())
       {
       result = self()->machine()->getLastGlobalVRFRegisterNumber() - linkageRegisterIndex;
       }
@@ -6553,7 +6553,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
 
    if (node->getOpCode().isIf() && node->getNumChildren() > 0 && !node->getOpCode().isCompBranchOnly())
       {
-      TR::DataTypes dt = node->getFirstChild()->getDataType();
+      TR::DataType dt = node->getFirstChild()->getDataType();
 
       isFloat = (dt == TR::Float
                  || dt == TR::Double
@@ -6700,7 +6700,7 @@ OMR::Z::CodeGenerator::setRealRegisterAssociation(TR::Register * reg, TR::RealRe
    }
 
 bool
-OMR::Z::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt)
+OMR::Z::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
    if ((self()->getGlobalRegister(i) != TR::RealRegister::GPR0) || (dt != TR::Address))
      return true;
@@ -7868,7 +7868,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
 
 
 TR_S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataTypes dt, int64_t value)
+OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value)
    {
    TR_ASSERT( dt == TR::Int64, "create64BitLiteralPoolSnippet is only for data constants\n");
 
@@ -10115,7 +10115,7 @@ OMR::Z::CodeGenerator::genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCop
    }
 
 int32_t
-OMR::Z::CodeGenerator::biasDecimalFloatFrac(TR::DataTypes dt, int32_t frac)
+OMR::Z::CodeGenerator::biasDecimalFloatFrac(TR::DataType dt, int32_t frac)
    {
    switch (dt)
       {
@@ -10806,7 +10806,7 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
    return (MINLONGDISP <= disp) && (disp <= MAXLONGDISP);
    }
 
-bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataTypes dt)
+bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
 
    if (dt == TR::Float) return false;

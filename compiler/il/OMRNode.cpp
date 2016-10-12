@@ -1412,7 +1412,7 @@ OMR::Node::aconst(uintptrj_t val)
 
 
 TR::Node *
-OMR::Node::createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataTypes dt)
+OMR::Node::createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataType dt)
    {
    TR::Node *constZero = NULL;
    switch (dt)
@@ -1451,7 +1451,7 @@ OMR::Node::createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataTypes
    }
 
 TR::Node *
-OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataTypes dt)
+OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt)
    {
    TR::Node *constOne = NULL;
    char buf[20];
@@ -1487,7 +1487,7 @@ OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataTypes dt)
    }
 
 TR::Node *
-OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataTypes dt, intptrj_t extraData)
+OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData)
    {
    TR::Node *result = NULL;
    const int8_t dead8 = (int8_t)((extraData << 4) | 0xD);
@@ -1576,7 +1576,7 @@ OMR::Node::createLiteralPoolAddress(TR::Node *node, size_t offset)
 
 
 TR::Node *
-OMR::Node::createVectorConst(TR::Node *originatingByteCodeNode, TR::DataTypes dt)
+OMR::Node::createVectorConst(TR::Node *originatingByteCodeNode, TR::DataType dt)
    {
    TR::Node *node = TR::Node::createInternal(originatingByteCodeNode, TR::vconst, 0, NULL);
    node->setDataType(dt);
@@ -1585,7 +1585,7 @@ OMR::Node::createVectorConst(TR::Node *originatingByteCodeNode, TR::DataTypes dt
 
 // v2v is vector conversion that preserves bit-pattern, effectively a noop that only changes datatype.
 TR::Node *
-OMR::Node::createVectorConversion(TR::Node *src, TR::DataTypes trgType)
+OMR::Node::createVectorConversion(TR::Node *src, TR::DataType trgType)
    {
    TR::Node *node = TR::Node::createWithoutSymRef(TR::v2v, 1, 1, src);
    node->setDataType(trgType);
@@ -4592,7 +4592,7 @@ OMR::Node::freeExtensionIfExists()
 
 
 
-TR::DataTypes
+TR::DataType
 OMR::Node::getArrayCopyElementType()
    {
    TR::Compilation * comp = TR::comp();
@@ -4600,7 +4600,7 @@ OMR::Node::getArrayCopyElementType()
 
    if (_numChildren==3 || _numChildren==4 || _numChildren==6)
       {
-       return _unionBase._extension.getExtensionPtr()->getElem<TR::DataTypes>(_numChildren);
+       return (TR::DataTypes)_unionBase._extension.getExtensionPtr()->getElem<uint32_t>(_numChildren);
       }
 
    TR_ASSERT(comp, "Query only valid during compilation\n");
@@ -4610,7 +4610,7 @@ OMR::Node::getArrayCopyElementType()
    }
 
 void
-OMR::Node::setArrayCopyElementType(TR::DataTypes type)
+OMR::Node::setArrayCopyElementType(TR::DataType type)
    {
    TR_ASSERT(self()->getOpCodeValue() == TR::arraycopy || self()->getOpCodeValue() == TR::arrayset, "assertion failure");
 
@@ -5069,7 +5069,7 @@ OMR::Node::setPinningArrayPointer(TR::AutomaticSymbol *s)
    return (_unionPropertyA._pinningArrayPointer = s);
    }
 
-TR::DataTypes
+TR::DataType
 OMR::Node::computeDataType()
    {
    // If opcode has SymRef, must get DataType from SymRef, since _dataType member is union-aliased with SymRef.
@@ -5094,19 +5094,19 @@ OMR::Node::computeDataType()
          {
          // Vector comparison returning resultant vector should return vector bool int type, WCode ACR 265
          if (_opCode.isBooleanCompare())
-            _unionPropertyA._dataType = TR::DataType::getVectorIntegralType(self()->getFirstChild()->getDataType());
+            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorIntegralType().getDataType();
          else if (_opCode.isVectorReduction())
-            _unionPropertyA._dataType = TR::DataType::getVectorElementType(self()->getFirstChild()->getDataType());
+            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getVectorElementType().getDataType();
          else if (_opCode.getOpCodeValue() == TR::vsplats)
-            _unionPropertyA._dataType = scalarToVector(self()->getFirstChild()->getDataType());
+            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().scalarToVector().getDataType();
          else
-            _unionPropertyA._dataType = self()->getFirstChild()->getDataType();
+            _unionPropertyA._dataType = self()->getFirstChild()->getDataType().getDataType();
 
          return _unionPropertyA._dataType;
          }
 
       if (_opCode.getOpCodeValue() == TR::getvelem)
-         return _unionPropertyA._dataType = vectorToScalar(self()->getFirstChild()->getDataType());
+         return _unionPropertyA._dataType = self()->getFirstChild()->getDataType().vectorToScalar().getDataType();
       }
    TR_ASSERT(false, "Unsupported typeless opcode in node %p\n", self());
    return TR::NoType;

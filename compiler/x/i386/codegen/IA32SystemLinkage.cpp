@@ -152,7 +152,7 @@ TR_IA32SystemLinkage::TR_IA32SystemLinkage(
    }
 
 uint32_t
-TR_IA32SystemLinkage::getAlignment(TR::DataTypes type)
+TR_IA32SystemLinkage::getAlignment(TR::DataType type)
    {
    switch(type)
       {

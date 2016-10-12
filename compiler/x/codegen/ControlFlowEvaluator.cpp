@@ -525,7 +525,7 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::X86::TreeEvaluator::minmaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child  = node->getFirstChild();
-   TR::DataTypes data_type = child->getDataType();
+   TR::DataType data_type = child->getDataType();
    TR::DataType type = child->getType();
    TR_X86OpCodes  move_op = MOVRegReg(TR::Compiler->target.is64Bit() && type.isInt64());
    TR_X86OpCodes  cmp_op = CMPRegReg(TR::Compiler->target.is64Bit() && type.isInt64());

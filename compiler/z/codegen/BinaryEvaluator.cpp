@@ -688,7 +688,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    else
       {
       TR_S390BinaryCommutativeAnalyser temp(cg);
-      TR::DataTypes type = node->getDataType();
+      TR::DataType type = node->getDataType();
       temp.integerAddAnalyser(node, TR::InstOpCode::AR, type == TR::Int16 ? TR::InstOpCode::AH : TR::InstOpCode::A, TR::InstOpCode::LR);
       targetRegister = node->getRegister();
       }
@@ -768,7 +768,7 @@ generic32BitSubEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    else // The second child of the sub node isn't a loadConstant type.
       {
       TR_S390BinaryAnalyser temp(cg);
-      TR::DataTypes type = node->getDataType();
+      TR::DataType type = node->getDataType();
       temp.intBinaryAnalyser(node, TR::InstOpCode::SR, type == TR::Int16 ? TR::InstOpCode::SH : TR::InstOpCode::S);
       targetRegister = node->getRegister();
       }

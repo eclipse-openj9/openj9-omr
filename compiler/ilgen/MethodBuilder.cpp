@@ -346,7 +346,7 @@ MethodBuilder::lookupSymbol(const char *name)
    TR_HashId typesID;
    _symbolTypes->locate(name, typesID);
 
-   TR::DataTypes type = ((TR::IlType *)(_symbolTypes->getData(typesID)))->getPrimitiveType();
+   TR::DataType type = ((TR::IlType *)(_symbolTypes->getData(typesID)))->getPrimitiveType();
 
    TR_HashId slotID;
    if (_parameterSlot->locate(name, slotID))

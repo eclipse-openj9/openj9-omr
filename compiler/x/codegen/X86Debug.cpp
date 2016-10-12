@@ -2226,7 +2226,7 @@ const char callRegName32[][5] =
 
 static const char*
 getInterpretedMethodNameHelper(TR::MethodSymbol *methodSymbol,
-                               TR::DataTypes     type){
+                               TR::DataType     type){
    if (methodSymbol->isVMInternalNative() || methodSymbol->isJITInternalNative())
       return "icallVMprJavaSendNativeStatic";
 
@@ -2282,10 +2282,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86CallSnippet  * snippet)
          {
             TR::Node       *child   = callNode->getChild(count);
             TR::DataType    type    = child->getType();
-            TR::DataTypes   dt      = type.getDataType();
 
 
-            switch (dt)
+            switch (type)
                {
                case TR::Float:
                case TR::Int8:
@@ -2307,7 +2306,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86CallSnippet  * snippet)
                   bufferPos+=5;
                   break;
                default:
-                  TR_ASSERT(0, "unknown data type: %d", dt);
+                  TR_ASSERT(0, "unknown data type: %d", type);
                   break;
                }
 

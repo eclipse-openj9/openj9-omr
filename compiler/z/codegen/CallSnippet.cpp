@@ -278,7 +278,7 @@ TR_S390CallSnippet::getCallRA()
 
 
 TR_RuntimeHelper
-TR_S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataTypes type, TR::CodeGenerator * cg)
+TR_S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataType type, TR::CodeGenerator * cg)
    {
    bool synchronised = methodSymbol->isSynchronised();
 
@@ -381,7 +381,7 @@ TR_S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataTypes typ
 
 TR_RuntimeHelper TR_S390CallSnippet::getInterpretedDispatchHelper(
    TR::SymbolReference *methodSymRef,
-   TR::DataTypes        type)
+   TR::DataType        type)
    {
    TR::Compilation *comp = cg()->comp();
    TR::MethodSymbol * methodSymbol = methodSymRef->getSymbol()->castToMethodSymbol();

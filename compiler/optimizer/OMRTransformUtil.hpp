@@ -67,7 +67,7 @@ class OMR_EXTENSIBLE TransformUtil
          TR::Compilation *comp,
          TR::Node *address,
          size_t byteLengthOrPrecision,
-         TR::DataTypes dataType,
+         TR::DataType dataType,
          TR::SymbolReference *ref,
          bool store);
 

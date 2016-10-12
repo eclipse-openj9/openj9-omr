@@ -269,7 +269,7 @@ class TR_ExpressionPropagation
                oldPrecision = oldNode->getDecimalPrecision();
                int32_t oldSize = oldNode->getSize();
 
-               TR::DataTypes newDataType = newNode->getOpCode().hasSymbolReference() ? newNode->getSymbolReference()->getSymbol()->getDataType() : newNode->getDataType();
+               TR::DataType newDataType = newNode->getOpCode().hasSymbolReference() ? newNode->getSymbolReference()->getSymbol()->getDataType() : newNode->getDataType();
                int32_t      newSymSize  = newNode->getOpCode().hasSymbolReference() ? newNode->getSymbolReference()->getSymbol()->getSize() : newNode->getSize();
                newPrecision = TR::DataType::getBCDPrecisionFromSize(newDataType, newSymSize);
 

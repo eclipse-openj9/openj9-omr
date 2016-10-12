@@ -982,12 +982,12 @@ int32_t TR_PPCSystemLinkage::buildArgs(TR::Node *callNode,
    for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
       {
       TR::MemoryReference *mref=NULL;
-      TR::Register           *argRegister;
-      bool                   checkSplit = true;
-      TR::DataTypes           childType;
+      TR::Register        *argRegister;
+      bool                 checkSplit = true;
 
       child = callNode->getChild(i);
-      childType = child->getDataType();
+      TR::DataType childType = child->getDataType();
+
       switch (childType)
          {
          case TR::Int8:

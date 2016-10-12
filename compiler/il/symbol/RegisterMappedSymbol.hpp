@@ -35,10 +35,10 @@ protected:
    RegisterMappedSymbol(int32_t o = 0) :
       OMR::RegisterMappedSymbolConnector() { }
 
-   RegisterMappedSymbol(TR::DataTypes d) :
+   RegisterMappedSymbol(TR::DataType d) :
       OMR::RegisterMappedSymbolConnector(d) { }
 
-   RegisterMappedSymbol(TR::DataTypes d, uint32_t s) :
+   RegisterMappedSymbol(TR::DataType d, uint32_t s) :
       OMR::RegisterMappedSymbolConnector(d, s) { }
 
 private:

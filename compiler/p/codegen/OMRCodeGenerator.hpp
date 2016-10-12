@@ -204,10 +204,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    int32_t maxPositiveDisplacement() { return UPPER_IMMED; }
    int32_t maxNegativeDisplacement() { return LOWER_IMMED; }
 
-   int32_t findOrCreateFloatConstant(void *v, TR::DataTypes t,
+   int32_t findOrCreateFloatConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3);
-   int32_t findOrCreateAddressConstant(void *v, TR::DataTypes t,
+   int32_t findOrCreateAddressConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3,
                   TR::Node *node, bool isUnloadablePicSite);
@@ -271,7 +271,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       return false;
       }
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataTypes);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
 
    bool getSupportsEncodeUtf16LittleWithSurrogateTest();
 
@@ -385,13 +385,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    using OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge;
    int32_t getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *);
    int32_t getMaximumNumberOfFPRsAllowedAcrossEdge(TR::Node *);
-   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt);
+   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);
 
    TR_BitVector _globalRegisterBitVectors[TR_numSpillKinds];
    virtual TR_BitVector *getGlobalRegisters(TR_SpillKinds kind, TR_LinkageConventions lc){ return &_globalRegisterBitVectors[kind]; }
 
    TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters], _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // these could be smaller
-   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type);
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type);
 
    virtual void simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary);
 

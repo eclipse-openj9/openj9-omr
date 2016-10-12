@@ -175,8 +175,8 @@ class OpCodesTest : public TestDriver
    compileOpCodeMethod(int32_t opCodeArgsNum,
          TR::ILOpCodes opCode,
          char * resolvedMethodName,
-         TR::DataTypes * argTypes,
-         TR::DataTypes returnType,
+         TR::DataType * argTypes,
+         TR::DataType returnType,
          int32_t & returnCode,
          uint16_t numArgs = 0,
          ...);
@@ -187,18 +187,18 @@ class OpCodesTest : public TestDriver
          TR::ILOpCodes opCode,
          char * compileeResolvedMethodName,
          char * testResolvedMethodName,
-         TR::DataTypes * argTypes,
-         TR::DataTypes returnType,
+         TR::DataType * argTypes,
+         TR::DataType returnType,
          int32_t & returnCode);
 
    void
    addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
          TR::ILOpCodes opCode,
          char * resolvedMethodName,
-         TR::DataTypes * argTypes,
-         TR::DataTypes returnType);
+         TR::DataType * argTypes,
+         TR::DataType returnType);
 
-   static TR::ResolvedMethod * resolvedMethod(TR::DataTypes dataType);
+   static TR::ResolvedMethod * resolvedMethod(TR::DataType dataType);
 
    //number of arguments for datatypes
    static const int32_t RESOLVED_METHOD_NAME_LENGTH = 50;
@@ -655,37 +655,37 @@ class OpCodesTest : public TestDriver
    static signatureCharLL_I_testMethodType *_ifacmpgt;
    static signatureCharILL_L_testMethodType *_aternary;
 
-   static TR::DataTypes _argTypesUnaryByte[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryShort[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryInt[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryLong[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryFloat[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryDouble[_numberOfUnaryArgs];
-   static TR::DataTypes _argTypesUnaryAddress[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryByte[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryShort[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryInt[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryLong[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryFloat[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryDouble[_numberOfUnaryArgs];
+   static TR::DataType _argTypesUnaryAddress[_numberOfUnaryArgs];
 
-   static TR::DataTypes _argTypesBinaryByte[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryShort[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryInt[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryLong[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryFloat[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryDouble[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddress[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryByte[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryShort[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryInt[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryLong[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryFloat[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryDouble[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddress[_numberOfBinaryArgs];
 
-   static TR::DataTypes _argTypesTernaryByte[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryShort[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryInt[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryLong[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryFloat[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryDouble[_numberOfTernaryArgs];
-   static TR::DataTypes _argTypesTernaryAddress[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryByte[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryShort[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryInt[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryLong[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryFloat[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryDouble[_numberOfTernaryArgs];
+   static TR::DataType _argTypesTernaryAddress[_numberOfTernaryArgs];
 
-   static TR::DataTypes _argTypesBinaryAddressByte[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressShort[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressInt[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressLong[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressFloat[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressDouble[_numberOfBinaryArgs];
-   static TR::DataTypes _argTypesBinaryAddressAddress[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressByte[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressShort[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressInt[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressLong[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressFloat[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressDouble[_numberOfBinaryArgs];
+   static TR::DataType _argTypesBinaryAddressAddress[_numberOfBinaryArgs];
 
    // straight C(++) implementations of testMethodType for initial test validation purposes
    template <typename T> static T neg(T a) { return -a;}

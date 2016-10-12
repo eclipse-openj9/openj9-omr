@@ -453,7 +453,7 @@ OMR::IL::opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode)
 
 
 TR::ILOpCodes
-OMR::IL::opCodeForConst(TR::DataTypes dt)
+OMR::IL::opCodeForConst(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -461,7 +461,7 @@ OMR::IL::opCodeForConst(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForDirectLoad(TR::DataTypes dt)
+OMR::IL::opCodeForDirectLoad(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -469,7 +469,7 @@ OMR::IL::opCodeForDirectLoad(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForDirectStore(TR::DataTypes dt)
+OMR::IL::opCodeForDirectStore(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -477,7 +477,7 @@ OMR::IL::opCodeForDirectStore(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIndirectLoad(TR::DataTypes dt)
+OMR::IL::opCodeForIndirectLoad(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -485,7 +485,7 @@ OMR::IL::opCodeForIndirectLoad(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIndirectStore(TR::DataTypes dt)
+OMR::IL::opCodeForIndirectStore(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -493,7 +493,7 @@ OMR::IL::opCodeForIndirectStore(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIndirectArrayLoad(TR::DataTypes dt)
+OMR::IL::opCodeForIndirectArrayLoad(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -501,7 +501,7 @@ OMR::IL::opCodeForIndirectArrayLoad(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIndirectArrayStore(TR::DataTypes dt)
+OMR::IL::opCodeForIndirectArrayStore(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -509,7 +509,7 @@ OMR::IL::opCodeForIndirectArrayStore(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForRegisterLoad(TR::DataTypes dt)
+OMR::IL::opCodeForRegisterLoad(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -517,7 +517,7 @@ OMR::IL::opCodeForRegisterLoad(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForRegisterStore(TR::DataTypes dt)
+OMR::IL::opCodeForRegisterStore(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -525,7 +525,7 @@ OMR::IL::opCodeForRegisterStore(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForCompareEquals(TR::DataTypes dt)
+OMR::IL::opCodeForCompareEquals(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -533,7 +533,7 @@ OMR::IL::opCodeForCompareEquals(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIfCompareEquals(TR::DataTypes dt)
+OMR::IL::opCodeForIfCompareEquals(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -541,7 +541,7 @@ OMR::IL::opCodeForIfCompareEquals(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForCompareNotEquals(TR::DataTypes dt)
+OMR::IL::opCodeForCompareNotEquals(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -549,7 +549,7 @@ OMR::IL::opCodeForCompareNotEquals(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIfCompareNotEquals(TR::DataTypes dt)
+OMR::IL::opCodeForIfCompareNotEquals(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -557,7 +557,7 @@ OMR::IL::opCodeForIfCompareNotEquals(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForCompareLessThan(TR::DataTypes dt)
+OMR::IL::opCodeForCompareLessThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -565,7 +565,7 @@ OMR::IL::opCodeForCompareLessThan(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIfCompareLessThan(TR::DataTypes dt)
+OMR::IL::opCodeForIfCompareLessThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -573,7 +573,7 @@ OMR::IL::opCodeForIfCompareLessThan(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForCompareGreaterThan(TR::DataTypes dt)
+OMR::IL::opCodeForCompareGreaterThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
@@ -581,7 +581,7 @@ OMR::IL::opCodeForCompareGreaterThan(TR::DataTypes dt)
    }
 
 TR::ILOpCodes
-OMR::IL::opCodeForIfCompareGreaterThan(TR::DataTypes dt)
+OMR::IL::opCodeForIfCompareGreaterThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 

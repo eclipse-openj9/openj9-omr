@@ -55,7 +55,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
 
    virtual TR::Register *longClobberEvaluate(TR::Node *node);
 
-   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type);
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type);
    TR_BitVector *getGlobalGPRsPreservedAcrossCalls(){ return &_globalGPRsPreservedAcrossCalls; }
    TR_BitVector *getGlobalFPRsPreservedAcrossCalls(){ return &_globalFPRsPreservedAcrossCalls; }
 

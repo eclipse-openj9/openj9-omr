@@ -50,7 +50,7 @@ struct OpCodeProperties
    uint32_t            properties3; // all those trivial flags32_t constructor calls
    uint32_t            properties4;
 
-   TR::DataTypes       dataType;
+   TR::DataType        dataType;
    uint32_t            typeProperties;
    TR::ILOpCodes       swapChildrenOpCode;
    TR::ILOpCodes       reverseBranchOpCode;
@@ -102,8 +102,8 @@ public:
    TR::ILOpCodes convertCmpToIfCmp()
       { return _opCodeProperties[_opCode].ifCompareOpCode; }
 
-   TR::DataTypes getDataType() const                  { return _opCodeProperties[_opCode].dataType; }
-   static TR::DataTypes getDataType(TR::ILOpCodes op) { return _opCodeProperties[op].dataType; }
+   TR::DataType getDataType() const                  { return _opCodeProperties[_opCode].dataType; }
+   static TR::DataType getDataType(TR::ILOpCodes op) { return _opCodeProperties[op].dataType; }
 
    TR::DataType getType() const                  { return _opCodeProperties[_opCode].dataType; }
    static TR::DataType getType(TR::ILOpCodes op) { return _opCodeProperties[op].dataType; }
@@ -384,7 +384,7 @@ public:
              getOpCodeValue() == TR::arraycopy;
       }
 
-   static TR::ILOpCodes getProperConversion(TR::DataTypes sourceDataType, TR::DataTypes targetDataType, bool needUnsignedConversion)
+   static TR::ILOpCodes getProperConversion(TR::DataType sourceDataType, TR::DataType targetDataType, bool needUnsignedConversion)
       {
       TR::ILOpCodes op = TR::DataType::getDataTypeConversion(sourceDataType, targetDataType);
       if (!needUnsignedConversion) return op;
@@ -490,7 +490,7 @@ public:
          }
       }
 
-   static TR::ILOpCodes compareOpCode(enum TR::DataTypes dt, enum TR_ComparisonTypes ct, bool unsignedCompare = false);
+   static TR::ILOpCodes compareOpCode(TR::DataType dt, enum TR_ComparisonTypes ct, bool unsignedCompare = false);
 
    static bool isStrictlyLessThanCmp(TR::ILOpCodes op)
       {
@@ -640,7 +640,7 @@ public:
          }
       }
 
-   static TR::ILOpCodes indirectLoadOpCode(TR::DataTypes type)
+   static TR::ILOpCodes indirectLoadOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -656,7 +656,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes absOpCode(TR::DataTypes type)
+   static TR::ILOpCodes absOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -669,7 +669,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes addOpCode(TR::DataTypes type, bool is64Bit)
+   static TR::ILOpCodes addOpCode(TR::DataType type, bool is64Bit)
       {
       switch(type)
          {
@@ -691,7 +691,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes subtractOpCode(TR::DataTypes type)
+   static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -712,7 +712,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes multiplyOpCode(TR::DataTypes type)
+   static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -733,7 +733,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes divideOpCode(TR::DataTypes type)
+   static TR::ILOpCodes divideOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -754,7 +754,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes remainderOpCode(TR::DataTypes type)
+   static TR::ILOpCodes remainderOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -769,7 +769,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes andOpCode(TR::DataTypes type)
+   static TR::ILOpCodes andOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -782,7 +782,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes orOpCode(TR::DataTypes type)
+   static TR::ILOpCodes orOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -795,7 +795,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes xorOpCode(TR::DataTypes type)
+   static TR::ILOpCodes xorOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -808,7 +808,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes shiftLeftOpCode(TR::DataTypes type)
+   static TR::ILOpCodes shiftLeftOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -821,7 +821,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes unsignedShiftLeftOpCode(TR::DataTypes type)
+   static TR::ILOpCodes unsignedShiftLeftOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -832,7 +832,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes shiftRightOpCode(TR::DataTypes type)
+   static TR::ILOpCodes shiftRightOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -845,7 +845,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes unsignedShiftRightOpCode(TR::DataTypes type)
+   static TR::ILOpCodes unsignedShiftRightOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -856,7 +856,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes negateOpCode(TR::DataTypes type)
+   static TR::ILOpCodes negateOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -936,7 +936,7 @@ public:
       return false;
       }
 
-   static TR::ILOpCodes ifcmpgeOpCode(TR::DataTypes type, bool isUnsigned)
+   static TR::ILOpCodes ifcmpgeOpCode(TR::DataType type, bool isUnsigned)
       {
       switch(type)
          {
@@ -952,7 +952,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes ifcmpleOpCode(TR::DataTypes type, bool isUnsigned)
+   static TR::ILOpCodes ifcmpleOpCode(TR::DataType type, bool isUnsigned)
       {
       switch(type)
          {
@@ -968,7 +968,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes ifcmpgtOpCode(TR::DataTypes type, bool isUnsigned)
+   static TR::ILOpCodes ifcmpgtOpCode(TR::DataType type, bool isUnsigned)
       {
       switch(type)
          {
@@ -984,7 +984,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes ifcmpltOpCode(TR::DataTypes type, bool isUnsigned)
+   static TR::ILOpCodes ifcmpltOpCode(TR::DataType type, bool isUnsigned)
       {
       switch(type)
          {
@@ -1000,7 +1000,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes ifcmpeqOpCode(TR::DataTypes type)
+   static TR::ILOpCodes ifcmpeqOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -1016,7 +1016,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes ifcmpneOpCode(TR::DataTypes type)
+   static TR::ILOpCodes ifcmpneOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -1032,7 +1032,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes cmpeqOpCode(TR::DataTypes type)
+   static TR::ILOpCodes cmpeqOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -1080,7 +1080,7 @@ public:
          }
       }
 
-   static TR::ILOpCodes constOpCode(TR::DataTypes type)
+   static TR::ILOpCodes constOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -1146,7 +1146,7 @@ public:
             }
          }
 
-   static TR::ILOpCodes returnOpCode(TR::DataTypes type)
+   static TR::ILOpCodes returnOpCode(TR::DataType type)
       {
       switch(type)
          {
@@ -1180,7 +1180,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes getDirectCall(TR::DataTypes type)
+   static TR::ILOpCodes getDirectCall(TR::DataType type)
       {
       switch (type)
          {
@@ -1301,7 +1301,7 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes getRotateOpCodeFromDt(TR::DataTypes type)
+   static TR::ILOpCodes getRotateOpCodeFromDt(TR::DataType type)
       {
       switch (type)
          {
@@ -1315,16 +1315,6 @@ public:
       return TR::BadILOp;
       }
 
-   static TR::ILOpCodes getCorrespondingNonAggregateOp(TR::ILOpCodes op, TR::DataTypes type)
-      {
-      switch (op)
-         {
-         default: return TR::BadILOp;
-         }
-
-      return TR::BadILOp;
-      }
-
    bool isSqrt()
       {
       auto op = getOpCodeValue();
@@ -1332,7 +1322,6 @@ public:
          return true;
       return false;
       }
-
 
 
    template <typename T> static TR::ILOpCodes getConstOpCode();

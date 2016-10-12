@@ -5228,7 +5228,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          {
          TR::Node *duplicateNode = invariantNode->duplicateTree();
 
-         TR::DataTypes dataType = invariantNode->getDataType();
+         TR::DataType dataType = invariantNode->getDataType();
          TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType);
 
          if (invariantNode->getOpCode().hasSymbolReference() && invariantNode->getSymbolReference()->getSymbol()->isNotCollected())
@@ -6028,7 +6028,7 @@ void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *nullChe
          //       iconst strideShift
 
          bool is64BitTarget = TR::Compiler->target.is64Bit() ? true : false;
-         TR::DataTypes type =  spineCheckNode->getChild(0)->getDataType();
+         TR::DataType type =  spineCheckNode->getChild(0)->getDataType();
          uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
          if (comp()->useCompressedPointers() && (type == TR::Address))
             elementSize = TR::Compiler->om.sizeofReferenceField();

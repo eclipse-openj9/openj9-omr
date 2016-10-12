@@ -207,7 +207,7 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Node *node, int32_t &registerPr
          if (!node->getOpCode().isLoadConst())
             {
             bool gprCandidate = true;
-            TR::DataTypes dtype = node->getDataType();
+            TR::DataType dtype = node->getDataType();
             if (dtype == TR::Float
                 || dtype == TR::Double
 #ifdef J9_PROJECT_SPECIFIC
@@ -1158,7 +1158,7 @@ static bool blockIsIgnorablyCold(TR::Block *block, TR::CodeGenerator *cg)
 void
 OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol *symbol)
    {
-   TR::DataTypes dt = TR::NoType;
+   TR::DataType dt = TR::NoType;
 
    if (symbol->getType().isAggregate())
       {
@@ -1239,7 +1239,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
       // Register pressure simulation algorithm
 
       TR::Symbol *rcSymbol = rc->getSymbolReference()->getSymbol();
-      TR::DataTypes dtype = rc->getDataType();
+      TR::DataType dtype = rc->getDataType();
 
       const bool usesFPR = (dtype == TR::Float
                            || dtype == TR::Double
@@ -1250,7 +1250,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
 #endif
                            );
 
-      const bool usesVRF = isVectorType(dtype);
+      const bool usesVRF = dtype.isVector();
 
       if (self()->terseSimulateTreeEvaluation())
          {
@@ -1428,7 +1428,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                   TR_RegisterPressureSummary summary(state._gprPressure, state._fprPressure, state._vrfPressure);
                   if (enableHighWordGRA)
                      {
-                     TR::DataTypes dtype = rc->getSymbolReference()->getSymbol()->getDataType();
+                     TR::DataType dtype = rc->getSymbolReference()->getSymbol()->getDataType();
                      if (dtype == TR::Int8 ||
                          dtype == TR::Int16 ||
                          dtype == TR::Int32)
@@ -1776,7 +1776,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
          // if any HPR candidate is present
          if (remainingRegisters.intersects(HPRMasks))
             {
-            TR::DataTypes dtype = rc->getSymbolReference()->getSymbol()->getDataType();
+            TR::DataType dtype = rc->getSymbolReference()->getSymbol()->getDataType();
             if (hprSimulated && !hprColdBlockSkipped)
                {
                if (self()->traceSimulateTreeEvaluation())
@@ -1860,7 +1860,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
 
    if(1)
       {
-      TR::DataTypes dtype = rc->getDataType();
+      TR::DataType dtype = rc->getDataType();
       uint8_t regsWithheld =
          (dtype == TR::Float
           || dtype == TR::Double

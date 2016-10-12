@@ -908,7 +908,7 @@ static const TR::RealRegister::RegNum NOT_ASSIGNED = (TR::RealRegister::RegNum)-
 
 
 uint32_t
-TR_AMD64SystemLinkage::getAlignment(TR::DataTypes type)
+TR_AMD64SystemLinkage::getAlignment(TR::DataType type)
    {
    switch(type)
       {
@@ -989,7 +989,7 @@ TR_AMD64ABILinkage::mapIncomingParms(
 
 bool
 TR_AMD64SystemLinkage::layoutTypeInRegs(
-      TR::DataTypes type,
+      TR::DataType type,
       uint16_t &intArgs,
       uint16_t &floatArgs,
       parmLayoutResult &layoutResult)

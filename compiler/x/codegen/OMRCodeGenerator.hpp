@@ -760,7 +760,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       return _flags.testAll(UseSSEForSinglePrecision | UseSSEForDoublePrecision);
       }
 
-   bool useSSEFor(TR::DataTypes type);
+   bool useSSEFor(TR::DataType type);
 
    bool useGPRsForWin32CTMConversion()
       {

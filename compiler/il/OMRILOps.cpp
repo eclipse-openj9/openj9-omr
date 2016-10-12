@@ -91,113 +91,10 @@ OMR::ILOpCode::setTarget()
    }
 
 
-#if !defined(_MSC_VER)
-// the microsoft compiler cannot handle these templates
-namespace
-   {
-   enum signedUnsigned
-      {
-      isSigned,
-      isUnSigned
-      };
-   // originally, getCompareOp0, getCompareOp1 and getCompareOp2
-   // were all called getCompareOp.  However, this caused a
-   // compiler crash on AIX.
-   //
-   template<enum signedUnsigned>
-   class getCompareOpCodeHelper_
-      {
-      public:
-      template<enum TR::DataTypes, enum TR_ComparisonTypes>
-         static TR::ILOpCodes getCompareOp0();
-      template<enum TR::DataTypes>
-      static TR::ILOpCodes getCompareOp1(enum TR_ComparisonTypes ct);
-      static TR::ILOpCodes getCompareOp2(enum TR::DataTypes dt,
-                                        enum TR_ComparisonTypes ct);
-      };
-
-   template<enum signedUnsigned s>
-   template<enum TR::DataTypes, enum TR_ComparisonTypes>
-   inline TR::ILOpCodes getCompareOpCodeHelper_<s>::
-      getCompareOp0() { return TR::BadILOp; }
-
-#define declCmp0(S, DT, CT, OP) \
-   template<> template<> inline TR::ILOpCodes \
-   getCompareOpCodeHelper_<S>::getCompareOp0<DT, CT>() { return OP; }
-#define declCmp1(S, DT, OPBase) \
-   declCmp0(S, DT, TR_cmpEQ, OPBase ## eq) \
-   declCmp0(S, DT, TR_cmpNE, OPBase ## ne) \
-   declCmp0(S, DT, TR_cmpLT, OPBase ## lt) \
-   declCmp0(S, DT, TR_cmpLE, OPBase ## le) \
-   declCmp0(S, DT, TR_cmpGT, OPBase ## gt) \
-   declCmp0(S, DT, TR_cmpGE, OPBase ## ge)
-#define declCmp2(DT, sOPBase, uOPBase) \
-   declCmp1(isSigned, DT, sOPBase) \
-   declCmp1(isUnSigned, DT, uOPBase)
-#define declCmp3(DT, OPBase) declCmp1(isSigned, DT, OPBase)
-declCmp2(TR::Int8,    TR::bcmp, TR::bucmp)
-declCmp2(TR::Int16,   TR::scmp, TR::sucmp)
-declCmp2(TR::Int32,   TR::icmp, TR::iucmp)
-declCmp2(TR::Int64,   TR::lcmp, TR::lucmp)
-declCmp3(TR::Float,   TR::fcmp)
-declCmp3(TR::Double,  TR::dcmp)
-declCmp3(TR::Address, TR::acmp)
-#undef declCmp3
-#undef declCmp2
-#undef declCmp1
-#undef declCmp0
-
-   template<signedUnsigned s>
-   template<TR::DataTypes DT>
-   inline TR::ILOpCodes getCompareOpCodeHelper_<s>::getCompareOp1(TR_ComparisonTypes ct)
-      {
-      switch (ct)
-         {
-         case TR_cmpEQ: return getCompareOp0<DT, TR_cmpEQ>();
-         case TR_cmpNE: return getCompareOp0<DT, TR_cmpNE>();
-         case TR_cmpLT: return getCompareOp0<DT, TR_cmpLT>();
-         case TR_cmpLE: return getCompareOp0<DT, TR_cmpLE>();
-         case TR_cmpGT: return getCompareOp0<DT, TR_cmpGT>();
-         case TR_cmpGE: return getCompareOp0<DT, TR_cmpGE>();
-         default: return TR::BadILOp;
-         }
-      }
-
-   template<enum signedUnsigned s> inline
-      TR::ILOpCodes getCompareOpCodeHelper_<s>::
-      getCompareOp2(enum TR::DataTypes dt,
-                    enum TR_ComparisonTypes ct)
-      {
-      switch (dt)
-         {
-         case TR::Int8:    return getCompareOp1<TR::Int8>(ct);
-         case TR::Int16:   return getCompareOp1<TR::Int16>(ct);
-         case TR::Int32:   return getCompareOp1<TR::Int32>(ct);
-         case TR::Int64:   return getCompareOp1<TR::Int64>(ct);
-         case TR::Float:   return getCompareOp1<TR::Float>(ct);
-         case TR::Double:  return getCompareOp1<TR::Double>(ct);
-         case TR::Address: return getCompareOp1<TR::Address>(ct);
-         default: return TR::BadILOp;
-         }
-      }
-   }
-
 TR::ILOpCodes
-OMR::ILOpCode::compareOpCode(enum TR::DataTypes dt,
-                                        enum TR_ComparisonTypes ct,
-                                        bool unsignedCompare)
-   {
-   return unsignedCompare ?
-      getCompareOpCodeHelper_<isUnSigned>::getCompareOp2(dt, ct) :
-      getCompareOpCodeHelper_<isSigned>::getCompareOp2(dt, ct);
-   }
-
-#else
-// version for the microsoft compiler
-TR::ILOpCodes
-OMR::ILOpCode::compareOpCode(enum TR::DataTypes dt,
-                                        enum TR_ComparisonTypes ct,
-                                        bool unsignedCompare)
+OMR::ILOpCode::compareOpCode(TR::DataType dt,
+                             enum TR_ComparisonTypes ct,
+                             bool unsignedCompare)
    {
    if (unsignedCompare)
       {
@@ -393,5 +290,4 @@ OMR::ILOpCode::compareOpCode(enum TR::DataTypes dt,
       }
    return TR::BadILOp;
    }
-#endif
 

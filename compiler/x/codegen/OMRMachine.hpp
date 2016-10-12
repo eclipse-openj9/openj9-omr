@@ -218,7 +218,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR_X86OpCodes fpDeterminePopOpCode(TR_X86OpCodes op);
    TR_X86OpCodes fpDetermineReverseOpCode(TR_X86OpCodes op);
 
-   TR::MemoryReference  *getDummyLocalMR(TR::DataTypes dt);
+   TR::MemoryReference  *getDummyLocalMR(TR::DataType dt);
 
    TR::RealRegister *fpMapToStackRelativeRegister(TR::Register *vreg);
 

@@ -134,7 +134,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
             int32_t slot = defSymRef->getCPIndex();
             if (slot >= methodSymbol->getFirstJitTempIndex()) continue;
             int32_t symRefNum = defSymRef->getReferenceNumber();
-            TR::DataTypes dt = defSymRef->getSymbol()->getDataType();
+            TR::DataType dt = defSymRef->getSymbol()->getDataType();
             bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
 
             if (methodSymbol->sharesStackSlot(defSymRef))
@@ -183,7 +183,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
       bool isTwoSlotSymRefAtThisSlot = false;
       for (TR::SymbolReference* symRef = ppsIt.getFirst(); symRef; symRef = ppsIt.getNext())
          {
-         TR::DataTypes dt = symRef->getSymbol()->getDataType();
+         TR::DataType dt = symRef->getSymbol()->getDataType();
          bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
          if (takesTwoSlots)
             {
@@ -206,7 +206,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
             uint16_t symIndex = symRef->getSymbol()->getSideTableIndex();
             const TR_UseDefInfo::BitVector &defs = aux._defsForSymbol[symIndex];
             unionDef |= defs;
-            TR::DataTypes dt = symRef->getSymbol()->getDataType();
+            TR::DataType dt = symRef->getSymbol()->getDataType();
             bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
             if (takesTwoSlots)
                twoSlotUnionDef |= defs;
@@ -226,7 +226,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
                ListIterator<TR::SymbolReference> prevppsIt(&prevppsList);
                for (TR::SymbolReference* prevSymRef = prevppsIt.getFirst(); prevSymRef; prevSymRef = prevppsIt.getNext())
                   {
-                  TR::DataTypes prevdt = prevSymRef->getSymbol()->getDataType();
+                  TR::DataType prevdt = prevSymRef->getSymbol()->getDataType();
                   bool doesPrevTakesTwoSlots = prevdt == TR::Int64 || prevdt == TR::Double;
                   if (doesPrevTakesTwoSlots)
                      {
@@ -258,7 +258,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
       bool isTwoSlotSymRefAtThisSlot = false;
       for (TR::SymbolReference* symRef = autosIt.getFirst(); symRef; symRef = autosIt.getNext())
          {
-         TR::DataTypes dt = symRef->getSymbol()->getDataType();
+         TR::DataType dt = symRef->getSymbol()->getDataType();
          bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
          if (takesTwoSlots)
             {
@@ -282,7 +282,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
             uint16_t symIndex = symRef->getSymbol()->getSideTableIndex();
             const TR_UseDefInfo::BitVector &defs = aux._defsForSymbol[symIndex];
             unionDef |= defs;
-            TR::DataTypes dt = symRef->getSymbol()->getDataType();
+            TR::DataType dt = symRef->getSymbol()->getDataType();
             bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
             if (takesTwoSlots)
                twoSlotUnionDef |= defs;
@@ -302,7 +302,7 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
                ListIterator<TR::SymbolReference> prevautosIt(&prevautosList);
                for (TR::SymbolReference* prevSymRef = prevautosIt.getFirst(); prevSymRef; prevSymRef = prevautosIt.getNext())
                   {
-                  TR::DataTypes prevdt = prevSymRef->getSymbol()->getDataType();
+                  TR::DataType prevdt = prevSymRef->getSymbol()->getDataType();
                   bool doesPrevTakesTwoSlots = prevdt == TR::Int64 || prevdt == TR::Double;
                   if (doesPrevTakesTwoSlots)
                      {

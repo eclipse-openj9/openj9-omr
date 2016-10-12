@@ -362,7 +362,7 @@ OMR::SymbolReferenceTable::findOrCreateOSRReturnAddressSymbolRef()
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataTypes type)
+OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataType type)
    {
    int32_t index = getArrayletShadowIndex(TR::Address);
    if (!baseArray.element(index))
@@ -382,7 +382,7 @@ OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataTypes typ
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataTypes type, TR::Node * baseArrayAddress)
+OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataType type, TR::Node * baseArrayAddress)
    {
    int32_t index = getArrayShadowIndex(type);
    if (!baseArray.element(index))
@@ -398,7 +398,7 @@ OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataTypes type, 
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataTypes type, TR::Node * baseArrayAddress, int32_t size, TR_FrontEnd * fe)
+OMR::SymbolReferenceTable::findOrCreateArrayShadowSymbolRef(TR::DataType type, TR::Node * baseArrayAddress, int32_t size, TR_FrontEnd * fe)
    {
 
    int32_t index = getArrayShadowIndex(type);
@@ -426,7 +426,7 @@ bool OMR::SymbolReferenceTable::isRefinedArrayShadow(TR::SymbolReference *symRef
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataTypes type)
+OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataType type)
    {
    TR::SymbolReference * symRef = getSymRef(getArrayShadowIndex(type));
    symRef->setReallySharesSymbol();
@@ -438,7 +438,7 @@ OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataTypes type)
 
 //TODO: to be changed to a special sym ref to be used by intrinsics
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataTypes type, TR::Symbol *sym)
+OMR::SymbolReferenceTable::createRefinedArrayShadowSymbolRef(TR::DataType type, TR::Symbol *sym)
    {
    const bool trace=false;
    sym->setArrayShadowSymbol();
@@ -630,7 +630,7 @@ OMR::SymbolReferenceTable::findOrCreateCurrentTimeMaxPrecisionSymbol()
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataTypes type)
+OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type)
    {
    TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),type);
    sym->setStaticAddress(dataAddress);
@@ -639,7 +639,7 @@ OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR:
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataTypes type, TR::KnownObjectTable::Index knownObjectIndex)
+OMR::SymbolReferenceTable::createKnownStaticDataSymbolRef(void *dataAddress, TR::DataType type, TR::KnownObjectTable::Index knownObjectIndex)
    {
    TR::StaticSymbol * sym = TR::StaticSymbol::create(trHeapMemory(),type);
    sym->setStaticAddress(dataAddress);
@@ -1214,9 +1214,9 @@ void OMR::SymbolReferenceTable::initRegisterSymbols(TR::ResolvedMethodSymbol *ow
 #endif
   }
 
-TR::SymbolReference * OMR::SymbolReferenceTable::createRegisterSymbol(TR::ResolvedMethodSymbol *owningMethodSymbol, TR_RegisterKinds regKind, TR::DataTypes dataType, TR_GlobalRegisterNumber grn)
+TR::SymbolReference * OMR::SymbolReferenceTable::createRegisterSymbol(TR::ResolvedMethodSymbol *owningMethodSymbol, TR_RegisterKinds regKind, TR::DataType dataType, TR_GlobalRegisterNumber grn)
   {
-  TR::DataTypes dt;
+  TR::DataType dt(dataType);
   int32_t size;
 
   switch (regKind)
@@ -1275,7 +1275,7 @@ TR::SymbolReference * OMR::SymbolReferenceTable::getRegisterSymbol(TR_GlobalRegi
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findStaticSymbol(TR_ResolvedMethod * owningMethod, int32_t cpIndex, TR::DataTypes type)
+OMR::SymbolReferenceTable::findStaticSymbol(TR_ResolvedMethod * owningMethod, int32_t cpIndex, TR::DataType type)
    {
    TR::SymbolReference * symRef;
    TR_SymRefIterator i(type == TR::Address ? aliasBuilder.addressStaticSymRefs() :
@@ -1347,7 +1347,7 @@ OMR::SymbolReferenceTable::findOrCreateClassSymbol(
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateCPSymbol(
-   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, TR::DataTypes dataType, bool resolved, void * dataAddress)
+   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, TR::DataType dataType, bool resolved, void * dataAddress)
    {
    TR::StaticSymbol *sym;
    TR_SymRefIterator i(aliasBuilder.cpSymRefs(), self());
@@ -1487,7 +1487,7 @@ OMR::SymbolReferenceTable::findOrCreateMethodSymbol(
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataTypes type, bool isReference, bool isInternalPointer, bool reuseAuto, bool isAdjunct, size_t size)
+OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, bool isReference, bool isInternalPointer, bool reuseAuto, bool isAdjunct, size_t size)
    {
    mcount_t owningMethodIndex = owningMethodSymbol->getResolvedMethodIndex();
    int32_t numberOfParms = owningMethodSymbol->getNumParameterSlots();
@@ -1636,7 +1636,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findAvailableAuto(TR::DataTypes type, bool behavesLikeTemp, bool isAdjunct)
+OMR::SymbolReferenceTable::findAvailableAuto(TR::DataType type, bool behavesLikeTemp, bool isAdjunct)
    {
    return findAvailableAuto(_availableAutos, type, behavesLikeTemp, isAdjunct);
    }
@@ -1644,7 +1644,7 @@ OMR::SymbolReferenceTable::findAvailableAuto(TR::DataTypes type, bool behavesLik
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findAvailableAuto(List<TR::SymbolReference> & availableAutos,
-                                           TR::DataTypes type, bool behavesLikeTemp, bool isAdjunct)
+                                           TR::DataType type, bool behavesLikeTemp, bool isAdjunct)
    {
    // Disable sharing of autos in IL gen now as autos compaction based on
    // liveness information has been implemented as a pass before codegen is
@@ -1694,7 +1694,7 @@ static bool parmSlotCameFromExpandingAnArchetypeArgPlaceholder(int32_t slot, TR:
 
 TR::ParameterSymbol *
 OMR::SymbolReferenceTable::createParameterSymbol(
-   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataTypes type, bool isUnsigned)
+   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, bool isUnsigned)
    {
    TR::ParameterSymbol * sym = TR::ParameterSymbol::create(trHeapMemory(),type,isUnsigned,slot);
 
@@ -1714,17 +1714,17 @@ OMR::SymbolReferenceTable::createParameterSymbol(
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataTypes type, bool isInternalPointer, size_t size)
+OMR::SymbolReferenceTable::createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType type, bool isInternalPointer, size_t size)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR_ASSERT(!isBCDType(type) || size,"binary coded decimal types must provide a size\n");
+   TR_ASSERT(!type.isBCD() || size,"binary coded decimal types must provide a size\n");
 #endif
 
    return findOrCreateAutoSymbol(owningMethodSymbol, owningMethodSymbol->incTempIndex(fe()), type, true, isInternalPointer, false, false, size);
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createCoDependententTemporary(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataTypes type, bool isInternalPointer, size_t size, TR::Symbol *coDependent, int32_t offset)
+OMR::SymbolReferenceTable::createCoDependententTemporary(TR::ResolvedMethodSymbol *owningMethodSymbol, TR::DataType type, bool isInternalPointer, size_t size, TR::Symbol *coDependent, int32_t offset)
    {
    TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, offset, type, true, isInternalPointer, false, false, size);
    return tempSymRef;
@@ -1733,10 +1733,10 @@ OMR::SymbolReferenceTable::createCoDependententTemporary(TR::ResolvedMethodSymbo
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
-   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataTypes type, size_t size)
+   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, size_t size)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR_ASSERT(!isBCDType(type) || size,"binary coded decimal types must provide a size\n");
+   TR_ASSERT(!type.isBCD() || size,"binary coded decimal types must provide a size\n");
 #endif
    return findOrCreateAutoSymbol(owningMethodSymbol, -(slot + 1), type, true, false, false, false, size);
    }
@@ -1789,7 +1789,7 @@ OMR::SymbolReferenceTable::createLocalPrimArray(int32_t objectSize, TR::Resolved
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataTypes d, void *address)
+OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataType d, void *address)
    {
    ListIterator<TR::SymbolReference> i(&_debugCounterSymbolRefs);
    TR::SymbolReference *result;

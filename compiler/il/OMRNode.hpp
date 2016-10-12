@@ -308,17 +308,17 @@ public:
    static TR::Node *aconst(TR::Node *originatingByteCodeNode, uintptrj_t val, uint8_t precision);
    static TR::Node *aconst(uintptrj_t val);
 
-   static TR::Node *createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataTypes dt);
-   static TR::Node *createConstOne(TR::Node *originatingByteCodeNode, TR::DataTypes dt);
-   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataTypes dt, intptrj_t extraData=0);
+   static TR::Node *createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataType dt);
+   static TR::Node *createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt);
+   static TR::Node *createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, intptrj_t extraData=0);
 
    static TR::Node *createCompressedRefsAnchor(TR::Node *firstChild);
 
    static TR::Node *createAddConstantToAddress(TR::Node * addr, intptr_t value, TR::Node * parent = NULL);
    static TR::Node *createLiteralPoolAddress(TR::Node *node, size_t offset);
 
-   static TR::Node *createVectorConst(TR::Node *originatingByteCodeNode, TR::DataTypes dt);
-   static TR::Node *createVectorConversion(TR::Node *src, TR::DataTypes trgType);
+   static TR::Node *createVectorConst(TR::Node *originatingByteCodeNode, TR::DataType dt);
+   static TR::Node *createVectorConversion(TR::Node *src, TR::DataType trgType);
 
 /**
  * Private constructor helpers
@@ -786,8 +786,8 @@ public:
     */
    void                    freeExtensionIfExists();
 
-   TR::DataTypes           getArrayCopyElementType();
-   void                    setArrayCopyElementType(TR::DataTypes type);
+   TR::DataType           getArrayCopyElementType();
+   void                    setArrayCopyElementType(TR::DataType type);
 
    TR_OpaqueClassBlock *   getArrayStoreClassInNode();
    void                    setArrayStoreClassInNode(TR_OpaqueClassBlock *o);
@@ -867,9 +867,9 @@ public:
    TR::AutomaticSymbol * getPinningArrayPointer();
    TR::AutomaticSymbol * setPinningArrayPointer(TR::AutomaticSymbol *s);
 
-   inline TR::DataTypes   getDataType();
-   inline TR::DataTypes   setDataType(TR::DataTypes dt);
-   TR::DataTypes          computeDataType();
+   inline TR::DataType   getDataType();
+   inline TR::DataType   setDataType(TR::DataType dt);
+   TR::DataType          computeDataType();
 
    /**
     * UnionPropertyA functions end
@@ -1660,7 +1660,7 @@ protected:
       TR::Block             *_block;                        ///< hasBlock()
       int32_t                _arrayStride;                  ///< hasArrayStride()
       TR::AutomaticSymbol  *_pinningArrayPointer;          ///< hasPinningArrayPointer()
-      TR::DataTypes          _dataType;                     ///< hasDataType()
+      TR::DataTypes         _dataType;                     ///< hasDataType()  TODO: Change to TR::DataType once all target compilers support it
 
       UnionPropertyA()
          {

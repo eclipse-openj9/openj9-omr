@@ -464,10 +464,10 @@ TR::MemoryReference * generateS390MemoryReference(TR::MemoryReference &, int32_t
 TR::MemoryReference * generateS390MemoryReference(TR::Node *, TR::SymbolReference *, TR::CodeGenerator *);
 TR::MemoryReference * generateS390MemoryReference(TR::Snippet *, TR::CodeGenerator *, TR::Register *, TR::Node *);
 TR::MemoryReference * generateS390MemoryReference(TR::Snippet *, TR::Register *, int32_t, TR::CodeGenerator *);
-TR::MemoryReference * generateS390MemoryReference(int32_t, enum TR::DataTypes, TR::CodeGenerator *, TR::Register *, TR::Node *node = NULL);
-TR::MemoryReference * generateS390MemoryReference(int64_t, enum TR::DataTypes, TR::CodeGenerator *, TR::Register *, TR::Node *node = NULL);
-TR::MemoryReference * generateS390MemoryReference(float  , enum TR::DataTypes, TR::CodeGenerator *, TR::Node *);
-TR::MemoryReference * generateS390MemoryReference(double , enum TR::DataTypes, TR::CodeGenerator *, TR::Node *);
+TR::MemoryReference * generateS390MemoryReference(int32_t, TR::DataType, TR::CodeGenerator *, TR::Register *, TR::Node *node = NULL);
+TR::MemoryReference * generateS390MemoryReference(int64_t, TR::DataType, TR::CodeGenerator *, TR::Register *, TR::Node *node = NULL);
+TR::MemoryReference * generateS390MemoryReference(float  , TR::DataType, TR::CodeGenerator *, TR::Node *);
+TR::MemoryReference * generateS390MemoryReference(double , TR::DataType, TR::CodeGenerator *, TR::Node *);
 TR::MemoryReference * generateS390MemoryReference(TR::CodeGenerator * cg, TR::Node *, TR::Node *, int32_t disp=0, bool forSS=false);
 
 TR::MemoryReference * generateS390ConstantAreaMemoryReference(TR::Register *br, int32_t disp, TR::Node *node, TR::CodeGenerator *cg, bool forSS);

@@ -33,7 +33,7 @@ namespace OMR { typedef OMR::ParameterSymbol ParameterSymbolConnector; }
 #include <stddef.h>                  // for size_t
 #include <stdint.h>                  // for int32_t, int8_t, etc
 #include "env/KnownObjectTable.hpp"  // for KnownObjectTable, etc
-#include "il/DataTypes.hpp"          // for DataTypes
+#include "il/DataTypes.hpp"          // for DataType
 
 namespace TR { class ParameterSymbol; }
 
@@ -45,19 +45,19 @@ class OMR_EXTENSIBLE ParameterSymbol : public TR::RegisterMappedSymbol
 
 protected:
 
-   ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot);
+   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot);
 
-   ParameterSymbol(TR::DataTypes d, bool isUnsigned, int32_t slot, size_t size);
+   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size);
 
    TR::ParameterSymbol * self();
 
 public:
 
    template <typename AllocatorType>
-   static TR::ParameterSymbol * create(AllocatorType, TR::DataTypes, bool, int32_t);
+   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, bool, int32_t);
 
    template <typename AllocatorType>
-   static TR::ParameterSymbol * create(AllocatorType, TR::DataTypes, bool, int32_t, size_t);
+   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, bool, int32_t, size_t);
 
    int32_t  getParameterOffset()               { return _mappedOffset; }
    void     setParameterOffset(int32_t o);

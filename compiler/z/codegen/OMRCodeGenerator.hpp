@@ -472,7 +472,7 @@ public:
    void genMemClear(TR::MemoryReference *targetMR, TR::Node *targetNode, int64_t clearSize);
 
    void genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCopy, TR::MemoryReference *targetMR, size_t litPoolOffset, TR::InstOpCode::Mnemonic op = TR::InstOpCode::MVC);
-   int32_t biasDecimalFloatFrac(TR::DataTypes dt, int32_t frac);
+   int32_t biasDecimalFloatFrac(TR::DataType dt, int32_t frac);
 
 
    bool isMemcpyWithPadIfFoldable(TR::Node *node, TR_MemCpyPadTypes type);
@@ -640,7 +640,7 @@ public:
    // GRA
    //
    bool prepareForGRA();
-   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataTypes type);
+   TR_GlobalRegisterNumber getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type);
 
    TR_BitVector _globalRegisterBitVectors[TR_numSpillKinds];
    virtual TR_BitVector *getGlobalRegisters(TR_SpillKinds kind, TR_LinkageConventions lc){ return &_globalRegisterBitVectors[kind]; }
@@ -653,7 +653,7 @@ public:
    TR_GlobalRegisterNumber getGlobalGPRFromHPR (TR_GlobalRegisterNumber n);
 
    bool considerTypeForGRA(TR::Node *node);
-   bool considerTypeForGRA(TR::DataTypes dt);
+   bool considerTypeForGRA(TR::DataType dt);
    bool considerTypeForGRA(TR::SymbolReference *symRef);
 
    // Number of assignable GPRs
@@ -671,7 +671,7 @@ public:
    bool allowGlobalRegisterAcrossBranch(TR_RegisterCandidate *, TR::Node *);
    void setRealRegisterAssociation(TR::Register     *reg,
                                    TR::RealRegister::RegNum realNum);
-   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataTypes dt);
+   bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);
    void registerSymbolSetup();
 
    // Used to model register liveness without Future Use Count.
@@ -887,7 +887,7 @@ public:
    TR_S390ConstantDataSnippet * getConstantDataSnippet(CS2::HashIndex hi) { return _constantHash.DataAt(hi);}
 
 
-   TR_S390ConstantDataSnippet * create64BitLiteralPoolSnippet(TR::DataTypes dt, int64_t value);
+   TR_S390ConstantDataSnippet * create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value);
    TR_S390ConstantDataSnippet * createLiteralPoolSnippet(TR::Node * node);
    TR_S390ConstantInstructionSnippet *createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr);
    TR_S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size, bool isWarm = 0);
@@ -1100,7 +1100,7 @@ public:
    bool constLoadNeedsLiteralFromPool(TR::Node *node);
    virtual bool isDispInRange(int64_t disp);
 
-   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataTypes);
+   bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
 
    bool canOptimizeEdit(uint8_t *parm, int32_t length);
    bool parseEditParm(uint8_t *parm,

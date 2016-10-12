@@ -688,7 +688,7 @@ OMR::Node::setBranchDestination(TR::TreeTop * p)
    return (_unionPropertyA._branchDestinationNode = p);
    }
 
-TR::DataTypes
+TR::DataType
 OMR::Node::getDataType()
    {
    if (!_opCode.hasNoDataType())
@@ -696,11 +696,11 @@ OMR::Node::getDataType()
    return self()->computeDataType();
    }
 
-TR::DataTypes
-OMR::Node::setDataType(TR::DataTypes dt)
+TR::DataType
+OMR::Node::setDataType(TR::DataType dt)
    {
    TR_ASSERT(self()->hasDataType(), "attempting to access _dataType field for node %s %p that does not have it", self()->getOpCode().getName(), this);
-   return (_unionPropertyA._dataType = dt);
+   return (_unionPropertyA._dataType = dt.getDataType());
    }
 
 /**

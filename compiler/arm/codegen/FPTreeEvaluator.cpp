@@ -2496,7 +2496,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::Co
 static TR::Register *generateFloatMaxMin(TR::Node *node, TR::CodeGenerator *cg, bool max)
    {
    TR::Node *firstChild  = node->getFirstChild();
-   TR::DataTypes data_type = firstChild->getDataType();
+   TR::DataType data_type = firstChild->getDataType();
    TR::DataType type = firstChild->getType();
    TR::Instruction *cursor;
    TR::Register *trgReg, *trgFloatReg;

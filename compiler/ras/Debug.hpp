@@ -437,7 +437,7 @@ public:
 
    virtual const char * getName(TR::ILOpCode);
    virtual const char * getName(TR::ILOpCodes);
-   virtual const char * getName(TR::DataTypes);
+   virtual const char * getName(TR::DataType);
    virtual const char * getName(TR_RawBCDSignCode);
    virtual const char * getName(TR::LabelSymbol *);
    virtual const char * getName(TR::SymbolReference *);

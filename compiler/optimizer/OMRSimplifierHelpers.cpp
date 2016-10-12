@@ -1036,7 +1036,7 @@ TR::Node *removeOperandWidening(TR::Node *node, TR::Node *parent, TR::Block *blo
 #endif
 
 // NOTE: This function only (and should only) decodes opcodes found in conversionMap table!!!
-bool decodeConversionOpcode(TR::ILOpCode op, TR::DataTypes nodeDataType, TR::DataTypes &sourceDataType, TR::DataTypes &targetDataType)
+bool decodeConversionOpcode(TR::ILOpCode op, TR::DataType nodeDataType, TR::DataType &sourceDataType, TR::DataType &targetDataType)
    {
    if (!op.isConversion())
       {

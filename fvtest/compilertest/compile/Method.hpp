@@ -137,7 +137,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
    virtual void                * resolvedMethodAddress()                    { return (void *)_ilInjector; }
 
    virtual uint16_t              numberOfParameterSlots()                   { return _numParms; }
-   virtual TR::DataTypes         parmType(uint32_t slot);
+   virtual TR::DataType         parmType(uint32_t slot);
    virtual uint16_t              numberOfTemps()                            { return 0; }
 
    virtual void                * startAddressForJittedMethod()              { return (getEntryPoint()); }
@@ -150,7 +150,7 @@ class ResolvedMethod : public ResolvedMethodBase, public Method
 
    const char                  * getLineNumber()                            { return _lineNumber;}
    char                        * getSignature()                             { return _signature;}
-   TR::DataTypes                 returnType();
+   TR::DataType                 returnType();
    TR::IlType                  * returnIlType()                             { return _returnType; }
    int32_t                       getNumArgs()                               { return _numParms;}
    void                          setEntryPoint(void *ep)                    { _entryPoint = ep; }

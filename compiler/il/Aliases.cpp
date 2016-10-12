@@ -624,18 +624,18 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
 #endif
 
          // alias vector arrays shadows  with corresponding scalar array shadows
-         if (_symbol->isArrayShadowSymbol() && isVectorType(_symbol->getDataType()))
+         if (_symbol->isArrayShadowSymbol() && _symbol->getDataType().isVector())
             {
             if (!aliases)
                aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
-            aliases->set(symRefTab->getArrayShadowIndex(vectorToScalar(_symbol->getDataType())));
+            aliases->set(symRefTab->getArrayShadowIndex(_symbol->getDataType().vectorToScalar()));
             }
          // the other way around
-         if (_symbol->isArrayShadowSymbol() && !isVectorType(_symbol->getDataType()))
+         if (_symbol->isArrayShadowSymbol() && !_symbol->getDataType().isVector())
             {
             if (!aliases)
                aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
-            aliases->set(symRefTab->getArrayShadowIndex(scalarToVector(_symbol->getDataType())));
+            aliases->set(symRefTab->getArrayShadowIndex(_symbol->getDataType().scalarToVector()));
             }
 
 
@@ -646,7 +646,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             if (!aliases)
                aliases = new (comp->trHeapMemory()) TR_BitVector(symRefTab->getNumSymRefs(), comp->trMemory(), heapAlloc, growable);
 
-            TR::DataTypes type = _symbol->getDataType();
+            TR::DataType type = _symbol->getDataType();
             TR_BitVectorIterator bvi(symRefTab->aliasBuilder.arrayElementSymRefs());
             int32_t symRefNum;
             while (bvi.hasMoreElements())
@@ -855,7 +855,7 @@ addVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol * methodSymbol, TR_BitVecto
          {
          TR::SymbolReference * symRefInCallee = node->getSymbolReference(), * symRefInCaller;
          TR::Symbol * symInCallee = symRefInCallee->getSymbol();
-         TR::DataTypes type = symInCallee->getDataType();
+         TR::DataType type = symInCallee->getDataType();
          if (symInCallee->isShadow())
             {
             if (symInCallee->isArrayShadowSymbol())

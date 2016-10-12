@@ -55,23 +55,23 @@ public:
    static TR::AutomaticSymbol * create(AllocatorType);
 
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * create(AllocatorType, TR::DataTypes);
+   static TR::AutomaticSymbol * create(AllocatorType, TR::DataType);
 
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * create(AllocatorType, TR::DataTypes, uint32_t);
+   static TR::AutomaticSymbol * create(AllocatorType, TR::DataType, uint32_t);
 
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * create(AllocatorType, TR::DataTypes, uint32_t, const char *);
+   static TR::AutomaticSymbol * create(AllocatorType, TR::DataType, uint32_t, const char *);
 
 protected:
 
    AutomaticSymbol();
 
-   AutomaticSymbol(TR::DataTypes d);
+   AutomaticSymbol(TR::DataType d);
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s);
+   AutomaticSymbol(TR::DataType d, uint32_t s);
 
-   AutomaticSymbol(TR::DataTypes d, uint32_t s, const char *name);
+   AutomaticSymbol(TR::DataType d, uint32_t s, const char *name);
 
    void init();
 
@@ -129,7 +129,7 @@ public:
  *
  */
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * createRegisterSymbol(AllocatorType m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+   static TR::AutomaticSymbol * createRegisterSymbol(AllocatorType m, TR_RegisterKinds regKind, uint32_t globalRegNum, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 
    TR_RegisterKinds  getRegisterKind() const                { return _regKind;                        }
    void              setGlobalRegisterNumber(uint32_t grn)  { _globalRegisterNumber = grn;            }
@@ -158,7 +158,7 @@ public:
    template <typename AllocatorType>
    static TR::AutomaticSymbol * createLocalObject(AllocatorType  m,
                                                  int32_t          arrayType,
-                                                 TR::DataTypes    d,
+                                                 TR::DataType    d,
                                                  uint32_t         s,
                                                  TR_FrontEnd *    fe);
 
@@ -172,7 +172,7 @@ public:
    static TR::AutomaticSymbol * createLocalObject(AllocatorType          m,
                                                    TR::ILOpCodes          kind,
                                                    TR::SymbolReference *  classSymRef,
-                                                   TR::DataTypes          d,
+                                                   TR::DataType          d,
                                                    uint32_t               s,
                                                    TR_FrontEnd *          fe);
 
@@ -223,10 +223,10 @@ public:
    static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::AutomaticSymbol *pinningArrayPointer = 0);
 
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::DataTypes d, TR::AutomaticSymbol *pinningArrayPointer = 0);
+   static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::DataType d, TR::AutomaticSymbol *pinningArrayPointer = 0);
 
    template <typename AllocatorType>
-   static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::DataTypes d, uint32_t s, TR_FrontEnd * fe);
+   static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 
    TR::AutomaticSymbol *getPinningArrayPointer()
       {

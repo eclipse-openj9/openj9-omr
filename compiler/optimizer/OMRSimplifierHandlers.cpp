@@ -1768,7 +1768,7 @@ static bool reduceLongOp(TR::Node * node, TR::Block * block, TR::Simplifier * s,
    return true;
    }
 
-static void fold2SmallerIntConstant(TR::Node * node, TR::Node *child, TR::DataTypes sdt, TR::DataTypes tdt, TR::Simplifier * s)
+static void fold2SmallerIntConstant(TR::Node * node, TR::Node *child, TR::DataType sdt, TR::DataType tdt, TR::Simplifier * s)
    {
    int32_t val;
    switch (sdt)
@@ -1807,7 +1807,7 @@ static TR::Node *intDemoteSimplifier(TR::Node * node, TR::Block * block, TR::Sim
 
    TR::ILOpCode op = node->getOpCode();
 
-   TR::DataTypes sourceDataType, targetDataType;
+   TR::DataType sourceDataType(TR::DataTypes::NoType), targetDataType(TR::DataTypes::NoType);
 
    if (!decodeConversionOpcode(op, node->getDataType(), sourceDataType, targetDataType))
       return node;
@@ -1857,14 +1857,13 @@ static TR::Node *intDemoteSimplifier(TR::Node * node, TR::Block * block, TR::Sim
    // TODO: do we really need Tx to be 64 bit?
 
    TR::ILOpCode childOp = firstChild->getOpCode();
-   TR::DataTypes childSourceDataType, childTargetDataType;
+   TR::DataType childSourceDataType(TR::DataTypes::NoType), childTargetDataType(TR::DataTypes::NoType);
 
    if (sourceIs64Bit && decodeConversionOpcode(childOp, firstChild->getDataType(), childSourceDataType, childTargetDataType) && (childSourceDataType != targetDataType))
       {
       bool wantZeroExtension = childOp.isZeroExtension();
-      TR::DataType childSourceType = childSourceDataType;
       uint32_t childSourceSize = TR::ILOpCode::getSize(TR::ILOpCode::getProperConversion(childTargetDataType, childSourceDataType, wantZeroExtension));  // size of childSourceDataType (hack)
-      if (childSourceType.isIntegral() && (childSourceSize < sourceSize))
+      if (childSourceDataType.isIntegral() && (childSourceSize < sourceSize))
          {
          bool wantZeroExtension = childOp.isZeroExtension();
          TR::ILOpCodes foldOp =  TR::ILOpCode::getProperConversion(childSourceDataType, targetDataType, wantZeroExtension);
@@ -5178,7 +5177,7 @@ static void bitTestingOp(TR::Node * node, TR::Simplifier *s)
   firstChild->setAndIncChild(0, shift->getFirstChild());
   shift->recursivelyDecReferenceCount();
 
-  TR::DataTypes dt = node->getFirstChild()->getDataType();
+  TR::DataType dt = node->getFirstChild()->getDataType();
 
   switch (dt)
      {
@@ -5702,11 +5701,11 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
        !s->comp()->cg()->getLinkage()->isArgumentListSymbol(firstChild->getSymbolReference()->getSymbol(), s->comp())) // argList symbol can grow later on
        {
        bool newOType = false;
-       TR::DataTypes loadDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
+       TR::DataType loadDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
        intptrj_t loadSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
        intptrj_t loadSymSize = node->getSymbolReference()->getSymbol()->getSize();
 
-       TR::DataTypes addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
+       TR::DataType addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
        intptrj_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
        TR::Symbol* addrSymbol = firstChild->getSymbolReference()->getSymbol();
        bool localStatic = false;
@@ -5837,11 +5836,11 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
        {
        bool newOType = false;
 
-       TR::DataTypes storeDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
+       TR::DataType storeDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
        intptrj_t storeSize = newOType ? node->getSize() : node->getSymbolReference()->getSymbol()->getSize();
        intptrj_t storeSymSize = node->getSymbolReference()->getSymbol()->getSize();
 
-       TR::DataTypes addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
+       TR::DataType addrDataType = firstChild->getSymbolReference()->getSymbol()->getDataType();
        intptrj_t addrSize = firstChild->getSymbolReference()->getSymbol()->getSize();
        TR::Symbol *addrSymbol = firstChild->getSymbolReference()->getSymbol();
 
@@ -17155,7 +17154,7 @@ TR::Node *bndchkwithspinechkSimplifier(TR::Node * node, TR::Block * block, TR::S
       // We need to determine the element size in order to prove the spine
       // check is not necessary.  Derive it from the array element node.
       //
-      TR::DataTypes dt = node->getFirstChild()->getDataType();
+      TR::DataType dt = node->getFirstChild()->getDataType();
 
       int32_t elementSize = (dt == TR::Address) ?
                               TR::Compiler->om.sizeofReferenceField() :

@@ -964,7 +964,7 @@ OMR::ResolvedMethodSymbol::sharesStackSlot(TR::SymbolReference *symRef)
    int32_t slot = symRef->getCPIndex();
    if (slot >= self()->getFirstJitTempIndex())
       return false; // Jit temps don't share slots
-   TR::DataTypes dt = symRef->getSymbol()->getDataType();
+   TR::DataType dt = symRef->getSymbol()->getDataType();
    bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
 
    List<TR::SymbolReference> *listForPrevSlot, *list, *listForNextSlot;
@@ -1301,7 +1301,7 @@ OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
       bool takesTwoSlots = false;
       for (TR::SymbolReference* symRef = ppsIt.getFirst(); symRef; symRef = ppsIt.getNext())
          {
-         TR::DataTypes dt = symRef->getSymbol()->getDataType();
+         TR::DataType dt = symRef->getSymbol()->getDataType();
          takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
          if (takesTwoSlots)
             break;
@@ -1341,7 +1341,7 @@ OMR::ResolvedMethodSymbol::sharesStackSlots(TR::Compilation *comp)
 
       for (; symRef; symRef = autosIt.getNext())
          {
-         TR::DataTypes dt = symRef->getSymbol()->getDataType();
+         TR::DataType dt = symRef->getSymbol()->getDataType();
          takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
          if (takesTwoSlots)
             break;

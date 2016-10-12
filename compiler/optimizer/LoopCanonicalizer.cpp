@@ -2085,7 +2085,7 @@ bool TR_LoopCanonicalizer::replaceInductionVariableComputationsInExits(TR_Struct
       if (!structure->contains(block->getStructureOf()))
          {
          TR::Block *newBlock = (*edge)->getFrom()->asBlock()->splitEdge((*edge)->getFrom()->asBlock(), block, comp());
-         TR::DataTypes dataType = newSymbolReference->getSymbol()->getDataType();
+         TR::DataType dataType = newSymbolReference->getSymbol()->getDataType();
          TR::Node *subNode = TR::Node::create((dataType == TR::Int32) ? TR::iadd : TR::ladd, 2,
                                                 TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, newSymbolReference),
                                                 TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, primaryInductionVar));
@@ -2138,7 +2138,7 @@ bool TR_LoopCanonicalizer::replaceInductionVariableComputationsInExits(TR_Struct
       if (!structure->contains(block->getStructureOf()))
          {
          TR::Block *newBlock = (*edge)->getFrom()->asBlock()->splitEdge((*edge)->getFrom()->asBlock(), block, comp());
-         TR::DataTypes dataType = newSymbolReference->getSymbol()->getDataType();
+         TR::DataType dataType = newSymbolReference->getSymbol()->getDataType();
          TR::Node *subNode = TR::Node::create((dataType == TR::Int32) ? TR::iadd : TR::ladd, 2,
                                                 TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, newSymbolReference),
                                                 TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, primaryInductionVar));
@@ -2537,7 +2537,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
       if ((node->getSymbolReference() == _symRefBeingReplaced) &&
           performTransformation(comp(), "Replacing use %p of sym ref #%d by sym ref #%d\n", node, node->getSymbolReference()->getReferenceNumber(), _primaryInductionVariable->getReferenceNumber()))
          {
-         TR::DataTypes dataType = node->getDataType();
+         TR::DataType dataType = node->getDataType();
          if (!(*newSymbolReference))
            *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), dataType, false);
 
@@ -2737,7 +2737,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
 
 void TR_LoopCanonicalizer::placeInitializationTreeInLoopPreHeader(TR::Block *b, TR::Node *node, TR::SymbolReference *newSymbolReference, TR::SymbolReference *primaryInductionVar, TR::SymbolReference *derivedInductionVar)
    {
-   TR::DataTypes dataType = newSymbolReference->getSymbol()->getDataType();
+   TR::DataType dataType = newSymbolReference->getSymbol()->getDataType();
    TR::Node *subNode = TR::Node::create((dataType == TR::Int32) ? TR::isub : TR::lsub, 2,
                                             TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, derivedInductionVar),
                                             TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, primaryInductionVar));

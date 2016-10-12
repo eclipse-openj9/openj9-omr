@@ -841,16 +841,16 @@ OMR::CodeGenerator::trPersistentMemory()
    }
 
 void
-OMR::CodeGenerator::addSymbolAndDataTypeToMap(TR::Symbol *symbol, TR::DataTypes dt)
+OMR::CodeGenerator::addSymbolAndDataTypeToMap(TR::Symbol *symbol, TR::DataType dt)
    {
    _symbolDataTypeMap.Add(symbol,dt);
    }
-TR::DataTypes
+TR::DataType
 OMR::CodeGenerator::getDataTypeFromSymbolMap(TR::Symbol *symbol)
    {
    CS2::HashIndex hi;
 
-   TR::DataTypes dt = TR::NoType;
+   TR::DataType dt = TR::NoType;
 
    if(_symbolDataTypeMap.Locate(symbol,hi))
       {
@@ -2980,7 +2980,7 @@ OMR::CodeGenerator::lookUpSnippet(int32_t snippetKind, TR::SymbolReference *symR
    }
 
 TR::SymbolReference *
-OMR::CodeGenerator::allocateLocalTemp(TR::DataTypes dt, bool isInternalPointer)
+OMR::CodeGenerator::allocateLocalTemp(TR::DataType dt, bool isInternalPointer)
    {
    // *this    swipeable for debugging purposes
    //

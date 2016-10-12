@@ -209,8 +209,8 @@ class SymbolReferenceTable
    int32_t getNumUnresolvedSymbols()                  { return _numUnresolvedSymbols; }
    int32_t getNonhelperIndex(CommonNonhelperSymbol s);
    int32_t getNumHelperSymbols()                      { return _numHelperSymbols; }
-   int32_t getArrayShadowIndex(TR::DataTypes t)        { return _numHelperSymbols + firstArrayShadowSymbol + t; }
-   int32_t getArrayletShadowIndex(TR::DataTypes t) { return _numHelperSymbols + firstArrayShadowSymbol + TR::NumTypes + t; }
+   int32_t getArrayShadowIndex(TR::DataType t)        { return _numHelperSymbols + firstArrayShadowSymbol + t; }
+   int32_t getArrayletShadowIndex(TR::DataType t) { return _numHelperSymbols + firstArrayShadowSymbol + TR::NumTypes + t; }
 
    template <class BitVector>
    void getAllSymRefs(BitVector &allSymRefs)
@@ -234,19 +234,19 @@ class SymbolReferenceTable
    TR::SymbolReference * createRuntimeHelper(TR_RuntimeHelper, bool = false, bool = false, bool preservesAllRegisters = false);
    TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper, bool, bool, bool preservesAllRegisters);
 
-   TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataTypes, bool isUnsigned);
-   TR::SymbolReference * findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataTypes, bool isReference = true,
+   TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isUnsigned);
+   TR::SymbolReference * findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isReference = true,
          bool isInternalPointer = false, bool reuseAuto = true, bool isAdjunct = false, size_t size = 0);
-   TR::SymbolReference * createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataTypes, bool isInternalPointer = false, size_t size = 0);
-   TR::SymbolReference * createCoDependententTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataTypes, bool isInternalPointer, size_t size,
+   TR::SymbolReference * createTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType, bool isInternalPointer = false, size_t size = 0);
+   TR::SymbolReference * createCoDependententTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, TR::DataType, bool isInternalPointer, size_t size,
          TR::Symbol *coDependent, int32_t offset);
-   TR::SymbolReference * findStaticSymbol(TR_ResolvedMethod * owningMethod, int32_t cpIndex, TR::DataTypes);
+   TR::SymbolReference * findStaticSymbol(TR_ResolvedMethod * owningMethod, int32_t cpIndex, TR::DataType);
 
    // --------------------------------------------------------------------------
    // OMR
    // --------------------------------------------------------------------------
 
-   TR::SymbolReference * findOrCreatePendingPushTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t stackDepth, TR::DataTypes, size_t size = 0);
+   TR::SymbolReference * findOrCreatePendingPushTemporary(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t stackDepth, TR::DataType, size_t size = 0);
    TR::SymbolReference * createLocalPrimArray(int32_t objectSize, TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t arrayType);
    TR::Symbol           * findOrCreateGenericIntShadowSymbol();
    TR::Symbol           * findGenericIntShadowSymbol() { return _genericIntShadowSymbol; }
@@ -264,8 +264,8 @@ class SymbolReferenceTable
 
    bool isVtableEntrySymbolRef(TR::SymbolReference * s) { return _vtableEntrySymbolRefs.find(s); }
 
-   TR::SymbolReference * createKnownStaticDataSymbolRef(void *counterAddress, TR::DataTypes type);
-   TR::SymbolReference * createKnownStaticDataSymbolRef(void *counterAddress, TR::DataTypes type, TR::KnownObjectTable::Index knownObjectIndex);
+   TR::SymbolReference * createKnownStaticDataSymbolRef(void *counterAddress, TR::DataType type);
+   TR::SymbolReference * createKnownStaticDataSymbolRef(void *counterAddress, TR::DataType type, TR::KnownObjectTable::Index knownObjectIndex);
    TR::SymbolReference * findOrCreateTransactionEntrySymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateTransactionExitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateTransactionAbortSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
@@ -331,8 +331,8 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateNewObjectNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
    TR::SymbolReference * findOrCreateArrayStoreExceptionSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
-   TR::SymbolReference * findOrCreateArrayShadowSymbolRef(TR::DataTypes, TR::Node * baseAddress = 0);
-   TR::SymbolReference * findOrCreateArrayletShadowSymbolRef(TR::DataTypes type);
+   TR::SymbolReference * findOrCreateArrayShadowSymbolRef(TR::DataType, TR::Node * baseAddress = 0);
+   TR::SymbolReference * findOrCreateArrayletShadowSymbolRef(TR::DataType type);
    TR::SymbolReference * findOrCreateAsyncCheckSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol = 0);
    TR::SymbolReference * findOrCreateExcpSymbolRef();
    TR::SymbolReference * findOrCreateANewArrayNoZeroInitSymbolRef(TR::ResolvedMethodSymbol * owningMethodSymbol);
@@ -377,12 +377,12 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateArrayCmpSymbol();
 
    TR::SymbolReference * findOrCreateClassSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, void * classObject, bool cpIndexOfStatic = false);
-   TR::SymbolReference * findOrCreateArrayShadowSymbolRef(TR::DataTypes type, TR::Node * baseArrayAddress, int32_t size, TR_FrontEnd * fe);
+   TR::SymbolReference * findOrCreateArrayShadowSymbolRef(TR::DataType type, TR::Node * baseArrayAddress, int32_t size, TR_FrontEnd * fe);
 
    TR::SymbolReference * findOrCreateCounterAddressSymbolRef();
-   TR::SymbolReference * findOrCreateCounterSymRef(char *name, TR::DataTypes d, void *address);
-   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataTypes);
-   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataTypes, TR::Symbol *); // TODO: to be changed to a special sym ref
+   TR::SymbolReference * findOrCreateCounterSymRef(char *name, TR::DataType d, void *address);
+   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataType);
+   TR::SymbolReference * createRefinedArrayShadowSymbolRef(TR::DataType, TR::Symbol *); // TODO: to be changed to a special sym ref
    bool                 isRefinedArrayShadow(TR::SymbolReference *symRef);
 
 
@@ -392,7 +392,7 @@ class SymbolReferenceTable
    // life of a procedure. A set of hardware registers is pre-created for each method.
    //
    void initRegisterSymbols(TR::ResolvedMethodSymbol *);
-   TR::SymbolReference * createRegisterSymbol(TR::ResolvedMethodSymbol *, TR_RegisterKinds, TR::DataTypes, TR_GlobalRegisterNumber grn);
+   TR::SymbolReference * createRegisterSymbol(TR::ResolvedMethodSymbol *, TR_RegisterKinds, TR::DataType, TR_GlobalRegisterNumber grn);
    TR::SymbolReference * getRegisterSymbol(TR_GlobalRegisterNumber grn);
 
    /*
@@ -400,13 +400,13 @@ class SymbolReferenceTable
     */
 
    void makeAutoAvailableForIlGen(TR::SymbolReference * a);
-   TR::SymbolReference * findAvailableAuto(TR::DataTypes dataType, bool behavesLikeTemp, bool isAdjunct = false);
-   TR::SymbolReference * findAvailableAuto(List<TR::SymbolReference> &, TR::DataTypes dataType, bool behavesLikeTemp, bool isAdjunct = false);
+   TR::SymbolReference * findAvailableAuto(TR::DataType dataType, bool behavesLikeTemp, bool isAdjunct = false);
+   TR::SymbolReference * findAvailableAuto(List<TR::SymbolReference> &, TR::DataType dataType, bool behavesLikeTemp, bool isAdjunct = false);
    void clearAvailableAutos() { _availableAutos.init(); }
 
    protected:
 
-   TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataTypes, bool, void *);
+   TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *);
 
    bool shouldMarkBlockAsCold(TR_ResolvedMethod * owningMethod, bool isUnresolvedInCP);
    void markBlockAsCold();

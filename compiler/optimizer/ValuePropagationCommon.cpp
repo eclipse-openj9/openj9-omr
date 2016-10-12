@@ -700,7 +700,7 @@ int32_t TR_ValuePropagation::getPrimitiveArrayType(char primitiveArrayChar)
       }
    }
 
-bool TR_ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &elementSize, TR::DataTypes &type )
+bool TR_ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &elementSize, TR::DataType &type )
    {
    TR::Node *srcArrayNode = node->getFirstChild();
    TR::Node *srcOffsetNode = node->getSecondChild();
@@ -711,7 +711,7 @@ bool TR_ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int3
    int32_t srcSigLength, srcType;
    int32_t dstSigLength, dstType;
    static uint8_t primitiveArrayTypeToElementSize[] = {1, 2, 4, 8, 1, 2, 4, 8};
-   static TR::DataTypes primitiveArrayToTRDataType[] = {TR::Int8, TR::Int16, TR::Float, TR::Double, TR::Int8, TR::Int16, TR::Int32, TR::Int64};
+   static TR::DataType primitiveArrayToTRDataType[] = {TR::Int8, TR::Int16, TR::Float, TR::Double, TR::Int8, TR::Int16, TR::Int32, TR::Int64};
 
    const char *srcSig = srcArrayNode->getTypeSignature(srcSigLength);
    const char *dstSig = dstArrayNode->getTypeSignature(dstSigLength);
@@ -1057,7 +1057,7 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
    int32_t dstLength = -1;
    int32_t elementSize = 0;
    int32_t arraySpineShift = 0;
-   TR::DataTypes type = TR::NoType;
+   TR::DataType type = TR::NoType;
 
    bool transformTheCall = false;
    bool primitiveArray1 = false;
@@ -1903,7 +1903,7 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
          else if (srcArrayInfo)
             {
              // Default to NoType to prevent puting garbage in element datatype
-            TR::DataTypes newType = TR::NoType;
+            TR::DataType newType = TR::NoType;
             // Java spec says arraycopies need to be atomic for the element size
             // So we need to make sure we set the element datatype appropriately to enforce that
             switch (srcArrayInfo->elementSize())
@@ -2561,7 +2561,7 @@ TR::TreeTop *TR_ValuePropagation::buildSameLeafTest(TR::Node *offset,TR::Node *l
    }
 
 
-TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataTypes type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode, TR::Node *strideShiftNode, TR::Node *hdrSize)
+TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataType type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode, TR::Node *strideShiftNode, TR::Node *hdrSize)
    {
    bool is64BitTarget = TR::Compiler->target.is64Bit() ? true : false;
 
@@ -2603,7 +2603,7 @@ TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode
 
 void TR_ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *rtArrayCopy,TR::TreeTop *dupArraycopyTree, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *srcOffRef, TR::SymbolReference *dstOffRef, TR::SymbolReference *lenRef, bool primitive)
    {
-   TR::DataTypes type = rtArrayCopy->_type;
+   TR::DataType type = rtArrayCopy->_type;
    uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
    if (comp()->useCompressedPointers() && (type == TR::Address))
       elementSize = TR::Compiler->om.sizeofReferenceField();
@@ -3047,7 +3047,7 @@ void TR_ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtArr
       return;
 
    TR::Block *origCallBlock = rtArrayCopyTree->_treetop->getEnclosingBlock();
-   TR::DataTypes type = rtArrayCopyTree->_type;
+   TR::DataType type = rtArrayCopyTree->_type;
    uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
    if (comp()->useCompressedPointers() && (type == TR::Address))
       elementSize = TR::Compiler->om.sizeofReferenceField();
@@ -3370,7 +3370,7 @@ void TR_ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *rt
       traceMsg(comp(), "Transforming multi-leaf array copy: %p\n", vcallNode);
 
    TR::TreeTop *prevTree = vcallTree->getPrevTreeTop();
-   TR::DataTypes type = rtArrayCopyTree->_type;
+   TR::DataType type = rtArrayCopyTree->_type;
    intptrj_t elementSize = TR::Symbol::convertTypeToSize(type);
    intptrj_t leafSize = comp()->fe()->getArrayletMask(elementSize) + 1;
 

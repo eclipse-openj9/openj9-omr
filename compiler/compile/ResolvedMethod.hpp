@@ -52,10 +52,10 @@ public:
 
    virtual uint32_t numberOfParameters();
    virtual uint32_t numberOfExplicitParameters(); // excludes receiver if any
-   virtual TR::DataTypes parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
+   virtual TR::DataType parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
    virtual TR::ILOpCodes directCallOpCode();
    virtual TR::ILOpCodes indirectCallOpCode();
-   virtual TR::DataTypes returnType();
+   virtual TR::DataType returnType();
    virtual uint32_t returnTypeWidth();
    virtual bool returnTypeIsUnsigned();
    virtual TR::ILOpCodes returnOpCode();
@@ -118,7 +118,7 @@ public:
    virtual TR_OpaqueClassBlock * getClassFromConstantPool(TR::Compilation *, uint32_t cpIndex, bool returnClassForAot = false);
    virtual bool canAlwaysShareSymbolDespiteOwningMethod(TR_ResolvedMethod *other) { return false; }
    virtual char *getClassNameFromConstantPool(uint32_t cpIndex, uint32_t &length);
-   virtual TR::DataTypes getLDCType(int32_t cpIndex);
+   virtual TR::DataType getLDCType(int32_t cpIndex);
    virtual bool isClassConstant(int32_t cpIndex);
    virtual bool isStringConstant(int32_t cpIndex);
    virtual bool isMethodTypeConstant(int32_t cpIndex);
@@ -163,8 +163,8 @@ public:
 
    // --------------------------------------------------------------------------
 
-   virtual bool fieldAttributes (TR::Compilation *, int32_t cpIndex, uint32_t * fieldOffset, TR::DataTypes * type, bool * volatileP, bool * isFinal, bool *isPrivate, bool isStore, bool * unresolvedInCP = 0, bool needAOTValidation=true);
-   virtual bool staticAttributes(TR::Compilation *, int32_t cpIndex, void * *, TR::DataTypes * type, bool * volatileP, bool * isFinal, bool *isPrivate, bool isStore, bool * unresolvedInCP = 0, bool needAOTValidation=true);
+   virtual bool fieldAttributes (TR::Compilation *, int32_t cpIndex, uint32_t * fieldOffset, TR::DataType * type, bool * volatileP, bool * isFinal, bool *isPrivate, bool isStore, bool * unresolvedInCP = 0, bool needAOTValidation=true);
+   virtual bool staticAttributes(TR::Compilation *, int32_t cpIndex, void * *, TR::DataType * type, bool * volatileP, bool * isFinal, bool *isPrivate, bool isStore, bool * unresolvedInCP = 0, bool needAOTValidation=true);
 
    virtual char *classNameOfFieldOrStatic(int32_t cpIndex, int32_t & len);
    virtual char *classSignatureOfFieldOrStatic(int32_t cpIndex, int32_t & len);

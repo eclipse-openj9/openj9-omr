@@ -243,7 +243,7 @@ IlBuilder::defineValue(const char *name, TR::IlType *dt)
    }
 
 TR::IlValue *
-IlBuilder::newValue(TR::DataTypes dt)
+IlBuilder::newValue(TR::DataType dt)
    {
    TR::SymbolReference *newSymRef = symRefTab()->createTemporary(methodSymbol(), dt);
    char *name = (char *) _comp->trMemory()->allocateHeapMemory(5 * sizeof(char));
@@ -426,7 +426,7 @@ IlBuilder::connectTrees()
    }
 
 TR::Node *
-IlBuilder::zero(TR::DataTypes dt)
+IlBuilder::zero(TR::DataType dt)
    {
    switch (dt)
       {
@@ -555,7 +555,7 @@ IlBuilder::storeNode(TR::IlValue *dest, TR::Node *v)
 void
 IlBuilder::indirectStoreNode(TR::Node *addr, TR::Node *v)
    {
-   TR::DataTypes dt = v->getDataType();
+   TR::DataType dt = v->getDataType();
    TR::SymbolReference *storeSymRef = symRefTab()->findOrCreateArrayShadowSymbolRef(dt, addr);
    TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectArrayStore(dt);
    genTreeTop(TR::Node::createWithSymRef(storeOp, 2, addr, v, 0, storeSymRef));
@@ -566,10 +566,10 @@ IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
    {
    TR_ASSERT(dt->isPointer(), "indirectLoadNode must apply to pointer type");
    TR::IlType *baseType = dt->baseType();
-   TR::DataTypes primType = baseType->getPrimitiveType();
-   TR::DataTypes symRefType = primType;
+   TR::DataType primType = baseType->getPrimitiveType();
+   TR::DataType symRefType = primType;
    if (isVectorLoad)
-      symRefType = scalarToVector(symRefType);
+      symRefType = symRefType.scalarToVector();
 
    TR::SymbolReference *storeSymRef = symRefTab()->findOrCreateArrayShadowSymbolRef(symRefType, addr);
 
@@ -606,11 +606,11 @@ IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    ILB_REPLAY("%s->Store(\"%s\", %s);", REPLAY_BUILDER(this), varName, REPLAY_VALUE(value));
 
    TR::Node *valueNode = loadValue(value);
-   TR::DataTypes dt = valueNode->getDataType();
-   if (!isVectorType(dt))
+   TR::DataType dt = valueNode->getDataType();
+   if (!dt.isVector())
       {
       valueNode = TR::Node::create(TR::vsplats, 1, valueNode);
-      dt = scalarToVector(dt);
+      dt = dt.scalarToVector();
       }
 
    if (!_methodBuilder->symbolDefined(varName))
@@ -643,7 +643,7 @@ IlBuilder::VectorStoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *valu
 
    TR::Node *valueNode = loadValue(value);
 
-   if (!isVectorType(valueNode->getDataType()))
+   if (!valueNode->getDataType().isVector())
       valueNode = TR::Node::create(TR::vsplats, 1, valueNode);
 
    indirectStoreNode(loadValue(address), valueNode);
@@ -695,7 +695,7 @@ IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *objec
   ILB_REPLAY("%s->StoreIndirect(\"%s\", \"%s\", %s, %s);", REPLAY_BUILDER(this), type, field, REPLAY_VALUE(object), REPLAY_VALUE(value));
 
   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
-  TR::DataTypes fieldType = symRef->getSymbol()->getDataType();
+  TR::DataType fieldType = symRef->getSymbol()->getDataType();
   TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getCPIndex(), object->getCPIndex());
   TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
   genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
@@ -721,8 +721,8 @@ IlBuilder::VectorLoad(const char *name)
    {
    TR::IlValue *nameSymRef = lookupSymbol(name);
    appendBlock();
-   TR::DataTypes returnType = nameSymRef->getSymbol()->getDataType();
-   TR_ASSERT(isVectorType(returnType), "VectorLoad must load symbol with a vector type");
+   TR::DataType returnType = nameSymRef->getSymbol()->getDataType();
+   TR_ASSERT(returnType.isVector(), "VectorLoad must load symbol with a vector type");
    TR::IlValue *returnValue = newValue(returnType);
    TraceIL("IlBuilder[ %p ]::%d is VectorLoad %s (%d)\n", this, returnValue->getCPIndex(), name, nameSymRef->getCPIndex());
 
@@ -737,7 +737,7 @@ TR::IlValue *
 IlBuilder::LoadIndirect(const char *type, const char *field, TR::IlValue *object)
    {
    TR::SymbolReference *symRef = (TR::SymbolReference *)_types->FieldReference(type, field);
-   TR::DataTypes fieldType = symRef->getSymbol()->getDataType();
+   TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TR::IlValue *returnValue = newValue(fieldType);
    TraceIL("IlBuilder[ %p ]::%d is LoadIndirect %s.%s from (%d)\n", this, returnValue->getCPIndex(), type, field, object->getCPIndex());
    storeNode(returnValue, TR::Node::createWithSymRef(comp()->il.opCodeForIndirectLoad(fieldType), 1, loadValue(object), 0, symRef));
@@ -775,7 +775,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    TR::Node *indexNode = TR::Node::createLoad(index);
    TR::Node *elemSizeNode;
    TR::ILOpCodes addOp, mulOp;
-   TR::DataTypes indexType = indexNode->getSymbol()->getDataType();
+   TR::DataType indexType = indexNode->getSymbol()->getDataType();
    if (TR::Compiler->target.is64Bit())
       {
       if (indexType != TR::Int64)
@@ -789,7 +789,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
       }
    else
       {
-      TR::DataTypes targetType = TR::Int32;
+      TR::DataType targetType = TR::Int32;
       if (indexType != targetType)
          {
          TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, targetType);
@@ -898,8 +898,8 @@ IlBuilder::ConvertTo(TR::IlType *t, TR::IlValue *v)
    {
    appendBlock();
    TR::IlValue *convertedValue = newValue(t);
-   TR::DataTypes t1 = v->getSymbol()->getDataType();
-   TR::DataTypes t2 = t->getPrimitiveType();
+   TR::DataType t1 = v->getSymbol()->getDataType();
+   TR::DataType t2 = t->getPrimitiveType();
    TR::ILOpCodes convertOp = TR::DataType::getDataTypeConversion(v->getSymbol()->getDataType(), t->getPrimitiveType());
    TR::Node *result = TR::Node::create(convertOp, 1, loadValue(v));
    storeNode(convertedValue, result);
@@ -922,15 +922,15 @@ void
 IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
    {
    TR::Node *    left  = *leftPtr;
-   TR::DataTypes lType = left->getDataType();
+   TR::DataType lType = left->getDataType();
 
    TR::Node *    right = *rightPtr;
-   TR::DataTypes rType = right->getDataType();
+   TR::DataType rType = right->getDataType();
 
-   if (isVectorType(lType) && !isVectorType(rType))
+   if (lType.isVector() && !rType.isVector())
       *rightPtr = TR::Node::create(TR::vsplats, 1, right);
 
-   if (!isVectorType(lType) && isVectorType(rType))
+   if (!lType.isVector() && rType.isVector())
       *leftPtr = TR::Node::create(TR::vsplats, 1, left);
    }
 
@@ -939,8 +939,8 @@ IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                              TR::Node *leftNode,
                              TR::Node *rightNode) 
    {
-   TR::DataTypes leftType = leftNode->getDataType();
-   TR::DataTypes rightType = rightNode->getDataType();
+   TR::DataType leftType = leftNode->getDataType();
+   TR::DataType rightType = rightNode->getDataType();
    bool isAddressBump = ((leftType == TR::Address) &&
                             (rightType == TR::Int32 || rightType == TR::Int64));
    bool isRevAddressBump = ((rightType == TR::Address) &&
@@ -979,7 +979,7 @@ IlBuilder::binaryOpFromOpMap(OpCodeMapper mapOp,
 
    doVectorConversions(&leftNode, &rightNode);
 
-   TR::DataTypes leftType = leftNode->getDataType();
+   TR::DataType leftType = leftNode->getDataType();
    return binaryOpFromNodes(mapOp(leftType), leftNode, rightNode);
    }
 
@@ -1061,7 +1061,7 @@ IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    return returnValue;
    }
 
-static TR::ILOpCodes addOpCode(TR::DataTypes type)
+static TR::ILOpCodes addOpCode(TR::DataType type)
    {
    return TR::ILOpCode::addOpCode(type, TR::Compiler->target.is64Bit());
    }
@@ -1301,7 +1301,7 @@ IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** argVal
    appendBlock();
 
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR::DataTypes returnType = resolvedMethod->returnType();
+   TR::DataType returnType = resolvedMethod->returnType();
 
    // treat as "Static" (so no receiver expected) and use a direct call opcode
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod, TR::MethodSymbol::Static);

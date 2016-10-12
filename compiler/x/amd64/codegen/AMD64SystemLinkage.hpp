@@ -43,7 +43,7 @@ class TR_AMD64SystemLinkage : public TR_X86SystemLinkage
 
    virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult);
    virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, parmLayoutResult&);
-   virtual uint32_t getAlignment(TR::DataTypes type);
+   virtual uint32_t getAlignment(TR::DataType type);
 
    virtual int32_t buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
 
@@ -52,7 +52,7 @@ class TR_AMD64SystemLinkage : public TR_X86SystemLinkage
 
    TR::Register *buildVolatileAndReturnDependencies(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
    private:
-   bool layoutTypeInRegs(TR::DataTypes type, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult&);
+   bool layoutTypeInRegs(TR::DataType type, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult&);
 
    };
 

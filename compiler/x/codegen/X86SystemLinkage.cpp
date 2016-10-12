@@ -840,7 +840,7 @@ TR_X86SystemLinkage::getParameterStartingPos(
 
 int32_t
 TR_X86SystemLinkage::layoutTypeOnStack(
-      TR::DataTypes type,
+      TR::DataType type,
       int32_t &dataCursor,
       parmLayoutResult &layoutResult)
    {

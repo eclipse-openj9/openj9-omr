@@ -85,10 +85,10 @@ OMR::TransformUtil::scalarizeArrayCopy(
       {
       return node;
       }
-   TR::DataTypes dataType = TR::Aggregate;
+   TR::DataType dataType = TR::Aggregate;
 
    // Get the element datatype from the (hidden) 4th child
-   TR::DataTypes elementType = node->getArrayCopyElementType();
+   TR::DataType elementType = node->getArrayCopyElementType();
    int32_t elementSize = TR::Symbol::convertTypeToSize(elementType);
 
    if (byteLen == elementSize)
@@ -159,8 +159,8 @@ OMR::TransformUtil::scalarizeArrayCopy(
       return node;
       }
 #ifdef J9_PROJECT_SPECIFIC
-   if (isBCDType(targetRef->getSymbol()->getDataType()) ||
-       isBCDType(sourceRef->getSymbol()->getDataType()))
+   if (targetRef->getSymbol()->getDataType().isBCD() ||
+       sourceRef->getSymbol()->getDataType().isBCD())
       {
       return node;
       }
@@ -215,7 +215,7 @@ OMR::TransformUtil::scalarizeAddressParameter(
       TR::Compilation *comp,
       TR::Node *address,
       size_t byteLengthOrPrecision, // precision for BCD types and byteLength for all other types
-      TR::DataTypes dataType,
+      TR::DataType dataType,
       TR::SymbolReference *ref,
       bool store)
    {
@@ -224,7 +224,7 @@ OMR::TransformUtil::scalarizeAddressParameter(
    TR::Node * loadOrStore = NULL;
 
 #ifdef J9_PROJECT_SPECIFIC
-   size_t byteLength = isBCDType(dataType) ? TR::DataType::getSizeFromBCDPrecision(dataType, byteLengthOrPrecision) : byteLengthOrPrecision;
+   size_t byteLength = dataType.isBCD() ? TR::DataType::getSizeFromBCDPrecision(dataType, byteLengthOrPrecision) : byteLengthOrPrecision;
 #else
    size_t byteLength = byteLengthOrPrecision;
 #endif

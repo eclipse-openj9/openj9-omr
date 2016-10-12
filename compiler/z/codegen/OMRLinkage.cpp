@@ -665,7 +665,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       parmNum++;
       int32_t lri = paramCursor->getLinkageRegisterIndex();                // linkage register
       int32_t ai = paramCursor->getAllocatedIndex();                       // global reg number
-      TR::DataTypes dtype = paramCursor->getDataType();
+      TR::DataType dtype = paramCursor->getDataType();
       int32_t offset = paramCursor->getParameterOffset() - frameOffset;
       TR::SymbolReference * paramSymRef = NULL;
       int32_t namelen = 0;
@@ -676,7 +676,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
       // Treat GPR6 special on zLinux.  It is a linkage register but also preserved.
       // If it has no global reg number, locate it on local save area instead of register save area
       if (TR::Compiler->target.isLinux() &&
-          (lri > 0 && ai < 0 && (self()->getPreserved(REGNUM(lri + 3)) || isVectorType(dtype))))
+          (lri > 0 && ai < 0 && (self()->getPreserved(REGNUM(lri + 3)) || dtype.isVector())))
           paramCursor->setParmHasToBeOnStack();
 
       if (self()->comp()->getOption(TR_TraceCG))
@@ -782,7 +782,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
              lastFreeIntArgIndex++;
              }
            }
-         else if (enableVectorLinkage && isVectorType(dtype)) // vector type
+         else if (enableVectorLinkage && dtype.isVector()) // vector type
             {
             regNum = self()->getVectorArgumentRegister(lri);
             lastFreeVectorArgIndex = lri + 1;
@@ -1547,7 +1547,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
       int32_t index = -1;
       paramNum++;
 
-      TR::DataTypes dt = paramCursor->getDataType();
+      TR::DataType dt = paramCursor->getDataType();
 
       switch (dt)
          {
@@ -1958,7 +1958,7 @@ TR::Register *
 OMR::Z::Linkage::pushArg(TR::Node * callNode, TR::Node * child, int32_t numIntegerArgs, int32_t numFloatArgs, int32_t * stackOffsetPtr,TR::RegisterDependencyConditions * dependencies, TR::Register * argRegister)
    {
    TR::DataType argType = child->getType();
-   TR::DataTypes argDataType = argType.getDataType();
+   TR::DataType argDataType = argType.getDataType();
    int8_t regSize = (TR::Compiler->target.is64Bit())? 8:4;
    int8_t argSize = 0;
 
@@ -2242,7 +2242,7 @@ OMR::Z::Linkage::pushAggregateArg(TR::Node * callNode, TR::Node * child, int32_t
  * canonical positions
  */
 void
-OMR::Z::Linkage::loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataTypes argType, int32_t stackOffset, int32_t argSize, int32_t numIntegerArgs, TR::Register* stackRegister)
+OMR::Z::Linkage::loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataType argType, int32_t stackOffset, int32_t argSize, int32_t numIntegerArgs, TR::Register* stackRegister)
    {
    TR::RealRegister::RegNum argRegNum;
    int8_t gprSize = self()->cg()->machine()->getGPRSize();
@@ -2338,7 +2338,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    void * smark;
    uint32_t firstArgumentChild = callNode->getFirstArgumentIndex();
    TR::DataType resType = callNode->getType();
-   TR::DataTypes resDataType = resType.getDataType();
+   TR::DataType resDataType = resType.getDataType();
 
    static const bool enableVectorLinkage = self()->cg()->getSupportsVectorRegisters();
 
@@ -2402,7 +2402,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
       {
       child = callNode->getChild(i);
       TR::DataType argType = child->getType();
-      TR::DataTypes argDataType = argType.getDataType();
+      TR::DataType argDataType = argType.getDataType();
 
       if (argType.isInt64()
           || argDataType == TR::Double
@@ -2417,7 +2417,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
       else if (argType.isLongDouble())
          argSize += 16;
 #endif
-      else if (enableVectorLinkage && isVectorType(argDataType))
+      else if (enableVectorLinkage && argDataType.isVector())
          argSize += 128;
       else
          argSize += gprSize;
@@ -2847,7 +2847,7 @@ OMR::Z::Linkage::storeArgumentOnStack(TR::Node * callNode, TR::InstOpCode::Mnemo
  * Handles LongDouble type params
  */
 TR::Instruction *
-OMR::Z::Linkage::storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataTypes argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister)
+OMR::Z::Linkage::storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataType argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister)
    {
    TR::Instruction * cursor;
    int32_t size = (opCode==InstOpCode::STE) ? 4 : 8;
@@ -3236,7 +3236,7 @@ OMR::Z::Linkage::unlockAR(int32_t registerNo)
    tempRegister->setAssignedRegister(NULL);
    }
 
-bool OMR::Z::Linkage::needsAlignment(TR::DataTypes dt, TR::CodeGenerator * cg)
+bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)
    {
    TR::Compilation* comp = cg->comp();
    switch (dt)
@@ -3479,7 +3479,7 @@ TR_GlobalRegisterNumber OMR::Z::Linkage::getFormalParameterGlobalRegister(TR::Pa
    TR_ASSERT(sym->getLinkageRegisterIndex() >= 0,  "ParameterSymbol is not mapped to register\n");
 
    TR::RealRegister::RegNum r;
-   TR::DataTypes dt=sym->getDataType();
+   TR::DataType dt=sym->getDataType();
 
    switch(dt)
       {

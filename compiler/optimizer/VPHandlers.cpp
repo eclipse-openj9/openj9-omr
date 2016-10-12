@@ -482,7 +482,7 @@ static bool findConstant(TR_ValuePropagation *vp, TR::Node *node)
    TR_VPConstraint *constraint = vp->getConstraint(node, isGlobal);
    if (constraint)
       {
-      TR::DataTypes type = node->getDataType();
+      TR::DataType type = node->getDataType();
       switch (type)
          {
          case TR::Int64:
@@ -1074,7 +1074,7 @@ TR::Node *constrainBCDAggrLoad(TR_ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainAnyIntLoad(TR_ValuePropagation *vp, TR::Node *node)
    {
-   TR::DataTypes dataType = node->getDataType();
+   TR::DataType dataType = node->getDataType();
 
    // Optimize characters being loaded out of the values array of a constant string
    //
@@ -1513,7 +1513,7 @@ TR::Node *constrainAload(TR_ValuePropagation *vp, TR::Node *node)
             if (sym->isStatic() && sym->isFinal())
                {
                TR::StaticSymbol * symbol = sym->castToStaticSymbol();
-               TR::DataTypes type = symbol->getDataType();
+               TR::DataType type = symbol->getDataType();
                TR_OpaqueClassBlock * classOfStatic = symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex());
                if (classOfStatic == NULL)
                   {
@@ -2281,7 +2281,7 @@ TR::Node *constrainIaload(TR_ValuePropagation *vp, TR::Node *node)
             if (sym->isStatic() && sym->isFinal())
                {
                TR::StaticSymbol * symbol = sym->castToStaticSymbol();
-               TR::DataTypes type = symbol->getDataType();
+               TR::DataType type = symbol->getDataType();
                TR_OpaqueClassBlock * classOfStatic = symRef->getOwningMethod(vp->comp())->classOfStatic(symRef->getCPIndex());
                bool isClassInitialized = false;
                TR_PersistentClassInfo * classInfo =
@@ -5174,7 +5174,7 @@ TR::Node *constrainCall(TR_ValuePropagation *vp, TR::Node *node)
       TR_Method *method = node->getSymbol()->castToMethodSymbol()->getMethod();
       if (method)
          {
-         TR::DataTypes dataType = method->returnType();
+         TR::DataType dataType = method->returnType();
 
          if (dataType == TR::Int8 || dataType == TR::Int16 || dataType == TR::Int32 || dataType == TR::Int64)
             {
@@ -8263,7 +8263,7 @@ void replaceWithSmallerType(TR_ValuePropagation *vp, TR::Node *node)
       return;
       }
 
-   TR::DataTypes newType = node->getDataType();
+   TR::DataType newType = node->getDataType();
    TR::Node *load = node->getFirstChild();
 
    TR::Compilation *comp = vp->comp();
@@ -12674,7 +12674,7 @@ TR::Node *constrainArraycopy(TR_ValuePropagation *vp, TR::Node *node)
       TR_VPConstraint *dst = vp->getConstraint(dstObjNode, isGlobal);
       TR_VPClassType *srcType = src ? src->getClassType() : NULL;
       TR_VPClassType *dstType = dst ? dst->getClassType() : NULL;
-      TR::DataTypes elementType = TR::NoType;
+      TR::DataType elementType = TR::NoType;
       if (srcType && srcType->isPrimitiveArray(vp->comp()))
          elementType = srcType->getPrimitiveArrayDataType();
       else if (dstType && dstType->isPrimitiveArray(vp->comp()))

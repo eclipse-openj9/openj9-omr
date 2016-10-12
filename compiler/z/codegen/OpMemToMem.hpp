@@ -548,7 +548,7 @@ class MemToMemTypedMacroOp
       TR::RegisterDependencyConditions* getDependencies() { return _macroDependencies; }
 
    protected:
-      MemToMemTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataTypes destType, TR::Node * lenNode, bool isForward)
+      MemToMemTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Node * lenNode, bool isForward)
          : _rootNode(rootNode), _dstNode(dstNode), _srcNode(srcNode), _cg(cg), _destType(destType),
            _startReg(0), _endReg(0), _srcReg(0), _bxhReg(0), _strideReg(0), _macroDependencies(NULL), _lenNode(lenNode), _isForward(isForward)
          {}
@@ -566,7 +566,7 @@ class MemToMemTypedMacroOp
       TR::Register* _startReg;
       TR::Register* _endReg;
       TR::Register* _strideReg;
-      TR::DataTypes _destType;
+      TR::DataType _destType;
       bool _applyDepLocally;
       bool _isForward;
       TR::RegisterDependencyConditions* _macroDependencies;
@@ -608,7 +608,7 @@ class MemToMemTypedVarLenMacroOp : public MemToMemTypedMacroOp
    {
    public:
    protected:
-      MemToMemTypedVarLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataTypes destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward = false)
+      MemToMemTypedVarLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward = false)
          : MemToMemTypedMacroOp(rootNode, dstNode, srcNode, cg, destType, lenNode, isForward), _lenReg(lenReg)
          {}
       virtual TR::Instruction* generateLoop();
@@ -626,7 +626,7 @@ class MemToMemTypedVarLenMacroOp : public MemToMemTypedMacroOp
 class MemInitVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
    {
    public:
-      MemInitVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::CodeGenerator * cg, TR::DataTypes destType, TR::Register* lenReg, TR::Register* initReg, TR::Node * lenNode, bool isForward = false)
+      MemInitVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Register* initReg, TR::Node * lenNode, bool isForward = false)
          : MemToMemTypedVarLenMacroOp(rootNode, dstNode, dstNode, cg, destType, lenReg, lenNode, isForward), _initReg(initReg)
          {}
    protected:
@@ -640,7 +640,7 @@ class MemInitVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
 class MemCpyVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
    {
    public:
-      MemCpyVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataTypes destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward = false)
+      MemCpyVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward = false)
          : MemToMemTypedVarLenMacroOp(rootNode, dstNode, srcNode, cg, destType, lenReg, lenNode, isForward)
          {
          allocWorkReg();
@@ -664,7 +664,7 @@ class MemCpyAtomicMacroOp: public MemToMemTypedVarLenMacroOp
    {
 public:
 
-   MemCpyAtomicMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataTypes destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward=false, bool unroll=false, int32_t constLength=-1);
+   MemCpyAtomicMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward=false, bool unroll=false, int32_t constLength=-1);
    // Add getters for registers, so that can be shared with MVC routine in arraycopyEvaluator
    TR::Register * getAlignedReg() { return _alignedReg; };
    TR::Register * getWorkReg() { return _workReg; };

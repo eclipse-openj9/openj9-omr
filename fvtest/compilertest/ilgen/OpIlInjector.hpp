@@ -57,7 +57,8 @@ class OpIlInjector : public TR::IlInjector
       : TR::IlInjector(types, test),
         _opCode(opCode),
         _numOptArgs(0),
-        _conditionalDataType(TR::NoType)
+        _dataType(TR::DataTypes::NoType),
+        _conditionalDataType(TR::DataTypes::NoType)
       {
       setDataType();
       }
@@ -128,8 +129,8 @@ class OpIlInjector : public TR::IlInjector
       }
 
    TR::ILOpCodes _opCode;
-   TR::DataTypes _dataType; // datatype of OpCode child/children
-   TR::DataTypes _conditionalDataType; // return type of Ternary opcodes
+   TR::DataType _dataType; // datatype of OpCode child/children
+   TR::DataType _conditionalDataType; // return type of Ternary opcodes
 
    ParmNode **_optArgs;  // holds args that are not on stack params
    uint32_t _numOptArgs;

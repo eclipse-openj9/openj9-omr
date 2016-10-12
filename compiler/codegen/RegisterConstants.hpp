@@ -76,7 +76,7 @@ enum TR_RegisterSizes
 
 enum TR_RematerializableTypes
    {
-   // TODO:AMD64: We should just use TR::DataTypes for this and simplify everything
+   // TODO:AMD64: We should just use TR::DataType for this and simplify everything
    TR_Unrematerializable       = -1,
    TR_RematerializableByte     = 0,
    TR_RematerializableShort    = 1,

@@ -61,7 +61,7 @@ public:
    const char *getName() { return _name; }
    virtual char *getSignatureName();
 
-   virtual TR::DataTypes getPrimitiveType() { return TR::NoType; }
+   virtual TR::DataType getPrimitiveType() { return TR::NoType; }
 
    virtual bool isArray() { return false; }
    virtual bool isPointer() { return false; }
@@ -89,7 +89,7 @@ public:
    void CloseStruct(const char *structName);
    TR::IlType * GetFieldType(const char *structName, const char *fieldName);
 
-   TR::IlType *PrimitiveType(TR::DataTypes primitiveType)
+   TR::IlType *PrimitiveType(TR::DataType primitiveType)
       {
       return _primitiveType[primitiveType];
       }
@@ -98,7 +98,7 @@ public:
 
    TR::IlType *PointerTo(TR::IlType *baseType);
    TR::IlType *PointerTo(const char *structName);
-   TR::IlType *PointerTo(TR::DataTypes baseType)  { return PointerTo(_primitiveType[baseType]); }
+   TR::IlType *PointerTo(TR::DataType baseType)  { return PointerTo(_primitiveType[baseType]); }
 
    TR::IlReference *FieldReference(const char *structName, const char *fieldName);
    TR_Memory *trMemory() { return _trMemory; }

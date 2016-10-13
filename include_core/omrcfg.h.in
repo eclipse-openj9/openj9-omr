@@ -215,11 +215,6 @@ extern "C" {
  */
 @OMR_THR_YIELD_ALG@
 
-/**
- * Defined if the C++ compiler supports static assert.
- */
-@OMR_HAVE_CXX11_STATIC_ASSERT@
-
 #ifdef __cplusplus
 }
 #endif

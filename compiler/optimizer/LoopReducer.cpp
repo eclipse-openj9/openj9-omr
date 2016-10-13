@@ -56,7 +56,7 @@
 #include "optimizer/Optimizer.hpp"               // for Optimizer
 #include "optimizer/Structure.hpp"
 #include "optimizer/TranslateTable.hpp"
-#include "optimizer/VPConstraint.hpp"            // for TR_VPConstraint
+#include "optimizer/VPConstraint.hpp"            // for TR::VPConstraint
 #include "ras/Debug.hpp"                         // for TR_DebugBase
 
 #define OPT_DETAILS "O^O LOOP TRANSFORMATION: "

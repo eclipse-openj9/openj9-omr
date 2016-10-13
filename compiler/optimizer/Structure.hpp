@@ -48,7 +48,7 @@ class TR_PrimaryInductionVariable;
 class TR_RegionStructure;
 class TR_RegisterCandidate;
 class TR_StructureSubGraphNode;
-class TR_VPConstraint;
+namespace TR { class VPConstraint; }
 namespace TR { class RegisterMappedSymbol; }
 namespace TR { class SymbolReference; }
 
@@ -387,7 +387,7 @@ class TR_InductionVariable : public TR_Link<TR_InductionVariable>
 
    TR_InductionVariable() {}
 
-   TR_InductionVariable(TR::RegisterMappedSymbol *s, TR_VPConstraint *entry, TR_VPConstraint *exit, TR_VPConstraint *incr, TR_YesNoMaybe isSigned)
+   TR_InductionVariable(TR::RegisterMappedSymbol *s, TR::VPConstraint *entry, TR::VPConstraint *exit, TR::VPConstraint *incr, TR_YesNoMaybe isSigned)
       : _local(s), _isSigned(isSigned)
       {
       setEntry(entry);
@@ -397,20 +397,20 @@ class TR_InductionVariable : public TR_Link<TR_InductionVariable>
 
    TR::RegisterMappedSymbol *getLocal() {return _local;}
    void                     setLocal(TR::RegisterMappedSymbol *s) { _local = s;}
-   TR_VPConstraint *getEntry() {return _entry;}
-   TR_VPConstraint *getIncr() {return _incr;}
-   TR_VPConstraint *getExit() {return _exit;}
-   void setEntry(TR_VPConstraint *entry) { _entry = entry; }
-   void setExit(TR_VPConstraint *exit) { _exit = exit; }
-   void setIncr(TR_VPConstraint *incr) { _incr = incr; }
+   TR::VPConstraint *getEntry() {return _entry;}
+   TR::VPConstraint *getIncr() {return _incr;}
+   TR::VPConstraint *getExit() {return _exit;}
+   void setEntry(TR::VPConstraint *entry) { _entry = entry; }
+   void setExit(TR::VPConstraint *exit) { _exit = exit; }
+   void setIncr(TR::VPConstraint *incr) { _incr = incr; }
    TR_YesNoMaybe isSigned() { return _isSigned; }
 
    private:
 
    TR::RegisterMappedSymbol    *_local;
-   TR_VPConstraint            *_entry;
-   TR_VPConstraint            *_incr;
-   TR_VPConstraint            *_exit;
+   TR::VPConstraint            *_entry;
+   TR::VPConstraint            *_incr;
+   TR::VPConstraint            *_exit;
    TR_YesNoMaybe               _isSigned; //FIXME// CRITICAL Value Propgation should set this up.. right now this is not being done
    };
 

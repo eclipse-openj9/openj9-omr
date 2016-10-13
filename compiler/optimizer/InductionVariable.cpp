@@ -65,7 +65,7 @@
 #include "optimizer/Dominators.hpp"              // for TR_Dominators
 #include "optimizer/UseDefInfo.hpp"              // for TR_UseDefInfo, etc
 #include "optimizer/LoopCanonicalizer.hpp"       // for TR_LoopTransformer
-#include "optimizer/VPConstraint.hpp"            // for TR_VPConstraint, etc
+#include "optimizer/VPConstraint.hpp"            // for TR::VPConstraint, etc
 #include "ras/Debug.hpp"                         // for TR_DebugBase
 
 #define OPT_DETAILS "O^O INDUCTION VARIABLE ANALYSIS: "
@@ -511,8 +511,8 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
 
                   if (v && v->getEntry() && v->getExit())
                      {
-                     TR_VPConstraint *entryVal = v->getEntry();
-                     TR_VPConstraint *exitVal = v->getExit();
+                     TR::VPConstraint *entryVal = v->getEntry();
+                     TR::VPConstraint *exitVal = v->getExit();
                      if (entryVal->asIntConstraint())
                         {
                         if (entryVal->getHighInt() <= TR::getMaxSigned<TR::Int32>()/8)
@@ -802,12 +802,12 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                          TR_InductionVariable *v = loopStructure->asRegion()->findMatchingIV(inductionVarSymRef);
                         if (v)
                            {
-                           TR_VPConstraint *entryVal = v->getEntry();
-                           TR_VPConstraint *exitVal = v->getExit();
-                           TR_VPConstraint *incr = v->getIncr();
-                           TR_VPConstraint *newEntryVal = NULL;
-                           TR_VPConstraint *newExitVal = NULL;
-                           TR_VPConstraint *newIncr = NULL;
+                           TR::VPConstraint *entryVal = v->getEntry();
+                           TR::VPConstraint *exitVal = v->getExit();
+                           TR::VPConstraint *incr = v->getIncr();
+                           TR::VPConstraint *newEntryVal = NULL;
+                           TR::VPConstraint *newExitVal = NULL;
+                           TR::VPConstraint *newIncr = NULL;
 
                            if (newSymbolReference->getSymbol()->getType().isInt64())
                               {
@@ -1039,7 +1039,7 @@ bool TR_LoopStrider::reassociateAndHoistNonPacked()
    }
 
 
-TR_VPLongRange* TR_LoopStrider::genVPLongRange(TR_VPConstraint* cons, int64_t coeff, int64_t additive)
+TR::VPLongRange* TR_LoopStrider::genVPLongRange(TR::VPConstraint* cons, int64_t coeff, int64_t additive)
    {
    if (cons)
       {
@@ -1055,18 +1055,18 @@ TR_VPLongRange* TR_LoopStrider::genVPLongRange(TR_VPConstraint* cons, int64_t co
          high = cons->getHighLong();
          }
 
-      return new (trHeapMemory()) TR_VPLongRange(low*coeff + additive, high*coeff + additive);
+      return new (trHeapMemory()) TR::VPLongRange(low*coeff + additive, high*coeff + additive);
       }
    return NULL;
    }
 
-TR_VPIntRange* TR_LoopStrider::genVPIntRange(TR_VPConstraint* cons, int64_t coeff, int64_t additive)
+TR::VPIntRange* TR_LoopStrider::genVPIntRange(TR::VPConstraint* cons, int64_t coeff, int64_t additive)
    {
    if (cons && cons->asIntConstraint())
       {
       int32_t low = cons->getLowInt();
       int32_t high = cons->getHighInt();
-      return new (trHeapMemory()) TR_VPIntRange((int32_t)(low*coeff + additive), (int32_t)(high*coeff + additive));
+      return new (trHeapMemory()) TR::VPIntRange((int32_t)(low*coeff + additive), (int32_t)(high*coeff + additive));
       }
    return NULL;
    }
@@ -3811,7 +3811,7 @@ bool TR_LoopStrider::isStoreInRequiredForm(TR::Node *storeNode, int32_t symRefNu
       if (!v) return false;
 
       _isAddition = true;
-      TR_VPConstraint * incr = v->getIncr();
+      TR::VPConstraint * incr = v->getIncr();
       int64_t low;
 
       if (incr->asIntConst())
@@ -4462,14 +4462,14 @@ void TR_LoopStrider::createConstraintsForNewInductionVariable(TR_Structure *loop
    if (v)
       {
       // old constraints
-      TR_VPConstraint *entryVal = v->getEntry();
-      TR_VPConstraint *exitVal = v->getExit();
-      TR_VPConstraint *incr = v->getIncr();
+      TR::VPConstraint *entryVal = v->getEntry();
+      TR::VPConstraint *exitVal = v->getExit();
+      TR::VPConstraint *incr = v->getIncr();
 
       //new constraints
-      TR_VPConstraint *newEntryVal = genVPLongRange(entryVal, 1, 0);  // create the new entry constraint
-      TR_VPConstraint *newExitVal = genVPLongRange(entryVal, 1, 0); // create the new exit constraint
-      TR_VPConstraint *newIncr = genVPLongRange(incr, 1, 0); // create the new incr constraint
+      TR::VPConstraint *newEntryVal = genVPLongRange(entryVal, 1, 0);  // create the new entry constraint
+      TR::VPConstraint *newExitVal = genVPLongRange(entryVal, 1, 0); // create the new exit constraint
+      TR::VPConstraint *newIncr = genVPLongRange(incr, 1, 0); // create the new incr constraint
 
       TR_InductionVariable *oldIV = loopStructure->asRegion()->findMatchingIV(oldSymRef);
 

@@ -77,7 +77,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/UseDefInfo.hpp"                // for TR_UseDefInfo, etc
 #include "optimizer/ValueNumberInfo.hpp"
-#include "optimizer/VPConstraint.hpp"              // for TR_VPConstraint
+#include "optimizer/VPConstraint.hpp"              // for TR::VPConstraint
 #include "ras/Debug.hpp"                           // for TR_DebugBase
 #include "ras/DebugCounter.hpp"                    // for TR::DebugCounter, etc
 
@@ -4063,9 +4063,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          TR_InductionVariable *v = whileLoop->findMatchingIV(firstChildSymRef);
          if (v && v->getEntry() && v->getExit())
             {
-            TR_VPConstraint *entryVal = v->getEntry();
-            TR_VPConstraint *exitVal = v->getExit();
-            TR_VPConstraint *incrVal = v->getIncr();
+            TR::VPConstraint *entryVal = v->getEntry();
+            TR::VPConstraint *exitVal = v->getExit();
+            TR::VPConstraint *incrVal = v->getIncr();
             if (entryVal->asIntConstraint() &&
                exitVal->asIntConstraint() &&
                incrVal->asIntConstraint())

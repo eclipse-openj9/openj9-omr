@@ -1019,7 +1019,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
    //    if (isCountedLoop && !_completeUnroll && !_spillLoopRequired)
    //       {
    //       //Adjust the induction variable information to include the new information
-   //       _indVar->setIncr(new (trHeapMemory()) TR_VPIntConst(_loopStride * (1 + _unrollCount)));
+   //       _indVar->setIncr(new (trHeapMemory()) TR::VPIntConst(_loopStride * (1 + _unrollCount)));
    //       }
    //    else
    //       {

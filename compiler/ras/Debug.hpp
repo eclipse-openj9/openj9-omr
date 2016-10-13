@@ -68,7 +68,7 @@ class TR_RematerializationInfo;
 class TR_ResolvedMethod;
 class TR_Structure;
 class TR_StructureSubGraphNode;
-class TR_VPConstraint;
+namespace TR { class VPConstraint; }
 namespace TR { class GCStackAtlas; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Block; }
@@ -520,7 +520,7 @@ public:
    virtual const char * getRegisterKindName(TR_RegisterKinds);
    virtual const char * toString(TR_RematerializationInfo *);
 
-   virtual void         print(TR::FILE *, TR_VPConstraint *);
+   virtual void         print(TR::FILE *, TR::VPConstraint *);
 
 #ifdef J9_PROJECT_SPECIFIC
    virtual void         dump(TR::FILE *, TR_CHTable *);

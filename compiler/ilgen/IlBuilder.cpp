@@ -1141,7 +1141,7 @@ IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node 
    /*
     * BB1:
     *    overflowCHK
-    *       add
+    *       operation(add/sub/mul)
     *          =>child1
     *          =>child2
     *    store
@@ -1199,6 +1199,18 @@ IlBuilder::SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    TR::IlValue *subValue = operationWithOverflow(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
    TraceIL("IlBuilder[ %p ]::%d is SubWithOverflow %d + %d\n", this, subValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    return subValue;
+   }
+
+TR::IlValue *
+IlBuilder::MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::IlValue *mulValue = operationWithOverflow(TR::ILOpCode::multiplyOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TraceIL("IlBuilder[ %p ]::%d is MulWithOverflow %d + %d\n", this, mulValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   return mulValue;
    }
 
 TR::IlValue *

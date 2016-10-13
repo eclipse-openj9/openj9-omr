@@ -153,6 +153,7 @@ public:
    TR::IlValue *Sub(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Mul(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Div(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *And(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Xor(TR::IlValue *left, TR::IlValue *right);

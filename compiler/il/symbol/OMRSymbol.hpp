@@ -432,6 +432,9 @@ public:
    void setNamedShadowSymbol();
    bool isNamedShadowSymbol();
 
+   void setImmutableField() { _flags2.set(ImmutableField); }
+   bool isImmutableField()  { return _flags2.testAny(ImmutableField); }
+
    /**
     * Enum values for _flags field.
     */
@@ -556,6 +559,7 @@ public:
       RealRegister              = 0x00000080, // RegisterSymbol is machine real register
       UnsafeShadow              = 0x00000100,
       NamedShadow               = 0x00000200,
+      ImmutableField            = 0x00000400,
       };
 
 protected:

@@ -125,6 +125,7 @@ enum
    IfEAOpportunities,
    IfEAOpportunitiesMarkLastRun,
    IfEAOpportunitiesAndNotOptServer,
+   IfAggressiveLiveness,
    MarkLastRun
    };
 

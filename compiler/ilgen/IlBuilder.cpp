@@ -1136,12 +1136,12 @@ IlBuilder::genOverflowCHKTreeTop(TR::Node *operationNode)
    }
 
 TR::IlValue *
-IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler)
    {
    /*
     * BB1:
     *    overflowCHK
-    *       add
+    *       operation(add/sub/mul)
     *          =>child1
     *          =>child2
     *    store
@@ -1153,9 +1153,20 @@ IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
     * BB3:
     *    continue
     */
-   TR::IlValue *addValue = NULL;
-   TR::Node *addNode = NULL;
+   TR::Node *operationNode = binaryOpNodeFromNodes(op, leftNode, rightNode);
+   TR::Node *overflowChkNode = genOverflowCHKTreeTop(operationNode);
 
+   TR::Block *blockWithOverflowCHK = _currentBlock;
+   TR::IlValue *resultValue = newValue(operationNode->getDataType());
+   genTreeTop(TR::Node::createStore(resultValue, operationNode));
+
+   appendExceptionHandler(blockWithOverflowCHK, handler, TR::Block::CanCatchOverflowCheck);
+   return resultValue;
+   }
+
+TR::IlValue *
+IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
    appendBlock(); 
 
    TR::Node *leftNode = loadValue(left);
@@ -1171,18 +1182,35 @@ IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
          TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
       }
    else op = addOpCode(leftNode->getDataType());
-   addNode = binaryOpNodeFromNodes(op, leftNode, rightNode);
-   TR::Node *overflowChkNode = genOverflowCHKTreeTop(addNode);
 
-   TR::Block *blockWithOverflowCHK = _currentBlock;
-   addValue = newValue(addNode->getDataType());
-   genTreeTop(TR::Node::createStore(addValue, addNode));
-
-   appendExceptionHandler(blockWithOverflowCHK, handler, TR::Block::CanCatchOverflowCheck);
-
+   TR::IlValue *addValue = operationWithOverflow(op, leftNode, rightNode, handler);
    TraceIL("IlBuilder[ %p ]::%d is AddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    //ILB_REPLAY("%s = %s->AddWithOverflow(%s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_BUILDER(*handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
+   }
+
+TR::IlValue *
+IlBuilder::SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::IlValue *subValue = operationWithOverflow(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TraceIL("IlBuilder[ %p ]::%d is SubWithOverflow %d + %d\n", this, subValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   return subValue;
+   }
+
+TR::IlValue *
+IlBuilder::MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::IlValue *mulValue = operationWithOverflow(TR::ILOpCode::multiplyOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TraceIL("IlBuilder[ %p ]::%d is MulWithOverflow %d + %d\n", this, mulValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   return mulValue;
    }
 
 TR::IlValue *

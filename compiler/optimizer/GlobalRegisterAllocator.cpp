@@ -415,6 +415,14 @@ TR_GlobalRegisterAllocator::perform()
          for (a = locals.getFirst(); a != NULL; a = locals.getNext())
             ++numLocals;
 
+         if (comp()->getOption(TR_EnableAggressiveLiveness))
+            {
+            TR::ParameterSymbol *p;
+            ListIterator<TR::ParameterSymbol> parms(&comp()->getMethodSymbol()->getParameterList());
+            for (p = parms.getFirst(); p != NULL; p = parms.getNext())
+               ++numLocals;
+            }
+
          ListIterator<TR::RegisterMappedSymbol> methodMetaDataSymbols(&comp()->getMethodSymbol()->getMethodMetaDataList());
          if (comp()->allocateAtThisOptLevel())
             {
@@ -434,7 +442,7 @@ TR_GlobalRegisterAllocator::perform()
             // Perform liveness analysis
             //
             TR_Liveness liveLocals(comp(), optimizer(), comp()->getFlowGraph()->getStructure(),
-               false, NULL, false, false);
+               false, NULL, false, comp()->getOption(TR_EnableAggressiveLiveness));
             if (comp()->getVisitCount() > HIGH_VISIT_COUNT)
                {
                comp()->resetVisitCounts(1);

@@ -1494,7 +1494,14 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             }
          break;
          }
-
+      case IfAggressiveLiveness:
+         {
+         if (comp()->getOption(TR_EnableAggressiveLiveness))
+            {
+            doThisOptimization = true;
+            }
+         break;
+         }
       case MarkLastRun:
          doThisOptimization = true;
          TR_ASSERT(optNum < OMR::numOpts ,"No current support for marking groups as last (optNum=%d,numOpt=%d\n",optNum,OMR::numOpts); //make sure we didn't mark groups

@@ -596,6 +596,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dumpInitialMethodNamesAndCounts",    "O\tDebug Printing of Method Names and Initial Counts.", SET_OPTION_BIT(TR_DumpInitialMethodNamesAndCounts), "F"},
    {"dumpIprofilerMethodNamesAndCounts",  "O\tDebug Printing of Method Names and Persisted Counts.", SET_OPTION_BIT(TR_DumpPersistedIProfilerMethodNamesAndCounts), "F"},
    {"dynamicThreadPriority",              "M\tenable dynamic changing of compilation thread priority", SET_OPTION_BIT(TR_DynamicThreadPriority), "F", NOT_IN_SUBSET},
+   {"enableAggressiveLiveness",           "I\tenable globalLiveVariablesForGC below warm", SET_OPTION_BIT(TR_EnableAggressiveLiveness), "F"},
    {"enableAllocationOfScratchBTL",       "M\tAllow the allocation scratch memory below the line (zOS 31-bit)", RESET_OPTION_BIT(TR_DontAllocateScratchBTL), "F", NOT_IN_SUBSET },
    {"enableAllocationSinking",            "O\tdelay object allocations until immediately before the corresponding constructor calls", TR::Options::enableOptimization, allocationSinking, 0, "P"},
    {EnableAnnotations,                    "O\tenable annotation support",                      SET_OPTION_BIT(TR_EnableAnnotations), "F"},

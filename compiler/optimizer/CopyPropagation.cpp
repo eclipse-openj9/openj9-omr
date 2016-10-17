@@ -2334,9 +2334,7 @@ bool nodeContainsLoadReg(TR::Compilation * comp, TR::Node * n, vcount_t vc)
 TR::Node * TR_CopyPropagation::isCheapRematerializationCandidate(TR::Node * defNode, TR::Node * node)
    {
    // Only run if GRA has already run - do not rematerialize if GRA hasn't had the chance to work with the temps.
-   if (!(comp()->cg()->getGRACompleted() ||
-         comp()->cg()->getLimitedGRACompleted() ||
-         comp()->cg()->getGRAForShortLoopsCompleted()))
+   if (!comp()->cg()->getGRACompleted())
       {
       return NULL;
       }

@@ -201,9 +201,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0);
 #endif
 
-   int32_t maxPositiveDisplacement() { return UPPER_IMMED; }
-   int32_t maxNegativeDisplacement() { return LOWER_IMMED; }
-
    int32_t findOrCreateFloatConstant(void *v, TR::DataType t,
                   TR::Instruction *n0, TR::Instruction *n1,
                   TR::Instruction *n2, TR::Instruction *n3);

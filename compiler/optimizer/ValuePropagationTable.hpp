@@ -792,7 +792,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,        // TR::arrayset
    constrainChildren,        // TR::arraytranslate
    constrainTRT,             // TR::arraytranslateAndTest
-   constrainChildren,        // TR::countDigits
    constrainChildren,        // TR::long2String
    constrainChildren,        // TR::bitOpMem
    constrainChildren,        // TR::bitOpMemND
@@ -1377,6 +1376,8 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,           // TR::pdremSelect
 
    constrainChildren,           // TR::pdModifyPrecision
+
+   constrainChildren,           // TR::countDigits
 
    constrainChildren,           // TR::pd2df
    constrainChildren,           // TR::pd2dfAbs

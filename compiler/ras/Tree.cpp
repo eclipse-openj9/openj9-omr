@@ -2953,7 +2953,6 @@ int32_t childTypes[] =
    TR::NoType,                     // TR::arrayset
    TR::NoType,                     // TR::arraytranslate
    TR::NoType,                     // TR::arraytranslateAndTest
-   TR::NoType,                     // TR::countDigits
    TR::NoType,                     // TR::long2String
    TR::NoType,                     // TR::bitOpMem
    TR::NoType,                     // TR::bitOpMemND
@@ -3535,6 +3534,8 @@ int32_t childTypes[] =
    TR::PackedDecimal,                                        // TR::pdremSelect
 
    TR::PackedDecimal,                                        // TR::pdModifyPrecision
+
+   TR::NoType,                                               // TR::countDigits
 
    TR::PackedDecimal,                                        // TR::pd2df
    TR::PackedDecimal,                                        // TR::pd2dfAbs

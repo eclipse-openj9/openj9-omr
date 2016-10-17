@@ -650,7 +650,6 @@
    arraysetSimplifier,      // TR::arrayset
    dftSimplifier,           // TR::arraytranslate
    dftSimplifier,           // TR::arraytranslateAndTest
-   dftSimplifier,           // TR::countDigits
    dftSimplifier,           // TR::long2String
    bitOpMemSimplifier,      // TR::bitOpMem
    bitOpMemNDSimplifier,    // TR::bitOpMemND

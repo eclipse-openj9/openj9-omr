@@ -9094,21 +9094,6 @@
    },
 
    {
-   /* .opcode               = */ TR::countDigits,
-   /* .name                 = */ "countDigits",
-   /* .properties1          = */ 0,
-   /* .properties2          = */ 0,
-   /* .properties3          = */ 0,
-   /* .properties4          = */ 0,
-   /* .dataType             = */ TR::Int32,
-   /* .typeProperties       = */ ILTypeProp::Size_4 | ILTypeProp::Integer,
-   /* .swapChildrenOpCode   = */ TR::BadILOp,
-   /* .reverseBranchOpCode  = */ TR::BadILOp,
-   /* .booleanCompareOpCode = */ TR::BadILOp,
-   /* .ifCompareOpCode      = */ TR::BadILOp,
-   },
-
-   {
    /* .opcode               = */ TR::long2String,
    /* .name                 = */ "long2String",
    /* .properties1          = */ ILProp1::Call | ILProp1::HasSymbolRef,

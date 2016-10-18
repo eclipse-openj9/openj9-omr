@@ -33,6 +33,8 @@ uint32_t compareAndSwapU32NoSpinlock(uint32_t *location, uint32_t oldValue, uint
 void issueReadBarrier(void);
 void issueReadWriteBarrier(void);
 void issueWriteBarrier(void);
+uintptr_t addAtomic(volatile uintptr_t *address, uintptr_t addend);
+uintptr_t subtractAtomic(volatile uintptr_t *address, uintptr_t value);
 
 /* ---------------- cas8help.s ---------------- */
 #if !defined(OMR_ENV_DATA64) && (defined(AIXPPC) || defined(LINUXPPC))

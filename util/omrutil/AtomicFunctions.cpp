@@ -60,3 +60,15 @@ issueWriteBarrier(void)
 {
 	VM_AtomicSupport::writeBarrier();
 }
+ 
+uintptr_t
+addAtomic(volatile uintptr_t *address, uintptr_t addend)
+{
+	return VM_AtomicSupport::add(address, addend);
+}
+
+uintptr_t
+subtractAtomic(volatile uintptr_t *address, uintptr_t value)
+{
+	return VM_AtomicSupport::subtract(address, value);
+}

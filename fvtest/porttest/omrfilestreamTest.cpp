@@ -901,6 +901,7 @@ writeOnlyTest:
 	/*umask vary so we can't test 'isGroupWritable', 'isGroupReadable', 'isOtherWritable', or 'isOtherReadable'*/
 #endif /* defined(WIN32) */
 
+	rc = omrfile_unlink(filename);
 	if (0 != rc) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_unlink failed: %s\n", filename);
 			goto exit;

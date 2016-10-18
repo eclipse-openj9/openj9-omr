@@ -28,6 +28,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21)
+#undef OMR_OMRSIG_HAS_SIGVEC
+#else /* defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21) */
+#define OMR_OMRSIG_HAS_SIGVEC
+#endif /* defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 21) */
+
 #if defined(OSX)
 #define __THROW
 #endif /* defined(OSX) */

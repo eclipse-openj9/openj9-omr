@@ -2240,7 +2240,7 @@ TR_Debug::printVCG(TR::FILE *pOutFile, TR::Node * node, uint32_t indentation)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_VPConstraint *info)
+TR_Debug::print(TR::FILE *pOutFile, TR::VPConstraint *info)
    {
    if (pOutFile == NULL)
       return;

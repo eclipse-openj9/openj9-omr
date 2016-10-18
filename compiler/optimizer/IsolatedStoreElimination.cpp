@@ -56,7 +56,7 @@
 #include "optimizer/Structure.hpp"             // for TR_RegionStructure, etc
 #include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "optimizer/UseDefInfo.hpp"            // for TR_UseDefInfo, etc
-#include "optimizer/VPConstraint.hpp"          // for TR_VPConstraint
+#include "optimizer/VPConstraint.hpp"          // for TR::VPConstraint
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
 

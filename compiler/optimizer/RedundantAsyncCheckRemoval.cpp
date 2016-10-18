@@ -51,7 +51,7 @@
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/Structure.hpp"             // for TR_StructureSubGraphNode, etc
 #include "optimizer/TransformUtil.hpp"         // for TransformUtil
-#include "optimizer/VPConstraint.hpp"          // for TR_VPConstraint
+#include "optimizer/VPConstraint.hpp"          // for TR::VPConstraint
 #include "optimizer/AsyncCheckInsertion.hpp"
 
 #define OPT_DETAILS "O^O REDUNDANT ASYNC CHECK REMOVAL: "
@@ -773,9 +773,9 @@ int32_t TR_RedundantAsyncCheckRemoval::estimateLoopIterations(TR_RegionStructure
         indVar != 0;
         indVar = indVar->getNext())
       {
-      TR_VPConstraint *entryVal = indVar->getEntry();
-      TR_VPConstraint *exitVal  = indVar->getExit();
-      TR_VPConstraint *incrVal  = indVar->getIncr();
+      TR::VPConstraint *entryVal = indVar->getEntry();
+      TR::VPConstraint *exitVal  = indVar->getExit();
+      TR::VPConstraint *incrVal  = indVar->getIncr();
 
       if (incrVal->asLongConst() || (entryVal && entryVal->asLongConst()) || (exitVal && exitVal->asLongConst()))
          {

@@ -75,7 +75,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "optimizer/UseDefInfo.hpp"                // for TR_UseDefInfo
 #include "optimizer/ValueNumberInfo.hpp"
-#include "optimizer/VPConstraint.hpp"              // for TR_VPConstraint, etc
+#include "optimizer/VPConstraint.hpp"              // for TR::VPConstraint, etc
 #include "optimizer/ValuePropagation.hpp"
 #include "ras/Debug.hpp"                           // for TR_DebugBase
 #include "ras/DebugCounter.hpp"
@@ -108,7 +108,7 @@ extern void collectArraylengthNodes(TR::Node *node, vcount_t visitCount, List<TR
 //
 // ***************************************************************************
 
-TR_ValuePropagation::TR_ValuePropagation(TR::OptimizationManager *manager)
+TR::ValuePropagation::ValuePropagation(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _parmValues(NULL),
      _currentParent(NULL),
@@ -147,17 +147,17 @@ TR_ValuePropagation::TR_ValuePropagation(TR::OptimizationManager *manager)
 
 
 
-void TR_ValuePropagation::initialize()
+void TR::ValuePropagation::initialize()
    {
    _resetClassesThatShouldNotBeNewlyExtended.deleteAll();
    _enableVersionBlocks       = false;
    _disableVersionBlockForThisBlock = true;
 
-   _nullObjectConstraint        = new (trStackMemory()) TR_VPNullObject();
-   _nonNullObjectConstraint     = new (trStackMemory()) TR_VPNonNullObject();
-   _preexistentObjectConstraint = new (trStackMemory()) TR_VPPreexistentObject();
-   _constantZeroConstraint      = new (trStackMemory()) TR_VPIntConst(0);
-   _unreachablePathConstraint   = new (trStackMemory()) TR_VPUnreachablePath();
+   _nullObjectConstraint        = new (trStackMemory()) TR::VPNullObject();
+   _nonNullObjectConstraint     = new (trStackMemory()) TR::VPNonNullObject();
+   _preexistentObjectConstraint = new (trStackMemory()) TR::VPPreexistentObject();
+   _constantZeroConstraint      = new (trStackMemory()) TR::VPIntConst(0);
+   _unreachablePathConstraint   = new (trStackMemory()) TR::VPUnreachablePath();
 
    _bcdSignConstraints = NULL;
 
@@ -286,7 +286,7 @@ void TR_ValuePropagation::initialize()
 
    _reachedMaxRelationDepth = false;
    _propagationDepth = 0;
-   static const char *pEnv = feGetEnv("TR_VPMaxRelDepth");
+   static const char *pEnv = feGetEnv("TR::VPMaxRelDepth");
    _maxPropagationDepth = pEnv ? atoi(pEnv) : MAX_RELATION_DEPTH;
    if (comp()->getMethodHotness() > warm)
       _maxPropagationDepth = _maxPropagationDepth * 3;
@@ -341,7 +341,7 @@ void TR_ValuePropagation::initialize()
      _unsafeArrayAccessNodes = new (trStackMemory()) TR_BitVector(comp()->getNodeCount(), trMemory(), stackAlloc, growable);
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::copyRelationships(Relationship *first)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::copyRelationships(Relationship *first)
    {
    TR_LinkHeadAndTail<Relationship> list;
    for (Relationship *rel = first; rel; rel = rel->getNext())
@@ -352,7 +352,7 @@ TR_ValuePropagation::Relationship *TR_ValuePropagation::copyRelationships(Relati
    return list.getFirst();
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::copyStoreRelationships(StoreRelationship *first)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::copyStoreRelationships(StoreRelationship *first)
    {
    TR_LinkHeadAndTail<StoreRelationship> list;
    for (StoreRelationship *rel = first; rel; rel = rel->getNext())
@@ -363,7 +363,7 @@ TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::copyStoreRelationsh
    return list.getFirst();
    }
 
-TR_ValuePropagation::ValueConstraint *TR_ValuePropagation::createValueConstraint(int32_t valueNumber, Relationship *relationships, StoreRelationship *storeRelationships)
+TR::ValuePropagation::ValueConstraint *TR::ValuePropagation::createValueConstraint(int32_t valueNumber, Relationship *relationships, StoreRelationship *storeRelationships)
    {
    ValueConstraint *vc;
    if (!_valueConstraintCache->isEmpty())
@@ -374,14 +374,14 @@ TR_ValuePropagation::ValueConstraint *TR_ValuePropagation::createValueConstraint
    return vc;
    }
 
-void TR_ValuePropagation::freeValueConstraint(ValueConstraint *vc)
+void TR::ValuePropagation::freeValueConstraint(ValueConstraint *vc)
    {
    freeRelationships(vc->relationships);
    freeStoreRelationships(vc->storeRelationships);
    _valueConstraintCache->push(vc);
    }
 
-int32_t TR_ValuePropagation::getValueNumber(TR::Node *node)
+int32_t TR::ValuePropagation::getValueNumber(TR::Node *node)
    {
    static const char *disableLocalVPConstNumbering = feGetEnv("TR_DisableLocalVPConstNumbering");
    if (_isGlobalPropagation)
@@ -434,7 +434,7 @@ int32_t TR_ValuePropagation::getValueNumber(TR::Node *node)
       }
    }
 
-TR_VPConstraint *TR_ValuePropagation::getConstraint(TR::Node *node, bool &isGlobal, TR::Node *relative)
+TR::VPConstraint *TR::ValuePropagation::getConstraint(TR::Node *node, bool &isGlobal, TR::Node *relative)
    {
    /*
      If we return a non-null constraint, isGlobal will be set accordingly.
@@ -449,7 +449,7 @@ TR_VPConstraint *TR_ValuePropagation::getConstraint(TR::Node *node, bool &isGlob
    int32_t relativeVN  = relative ? getValueNumber(relative) : AbsoluteConstraint;
    // Look for an existing local constraint. If we find it we are done.
    //
-   TR_VPConstraint *constraint = NULL;
+   TR::VPConstraint *constraint = NULL;
    Relationship *rel = findConstraint(valueNumber, relativeVN);
    if (rel)
       {
@@ -476,7 +476,7 @@ TR_VPConstraint *TR_ValuePropagation::getConstraint(TR::Node *node, bool &isGlob
    //
    if (constraint)
       {
-      TR_VPConstraint *betterConstraint = applyGlobalConstraints(node, valueNumber, constraint, relativeVN);
+      TR::VPConstraint *betterConstraint = applyGlobalConstraints(node, valueNumber, constraint, relativeVN);
       addBlockOrGlobalConstraint(node, betterConstraint, isGlobal, relative);
       return constraint;
       }
@@ -498,7 +498,7 @@ TR_VPConstraint *TR_ValuePropagation::getConstraint(TR::Node *node, bool &isGlob
    return constraint;
    }
 
-void TR_ValuePropagation::removeNode(TR::Node *node, bool anchorIt)
+void TR::ValuePropagation::removeNode(TR::Node *node, bool anchorIt)
    {
    // If the node has a reference count more than one, anchor it in a
    // treetop _preceeding_ the current treetop to avoid swing-down problems.
@@ -540,7 +540,7 @@ void TR_ValuePropagation::removeNode(TR::Node *node, bool anchorIt)
       }
    }
 
-void TR_ValuePropagation::removeChildren(TR::Node *node, bool anchorIt)
+void TR::ValuePropagation::removeChildren(TR::Node *node, bool anchorIt)
    {
    for (int32_t i = node->getNumChildren()-1; i >= 0; i--)
       {
@@ -559,7 +559,7 @@ static bool canCauseOSR(TR::TreeTop *tt, TR::Compilation *comp)
    return false;
    }
 
-void TR_ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *endTree)
+void TR::ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *endTree)
    {
    TR::TreeTop *treeTop;
    TR::TreeTop *lastRealTreeTop = _curBlock->getLastRealTreeTop();
@@ -684,7 +684,7 @@ void TR_ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *endT
       }
    }
 
-int32_t TR_ValuePropagation::getPrimitiveArrayType(char primitiveArrayChar)
+int32_t TR::ValuePropagation::getPrimitiveArrayType(char primitiveArrayChar)
    {
    switch (primitiveArrayChar)
       {
@@ -700,7 +700,7 @@ int32_t TR_ValuePropagation::getPrimitiveArrayType(char primitiveArrayChar)
       }
    }
 
-bool TR_ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &elementSize, TR::DataType &type )
+bool TR::ValuePropagation::canTransformArrayCopyCallForSmall(TR::Node *node, int32_t &srcLength, int32_t &dstLength, int32_t &elementSize, TR::DataType &type )
    {
    TR::Node *srcArrayNode = node->getFirstChild();
    TR::Node *srcOffsetNode = node->getSecondChild();
@@ -787,7 +787,7 @@ TR_ResolvedMethod * findResolvedClassMethod(TR::Compilation * comp, char * class
 #endif
 
 
-void TR_ValuePropagation::removeArrayCopyNode(TR::TreeTop *arraycopyTree)
+void TR::ValuePropagation::removeArrayCopyNode(TR::TreeTop *arraycopyTree)
    {
    ListElement<TR_TreeTopWrtBarFlag> *elem = _unknownTypeArrayCopyTrees.getListHead();
    ListElement<TR_TreeTopWrtBarFlag> *prev = NULL;
@@ -927,7 +927,7 @@ TR::Node* generateLenForArrayCopy(TR::Compilation *comp, int32_t elementSize, TR
    }
 
 
-bool TR_ValuePropagation::canRunTransformToArrayCopy()
+bool TR::ValuePropagation::canRunTransformToArrayCopy()
    {
    if (!lastTimeThrough())
       return false;
@@ -940,7 +940,7 @@ bool TR_ValuePropagation::canRunTransformToArrayCopy()
    return true;
    }
 
-bool TR_ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arraycopyNode)
+bool TR::ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arraycopyNode)
    {
    if (!canRunTransformToArrayCopy())
       return false;
@@ -974,9 +974,9 @@ bool TR_ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arraycopyNode)
          int64_t copyLenHigh;
 
          bool isGlobal;
-         TR_VPConstraint *srcOffsetConstraint = getConstraint(srcOffset, isGlobal);
-         TR_VPConstraint *dstOffsetConstraint = getConstraint(destOffset, isGlobal);
-         TR_VPConstraint *copyLenConstraint   = getConstraint(len, isGlobal);
+         TR::VPConstraint *srcOffsetConstraint = getConstraint(srcOffset, isGlobal);
+         TR::VPConstraint *dstOffsetConstraint = getConstraint(destOffset, isGlobal);
+         TR::VPConstraint *copyLenConstraint   = getConstraint(len, isGlobal);
 
          srcOffLow   = srcOffsetConstraint ? srcOffsetConstraint->getLowInt() : TR::getMinSigned<TR::Int32>();
          srcOffHigh  = srcOffsetConstraint ? srcOffsetConstraint->getHighInt() : TR::getMaxSigned<TR::Int32>();
@@ -1026,7 +1026,7 @@ bool TR_ValuePropagation::transformUnsafeCopyMemoryCall(TR::Node *arraycopyNode)
 
    }
 
-void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
+void TR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    {
    bool is64BitTarget = TR::Compiler->target.is64Bit();
 
@@ -1083,11 +1083,11 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
       traceMsg(comp(), "Detected arraylet arraycopy: %p\n", node);
 
    bool isGlobal;
-   TR_VPConstraint *srcObject = getConstraint(srcObjNode, isGlobal);
-   TR_VPConstraint *srcOffset = getConstraint(srcOffNode, isGlobal);
-   TR_VPConstraint *dstObject = getConstraint(dstObjNode, isGlobal);
-   TR_VPConstraint *dstOffset = getConstraint(dstOffNode, isGlobal);
-   TR_VPConstraint *copyLen   = getConstraint(copyLenNode, isGlobal);
+   TR::VPConstraint *srcObject = getConstraint(srcObjNode, isGlobal);
+   TR::VPConstraint *srcOffset = getConstraint(srcOffNode, isGlobal);
+   TR::VPConstraint *dstObject = getConstraint(dstObjNode, isGlobal);
+   TR::VPConstraint *dstOffset = getConstraint(dstOffNode, isGlobal);
+   TR::VPConstraint *copyLen   = getConstraint(copyLenNode, isGlobal);
 
    int32_t srcVN = getValueNumber(srcObjNode);
    int32_t dstVN = getValueNumber(dstObjNode);
@@ -1102,8 +1102,8 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
    if (!comp()->getOptions()->needWriteBarriers())
       needWriteBarrier = false;
 
-   TR_VPArrayInfo *srcArrayInfo;
-   TR_VPArrayInfo *dstArrayInfo;
+   TR::VPArrayInfo *srcArrayInfo;
+   TR::VPArrayInfo *dstArrayInfo;
 
    srcOffLow = srcOffset ? srcOffset->getLowInt() : TR::getMinSigned<TR::Int32>();
    srcOffHigh = srcOffset ? srcOffset->getHighInt() : TR::getMaxSigned<TR::Int32>();
@@ -1937,13 +1937,13 @@ void TR_ValuePropagation::transformArrayCopyCall(TR::Node *node)
 
    // We can now make assertions about the arguments to the arraycopy call
    //
-   addBlockConstraint(srcObjNode, TR_VPNonNullObject::create(this));
-   addBlockConstraint(dstObjNode, TR_VPNonNullObject::create(this));
+   addBlockConstraint(srcObjNode, TR::VPNonNullObject::create(this));
+   addBlockConstraint(dstObjNode, TR::VPNonNullObject::create(this));
    srcOffHigh = srcArrayInfo ? srcArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
-   addBlockConstraint(srcOffNode, TR_VPIntRange::create(this, 0, srcOffHigh));
+   addBlockConstraint(srcOffNode, TR::VPIntRange::create(this, 0, srcOffHigh));
    dstOffHigh = dstArrayInfo ? dstArrayInfo->highBound() : TR::getMaxSigned<TR::Int32>();
-   addBlockConstraint(dstOffNode, TR_VPIntRange::create(this, 0, dstOffHigh));
-   addBlockConstraint(copyLenNode, TR_VPIntRange::create(this, 0, TR::getMaxSigned<TR::Int32>()));
+   addBlockConstraint(dstOffNode, TR::VPIntRange::create(this, 0, dstOffHigh));
+   addBlockConstraint(copyLenNode, TR::VPIntRange::create(this, 0, TR::getMaxSigned<TR::Int32>()));
 
    }
 
@@ -2034,7 +2034,7 @@ TR::Node *generateArrayAddressTree(
    return array;
    }
 
-TR::TreeTop* TR_ValuePropagation::createPrimitiveOrReferenceCompareNode(TR::Node* node)
+TR::TreeTop* TR::ValuePropagation::createPrimitiveOrReferenceCompareNode(TR::Node* node)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
@@ -2051,7 +2051,7 @@ TR::TreeTop* TR_ValuePropagation::createPrimitiveOrReferenceCompareNode(TR::Node
 #endif
    }
 
-TR::TreeTop* TR_ValuePropagation::createArrayStoreCompareNode(TR::Node *src, TR::Node *dst)
+TR::TreeTop* TR::ValuePropagation::createArrayStoreCompareNode(TR::Node *src, TR::Node *dst)
    {
    TR::Node *vftDst = TR::Node::createWithSymRef(TR::aloadi, 1, 1, dst, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
    TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, src, vftDst, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
@@ -2060,7 +2060,7 @@ TR::TreeTop* TR_ValuePropagation::createArrayStoreCompareNode(TR::Node *src, TR:
    return cmpTree;
    }
 
-TR::TreeTop* TR_ValuePropagation::createPrimitiveArrayNodeWithoutFlags(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference * lenRef, bool useFlagsOnOriginalArraycopy, bool isOptimizedReferenceArraycopy)
+TR::TreeTop* TR::ValuePropagation::createPrimitiveArrayNodeWithoutFlags(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference * lenRef, bool useFlagsOnOriginalArraycopy, bool isOptimizedReferenceArraycopy)
    {
    TR::Node* root = tree->getNode()->getFirstChild();
    TR::Node* len = TR::Node::createLoad(root, lenRef);
@@ -2195,7 +2195,7 @@ TR::TreeTop *createStoresForArraycopyChildren(TR::Compilation *comp, TR::TreeTop
    }
 
 #ifdef J9_PROJECT_SPECIFIC
-void TR_ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR::TreeTop *arrayTranslateTree, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *srcOffRef, TR::SymbolReference *dstOffRef, TR::SymbolReference *lenRef,TR::SymbolReference *tableRef, bool hasTable )
+void TR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR::TreeTop *arrayTranslateTree, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *srcOffRef, TR::SymbolReference *dstOffRef, TR::SymbolReference *lenRef,TR::SymbolReference *tableRef, bool hasTable )
    {
 
    bool is64BitTarget = TR::Compiler->target.is64Bit();
@@ -2443,7 +2443,7 @@ void TR_ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR::T
   }
 #endif
 
-TR::TreeTop* TR_ValuePropagation::createConverterCallNodeAfterStores(
+TR::TreeTop* TR::ValuePropagation::createConverterCallNodeAfterStores(
    TR::TreeTop         *tree,
    TR::TreeTop         *origTree,
    TR::SymbolReference *srcRef,
@@ -2541,7 +2541,7 @@ TR::TreeTop* TR_ValuePropagation::createConverterCallNodeAfterStores(
    }
 
 //-------------------------- realtime support
-TR::TreeTop *TR_ValuePropagation::buildSameLeafTest(TR::Node *offset,TR::Node *len,TR::Node *spineShiftNode)
+TR::TreeTop *TR::ValuePropagation::buildSameLeafTest(TR::Node *offset,TR::Node *len,TR::Node *spineShiftNode)
    {
    TR::TreeTop *ifTree = TR::TreeTop::create(comp());
    TR::Node *ifNode;
@@ -2601,7 +2601,7 @@ TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode
    return node;
    }
 
-void TR_ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *rtArrayCopy,TR::TreeTop *dupArraycopyTree, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *srcOffRef, TR::SymbolReference *dstOffRef, TR::SymbolReference *lenRef, bool primitive)
+void TR::ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *rtArrayCopy,TR::TreeTop *dupArraycopyTree, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *srcOffRef, TR::SymbolReference *dstOffRef, TR::SymbolReference *lenRef, bool primitive)
    {
    TR::DataType type = rtArrayCopy->_type;
    uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
@@ -2710,7 +2710,7 @@ void TR_ValuePropagation::generateRTArrayNodeWithoutFlags(TR_RealTimeArrayCopy *
    }
 
 
-TR::TreeTop* TR_ValuePropagation::createArrayCopyVCallNodeAfterStores(
+TR::TreeTop* TR::ValuePropagation::createArrayCopyVCallNodeAfterStores(
    TR::TreeTop         *tree,
    TR::SymbolReference *srcRef,
    TR::SymbolReference *dstRef,
@@ -2889,7 +2889,7 @@ void   createAndInsertTestBlock(TR::Compilation *comp,TR::TreeTop *ifTree, TR::T
 
 // Check if the contiguous size field is zero, which indicates the array is discontiguous.
 //
-TR::TreeTop *TR_ValuePropagation::createSpineCheckNode(TR::Node *node, TR::SymbolReference *objSymRef)
+TR::TreeTop *TR::ValuePropagation::createSpineCheckNode(TR::Node *node, TR::SymbolReference *objSymRef)
    {
    TR::Node *objNode = TR::Node::createLoad(node, objSymRef);
    TR::Node *sizeNode = TR::Node::createWithSymRef(TR::iloadi, 1, 1, objNode, comp()->getSymRefTab()->findOrCreateContiguousArraySizeSymbolRef());
@@ -2900,7 +2900,7 @@ TR::TreeTop *TR_ValuePropagation::createSpineCheckNode(TR::Node *node, TR::Symbo
 
 // Spills the original arguments to System.arraycopy before the spine check.
 //
-TR::TreeTop *TR_ValuePropagation::createAndInsertStoresForArrayCopySpineCheck(
+TR::TreeTop *TR::ValuePropagation::createAndInsertStoresForArrayCopySpineCheck(
    TR_ArrayCopySpineCheck *checkInfo)
    {
    TR::TreeTop *storeTree;
@@ -2917,7 +2917,7 @@ TR::TreeTop *TR_ValuePropagation::createAndInsertStoresForArrayCopySpineCheck(
    }
 
 
-TR::TreeTop *TR_ValuePropagation::createArrayCopyCallForSpineCheck(
+TR::TreeTop *TR::ValuePropagation::createArrayCopyCallForSpineCheck(
    TR_ArrayCopySpineCheck *checkInfo)
    {
    TR::Node *srcObjNode, *srcOffNode, *dstObjNode, *dstOffNode, *lenNode;
@@ -2963,7 +2963,7 @@ TR::TreeTop *TR_ValuePropagation::createArrayCopyCallForSpineCheck(
    }
 
 
-void TR_ValuePropagation::transformArrayCopySpineCheck(TR_ArrayCopySpineCheck *checkInfo)
+void TR::ValuePropagation::transformArrayCopySpineCheck(TR_ArrayCopySpineCheck *checkInfo)
    {
 
    TR::CFG *cfg = comp()->getFlowGraph();
@@ -3035,7 +3035,7 @@ void TR_ValuePropagation::transformArrayCopySpineCheck(TR_ArrayCopySpineCheck *c
    }
 
 
-void TR_ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtArrayCopyTree)
+void TR::ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtArrayCopyTree)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::CFG *cfg = comp()->getFlowGraph();
@@ -3354,7 +3354,7 @@ void TR_ValuePropagation::transformRealTimeArrayCopy(TR_RealTimeArrayCopy *rtArr
    }
 
 #ifdef J9_PROJECT_SPECIFIC
-void TR_ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *rtArrayCopyTree)
+void TR::ValuePropagation::transformRTMultiLeafArrayCopy(TR_RealTimeArrayCopy *rtArrayCopyTree)
    {
    //copied from transformRealTimeArrayCopy
    TR::CFG *cfg = comp()->getFlowGraph();
@@ -3442,7 +3442,7 @@ const char* transformedTargetName (TR::RecognizedMethod rm)
       }
    }
 
-void TR_ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR_ValuePropagation::ObjCloneInfo *cloneInfo)
+void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::ValuePropagation::ObjCloneInfo *cloneInfo)
    {
    TR_OpaqueClassBlock *j9class = cloneInfo->_clazz;
    static char *disableObjectCloneOpt = feGetEnv("TR_disableFastObjectClone");
@@ -3537,7 +3537,7 @@ void TR_ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR_Val
    return;
    }
 
-void TR_ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_OpaqueClassBlock *j9arrayClass)
+void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_OpaqueClassBlock *j9arrayClass)
    {
    static char *disableArrayCloneOpt = feGetEnv("TR_disableFastArrayClone");
    if (disableArrayCloneOpt || TR::Compiler->om.canGenerateArraylets())
@@ -3652,7 +3652,7 @@ void TR_ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opaq
    }
 
 #ifdef J9_PROJECT_SPECIFIC
-void TR_ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
+void TR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    {
 
    if (callTree->getEnclosingBlock()->isCold()||
@@ -3884,13 +3884,13 @@ void TR_ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
 
 //----------------------------------------------------------------
 
-TR_LocalValuePropagation::TR_LocalValuePropagation(TR::OptimizationManager *manager)
-   : TR_ValuePropagation(manager)
+TR::LocalValuePropagation::LocalValuePropagation(TR::OptimizationManager *manager)
+   : TR::ValuePropagation(manager)
    {
    _isGlobalPropagation = false;
    }
 
-int32_t TR_LocalValuePropagation::perform()
+int32_t TR::LocalValuePropagation::perform()
    {
    if ((_firstUnresolvedSymbolValueNumber - 1) <= comp()->getNodeCount())
       {
@@ -3917,7 +3917,7 @@ int32_t TR_LocalValuePropagation::perform()
 
 
 
-int32_t TR_LocalValuePropagation::performOnBlock(TR::Block *block)
+int32_t TR::LocalValuePropagation::performOnBlock(TR::Block *block)
    {
    // Walk the trees and process
    //
@@ -3949,7 +3949,7 @@ int32_t TR_LocalValuePropagation::performOnBlock(TR::Block *block)
    }
 
 
-void TR_LocalValuePropagation::prePerformOnBlocks()
+void TR::LocalValuePropagation::prePerformOnBlocks()
    {
    TR::CFG *cfg = comp()->getFlowGraph();
 
@@ -3978,7 +3978,7 @@ void TR_LocalValuePropagation::prePerformOnBlocks()
    }
 
 
-void TR_LocalValuePropagation::postPerformOnBlocks()
+void TR::LocalValuePropagation::postPerformOnBlocks()
    {
    // Perform transformations that were delayed until the end of the analysis
    //
@@ -4011,7 +4011,7 @@ void TR_LocalValuePropagation::postPerformOnBlocks()
 
    }
 
-TR::TreeTop *TR_LocalValuePropagation::processBlock(TR::TreeTop *startTree)
+TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    {
    _constNodeInfo.MakeEmpty();
    TR::Node *node = startTree->getNode();
@@ -4093,7 +4093,7 @@ TR::TreeTop *TR_LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    }
 
 
-void TR_ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t whichChild)
+void TR::ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t whichChild)
    {
    if (node && node->getVisitCount() != _visitCount)
       {

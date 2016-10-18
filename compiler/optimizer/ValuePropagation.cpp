@@ -71,7 +71,7 @@
 #include "optimizer/Structure.hpp"
 #include "optimizer/Reachability.hpp"
 #include "optimizer/UseDefInfo.hpp"             // for TR_UseDefInfo, etc
-#include "optimizer/VPConstraint.hpp"           // for TR_VPConstraint, etc
+#include "optimizer/VPConstraint.hpp"           // for TR::VPConstraint, etc
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"                        // for TR_DebugBase
 
@@ -111,7 +111,7 @@ void collectArraylengthNodes(TR::Node *node, vcount_t visitCount, List<TR::Node>
       collectArraylengthNodes(node->getChild(childNum), visitCount, arraylengthNodes);
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::createRelationship(int32_t relative, TR_VPConstraint *constraint)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::createRelationship(int32_t relative, TR::VPConstraint *constraint)
    {
    Relationship *rel = _relationshipCache.pop();
    if (!rel)
@@ -122,12 +122,12 @@ TR_ValuePropagation::Relationship *TR_ValuePropagation::createRelationship(int32
    return rel;
    }
 
-void TR_ValuePropagation::freeRelationship(Relationship *rel)
+void TR::ValuePropagation::freeRelationship(Relationship *rel)
    {
    _relationshipCache.add(rel);
    }
 
-void TR_ValuePropagation::freeRelationships(TR_LinkHead<Relationship> &list)
+void TR::ValuePropagation::freeRelationships(TR_LinkHead<Relationship> &list)
    {
    Relationship *cur, *next;
    for (cur = list.getFirst(); cur; cur = next)
@@ -138,7 +138,7 @@ void TR_ValuePropagation::freeRelationships(TR_LinkHead<Relationship> &list)
    list.setFirst(NULL);
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::createStoreRelationship(TR::Symbol *symbol, Relationship *firstRel)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::createStoreRelationship(TR::Symbol *symbol, Relationship *firstRel)
    {
    StoreRelationship *rel = _storeRelationshipCache.pop();
    if (!rel)
@@ -149,13 +149,13 @@ TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::createStoreRelation
    return rel;
    }
 
-void TR_ValuePropagation::freeStoreRelationship(StoreRelationship *rel)
+void TR::ValuePropagation::freeStoreRelationship(StoreRelationship *rel)
    {
    freeRelationships(rel->relationships);
    _storeRelationshipCache.add(rel);
    }
 
-void TR_ValuePropagation::freeStoreRelationships(TR_LinkHead<StoreRelationship> &list)
+void TR::ValuePropagation::freeStoreRelationships(TR_LinkHead<StoreRelationship> &list)
    {
    StoreRelationship *cur, *next;
    for (cur = list.getFirst(); cur; cur = next)
@@ -166,17 +166,17 @@ void TR_ValuePropagation::freeStoreRelationships(TR_LinkHead<StoreRelationship> 
    list.setFirst(NULL);
    }
 
-void TR_ValuePropagation::freeValueConstraints(ValueConstraints &valueConstraints)
+void TR::ValuePropagation::freeValueConstraints(ValueConstraints &valueConstraints)
    {
    _vcHandler.empty(valueConstraints);
    }
 
-TR_ValuePropagation::ValueConstraint *TR_ValuePropagation::copyValueConstraints(ValueConstraints &valueConstraints)
+TR::ValuePropagation::ValueConstraint *TR::ValuePropagation::copyValueConstraints(ValueConstraints &valueConstraints)
    {
    return _vcHandler.copyAll(valueConstraints);
    }
 
-void TR_ValuePropagation::addConstraint(TR_VPConstraint *constraint, int32_t hash)
+void TR::ValuePropagation::addConstraint(TR::VPConstraint *constraint, int32_t hash)
    {
    ConstraintsHashTableEntry *entry = new (trStackMemory()) ConstraintsHashTableEntry;
    entry->constraint = constraint;
@@ -184,7 +184,7 @@ void TR_ValuePropagation::addConstraint(TR_VPConstraint *constraint, int32_t has
    _constraintsHashTable[hash] = entry;
    }
 
-void TR_ValuePropagation::addLoopDef(TR::Node *node)
+void TR::ValuePropagation::addLoopDef(TR::Node *node)
    {
    // If the loop def entry does not already exist, create it
    //
@@ -202,7 +202,7 @@ void TR_ValuePropagation::addLoopDef(TR::Node *node)
    _loopDefsHashTable[hash] = entry;
    }
 
-TR_ValuePropagation::LoopDefsHashTableEntry *TR_ValuePropagation::findLoopDef(TR::Node *node)
+TR::ValuePropagation::LoopDefsHashTableEntry *TR::ValuePropagation::findLoopDef(TR::Node *node)
    {
    // Find the loop def entry
    //
@@ -227,7 +227,7 @@ static bool worthPropagatingConstraints(TR::Compilation *comp, bool isGlobalProp
 
 
 
-bool TR_ValuePropagation::propagateConstraint(TR::Node *node, int32_t valueNumber, Relationship *first, Relationship *rel, ValueConstraints *valueConstraints)
+bool TR::ValuePropagation::propagateConstraint(TR::Node *node, int32_t valueNumber, Relationship *first, Relationship *rel, ValueConstraints *valueConstraints)
    {
    // Go through the relationships list for this value number and propagate the
    // effects of the given new relationship to the others.
@@ -247,7 +247,7 @@ bool TR_ValuePropagation::propagateConstraint(TR::Node *node, int32_t valueNumbe
       }
 
 
-   TR_VPConstraint *c;
+   TR::VPConstraint *c;
    Relationship *cur = first;
    for (cur = first; cur && worthPropagatingConstraints(comp(), _isGlobalPropagation); cur = cur->getNext())
       {
@@ -315,7 +315,7 @@ bool TR_ValuePropagation::propagateConstraint(TR::Node *node, int32_t valueNumbe
 // number.
 // Return the relationship if it is new or changed from the existing one.
 //
-TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_t valueNumber, int32_t relative, TR_VPConstraint *constraint, ValueConstraints *valueConstraints, bool replaceExisting)
+TR::VPConstraint *TR::ValuePropagation::addConstraintToList(TR::Node *node, int32_t valueNumber, int32_t relative, TR::VPConstraint *constraint, ValueConstraints *valueConstraints, bool replaceExisting)
    {
    // If we are really adding a global constraint, go do that.
    //
@@ -325,10 +325,10 @@ TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_
       return addGlobalConstraint(node, valueNumber, constraint, relative);
       }
 
-   TR_VPConstraint *c = NULL;
+   TR::VPConstraint *c = NULL;
    Relationship    *rel = NULL, *prevRel = NULL;
    bool             newOrChanged = false;
-   TR_VPConstraint *existingGlobalConstraint = NULL;
+   TR::VPConstraint *existingGlobalConstraint = NULL;
 
    // Apply global constraints to the new constraint.
    // If the new constraint is the same as an existing global constraint there
@@ -401,7 +401,7 @@ TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_
       // If the relationship does not exist, we must have traversed the whole list
       // Make sure that our lists are not getting too long -
       //
-      static const char *p = feGetEnv("TR_VPMaxRelDepth");
+      static const char *p = feGetEnv("TR::VPMaxRelDepth");
       static const int32_t maxRelDepth = p ? atoi(p) : 64;
       if (!rel && numRelatives > maxRelDepth)
          {
@@ -458,7 +458,7 @@ TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_
          if (isUnreachableStore(store))
             continue;
 
-         TR_VPConstraint *storeConstraint = NULL;
+         TR::VPConstraint *storeConstraint = NULL;
          Relationship *storeRel, *prev;
          TR::Symbol *storeSym = store->symbol;
          // don't update store constraints for symbols
@@ -494,12 +494,12 @@ TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_
                   ///storeConstraint = constraint->intersect(constraint, this);
                   //
                   //FIXME: ugly, uncomment line above and comment this 'if' block
-                  if (TR_VPConstraint::isSpecialClass((uintptrj_t)constraint->getClass()))
+                  if (TR::VPConstraint::isSpecialClass((uintptrj_t)constraint->getClass()))
                      {
                      TR_ASSERT(constraint->asClass(), "special class constraint must be VPClass");
                      traceMsg(comp(), "found special class constraint!\n");
                      // remove the type information
-                     storeConstraint = TR_VPClass::create(this, NULL, constraint->getClassPresence(), constraint->getPreexistence(), constraint->getArrayInfo(), constraint->getObjectLocation());
+                     storeConstraint = TR::VPClass::create(this, NULL, constraint->getClassPresence(), constraint->getPreexistence(), constraint->getArrayInfo(), constraint->getObjectLocation());
                      }
                    else
                      storeConstraint = constraint;
@@ -569,7 +569,7 @@ TR_VPConstraint *TR_ValuePropagation::addConstraintToList(TR::Node *node, int32_
    return c;
    }
 
-TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, TR_VPConstraint *constraint, TR::Node *relative)
+TR::VPConstraint *TR::ValuePropagation::addGlobalConstraint(TR::Node *node, TR::VPConstraint *constraint, TR::Node *relative)
    {
    // No global constraints for local value propagation
    //
@@ -579,7 +579,7 @@ TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, TR_VPC
    return addGlobalConstraint(node, getValueNumber(node), constraint, relativeVN);
    }
 
-TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, int32_t valueNumber, TR_VPConstraint *constraint, int32_t relative)
+TR::VPConstraint *TR::ValuePropagation::addGlobalConstraint(TR::Node *node, int32_t valueNumber, TR::VPConstraint *constraint, int32_t relative)
    {
    TR_ASSERT(_isGlobalPropagation, "Local VP can't add global constraint");
 
@@ -598,7 +598,7 @@ TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, int32_
 
    bool newOrChanged = false;
 
-   static const char *p = feGetEnv("TR_VPMaxRelDepth");
+   static const char *p = feGetEnv("TR::VPMaxRelDepth");
    static const int32_t maxRelDepth = p ? atoi(p) : 64;
    if (!rel && numRelatives > maxRelDepth)
       {
@@ -618,7 +618,7 @@ TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, int32_
    //
    // When we finally fix ValuePropagation to fully support unsigned
    // arithmetic, we can get rid of the c in the assume and following if)
-   TR_VPConstraint *c = constraint->intersect(rel->constraint, this);
+   TR::VPConstraint *c = constraint->intersect(rel->constraint, this);
    // enable this code now since unsigned types are supported in VP
    //TR_ASSERT(c, "Cannot intersect constraints");
 
@@ -687,7 +687,7 @@ TR_VPConstraint *TR_ValuePropagation::addGlobalConstraint(TR::Node *node, int32_
    return c;
    }
 
-TR_VPConstraint *TR_ValuePropagation::addEdgeConstraint(TR::Node *node, TR_VPConstraint *constraint, EdgeConstraints *constraints, TR::Node *relative)
+TR::VPConstraint *TR::ValuePropagation::addEdgeConstraint(TR::Node *node, TR::VPConstraint *constraint, EdgeConstraints *constraints, TR::Node *relative)
    {
    if (!_isGlobalPropagation)
       return constraint;
@@ -703,7 +703,7 @@ TR_VPConstraint *TR_ValuePropagation::addEdgeConstraint(TR::Node *node, TR_VPCon
    return constraint;
    }
 
-TR_VPConstraint *TR_ValuePropagation::addBlockConstraint(TR::Node *node, TR_VPConstraint *constraint, TR::Node *relative, bool mustBeValid)
+TR::VPConstraint *TR::ValuePropagation::addBlockConstraint(TR::Node *node, TR::VPConstraint *constraint, TR::Node *relative, bool mustBeValid)
    {
    if (!constraint)
       return NULL;
@@ -723,7 +723,7 @@ TR_VPConstraint *TR_ValuePropagation::addBlockConstraint(TR::Node *node, TR_VPCo
    return constraint;
    }
 
-TR_VPConstraint *TR_ValuePropagation::addBlockOrGlobalConstraint(TR::Node *node, TR_VPConstraint *constraint, bool isGlobal, TR::Node *relative)
+TR::VPConstraint *TR::ValuePropagation::addBlockOrGlobalConstraint(TR::Node *node, TR::VPConstraint *constraint, bool isGlobal, TR::Node *relative)
    {
    if (isGlobal)
       return addGlobalConstraint(node, constraint, relative);
@@ -731,7 +731,7 @@ TR_VPConstraint *TR_ValuePropagation::addBlockOrGlobalConstraint(TR::Node *node,
    return addBlockConstraint(node, constraint, relative);
    }
 
-void TR_ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromList, TR_LinkHead<Relationship> &toList,
+void TR::ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromList, TR_LinkHead<Relationship> &toList,
       int32_t valueNumber, bool preserveFrom, StoreRelationship *mergingStore, List<TR::Symbol> *storeSymbols,
       bool inBothLists)
    {
@@ -759,7 +759,7 @@ void TR_ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromList
    bool isToEmpty = toList.isEmpty();
    Relationship *prev = NULL;
    Relationship *rel;
-   TR_VPConstraint *newConstraint;
+   TR::VPConstraint *newConstraint;
 
    // allow store relationships to survive control flow merges
    //
@@ -872,7 +872,7 @@ void TR_ValuePropagation::mergeRelationships(TR_LinkHead<Relationship> &fromList
       }
    }
 
-void TR_ValuePropagation::mergeStoreRelationships(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom)
+void TR::ValuePropagation::mergeStoreRelationships(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom)
    {
    // Merge (i.e. logical OR) the store relationships in the "from" list into
    // the "to" list.
@@ -1058,7 +1058,7 @@ void TR_ValuePropagation::mergeStoreRelationships(ValueConstraint *fromvc, Value
       }
    }
 
-void TR_ValuePropagation::mergeValueConstraints(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom)
+void TR::ValuePropagation::mergeValueConstraints(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom)
    {
    // First merge the non-store relationships.
    //
@@ -1069,7 +1069,7 @@ void TR_ValuePropagation::mergeValueConstraints(ValueConstraint *fromvc, ValueCo
    mergeStoreRelationships(fromvc, tovc, preserveFrom);
    }
 
-void TR_ValuePropagation::mergeEdgeConstraints(EdgeConstraints *fromEdge, EdgeConstraints *toEdge)
+void TR::ValuePropagation::mergeEdgeConstraints(EdgeConstraints *fromEdge, EdgeConstraints *toEdge)
    {
    // Merge (i.e. logical OR) the "from" list into the "to" list.
    // Both lists are ordered by value number.
@@ -1145,7 +1145,7 @@ void TR_ValuePropagation::mergeEdgeConstraints(EdgeConstraints *fromEdge, EdgeCo
    freeValueConstraints(*fromVC.getBase());
    }
 
-void TR_ValuePropagation::mergeConstraintIntoEdge(ValueConstraint *constraint, EdgeConstraints *edge)
+void TR::ValuePropagation::mergeConstraintIntoEdge(ValueConstraint *constraint, EdgeConstraints *edge)
    {
    // Merge (i.e. logical OR) the value constraint into the list.
    //
@@ -1158,7 +1158,7 @@ void TR_ValuePropagation::mergeConstraintIntoEdge(ValueConstraint *constraint, E
       }
    }
 
-void TR_ValuePropagation::mergeBackEdgeConstraints(EdgeConstraints *edge)
+void TR::ValuePropagation::mergeBackEdgeConstraints(EdgeConstraints *edge)
    {
    // Merge store constraints into the given exit edge for defs that have
    // been seen on the loop back edges.
@@ -1175,7 +1175,7 @@ void TR_ValuePropagation::mergeBackEdgeConstraints(EdgeConstraints *edge)
 
 // Create a global constraint entry
 //
-TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::GlobalConstraint::create(TR::Compilation * c, int32_t valueNumber)
+TR::ValuePropagation::GlobalConstraint *TR::ValuePropagation::GlobalConstraint::create(TR::Compilation * c, int32_t valueNumber)
    {
    GlobalConstraint *entry;
    entry = new (c->trStackMemory()) GlobalConstraint;
@@ -1186,14 +1186,14 @@ TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::GlobalConstraint::cr
 // Hash function for the global constraints hash table
 //
 inline
-uint32_t TR_ValuePropagation::hashGlobalConstraint(int32_t valueNumber)
+uint32_t TR::ValuePropagation::hashGlobalConstraint(int32_t valueNumber)
    {
    return valueNumber & _globalConstraintsHTMaxBucketIndex; // exploiting the fact that size is power of two
    }
 
 // Find the global constraint for the given value number.
 //
-TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::findGlobalConstraint(int32_t valueNumber)
+TR::ValuePropagation::GlobalConstraint *TR::ValuePropagation::findGlobalConstraint(int32_t valueNumber)
    {
    if (!_isGlobalPropagation)
       return NULL;
@@ -1210,7 +1210,7 @@ TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::findGlobalConstraint
 
 // Create the global constraint for the given value number.
 //
-TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::createGlobalConstraint(int32_t valueNumber)
+TR::ValuePropagation::GlobalConstraint *TR::ValuePropagation::createGlobalConstraint(int32_t valueNumber)
    {
    uint32_t hash = hashGlobalConstraint(valueNumber);
    GlobalConstraint *entry = GlobalConstraint::create(comp(), valueNumber);
@@ -1221,7 +1221,7 @@ TR_ValuePropagation::GlobalConstraint *TR_ValuePropagation::createGlobalConstrai
 
 // Create an edge constraint entry
 //
-TR_ValuePropagation::EdgeConstraints *TR_ValuePropagation::EdgeConstraints::create(TR::Compilation * c, TR::CFGEdge *edge)
+TR::ValuePropagation::EdgeConstraints *TR::ValuePropagation::EdgeConstraints::create(TR::Compilation * c, TR::CFGEdge *edge)
    {
    EdgeConstraints *entry;
    entry = new (c->trStackMemory()) EdgeConstraints;
@@ -1232,7 +1232,7 @@ TR_ValuePropagation::EdgeConstraints *TR_ValuePropagation::EdgeConstraints::crea
 // Find the edge constraints for the given edge. Create edge constraints if
 // they don't currently exist.
 //
-TR_ValuePropagation::EdgeConstraints *TR_ValuePropagation::getEdgeConstraints(TR::CFGEdge *edge)
+TR::ValuePropagation::EdgeConstraints *TR::ValuePropagation::getEdgeConstraints(TR::CFGEdge *edge)
    {
    int32_t hash = ((uintptrj_t)edge) % VP_HASH_TABLE_SIZE;
    EdgeConstraints *entry;
@@ -1250,7 +1250,7 @@ TR_ValuePropagation::EdgeConstraints *TR_ValuePropagation::getEdgeConstraints(TR
    return entry;
    }
 
-TR_ValuePropagation::EdgeConstraints *TR_ValuePropagation::createEdgeConstraints(TR::CFGEdge *edge, bool keepBlockList)
+TR::ValuePropagation::EdgeConstraints *TR::ValuePropagation::createEdgeConstraints(TR::CFGEdge *edge, bool keepBlockList)
    {
    if (!_isGlobalPropagation)
       return NULL;
@@ -1283,7 +1283,7 @@ static bool reduceCostOfAnalysisByTreatingBlockConservatively(TR::Block *b)
    }
 
 
-void TR_ValuePropagation::createExceptionEdgeConstraints(uint32_t exceptions, ValueConstraint *extraConstraint, TR::Node *reason)
+void TR::ValuePropagation::createExceptionEdgeConstraints(uint32_t exceptions, ValueConstraint *extraConstraint, TR::Node *reason)
    {
    if (!_isGlobalPropagation)
       return;
@@ -1337,7 +1337,7 @@ void TR_ValuePropagation::createExceptionEdgeConstraints(uint32_t exceptions, Va
       }
    }
 
-void TR_ValuePropagation::removeConstraint(int32_t valueNumber, ValueConstraints &valueConstraints, int32_t relative)
+void TR::ValuePropagation::removeConstraint(int32_t valueNumber, ValueConstraints &valueConstraints, int32_t relative)
    {
    // Find the constraint for the given value number in the given value
    // constraint list and remove it.
@@ -1367,7 +1367,7 @@ void TR_ValuePropagation::removeConstraint(int32_t valueNumber, ValueConstraints
       }
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreRelationship(TR_LinkHead<StoreRelationship> &list, TR::Symbol *symbol)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::findStoreRelationship(TR_LinkHead<StoreRelationship> &list, TR::Symbol *symbol)
    {
    StoreRelationship *rel;
    for (rel = list.getFirst(); rel; rel = rel->getNext())
@@ -1380,7 +1380,7 @@ TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreRelationsh
    return NULL;
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::findConstraintInList(TR_LinkHead<Relationship> &list, int32_t relative)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::findConstraintInList(TR_LinkHead<Relationship> &list, int32_t relative)
    {
    // Find the constraint for the given value number in the given relationship
    // list.
@@ -1396,7 +1396,7 @@ TR_ValuePropagation::Relationship *TR_ValuePropagation::findConstraintInList(TR_
    return NULL;
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::findValueConstraint(int32_t valueNumber, ValueConstraints &valueConstraints, int32_t relative)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::findValueConstraint(int32_t valueNumber, ValueConstraints &valueConstraints, int32_t relative)
    {
    // Find the constraint for the given value number in the given value
    // constraint list.
@@ -1407,17 +1407,17 @@ TR_ValuePropagation::Relationship *TR_ValuePropagation::findValueConstraint(int3
    return NULL;
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::findConstraint(int32_t valueNumber, int32_t relative)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::findConstraint(int32_t valueNumber, int32_t relative)
    {
    return findValueConstraint(valueNumber, _curConstraints, relative);
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::findEdgeConstraint(int32_t valueNumber, EdgeConstraints *edge, int32_t relative)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::findEdgeConstraint(int32_t valueNumber, EdgeConstraints *edge, int32_t relative)
    {
    return findValueConstraint(valueNumber, edge->valueConstraints, relative);
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreValueConstraint(int32_t valueNumber, TR::Symbol *symbol, ValueConstraints &valueConstraints)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::findStoreValueConstraint(int32_t valueNumber, TR::Symbol *symbol, ValueConstraints &valueConstraints)
    {
    // Find the store constraint for the given value number and symbol in the
    // given value constraint list.
@@ -1428,17 +1428,17 @@ TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreValueConst
    return NULL;
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreConstraint(int32_t valueNumber, TR::Symbol *symbol)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::findStoreConstraint(int32_t valueNumber, TR::Symbol *symbol)
    {
    return findStoreValueConstraint(valueNumber, symbol, _curConstraints);
    }
 
-TR_ValuePropagation::StoreRelationship *TR_ValuePropagation::findStoreEdgeConstraint(int32_t valueNumber, TR::Symbol *symbol, EdgeConstraints *edge)
+TR::ValuePropagation::StoreRelationship *TR::ValuePropagation::findStoreEdgeConstraint(int32_t valueNumber, TR::Symbol *symbol, EdgeConstraints *edge)
    {
    return findStoreValueConstraint(valueNumber, symbol, edge->valueConstraints);
    }
 
-TR_ValuePropagation::Relationship *TR_ValuePropagation::findGlobalConstraint(int32_t valueNumber, int32_t relative)
+TR::ValuePropagation::Relationship *TR::ValuePropagation::findGlobalConstraint(int32_t valueNumber, int32_t relative)
    {
    GlobalConstraint *gc = findGlobalConstraint(valueNumber);
    if (!gc)
@@ -1446,7 +1446,7 @@ TR_ValuePropagation::Relationship *TR_ValuePropagation::findGlobalConstraint(int
    return findConstraintInList(gc->constraints, relative);
    }
 
-TR_VPConstraint *TR_ValuePropagation::applyGlobalConstraints(TR::Node *node, int32_t valueNumber, TR_VPConstraint *constraint, int32_t relative)
+TR::VPConstraint *TR::ValuePropagation::applyGlobalConstraints(TR::Node *node, int32_t valueNumber, TR::VPConstraint *constraint, int32_t relative)
    {
    // See if there are global constraints for this value number that can be
    // applied to further constrain the given local constraint.
@@ -1456,7 +1456,7 @@ TR_VPConstraint *TR_ValuePropagation::applyGlobalConstraints(TR::Node *node, int
       return constraint;
 
    Relationship *rel, *link;
-   TR_VPConstraint *c = constraint;
+   TR::VPConstraint *c = constraint;
    int32_t limit = std::max(valueNumber, relative);
    for (rel = gc->constraints.getFirst(); rel; rel = rel->getNext())
       {
@@ -1503,7 +1503,7 @@ TR_VPConstraint *TR_ValuePropagation::applyGlobalConstraints(TR::Node *node, int
          }
       if (reverse && follow)
          {
-         TR_VPConstraint *linkedConstraint;
+         TR::VPConstraint *linkedConstraint;
          if (relative == AbsoluteConstraint)
             linkedConstraint = reverse->constraint->asRelation()->propagateAbsoluteConstraint(follow->constraint, valueNumber, this);
          else
@@ -1519,7 +1519,7 @@ TR_VPConstraint *TR_ValuePropagation::applyGlobalConstraints(TR::Node *node, int
    return c;
    }
 
-TR_VPConstraint *TR_ValuePropagation::getStoreConstraint(TR::Node *node, TR::Node *relative)
+TR::VPConstraint *TR::ValuePropagation::getStoreConstraint(TR::Node *node, TR::Node *relative)
    {
    // See if there is an existing constraint for this node
    //
@@ -1552,7 +1552,7 @@ TR_VPConstraint *TR_ValuePropagation::getStoreConstraint(TR::Node *node, TR::Nod
    }
 
 
-void TR_ValuePropagation::createStoreConstraints(TR::Node *node)
+void TR::ValuePropagation::createStoreConstraints(TR::Node *node)
    {
    // Only need store constraints for global VP
    //
@@ -1588,29 +1588,29 @@ void TR_ValuePropagation::createStoreConstraints(TR::Node *node)
    }
 
 
-bool TR_ValuePropagation::hasBeenStored(int32_t valueNumber, TR::Symbol *symbol, ValueConstraints &valueConstraints)
+bool TR::ValuePropagation::hasBeenStored(int32_t valueNumber, TR::Symbol *symbol, ValueConstraints &valueConstraints)
    {
    // See if the given value number has a store constraint in the given list
    //
    return (findStoreValueConstraint(valueNumber, symbol, valueConstraints) != NULL);
    }
 
-void TR_ValuePropagation::setUnreachableStore(StoreRelationship *store)
+void TR::ValuePropagation::setUnreachableStore(StoreRelationship *store)
    {
    // Mark the store constraints in the given list as unreachable
    //
    freeRelationships(store->relationships);
-   store->relationships.setFirst(createRelationship(AbsoluteConstraint, TR_VPUnreachablePath::create(this)));
+   store->relationships.setFirst(createRelationship(AbsoluteConstraint, TR::VPUnreachablePath::create(this)));
    }
 
-bool TR_ValuePropagation::isUnreachableStore(StoreRelationship *store)
+bool TR::ValuePropagation::isUnreachableStore(StoreRelationship *store)
    {
    Relationship *rel = store->relationships.getFirst();
    return (rel && rel->constraint->asUnreachablePath());
    }
 
 
-bool TR_ValuePropagation::isDefInUnreachableBlock(int32_t defIndex)
+bool TR::ValuePropagation::isDefInUnreachableBlock(int32_t defIndex)
    {
    TR::TreeTop *defTT = _useDefInfo->getTreeTop(defIndex);
    TR::Node *defNode = defTT->getNode();
@@ -1649,11 +1649,11 @@ bool TR_ValuePropagation::isDefInUnreachableBlock(int32_t defIndex)
    }
 
 
-TR_YesNoMaybe TR_ValuePropagation::isCastClassObject(TR_VPClassType *type)
+TR_YesNoMaybe TR::ValuePropagation::isCastClassObject(TR::VPClassType *type)
    {
    if (type && type->asResolvedClass())
       {
-      TR_VPResolvedClass *rc = type->asResolvedClass();
+      TR::VPResolvedClass *rc = type->asResolvedClass();
       TR_OpaqueClassBlock *jlC = fe()->getClassClassPointer(rc->getClass());
       if (jlC)
          {
@@ -1668,7 +1668,7 @@ TR_YesNoMaybe TR_ValuePropagation::isCastClassObject(TR_VPClassType *type)
    return TR_maybe;
    }
 
-void TR_ValuePropagation::checkTypeRelationship(TR_VPConstraint *lhs, TR_VPConstraint *rhs,
+void TR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPConstraint *rhs,
                                                 int32_t &value, bool isInstanceOf, bool isCheckCast)
    {
    if (trace())
@@ -1679,15 +1679,15 @@ void TR_ValuePropagation::checkTypeRelationship(TR_VPConstraint *lhs, TR_VPConst
 
    if (lhs->asClass() && rhs->asClass())
       {
-      TR_VPConstraint *objectConstraint = lhs;
-      TR_VPConstraint *castConstraint = rhs;
-      TR_VPClass *objectClass = objectConstraint->asClass();
-      TR_VPClass *castClass = castConstraint->asClass();
-      TR_VPClassPresence *presence = castClass->getClassPresence();
-      TR_VPClassType *type = castClass->getClassType();
-      TR_VPClassType *newType;
+      TR::VPConstraint *objectConstraint = lhs;
+      TR::VPConstraint *castConstraint = rhs;
+      TR::VPClass *objectClass = objectConstraint->asClass();
+      TR::VPClass *castClass = castConstraint->asClass();
+      TR::VPClassPresence *presence = castClass->getClassPresence();
+      TR::VPClassType *type = castClass->getClassType();
+      TR::VPClassType *newType;
       if (type && type->asFixedClass())
-         newType = TR_VPResolvedClass::create(this, type->getClass());
+         newType = TR::VPResolvedClass::create(this, type->getClass());
       else
          newType = type;
 
@@ -1765,8 +1765,8 @@ void TR_ValuePropagation::checkTypeRelationship(TR_VPConstraint *lhs, TR_VPConst
       }
    else if (lhs->getClassType() && rhs->getClassType())
       {
-      //TR_VPConstraint *resultType = lhs->intersect(rhs, this);
-      TR_VPConstraint *resultType = lhs->getClassType()->classTypesCompatible(rhs->getClassType(), this);
+      //TR::VPConstraint *resultType = lhs->intersect(rhs, this);
+      TR::VPConstraint *resultType = lhs->getClassType()->classTypesCompatible(rhs->getClassType(), this);
       if (jlKlass)
          {
          // check if intersection failed
@@ -1784,7 +1784,7 @@ void TR_ValuePropagation::checkTypeRelationship(TR_VPConstraint *lhs, TR_VPConst
    }
 
 
-void TR_ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR_VPConstraint *constraint)
+void TR::ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR::VPConstraint *constraint)
    {
    if (_isGlobalPropagation)
       return; //nothing to do
@@ -1802,7 +1802,7 @@ void TR_ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR_V
    if (symRef && symRef->getSymbol()->getParmSymbol())
       {
       int32_t parmNum = symRef->getSymbol()->getParmSymbol()->getOrdinal();
-      TR_VPConstraint *parmConstraint = _parmValues[parmNum];
+      TR::VPConstraint *parmConstraint = _parmValues[parmNum];
       if (parmConstraint)
          {
          if (trace())
@@ -1819,7 +1819,7 @@ void TR_ValuePropagation::invalidateParmConstraintsIfNeeded(TR::Node *node, TR_V
       }
    }
 
-TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_t relative, bool &isGlobal, bool forceMerge)
+TR::VPConstraint *TR::ValuePropagation::mergeDefConstraints(TR::Node *node, int32_t relative, bool &isGlobal, bool forceMerge)
    {
    isGlobal = true; // Will be reset if local constraints found
 
@@ -1889,17 +1889,17 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
    if (node->getOpCode().isIndirect())
       baseValueNumber = getValueNumber(node->getFirstChild());
 
-   TR_VPConstraint   *constraint      = NULL;
+   TR::VPConstraint   *constraint      = NULL;
    int32_t            defValueNumber;
    StoreRelationship *defValueConstraint;
-   TR_VPConstraint   *defConstraint;
+   TR::VPConstraint   *defConstraint;
    bool               unseenDefsFound = false;
    bool               unconstrained   = false;
    int32_t            defIndex;
    TR::Symbol        *sym;
    Relationship      *rel;
 
-   TR_ScratchList<TR_VPConstraint> bigDecimalConstraints(comp()->trMemory());
+   TR_ScratchList<TR::VPConstraint> bigDecimalConstraints(comp()->trMemory());
    TR_UseDefInfo::BitVector::Cursor cursor(defs);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
@@ -2156,8 +2156,8 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
 
       if (constraint && mergeDeferredConstraints)
          {
-         ListIterator<TR_VPConstraint> cIt(&bigDecimalConstraints);
-         TR_VPConstraint *c;
+         ListIterator<TR::VPConstraint> cIt(&bigDecimalConstraints);
+         TR::VPConstraint *c;
          for (c = cIt.getFirst(); c; c = cIt.getNext())
             {
             if (trace())
@@ -2517,7 +2517,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                               if ((uint32_t) defConstraint->getLowInt() < (uint32_t) constraint->getLowInt() &&
                                   (uint32_t) constraint->getLowInt() <= defConstraint->getHighInt() )
                                  {
-                                 TR_VPConstraint *newDefConstraint = TR_VPIntRange::create(this, constraint->getLowInt(), defConstraint->getHighInt());
+                                 TR::VPConstraint *newDefConstraint = TR::VPIntRange::create(this, constraint->getLowInt(), defConstraint->getHighInt());
                                  defConstraint = defConstraint->intersect(newDefConstraint, this);
                                  }
                               }
@@ -2527,7 +2527,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowInt() < constraint->getLowInt() &&
                                constraint->getLowInt() <= defConstraint->getHighInt())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPIntRange::create(this, constraint->getLowInt(), defConstraint->getHighInt());
+                              TR::VPConstraint *newDefConstraint = TR::VPIntRange::create(this, constraint->getLowInt(), defConstraint->getHighInt());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2539,7 +2539,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowInt() <= constraint->getHighInt() &&
                                constraint->getHighInt() < defConstraint->getHighInt())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPIntRange::create(this, defConstraint->getLowInt(), constraint->getHighInt());
+                              TR::VPConstraint *newDefConstraint = TR::VPIntRange::create(this, defConstraint->getLowInt(), constraint->getHighInt());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2556,7 +2556,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                               if ((uint16_t) defConstraint->getLowShort() < (uint16_t) constraint->getLowShort() &&
                                   (uint16_t) constraint->getLowShort() <= defConstraint->getHighShort())
                                  {
-                                 TR_VPConstraint *newDefConstraint = TR_VPShortRange::create(this, constraint->getLowShort(), defConstraint->getHighShort());
+                                 TR::VPConstraint *newDefConstraint = TR::VPShortRange::create(this, constraint->getLowShort(), defConstraint->getHighShort());
                                  defConstraint = defConstraint->intersect(newDefConstraint, this);
                                  }
                               }
@@ -2566,7 +2566,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowShort() < constraint->getLowShort() &&
                                constraint->getLowShort() <= defConstraint->getHighShort())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPShortRange::create(this, constraint->getLowShort(), defConstraint->getHighShort());
+                              TR::VPConstraint *newDefConstraint = TR::VPShortRange::create(this, constraint->getLowShort(), defConstraint->getHighShort());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2578,7 +2578,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowShort() <= constraint->getHighShort() &&
                                constraint->getHighShort() < defConstraint->getHighShort())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPShortRange::create(this, defConstraint->getLowShort(), constraint->getHighShort());
+                              TR::VPConstraint *newDefConstraint = TR::VPShortRange::create(this, defConstraint->getLowShort(), constraint->getHighShort());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2595,7 +2595,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                               if ((uint64_t) defConstraint->getLowLong() < (uint64_t) constraint->getLowLong() &&
                                   (uint64_t) constraint->getLowLong() <= (uint64_t) defConstraint->getHighLong())
                                  {
-                                 TR_VPConstraint *newDefConstraint = TR_VPLongRange::create(this, constraint->getLowLong(), defConstraint->getHighLong());
+                                 TR::VPConstraint *newDefConstraint = TR::VPLongRange::create(this, constraint->getLowLong(), defConstraint->getHighLong());
                                  defConstraint = defConstraint->intersect(newDefConstraint, this);
                                  }
                               }
@@ -2605,7 +2605,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowLong() < constraint->getLowLong() &&
                                constraint->getLowLong() <= defConstraint->getHighLong())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPLongRange::create(this, constraint->getLowLong(), defConstraint->getHighLong());
+                              TR::VPConstraint *newDefConstraint = TR::VPLongRange::create(this, constraint->getLowLong(), defConstraint->getHighLong());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2617,7 +2617,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
                            if (defConstraint->getLowLong() <= constraint->getHighLong() &&
                                constraint->getHighLong() < defConstraint->getHighLong())
                               {
-                              TR_VPConstraint *newDefConstraint = TR_VPLongRange::create(this, defConstraint->getLowLong(), constraint->getHighLong());
+                              TR::VPConstraint *newDefConstraint = TR::VPLongRange::create(this, defConstraint->getLowLong(), constraint->getHighLong());
                               defConstraint = defConstraint->intersect(newDefConstraint, this);
                               }
                            }
@@ -2666,8 +2666,8 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
 
       if (constraint && mergeDeferredConstraints)
          {
-         ListIterator<TR_VPConstraint> cIt(&bigDecimalConstraints);
-         TR_VPConstraint *c;
+         ListIterator<TR::VPConstraint> cIt(&bigDecimalConstraints);
+         TR::VPConstraint *c;
          for (c = cIt.getFirst(); c; c = cIt.getNext())
             {
             if (trace())
@@ -2687,7 +2687,7 @@ TR_VPConstraint *TR_ValuePropagation::mergeDefConstraints(TR::Node *node, int32_
    return constraint;
    }
 
-void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *constraint, bool isGlobal)
+void TR::ValuePropagation::replaceByConstant(TR::Node *node, TR::VPConstraint *constraint, bool isGlobal)
    {
    if (isGlobal)
       addGlobalConstraint(node, constraint);
@@ -2723,7 +2723,7 @@ void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *con
    invalidateUseDefInfo();
 
    TR::DataType type = node->getDataType();
-   TR_VPConstraint * shortConstraint = constraint->asShortConstraint();
+   TR::VPConstraint * shortConstraint = constraint->asShortConstraint();
    switch (type)
       {
       case TR::Int32:
@@ -2775,7 +2775,7 @@ void TR_ValuePropagation::replaceByConstant(TR::Node *node, TR_VPConstraint *con
    setEnableSimplifier();
    }
 
-void TR_ValuePropagation::removeRestOfBlock()
+void TR::ValuePropagation::removeRestOfBlock()
    {
    // Remove the rest of the trees in the block.
    //
@@ -2790,7 +2790,7 @@ void TR_ValuePropagation::removeRestOfBlock()
       }
    }
 
-void TR_ValuePropagation::mustTakeException()
+void TR::ValuePropagation::mustTakeException()
    {
    // Make sure this hasn't already been done
    //
@@ -2826,7 +2826,7 @@ void TR_ValuePropagation::mustTakeException()
       }
    }
 
-bool TR_ValuePropagation::registerPreXClass(TR_VPConstraint *constraint)
+bool TR::ValuePropagation::registerPreXClass(TR::VPConstraint *constraint)
    {
    if (!constraint->isFixedClass())
       return false;
@@ -2842,7 +2842,7 @@ bool TR_ValuePropagation::registerPreXClass(TR_VPConstraint *constraint)
    return true;
    }
 
-TR::Node *TR_ValuePropagation::findThrowInBlock(TR::Block *block, TR::TreeTop *&treeTop)
+TR::Node *TR::ValuePropagation::findThrowInBlock(TR::Block *block, TR::TreeTop *&treeTop)
    {
   // if (comp()->getFlowGraph()->getRemovedNodes().find(block))
     if(block->nodeIsRemoved())
@@ -2866,15 +2866,15 @@ TR::Node *TR_ValuePropagation::findThrowInBlock(TR::Block *block, TR::TreeTop *&
    }
 
 
-bool TR_ValuePropagation::isHighWordZero(TR::Node *node)
+bool TR::ValuePropagation::isHighWordZero(TR::Node *node)
    {
    // See if there is a constraint for this value
    //
    bool isGlobal;
-   TR_VPConstraint *constraint = getConstraint(node, isGlobal);
+   TR::VPConstraint *constraint = getConstraint(node, isGlobal);
    if (constraint)
       {
-      TR_VPLongConstraint *longConstraint = constraint->asLongConstraint();
+      TR::VPLongConstraint *longConstraint = constraint->asLongConstraint();
       if (longConstraint &&
           (longConstraint->getLow() >= 0) &&
           ((longConstraint->getHigh() & (((uint64_t)0xffffffff)<<32)) == 0))
@@ -2886,7 +2886,7 @@ bool TR_ValuePropagation::isHighWordZero(TR::Node *node)
    return false;
    }
 
-void TR_ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
+void TR::ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
    {
    // If we are the first time through a loop see if this is an increment of a
    // local. If so save the node in the induction variable info for the loop.
@@ -2909,7 +2909,7 @@ void TR_ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
       return;
 
    bool isGlobal;
-   TR_VPConstraint *increment = getConstraint(child->getSecondChild(), isGlobal);
+   TR::VPConstraint *increment = getConstraint(child->getSecondChild(), isGlobal);
    if (!increment)
       return;
    if (!(increment->asIntConst() || increment->asLongConst()))
@@ -2918,11 +2918,11 @@ void TR_ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
    if (child->getOpCode().isSub())
       {
       if (increment->asIntConst())
-         increment = TR_VPIntConst::create(this, -increment->asIntConst()->getInt());
+         increment = TR::VPIntConst::create(this, -increment->asIntConst()->getInt());
       else if(increment->asShortConst())
-         increment = TR_VPShortConst::create(this, -increment->asShortConst()->getShort());
+         increment = TR::VPShortConst::create(this, -increment->asShortConst()->getShort());
       else
-         increment = TR_VPLongConst::create(this, -increment->asLongConst()->getLong());
+         increment = TR::VPLongConst::create(this, -increment->asLongConst()->getLong());
       }
 
    // The node is an increment of a local by a constant. To be an induction
@@ -3141,15 +3141,15 @@ void TR_ValuePropagation::checkForInductionVariableIncrement(TR::Node *node)
       {
       // select the right type of constraint for induction variables to prevent merging different types of constraints together
       if (node->getOpCode().isLong())
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPLongConst::create(this, incrementVN), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPLongConst::create(this, incrementVN), &_curConstraints, true);
       else if (node->getOpCode().isShort())
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPShortConst::create(this, incrementVN), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPShortConst::create(this, incrementVN), &_curConstraints, true);
       else
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPIntConst::create(this, incrementVN), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPIntConst::create(this, incrementVN), &_curConstraints, true);
       }
    }
 
-void TR_ValuePropagation::checkForInductionVariableLoad(TR::Node *node)
+void TR::ValuePropagation::checkForInductionVariableLoad(TR::Node *node)
    {
    // If we are the last time through a loop see if this is a load of an
    // induction variable.
@@ -3182,15 +3182,15 @@ void TR_ValuePropagation::checkForInductionVariableLoad(TR::Node *node)
 
       // select the right type of constraint for induction variables to prevent merging different types of constraints together
       if (node->getOpCode().isLong())
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPLongConst::create(this, useValueNumber), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPLongConst::create(this, useValueNumber), &_curConstraints, true);
       else if (node->getOpCode().isShort())
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPShortConst::create(this, useValueNumber), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPShortConst::create(this, useValueNumber), &_curConstraints, true);
       else
-         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR_VPIntConst::create(this, useValueNumber), &_curConstraints, true);
+         addConstraintToList(node, iv->_valueNumber, AbsoluteConstraint, TR::VPIntConst::create(this, useValueNumber), &_curConstraints, true);
       }
    }
 
-void TR_ValuePropagation::collectInductionVariableEntryConstraints()
+void TR::ValuePropagation::collectInductionVariableEntryConstraints()
    {
    // If this is the last time through the loop, induction variables have
    // already been identified. Make sure that the entry values for each one are
@@ -3234,7 +3234,7 @@ void TR_ValuePropagation::collectInductionVariableEntryConstraints()
       }
    }
 
-bool TR_ValuePropagation::checkLoopTestBlock(TR::Symbol *sym)
+bool TR::ValuePropagation::checkLoopTestBlock(TR::Symbol *sym)
    {
    // the symbol could be an induction variable even though it
    // has more than two defs. find the loop test block and check
@@ -3325,7 +3325,7 @@ bool TR_ValuePropagation::checkLoopTestBlock(TR::Symbol *sym)
    }
 
 
-void TR_ValuePropagation::checkBackEdgeCoverage()
+void TR::ValuePropagation::checkBackEdgeCoverage()
    {
    // For each valid induction variable there should be a constraint on the
    // back edge to show that increments to the induction variable have
@@ -3359,7 +3359,7 @@ void TR_ValuePropagation::checkBackEdgeCoverage()
       }
    }
 
-void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node)
+void TR::ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node)
    {
    TR_RegionStructure *region = node->getStructure()->asRegion();
    region->clearInductionVariables();
@@ -3376,7 +3376,7 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
       // subgraph so we must examine the successors of the region's node in the
       // parent subgraph.
       //
-      TR_VPConstraint *exitConstraint      = NULL;
+      TR::VPConstraint *exitConstraint      = NULL;
       bool             exitConstraintFound = false;
       TR_SuccessorIterator exits(node);
       for (TR::CFGEdge *edge = exits.getFirst(); edge; edge = exits.getNext())
@@ -3401,7 +3401,7 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
             continue;
             }
 
-         TR_VPConstraint *constraint = uses->constraint;
+         TR::VPConstraint *constraint = uses->constraint;
 
          // Remove the "uses" constraint - it does not apply to the parent
          //
@@ -3420,7 +3420,7 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
          // Merge the constraints for all these value numbers to get the
          // constraint for the induction variable along this edge
          //
-         ListElement<TR_VPConstraint> *next;
+         ListElement<TR::VPConstraint> *next;
          if (constraint->asMergedConstraints())
             {
             next = constraint->asMergedConstraints()->getList()->getListHead();
@@ -3485,29 +3485,29 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
       //if (ivInfo->_invalidEntryInfo)
       //   continue;
 
-      TR_VPConstraint *entry, *exit, *incr;
+      TR::VPConstraint *entry, *exit, *incr;
       if (ivInfo->_symbol->getType().isInt32())
          {
          if (ivInfo->_entryConstraint &&
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asIntConst())
-               entry = new (trHeapMemory()) TR_VPIntConst(ivInfo->_entryConstraint->getLowInt());
+               entry = new (trHeapMemory()) TR::VPIntConst(ivInfo->_entryConstraint->getLowInt());
             else
-               entry = new (trHeapMemory()) TR_VPIntRange(ivInfo->_entryConstraint->getLowInt(), ivInfo->_entryConstraint->getHighInt());
+               entry = new (trHeapMemory()) TR::VPIntRange(ivInfo->_entryConstraint->getLowInt(), ivInfo->_entryConstraint->getHighInt());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asIntConst())
-            incr = new (trHeapMemory()) TR_VPIntConst(ivInfo->_increment->getLowInt());
+            incr = new (trHeapMemory()) TR::VPIntConst(ivInfo->_increment->getLowInt());
          else
-            incr = new (trHeapMemory()) TR_VPIntRange(ivInfo->_increment->getLowInt(), ivInfo->_increment->getHighInt());
+            incr = new (trHeapMemory()) TR::VPIntRange(ivInfo->_increment->getLowInt(), ivInfo->_increment->getHighInt());
          if (exitConstraint)
             {
             if (exitConstraint->asIntConst())
-               exit = new (trHeapMemory()) TR_VPIntConst(exitConstraint->getLowInt());
+               exit = new (trHeapMemory()) TR::VPIntConst(exitConstraint->getLowInt());
             else
-               exit = new (trHeapMemory()) TR_VPIntRange(exitConstraint->getLowInt(), exitConstraint->getHighInt());
+               exit = new (trHeapMemory()) TR::VPIntRange(exitConstraint->getLowInt(), exitConstraint->getHighInt());
             }
          else
             exit = NULL;
@@ -3518,22 +3518,22 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asShortConst())
-               entry = new (trHeapMemory()) TR_VPShortConst(ivInfo->_entryConstraint->getLowShort());
+               entry = new (trHeapMemory()) TR::VPShortConst(ivInfo->_entryConstraint->getLowShort());
             else
-               entry = new (trHeapMemory()) TR_VPShortRange(ivInfo->_entryConstraint->getLowShort(), ivInfo->_entryConstraint->getHighShort());
+               entry = new (trHeapMemory()) TR::VPShortRange(ivInfo->_entryConstraint->getLowShort(), ivInfo->_entryConstraint->getHighShort());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asShortConst())
-            incr = new (trHeapMemory()) TR_VPShortConst(ivInfo->_increment->getLowShort());
+            incr = new (trHeapMemory()) TR::VPShortConst(ivInfo->_increment->getLowShort());
          else
-            incr = new (trHeapMemory()) TR_VPShortRange(ivInfo->_increment->getLowShort(), ivInfo->_increment->getHighShort());
+            incr = new (trHeapMemory()) TR::VPShortRange(ivInfo->_increment->getLowShort(), ivInfo->_increment->getHighShort());
          if (exitConstraint)
             {
             if (exitConstraint->asShortConst())
-               exit = new (trHeapMemory()) TR_VPShortConst(exitConstraint->getLowShort());
+               exit = new (trHeapMemory()) TR::VPShortConst(exitConstraint->getLowShort());
             else
-               exit = new (trHeapMemory()) TR_VPShortRange(exitConstraint->getLowShort(), exitConstraint->getHighShort());
+               exit = new (trHeapMemory()) TR::VPShortRange(exitConstraint->getLowShort(), exitConstraint->getHighShort());
             }
          else
             exit = NULL;
@@ -3545,22 +3545,22 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
              !ivInfo->_invalidEntryInfo)
             {
             if (ivInfo->_entryConstraint->asLongConst())
-               entry = new (trHeapMemory()) TR_VPLongConst(ivInfo->_entryConstraint->getLowLong());
+               entry = new (trHeapMemory()) TR::VPLongConst(ivInfo->_entryConstraint->getLowLong());
             else
-               entry = new (trHeapMemory()) TR_VPLongRange(ivInfo->_entryConstraint->getLowLong(), ivInfo->_entryConstraint->getHighLong());
+               entry = new (trHeapMemory()) TR::VPLongRange(ivInfo->_entryConstraint->getLowLong(), ivInfo->_entryConstraint->getHighLong());
             }
          else
             entry = NULL;
          if (ivInfo->_increment->asLongConst())
-            incr = new (trHeapMemory()) TR_VPLongConst(ivInfo->_increment->getLowLong());
+            incr = new (trHeapMemory()) TR::VPLongConst(ivInfo->_increment->getLowLong());
          else
-            incr = new (trHeapMemory()) TR_VPLongRange(ivInfo->_increment->getLowLong(), ivInfo->_increment->getHighLong());
+            incr = new (trHeapMemory()) TR::VPLongRange(ivInfo->_increment->getLowLong(), ivInfo->_increment->getHighLong());
          if (exitConstraint)
             {
             if (exitConstraint->asLongConst())
-               exit = new (trHeapMemory()) TR_VPLongConst(exitConstraint->getLowLong());
+               exit = new (trHeapMemory()) TR::VPLongConst(exitConstraint->getLowLong());
             else
-               exit = new (trHeapMemory()) TR_VPLongRange(exitConstraint->getLowLong(), exitConstraint->getHighLong());
+               exit = new (trHeapMemory()) TR::VPLongRange(exitConstraint->getLowLong(), exitConstraint->getHighLong());
             }
          else
             exit = NULL;
@@ -3602,7 +3602,7 @@ void TR_ValuePropagation::setUpInductionVariables(TR_StructureSubGraphNode *node
       }
    }
 
-void TR_ValuePropagation::collectBackEdgeConstraints()
+void TR::ValuePropagation::collectBackEdgeConstraints()
    {
    // Merge the constraint lists from the back edges of a natural loop.
    // Only those constraints that apply to value numbers for def nodes and
@@ -3671,14 +3671,14 @@ void TR_ValuePropagation::collectBackEdgeConstraints()
    }
 
 
-TR_GlobalValuePropagation::TR_GlobalValuePropagation(TR::OptimizationManager *manager)
-   : TR_ValuePropagation(manager), _blocksToProcess(NULL)
+TR::GlobalValuePropagation::GlobalValuePropagation(TR::OptimizationManager *manager)
+   : TR::ValuePropagation(manager), _blocksToProcess(NULL)
    {
    _isGlobalPropagation = true;
    }
 
 
-int32_t TR_GlobalValuePropagation::perform()
+int32_t TR::GlobalValuePropagation::perform()
    {
 
    TR::CFG *cfg = comp()->getFlowGraph();
@@ -3807,7 +3807,7 @@ int32_t TR_GlobalValuePropagation::perform()
 
 
 
-void TR_ValuePropagation::getParmValues()
+void TR::ValuePropagation::getParmValues()
    {
    // Determine how many parms there are
    //
@@ -3821,7 +3821,7 @@ void TR_ValuePropagation::getParmValues()
 
    // Allocate the constraints array for the parameters
    //
-   _parmValues = (TR_VPConstraint**)trMemory()->allocateStackMemory(numParms*sizeof(TR_VPConstraint*));
+   _parmValues = (TR::VPConstraint**)trMemory()->allocateStackMemory(numParms*sizeof(TR::VPConstraint*));
 
    // Create a constraint for each parameter that we can find info for.
    // First look for a "this" parameter then look through the method's signature
@@ -3842,7 +3842,7 @@ void TR_ValuePropagation::getParmValues()
 #endif
 
    int32_t parmIndex = 0;
-   TR_VPConstraint *constraint = NULL;
+   TR::VPConstraint *constraint = NULL;
    ListIterator<TR::ParameterSymbol> parms(&methodSym->getParameterList());
    TR::ParameterSymbol *p = parms.getFirst();
    if (!comp()->getCurrentMethod()->isStatic())
@@ -3901,13 +3901,13 @@ void TR_ValuePropagation::getParmValues()
                if (classObject != jlKlass)
                   {
                   if (!fe()->classHasBeenExtended(classObject))
-                     constraint = TR_VPFixedClass::create(this, classObject);
+                     constraint = TR::VPFixedClass::create(this, classObject);
                   else
-                     constraint = TR_VPResolvedClass::create(this, classObject);
+                     constraint = TR::VPResolvedClass::create(this, classObject);
                   }
                else
-                  constraint = TR_VPObjectLocation::create(this, TR_VPObjectLocation::JavaLangClassObject);
-               constraint = constraint->intersect(TR_VPPreexistentObject::create(this, prexClass), this);
+                  constraint = TR::VPObjectLocation::create(this, TR::VPObjectLocation::JavaLangClassObject);
+               constraint = constraint->intersect(TR::VPPreexistentObject::create(this, prexClass), this);
                TR_ASSERT(constraint, "Cannot intersect constraints");
                }
             }
@@ -3921,15 +3921,15 @@ void TR_ValuePropagation::getParmValues()
             if (jlKlass)
                {
                if (classObject != jlKlass)
-                  constraint = TR_VPResolvedClass::create(this, classObject);
+                  constraint = TR::VPResolvedClass::create(this, classObject);
                else
-                  constraint = TR_VPObjectLocation::create(this, TR_VPObjectLocation::JavaLangClassObject);
+                  constraint = TR::VPObjectLocation::create(this, TR::VPObjectLocation::JavaLangClassObject);
                }
             }
 
          if (0 && constraint) // cannot do this if 'this' is changed in the method...allow the non null property on the TR::Node set by IL gen to dictate the creation of non null constraint
             {
-            constraint = constraint->intersect(TR_VPNonNullObject::create(this), this);
+            constraint = constraint->intersect(TR::VPNonNullObject::create(this), this);
             TR_ASSERT(constraint, "Cannot intersect constraints");
             }
 #endif
@@ -3947,7 +3947,7 @@ void TR_ValuePropagation::getParmValues()
       if ((dataType == TR::Int8 || dataType == TR::Int16)
           && comp()->getOption(TR_AllowVPRangeNarrowingBasedOnDeclaredType))
          {
-         _parmValues[parmIndex++] = TR_VPIntRange::create(this, dataType, TR_maybe);
+         _parmValues[parmIndex++] = TR::VPIntRange::create(this, dataType, TR_maybe);
          }
       else if (dataType == TR::Aggregate)
          {
@@ -4005,13 +4005,13 @@ void TR_ValuePropagation::getParmValues()
                   if (opaqueClass != jlKlass)
                      {
                      if (!fe()->classHasBeenExtended(opaqueClass))
-                        constraint = TR_VPFixedClass::create(this, opaqueClass);
+                        constraint = TR::VPFixedClass::create(this, opaqueClass);
                      else
-                        constraint = TR_VPResolvedClass::create(this, opaqueClass);
+                        constraint = TR::VPResolvedClass::create(this, opaqueClass);
                      }
                   else
-                     constraint = TR_VPObjectLocation::create(this, TR_VPObjectLocation::JavaLangClassObject);
-                  constraint = constraint->intersect(TR_VPPreexistentObject::create(this, prexClass), this);
+                     constraint = TR::VPObjectLocation::create(this, TR::VPObjectLocation::JavaLangClassObject);
+                  constraint = constraint->intersect(TR::VPPreexistentObject::create(this, prexClass), this);
                   TR_ASSERT(constraint, "Cannot intersect constraints");
                   }
                }
@@ -4024,9 +4024,9 @@ void TR_ValuePropagation::getParmValues()
                if (jlKlass)
                   {
                   if (opaqueClass != jlKlass)
-                     constraint = TR_VPResolvedClass::create(this, opaqueClass);
+                     constraint = TR::VPResolvedClass::create(this, opaqueClass);
                   else
-                     constraint = TR_VPObjectLocation::create(this, TR_VPObjectLocation::JavaLangClassObject);
+                     constraint = TR::VPObjectLocation::create(this, TR::VPObjectLocation::JavaLangClassObject);
                   }
                }
             }
@@ -4035,13 +4035,13 @@ void TR_ValuePropagation::getParmValues()
             char *sig;
             uint32_t len;
             sig = parmIterator->getUnresolvedJavaClassSignature(len);
-            constraint = TR_VPUnresolvedClass::create(this, sig, len, method);
+            constraint = TR::VPUnresolvedClass::create(this, sig, len, method);
             if (usePreexistence() && parmIterator->isClass())
                {
                classObject = constraint->getClass();
                if (classObject && !fe()->classHasBeenExtended(classObject))
-                  constraint = TR_VPFixedClass::create(this, classObject);
-               constraint = constraint->intersect(TR_VPPreexistentObject::create(this, classObject), this);
+                  constraint = TR::VPFixedClass::create(this, classObject);
+               constraint = constraint->intersect(TR::VPPreexistentObject::create(this, classObject), this);
                TR_ASSERT(constraint, "Cannot intersect constraints");
                }
             }
@@ -4060,14 +4060,14 @@ void TR_ValuePropagation::getParmValues()
 
 
 
-bool TR_ValuePropagation::isParmInvariant(TR::Symbol *sym)
+bool TR::ValuePropagation::isParmInvariant(TR::Symbol *sym)
    {
    int32_t index = sym->getParmSymbol()->getOrdinal();
    return (_parmInfo[index] ? false : true);
    }
 
 
-bool TR_GlobalValuePropagation::buildInputConstraints(TR::CFGNode *node)
+bool TR::GlobalValuePropagation::buildInputConstraints(TR::CFGNode *node)
    {
    // Build the input constraints for the given CFG node into _curConstraints.
    // Return true if the node is reachable, false if not.
@@ -4145,7 +4145,7 @@ bool TR_GlobalValuePropagation::buildInputConstraints(TR::CFGNode *node)
    }
 
 
-void TR_GlobalValuePropagation::propagateOutputConstraints(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool isNaturalLoop, List<TR::CFGEdge> &outEdges1, List<TR::CFGEdge> *outEdges2)
+void TR::GlobalValuePropagation::propagateOutputConstraints(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool isNaturalLoop, List<TR::CFGEdge> &outEdges1, List<TR::CFGEdge> *outEdges2)
    {
    // Propagate constraints on the output edges to the parent region
    // There may be two sets of edges (for normal and exception edges)
@@ -4232,7 +4232,7 @@ void TR_GlobalValuePropagation::propagateOutputConstraints(TR_StructureSubGraphN
       }
    }
 
-void TR_GlobalValuePropagation::determineConstraints()
+void TR::GlobalValuePropagation::determineConstraints()
    {
    // Go through the regions finding constraints.
    // We will use 2 visit counts, one for the first time through a region node
@@ -4246,7 +4246,7 @@ void TR_GlobalValuePropagation::determineConstraints()
    processStructure(&rootNode, true, false);
    }
 
-void TR_GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    static uint32_t numIter = 0;
    if (comp()->getOptions()->realTimeGC() &&
@@ -4278,7 +4278,7 @@ void TR_GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node,
       }
    }
 
-void TR_GlobalValuePropagation::processAcyclicRegion(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processAcyclicRegion(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    if (trace())
       printStructureInfo(node->getStructure(), true, lastTimeThrough);
@@ -4289,7 +4289,7 @@ void TR_GlobalValuePropagation::processAcyclicRegion(TR_StructureSubGraphNode *n
       printStructureInfo(node->getStructure(), false, lastTimeThrough);
    }
 
-void TR_GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    TR_RegionStructure *region = node->getStructure()->asRegion();
 
@@ -4409,7 +4409,7 @@ void TR_GlobalValuePropagation::processNaturalLoop(TR_StructureSubGraphNode *nod
    _loopInfo = parentLoopInfo;
    }
 
-void TR_GlobalValuePropagation::processImproperLoop(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processImproperLoop(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    if (trace())
       printStructureInfo(node->getStructure(), true, lastTimeThrough);
@@ -4486,7 +4486,7 @@ void TR_GlobalValuePropagation::processImproperLoop(TR_StructureSubGraphNode *no
       printStructureInfo(node->getStructure(), false, lastTimeThrough);
    }
 
-void TR_ValuePropagation::generalizeStores(ValueConstraints &stores, ValueConstraints *vC)
+void TR::ValuePropagation::generalizeStores(ValueConstraints &stores, ValueConstraints *vC)
    {
    ValueConstraint *vc, *newVc;
 
@@ -4509,7 +4509,7 @@ void TR_ValuePropagation::generalizeStores(ValueConstraints &stores, ValueConstr
       }
    }
 
-void TR_ValuePropagation::findStoresInBlock(TR::Block *block, ValueConstraints &stores)
+void TR::ValuePropagation::findStoresInBlock(TR::Block *block, ValueConstraints &stores)
    {
    // Scan this block for stores that are to be put into the containing
    // improper region's list of generalized store constraints.
@@ -4537,7 +4537,7 @@ void TR_ValuePropagation::findStoresInBlock(TR::Block *block, ValueConstraints &
       }
    }
 
-void TR_GlobalValuePropagation::getImproperRegionStores(TR_StructureSubGraphNode *node, ValueConstraints &stores)
+void TR::GlobalValuePropagation::getImproperRegionStores(TR_StructureSubGraphNode *node, ValueConstraints &stores)
    {
    TR_RegionStructure *region = node->getStructure()->asRegion();
    if (region)
@@ -4557,7 +4557,7 @@ void TR_GlobalValuePropagation::getImproperRegionStores(TR_StructureSubGraphNode
       }
    }
 
-void TR_GlobalValuePropagation::processRegionSubgraph(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop, bool isNaturalLoop)
+void TR::GlobalValuePropagation::processRegionSubgraph(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop, bool isNaturalLoop)
    {
    // Process the nodes in a region in flow order (not completely possible for
    // an improper region but this method is not called for an improper region).
@@ -4600,7 +4600,7 @@ void TR_GlobalValuePropagation::processRegionSubgraph(TR_StructureSubGraphNode *
    }
 
 
-void TR_GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    node->setVisitCount(_visitCount);
 
@@ -4670,7 +4670,7 @@ void TR_GlobalValuePropagation::processRegionNode(TR_StructureSubGraphNode *node
    }
 
 
-void TR_GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
+void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bool lastTimeThrough, bool insideLoop)
    {
    TR::CFGEdge *edge;
 
@@ -4730,7 +4730,7 @@ void TR_GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, boo
 
    if (comp()->getStartBlock()->getNumber() == _curBlock->getNumber())
       {
-      addConstraintToList(NULL, _syncValueNumber, AbsoluteConstraint, TR_VPSync::create(this, TR_no), &_curConstraints);
+      addConstraintToList(NULL, _syncValueNumber, AbsoluteConstraint, TR::VPSync::create(this, TR_no), &_curConstraints);
       }
 
    if (trace())
@@ -4801,7 +4801,7 @@ void TR_GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, boo
    propagateOutputConstraints(node, lastTimeThrough, false, List1, &List2);
    }
 
-TR::CFGEdge *TR_ValuePropagation::findOutEdge(TR::list<TR::CFGEdge*> &edges, TR::CFGNode *target)
+TR::CFGEdge *TR::ValuePropagation::findOutEdge(TR::list<TR::CFGEdge*> &edges, TR::CFGNode *target)
    {
    // Find the output edge in the list of edges to the given node
    //
@@ -4812,35 +4812,35 @@ TR::CFGEdge *TR_ValuePropagation::findOutEdge(TR::list<TR::CFGEdge*> &edges, TR:
    return *edge;
    }
 
-bool TR_ValuePropagation::isUnreachablePath(ValueConstraints &valueConstraints)
+bool TR::ValuePropagation::isUnreachablePath(ValueConstraints &valueConstraints)
    {
    return !valueConstraints.isEmpty() &&
           !_vcHandler.getRoot(valueConstraints)->relationships.isEmpty() &&
           _vcHandler.getRoot(valueConstraints)->relationships.getFirst()->constraint->asUnreachablePath();
    }
 
-bool TR_ValuePropagation::isUnreachablePath(EdgeConstraints *constraints)
+bool TR::ValuePropagation::isUnreachablePath(EdgeConstraints *constraints)
    {
    return isUnreachablePath(constraints->valueConstraints);
    }
 
-void TR_ValuePropagation::setUnreachablePath()
+void TR::ValuePropagation::setUnreachablePath()
    {
 #if 0
    freeValueConstraints(_curConstraints);
-   addConstraintToList(NULL, 0, AbsoluteConstraint, TR_VPUnreachablePath::create(this), &_curConstraints);
+   addConstraintToList(NULL, 0, AbsoluteConstraint, TR::VPUnreachablePath::create(this), &_curConstraints);
 #else
    setUnreachablePath(_curConstraints);
 #endif
    }
 
-void TR_ValuePropagation::setUnreachablePath(ValueConstraints &vc)
+void TR::ValuePropagation::setUnreachablePath(ValueConstraints &vc)
    {
    freeValueConstraints(vc);
-   addConstraintToList(NULL, 0, AbsoluteConstraint, TR_VPUnreachablePath::create(this), &vc);
+   addConstraintToList(NULL, 0, AbsoluteConstraint, TR::VPUnreachablePath::create(this), &vc);
    }
 
-void TR_ValuePropagation::setUnreachablePath(TR::CFGEdge *edge)
+void TR::ValuePropagation::setUnreachablePath(TR::CFGEdge *edge)
    {
    if (!_isGlobalPropagation)
       return;
@@ -4848,14 +4848,14 @@ void TR_ValuePropagation::setUnreachablePath(TR::CFGEdge *edge)
    EdgeConstraints *constraints = getEdgeConstraints(edge);
 #if 0
    freeValueConstraints(constraints->valueConstraints);
-   addConstraintToList(NULL, 0, AbsoluteConstraint, TR_VPUnreachablePath::create(this), &constraints->valueConstraints);
+   addConstraintToList(NULL, 0, AbsoluteConstraint, TR::VPUnreachablePath::create(this), &constraints->valueConstraints);
 #else
    setUnreachablePath(constraints->valueConstraints);
 #endif
    }
 
 
-void TR_ValuePropagation::printStructureInfo(TR_Structure *s, bool starting, bool lastTimeThrough)
+void TR::ValuePropagation::printStructureInfo(TR_Structure *s, bool starting, bool lastTimeThrough)
    {
    traceMsg(comp(), "\n%s ", starting ? "Starting " : "Stopping ");
    char *type;
@@ -4913,7 +4913,7 @@ void TR_ValuePropagation::printStructureInfo(TR_Structure *s, bool starting, boo
       }
    }
 
-void TR_ValuePropagation::printParentStructure(TR_Structure *s)
+void TR::ValuePropagation::printParentStructure(TR_Structure *s)
    {
    if (s->getParent())
       {
@@ -4923,7 +4923,7 @@ void TR_ValuePropagation::printParentStructure(TR_Structure *s)
    }
 
 
-void TR_ValuePropagation::printValueConstraints(ValueConstraints &valueConstraints)
+void TR::ValuePropagation::printValueConstraints(ValueConstraints &valueConstraints)
    {
    ValueConstraintIterator iter(valueConstraints);
    ValueConstraint *vc;
@@ -4933,7 +4933,7 @@ void TR_ValuePropagation::printValueConstraints(ValueConstraints &valueConstrain
       }
    }
 
-void TR_ValuePropagation::printGlobalConstraints()
+void TR::ValuePropagation::printGlobalConstraints()
    {
    traceMsg(comp(), "   Global constraints:\n");
    for (int32_t i = 0; i <= _globalConstraintsHTMaxBucketIndex; i++)
@@ -4950,7 +4950,7 @@ void TR_ValuePropagation::printGlobalConstraints()
       }
    }
 
-void TR_ValuePropagation::printEdgeConstraints(EdgeConstraints *constraints)
+void TR::ValuePropagation::printEdgeConstraints(EdgeConstraints *constraints)
    {
    if (!_isGlobalPropagation || comp()->getOutFile() == NULL)
       return;
@@ -4976,7 +4976,7 @@ void TR_ValuePropagation::printEdgeConstraints(EdgeConstraints *constraints)
       }
    }
 
-void TR_ValuePropagation::Relationship::print(TR_ValuePropagation *vp)
+void TR::ValuePropagation::Relationship::print(TR::ValuePropagation *vp)
    {
    if (vp->comp()->getOutFile() == NULL)
       return;
@@ -4993,7 +4993,7 @@ void TR_ValuePropagation::Relationship::print(TR_ValuePropagation *vp)
       constraint->print(vp->comp(), vp->comp()->getOutFile(), relative);
    }
 
-void TR_ValuePropagation::Relationship::print(TR_ValuePropagation *vp, int32_t valueNumber, int32_t indent)
+void TR::ValuePropagation::Relationship::print(TR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
    if (vp->comp()->getOutFile() == NULL)
       return;
@@ -5013,7 +5013,7 @@ void TR_ValuePropagation::Relationship::print(TR_ValuePropagation *vp, int32_t v
       {
       // Induction variable use constraint
       //
-      TR_ValuePropagation::InductionVariable *iv;
+      TR::ValuePropagation::InductionVariable *iv;
       for (iv = vp->_loopInfo->_inductionVariables.getFirst(); iv; iv = iv->getNext())
          {
          if (iv->_valueNumber == valueNumber)
@@ -5029,7 +5029,7 @@ void TR_ValuePropagation::Relationship::print(TR_ValuePropagation *vp, int32_t v
    trfprintf(vp->comp()->getOutFile(), "\n");
    }
 
-void TR_ValuePropagation::StoreRelationship::print(TR_ValuePropagation *vp, int32_t valueNumber, int32_t indent)
+void TR::ValuePropagation::StoreRelationship::print(TR::ValuePropagation *vp, int32_t valueNumber, int32_t indent)
    {
    if (vp->comp()->getOutFile() == NULL)
       return;
@@ -5045,7 +5045,7 @@ void TR_ValuePropagation::StoreRelationship::print(TR_ValuePropagation *vp, int3
       trfprintf(vp->comp()->getOutFile(), "%*.sptr %p symbol %p has no relationships\n", indent, " ", this, symbol);
    }
 
-void TR_ValuePropagation::ValueConstraint::print(TR_ValuePropagation *vp, int32_t indent)
+void TR::ValuePropagation::ValueConstraint::print(TR::ValuePropagation *vp, int32_t indent)
    {
    if (vp->comp()->getOutFile() == NULL)
       return;
@@ -5060,7 +5060,7 @@ void TR_ValuePropagation::ValueConstraint::print(TR_ValuePropagation *vp, int32_
 // constraints if intersection fails
 // for a particular value number
 //
-bool TR_ValuePropagation::removeConstraints()
+bool TR::ValuePropagation::removeConstraints()
    {
    static char *p = feGetEnv("TR_FixIntersect");
    if (!p)
@@ -5069,7 +5069,7 @@ bool TR_ValuePropagation::removeConstraints()
       return true;
    }
 
-bool TR_ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraints *vc, bool findStores)
+bool TR::ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraints *vc, bool findStores)
    {
    if (trace())
       {
@@ -5115,7 +5115,7 @@ bool TR_ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraint
 // this routine removes both valueconstraints
 // and store relationships collected on the vn so far
 //
-bool TR_ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraints *valueConstraints)
+bool TR::ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraints *valueConstraints)
    {
    if (trace())
       traceMsg(comp(), "   Intersection of constraints failed for valueNumber [%d], removing constraints\n", valueNumber);
@@ -5176,7 +5176,7 @@ bool TR_ValuePropagation::removeConstraints(int32_t valueNumber, ValueConstraint
    }
 
 
-bool TR_ValuePropagation::removeStoreConstraints(ValueConstraints *valueConstraints, int32_t valueNumber, int32_t relative)
+bool TR::ValuePropagation::removeStoreConstraints(ValueConstraints *valueConstraints, int32_t valueNumber, int32_t relative)
    {
    ValueConstraint *vc = _vcHandler.find(valueNumber, *valueConstraints);
    if (vc)
@@ -5207,7 +5207,7 @@ bool TR_ValuePropagation::removeStoreConstraints(ValueConstraints *valueConstrai
    return false;
    }
 
-bool TR_ValuePropagation::removeConstraints(int32_t valueNumber)
+bool TR::ValuePropagation::removeConstraints(int32_t valueNumber)
    {
    if (trace())
       traceMsg(comp(), "   Intersection failed for value number [%d], removing global constraints\n", valueNumber);
@@ -5263,7 +5263,7 @@ bool TR_ValuePropagation::removeConstraints(int32_t valueNumber)
    return true;
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward)
+TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward)
    {
    TR::Node* root = tree->getNode()->getFirstChild();
    TR::Node* len = TR::Node::createLoad(root, lenRef);
@@ -5271,7 +5271,7 @@ TR::TreeTop* TR_ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::
    return createArrayNode(tree, newTree, srcRef, dstRef, len, srcObjRef, dstObjRef, isForward);
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::Node* len, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward)
+TR::TreeTop* TR::ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::Node* len, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward)
    {
    TR::Node* root = tree->getNode()->getFirstChild();
    TR::Node* src = NULL;
@@ -5374,7 +5374,7 @@ TR::TreeTop* TR_ArraycopyTransformation::createArrayNode(TR::TreeTop* tree, TR::
    return newTree;
    }
 
-int64_t TR_ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::Node* arrayCopyNode)
+int64_t TR::ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::Node* arrayCopyNode)
    {
 #ifdef J9_PROJECT_SPECIFIC
    const float MIN_ARRAYCOPY_FREQ_FOR_SPECIALIZATION = 0.7f;
@@ -5402,7 +5402,7 @@ int64_t TR_ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::Nod
    return -1;
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::createPointerCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef)
+TR::TreeTop* TR::ArraycopyTransformation::createPointerCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef)
    {
    bool is64Bit = TR::Compiler->target.is64Bit();
    TR::Node* cmp;
@@ -5445,7 +5445,7 @@ TR::TreeTop* TR_ArraycopyTransformation::createPointerCompareNode(TR::Node* node
    return cmpTree;
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::createRangeCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef)
+TR::TreeTop* TR::ArraycopyTransformation::createRangeCompareNode(TR::Node* node, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef)
    {
    bool is64Bit = TR::Compiler->target.is64Bit();
    TR::Node* cmp;
@@ -5507,7 +5507,7 @@ TR::TreeTop* TR_ArraycopyTransformation::createRangeCompareNode(TR::Node* node, 
    }
 
 
-TR::TreeTop* TR_ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* arrayTree, TR::Node* node)
+TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* arrayTree, TR::Node* node)
    {
      if (/* node->isReferenceArrayCopy() || */ node->isRarePathForwardArrayCopy() || node->isBackwardArrayCopy())
       {
@@ -5618,7 +5618,7 @@ TR::TreeTop* TR_ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* a
    return firstInsertedTree;
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode)
+TR::TreeTop* TR::ArraycopyTransformation::tryToSpecializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode)
    {
    TR::Node *lengthChild = arraycopyNode->getChild(arraycopyNode->getNumChildren()-1); // last child is length
    if (arraycopyNode->isRarePathForwardArrayCopy() || lengthChild->getOpCode().isLoadConst())
@@ -5654,7 +5654,7 @@ static TR::Node *addressSizedConst(TR::Compilation *comp, TR::Node *n, intptrj_t
    return node;
    }
 
-TR::TreeTop* TR_ArraycopyTransformation::specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptrj_t lengthInBytes,
+TR::TreeTop* TR::ArraycopyTransformation::specializeForLength(TR::TreeTop *tt, TR::Node *arraycopyNode, uintptrj_t lengthInBytes,
       TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef)
    {
    TR::TreeTop* arraycopyOriginal = TR::TreeTop::create(comp());
@@ -5692,11 +5692,11 @@ TR::TreeTop* TR_ArraycopyTransformation::specializeForLength(TR::TreeTop *tt, TR
    return specificIfCheck; // First inserted tree
    }
 
-TR_ArraycopyTransformation::TR_ArraycopyTransformation(TR::OptimizationManager *manager)
+TR::ArraycopyTransformation::ArraycopyTransformation(TR::OptimizationManager *manager)
    : TR::Optimization(manager), _changedTrees(false)
    {}
 
-int32_t TR_ArraycopyTransformation::perform()
+int32_t TR::ArraycopyTransformation::perform()
    {
    // this is not an optional transformation - it must be run if arraycopy transformation
    // is done since the code generator can not handle the direct output from
@@ -5731,7 +5731,7 @@ int32_t TR_ArraycopyTransformation::perform()
    }
 
 
-void TR_ValuePropagation::createNewBlockInfoForVersioning(TR::Block *block)
+void TR::ValuePropagation::createNewBlockInfoForVersioning(TR::Block *block)
    {
 
    if (!block->isCatchBlock() && !_bndChecks->isEmpty() && !_bndChecks->isSingleton())
@@ -5755,7 +5755,7 @@ void TR_ValuePropagation::createNewBlockInfoForVersioning(TR::Block *block)
    }
 
 
-void TR_ValuePropagation::versionBlocks()
+void TR::ValuePropagation::versionBlocks()
    {
 
    TR::CFG *_cfg = comp()->getFlowGraph();
@@ -6083,7 +6083,7 @@ void TR_ValuePropagation::versionBlocks()
 
 //walk the bndchks collected for this block and add to appropriate bucket based on arrayLenght.
 //returns True if to version block and false if not.
-bool TR_ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersion> *arrayLengths)
+bool TR::ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersion> *arrayLengths)
    {
    bool isGlobal;
    TR_BitVector invariantVariables(comp()->getSymRefCount(), trMemory(), stackAlloc);
@@ -6135,8 +6135,8 @@ bool TR_ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersio
           char *sig = symRefField->getOwningMethod(comp())->classNameOfFieldOrStatic(symRefField->getCPIndex(), len);
           TR_OpaqueClassBlock *classOfField = NULL;
           TR_OpaqueClassBlock *classOfBase = NULL;
-          TR_VPConstraint *vpcBase = getConstraint(nodeBase, isGlobal);
-          TR_VPResolvedClass *rcBase = NULL;
+          TR::VPConstraint *vpcBase = getConstraint(nodeBase, isGlobal);
+          TR::VPResolvedClass *rcBase = NULL;
 
           if (sig)
              classOfField = fe()->getClassFromSignature(sig, len,symRefField->getOwningMethod(comp()));
@@ -6270,7 +6270,7 @@ bool TR_ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersio
          if (baseNode)
             {
 
-            TR_VPConstraint *rel = getConstraint(bndchkNode->getSecondChild(),isGlobal,arrayIndexInfo->_baseNode);
+            TR::VPConstraint *rel = getConstraint(bndchkNode->getSecondChild(),isGlobal,arrayIndexInfo->_baseNode);
             if (!(rel && rel->asEqual()) && (bndchkNode->getSecondChild() != arrayIndexInfo->_baseNode ))
                continue;
             }
@@ -6398,7 +6398,7 @@ bool TR_ValuePropagation::prepareForBlockVersion(TR_LinkHead<ArrayLengthToVersio
    }
 
 
-void TR_ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blockInfo, List<TR::Node> *comparisonNodes)
+void TR::ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *blockInfo, List<TR::Node> *comparisonNodes)
    {
    //walk arrayLength and for each one walk all buckets - create tests for min and max.
    TR::Node *nextComparisonNode;
@@ -6492,7 +6492,7 @@ void TR_ValuePropagation::buildBoundCheckComparisonNodes(BlockVersionInfo *block
 
 
 
-void TR_ValuePropagation::removeBndChecksFromFastVersion(BlockVersionInfo *blockInfo)
+void TR::ValuePropagation::removeBndChecksFromFastVersion(BlockVersionInfo *blockInfo)
    {
 
    for (ArrayLengthToVersion *array = blockInfo->_arrayLengths->getFirst(); array; array = array->getNext())
@@ -6523,7 +6523,7 @@ void TR_ValuePropagation::removeBndChecksFromFastVersion(BlockVersionInfo *block
    }
 
 // deals only with constants. (i+5), (i+2-3)
-TR::Node *TR_ValuePropagation::findVarOfSimpleFormOld(TR::Node *node) //ArrayIndexNodeFromOffset(TR::Node *node, int32_t stride)
+TR::Node *TR::ValuePropagation::findVarOfSimpleFormOld(TR::Node *node) //ArrayIndexNodeFromOffset(TR::Node *node, int32_t stride)
    {
    if (node->getOpCode().hasSymbolReference() &&
        !node->hasUnresolvedSymbolReference() &&
@@ -6563,7 +6563,7 @@ TR::Node *TR_ValuePropagation::findVarOfSimpleFormOld(TR::Node *node) //ArrayInd
 // i has to be any subtree, but its children are walked through, and if they have a symbol reference
 // they have to be either a param or an auto (we are trying to avoid object fields)
 // and of course they have to be not defined before then; see design 1839
-TR::Node *TR_ValuePropagation::findVarOfSimpleForm(TR::Node *node) //ArrayIndexNodeFromOffset(TR::Node *node, int32_t stride)
+TR::Node *TR::ValuePropagation::findVarOfSimpleForm(TR::Node *node) //ArrayIndexNodeFromOffset(TR::Node *node, int32_t stride)
    {
    if (node->getOpCode().hasSymbolReference() &&
        !node->hasUnresolvedSymbolReference() &&
@@ -6631,7 +6631,7 @@ TR::Node *TR_ValuePropagation::findVarOfSimpleForm(TR::Node *node) //ArrayIndexN
    }
 
 
-void TR_ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *array, TR_LinkHead<ArrayLengthToVersion> *arrayLengths, int32_t c, TR::Node *baseNode, TR::Node *bndchkNode, TR_OpaqueClassBlock *instanceOfClass)
+void TR::ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *array, TR_LinkHead<ArrayLengthToVersion> *arrayLengths, int32_t c, TR::Node *baseNode, TR::Node *bndchkNode, TR_OpaqueClassBlock *instanceOfClass)
    {
    if (!array )
       {         //create a new arrayLengthToVersion
@@ -6657,7 +6657,7 @@ void TR_ValuePropagation::createNewBucketForArrayIndex(ArrayLengthToVersion *arr
    array->_arrayIndicesInfo->add(arrayIndex);
    }
 
-void TR_ValuePropagation::collectDefSymRefs(TR::Node *node, TR::Node *parent)
+void TR::ValuePropagation::collectDefSymRefs(TR::Node *node, TR::Node *parent)
    {
    if (!node)
       return;
@@ -6748,7 +6748,7 @@ void TR_ValuePropagation::collectDefSymRefs(TR::Node *node, TR::Node *parent)
 
 //add in decresing order when constants
 //non-constants arraylen will be at the head of list.
-void  TR_ValuePropagation::addToSortedList(TR_LinkHead<ArrayLengthToVersion> *arrayLengths, ArrayLengthToVersion *newArrayLen)
+void  TR::ValuePropagation::addToSortedList(TR_LinkHead<ArrayLengthToVersion> *arrayLengths, ArrayLengthToVersion *newArrayLen)
    {
    if (!newArrayLen->_arrayLen->getOpCode().isLoadConst())
       {
@@ -6775,7 +6775,7 @@ void  TR_ValuePropagation::addToSortedList(TR_LinkHead<ArrayLengthToVersion> *ar
    }
 
 
-TR::TreeTop* TR_ValuePropagation::createReferenceArrayNodeWithoutFlags(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcObjectRef, TR::SymbolReference* dstObjectRef, TR::SymbolReference* lenRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, bool useFlagsOnOriginalArraycopy)
+TR::TreeTop* TR::ValuePropagation::createReferenceArrayNodeWithoutFlags(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcObjectRef, TR::SymbolReference* dstObjectRef, TR::SymbolReference* lenRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, bool useFlagsOnOriginalArraycopy)
    {
    TR::Node* root = tree->getNode()->getFirstChild();
    TR::Node* len = TR::Node::createLoad(root, lenRef);
@@ -6832,7 +6832,7 @@ TR::TreeTop* TR_ValuePropagation::createReferenceArrayNodeWithoutFlags(TR::TreeT
    }
 
 
-void TR_ValuePropagation::transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef)
+void TR::ValuePropagation::transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef)
    {
    TR::Node *node = arrayTree->_treetop->getNode();
    if (node->getOpCodeValue() != TR::arraycopy)
@@ -6889,7 +6889,7 @@ void TR_ValuePropagation::transformReferenceArrayCopyWithoutCreatingStoreTrees(T
    }
 
 
-void TR_ValuePropagation::transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *arrayTree)
+void TR::ValuePropagation::transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *arrayTree)
    {
    TR::Node *node = arrayTree->_treetop->getNode();
    if (node->getOpCodeValue() != TR::arraycopy)
@@ -6906,7 +6906,7 @@ void TR_ValuePropagation::transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *arra
    transformReferenceArrayCopyWithoutCreatingStoreTrees(arrayTree, srcObjRef, dstObjRef, srcRef, dstRef, lenRef);
    }
 
-void TR_ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *arrayTree)
+void TR::ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *arrayTree)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Node *node = arrayTree->_treetop->getNode();
@@ -6973,7 +6973,7 @@ void TR_ValuePropagation::transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *ar
    }
 
 
-static void changeBranchToGoto(TR_ValuePropagation *vp, TR::Node *guardNode, TR::Block *guard)
+static void changeBranchToGoto(TR::ValuePropagation *vp, TR::Node *guardNode, TR::Block *guard)
    {
    // change the if to goto
    TR::Node::recreate(guardNode, TR::Goto);
@@ -6998,7 +6998,7 @@ static void changeBranchToGoto(TR_ValuePropagation *vp, TR::Node *guardNode, TR:
    }
 
 
-void TR_ValuePropagation::transformStringConcats(TR_VPStringCached *stringCached)
+void TR::ValuePropagation::transformStringConcats(VPStringCached *stringCached)
   {
    if (!performTransformation(comp(), "%sSimplified String Concatenation:(StringCache) [%p] \n", OPT_DETAILS, stringCached->_treetop1, stringCached->_treetop2)&& getStringCacheRef())
        return;
@@ -7042,7 +7042,7 @@ void TR_ValuePropagation::transformStringConcats(TR_VPStringCached *stringCached
   TR::TransformUtil::removeTree(comp(), newTree);
   }
 
-TR::SymbolReference * TR_ValuePropagation::getStringCacheRef()
+TR::SymbolReference * TR::ValuePropagation::getStringCacheRef()
   {
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -7089,7 +7089,7 @@ TR::SymbolReference * TR_ValuePropagation::getStringCacheRef()
 #endif
 }
 
-void TR_ValuePropagation::transformStringCtors(TR_VPTreeTopPair *treeTopPair)
+void TR::ValuePropagation::transformStringCtors(VPTreeTopPair *treeTopPair)
 {
 
   if (!performTransformation(comp(), "%sSimplified String Concatenation:(StringCache) [%p] \n", OPT_DETAILS, treeTopPair->_treetop1,treeTopPair->_treetop2)&& getStringCacheRef())
@@ -7101,8 +7101,8 @@ void TR_ValuePropagation::transformStringCtors(TR_VPTreeTopPair *treeTopPair)
 
   //Check ConstantString Constraint
   bool isGlobal ;
-  TR_VPConstraint * base1 =  getConstraint(appendedString[0], isGlobal);
-  TR_VPConstraint * base2 = getConstraint(appendedString[1], isGlobal);
+  TR::VPConstraint * base1 =  getConstraint(appendedString[0], isGlobal);
+  TR::VPConstraint * base2 = getConstraint(appendedString[1], isGlobal);
 
   if (!(base1 && base1->isConstString() && base2 && base2->isConstString()))
      {
@@ -7144,7 +7144,7 @@ void TR_ValuePropagation::transformStringCtors(TR_VPTreeTopPair *treeTopPair)
   treeTopPair->_treetop1->unlink(true);
 }
 
-void TR_ValuePropagation::replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount)
+void TR::ValuePropagation::replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount)
    {
    if (curNode->getVisitCount() == visitCount)
       return;
@@ -7167,7 +7167,7 @@ void TR_ValuePropagation::replacePackedArrayLoad(TR::Node *loadNode, TR::Node *p
    }
 
 
-bool TR_ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)
+bool TR::ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)
    {
    if (node->getVisitCount() == visitCount)
       return true;
@@ -7201,11 +7201,11 @@ bool TR_ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visi
 
 
 
-void TR_ValuePropagation::doDelayedTransformations()
+void TR::ValuePropagation::doDelayedTransformations()
    {
    // If there were unreachable blocks, remove them
-   ListIterator<TR_VPStringCached> treesIt0(&_cachedStringBufferVcalls);
-   TR_VPStringCached *stringCache;
+   ListIterator<VPStringCached> treesIt0(&_cachedStringBufferVcalls);
+   VPStringCached *stringCache;
    for (stringCache= treesIt0.getFirst();stringCache; stringCache = treesIt0.getNext())
       {
       traceMsg(comp(),"Transforming call now in do-delayed");
@@ -7214,8 +7214,8 @@ void TR_ValuePropagation::doDelayedTransformations()
 
    _cachedStringBufferVcalls.deleteAll();  //cachedStringConcats
 
-   ListIterator<TR_VPTreeTopPair> treesIt2(&_cachedStringPeepHolesVcalls);
-   TR_VPTreeTopPair *treeTopPair;
+   ListIterator<VPTreeTopPair> treesIt2(&_cachedStringPeepHolesVcalls);
+   VPTreeTopPair *treeTopPair;
    for (treeTopPair= treesIt2.getFirst();treeTopPair; treeTopPair = treesIt2.getNext())
       {
       traceMsg(comp(),"Transforming call now in do-delayed");

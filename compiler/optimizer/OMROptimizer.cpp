@@ -813,9 +813,9 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
    _opts[OMR::generalStoreSinking] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralSinkStores::create, OMR::generalStoreSinking, "O^O GENERAL SINK STORES: ");
    _opts[OMR::globalValuePropagation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GlobalValuePropagation::create, OMR::globalValuePropagation, "O^O GLOBAL VALUE PROPAGATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::GlobalValuePropagation::create, OMR::globalValuePropagation, "O^O GLOBAL VALUE PROPAGATION: ");
    _opts[OMR::localValuePropagation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LocalValuePropagation::create, OMR::localValuePropagation, "O^O LOCAL VALUE PROPAGATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalValuePropagation::create, OMR::localValuePropagation, "O^O LOCAL VALUE PROPAGATION: ");
    _opts[OMR::redundantInductionVarElimination] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantInductionVarElimination::create, OMR::redundantInductionVarElimination, "O^O REDUNDANT INDUCTION VAR ELIMINATION: ");
    _opts[OMR::partialRedundancyElimination] =

@@ -57,7 +57,7 @@
 #include "optimizer/Optimizer.hpp"               // for Optimizer
 #include "optimizer/Structure.hpp"               // for TR_RegionStructure, etc
 #include "optimizer/UseDefInfo.hpp"              // for TR_UseDefInfo, etc
-#include "optimizer/VPConstraint.hpp"            // for TR_VPConstraint
+#include "optimizer/VPConstraint.hpp"            // for TR::VPConstraint
 #include "ras/Debug.hpp"                         // for TR_DebugBase
 
 namespace TR { class RegisterMappedSymbol; }
@@ -3085,7 +3085,7 @@ bool TR_LoopTransformer::isStoreInRequiredForm(int32_t symRefNum, TR_Structure *
       if (!v) return false;
 
       _isAddition = true;
-      TR_VPConstraint * incr = v->getIncr();
+      TR::VPConstraint * incr = v->getIncr();
       int64_t low;
 
       if (incr->asIntConst())
@@ -4059,7 +4059,7 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
          continue;
 
       int32_t entryValue = 0;
-      TR_VPConstraint *incrVal = NULL;
+      TR::VPConstraint *incrVal = NULL;
 
       comp()->incVisitCount();
       bool isInvertible = false;
@@ -4069,8 +4069,8 @@ int32_t TR_LoopInverter::detectCanonicalizedPredictableLoops(TR_Structure *loopS
          TR_InductionVariable *v = loopStructure->asRegion()->findMatchingIV(inductionSymRef);
          if (v)
             {
-            TR_VPConstraint *entryVal = v->getEntry();
-            TR_VPConstraint *exitVal = v->getExit();
+            TR::VPConstraint *entryVal = v->getEntry();
+            TR::VPConstraint *exitVal = v->getExit();
             incrVal  = v->getIncr();
 
             if (entryVal &&

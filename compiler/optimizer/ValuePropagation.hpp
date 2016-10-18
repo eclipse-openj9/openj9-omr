@@ -64,16 +64,16 @@ class TR_ResolvedMethod;
 class TR_Structure;
 class TR_StructureSubGraphNode;
 class TR_UseDefInfo;
-class TR_VPClassType;
-class TR_VPConstraint;
-class TR_VPIntConst;
-class TR_VPNonNullObject;
-class TR_VPNullObject;
-class TR_VPPreexistentObject;
-class TR_VPUnreachablePath;
-class TR_VP_BCDSign;
+namespace TR { class VPClassType; }
+namespace TR { class VPConstraint; }
+namespace TR { class VPIntConst; }
+namespace TR { class VPNonNullObject; }
+namespace TR { class VPNullObject; }
+namespace TR { class VPPreexistentObject; }
+namespace TR { class VPUnreachablePath; }
+namespace TR { class VP_BCDSign; }
 class TR_ValueNumberInfo;
-class TR_ValuePropagation;
+namespace TR { class ValuePropagation; }
 class TR_VirtualGuard;
 namespace TR { class Block; }
 namespace TR { class CFGEdge; }
@@ -85,16 +85,18 @@ namespace TR { class TreeTop; }
 template <class T> class TR_Array;
 template <class T> class TR_Stack;
 
-typedef TR::Node* (* ValuePropagationPtr)(TR_ValuePropagation *, TR::Node *);
+typedef TR::Node* (* ValuePropagationPtr)(TR::ValuePropagation *, TR::Node *);
 extern const ValuePropagationPtr constraintHandlers[];
 
-class TR_ArraycopyTransformation : public TR::Optimization
+namespace TR {
+
+class ArraycopyTransformation : public TR::Optimization
    {
    public:
-   TR_ArraycopyTransformation(TR::OptimizationManager *manager);
+   ArraycopyTransformation(TR::OptimizationManager *manager);
    static TR::Optimization *create(TR::OptimizationManager *manager)
       {
-      return new (manager->allocator()) TR_ArraycopyTransformation(manager);
+      return new (manager->allocator()) TR::ArraycopyTransformation(manager);
       }
 
    virtual int32_t perform();
@@ -129,12 +131,12 @@ class TR_ArraycopyTransformation : public TR::Optimization
    bool _changedTrees;
    };
 
-class TR_ValuePropagation : public TR::Optimization
+class ValuePropagation : public TR::Optimization
    {
    public:
    int32_t _syncValueNumber;
 
-   TR_ValuePropagation(TR::OptimizationManager *manager);
+   ValuePropagation(TR::OptimizationManager *manager);
 
    void initialize();
 
@@ -147,9 +149,9 @@ class TR_ValuePropagation : public TR::Optimization
       TR_ALLOC(TR_Memory::ValuePropagation)
 
       ConstraintsHashTableEntry *next;
-      TR_VPConstraint           *constraint;
+      TR::VPConstraint           *constraint;
       };
-   void addConstraint(TR_VPConstraint *constraint, int32_t hash);
+   void addConstraint(TR::VPConstraint *constraint, int32_t hash);
 
 
    // Relationship. This is a property of a value number and represents either
@@ -166,11 +168,11 @@ class TR_ValuePropagation : public TR::Optimization
    struct Relationship : public TR_Link<Relationship>
       {
       int32_t          relative;
-      TR_VPConstraint *constraint;
-      void print(TR_ValuePropagation *vp);
-      void print(TR_ValuePropagation *vp, int32_t valueNumber, int32_t indent);
+      TR::VPConstraint *constraint;
+      void print(TR::ValuePropagation *vp);
+      void print(TR::ValuePropagation *vp, int32_t valueNumber, int32_t indent);
       };
-   Relationship *createRelationship(int32_t relative, TR_VPConstraint *constraint);
+   Relationship *createRelationship(int32_t relative, TR::VPConstraint *constraint);
    void          freeRelationship(Relationship *rel);
    void          freeRelationships(TR_LinkHead<Relationship> &list);
    Relationship *copyRelationships(Relationship *first);
@@ -187,7 +189,7 @@ class TR_ValuePropagation : public TR::Optimization
       {
       TR::Symbol        *symbol;
       TR_LinkHead<Relationship> relationships;
-      void print(TR_ValuePropagation *vp, int32_t valueNumber, int32_t indent);
+      void print(TR::ValuePropagation *vp, int32_t valueNumber, int32_t indent);
       };
    StoreRelationship *createStoreRelationship(TR::Symbol *symbol, Relationship *firstRel);
    void          freeStoreRelationship(StoreRelationship *rel);
@@ -219,7 +221,7 @@ class TR_ValuePropagation : public TR::Optimization
 
       TR_LinkHead<Relationship> relationships;
       TR_LinkHead<StoreRelationship> storeRelationships;
-      void print(TR_ValuePropagation *vp, int32_t indent);
+      void print(TR::ValuePropagation *vp, int32_t indent);
       };
 
    typedef TREE_CLASS<ValueConstraint> ValueConstraints;
@@ -244,7 +246,7 @@ class TR_ValuePropagation : public TR::Optimization
 
       TR_LinkHead<Relationship> relationships;
       TR_LinkHead<StoreRelationship> storeRelationships;
-      void print(TR_ValuePropagation *vp, int32_t indent);
+      void print(TR::ValuePropagation *vp, int32_t indent);
 
       private:
       int32_t _valueNumber;
@@ -282,7 +284,7 @@ class TR_ValuePropagation : public TR::Optimization
    class ValueConstraintHandler : public TREE_HANDLER<ValueConstraint>
       {
       public:
-      void setVP(TR_ValuePropagation *vp) {_vp = vp;}
+      void setVP(TR::ValuePropagation *vp) {_vp = vp;}
 
       virtual ValueConstraint *allocate(int32_t key)
          {
@@ -303,13 +305,13 @@ class TR_ValuePropagation : public TR::Optimization
       virtual TR::Compilation *comp() {return _vp->comp();}
 
       private:
-      TR_ValuePropagation *_vp;
+      TR::ValuePropagation *_vp;
       };
 #else
    class ValueConstraintHandler
       {
       public:
-      void setVP(TR_ValuePropagation *vp) {_vp = vp;}
+      void setVP(TR::ValuePropagation *vp) {_vp = vp;}
 
       ValueConstraint *allocate(int32_t key)
          {
@@ -392,7 +394,7 @@ class TR_ValuePropagation : public TR::Optimization
          return NULL;
          }
       private:
-      TR_ValuePropagation *_vp;
+      TR::ValuePropagation *_vp;
       };
 #endif
 
@@ -465,12 +467,12 @@ class TR_ValuePropagation : public TR::Optimization
 
 
 
-   TR_VPConstraint *addGlobalConstraint(TR::Node *node, TR_VPConstraint *constraint, TR::Node *relative = NULL);
-   TR_VPConstraint *addGlobalConstraint(TR::Node *node, int32_t valueNumber, TR_VPConstraint *constraint, int32_t relative);
-   TR_VPConstraint *addBlockConstraint(TR::Node *node, TR_VPConstraint *constraint, TR::Node *relative = NULL, bool mustBeValid = true);
-   TR_VPConstraint *addEdgeConstraint(TR::Node *node, TR_VPConstraint *constraint, EdgeConstraints *contraints, TR::Node *relative = NULL);
-   TR_VPConstraint *addConstraintToList(TR::Node *node, int32_t valueNumber, int32_t relative, TR_VPConstraint *constraint, ValueConstraints *valueConstraints, bool replaceExisting = false);
-   TR_VPConstraint *addBlockOrGlobalConstraint(TR::Node *node, TR_VPConstraint *constraint, bool isGlobal, TR::Node *relative=NULL);
+   TR::VPConstraint *addGlobalConstraint(TR::Node *node, TR::VPConstraint *constraint, TR::Node *relative = NULL);
+   TR::VPConstraint *addGlobalConstraint(TR::Node *node, int32_t valueNumber, TR::VPConstraint *constraint, int32_t relative);
+   TR::VPConstraint *addBlockConstraint(TR::Node *node, TR::VPConstraint *constraint, TR::Node *relative = NULL, bool mustBeValid = true);
+   TR::VPConstraint *addEdgeConstraint(TR::Node *node, TR::VPConstraint *constraint, EdgeConstraints *contraints, TR::Node *relative = NULL);
+   TR::VPConstraint *addConstraintToList(TR::Node *node, int32_t valueNumber, int32_t relative, TR::VPConstraint *constraint, ValueConstraints *valueConstraints, bool replaceExisting = false);
+   TR::VPConstraint *addBlockOrGlobalConstraint(TR::Node *node, TR::VPConstraint *constraint, bool isGlobal, TR::Node *relative=NULL);
    void mergeRelationships(TR_LinkHead<Relationship> &fromList, TR_LinkHead<Relationship> &toList, int32_t valueNumber, bool preserveFrom = false, StoreRelationship *mergingStore = NULL, List<TR::Symbol> *storeSymbols = NULL, bool inBothLists = false);
    void mergeStoreRelationships(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom = false);
    void mergeValueConstraints(ValueConstraint *fromvc, ValueConstraint *tovc, bool preserveFrom = false);
@@ -495,13 +497,13 @@ class TR_ValuePropagation : public TR::Optimization
    // Get the constraint for a node in the current block, or create one from
    // the node's def points.
    //
-   TR_VPConstraint *getConstraint(TR::Node *node, bool &isGlobal, TR::Node *relative = NULL);
-   TR_VPConstraint *mergeDefConstraints(TR::Node *node, int32_t relative, bool &isGlobal, bool forceMerge = false);
-   TR_VPConstraint *applyGlobalConstraints(TR::Node *node, int32_t valueNumber, TR_VPConstraint *constraint, int32_t relative);
-   void invalidateParmConstraintsIfNeeded(TR::Node *node, TR_VPConstraint *constraint);
-   void checkTypeRelationship(TR_VPConstraint *lhs, TR_VPConstraint *rhs, int32_t &value, bool isInstanceOf, bool isCheckCast);
-   TR_YesNoMaybe isCastClassObject(TR_VPClassType *type);
-   TR_VPConstraint *getStoreConstraint(TR::Node *node, TR::Node *relative = NULL);
+   TR::VPConstraint *getConstraint(TR::Node *node, bool &isGlobal, TR::Node *relative = NULL);
+   TR::VPConstraint *mergeDefConstraints(TR::Node *node, int32_t relative, bool &isGlobal, bool forceMerge = false);
+   TR::VPConstraint *applyGlobalConstraints(TR::Node *node, int32_t valueNumber, TR::VPConstraint *constraint, int32_t relative);
+   void invalidateParmConstraintsIfNeeded(TR::Node *node, TR::VPConstraint *constraint);
+   void checkTypeRelationship(TR::VPConstraint *lhs, TR::VPConstraint *rhs, int32_t &value, bool isInstanceOf, bool isCheckCast);
+   TR_YesNoMaybe isCastClassObject(TR::VPClassType *type);
+   TR::VPConstraint *getStoreConstraint(TR::Node *node, TR::Node *relative = NULL);
    void createStoreConstraints(TR::Node *node);
    void setUnreachableStore(StoreRelationship *store);
    bool isUnreachableStore(StoreRelationship *store);
@@ -517,7 +519,7 @@ class TR_ValuePropagation : public TR::Optimization
    //
    void removeNode(TR::Node *node, bool anchorIt = true);
    void removeChildren(TR::Node *node, bool anchorIt = true);
-   void replaceByConstant(TR::Node *node, TR_VPConstraint *constraint, bool isGlobal);
+   void replaceByConstant(TR::Node *node, TR::VPConstraint *constraint, bool isGlobal);
    void removeRestOfBlock();
    void mustTakeException();
    void processTrees(TR::TreeTop *startTree, TR::TreeTop *endTree);
@@ -554,11 +556,11 @@ class TR_ValuePropagation : public TR::Optimization
       TR::Node                       *_node;
       };
 
-   struct TR_VPTreeTopPair
+   struct VPTreeTopPair
    {
    TR_ALLOC(TR_Memory::ValuePropagation)
 
-      TR_VPTreeTopPair(TR::TreeTop *treetop1,TR::TreeTop *treetop2): _treetop1(treetop1),_treetop2(treetop2){}
+      VPTreeTopPair(TR::TreeTop *treetop1,TR::TreeTop *treetop2): _treetop1(treetop1),_treetop2(treetop2){}
 
       TR::TreeTop                    *_treetop1;
       TR::TreeTop                    *_treetop2;
@@ -566,12 +568,12 @@ class TR_ValuePropagation : public TR::Optimization
    };
 
 
-   struct TR_VPStringCached
+   struct VPStringCached
       {
 
       TR_ALLOC(TR_Memory::ValuePropagation)
 
-      TR_VPStringCached(TR::TreeTop *append1, TR::TreeTop *append2, TR::Node *appendString1, TR::Node *appendString2, TR::TreeTop *newTree, TR::TreeTop *toStringTree)
+      VPStringCached(TR::TreeTop *append1, TR::TreeTop *append2, TR::Node *appendString1, TR::Node *appendString2, TR::TreeTop *newTree, TR::TreeTop *toStringTree)
          : _treetop1(append1), _treetop2(append2), _appendedString1(appendString1), _appendedString2(appendString2), _newTree(newTree), _toStringTree(toStringTree)
          {}
       TR::TreeTop                    *_treetop1;
@@ -682,8 +684,8 @@ class TR_ValuePropagation : public TR::Optimization
 
    void removeArrayCopyNode(TR::TreeTop *);
    TR::SymbolReference * getStringCacheRef();
-   void transformStringConcats(TR_VPStringCached *vcall);
-   void transformStringCtors(TR_VPTreeTopPair *vcall2);
+   void transformStringConcats(VPStringCached *vcall);
+   void transformStringCtors(VPTreeTopPair *vcall2);
    void transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
@@ -744,7 +746,7 @@ class TR_ValuePropagation : public TR::Optimization
    void setIntersectionFailed(bool b) {_intersectionFailed = b;}
    bool                           _intersectionFailed;
 
-   TR_VPConstraint                        **_parmValues;
+   TR::VPConstraint                        **_parmValues;
    ConstraintsHashTableEntry              **_constraintsHashTable;
    GlobalConstraint                       **_globalConstraintsHashTable;
    uint32_t                               _globalConstraintsHTMaxBucketIndex;
@@ -767,7 +769,7 @@ class TR_ValuePropagation : public TR::Optimization
    //
    struct InductionVariable : public TR_Link<InductionVariable>
       {
-      InductionVariable(TR::Symbol *sym, TR::Node *entryDef, int32_t incrVN, TR_VPConstraint *incr, TR_ValuePropagation *vp)
+      InductionVariable(TR::Symbol *sym, TR::Node *entryDef, int32_t incrVN, TR::VPConstraint *incr, TR::ValuePropagation *vp)
          : _symbol(sym), _entryDef(entryDef), _entryConstraint(0), _incrementVN(incrVN),
            _increment(incr)
          {
@@ -776,8 +778,8 @@ class TR_ValuePropagation : public TR::Optimization
          }
       TR::Symbol                *_symbol;
       TR::Node                 *_entryDef;
-      TR_VPConstraint         *_entryConstraint;
-      TR_VPConstraint         *_increment;
+      TR::VPConstraint         *_entryConstraint;
+      TR::VPConstraint         *_increment;
       int32_t                  _valueNumber;
       int32_t                  _incrementVN;
       bool                     _invalidEntryInfo;
@@ -819,7 +821,7 @@ class TR_ValuePropagation : public TR::Optimization
    //
    void enablePreexistence() {_usePreexistence = true;}
    bool usePreexistence()    {return _usePreexistence;}
-   bool registerPreXClass(TR_VPConstraint *constraint);
+   bool registerPreXClass(TR::VPConstraint *constraint);
    TR_ScratchList<TR_OpaqueClassBlock> _prexClasses;
    TR_ScratchList<TR_ResolvedMethod> _prexMethods;
    TR_ScratchList<TR_OpaqueClassBlock> _prexClassesThatShouldNotBeNewlyExtended;
@@ -829,7 +831,7 @@ class TR_ValuePropagation : public TR::Optimization
    //
    struct CallInfo : public TR_Link<CallInfo>
       {
-      CallInfo(TR_ValuePropagation *vp, TR_OpaqueClassBlock *thisType, TR_PrexArgInfo *argInfo)
+      CallInfo(TR::ValuePropagation *vp, TR_OpaqueClassBlock *thisType, TR_PrexArgInfo *argInfo)
          : _tt(vp->_curTree), _block(vp->_curBlock), _thisType(thisType), _argInfo(argInfo) { }
       TR::TreeTop          *_tt;
       TR::Block            *_block;
@@ -841,7 +843,7 @@ class TR_ValuePropagation : public TR::Optimization
 
     struct VirtualGuardInfo  : public TR_Link<VirtualGuardInfo>
         {
-        VirtualGuardInfo(TR_ValuePropagation *vp, TR_VirtualGuard* vgOld, TR_VirtualGuard* vgNew, TR::Node* newGNode, TR::Node* cn)
+        VirtualGuardInfo(TR::ValuePropagation *vp, TR_VirtualGuard* vgOld, TR_VirtualGuard* vgNew, TR::Node* newGNode, TR::Node* cn)
         : _currentTree(vp->_curTree), _block(vp->_curBlock), _oldVirtualGuard (vgOld), _newVirtualGuard(vgNew), _newGuardNode(newGNode), _callNode(cn) { }
         TR_VirtualGuard     *_oldVirtualGuard;
         TR_VirtualGuard     *_newVirtualGuard;
@@ -857,7 +859,7 @@ class TR_ValuePropagation : public TR::Optimization
 
    struct ClassInitInfo : public TR_Link<ClassInitInfo>
       {
-      ClassInitInfo(TR_ValuePropagation *vp, char *sig, int32_t len)
+      ClassInitInfo(TR::ValuePropagation *vp, char *sig, int32_t len)
          : _tt(vp->_curTree), _block(vp->_curBlock), _sig(sig), _len(len) { }
       TR::TreeTop          *_tt;
       TR::Block            *_block;
@@ -938,21 +940,21 @@ class TR_ValuePropagation : public TR::Optimization
 
    // Cached constraints
    //
-   TR_VPNullObject        *_nullObjectConstraint;
-   TR_VPNonNullObject     *_nonNullObjectConstraint;
-   TR_VPPreexistentObject *_preexistentObjectConstraint;
-   TR_VPIntConst          *_constantZeroConstraint;
-   TR_VPUnreachablePath   *_unreachablePathConstraint;
+   TR::VPNullObject        *_nullObjectConstraint;
+   TR::VPNonNullObject     *_nonNullObjectConstraint;
+   TR::VPPreexistentObject *_preexistentObjectConstraint;
+   TR::VPIntConst          *_constantZeroConstraint;
+   TR::VPUnreachablePath   *_unreachablePathConstraint;
 
  #if (defined(LINUX) && ( defined(TR_TARGET_X86) || defined(TR_TARGET_S390)))
   #if __GNUC__ > 4 || \
    (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt) __attribute__((optimize(1)));
+   TR::VP_BCDSign **getBCDSignConstraints(TR::DataType dt) __attribute__((optimize(1)));
   #else
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
+   TR::VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
   #endif
  #else
-   TR_VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
+   TR::VP_BCDSign **getBCDSignConstraints(TR::DataType dt);
  #endif
    TR_UseDefInfo      *_useDefInfo;      // Cached use/def info
    TR_ValueNumberInfo *_valueNumberInfo; // Cached value number info
@@ -1017,8 +1019,8 @@ class TR_ValuePropagation : public TR::Optimization
    List<TR_ArrayCopySpineCheck> _arrayCopySpineCheck;
    List<TR::TreeTop> _multiLeafCallsToInline;
    List<TR_TreeTopNodePair> _scalarizedArrayCopies;
-   List<TR_VPStringCached> _cachedStringBufferVcalls;
-   List<TR_VPTreeTopPair> _cachedStringPeepHolesVcalls;
+   List<VPStringCached> _cachedStringBufferVcalls;
+   List<VPTreeTopPair> _cachedStringPeepHolesVcalls;
    List<TR::TreeTop> _converterCalls;
    List<TR::TreeTop> _objectCloneCalls;
    List<TR::TreeTop> _arrayCloneCalls;
@@ -1029,17 +1031,17 @@ class TR_ValuePropagation : public TR::Optimization
    bool       *_parmTypeValid;
 
    private:
-   TR_VP_BCDSign **_bcdSignConstraints;
+   TR::VP_BCDSign **_bcdSignConstraints;
    };
 
-class TR_GlobalValuePropagation : public TR_ValuePropagation
+class GlobalValuePropagation : public TR::ValuePropagation
    {
    public:
 
-   TR_GlobalValuePropagation(TR::OptimizationManager *manager);
+   GlobalValuePropagation(TR::OptimizationManager *manager);
    static TR::Optimization *create(TR::OptimizationManager *manager)
       {
-      return new (manager->allocator()) TR_GlobalValuePropagation(manager);
+      return new (manager->allocator()) TR::GlobalValuePropagation(manager);
       }
 
    virtual int32_t perform();
@@ -1065,7 +1067,7 @@ class TR_GlobalValuePropagation : public TR_ValuePropagation
    };
 
 /**
- * Class TR_LocalValuePropagation
+ * Class TR::LocalValuePropagation
  * ==============================
  *
  * The local value propagation optimization can conduct constant, type 
@@ -1078,14 +1080,14 @@ class TR_GlobalValuePropagation : public TR_ValuePropagation
  * commoned by a prior local common subexpression elimination pass).  
  */
 
-class TR_LocalValuePropagation : public TR_ValuePropagation
+class LocalValuePropagation : public TR::ValuePropagation
    {
    public:
 
-   TR_LocalValuePropagation(TR::OptimizationManager *manager);
+   LocalValuePropagation(TR::OptimizationManager *manager);
    static TR::Optimization *create(TR::OptimizationManager *manager)
       {
-      return new (manager->allocator()) TR_LocalValuePropagation(manager);
+      return new (manager->allocator()) TR::LocalValuePropagation(manager);
       }
 
    virtual int32_t perform();
@@ -1097,6 +1099,8 @@ class TR_LocalValuePropagation : public TR_ValuePropagation
 
    TR::TreeTop *processBlock(TR::TreeTop *start);
    };
+
+}
 
 TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataType type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode,TR::Node *strideShiftNode, TR::Node *hdrSize);
 TR::Node *generateArrayAddressTree(TR::Compilation* comp, TR::Node *node, int32_t offHigh, TR::Node *offNode, TR::Node *objNode, int32_t elementSize, TR::Node * &stride, TR::Node *hdrSize);

@@ -32,16 +32,16 @@
 class TR_FrontEnd;
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
-class TR_VPArrayInfo;
-class TR_VPClassPresence;
-class TR_VPClassType;
-class TR_VPConstString;
-class TR_VPKnownObject;
-class TR_VPObjectLocation;
-class TR_VPPreexistentObject;
-class TR_ValuePropagation;
-class TR_VP_BCDValue;
-class TR_VP_BCDSign;
+namespace TR { class VPArrayInfo; }
+namespace TR { class VPClassPresence; }
+namespace TR { class VPClassType; }
+namespace TR { class VPConstString; }
+namespace TR { class VPKnownObject; }
+namespace TR { class VPObjectLocation; }
+namespace TR { class VPPreexistentObject; }
+namespace TR { class ValuePropagation; }
+namespace TR { class VP_BCDValue; }
+namespace TR { class VP_BCDSign; }
 
 namespace TR { class Compilation; }
 namespace TR { class Node; }
@@ -51,6 +51,8 @@ namespace TR { class SymbolReference; }
 
 #define VP_UNDEFINED_PRECISION -1
 
+namespace TR {
+
 // ***************************************************************************
 //
 // Value propagation constraints. A constraint is a property that puts some
@@ -58,74 +60,74 @@ namespace TR { class SymbolReference; }
 //
 // ***************************************************************************
 
-class TR_VPConstraint
+class VPConstraint
    {
    public:
    TR_ALLOC(TR_Memory::ValuePropagation)
 
-   TR_VPConstraint(int32_t p) : _mergePriority(p) {_unsignedType = false;}
+   VPConstraint(int32_t p) : _mergePriority(p) {_unsignedType = false;}
 
-   virtual class TR_VPShortConstraint   *asShortConstraint();
-   virtual class TR_VPShortConst        *asShortConst();
-   virtual class TR_VPShortRange        *asShortRange();
-   virtual class TR_VPIntConstraint     *asIntConstraint();
-   virtual class TR_VPIntConst          *asIntConst();
-   virtual class TR_VPIntRange          *asIntRange();
-   virtual class TR_VPLongConstraint    *asLongConstraint();
-   virtual class TR_VPLongConst         *asLongConst();
-   virtual class TR_VPLongRange         *asLongRange();
-   virtual class TR_VP_BCDValue         *asBCDValue();
-   virtual class TR_VP_BCDSign          *asBCDSign();
-   virtual class TR_VPClass             *asClass();
-   virtual class TR_VPClassType         *asClassType();
-   virtual class TR_VPResolvedClass     *asResolvedClass();
-   virtual class TR_VPFixedClass        *asFixedClass();
-   virtual class TR_VPKnownObject       *asKnownObject();
-   virtual class TR_VPConstString       *asConstString();
-   virtual class TR_VPUnresolvedClass   *asUnresolvedClass();
-     //virtual class TR_VPImplementedInterface *asImplementedInterface();
-   virtual class TR_VPClassPresence     *asClassPresence();
-   virtual class TR_VPNullObject        *asNullObject();
-   virtual class TR_VPNonNullObject     *asNonNullObject();
-   virtual class TR_VPPreexistentObject *asPreexistentObject();
-   virtual class TR_VPArrayInfo         *asArrayInfo();
-   virtual class TR_VPObjectLocation    *asObjectLocation();
-   virtual class TR_VPMergedConstraints *asMergedConstraints();
-   virtual class TR_VPMergedConstraints *asMergedShortConstraints();
-   virtual class TR_VPMergedConstraints *asMergedIntConstraints();
-   virtual class TR_VPMergedConstraints *asMergedLongConstraints();
-   virtual class TR_VPUnreachablePath   *asUnreachablePath();
-   virtual class TR_VPSync              *asVPSync();
-   virtual class TR_VPRelation          *asRelation();
-   virtual class TR_VPLessThanOrEqual   *asLessThanOrEqual();
-   virtual class TR_VPGreaterThanOrEqual*asGreaterThanOrEqual();
-   virtual class TR_VPEqual             *asEqual();
-   virtual class TR_VPNotEqual          *asNotEqual();
+   virtual class VPShortConstraint   *asShortConstraint();
+   virtual class VPShortConst        *asShortConst();
+   virtual class VPShortRange        *asShortRange();
+   virtual class VPIntConstraint     *asIntConstraint();
+   virtual class VPIntConst          *asIntConst();
+   virtual class VPIntRange          *asIntRange();
+   virtual class VPLongConstraint    *asLongConstraint();
+   virtual class VPLongConst         *asLongConst();
+   virtual class VPLongRange         *asLongRange();
+   virtual class VP_BCDValue         *asBCDValue();
+   virtual class VP_BCDSign          *asBCDSign();
+   virtual class VPClass             *asClass();
+   virtual class VPClassType         *asClassType();
+   virtual class VPResolvedClass     *asResolvedClass();
+   virtual class VPFixedClass        *asFixedClass();
+   virtual class VPKnownObject       *asKnownObject();
+   virtual class VPConstString       *asConstString();
+   virtual class VPUnresolvedClass   *asUnresolvedClass();
+     //virtual class TR::VPImplementedInterface *asImplementedInterface();
+   virtual class VPClassPresence     *asClassPresence();
+   virtual class VPNullObject        *asNullObject();
+   virtual class VPNonNullObject     *asNonNullObject();
+   virtual class VPPreexistentObject *asPreexistentObject();
+   virtual class VPArrayInfo         *asArrayInfo();
+   virtual class VPObjectLocation    *asObjectLocation();
+   virtual class VPMergedConstraints *asMergedConstraints();
+   virtual class VPMergedConstraints *asMergedShortConstraints();
+   virtual class VPMergedConstraints *asMergedIntConstraints();
+   virtual class VPMergedConstraints *asMergedLongConstraints();
+   virtual class VPUnreachablePath   *asUnreachablePath();
+   virtual class VPSync              *asVPSync();
+   virtual class VPRelation          *asRelation();
+   virtual class VPLessThanOrEqual   *asLessThanOrEqual();
+   virtual class VPGreaterThanOrEqual*asGreaterThanOrEqual();
+   virtual class VPEqual             *asEqual();
+   virtual class VPNotEqual          *asNotEqual();
 
    virtual const char *name()=0;
 
-   static TR_VPConstraint *create(TR_ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixedClass);
+   static TR::VPConstraint *create(TR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixedClass);
    static bool isSpecialClass(uintptrj_t klass);
 
 
-   TR_VPConstraint *merge(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   TR_VPConstraint *intersect(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   TR::VPConstraint *merge(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   TR::VPConstraint *intersect(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    // Arithmetic operations
    //
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *add(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *subtract(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
    virtual TR_YesNoMaybe canOverflow();
    virtual void setCanOverflow(TR_YesNoMaybe v) {}
 
    // Absolute comparisons
    //
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThan(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThanOrEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    // Relative comparisons
    //
@@ -163,13 +165,13 @@ class TR_VPConstraint
    virtual TR_OpaqueClassBlock *getClass();
    virtual bool isFixedClass();
    virtual bool isConstString();
-   virtual TR_VPClassType *getClassType();
-   virtual TR_VPClassPresence *getClassPresence();
-   virtual TR_VPPreexistentObject *getPreexistence();
-   virtual TR_VPObjectLocation *getObjectLocation();
-   virtual TR_VPConstString *getConstString();
-   virtual TR_VPKnownObject *getKnownObject();
-   virtual TR_VPArrayInfo *getArrayInfo();
+   virtual TR::VPClassType *getClassType();
+   virtual TR::VPClassPresence *getClassPresence();
+   virtual TR::VPPreexistentObject *getPreexistence();
+   virtual TR::VPObjectLocation *getObjectLocation();
+   virtual TR::VPConstString *getConstString();
+   virtual TR::VPKnownObject *getKnownObject();
+   virtual TR::VPArrayInfo *getArrayInfo();
    virtual const char *getClassSignature(int32_t &len);
 
    virtual TR_YesNoMaybe isStackObject();
@@ -235,7 +237,7 @@ class TR_VPConstraint
    void setHasArtificialIncrement() { (_mergePriority = _mergePriority | 0x80000000); }
    bool hasArtificialIncrement() { return ((_mergePriority & 0x80000000) != 0); }
 
-   void print(TR_ValuePropagation *vp);
+   void print(TR::ValuePropagation *vp);
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
 
@@ -249,16 +251,16 @@ class TR_VPConstraint
 
    class Tracer {
       public:
-      Tracer(TR_ValuePropagation *vp, TR_VPConstraint *self, TR_VPConstraint *other, const char *name);
+      Tracer(TR::ValuePropagation *vp, TR::VPConstraint *self, TR::VPConstraint *other, const char *name);
       ~Tracer();
 
-      TR_ValuePropagation *vp(){ return _vp; }
+      TR::ValuePropagation *vp(){ return _vp; }
       TR::Compilation      *comp();
 
       protected:
-      TR_ValuePropagation *_vp;
-      TR_VPConstraint     *_self;
-      TR_VPConstraint     *_other;
+      TR::ValuePropagation *_vp;
+      TR::VPConstraint     *_self;
+      TR::VPConstraint     *_other;
       const char          *_name;
    };
 
@@ -311,11 +313,11 @@ class TR_VPConstraint
 
 #define TRACER(vp, self, other) Tracer _tracer_(vp, self, other, __func__)
 
-class TR_VPShortConstraint: public TR_VPConstraint
+class VPShortConstraint: public TR::VPConstraint
    {
    public:
-   TR_VPShortConstraint(int16_t v) : TR_VPConstraint(ShortPriority) {_low=v; _overflow = TR_no;}
-   virtual TR_VPShortConstraint * asShortConstraint();
+   VPShortConstraint(int16_t v) : TR::VPConstraint(ShortPriority) {_low=v; _overflow = TR_no;}
+   virtual TR::VPShortConstraint * asShortConstraint();
 
    int16_t getShort() {return _low; }
    int16_t getLow() {return _low; }
@@ -323,15 +325,15 @@ class TR_VPShortConstraint: public TR_VPConstraint
    virtual int16_t  getLowShort();
    virtual int16_t  getHighShort();
 
-   virtual TR_VPConstraint * merge1 ( TR_VPConstraint * other, TR_ValuePropagation * vp);
-   virtual TR_VPConstraint * intersect1 (TR_VPConstraint * other, TR_ValuePropagation * vp);
+   virtual TR::VPConstraint * merge1 ( TR::VPConstraint * other, TR::ValuePropagation * vp);
+   virtual TR::VPConstraint * intersect1 (TR::VPConstraint * other, TR::ValuePropagation * vp);
 
-   virtual bool mustBeNotEqual (TR_VPConstraint * other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThan (TR_VPConstraint * other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThanOrEqual (TR_VPConstraint * other, TR_ValuePropagation *vp);
+   virtual bool mustBeNotEqual (TR::VPConstraint * other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThan (TR::VPConstraint * other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThanOrEqual (TR::VPConstraint * other, TR::ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint * other, TR::DataType type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation * vp);
+   virtual TR::VPConstraint *add(TR::VPConstraint * other, TR::DataType type, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *subtract(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation * vp);
 
    virtual TR_YesNoMaybe canOverflow() {return _overflow;}
    virtual void setCanOverflow(TR_YesNoMaybe v) {_overflow = v;}
@@ -343,20 +345,20 @@ class TR_VPShortConstraint: public TR_VPConstraint
    TR_YesNoMaybe _overflow;
 
    private:
-   TR_VPConstraint *getRange(int16_t, int16_t, bool, bool, TR_ValuePropagation * vp);
+   TR::VPConstraint *getRange(int16_t, int16_t, bool, bool, TR::ValuePropagation * vp);
    };
 
-class TR_VPShortConst : public TR_VPShortConstraint
+class VPShortConst : public TR::VPShortConstraint
    {
    public:
-   TR_VPShortConst(int16_t v) : TR_VPShortConstraint(v) {}
-   static TR_VPShortConst *create(TR_ValuePropagation *vp, int16_t v);
-   static TR_VPConstraint *createExclusion(TR_ValuePropagation *vp, int16_t v);
+   VPShortConst(int16_t v) : TR::VPShortConstraint(v) {}
+   static TR::VPShortConst *create(TR::ValuePropagation *vp, int16_t v);
+   static TR::VPConstraint *createExclusion(TR::ValuePropagation *vp, int16_t v);
    // unsigned createExclusion
-   //static TR_VPConstraint *createExclusion(TR_ValuePropagation *vp, int32_t v);
-   virtual TR_VPShortConst *asShortConst();
+   //static TR::VPConstraint *createExclusion(TR::ValuePropagation *vp, int32_t v);
+   virtual TR::VPShortConst *asShortConst();
    virtual int16_t getHigh() {return _low;}
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
@@ -364,14 +366,14 @@ class TR_VPShortConst : public TR_VPShortConstraint
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
    };
 
-class TR_VPShortRange : public TR_VPShortConstraint
+class VPShortRange : public TR::VPShortConstraint
    {
    public:
-   TR_VPShortRange(int16_t low, int16_t high) : TR_VPShortConstraint(low), _high(high) {}
-   static TR_VPShortConstraint *create(TR_ValuePropagation *vp, int16_t low, int16_t high, TR_YesNoMaybe canOverflow = TR_no);
-   static TR_VPShortConstraint *create(TR_ValuePropagation *vp);
-   static TR_VPShortConstraint *createWithPrecision(TR_ValuePropagation *vp, int32_t precision, bool isNonNegative = false);
-   virtual TR_VPShortRange *asShortRange();
+   VPShortRange(int16_t low, int16_t high) : TR::VPShortConstraint(low), _high(high) {}
+   static TR::VPShortConstraint *create(TR::ValuePropagation *vp, int16_t low, int16_t high, TR_YesNoMaybe canOverflow = TR_no);
+   static TR::VPShortConstraint *create(TR::ValuePropagation *vp);
+   static TR::VPShortConstraint *createWithPrecision(TR::ValuePropagation *vp, int32_t precision, bool isNonNegative = false);
+   virtual TR::VPShortRange *asShortRange();
    virtual int16_t getHigh() {return _high;}
 
    virtual void print(TR::Compilation *, TR::FILE *);
@@ -383,11 +385,11 @@ class TR_VPShortRange : public TR_VPShortConstraint
    int16_t _high;
    };
 
-class TR_VPIntConstraint : public TR_VPConstraint
+class VPIntConstraint : public TR::VPConstraint
    {
    public:
-   TR_VPIntConstraint(int32_t v) : TR_VPConstraint(IntPriority) {_low = v; _overflow = TR_no;}
-   virtual TR_VPIntConstraint *asIntConstraint();
+   VPIntConstraint(int32_t v) : TR::VPConstraint(IntPriority) {_low = v; _overflow = TR_no;}
+   virtual TR::VPIntConstraint *asIntConstraint();
 
    int32_t getInt() {return _low;}
    int32_t getLow() {return _low;}
@@ -395,22 +397,22 @@ class TR_VPIntConstraint : public TR_VPConstraint
    virtual int32_t getLowInt();
    virtual int32_t getHighInt();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
    // unsigned intMerge
-   //TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp, bool isUnsigned);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   //TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp, bool isUnsigned);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
    // unsigned intIntersect
-   //TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp, bool isUnsigned);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   //TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp, bool isUnsigned);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThan(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThanOrEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *add(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *subtract(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
    // unsigned add
-   //TR_VPConstraint *add(TR_VPIntConstraint *other, TR_ValuePropagation *vp, bool isUnsigned);
+   //TR::VPConstraint *add(TR::VPIntConstraint *other, TR::ValuePropagation *vp, bool isUnsigned);
    // unsigned subtract
-   //TR_VPConstraint *subtract(TR_VPIntConstraint *other, TR_ValuePropagation *vp, bool isUnsigned);
+   //TR::VPConstraint *subtract(TR::VPIntConstraint *other, TR::ValuePropagation *vp, bool isUnsigned);
 
    virtual TR_YesNoMaybe canOverflow() {return _overflow;}
    virtual void setCanOverflow(TR_YesNoMaybe v) {_overflow = v;}
@@ -422,20 +424,20 @@ class TR_VPIntConstraint : public TR_VPConstraint
    TR_YesNoMaybe _overflow;
 
    private:
-   TR_VPConstraint *getRange(int32_t, int32_t, bool, bool, TR_ValuePropagation *vp );
+   TR::VPConstraint *getRange(int32_t, int32_t, bool, bool, TR::ValuePropagation *vp );
    };
 
-class TR_VPIntConst : public TR_VPIntConstraint
+class VPIntConst : public TR::VPIntConstraint
    {
    public:
-   TR_VPIntConst(int32_t v) : TR_VPIntConstraint(v) {}
-   static TR_VPIntConst *create(TR_ValuePropagation *vp, int32_t v);
-   static TR_VPConstraint *createExclusion(TR_ValuePropagation *vp, int32_t v);
+   VPIntConst(int32_t v) : TR::VPIntConstraint(v) {}
+   static TR::VPIntConst *create(TR::ValuePropagation *vp, int32_t v);
+   static TR::VPConstraint *createExclusion(TR::ValuePropagation *vp, int32_t v);
    // unsigned createExclusion
-   //static TR_VPConstraint *createExclusion(TR_ValuePropagation *vp, int32_t v);
-   virtual TR_VPIntConst *asIntConst();
+   //static TR::VPConstraint *createExclusion(TR::ValuePropagation *vp, int32_t v);
+   virtual TR::VPIntConst *asIntConst();
    virtual int32_t getHigh() {return _low;}
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
@@ -443,15 +445,15 @@ class TR_VPIntConst : public TR_VPIntConstraint
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
    };
 
-class TR_VPIntRange : public TR_VPIntConstraint
+class VPIntRange : public TR::VPIntConstraint
    {
    public:
-   TR_VPIntRange(int32_t low, int32_t high) : TR_VPIntConstraint(low), _high(high) {}
-   //static TR_VPIntConstraint *create(TR_ValuePropagation *vp, int32_t low, int32_t high);
-   static TR_VPIntConstraint *create(TR_ValuePropagation *vp, int32_t low, int32_t high, TR_YesNoMaybe canOverflow = TR_no);
-   static TR_VPIntConstraint *create(TR_ValuePropagation *vp, TR::DataTypes dt, TR_YesNoMaybe isUnsigned); // Takes a TR::DataTypes instead of TR::DataType to work around ambiguous overloads
-   static TR_VPIntConstraint *createWithPrecision(TR_ValuePropagation *vp, TR::DataType dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative = false);
-   virtual TR_VPIntRange *asIntRange();
+   VPIntRange(int32_t low, int32_t high) : TR::VPIntConstraint(low), _high(high) {}
+   //static TR::VPIntConstraint *create(TR::ValuePropagation *vp, int32_t low, int32_t high);
+   static TR::VPIntConstraint *create(TR::ValuePropagation *vp, int32_t low, int32_t high, TR_YesNoMaybe canOverflow = TR_no);
+   static TR::VPIntConstraint *create(TR::ValuePropagation *vp, TR::DataTypes dt, TR_YesNoMaybe isUnsigned); // Takes a TR::DataTypes instead of TR::DataType to work around ambiguous overloads
+   static TR::VPIntConstraint *createWithPrecision(TR::ValuePropagation *vp, TR::DataType dt, int32_t precision, TR_YesNoMaybe isUnsigned, bool isNonNegative = false);
+   virtual TR::VPIntRange *asIntRange();
    virtual int32_t getHigh() {return _high;}
 
    virtual void print(TR::Compilation *, TR::FILE *);
@@ -463,11 +465,11 @@ class TR_VPIntRange : public TR_VPIntConstraint
    int32_t _high;
    };
 
-class TR_VPLongConstraint : public TR_VPConstraint
+class VPLongConstraint : public TR::VPConstraint
    {
    public:
-   TR_VPLongConstraint(int64_t v) : TR_VPConstraint(LongPriority) {_low = v; _overflow = TR_no;}
-   virtual TR_VPLongConstraint *asLongConstraint();
+   VPLongConstraint(int64_t v) : TR::VPConstraint(LongPriority) {_low = v; _overflow = TR_no;}
+   virtual TR::VPLongConstraint *asLongConstraint();
 
    int64_t getLong() {return _low;}
    uint64_t getUnsignedLong() {return (uint64_t)_low; }
@@ -477,14 +479,14 @@ class TR_VPLongConstraint : public TR_VPConstraint
    virtual int64_t getHighLong();
 
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThan(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThanOrEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
-   virtual TR_VPConstraint *add(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *subtract(TR_VPConstraint *other, TR::DataType type, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *add(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *subtract(TR::VPConstraint *other, TR::DataType type, TR::ValuePropagation *vp);
 
    virtual TR_YesNoMaybe canOverflow() {return _overflow;}
    virtual void setCanOverflow(TR_YesNoMaybe v) {_overflow = v;}
@@ -495,19 +497,19 @@ class TR_VPLongConstraint : public TR_VPConstraint
    int64_t _low;
    TR_YesNoMaybe _overflow;
    private:
-   TR_VPConstraint *getRange(int64_t, int64_t, bool, bool, TR_ValuePropagation *vp );
+   TR::VPConstraint *getRange(int64_t, int64_t, bool, bool, TR::ValuePropagation *vp );
 
    };
 
-class TR_VPLongConst : public TR_VPLongConstraint
+class VPLongConst : public TR::VPLongConstraint
    {
    public:
-   TR_VPLongConst(int64_t v) : TR_VPLongConstraint(v) {}
-   static TR_VPLongConst *create(TR_ValuePropagation *vp, int64_t v);
-   static TR_VPConstraint *createExclusion(TR_ValuePropagation *vp, int64_t v);
-   virtual TR_VPLongConst *asLongConst();
+   VPLongConst(int64_t v) : TR::VPLongConstraint(v) {}
+   static TR::VPLongConst *create(TR::ValuePropagation *vp, int64_t v);
+   static TR::VPConstraint *createExclusion(TR::ValuePropagation *vp, int64_t v);
+   virtual TR::VPLongConst *asLongConst();
    virtual int64_t getHigh() {return _low;}
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
@@ -515,12 +517,12 @@ class TR_VPLongConst : public TR_VPLongConstraint
    virtual int32_t getPrecision() {return getPrecisionFromValue(_low);}
    };
 
-class TR_VPLongRange : public TR_VPLongConstraint
+class VPLongRange : public TR::VPLongConstraint
    {
    public:
-   TR_VPLongRange(int64_t low, int64_t high) : TR_VPLongConstraint(low), _high(high) {}
-   static TR_VPLongConstraint *create(TR_ValuePropagation *vp, int64_t low, int64_t high, bool powerOfTwo = false, TR_YesNoMaybe canOverflow = TR_no);
-   virtual TR_VPLongRange *asLongRange();
+   VPLongRange(int64_t low, int64_t high) : TR::VPLongConstraint(low), _high(high) {}
+   static TR::VPLongConstraint *create(TR::ValuePropagation *vp, int64_t low, int64_t high, bool powerOfTwo = false, TR_YesNoMaybe canOverflow = TR_no);
+   virtual TR::VPLongRange *asLongRange();
    virtual int64_t getHigh() {return _high;}
 
    virtual void print(TR::Compilation *, TR::FILE *);
@@ -537,21 +539,21 @@ class TR_VPLongRange : public TR_VPLongConstraint
    };
 
 
-class TR_VPClass : public TR_VPConstraint
+class VPClass : public TR::VPConstraint
    {
    public:
-   TR_VPClass(TR_VPClassType *type, TR_VPClassPresence *presence, TR_VPPreexistentObject *preexistence, TR_VPArrayInfo *arrayInfo, TR_VPObjectLocation *location)
-      : TR_VPConstraint(ClassPriority), _type(type), _presence(presence),
+   VPClass(TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location)
+      : TR::VPConstraint(ClassPriority), _type(type), _presence(presence),
         _preexistence(preexistence), _arrayInfo(arrayInfo), _location(location)
       {}
-   static TR_VPConstraint *create(TR_ValuePropagation *vp, TR_VPClassType *type, TR_VPClassPresence *presence, TR_VPPreexistentObject *preexistence, TR_VPArrayInfo *arrayInfo, TR_VPObjectLocation *location);
-   virtual TR_VPClass *asClass();
+   static TR::VPConstraint *create(TR::ValuePropagation *vp, TR::VPClassType *type, TR::VPClassPresence *presence, TR::VPPreexistentObject *preexistence, TR::VPArrayInfo *arrayInfo, TR::VPObjectLocation *location);
+   virtual TR::VPClass *asClass();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   void typeIntersect(TR_VPClassPresence* &presence, TR_VPClassType* &type, TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   void typeIntersect(TR::VPClassPresence* &presence, TR::VPClassType* &type, TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool isNullObject();
    virtual bool isNonNullObject();
@@ -559,13 +561,13 @@ class TR_VPClass : public TR_VPConstraint
    virtual TR_OpaqueClassBlock *getClass();
    virtual bool isFixedClass();
    virtual bool isConstString();
-   virtual TR_VPClassType *getClassType();
-   virtual TR_VPArrayInfo *getArrayInfo();
-   virtual TR_VPClassPresence *getClassPresence();
-   virtual TR_VPPreexistentObject *getPreexistence();
-   virtual TR_VPObjectLocation *getObjectLocation();
-   virtual TR_VPConstString *getConstString();
-   virtual TR_VPKnownObject *getKnownObject();
+   virtual TR::VPClassType *getClassType();
+   virtual TR::VPArrayInfo *getArrayInfo();
+   virtual TR::VPClassPresence *getClassPresence();
+   virtual TR::VPPreexistentObject *getPreexistence();
+   virtual TR::VPObjectLocation *getObjectLocation();
+   virtual TR::VPConstString *getConstString();
+   virtual TR::VPKnownObject *getKnownObject();
 
    virtual TR_YesNoMaybe isStackObject();
    virtual TR_YesNoMaybe isHeapObject();
@@ -579,29 +581,29 @@ class TR_VPClass : public TR_VPConstraint
    virtual const char *name();
 
    private:
-   TR_VPClassType         *_type;  // Conditional on presence.  "If the reference is non-null, it has this type info"
-   TR_VPClassPresence     *_presence;
-   TR_VPPreexistentObject *_preexistence;
-   TR_VPArrayInfo         *_arrayInfo;
-   TR_VPObjectLocation    *_location;
+   TR::VPClassType         *_type;  // Conditional on presence.  "If the reference is non-null, it has this type info"
+   TR::VPClassPresence     *_presence;
+   TR::VPPreexistentObject *_preexistence;
+   TR::VPArrayInfo         *_arrayInfo;
+   TR::VPObjectLocation    *_location;
    };
 
-class TR_VPClassType : public TR_VPConstraint
+class VPClassType : public TR::VPConstraint
    {
    public:
-   TR_VPClassType(int32_t p) : TR_VPConstraint(p) {}
-   static TR_VPClassType *create(TR_ValuePropagation *vp, TR::SymbolReference *symRef, bool isFixedClass, bool isPointerToClass = false);
-   static TR_VPClassType *create(TR_ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixed, TR_OpaqueClassBlock *j9class = 0);
-   virtual TR_VPClassType *asClassType();
+   VPClassType(int32_t p) : TR::VPConstraint(p) {}
+   static TR::VPClassType *create(TR::ValuePropagation *vp, TR::SymbolReference *symRef, bool isFixedClass, bool isPointerToClass = false);
+   static TR::VPClassType *create(TR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method, bool isFixed, TR_OpaqueClassBlock *j9class = 0);
+   virtual TR::VPClassType *asClassType();
 
    virtual const char *getClassSignature(int32_t &len) = 0;
-   virtual TR_VPClassType *getClassType();
-   virtual TR_VPClassType *getArrayClass(TR_ValuePropagation *vp) = 0;
+   virtual TR::VPClassType *getClassType();
+   virtual TR::VPClassType *getArrayClass(TR::ValuePropagation *vp) = 0;
 
    virtual bool isReferenceArray(TR::Compilation *) = 0;
    virtual bool isPrimitiveArray(TR::Compilation *) = 0;
 
-   virtual bool isJavaLangObject(TR_ValuePropagation *vp) {return (_len == 18 && !strncmp(_sig, "Ljava/lang/Object;", 18));}
+   virtual bool isJavaLangObject(TR::ValuePropagation *vp) {return (_len == 18 && !strncmp(_sig, "Ljava/lang/Object;", 18));}
 
    virtual bool isCloneableOrSerializable();
 
@@ -613,32 +615,32 @@ class TR_VPClassType : public TR_VPConstraint
    virtual TR_YesNoMaybe isJ9ClassObject();
    virtual TR_YesNoMaybe isArray();
 
-   TR_VPClassType *classTypesCompatible(TR_VPClassType * otherType, TR_ValuePropagation *vp);
+   TR::VPClassType *classTypesCompatible(TR::VPClassType * otherType, TR::ValuePropagation *vp);
 
    protected:
    const char *_sig;
    int32_t _len;
    };
 
-class TR_VPResolvedClass : public TR_VPClassType
+class VPResolvedClass : public TR::VPClassType
    {
    public:
-   TR_VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *);
-   TR_VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *, int32_t p);
-   static TR_VPResolvedClass *create(TR_ValuePropagation *vp, TR_OpaqueClassBlock *klass);
-   virtual TR_VPResolvedClass *asResolvedClass();
+   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *);
+   VPResolvedClass(TR_OpaqueClassBlock *klass, TR::Compilation *, int32_t p);
+   static TR::VPResolvedClass *create(TR::ValuePropagation *vp, TR_OpaqueClassBlock *klass);
+   virtual TR::VPResolvedClass *asResolvedClass();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual const char *getClassSignature(int32_t &len);
 
    virtual TR_OpaqueClassBlock *getClass();
-   virtual TR_VPClassType *getArrayClass(TR_ValuePropagation *vp);
+   virtual TR::VPClassType *getArrayClass(TR::ValuePropagation *vp);
 
    virtual bool isReferenceArray(TR::Compilation *);
    virtual bool isPrimitiveArray(TR::Compilation *);
-   bool isJavaLangObject(TR_ValuePropagation *vp);
+   bool isJavaLangObject(TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
@@ -647,18 +649,18 @@ class TR_VPResolvedClass : public TR_VPClassType
    TR_OpaqueClassBlock *_class;
    };
 
-class TR_VPFixedClass : public TR_VPResolvedClass
+class VPFixedClass : public TR::VPResolvedClass
    {
    public:
-   TR_VPFixedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p = FixedClassPriority) : TR_VPResolvedClass(klass, comp, p) {}
-   static TR_VPFixedClass *create(TR_ValuePropagation *vp, TR_OpaqueClassBlock *klass);
-   virtual TR_VPFixedClass *asFixedClass();
+   VPFixedClass(TR_OpaqueClassBlock *klass, TR::Compilation * comp, int32_t p = FixedClassPriority) : TR::VPResolvedClass(klass, comp, p) {}
+   static TR::VPFixedClass *create(TR::ValuePropagation *vp, TR_OpaqueClassBlock *klass);
+   virtual TR::VPFixedClass *asFixedClass();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool isFixedClass();
-   virtual TR_VPClassType *getArrayClass(TR_ValuePropagation *vp);
+   virtual TR::VPClassType *getArrayClass(TR::ValuePropagation *vp);
 
    virtual TR_YesNoMaybe isArray();
 
@@ -668,22 +670,22 @@ class TR_VPFixedClass : public TR_VPResolvedClass
    virtual const char *name();
    };
 
-class TR_VPConstString : public TR_VPFixedClass
+class VPConstString : public TR::VPFixedClass
    {
    protected:
-   TR_VPConstString(TR_OpaqueClassBlock *klass, TR::Compilation * comp, TR::SymbolReference *symRef)
-      : TR_VPFixedClass(klass, comp, ConstStringPriority), _symRef(symRef) {}
+   VPConstString(TR_OpaqueClassBlock *klass, TR::Compilation * comp, TR::SymbolReference *symRef)
+      : TR::VPFixedClass(klass, comp, ConstStringPriority), _symRef(symRef) {}
    public:
-   static TR_VPConstString *create(TR_ValuePropagation *vp, TR::SymbolReference *symRef);
-   virtual TR_VPConstString *asConstString();
-   virtual TR_VPConstString *getConstString(){ return this; }
+   static TR::VPConstString *create(TR::ValuePropagation *vp, TR::SymbolReference *symRef);
+   virtual TR::VPConstString *asConstString();
+   virtual TR::VPConstString *getConstString(){ return this; }
    virtual bool isConstString();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    uint16_t  charAt(int32_t index, TR::Compilation *);
    bool      getFieldByName(TR::SymbolReference *fieldRef, void* &result, TR::Compilation *);
@@ -698,19 +700,19 @@ class TR_VPConstString : public TR_VPFixedClass
    TR::SymbolReference *_symRef;
    };
 
-class TR_VPUnresolvedClass : public TR_VPClassType
+class VPUnresolvedClass : public TR::VPClassType
    {
    public:
-   TR_VPUnresolvedClass(const char *sig, int32_t len, TR_ResolvedMethod *method)
-      : TR_VPClassType(UnresolvedClassPriority), _method(method)
+   VPUnresolvedClass(const char *sig, int32_t len, TR_ResolvedMethod *method)
+      : TR::VPClassType(UnresolvedClassPriority), _method(method)
       {_sig = sig; _len = len; _definiteType = false;}
-   static TR_VPUnresolvedClass *create(TR_ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method);
-   virtual TR_VPUnresolvedClass *asUnresolvedClass();
+   static TR::VPUnresolvedClass *create(TR::ValuePropagation *vp, const char *sig, int32_t len, TR_ResolvedMethod *method);
+   virtual TR::VPUnresolvedClass *asUnresolvedClass();
 
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual const char *getClassSignature(int32_t &len);
-   virtual TR_VPClassType *getArrayClass(TR_ValuePropagation *vp);
+   virtual TR::VPClassType *getArrayClass(TR::ValuePropagation *vp);
 
    TR_ResolvedMethod *getOwningMethod() { return _method; }
 
@@ -730,23 +732,23 @@ class TR_VPUnresolvedClass : public TR_VPClassType
    bool _definiteType;
    };
 
-class TR_VPClassPresence : public TR_VPConstraint
+class VPClassPresence : public TR::VPConstraint
    {
    public:
-   TR_VPClassPresence() : TR_VPConstraint(ClassPresencePriority) {}
-   virtual TR_VPClassPresence *asClassPresence();
-   virtual TR_VPClassPresence *getClassPresence();
+   VPClassPresence() : TR::VPConstraint(ClassPresencePriority) {}
+   virtual TR::VPClassPresence *asClassPresence();
+   virtual TR::VPClassPresence *getClassPresence();
    };
 
-class TR_VPNullObject : public TR_VPClassPresence
+class VPNullObject : public TR::VPClassPresence
    {
    public:
-   static TR_VPNullObject *create(TR_ValuePropagation *vp);
-   virtual TR_VPNullObject *asNullObject();
+   static TR::VPNullObject *create(TR::ValuePropagation *vp);
+   virtual TR::VPNullObject *asNullObject();
 
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool isNullObject();
 
@@ -754,14 +756,14 @@ class TR_VPNullObject : public TR_VPClassPresence
    virtual const char *name();
    };
 
-class TR_VPNonNullObject : public TR_VPClassPresence
+class VPNonNullObject : public TR::VPClassPresence
    {
    public:
-   static TR_VPNonNullObject *create(TR_ValuePropagation *vp);
-   virtual TR_VPNonNullObject *asNonNullObject();
+   static TR::VPNonNullObject *create(TR::ValuePropagation *vp);
+   virtual TR::VPNonNullObject *asNonNullObject();
 
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool isNonNullObject();
 
@@ -769,18 +771,18 @@ class TR_VPNonNullObject : public TR_VPClassPresence
    virtual const char *name();
    };
 
-class TR_VPPreexistentObject : public TR_VPConstraint
+class VPPreexistentObject : public TR::VPConstraint
    {
    public:
-   TR_VPPreexistentObject(TR_OpaqueClassBlock *c = NULL) : TR_VPConstraint(ClassPreexistencePriority) { _assumptionClass = c;}
-   static TR_VPPreexistentObject *create(TR_ValuePropagation *vp, TR_OpaqueClassBlock *c = NULL);
-   virtual TR_VPPreexistentObject *asPreexistentObject();
+   VPPreexistentObject(TR_OpaqueClassBlock *c = NULL) : TR::VPConstraint(ClassPreexistencePriority) { _assumptionClass = c;}
+   static TR::VPPreexistentObject *create(TR::ValuePropagation *vp, TR_OpaqueClassBlock *c = NULL);
+   virtual TR::VPPreexistentObject *asPreexistentObject();
 
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool isPreexistentObject();
 
-   virtual TR_VPPreexistentObject *getPreexistence();
+   virtual TR::VPPreexistentObject *getPreexistence();
 
    TR_OpaqueClassBlock *getAssumptionClass() { return _assumptionClass; }
 
@@ -790,19 +792,19 @@ class TR_VPPreexistentObject : public TR_VPConstraint
    TR_OpaqueClassBlock *_assumptionClass;
    };
 
-class TR_VPArrayInfo : public TR_VPConstraint
+class VPArrayInfo : public TR::VPConstraint
    {
    public:
-   TR_VPArrayInfo(int32_t lowBound, int32_t highBound, int32_t elementSize)
-      : TR_VPConstraint(ArrayInfoPriority), _lowBound(lowBound), _highBound(highBound), _elementSize(elementSize)
+   VPArrayInfo(int32_t lowBound, int32_t highBound, int32_t elementSize)
+      : TR::VPConstraint(ArrayInfoPriority), _lowBound(lowBound), _highBound(highBound), _elementSize(elementSize)
       {}
-   static TR_VPArrayInfo *create(TR_ValuePropagation *vp, int32_t lowBound, int32_t highBound, int32_t elementSize);
-   static TR_VPArrayInfo *create(TR_ValuePropagation *vp, char *sig);
-   virtual TR_VPArrayInfo *asArrayInfo();
+   static TR::VPArrayInfo *create(TR::ValuePropagation *vp, int32_t lowBound, int32_t highBound, int32_t elementSize);
+   static TR::VPArrayInfo *create(TR::ValuePropagation *vp, char *sig);
+   virtual TR::VPArrayInfo *asArrayInfo();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPArrayInfo *getArrayInfo();
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPArrayInfo *getArrayInfo();
 
    int32_t lowBound()  {return _lowBound;}
    int32_t highBound() {return _highBound;}
@@ -820,7 +822,7 @@ class TR_VPArrayInfo : public TR_VPConstraint
 /** Constrains the referent (if any) of an address to a set of "locations".
  *
  * The atomic locations are HeapObject, StackObject, JavaLangClassObject, and
- * J9ClassObject. The sets named in TR_VPObjectLocationKind fall into the
+ * J9ClassObject. The sets named in VPObjectLocationKind fall into the
  * following lattice structure.
  *
  * \verbatim
@@ -845,7 +847,7 @@ class TR_VPArrayInfo : public TR_VPConstraint
                                |
                             bottom
                    (either intersection failure
-                    or     TR_VPUnreachablePath)
+                    or     TR::VPUnreachablePath)
    \endverbatim
  *
  * Note that top and bottom are not represented by instances of this class.
@@ -853,18 +855,18 @@ class TR_VPArrayInfo : public TR_VPConstraint
  * In general we could have other arbitrary sets of the primitive locations,
  * e.g. {StackObject, J9ClassObject}, but currently nothing should create them.
  *
- * \par Warning: interaction with TR_VPClassType
+ * \par Warning: interaction with TR::VPClassType
  *
  * A location constraint that requires the referent to be a representation of a
  * class (i.e. JavaLangClassObject, J9ClassObject, or ClassObject) alters the
- * interpretation of any TR_VPClassType constraint beside it in an enclosing
- * TR_VPClass. In this case the TR_VPClassType constrains the \em represented
+ * interpretation of any TR::VPClassType constraint beside it in an enclosing
+ * TR::VPClass. In this case the TR::VPClassType constrains the \em represented
  * class. rather than the class of which the referent is an instance.
  */
-class TR_VPObjectLocation : public TR_VPConstraint
+class VPObjectLocation : public TR::VPConstraint
    {
    public:
-   enum TR_VPObjectLocationKind
+   enum VPObjectLocationKind
       {
       HeapObject          = 1 << 0,
       StackObject         = 1 << 1,
@@ -876,12 +878,12 @@ class TR_VPObjectLocation : public TR_VPConstraint
       NotClassObject      = HeapObject | StackObject,
       };
 
-   static  TR_VPObjectLocation *create(TR_ValuePropagation *vp, TR_VPObjectLocationKind kind);
+   static  TR::VPObjectLocation *create(TR::ValuePropagation *vp, VPObjectLocationKind kind);
 
-   virtual TR_VPObjectLocation *asObjectLocation();
-   virtual TR_VPObjectLocation *getObjectLocation();
-   virtual TR_VPConstraint     *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint     *merge1    (TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPObjectLocation *asObjectLocation();
+   virtual TR::VPObjectLocation *getObjectLocation();
+   virtual TR::VPConstraint     *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint     *merge1    (TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual TR_YesNoMaybe isStackObject();
    virtual TR_YesNoMaybe isHeapObject();
@@ -893,22 +895,22 @@ class TR_VPObjectLocation : public TR_VPConstraint
    virtual const char *name();
 
    private:
-   TR_VPObjectLocation(TR_VPObjectLocationKind kind) : TR_VPConstraint(ObjectLocationPriority), _kind(kind) {}
+   VPObjectLocation(VPObjectLocationKind kind) : TR::VPConstraint(ObjectLocationPriority), _kind(kind) {}
 
-   TR_YesNoMaybe isWithin(TR_VPObjectLocationKind area);
-   static bool isKindSubset(TR_VPObjectLocationKind x, TR_VPObjectLocationKind y)
+   TR_YesNoMaybe isWithin(VPObjectLocationKind area);
+   static bool isKindSubset(VPObjectLocationKind x, VPObjectLocationKind y)
       {
       return (x & ~y) == 0;
       }
 
-   TR_VPObjectLocationKind _kind;
+   VPObjectLocationKind _kind;
    };
 
-class TR_VPKnownObject : public TR_VPFixedClass
+class VPKnownObject : public TR::VPFixedClass
    {
-   // IMPORTANT NOTE: Just like with class constraints, TR_VPKnownObject tells
+   // IMPORTANT NOTE: Just like with class constraints, TR::VPKnownObject tells
    // you "if this reference is non-null, it points at object X".  Consumers of
-   // TR_VPKnownObject must bear in mind that NULL is always a possibility.
+   // TR::VPKnownObject must bear in mind that NULL is always a possibility.
    //
    // This kind of conditional constraint is subtle, but we do it this way
    // because it allows us to achieve better optimization.  Usages of
@@ -917,7 +919,7 @@ class TR_VPKnownObject : public TR_VPFixedClass
    // non-nullness allow us to retain information that would be lost if the
    // constraints were required to be unconditional.
    //
-   // We practically always have a TR_VPClass constraint that contains both
+   // We practically always have a TR::VPClass constraint that contains both
    // Known Object and isNonNullObject info, and together, these tell us
    // reliably that a given reference definitely points at a particular object.
    //
@@ -925,37 +927,37 @@ class TR_VPKnownObject : public TR_VPFixedClass
    // allows us to preserve information across control merges that would
    // otherwise be lost.)
 
-   typedef TR_VPFixedClass Super;
+   typedef TR::VPFixedClass Super;
 
    protected:
-   TR_VPKnownObject(TR_OpaqueClassBlock *klass, TR::Compilation * comp, TR::KnownObjectTable::Index index, bool isJavaLangClass)
-      : TR_VPFixedClass(klass, comp, KnownObjectPriority), _index(index), _isJavaLangClass(isJavaLangClass) {}
+   VPKnownObject(TR_OpaqueClassBlock *klass, TR::Compilation * comp, TR::KnownObjectTable::Index index, bool isJavaLangClass)
+      : TR::VPFixedClass(klass, comp, KnownObjectPriority), _index(index), _isJavaLangClass(isJavaLangClass) {}
 
-   static TR_VPKnownObject *create(TR_ValuePropagation *vp, TR::KnownObjectTable::Index index, bool isJavaLangClass);
+   static TR::VPKnownObject *create(TR::ValuePropagation *vp, TR::KnownObjectTable::Index index, bool isJavaLangClass);
 
    public:
-   static TR_VPKnownObject *create(TR_ValuePropagation *vp, TR::KnownObjectTable::Index index)
+   static TR::VPKnownObject *create(TR::ValuePropagation *vp, TR::KnownObjectTable::Index index)
       {
       return create(vp, index, false);
       }
 
-   static TR_VPKnownObject *createForJavaLangClass(TR_ValuePropagation *vp, TR::KnownObjectTable::Index index)
+   static TR::VPKnownObject *createForJavaLangClass(TR::ValuePropagation *vp, TR::KnownObjectTable::Index index)
       {
       return create(vp, index, true);
       }
 
-   virtual TR_VPKnownObject *asKnownObject();
-   virtual TR_VPKnownObject *getKnownObject(){ return this; }
+   virtual TR::VPKnownObject *asKnownObject();
+   virtual TR::VPKnownObject *getKnownObject(){ return this; }
 
    TR::KnownObjectTable::Index getIndex(){ return _index; }
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual TR_YesNoMaybe isJavaLangClassObject();
 
-   virtual bool mustBeEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual bool mustBeEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool hasMoreThanFixedClassInfo(){ return true; }
 
@@ -969,20 +971,20 @@ class TR_VPKnownObject : public TR_VPFixedClass
 
 
 /*
-class TR_VPImplementedInterface : public TR_VPConstraint
+class VPImplementedInterface : public TR::VPConstraint
    {
    public:
 
-   static  TR_VPImplementedInterface *create(TR_ValuePropagation *vp, char *sig, int32_t len, TR_ResolvedMethod *method);
+   static  TR::VPImplementedInterface *create(TR::ValuePropagation *vp, char *sig, int32_t len, TR_ResolvedMethod *method);
 
-   TR_VPImplementedInterface(char *sig, int32_t len, TR_ResolvedMethod *method)
+   VPImplementedInterface(char *sig, int32_t len, TR_ResolvedMethod *method)
       : _method(method)
       {_sig = sig; _len = len;}
 
-   virtual TR_VPImplementedInterface *asImplementedInterface();
+   virtual TR::VPImplementedInterface *asImplementedInterface();
 
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *merge1    (TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1    (TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual char *getInterfaceSignature(int32_t &len);
 
@@ -1001,28 +1003,28 @@ class TR_VPImplementedInterface : public TR_VPConstraint
 
 
 
-class TR_VPMergedConstraints : public TR_VPConstraint
+class VPMergedConstraints : public TR::VPConstraint
    {
    public:
-   TR_VPMergedConstraints(ListElement<TR_VPConstraint> *first, TR_Memory * m)
-      : TR_VPConstraint(MergedConstraintPriority),
+   VPMergedConstraints(ListElement<TR::VPConstraint> *first, TR_Memory * m)
+      : TR::VPConstraint(MergedConstraintPriority),
         _type((first && first->getData()->asShortConstraint() ? TR::Int16 : ((first && first->getData()->asLongConstraint()) ? TR::Int64 : TR::Int32))),
         _constraints(m)
       {
           _constraints.setListHead(first);
       }
-   static TR_VPMergedConstraints *create(TR_ValuePropagation *vp, TR_VPConstraint *first, TR_VPConstraint *second);
-   static TR_VPMergedConstraints *create(TR_ValuePropagation *vp, ListElement<TR_VPConstraint> *list);
-   virtual TR_VPMergedConstraints *asMergedConstraints();
-   virtual TR_VPMergedConstraints *asMergedShortConstraints();
-   virtual TR_VPMergedConstraints *asMergedIntConstraints();
-   virtual TR_VPMergedConstraints *asMergedLongConstraints();
+   static TR::VPMergedConstraints *create(TR::ValuePropagation *vp, TR::VPConstraint *first, TR::VPConstraint *second);
+   static TR::VPMergedConstraints *create(TR::ValuePropagation *vp, ListElement<TR::VPConstraint> *list);
+   virtual TR::VPMergedConstraints *asMergedConstraints();
+   virtual TR::VPMergedConstraints *asMergedShortConstraints();
+   virtual TR::VPMergedConstraints *asMergedIntConstraints();
+   virtual TR::VPMergedConstraints *asMergedLongConstraints();
 
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeNotEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThan(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual bool mustBeLessThanOrEqual(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeNotEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThan(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual bool mustBeLessThanOrEqual(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual int16_t getLowShort();
    virtual int16_t getHighShort();
@@ -1039,50 +1041,50 @@ class TR_VPMergedConstraints : public TR_VPConstraint
    virtual uint64_t getUnsignedHighLong();
 
 
-   TR_ScratchList<TR_VPConstraint> *getList() {return &_constraints;}
+   TR_ScratchList<TR::VPConstraint> *getList() {return &_constraints;}
    TR::DataType                     getType() {return _type;}
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
 
    private:
-   TR_VPConstraint *shortMerge(TR_VPConstraint * otherCur, ListElement<TR_VPConstraint> * otherNext, TR_ValuePropagation * vp);
-   TR_VPConstraint *shortIntersect(TR_VPConstraint *otherCur, ListElement<TR_VPConstraint> * otherNext, TR_ValuePropagation * vp);
+   TR::VPConstraint *shortMerge(TR::VPConstraint * otherCur, ListElement<TR::VPConstraint> * otherNext, TR::ValuePropagation * vp);
+   TR::VPConstraint *shortIntersect(TR::VPConstraint *otherCur, ListElement<TR::VPConstraint> * otherNext, TR::ValuePropagation * vp);
 
    // unsigned intMerge
-   //   TR_VPConstraint *intMerge(TR_VPIntConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp, bool isUnsigned);
-   TR_VPConstraint *intMerge(TR_VPConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp);
-   TR_VPConstraint *intIntersect(TR_VPConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp);
+   //   TR::VPConstraint *intMerge(TR::VPIntConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp, bool isUnsigned);
+   TR::VPConstraint *intMerge(TR::VPConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp);
+   TR::VPConstraint *intIntersect(TR::VPConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp);
 
    // unsigned intIntersect
-   //TR_VPConstraint *intIntersect(TR_VPIntConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp, bool isUnsigned);
-   TR_VPConstraint *longMerge(TR_VPConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp);
-   TR_VPConstraint *longIntersect(TR_VPConstraint *otherCur, ListElement<TR_VPConstraint> *otherNext, TR_ValuePropagation *vp);
+   //TR::VPConstraint *intIntersect(TR::VPIntConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp, bool isUnsigned);
+   TR::VPConstraint *longMerge(TR::VPConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp);
+   TR::VPConstraint *longIntersect(TR::VPConstraint *otherCur, ListElement<TR::VPConstraint> *otherNext, TR::ValuePropagation *vp);
 
-   TR_ScratchList<TR_VPConstraint> _constraints;
+   TR_ScratchList<TR::VPConstraint> _constraints;
    TR::DataType                    _type;
    };
 
-class TR_VPUnreachablePath : public TR_VPConstraint
+class VPUnreachablePath : public TR::VPConstraint
    {
    public:
-   TR_VPUnreachablePath() : TR_VPConstraint(0) {}
-   static TR_VPUnreachablePath *create(TR_ValuePropagation *vp);
-   virtual TR_VPUnreachablePath *asUnreachablePath();
+   VPUnreachablePath() : TR::VPConstraint(0) {}
+   static TR::VPUnreachablePath *create(TR::ValuePropagation *vp);
+   virtual TR::VPUnreachablePath *asUnreachablePath();
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual const char *name();
    };
 
 // breaks handcuff rule
-class TR_VPSync : public TR_VPConstraint
+class VPSync : public TR::VPConstraint
    {
    public:
-   TR_VPSync(TR_YesNoMaybe v) : TR_VPConstraint(0), _syncEmitted(v) {}
-   static TR_VPSync *create(TR_ValuePropagation *vp, TR_YesNoMaybe v);
-   virtual TR_VPSync *asVPSync();
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   VPSync(TR_YesNoMaybe v) : TR::VPConstraint(0), _syncEmitted(v) {}
+   static TR::VPSync *create(TR::ValuePropagation *vp, TR_YesNoMaybe v);
+   virtual TR::VPSync *asVPSync();
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
    TR_YesNoMaybe syncEmitted() { return _syncEmitted; }
    ////void setSyncEmitted(TR_YesNoMaybe v) { _syncEmitted = v; }
 
@@ -1094,106 +1096,106 @@ class TR_VPSync : public TR_VPConstraint
    TR_YesNoMaybe _syncEmitted;
    };
 
-class TR_VPRelation : public TR_VPConstraint
+class VPRelation : public TR::VPConstraint
    {
    public:
 
-   TR_VPRelation(int32_t incr, int32_t p)
-      : TR_VPConstraint(p), _increment(incr)
+   VPRelation(int32_t incr, int32_t p)
+      : TR::VPConstraint(p), _increment(incr)
       {}
-   virtual TR_VPRelation *asRelation();
+   virtual TR::VPRelation *asRelation();
    int32_t      increment() {return _increment;}
 
-   virtual TR_VPConstraint *propagateAbsoluteConstraint(
-                               TR_VPConstraint *constraint,
+   virtual TR::VPConstraint *propagateAbsoluteConstraint(
+                               TR::VPConstraint *constraint,
                                int32_t relative,
-                               TR_ValuePropagation *vp);
-   virtual TR_VPConstraint*propagateRelativeConstraint(
-                               TR_VPRelation *other,
+                               TR::ValuePropagation *vp);
+   virtual TR::VPConstraint*propagateRelativeConstraint(
+                               TR::VPRelation *other,
                                int32_t relative, int32_t otherRelative,
-                               TR_ValuePropagation *vp) = 0;
+                               TR::ValuePropagation *vp) = 0;
 
-   virtual TR_VPRelation *getComplement(TR_ValuePropagation *vp) = 0;
+   virtual TR::VPRelation *getComplement(TR::ValuePropagation *vp) = 0;
 
    protected:
    int32_t      _increment;
    };
 
-class TR_VPLessThanOrEqual : public TR_VPRelation
+class VPLessThanOrEqual : public TR::VPRelation
    {
    public:
 
-   TR_VPLessThanOrEqual(int32_t incr)
-      : TR_VPRelation(incr, LessThanOrEqualPriority)
+   VPLessThanOrEqual(int32_t incr)
+      : TR::VPRelation(incr, LessThanOrEqualPriority)
       {}
-   virtual TR_VPLessThanOrEqual *asLessThanOrEqual();
-   static TR_VPLessThanOrEqual *create(TR_ValuePropagation *vp, int32_t incr);
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPLessThanOrEqual *asLessThanOrEqual();
+   static TR::VPLessThanOrEqual *create(TR::ValuePropagation *vp, int32_t incr);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool mustBeNotEqual();
    virtual bool mustBeLessThan();
    virtual bool mustBeLessThanOrEqual();
 
-   virtual TR_VPConstraint *propagateAbsoluteConstraint(
-                               TR_VPConstraint *constraint,
+   virtual TR::VPConstraint *propagateAbsoluteConstraint(
+                               TR::VPConstraint *constraint,
                                int32_t relative,
-                               TR_ValuePropagation *vp);
-   virtual TR_VPConstraint*propagateRelativeConstraint(
-                               TR_VPRelation *other,
+                               TR::ValuePropagation *vp);
+   virtual TR::VPConstraint*propagateRelativeConstraint(
+                               TR::VPRelation *other,
                                int32_t relative, int32_t otherRelative,
-                               TR_ValuePropagation *vp);
+                               TR::ValuePropagation *vp);
 
-   virtual TR_VPRelation *getComplement(TR_ValuePropagation *vp);
+   virtual TR::VPRelation *getComplement(TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
    virtual const char *name();
    };
 
-class TR_VPGreaterThanOrEqual : public TR_VPRelation
+class VPGreaterThanOrEqual : public TR::VPRelation
    {
    public:
 
-   TR_VPGreaterThanOrEqual(int32_t incr)
-      : TR_VPRelation(incr, GreaterThanOrEqualPriority)
+   VPGreaterThanOrEqual(int32_t incr)
+      : TR::VPRelation(incr, GreaterThanOrEqualPriority)
       {}
-   virtual TR_VPGreaterThanOrEqual *asGreaterThanOrEqual();
-   static TR_VPGreaterThanOrEqual *create(TR_ValuePropagation *vp, int32_t incr);
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPGreaterThanOrEqual *asGreaterThanOrEqual();
+   static TR::VPGreaterThanOrEqual *create(TR::ValuePropagation *vp, int32_t incr);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool mustBeNotEqual();
    virtual bool mustBeGreaterThan();
    virtual bool mustBeGreaterThanOrEqual();
 
-   virtual TR_VPConstraint *propagateAbsoluteConstraint(
-                               TR_VPConstraint *constraint,
+   virtual TR::VPConstraint *propagateAbsoluteConstraint(
+                               TR::VPConstraint *constraint,
                                int32_t relative,
-                               TR_ValuePropagation *vp);
-   virtual TR_VPConstraint*propagateRelativeConstraint(
-                               TR_VPRelation *other,
+                               TR::ValuePropagation *vp);
+   virtual TR::VPConstraint*propagateRelativeConstraint(
+                               TR::VPRelation *other,
                                int32_t relative, int32_t otherRelative,
-                               TR_ValuePropagation *vp);
+                               TR::ValuePropagation *vp);
 
-   virtual TR_VPRelation *getComplement(TR_ValuePropagation *vp);
+   virtual TR::VPRelation *getComplement(TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
    virtual const char *name();
    };
 
-class TR_VPEqual : public TR_VPRelation
+class VPEqual : public TR::VPRelation
    {
    public:
 
-   TR_VPEqual(int32_t incr)
-      : TR_VPRelation(incr, EqualPriority)
+   VPEqual(int32_t incr)
+      : TR::VPRelation(incr, EqualPriority)
       {}
-   virtual TR_VPEqual *asEqual();
-   static TR_VPEqual *create(TR_ValuePropagation *vp, int32_t incr);
-   virtual TR_VPConstraint *merge1(TR_VPConstraint *other, TR_ValuePropagation *vp);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPEqual *asEqual();
+   static TR::VPEqual *create(TR::ValuePropagation *vp, int32_t incr);
+   virtual TR::VPConstraint *merge1(TR::VPConstraint *other, TR::ValuePropagation *vp);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool mustBeEqual();
    virtual bool mustBeNotEqual();
@@ -1202,49 +1204,51 @@ class TR_VPEqual : public TR_VPRelation
    virtual bool mustBeGreaterThan();
    virtual bool mustBeGreaterThanOrEqual();
 
-   virtual TR_VPConstraint *propagateAbsoluteConstraint(
-                               TR_VPConstraint *constraint,
+   virtual TR::VPConstraint *propagateAbsoluteConstraint(
+                               TR::VPConstraint *constraint,
                                int32_t relative,
-                               TR_ValuePropagation *vp);
-   virtual TR_VPConstraint*propagateRelativeConstraint(
-                               TR_VPRelation *other,
+                               TR::ValuePropagation *vp);
+   virtual TR::VPConstraint*propagateRelativeConstraint(
+                               TR::VPRelation *other,
                                int32_t relative, int32_t otherRelative,
-                               TR_ValuePropagation *vp);
+                               TR::ValuePropagation *vp);
 
-   virtual TR_VPRelation *getComplement(TR_ValuePropagation *vp);
+   virtual TR::VPRelation *getComplement(TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
    virtual const char *name();
    };
 
-class TR_VPNotEqual : public TR_VPRelation
+class VPNotEqual : public TR::VPRelation
    {
    public:
 
-   TR_VPNotEqual(int32_t incr)
-      : TR_VPRelation(incr, NotEqualPriority)
+   VPNotEqual(int32_t incr)
+      : TR::VPRelation(incr, NotEqualPriority)
       {}
-   virtual TR_VPNotEqual *asNotEqual();
-   static TR_VPNotEqual *create(TR_ValuePropagation *vp, int32_t incr);
-   virtual TR_VPConstraint *intersect1(TR_VPConstraint *other, TR_ValuePropagation *vp);
+   virtual TR::VPNotEqual *asNotEqual();
+   static TR::VPNotEqual *create(TR::ValuePropagation *vp, int32_t incr);
+   virtual TR::VPConstraint *intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp);
 
    virtual bool mustBeNotEqual();
 
-   virtual TR_VPConstraint *propagateAbsoluteConstraint(
-                               TR_VPConstraint *constraint,
+   virtual TR::VPConstraint *propagateAbsoluteConstraint(
+                               TR::VPConstraint *constraint,
                                int32_t relative,
-                               TR_ValuePropagation *vp);
-   virtual TR_VPConstraint*propagateRelativeConstraint(
-                               TR_VPRelation *other,
+                               TR::ValuePropagation *vp);
+   virtual TR::VPConstraint*propagateRelativeConstraint(
+                               TR::VPRelation *other,
                                int32_t relative, int32_t otherRelative,
-                               TR_ValuePropagation *vp);
+                               TR::ValuePropagation *vp);
 
-   virtual TR_VPRelation *getComplement(TR_ValuePropagation *vp);
+   virtual TR::VPRelation *getComplement(TR::ValuePropagation *vp);
 
    virtual void print(TR::Compilation *, TR::FILE *);
    virtual void print(TR::Compilation *, TR::FILE *, int32_t relative);
    virtual const char *name();
    };
+
+}
 
 #endif

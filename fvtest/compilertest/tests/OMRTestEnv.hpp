@@ -33,10 +33,6 @@ class OMRTestEnv : public testing::Environment
    public:
    virtual void SetUp();
    virtual void TearDown();
-   static TR_Memory *trMemory() { return _trMemory; }
-
-   private:
-   static TR_Memory *_trMemory;
 };
 
 

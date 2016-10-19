@@ -734,6 +734,68 @@ class S390PseudoInstruction : public TR::Instruction
    	}
    };
 
+/**
+ * Extends from S390PseudoInstruction to exploit the property of register assignment ignoring
+ * these types or treating them specially
+ */
+class S390DebugCounterBumpInstruction : public S390PseudoInstruction
+   {
+private:
+   /** Contains address information necessary for LGRL during binary encoding */
+   TR::Snippet * _counterSnippet;
+
+   /** A free real register for DCB to use during binary encoding */
+   TR::RealRegister * _assignableReg;
+
+   /** Specifies amount to increment the counter */
+   int32_t _delta;
+
+public:
+   S390DebugCounterBumpInstruction(TR::InstOpCode::Mnemonic op,
+                                      TR::Node *n,
+                                      TR::Snippet* counterSnip,
+                                      TR::CodeGenerator *cg,
+                                      int32_t delta)
+      : S390PseudoInstruction(op, n, NULL, cg),
+        _counterSnippet(counterSnip),
+        _assignableReg(NULL),
+        _delta(delta){}
+
+   S390DebugCounterBumpInstruction(TR::InstOpCode::Mnemonic op,
+                                      TR::Node *n,
+                                      TR::Snippet* counterSnip,
+                                      TR::CodeGenerator *cg,
+                                      int32_t delta,
+                                      TR::Instruction *precedingInstruction)
+      : S390PseudoInstruction(op, n, NULL, precedingInstruction, cg),
+        _counterSnippet(counterSnip),
+        _assignableReg(NULL),
+        _delta(delta){}
+
+   /**
+   * A real register must only be assigned for DCB to use if it is guaranteed to be free at the cursor position where DCB is inserted
+   * @param ar Real Register to be assigned
+   */
+   void setAssignableReg(TR::RealRegister * ar){ _assignableReg = ar; }
+
+   /**
+   * @return Assigned Real Register
+   */
+   TR::RealRegister * getAssignableReg(){ return _assignableReg; }
+
+   /**
+   * @return The snippet that holds the debugCounter's counter address in persistent memory
+   */
+   TR::Snippet * getCounterSnippet(){ return _counterSnippet; }
+
+   /**
+   * @return The integer amount to increment the counter
+   */
+   int32_t getDelta(){ return _delta; }
+
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
 ////////////////////////////////////////////////////////////////////////////////
 // S390AnnotationInstruction Class Definition
 ////////////////////////////////////////////////////////////////////////////////

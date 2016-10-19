@@ -5512,9 +5512,12 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    int32_t bytecodeSize = getPolicy()->getInitialBytecodeSize(calleeSymbol->getResolvedMethod(), calleeSymbol, comp());
    TR_ResolvedMethod * reportCalleeMethod = calleeSymbol->getResolvedMethod();
    int32_t numberOfLocalsInCallee = reportCalleeMethod->numberOfParameterSlots() + reportCalleeMethod->numberOfTemps();
-   TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded", callNodeTreeTop);
-   TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded:#bytecodeSize", callNodeTreeTop, bytecodeSize);
-   TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded:#localsInCallee", callNodeTreeTop, numberOfLocalsInCallee);
+
+   // TODO (Issue #389): Inserting any of these debug counters below causes reference count exceptions during optimization phase
+   //
+   // TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded", callNodeTreeTop);
+   // TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded:#bytecodeSize", callNodeTreeTop, bytecodeSize);
+   // TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded:#localsInCallee", callNodeTreeTop, numberOfLocalsInCallee);
 
    if (debug("inliningTrees"))
       {

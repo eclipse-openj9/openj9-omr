@@ -270,6 +270,7 @@ public:
    static TR::Node *createStore(TR::SymbolReference * symRef, TR::Node * value);
    static TR::Node *createStore(TR::SymbolReference * symRef, TR::Node * value, TR::ILOpCodes op);
    static TR::Node *createStore(TR::SymbolReference * symRef, TR::Node * value, TR::ILOpCodes op, size_t size);
+   static TR::Node *createStore(TR::Node *originatingByteCodeNode, TR::SymbolReference * symRef, TR::Node * value);
 
    static TR::Node *createRelative32BitFenceNode(void * relocationAddress);
    static TR::Node *createRelative32BitFenceNode(TR::Node *originatingByteCodeNode, void *);

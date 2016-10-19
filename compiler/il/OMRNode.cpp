@@ -1211,7 +1211,13 @@ OMR::Node::createStore(TR::SymbolReference * symRef, TR::Node * value, TR::ILOpC
    return store;
    }
 
-
+TR::Node *
+OMR::Node::createStore(TR::Node *originatingByteCodeNode, TR::SymbolReference * symRef, TR::Node * value)
+   {
+   TR::DataType type = symRef->getSymbol()->getDataType();
+   TR::ILOpCodes op = TR::comp()->il.opCodeForDirectStore(type);
+   return TR::Node::createWithSymRef(originatingByteCodeNode, op, 1, value, symRef);
+   }
 
 TR::Node *
 OMR::Node::createRelative32BitFenceNode(void * relocationAddress)

@@ -64,22 +64,24 @@ IlType::getStructSize()
 
 const uint8_t primitiveTypeAlignment[TR::NumOMRTypes] =
    {
-   1,
-   1,
-   2,
-   4,
-   8,
+   1,  // NoType
+   1,  // Int8
+   2,  // Int16
+   4,  // Int32
+   8,  // Int64
+   4,  // Float
+   8,  // Double
 #if TR_TARGET_64BIT // HOST?
-   4,
+   4,  // Address/Word
 #else
-   8,
+   8,  // Address/Word
 #endif
-   16,
-   16,
-   16,
-   16,
-   16,
-   16
+   16, // VectorInt8
+   16, // VectorInt16
+   16, // VectorInt32
+   16, // VectorInt64
+   16, // VectorFloat
+   16  // VectorDouble
    };
 
 

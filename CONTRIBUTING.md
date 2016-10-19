@@ -36,7 +36,8 @@ will help us to merge your pull requests smoothly:
 3. Follow the coding style and format of the code you are modifying (see the
    [coding standards](doc/CodingStandard.md)).
 4. Follow the commit guidelines found below.
-5. Ensure that "make test" passes all tests before you submit a Pull Request.
+5. Ensure that `make test` passes all tests and `make lint` passes before you
+   submit a Pull Request.
 
 ## Commit Guidelines
 

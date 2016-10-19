@@ -44,6 +44,8 @@ omrmakefiles/configure.mk
 omrmakefiles/toolconfigure.mk
 omrsigcompat/omrsig.exportlist
 
+TRBuildName.cpp
+
 J9TraceFormat.dat
 OMRTestTraceFormat.dat
 OMRTraceFormat.dat
@@ -61,6 +63,7 @@ omrthreadtest
 omrtraceoptiontest
 omrutiltest
 omrvmtest
+testjit
 utTrcCounters
 
 # hook generation tool
@@ -113,6 +116,11 @@ Testing/
 *.exe
 *.out
 *.app
+
+# Misc Build Artifacts
+*.o.depend.mk
+*.o.s
+*.pyc
 
 # Visual Studio
 *.dir/

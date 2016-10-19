@@ -3327,14 +3327,15 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 		}
 		scavengeIncremental(env, 3);
 		if (concurrent_state_scan == _concurrentState) {
-			_activeSubSpace->flip(env, 1);
-			/* Let know MemorySpace about new default MemorySubSpace */
-			_activeSubSpace->getMemorySpace()->setDefaultMemorySubSpace(_activeSubSpace->getDefaultMemorySubSpace());
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_evacuate);
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
+
 		}
 	}
 	else
 #endif
 	{
+		_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_evacuate);
 		/* And perform the scavenge */
 		scavenge(env);
 	}
@@ -3376,12 +3377,10 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 			if (!_extensions->concurrentScavenger)
 #endif
 			{
-				_activeSubSpace->flip(env, 1);
-				/* Let know MemorySpace about new default MemorySubSpace */
-				_activeSubSpace->getMemorySpace()->setDefaultMemorySubSpace(_activeSubSpace->getDefaultMemorySubSpace());
+				_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
+				_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
 			}
-			_activeSubSpace->flip(env, 2);
-			_activeSubSpace->flip(env, 3);
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::restore_allocation_and_set_survivor);
 
 
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -3410,6 +3409,9 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 		} else {
 			/* Build free list in survivor profile - the scavenge was unsuccessful, so rebuild the free list */
 			_activeSubSpace->rebuildFreeListForBackout(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::backout);
+#endif
 		}
 
 		/* Restart the allocation caches associated to all threads */
@@ -3799,24 +3801,8 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
-		/* About to block. A dedicated master GC thread will take over for the duration of STW phase (start or end) */
-		_masterGCThread.garbageCollect(env, allocDescription);
-		/* STW phase is complete */
-
-		/* Ensure switchConcurrentForThread is invoked for each mutator thread. It will be done indirectly,
-		 * first time a thread acquires VM access after exclusive VM access is released, through a VM access hook. */
-		GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
-		OMR_VMThread *walkThread = NULL;
-
-		while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
-			MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
-			if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
-				threadEnvironment->_envLanguageInterface->forceOutOfLineVMAccess();
-			}
-		}
-
-		/* For this thread too directly */
-		switchConcurrentForThread(env);
+		/* this may trigger either start or end of Concurrent Scavenge cycle */
+		triggerConcurrentScavengerTransition(env, allocDescription);
 	}
 	else
 #endif
@@ -3848,18 +3834,25 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
  * @return true if Global GC was executed, false if concurrent kickoff forced or Global GC is not possible
  */
 bool
-MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *envModron,  MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, PercolateReason percolateReason, uint32_t gcCode)
+MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *env,  MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, PercolateReason percolateReason, uint32_t gcCode)
 {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* before doing percolate global, we have to complete potentially ongoing concurrent Scavenge cycle */
+	if (_extensions->concurrentScavenger && isConcurrentInProgress()) {
+		triggerConcurrentScavengerTransition(env, allocDescription);
+	}
+#endif
+
 	/* save the cycle state since we are about to call back into the collector to start a new global cycle */
-	MM_CycleState *scavengeCycleState = envModron->_cycleState;
+	MM_CycleState *scavengeCycleState = env->_cycleState;
 	Assert_MM_true(NULL != scavengeCycleState);
-	envModron->_cycleState = NULL;
+	env->_cycleState = NULL;
 
 	/* Set last percolate reason */
 	_extensions->heap->getPercolateStats()->setLastPercolateReason(percolateReason);
 
 	/* Percolate the collect to parent MSS */
-	bool result = subSpace->percolateGarbageCollect(envModron, allocDescription, gcCode);
+	bool result = subSpace->percolateGarbageCollect(env, allocDescription, gcCode);
 
 	/* Reset last Percolate reason */
 	_extensions->heap->getPercolateStats()->resetLastPercolateReason();
@@ -3869,8 +3862,8 @@ MM_Scavenger::percolateGarbageCollect(MM_EnvironmentBase *envModron,  MM_MemoryS
 	}
 
 	/* restore the cycle state to maintain symmetry */
-	Assert_MM_true(NULL == envModron->_cycleState);
-	envModron->_cycleState = scavengeCycleState;
+	Assert_MM_true(NULL == env->_cycleState);
+	env->_cycleState = scavengeCycleState;
 	return result;
 }
 
@@ -4483,10 +4476,11 @@ void
 MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 {
 	MM_ScavengerRootScanner rootScanner(env, this);
-	// todo: if not abort
-	completeScan(env);
-	{
-		rootScanner.scanClearable(env);
+
+	if (!backOutFlagRaised()) {
+		if (completeScan(env)) {
+			rootScanner.scanClearable(env);
+		}
 	}
 	rootScanner.flush(env);
 
@@ -4534,7 +4528,7 @@ MM_Scavenger::scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScav
 	/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */
 	_concurrentState = concurrent_state_complete;
 	/* make allocate space non-allocatable to trigger the final GC phase */
-	_activeSubSpace->flip(env, 2);
+	_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
 
 	return bytesScanned;
 }
@@ -4580,6 +4574,28 @@ MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
     }
 }
 
+void
+MM_Scavenger::triggerConcurrentScavengerTransition(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
+{
+	/* About to block. A dedicated master GC thread will take over for the duration of STW phase (start or end) */
+	_masterGCThread.garbageCollect(env, allocDescription);
+	/* STW phase is complete */
+
+	/* Ensure switchConcurrentForThread is invoked for each mutator thread. It will be done indirectly,
+	 * first time a thread acquires VM access after exclusive VM access is released, through a VM access hook. */
+	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
+	OMR_VMThread *walkThread = NULL;
+
+	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
+		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
+		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+			threadEnvironment->_envLanguageInterface->forceOutOfLineVMAccess();
+		}
+	}
+
+	/* For this thread too directly */
+	switchConcurrentForThread(env);
+}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

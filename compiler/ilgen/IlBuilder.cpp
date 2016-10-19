@@ -673,7 +673,7 @@ TR::IlValue *
 IlBuilder::CreateLocalStruct(TR::IlType *structType)
    {
    //similar to CreateLocalArray except writing a method in StructType to get the struct size
-   uint32_t size = structType->getStructSize();
+   uint32_t size = structType->getSize();
    TR::SymbolReference *localStructSymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
@@ -783,7 +783,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
          TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, TR::Int64);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
-      elemSizeNode = TR::Node::lconst(TR::DataType::getSize(elemType->getPrimitiveType()));
+      elemSizeNode = TR::Node::lconst(elemType->getSize());
       addOp = TR::aladd;
       mulOp = TR::lmul;
       }
@@ -795,7 +795,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
          TR::ILOpCodes op = TR::DataType::getDataTypeConversion(indexType, targetType);
          indexNode = TR::Node::create(op, 1, indexNode);
          }
-      elemSizeNode = TR::Node::iconst(TR::DataType::getSize(elemType->getPrimitiveType()));
+      elemSizeNode = TR::Node::iconst(elemType->getSize());
       addOp = TR::aiadd;
       mulOp = TR::imul;
       }

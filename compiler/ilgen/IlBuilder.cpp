@@ -892,6 +892,17 @@ IlBuilder::ConstDouble(double value)
    return returnValue;
    }
 
+TR::IlValue *
+IlBuilder::ConstAddress(void* value)
+   {
+   appendBlock();
+   TR::IlValue *returnValue = newValue(Address);
+   storeNode(returnValue, TR::Node::aconst((uintptrj_t)value));
+   TraceIL("IlBuilder[ %p ]::%d is ConstAddress %p\n", this, returnValue->getCPIndex(), value);
+   ILB_REPLAY("%s = %s->ConstAddress(%p);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
+   return returnValue;
+   }
+
 
 TR::IlValue *
 IlBuilder::ConvertTo(TR::IlType *t, TR::IlValue *v)

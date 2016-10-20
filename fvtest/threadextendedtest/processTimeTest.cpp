@@ -16,60 +16,24 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-
-#include <math.h>
-
+#include "AtomicSupport.hpp"
 #include "omrTest.h"
-#include "thread_api.h"
 #include "threadExtendedTestHelpers.hpp"
-
-#define MATRIX_SIZE 			500
-#define NUM_ITERATIONS_MONOTONIC_TEST	500
-#define NUM_ITERATIONS_SYSTEM_CPU_BURN	3000
-
-typedef struct SupportThreadInfo {
-	uint32_t counter;
-	uint32_t app;
-	uint32_t sync;
-	omrthread_monitor_t synchronization;
-} SupportThreadInfo;
-
-SupportThreadInfo *thrInfo;
+#include "thread_api.h"
 
 /**
- * This is the core function to test the user time returned by get_process_times.
- * Its run time is deterministic and it does the same amount of work each time it is invoked.
+ * Do work in a syscall consuming kernel CPU time. This is the core function to
+ * test system / kernel time returned by get_process_times. Uses file handling
+ * sys call to increase time taken in kernel mode Runtime is deterministic and
+ * it does the same amount of work each time it is invoked.
  */
 void
-matrixSquare(void)
-{
-	/*
-	 * Declare and initialize the matrix. memset works here since this is a true 2D
-	 * array defined in the same scope as the memset.
-	 */
-	uintptr_t matrix[MATRIX_SIZE][MATRIX_SIZE];
-	uintptr_t i = 0;
-	uintptr_t j = 0;
-
-	memset(matrix, 0, sizeof(matrix));
-
-	for (j = 0; j < MATRIX_SIZE; j++) {
-		matrix[i][j] = (uintptr_t)pow((double)100, 2.0);
-	}
-}
-
-/**
- * This is the core function to test system / kernel time returned by get_process_times.
- * Uses file handling sys call to increase time taken in kernel mode
- * Runtime is deterministic and it does the same amount of work each time it is invoked.
- */
-void
-systemTimeCPUBurn(void)
+systemTimeCpuBurn(void)
 {
 	uintptr_t j = 0;
-	FILE *tempFile = NULL;
+	FILE * tempFile = NULL;
 
-	for (j = 0; j < NUM_ITERATIONS_SYSTEM_CPU_BURN; j++) {
+	for (j = 0; j < 100; j++) {
 #if defined(WIN32) || defined(WIN64)
 		tempFile = fopen("nul", "w");
 #else
@@ -81,115 +45,129 @@ systemTimeCPUBurn(void)
 }
 
 /**
- * This function records process times after each call to the 'user time' CPU burner.
- * It also checks for valid return codes after each call.
- *
- * @param[in]  arrayLength		Length of the processTimeArray
- * @param[out] processTimeArray	Pointer to the array of process times
+ * Do work in the process consuming user CPU time. This is the core function to
+ * test the user time returned by get_process_times. Its run time is
+ * deterministic and it does the same amount of work each time it is invoked.
  */
 void
-runCPUBurnToTestUserTimes(omrthread_process_time_t *processTimeArray, uintptr_t arrayLength)
+userTimeCpuBurn()
 {
-	uintptr_t i = 0;
-	intptr_t retValOfGetProcessTimes = 0;
-
-	/*
-	 * If we increase the workload done (running the matrixSquare multiple times),
-	 * CPU time recorded should increase after each run
-	 */
-	for (i = 0; i < arrayLength; i++) {
-		matrixSquare();
-		retValOfGetProcessTimes = (omrthread_get_process_times(processTimeArray++) || retValOfGetProcessTimes);
-		EXPECT_TRUE(0 == retValOfGetProcessTimes);
-	}
-}
-/**
- * This function records process times after each call to the 'system time' CPU burner.
- * It also checks for valid return codes after each call.
- *
- * @param[in]  arrayLength		Length of the processTimeArray
- * @param[out] processTimeArray	Pointer to the array of process times
- */
-void
-runCPUBurnToTestSystemTimes(omrthread_process_time_t *processTimeArray, uintptr_t arrayLength)
-{
-	uintptr_t i = 0;
-	intptr_t retValOfGetProcessTimes = 0;
-
-	/*
-	 * If we increase the workload done (running the same function multiple times),
-	 * CPU time recorded above should increase after each run
-	 */
-	for (i = 0; i < arrayLength; i++) {
-		systemTimeCPUBurn();
-		retValOfGetProcessTimes = (omrthread_get_process_times(processTimeArray++) || retValOfGetProcessTimes);
-		EXPECT_TRUE(0 == retValOfGetProcessTimes);
+	for (size_t i = 0; i < 40000; i++) {
+		VM_AtomicSupport::nop();
 	}
 }
 
-/**
- * Test for the monotonicity of get_process_times
- * w.r.t system time returned.
- */
-TEST(ThreadExtendedTest, TestSystemTimesMonotonic)
+TEST(ThreadCpuTime, userCpuTimeIncreasesMonotonically)
 {
-	uintptr_t i = 0;
-	uintptr_t isMonotonic = 1;
+	omrthread_process_time_t cpuTime;
+	omrthread_process_time_t prevCpuTime;
+	ASSERT_EQ(omrthread_get_process_times(&prevCpuTime), 0);
 
-	omrthread_process_time_t processTimeArray[NUM_ITERATIONS_MONOTONIC_TEST];
-	memset(&processTimeArray, 0, sizeof(processTimeArray));
-
-	/*
-	 * Runs the CPU burner which internally increasing workload and stores the
-	 * process time at each increment at the next slot sin the array
-	 */
-	runCPUBurnToTestSystemTimes(processTimeArray, NUM_ITERATIONS_MONOTONIC_TEST);
-
-	/* Test for monotonicity */
-	for (i = 0; i < NUM_ITERATIONS_MONOTONIC_TEST - 1; i++) {
-		if (processTimeArray[i]._systemTime > processTimeArray[i + 1]._systemTime) {
-			isMonotonic = 0;
-			break;
-		}
+	for (size_t i = 0; i < 500; i += 1) {
+		userTimeCpuBurn();
+		ASSERT_EQ(omrthread_get_process_times(&cpuTime), 0);
+		ASSERT_GE(cpuTime._userTime, prevCpuTime._userTime);
+		prevCpuTime = cpuTime;
 	}
-	ASSERT_TRUE(isMonotonic == 1);
 }
 
-/**
- * Test for the monotonicity of get_process_times
- * w.r.t user times returned.
- */
-TEST(ThreadExtendedTest, TestUserTimesMonotonic)
+TEST(ThreadCpuTime, systemCpuTimeIncreasesMonotonically)
 {
-	uintptr_t i = 0;
-	uintptr_t isMonotonic = 1;
+	omrthread_process_time_t cpuTime;
+	omrthread_process_time_t prevCpuTime;
+	ASSERT_EQ(omrthread_get_process_times(&prevCpuTime), 0);
 
-	omrthread_process_time_t processTimeArray[NUM_ITERATIONS_MONOTONIC_TEST];
-	memset(&processTimeArray, 0, sizeof(processTimeArray));
-
-	/*
-	 * Runs the CPU burner which internally increases workload and stores the
-	 * process time at each increment in the next processTimeArray slot
-	 */
-	runCPUBurnToTestUserTimes(processTimeArray, NUM_ITERATIONS_MONOTONIC_TEST);
-
-	/* Test for monotonicity */
-	for (i = 0; i < NUM_ITERATIONS_MONOTONIC_TEST - 1; i++) {
-		if (processTimeArray[i]._userTime > processTimeArray[i + 1]._userTime) {
-			isMonotonic = 0;
-			break;
-		}
+	for (size_t i = 0; i < 500; i += 1) {
+		systemTimeCpuBurn();
+		ASSERT_EQ(omrthread_get_process_times(&cpuTime), 0);
+		ASSERT_GE(cpuTime._systemTime, prevCpuTime._systemTime);
+		prevCpuTime = cpuTime;
 	}
-	ASSERT_TRUE(isMonotonic == 1);
 }
 
-#define NUM_ITERATIONS_JVM_CPU_USAGE  250
+class CpuTimeTest : public ::testing::Test
+{
+protected:
+	virtual void SetUp()
+	{
+		// CPU usage tracking is disabled by default.
+		// Enable it for the current thread.
+		omrthread_lib_enable_cpu_monitor(omrthread_self());
+	}
+};
 
-#define LONG_MILLI_TIMEOUT      900000
-#define MILLI_TIMEOUT           10000
-#define NANO_TIMEOUT            0
+TEST_F(CpuTimeTest, increasesMonotonically)
+{
+	J9ThreadsCpuUsage cpuUsage;
+	J9ThreadsCpuUsage prevCpuUsage;
+	omrthread_get_jvm_cpu_usage_info(&prevCpuUsage);
 
-#define ONESEC					1000 /**< 1 sec in ms */
+	for (unsigned int i = 0; i < 500; i += 1) {
+		userTimeCpuBurn();
+		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
+		ASSERT_NE(cpuUsage.systemJvmCpuTime, 0);
+		ASSERT_GE(cpuUsage.systemJvmCpuTime, prevCpuUsage.systemJvmCpuTime);
+		ASSERT_GE(cpuUsage.timestamp, prevCpuUsage.timestamp);
+		ASSERT_EQ(cpuUsage.applicationCpuTime, prevCpuUsage.applicationCpuTime);
+		prevCpuUsage = cpuUsage;
+	}
+}
+
+class ApplicationCpuTimeTest : public CpuTimeTest
+{
+protected:
+	virtual void SetUp()
+	{
+		omrthread_set_category(omrthread_self(),
+		                       J9THREAD_CATEGORY_APPLICATION_THREAD,
+		                       J9THREAD_TYPE_SET_MODIFY);
+		CpuTimeTest::SetUp();
+	}
+
+	virtual void TearDown()
+	{
+		omrthread_set_category(omrthread_self(), J9THREAD_CATEGORY_SYSTEM_THREAD,
+		                       J9THREAD_TYPE_SET_MODIFY);
+	}
+};
+
+TEST_F(ApplicationCpuTimeTest, increasesMonotonically)
+{
+	J9ThreadsCpuUsage cpuUsage, prevCpuUsage;
+	omrthread_get_jvm_cpu_usage_info(&prevCpuUsage);
+
+	for (unsigned int i = 0; i < 500; i += 1) {
+		userTimeCpuBurn();
+		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
+		ASSERT_NE(cpuUsage.applicationCpuTime, 0);
+		ASSERT_GE(cpuUsage.applicationCpuTime, prevCpuUsage.applicationCpuTime);
+		ASSERT_GE(cpuUsage.timestamp, prevCpuUsage.timestamp);
+		ASSERT_EQ(cpuUsage.systemJvmCpuTime, prevCpuUsage.systemJvmCpuTime);
+		prevCpuUsage = cpuUsage;
+	}
+}
+
+#define NUM_ITERATIONS_JVM_CPU_USAGE 250
+
+#define LONG_MILLI_TIMEOUT 900000
+#define MILLI_TIMEOUT 10000
+#define NANO_TIMEOUT 0
+
+#define ONESEC 1000 /**< 1 sec in ms */
+
+#define MATRIX_SIZE 500
+#define NUM_ITERATIONS_MONOTONIC_TEST 500
+#define NUM_ITERATIONS_SYSTEM_CPU_BURN 3000
+
+typedef struct SupportThreadInfo
+{
+	uint32_t counter;
+	uint32_t app;
+	uint32_t sync;
+	omrthread_monitor_t synchronization;
+} SupportThreadInfo;
+
+SupportThreadInfo * thrInfo;
 
 /**
  * Generate CPU Load for 1 second
@@ -215,7 +193,7 @@ cpuLoad(void)
  * @param arg The index into the ThreadInfo array
  */
 static int32_t J9THREAD_PROC
-sysThread(void *arg)
+sysThread(void * arg)
 {
 	uintptr_t i = 0;
 	uintptr_t arrayLength = NUM_ITERATIONS_JVM_CPU_USAGE;
@@ -239,7 +217,8 @@ sysThread(void *arg)
 
 	/* Wait for the master thread to get cpu usage thrInfo for all threads */
 	do {
-		omrthread_monitor_wait_interruptable(thrInfo->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
+		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
+		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (0 == thrInfo->sync);
 
 	omrthread_monitor_exit(thrInfo->synchronization);
@@ -255,7 +234,7 @@ sysThread(void *arg)
  * @param arg The index into the ThreadInfo array
  */
 static int32_t J9THREAD_PROC
-appThread(void *arg)
+appThread(void * arg)
 {
 	uintptr_t i = 0;
 	uintptr_t arrayLength = NUM_ITERATIONS_JVM_CPU_USAGE;
@@ -280,7 +259,8 @@ appThread(void *arg)
 
 	/* Wait for the master thread to get cpu usage thrInfo for all threads */
 	do {
-		omrthread_monitor_wait_interruptable(thrInfo->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
+		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
+		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (0 == thrInfo->sync);
 
 	omrthread_monitor_exit(thrInfo->synchronization);
@@ -301,14 +281,14 @@ appThread(void *arg)
 	return 0;
 }
 
-#define NUM_APP_THREAD	50
-#define NUM_SYS_THREAD	10
+#define NUM_APP_THREAD 50
+#define NUM_SYS_THREAD 10
 
 /**
  * Compare the values of omrthread_get_cpu_time and omrthread_get_self_cpu_time
  * and the monotonicity of the omrthread_get_cpu_time values
  */
-TEST(ThreadExtendedTest, TestThreadCpuTime)
+TEST(ThreadExtendedTest, DISABLED_TestThreadCpuTime)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(omrTestEnv->getPortLibrary());
 	uint32_t i = 0;
@@ -320,13 +300,16 @@ TEST(ThreadExtendedTest, TestThreadCpuTime)
 	/* Enable CPU monitoring as it is disabled by default */
 	omrthread_lib_enable_cpu_monitor(omrthread_self());
 
-	/* Create the SupportThreadInfo structure for the required number of threads and intialize it */
-	thrInfo = (SupportThreadInfo *)omrmem_allocate_memory(sizeof(SupportThreadInfo), OMRMEM_CATEGORY_THREADS);
+	/* Create the SupportThreadInfo structure for the required number of threads
+	 * and intialize it */
+	thrInfo = (SupportThreadInfo *)omrmem_allocate_memory(
+	        sizeof(SupportThreadInfo), OMRMEM_CATEGORY_THREADS);
 	ASSERT_TRUE(thrInfo != NULL);
 	thrInfo->counter = 0;
 	thrInfo->sync = 0;
 	thrInfo->app = 0;
-	omrthread_monitor_init_with_name(&thrInfo->synchronization, 0, "threadCpuTimeInfo monitor");
+	omrthread_monitor_init_with_name(&thrInfo->synchronization, 0,
+	                                 "threadCpuTimeInfo monitor");
 
 	ret = omrthread_attr_init(&attr);
 	ASSERT_TRUE(ret == 0);
@@ -336,30 +319,23 @@ TEST(ThreadExtendedTest, TestThreadCpuTime)
 	/* Create the required number of threads */
 	omrthread_monitor_enter(thrInfo->synchronization);
 	for (i = 0; i < NUM_APP_THREAD; i++) {
-		ret = omrthread_create_ex(
-				  &(tid[i]),
-				  &attr,
-				  0,
-				  (omrthread_entrypoint_t) appThread,
-				  (void *) &tid[i]);
+		ret = omrthread_create_ex(&(tid[i]), &attr, 0,
+		                          (omrthread_entrypoint_t)appThread, (void *)&tid[i]);
 		ASSERT_TRUE(ret == 0);
 	}
 
 	omrthread_attr_destroy(&attr);
 	/* Now create the system threads */
 	for (i = 0; i < NUM_SYS_THREAD; i++) {
-		ret = omrthread_create_ex(
-				  &(tid[i]),
-				  J9THREAD_ATTR_DEFAULT,
-				  0,
-				  (omrthread_entrypoint_t) sysThread,
-				  (void *) &tid[i]);
+		ret = omrthread_create_ex(&(tid[i]), J9THREAD_ATTR_DEFAULT, 0,
+		                          (omrthread_entrypoint_t)sysThread, (void *)&tid[i]);
 		ASSERT_TRUE(ret == 0);
 	}
 
 	/* Wait for the threads to complete work */
 	do {
-		omrthread_monitor_wait_interruptable(thrInfo->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
+		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
+		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (thrInfo->counter > 0);
 
 	/* All threads have stopped, now get their cpu usage details */
@@ -371,7 +347,8 @@ TEST(ThreadExtendedTest, TestThreadCpuTime)
 
 	do {
 		/* Ensure that all threads have exited before the master thread exits */
-		omrthread_monitor_wait_interruptable(thrInfo->synchronization, MILLI_TIMEOUT, NANO_TIMEOUT);
+		omrthread_monitor_wait_interruptable(thrInfo->synchronization,
+		                                     MILLI_TIMEOUT, NANO_TIMEOUT);
 	} while (thrInfo->app > 0);
 
 	/* All threads have completed, now get their cpu usage details */
@@ -390,31 +367,4 @@ TEST(ThreadExtendedTest, TestThreadCpuTime)
 	 * should either be the same or (slightly) higher
 	 */
 	ASSERT_TRUE(cpuUsageAft.systemJvmCpuTime >= cpuUsageBef.systemJvmCpuTime);
-}
-
-TEST(ThreadExtendedTest, TestJvmCpuUsageInfoMonotonic)
-{
-	uintptr_t i = 0;
-	intptr_t retVal = 0;
-	uintptr_t isMonotonic = 1;
-	J9ThreadsCpuUsage cpuUsage[NUM_ITERATIONS_MONOTONIC_TEST];
-
-	/* Enable CPU monitoring as it is disabled by default */
-	omrthread_lib_enable_cpu_monitor(omrthread_self());
-
-	memset(&cpuUsage, 0, sizeof(cpuUsage));
-
-	for (i = 0; i < NUM_ITERATIONS_MONOTONIC_TEST; i++) {
-		retVal = omrthread_get_jvm_cpu_usage_info(&cpuUsage[i]);
-		matrixSquare();
-		ASSERT_TRUE(0 == retVal);
-	}
-
-	for (i = 0; i < NUM_ITERATIONS_MONOTONIC_TEST - 1; i++) {
-		if (cpuUsage[i].applicationCpuTime > cpuUsage[i + 1].applicationCpuTime) {
-			isMonotonic = 0;
-			break;
-		}
-	}
-	ASSERT_TRUE(isMonotonic == 1);
 }

@@ -62,39 +62,39 @@ void TR_ARMBinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
 
    if (getOpReg1Reg2())
       {
-//      new TR_ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
 //      root->setRegister(firstRegister);
       }
    else if (getOpReg2Reg1())
       {
-//      new TR_ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
 //      root->setRegister(secondRegister);
 //      notReversedOperands();
       }
    else if (getCopyReg1())
       {
 //      TR::Register *tempReg = root->setRegister(cg()->allocateRegister());
-//      new TR_ARMRegRegInstruction(copyOpCode, tempReg, firstRegister);
-//      new TR_ARMRegRegInstruction(regToRegOpCode, tempReg, secondRegister);
+//      new TR::ARMRegRegInstruction(copyOpCode, tempReg, firstRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, tempReg, secondRegister);
       }
    else if (getCopyReg2())
       {
 //      TR::Register *tempReg = root->setRegister(cg()->allocateRegister());
-//      new TR_ARMRegRegInstruction(copyOpCode, tempReg, secondRegister);
-//      new TR_ARMRegRegInstruction(regToRegOpCode, tempReg, firstRegister);
+//      new TR::ARMRegRegInstruction(copyOpCode, tempReg, secondRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, tempReg, firstRegister);
 //      notReversedOperands();
       }
    else if (getOpReg1Mem2())
       {
 //      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(secondChild);
-//      new TR_ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
+//      new TR::ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
 //      tempMR->decNodeReferenceCounts();
 //      root->setRegister(firstRegister);
       }
    else
       {
 //      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(firstChild);
-//      new TR_ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
+//      new TR::ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
 //      tempMR->decNodeReferenceCounts();
 //      root->setRegister(secondRegister);
 //      notReversedOperands();
@@ -147,20 +147,20 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
 
    if (getOpReg1Reg2())
       {
-//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(lowRegToRegOpCode,
 //                                  firstRegister->getLowOrder(),
 //                                  secondRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(highRegToRegOpCode,
 //                                  firstRegister->getHighOrder(),
 //                                  secondRegister->getHighOrder());
 //      root->setRegister(firstRegister);
       }
    else if (getOpReg2Reg1())
       {
-//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(lowRegToRegOpCode,
 //                                  secondRegister->getLowOrder(),
 //                                  firstRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(highRegToRegOpCode,
 //                                  secondRegister->getHighOrder(),
 //                                  firstRegister->getHighOrder());
 //      root->setRegister(secondRegister);
@@ -169,32 +169,32 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
    else if (getCopyReg1())
       {
 //      TR::Register *tempReg = root->setRegister(cg()->allocateRegisterPair());
-//      new TR_ARMRegRegInstruction(copyOpCode,
+//      new TR::ARMRegRegInstruction(copyOpCode,
 //                                  tempReg->getLowOrder(),
 //                                  firstRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(copyOpCode,
+//      new TR::ARMRegRegInstruction(copyOpCode,
 //                                  tempReg->getHighOrder(),
 //                                  firstRegister->getHighOrder());
-//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(lowRegToRegOpCode,
 //                                  tempReg->getLowOrder(),
 //                                  secondRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(highRegToRegOpCode,
 //                                  tempReg->getHighOrder(),
 //                                  secondRegister->getHighOrder());
       }
    else if (getCopyReg2())
       {
 //      TR::Register *tempReg = root->setRegister(cg()->allocateRegisterPair());
-//      new TR_ARMRegRegInstruction(copyOpCode,
+//      new TR::ARMRegRegInstruction(copyOpCode,
 //                                  tempReg->getLowOrder(),
 //                                  secondRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(copyOpCode,
+//      new TR::ARMRegRegInstruction(copyOpCode,
 //                                  tempReg->getHighOrder(),
 //                                  secondRegister->getHighOrder());
-//      new TR_ARMRegRegInstruction(lowRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(lowRegToRegOpCode,
 //                                  tempReg->getLowOrder(),
 //                                  firstRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(highRegToRegOpCode,
+//      new TR::ARMRegRegInstruction(highRegToRegOpCode,
 //                                  tempReg->getHighOrder(),
 //                                  firstRegister->getHighOrder());
 //      notReversedOperands();
@@ -203,10 +203,10 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
       {
 //      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(secondChild);
 //      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
-//      new TR_ARMRegMemInstruction(lowMemToRegOpCode,
+//      new TR::ARMRegMemInstruction(lowMemToRegOpCode,
 //                                  firstRegister->getLowOrder(),
 //                                  lowMR);
-//      new TR_ARMRegMemInstruction(highMemToRegOpCode,
+//      new TR::ARMRegMemInstruction(highMemToRegOpCode,
 //                                  firstRegister->getHighOrder(),
 //                                  highMR);
 //      lowMR->decNodeReferenceCounts();
@@ -216,10 +216,10 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
       {
 //      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(firstChild);
 //      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
-//      new TR_ARMRegMemInstruction(lowMemToRegOpCode,
+//      new TR::ARMRegMemInstruction(lowMemToRegOpCode,
 //                                  secondRegister->getLowOrder(),
 //                                  lowMR);
-//      new TR_ARMRegMemInstruction(highMemToRegOpCode,
+//      new TR::ARMRegMemInstruction(highMemToRegOpCode,
 //                                  secondRegister->getHighOrder(),
 //                                  highMR);
 //      lowMR->decNodeReferenceCounts();
@@ -271,12 +271,12 @@ void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
 
    if (getOpReg1Reg2())
       {
-//      new TR_ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, firstRegister, secondRegister);
 //      root->setRegister(firstRegister);
       }
    else if (getOpReg2Reg1())
       {
-//      new TR_ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
+//      new TR::ARMRegRegInstruction(regToRegOpCode, secondRegister, firstRegister);
 //      root->setRegister(secondRegister);
 //      notReversedOperands();
       }
@@ -286,19 +286,19 @@ void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
 //      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference();
 //      tempMR->setBaseRegister(firstRegister);
 //      tempMR->setIndexRegister(secondRegister);
-//      new TR_ARMRegMemInstruction(LEA4RegMem, tempReg, tempMR);
+//      new TR::ARMRegMemInstruction(LEA4RegMem, tempReg, tempMR);
       }
    else if (getOpReg1Mem2())
       {
 //      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(secondChild);
-//      new TR_ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
+//      new TR::ARMRegMemInstruction(memToRegOpCode, firstRegister, tempMR);
 //      tempMR->decNodeReferenceCounts();
 //      root->setRegister(firstRegister);
       }
    else
       {
 //      TR_ARMMemoryReference *tempMR = new TR_ARMMemoryReference(firstChild);
-//      new TR_ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
+//      new TR::ARMRegMemInstruction(memToRegOpCode, secondRegister, tempMR);
 //      tempMR->decNodeReferenceCounts();
 //      root->setRegister(secondRegister);
 //      notReversedOperands();
@@ -345,14 +345,14 @@ void TR_ARMBinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
 
    if (getOpReg1Reg2())
       {
-//      new TR_ARMRegRegInstruction(ADD4RegReg, firstRegister->getLowOrder(), secondRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(ADC4RegReg, firstRegister->getHighOrder(), secondRegister->getHighOrder());
+//      new TR::ARMRegRegInstruction(ADD4RegReg, firstRegister->getLowOrder(), secondRegister->getLowOrder());
+//      new TR::ARMRegRegInstruction(ADC4RegReg, firstRegister->getHighOrder(), secondRegister->getHighOrder());
 //      root->setRegister(firstRegister);
       }
    else if (getOpReg2Reg1())
       {
-//      new TR_ARMRegRegInstruction(ADD4RegReg, secondRegister->getLowOrder(), firstRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(ADC4RegReg, secondRegister->getHighOrder(), firstRegister->getHighOrder());
+//      new TR::ARMRegRegInstruction(ADD4RegReg, secondRegister->getLowOrder(), firstRegister->getLowOrder());
+//      new TR::ARMRegRegInstruction(ADC4RegReg, secondRegister->getHighOrder(), firstRegister->getHighOrder());
 //      root->setRegister(secondRegister);
 //      notReversedOperands();
       }
@@ -362,18 +362,18 @@ void TR_ARMBinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
 //      TR::Register     *highRegister = cg()->allocateRegister();
 //      TR_RegisterPair *tempReg      = cg()->allocateRegisterPair(lowRegister, highRegister);
 //      root->setRegister(tempReg);
-//      new TR_ARMRegRegInstruction(MOV4RegReg, lowRegister, firstRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(MOV4RegReg, highRegister, firstRegister->getHighOrder());
-//      new TR_ARMRegRegInstruction(ADD4RegReg, tempReg->getLowOrder(), secondRegister->getLowOrder());
-//      new TR_ARMRegRegInstruction(ADC4RegReg, tempReg->getHighOrder(), secondRegister->getHighOrder());
+//      new TR::ARMRegRegInstruction(MOV4RegReg, lowRegister, firstRegister->getLowOrder());
+//      new TR::ARMRegRegInstruction(MOV4RegReg, highRegister, firstRegister->getHighOrder());
+//      new TR::ARMRegRegInstruction(ADD4RegReg, tempReg->getLowOrder(), secondRegister->getLowOrder());
+//      new TR::ARMRegRegInstruction(ADC4RegReg, tempReg->getHighOrder(), secondRegister->getHighOrder());
 //      root->setRegister(tempReg);
       }
    else if (getOpReg1Mem2())
       {
 //      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(secondChild);
 //      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
-//      new TR_ARMRegMemInstruction(ADD4RegMem, firstRegister->getLowOrder(), lowMR);
-//      new TR_ARMRegMemInstruction(ADC4RegMem, firstRegister->getHighOrder(), highMR);
+//      new TR::ARMRegMemInstruction(ADD4RegMem, firstRegister->getLowOrder(), lowMR);
+//      new TR::ARMRegMemInstruction(ADC4RegMem, firstRegister->getHighOrder(), highMR);
 //      lowMR->decNodeReferenceCounts();
 //      root->setRegister(firstRegister);
       }
@@ -381,8 +381,8 @@ void TR_ARMBinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
       {
 //      TR_ARMMemoryReference *lowMR  = new TR_ARMMemoryReference(firstChild);
 //      TR_ARMMemoryReference *highMR = new TR_ARMMemoryReference(*lowMR, 4);
-//      new TR_ARMRegMemInstruction(ADD4RegMem, secondRegister->getLowOrder(), lowMR);
-//      new TR_ARMRegMemInstruction(ADC4RegMem, secondRegister->getHighOrder(), highMR);
+//      new TR::ARMRegMemInstruction(ADD4RegMem, secondRegister->getLowOrder(), lowMR);
+//      new TR::ARMRegMemInstruction(ADC4RegMem, secondRegister->getHighOrder(), highMR);
 //      lowMR->decNodeReferenceCounts();
 //      root->setRegister(secondRegister);
 //      notReversedOperands();

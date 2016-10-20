@@ -506,7 +506,7 @@ static TR::Register *compareLongAndSetOrderedBoolean(TR_ARMConditionCode branchO
    if (true)
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      TR_ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_setblong, node, deps);
+      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_setblong, node, deps);
       cfop->addTargetRegister(trgReg);
       cfop->addTargetRegister(tempReg);
       cfop->addSourceRegister(src1Reg->getLowOrder());
@@ -545,7 +545,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
    TR::Register *src2Reg = cg->evaluate(secondChild);
    if (/* isSmall() || */ TR::comp()->getOption(TR_DisableOOL) || disableOOLForLongCompares)
       {
-      TR_ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_iflong, node, deps);
+      TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_iflong, node, deps);
       cfop->addSourceRegister(src1Reg->getHighOrder());
       cfop->addSourceRegister(src1Reg->getLowOrder());
       cfop->addSourceRegister(src2Reg->getHighOrder());
@@ -929,7 +929,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGen
    // can handle registers being alive across basic block boundaries.
    // For now we just generate pessimistic code.
    TR::Register   *src2Reg = cg->evaluate(secondChild);
-   TR_ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_lcmp, node, deps);
+   TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_lcmp, node, deps);
    cfop->addTargetRegister(trgReg);
    cfop->addSourceRegister(src1Reg->getLowOrder());
    cfop->addSourceRegister(src1Reg->getHighOrder());
@@ -1332,16 +1332,16 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
    generateLabelInstruction(node, cg, ARMOp_label, backLabel);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, pivotRegister, highRegister, lowRegister);
-   new (cg->trHeapMemory()) TR_ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
+   new (cg->trHeapMemory()) TR::ARMTrg1Src1Imm2Instruction(0xfffffffc, 31, pivotRegister, pivotRegister, ARMOp_rlwinm, cg);
    generateTrg1MemInstruction(cg, ARMOp_lwzx, dataRegister, new (cg->trHeapMemory()) TR_ARMMemoryReference(addrRegister, pivotRegister, cg));
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, dataRegister, selector);
    generateConditionalBranchInstruction(node, cg, ARMOp_bne, searchLabel, cndRegister);
    generateLabelInstruction(node, cg, ARMOp_bl, linkLabel);
    generateLabelInstruction(node, cg, ARMOp_label, linkLabel);
-   new (cg->trHeapMemory()) TR_ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
+   new (cg->trHeapMemory()) TR::ARMTrg1Instruction(ARMOp_mflr, dataRegister, cg);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, pivotRegister, pivotRegister, 20);
    generateTrg1Src2Instruction(node, cg, ARMOp_add, dataRegister, pivotRegister, dataRegister);
-   new (cg->trHeapMemory()) TR_ARMSrc1Instruction(ARMOp_mtctr, dataRegister, cg);
+   new (cg->trHeapMemory()) TR::ARMSrc1Instruction(ARMOp_mtctr, dataRegister, cg);
    new (cg->trHeapMemory()) TR::Instruction(ARMOp_bctr, cg);
    for (int32_t ii=2; ii<total; ii++)
       {
@@ -1359,7 +1359,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    generateTrg1Src2Instruction(node, cg, ARMOp_cmp4, cndRegister, pivotRegister, lowRegister);
    generateConditionalBranchInstruction(node, cg, ARMOp_beq, node->getSecondChild()->getBranchDestination()->getNode()->getLabel(), cndRegister);
    generateTrg1Src1ImmInstruction(node, cg, ARMOp_addi, highRegister, pivotRegister, -4);
-   new (cg->trHeapMemory()) TR_ARMDepLabelInstruction(ARMOp_b, backLabel, conditions, cg);
+   new (cg->trHeapMemory()) TR::ARMDepLabelInstruction(ARMOp_b, backLabel, conditions, cg);
    */
    }
 

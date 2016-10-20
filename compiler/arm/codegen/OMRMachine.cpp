@@ -379,7 +379,7 @@ TR::RealRegister *OMR::ARM::Machine::reverseSpillState(TR::Instruction      *cur
          bool isOOLentryReverseSpill = false;
          if (currentInstruction->isLabel())
             {
-            if (((TR_ARMLabelInstruction*)currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream())
+            if (((TR::ARMLabelInstruction*)currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream())
                {
                // indicates that we are at OOL entry point post conditions. Since
                // we are now exiting the OOL cold path (going reverse order)
@@ -836,7 +836,7 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
    switch (rk)
       {
       case TR_GPR:
-         new (cg->trHeapMemory()) TR_ARMTrg1Src1Instruction(precedingInstruction, ARMOp_mov, node, targetReg, sourceReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_mov, node, targetReg, sourceReg, cg);
          break;
       case TR_FPR:
          bool isTargetSinglePrecision = isSinglePrecision(targetReg->getRegisterNumber());
@@ -845,7 +845,7 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
             {
             if (isSourceSinglePrecision)
                {
-                new (cg->trHeapMemory()) TR_ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpys, node, targetReg, sourceReg, cg);
+                new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpys, node, targetReg, sourceReg, cg);
                }
             else
                {
@@ -860,7 +860,7 @@ static void registerCopy(TR::Instruction     *precedingInstruction,
                }
             else
                {
-               new (cg->trHeapMemory()) TR_ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpyd, node, targetReg, sourceReg, cg);
+               new (cg->trHeapMemory()) TR::ARMTrg1Src1Instruction(precedingInstruction, ARMOp_fcpyd, node, targetReg, sourceReg, cg);
                }
            }
          break;
@@ -885,9 +885,9 @@ static void registerExchange(TR::Instruction     *precedingInstruction,
       }
    else
       {
-      new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
-      new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, sourceReg, targetReg, sourceReg, cg);
-      new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, sourceReg, targetReg, sourceReg, cg);
+      new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(precedingInstruction, ARMOp_eor, node, targetReg, targetReg, sourceReg, cg);
       }
    }
 

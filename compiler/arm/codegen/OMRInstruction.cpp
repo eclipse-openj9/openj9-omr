@@ -119,7 +119,7 @@ bool OMR::ARM::Instruction::dependencyRefsRegister(TR::Register *reg)
    return false;
    }
 
-TR_ARMConditionalBranchInstruction *
+TR::ARMConditionalBranchInstruction *
 OMR::ARM::Instruction::getARMConditionalBranchInstruction()
    {
    return NULL;
@@ -128,7 +128,7 @@ OMR::ARM::Instruction::getARMConditionalBranchInstruction()
 // The following safe virtual downcast method is only used in an assertion
 // check within "toARMImmInstruction"
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-TR_ARMImmInstruction *OMR::ARM::Instruction::getARMImmInstruction()
+TR::ARMImmInstruction *OMR::ARM::Instruction::getARMImmInstruction()
    {
    return NULL;
    }
@@ -151,13 +151,13 @@ void OMR::ARM::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       }
    }
 
-// TR_ARMConditionalBranchInstruction member functions
-TR_ARMConditionalBranchInstruction *TR_ARMConditionalBranchInstruction::getARMConditionalBranchInstruction()
+// TR::ARMConditionalBranchInstruction member functions
+TR::ARMConditionalBranchInstruction *TR::ARMConditionalBranchInstruction::getARMConditionalBranchInstruction()
    {
    return this;
    }
 
-void TR_ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    if (getDependencyConditions())
       {
@@ -186,72 +186,72 @@ void TR_ARMConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindTo
       }
    }
 
-bool TR_ARMConditionalBranchInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMConditionalBranchInstruction::refsRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMConditionalBranchInstruction::defsRegister(TR::Register *reg)
+bool TR::ARMConditionalBranchInstruction::defsRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMConditionalBranchInstruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMConditionalBranchInstruction::defsRealRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMConditionalBranchInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMConditionalBranchInstruction::usesRegister(TR::Register *reg)
    {
    return false;
    }
 
-// TR_ARMImmInstruction:: member functions
+// TR::ARMImmInstruction:: member functions
 
 
 // The following safe virtual downcast method is only used in an assertion
 // check within "toARMImmInstruction"
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-TR_ARMImmInstruction *TR_ARMImmInstruction::getARMImmInstruction()
+TR::ARMImmInstruction *TR::ARMImmInstruction::getARMImmInstruction()
    {
    return this;
    }
 #endif // defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 
-// TR_ARMImmSymInstruction:: member functions
+// TR::ARMImmSymInstruction:: member functions
 
-TR_ARMImmSymInstruction::TR_ARMImmSymInstruction(TR_ARMOpCodes                       op,
-                                                 TR::Node                            *node,
-                                                 uint32_t                            imm,
-                                                 TR::RegisterDependencyConditions *cond,
-                                                 TR::SymbolReference                 *sr,
-                                                 TR::CodeGenerator                   *cg,
-                                                 TR::Snippet                         *s,
-                                                 TR_ARMConditionCode                 cc)
-   : TR_ARMImmInstruction(op, node, cond, imm, cg),
+TR::ARMImmSymInstruction::ARMImmSymInstruction(TR_ARMOpCodes                       op,
+                                               TR::Node                            *node,
+                                               uint32_t                            imm,
+                                               TR::RegisterDependencyConditions *cond,
+                                               TR::SymbolReference                 *sr,
+                                               TR::CodeGenerator                   *cg,
+                                               TR::Snippet                         *s,
+                                               TR_ARMConditionCode                 cc)
+   : TR::ARMImmInstruction(op, node, cond, imm, cg),
      _symbolReference(sr),
      _snippet(s)
    {
    setConditionCode(cc);
    }
 
-TR_ARMImmSymInstruction::TR_ARMImmSymInstruction(TR::Instruction                           *precedingInstruction,
-                                                       TR_ARMOpCodes                       op,
-                                                       TR::Node                            *node,
-                                                       uint32_t                            imm,
-                                                       TR::RegisterDependencyConditions *cond,
-                                                       TR::SymbolReference                 *sr,
-                                                       TR::CodeGenerator                   *cg,
-                                                       TR::Snippet                         *s,
-                                                       TR_ARMConditionCode                 cc)
-   : TR_ARMImmInstruction(precedingInstruction, op, node, cond, imm, cg),
+TR::ARMImmSymInstruction::ARMImmSymInstruction(TR::Instruction                           *precedingInstruction,
+                                               TR_ARMOpCodes                       op,
+                                               TR::Node                            *node,
+                                               uint32_t                            imm,
+                                               TR::RegisterDependencyConditions *cond,
+                                               TR::SymbolReference                 *sr,
+                                               TR::CodeGenerator                   *cg,
+                                               TR::Snippet                         *s,
+                                               TR_ARMConditionCode                 cc)
+   : TR::ARMImmInstruction(precedingInstruction, op, node, cond, imm, cg),
      _symbolReference(sr),
      _snippet(s)
    {
    setConditionCode(cc);
    }
 
-void TR_ARMLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Compilation *comp = TR::comp();
    TR::Machine  *machine        = cg()->machine();
@@ -316,30 +316,30 @@ void TR_ARMLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       }
    }
 
-// TR_ARMTrg1Src2Instruction:: member functions
-bool TR_ARMTrg1Src2Instruction::refsRegister(TR::Register *reg)
+// TR::ARMTrg1Src2Instruction:: member functions
+bool TR::ARMTrg1Src2Instruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register() ||
            reg == getSource1Register() ||
            getSource2Operand()->refsRegister(reg));
    }
 
-bool TR_ARMTrg1Src2Instruction::defsRegister(TR::Register *reg)
+bool TR::ARMTrg1Src2Instruction::defsRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register());
    }
 
-bool TR_ARMTrg1Src2Instruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMTrg1Src2Instruction::defsRealRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register()->getAssignedRegister());
    }
 
-bool TR_ARMTrg1Src2Instruction::usesRegister(TR::Register *reg)
+bool TR::ARMTrg1Src2Instruction::usesRegister(TR::Register *reg)
    {
    return (reg == getSource1Register() || getSource2Operand()->refsRegister(reg));
    }
 
-void TR_ARMTrg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMTrg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine  *machine        = cg()->machine();
    TR::Register    *target1Virtual = getTarget1Register();
@@ -387,30 +387,30 @@ void TR_ARMTrg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigne
    }
 
 #if (defined(__VFP_FP__) && !defined(__SOFTFP__))
-// TR_ARMTrg2Src1Instruction:: member functions
-bool TR_ARMTrg2Src1Instruction::refsRegister(TR::Register *reg)
+// TR::ARMTrg2Src1Instruction:: member functions
+bool TR::ARMTrg2Src1Instruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register() ||
            reg == getTarget2Register() ||
            reg == getSource1Register() );
    }
 
-bool TR_ARMTrg2Src1Instruction::defsRegister(TR::Register *reg)
+bool TR::ARMTrg2Src1Instruction::defsRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register() || reg == getTarget2Register());
    }
 
-bool TR_ARMTrg2Src1Instruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMTrg2Src1Instruction::defsRealRegister(TR::Register *reg)
    {
    return (reg == getTarget1Register()->getAssignedRegister() || reg == getTarget2Register()->getAssignedRegister());
    }
 
-bool TR_ARMTrg2Src1Instruction::usesRegister(TR::Register *reg)
+bool TR::ARMTrg2Src1Instruction::usesRegister(TR::Register *reg)
    {
    return (reg == getSource1Register());
    }
 
-void TR_ARMTrg2Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMTrg2Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine  *machine        = cg()->machine();
    TR::Register    *target1Virtual = getTarget1Register();
@@ -462,7 +462,7 @@ void TR_ARMTrg2Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigne
    }
 #endif
 
-bool TR_ARMMulInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMMulInstruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTargetLoRegister() ||
            reg == getTargetHiRegister() ||
@@ -470,25 +470,25 @@ bool TR_ARMMulInstruction::refsRegister(TR::Register *reg)
            reg == getSource2Register());
    }
 
-bool TR_ARMMulInstruction::defsRegister(TR::Register *reg)
+bool TR::ARMMulInstruction::defsRegister(TR::Register *reg)
    {
    return (reg == getTargetLoRegister() ||
            reg == getTargetHiRegister());
    }
 
-bool TR_ARMMulInstruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMMulInstruction::defsRealRegister(TR::Register *reg)
    {
    return (reg == getTargetLoRegister()->getAssignedRegister() ||
            reg == getTargetHiRegister()->getAssignedRegister());
    }
 
-bool TR_ARMMulInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMMulInstruction::usesRegister(TR::Register *reg)
    {
    return (reg == getSource1Register() ||
            reg == getSource2Register());
    }
 
-void TR_ARMMulInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMMulInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine *machine         = cg()->machine();
    TR::Register   *targetLoVirtual = getTargetLoRegister();
@@ -547,23 +547,23 @@ void TR_ARMMulInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    setSource2Register(assignedSource2Register);
    }
 
-TR::Register *TR_ARMMemInstruction::getMemoryDataRegister()
+TR::Register *TR::ARMMemInstruction::getMemoryDataRegister()
    {
    return getTargetRegister();
    }
 
 
-bool TR_ARMMemInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMMemInstruction::refsRegister(TR::Register *reg)
    {
    return getMemoryReference()->refsRegister(reg);
    }
 
-bool TR_ARMMemInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMMemInstruction::usesRegister(TR::Register *reg)
    {
    return getMemoryReference()->refsRegister(reg);
    }
 
-void TR_ARMMemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMMemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    if (getDependencyConditions())
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
@@ -574,29 +574,29 @@ void TR_ARMMemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-// TR_ARMMemSrc1Instruction:: member functions
+// TR::ARMMemSrc1Instruction:: member functions
 
-bool TR_ARMMemSrc1Instruction::refsRegister(TR::Register *reg)
+bool TR::ARMMemSrc1Instruction::refsRegister(TR::Register *reg)
    {
    return (getMemoryReference()->refsRegister(reg) || reg == getSourceRegister());
    }
 
-bool TR_ARMMemSrc1Instruction::defsRegister(TR::Register *reg)
+bool TR::ARMMemSrc1Instruction::defsRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMMemSrc1Instruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMMemSrc1Instruction::defsRealRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMMemSrc1Instruction::usesRegister(TR::Register *reg)
+bool TR::ARMMemSrc1Instruction::usesRegister(TR::Register *reg)
    {
    return (getMemoryReference()->refsRegister(reg) || reg == getSourceRegister());
    }
 
-void TR_ARMMemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMMemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine *machine       = cg()->machine();
    TR::Register   *sourceVirtual = getSourceRegister();
@@ -650,29 +650,29 @@ void TR_ARMMemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-// TR_ARMTrg1Instruction:: member functions
+// TR::ARMTrg1Instruction:: member functions
 
-bool TR_ARMTrg1Instruction::refsRegister(TR::Register *reg)
+bool TR::ARMTrg1Instruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister());
    }
 
-bool TR_ARMTrg1Instruction::usesRegister(TR::Register *reg)
+bool TR::ARMTrg1Instruction::usesRegister(TR::Register *reg)
    {
    return false;
    }
 
-bool TR_ARMTrg1Instruction::defsRegister(TR::Register *reg)
+bool TR::ARMTrg1Instruction::defsRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister());
    }
 
-bool TR_ARMTrg1Instruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMTrg1Instruction::defsRealRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister()->getAssignedRegister());
    }
 
-void TR_ARMTrg1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMTrg1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    if (getDependencyConditions())
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
@@ -685,19 +685,19 @@ void TR_ARMTrg1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-// TR_ARMTrg1MemInstruction:: member functions
+// TR::ARMTrg1MemInstruction:: member functions
 
-bool TR_ARMTrg1MemInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMTrg1MemInstruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister() || getMemoryReference()->refsRegister(reg));
    }
 
-bool TR_ARMTrg1MemInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMTrg1MemInstruction::usesRegister(TR::Register *reg)
    {
    return getMemoryReference()->refsRegister(reg);
    }
 
-void TR_ARMTrg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMTrg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Register *targetVirtual = getTargetRegister();
    TR::Register *mBaseVirtual  = getMemoryReference()->getModBase();
@@ -724,18 +724,18 @@ void TR_ARMTrg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-// TR_ARMTrg1MemSrc1Instruction:: member functions
-bool TR_ARMTrg1MemSrc1Instruction::refsRegister(TR::Register *reg)
+// TR::ARMTrg1MemSrc1Instruction:: member functions
+bool TR::ARMTrg1MemSrc1Instruction::refsRegister(TR::Register *reg)
    {
    return (reg == getTargetRegister() || getMemoryReference()->refsRegister(reg) || reg == getSourceRegister());
    }
 
-bool TR_ARMTrg1MemSrc1Instruction::usesRegister(TR::Register *reg)
+bool TR::ARMTrg1MemSrc1Instruction::usesRegister(TR::Register *reg)
    {
    return (getMemoryReference()->refsRegister(reg) || reg == getSourceRegister());
    }
 
-void TR_ARMTrg1MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMTrg1MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Register *targetVirtual = getTargetRegister();
    TR::Register *mBaseVirtual  = getMemoryReference()->getModBase();
@@ -773,9 +773,9 @@ void TR_ARMTrg1MemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssi
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-// TR_ARMControlFlowInstruction:: member functions
+// TR::ARMControlFlowInstruction:: member functions
 
-bool TR_ARMControlFlowInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMControlFlowInstruction::refsRegister(TR::Register *reg)
    {
    int i;
    for (i = 0; i < getNumTargets(); i++)
@@ -791,7 +791,7 @@ bool TR_ARMControlFlowInstruction::refsRegister(TR::Register *reg)
    return false;
    }
 
-bool TR_ARMControlFlowInstruction::defsRegister(TR::Register *reg)
+bool TR::ARMControlFlowInstruction::defsRegister(TR::Register *reg)
    {
    for (int i = 0; i < getNumTargets(); i++)
       {
@@ -801,7 +801,7 @@ bool TR_ARMControlFlowInstruction::defsRegister(TR::Register *reg)
    return false;
    }
 
-bool TR_ARMControlFlowInstruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMControlFlowInstruction::defsRealRegister(TR::Register *reg)
    {
    for (int i = 0; i < getNumTargets(); i++)
       {
@@ -811,7 +811,7 @@ bool TR_ARMControlFlowInstruction::defsRealRegister(TR::Register *reg)
    return false;
    }
 
-bool TR_ARMControlFlowInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMControlFlowInstruction::usesRegister(TR::Register *reg)
    {
    for (int i = 0; i < getNumSources(); i++)
       {
@@ -844,7 +844,7 @@ static TR::Instruction *expandBlongLessThan(TR::Node          *node,
    return cursor;
 }
 
-void TR_ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Machine    *machine = cg()->machine();
    TR::Node          *currentNode = getNode();
@@ -1008,22 +1008,22 @@ void TR_ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssi
       case ARMOp_setbool:
          TR_ASSERT(0, "implement setbool");
          /*
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
          */
       case ARMOp_setbflt:
          TR_ASSERT(0, "implement setbflt");
          /*
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, getOpCode3Value(), currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, getCmpOpValue(), currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(1), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode2Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, getOpCode3Value(), currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
          */
       case ARMOp_lcmp:
@@ -1062,39 +1062,39 @@ void TR_ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssi
          break;
 /*
       case ARMOp_flcmpl:
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_bgt, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_bgt, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_flcmpg:
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_blt, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_fcmpu, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), -1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_blt, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_idiv:
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_eqv, currentNode, getTargetRegister(2), getTargetRegister(1), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_and, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getTargetRegister(2), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(1), getSourceRegister(1), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_eqv, currentNode, getTargetRegister(2), getTargetRegister(1), getSourceRegister(1), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_and, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getTargetRegister(2), -1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(1), getSourceRegister(1), getSourceRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
       case ARMOp_irem:
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getSourceRegister(2), -1, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(2), getSourceRegister(1), getSourceRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_mullw, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMTrg1Src2Instruction(cursor, ARMOp_subf, currentNode, getTargetRegister(1), getTargetRegister(2), getSourceRegister(1), cg());
-         cursor = new (cg()->trHeapMemory()) TR_ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src1ImmInstruction(cursor, ARMOp_cmpi4, currentNode, getTargetRegister(0), getSourceRegister(2), -1, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1ImmInstruction(cursor, ARMOp_li, currentNode, getTargetRegister(1), 0, cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMConditionalBranchInstruction(cursor, ARMOp_beq, currentNode, label2, getTargetRegister(0), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_divw, currentNode, getTargetRegister(2), getSourceRegister(1), getSourceRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_mullw, currentNode, getTargetRegister(2), getSourceRegister(2), getTargetRegister(2), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMTrg1Src2Instruction(cursor, ARMOp_subf, currentNode, getTargetRegister(1), getTargetRegister(2), getSourceRegister(1), cg());
+         cursor = new (cg()->trHeapMemory()) TR::ARMLabelInstruction(cursor, ARMOp_label, currentNode, label2, cg());
          break;
 */
       default:
@@ -1104,27 +1104,27 @@ void TR_ARMControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAssi
       getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
    }
 
-bool TR_ARMMultipleMoveInstruction::refsRegister(TR::Register *reg)
+bool TR::ARMMultipleMoveInstruction::refsRegister(TR::Register *reg)
    {
    return (reg == getMemoryBaseRegister());
    }
 
-bool TR_ARMMultipleMoveInstruction::defsRegister(TR::Register *reg)
+bool TR::ARMMultipleMoveInstruction::defsRegister(TR::Register *reg)
    {
    return (reg == getMemoryBaseRegister());
    }
 
-bool TR_ARMMultipleMoveInstruction::defsRealRegister(TR::Register *reg)
+bool TR::ARMMultipleMoveInstruction::defsRealRegister(TR::Register *reg)
    {
    return (reg == getMemoryBaseRegister()->getAssignedRegister());
    }
 
-bool TR_ARMMultipleMoveInstruction::usesRegister(TR::Register *reg)
+bool TR::ARMMultipleMoveInstruction::usesRegister(TR::Register *reg)
    {
    return (reg == getMemoryBaseRegister());
    }
 
-void TR_ARMMultipleMoveInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+void TR::ARMMultipleMoveInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    if (getDependencyConditions())
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());

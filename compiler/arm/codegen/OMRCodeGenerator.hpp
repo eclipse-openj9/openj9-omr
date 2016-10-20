@@ -84,7 +84,7 @@ class TR_BackingStore;
 namespace TR { class Machine; }
 namespace TR { class CodeGenerator; }
 struct TR_ARMLinkageProperties;
-class TR_ARMImmInstruction;
+namespace TR { class ARMImmInstruction; }
 class TR_ARMOpCode;
 class TR_ARMConstantDataSnippet;
 class TR_ARMLoadLabelItem;
@@ -227,7 +227,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    uint32_t                         _numFPR;
    TR::RealRegister            *_frameRegister;
    TR::RealRegister            *_methodMetaDataRegister;
-   TR_ARMImmInstruction          *_returnTypeInfoInstruction;
+   TR::ARMImmInstruction          *_returnTypeInfoInstruction;
    TR_ARMConstantDataSnippet       *_constantData;
    TR_ARMLinkageProperties   *_linkageProperties;
    List<TR_ARMOutOfLineCodeSection> _outOfLineCodeSectionList;

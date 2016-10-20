@@ -71,7 +71,9 @@ namespace TR { class X86ScratchRegisterManager; }
 namespace TR { class X86VFPSaveInstruction;     }
 struct TR_X86LinkageProperties;
 
-class TR_ClobberingInstruction
+namespace TR {
+
+class ClobberingInstruction
    {
    TR::Instruction *_instruction;
    TR::list<TR::Register*> _clobberedRegisters;
@@ -79,14 +81,18 @@ class TR_ClobberingInstruction
 public:
    TR_ALLOC(TR_Memory::ClobberingInstruction)
 
-   TR_ClobberingInstruction(TR_Memory * m) : _instruction(0), _clobberedRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())) {};
-   TR_ClobberingInstruction(TR::Instruction *instr, TR_Memory * m) : _instruction(instr), _clobberedRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())) {}
+   ClobberingInstruction(TR_Memory * m) : _instruction(0), _clobberedRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())) {};
+   ClobberingInstruction(TR::Instruction *instr, TR_Memory * m) : _instruction(instr), _clobberedRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())) {}
 
    TR::Instruction *getInstruction() {return _instruction;}
    TR::Instruction *setInstruction(TR::Instruction *i) {return (_instruction = i);}
    TR::list<TR::Register*> &getClobberedRegisters() {return _clobberedRegisters;}
    void addClobberedRegister(TR::Register *reg) {_clobberedRegisters.push_front(reg);}
    };
+
+}
+
+typedef TR::ClobberingInstruction TR_ClobberingInstruction;
 
 struct TR_BetterSpillPlacement
    {
@@ -353,7 +359,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void performNonLinearRegisterAssignmentAtBranch(TR::X86LabelInstruction *branchInstruction, TR_RegisterKinds kindsToBeAssigned);
    void prepareForNonLinearRegisterAssignmentAtMerge(TR::X86LabelInstruction *mergeInstruction);
 
-   void processClobberingInstructions(TR_ClobberingInstruction * clobInstructionCursor, TR::Instruction *instructionCursor);
+   void processClobberingInstructions(TR::ClobberingInstruction * clobInstructionCursor, TR::Instruction *instructionCursor);
 
    // different from evaluateNode in that it returns a clobberable register
    TR::Register *shortClobberEvaluate(TR::Node *node);
@@ -425,12 +431,12 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::list<TR::Register*> &getDependentDiscardableRegisters() {return _dependentDiscardableRegisters;}
    void addDependentDiscardableRegister(TR::Register *reg) {_dependentDiscardableRegisters.push_front(reg);}
-   void clobberLiveDependentDiscardableRegisters(TR_ClobberingInstruction *instr, TR::Register *baseReg);
+   void clobberLiveDependentDiscardableRegisters(TR::ClobberingInstruction *instr, TR::Register *baseReg);
    void reactivateDependentDiscardableRegisters(TR::Register *baseReg);
    void deactivateDependentDiscardableRegisters(TR::Register *baseReg);
 
-   TR::list<TR_ClobberingInstruction*> &getClobberingInstructions() {return _clobberingInstructions;}
-   void addClobberingInstruction(TR_ClobberingInstruction *i)  {_clobberingInstructions.push_front(i);}
+   TR::list<TR::ClobberingInstruction*> &getClobberingInstructions() {return _clobberingInstructions;}
+   void addClobberingInstruction(TR::ClobberingInstruction *i)  {_clobberingInstructions.push_front(i);}
 
    TR::list<TR_OutlinedInstructions*> &getOutlinedInstructionsList() {return _outlinedInstructionsList;}
 
@@ -656,8 +662,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::list<TR::Register*>               _spilledIntRegisters;
    TR::list<TR::Register*>               _liveDiscardableRegisters;
    TR::list<TR::Register*>               _dependentDiscardableRegisters;
-   TR::list<TR_ClobberingInstruction*>  _clobberingInstructions;
-   std::list<TR_ClobberingInstruction*, TR::typed_allocator<TR_ClobberingInstruction*, TR::Allocator> >::iterator _clobIterator;
+   TR::list<TR::ClobberingInstruction*>  _clobberingInstructions;
+   std::list<TR::ClobberingInstruction*, TR::typed_allocator<TR::ClobberingInstruction*, TR::Allocator> >::iterator _clobIterator;
    TR::list<TR::X86LabelInstruction*>    _deferredSplits;
    TR::list<TR_OutlinedInstructions*>   _outlinedInstructionsList;
 

@@ -699,7 +699,7 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes op,
        reg->isDiscardable() &&
        getOpCode().modifiesTarget())
       {
-      TR_ClobberingInstruction *clob = new (cg->trHeapMemory()) TR_ClobberingInstruction(this, cg->trMemory());
+      TR::ClobberingInstruction *clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
       clob->addClobberedRegister(reg);
       cg->addClobberingInstruction(clob);
       cg->removeLiveDiscardableRegister(reg);
@@ -742,7 +742,7 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes                       op,
        reg->isDiscardable() &&
        getOpCode().modifiesTarget())
       {
-      TR_ClobberingInstruction *clob = new (cg->trHeapMemory()) TR_ClobberingInstruction(this, cg->trMemory());
+      TR::ClobberingInstruction *clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(this, cg->trMemory());
       clob->addClobberedRegister(reg);
       cg->addClobberingInstruction(clob);
       cg->removeLiveDiscardableRegister(reg);
@@ -3702,7 +3702,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
          case TR::fcmple:
          case TR::dcmpgtu:
          case TR::fcmpgtu:
-            TR_ASSERT(0, "TR_X86FPCompareEvalRegInstruction::assignRegisters() ==> shouldn't be able to generate this condition!\n" );
+            TR_ASSERT(0, "TR::X86FPCompareEvalRegInstruction::assignRegisters() ==> shouldn't be able to generate this condition!\n" );
             break;
 
          case TR::ifdcmpltu:
@@ -3749,7 +3749,7 @@ void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBe
             break;
 
          default:
-            TR_ASSERT(0, "TR_X86FPCompareEvalRegInstruction::assignRegisters() ==> invalid comparison op: %d\n", cmpOp);
+            TR_ASSERT(0, "TR::X86FPCompareEvalRegInstruction::assignRegisters() ==> invalid comparison op: %d\n", cmpOp);
             break;
          }
 

@@ -4193,7 +4193,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
          if (debug("dumpRemat"))
             diagnostic("\n---> Deleting surviving discardable registers at BBEnd [" POINTER_PRINTF_FORMAT "]", node);
 
-         TR_ClobberingInstruction  *clob = NULL;
+         TR::ClobberingInstruction  *clob = NULL;
          if (debug("dumpRemat"))
             diagnostic(":");
          auto iterator = cg->getLiveDiscardableRegisters().begin();
@@ -4202,7 +4202,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
             TR::Register* regCursor = *iterator;
             if (!clob)
             {
-               clob = new (cg->trHeapMemory()) TR_ClobberingInstruction(instr, cg->trMemory());
+               clob = new (cg->trHeapMemory()) TR::ClobberingInstruction(instr, cg->trMemory());
                cg->addClobberingInstruction(clob);
             }
             clob->addClobberedRegister(regCursor);

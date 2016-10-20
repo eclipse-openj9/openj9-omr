@@ -573,7 +573,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _indexRegister, srcReg, cg);
          if (_indexRegister != tempTargetRegister)
             {
             if (_indexNode != NULL)
@@ -610,7 +610,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, _indexRegister, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();
@@ -637,7 +637,7 @@ void OMR::ARM::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::N
             tempTargetRegister = cg->allocateCollectedReferenceRegister();
          else
             tempTargetRegister = cg->allocateRegister();
-         new (cg->trHeapMemory()) TR_ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
+         new (cg->trHeapMemory()) TR::ARMTrg1Src2Instruction(ARMOp_add, srcTree, tempTargetRegister, _baseRegister, srcReg, cg);
          if (_baseRegister != tempTargetRegister)
             {
             self()->decNodeReferenceCounts();

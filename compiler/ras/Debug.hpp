@@ -228,22 +228,22 @@ class TR_PPCCallSnippet;
 
 
 class TR_ARMOpCode;
-class TR_ARMLabelInstruction;
-class TR_ARMConditionalBranchInstruction;
-class TR_ARMVirtualGuardNOPInstruction;
-class TR_ARMAdminInstruction;
-class TR_ARMImmInstruction;
-class TR_ARMImmSymInstruction;
-class TR_ARMTrg1Src2Instruction;
-class TR_ARMTrg2Src1Instruction;
-class TR_ARMMulInstruction;
-class TR_ARMMemSrc1Instruction;
-class TR_ARMTrg1Instruction;
-class TR_ARMMemInstruction;
-class TR_ARMTrg1MemInstruction;
-class TR_ARMTrg1MemSrc1Instruction;
-class TR_ARMControlFlowInstruction;
-class TR_ARMMultipleMoveInstruction;
+namespace TR { class ARMLabelInstruction; }
+namespace TR { class ARMConditionalBranchInstruction; }
+namespace TR { class ARMVirtualGuardNOPInstruction; }
+namespace TR { class ARMAdminInstruction; }
+namespace TR { class ARMImmInstruction; }
+namespace TR { class ARMImmSymInstruction; }
+namespace TR { class ARMTrg1Src2Instruction; }
+namespace TR { class ARMTrg2Src1Instruction; }
+namespace TR { class ARMMulInstruction; }
+namespace TR { class ARMMemSrc1Instruction; }
+namespace TR { class ARMTrg1Instruction; }
+namespace TR { class ARMMemInstruction; }
+namespace TR { class ARMTrg1MemInstruction; }
+namespace TR { class ARMTrg1MemSrc1Instruction; }
+namespace TR { class ARMControlFlowInstruction; }
+namespace TR { class ARMMultipleMoveInstruction; }
 class TR_ARMMemoryReference;
 class TR_ARMOperand2;
 class TR_ARMRealRegister;
@@ -585,7 +585,7 @@ public:
    void print(TR::FILE *, TR_PPCHelperCallSnippet *);
 #endif
 #if defined(TR_TARGET_ARM)
-   virtual void printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR_ARMMemInstruction *instr);
+   virtual void printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstruction *instr);
    virtual void printARMHelperBranch(TR::SymbolReference *symRef, uint8_t *cursor, TR::FILE *outFile, const char * opcodeName = "bl");
    virtual const char * getOpCodeName(TR_ARMOpCode *);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
@@ -940,23 +940,23 @@ public:
    void printBinaryPrefix(char *prefixBuffer, TR::Instruction *);
    void dumpDependencyGroup(TR::FILE *pOutFile, TR_ARMRegisterDependencyGroup *group, int32_t numConditions, char *prefix, bool omitNullDependencies);
    void dumpDependencies(TR::FILE *, TR::Instruction *);
-   void print(TR::FILE *, TR_ARMLabelInstruction *);
+   void print(TR::FILE *, TR::ARMLabelInstruction *);
 #ifdef J9_PROJECT_SPECIFIC
-   void print(TR::FILE *, TR_ARMVirtualGuardNOPInstruction *);
+   void print(TR::FILE *, TR::ARMVirtualGuardNOPInstruction *);
 #endif
-   void print(TR::FILE *, TR_ARMAdminInstruction *);
-   void print(TR::FILE *, TR_ARMImmInstruction *);
-   void print(TR::FILE *, TR_ARMImmSymInstruction *);
-   void print(TR::FILE *, TR_ARMTrg1Src2Instruction *);
-   void print(TR::FILE *, TR_ARMTrg2Src1Instruction *);
-   void print(TR::FILE *, TR_ARMMulInstruction *);
-   void print(TR::FILE *, TR_ARMMemSrc1Instruction *);
-   void print(TR::FILE *, TR_ARMTrg1Instruction *);
-   void print(TR::FILE *, TR_ARMMemInstruction *);
-   void print(TR::FILE *, TR_ARMTrg1MemInstruction *);
-   void print(TR::FILE *, TR_ARMTrg1MemSrc1Instruction *);
-   void print(TR::FILE *, TR_ARMControlFlowInstruction *);
-   void print(TR::FILE *, TR_ARMMultipleMoveInstruction *);
+   void print(TR::FILE *, TR::ARMAdminInstruction *);
+   void print(TR::FILE *, TR::ARMImmInstruction *);
+   void print(TR::FILE *, TR::ARMImmSymInstruction *);
+   void print(TR::FILE *, TR::ARMTrg1Src2Instruction *);
+   void print(TR::FILE *, TR::ARMTrg2Src1Instruction *);
+   void print(TR::FILE *, TR::ARMMulInstruction *);
+   void print(TR::FILE *, TR::ARMMemSrc1Instruction *);
+   void print(TR::FILE *, TR::ARMTrg1Instruction *);
+   void print(TR::FILE *, TR::ARMMemInstruction *);
+   void print(TR::FILE *, TR::ARMTrg1MemInstruction *);
+   void print(TR::FILE *, TR::ARMTrg1MemSrc1Instruction *);
+   void print(TR::FILE *, TR::ARMControlFlowInstruction *);
+   void print(TR::FILE *, TR::ARMMultipleMoveInstruction *);
 
    void print(TR::FILE *, TR::MemoryReference *);
 

@@ -123,6 +123,7 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 // Return codes from the compilation. Any non-zero return code will abort the
 // compilation.
 #define COMPILATION_SUCCEEDED          0
+#define COMPILATION_REQUESTED          1
 #define COMPILATION_IL_GEN_FAILURE     8
 #define COMPILATION_UNIMPL_OPCODE     12
 #define COMPILATION_METADATA_CREATION_FAILURE 24

@@ -24,6 +24,7 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "tests/BuilderTest.hpp"
+#include "OpCodesTest.hpp"
 
 namespace TestCompiler
 {
@@ -650,9 +651,9 @@ BuilderTest::invokeTests()
    {
    for(uint32_t i = 0; i <= 20 ; i++)
       {
-   	EXPECT_EQ(iterativeFib(i), _iterativeFibMethod(i));
+   	OMR_CT_EXPECT_EQ(_iterativeFibMethod, iterativeFib(i), _iterativeFibMethod(i));
 #if (defined(TR_TARGET_X86) && defined(TR_TARGET_64BIT)) || defined(TR_TARGET_S390)
-   	EXPECT_EQ(recursiveFib(i), _recursiveFibMethod(i));
+   	OMR_CT_EXPECT_EQ(_recursiveFibMethod, recursiveFib(i), _recursiveFibMethod(i));
 #endif
       }
    }
@@ -670,18 +671,16 @@ BuilderTest::invokeControlFlowTests()
 
    for(uint32_t i = 0; i < sizeof(basicForLoopParms) / sizeof(basicForLoopParms[0]); ++i)
       {
-      EXPECT_EQ(basicForLoop(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2], true),
-               _basicForLoopUpMethod(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2]));
+      OMR_CT_EXPECT_EQ(_basicForLoopUpMethod, basicForLoop(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2], true), _basicForLoopUpMethod(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2]));
 
-      EXPECT_EQ(basicForLoop(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2], false),
-               _basicForLoopDownMethod(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2]));
+      OMR_CT_EXPECT_EQ(_basicForLoopDownMethod, basicForLoop(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2], false), _basicForLoopDownMethod(basicForLoopParms[i][0], basicForLoopParms[i][1], basicForLoopParms[i][2]));
       }
 
    int32_t nestedLoopParms[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16, 20};
 
    for(uint32_t i = 0; i < sizeof(nestedLoopParms) / sizeof(nestedLoopParms[0]); ++i)
       {
-      EXPECT_EQ(shootoutNestedLoop(nestedLoopParms[i]), _shootoutNestedLoopMethod(nestedLoopParms[i]));
+      OMR_CT_EXPECT_EQ(_shootoutNestedLoopMethod, shootoutNestedLoop(nestedLoopParms[i]), _shootoutNestedLoopMethod(nestedLoopParms[i]));
       }
 
    int32_t absDiffParms[][2] =
@@ -693,7 +692,7 @@ BuilderTest::invokeControlFlowTests()
 
    for(uint32_t i = 0; i < sizeof(absDiffParms) / sizeof(absDiffParms[0]); ++i)
       {
-      EXPECT_EQ(absDiff(absDiffParms[i][0], absDiffParms[i][1]), _absDiffIfThenElseMethod(absDiffParms[i][0], absDiffParms[i][1]));
+      OMR_CT_EXPECT_EQ(_absDiffIfThenElseMethod, absDiff(absDiffParms[i][0], absDiffParms[i][1]), _absDiffIfThenElseMethod(absDiffParms[i][0], absDiffParms[i][1]));
       }
 
    int32_t maxIfThenParms[][2] =
@@ -706,7 +705,7 @@ BuilderTest::invokeControlFlowTests()
 
    for(uint32_t i = 0; i < sizeof(maxIfThenParms) / sizeof(maxIfThenParms[0]); ++i)
       {
-      EXPECT_EQ(maxIfThen(maxIfThenParms[i][0], maxIfThenParms[i][1]), _maxIfThenMethod(maxIfThenParms[i][0], maxIfThenParms[i][1]));
+      OMR_CT_EXPECT_EQ(_maxIfThenMethod, maxIfThen(maxIfThenParms[i][0], maxIfThenParms[i][1]), _maxIfThenMethod(maxIfThenParms[i][0], maxIfThenParms[i][1]));
       }
 
    const int64_t LONG_NEG = -9;
@@ -720,23 +719,23 @@ BuilderTest::invokeControlFlowTests()
 
    for(uint32_t i = 0; i < sizeof(subIfFalseThenParms) / sizeof(subIfFalseThenParms[0]); ++i)
       {
-      EXPECT_EQ(subIfFalseThen(subIfFalseThenParms[i][0], subIfFalseThenParms[i][1]), _subIfFalseThenMethod(subIfFalseThenParms[i][0], subIfFalseThenParms[i][1]));
+      OMR_CT_EXPECT_EQ(_subIfFalseThenMethod, subIfFalseThen(subIfFalseThenParms[i][0], subIfFalseThenParms[i][1]), _subIfFalseThenMethod(subIfFalseThenParms[i][0], subIfFalseThenParms[i][1]));
       }
 
    int32_t loopN[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20};
    for(uint32_t i = 0; i < sizeof(loopN) / sizeof(loopN[0]); ++i)
       {
-      EXPECT_EQ(doWhileFib(loopN[i]), _doWhileFibMethod(loopN[i]));
-      EXPECT_EQ(whileDoFib(loopN[i]), _whileDoFibMethod(loopN[i]));
-      EXPECT_EQ(forLoopContinue(loopN[i]), _forLoopContinueMethod(loopN[i]));
-      EXPECT_EQ(forLoopBreak(loopN[i]), _forLoopBreakMethod(loopN[i]));
-      EXPECT_EQ(forLoopBreakAndContinue(loopN[i]), _forLoopBreakAndContinueMethod(loopN[i]));
-      EXPECT_EQ(doWhileWithBreak(loopN[i]), _doWhileWithBreakMethod(loopN[i]));
-      EXPECT_EQ(doWhileWithContinue(loopN[i]), _doWhileWithContinueMethod(loopN[i]));
-      EXPECT_EQ(doWhileWithBreakAndContinue(loopN[i]), _doWhileWithBreakAndContinueMethod(loopN[i]));
-      EXPECT_EQ(whileDoWithBreak(loopN[i]), _whileDoWithBreakMethod(loopN[i]));
-      EXPECT_EQ(whileDoWithContinue(loopN[i]), _whileDoWithContinueMethod(loopN[i])) << i;
-      EXPECT_EQ(whileDoWithBreakAndContinue(loopN[i]), _whileDoWithBreakAndContinueMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_doWhileFibMethod, doWhileFib(loopN[i]), _doWhileFibMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_whileDoFibMethod, whileDoFib(loopN[i]), _whileDoFibMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_forLoopContinueMethod, forLoopContinue(loopN[i]), _forLoopContinueMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_forLoopBreakMethod, forLoopBreak(loopN[i]), _forLoopBreakMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_forLoopBreakAndContinueMethod, forLoopBreakAndContinue(loopN[i]), _forLoopBreakAndContinueMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_doWhileWithBreakMethod, doWhileWithBreak(loopN[i]), _doWhileWithBreakMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_doWhileWithContinueMethod, doWhileWithContinue(loopN[i]), _doWhileWithContinueMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_doWhileWithBreakAndContinueMethod, doWhileWithBreakAndContinue(loopN[i]), _doWhileWithBreakAndContinueMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_whileDoWithBreakMethod, whileDoWithBreak(loopN[i]), _whileDoWithBreakMethod(loopN[i]));
+      OMR_CT_EXPECT_EQ(_whileDoWithContinueMethod, whileDoWithContinue(loopN[i]), _whileDoWithContinueMethod(loopN[i])) << i;
+      OMR_CT_EXPECT_EQ(_whileDoWithBreakAndContinueMethod, whileDoWithBreakAndContinue(loopN[i]), _whileDoWithBreakAndContinueMethod(loopN[i]));
       }
    }
 
@@ -777,28 +776,25 @@ BuilderTest::invokeNestedControlFlowLoopTests()
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
    for(uint32_t i = 0; i < arrSize; ++i)
       {
-      EXPECT_EQ(forLoopIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]),
-               _forLoopUpIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
+      OMR_CT_EXPECT_EQ(_forLoopUpIfThenElseMethod, forLoopIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _forLoopUpIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
    for(uint32_t i = 0; i < arrSize; ++i)
       {
-      EXPECT_EQ(whileDoIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]),
-               _whileDoIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
+      OMR_CT_EXPECT_EQ(_whileDoIfThenElseMethod, whileDoIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _whileDoIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(loopIfThenElseArr) / sizeof(loopIfThenElseArr[0]);
    for(uint32_t i = 0; i < arrSize; ++i)
       {
-      EXPECT_EQ(doWhileIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]),
-               _doWhileIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
+      OMR_CT_EXPECT_EQ(_doWhileIfThenElseMethod, doWhileIfThenElse(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]), _doWhileIfThenElseMethod(loopIfThenElseArr[i][0], loopIfThenElseArr[i][1], loopIfThenElseArr[i][2], loopIfThenElseArr[i][3]));
       }
 
    arrSize = sizeof(ifThenElseLoopArr) / sizeof(ifThenElseLoopArr[0]);
    for(int32_t i = 0; i < arrSize; i++)
       {
-      EXPECT_EQ(ifThenElseLoop(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]), _ifThenElseLoopMethod(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]));
+      OMR_CT_EXPECT_EQ(_ifThenElseLoopMethod, ifThenElseLoop(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]), _ifThenElseLoopMethod(ifThenElseLoopArr[i][0], ifThenElseLoopArr[i][1]));
       }
    }
 

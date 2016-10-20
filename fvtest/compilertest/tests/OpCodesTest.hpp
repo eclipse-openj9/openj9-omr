@@ -27,6 +27,10 @@
 
 namespace TR { class ResolvedMethod; }
 
+#define OMR_CT_EXPECT_EQ(compilee, a, b) if (compilee != NULL) EXPECT_EQ(a, b)
+#define OMR_CT_EXPECT_DOUBLE_EQ(compilee, a, b) if (compilee != NULL) EXPECT_DOUBLE_EQ(a, b)
+#define OMR_CT_EXPECT_FLOAT_EQ(compilee, a, b) if (compilee != NULL) EXPECT_FLOAT_EQ(a, b)
+
 namespace TestCompiler
 {
 //unsigned signatureChars
@@ -742,3 +746,4 @@ class OpCodesTest : public TestDriver
    };
 
 } // namespace TestCompiler
+

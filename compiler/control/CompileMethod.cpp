@@ -228,6 +228,9 @@ compileMethodFromDetails(
 
    TR::CompileIlGenRequest request(details);
 
+   // initialize return code before compilation starts
+   rc = COMPILATION_REQUESTED;
+
    uint8_t *startPC = 0;
 
    TR_FilterBST *filterInfo = 0;

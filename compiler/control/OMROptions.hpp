@@ -48,7 +48,7 @@ namespace OMR { typedef OMR::Options OptionsConnector; }
 
 namespace TR { class CFGNode; }
 
-class TR_CompilationFilters;
+namespace TR { class CompilationFilters; }
 class TR_Debug;
 class TR_Debug;
 class TR_MCTLogs;
@@ -1386,11 +1386,14 @@ public:
 
    // Sub group filters
    //
-   TR_CompilationFilters * subGroup;
+   TR::CompilationFilters * subGroup;
 
    };
 
-class TR_CompilationFilters
+namespace TR
+{
+
+class CompilationFilters
    {
 public:
    #define FILTER_HASH_SIZE 211
@@ -1437,7 +1440,7 @@ public:
    void setHasRegexFilter()         {flags |= HasRegexFilter;}
    void setDefaultExclude(bool b)   {if (b) flags |= DefaultExclude;else flags &= ~DefaultExclude;}
    };
-
+} //namespace TR
 
 // Compilation options - each compilation has a pointer to one of these objects
 // to represent the options used for that compilation. There is a single

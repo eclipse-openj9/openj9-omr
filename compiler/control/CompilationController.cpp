@@ -32,22 +32,22 @@
 #include "infra/Monitor.hpp"                  // for Monitor
 #include "infra/ThreadLocal.h"                // for tlsAlloc, tlsFree
 
-class TR_CompilationInfo;
+namespace TR { class CompilationInfo; }
 
-int32_t                 TR_CompilationController::_verbose = 0;
-TR_CompilationStrategy *TR_CompilationController::_compilationStrategy = NULL;
-TR_CompilationInfo *    TR_CompilationController::_compInfo = 0;
-bool                    TR_CompilationController::_useController = false;
+int32_t                 TR::CompilationController::_verbose = 0;
+TR::CompilationStrategy *TR::CompilationController::_compilationStrategy = NULL;
+TR::CompilationInfo *    TR::CompilationController::_compInfo = 0;
+bool                    TR::CompilationController::_useController = false;
 
 
-bool TR_CompilationController::init(TR_CompilationInfo *compInfo)
+bool TR::CompilationController::init(TR::CompilationInfo *compInfo)
    {
    TR::Options *options = TR::Options::getCmdLineOptions();
    char *strategyName = options->getCompilationStrategyName();
 
       {
       _compInfo = compInfo;
-      _compilationStrategy = new (PERSISTENT_NEW) TR_DefaultCompilationStrategy();
+      _compilationStrategy = new (PERSISTENT_NEW) TR::DefaultCompilationStrategy();
 
          {
          TR_OptimizationPlan::_optimizationPlanMonitor = TR::Monitor::create("OptimizationPlanMonitor");
@@ -68,7 +68,7 @@ bool TR_CompilationController::init(TR_CompilationInfo *compInfo)
    return _useController;
    }
 
-void TR_CompilationController::shutdown()
+void TR::CompilationController::shutdown()
    {
    tlsFree(OMR::compilation);
    if (!_useController)
@@ -86,7 +86,7 @@ void TR_CompilationController::shutdown()
    }
 
 TR_OptimizationPlan *
-TR_DefaultCompilationStrategy::processEvent(TR_MethodEvent *event, bool *newPlanCreated)
+TR::DefaultCompilationStrategy::processEvent(TR_MethodEvent *event, bool *newPlanCreated)
    {
    TR_OptimizationPlan *plan = NULL;
    return plan;

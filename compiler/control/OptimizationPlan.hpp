@@ -30,7 +30,7 @@
 #include "infra/Assert.hpp"              // for TR_ASSERT
 #include "infra/Flags.hpp"               // for flags32_t
 
-class TR_CompilationInfo;
+namespace TR { class CompilationInfo; }
 class TR_MethodEvent;
 namespace TR { class Recompilation; }
 namespace TR { class Monitor; }
@@ -247,11 +247,13 @@ class TR_OptimizationPlan
    };
 
 
-//---------------------------- TR_CompilationStrategy ---------------------------
+//---------------------------- TR::CompilationStrategy ---------------------------
 // Abstract class. Must derive strategies from it. The only pure virtual method
 // is processEevent() which needs to be defined in the derived classes.
 //-------------------------------------------------------------------------------
-class TR_CompilationStrategy
+namespace TR
+{
+class CompilationStrategy
    {
    public:
    virtual TR_OptimizationPlan *processEvent(TR_MethodEvent *event, bool *newPlanCreated) = 0;
@@ -261,30 +263,32 @@ class TR_CompilationStrategy
    virtual void shutdown() {} // called at shutdown time; useful for stats
    virtual bool enableSwitchToProfiling() { return false; } // turn profiling on during optimizations
    };
+} // namespace TR
 
-
-//------------------------------- TR_CompilationController ------------------------
+//------------------------------- TR::CompilationController ------------------------
 // All methods and fields are static. The most important field is _compilationStrategy
 // that store the compilation strategy in use.
 //---------------------------------------------------------------------------------
-class TR_CompilationController
+namespace TR
+{
+class CompilationController
    {
    public:
    enum {LEVEL1=1, LEVEL2, LEVEL3}; // verbosity levels;
    enum {DEFAULT, THRESHOLD}; // strategy codes
-   static bool    init(TR_CompilationInfo *);
+   static bool    init(TR::CompilationInfo *);
    static void    shutdown();
    static bool    useController() { return _useController; }
    static int32_t verbose() { return _verbose; }
    static void    setVerbose(int32_t v) { _verbose = v; }
-   static TR_CompilationStrategy * getCompilationStrategy() { return _compilationStrategy; }
-   static TR_CompilationInfo     * getCompilationInfo() { return _compInfo; }
+   static TR::CompilationStrategy * getCompilationStrategy() { return _compilationStrategy; }
+   static TR::CompilationInfo     * getCompilationInfo() { return _compInfo; }
    private:
-   static TR_CompilationStrategy *_compilationStrategy;
-   static TR_CompilationInfo     *_compInfo;        // stored here for convenience
+   static TR::CompilationStrategy *_compilationStrategy;
+   static TR::CompilationInfo     *_compInfo;        // stored here for convenience
    static int32_t                 _verbose;
    static bool                    _useController;
    };
 
-
+} // namespace TR
 #endif

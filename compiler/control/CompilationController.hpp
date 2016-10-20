@@ -25,14 +25,18 @@
 class TR_MethodEvent;
 namespace TR { class Recompilation; }
 
-class TR_DefaultCompilationStrategy : public TR_CompilationStrategy
+namespace TR
+{
+
+class DefaultCompilationStrategy : public TR::CompilationStrategy
    {
    public:
    TR_PERSISTENT_ALLOC(TR_Memory::PersistentInfo);
-   TR_DefaultCompilationStrategy() {}
+   DefaultCompilationStrategy() {}
    TR_OptimizationPlan *processEvent(TR_MethodEvent *event, bool *newPlanCreated);
    void shutdown() {}
    virtual bool enableSwitchToProfiling() { return true; }
    };
 
+} // namesapce TR
 #endif

@@ -47,15 +47,15 @@
 
 #define FILTER_POOL_CHUNK_SIZE 32768
 
-#define FILTER_SIZE (sizeof(TR_CompilationFilters) + sizeof(TR_FilterBST*) * FILTER_HASH_SIZE)
+#define FILTER_SIZE (sizeof(TR::CompilationFilters) + sizeof(TR_FilterBST*) * FILTER_HASH_SIZE)
 void
-TR_Debug::clearFilters(TR_CompilationFilters * filters)
+TR_Debug::clearFilters(TR::CompilationFilters * filters)
    {
    char *buf = (char*) findOrCreateFilters(filters);
    int32_t size = FILTER_SIZE;
    memset(buf, 0, size);
 
-   filters->filterHash = (TR_FilterBST **)(buf + sizeof(TR_CompilationFilters));
+   filters->filterHash = (TR_FilterBST **)(buf + sizeof(TR::CompilationFilters));
    filters->setDefaultExclude(false);
    filters->excludedMethodFilter = NULL;
    }
@@ -69,24 +69,24 @@ TR_Debug::clearFilters(bool loadLimit)
       clearFilters(_compilationFilters);
    }
 
-TR_CompilationFilters *
-TR_Debug::findOrCreateFilters(TR_CompilationFilters * filters)
+TR::CompilationFilters *
+TR_Debug::findOrCreateFilters(TR::CompilationFilters * filters)
    {
    if (filters)
       return filters;
    else
       {
-      int32_t size = sizeof(TR_CompilationFilters) + sizeof(TR_FilterBST*) * FILTER_HASH_SIZE;
+      int32_t size = sizeof(TR::CompilationFilters) + sizeof(TR_FilterBST*) * FILTER_HASH_SIZE;
 
       char * buf = (char *)(TR::Compiler->regionAllocator.allocate(size));
 
-      filters = (TR_CompilationFilters *)buf;
+      filters = (TR::CompilationFilters *)buf;
       clearFilters(filters);
       return filters;
       }
   }
 
-TR_CompilationFilters *
+TR::CompilationFilters *
 TR_Debug::findOrCreateFilters(bool loadLimit)
    {
    if (loadLimit)
@@ -98,13 +98,13 @@ TR_Debug::findOrCreateFilters(bool loadLimit)
    }
 
 TR_FilterBST *
-TR_Debug::addFilter(char * & filterString, int32_t scanningExclude, int32_t optionSetIndex, int32_t lineNum, TR_CompilationFilters * anyFilters)
+TR_Debug::addFilter(char * & filterString, int32_t scanningExclude, int32_t optionSetIndex, int32_t lineNum, TR::CompilationFilters * anyFilters)
    {
    uint32_t filterType = scanningExclude ? TR_FILTER_EXCLUDE_NAME_ONLY : TR_FILTER_NAME_ONLY;
 
    // Allocate the filter hash table, if it hasn't been already.
    //
-   TR_CompilationFilters * filters = findOrCreateFilters(anyFilters);
+   TR::CompilationFilters * filters = findOrCreateFilters(anyFilters);
 
    TR_FilterBST * filterBST = new (TR::Compiler->regionAllocator) TR_FilterBST(filterType, optionSetIndex, lineNum);
 
@@ -250,7 +250,7 @@ TR_Debug::addSamplingPoint(char * filterString, TR_FilterBST * & lastSamplingPoi
       return false;
    p += 2;
 
-   TR_CompilationFilters *filters = findOrCreateFilters(loadLimit);
+   TR::CompilationFilters *filters = findOrCreateFilters(loadLimit);
    TR_FilterBST * filterBST = new (TR::Compiler->regionAllocator) TR_FilterBST(type, tickCount);
    if (!scanFilterName(methodName, filterBST))
       return false;
@@ -298,7 +298,7 @@ TR_Debug::addSamplingPoint(char * filterString, TR_FilterBST * & lastSamplingPoi
    }
 
 bool
-TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR_CompilationFilters * filters)
+TR_Debug::scanInlineFilters(FILE * inlineFile, int32_t & lineNumber, TR::CompilationFilters * filters)
    {
    char          limitReadBuffer[1024];
    bool          inlineFileError = false;
@@ -424,7 +424,7 @@ TR_Debug::inlinefileOption(char *option, void *base, TR::OptionTable *entry, TR:
       // initializing _inlineFilters using the new interface
       //
       _inlineFilters = findOrCreateFilters(_inlineFilters);
-      TR_CompilationFilters * filters = _inlineFilters;
+      TR::CompilationFilters * filters = _inlineFilters;
 
       filters->setDefaultExclude(true);
 
@@ -485,7 +485,7 @@ TR_Debug::limitfileOption(char *option, void *base, TR::OptionTable *entry, TR::
    FILE *limitFile = fopen(limitFileName, "r");
    if (limitFile)
       {
-      TR_CompilationFilters * filters = findOrCreateFilters(loadLimit);
+      TR::CompilationFilters * filters = findOrCreateFilters(loadLimit);
       if (!cmdLineOptions->getOption(TR_OrderCompiles))
          filters->setDefaultExclude(true);
 
@@ -901,7 +901,7 @@ TR_Debug::print(TR_FilterBST * filter)
    }
 
 void
-TR_Debug::printFilters(TR_CompilationFilters * filters)
+TR_Debug::printFilters(TR::CompilationFilters * filters)
    {
    int32_t i;
    if (filters)
@@ -1125,7 +1125,7 @@ TR_Debug::methodSigCanBeRelocated(const char *methodSig, TR_FilterBST * & filter
    }
 
 bool
-TR_Debug::methodSigCanBeFound(const char *methodSig, TR_CompilationFilters * filters, TR_FilterBST * & filter, TR_Method::Type methodType)
+TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * filters, TR_FilterBST * & filter, TR_Method::Type methodType)
    {
    const char *methodClass, *methodName, *methodSignature;
    uint32_t methodClassLen, methodNameLen, methodSignatureLen;
@@ -1240,7 +1240,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR_CompilationFilters * fil
    }
 
 bool
-TR_Debug::methodCanBeFound(TR_Memory *trMemory, TR_ResolvedMethod *method, TR_CompilationFilters * filters, TR_FilterBST * & filter)
+TR_Debug::methodCanBeFound(TR_Memory *trMemory, TR_ResolvedMethod *method, TR::CompilationFilters * filters, TR_FilterBST * & filter)
    {
    const char * methodSig = method->signature(trMemory);
    return methodSigCanBeFound(methodSig, filters, filter, method->convertToMethod()->methodType());
@@ -1249,7 +1249,7 @@ TR_Debug::methodCanBeFound(TR_Memory *trMemory, TR_ResolvedMethod *method, TR_Co
 bool
 TR_Debug::methodSigCanBeCompiledOrRelocated(const char *methodSig, TR_FilterBST * & filter, bool loadLimit, TR_Method::Type methodType)
    {
-   TR_CompilationFilters *compOrReloFilter = NULL;
+   TR::CompilationFilters *compOrReloFilter = NULL;
 
    if (loadLimit)
       {

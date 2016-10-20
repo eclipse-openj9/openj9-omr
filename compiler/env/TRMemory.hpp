@@ -429,8 +429,8 @@ public:
       S390Instruction,
 
       ArtifactManager,
-      TR_CompilationInfo,
-      TR_CompilationInfoPerThreadBase,
+      CompilationInfo,
+      CompilationInfoPerThreadBase,
       TR_DebuggingCounters,
       TR_Pattern,
       TR_UseNodeInfo,

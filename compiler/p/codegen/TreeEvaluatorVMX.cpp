@@ -471,9 +471,3 @@ TR::Register *OMR::Power::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node
    {
    return NULL;
    }
-
-
-TR::Register *OMR::Power::TreeEvaluator::countDigitsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   return NULL;
-   }

@@ -30,14 +30,25 @@ extern "C" bool initializeTestJit(TR_RuntimeHelper *helperIDs, void **helperAddr
 extern "C" void shutdownJit();
 
 void
-OMRTestEnv::SetUp()
+TestCompiler::OMRTestEnv::SetUp()
    {
-   initializeTestJit(0, 0, 0, "-Xjit");
+   initialize("-Xjit");
    }
 
 void
-OMRTestEnv::TearDown()
+TestCompiler::OMRTestEnv::TearDown()
+   {
+   shutdown();
+   }
+
+void
+TestCompiler::OMRTestEnv::initialize(char *options)
+   {
+   initializeTestJit(0, 0, 0, options);
+   }
+
+void
+TestCompiler::OMRTestEnv::shutdown()
    {
    shutdownJit();
    }
-

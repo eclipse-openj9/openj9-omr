@@ -42,7 +42,7 @@
 TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
    : _compilation(c),
    	 _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
-   	 _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), 0),
+       _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
    	 _dominators(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
@@ -91,12 +91,12 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
 
    if (_postDominators)
       {
-      if (_dfNumbers.ValueAt(cfg->getStart()->getNumber()) < 0)
+      if (_dfNumbers[cfg->getStart()->getNumber()] < 0)
          _dfNumbers[cfg->getStart()->getNumber()] = _topDfNum++;
       }
    else
       {
-      if (_dfNumbers.ValueAt(cfg->getEnd()->getNumber()) < 0)
+      if (_dfNumbers[cfg->getEnd()->getNumber()] < 0)
          _dfNumbers[cfg->getEnd()->getNumber()] = _topDfNum++;
       }
 
@@ -118,7 +118,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
    #if DEBUG
       for (block = toBlock(cfg->getFirstNode()); block; block = toBlock(block->getNext()))
          {
-         TR_ASSERT(_dfNumbers.ValueAt(block->getNumber()) >= 0, "Unreachable block in the CFG");
+         TR_ASSERT(_dfNumbers[block->getNumber()] >= 0, "Unreachable block in the CFG");
          }
    #endif
 
@@ -139,7 +139,7 @@ int TR_Dominators::dominates(TR::Block *block, TR::Block *other)
 
    if (other == block)
       return 1;
-   for (TR::Block *d = other; d != NULL && _dfNumbers.ValueAt(d->getNumber()) >= _dfNumbers.ValueAt(block->getNumber()); d = getDominator(d))
+   for (TR::Block *d = other; d != NULL && _dfNumbers[d->getNumber()] >= _dfNumbers[block->getNumber()]; d = getDominator(d))
       {
       if (d == block)
          return 1;
@@ -191,7 +191,7 @@ void TR_Dominators::findDominators(TR::Block *start)
          TR_SuccessorIterator bi(w._block);
          for (succ = bi.getFirst(); succ != NULL; succ = bi.getNext())
             {
-            u = eval(_dfNumbers.ValueAt(toBlock(succ->getTo())->getNumber())+1);
+            u = eval(_dfNumbers[toBlock(succ->getTo())->getNumber()]+1);
             u = getInfo(u)._sdno;
             if (u < w._sdno)
                w._sdno = u;
@@ -202,7 +202,7 @@ void TR_Dominators::findDominators(TR::Block *start)
          TR_PredecessorIterator bi(w._block);
          for (pred = bi.getFirst(); pred != NULL; pred = bi.getNext())
             {
-            u = eval(_dfNumbers.ValueAt(toBlock(pred->getFrom())->getNumber())+1);
+            u = eval(_dfNumbers[toBlock(pred->getFrom())->getNumber()]+1);
             u = getInfo(u)._sdno;
             if (u < w._sdno)
                w._sdno = u;

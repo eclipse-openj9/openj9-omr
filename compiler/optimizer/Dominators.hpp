@@ -28,6 +28,7 @@
 #include "il/Block.hpp"             // for Block
 #include "il/Node.hpp"              // for vcount_t
 #include "infra/Cfg.hpp"            // for CFG
+#include "infra/deque.hpp"
 
 class TR_FrontEnd;
 namespace TR { class CFGEdge; }
@@ -59,7 +60,7 @@ class TR_Dominators
    TR_StackMemory   trStackMemory() { return trMemory(); }
    bool trace() { return _trace; }
 
-   CS2::StaticArrayOf<int32_t, TR::Allocator> _dfNumbers;
+   TR::deque<int32_t> _dfNumbers;
 
    protected:
 

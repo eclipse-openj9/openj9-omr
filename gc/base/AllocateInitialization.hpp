@@ -192,12 +192,11 @@ public:
 				env->restoreObjects(&objectPtr);
 #endif /* OMR_GC_ALLOCATION_TAX */
 			}
-		} else if (isGCAllowed()) {
-			/* gc was allowed but allocation failed -- issue Allocation Failure Report if required */
-			env->allocationFailureEndReportIfRequired(&_allocateDescription);
 		}
 
 		if (isGCAllowed()) {
+			/* issue Allocation Failure Report if required */
+			env->allocationFailureEndReportIfRequired(&_allocateDescription);
 			/* Done allocation - successful or not */
 			env->unwindExclusiveVMAccessForGC();
 		}

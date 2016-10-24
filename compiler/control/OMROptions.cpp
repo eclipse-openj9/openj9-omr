@@ -707,7 +707,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSCHint=","R<nnn>\tOverride default SC Hints to user-specified hints", TR::Options::set32BitHexadecimal, offsetof(OMR::Options, _enableSCHintFlags), 0, "F%d"},
    {"enableScorchInterpBlkFreqProfiling",   "R\tenable profiling blocks in the jit", SET_OPTION_BIT(TR_EnableScorchInterpBlockFrequencyProfiling), "F"},
-   {"enableSCSSRelocations",              "O\tenable relocations in sequential constant store simplification sequences", SET_OPTION_BIT(TR_EnableSCSSRelocations), "F"},
    {"enableSelectiveEnterExitHooks",      "O\tadd method-specific test to JVMTI method enter and exit hooks", SET_OPTION_BIT(TR_EnableSelectiveEnterExitHooks), "F"},
    {"enableSelfTuningScratchMemoryUsageBeforeCompile", "O\tEnable self tuning scratch memory usage", SET_OPTION_BIT(TR_EnableSelfTuningScratchMemoryUsageBeforeCompile), "F", NOT_IN_SUBSET},
    {"enableSelfTuningScratchMemoryUsageInTrMemory", "O\tEnable self tuning scratch memory usage", SET_OPTION_BIT(TR_EnableSelfTuningScratchMemoryUsageInTrMemory), "F", NOT_IN_SUBSET},

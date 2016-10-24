@@ -40,7 +40,6 @@ namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector;
 #include "codegen/RegisterConstants.hpp"
 #include "compile/AliasBuilder.hpp"            // for AliasBuilder
 #include "compile/Method.hpp"                  // for mcount_t
-#include "cs2/arrayof.h"                       // for ArrayOf
 #include "cs2/hashtab.h"                       // for HashTable, etc
 #include "env/jittypes.h"                      // for intptrj_t, uintptrj_t
 #include "il/DataTypes.hpp"                    // for DataTypes, etc

@@ -26,6 +26,7 @@
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Block.hpp"             // for Block
 #include "infra/Cfg.hpp"            // for CFG
+#include "infra/deque.hpp"
 
 class TR_Dominators;
 class TR_RegionStructure;
@@ -59,7 +60,7 @@ class TR_RegionAnalysis
    typedef CS2::TableOf<StructInfo, TR::Allocator> InfoTable;
    typedef TR::SparseBitVector SparseBitVector;
    typedef TR::BitVector WorkBitVector;
-   typedef CS2::StaticArrayOf<TR_StructureSubGraphNode*, TR::Allocator> SubGraphNodes;
+   typedef TR::deque<TR_StructureSubGraphNode*> SubGraphNodes;
 
    void simpleIterator(TR_Stack<int32_t>& workStack,
                        SparseBitVector& vector,

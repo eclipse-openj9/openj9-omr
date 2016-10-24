@@ -223,7 +223,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
       _curTree = _curTree->getNextTreeTop();
       }
 
-   StoreNodeTable storeNodeTable(comp()->allocator());
+   StoreNodeTable storeNodeTable(0, comp()->allocator());
    SharedBitVector deadSymbolReferences(comp()->allocator());
    _storeNodes = &storeNodeTable;
 
@@ -313,7 +313,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
          {
          _blockContainsReturn = false;
          deadSymbolReferences.Clear();
-         _storeNodes->MakeEmpty();
+         _storeNodes->clear();
          }
 
       if (!removedTree)
@@ -742,10 +742,9 @@ void TR::LocalDeadStoreElimination::setExternalReferenceCountToTree(TR::Node *no
 
 bool TR::LocalDeadStoreElimination::seenIdenticalStore(TR::Node *node)
    {
-     StoreNodeTable::BackwardsCursor tc(*_storeNodes);
-     for (tc.SetToFirst(); tc.Valid(); tc.SetToNext()) {
-       TR::Node *storeNode = *tc;
-       if (!storeNode) continue;
+   for (auto it = _storeNodes->rbegin(); it != _storeNodes->rend(); ++it) {
+      TR::Node *storeNode = *it;
+      if (!storeNode) continue;
 
       // the same store node could be commoned in a previous tree
       // e.g.
@@ -825,7 +824,7 @@ void TR::LocalDeadStoreElimination::adjustStoresInfo(TR::Node *node, SharedBitVe
       TR::SymbolReference *symRef = node->getSymbolReference();
       TR::Symbol *sym = symRef->getSymbol();
       deadSymbolReferences[symRef->getReferenceNumber()] = true;
-      (*_storeNodes)[_storeNodes->NumberOfElements()] = node;
+      _storeNodes->push_back(node);
       }
    else if (node->getOpCode().isCall() ||
             node->getOpCodeValue() == TR::monent ||
@@ -1152,22 +1151,23 @@ bool TR::LocalDeadStoreElimination::examineNewUsesForKill(TR::Node *node, TR::No
    return result;
    }
 
-void TR::LocalDeadStoreElimination::killStoreNodes(TR::Node *node) {
-  StoreNodeTable::Cursor tc(*_storeNodes);
+void TR::LocalDeadStoreElimination::killStoreNodes(TR::Node *node)
+   {
+   TR::SparseBitVector usedef_vector(comp()->allocator());
+   node->getSymbolReference()->getUseDefAliases().getAliasesWithClear(usedef_vector);
 
-  TR::SparseBitVector usedef_vector(comp()->allocator());
-  node->getSymbolReference()->getUseDefAliases().getAliasesWithClear(usedef_vector);
+   for (auto it = _storeNodes->begin(); it != _storeNodes->end(); ++it)
+      {
+      TR::Node *storeNode = *it;
 
-  for (tc.SetToFirst(); tc.Valid(); tc.SetToNext()) {
-    TR::Node *storeNode = *tc;
+      if (storeNode && node->getSymbolReference()->sharesSymbol())
+         {
+         TR::SymbolReference *storeSymRef=storeNode->getSymbolReference();
 
-    if (storeNode && node->getSymbolReference()->sharesSymbol()) {
-      TR::SymbolReference *storeSymRef=storeNode->getSymbolReference();
-
-      // TODO: improve by not killing stores that are definitely disjoint
-      // if (node->getSymbolReference()->getUseDefAliases().contains(storeSymRef, comp()))
-      if (usedef_vector[storeSymRef->getReferenceNumber()])
-        *tc = NULL;
-    }
-  }
-}
+         // TODO: improve by not killing stores that are definitely disjoint
+         // if (node->getSymbolReference()->getUseDefAliases().contains(storeSymRef, comp()))
+         if (usedef_vector[storeSymRef->getReferenceNumber()])
+        *it = NULL;
+         }
+      }
+   }

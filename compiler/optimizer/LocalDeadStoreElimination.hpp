@@ -21,9 +21,9 @@
 
 #include <stdint.h>                           // for int32_t
 #include "env/TRMemory.hpp"                   // for Allocator, etc
-#include "cs2/arrayof.h"                      // for ArrayOf<>::iterator, etc
 #include "cs2/tableof.h"                      // for TableOf
 #include "il/Node.hpp"                        // for vcount_t, rcount_t
+#include "infra/deque.hpp"
 #include "optimizer/Optimization.hpp"         // for Optimization
 #include "optimizer/OptimizationManager.hpp"  // for OptimizationManager
 
@@ -80,7 +80,7 @@ class LocalDeadStoreElimination : public TR::Optimization
    typedef TR::Node *StoreNode;
 
    typedef CS2::TableOf<PendingIdentityStore, TR::Allocator> PendingIdentityStoreTable;
-   typedef CS2::ArrayOf<StoreNode, TR::Allocator> StoreNodeTable;
+   typedef TR::deque<StoreNode> StoreNodeTable;
    typedef TR::BitVector LDSBitVector;
 
    inline TR::LocalDeadStoreElimination *self();

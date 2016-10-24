@@ -41,6 +41,19 @@ public:
 
    struct TryCatchInfo : TR_Link<TryCatchInfo>
       {
+      void *operator new(size_t s, void *p) { return p; }
+
+      TryCatchInfo(uint16_t s, uint16_t e, uint16_t h, uint32_t c) :
+         _startIndex(s),
+         _endIndex(e),
+         _handlerIndex(h),
+         _catchType(c),
+         _firstBlock(0),
+         _lastBlock(0),
+         _catchBlock(0)
+         {
+         }
+
       void initialize(uint16_t s, uint16_t e, uint16_t h, uint32_t c)
          {
          _startIndex = s;
@@ -48,6 +61,7 @@ public:
          _handlerIndex = h;
          _catchType = c;
          }
+
       bool operator==(TryCatchInfo & o)
          {
          return _handlerIndex == o._handlerIndex && _catchType == o._catchType;

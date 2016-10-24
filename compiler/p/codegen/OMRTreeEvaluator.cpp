@@ -1514,7 +1514,7 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 	kind = TR_VSX_VECTOR;
 	break;
      default:
-	TR_ASSERT(false, "unknown vector load TRIL: unrecognized vector type %i\n", node->getDataType()); return NULL;
+	TR_ASSERT(false, "unknown vector load TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
 
    TR::Register *dstReg = cg->allocateRegister(kind);
@@ -1554,7 +1554,7 @@ TR::Register *OMR::Power::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::Cod
      case TR::VectorInt64:
      case TR::VectorDouble:
              opcode = TR::InstOpCode::stxvd2x; break;
-     default: TR_ASSERT(false, "unknown vector store TRIL: unrecognized vector type %i\n", node->getDataType()); return NULL;
+     default: TR_ASSERT(false, "unknown vector store TRIL: unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
 
    TR::Node *valueChild = node->getOpCode().isStoreDirect() ? node->getFirstChild() : node->getSecondChild();
@@ -1818,7 +1818,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::C
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
-         TR_ASSERT(false, "unsupported vector type %i in getvelemEvaluator.\n", firstChild->getDataType());
+         TR_ASSERT(false, "unsupported vector type %s in getvelemEvaluator.\n", firstChild->getDataType().toString());
          break;
       case TR::VectorInt32:
          elementCount = 4;
@@ -1846,7 +1846,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::C
          vecStoreOpCode = TR::InstOpCode::stxvd2x;
          break;
       default:
-         TR_ASSERT(false, "unrecognized vector type %i\n", firstChild->getDataType());
+         TR_ASSERT(false, "unrecognized vector type %s\n", firstChild->getDataType().toString());
       }
 
    TR::Register *vectorReg = cg->evaluate(firstChild);
@@ -2182,7 +2182,7 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
      case TR::VectorInt32:  return inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
      case TR::VectorFloat: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvadddp);
-     default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+     default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
@@ -2194,7 +2194,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
      case TR::VectorInt32:  return inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
      case TR::VectorFloat: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubdp);
-     default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+     default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
@@ -2209,7 +2209,7 @@ TR::Register *OMR::Power::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeG
      case TR::VectorDouble:
        return vnegDoubleHelper(node,cg);
      default:
-       TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+       TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
@@ -2252,7 +2252,7 @@ TR::Register *OMR::Power::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeG
      case TR::VectorDouble:
        return vmulDoubleHelper(node,cg);
      default:
-       TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+       TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 
@@ -2316,7 +2316,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeG
      case TR::VectorDouble:
 	return vdivDoubleHelper(node, cg);
      default:
-       TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+       TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
      }
    }
 

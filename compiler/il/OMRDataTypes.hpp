@@ -286,7 +286,7 @@ namespace OMR
 class DataType
    {
 public:
-   DataType() : _type(TR::DataTypes::NoType) { }
+   DataType() : _type(TR::NoType) { }
    DataType(TR::DataTypes t) : _type(t) { }
 
    TR::DataTypes getDataType() const { return _type; }
@@ -338,6 +338,8 @@ public:
 
    TR::DataType vectorToScalar();
    TR::DataType scalarToVector();
+
+   const char * toString() const;
 
    static TR::DataType getIntegralTypeFromPrecision(int32_t precision);
 

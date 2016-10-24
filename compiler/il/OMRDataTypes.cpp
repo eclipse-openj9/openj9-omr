@@ -281,8 +281,8 @@ OMR::DataType::getFloatTypeFromSize(int32_t size)
 TR::ILOpCodes
 OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    {
-   TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %d requested", t1);
-   TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %d requested", t2);
+   TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
+   TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %s requested", t2.toString());
    return OMR::conversionMap[t1][t2];
    }
 
@@ -348,6 +348,12 @@ OMR::DataType::getName(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "Name requested for unknown datatype");
    return OMRDataTypeNames[dt];
+   }
+
+const char *
+OMR::DataType::toString() const
+   {
+   return TR::DataType::getName(getDataType());
    }
 
 

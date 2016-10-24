@@ -246,7 +246,7 @@ OMR::TransformUtil::scalarizeAddressParameter(
             ref->getSymbol()->getDataType() == dataType)
       {
       if (comp->getOption(TR_TraceScalarizeSSOps))
-         traceMsg(comp,"\n\tscalarizeAddressParameter auto direct case: address %p, dt %d\n",address,dataType);
+         traceMsg(comp,"\n\tscalarizeAddressParameter auto direct case: address %p, dt %s\n",address,dataType.toString());
 
       TR::ILOpCodes opcode = store ? comp->il.opCodeForDirectStore(dataType)
                                   : comp->il.opCodeForDirectLoad(dataType);

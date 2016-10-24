@@ -12892,7 +12892,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
                }
 
          default:
-            TR_ASSERT(0, "Unexpected copy datatype %d encountered on arrayset", constType);
+            TR_ASSERT(0, "Unexpected copy datatype %s encountered on arrayset", constType.toString());
             break;
          }
       }
@@ -18209,7 +18209,7 @@ int32_t getVectorElementSize(TR::Node *node)
       case TR::VectorFloat: return 4;
       case TR::VectorInt64:
       case TR::VectorDouble: return 8;
-      default: TR_ASSERT(false, "Unknown vector node type %i for element size\n", node->getDataType()); return 0;
+      default: TR_ASSERT(false, "Unknown vector node type %s for element size\n", node->getDataType().toString()); return 0;
       }
    }
 
@@ -18223,7 +18223,7 @@ int32_t getVectorElementSizeMask(TR::Node *node)
       case TR::VectorFloat: return 2;
       case TR::VectorInt64:
       case TR::VectorDouble: return 3;
-      default: TR_ASSERT(false, "Unknown vector node type %i for Element Size Control Mask\n", node->getDataType()); return 0;
+      default: TR_ASSERT(false, "Unknown vector node type %s for Element Size Control Mask\n", node->getDataType().toString()); return 0;
       }
    }
 
@@ -18281,7 +18281,7 @@ OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt32:
       case TR::VectorInt64: return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VLC);
       case TR::VectorDouble: return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFPSO);
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
@@ -18403,7 +18403,7 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          case TR::VectorInt32:
          case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VA);
          case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFA);
-         default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+         default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
          }
       }
    }
@@ -18429,7 +18429,7 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          case TR::VectorInt32:
          case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VS);
          case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFS);
-         default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+         default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
          }
       }
    }
@@ -18489,7 +18489,7 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          return returnReg;
          }
       case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
@@ -18588,7 +18588,7 @@ OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt32:
       case TR::VectorInt64: return vDivOrRemHelper(node, cg, true);
       case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
@@ -18702,7 +18702,7 @@ OMR::Z::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt32:
       case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ);
       case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE);
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 
@@ -18717,7 +18717,7 @@ OMR::Z::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt32:
       case TR::VectorInt64: targetReg = inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ); break;
       case TR::VectorDouble: targetReg = inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE); break;
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); break;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); break;
       }
 
    // vector nor with zero vector
@@ -18747,7 +18747,7 @@ OMR::Z::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt32:
       case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, op);
       case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCH);
-      default: TR_ASSERT(false, "unrecognized vector type %i\n", node->getDataType()); return NULL;
+      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
 

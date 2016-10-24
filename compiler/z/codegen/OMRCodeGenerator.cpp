@@ -10096,7 +10096,7 @@ OMR::Z::CodeGenerator::biasDecimalFloatFrac(TR::DataType dt, int32_t frac)
       case TR::DecimalDouble:     return TR_DECIMAL_DOUBLE_BIAS-frac;
       case TR::DecimalLongDouble: return TR_DECIMAL_LONG_DOUBLE_BIAS-frac;
 #endif
-      default: TR_ASSERT(0, "unexpected biasDecimalFloatFrac dt %d",dt);
+      default: TR_ASSERT(0, "unexpected biasDecimalFloatFrac dt %s",dt.toString());
       }
    return 0;
    }

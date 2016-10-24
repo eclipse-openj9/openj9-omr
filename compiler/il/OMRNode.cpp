@@ -1442,7 +1442,7 @@ OMR::Node::createConstZeroValue(TR::Node *originatingByteCodeNode, TR::DataType 
          break;
          }
       default:
-         TR_ASSERT_SAFE_FATAL(false, "datatype %d not supported for createConstZeroValue\n", dt);
+         TR_ASSERT_SAFE_FATAL(false, "datatype %s not supported for createConstZeroValue\n", dt.toString());
       }
    return constZero;
    }
@@ -1478,7 +1478,7 @@ OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt)
          constOne->setUnsignedLongInt(DOUBLE_ONE);
          break;
       default:
-         TR_ASSERT_SAFE_FATAL(false, "datatype %d not supported for createConstOne\n", dt);
+         TR_ASSERT_SAFE_FATAL(false, "datatype %s not supported for createConstOne\n", dt.toString());
       }
    return constOne;
    }
@@ -1520,7 +1520,7 @@ OMR::Node::createConstDead(TR::Node *originatingByteCodeNode, TR::DataType dt, i
          result->setDouble(*(double*)(&dead64));
          break;
       default:
-         TR_ASSERT_SAFE_FATAL(false, "datatype %d not supported for createConstDead\n", dt);
+         TR_ASSERT_SAFE_FATAL(false, "datatype %s not supported for createConstDead\n", dt.toString());
       }
    return result;
    }
@@ -4389,7 +4389,7 @@ OMR::Node::get32bitIntegralValue()
       return self()->getByte();
    else
       {
-      TR_ASSERT(false, "Must be an <= size 4 integral but it is type %d", self()->getDataType());
+      TR_ASSERT(false, "Must be an <= size 4 integral but it is type %s", self()->getDataType().toString());
       return 0;
       }
    }
@@ -4431,7 +4431,7 @@ OMR::Node::get64bitIntegralValue()
       return self()->getAddress(); //TR::Compiler->target.is64Bit() ? getUnsignedLongInt() : getUnsignedInt();
    else
       {
-      TR_ASSERT(false, "Must be an integral or address but it is type %d on node %p\n", self()->getDataType(), self());
+      TR_ASSERT(false, "Must be an integral or address but it is type %s on node %p\n", self()->getDataType().toString(), self());
       return 0;
       }
 
@@ -4460,7 +4460,7 @@ OMR::Node::set64bitIntegralValue(int64_t value)
       }
    else
       {
-      TR_ASSERT(false, "Must be an integral value but it is type %d", self()->getDataType());
+      TR_ASSERT(false, "Must be an integral value but it is type %s", self()->getDataType().toString());
       }
    }
 
@@ -4481,7 +4481,7 @@ OMR::Node::get64bitIntegralValueAsUnsigned()
       return TR::Compiler->target.is64Bit() ? self()->getUnsignedLongInt() : self()->getUnsignedInt();
    else
       {
-      TR_ASSERT(false, "Must be an integral or address but it is type %d", self()->getDataType());
+      TR_ASSERT(false, "Must be an integral or address but it is type %s", self()->getDataType().toString());
       return 0;
       }
 

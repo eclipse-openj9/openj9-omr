@@ -513,7 +513,7 @@ bool isNZDoublePowerOfTwo(double value)
 // instead of base ** 255
 bool isIntegralExponentInRange(TR::Node *parent, TR::Node *exponent, int64_t maxNegativeExponent, int64_t maxPositiveExponent, TR::Simplifier * s)
    {
-   TR_ASSERT(exponent->getType().isIntegral(),"isIntegralExponentInRange only valid for integral exponents and not type %d\n",exponent->getDataType());
+   TR_ASSERT(exponent->getType().isIntegral(),"isIntegralExponentInRange only valid for integral exponents and not type %s\n",exponent->getDataType().toString());
    TR_ASSERT(parent->getOpCode().isExponentiation(),"isIntegralExponentInRange only valid for exponentiation operations\n");
    bool exponentInRange = false;
    bool isUnsignedExpOp = parent->getOpCode().isUnsignedExponentiation();
@@ -747,7 +747,7 @@ TR::Node *replaceExpWithMult(TR::Node *node,TR::Node *valueNode,TR::Node *expone
                   }
                default:
                   {
-                  TR_ASSERT(false,"unexpected exponent datatype %d\n",node->getDataType());
+                  TR_ASSERT(false,"unexpected exponent datatype %s\n",node->getDataType().toString());
                   }
                }
             return node;

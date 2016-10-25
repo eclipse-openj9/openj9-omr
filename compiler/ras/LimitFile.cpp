@@ -996,7 +996,7 @@ TR_Debug::scanFilterName(char *string, TR_FilterBST *filter)
    char *signatureChars = string;
    int32_t signatureLen = 0;
    char  filterType = filter->getFilterType();
-   if (*string == '/') // hack that works for linux
+   if (*string == '/' || *string == '.') // hack that works for linux
       omrPattern = true;
 
    while (*string && *string != '\t' && *string != ',' && *string != '\n')
@@ -1133,7 +1133,7 @@ TR_Debug::methodSigCanBeFound(const char *methodSig, TR::CompilationFilters * fi
    methodClass = methodSig;
    if (methodType != TR_Method::J9)
       {
-      if (methodSig[0] == '/') // omr method pattern
+      if (methodSig[0] == '/' || methodSig[0] == '.') // omr method pattern
          {
          methodClass = methodSig;
          methodSignature = strchr(methodSig, ':');

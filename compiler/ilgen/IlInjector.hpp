@@ -108,6 +108,7 @@ public:
    void                           storeToTemp(TR::SymbolReference *tempSymRef, TR::Node *value);
    TR::Node                     * loadTemp(TR::SymbolReference *tempSymRef);
    TR::Node                     * i2l(TR::Node *n);
+   TR::Node                     * iu2l(TR::Node *n);
 
    void                           ifjump(TR::ILOpCodes op, TR::Node *first, TR::Node *second, TR::Block *targetBlock);
    void                           ifjump(TR::ILOpCodes op, TR::Node *first, TR::Node *second, int32_t targetBlockNumber);

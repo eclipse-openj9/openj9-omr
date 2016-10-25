@@ -273,6 +273,11 @@ OMR::IlInjector::i2l(TR::Node *n)
    return TR::Node::create(TR::i2l, 1, n);
    }
 
+TR::Node *
+OMR::IlInjector::iu2l(TR::Node *n)
+   {
+   return TR::Node::create(TR::iu2l, 1, n);
+   }
 
 void
 OMR::IlInjector::ifjump(TR::ILOpCodes op,

@@ -90,6 +90,7 @@
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 #include "ras/DebugCounter.hpp"                // for TR_DebugCounterGroup, etc
 #include "control/Recompilation.hpp"           // for TR_Recompilation, etc
+#include "runtime/CodeCacheExceptions.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"           // for TR_Recompilation, etc
@@ -1855,14 +1856,16 @@ void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
    _numReservedIPICTrampolines = 0;
    if ( self()->cg()->committedToCodeCache() || !newCodeCache )
       {
-      if (self()->getErrorCode() == COMPILATION_SUCCEEDED)
+      traceMsg(self(), "Already committed to current code cache");
+
+      if (newCodeCache)
          {
-         if (newCodeCache)
-            self()->setErrorCode(COMPILATION_ILLEGAL_CODE_CACHE_SWITCH);
-         else
-            self()->setErrorCode(COMPILATION_NULL_SUBSTITUTE_CODE_CACHE);
+         self()->setErrorCode(COMPILATION_ILLEGAL_CODE_CACHE_SWITCH);
+         throw TR::RecoverableCodeCacheError();
          }
-      self()->fe()->outOfMemory(self(), "Already committed to current code cache");
+
+      self()->setErrorCode(COMPILATION_NULL_SUBSTITUTE_CODE_CACHE);
+      throw TR::CodeCacheError();
       }
    }
 

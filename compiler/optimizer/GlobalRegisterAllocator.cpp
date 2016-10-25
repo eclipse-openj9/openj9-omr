@@ -514,7 +514,8 @@ TR_GlobalRegisterAllocator::perform()
           comp()->compilationShouldBeInterrupted(GRA_AFTER_FIND_LOOP_AUTO_CONTEXT))
          {
          comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         comp()->fe()->outOfMemory(comp(), "interrupted during GRA");
+         traceMsg(comp(), "interrupted during GRA");
+         throw TR::CompilationInterrupted();
          }
 
       bool canAffordAssignment = true;
@@ -3927,7 +3928,8 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
                if (((++numIter) & 0x3f)==0 && comp()->compilationShouldBeInterrupted(GRA_FIND_LOOPS_AND_CORRESPONDING_AUTOS_BLOCK_CONTEXT))
                   {
                   comp()->setErrorCode(COMPILATION_INTERRUPTED);
-                  comp()->fe()->outOfMemory(comp(), "interrupted in GRA-findLoopsAndCorrspondingAuto-block");
+                  traceMsg(comp(), "interrupted in GRA-findLoopsAndCorrspondingAuto-block");
+                  throw TR::CompilationInterrupted();
                   }
                nextBlock->setVisitCount(visitCount);
                int32_t executionFrequency = 1;

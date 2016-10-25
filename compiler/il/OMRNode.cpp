@@ -157,7 +157,8 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
          {
          TR_ASSERT(0, "getGlobalIndex() == MAX_NODE_COUNT");
          comp->setErrorCode(COMPILATION_MAX_NODE_COUNT_EXCEEDED);
-         comp->fe()->outOfMemory(comp, "Global index equal to max node count");
+         traceMsg(comp, "Global index equal to max node count");
+         throw TR::ExcessiveComplexity();
          }
       }
 
@@ -248,7 +249,8 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
       {
       TR_ASSERT(0, "getGlobalIndex() == MAX_NODE_COUNT");
       comp->setErrorCode(COMPILATION_MAX_NODE_COUNT_EXCEEDED);
-      comp->fe()->outOfMemory(comp, "Global index equal to max node count");
+      traceMsg(comp, "Global index equal to max node count");
+      throw TR::ExcessiveComplexity();
       }
 
    if(comp->getDebug())

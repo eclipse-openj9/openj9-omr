@@ -4257,7 +4257,8 @@ void TR::GlobalValuePropagation::processStructure(TR_StructureSubGraphNode *node
        comp()->compilationShouldBeInterrupted(BEFORE_PROCESS_STRUCTURE_CONTEXT))
       {
       comp()->setErrorCode(COMPILATION_INTERRUPTED);
-      comp()->fe()->outOfMemory(comp(), "interrupted when starting processStructure()");
+      traceMsg(comp(), "interrupted when starting processStructure()");
+      throw TR::CompilationInterrupted();
       }
    TR_RegionStructure *region = node->getStructure()->asRegion();
    if (region)

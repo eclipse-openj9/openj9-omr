@@ -148,7 +148,8 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
    if (_methodIndex >= MAX_CALLER_INDEX)
       {
       comp->setErrorCode(COMPILATION_MAX_CALLER_INDEX_EXCEEDED);
-      comp->fe()->outOfMemory(comp, "Exceeded MAX_CALLER_INDEX");
+      traceMsg(comp, "Exceeded MAX_CALLER_INDEX");
+      throw TR::MaxCallerIndexExceeded();
       }
 
    if (_resolvedMethod->isSynchronized())
@@ -1030,7 +1031,8 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
               {
                self()->comp()->setErrorCode(COMPILATION_IL_GEN_FAILURE);
-               self()->comp()->fe()->outOfMemory(self()->comp(), "Pending push slot sharing detected");
+               traceMsg(self()->comp(), "Pending push slot sharing detected");
+               throw TR::ILGenFailure();
                }
             }
 
@@ -1062,7 +1064,8 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
                {
                self()->comp()->setErrorCode(COMPILATION_IL_GEN_FAILURE);
-               self()->comp()->fe()->outOfMemory(self()->comp(), "Auto/parm slot sharing detected");
+               traceMsg(self()->comp(), "Auto/parm slot sharing detected");
+               throw TR::ILGenFailure();
                }
             }
          // Certain special temps go into the OSR buffer, but most don't

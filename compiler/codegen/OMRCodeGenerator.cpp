@@ -101,6 +101,7 @@
 #include "ras/DebugCounter.hpp"
 #include "ras/Delimiter.hpp"                        // for Delimiter
 #include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
+#include "runtime/CodeCacheExceptions.hpp"
 #include "stdarg.h"                                 // for va_end, etc
 
 namespace TR { class Optimizer; }
@@ -2404,9 +2405,15 @@ OMR::CodeGenerator::reserveCodeCache()
       // We may reach this point if all code caches have been used up
       // If some code caches have some space but cannot be used because they are reserved
       // we will throw an exception in the call to getDesignatedCodeCache
+      traceMsg(self()->comp(), "Cannot reserve code cache");
+
       if (self()->comp()->compileRelocatableCode())
+         {
          self()->comp()->setErrorCode(COMPILATION_OUT_OF_MEMORY_RELOCATION_DATA);
-      self()->fe()->outOfMemory(self()->comp(), "Cannot reserve code cache");
+         throw TR::RecoverableCodeCacheError();
+         }
+
+      throw TR::CodeCacheError();
       }
    }
 

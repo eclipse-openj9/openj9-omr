@@ -1120,7 +1120,8 @@ int32_t OMR::Optimizer::optimize()
          {
          comp()->setNextOptLevel(nextHotness);
          comp()->setErrorCode(COMPILATION_NEEDED_AT_HIGHER_LEVEL);
-         comp()->fe()->outOfMemory(comp(), "Method needs to be compiled at higher level");
+         traceMsg(comp(), "Method needs to be compiled at higher level");
+         throw TR::InsufficientlyAggressiveCompilation();
          }
       }
 
@@ -1973,12 +1974,13 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
                comp()->setErrorCode(COMPILATION_LOOPS_OR_BASICBLOCKS_EXCEEDED);
                if (comp()->getOption(TR_MimicInterpreterFrameShape))
                   {
-                  comp()->fe()->outOfMemory(comp(), "complex method under MimicInterpreterFrameShape");
+                  traceMsg(comp(), "complex method under MimicInterpreterFrameShape");
                   }
                else
                   {
-                  comp()->fe()->outOfMemory(comp(), "Method is too large");
+                  traceMsg(comp(), "Method is too large");
                   }
+               throw TR::ExcessiveComplexity();
                }
             }
          }
@@ -2041,7 +2043,8 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       if (comp()->compilationShouldBeInterrupted((TR_CallingContext)optNum))
          {
          comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         comp()->fe()->outOfMemory(comp(), "interrupted between optimizations");
+         traceMsg(comp(), "interrupted between optimizations");
+         throw TR::CompilationInterrupted();
          }
 
       manager->setTrace(origTraceSetting);

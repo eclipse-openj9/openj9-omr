@@ -32,8 +32,9 @@
 #include "CopyScanCacheStandard.hpp"
 #include "CycleState.hpp"
 #include "GCExtensionsBase.hpp"
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 #include "MasterGCThread.hpp"
- 
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 struct J9HookInterface;
 class GC_ObjectScanner;
 class MM_AllocateDescription;
@@ -499,6 +500,10 @@ public:
 	/* mutator thread */
 	void mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *env, MM_EnvironmentBase *threadEnvironment);
 	void mutatorSetupForGC(MM_EnvironmentBase *env);
+	/**
+	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 
+	 */ 
+	void triggerConcurrentScavengerTransition(MM_EnvironmentBase *envBase, MM_AllocateDescription *allocDescription);
 
 	/* worker thread */
 	void workThreadProcessRoots(MM_EnvironmentStandard *env);

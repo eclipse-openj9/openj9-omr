@@ -428,22 +428,34 @@ MM_MemorySubSpaceSemiSpace::tearDown(MM_EnvironmentBase *env)
  ****************************************
  */
 void
-MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, uintptr_t step)
+MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 {
-	if (1 == step) {
+	switch (step) {
+	case set_evacuate:
 		_memorySubSpaceEvacuate = _memorySubSpaceAllocate;
-		_memorySubSpaceAllocate = _memorySubSpaceSurvivor;
 		_memorySubSpaceEvacuate->isAllocatable(false);
+		break;
+	case set_allocate:
+		_memorySubSpaceAllocate = _memorySubSpaceSurvivor;
 		_memorySubSpaceAllocate->isAllocatable(true);
-	}
-
-	if (2 == step) {
+		/* Let know MemorySpace about new default MemorySubSpace */
+		getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
+		break;
+	case disable_allocation:
 		_memorySubSpaceAllocate->isAllocatable(false);
-	}
-
-	if (3 == step) {
-		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
+		break;
+	case restore_allocation_and_set_survivor:
 		_memorySubSpaceAllocate->isAllocatable(true);
+		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
+		break;
+	case backout:
+		_memorySubSpaceAllocate = _memorySubSpaceEvacuate;
+		_memorySubSpaceAllocate->isAllocatable(true);
+		_memorySubSpaceEvacuate = _memorySubSpaceSurvivor;
+		getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
+		break;
+	default:
+		Assert_MM_unreachable();
 	}
 }
 
@@ -496,12 +508,7 @@ MM_MemorySubSpaceSemiSpace::tilt(MM_EnvironmentBase *env, uintptr_t survivorSpac
 void
 MM_MemorySubSpaceSemiSpace::rebuildFreeListForEvacuate(MM_EnvironmentBase *env)
 {
-	// todo: try to consolite so that we call just aginst evacuate in both cases
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	_memorySubSpaceEvacuate->rebuildFreeList(env);
-#else
-	_memorySubSpaceAllocate->rebuildFreeList(env);
-#endif
 }
 
 

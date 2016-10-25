@@ -46,6 +46,14 @@ class MM_MemorySubSpaceSemiSpace : public MM_MemorySubSpace
 	/*
 	 * Data members
 	 */
+public:
+	enum Flip_step { 
+		set_evacuate,
+		set_allocate,
+		disable_allocation,
+		restore_allocation_and_set_survivor,
+		backout
+	};	 
 private:
 	MM_MemorySubSpace *_memorySubSpaceAllocate;
 	MM_MemorySubSpace *_memorySubSpaceSurvivor;
@@ -140,7 +148,7 @@ public:
 	virtual void systemGarbageCollect(MM_EnvironmentBase *env, uint32_t gcCode);
 
 	/* Type specific methods */
-	void flip(MM_EnvironmentBase *env, uintptr_t step);
+	void flip(MM_EnvironmentBase *env, Flip_step action);
 	
 	MMINLINE uintptr_t getSurvivorSpaceSizeRatio() const { return _survivorSpaceSizeRatio; }
 	MMINLINE void setSurvivorSpaceSizeRatio(uintptr_t size) { _survivorSpaceSizeRatio = size; }

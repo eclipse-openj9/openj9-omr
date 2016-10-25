@@ -43,11 +43,11 @@ int main(int argc, char **argv)
    const char *exitAssertFlag="--gtest_internal_run_death_test=";
    for(int i = 0; i < argc; ++i)
       {
-      if(!strncmp(argv[i], exitAssertFlag, strlen(exitAssertFlag))
-         && strstr(argv[i], "LimitFileTest.cpp"))
-         {
-         useOMRTestEnv = false;
-         }
+      if(!strncmp(argv[i], exitAssertFlag, strlen(exitAssertFlag)))
+         if(strstr(argv[i], "LimitFileTest.cpp") || strstr(argv[i], "LogFileTest.cpp"))
+            {
+            useOMRTestEnv = false;
+            }
       }
 
    ::testing::InitGoogleTest(&argc, argv);

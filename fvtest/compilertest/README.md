@@ -6,10 +6,13 @@ language independent compiler tests for the Testarossa compiler technology.
 
 Building
 --------
+Before building the Test compiler you must make sure to configure the project
+by following the 'Basic configuration and compile' step as outlined in the 
+top-level `omr/README.md` document.
 
 To build the Test compiler, typing `make` in this directory
 (`omr/fvtest/compilertest`) should suffice. A binary called 
-`testjit` will be produced in `../../objs/compilertest_$(BUILD_CONFIG)/`
+`testjit` will be produced in the top-level `omr` directory.
 
 BUILD_CONFIG defaults to prod. 
 

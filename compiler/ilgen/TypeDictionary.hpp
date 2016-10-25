@@ -68,7 +68,7 @@ public:
    virtual TR::IlType *baseType() { return NULL; }
 
    virtual bool isStruct() {return false; }
-   virtual size_t getStructSize(); 
+   virtual size_t getSize();
 
 protected:
    const char *_name;

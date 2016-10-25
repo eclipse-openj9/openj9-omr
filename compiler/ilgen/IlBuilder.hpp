@@ -144,6 +144,7 @@ public:
    TR::IlValue *ConstInt64(int64_t value);
    TR::IlValue *ConstFloat(float value);
    TR::IlValue *ConstDouble(double value);
+   TR::IlValue *ConstAddress(void* value);
    TR::IlValue *ConstString(const char *value);
    TR::IlValue *ConstzeroValueForValue(TR::IlValue *v);
 

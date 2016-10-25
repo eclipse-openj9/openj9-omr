@@ -56,30 +56,32 @@ IlType::getSignatureName()
    }
 
 size_t
-IlType::getStructSize()
+IlType::getSize()
    {
-   TR_ASSERT(0, "The input type is not a StructType\n");
+   TR_ASSERT(0, "The input type does not have a defined size\n");
    return 0;
    }
 
 const uint8_t primitiveTypeAlignment[TR::NumOMRTypes] =
    {
-   1,
-   1,
-   2,
-   4,
-   8,
+   1,  // NoType
+   1,  // Int8
+   2,  // Int16
+   4,  // Int32
+   8,  // Int64
+   4,  // Float
+   8,  // Double
 #if TR_TARGET_64BIT // HOST?
-   4,
+   4,  // Address/Word
 #else
-   8,
+   8,  // Address/Word
 #endif
-   16,
-   16,
-   16,
-   16,
-   16,
-   16
+   16, // VectorInt8
+   16, // VectorInt16
+   16, // VectorInt32
+   16, // VectorInt64
+   16, // VectorFloat
+   16  // VectorDouble
    };
 
 
@@ -98,7 +100,9 @@ public:
       return _type;
       }
 
-  virtual char *getSignatureName() { return (char *) signatureNameForType[_type]; }
+   virtual char *getSignatureName() { return (char *) signatureNameForType[_type]; }
+
+   virtual size_t getSize() { return TR::DataType::getSize(_type); }
 
 protected:
    TR::DataType _type;
@@ -161,7 +165,7 @@ public:
 
    TR::SymbolReference *getFieldSymRef(const char *name);
    bool isStruct() { return true; }
-   size_t getStructSize();
+   virtual size_t getSize();
 
 protected:
    FieldInfo * findField(const char *fieldName);
@@ -253,7 +257,7 @@ StructType::getFieldSymRef(const char *fieldName)
    }
 
 size_t
-StructType::getStructSize()
+StructType::getSize()
    {
    size_t size = 0;
    FieldInfo *currentField = _firstField;

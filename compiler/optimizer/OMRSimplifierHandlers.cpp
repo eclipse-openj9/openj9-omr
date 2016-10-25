@@ -10967,6 +10967,11 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    orderChildren(node, firstChild, secondChild, s);
    BINARY_IDENTITY_OR_ZERO_OP(int32_t, Int, -1, 0)
 
+   if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
+      {
+      return foldedNode;
+      }
+
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
 
@@ -11109,6 +11114,11 @@ TR::Node *landSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    orderChildren(node, firstChild, secondChild, s);
    orderChildrenByHighWordZero(node, firstChild, secondChild, s);
    BINARY_IDENTITY_OR_ZERO_OP(int64_t, LongInt, -1L, 0L)
+
+   if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
+      {
+      return foldedNode;
+      }
 
    TR::ILOpCodes firstChildOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondChildOp = secondChild->getOpCodeValue();
@@ -11317,6 +11327,12 @@ TR::Node *sandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
    orderChildren(node, firstChild, secondChild, s);
    BINARY_IDENTITY_OR_ZERO_OP(int16_t, ShortInt, -1, 0)
+
+   if (TR::Node* foldedNode = tryFoldAndWidened(s, node))
+      {
+      return foldedNode;
+      }
+
    return node;
    }
 

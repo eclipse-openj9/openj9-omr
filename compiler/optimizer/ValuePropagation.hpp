@@ -1105,6 +1105,7 @@ class LocalValuePropagation : public TR::ValuePropagation
 TR::Node *generateArrayletAddressTree(TR::Compilation* comp, TR::Node *vcallNode, TR::DataType type, TR::Node *off,TR::Node *obj, TR::Node *spineShiftNode,TR::Node *shiftNode,TR::Node *strideShiftNode, TR::Node *hdrSize);
 TR::Node *generateArrayAddressTree(TR::Compilation* comp, TR::Node *node, int32_t offHigh, TR::Node *offNode, TR::Node *objNode, int32_t elementSize, TR::Node * &stride, TR::Node *hdrSize);
 TR::Node * createHdrSizeNode(TR::Compilation *comp, TR::Node *n);
+void constrainNewlyFoldedConst(TR::ValuePropagation *vp, TR::Node *node, bool isGlobal);
 
 void constrainRangeByPrecision(const int64_t low, const int64_t high, const int32_t precision, int64_t &lowResult, int64_t &highResult, bool isNonNegative = false);
 

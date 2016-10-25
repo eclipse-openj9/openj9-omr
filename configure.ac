@@ -267,16 +267,16 @@ AC_ARG_ENABLE([auto-build-flag],
 
 ############### Enable a build flag
 # OMRCFG_ENABLE_FLAG(<flag name>)
-# #define the flag in omrcfg.h
-# Set the flag to 1 in omrcfg.mk
+# #define the flag in omrcfg.inc
+# Set the flag to 1 in config.mk
 AC_DEFUN([OMRCFG_ENABLE_FLAG],
   [AC_SUBST([$1], [1])
    AC_DEFINE([$1], [1])])
 
 ############### Disable a build flag
 # OMRCFG_DISABLE_FLAG(<flag name>)
-# The flag is undefined in omrcfg.h
-# Set the flag to 0 in omrcfg.mk
+# The flag is undefined in omrcfg.inc
+# Set the flag to 0 in config.mk
 AC_DEFUN([OMRCFG_DISABLE_FLAG],
   [AC_SUBST([$1], [0])])
 

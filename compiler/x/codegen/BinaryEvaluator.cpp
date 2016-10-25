@@ -971,6 +971,20 @@ TR::Register *OMR::X86::TreeEvaluator::baddEvaluator(TR::Node *node, TR::CodeGen
    // target register generated and we return NULL to the caller (which should be
    // a store) to indicate that the store has already been done.
    //
+
+   if (NEED_CC(node))
+      {
+      TR_ASSERT(node->getOpCodeValue() == TR::badd,
+                "CC computation not supported for this node %p\n", node);
+
+      // we need eflags from integerAddAnalyser for the CC sequence
+      TR_X86BinaryCommutativeAnalyser(cg).integerAddAnalyser(node, ADD1RegReg,
+                                                                   ADD1RegMem,
+                                                                   true/* produce eflags */);
+      targetRegister = node->getRegister();
+      return targetRegister;
+      }
+
    bool isMemOp = node->isDirectMemoryUpdate();
 
    if (isMemOp)
@@ -1083,6 +1097,19 @@ TR::Register *OMR::X86::TreeEvaluator::saddEvaluator(TR::Node *node, TR::CodeGen
    // target register generated and we return NULL to the caller (which should be
    // a store) to indicate that the store has already been done.
    //
+   if (NEED_CC(node))
+      {
+      TR_ASSERT(node->getOpCodeValue() == TR::sadd,
+                "CC computation not supported for this node %p\n", node);
+
+      // we need eflags from integerAddAnalyser for the CC sequence
+      TR_X86BinaryCommutativeAnalyser(cg).integerAddAnalyser(node, ADD2RegReg,
+                                                                   ADD2RegMem,
+                                                                   true/* produce eflags */);
+      targetRegister = node->getRegister();
+      return targetRegister;
+      }
+
    bool isMemOp = node->isDirectMemoryUpdate();
 
    if (isMemOp)
@@ -1469,6 +1496,20 @@ TR::Register *OMR::X86::TreeEvaluator::bsubEvaluator(TR::Node *node, TR::CodeGen
    bool                 oursIsTheOnlyMemRef  = true;
    TR::Compilation     *comp                 = cg->comp();
 
+   if (NEED_CC(node))
+      {
+      TR_ASSERT(node->getOpCodeValue() == TR::bsub,
+                "CC computation not supported for this node %p\n", node);
+
+      // we need eflags from integerAddAnalyser for the CC sequence
+      TR_X86SubtractAnalyser(cg).integerSubtractAnalyser(node, SUB1RegReg,
+                                                               SUB1RegMem,
+                                                               MOV1RegReg,
+                                                               true/* produce eflags */);
+      targetRegister = node->getRegister();
+      return targetRegister;
+      }
+
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be
    // a store) to indicate that the store has already been done.
@@ -1577,6 +1618,20 @@ TR::Register *OMR::X86::TreeEvaluator::ssubEvaluator(TR::Node *node, TR::CodeGen
    TR::MemoryReference *tempMR              = NULL;
    bool                 oursIsTheOnlyMemRef = true;
    TR::Compilation     *comp                = cg->comp();
+
+   if (NEED_CC(node))
+      {
+      TR_ASSERT(node->getOpCodeValue() == TR::ssub,
+                "CC computation not supported for this node %p\n", node);
+
+      // we need eflags from integerAddAnalyser for the CC sequence
+      TR_X86SubtractAnalyser(cg).integerSubtractAnalyser(node, SUB2RegReg,
+                                                               SUB2RegMem,
+                                                               MOV4RegReg,
+                                                               true/* produce eflags */);
+      targetRegister = node->getRegister();
+      return targetRegister;
+      }
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be

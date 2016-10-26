@@ -35,6 +35,7 @@ class PointerMethod : public TR::MethodBuilder
    TR::IlType *pFloat;
    TR::IlType *pDouble;
    TR::IlType *ppDouble;
+   static int32_t staticInt32;
 
    public:
    PointerMethod(TR::TypeDictionary *);

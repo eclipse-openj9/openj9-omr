@@ -94,12 +94,27 @@ class TR_Dominators
 #endif
       };
 
-   class StackInfo
+   struct StackInfo
       {
-      public:
-      std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator curIterator;
-      TR::list<TR::CFGEdge*> * list;
-      int32_t                  parent;
+      typedef TR::list<TR::CFGEdge*> list_type;
+      typedef std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator iterator_type;
+      StackInfo(list_type &list, iterator_type position, int32_t parent) :
+         list(list),
+         listPosition(position),
+         parent(parent)
+         {
+         }
+
+      StackInfo(const StackInfo &other) :
+         list(other.list),
+         listPosition(other.listPosition),
+         parent(other.parent)
+         {
+         }
+
+      list_type &list;
+      iterator_type listPosition;
+      int32_t parent;
       };
 
    BBInfo& getInfo(int32_t index) {return _info[index];}

@@ -244,49 +244,51 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
 
    // Set up to start at the start block
    //
+   TR::deque<StackInfo> stack(comp()->allocator());
+
+   /*
+    * Seed an initial list of successors using a dummy loop edge connecting the start to itself.
+    */
    TR::CFGEdge dummyEdge;
-   TR::list<TR::CFGEdge*> dummyList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
-   dummyList.push_front(&dummyEdge);
-   CS2::ArrayOf<StackInfo, TR::Allocator> stack(_numNodes/2, comp()->allocator());
-   stack[0].curIterator = dummyList.begin();
-   stack[0].list = &dummyList;
+   TR::list<TR::CFGEdge*> startList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   startList.push_front(&dummyEdge);
 
-   stack[0].parent = -1;
-   int32_t stackTop = 1;
-   while (stackTop>0) {
-      auto next = stack[--stackTop].curIterator;
-      auto list = stack[stackTop].list;
-      TR::CFGNode* succ = _postDominators ? (*next)->getFrom() : (*next)->getTo();
-      TR::Block *block;
-      if (succ)
-         block = toBlock(succ);
-      else
-         block = start;
+   StackInfo seed(startList, startList.begin(), -1);
+   stack.push_back(seed);
 
-      TR::Block *nextBlock;
+   while (!stack.empty()) {
+      StackInfo current(stack.back());
+      stack.pop_back();
+      TR_ASSERT(current.listPosition != current.list.end(), "Successor list has already been exhausted.");
+      TR::CFGNode* succ = _postDominators ? (*current.listPosition)->getFrom() : (*current.listPosition)->getTo();
+      TR::Block *block = succ ? toBlock(succ) : start;
+
       if (block->getVisitCount() == _visitCount)
          {
          // This block has already been processed. Just set up the next block
          // at this level.
          //
+         StackInfo::iterator_type next(current.listPosition);
          ++next;
-         if (next != list->end())
+         if (next != current.list.end())
             {
             if (trace())
                {
-               if (_postDominators)
-                  traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-               else
-                  traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
-
+               traceMsg(
+                  comp(),
+                  "Insert block_%d at level %d\n",
+                  toBlock( _postDominators ? (*next)->getFrom() : (*next)->getTo() )->getNumber(),
+                  stack.size()
+                  );
                }
-            stack[stackTop++].curIterator = next;
+
+            stack.push_back(StackInfo(current.list, next, current.parent));
             }
          continue;
          }
 
       if (trace())
-         traceMsg(comp(), "At level %d block_%d becomes block_%d\n", stackTop, block->getNumber(), _topDfNum);
+         traceMsg(comp(), "At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
 
       block->setVisitCount(_visitCount);
       _dfNumbers[block->getNumber()] = _topDfNum++;
@@ -300,67 +302,61 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
       binfo._ancestor = 0;
       binfo._child = 0;
       binfo._size = 1;
-      binfo._parent = stack[stackTop].parent;
+      binfo._parent = current.parent;
 
       // Set up the next block at this level
       //
+      StackInfo::iterator_type next(current.listPosition);
       ++next;
-      if (next != list->end())
+      if (next != current.list.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock(_postDominators ? (*next)->getFrom() : (*next)->getTo())->getNumber(),
+               stack.size()
+               );
             }
 
-         stack[stackTop++].curIterator = next;
+         stack.push_back(StackInfo(current.list, next, current.parent));
          }
 
       // Set up the successors to be processed
       //
-      if (_postDominators)
-         list = &(block->getExceptionPredecessors());
-      else
-         list = &(block->getExceptionSuccessors());
-
-      next = list->begin();
-      if (next != list->end())
+      StackInfo::list_type &exceptionSuccessors = _postDominators ? block->getExceptionPredecessors() : block->getExceptionSuccessors();
+      StackInfo::iterator_type firstExceptionSuccessor = exceptionSuccessors.begin();
+      if (firstExceptionSuccessor != exceptionSuccessors.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock( _postDominators ? (*firstExceptionSuccessor)->getFrom() : (*firstExceptionSuccessor)->getTo())->getNumber(),
+               stack.size()
+               );
             }
 
-         stack[stackTop].curIterator = next;
-         stack[stackTop].list = list;
-         stack[stackTop].parent = _topDfNum;
-         stackTop++;
+         stack.push_back(StackInfo(exceptionSuccessors, firstExceptionSuccessor, _topDfNum));
          }
 
-      if (_postDominators)
-         list = &(block->getPredecessors());
-      else
-         list = &(block->getSuccessors());
-
-      next = list->begin();
-      if (next != list->end())
+      StackInfo::list_type &successors = _postDominators ? block->getPredecessors() : block->getSuccessors();
+      StackInfo::iterator_type firstSuccessor = successors.begin();
+      if (firstSuccessor != successors.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock( _postDominators ? (*firstSuccessor)->getFrom() : (*firstSuccessor)->getTo() )->getNumber(),
+               stack.size()
+               );
             }
-         stack[stackTop].list = list;
-         stack[stackTop].curIterator = next;
-         stack[stackTop].parent = _topDfNum;
-         stackTop++;
+
+         stack.push_back(StackInfo(successors, firstSuccessor, _topDfNum));
          }
       }
    }

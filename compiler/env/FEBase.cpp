@@ -52,32 +52,6 @@ TR::FECommon::createDebug( TR::Compilation *comp)
 
 void feOutOfMemory(void *, TR::Compilation *comp, const char *reason)
    {
-   if (comp)
-      {
-      if (comp->getOption(TR_BreakOnOOM))
-         {
-         fprintf(stderr, "\n=== OUT OF MEMORY (%s) compiling %s ===\n", reason, comp->signature());
-         TR::Compiler->debug.breakPoint();
-         }
-      if (debug("traceOutOfMemory") || debug("stopOnOutOfMemory") || comp->getOptions()->getOption(TR_StopOnFailure))
-         {
-         diagnostic("JIT: terminating compile of %s: %s\n", comp->signature(), reason ? reason : "<no reason provided>");
-         fprintf(stderr, "JIT: terminating compile of %s: %s\n", comp->signature(), reason ? reason : "<no reason provided>");
-         fflush(stderr);
-         }
-
-      auto jitConfig = TR::JitConfig::instance();
-      if (jitConfig && jitConfig->options.verboseFlags != 0)
-         {
-         TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL, "JIT: terminating compile of %s: %s", comp->signature(), reason ? reason : "<no reason provided>");
-         }
-      }
-   else if (TR::Options::getCmdLineOptions()->getOption(TR_BreakOnOOM))
-      {
-      fprintf(stderr, "\n=== OUT OF MEMORY (%s) ===\n", reason);
-      TR::Compiler->debug.breakPoint();
-      }
-
    throw TR::CompilationException();
    }
 

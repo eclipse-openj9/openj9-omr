@@ -1935,7 +1935,7 @@ MM_Scavenger::completeScan(MM_EnvironmentStandard *env)
 
 	while((env->_scanCache = getNextScanCache(env)) != NULL) {
 #if defined(OMR_SCAVENGER_TRACE)
-		omrtty_printf("{SCAV: Completing scan (%p) %p-%p-%p}\n", env->_scanCache, env->_scanCache->cacheBase, env->_scanCache->cacheAlloc, env->_scanCache->cacheTop);
+		omrtty_printf("{SCAV: Completing scan (%p) %p-%p-%p-%p}\n", env->_scanCache, env->_scanCache->cacheBase, env->_scanCache->cacheAlloc, env->_scanCache->scanCurrent, env->_scanCache->cacheTop);
 #endif /* OMR_SCAVENGER_TRACE */
 
 		assume0(env->_scanCache->cacheBase <= env->_scanCache->cacheAlloc);
@@ -2173,7 +2173,7 @@ MM_Scavenger::processRememberedThreadReference(MM_EnvironmentStandard *env, omro
  * All objects taken as input MUST be in Tenured (Old) Space
  ********************************************************************/
 bool
-MM_Scavenger::walkObjectSlotsForRSO(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
 	Assert_MM_true((NULL != objectPtr) && (!isObjectInNewSpace(objectPtr)));
 
@@ -2189,6 +2189,7 @@ MM_Scavenger::walkObjectSlotsForRSO(MM_EnvironmentStandard *env, omrobjectptr_t 
 				if (isObjectInNewSpace(slotObjectPtr)) {
 					Assert_MM_true(!isObjectInEvacuateMemory(slotObjectPtr));
 					shouldBeRemembered = true;
+					break;
 				}
 			}
 		}
@@ -2299,7 +2300,7 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 
 					/* Re-scan the tenured for objects that should be remembered.
 					 * No copying will be done. */
-					shouldBeRemembered = walkObjectSlotsForRSO(env, objectPtr);
+					shouldBeRemembered = shouldRememberObject(env, objectPtr);
 
 					/* The remembered state of a class object also depends on the class statics */
 					if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
@@ -2366,16 +2367,29 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 					/* Is slot flagged for deferred removal ? */
 					/* Yes..so first remove tag bit from object address */
 					objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator.
+					 */
+					if (!shouldRememberObject(env, objectPtr)) {
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
-					omrtty_printf("{SCAV: REMOVED remembered set object %p}\n", objectPtr);
+						omrtty_printf("{SCAV: REMOVED remembered set object %p}\n", objectPtr);
 #endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 
-					/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
-					_extensions->objectModel.clearRemembered(objectPtr);
-					remSetSlotIterator.removeSlot();
+						/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
+						_extensions->objectModel.clearRemembered(objectPtr);
+						remSetSlotIterator.removeSlot();
 
-					/* Inform interested parties that an object has been removed from the remembered set */
-					TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+						/* Inform interested parties that an object has been removed from the remembered set */
+						TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+					} else {
+						/* We are not removing it after all, since the object has Nursery references => reset the deferred flag.
+						 * todo: consider doing double remembering, if remembered during CS cycle, to avoid the rescan of the object
+						 */
+						*slotPtr = objectPtr;
+					}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 				} else {
 					/* Retain remembered object */
@@ -2640,7 +2654,7 @@ MM_Scavenger::flushCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *
 	if (0 == (cache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY)) {
 #if defined(OMR_SCAVENGER_TRACE)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("{SCAV: Flushing cache (%p) %p-%p-%p}\n", cache, cache->cacheBase, cache->cacheAlloc, cache->cacheTop);
+		omrtty_printf("{SCAV: Flushing cache (%p) %p-%p-%p-%p}\n", cache, cache->cacheBase, cache->cacheAlloc, cache->scanCurrent, cache->cacheTop);
 #endif /* OMR_SCAVENGER_TRACE */
 		if (0 == (cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED)) {
 			clearCache(env, cache);

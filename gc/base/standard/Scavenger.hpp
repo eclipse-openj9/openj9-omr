@@ -207,7 +207,7 @@ private:
 	 * @param objectPtr The pointer to the  Object in Tenured Space.
 	 * @return True If Object should be remembered
 	 */
-	bool walkObjectSlotsForRSO(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
+	bool shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/**
 	 * BackOutFixSlot implementation

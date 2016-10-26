@@ -7730,17 +7730,12 @@ void TR::ValuePropagation::doDelayedTransformations()
       if (node != predictedNode)
          continue;
 
-      if (!performTransformation(comp(), "%sChanging a throw [%p] to a goto\n", OPT_DETAILS, node))
-         continue;
-
       // temporary set the numOfChildren to two to avoid assume in getSecondChild
       //
       node->setNumChildren(2);
       TR::Block *predictedCatchBlock = (TR::Block *)node->getSecondChild();
       node->setNumChildren(1);
 
-      TR::SymbolReference * excpSymRef = comp()->getSymRefTab()->findOrCreateExcpSymbolRef();
-      TR::Node * firstReferenceOfCatchObject = predictedCatchBlock->findFirstReference(excpSymRef->getSymbol(), comp()->incVisitCount());
       TR::TreeTop * firstTT = predictedCatchBlock->getFirstRealTreeTop();
 
       // Find the first real tree in catch block; ignoring the
@@ -7750,78 +7745,55 @@ void TR::ValuePropagation::doDelayedTransformations()
              firstTT->getNode()->isProfilingCode())
         firstTT = firstTT->getNextRealTreeTop();
 
-      TR::Node * firstNode = firstTT->getNode();
-      if (firstNode->getOpCodeValue() == TR::astore &&
-          firstNode->getFirstChild() == firstReferenceOfCatchObject)
+      if (predictedCatchBlock->specializedDesyncCatchBlock())
+         dumpOptDetails(comp(), "%sChanging a throw [%p] to a goto for specializedDesyncCatchBlock\n", OPT_DETAILS, node);
+      else if (!performTransformation(comp(), "%sChanging a throw [%p] to a goto\n", OPT_DETAILS, node))
+         continue;
+
+      optimizer()->setAliasSetsAreValid(false); // the catch auto must be aliased to the catch block
+      TR::SymbolReference * excpSymRef = comp()->getSymRefTab()->findOrCreateExcpSymbolRef();
+      if (treeTop->getNode()->getOpCodeValue() == TR::NULLCHK)
          {
-         optimizer()->setAliasSetsAreValid(false); // the catch auto must be aliased to the catch block
-         firstTT = firstTT->getNextTreeTop();
-         if (firstReferenceOfCatchObject->getReferenceCount() > 1)
-            {
-            // change the other references to be loads of the temp of the lhs
-            // of the store by changing the content of the node containing load
-            // of exception symbol
-            //
-            firstNode->setAndIncChild(0, TR::Node::createLoad(firstNode, excpSymRef));
-            firstReferenceOfCatchObject->setSymbolReference(firstNode->getSymbolReference());
-            firstReferenceOfCatchObject->decReferenceCount();
-            }
-         if (treeTop->getNode()->getOpCodeValue() == TR::NULLCHK)
-            {
-            TR::Node::recreate(node, TR::PassThrough);
-            treeTop = TR::TreeTop::create(comp(), treeTop, TR::Node::createWithSymRef(TR::astore, 1, 1, node->getFirstChild(), firstNode->getSymbolReference()));
-            }
-         else
-            {
-            TR::Node::recreate(node, TR::astore);
-            node->setSymbolReference(firstNode->getSymbolReference());
-            }
-         }
-      else if (!firstReferenceOfCatchObject)
-         TR::Node::recreate(node, node->getReferenceCount() == 0 ? TR::treetop : TR::PassThrough);
-      else
-         firstTT = 0;
-
-      if (firstTT && performTransformation(comp(), "%sChanging a throw [%p] to a goto\n", OPT_DETAILS, node))
-         {
-         invalidateUseDefInfo();
-         invalidateValueNumberInfo();
-
-         if (debug("traceThrowToGoto"))
-            printf("\nthrow converted to goto in %s ", comp()->signature());
-         TR::Block * gotoDestination = predictedCatchBlock->split(firstTT, cfg);
-
-         List<TR::SymbolReference> l1(trMemory()), l2(trMemory()), l3(trMemory());
-         TR::ResolvedMethodSymbol * currentSymbol = comp()->getJittedMethodSymbol();
-         TR_HandleInjectedBasicBlock hibb(comp(), NULL, currentSymbol, l1, l2, l3, 0);
-         hibb.findAndReplaceReferences(predictedCatchBlock->getEntry(), gotoDestination, 0);
-         ListIterator<TR::SymbolReference> newTemps(&l2);
-         for (TR::SymbolReference * newTemp = newTemps.getFirst(); newTemp; newTemp = newTemps.getNext())
-            currentSymbol->addAutomatic(newTemp->getSymbol()->castToAutoSymbol());
-
-         ListElement<TR_Pair<TR::Node, TR::Block> > *e = throwsIt.getCurrentElement()->getNextElement();
-         for (; e; e= e->getNextElement())
-            {
-            TR_Pair<TR::Node, TR::Block> *predictedThrow = e->getData();
-            if (predictedThrow->getValue() == predictedCatchBlock)
-               predictedThrow->setValue(gotoDestination);
-            }
-
-         TR::TreeTop::create(comp(), treeTop, TR::Node::create(node, TR::Goto, 0, gotoDestination->getEntry()));
-         cfg->addEdge(blockContainingThrow, gotoDestination);
-         cfg->removeEdge(blockContainingThrow, cfg->getEnd());
-
-         if (predictedCatchBlock->specializedDesyncCatchBlock())
-            cfg->removeEdge(blockContainingThrow, predictedCatchBlock);
-         for (auto edge = predictedCatchBlock->getExceptionSuccessors().begin(); edge != predictedCatchBlock->getExceptionSuccessors().end();)
-             cfg->removeEdge(*(edge++));
+         TR::Node::recreate(node, TR::PassThrough);
+         treeTop = TR::TreeTop::create(comp(), treeTop, TR::Node::createWithSymRef(TR::astore, 1, 1, node->getFirstChild(), excpSymRef));
          }
       else
          {
-         TR_ASSERT(!predictedCatchBlock->specializedDesyncCatchBlock(), "we've assumed that we would convert this throw to a goto");
-         if (debug("traceThrowToGoto"))
-            printf("\n unable to convert throw to goto in %s ", comp()->signature());
+         TR::Node::recreate(node, TR::astore);
+         node->setSymbolReference(excpSymRef);
          }
+
+      invalidateUseDefInfo();
+      invalidateValueNumberInfo();
+
+      if (debug("traceThrowToGoto"))
+         printf("\nthrow converted to goto in %s ", comp()->signature());
+      TR::Block * gotoDestination = predictedCatchBlock->split(firstTT, cfg);
+
+      List<TR::SymbolReference> l1(trMemory()), l2(trMemory()), l3(trMemory());
+      TR::ResolvedMethodSymbol * currentSymbol = comp()->getJittedMethodSymbol();
+      TR_HandleInjectedBasicBlock hibb(comp(), NULL, currentSymbol, l1, l2, l3, 0);
+      hibb.findAndReplaceReferences(predictedCatchBlock->getEntry(), gotoDestination, 0);
+      ListIterator<TR::SymbolReference> newTemps(&l2);
+      for (TR::SymbolReference * newTemp = newTemps.getFirst(); newTemp; newTemp = newTemps.getNext())
+         currentSymbol->addAutomatic(newTemp->getSymbol()->castToAutoSymbol());
+
+      ListElement<TR_Pair<TR::Node, TR::Block> > *e = throwsIt.getCurrentElement()->getNextElement();
+      for (; e; e= e->getNextElement())
+         {
+         TR_Pair<TR::Node, TR::Block> *predictedThrow = e->getData();
+         if (predictedThrow->getValue() == predictedCatchBlock)
+            predictedThrow->setValue(gotoDestination);
+         }
+
+      TR::TreeTop::create(comp(), treeTop, TR::Node::create(node, TR::Goto, 0, gotoDestination->getEntry()));
+      cfg->addEdge(blockContainingThrow, gotoDestination);
+      cfg->removeEdge(blockContainingThrow, cfg->getEnd());
+
+      if (predictedCatchBlock->specializedDesyncCatchBlock())
+         cfg->removeEdge(blockContainingThrow, predictedCatchBlock);
+      for (auto edge = predictedCatchBlock->getExceptionSuccessors().begin(); edge != predictedCatchBlock->getExceptionSuccessors().end();)
+          cfg->removeEdge(*(edge++));
       }
 
    _predictedThrows.init();

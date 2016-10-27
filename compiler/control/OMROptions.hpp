@@ -642,11 +642,9 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000400 + 18,
    // Available                                       = 0x00000800 + 18,
    // Available                                       = 0x00001000 + 18,
-   // Available                                       = 0x00002000 + 18, // trace sequentialConstantStoreSimplification
    // Available                                       = 0x00004000 + 18,
    // Available                                       = 0x00008000 + 18,
    // Available                                       = 0x00010000 + 18,
-   TR_EnableSCSSRelocations                           = 0x00020000 + 18, // enable relocations in sequentialConstantStoreSimplification sequences
    // Available                                       = 0x00040000 + 18,
    TR_DisableProloguePushes                           = 0x00080000 + 18, // Use stores instead of pushes in x86 prologues
    TR_EnableOutlinedPrologues                         = 0x00100000 + 18, // Call a helper to do some of the prologue logic

@@ -85,6 +85,7 @@ bool swapChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondC
 bool isExprInvariant(TR_RegionStructure *region, TR::Node *node);
 void orderChildren(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);
 TR::Node *foldRedundantAND(TR::Node * node, TR::ILOpCodes andOpCode, TR::ILOpCodes constOpCode, int64_t andVal, TR::Simplifier * s);
+TR::Node* tryFoldAndWidened(TR::Simplifier* simplifier, TR::Node* node);
 bool branchToFollowingBlock(TR::Node * node, TR::Block * block, TR::Compilation *comp);
 void makeConstantTheRightChild(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);
 void makeConstantTheRightChildAndSetOpcode(TR::Node * node, TR::Node * & firstChild, TR::Node * & secondChild, TR::Simplifier * s);

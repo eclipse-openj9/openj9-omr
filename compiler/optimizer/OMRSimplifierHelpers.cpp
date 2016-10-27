@@ -379,6 +379,61 @@ TR::Node *foldRedundantAND(TR::Node * node, TR::ILOpCodes andOpCode, TR::ILOpCod
    return 0;
    }
 
+/** \brief
+ *     Attempts to fold a logical and operation whose first child is a widening operation and whose second child is a
+ *     constant node such that no bits in the constant node could ever overlap with the bits in the widened value.
+ *
+ *  \param simplifier
+ *     The simplifier instance used to simplify the trees.
+ *
+ *  \param node
+ *     The node which to attempt to fold.
+ *
+ *  \return
+ *     The new folded node if a transformation was performed; NULL otherwise.
+ */
+TR::Node* tryFoldAndWidened(TR::Simplifier* simplifier, TR::Node* node)
+   {
+   if (node->getOpCode().isAnd())
+      {
+      TR::Node* rhsNode = node->getChild(1);
+
+      if (rhsNode->getOpCode().isLoadConst())
+         {
+         TR::Node* lhsNode = node->getChild(0);
+
+         // Look for zero extensions or known non-negative sign extensions
+         if (lhsNode->getOpCode().isZeroExtension() || (lhsNode->getOpCode().isSignExtension() && lhsNode->isNonNegative()))
+            {
+            TR::Node* extensionValueNode = lhsNode->getChild(0);
+
+            // Sanity check that this is indeed an extension
+            TR_ASSERT(node->getSize() > extensionValueNode->getSize(), "Extended value datatype size must be smaller than the parent's datatype size.");
+
+            // Produce a mask of 1 bits of the same width as the value being extended
+            int64_t mask = (1ll << (8ll * static_cast<int64_t> (extensionValueNode->getSize()))) - 1ll;
+
+            if ((rhsNode->getConstValue() & mask) == 0)
+               {
+               if (performTransformation(simplifier->comp(), "%sConstant folding widened and node [%p] to zero\n", simplifier->optDetailString(), node))
+                  {
+                  simplifier->anchorNode(extensionValueNode, simplifier->_curTree);
+
+                  // This call will recreate the node as well
+                  simplifier->prepareToReplaceNode(node, TR::ILOpCode::constOpCode(node->getDataType()));
+
+                  node->setConstValue(0);
+
+                  return node;
+                  }
+               }
+            }
+         }
+      }
+
+   return NULL;
+   }
+
 //---------------------------------------------------------------------
 // Common routine to see if a branch is going immediately to the following block
 //

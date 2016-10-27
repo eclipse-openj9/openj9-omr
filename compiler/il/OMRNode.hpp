@@ -164,7 +164,7 @@ public:
    static TR::Node *copy(TR::Node *, int32_t numChildren);
 
    static TR::Node *recreate(TR::Node *originalNode, TR::ILOpCodes op);
-   static TR::Node *recreateWithSymRefAndCopyValidProperties(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef);
+   static TR::Node *recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op, TR::SymbolReference *newSymRef);
 
    // create methods from everywhere other than the ilGenerator need
    // to pass in a TR::Node pointer from which the byte code information will be copied
@@ -192,7 +192,7 @@ private:
    static TR::Node *recreateWithoutSymRef_va_args(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, va_list &args);
    static TR::Node *createWithoutSymRef(TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, ...);
    static TR::Node *recreateWithoutSymRef(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, ...);
-   static TR::Node *recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, ...);
+   static TR::Node *recreateWithSymRefWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, ...);
 
 public:
    // only this variadic method is part of the external interface
@@ -207,7 +207,7 @@ private:
    uint16_t addChildrenAndSymRef(uint16_t childIndex, TR::Node *child, ChildrenAndSymRefType... childrenAndSymRef);
 
    template <class...ChildrenAndSymRefType>
-   static TR::Node *recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, TR::Node *first, ChildrenAndSymRefType... childrenAndSymRef);
+   static TR::Node *recreateWithSymRefWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, TR::Node *first, ChildrenAndSymRefType... childrenAndSymRef);
 
    template <class...Children>
    static TR::Node *recreateWithoutSymRef(TR::Node *originalNode, TR::ILOpCodes op, uint16_t numChildren, uint16_t numChildArgs, TR::Node *first, Children... children);

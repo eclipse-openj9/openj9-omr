@@ -494,7 +494,9 @@ AS_IF([test "$cross_compiling" != "yes"],
 ###
 AC_SUBST(OMR_CROSS_COMPILE)
 
-AS_IF([test "x$BUILD_CC" = "x"], [BUILD_CC=$CC])
+AS_IF([test "x$BUILD_CC" = "x"], [BUILD_CC="$CC"])
+AS_IF([test "x$HOST_CC" = "x"], [HOST_CC="$CC"])
+
 AC_SUBST(CC,[$BUILD_CC])
 AC_SUBST(CXX)
 AC_SUBST(CCLINK)
@@ -591,19 +593,8 @@ AC_CONFIG_FILES([
 	omrmakefiles/configure.mk:omrmakefiles/configure.mk.in
 ])
 
-###
-### Configure the build tools
-###
-# The build tools are executed on the build machine, not the host machine.
-# If cross-compiling, unset CC and CXX so that configure detects the compiler
-# on the build machine.
-# toolconfig/configure must be run from the subdirectory so that it doesn't
-# overwrite output from this configure script.
-AC_CONFIG_COMMANDS([toolconfigure],
-	[(cd toolconfig && sh ./configure $OMR_HOSTCONFIG_ENV)],
-	[AS_IF([test "$cross_compiling" = "yes"],
-		[OMR_HOSTCONFIG_ENV="CC= CXX="])])
+AC_CONFIG_HEADERS([include_core/omrcfg.h:include_core/omrcfg.h.in])
 
-AC_CONFIG_HEADERS([include_core/omrcfg.inc:include_core/omrcfg.inc.in])
+AC_CONFIG_SUBDIRS([tools])
 
 AC_OUTPUT

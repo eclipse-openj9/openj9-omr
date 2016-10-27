@@ -15,8 +15,10 @@
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
-top_srcdir = ../..
-include $(top_srcdir)/omrmakefiles/configure.mk
+
+top_srcdir := ../..
+VPATH := ../..
+include $(top_srcdir)/toolconfigure.mk
 
 .DEFAULT_GOAL := all
 

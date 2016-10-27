@@ -2179,7 +2179,7 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 
 	bool shouldBeRemembered = false;
 	GC_ObjectScannerState objectScannerState;
-	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots);
+	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots | GC_ObjectScanner::indexableObjectNoSplit);
 
 	if (NULL != objectScanner) {
 		GC_SlotObject *slotPtr;
@@ -2287,37 +2287,44 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 		clearRememberedSetOverflowState();
 		clearRememberedSetLists(env);
 
-		/* Walk the heap finding all old objects that are flagged as remembered */
+		/* Walk the tenure memory subspace finding all tenured objects flagged as remembered */
 		MM_HeapRegionDescriptorStandard *region = NULL;
 		GC_MemorySubSpaceRegionIteratorStandard regionIterator(_tenureMemorySubSpace);
 		while((region = regionIterator.nextRegion()) != NULL) {
+			/* Verify or clear remembered bits for each tenured object currently flagged as remembered */
 			GC_ObjectHeapIteratorAddressOrderedList objectIterator(_extensions, region, false);
 			omrobjectptr_t objectPtr;
-
 			while((objectPtr = objectIterator.nextObject()) != NULL) {
 				if(_extensions->objectModel.isRemembered(objectPtr)) {
+					/* Assume object no longer needs to be remembered (all dependent objects tenured) */
 					bool shouldBeRemembered = false;
 
-					/* Re-scan the tenured for objects that should be remembered.
-					 * No copying will be done. */
-					shouldBeRemembered = shouldRememberObject(env, objectPtr);
-
-					/* The remembered state of a class object also depends on the class statics */
-					if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
-						shouldBeRemembered |= _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
-					}
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
-					/* unconditionally remember any recently referenced objects */
+					/* Unconditionally remember object if it was recently referenced */
 					if (processRememberedThreadReference(env, objectPtr)) {
 						Trc_MM_ParallelScavenger_scavengeRememberedSet_keepingRememberedObject(env->getLanguageVMThread(), objectPtr, _extensions->objectModel.getRememberedBits(objectPtr));
 						shouldBeRemembered = true;
 					}
-#endif
+#endif /* !defined(OMR_GC_CONCURRENT_SCAVENGER) */
 
-					/* Re-remember the object if necessary. This will add it to the list if possible. */
+					if (!shouldBeRemembered) {
+						/* Remember object if new space contains any indirectly associated object */
+						if ( _extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+							shouldBeRemembered = _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
+						}
+					}
+
+					if (!shouldBeRemembered) {
+						/* Remember object if any dependent slot points to new space. */
+						shouldBeRemembered = shouldRememberObject(env, objectPtr);
+					}
+
 					if(shouldBeRemembered) {
+						/* Tenured object remains flagged as remembered */
+						/* Add tenured object to the thread's remembered set list if possible. Otherwise, this will force setRememberedSetOverflowState(). */
 						addToRememberedSetFragment(env, objectPtr);
 					} else {
+						/* Tenured object remembered flags can be cleared */
 						_extensions->objectModel.clearRemembered(objectPtr);
 						/* Inform interested parties that an object has been removed from the remembered set */
 						TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);

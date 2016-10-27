@@ -65,8 +65,9 @@ public:
 	{
 		scanRoots = 1			/* scavenge roots phase -- scan & copy/forward root objects */
 		, scanHeap = 2			/* scavenge heap phase -- scan  & copy/forward objects reachable from scanned roots */
-		, indexableObject = 4	/* this is set for array object scanners */
-		, noMoreSlots = 8		/* this is set when object has more no slots to scan past current bitmap */
+		, indexableObject = 4			/* this is set for array object scanners where the array elements can be partitioned for multithreaded scanning */
+		, indexableObjectNoSplit = 8	/* this is set for array object scanners where the array elements cannot be partitioned for multithreaded scanning */
+		, noMoreSlots = 128				/* this is set when object has more no slots to scan past current bitmap */
 	};
 
 	/* Member Functions */
@@ -190,6 +191,10 @@ public:
 	MMINLINE static bool isIndexableObject(uintptr_t flags) { return (0 != (indexableObject & flags)); }
 
 	MMINLINE bool isIndexableObject() { return (0 != (indexableObject & _flags)); }
+
+	MMINLINE static bool isIndexableObjectNoSplit(uintptr_t flags) { return (0 != (indexableObjectNoSplit & flags)); }
+
+	MMINLINE bool isIndexableObjectNoSplit() { return (0 != (indexableObjectNoSplit & _flags)); }
 };
 
 #endif /* OBJECTSCANNER_HPP_ */

@@ -35,16 +35,22 @@ static void printString(int64_t ptr)
    printf("%s", string);
    }
 
+static void printInt16(int16_t val)
+   {
+   #define PRINTINT16_LINE LINETOSTR(__LINE__)
+   printf("%d", val);
+   }
+
 static void printInt32(int32_t val)
    {
    #define PRINTINT32_LINE LINETOSTR(__LINE__)
    printf("%d", val);
    }
 
-static void printAddress(int64_t addr)
+static void printAddress(void* addr)
    {
    #define PRINTADDRESS_LINE LINETOSTR(__LINE__)
-   printf("%lx", addr);
+   printf("%p", addr);
    }
 
 LinkedListMethod::LinkedListMethod(TR::TypeDictionary *d)
@@ -56,7 +62,7 @@ LinkedListMethod::LinkedListMethod(TR::TypeDictionary *d)
    DefineName("search");
    TR::IlType *pElementType = d->PointerTo((char *)"Element");
    DefineParameter("list", pElementType);
-   DefineParameter("key", Int32);
+   DefineParameter("key", Int16);
    DefineReturnType(Int32);
 
    DefineFunction((char *)"printString", 
@@ -66,6 +72,13 @@ LinkedListMethod::LinkedListMethod(TR::TypeDictionary *d)
                   NoType,
                   1,
                   Int64);
+   DefineFunction((char *)"printInt16", 
+                  (char *)__FILE__,
+                  (char *)PRINTINT16_LINE,
+                  (void *)&printInt16,
+                  NoType,
+                  1,
+                  Int16);
    DefineFunction((char *)"printInt32", 
                   (char *)__FILE__,
                   (char *)PRINTINT32_LINE,
@@ -79,7 +92,7 @@ LinkedListMethod::LinkedListMethod(TR::TypeDictionary *d)
                   (void *)&printAddress,
                   NoType,
                   1,
-                  Int64);
+                  Address);
    }
 
 bool
@@ -109,7 +122,7 @@ LinkedListMethod::buildIL()
    loop->                     Load("ptr"));
    loop->Call("printString",  1,
    loop->                     ConstInt64((int64_t) "] = { k"));
-   loop->Call("printInt32",   1,
+   loop->Call("printInt16",   1,
    loop->                     LoadIndirect("Element", "key",
    loop->                        Load("ptr")));
    loop->Call("printString",  1,
@@ -155,7 +168,7 @@ class LinkedListTypeDictionary : public TR::TypeDictionary
       TR::IlType *ElementType = DefineStruct("Element");
       TR::IlType *pElementType = PointerTo("Element");
       DefineField("Element", "next", pElementType);
-      DefineField("Element", "key", Int32);
+      DefineField("Element", "key", Int16);
       DefineField("Element", "val", Int32);
       CloseStruct("Element");
       }
@@ -198,7 +211,7 @@ main(int argc, char *argv[])
 
    printf("Step 4: allocate and populate list\n");
    Element *cdr = NULL;
-   for (int32_t c=0;c < 100;c++)
+   for (int16_t c=0;c < 100;c++)
       {
       Element *car = new Element();
       car->key = c;
@@ -217,7 +230,7 @@ main(int argc, char *argv[])
       printf("FAIL!\n");
    else
       {
-      for (int32_t n=0;n < 100;n++)
+      for (int16_t n=0;n < 100;n++)
          {
          val = search(list, n);
          printf("search(list,%2d) = %d\n", n, val);

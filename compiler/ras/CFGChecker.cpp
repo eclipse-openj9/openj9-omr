@@ -187,7 +187,6 @@ bool TR_CFGChecker::arrangeBlocksInProgramOrder()
    // at the "next" block to a real block.
    //
    _blocksInProgramOrder = (TR::Block **) _cfg->comp()->trMemory()->allocateStackMemory((_numRealBlocks+1)*sizeof(TR::Block *));
-   bool ignore_block_count=false;
 
    memset(_blocksInProgramOrder, 0, (_numRealBlocks+1)*sizeof(TR::Block *));
 
@@ -217,11 +216,6 @@ bool TR_CFGChecker::arrangeBlocksInProgramOrder()
       TR_ASSERT( node->getOpCodeValue() == TR::BBStart, "Missing TR::BBStart");
       TR::Block *b = node->getBlock();
 
-      // WCODE: We sometimes keep around empty blocks that contain
-      // user labels for debug purposes. In such a case, the block
-      // count check is not valid
-      if (b->isAlwaysKeepBlock())   ignore_block_count=true;
-
       if (!_blockChecklist.isSet(b->getNumber()))
          {
          if (_outFile) trfprintf(_outFile, "Block %d [%p]  at tree node [%p] is in the trees but not in the CFG\n", b->getNumber(),
@@ -243,7 +237,7 @@ bool TR_CFGChecker::arrangeBlocksInProgramOrder()
 
    // Check for the right number of blocks in the trees
    //
-   if (!ignore_block_count && (i != _numRealBlocks))
+   if (i != _numRealBlocks)
       {
       if (_outFile) trfprintf(_outFile, "Number of blocks in trees [%d] does not match number in CFG [%d]\n", i, _numRealBlocks);
       return false;
@@ -269,7 +263,6 @@ bool TR_CFGChecker::areSuccessorsCorrect(int32_t i)
    if (block == NULL)
       return true;
 
-   if (block->isAlwaysKeepBlock()) return true;
    /*
    if ((_cfg->getMaxFrequency() >= 0) &&
        (block->getFrequency() < 0))

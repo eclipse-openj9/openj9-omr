@@ -1014,9 +1014,6 @@ void TR_OrderBlocks::addRemainingSuccessorsToList(TR::CFGNode *block, TR::CFGNod
       {
       TR::CFGNode *succBlock = (*succEdge)->getTo();
       // If the edge is created by BE, don't add block 1 to list for now
-      if (block->getNumber() != 0 && succBlock->getNumber() == 1 &&
-          block->asBlock()->isAlwaysKeepBlock() && block->asBlock()->getExit()->getNextTreeTop() != NULL)
-         continue;
       if (succBlock != excludeBlock && succBlock->getVisitCount() != _visitCount &&
            isCandidateTheHottestSuccessor(*succEdge, comp()))
          {
@@ -1065,9 +1062,6 @@ void TR_OrderBlocks::addRemainingSuccessorsToListHWProfile(TR::CFGNode *block, T
       {
       TR::CFGNode *succBlock = (*succEdge)->getTo();
       // If the edge is created by BE, don't add block 1 to list for now
-      if (block->getNumber() != 0 && succBlock->getNumber() == 1 &&
-            block->asBlock()->isAlwaysKeepBlock() && block->asBlock()->getExit()->getNextTreeTop() != NULL)
-         continue;
       if (succBlock != excludeBlock && succBlock->getVisitCount() != _visitCount &&
             succBlock->getFrequency() > 0)
          {
@@ -1650,7 +1644,7 @@ bool TR_OrderBlocks::doPeepHoleBlockCorrections(TR::Block *block, char *title)
       }
 
    // pattern: dead block because it has no predecessors
-   if (block->getPredecessors().empty() && (block->hasExceptionPredecessors() == false) && block->getEntry() != NULL && !block->isAlwaysKeepBlock())
+   if (block->getPredecessors().empty() && (block->hasExceptionPredecessors() == false) && block->getEntry() != NULL)
       {
       if (performTransformation(comp(), "%s block_%d has no predecessors so removing it and its out edges from the flow graph\n", title, block->getNumber()))
          {

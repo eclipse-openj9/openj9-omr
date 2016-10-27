@@ -301,8 +301,6 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
 
          if (!prevBlock->isCold() && newBlock->isCold()) continue;
 
-         if (newBlock->isAlwaysKeepBlock()) continue;
-
 
          // See if we can easily move the current block without adding a new goto.
          //
@@ -3755,13 +3753,6 @@ int32_t TR_CleanseTrees::process(TR::TreeTop *startTree, TR::TreeTop *endTreeTop
           (node->getBranchDestination() &&
            node->getBranchDestination()->getNode()->getBlock()->isGenControlBlock()))
          continue;
-
-      if ((block->getNextBlock() &&
-           block->getNextBlock()->isAlwaysKeepBlock()) ||
-          (node->getBranchDestination() &&
-           node->getBranchDestination()->getNode()->getBlock()->isAlwaysKeepBlock()))
-         continue;
-
 
       TR::Block *block1;
       TR::Block *block2;

@@ -5099,17 +5099,11 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       tif->firstBBEnd()->getNode()->setBlock(blockContainingTheCall);
       blockContainingTheCall->setExit(tif->firstBBEnd());
 
-      //Reset isGenControlBlock or isAlwasyKeepBlock flag so it can be deleted later
+      //Reset isGenControlBlock flag so it can be deleted later
       if (firstCalleeBlock->isGenControlBlock())
          {
          blockContainingTheCall->setIsGenControlBlock(true);
          firstCalleeBlock->setIsGenControlBlock(false);
-         }
-
-      if (firstCalleeBlock->isAlwaysKeepBlock())
-         {
-         blockContainingTheCall->setIsAlwaysKeepBlock(true);
-         firstCalleeBlock->setIsAlwaysKeepBlock(false);
          }
 
       firstCalleeBlock->setEntry(0);

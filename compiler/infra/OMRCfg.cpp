@@ -841,9 +841,6 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge)
          if(from->nodeIsRemoved())
              continue;
 
-         if (from->asBlock()->isAlwaysKeepBlock())
-            continue;
-
          if (comp()->getOption(TR_TraceAddAndRemoveEdge))
             traceMsg(comp(), "Processing unreachable node %d\n", from->getNumber());
 
@@ -1132,7 +1129,6 @@ OMR::CFG::removeUnreachableBlocks()
       {
       if (!reachableBlocks.get(node->getNumber()) && node->asBlock() && node != getEnd())
          unreachableNodes.push(node);
-      //TODO:  need to issue message if isGenControlBlock() is not on but isAlwaysKeepBlock() is on
       }
 
    while (!unreachableNodes.isEmpty())
@@ -3211,10 +3207,6 @@ OMR::CFG::findReachableBlocks(TR_BitVector *result)
             for (TR::CFGEdge * edge = edges.getFirst(); edge; edge = edges.getNext())
                {
                stack.push(edge->getTo());
-               // remove the start block predecessor of AlwaysKeepBlocks if they can be reached from somewhere else (excluding multiple entry points, and external_defined labels)
-               if (edge->getTo()->asBlock()->isAlwaysKeepBlock() && edge->getFrom() != getStart() && edge->getTo()->hasPredecessor(getStart()))
-                  {
-                  }
                }
             }
          }

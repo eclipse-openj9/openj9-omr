@@ -45,7 +45,6 @@
 #include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
 #include "infra/Assert.hpp"                    // for TR_ASSERT
 #include "infra/Cfg.hpp"                       // for CFG
-#include "infra/CfgFrequencyCompletion.hpp"
 #include "infra/deque.hpp"
 #include "infra/Link.hpp"                      // for TR_LinkHead1
 #include "infra/List.hpp"                      // for ListIterator, List

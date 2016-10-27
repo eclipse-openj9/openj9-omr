@@ -660,7 +660,10 @@ void TR::ILValidator::soundnessRule(TR::TreeTop *location, bool condition, const
       fprintf(stderr, "\n");
       static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
       if (!continueAfterValidationError)
-         comp()->fe()->outOfMemory(comp(), "Validation error");
+         {
+         traceMsg(comp(), "Validation error");
+         throw TR::CompilationException();
+         }
       }
    }
 
@@ -679,7 +682,10 @@ void TR::ILValidator::validityRule(Location &location, bool condition, const cha
       fprintf(stderr, "\n");
       static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
       if (!continueAfterValidationError)
-         comp()->fe()->outOfMemory(comp(), "Validation error");
+         {
+         traceMsg(comp(), "Validation error");
+         throw TR::CompilationException();
+         }
       }
    }
 

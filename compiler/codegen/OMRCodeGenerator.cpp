@@ -2426,7 +2426,7 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uin
       {
       self()->commitToCodeCache();
       }
-   TR_ASSERT( !((warmSize && !warmCode) || (coldSize && !coldCode)), "Allocation failed but didn't call outOfMemory()");
+   TR_ASSERT( !((warmSize && !warmCode) || (coldSize && !coldCode)), "Allocation failed but didn't throw an exception");
    return warmCode;
    }
 

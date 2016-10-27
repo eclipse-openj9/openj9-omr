@@ -186,7 +186,10 @@ FrontEnd::createStackAtlas(
        stackAtlas->getNumberOfParmSlotsMapped() > USHRT_MAX ||
        stackAtlas->getParmBaseOffset()  < SHRT_MIN || stackAtlas->getParmBaseOffset()  > SHRT_MAX ||
        stackAtlas->getLocalBaseOffset() < SHRT_MIN || stackAtlas->getLocalBaseOffset() > SHRT_MAX)
-      cg->fe()->outOfMemory(comp, "GC data");
+      {
+      traceMsg(comp, "Overflowed the fields in pyAtlas");
+      throw TR::CompilationException();
+      }
 
    // Maps are in reverse order in list from what we want in the atlas
    // so advance to the address where the last map should go and start

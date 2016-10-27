@@ -1221,7 +1221,10 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          if (!comp->isPeekingMethod())
             {
             if (self()->catchBlocksHaveRealPredecessors(comp->getFlowGraph(), comp))
-               comp->fe()->outOfMemory(comp, "Catch blocks have real predecessors");
+               {
+               traceMsg(comp, "Catch blocks have real predecessors");
+               throw TR::CompilationException();
+               }
             }
 
          // If OSR is enabled, need to create an OSR helper call to keep the pending pushes,
@@ -1749,6 +1752,17 @@ OMR::ResolvedMethodSymbol::addTrivialDeadTreeBlock(TR::Block *b)
       _trivialDeadTreeBlocksList.add(b);
    }
 
+// get/setTempIndex is called from TR_ResolvedMethod::makeParameterList
+int32_t
+OMR::ResolvedMethodSymbol::setTempIndex(int32_t index, TR_FrontEnd * fe)
+   {
+   if ((_tempIndex = index) < 0)
+      {
+      traceMsg(self()->comp(), "TR::ResolvedMethodSymbol::_tempIndex overflow");
+      throw TR::CompilationException();
+      }
+   return index;
+   }
 
 ncount_t
 OMR::ResolvedMethodSymbol::generateAccurateNodeCount()

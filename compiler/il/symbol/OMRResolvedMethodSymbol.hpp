@@ -282,15 +282,7 @@ public:
    void setIsSideEffectFree(bool b)       { _properties.set(IsSideEffectFree,b); }
    int32_t uncheckedSetTempIndex(int32_t index) { return _tempIndex = index; }
 
-// get/setTempIndex is called from TR_ResolvedMethod::makeParameterList
-   int32_t setTempIndex(int32_t index, TR_FrontEnd * fe)
-      {
-      if ((_tempIndex = index) < 0)
-         {
-         fe->outOfMemory(0, "TR::ResolvedMethodSymbol::_tempIndex overflow");
-         }
-      return index;
-      }
+   int32_t setTempIndex(int32_t index, TR_FrontEnd * fe);
 
    int32_t getTempIndex() { return _tempIndex; }
    int32_t getArrayCopyTempSlot(TR_FrontEnd * fe);

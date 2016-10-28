@@ -19,6 +19,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include "compile/Method.hpp"
+#include "OpCodesTest.hpp"
 #include "tests/Qux2IlInjector.hpp"
 #include "tests/Qux2Test.hpp"
 #include "gtest/gtest.h"
@@ -67,10 +68,10 @@ Qux2Test::qux2(int32_t num)
 void
 Qux2Test::invokeTests()
    {
-   EXPECT_EQ(qux2(5), _qux2(5));
-   EXPECT_EQ(10, _qux2(5));
-   EXPECT_EQ(qux2(INT_MAX/2), _qux2(INT_MAX/2));
-//   EXPECT_EQ(qux2(INT_MIN), _qux2(INT_MIN));
+   OMR_CT_EXPECT_EQ(_qux2, qux2(5), _qux2(5));
+   OMR_CT_EXPECT_EQ(_qux2, 10, _qux2(5));
+   OMR_CT_EXPECT_EQ(_qux2, qux2(INT_MAX/2), _qux2(INT_MAX/2));
+//   OMR_CT_EXPECT_EQ(_qux2, qux2(INT_MIN), _qux2(INT_MIN));
    }
 
 } // namespace TestCompiler

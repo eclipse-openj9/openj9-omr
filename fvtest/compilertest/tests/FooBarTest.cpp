@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "compile/Method.hpp"
 #include "ilgen/TypeDictionary.hpp"
+#include "OpCodesTest.hpp"
 #include "tests/FooBarTest.hpp"
 #include "tests/BarIlInjector.hpp"
 #include "tests/FooIlInjector.hpp"
@@ -103,17 +104,17 @@ FooBarTest::invokeTests()
       _dataArray[i] = _dataArraySize - i;
 
    int32_t testID = 0, result;
-   ASSERT_EQ(-1, _foo(0));
+   OMR_CT_EXPECT_EQ(_foo, -1, _foo(0));
 
    for (i = 1; i < _dataArraySize;i++,testID++)
       {
-      ASSERT_EQ(i, _foo(i));
+      OMR_CT_EXPECT_EQ(_foo, i, _foo(i));
       }
 
    // Second set of tests should map i to N-i
    for (i = 0; i < _dataArraySize;i++/*,testID++*/)
       {
-      ASSERT_EQ(_dataArraySize - i, _bar(i));
+      OMR_CT_EXPECT_EQ(_bar, _dataArraySize - i, _bar(i));
       }
 
    // Third set of tests should map i to 1
@@ -121,13 +122,13 @@ FooBarTest::invokeTests()
       _dataArray[i] = 1;
    for (i = 0;i < _dataArraySize;i++,testID++)
       {
-      ASSERT_EQ(1, _foo(i));
+      OMR_CT_EXPECT_EQ(_foo, 1, _foo(i));
       }
 
-   ASSERT_EQ(-1, _foo(-1));
-   ASSERT_EQ(-1, _foo(INT_MIN));
-   ASSERT_EQ(-1, _foo(_dataArraySize));
-   ASSERT_EQ(-1, _foo(INT_MAX));
+   OMR_CT_EXPECT_EQ(_foo, -1, _foo(-1));
+   OMR_CT_EXPECT_EQ(_foo, -1, _foo(INT_MIN));
+   OMR_CT_EXPECT_EQ(_foo, -1, _foo(_dataArraySize));
+   OMR_CT_EXPECT_EQ(_foo, -1, _foo(INT_MAX));
    }
 
 } // namespace TestCompiler

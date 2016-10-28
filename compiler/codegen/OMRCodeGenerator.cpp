@@ -2409,7 +2409,6 @@ OMR::CodeGenerator::reserveCodeCache()
 
       if (self()->comp()->compileRelocatableCode())
          {
-         self()->comp()->setErrorCode(COMPILATION_OUT_OF_MEMORY_RELOCATION_DATA);
          throw TR::RecoverableCodeCacheError();
          }
 

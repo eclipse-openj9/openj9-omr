@@ -612,7 +612,6 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
 
       if (this->_analysisInterrupted)
          {
-         this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
          traceMsg(this->comp(), "interrupted in forward bit vector analysis");
          throw TR::CompilationInterrupted();
          }
@@ -1187,7 +1186,6 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
 
       if (this->_analysisInterrupted)
          {
-         this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
          traceMsg(this->comp(), "interrupted in forward bit vector analysis");
          throw TR::CompilationInterrupted();
          }

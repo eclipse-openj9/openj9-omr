@@ -147,7 +147,6 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
 
    if (_methodIndex >= MAX_CALLER_INDEX)
       {
-      comp->setErrorCode(COMPILATION_MAX_CALLER_INDEX_EXCEEDED);
       traceMsg(comp, "Exceeded MAX_CALLER_INDEX");
       throw TR::MaxCallerIndexExceeded();
       }
@@ -1030,7 +1029,6 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
                traceMsg(self()->comp(), "#%d shares pending push slot\n", symRef->getReferenceNumber());
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
               {
-               self()->comp()->setErrorCode(COMPILATION_IL_GEN_FAILURE);
                traceMsg(self()->comp(), "Pending push slot sharing detected");
                throw TR::ILGenFailure();
                }
@@ -1063,7 +1061,6 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
                traceMsg(self()->comp(), "#%d shares auto slot\n", symRef->getReferenceNumber());
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
                {
-               self()->comp()->setErrorCode(COMPILATION_IL_GEN_FAILURE);
                traceMsg(self()->comp(), "Auto/parm slot sharing detected");
                throw TR::ILGenFailure();
                }

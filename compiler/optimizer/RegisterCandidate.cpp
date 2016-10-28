@@ -2673,7 +2673,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          {
          if (comp()->compilationShouldBeInterrupted(GRA_ASSIGN_CONTEXT))
             {
-            comp()->setErrorCode(COMPILATION_INTERRUPTED);
             traceMsg(comp(), "interrupted in GRA");
             throw TR::CompilationInterrupted();
             }

@@ -1591,7 +1591,6 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
          _numInternalPointers++;
          if (_numInternalPointers > comp()->maxInternalPointers())
             {
-            comp()->setErrorCode(COMPILATION_MAX_NODE_COUNT_EXCEEDED);
             traceMsg(comp(), "Excessive number of internal pointers");
             throw TR::ExcessiveComplexity();
             }

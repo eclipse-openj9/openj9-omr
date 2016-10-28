@@ -1119,7 +1119,6 @@ int32_t OMR::Optimizer::optimize()
       if (nextHotness > comp()->getMethodHotness())
          {
          comp()->setNextOptLevel(nextHotness);
-         comp()->setErrorCode(COMPILATION_NEEDED_AT_HIGHER_LEVEL);
          traceMsg(comp(), "Method needs to be compiled at higher level");
          throw TR::InsufficientlyAggressiveCompilation();
          }
@@ -1971,7 +1970,6 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
                }
             else
                {
-               comp()->setErrorCode(COMPILATION_LOOPS_OR_BASICBLOCKS_EXCEEDED);
                if (comp()->getOption(TR_MimicInterpreterFrameShape))
                   {
                   traceMsg(comp(), "complex method under MimicInterpreterFrameShape");
@@ -2042,7 +2040,6 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       if (comp()->compilationShouldBeInterrupted((TR_CallingContext)optNum))
          {
-         comp()->setErrorCode(COMPILATION_INTERRUPTED);
          traceMsg(comp(), "interrupted between optimizations");
          throw TR::CompilationInterrupted();
          }

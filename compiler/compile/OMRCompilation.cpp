@@ -1867,11 +1867,9 @@ void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
 
       if (newCodeCache)
          {
-         self()->setErrorCode(COMPILATION_ILLEGAL_CODE_CACHE_SWITCH);
          throw TR::RecoverableCodeCacheError();
          }
 
-      self()->setErrorCode(COMPILATION_NULL_SUBSTITUTE_CODE_CACHE);
       throw TR::CodeCacheError();
       }
    }

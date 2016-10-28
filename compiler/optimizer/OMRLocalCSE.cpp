@@ -416,7 +416,6 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
    {
    if (depth > MAX_DEPTH)
       {
-      comp()->setErrorCode(COMPILATION_MAX_DEPTH_EXCEEDED);
       traceMsg(comp(), "scratch space in local CSE");
       throw TR::ExcessiveComplexity();
       }

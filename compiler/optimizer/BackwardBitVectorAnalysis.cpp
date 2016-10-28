@@ -222,10 +222,11 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
 	 }
 
       if (this->_analysisInterrupted)
-	 {
+         {
          this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         this->comp()->fe()->outOfMemory(this->comp(), "interrupted in backward bit vector analysis");
-	 }
+         traceMsg(this->comp(), "interrupted in backward bit vector analysis");
+         throw TR::CompilationInterrupted();
+         }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;
@@ -1044,10 +1045,11 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
 	 }
 
       if (this->_analysisInterrupted)
-	 {
-	 this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         this->comp()->fe()->outOfMemory(this->comp(), "interrupted in backward bit vector analysis");
-	 }
+         {
+         this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
+         traceMsg(this->comp(), "interrupted in backward bit vector analysis");
+         throw TR::CompilationInterrupted();
+         }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;

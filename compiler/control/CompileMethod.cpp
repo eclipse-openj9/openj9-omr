@@ -200,6 +200,22 @@ registerTrampoline(uint8_t *start, uint32_t size, const char *name)
       writePerfToolEntry(start, size, name);
    }
 
+static void
+printCompFailureInfo(TR::Compilation * comp, const char * reason)
+   {
+   if (comp)
+      {
+      traceMsg(comp, "\n=== EXCEPTION THROWN (%s) ===\n", reason);
+
+      if (debug("traceCompilationException"))
+         {
+         diagnostic("JIT: terminated compile of %s: %s\n", comp->signature(), reason ? reason : "<no reason provided>");
+         fprintf(stderr, "JIT: terminated compile of %s: %s\n", comp->signature(), reason ? reason : "<no reason provided>");
+         fflush(stderr);
+         }
+      }
+   }
+
 uint8_t *
 compileMethod(
       OMR_VMThread *omrVMThread,
@@ -363,6 +379,14 @@ compileMethodFromDetails(
          }
       catch (const std::exception &exception)
          {
+#if defined(J9ZOS390)
+         // Compiling with -Wc,lp64 results in a crash on z/OS when trying
+         // to call the what() virtual method of the exception.
+         printCompFailureInfo(&compiler, "");
+#else
+         printCompFailureInfo(&compiler, exception.what());
+#endif
+
          // failed! :-(
          if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
             traceMsg((&compiler), "<result success=\"false\">longjmp invoked from the compiler</result>\n");

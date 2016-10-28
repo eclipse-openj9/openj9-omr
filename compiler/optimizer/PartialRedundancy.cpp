@@ -4259,10 +4259,11 @@ bool TR_ExceptionCheckMotion::analyzeNodeIfSuccessorsAnalyzed(TR::CFGNode *cfgNo
    }
 
       if (_analysisInterrupted)
-   {
+         {
          comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         comp()->fe()->outOfMemory(comp(), "interrupted in forward bit vector analysis");
-   }
+         traceMsg(comp(), "interrupted in forward bit vector analysis");
+         throw TR::CompilationInterrupted();
+         }
 
       TR::CFGNode *node = _analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;

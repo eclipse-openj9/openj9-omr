@@ -99,7 +99,8 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
       traceMsg(comp(), "compilation failed for %s because osr def analysis failed\n",
             optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
       comp()->setErrorCode(COMPILATION_IL_GEN_FAILURE);
-      comp()->fe()->outOfMemory(comp(), "osr def analysis failed");
+      traceMsg(comp(), "osr def analysis failed");
+      throw TR::ILGenFailure();
       }
    comp()->printMemStatsAfter("computeOSRDefInfo");
 

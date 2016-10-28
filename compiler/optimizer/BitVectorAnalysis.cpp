@@ -611,10 +611,11 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
    }
 
       if (this->_analysisInterrupted)
-   {
+         {
          this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         this->comp()->fe()->outOfMemory(this->comp(), "interrupted in forward bit vector analysis");
-   }
+         traceMsg(this->comp(), "interrupted in forward bit vector analysis");
+         throw TR::CompilationInterrupted();
+         }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;
@@ -1187,7 +1188,8 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
       if (this->_analysisInterrupted)
          {
          this->comp()->setErrorCode(COMPILATION_INTERRUPTED);
-         this->comp()->fe()->outOfMemory(this->comp(), "interrupted in forward bit vector analysis");
+         traceMsg(this->comp(), "interrupted in forward bit vector analysis");
+         throw TR::CompilationInterrupted();
          }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();

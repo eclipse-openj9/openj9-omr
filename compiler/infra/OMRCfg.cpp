@@ -960,7 +960,8 @@ bool OMR::CFG::removeEdge(TR::CFGEdge *edge, bool recursiveImpl)
         (MAX_REMOVE_EDGE_NESTING_DEPTH * 2) : MAX_REMOVE_EDGE_NESTING_DEPTH))
       {
       comp()->setErrorCode(COMPILATION_REMOVE_EDGE_NESTING_DEPTH_EXCEEDED);
-      comp()->fe()->outOfMemory(comp(), "Exceeded removeEdge nesting depth");
+      traceMsg(comp(), "Exceeded removeEdge nesting depth");
+      throw TR::ExcessiveComplexity();
       }
 
 

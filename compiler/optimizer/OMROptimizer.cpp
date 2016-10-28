@@ -1102,14 +1102,14 @@ int32_t OMR::Optimizer::optimize()
    const OptimizationStrategy *opt = _strategy;
    while (opt->_num != endOpts)
       {
-        if (performOptimization(opt, firstOptIndex, lastOptIndex, doTiming) == COMPILATION_INTERRUPTED)
-          return COMPILATION_INTERRUPTED;
-        opt++;
-        if (!isIlGenOpt() && comp()->getNodePool().removeDeadNodes())
-           {
-             setValueNumberInfo(NULL);
-           }
+      int32_t actualCost = performOptimization(opt, firstOptIndex, lastOptIndex, doTiming);
+      opt++;
+      if (!isIlGenOpt() && comp()->getNodePool().removeDeadNodes())
+         {
+         setValueNumberInfo(NULL);
+         }
       }
+
    if (TR::Options::getCmdLineOptions()->getOption(TR_EnableDeterministicOrientedCompilation) &&
        comp()->isOutermostMethod() &&
        (comp()->getMethodHotness() > cold) &&

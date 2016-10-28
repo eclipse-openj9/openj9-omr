@@ -35,6 +35,6 @@
 int main(int argc, char **argv)
    {
    ::testing::InitGoogleTest(&argc, argv);
-   ::testing::AddGlobalTestEnvironment(new OMRTestEnv);
+   ::testing::AddGlobalTestEnvironment(new TestCompiler::OMRTestEnv);
    return RUN_ALL_TESTS();
    }

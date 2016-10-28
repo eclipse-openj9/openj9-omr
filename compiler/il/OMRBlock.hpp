@@ -430,9 +430,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    void setIsOSRCatchBlock()                          { _flags.set(_isOSRCatchBlock); }
    bool isOSRCatchBlock()                             { return _flags.testAny(_isOSRCatchBlock); }
 
-   void setIsAlwaysKeepBlock(bool b)                  { _flags.set(_isAlwaysKeepBlock, b); }
-   bool isAlwaysKeepBlock()                           { return _flags.testAny(_isAlwaysKeepBlock); }
-
    void setIsCreatedAtCodeGen(bool b = true)          { _flags.set(_createdAtCodeGen, b); }
    bool isCreatedAtCodeGen()                          { return _flags.testAny(_createdAtCodeGen); }
 
@@ -520,7 +517,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _isGenAsmFlowBlock                    = 0x00100000,
       _isOSRCodeBlock                       = 0x00004000,
       _isOSRCatchBlock                      = 0x00008000,
-      _isAlwaysKeepBlock                    = 0x00020000,  // Block referenced by addr(label) or gen refs(label) or gen control block
       _createdAtCodeGen                     = 0x00080000,
       _hasCalls                             = 0x00200000,
       _hasCallToSuperCold                   = 0x00400000,

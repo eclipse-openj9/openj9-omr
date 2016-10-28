@@ -148,7 +148,6 @@ void TR_RegionStructure::addSubNode(TR_StructureSubGraphNode *subNode)
 void TR_RegionStructure::cleanupAfterEdgeRemoval(TR::CFGNode *node)
    {
    TR_BlockStructure *blockSt = toStructureSubGraphNode(node)->getStructure()->asBlock();
-   if ( blockSt != NULL  && blockSt->getBlock()->isAlwaysKeepBlock()) return;
    if (node != getEntry() &&
        node->getPredecessors().empty() &&
        node->getExceptionPredecessors().empty())
@@ -1043,7 +1042,7 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
 
       if (!toNode)
          {
-         if ((to == comp()->getFlowGraph()->getEnd() || to->isAlwaysKeepBlock()) /* &&
+         if (to == comp()->getFlowGraph()->getEnd() /* &&
              to->getPredecessors().empty() */)
             {
             toStruct = to->getStructureOf();

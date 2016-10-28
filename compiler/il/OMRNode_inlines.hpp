@@ -70,7 +70,7 @@ OMR::Node::addChildrenAndSymRef(uint16_t childIndex, TR::Node *child,
 
 template <class...ChildrenAndSymRefType>
 TR::Node *
-OMR::Node::recreateWithSymRef(TR::Node *originalNode, TR::ILOpCodes op,
+OMR::Node::recreateWithSymRefWithoutProperties(TR::Node *originalNode, TR::ILOpCodes op,
                               uint16_t numChildren, uint16_t numChildArgs,
                               TR::Node *first,
                               ChildrenAndSymRefType... childrenAndSymRef)
@@ -88,7 +88,7 @@ OMR::Node::recreateWithoutSymRef(TR::Node *originalNode, TR::ILOpCodes op,
                                  uint16_t numChildren, uint16_t numChildArgs,
                                  TR::Node *first, Children... children)
    {
-   return recreateWithSymRef(originalNode, op, numChildren, numChildArgs,
+   return recreateWithSymRefWithoutProperties(originalNode, op, numChildren, numChildArgs,
                              first, children...);
    }
 
@@ -98,7 +98,7 @@ OMR::Node::createWithSymRefInternal(TR::ILOpCodes op, uint16_t numChildren,
                                     uint16_t numChildArgs, TR::Node *first,
                                     ChildrenAndSymRefType... childrenAndSymRef)
    {
-   return recreateWithSymRef(0, op, numChildren, numChildArgs, first,
+   return recreateWithSymRefWithoutProperties(0, op, numChildren, numChildArgs, first,
                              childrenAndSymRef...);
    }
 template <class...Children>

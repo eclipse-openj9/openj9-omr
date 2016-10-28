@@ -868,7 +868,7 @@ void TR_PartialRedundancy::processReusedNode(TR::Node *node, TR::ILOpCodes newOp
 
    node->setNumChildren(newNumChildren);
    if (newSymRef)
-      node = TR::Node::recreateWithSymRefAndCopyValidProperties(node, newOpCode, newSymRef);
+      node = TR::Node::recreateWithSymRef(node, newOpCode, newSymRef);
    else
       node = TR::Node::recreate(node, newOpCode);
 

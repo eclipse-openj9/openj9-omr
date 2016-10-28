@@ -134,7 +134,7 @@ int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
    TR_VerboseLog::initialize(jitConfig);
    TR::Options::setCanJITCompile(true);
    TR::Options::getCmdLineOptions()->setOption(TR_NoRecompile);
-   TR_CompilationController::init(NULL);
+   TR::CompilationController::init(NULL);
 
    void *pseudoTOC = NULL;
 #if defined(TR_TARGET_POWER)

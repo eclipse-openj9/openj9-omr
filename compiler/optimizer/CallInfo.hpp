@@ -38,7 +38,7 @@
 #include "infra/List.hpp"                      // for List, etc
 #include "optimizer/InlinerFailureReason.hpp"
 
-class TR_CompilationFilters;
+namespace TR { class CompilationFilters;}
 class TR_FrontEnd;
 class TR_InlineBlocks;
 class TR_InlinerBase;
@@ -116,7 +116,7 @@ class TR_CallStack : public TR_Link<TR_CallStack>
       List<TR::SymbolReference>  _temps;
       List<TR::SymbolReference>  _injectedBasicBlockTemps;
       TR_InnerPreexistenceInfo *_innerPrexInfo;
-      TR_CompilationFilters *   _inlineFilters;
+      TR::CompilationFilters *   _inlineFilters;
       int32_t                   _maxCallSize;
       bool                      _inALoop;
       bool                      _alwaysCalled;

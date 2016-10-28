@@ -55,7 +55,7 @@
 class TR_Debug;
 class TR_BlockStructure;
 class TR_CHTable;
-class TR_CompilationFilters;
+namespace TR { class CompilationFilters; }
 class TR_FilterBST;
 class TR_FrontEnd;
 class TR_GCStackMap;
@@ -366,7 +366,7 @@ public:
    virtual void newInstruction(TR::Instruction *);
    virtual void addInstructionComment(TR::Instruction *, char*, ...);
 
-   virtual TR_CompilationFilters * getInlineFilters() { return _inlineFilters; }
+   virtual TR::CompilationFilters * getInlineFilters() { return _inlineFilters; }
 
    virtual TR_FrontEnd *fe() { return _fe; }
    virtual TR::Compilation *comp() { return _comp; }
@@ -407,19 +407,19 @@ public:
    virtual bool            methodSigCanBeCompiled(const char *, TR_FilterBST * & , TR_Method::Type methodType);
    virtual bool            methodSigCanBeRelocated(const char *, TR_FilterBST * & );
    virtual bool            methodSigCanBeCompiledOrRelocated(const char *, TR_FilterBST * &, bool isRelocation, TR_Method::Type methodType);
-   virtual bool            methodCanBeFound(TR_Memory *, TR_ResolvedMethod *, TR_CompilationFilters *, TR_FilterBST * &);
-   virtual bool            methodSigCanBeFound(const char *, TR_CompilationFilters *, TR_FilterBST * &, TR_Method::Type methodType);
-   virtual TR_CompilationFilters * getCompilationFilters() { return _compilationFilters; }
-   virtual TR_CompilationFilters * getRelocationFilters() { return _relocationFilters; }
-   virtual void            clearFilters(TR_CompilationFilters *);
+   virtual bool            methodCanBeFound(TR_Memory *, TR_ResolvedMethod *, TR::CompilationFilters *, TR_FilterBST * &);
+   virtual bool            methodSigCanBeFound(const char *, TR::CompilationFilters *, TR_FilterBST * &, TR_Method::Type methodType);
+   virtual TR::CompilationFilters * getCompilationFilters() { return _compilationFilters; }
+   virtual TR::CompilationFilters * getRelocationFilters() { return _relocationFilters; }
+   virtual void            clearFilters(TR::CompilationFilters *);
    void                    clearFilters(bool loadLimit);
-   virtual bool            scanInlineFilters(FILE *, int32_t &, TR_CompilationFilters *);
-   virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, TR_CompilationFilters *);
+   virtual bool            scanInlineFilters(FILE *, int32_t &, TR::CompilationFilters *);
+   virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, TR::CompilationFilters *);
    virtual TR_FilterBST *  addFilter(char * &, int32_t, int32_t, int32_t, bool loadLimit);
    virtual TR_FilterBST *  addExcludedMethodFilter(bool loadLimit);
    virtual bool            addSamplingPoint(char *, TR_FilterBST * &, bool loadLimit);
    virtual int32_t         scanFilterName(char *, TR_FilterBST *);
-   virtual void            printFilters(TR_CompilationFilters *);
+   virtual void            printFilters(TR::CompilationFilters *);
    virtual void            printFilters();
    virtual void            print(TR_FilterBST * filter);
    virtual void            printSamplingPoints();
@@ -687,8 +687,8 @@ public:
    void printLoadConst(TR::FILE *, TR::Node *);
    void printLoadConst(TR::Node *, TR_PrettyPrinterString&);
 
-   TR_CompilationFilters * findOrCreateFilters(TR_CompilationFilters *);
-   TR_CompilationFilters * findOrCreateFilters(bool loadLimit);
+   TR::CompilationFilters * findOrCreateFilters(TR::CompilationFilters *);
+   TR::CompilationFilters * findOrCreateFilters(bool loadLimit);
 
    void printFilterTree(TR_FilterBST *root);
 
@@ -1099,9 +1099,9 @@ protected:
    uint32_t                   _nextInstructionNumber;
    uint32_t                   _nextStructureNumber;
    uint32_t                   _nextVariableSizeSymbolNumber;
-   TR_CompilationFilters    * _compilationFilters;
-   TR_CompilationFilters    * _relocationFilters;
-   TR_CompilationFilters    * _inlineFilters;
+   TR::CompilationFilters    * _compilationFilters;
+   TR::CompilationFilters    * _relocationFilters;
+   TR::CompilationFilters    * _inlineFilters;
    bool                       _usesSingleAllocMetaData;
    TR_BitVector               _nodeChecklist;
    TR_BitVector               _structureChecklist;

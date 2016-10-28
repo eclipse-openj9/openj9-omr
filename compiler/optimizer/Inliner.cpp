@@ -720,7 +720,7 @@ OMR_InlinerPolicy::tryToInlineGeneral(TR_CallTarget * calltarget, TR_CallStack *
    if (callStack && callStack->_inlineFilters)
       {
       TR_FilterBST *filterInfo = NULL;
-      TR_CompilationFilters * inlineFilters = NULL;
+      TR::CompilationFilters * inlineFilters = NULL;
 
       inlineFilters=callStack->_inlineFilters;
 
@@ -744,7 +744,7 @@ OMR_InlinerPolicy::tryToInlineGeneral(TR_CallTarget * calltarget, TR_CallStack *
       if (!toInline)
          {
          TR_FilterBST *filterInfo = NULL;
-         TR_CompilationFilters * inlineFilters = NULL;
+         TR::CompilationFilters * inlineFilters = NULL;
 
          if (TR::Options::getDebug())
             {
@@ -798,7 +798,7 @@ TR_CallStack::TR_CallStack(
      _safeToAddSymRefs(safeToAddSymRefs)
    {
    TR_FilterBST *filterInfo = NULL;
-   TR_CompilationFilters * inlineFilters = NULL;
+   TR::CompilationFilters * inlineFilters = NULL;
 
    if (!nextCallStack)
       {

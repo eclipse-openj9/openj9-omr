@@ -5694,7 +5694,11 @@ TR::Node *constrainAcall(TR::ValuePropagation *vp, TR::Node *node)
              || method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
             {
             bool isGlobal;
-            constraint = vp->getConstraint(node->getFirstChild(), isGlobal);
+            if (method->getRecognizedMethod() == TR::java_lang_Object_clone)
+              constraint = vp->getConstraint(node->getFirstChild(), isGlobal);
+            else
+              constraint = vp->getConstraint(node->getLastChild(), isGlobal);
+
             TR::VPResolvedClass *newTypeConstraint = NULL;
             if (constraint)
                {

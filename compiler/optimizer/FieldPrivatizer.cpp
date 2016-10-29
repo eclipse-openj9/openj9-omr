@@ -68,68 +68,6 @@
 #include "optimizer/LoopCanonicalizer.hpp"
 
 
-/**
- * Class FieldPrivatizer
- * =====================
- * Field privatizer aims to replace accesses to fields and statics inside
- * loops with accesses of new temps that it creates (allowing the loop to
- * run faster since the temp is an access from the stack, plus the temp
- * gets to be a candidate for global register allocation whereas the
- * original field or static would not be).
- *
- * Field privatizer would attempt to replace loads as well as stores of
- * fields and statics and so if there are calls inside the loop or any
- * other implicit use points for the original field or static (e.g. an
- * exception check, that could fail and reach an exception handler that
- * uses the field or static) then the transformation cannot be done (since
- * omitting stores to the field or static inside the loop may change
- * program behaviour at those use points inside the loop). Assuming field
- * privatizer finds a field or static without any potential use inside the
- * loop and subject to certain other conditions it checks to keep the
- * implementation simple, the transformation is to:
- * a) initialize the new temp it creates with the field or static value
- * in the loop preheader;
- * b) change every load and store of the field or static inside the loop
- * to use the new temp;
- * c) restore the field or static value on all exits out of the loop by
- * using the temp value on exit from the loop.
- *
- * This optimization differs from what PRE (a form of load elimination as
- * part of the global commoning it does) may do in the same loop in that
- * field privatizer eliminates stores as well as loads, whereas PRE could
- * only have eliminated the loads of the field or static; PRE would not omit
- * the store to the field or static.
- *
- * As a very simple example...
- *
- * Original loop
- *
- * while (o.f < n)
- *    o.f = o.f + 1;
- *
- * Field Privatizer optimized loop
- *
- * t = o.f;
- * while (t < n)
- *    t = t + 1;
- * o.f = t;
- *
- * PRE optimized loop
- *
- * t = o.f;
- * while (t < n)
- *    {
- *    o.f = t + 1;
- *    t = t + 1;
- *    }
- *
- * So, what PRE would do to the loop is somewhat similar but still less
- * powerful; however PRE can do such optimizations even outside of loops
- * and more importantly can do exactly the same thing even if there were
- * implicit uses of o.f inside the loop. So it's more general in that sense.
- */
-
-
 TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
      _privatizedFieldSymRefs(manager->trMemory(), stackAlloc),

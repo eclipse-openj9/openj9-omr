@@ -42,12 +42,15 @@ namespace TR
  * Class LocalDeadStoreElimination
  * ===============================
  *
- * Performs Dead Store Elimination locally within a basic block.
- * It does not take into account any information from other blocks.
- * Basically it tries to remove a store into a location within the
- * the basic block that is :
- * a) (over)written by another store in the block to the same location.
- * b) NOT used by any instruction in the block between the two stores.
+ * LocalDeadStoreElimination implements an algorithm that proceeds as follows:
+ *
+ * Scan through an extended basic block starting from the last treetop
+ * and moving upwards through the block. As a store is seen, mark the symbol
+ * being stored as unused and if another store is encountered above to
+ * the same symbol, then it can be removed if the symbol being stored into
+ * is still marked as unused. Symbols are marked as used when a load is
+ * seen or they are aliased to a symbol (a call for example) that might
+ * use it implicitly (through aliases).
  */
 
 class LocalDeadStoreElimination : public TR::Optimization

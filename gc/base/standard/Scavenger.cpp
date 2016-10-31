@@ -1340,11 +1340,14 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	/* and correct for the double array alignment */
 	newCacheAlloc = (void *) (((uint8_t *)destinationObjectPtr) + objectReserveSizeInBytes);
 
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Try to swap the forwarding pointer to the destination copy array into the source object */
 	omrobjectptr_t originalDestinationObjectPtr = destinationObjectPtr;
 	destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
 	if (destinationObjectPtr == originalDestinationObjectPtr) {
-		/* Succeeded in forwarding the object - copy and adjust the age value */
+		/* Succeeded in forwarding the object */
+#endif
+		/* Copy and adjust the age value */
 
 #if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
@@ -1370,6 +1373,14 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		/* object has been copied so if scanning hierarchically set effectiveCopyCache to support aliasing check */
 		env->_effectiveCopyScanCache = copyCache;
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
+	 * (since mutator may access the object as soon as forwarding pointer is installed) */
+	omrobjectptr_t originalDestinationObjectPtr = destinationObjectPtr;
+	destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
+	if (destinationObjectPtr == originalDestinationObjectPtr) {
+		/* Succeeded in forwarding the object */
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		/* Update the stats */
 		MM_ScavengerStats *scavStats = &env->_scavengerStats;
 		if(copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {

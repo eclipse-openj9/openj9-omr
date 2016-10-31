@@ -102,10 +102,6 @@ ifdef DEBUGSTATS
                 ExternHelper _numSSECopiesAlignFailed:dword
                 ExternHelper _numStringMoves:dword
 endif
-                ExternHelper jitWriteBarrierStore
-                ExternHelper jitWriteBarrierBatchStore
-                ExternHelper jitInstanceOf
-                ExternHelper jitThrowArrayStoreExceptionWithIP
 
                 public _arrayCopy
                 public _halfWordArrayCopy

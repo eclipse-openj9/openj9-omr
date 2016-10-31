@@ -105,7 +105,6 @@ TEST_F(CpuTimeTest, increasesMonotonically)
 	for (unsigned int i = 0; i < 500; i += 1) {
 		userTimeCpuBurn();
 		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
-		ASSERT_NE(cpuUsage.systemJvmCpuTime, 0);
 		ASSERT_GE(cpuUsage.systemJvmCpuTime, prevCpuUsage.systemJvmCpuTime);
 		ASSERT_GE(cpuUsage.timestamp, prevCpuUsage.timestamp);
 		ASSERT_EQ(cpuUsage.applicationCpuTime, prevCpuUsage.applicationCpuTime);
@@ -139,7 +138,6 @@ TEST_F(ApplicationCpuTimeTest, increasesMonotonically)
 	for (unsigned int i = 0; i < 500; i += 1) {
 		userTimeCpuBurn();
 		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
-		ASSERT_NE(cpuUsage.applicationCpuTime, 0);
 		ASSERT_GE(cpuUsage.applicationCpuTime, prevCpuUsage.applicationCpuTime);
 		ASSERT_GE(cpuUsage.timestamp, prevCpuUsage.timestamp);
 		ASSERT_EQ(cpuUsage.systemJvmCpuTime, prevCpuUsage.systemJvmCpuTime);

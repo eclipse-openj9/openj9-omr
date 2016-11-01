@@ -52,20 +52,6 @@
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"                       // for Optimizer
 
-/**
- * Class Local Dead Store Elimination
- * ==================================
- *
- * LocalDeadStoreElimination implements an algorithm that proceeds as follows:
- *
- * Scan through an extended basic block starting from the last treetop
- * and moving upwards through the block. As a store is seen, mark the symbol
- * being stored as unused and if another store in encountered above to
- * the same symbol, then it can be removed if the symbol being stored into
- * is still marked as unused. Symbols are marked as used when a load is
- * seen or they are aliased to a symbol (a call for example) that might
- * use it implicitly (through aliases).
- */
 
 TR::Optimization *TR::LocalDeadStoreElimination::create(TR::OptimizationManager *manager)
    {

@@ -109,11 +109,25 @@ class PreviousNodeConversion
  * Class LocalCSE (Local Common Subexpression Elimination)
  * =======================================================
  *
- * Performs Common Subexpression Elimination locally within a basic block.
- * It does not take into account any information from other blocks.
- * Basically it tries to match nodes that are syntactically equivalent
- * and replaces the link to the latter node by a link
- * to the equivalent node earlier within the same block.
+ * LocalCSE implements an algorithm that proceeds as follows:
+ *
+ * Each block is examined starting from the first treetop scanning
+ * down to the last treetop. Two transformations are being done at
+ * the same time, namely local copy propagation and local common
+ * subexpression elimination.
+ *
+ * 1. Local copy propagation is done first and it tries to
+ * basically propagate RHS of assignments to a symbol to its uses.
+ * The propagation is done in a bottom-up manner, i.e. children are propagated
+ * before parents. This has the desirable effect of removing the ambiguity
+ * between values that are really the same but are stored (copied) at an
+ * intermediate stage. This is similar to the information we would get from
+ * local value numbering.
+ *
+ * 2. Local CSE is done on the same subtree after local copy propagation
+ * but it is done in a top down manner so as to capture any commoning
+ * opportunities as high up in the subtree as possible (i.e. the
+ * maximum subtree is commoned).
  */
 
 class LocalCSE : public TR::Optimization

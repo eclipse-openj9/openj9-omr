@@ -2188,7 +2188,6 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 {
 	Assert_MM_true((NULL != objectPtr) && (!isObjectInNewSpace(objectPtr)));
 
-	bool shouldBeRemembered = false;
 	GC_ObjectScannerState objectScannerState;
 	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots | GC_ObjectScanner::indexableObjectNoSplit);
 
@@ -2199,14 +2198,18 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 			if (NULL != slotObjectPtr) {
 				if (isObjectInNewSpace(slotObjectPtr)) {
 					Assert_MM_true(!isObjectInEvacuateMemory(slotObjectPtr));
-					shouldBeRemembered = true;
-					break;
+					return true;
 				}
 			}
 		}
 	}
 
-	return shouldBeRemembered;
+	/* The remembered state of a class object also depends on the class statics */
+	if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+		return _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
+	}
+
+	return false;
 }
 
 /**
@@ -2307,28 +2310,16 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 			omrobjectptr_t objectPtr;
 			while((objectPtr = objectIterator.nextObject()) != NULL) {
 				if(_extensions->objectModel.isRemembered(objectPtr)) {
-					/* Assume object no longer needs to be remembered (all dependent objects tenured) */
-					bool shouldBeRemembered = false;
+					/* Check if object still has nursery references, direct or indirect */
+					bool shouldBeRemembered = shouldRememberObject(env, objectPtr);
 
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 					/* Unconditionally remember object if it was recently referenced */
-					if (processRememberedThreadReference(env, objectPtr)) {
+					if (!shouldBeRemembered && processRememberedThreadReference(env, objectPtr)) {
 						Trc_MM_ParallelScavenger_scavengeRememberedSet_keepingRememberedObject(env->getLanguageVMThread(), objectPtr, _extensions->objectModel.getRememberedBits(objectPtr));
 						shouldBeRemembered = true;
 					}
 #endif /* !defined(OMR_GC_CONCURRENT_SCAVENGER) */
-
-					if (!shouldBeRemembered) {
-						/* Remember object if new space contains any indirectly associated object */
-						if ( _extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
-							shouldBeRemembered = _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
-						}
-					}
-
-					if (!shouldBeRemembered) {
-						/* Remember object if any dependent slot points to new space. */
-						shouldBeRemembered = shouldRememberObject(env, objectPtr);
-					}
 
 					if(shouldBeRemembered) {
 						/* Tenured object remains flagged as remembered */

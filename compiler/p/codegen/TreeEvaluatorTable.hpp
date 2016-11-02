@@ -464,9 +464,9 @@
    TR::TreeEvaluator::vmulEvaluator,                    // TR::vmul
    TR::TreeEvaluator::vdivEvaluator,                    // TR::vdiv
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vrem
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vand
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vor
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vxor
+   TR::TreeEvaluator::vandEvaluator,                    // TR::vand
+   TR::TreeEvaluator::vorEvaluator,                    // TR::vor
+   TR::TreeEvaluator::vxorEvaluator,                    // TR::vxor
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vshl
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vushr
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vshr

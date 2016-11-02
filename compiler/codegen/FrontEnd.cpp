@@ -193,16 +193,18 @@ TR_FrontEnd::getFormattedName(
    // FIXME: TODO: This is a temporary implementation -- we ignore the suffix format and
    // use the pid only
 
-   pid_t pid = getpid();
-   snprintf(buf, bufLength, "%s-%d", name, pid);
+   if(suffix)
+      {
+      pid_t pid = getpid();
+      snprintf(buf, bufLength, "%s-%d", name, pid);
 
-   // FIXME: proper error handling for snprintf
+      // FIXME: proper error handling for snprintf
+      return buf;
+      }
 
-   return buf;
-
-#else
-   return strncpy(buf, name, bufLength);
 #endif
+
+   return strncpy(buf, name, bufLength);
 
    }
 

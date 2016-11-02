@@ -34,7 +34,26 @@
 
 int main(int argc, char **argv)
    {
+   bool useOMRTestEnv = true;
+
+   /* Disable OMRTestEnv on some tests. This is needed when the test
+    * wants to initialize the JIT with special options which cannot be
+    * easily cleaned up.
+    */
+   const char *exitAssertFlag="--gtest_internal_run_death_test=";
+   for(int i = 0; i < argc; ++i)
+      {
+      if(!strncmp(argv[i], exitAssertFlag, strlen(exitAssertFlag))
+         && strstr(argv[i], "LimitFileTest.cpp"))
+         {
+         useOMRTestEnv = false;
+         }
+      }
+
    ::testing::InitGoogleTest(&argc, argv);
-   ::testing::AddGlobalTestEnvironment(new TestCompiler::OMRTestEnv);
+
+   if(useOMRTestEnv)
+      ::testing::AddGlobalTestEnvironment(new TestCompiler::OMRTestEnv);
+
    return RUN_ALL_TESTS();
    }

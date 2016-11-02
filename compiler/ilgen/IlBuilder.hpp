@@ -157,6 +157,7 @@ public:
    TR::IlValue *MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Div(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *And(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *Or(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Xor(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ShiftL(TR::IlValue *v, TR::IlValue *amount);
    TR::IlValue *ShiftL(TR::IlValue *v, int8_t amount)                { return ShiftL(v, ConstInt8(amount)); }

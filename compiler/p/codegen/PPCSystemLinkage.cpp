@@ -1533,7 +1533,7 @@ void TR_PPCSystemLinkage::buildVirtualDispatch(TR::Node                         
                                                uint32_t                            sizeOfArguments)
    {
    bool aix_style_linkage = (TR::Compiler->target.isAIX() || (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()));
-
+   TR_ASSERT(callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isComputed(), "system linkage only supports computed indirect call for now %p\n", callNode);
    //We do not support Linux 32bit.
    if(!aix_style_linkage)
       {

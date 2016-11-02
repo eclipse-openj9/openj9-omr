@@ -1194,6 +1194,23 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes getIndirectCall(TR::DataType type)
+      {
+      switch (type)
+         {
+         case TR::Int8:     return TR::icalli;
+         case TR::Int16:    return TR::icalli;
+         case TR::Int32:    return TR::icalli;
+         case TR::Int64:    return TR::lcalli;
+         case TR::Float:    return TR::fcalli;
+         case TR::Double:   return TR::dcalli;
+         case TR::Address:  return TR::acalli;
+         case TR::NoType:   return TR::calli;
+         default: TR_ASSERT(0,"no indirect call for this type");
+         }
+      return TR::BadILOp;
+      }
+
    static TR::ILOpCodes getDirectCall(TR::DataType type)
       {
       switch (type)

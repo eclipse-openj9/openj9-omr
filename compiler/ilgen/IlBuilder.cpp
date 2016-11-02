@@ -1366,37 +1366,84 @@ IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
    return returnValue;
    }
 
-TR::IlValue *
-IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
+TR::IlValue** 
+IlBuilder::processCallArgs(TR::Compilation *comp, int numArgs, va_list args)
    {
-   TR::IlValue ** argValues = (TR::IlValue **) _comp->trMemory()->allocateHeapMemory(numArgs * sizeof(TR::IlValue *));
-   va_list args;
-
-   va_start(args, numArgs);
+   TR::IlValue ** argValues = (TR::IlValue **) comp->trMemory()->allocateHeapMemory(numArgs * sizeof(TR::IlValue *));
    for (int32_t a=0;a < numArgs;a++)
       {
       argValues[a] = va_arg(args, TR::IlValue*);
       }
-   va_end(args);
+   return argValues;
+   }
 
-   return Call(functionName, numArgs, argValues);
+/*
+ * \param numArgs 
+ *    Number of actual arguments for the method  plus 1 
+ * \param ... 
+ *    The list is a computed address followed by the actual arguments
+ */
+TR::IlValue *
+IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
+   {
+   // TODO: figure out Call REPLAY
+   TraceIL("IlBuilder[ %p ]::ComputedCall %s\n", this, functionName);
+   va_list args;
+   va_start(args, numArgs);
+   TR::IlValue **argValues = processCallArgs(_comp, numArgs, args);
+   va_end(args);
+   TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
+   }
+
+/*
+ * \param numArgs 
+ *    Number of actual arguments for the method  plus 1 
+ * \param argValues
+ *    the computed address followed by the actual arguments
+ */
+TR::IlValue *
+IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlValue **argValues)
+   {
+   // TODO: figure out Call REPLAY
+   TraceIL("IlBuilder[ %p ]::ComputedCall %s\n", this, functionName);
+   TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
+   }
+
+TR::IlValue *
+IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
+   {
+   // TODO: figure out Call REPLAY
+   TraceIL("IlBuilder[ %p ]::Call %s\n", this, functionName);
+   va_list args;
+   va_start(args, numArgs);
+   TR::IlValue **argValues = processCallArgs(_comp, numArgs, args);
+   va_end(args);
+   TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   return genCall(methodSymRef, numArgs, argValues);
    }
 
 TR::IlValue *
 IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** argValues)
    {
-   //   ILB_REPLAY("%s = %s->GreaterThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    // TODO: figure out Call REPLAY
-
    TraceIL("IlBuilder[ %p ]::Call %s\n", this, functionName);
+   TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
+   return genCall(methodSymRef, numArgs, argValues);
+   }
+
+TR::IlValue *
+IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlValue ** argValues, bool isDirectCall /* true by default*/)
+   {
    appendBlock();
 
-   TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
-   TR::DataType returnType = resolvedMethod->returnType();
-
-   // treat as "Static" (so no receiver expected) and use a direct call opcode
-   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod, TR::MethodSymbol::Static);
-   TR::Node *callNode = TR::Node::createWithSymRef(TR::ILOpCode::getDirectCall(returnType), numArgs, methodSymRef);
+   TR::DataType returnType = methodSymRef->getSymbol()->castToMethodSymbol()->getMethod()->returnType();
+   TR::Node *callNode = TR::Node::createWithSymRef(isDirectCall? TR::ILOpCode::getDirectCall(returnType): TR::ILOpCode::getIndirectCall(returnType), numArgs, methodSymRef);
 
    // TODO: should really verify argument types here
    int32_t childIndex = 0;
@@ -1406,15 +1453,15 @@ IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** argVal
       callNode->setAndIncChild(childIndex++, loadValue(arg));
       }
 
+   // call has side effect and needs to be anchored under a treetop
+   genTreeTop(callNode);
+
    if (returnType != TR::NoType)
       {
       TR::IlValue *returnValue = newValue(callNode->getDataType());
-      storeNode(returnValue, callNode);
+      genTreeTop(TR::Node::createStore(returnValue, callNode));
       return returnValue;
       }
-
-   // call with no return value needs to be anchored
-   genTreeTop(callNode);
 
    return NULL;
    }

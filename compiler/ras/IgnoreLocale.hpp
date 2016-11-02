@@ -27,7 +27,7 @@ int toupper_ignore_locale(int c);
 int stricmp_ignore_locale(const char *s1, const char *s2);
 int strnicmp_ignore_locale(const char *s1, const char *s2, size_t n);
 
-#if (J9ZOS390 || AIXPPC || LINUX)
+#if (J9ZOS390 || AIXPPC || LINUX || OSX)
 #include <strings.h>
    #define STRICMP strcasecmp
    #define STRNICMP strncasecmp

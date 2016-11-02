@@ -402,6 +402,46 @@ static inline bool isPowerOf2(int64_t input)
    return (input & -input) == input;
    }
 
+#if defined(OSX)
+// On OSX, intptrj_t isn't int32_t nor int64_t
+
+static inline int32_t leadingZeroes (intptrj_t input)
+   {
+#ifdef TR_HOST_64BIT
+   return leadingZeroes ((int64_t)input);
+#else
+   return leadingZeroes ((int32_t)input);
+#endif
+   }
+
+static inline int32_t trailingZeroes(intptrj_t input)
+   {
+#ifdef TR_HOST_64BIT
+   return trailingZeroes((int64_t)input);
+#else
+   return trailingZeroes((int32_t)input);
+#endif
+   }
+
+static inline int32_t populationCount(intptrj_t input)
+   {
+#ifdef TR_HOST_64BIT
+   return populationCount((int64_t)input);
+#else
+   return populationCount((int32_t)input);
+#endif
+   }
+
+static inline bool isPowerOf2(intptrj_t input)
+   {
+#ifdef TR_HOST_64BIT
+   return isPowerOf2((int64_t)input);
+#else
+   return isPowerOf2((int32_t)input);
+#endif
+   }
+#endif
+
 #undef IN_BITMANIP_H
 
 #endif // BITMANIP_H

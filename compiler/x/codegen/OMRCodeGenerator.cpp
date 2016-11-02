@@ -495,7 +495,7 @@ OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)
       case TR_Helper:
          // Intentional fall through
       case TR_System:
-         if (TR::Compiler->target.isLinux())
+         if (TR::Compiler->target.isLinux() || TR::Compiler->target.isOSX())
             {
 #if defined(TR_TARGET_64BIT)
             linkage = new (self()->trHeapMemory()) TR_AMD64ABILinkage(self());

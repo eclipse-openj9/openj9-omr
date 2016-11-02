@@ -42,7 +42,15 @@ die "usage: $0 [[-Idir1]* [-M]] file1.asm file2.asm ...\n" unless @ARGV;
 $|=1;
 my $null = &devnull;
 my $gasVersion = (`as --version 2>$null`)[0];
-if ($gasVersion)
+my $llvmVersion = '0';
+
+if ($gasVersion && $gasVersion =~ "LLVM")
+   {
+   $llvmVersion = $gasVersion;
+   $llvmVersion =~ s/^.*LLVM version ([\d\.]+).*$/$1/;
+   $gasVersion = '3.0';
+   }
+elsif ($gasVersion)
    {
    chomp $gasVersion;
    $gasVersion =~ s/^GNU assembler ([\d\.]+).*$/$1/;
@@ -77,12 +85,29 @@ my %asmKeywords =
    "dt"       => { gasEquiv => ".tfloat",          args => -1 },
    "dw"       => { gasEquiv => ".short",           args => -1 },
    "if"       => { gasEquiv => ".if",              args => -1 },
-   "ifdef"    => { gasEquiv => ".ifdef",           args => 1 },
-   "ifndef"   => { gasEquiv => ".ifndef",          args => 1 },
    "else"     => { gasEquiv => ".else",            args => 0 },
    "endif"    => { gasEquiv => ".endif",           args => 0 },
    "xmmmovsd" => { gasEquiv => "movsd",            args => -1},
    );
+
+if ($llvmVersion gt '0')
+   {
+   %asmKeywords =
+      (
+      %asmKeywords,
+      "ifdef"    => { gasEquiv => ".ifc 1,",           args => 1 },
+      "ifndef"   => { gasEquiv => ".ifnc 1,",          args => 1 },
+      )
+   }
+else
+   {
+   %asmKeywords =
+      (
+      %asmKeywords,
+      "ifdef"    => { gasEquiv => ".ifdef",           args => 1 },
+      "ifndef"   => { gasEquiv => ".ifndef",          args => 1 },
+      )
+   }
 
 my @ignoredKeywords =
    (
@@ -516,7 +541,7 @@ sub processFile
       #       (iteratively until convergence) to prevent old gas from
       #       treating them as memory references
       # HACK2: ...but don't do it in .if/.ifdef/.ifndef directives
-      if ($gasVersion lt '2.16.91.0.5' && $line !~ /^\s*\.if/) # 2.16.91.0.5 is known to work - haven't tested others
+      if (($gasVersion lt '2.16.91.0.5' or $llvmVersion gt '0') && $line !~ /^\s*\.if/) # 2.16.91.0.5 is known to work - haven't tested others
          {
          my $oldLine;
          do
@@ -536,7 +561,7 @@ sub processFile
       # HACK: Pre-2.12.1 gas mixes up i386's CMPSD/MOVSD with SSE2's CMPSD/MOVSD; it also
       #       thinks that SSE2 instructions with QWORD PTR operands are reserved for x86-64
       # HACK: Unfortunately, post-2.15.90 gas on RHEL4 is broken again.
-      if ($gasVersion lt '2.12.1' or $gasVersion gt '2.12.90')
+      if (($gasVersion lt '2.12.1' or $gasVersion gt '2.12.90') and $llvmVersion gt '0')
          {
          # removing the modifier for SSE2 instructions seems to work
          $line =~ s/qword ptr//i
@@ -547,6 +572,12 @@ sub processFile
             {
             $line = ".att_syntax\n$line\n.intel_syntax noprefix";
             }
+         }
+
+      # HACK: llvm uses short jumps by default
+      if ($llvmVersion gt '0')
+         {
+	 $line =~ s/jmp(\s+)short/jmp$1/i if $line =~ /jmp(\s+)short/i;
          }
 
       # HACK: gas 2.15.94 (FC4) gas does not know about word ptr in fstcw fldcw

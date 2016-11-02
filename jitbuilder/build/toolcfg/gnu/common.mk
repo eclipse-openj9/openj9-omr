@@ -16,15 +16,21 @@ DEPSUFF=.depend.mk
 #
 
 AR_PATH?=ar
-AS_PATH?=as
 M4_PATH?=m4
 SED_PATH?=sed
 AR_PATH?=ar
 PERL_PATH?=perl
 
 ifeq ($(C_COMPILER),gcc)
+    AS_PATH?=as
     CC_PATH?=gcc
     CXX_PATH?=g++
+endif
+
+ifeq ($(C_COMPILER),clang)
+    AS_PATH?=clang
+    CC_PATH?=clang
+    CXX_PATH?=clang++
 endif
 
 # This is the script that's used to generate TRBuildName.cpp
@@ -130,6 +136,10 @@ ifeq ($(PLATFORM),s390-linux64-gcc)
     CX_FLAGS+=-fPIC -fno-strict-aliasing -march=z900 -mtune=z9-109 -mzarch
 endif
 
+ifeq ($(C_COMPILER),clang)
+    CX_FLAGS+=-Wno-parentheses -Werror=header-guard
+endif
+
 C_CMD?=$(CC_PATH)
 C_INCLUDES=$(PRODUCT_INCLUDES)
 C_DEFINES+=$(CX_DEFINES) $(CX_DEFINES_EXTRA) $(C_DEFINES_EXTRA)
@@ -147,19 +157,32 @@ S_CMD?=$(AS_PATH)
 
 S_INCLUDES=$(PRODUCT_INCLUDES)
 S_DEFINES+=$(HOST_DEFINES) $(TARGET_DEFINES)
-S_FLAGS+=--noexecstack
+
+ifeq ($(C_COMPILER),clang)
+    S_FLAGS+=-Wa,--noexecstack
+else
+    S_FLAGS+=--noexecstack
+    ifeq ($(BUILD_CONFIG),debug)
+        S_FLAGS+=--gstabs
+    endif
+endif
 
 ifeq ($(BUILD_CONFIG),debug)
     S_DEFINES+=DEBUG
-    S_FLAGS+=--gstabs
 endif
 
-ifeq ($(PLATFORM),amd64-linux-gcc)
-    S_FLAGS+=--32
-endif
-
-ifeq ($(PLATFORM),amd64-linux64-gcc)
-    S_FLAGS+=--64
+ifeq ($(HOST_ARCH),x)
+    ifeq ($(HOST_BITS),32)
+        S_FLAGS+=--32
+    endif
+    
+    ifeq ($(HOST_BITS),64)
+        ifeq ($(C_COMPILER),clang)
+            S_FLAGS+=-march=x86-64 -c
+        else
+            S_FLAGS+=--64
+        endif
+    endif
 endif
 
 ifeq ($(PLATFORM),s390-linux-gcc)

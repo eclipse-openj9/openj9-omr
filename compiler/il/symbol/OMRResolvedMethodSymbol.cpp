@@ -568,7 +568,7 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
    {
    TR::Block *block = insertionPoint->getEnclosingBlock();
 
-   if (self()->supportsInduceOSR(induceBCI, insertionPoint->getNode(), block, NULL, self()->comp()))
+   if (self()->supportsInduceOSR(induceBCI, block, NULL, self()->comp()))
       {
       TR::CFG *cfg = self()->comp()->getFlowGraph();
       cfg->setStructure(NULL);
@@ -617,7 +617,7 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint)
    {
-   if (self()->supportsInduceOSR(insertionPoint->getNode()->getByteCodeInfo(), insertionPoint->getNode(), insertionPoint->getEnclosingBlock(), NULL, self()->comp()))
+   if (self()->supportsInduceOSR(insertionPoint->getNode()->getByteCodeInfo(), insertionPoint->getEnclosingBlock(), NULL, self()->comp()))
       return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(insertionPoint, insertionPoint->getNode()->getByteCodeInfo(), false, false, self()->comp());
    if (self()->comp()->getOption(TR_TraceOSR))
       traceMsg(self()->comp(), "induceImmediateOSRWithoutChecksBefore n%dn failed - supportsInduceOSR returned false\n", insertionPoint->getNode()->getGlobalIndex());
@@ -1414,7 +1414,6 @@ OMR::ResolvedMethodSymbol::resetLiveLocalIndices()
 
 bool
 OMR::ResolvedMethodSymbol::supportsInduceOSR(TR_ByteCodeInfo bci,
-                                           TR::Node *nodeToOSRAt,
                                            TR::Block *blockToOSRAt,
                                            TR::ResolvedMethodSymbol *calleeSymbolIfCallNode,
                                            TR::Compilation *comp)
@@ -1422,7 +1421,7 @@ OMR::ResolvedMethodSymbol::supportsInduceOSR(TR_ByteCodeInfo bci,
    if (!comp->supportsInduceOSR())
       return false;
 
-   if (self()->cannotAttemptOSR(bci, nodeToOSRAt, blockToOSRAt, calleeSymbolIfCallNode, comp))
+   if (self()->cannotAttemptOSR(bci, blockToOSRAt, calleeSymbolIfCallNode, comp))
       return false;
 
    return true;
@@ -1445,13 +1444,12 @@ OMR::ResolvedMethodSymbol::setShouldNotAttemptOSR(int32_t n)
 
 bool
 OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
-                                          TR::Node *nodeToOSRAt,
                                           TR::Block *blockToOSRAt,
                                           TR::ResolvedMethodSymbol *calleeSymbolIfCallNode,
                                           TR::Compilation *comp)
    {
    if (comp->getOption(TR_TraceOSR))
-      traceMsg(comp, "Checking if OSR can be attempted at bytecode index %d for induceOSR node %p\n", bci.getByteCodeIndex(), nodeToOSRAt);
+      traceMsg(comp, "Checking if OSR can be attempted at bytecode index %d\n", bci.getByteCodeIndex());
 
    if (!comp->canAffordOSRControlFlow())
       {
@@ -1470,7 +1468,7 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
    // TODO re-enable this with a check of a flag specifically used to track
    // if a node is an original node rather than just checking doNotProfile
    // which has other uses too
-   /*if (nodeToOSRAt->getByteCodeInfo().doNotProfile())
+   /*if (bci.doNotProfile())
      {
      if (comp->getOption(TR_TraceOSR))
         traceMsg(comp, "Node was not present at IL gen time\n");
@@ -1497,7 +1495,7 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
    while (osrMethodData)
       {
       if (comp->getOption(TR_TraceOSR))
-         traceMsg(comp, "Checking if OSR can be attempted at caller index %d and bytecode index %d for induceOSR call %p\n", callSite, byteCodeIndex, nodeToOSRAt);
+         traceMsg(comp, "Checking if OSR can be attempted at caller index %d and bytecode index %d\n", callSite, byteCodeIndex);
 
       auto *callerSymbol = osrMethodData->getMethodSymbol();
 

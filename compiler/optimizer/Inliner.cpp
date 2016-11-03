@@ -2141,7 +2141,7 @@ TR_InlinerBase::addGuardForVirtual(
        (guard->_kind == TR_HierarchyGuard))
       shouldAttemptOSR = false;
 
-   if (callerSymbol->supportsInduceOSR(callNode->getByteCodeInfo(), callNode, block1, calleeSymbol, comp()))
+   if (callerSymbol->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp()))
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 

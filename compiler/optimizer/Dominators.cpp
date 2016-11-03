@@ -39,11 +39,11 @@
 #include "infra/TRCfgNode.hpp"                 // for CFGNode
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
-TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
-   : _compilation(c),
-   	 _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
-       _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
-   	 _dominators(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
+TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
+   _compilation(c),
+   _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
+   _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
+   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
 
@@ -126,7 +126,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
       traceMsg(comp(), "End of %sdominator calculation\n", _postDominators ? "post-" : "");
 
    // Release no-longer-used CS2 data
-   _info.ShrinkTo(0);
+   _info.clear();
    }
 
 TR::Block * TR_Dominators::getDominator(TR::Block *block)

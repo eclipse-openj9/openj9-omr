@@ -68,9 +68,8 @@ class TR_Dominators
 
    private:
 
-   class BBInfo
+   struct BBInfo
       {
-      public:
       BBInfo(TR::Allocator allocator) :
          _bucket(allocator), _block(NULL), _parent(-1), _idom(-1), _ancestor(-1), _label(-1), _child(-1), _sdno(-1), _size(0)
          {}
@@ -128,7 +127,7 @@ class TR_Dominators
 
 
    TR::Compilation *_compilation;
-   CS2::StaticArrayOf<BBInfo, TR::Allocator>  _info;
+   TR::deque<BBInfo>  _info;
    CS2::StaticArrayOf<TR::Block *, TR::Allocator> _dominators;
    int32_t         _numNodes;
    int32_t         _topDfNum;

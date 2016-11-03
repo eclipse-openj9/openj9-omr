@@ -4017,8 +4017,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32forwardSSEArrayCopy:                          return "__forwardSSEArrayCopy";
             case TR_IA32forwardSSEArrayCopyNoAlignCheck:              return "__forwardSSEArrayCopyNoAlignCheck";
             case TR_IA32forwardArrayCopy2:                            return "__forwardArrayCopy2";
-            case TR_IA32referenceArrayCopy:                           return "__referenceArrayCopy";
-            case TR_IA32generalArrayCopy:                             return "__generalArrayCopy";
             case TR_IA32SSEforwardArrayCopy:                          return "_SSEforwardArrayCopy";
             case TR_IA32SSEforwardHalfWordArrayCopy:                  return "_SSEforwardHalfWordArrayCopy";
             case TR_IA32SSEforwardArrayCopyAMDOpteron:                return "_SSEforwardArrayCopyAMDOpteron";
@@ -4070,8 +4068,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64forwardArrayCopy:                            return "__forwardArrayCopy";
             case TR_AMD64forwardWordArrayCopy:                        return "__forwardWordArrayCopy";
             case TR_AMD64forwardHalfWordArrayCopy:                    return "__forwardHalfWordArrayCopy";
-            case TR_AMD64referenceArrayCopy:                          return "__referenceArrayCopy";
-            case TR_AMD64generalArrayCopy:                            return "__generalArrayCopy";
             case TR_AMD64forwardArrayCopyAMDOpteron:                  return "_forwardArrayCopyAMDOpteron";
 
             case TR_AMD64compressString:                               return "_compressString";

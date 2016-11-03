@@ -40,6 +40,8 @@
 #include "ras/Debug.hpp"                     // for TR_Debug
 #include "infra/SimpleRegex.hpp"
 #include "infra/Assert.hpp"
+#include "infra/Monitor.hpp"                 // for createCounter race conditions
+#include "infra/CriticalSection.hpp"         // for createCounter race conditions
 
 #if defined(_MSC_VER)
 #include <malloc.h> // alloca on Win32
@@ -49,7 +51,15 @@
 void
 TR::DebugCounter::prependDebugCounterBump(TR::Compilation *comp, TR::TreeTop *nextTreeTop, TR::DebugCounterBase *counter, int32_t delta)
    {
-   prependDebugCounterBump(comp, nextTreeTop, counter, TR::Node::iconst(nextTreeTop->getNode(), delta));
+   // Use long operations in 64 bit platforms and int operations in 32 bit platforms
+   if (TR::Compiler->target.is64Bit())
+      {
+      prependDebugCounterBump(comp, nextTreeTop, counter, TR::Node::lconst(nextTreeTop->getNode(), delta));
+      }
+   else
+      {
+      prependDebugCounterBump(comp, nextTreeTop, counter, TR::Node::iconst(nextTreeTop->getNode(), delta));
+      }
    }
 
 void
@@ -209,23 +219,23 @@ const char *TR::DebugCounter::debugCounterBucketName(TR::Compilation *comp, int3
    return result;
    }
 
-
+/** Use long operations in 64 bit platforms and int operations in 32 bit platforms */
 TR::Node *TR::DebugCounterBase::createBumpCounterNode(TR::Compilation *comp, TR::Node *deltaNode)
    {
    TR::SymbolReference *symref = getBumpCountSymRef(comp);
    deltaNode->setIsDebug(true);
-   TR::Node *load = TR::Node::createWithSymRef(deltaNode, TR::iload, 0, symref);
+   TR::Node *load = TR::Node::createWithSymRef(deltaNode, TR::Compiler->target.is64Bit() ? TR::lload : TR::iload, 0, symref);
    load->setIsDebug(true);
-   TR::Node *add = TR::Node::create(TR::iadd, 2, load, deltaNode);
+   TR::Node *add = TR::Node::create(TR::Compiler->target.is64Bit() ? TR::ladd : TR::iadd, 2, load, deltaNode);
    add->setIsDebug(true);
-   TR::Node *store = TR::Node::createWithSymRef(TR::istore, 1, 1, add, symref);
+   TR::Node *store = TR::Node::createWithSymRef(TR::Compiler->target.is64Bit() ? TR::lstore : TR::istore, 1, 1, add, symref);
    store->setIsDebug(true);
    return store;
    }
 
 TR::SymbolReference *TR::DebugCounter::getBumpCountSymRef(TR::Compilation *comp)
    {
-   return comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), TR::Int32, &_bumpCount);
+   return comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32, &_bumpCount);
    }
 
 intptrj_t TR::DebugCounter::getBumpCountAddress()
@@ -327,8 +337,10 @@ TR::SymbolReference *TR::DebugCounterAggregation::getBumpCountSymRef(TR::Compila
    if (_symRef == NULL)
       {
       TR::StaticSymbol *symbol = TR::StaticSymbol::create(_mem->trPersistentMemory(),TR::Int64);
+      TR_ASSERT(symbol, "StaticSymbol *symbol must not be null. Ensure availability of persistent memory");
       symbol->setStaticAddress(&_bumpCount);
       _symRef = new (_mem->trPersistentMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol);
+      TR_ASSERT(_symRef, "SymbolReference *_symRef must not be null. Ensure availability of persistent memory");
       }
    return _symRef;
    }
@@ -353,6 +365,10 @@ TR::DebugCounter *TR::DebugCounterGroup::findCounter(const char *nameChars, int3
    strncpy(name, nameChars, nameLength);
    name[nameLength] = 0;
 
+   // There's a race here if we do parallel compilation
+
+   OMR::CriticalSection findCounterLock(_countersMutex);
+
    CS2::HashIndex hi;
    if (!_countersHashTable.Locate(name, hi))
       return NULL;
@@ -368,8 +384,6 @@ TR::DebugCounterAggregation *TR::DebugCounterGroup::createAggregation(TR::Compil
 
 TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t fidelity, TR_PersistentMemory *persistentMemory)
    {
-   // TODO: There's a race here if we ever do parallel compilation
-
    // Get the denominator counter, if any, by looking for the rightmost separator character.
    //
    TR::DebugCounter *denominator = NULL;
@@ -396,6 +410,7 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
          // Can't be lazy anymore; we really need to make a copy of part of the name string
          //
          char *denominatorName = (char*)persistentMemory->allocatePersistentMemory(separator-name+1);
+         TR_ASSERT(denominatorName, "char *denominatorName must not be null. Ensure availability of persistent memory");
          sprintf(denominatorName, "%.*s", (int)(separator-name), name);
 
          // Counter has negligible cost, assuming it's only used as a denominator
@@ -413,8 +428,15 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
       flags |= TR::DebugCounter::ContributesToDenominator;
       }
    TR::DebugCounter *result = new (persistentMemory) TR::DebugCounter(name, fidelity, denominator, flags);
+   TR_ASSERT(result, "DebugCounter *result must not be null. Ensure availability of persistent memory");
    _counters.add(result);
+   
+   // There's a race here if we do parallel compilation
+
+   OMR::CriticalSection createCounterLock(_countersMutex);
+
    _countersHashTable.Add(result->getName(), result);
+
    return result;
    }
 

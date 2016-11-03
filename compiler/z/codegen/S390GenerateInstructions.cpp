@@ -2139,6 +2139,26 @@ generateS390PseudoInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    TR_ASSERT(0, "WCode only");
    return NULL;
    }
+
+/**
+ * Generate a debug counter bump pseudo instruction 
+ *
+ * @param cg      Code Generator Pointer
+ * @param op      Runtime Instrumentation opcode: TR::InstOpCode::DCB
+ * @param n       The associated node
+ * @param cs      The snippet that holds the debugCounter's counter address in persistent memory 
+ * @param preced  A pointer to the preceding instruction. It is required if this is called after register assignment
+ */
+TR::Instruction *
+generateS390DebugCounterBumpInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Snippet* cs, int32_t delta, TR::Instruction * preced)
+   {
+   if (preced)
+      {
+         return new (INSN_HEAP) TR::S390DebugCounterBumpInstruction(op, n, cs, cg, delta, preced);
+      }
+   return new (INSN_HEAP) TR::S390DebugCounterBumpInstruction(op, n, cs, cg, delta);
+   }
+
 TR::Instruction *
 generateRegRegInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * sreg, TR::Register * treg,
                           TR::RegisterDependencyConditions * cond, TR::Instruction * preced)

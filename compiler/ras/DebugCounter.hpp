@@ -21,14 +21,16 @@
 
 #include "ras/Debug.hpp"
 
-#include <stdarg.h>          // for va_list
-#include <stddef.h>          // for NULL
-#include <stdint.h>          // for int32_t, int8_t, uint32_t, int64_t, etc
-#include "cs2/hashtab.h"     // for HashTable
-#include "env/TRMemory.hpp"  // for TR_MemoryBase::ObjectType::DebugCounter, etc
-#include "env/jittypes.h"    // for intptrj_t
-#include "infra/Flags.hpp"   // for flags8_t
-#include "infra/List.hpp"    // for TR_PersistentList
+#include <stdarg.h>            // for va_list
+#include <stddef.h>            // for NULL
+#include <stdint.h>            // for int32_t, int8_t, uint32_t, int64_t, etc
+#include "cs2/hashtab.h"       // for HashTable
+#include "env/CompilerEnv.hpp" // for target->is64Bit()
+#include "env/TRMemory.hpp"    // for TR_MemoryBase::ObjectType::DebugCounter, etc
+#include "env/jittypes.h"      // for intptrj_t
+#include "infra/Flags.hpp"     // for flags8_t
+#include "infra/List.hpp"      // for TR_PersistentList
+#include "infra/Monitor.hpp"   // for createCounter race conditions
 
 namespace TR { class Compilation; }
 namespace TR { class Node; }
@@ -62,8 +64,8 @@ class DebugCounter : public DebugCounterBase
    uint64_t            _totalCount;
    const char         *_name;
    DebugCounter    *_denominator;
-   uint32_t            _bumpCount;     // The counter to be incremented directly
-   uint32_t            _bumpCountBase; // The last value of bumpCount that was accumulated into totalCount
+   uint64_t            _bumpCount;     // The counter to be incremented directly
+   uint64_t            _bumpCountBase; // The last value of bumpCount that was accumulated into totalCount
    int8_t              _fidelity;      // (See the Fidelities enumeration)
    flags8_t            _flags;
 
@@ -138,7 +140,8 @@ class DebugCounter : public DebugCounterBase
    //
    const char      *getName()                  { return _name; }
    int8_t           getFidelity()              { return _fidelity; }
-   int64_t          getCount()                 { return _totalCount; }
+   /** On 32-bit platforms, dereference the address as uint32 pointer, since we use 32-bit operations*/
+   int64_t          getCount()                 { return TR::Compiler->target.is64Bit() ? _totalCount : *(reinterpret_cast<uint32_t*>(&_totalCount)); }
    DebugCounter *getDenominator()           { return _denominator; }
    bool             isDenominator()            { return _flags.testAny(IsDenominator); }
    bool             contributesToDenominator() { return _flags.testAny(ContributesToDenominator); }
@@ -231,6 +234,7 @@ class DebugCounterGroup
    TR_PersistentList<DebugCounterAggregation> _aggregations;
    DebugCounter *createCounter (const char *name, int8_t fidelity, TR_PersistentMemory *mem);
    DebugCounter *findCounter   (const char *name, int32_t nameLength);
+   TR::Monitor *_countersMutex; /**< Monitor used to synchronize read/write actions to _countersHashTable, otherwise we may have a race */
 
    friend class ::TR_Debug;
 
@@ -238,7 +242,10 @@ class DebugCounterGroup
    TR_ALLOC(TR_MemoryBase::DebugCounter)
 
    DebugCounterGroup(TR_PersistentMemory *mem)
-         : _countersHashTable(TRPersistentMemoryAllocator(mem)){}
+         : _countersHashTable(TRPersistentMemoryAllocator(mem))
+         {
+         _countersMutex = TR::Monitor::create("countersMutex");
+         }
 
    const char *counterName(TR::Compilation *comp, const char *format, va_list args);
 

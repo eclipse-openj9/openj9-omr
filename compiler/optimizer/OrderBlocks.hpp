@@ -121,7 +121,6 @@ class TR_OrderBlocks : public TR_BlockOrderingOptimization
    void            peepHoleBranchBlock(TR::CFG *cfg, TR::Block *block, char *title);
    void            peepHoleBranchAroundSingleGoto(TR::CFG *cfg, TR::Block *block, char *title);
    bool            peepHoleBranchToFollowing(TR::CFG *cfg, TR::Block *block, TR::Block *followingBlock, char *title);
-   bool            peepHoleBranchAroundSimpleGenControlBlocks(TR::CFG *cfg, TR::Block *block, TR::Block *followingBlock, char *title);
    bool            peepHoleBranchToLoopHeader(TR::CFG *cfg, TR::Block *block, TR::Block *fallThrough, TR::Block *dest, char *title);
    void            removeEmptyBlock(TR::CFG *cfg, TR::Block *block, char *title);
    bool            doPeepHoleBlockCorrections(TR::Block *block, char *title);

@@ -1438,18 +1438,6 @@ OMR::Block::inheritBlockInfo(TR::Block * org, bool inheritFreq)
    self()->setIsSpecialized(org->isSpecialized());
    }
 
-bool
-OMR::Block::isSimpleGenControlBlock()
-   {
-   if (self()->isGenControlBlock())
-      {
-      // Block only contain single gen control
-      if (self()->getEntry()->getNextRealTreeTop() == self()->getExit()->getPrevRealTreeTop())
-         return true;
-      }
-   return false;
-   }
-
 TR::Block *
 OMR::Block::startOfExtendedBlock()
    {

@@ -191,8 +191,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    bool isTargetOfJumpWhoseTargetCanBeChanged(TR::Compilation * comp);
 
-   bool isSimpleGenControlBlock();
-
    static int32_t getMaxColdFrequency(TR::Block *b1, TR::Block *b2);
    static int32_t getMinColdFrequency(TR::Block *b1, TR::Block *b2);
    static int32_t getScaledSpecializedFrequency(int32_t fastFrequency);
@@ -415,9 +413,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    void setIsAdded()                                  { _flags.set(_isAdded); }
    bool isAdded()                                     { return _flags.testAny(_isAdded); }
 
-   void setIsGenControlBlock(bool b)                  { _flags.set(_isGenControlBlock, b); }
-   bool isGenControlBlock()                           { return _flags.testAny(_isGenControlBlock); }
-
    void setIsGenAsmBlock(bool b)                      { _flags.set(_isGenAsmBlock, b); }
    bool isGenAsmBlock()                               { return _flags.testAny(_isGenAsmBlock); }
 
@@ -512,7 +507,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _hasBeenVisited                       = 0x00000400,
       _isPRECandidate                       = 0x00000800,
       _isAdded                              = 0x00001000,
-      _isGenControlBlock                    = 0x00002000,
       _isGenAsmBlock                        = 0x00010000,
       _isGenAsmFlowBlock                    = 0x00100000,
       _isOSRCodeBlock                       = 0x00004000,

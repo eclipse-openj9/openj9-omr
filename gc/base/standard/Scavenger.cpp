@@ -3532,6 +3532,7 @@ MM_Scavenger::processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env)
 	/* estimate Fragmentation */
 	if (LOCALGC_ESTIMATE_FRAGMENTATION == (_extensions->estimateFragmentation & LOCALGC_ESTIMATE_FRAGMENTATION)) {
 		stats->estimateFragmentation(env);
+		((MM_CollectionStatisticsStandard *) env->_cycleState->_collectionStatistics)->_tenureFragmentation = MACRO_FRAGMENTATION;
 	} else {
 		stats->resetRemainingFreeMemoryAfterEstimate();
 	}

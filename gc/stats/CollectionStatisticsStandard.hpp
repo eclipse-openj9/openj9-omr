@@ -32,6 +32,11 @@
 #include "MemorySubSpace.hpp"
 #include "LargeObjectAllocateStats.hpp"
 #include "MemoryPool.hpp"
+
+#define NO_FRAGMENTATION 0
+#define MICRO_FRAGMENTATION 1
+#define MACRO_FRAGMENTATION 2
+
 /**
  * A collection of interesting statistics for the Heap.
  * @ingroup GC_Stats
@@ -52,9 +57,9 @@ public:
 	uintptr_t _totalSurvivorHeapSize; /**< Total active survivor heap size */
 	uintptr_t _totalFreeSurvivorHeapSize; /**< Total active free survivor heap size */
 	uintptr_t _rememberedSetCount; /**< remembered set count */
-	bool _tenureFragmentation;
-	uintptr_t _microFragmentedSize; /**< */
-	uintptr_t _macroFragmentedSize; /**< */
+	uint32_t _tenureFragmentation; /**< fragmentation indicator, can be NO_FRAGMENTATION, MICRO_FRAGMENTATION, MACRO_FRAGMENTATION, indicate if fragmentation info are ready in _microFragmentedSize and _macroFragmentedSize */
+	uintptr_t _microFragmentedSize; /**< Micro Fragmentation in Byte */
+	uintptr_t _macroFragmentedSize; /**< Macro Fragmentation in Byte*/
 private:
 protected:
 public:
@@ -108,14 +113,16 @@ public:
 			stats->_rememberedSetCount = 0;
 		}
 
-		if (_tenureFragmentation) {
+		if (NO_FRAGMENTATION != _tenureFragmentation) {
 			MM_MemorySpace *defaultMemorySpace = extensions->heap->getDefaultMemorySpace();
 			MM_MemorySubSpace *tenureMemorySubspace = defaultMemorySpace->getTenureMemorySubSpace();
-			MM_LargeObjectAllocateStats* allocateStats = tenureMemorySubspace->getLargeObjectAllocateStats();
-
-			stats->_microFragmentedSize = tenureMemorySubspace->getMemoryPool()->getDarkMatterBytes();
-			stats->_macroFragmentedSize = allocateStats->getRemainingFreeMemoryAfterEstimate();
-
+			if (MICRO_FRAGMENTATION == (MICRO_FRAGMENTATION & _tenureFragmentation)) {
+				stats->_microFragmentedSize = tenureMemorySubspace->getMemoryPool()->getDarkMatterBytes();
+			}
+			if (MACRO_FRAGMENTATION == (MACRO_FRAGMENTATION & _tenureFragmentation)) {
+				MM_LargeObjectAllocateStats* allocateStats = tenureMemorySubspace->getLargeObjectAllocateStats();
+				stats->_macroFragmentedSize = allocateStats->getRemainingFreeMemoryAfterEstimate();
+			}
 		} else {
 			stats->_microFragmentedSize = 0;
 			stats->_macroFragmentedSize = 0;
@@ -152,7 +159,7 @@ public:
 		,_totalSurvivorHeapSize(0)
 		,_totalFreeSurvivorHeapSize(0)
 		,_rememberedSetCount(0)
-		, _tenureFragmentation(false)
+		, _tenureFragmentation(NO_FRAGMENTATION)
 		, _microFragmentedSize(0)
 		, _macroFragmentedSize(0)
 	{};

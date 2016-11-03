@@ -23,6 +23,7 @@
 #include "omrcomp.h"
 
 #include "VerboseHandlerOutput.hpp"
+#include "CollectionStatisticsStandard.hpp"
 
 class MM_CollectionStatistics;
 class MM_EnvironmentBase;
@@ -36,8 +37,7 @@ public:
 private:
 
 protected:
-	void outputMemType(MM_EnvironmentBase* env, uintptr_t indent, const char* type, uintptr_t free, uintptr_t total);
-	void outputMemType(MM_EnvironmentBase* env, uintptr_t indent, const char* type, uintptr_t free, uintptr_t total, uintptr_t microFragment, uintptr_t macroFragment);
+	void outputMemType(MM_EnvironmentBase* env, uintptr_t indent, const char* type, uintptr_t free, uintptr_t total, uint32_t tenureFragmentation=NO_FRAGMENTATION, uintptr_t microFragment=0, uintptr_t macroFragment=0);
 	virtual bool initialize(MM_EnvironmentBase *env, MM_VerboseManager *manager);
 	virtual void tearDown(MM_EnvironmentBase *env);
 

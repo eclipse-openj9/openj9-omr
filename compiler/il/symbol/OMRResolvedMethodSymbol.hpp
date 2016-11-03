@@ -266,8 +266,8 @@ public:
    bool catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Compilation *comp);
 
    void setCannotAttemptOSR(int32_t);
-   bool cannotAttemptOSR(TR_ByteCodeInfo bci, TR::Node *nodeToOSRAt, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
-   bool supportsInduceOSR(TR_ByteCodeInfo bci, TR::Node *nodeToOSRAt, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
+   bool cannotAttemptOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
+   bool supportsInduceOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
 
    void setShouldNotAttemptOSR(int32_t n);
 

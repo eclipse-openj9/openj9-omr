@@ -701,7 +701,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode)
       TR_ByteCodeInfo &bci = node->getByteCodeInfo();
       TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
          self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
-      potentialOSRPoint = method->supportsInduceOSR(bci, node, tt->getEnclosingBlock(), NULL, self());
+      potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self());
       }
 
    return potentialOSRPoint;

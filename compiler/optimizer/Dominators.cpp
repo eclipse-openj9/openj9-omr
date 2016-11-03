@@ -24,7 +24,6 @@
 #include "compile/Compilation.hpp"             // for Compilation, etc
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                       // for StaticArrayOf, etc
 #include "cs2/bitvectr.h"                      // for ABitVector<>::BitRef
 #include "cs2/sparsrbit.h"
 #include "cs2/tableof.h"                       // for TableOf
@@ -43,7 +42,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    _compilation(c),
    _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
    _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
-   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
+   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, static_cast<TR::Block *>(NULL), c->allocator())
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
 
@@ -131,7 +130,11 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
 
 TR::Block * TR_Dominators::getDominator(TR::Block *block)
    {
-   return _dominators.ValueAt(block->getNumber());
+   if (block->getNumber() >= _dominators.size())
+      {
+      return NULL;
+      }
+   return _dominators[block->getNumber()];
    }
 
 int TR_Dominators::dominates(TR::Block *block, TR::Block *other)

@@ -22,7 +22,6 @@
 #include <stddef.h>                 // for NULL
 #include <stdint.h>                 // for int32_t
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/arrayof.h"            // for StaticArrayOf
 #include "cs2/tableof.h"            // for TableOf
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Block.hpp"             // for Block
@@ -55,7 +54,7 @@ class TR_Dominators
    TR::Block       *getDominator(TR::Block *);
    int             dominates(TR::Block *block, TR::Block *other);
 
-   TR::Compilation * comp()          {return _compilation;}
+   TR::Compilation * comp()         { return _compilation; }
    TR_Memory *      trMemory()      { return comp()->trMemory(); }
    TR_StackMemory   trStackMemory() { return trMemory(); }
    bool trace() { return _trace; }
@@ -128,7 +127,7 @@ class TR_Dominators
 
    TR::Compilation *_compilation;
    TR::deque<BBInfo>  _info;
-   CS2::StaticArrayOf<TR::Block *, TR::Allocator> _dominators;
+   TR::deque<TR::Block *> _dominators;
    int32_t         _numNodes;
    int32_t         _topDfNum;
    vcount_t        _visitCount;

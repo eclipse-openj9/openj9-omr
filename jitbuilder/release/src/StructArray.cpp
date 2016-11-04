@@ -28,7 +28,7 @@
 #include "StructArray.hpp"
 
 
-void printStructElems(int8_t type, int32_t value)
+void printStructElems(uint8_t type, int32_t value)
    {
    #define PRINTSTRUCTELEMS_LINE LINETOSTR(__LINE__)
    printf("StructType { type = %#x, value = %d }\n", type, value);
@@ -41,12 +41,12 @@ CreateStructArrayMethod::CreateStructArrayMethod(TR::TypeDictionary *d)
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
 
-   DefineName("testCreateStructArray");
-   DefineParameter("size", Int32);
-   DefineReturnType(Address);
-
    StructType = d->LookupStruct("Struct");
    pStructType = d->PointerTo(StructType);
+
+   DefineName("testCreateStructArray");
+   DefineParameter("size", Int32);
+   DefineReturnType(pStructType);
 
    DefineFunction("malloc",
                   "",
@@ -98,13 +98,13 @@ ReadStructArrayMethod::ReadStructArrayMethod(TR::TypeDictionary *d)
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
 
-   DefineName("testReadStructArray");
-   DefineParameter("myArray", Address);
-   DefineParameter("size", Int32);
-   DefineReturnType(NoType);
-
    StructType = d->LookupStruct("Struct");
    pStructType = d->PointerTo(StructType);
+
+   DefineName("testReadStructArray");
+   DefineParameter("myArray", pStructType);
+   DefineParameter("size", Int32);
+   DefineReturnType(NoType);
 
    DefineFunction("printStructElems",
                   __FILE__,
@@ -149,9 +149,9 @@ class StructArrayTypeDictionary : public TR::TypeDictionary
       TR::TypeDictionary()
       {
       DefineStruct("Struct");
-      DefineField("Struct", "type", Int8);
-      DefineField("Struct", "value", Int32);
-      CloseStruct("Struct");
+      DefineField("Struct", "type", Int8, offsetof(Struct, type));
+      DefineField("Struct", "value", Int32, offsetof(Struct, value));
+      CloseStruct("Struct", sizeof(Struct));
       }
    };
 
@@ -194,7 +194,7 @@ main(int argc, char *argv[])
    printf("Step 5: invoke compiled code for createMethod\n");
    auto arraySize = 16;
    CreateStructArrayFunctionType *create = (CreateStructArrayFunctionType *) createEntry;
-   void* array = create(arraySize);
+   Struct* array = create(arraySize);
 
    printf("Step 6: invoke compiled code for readMethod and verify results\n");
    ReadStructArrayFunctionType *read = (ReadStructArrayFunctionType *) readEntry;

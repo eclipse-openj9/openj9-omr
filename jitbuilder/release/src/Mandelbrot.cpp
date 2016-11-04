@@ -117,7 +117,7 @@ MandelbrotMethod::buildIL()
    k1Loop->         Load("x")),
    k1Loop->      Load("k")));
 
-   k1Loop->StoreAt(pDouble,
+   k1Loop->StoreAt(
    k1Loop->   IndexAt(pDouble,
    k1Loop->      Load("cr0"),
    k1Loop->      Load("xk")),
@@ -174,7 +174,7 @@ MandelbrotMethod::buildIL()
    x2Loop->   ConstInt32(8),
    x2Loop->   ConstInt32(1));
 
-   k2Loop->StoreAt(pDouble,
+   k2Loop->StoreAt(
    k2Loop->   IndexAt(pDouble,
    k2Loop->      Load("cr"),
    k2Loop->      Load("k")),
@@ -183,7 +183,7 @@ MandelbrotMethod::buildIL()
    k2Loop->         Load("cr0_x"),
    k2Loop->         Load("k"))));
 
-   k2Loop->StoreAt(pDouble,
+   k2Loop->StoreAt(
    k2Loop->   IndexAt(pDouble,
    k2Loop->      Load("ci"),
    k2Loop->      Load("k")),
@@ -238,7 +238,7 @@ MandelbrotMethod::buildIL()
    bit_k_set->      Load("ci_k"),
    bit_k_set->      Load("ci_k")));
 
-   bit_k_set->StoreAt(pDouble,
+   bit_k_set->StoreAt(
    bit_k_set->   IndexAt(pDouble,
    bit_k_set->      Load("cr"),
    bit_k_set->      Load("k")),
@@ -251,7 +251,7 @@ MandelbrotMethod::buildIL()
    bit_k_set->            Load("cr0_x"),
    bit_k_set->            Load("k")))));
 
-   bit_k_set->StoreAt(pDouble,
+   bit_k_set->StoreAt(
    bit_k_set->   IndexAt(pDouble,
    bit_k_set->      Load("ci"),
    bit_k_set->      Load("k")),
@@ -281,7 +281,7 @@ MandelbrotMethod::buildIL()
    k3Loop->      Load("bit_k"),
    k3Loop->      ConstInt32(1)));
 
-   x2Loop->StoreAt(pInt8,
+   x2Loop->StoreAt(
    x2Loop->   IndexAt(pInt8,
    x2Loop->      Load("line"),
    x2Loop->      Load("x")),

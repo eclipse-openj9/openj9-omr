@@ -622,9 +622,9 @@ IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    }
 
 void
-IlBuilder::StoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *value)
+IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->StoreAt(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_TYPE(dt), REPLAY_VALUE(address), REPLAY_VALUE(value));
+   ILB_REPLAY("%s->StoreAt(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(address), REPLAY_VALUE(value));
 
    TR_ASSERT(address->getSymbol()->getDataType() == TR::Address, "StoreAt needs an address operand");
 
@@ -633,9 +633,9 @@ IlBuilder::StoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *value)
    }
 
 void
-IlBuilder::VectorStoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *value)
+IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->VectorStoreAt(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_TYPE(dt), REPLAY_VALUE(address), REPLAY_VALUE(value));
+   ILB_REPLAY("%s->VectorStoreAt(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(address), REPLAY_VALUE(value));
 
    TR_ASSERT(address->getSymbol()->getDataType() == TR::Address, "StoreAt needs an address operand");
 

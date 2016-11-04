@@ -78,52 +78,52 @@ LocalArrayMethod::buildIL()
    Store("myArray",
       CreateLocalArray(10, Int64));
 
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(0)),
       ConstInt64(100));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(1)),
       ConstInt64(101));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(2)),
       ConstInt64(102));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(3)),
       ConstInt64(103));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(4)),
       ConstInt64(104));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(5)),
       ConstInt64(105));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(6)),
       ConstInt64(106));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(7)),
       ConstInt64(107));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(8)),
       ConstInt64(108));
-   StoreAt(pInt64,
+   StoreAt(
       IndexAt(pInt64,
          Load("myArray"),
          ConstInt32(9)),

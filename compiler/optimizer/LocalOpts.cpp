@@ -8212,6 +8212,7 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
       if (  _notYetRunMeansCold
          && node->getOpCode().isCall()
          && node->getSymbol()->isResolvedMethod()
+         && !node->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod()->convertToMethod()->isArchetypeSpecimen()
          && !comp()->getJittedMethodSymbol()->castToResolvedMethodSymbol()->doJSR292PerfTweaks())
          {
          TR::ResolvedMethodSymbol *calleeSymbol = node->getSymbol()->getResolvedMethodSymbol();

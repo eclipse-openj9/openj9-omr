@@ -2094,7 +2094,7 @@ OMR::ResolvedMethodSymbol::hasEscapeAnalysisOpportunities()
 bool
 OMR::ResolvedMethodSymbol::doJSR292PerfTweaks()
    {
-   return self()->hasMethodHandleInvokes();
+   return false;
    }
 
 int32_t

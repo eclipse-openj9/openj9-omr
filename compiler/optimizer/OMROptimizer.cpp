@@ -319,19 +319,20 @@ const OptimizationStrategy methodHandleInvokeInliningOpts[] =
    { localCSE,                                     }, // Especially copy propagation to replace temps with more descriptive trees
    { localValuePropagation                         }, // Propagate known-object info and derive more specific archetype specimen symbols for inlining
 #ifdef J9_PROJECT_SPECIFIC
-   { inlining,                                     },
+   { targetedInlining,                             },
 #endif
+   { deadTreesElimination                          },
    { methodHandleInvokeInliningGroup,    IfEnabled }, // Repeat as required to inline all the MethodHandle.invoke calls we can afford
    { endGroup                                      },
    };
 
 const OptimizationStrategy earlyGlobalOpts[] =
    {
+   { methodHandleInvokeInliningGroup,  IfMethodHandleInvokes },
 #ifdef J9_PROJECT_SPECIFIC
    { inlining                             },
 #endif
    { osrExceptionEdgeRemoval                       }, // most inlining is done by now
-   { methodHandleInvokeInliningGroup,  IfMethodHandleInvokes },
    //{ basicBlockOrdering,          IfLoops }, // early ordering with no extension
    { treeSimplification,        IfEnabled },
    { compactNullChecks                    }, // cleans up after inlining; MUST be done before PRE

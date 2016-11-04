@@ -856,7 +856,10 @@ int32_t OMR::Compilation::compile()
       //if so, fail the compile
       //
       if (_methodSymbol->catchBlocksHaveRealPredecessors(_methodSymbol->getFlowGraph(), self()))
-         self()->fe()->outOfMemory(self(), "Catch blocks have real predecessors");
+         {
+         traceMsg(self(), "Catch blocks have real predecessors");
+         throw TR::CompilationException();
+         }
 
       if ((debug("dumpInitialTrees") || self()->getOption(TR_TraceTrees)) && self()->getOutFile() != NULL)
          {
@@ -903,7 +906,10 @@ int32_t OMR::Compilation::compile()
          {
          static char *abortafterilgen = feGetEnv("TR_TOSS_IL");
          if(abortafterilgen)
-            self()->fe()->outOfMemory(self(), "Aborting after IL Gen due to TR_TOSS_IL");
+            {
+            traceMsg(self(), "Aborting after IL Gen due to TR_TOSS_IL");
+            throw TR::CompilationException();
+            }
 
 
          if (_recompilationInfo)
@@ -1187,7 +1193,8 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
    if (inlinedCallStackSize >= TR_ByteCodeInfo::maxCallerIndex)
       {
       TR_ASSERT(0, "max number of inlined calls exceeded");
-      self()->fe()->outOfMemory(self(), "max number of inlined calls exceeded");
+      traceMsg(self(), "max number of inlined calls exceeded");
+      throw TR::ExcessiveComplexity();
       }
 
    if (inlinedCallStackSize > _maxInlineDepth)
@@ -1860,11 +1867,9 @@ void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
 
       if (newCodeCache)
          {
-         self()->setErrorCode(COMPILATION_ILLEGAL_CODE_CACHE_SWITCH);
          throw TR::RecoverableCodeCacheError();
          }
 
-      self()->setErrorCode(COMPILATION_NULL_SUBSTITUTE_CODE_CACHE);
       throw TR::CodeCacheError();
       }
    }
@@ -2107,7 +2112,8 @@ OMR::Compilation::incVisitCount()
    if (_visitCount == MAX_VCOUNT-1)
       {
       TR_ASSERT(0, "_visitCount equals MAX_VCOUNT-1");
-      self()->fe()->outOfMemory(self(), "_visitCount equals MAX_VCOUNT-1");
+      traceMsg(self(), "_visitCount equals MAX_VCOUNT-1");
+      throw TR::CompilationException();
       }
    return ++_visitCount;
    }

@@ -389,8 +389,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          // If this failure is triggered in a prod build, you might
          // not get a SEGV nor any meaningful error msg.
          TR_ASSERT(0,"ERROR: addPreCondition list overflow\n");
-         _cg->fe()->outOfMemory(_cg->comp(), "addPreCondition list overflow, abort compilation\n");
-
+         traceMsg(_cg->comp(), "addPreCondition list overflow, abort compilation\n");
+         throw TR::CompilationException();
          }
       _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
       }
@@ -426,8 +426,8 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          // If this failure is triggered in a prod build, you might
          // not get a SEGV nor any meaningful error msg.
          TR_ASSERT(0,"ERROR: addPostCondition list overflow\n");
-         _cg->fe()->outOfMemory(_cg->comp(), "addPostCondition list overflow, abort compilation\n");
-
+         traceMsg(_cg->comp(), "addPostCondition list overflow, abort compilation\n");
+         throw TR::CompilationException();
          }
       _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
       if((flag & DefinesDependentRegister) != 0)

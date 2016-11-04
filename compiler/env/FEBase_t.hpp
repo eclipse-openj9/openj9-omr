@@ -20,6 +20,7 @@
 #include "compile/Compilation.hpp"
 #include "env/FEBase.hpp"
 #include "env/jittypes.h"
+#include "runtime/CodeCacheExceptions.hpp"
 
 namespace TR
 {
@@ -52,12 +53,7 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
 
    uint8_t *warmCode = codeCacheManager().allocateCodeMemory(warmCodeSize, coldCodeSize, &codeCache,
                                                              coldCode, false, isMethodHeaderNeeded);
-   if (warmCode == NULL)
-      {
-      comp->setErrorCode(jitConfig()->isCodeCacheFull() ?
-                         COMPILATION_CODE_MEMORY_EXHAUSTED :
-                         COMPILATION_ALL_CODE_CACHES_RESERVED);
-      }
+
    if (codeCache != comp->getCurrentCodeCache())
       {
       // Either we didn't get a code cache, or the one we get should be reserved
@@ -65,12 +61,20 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
       comp->setAotMethodCodeStart(warmCode);
       switchCodeCache(codeCache);
       }
-   if ( comp->getErrorCode() != COMPILATION_SUCCEEDED )
+
+   if (warmCode == NULL)
       {
-      outOfMemory(comp, "code");
+      if (jitConfig()->isCodeCacheFull())
+         {
+         throw TR::CodeCacheError();
+         }
+      else
+         {
+         throw TR::RecoverableCodeCacheError();
+         }
       }
 
-   TR_ASSERT( !((warmCodeSize && !warmCode) || (coldCodeSize && !coldCode)), "Allocation failed but didn't call outOfMemory()");
+   TR_ASSERT( !((warmCodeSize && !warmCode) || (coldCodeSize && !coldCode)), "Allocation failed but didn't throw an exception");
 
    codeCacheManager().registerCompiledMethod(TR::comp()->signature(), warmCode, warmCodeSize);
    return warmCode;

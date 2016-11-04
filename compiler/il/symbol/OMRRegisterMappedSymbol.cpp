@@ -84,7 +84,7 @@ OMR::RegisterMappedSymbol::setLiveLocalIndex(uint16_t i, TR_FrontEnd * fe)
    if (self()->isLiveLocalIndexUninitialized())
       {
       TR_ASSERT(0, "OMR::RegisterMappedSymbol::_liveLocalIndex == USHRT_MAX");
-      fe->outOfMemory(0, "OMR::RegisterMappedSymbol::_liveLocalIndex == USHRT_MAX");
+      throw TR::CompilationException();
       }
    }
 

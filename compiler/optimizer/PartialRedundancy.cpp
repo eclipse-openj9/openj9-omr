@@ -4260,7 +4260,6 @@ bool TR_ExceptionCheckMotion::analyzeNodeIfSuccessorsAnalyzed(TR::CFGNode *cfgNo
 
       if (_analysisInterrupted)
          {
-         comp()->setErrorCode(COMPILATION_INTERRUPTED);
          traceMsg(comp(), "interrupted in forward bit vector analysis");
          throw TR::CompilationInterrupted();
          }

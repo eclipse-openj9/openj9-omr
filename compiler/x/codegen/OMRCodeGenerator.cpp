@@ -2010,7 +2010,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       if (!addrToPatch)
          {
          TR_ASSERT(false, "Must have updated gcrPatchPointSymbol with the correct address by now\n");
-         self()->comp()->setErrorCode(COMPILATION_GCRPATCH_FAILURE);
          traceMsg(self()->comp(), "Must have updated gcrPatchPointSymbol with the correct address by now");
          throw TR::GCRPatchFailure();
          }

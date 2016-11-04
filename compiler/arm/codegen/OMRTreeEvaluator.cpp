@@ -1156,8 +1156,8 @@ TR::Register *OMR::ARM::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::Cod
       resultReg = sym->isLocalObject() ?  cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
       if (mref->useIndexedForm())
          {
-         cg->fe()->outOfMemory(TR::comp(), "implement unresolved loadAddr indexed");
-         TR_ASSERT(0, "implement unresolved loadAddr indexed\n");
+         traceMsg(TR::comp(), "implement unresolved loadAddr indexed");
+         throw TR::CompilationException();
          generateTrg1MemInstruction(cg, ARMOp_add, node, resultReg, mref);
          }
       else

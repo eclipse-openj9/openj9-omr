@@ -359,6 +359,8 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       TR::TreeTop * addGuardForVirtual(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::TreeTop *, TR::Node *,
                                       TR_OpaqueClassBlock *, TR::TreeTop *, TR::TreeTop *, TR::TreeTop *, TR_TransformInlinedFunction&,
                                       List<TR::SymbolReference> &, TR_VirtualGuardSelection *, TR::TreeTop **, TR_CallTarget *calltarget=0);
+      void rematerializeCallArguments(TR_TransformInlinedFunction & tif,
+   TR_VirtualGuardSelection *guard, TR::Node *callNode, TR::Block *block1, TR::TreeTop *rematPoint);
       void replaceCallNode(TR::ResolvedMethodSymbol *, TR::Node *, rcount_t, TR::TreeTop *, TR::Node *, TR::Node *);
       void linkOSRCodeBlocks();
       bool IsOSRFramesSizeUnderThreshold();
@@ -575,6 +577,7 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
       bool mustBeInlinedEvenInDebug(TR_ResolvedMethod * calleeMethod, TR::TreeTop *callNodeTreeTop);
       virtual bool supressInliningRecognizedInitialCallee(TR_CallSite* callsite, TR::Compilation* comp);
       virtual TR_InlinerFailureReason checkIfTargetInlineable(TR_CallTarget* target, TR_CallSite* callsite, TR::Compilation* comp);
+      virtual bool suitableForRemat(TR::Compilation *comp, TR::Node *node, TR_VirtualGuardSelection *guard);
    };
 
 class TR_TransformInlinedFunction

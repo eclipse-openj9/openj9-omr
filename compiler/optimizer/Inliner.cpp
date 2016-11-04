@@ -1615,7 +1615,7 @@ static TR_YesNoMaybe gatherNodesToCheck(TR::Compilation *comp, TR_InlinerTracer 
       for (uint16_t i = 0; i < currentNode->getNumChildren(); ++i)
          {
          // avoid exponential traversal
-         if (visitedNodes.ValueAt(currentNode->getGlobalIndex()))
+         if (visitedNodes.ValueAt(currentNode->getChild(i)->getGlobalIndex()))
             continue;
 
          TR_YesNoMaybe childResult = gatherNodesToCheck(comp, tracer, privArg, currentNode->getChild(i), childScanTargets,
@@ -1889,15 +1889,160 @@ static TR::Node *subexpressionUnsafeToRemat(TR::Node *node, bool knownObject=fal
  * Root function for privatized inliner argument rematerialization - this handles calculating remat
  * safety and performing the remat.
  */
-static void rematerializeCallArguments(TR::Compilation *comp, TR_InlinerTracer *tracer,
-   TR_TransformInlinedFunction & tif, TR_VirtualGuardSelection *guard, TR::Node *callNode,
-   TR::Block *block1, TR::TreeTop *rematPoint)
+void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & tif,
+   TR_VirtualGuardSelection *guard, TR::Node *callNode, TR::Block *block1, TR::TreeTop *rematPoint)
    {
-   debugTrace(tracer, "privatizedInlinerArg - consider arguments for rematerialization for guard [%p] of call node [n%dn]", guard, callNode->getGlobalIndex());
+   debugTrace(tracer(), "privatizedInlinerArg - consider arguments for rematerialization for guard [%p] of call node [n%dn]", guard, callNode->getGlobalIndex());
    //To get a full picture of what expressions are live and kicking
    //we have to walk the entire extended block rather than the block that
    //happened to contain the callNode
    block1 = block1->startOfExtendedBlock();
+   static char *disableProfiledGuardRemat = feGetEnv("TR_DisableProfiledGuardRemat");
+
+   bool suitableForRemat = !comp()->getOption(TR_DisableGuardedCallArgumentRemat) && !comp()->isProfilingCompilation();
+   // Vijay's Inliner change 02
+   if (guard->_kind == TR_NoGuard)
+      {
+      suitableForRemat = false;
+      }
+   else if (guard->_kind == TR_ProfiledGuard)
+      {
+      if (disableProfiledGuardRemat)
+         {
+         suitableForRemat = false;
+         }
+      else
+         {
+         suitableForRemat = getPolicy()->suitableForRemat(comp(), callNode, guard);
+         if (!suitableForRemat)
+            {
+            debugTrace(tracer(),"  skipping remat on profiled guard [%p] due to policy decision",guard);
+            }
+         }
+      }
+
+   // TODO: remove this disable once z codegen snippets issue has been fixed
+   //       see github issue #427
+   if (TR::Compiler->target.cpu.isZ())
+      {
+      static char *enableZPrivArgRemat = feGetEnv("TR_enablePrivArgRematForZ");
+      if (!enableZPrivArgRemat)
+         {
+         suitableForRemat = false;
+         }
+      }
+
+   if (suitableForRemat)
+      {
+      static char *dumpRematTrees = feGetEnv("TR_DumpPrivArgRematTrees");
+      TR::TreeTop *prevTree, *argStoreTree;
+
+      TR::SparseBitVector scanTargets(comp()->allocator());
+      RematSafetyInformation argSafetyInfo(comp());
+      TR::list<TR::TreeTop *> failedArgs(getTypedAllocator<TR::TreeTop*>(comp()->allocator()));
+      for (
+         prevTree=NULL, argStoreTree = tif.getParameterMapper().firstTempTreeTop();
+         prevTree != tif.getParameterMapper().lastTempTreeTop();
+         prevTree = argStoreTree, argStoreTree = argStoreTree->getNextTreeTop())
+         {
+         TR::Node *argStore = argStoreTree->getNode();
+         if (argStore->chkIsPrivatizedInlinerArg())
+            {
+            debugTrace(tracer(),"  considering priv arg store node [%p] - %d - for remat",argStore,argStore->getGlobalIndex());
+            if (dumpRematTrees)
+               comp()->getDebug()->print(comp()->getOutFile(),argStoreTree);
+            TR::SparseBitVector argSymRefsToCheck(comp()->allocator());
+            TR_YesNoMaybe result = gatherNodesToCheck(comp(), tracer(), argStore, argStore->getFirstChild(), scanTargets, argSymRefsToCheck);
+            if (result == TR_yes)
+               {
+               debugTrace(tracer(),"    priv arg remat may be possible for node [%p] - %d",argStore,argStore->getGlobalIndex());
+               argSafetyInfo.add(argStoreTree, argSymRefsToCheck);
+               }
+            else if (result == TR_no)
+               {
+               debugTrace(tracer(),"    priv arg remat unsafe for node [%p] - %d",argStore,argStore->getGlobalIndex());
+               failedArgs.push_back(argStoreTree);
+               }
+            }
+         }
+
+      // if we have failed to remat any arguments we want to see if there is another
+      // store of the argument that we can use for partial remat purposes - hibb often
+      // makes these for us
+      if (failedArgs.size() > 0)
+         {
+         walkTreeTopsCalculatingRematFailureAlternatives(comp(), tracer(),
+            block1->getFirstRealTreeTop(),
+            tif.getParameterMapper().firstTempTreeTop()->getNextTreeTop(),
+            failedArgs, scanTargets, argSafetyInfo);
+
+         for (auto iter = failedArgs.begin(); iter != failedArgs.end(); ++iter)
+            {
+            // NULL means we actually do have a candidate load to try and to
+            // partially rematerialize the argument
+            if (!*iter)
+               continue;
+
+            argStoreTree = *iter;//failedArgs.get(i);
+            TR::Node *argStore = argStoreTree->getNode();
+            TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privInlinerArg/Failed/%s", argStore->getFirstChild()->getOpCode().getName()), argStoreTree, 1, TR::DebugCounter::Expensive);
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byMethod/Failed/(%s)/%s", comp()->signature(), argStore->getFirstChild()->getOpCode().getName()));
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byReason/%s", argStore->getFirstChild()->getOpCode().getName()));
+            }
+         }
+
+      debugTrace(tracer(),"  priv arg remat: symref checking walk required = %d", !scanTargets.IsZero());
+
+      TR::SparseBitVector unsafeSymRefs(comp()->allocator());
+      if (!scanTargets.IsZero())
+         {
+         walkTreesCalculatingRematSafety(comp(), tracer(), block1->getFirstRealTreeTop(), tif.getParameterMapper().lastTempTreeTop()->getNextTreeTop(), scanTargets, unsafeSymRefs);
+         }
+
+      debugTrace(tracer(),"  priv arg remat: Proceeding with block_%d rematPoint=[%p]", rematPoint->getEnclosingBlock()->getNumber(), rematPoint);
+
+      if (comp()->getOption(TR_DebugInliner))
+         argSafetyInfo.dumpInfo(comp(), tracer());
+      for (uint32_t i = 0; i < argSafetyInfo.size(); ++i)
+         {
+         TR::TreeTop *argStoreTree = argSafetyInfo.argStore(i);
+         TR::TreeTop *rematTree = argSafetyInfo.rematTreeTop(i);
+         TR::Node *argStore = argStoreTree->getNode();
+         if (!unsafeSymRefs.Intersects(argSafetyInfo.symRefDependencies(i)))
+            {
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byMethod/(%s)/Succeeded", comp()->signature()));
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byReason/Success"));
+            TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privInlinerArg/Succeeded/(%s)", argStore->getFirstChild()->getOpCode().getName()), argStoreTree, 1, TR::DebugCounter::Expensive);
+            // equality of rematTree and argStoreTree means we want to duplicate the computation of
+            // the argument and do a full rematerialization
+            if (rematTree == argStoreTree)
+               {
+               TR::Node *duplicateStore = argStore->duplicateTree();
+               if (performTransformation(comp(), "O^O GUARDED CALL REMAT: Rematerialize [%p] as [%p]\n", argStore, duplicateStore))
+                  {
+                  rematPoint = TR::TreeTop::create(comp(), rematPoint, duplicateStore);
+                  }
+               }
+            // otherwise we are doing a partial remat where we are going to load from another temp
+            else
+               {
+               TR::Node *duplicateStore = TR::Node::createStore(argStore->getSymbolReference(), TR::Node::createLoad(argStore, rematTree->getNode()->getSymbolReference()));
+               duplicateStore->setByteCodeInfo(argStore->getByteCodeInfo());
+               if (performTransformation(comp(), "O^O GUARDED CALL REMAT: Partial rematerialize of [%p] as [%p] - load of [%d]\n", argStore, duplicateStore, rematTree->getNode()->getSymbolReference()->getReferenceNumber()))
+                  {
+                  rematPoint = TR::TreeTop::create(comp(), rematPoint, duplicateStore);
+                  }
+               }
+            }
+         else
+            {
+            debugTrace(tracer()," priv arg remat failed for node [%p] - %d - due to data dependencies", argStoreTree->getNode(), argStoreTree->getNode()->getGlobalIndex());
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byMethod/unsafeSymRef/Failed/(%s)/%s", comp()->signature(), argStore->getFirstChild()->getOpCode().getName()));
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privatizedInlinerArgs.byReason/unsafeSymRef/%s", argStore->getFirstChild()->getOpCode().getName()));
+            TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "privInlinerArg/Failed/(%s)", argStore->getFirstChild()->getOpCode().getName()), argStoreTree, 1, TR::DebugCounter::Expensive);
+            }
+         }
+      }
    }
 
 
@@ -2116,8 +2261,8 @@ TR_InlinerBase::addGuardForVirtual(
       tif.setResultNode(loadOfResultTemp);
       }
 
-   rematerializeCallArguments(comp(), tracer(), tif, guard, callNode,
-                              block1, block4->getFirstRealTreeTop()->getPrevTreeTop());
+   rematerializeCallArguments(tif, guard, callNode, block1,
+                              block4->getFirstRealTreeTop()->getPrevTreeTop());
 
    debugTrace(tracer(), "Updating fields for callsite %p: \n"
       " _callNodeTreeTop %p -> %p , _parent %p -> %p\n",
@@ -5263,8 +5408,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    // NOTE this used to be part of adding a virtual guard, but we need hibb to store
    // copies of surviving values first so we can exploit them so we do it here
    /*if (virtualGuard)
-      rematerializeCallArguments(comp(), tracer(), tif, guard,
-         previousBBStartInCaller->getNode()->getBlock(),
+      rematerializeCallArguments(tif, guard, previousBBStartInCaller->getNode()->getBlock(),
          virtualGuard->getNode()->getBranchDestination()->getNode()->getBlock()->getEntry());*/
 
    if (induceOSRCallTree)
@@ -6411,6 +6555,18 @@ TR_InlinerFailureReason
 OMR_InlinerPolicy::checkIfTargetInlineable(TR_CallTarget* target, TR_CallSite* callsite, TR::Compilation* comp)
    {
    return InlineableTarget;
+   }
+
+/**
+ * Do not perform privated inliner argument rematerialization on high probability profiled
+ * guards when distrusted
+ *
+ * @return true if privatized inliner argumetn rematerialization should be suppressed
+ */
+bool
+OMR_InlinerPolicy::suitableForRemat(TR::Compilation *comp, TR::Node *node, TR_VirtualGuardSelection *guard)
+   {
+   return true;
    }
 
 void

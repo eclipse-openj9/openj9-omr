@@ -85,7 +85,9 @@ public:
 
    TR::IlType * LookupStruct(const char *structName);
    TR::IlType * DefineStruct(const char *structName);
+   void DefineField(const char *structName, const char *fieldName, TR::IlType *type, size_t offset);
    void DefineField(const char *structName, const char *fieldName, TR::IlType *type);
+   void CloseStruct(const char *structName, size_t finalSize);
    void CloseStruct(const char *structName);
    TR::IlType * GetFieldType(const char *structName, const char *fieldName);
 

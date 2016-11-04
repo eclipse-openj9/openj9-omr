@@ -114,7 +114,7 @@ class FieldInfo
 public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
-   FieldInfo(const char *name, uint32_t offset, TR::IlType *type) :
+   FieldInfo(const char *name, size_t offset, TR::IlType *type) :
       _next(0),
       _name(name),
       _offset(offset),
@@ -130,7 +130,7 @@ public:
 
    TR::DataType getPrimitiveType()             { return _type->getPrimitiveType(); }
 
-   uint32_t getOffset()                          { return _offset; }
+   size_t getOffset()                            { return _offset; }
 
    FieldInfo *getNext()                          { return _next; }
    void setNext(FieldInfo *next)                 { _next = next; }
@@ -138,7 +138,7 @@ public:
 //private:
    FieldInfo           * _next;
    const char          * _name;
-   uint32_t              _offset;
+   size_t                _offset;
    TR::IlType          * _type;
    TR::SymbolReference * _symRef;
    };
@@ -158,8 +158,10 @@ public:
       { }
 
    TR::DataType getPrimitiveType()                 { return TR::Address; }
+   void Close(size_t finalSize)                      { TR_ASSERT(_size <= finalSize, "Final size %d of struct %s is less than its current size %d\n", finalSize, _name, _size); _size = finalSize; _closed = true; };
    void Close()                                      { _closed = true; };
 
+   void AddField(const char *name, TR::IlType *fieldType, size_t offset);
    void AddField(const char *name, TR::IlType *fieldType);
    TR::IlType * getFieldType(const char *fieldName);
 
@@ -172,9 +174,26 @@ protected:
 
    FieldInfo * _firstField;
    FieldInfo * _lastField;
-   uint32_t    _size;
+   size_t      _size;
    bool        _closed;
    };
+
+void
+StructType::AddField(const char *name, TR::IlType *typeInfo, size_t offset)
+   {
+   if (_closed)
+      return;
+
+   TR_ASSERT(_size <= offset, "Offset of new struct field %s::%s is %d, which is less than the current size of the struct %d\n", _name, name, offset, _size);
+
+   FieldInfo *fieldInfo = new (PERSISTENT_NEW) FieldInfo(name, offset, typeInfo);
+   if (0 != _lastField)
+      _lastField->setNext(fieldInfo);
+   else
+      _firstField = fieldInfo;
+   _lastField = fieldInfo;
+   _size = offset + typeInfo->getSize();
+   }
 
 void
 StructType::AddField(const char *name, TR::IlType *typeInfo)
@@ -372,6 +391,17 @@ TypeDictionary::DefineStruct(const char *structName)
    }
 
 void
+TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type, size_t offset)
+   {
+   TR_HashId structID=0;
+   if (_structsByName->locate(structName, structID))
+      {
+      StructType *structType = (StructType *) _structsByName->getData(structID);
+      structType->AddField(fieldName, type, offset);
+      }
+   }
+
+void
 TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type)
    {
    TR_HashId structID=0;
@@ -389,6 +419,15 @@ TypeDictionary::GetFieldType(const char *structName, const char *fieldName)
    _structsByName->locate(structName, structID);
    StructType *theStruct = (StructType *) _structsByName->getData(structID);
    return theStruct->getFieldType(fieldName);
+   }
+
+void
+TypeDictionary::CloseStruct(const char *structName, size_t finalSize)
+   {
+   TR_HashId structID = 0;
+   _structsByName->locate(structName, structID);
+   StructType *theStruct = (StructType *) _structsByName->getData(structID);
+   theStruct->Close(finalSize);
    }
 
 void

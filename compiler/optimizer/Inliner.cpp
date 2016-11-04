@@ -93,6 +93,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                        // for Optimizer
 #include "optimizer/PreExistence.hpp"                     // for TR_PrexArgInfo, etc
+#include "optimizer/RematTools.hpp"                       // for RematTools, RematSafetyInfo
 #include "optimizer/Structure.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
 #include "ras/Debug.hpp"                                  // for TR_DebugBase, etc
@@ -1537,355 +1538,6 @@ static bool blocksHaveSameStartingByteCodeInfo(TR::Block *aBlock, TR::Block *bBl
    }
 
 /*
- * This function is used to walk the nodes from each of the privatized inliner
- * args down to (a) gather nodes we need to check for safety and (b) prempt
- * further checking if not needed
- * Return TR_yes if the node is a candidate for remat after safety checks
- * (eg it is an expression containing loads and constants), TR_maybe if it is a
- * constant expression (we won't duplicate because constant prop should sort these),
- * TR_no if remat is unsafe
- * Side-effect - adds node to scanTarget if returning true, otherwise none
- */
-static TR_YesNoMaybe gatherNodesToCheck(TR::Compilation *comp, TR_InlinerTracer *tracer,
-      TR::Node *privArg, TR::Node *currentNode, TR::SparseBitVector &scanTargets,
-      TR::SparseBitVector &symRefsToCheck, TR::SparseBitVector &visitedNodes)
-   {
-   visitedNodes[currentNode->getGlobalIndex()] = true;
-
-   TR::ILOpCode &opCode = currentNode->getOpCode();
-   if (opCode.hasSymbolReference() && !opCode.isLoad())
-      {
-      debugTrace(tracer,"  priv arg remat: Can't fully remat [%p] due to [%p] - non-load with a symref", privArg, currentNode);
-      return TR_no;
-      }
-   else if (opCode.isLoadVarDirect())
-      {
-      if (currentNode->getSymbolReference()->hasKnownObjectIndex() ||
-          currentNode->getSymbol()->isConstObjectRef())
-         {
-         // In these limited cases we are dealing with a known constant object
-         // which we can trust so we don't need to scan for safety
-         return TR_yes;
-         }
-      else
-         {
-         scanTargets[currentNode->getGlobalIndex()] = true;
-         symRefsToCheck[currentNode->getSymbolReference()->getReferenceNumber()] = true;
-         return TR_yes;
-         }
-      }
-   else if (opCode.isLoadIndirect())
-      {
-      // cannot rematerialize an array access without also creating a spine check
-      // avoiding this case for now but this case can be handled in the future by creating a spine check
-      //
-      if (comp->requiresSpineChecks() && currentNode->getSymbol()->isArrayShadowSymbol())
-         {
-         debugTrace(tracer,"  priv arg remat: Can't fully remat [%p] due to [%p] - array access needs spine check", privArg, currentNode);
-
-         return TR_no;
-         }
-
-      // only add this node to the checking set if the root of the dereference
-      // chain does not prempt remat checks
-      if (gatherNodesToCheck(comp, tracer, privArg, currentNode->getFirstChild(), scanTargets, symRefsToCheck, visitedNodes) != TR_no)
-         {
-         scanTargets[currentNode->getGlobalIndex()] = true;
-         symRefsToCheck[currentNode->getSymbolReference()->getReferenceNumber()] = true;
-         return TR_yes;
-         }
-      // chained TR_no so no diagnostics here
-      return TR_no;
-      }
-   else if (opCode.isLoadConst())
-      {
-      // constants are ok too, but we don't need to clone them since
-      // constant prop should take care of them
-      return TR_maybe;
-      }
-   else if (opCode.isArithmetic()  || opCode.isConversion() ||
-            opCode.isMax()         || opCode.isMin()        ||
-            opCode.isArrayLength() || (opCode.isBooleanCompare() && !opCode.isBranch())
-           )
-      {
-      // gather the child nodes of interest separately until we know it is worth checking them
-      TR::SparseBitVector childScanTargets(comp->allocator());
-      TR::SparseBitVector childSymRefsToCheck(comp->allocator());
-      TR_YesNoMaybe candidateForRemat = TR_maybe;
-      for (uint16_t i = 0; i < currentNode->getNumChildren(); ++i)
-         {
-         // avoid exponential traversal
-         if (visitedNodes.ValueAt(currentNode->getChild(i)->getGlobalIndex()))
-            continue;
-
-         TR_YesNoMaybe childResult = gatherNodesToCheck(comp, tracer, privArg, currentNode->getChild(i), childScanTargets,
-                                                   childSymRefsToCheck, visitedNodes);
-         if (childResult == TR_no)
-            {
-            debugTrace(tracer,"  priv arg remat: Can't fully remat [%p] due to [%p] - unsafe arithmetic child %d", privArg, currentNode, i);
-            candidateForRemat = TR_no;
-            break;
-            }
-         else if (childResult == TR_yes)
-            {
-            candidateForRemat = TR_yes;
-            }
-         }
-      // only union in child symrefs if there is benefit from doing so
-      if (candidateForRemat == TR_yes)
-         {
-         scanTargets |= childScanTargets;
-         symRefsToCheck |= childSymRefsToCheck;
-         }
-      return candidateForRemat;
-      }
-   else
-      {
-      // anything we haven't considered is dangerous as a conservative assumption
-      heuristicTrace(tracer,"  guarded call remat: Can't fully remat [%p] due to [%p] - unhandled case", privArg, currentNode);
-      return TR_no;
-      }
-   }
-
-static TR_YesNoMaybe gatherNodesToCheck(TR::Compilation *comp, TR_InlinerTracer *tracer,
-      TR::Node *privArg, TR::Node *currentNode, TR::SparseBitVector &scanTargets,
-      TR::SparseBitVector &symRefsToCheck)
-   {
-   TR::SparseBitVector visitedNodes(comp->allocator());
-   return gatherNodesToCheck(comp, tracer, privArg, currentNode, scanTargets,
-                             symRefsToCheck, visitedNodes);
-   }
-
-static void walkNodesCalculatingRematSafety(TR::Compilation *comp,
-      TR_InlinerTracer *tracer, TR::Node *currentNode,
-      TR::SparseBitVector &scanTargets, TR::SparseBitVector &enabledSymRefs,
-      TR::SparseBitVector &unsafeSymRefs, TR::SparseBitVector &visitedNodes)
-   {
-   for (uint16_t i = 0; i < currentNode->getNumChildren(); ++i)
-      {
-      if (visitedNodes.ValueAt(currentNode->getGlobalIndex()))
-         return;
-
-      visitedNodes[currentNode->getGlobalIndex()] = true;
-
-      walkNodesCalculatingRematSafety(comp, tracer, currentNode->getChild(i),
-            scanTargets, enabledSymRefs, unsafeSymRefs, visitedNodes);
-      }
-
-   // step 1 - add the current node kills to our running kills
-   currentNode->mayKill().getAliasesAndUnionWith(unsafeSymRefs);
-
-   TR::ILOpCode &opCode = currentNode->getOpCode();
-   if (opCode.isLikeDef() && opCode.hasSymbolReference())
-      unsafeSymRefs[currentNode->getSymbolReference()->getReferenceNumber()] = true;
-
-   // update unsafeSymRefs - only set enabledSymRefs since the others are not "live"
-   unsafeSymRefs &= enabledSymRefs;
-
-   // step 2 - if we have encountered a node we are checking for, update
-   // enabledSymRefs
-   if (scanTargets.ValueAt(currentNode->getGlobalIndex()) && opCode.hasSymbolReference())
-      {
-      // enable the symref we just found
-      enabledSymRefs[currentNode->getSymbolReference()->getReferenceNumber()] = true;
-      }
-   }
-
-/*
- * This method walks the nodes between the start treetop inclusive and
- * the end treetop exclusive. When it encounters a node in the scanTargets
- * it adds the symref of the scan target to its set of interest and continues
- * scanning. Any symrefs killed after they have been added to the set of interest
- * are added to the unsafeSymRefs vector for later use
- */
-static void walkTreesCalculatingRematSafety(TR::Compilation *comp,
-   TR_InlinerTracer *tracer, TR::TreeTop *start, TR::TreeTop *end,
-   TR::SparseBitVector &scanTargets, TR::SparseBitVector &unsafeSymRefs)
-   {
-   TR::SparseBitVector enabledSymRefs(comp->allocator());
-   TR::SparseBitVector visitedNodes(comp->allocator());
-   while (start != end)
-      {
-      if (start->getNode())
-         {
-         walkNodesCalculatingRematSafety(comp, tracer, start->getNode(),
-            scanTargets, enabledSymRefs, unsafeSymRefs, visitedNodes);
-         }
-      start = start->getNextTreeTop();
-      }
-   }
-
-class RematSafetyInformation
-   {
-   std::vector<TR::SparseBitVector, TR::typed_allocator<TR::SparseBitVector, TR::Allocator> > dependentSymRefs;
-   std::vector<TR::TreeTop *, TR::typed_allocator<TR::TreeTop * , TR::Allocator> > argumentTreeTops;
-   std::vector<TR::TreeTop *, TR::typed_allocator<TR::TreeTop * , TR::Allocator> > rematTreeTops;
-   TR::Compilation *comp;
-   public:
-   RematSafetyInformation(TR::Compilation *comp) :
-      dependentSymRefs(getTypedAllocator<TR::SparseBitVector>(comp->allocator())),
-      argumentTreeTops(getTypedAllocator<TR::TreeTop*>(comp->allocator())),
-      rematTreeTops(getTypedAllocator<TR::TreeTop*>(comp->allocator())),
-      comp(comp)
-      {
-      }
-
-   void add(TR::TreeTop *argStore, TR::SparseBitVector &symRefDependencies)
-      {
-      dependentSymRefs.push_back(symRefDependencies);
-      argumentTreeTops.push_back(argStore);
-      rematTreeTops.push_back(argStore);
-      }
-
-   void add(TR::TreeTop *argStore, TR::TreeTop *rematStore)
-      {
-      TR::SparseBitVector symrefDeps(comp->allocator());
-      symrefDeps[rematStore->getNode()->getSymbolReference()->getReferenceNumber()] = true;
-      dependentSymRefs.push_back(symrefDeps);
-      argumentTreeTops.push_back(argStore);
-      rematTreeTops.push_back(rematStore);
-      }
-
-   uint32_t size()
-      {
-      return dependentSymRefs.size();
-      }
-
-   TR::SparseBitVector &symRefDependencies(uint32_t idx)
-      {
-      return dependentSymRefs[idx];
-      }
-
-   TR::TreeTop *argStore(uint32_t idx)
-      {
-      return argumentTreeTops[idx];
-      }
-
-   TR::TreeTop *rematTreeTop(uint32_t idx)
-      {
-      return rematTreeTops[idx];
-      }
-   void dumpInfo(TR::Compilation *comp, TR_InlinerTracer *tracer)
-      {
-      for (uint32_t i = 0; i < dependentSymRefs.size(); ++i)
-         {
-         debugTrace(tracer,"  Arg Remat Safety Info for priv arg store node %d", argumentTreeTops[i]->getNode()->getGlobalIndex());
-         if (rematTreeTops[i])
-            {
-            if (rematTreeTops[i] != argumentTreeTops[i])
-               debugTrace(tracer,"     partial remat candidate node %d", rematTreeTops[i]->getNode()->getGlobalIndex());
-            else
-               debugTrace(tracer,"     node candidate for full remat");
-            debugTrace(tracer,"    dependent symrefs: ");
-            (*comp) << dependentSymRefs[i];
-            debugTrace(tracer,"\n");
-            }
-         else
-            {
-            debugTrace(tracer,"    candidate is unsafe for remat - no candidates under consideration");
-            }
-         }
-      }
-   };
-
-/*
- * This method is used to find alternative temps which we might be able to load from
- * if we can't full rematerialize a privatized inliner arg. If we find a store of
- * one of the failed arguments, we record the store node and add the symref to the
- * dependencies for the arg. If the symref is not killed before the end of the block
- * we do a partial rematerialization by simply loading the temp.
- */
-static void walkTreeTopsCalculatingRematFailureAlternatives(TR::Compilation *comp,
-   TR_InlinerTracer *tracer, TR::TreeTop *start, TR::TreeTop *end,
-   TR::list<TR::TreeTop*> &failedArgs,
-   TR::SparseBitVector &scanTargets, RematSafetyInformation &rematInfo)
-   {
-   TR::SparseBitVector failedTargets(comp->allocator());
-   for (auto iter = failedArgs.begin(); iter != failedArgs.end(); ++iter)
-      {
-      failedTargets[(*iter)->getNode()->getFirstChild()->getGlobalIndex()] = true;
-      }
-
-   while (start != end)
-      {
-      debugTrace(tracer, "  priv arg remat: visiting [%p]: isStore %d privArg %d failedTargetMatch %d", start->getNode(),
-          start->getNode()->getOpCode().isStoreDirect(),
-          start->getNode()->getSymbol() && start->getNode()->getSymbol()->isAuto(),
-          failedTargets.ValueAt(start->getNode()->getFirstChild()->getGlobalIndex()));
-      if (start->getNode() && start->getNode()->getOpCode().isStoreDirect() &&
-          start->getNode()->getSymbol()->isAuto() &&
-          failedTargets.ValueAt(start->getNode()->getFirstChild()->getGlobalIndex()))
-         {
-         debugTrace(tracer,"  priv arg remat: considering partial remat with node [%p]", start->getNode());
-         for (auto iter = failedArgs.begin(); iter != failedArgs.end(); ++iter)
-            {
-            if ((*iter) &&
-                (*iter)->getNode()->getOpCode().hasSymbolReference() &&
-                (*iter)->getNode()->getSymbolReference()->getReferenceNumber() != start->getNode()->getSymbolReference()->getReferenceNumber() &&
-                (*iter)->getNode()->getFirstChild() == start->getNode()->getFirstChild())
-                {
-                debugTrace(tracer,"  priv arg remat: attempting partial remat with node [%p] for [%p]", start->getNode(), (*iter)->getNode());
-                rematInfo.add(*iter, start);
-                scanTargets[start->getNode()->getGlobalIndex()] = true;
-                failedTargets[start->getNode()->getFirstChild()->getGlobalIndex()] = false;
-                *iter = NULL;
-                }
-            }
-         }
-      start = start->getNextTreeTop();
-      }
-   }
-
-// this method is the guts of the old deprecated priv args remat impelmentation
-// once the if (false) code in rematerializeCallArguments is removed this can go too
-static TR::Node *subexpressionUnsafeToRemat(TR::Node *node, bool knownObject=false)
-   {
-   TR_ASSERT(node, "subexpressionUnsafeToRemat must not recurse past the end of the dereference chain");
-
-   TR::ILOpCode &op = node->getOpCode();
-   if (op.hasSymbolReference() && !op.isLoad())
-      return node;
-
-   if (node->getNumChildren() > 1)
-      return node; // Don't want to do a visitCount walk at this point
-
-   if (op.isLoadVarDirect())
-      {
-      if (knownObject)
-         return NULL;
-      else if (node->getSymbolReference()->hasKnownObjectIndex())
-         return NULL;
-      else if (node->getSymbol()->isConstObjectRef())
-         return NULL;
-      else if (node->getSymbol()->isParm())
-         return NULL; // TODO: What if it's stored to??
-      else if (node->getReferenceCount() <= 1)
-         {
-         // We don't worry about symbols getting defined between the
-         // privatization and the call, so all we need to worry about is
-         // symbols getting defined between their first evaluation and the
-         // privatization.  If the refcount == 1, then the first evaluation IS
-         // the privatization, so we're ok.
-         return NULL;
-         }
-      else
-         return node;
-      }
-   else if (op.isLoadIndirect())
-      {
-      knownObject = knownObject || node->getSymbolReference()->hasKnownObjectIndex();
-      if (knownObject || node->getReferenceCount() <= 1)
-         return subexpressionUnsafeToRemat(node->getFirstChild(), knownObject);
-      else
-         return NULL;
-      }
-   else
-      {
-      return node;
-      }
-   }
-
-/*
  * Root function for privatized inliner argument rematerialization - this handles calculating remat
  * safety and performing the remat.
  */
@@ -1952,7 +1604,7 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
             if (dumpRematTrees)
                comp()->getDebug()->print(comp()->getOutFile(),argStoreTree);
             TR::SparseBitVector argSymRefsToCheck(comp()->allocator());
-            TR_YesNoMaybe result = gatherNodesToCheck(comp(), tracer(), argStore, argStore->getFirstChild(), scanTargets, argSymRefsToCheck);
+            TR_YesNoMaybe result = RematTools::gatherNodesToCheck(comp(), argStore, argStore->getFirstChild(), scanTargets, argSymRefsToCheck, tracer()->debugLevel());
             if (result == TR_yes)
                {
                debugTrace(tracer(),"    priv arg remat may be possible for node [%p] - %d",argStore,argStore->getGlobalIndex());
@@ -1971,10 +1623,10 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
       // makes these for us
       if (failedArgs.size() > 0)
          {
-         walkTreeTopsCalculatingRematFailureAlternatives(comp(), tracer(),
-            block1->getFirstRealTreeTop(),
+         RematTools::walkTreeTopsCalculatingRematFailureAlternatives(comp(), 
+            block1->getFirstRealTreeTop(), 
             tif.getParameterMapper().firstTempTreeTop()->getNextTreeTop(),
-            failedArgs, scanTargets, argSafetyInfo);
+            failedArgs, scanTargets, argSafetyInfo, tracer()->debugLevel());
 
          for (auto iter = failedArgs.begin(); iter != failedArgs.end(); ++iter)
             {
@@ -1996,13 +1648,15 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
       TR::SparseBitVector unsafeSymRefs(comp()->allocator());
       if (!scanTargets.IsZero())
          {
-         walkTreesCalculatingRematSafety(comp(), tracer(), block1->getFirstRealTreeTop(), tif.getParameterMapper().lastTempTreeTop()->getNextTreeTop(), scanTargets, unsafeSymRefs);
+         RematTools::walkTreesCalculatingRematSafety(comp(), block1->getFirstRealTreeTop(), 
+            tif.getParameterMapper().lastTempTreeTop()->getNextTreeTop(), 
+            scanTargets, unsafeSymRefs, tracer()->debugLevel());
          }
 
       debugTrace(tracer(),"  priv arg remat: Proceeding with block_%d rematPoint=[%p]", rematPoint->getEnclosingBlock()->getNumber(), rematPoint);
 
       if (comp()->getOption(TR_DebugInliner))
-         argSafetyInfo.dumpInfo(comp(), tracer());
+         argSafetyInfo.dumpInfo(comp());
       for (uint32_t i = 0; i < argSafetyInfo.size(); ++i)
          {
          TR::TreeTop *argStoreTree = argSafetyInfo.argStore(i);

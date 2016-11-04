@@ -92,6 +92,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/GlobalAnticipatability.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/GlobalRegisterAllocator.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Inliner.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/RematTools.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/InductionVariable.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/IntersectionBitVectorAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Isolatedness.cpp \

@@ -3747,13 +3747,6 @@ int32_t TR_CleanseTrees::process(TR::TreeTop *startTree, TR::TreeTop *endTreeTop
       if (node->getBranchDestination() == treeTop)
          continue;
 
-      // Don't move if either of the bloks are gen control block
-      if ((block->getNextBlock() &&
-           block->getNextBlock()->isGenControlBlock()) ||
-          (node->getBranchDestination() &&
-           node->getBranchDestination()->getNode()->getBlock()->isGenControlBlock()))
-         continue;
-
       TR::Block *block1;
       TR::Block *block2;
       TR::TreeTop *tt1 = exitTreeTop->getNextTreeTop();

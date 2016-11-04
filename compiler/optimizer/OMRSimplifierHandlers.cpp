@@ -3578,15 +3578,6 @@ static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextB
    if (blockIsEmpty && (inEdge.size() > 1) && (block == s->comp()->getStartBlock() || block->hasExceptionPredecessors()))
      return false;
 
-   // only merge gen control block with another gen control block
-   if ((block->isGenControlBlock() && !nextBlock->isGenControlBlock()) ||
-       (block->isGenControlBlock() && !nextBlock->isSimpleGenControlBlock()) ||
-       (!block->isGenControlBlock() && nextBlock->isGenControlBlock()) ||
-       (block->isGenControlBlock() &&
-        block->getPredecessors().empty() &&
-        block->getExceptionPredecessors().empty()))
-      return false;
-
    // See if the two blocks have compatible exception edges
    //
    if (nextBlock->hasExceptionPredecessors())
@@ -15734,8 +15725,6 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
      block->setHasCallToSuperCold(true);
    if (nextBlock->isGenAsmBlock())
       block->setIsGenAsmBlock(true);
-   if (nextBlock->isGenControlBlock())
-      block->setIsGenControlBlock(true);
    if (nextBlock->isGenAsmFlowBlock())
       block->setIsGenAsmFlowBlock(true);
 

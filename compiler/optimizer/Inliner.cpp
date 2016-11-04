@@ -5244,13 +5244,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       tif->firstBBEnd()->getNode()->setBlock(blockContainingTheCall);
       blockContainingTheCall->setExit(tif->firstBBEnd());
 
-      //Reset isGenControlBlock flag so it can be deleted later
-      if (firstCalleeBlock->isGenControlBlock())
-         {
-         blockContainingTheCall->setIsGenControlBlock(true);
-         firstCalleeBlock->setIsGenControlBlock(false);
-         }
-
       firstCalleeBlock->setEntry(0);
 
       // hook up the last BBStart in the callee with the next BBEnd

@@ -1101,61 +1101,6 @@ bool TR_OrderBlocks::peepHoleGotoToFollowing(TR::CFG *cfg, TR::Block *block, TR:
          return true;
          }
       }
-#if 1
-   else if (peepHoleBranchAroundSimpleGenControlBlocks(cfg, block, followingBlock, title))
-      return true;
-
-#endif
-   return false;
-   }
-
-bool TR_OrderBlocks::peepHoleBranchAroundSimpleGenControlBlocks(TR::CFG *cfg, TR::Block *block, TR::Block *followingBlock, char *title)
-   {
-   //If goto go around blocks with single gen cotnrol, it is safe to remove the goto
-   TR::Block *nextBlock = block->getNextBlock();
-   TR::Block *prevBlock = block;
-   TR::Block *oldNext   = nextBlock;
-   TR::Node  *branchNode = block->getLastRealTreeTop()->getNode();
-   TR::Block *branchTarget =  branchNode->getBranchDestination()->getNode()->getBlock();
-
-   //return false;
-
-   //traceMsg(comp(), " block %d nextblock %d isSingleGenCtrlBlock=%d\n", block->getNumber(),nextBlock->getNumber(), nextBlock->isSimpleGenControlBlock());
-   //Skip gen control blocks with only gen control
-   while (nextBlock->isSimpleGenControlBlock())
-      {
-      prevBlock = nextBlock;
-      nextBlock = nextBlock->getNextBlock();
-      }
-
-   //At least one gen control block between block and branchTarget
-   if (prevBlock != block && branchTarget == nextBlock)
-      {
-      if (performTransformation(comp(), "%s branch/goto in block_%d branch/goto around simple gen control bloks to block_%d, removing the branch/goto node\n", title, block->getNumber(), branchTarget->getNumber()))
-         {
-         TR::TreeTop *        nextTreeTop = block->getLastRealTreeTop()->getNextTreeTop();
-         bool                hasPred0    = (oldNext->getPredecessors().size() == 1) && oldNext->hasPredecessor(cfg->getStart());
-         //TR_RegionStructure *parent      = block->getCommonParentStructureIfExists(branchTarget, cfg);
-
-         if (block->endsInGoto())
-            cfg->addEdge(block, oldNext);
-
-         // for PLX, there may be something like unrestricted after goto
-         block->getLastRealTreeTop()->getPrevTreeTop()->join(nextTreeTop);
-         branchNode->recursivelyDecReferenceCount();
-
-         //If oldNext only has block 0 as predecessor before, remove edge from block 0
-         if (hasPred0)
-            cfg->removeEdge(cfg->getStart(), oldNext);
-
-         //traceMsg(comp(), " block %d oldNext %d prevBlock %d nextBlock %d branchTarget %d\n", block->getNumber(), oldNext->getNumber(), prevBlock->getNumber(), nextBlock->getNumber(),branchTarget->getNumber());
-
-         cfg->removeEdge(block, branchTarget);
-         //Invalidate structure
-         //_donePeepholeGotoToLoopHeader = true;
-         return true;
-         }
-      }
    return false;
    }
 
@@ -1555,8 +1500,6 @@ bool TR_OrderBlocks::peepHoleBranchToFollowing(TR::CFG *cfg, TR::Block *block, T
       removeRedundantBranch(cfg, block, branchNode, takenBlock);
       return true;
       }
-   else if (peepHoleBranchAroundSimpleGenControlBlocks(cfg, block, followingBlock, title))
-      return true;
 
    return false;
    }

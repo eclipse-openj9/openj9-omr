@@ -204,6 +204,7 @@ public:
    void CloseStruct(const char *structName);
 
    TR::IlType * GetFieldType(const char *structName, const char *fieldName);
+   size_t OffsetOf(const char *structName, const char *fieldName);
 
    TR::IlType *PrimitiveType(TR::DataType primitiveType)
       {

@@ -164,6 +164,7 @@ public:
    void AddField(const char *name, TR::IlType *fieldType, size_t offset);
    void AddField(const char *name, TR::IlType *fieldType);
    TR::IlType * getFieldType(const char *fieldName);
+   size_t getFieldOffset(const char *fieldName);
 
    TR::SymbolReference *getFieldSymRef(const char *name);
    bool isStruct() { return true; }
@@ -234,6 +235,15 @@ StructType::getFieldType(const char *fieldName)
    if (NULL == info)
       return NULL;
    return info->_type;
+   }
+
+size_t
+StructType::getFieldOffset(const char *fieldName)
+   {
+   FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return -1;
+   return info->getOffset();
    }
 
 TR::IlReference *
@@ -419,6 +429,16 @@ TypeDictionary::GetFieldType(const char *structName, const char *fieldName)
    _structsByName->locate(structName, structID);
    StructType *theStruct = (StructType *) _structsByName->getData(structID);
    return theStruct->getFieldType(fieldName);
+   }
+
+size_t
+TypeDictionary::OffsetOf(const char *structName, const char *fieldName)
+   {
+   TR_HashId structID = 0;
+   bool structNameFound = _structsByName->locate(structName, structID);
+   TR_ASSERT(structNameFound, "No struct with name %s found when getting offset of field %s\n", structName, fieldName);
+   StructType *theStruct = (StructType *) _structsByName->getData(structID);
+   return theStruct->getFieldOffset(fieldName);
    }
 
 void

@@ -1111,7 +1111,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceGLU",                         "L\ttrace general loop unroller",                  TR::Options::traceOptimization, generalLoopUnroller, 0, "P"},
    {"traceGRA",                         "L\ttrace tree based global register allocator",     TR::Options::traceOptimization, tacticalGlobalRegisterAllocator, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
-   {"traceHCRGuardInsertion",           "L\ttrace HCR guard insertion",                    TR::Options::traceOptimization, hcrGuardInsertion, 0, "P"},
    {"traceIdiomRecognition",            "L\ttrace idiom recognition",                       TR::Options::traceOptimization, idiomRecognition, 0, "P"},
 #endif
    {"traceILDeadCode",                  "L\ttrace Instruction Level Dead Code (basic)",
@@ -1159,6 +1158,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOptTrees",                    "L\tdump trees after each optimization",           SET_OPTION_BIT(TR_TraceOptTrees), "P" },
    {"traceOSR",                         "L\ttrace OSR",                                    SET_OPTION_BIT(TR_TraceOSR), "P"},
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching defintions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"traceOSRGuardInsertion",           "L\ttrace HCR guard insertion",                    TR::Options::traceOptimization, osrGuardInsertion, 0, "P"},
+#endif
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
    {"tracePostInstructionSelection",    "L\tdump instructions (virtual registers) after instruction selection", SET_TRACECG_BIT(TR_TraceCGPostInstructionSelection), "P"},

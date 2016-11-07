@@ -131,7 +131,7 @@ class TR_PrexArgInfo
    TR_PrexArgument **_args;
    //
 #ifdef J9_PROJECT_SPECIFIC
-   static TR::Node* getCallNode (TR::ResolvedMethodSymbol* methodSymbol, uint32_t bci);
+   static TR::Node* getCallNode (TR::ResolvedMethodSymbol* methodSymbol, class TR_CallSite* callsite, class TR_InlinerTracer* tracer);
    static bool hasArgInfoForChild (TR::Node *child, TR_PrexArgInfo * argInfo);
    static TR_PrexArgument* getArgForChild(TR::Node *child, TR_PrexArgInfo* argInfo);
 #endif

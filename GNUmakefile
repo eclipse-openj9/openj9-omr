@@ -150,9 +150,13 @@ endif
 # VM Tests
 test_targets += fvtest/vmtest
 
-# OMR JIT
-ifeq (1,$(OMR_JIT))
-test_targets += fvtest/compilertest
+# Test Compiler
+ifeq (1,$(OMR_TEST_COMPILER))
+main_targets += fvtest/compilertest
+endif
+
+# JitBuilder
+ifeq (1,$(OMR_JITBUILDER))
 main_targets += jitbuilder
 test_targets += jitbuilder/release
 endif

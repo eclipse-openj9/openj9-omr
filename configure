@@ -720,6 +720,8 @@ OMR_EXAMPLE
 OMR_OMRSIG
 OMR_THREAD
 OMR_PORT
+OMR_TEST_COMPILER
+OMR_JITBUILDER
 OMR_JIT
 OMR_GC
 ac_ct_CXX
@@ -809,6 +811,8 @@ enable_tracegen
 enable_auto_build_flag
 enable_OMR_GC
 enable_OMR_JIT
+enable_OMR_JITBUILDER
+enable_OMR_TEST_COMPILER
 enable_OMR_PORT
 enable_OMR_THREAD
 enable_OMR_OMRSIG
@@ -1532,6 +1536,9 @@ Optional Features:
                           yes)
   --disable-OMR_GC        Enable building the OMR GC. (Default: yes)
   --enable-OMR_JIT        Enable building the OMR JIT. (Default: no)
+  --enable-OMR_JITBUILDER Enable building JitBuilder. (Default: no)
+  --enable-OMR_TEST_COMPILER
+                          Enable building the Test compiler. (Default: no)
   --disable-OMR_PORT      Enable building the Port library. (Default: yes)
   --disable-OMR_THREAD    Enable building the Thread library. (Default: yes)
   --disable-OMR_OMRSIG    Enable building the OMRSig library. (Default: yes)
@@ -5210,6 +5217,44 @@ else
 fi
 else
   OMR_JIT=0
+
+
+fi
+
+
+# Check whether --enable-OMR_JITBUILDER was given.
+if test "${enable_OMR_JITBUILDER+set}" = set; then :
+  enableval=$enable_OMR_JITBUILDER; if test "x${enableval}" = xyes; then :
+  OMR_JITBUILDER=1
+
+   $as_echo "#define OMR_JITBUILDER 1" >>confdefs.h
+
+else
+  OMR_JITBUILDER=0
+
+
+fi
+else
+  OMR_JITBUILDER=0
+
+
+fi
+
+
+# Check whether --enable-OMR_TEST_COMPILER was given.
+if test "${enable_OMR_TEST_COMPILER+set}" = set; then :
+  enableval=$enable_OMR_TEST_COMPILER; if test "x${enableval}" = xyes; then :
+  OMR_TEST_COMPILER=1
+
+   $as_echo "#define OMR_TEST_COMPILER 1" >>confdefs.h
+
+else
+  OMR_TEST_COMPILER=0
+
+
+fi
+else
+  OMR_TEST_COMPILER=0
 
 
 fi

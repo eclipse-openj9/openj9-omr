@@ -1106,8 +1106,6 @@ public:
    TR::Instruction* ccInstruction() { return _ccInstruction; }
    void setCCInstruction(TR::Instruction* cc) { _ccInstruction = cc; }
 
-   bool replaceWithDestructiveFormIfPossible(TR::Instruction* inst);
-
    #define TR_DEFAULT_DATA_SNIPPET_EXPONENT 4
    int32_t constantDataSnippetExponent() { return TR_DEFAULT_DATA_SNIPPET_EXPONENT; } // 1 << 4 = 16 byte max size for each constantDataSnippet
 
@@ -1194,8 +1192,6 @@ private:
    TR::list<TR::Register *> _internalControlFlowRegisters;
 
    CS2::HashTable<ncount_t, bool, TR::Allocator> _nodesToBeEvaluatedInRegPairs;
-
-   CS2::ArrayOf<TR::InstOpCode::Mnemonic, TR::Allocator> _nonDestructiveToDestructiveOpCode;
 
 protected:
    flags32_t  _cgFlags;

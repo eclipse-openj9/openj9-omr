@@ -61,6 +61,17 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
      _evalChildren(true), _mergedWithHCRGuard(false),
      _guardNode(guardNode), _currentInlinedSiteIndex(currentSiteIndex)
    {
+   if (callNode)
+      {
+      _bcInfo = callNode->getByteCodeInfo();
+      }
+   else
+      {
+      _bcInfo.setInvalidCallerIndex();
+      _bcInfo.setInvalidByteCodeIndex();
+      _bcInfo.setDoNotProfile(true);
+      }
+      
    comp->addVirtualGuard(this);
    if(kind != TR_ArrayStoreCheckGuard)
       {
@@ -88,6 +99,17 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
    {
    if (kind==TR_SideEffectGuard)
       _callNode = 0;
+   if (_callNode)
+      {
+      _bcInfo = _callNode->getByteCodeInfo();
+      }
+   else
+      {
+      _bcInfo.setInvalidCallerIndex();
+      _bcInfo.setInvalidByteCodeIndex();
+      _bcInfo.setDoNotProfile(true);
+      }
+      
    comp->addVirtualGuard(this);
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
       traceMsg(comp, "addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);

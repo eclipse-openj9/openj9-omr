@@ -354,7 +354,7 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
          {
 #ifdef J9_PROJECT_SPECIFIC
          TR::Snippet *snippet = getLabelSymbol()->getSnippet();
-         TR_X86GuardedDevirtualSnippet *devirtSnippet;
+         TR::X86GuardedDevirtualSnippet *devirtSnippet;
 
          // If this is a GuardedDevirtualSnippet, then must find out what real register
          // contains the class object reference.  This must be used by the snippet to generate

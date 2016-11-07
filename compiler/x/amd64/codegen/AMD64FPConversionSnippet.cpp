@@ -51,7 +51,7 @@ static const uint8_t popBinary[] =
    0x48, 0x83, 0xc4, 0x08
    };
 
-uint8_t *TR_AMD64FPConversionSnippet::genFPConversion(uint8_t *buffer)
+uint8_t *TR::AMD64FPConversionSnippet::genFPConversion(uint8_t *buffer)
    {
    // *this    swipeable for debugging purposes
 
@@ -135,7 +135,7 @@ uint8_t *TR_AMD64FPConversionSnippet::genFPConversion(uint8_t *buffer)
 #define IS_REX(byte) (((byte)&0xf0) == TR::RealRegister::REX )
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_AMD64FPConversionSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::AMD64FPConversionSnippet * snippet)
    {
 
    if (pOutFile == NULL)
@@ -214,7 +214,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_AMD64FPConversionSnippet * snippet)
    }
 
 
-uint32_t TR_AMD64FPConversionSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::AMD64FPConversionSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    uint32_t length = 11;

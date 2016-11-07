@@ -688,7 +688,7 @@ int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTy
                              TR::Node *node, bool isUnloadablePicSite)
    {
    if (_constantData == NULL)
-      _constantData = new (self()->trHeapMemory()) TR_ARMConstantDataSnippet(self());
+      _constantData = new (self()->trHeapMemory()) TR::ARMConstantDataSnippet(self());
    return(_constantData->addConstantRequest(v, t, n0, n1, n2, n3, n4, node, isUnloadablePicSite));
    }
 

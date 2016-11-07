@@ -34,8 +34,8 @@
 #include "il/SymbolReference.hpp"                 // for SymbolReference
 
 class TR_EntryPoint;
-class TR_S390ConstantDataSnippet;
-class TR_S390JNICallDataSnippet;
+namespace TR { class S390ConstantDataSnippet; }
+namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -86,10 +86,10 @@ public:
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
          intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR_S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR_S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::RealRegister::RegNum setEnvironmentPointerRegister (TR::RealRegister::RegNum r) { return _environmentPointerRegister = r; }
    virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return _environmentPointerRegister; }
@@ -161,9 +161,9 @@ public:
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
          TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR_S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint);
+         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint);
    virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR_S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual void setGOTPointerRegister (TR::RealRegister::RegNum r)         { _GOTPointerRegister = r; }
    virtual TR::RealRegister::RegNum getGOTPointerRegister()         { return _GOTPointerRegister; }

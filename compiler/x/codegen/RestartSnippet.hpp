@@ -30,18 +30,20 @@
 
 namespace TR { class Node; }
 
-class TR_X86RestartSnippet  : public TR::Snippet
+namespace TR {
+
+class X86RestartSnippet  : public TR::Snippet
    {
    TR::LabelSymbol *_restartLabel;
    bool            _forceLongRestartJump;
 
    public:
 
-   TR_X86RestartSnippet(TR::CodeGenerator *cg,
-                         TR::Node * n,
-                         TR::LabelSymbol *restartlab,
-                         TR::LabelSymbol *snippetlab,
-                         bool            isGCSafePoint)
+   X86RestartSnippet(TR::CodeGenerator *cg,
+                     TR::Node * n,
+                     TR::LabelSymbol *restartlab,
+                     TR::LabelSymbol *snippetlab,
+                     bool            isGCSafePoint)
       : TR::Snippet(cg, n, snippetlab, isGCSafePoint),
         _restartLabel(restartlab), _forceLongRestartJump(false) {}
 
@@ -137,5 +139,7 @@ class TR_X86RestartSnippet  : public TR::Snippet
    // } RTSJ Support ends
 
    };
+
+}
 
 #endif

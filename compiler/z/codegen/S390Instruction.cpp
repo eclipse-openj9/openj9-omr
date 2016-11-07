@@ -2876,7 +2876,7 @@ TR::S390RIEInstruction::generateBinaryEncoding()
       else if (getWarmToColdTrampolineSnippet() &&  trampolineDistance >= MIN_IMMEDIATE_VAL && trampolineDistance <= MAX_IMMEDIATE_VAL)
          {
          cg()->addRelocation(new (cg()->trHeapMemory()) TR_16BitLabelRelativeRelocation(cursor, getWarmToColdTrampolineSnippet()->getSnippetLabel()));
-         ((TR_S390WarmToColdTrampolineSnippet*)getWarmToColdTrampolineSnippet())->setIsUsed(true);
+         ((TR::S390WarmToColdTrampolineSnippet*)getWarmToColdTrampolineSnippet())->setIsUsed(true);
          }
       else
          {
@@ -5095,7 +5095,7 @@ TR::S390NOPInstruction::generateBinaryEncoding()
             {
             // Snippet is beyond 16 bit relative relocation distance.
             // In this case, we have to activate our pseudo branch around call descriptor
-            getCallDescInstr()->setCallDescValue(((TR_S390ConstantDataSnippet *)getTargetSnippet())->getDataAs8Bytes(), cg()->trMemory());
+            getCallDescInstr()->setCallDescValue(((TR::S390ConstantDataSnippet *)getTargetSnippet())->getDataAs8Bytes(), cg()->trMemory());
             cg()->addRelocation(new (cg()->trHeapMemory()) TR_16BitLabelRelativeRelocation(cursor+2, getCallDescInstr()->getCallDescLabel(),8));
 
             }

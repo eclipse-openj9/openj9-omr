@@ -25,16 +25,18 @@
 #include "codegen/Register.hpp"
 #include "codegen/ARMInstruction.hpp"
 
-class TR_ARMStackCheckFailureSnippet : public TR::Snippet
+namespace TR {
+
+class ARMStackCheckFailureSnippet : public TR::Snippet
    {
    TR::LabelSymbol *reStartLabel;
 
    public:
 
-   TR_ARMStackCheckFailureSnippet(TR::CodeGenerator *cg,
-                                  TR::Node        *node,
-                                  TR::LabelSymbol *restartlab,
-                                  TR::LabelSymbol *snippetlab)
+   ARMStackCheckFailureSnippet(TR::CodeGenerator *cg,
+                               TR::Node        *node,
+                               TR::LabelSymbol *restartlab,
+                               TR::LabelSymbol *snippetlab)
       : TR::Snippet(cg, node, snippetlab, true), reStartLabel(restartlab)
       {
       }
@@ -48,6 +50,8 @@ class TR_ARMStackCheckFailureSnippet : public TR::Snippet
 
    virtual uint32_t getLength(int32_t estimatedSnippetStart);
    };
+
+}
 
 #endif
 

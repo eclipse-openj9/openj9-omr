@@ -42,7 +42,7 @@
 #include "ras/Debug.hpp"                       // for TR_Debug
 #include "runtime/Runtime.hpp"                 // for BRANCH_BACKWARD_LIMIT, etc
 
-uint8_t *TR_PPCHelperCallSnippet::emitSnippetBody()
+uint8_t *TR::PPCHelperCallSnippet::emitSnippetBody()
    {
    // *this    swipeable for debugging purposes
    uint8_t             *buffer = cg()->getBinaryBufferCursor();
@@ -55,7 +55,7 @@ uint8_t *TR_PPCHelperCallSnippet::emitSnippetBody()
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_PPCHelperCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::PPCHelperCallSnippet * snippet)
    {
    // *this    swipeable for debugging purposes
    uint8_t *cursor = snippet->getSnippetLabel()->getCodeLocation();
@@ -63,7 +63,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_PPCHelperCallSnippet * snippet)
 
    if (snippet->getKind() == TR::Snippet::IsArrayCopyCall)
       {
-      cursor = print(pOutFile, (TR_PPCArrayCopyCallSnippet *)snippet, cursor);
+      cursor = print(pOutFile, (TR::PPCArrayCopyCallSnippet *)snippet, cursor);
       }
    else
       {
@@ -91,13 +91,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR_PPCHelperCallSnippet * snippet)
       }
    }
 
-uint32_t TR_PPCHelperCallSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::PPCHelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    return getHelperCallLength();
    }
 
-uint8_t *TR_PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
+uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
    intptrj_t distance = (intptrj_t)getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress() - (intptrj_t)buffer;
 
@@ -131,12 +131,12 @@ uint8_t *TR_PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
    return buffer;
    }
 
-uint32_t TR_PPCHelperCallSnippet::getHelperCallLength()
+uint32_t TR::PPCHelperCallSnippet::getHelperCallLength()
    {
    return ((_restartLabel==NULL)?4:8);
    }
 
-uint8_t *TR_PPCArrayCopyCallSnippet::emitSnippetBody()
+uint8_t *TR::PPCArrayCopyCallSnippet::emitSnippetBody()
    {
    TR::Node *node = getNode();
    TR_ASSERT(node->getOpCodeValue() == TR::arraycopy &&
@@ -158,11 +158,11 @@ uint8_t *TR_PPCArrayCopyCallSnippet::emitSnippetBody()
    *(int32_t *)buffer |= byteLen;
    buffer += 4;
 
-   return TR_PPCHelperCallSnippet::genHelperCall(buffer);
+   return TR::PPCHelperCallSnippet::genHelperCall(buffer);
    }
 
 uint8_t*
-TR_Debug::print(TR::FILE *pOutFile, TR_PPCArrayCopyCallSnippet *snippet, uint8_t *cursor)
+TR_Debug::print(TR::FILE *pOutFile, TR::PPCArrayCopyCallSnippet *snippet, uint8_t *cursor)
    {
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), cursor, "ArrayCopy Helper Call Snippet");
 
@@ -175,7 +175,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_PPCArrayCopyCallSnippet *snippet, uint8_t
    return cursor;
    }
 
-uint32_t TR_PPCArrayCopyCallSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::PPCArrayCopyCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   return TR_PPCHelperCallSnippet::getHelperCallLength() + 4;
+   return TR::PPCHelperCallSnippet::getHelperCallLength() + 4;
    }

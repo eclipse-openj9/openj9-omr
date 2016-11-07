@@ -1214,13 +1214,13 @@ OMR::Z::Instruction::getOutOfLineEXInstr()
       case TR::InstOpCode::EX:
       {
          TR::MemoryReference * tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
-         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
+         TR::S390ConstantInstructionSnippet * cis = (TR::S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
          TR_ASSERT( cis != NULL, "Out of line EX instruction doesn't have a constantInstructionSnippet\n");
          return cis->getInstruction();
       }
       case TR::InstOpCode::EXRL:
       {
-         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *)
+         TR::S390ConstantInstructionSnippet * cis = (TR::S390ConstantInstructionSnippet *)
             ((TR::S390RILInstruction *)self())->getTargetSnippet();
          TR_ASSERT( cis != NULL, "Out of line EXRL instruction doesn't have a constantInstructionSnippet\n");
          return cis->getInstruction();
@@ -1700,14 +1700,14 @@ bool OMR::Z::Instruction::containsRegister(TR::Register *reg)
       if (self()->getOpCodeValue() == TR::InstOpCode::EX)
          {
          TR::MemoryReference * tempMR = ((TR::S390RXInstruction *)self())->getMemoryReference();
-         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
+         TR::S390ConstantInstructionSnippet * cis = (TR::S390ConstantInstructionSnippet *) tempMR->getConstantDataSnippet();
          TR_ASSERT( cis != NULL, "Out of line EX instruction doesn't have a constantInstructionSnippet\n");
          if (cis->getInstruction()->containsRegister(reg))
             return true;
          }
       else if (self()->getOpCodeValue() == TR::InstOpCode::EXRL)
          {
-         TR_S390ConstantInstructionSnippet * cis = (TR_S390ConstantInstructionSnippet *) ((TR::S390RILInstruction *)self())->getTargetSnippet();
+         TR::S390ConstantInstructionSnippet * cis = (TR::S390ConstantInstructionSnippet *) ((TR::S390RILInstruction *)self())->getTargetSnippet();
          TR_ASSERT( cis != NULL, "Out of line EXRL instruction doesn't have a constantInstructionSnippet\n");
          if (cis->getInstruction()->containsRegister(reg))
             return true;

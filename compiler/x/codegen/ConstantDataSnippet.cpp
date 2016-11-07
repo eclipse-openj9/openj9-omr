@@ -20,7 +20,7 @@
 
 #include <stddef.h>                           // for NULL
 #include <stdint.h>                           // for uint8_t, int16_t
-#include "DataSnippet.hpp"                    // for TR_IA32DataSnippet
+#include "DataSnippet.hpp"                    // for TR::IA32DataSnippet
 #include "codegen/Snippet.hpp"                // for commentString, etc
 #include "compile/Compilation.hpp"            // for Compilation
 #include "il/symbol/LabelSymbol.hpp"          // for LabelSymbol
@@ -30,13 +30,13 @@
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
 
-TR_IA32ConstantDataSnippet::TR_IA32ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
-   : TR_IA32DataSnippet(cg, n, c, size)
+TR::IA32ConstantDataSnippet::IA32ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
+   : TR::IA32DataSnippet(cg, n, c, size)
    {
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_IA32ConstantDataSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::IA32ConstantDataSnippet * snippet)
    {
    // *this   swipeable for debugger
    if (pOutFile == NULL)

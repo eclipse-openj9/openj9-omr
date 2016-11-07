@@ -34,7 +34,7 @@
 #include "infra/Bit.hpp"                      // for intParts
 #include "runtime/Runtime.hpp"
 
-int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
+int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
                                                   TR::DataType       type,
                                                   TR::Instruction *nibble0,
                                                   TR::Instruction *nibble1,
@@ -55,8 +55,8 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
 #if 0
       case TR::Float:
 	 {
-	 ListIterator< TR_ARMConstant<float> >  fiterator(&_floatConstants);
-         TR_ARMConstant<float>                 *fcursor=fiterator.getFirst();
+	 ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
+         TR::ARMConstant<float>                 *fcursor=fiterator.getFirst();
 
          fin.fvalue = *(float *)v;
          while (fcursor != NULL)
@@ -68,7 +68,7 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
 	    }
          if (fcursor == NULL)
 	    {
-            fcursor = new (_cg->trHeapMemory()) TR_ARMConstant<float>(_cg, fin.fvalue);
+            fcursor = new (_cg->trHeapMemory()) TR::ARMConstant<float>(_cg, fin.fvalue);
             _floatConstants.add(fcursor);
             if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
 	       {
@@ -84,8 +84,8 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
 
       case TR::Double:
 	 {
-	 ListIterator< TR_ARMConstant<double> > diterator(&_doubleConstants);
-         TR_ARMConstant<double>                *dcursor=diterator.getFirst();
+	 ListIterator< TR::ARMConstant<double> > diterator(&_doubleConstants);
+         TR::ARMConstant<double>                *dcursor=diterator.getFirst();
 
          din.dvalue = *(double *)v;
          while (dcursor != NULL)
@@ -97,7 +97,7 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
 	    }
          if (dcursor == NULL)
 	    {
-            dcursor = new (_cg->trHeapMemory()) TR_ARMConstant<double>(_cg, din.dvalue);
+            dcursor = new (_cg->trHeapMemory()) TR::ARMConstant<double>(_cg, din.dvalue);
             _doubleConstants.add(dcursor);
             if (TR::Compiler->target.is64Bit() && !comp->getOption(TR_DisableTOCForConsts))
 	       {
@@ -113,8 +113,8 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
 #endif
       case TR::Address:
 	 {
-	 ListIterator< TR_ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-         TR_ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+	 ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
+         TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
 
          ain = *(intptrj_t *)v;
          while (acursor != NULL)
@@ -134,7 +134,7 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
             }
          if (acursor == NULL)
 	    {
-            acursor = new (_cg->trHeapMemory()) TR_ARMConstant<intptrj_t>(_cg, ain, node, isUnloadablePicSite);
+            acursor = new (_cg->trHeapMemory()) TR::ARMConstant<intptrj_t>(_cg, ain, node, isUnloadablePicSite);
             _addressConstants.add(acursor);
 	    }
          acursor->addValueRequest(nibble0, nibble1, nibble2, nibble3);
@@ -148,12 +148,12 @@ int32_t TR_ARMConstantDataSnippet::addConstantRequest(void              *v,
    return(ret);
    }
 
-bool TR_ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, TR::Instruction **q, bool remove)
+bool TR::ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble, TR::Instruction **q, bool remove)
    {
    int32_t count = TR::Compiler->target.is64Bit()?4:2;
 #if 0
-   ListIterator< TR_ARMConstant<double> >  diterator(&_doubleConstants);
-   TR_ARMConstant<double>                 *dcursor=diterator.getFirst();
+   ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
+   TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
 
    while (dcursor != NULL)
       {
@@ -197,8 +197,8 @@ bool TR_ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble,
          }
       dcursor = diterator.getNext();
       }
-   ListIterator< TR_ARMConstant<float> >  fiterator(&_floatConstants);
-   TR_ARMConstant<float>               *fcursor=fiterator.getFirst();
+   ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
+   TR::ARMConstant<float>               *fcursor=fiterator.getFirst();
    while (fcursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = fcursor->getRequestors();
@@ -242,8 +242,8 @@ bool TR_ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble,
       fcursor = fiterator.getNext();
       }
 #endif
-   ListIterator< TR_ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR_ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
@@ -289,7 +289,7 @@ bool TR_ARMConstantDataSnippet::getRequestorsFromNibble(TR::Instruction* nibble,
    return false;
    }
 
-uint8_t *TR_ARMConstantDataSnippet::emitSnippetBody()
+uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
    {
    uint8_t   *codeCursor = cg()->getBinaryBufferCursor();
    uint8_t   *iloc1, *iloc2, *iloc3, *iloc4;
@@ -305,8 +305,8 @@ uint8_t *TR_ARMConstantDataSnippet::emitSnippetBody()
    count = 4;
 
 #if 0
-   ListIterator< TR_ARMConstant<double> >  diterator(&_doubleConstants);
-   TR_ARMConstant<double>                 *dcursor=diterator.getFirst();
+   ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
+   TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
    while (dcursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = dcursor->getRequestors();
@@ -368,8 +368,8 @@ uint8_t *TR_ARMConstantDataSnippet::emitSnippetBody()
       dcursor = diterator.getNext();
       }
 
-   ListIterator< TR_ARMConstant<float> >  fiterator(&_floatConstants);
-   TR_ARMConstant<float>               *fcursor=fiterator.getFirst();
+   ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
+   TR::ARMConstant<float>               *fcursor=fiterator.getFirst();
    while (fcursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = fcursor->getRequestors();
@@ -426,8 +426,8 @@ uint8_t *TR_ARMConstantDataSnippet::emitSnippetBody()
       }
 #endif
 
-   ListIterator< TR_ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR_ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptrj_t>               *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       TR_Array<TR::Instruction *> &requestors = acursor->getRequestors();
@@ -509,17 +509,17 @@ uint8_t *TR_ARMConstantDataSnippet::emitSnippetBody()
 
 
 
-uint32_t TR_ARMConstantDataSnippet::getLength()
+uint32_t TR::ARMConstantDataSnippet::getLength()
    {
 #if 0
    if (TR::Compiler->target.is64Bit())
       {
-      ListIterator< TR_ARMConstant<double> >  diterator(&_doubleConstants);
-      TR_ARMConstant<double>                 *dcursor=diterator.getFirst();
-      ListIterator< TR_ARMConstant<float> >   fiterator(&_floatConstants);
-      TR_ARMConstant<float>                  *fcursor=fiterator.getFirst();
-      ListIterator< TR_ARMConstant<intptrj_t> >   aiterator(&_addressConstants);
-      TR_ARMConstant<intptrj_t>              *acursor=aiterator.getFirst();
+      ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
+      TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
+      ListIterator< TR::ARMConstant<float> >   fiterator(&_floatConstants);
+      TR::ARMConstant<float>                  *fcursor=fiterator.getFirst();
+      ListIterator< TR::ARMConstant<intptrj_t> >   aiterator(&_addressConstants);
+      TR::ARMConstant<intptrj_t>              *acursor=aiterator.getFirst();
       uint32_t length=0;
 
       while (dcursor!=NULL)
@@ -552,7 +552,7 @@ uint32_t TR_ARMConstantDataSnippet::getLength()
 
 
 #if DEBUG
-void TR_ARMConstantDataSnippet::print(TR::FILE *outFile)
+void TR::ARMConstantDataSnippet::print(TR::FILE *outFile)
    {
    if (outFile == NULL)
       return;
@@ -565,8 +565,8 @@ void TR_ARMConstantDataSnippet::print(TR::FILE *outFile)
    trfprintf(outFile, "\n%08x\t\t\t\t\t; Constant Data", codeCursor-codeStart);
 
 #if 0
-   ListIterator< TR_ARMConstant<double> >  diterator(&_doubleConstants);
-   TR_ARMConstant<double>                 *dcursor=diterator.getFirst();
+   ListIterator< TR::ARMConstant<double> >  diterator(&_doubleConstants);
+   TR::ARMConstant<double>                 *dcursor=diterator.getFirst();
    while (dcursor != NULL)
       {
       if (TR::Compiler->target.is32Bit() || dcursor->getRequestors().size()>0)
@@ -578,8 +578,8 @@ void TR_ARMConstantDataSnippet::print(TR::FILE *outFile)
       dcursor = diterator.getNext();
       }
 
-   ListIterator< TR_ARMConstant<float> >  fiterator(&_floatConstants);
-   TR_ARMConstant<float>                 *fcursor=fiterator.getFirst();
+   ListIterator< TR::ARMConstant<float> >  fiterator(&_floatConstants);
+   TR::ARMConstant<float>                 *fcursor=fiterator.getFirst();
    while (fcursor != NULL)
       {
       if (TR::Compiler->target.is32Bit() || fcursor->getRequestors().size()>0)
@@ -591,8 +591,8 @@ void TR_ARMConstantDataSnippet::print(TR::FILE *outFile)
       fcursor = fiterator.getNext();
       }
 #endif
-   ListIterator< TR_ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
-   TR_ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
+   ListIterator< TR::ARMConstant<intptrj_t> >  aiterator(&_addressConstants);
+   TR::ARMConstant<intptrj_t>                 *acursor=aiterator.getFirst();
    while (acursor != NULL)
       {
       if (acursor->getRequestors().size()>0)

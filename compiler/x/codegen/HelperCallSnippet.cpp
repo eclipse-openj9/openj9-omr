@@ -53,13 +53,13 @@
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
 
-TR_X86HelperCallSnippet::TR_X86HelperCallSnippet(TR::CodeGenerator   *cg,
+TR::X86HelperCallSnippet::X86HelperCallSnippet(TR::CodeGenerator   *cg,
                                                  TR::Node            *node,
                                                  TR::LabelSymbol      *restartlab,
                                                  TR::LabelSymbol      *snippetlab,
                                                  TR::SymbolReference *helper,
                                                  int32_t             stackPointerAdjustment)
-   : TR_X86RestartSnippet(cg, node, restartlab, snippetlab, helper->canCauseGC()),
+   : TR::X86RestartSnippet(cg, node, restartlab, snippetlab, helper->canCauseGC()),
      _destination(helper),
      _callNode(0),
      _offset(-1),
@@ -81,12 +81,12 @@ TR_X86HelperCallSnippet::TR_X86HelperCallSnippet(TR::CodeGenerator   *cg,
       }
    }
 
-TR_X86HelperCallSnippet::TR_X86HelperCallSnippet(TR::CodeGenerator *cg,
+TR::X86HelperCallSnippet::X86HelperCallSnippet(TR::CodeGenerator *cg,
                                                  TR::LabelSymbol    *restartlab,
                                                  TR::LabelSymbol    *snippetlab,
                                                  TR::Node          *callNode,
                                                  int32_t           stackPointerAdjustment)
-   : TR_X86RestartSnippet(cg, callNode, restartlab, snippetlab, callNode->getSymbolReference()->canCauseGC()),
+   : TR::X86RestartSnippet(cg, callNode, restartlab, snippetlab, callNode->getSymbolReference()->canCauseGC()),
      _destination(callNode->getSymbolReference()),
      _callNode(callNode),
      _offset(-1),
@@ -104,7 +104,7 @@ TR_X86HelperCallSnippet::TR_X86HelperCallSnippet(TR::CodeGenerator *cg,
       }
    }
 
-uint8_t *TR_X86HelperCallSnippet::emitSnippetBody()
+uint8_t *TR::X86HelperCallSnippet::emitSnippetBody()
    {
    uint8_t *buffer = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(buffer);
@@ -116,7 +116,7 @@ uint8_t *TR_X86HelperCallSnippet::emitSnippetBody()
 
 
 void
-TR_X86HelperCallSnippet::addMetaDataForLoadAddrArg(
+TR::X86HelperCallSnippet::addMetaDataForLoadAddrArg(
       uint8_t *buffer,
       TR::Node *child)
    {
@@ -135,7 +135,7 @@ TR_X86HelperCallSnippet::addMetaDataForLoadAddrArg(
    }
 
 
-uint8_t *TR_X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
+uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
    // add esp, _stackPointerAdjustment
    //
@@ -317,7 +317,7 @@ uint8_t *TR_X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86HelperCallSnippet  * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet)
    {
    // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
@@ -328,7 +328,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86HelperCallSnippet  * snippet)
    }
 
 void
-TR_Debug::printBody(TR::FILE *pOutFile, TR_X86HelperCallSnippet  * snippet, uint8_t *bufferPos)
+TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uint8_t *bufferPos)
    {
    // *this    swipeable for debugging purposes
    TR_ASSERT(pOutFile != NULL, "assertion failure");
@@ -422,7 +422,7 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR_X86HelperCallSnippet  * snippet, uint
    }
 
 
-uint32_t TR_X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    uint32_t length = 35;
@@ -480,7 +480,7 @@ uint32_t TR_X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    }
 
 
-int32_t TR_X86HelperCallSnippet::branchDisplacementToHelper(
+int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
    uint8_t            *nextInstructionAddress,
    TR::SymbolReference *helper,
    TR::CodeGenerator   *cg)
@@ -497,12 +497,12 @@ int32_t TR_X86HelperCallSnippet::branchDisplacementToHelper(
    }
 
 
-uint8_t *TR_X86CheckAsyncMessagesSnippet::genHelperCall(uint8_t *buffer)
+uint8_t *TR::X86CheckAsyncMessagesSnippet::genHelperCall(uint8_t *buffer)
    {
    // This code assumes that the superclass' genHelperCall() will only emit
    // the call and nothing more.  This should always be true for the asynccheck
    // helpers.
    //
-   uint8_t *cursor = TR_X86HelperCallSnippet::genHelperCall(buffer);
+   uint8_t *cursor = TR::X86HelperCallSnippet::genHelperCall(buffer);
    return cursor;
    }

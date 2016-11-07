@@ -86,7 +86,7 @@ namespace TR { class CodeGenerator; }
 struct TR_ARMLinkageProperties;
 namespace TR { class ARMImmInstruction; }
 class TR_ARMOpCode;
-class TR_ARMConstantDataSnippet;
+namespace TR { class ARMConstantDataSnippet; }
 class TR_ARMLoadLabelItem;
 class TR_BitVector;
 class TR_ARMScratchRegisterManager;
@@ -228,7 +228,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister            *_frameRegister;
    TR::RealRegister            *_methodMetaDataRegister;
    TR::ARMImmInstruction          *_returnTypeInfoInstruction;
-   TR_ARMConstantDataSnippet       *_constantData;
+   TR::ARMConstantDataSnippet       *_constantData;
    TR_ARMLinkageProperties   *_linkageProperties;
    List<TR_ARMOutOfLineCodeSection> _outOfLineCodeSectionList;
    // Internal Control Flow Depth Counters

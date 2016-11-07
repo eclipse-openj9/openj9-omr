@@ -26,7 +26,9 @@
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
 
-class TR_IA32DataSnippet : public TR::Snippet
+namespace TR {
+
+class IA32DataSnippet : public TR::Snippet
    {
    uint8_t _length;
    bool    _isClassAddress;
@@ -34,7 +36,7 @@ class TR_IA32DataSnippet : public TR::Snippet
    uint8_t _value[16];
    public:
 
-   TR_IA32DataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint8_t size);
+   IA32DataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint8_t size);
 
    virtual Kind getKind() { return IsData; }
    uint8_t* getValue()  { return _value; }
@@ -49,4 +51,7 @@ class TR_IA32DataSnippet : public TR::Snippet
    int32_t getDataAs4Bytes() { return *((int32_t *) &_value); }
    int64_t getDataAs8Bytes() { return *((int64_t *) &_value); }
    };
+
+}
+
 #endif

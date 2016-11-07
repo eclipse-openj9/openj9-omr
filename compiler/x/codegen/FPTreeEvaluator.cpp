@@ -209,7 +209,7 @@ TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR_IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
+         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
          TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
          TR::Instruction *instr = generateRegMemInstruction(MOVSSRegMem, node, targetRegister, tempMR, cg);
          setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, (intptrj_t)node->getFloatBits(), cg);
@@ -229,7 +229,7 @@ TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR_IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
+         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
          TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
          generateFPRegMemInstruction(FLDRegMem, node, targetRegister, tempMR, cg);
          }
@@ -252,7 +252,7 @@ TR::Register *OMR::X86::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR_IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
+         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
          TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
          generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, tempMR, cg);
          }
@@ -271,7 +271,7 @@ TR::Register *OMR::X86::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR_IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
+         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
          TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
          generateFPRegMemInstruction(DLDRegMem, node, targetRegister, tempMR, cg);
          }
@@ -523,7 +523,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    //
    if (comp->getJittedMethodSymbol()->usesSinglePrecisionMode() && !cg->useSSEForDoublePrecision())
       {
-      TR_IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
+      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
       generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
       }
 
@@ -753,7 +753,7 @@ TR::Register *OMR::X86::TreeEvaluator::fnegEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *targetRegister;
    if (sourceRegister->getKind() == TR_FPR)
       {
-      TR_IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, FLOAT_NEG_ZERO);
+      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, FLOAT_NEG_ZERO);
       targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
       generateRegMemInstruction(MOVSSRegMem, node, targetRegister, generateX86MemoryReference(cds, cg), cg);
       generateRegRegInstruction(XORPSRegReg, node, targetRegister, sourceRegister, cg);
@@ -775,7 +775,7 @@ TR::Register *OMR::X86::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *targetRegister;
    if (sourceRegister->getKind() == TR_FPR)
       {
-      TR_IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, DOUBLE_NEG_ZERO);
+      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, DOUBLE_NEG_ZERO);
       targetRegister = cg->allocateRegister(TR_FPR);
       generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, generateX86MemoryReference(cds, cg), cg);
       generateRegRegInstruction(XORPDRegReg, node, targetRegister, sourceRegister, cg);
@@ -973,12 +973,12 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                 SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
-      TR_IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
+      TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
 
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                 SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
-      TR_IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
+      TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
 
       tempMR = (cg->machine())->getDummyLocalMR(TR::Int32);
 
@@ -1057,7 +1057,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
 
    // Create the conversion snippet.
    //
-   cg->addSnippet( new (cg->trHeapMemory()) TR_X86FPConvertToIntSnippet(reStartLabel,
+   cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToIntSnippet(reStartLabel,
                                                          snippetLabel,
                                                          helperSymRef,
                                                          loadInstr,
@@ -1226,7 +1226,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
          int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                            SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
-         TR_IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
+         TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
          generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds1, cg), cg);
          }
 
@@ -1239,7 +1239,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
          int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                            SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
-         TR_IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
+         TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
          generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds2, cg), cg);
          }
 
@@ -1336,7 +1336,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       // Create the conversion snippet.
       //
-      cg->addSnippet( new (cg->trHeapMemory()) TR_X86FPConvertToLongSnippet(reStartLabel,
+      cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToLongSnippet(reStartLabel,
                                                         snippetLabel,
                                                         helperSymRef,
                                                         clobInstruction,
@@ -1446,7 +1446,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
 
       if( TR::Compiler->target.is64Bit() )
          {
-         cg->addSnippet( new (cg->trHeapMemory()) TR_AMD64FPConversionSnippet(reStartLabel,
+         cg->addSnippet( new (cg->trHeapMemory()) TR::AMD64FPConversionSnippet(reStartLabel,
                                                               snippetLabel,
                                                               helperSymRef,
                                                               instr,
@@ -1454,7 +1454,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
          }
       else
          {
-         cg->addSnippet( new (cg->trHeapMemory()) TR_X86FPConvertToIntSnippet(reStartLabel,
+         cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToIntSnippet(reStartLabel,
                                                                snippetLabel,
                                                                helperSymRef,
                                                                instr,
@@ -1607,7 +1607,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGene
          instr = generateRegRegInstruction(CVTTSD2SIReg4Reg, node, targetRegister, sourceRegister, cg);
          }
 
-      cg->addSnippet( new (cg->trHeapMemory()) TR_X86FPConvertToIntSnippet(reStartLabel,
+      cg->addSnippet( new (cg->trHeapMemory()) TR::X86FPConvertToIntSnippet(reStartLabel,
                                                             snippetLabel,
                                                             helperSymRef,
                                                             instr,
@@ -1823,7 +1823,7 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
          TR::X86RegImmInstruction  *instr = generateRegImmInstruction(ROL4RegImm1, node, target, 23, cg); // restore bits to proper order
          TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, cg);
          deps->addPostCondition(target, TR::RealRegister::NoReg, cg);
-         TR_X86fbits2iSnippet  *snippet = new (cg->trHeapMemory()) TR_X86fbits2iSnippet(restartLabel, snippetLabel, instr, cg);
+         TR::X86fbits2iSnippet  *snippet = new (cg->trHeapMemory()) TR::X86fbits2iSnippet(restartLabel, snippetLabel, instr, cg);
          cg->addSnippet(snippet);
          generateLabelInstruction(LABEL, node, restartLabel, deps, cg);
          restartLabel->setEndInternalControlFlow();

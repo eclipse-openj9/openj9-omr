@@ -81,7 +81,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::X86::MemoryReference
 
    MemoryReference(TR::Register *br, TR::Register *ir, uint8_t s, intptrj_t disp, TR::CodeGenerator *cg);
 
-   MemoryReference(TR_IA32DataSnippet *cds, TR::CodeGenerator *cg);
+   MemoryReference(TR::IA32DataSnippet *cds, TR::CodeGenerator *cg);
 
    MemoryReference(TR::LabelSymbol    *label, TR::CodeGenerator *cg);
 

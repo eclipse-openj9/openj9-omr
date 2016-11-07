@@ -22,7 +22,7 @@
 #include "env/IO.hpp"
 
 uint32_t
-TR_S390WarmToColdTrampolineSnippet::getLength(int32_t estimatedSnippetStart)
+TR::S390WarmToColdTrampolineSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // BRCL - 6 bytes
    return 6;
@@ -30,7 +30,7 @@ TR_S390WarmToColdTrampolineSnippet::getLength(int32_t estimatedSnippetStart)
 
 
 uint8_t *
-TR_S390WarmToColdTrampolineSnippet::emitSnippetBody()
+TR::S390WarmToColdTrampolineSnippet::emitSnippetBody()
    {
    uint8_t * cursor = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(cursor);
@@ -52,7 +52,7 @@ TR_S390WarmToColdTrampolineSnippet::emitSnippetBody()
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_S390WarmToColdTrampolineSnippet *snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::S390WarmToColdTrampolineSnippet *snippet)
    {
    uint8_t * buffer = snippet->getSnippetLabel()->getCodeLocation();
 

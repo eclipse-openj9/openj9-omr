@@ -30,22 +30,22 @@
 #include "x/codegen/X86Ops.hpp"                    // for ::JMP4, etc
 #include "codegen/UnresolvedDataSnippet.hpp"
 
-class TR_AMD64FPConversionSnippet;
-class TR_X86BoundCheckWithSpineCheckSnippet;
-class TR_X86CallSnippet;
-class TR_X86CheckFailureSnippet;
-class TR_X86CheckFailureSnippetWithResolve;
-class TR_X86DivideCheckSnippet;
-class TR_X86FPConvertToIntSnippet;
-class TR_X86FPConvertToLongSnippet;
-class TR_X86ForceRecompilationSnippet;
-class TR_X86GuardedDevirtualSnippet;
-class TR_X86PicDataSnippet;
-class TR_X86RecompilationSnippet;
-class TR_X86ScratchArgHelperCallSnippet;
-class TR_X86SpineCheckSnippet;
-class TR_X86UnresolvedVirtualCallSnippet;
-class TR_X86fbits2iSnippet;
+namespace TR { class AMD64FPConversionSnippet; }
+namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
+namespace TR { class X86CallSnippet; }
+namespace TR { class X86CheckFailureSnippet; }
+namespace TR { class X86CheckFailureSnippetWithResolve; }
+namespace TR { class X86DivideCheckSnippet; }
+namespace TR { class X86FPConvertToIntSnippet; }
+namespace TR { class X86FPConvertToLongSnippet; }
+namespace TR { class X86ForceRecompilationSnippet; }
+namespace TR { class X86GuardedDevirtualSnippet; }
+namespace TR { class X86PicDataSnippet; }
+namespace TR { class X86RecompilationSnippet; }
+namespace TR { class X86ScratchArgHelperCallSnippet; }
+namespace TR { class X86SpineCheckSnippet; }
+namespace TR { class X86UnresolvedVirtualCallSnippet; }
+namespace TR { class X86fbits2iSnippet; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
@@ -187,85 +187,85 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       {
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsCall:
-         print(pOutFile, (TR_X86CallSnippet *)snippet);
+         print(pOutFile, (TR::X86CallSnippet *)snippet);
          break;
       case TR::Snippet::IsIPicData:
       case TR::Snippet::IsVPicData:
-         print(pOutFile, (TR_X86PicDataSnippet *)snippet);
+         print(pOutFile, (TR::X86PicDataSnippet *)snippet);
          break;
       case TR::Snippet::IsUnresolvedVirtualCall:
-         print(pOutFile, (TR_X86UnresolvedVirtualCallSnippet *)snippet);
+         print(pOutFile, (TR::X86UnresolvedVirtualCallSnippet *)snippet);
          break;
       case TR::Snippet::IsHeapAllocation:
-         print(pOutFile, (TR_X86HeapAllocationSnippet  *)snippet);
+         print(pOutFile, (TR::X86HeapAllocationSnippet  *)snippet);
          break;
       case TR::Snippet::IsWriteBarrier:
-         print(pOutFile, (TR_IA32WriteBarrierSnippet *)snippet);
+         print(pOutFile, (TR::IA32WriteBarrierSnippet *)snippet);
          break;
 #ifdef TR_TARGET_64BIT
       case TR::Snippet::IsWriteBarrierAMD64:
-         print(pOutFile, (TR_AMD64WriteBarrierSnippet *)snippet);
+         print(pOutFile, (TR::AMD64WriteBarrierSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsJNIPause:
-         print(pOutFile, (TR_X86JNIPauseSnippet  *)snippet);
+         print(pOutFile, (TR::X86JNIPauseSnippet  *)snippet);
          break;
       case TR::Snippet::IsPassJNINull:
-         print(pOutFile, (TR_X86PassJNINullSnippet  *)snippet);
+         print(pOutFile, (TR::X86PassJNINullSnippet  *)snippet);
          break;
       case TR::Snippet::IsCheckFailure:
-         print(pOutFile, (TR_X86CheckFailureSnippet *)snippet);
+         print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);
          break;
       case TR::Snippet::IsCheckFailureWithResolve:
-         print(pOutFile, (TR_X86CheckFailureSnippetWithResolve *)snippet);
+         print(pOutFile, (TR::X86CheckFailureSnippetWithResolve *)snippet);
          break;
       case TR::Snippet::IsBoundCheckWithSpineCheck:
-         print(pOutFile, (TR_X86BoundCheckWithSpineCheckSnippet *)snippet);
+         print(pOutFile, (TR::X86BoundCheckWithSpineCheckSnippet *)snippet);
          break;
       case TR::Snippet::IsSpineCheck:
-         print(pOutFile, (TR_X86SpineCheckSnippet *)snippet);
+         print(pOutFile, (TR::X86SpineCheckSnippet *)snippet);
          break;
       case TR::Snippet::IsScratchArgHelperCall:
-         print(pOutFile, (TR_X86ScratchArgHelperCallSnippet *)snippet);
+         print(pOutFile, (TR::X86ScratchArgHelperCallSnippet *)snippet);
          break;
       case TR::Snippet::IsForceRecompilation:
-         print(pOutFile, (TR_X86ForceRecompilationSnippet  *)snippet);
+         print(pOutFile, (TR::X86ForceRecompilationSnippet  *)snippet);
          break;
       case TR::Snippet::IsRecompilation:
-         print(pOutFile, (TR_X86RecompilationSnippet *)snippet);
+         print(pOutFile, (TR::X86RecompilationSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsConstantData:
-         print(pOutFile, (TR_IA32ConstantDataSnippet *)snippet);
+         print(pOutFile, (TR::IA32ConstantDataSnippet *)snippet);
          break;
       case TR::Snippet::IsData:
-         print(pOutFile, (TR_IA32DataSnippet *)snippet);
+         print(pOutFile, (TR::IA32DataSnippet *)snippet);
          break;
       case TR::Snippet::IsDivideCheck:
-         print(pOutFile, (TR_X86DivideCheckSnippet  *)snippet);
+         print(pOutFile, (TR::X86DivideCheckSnippet  *)snippet);
          break;
 
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsGuardedDevirtual:
-         print(pOutFile, (TR_X86GuardedDevirtualSnippet  *)snippet);
+         print(pOutFile, (TR::X86GuardedDevirtualSnippet  *)snippet);
          break;
 #endif
       case TR::Snippet::IsHelperCall:
-         print(pOutFile, (TR_X86HelperCallSnippet  *)snippet);
+         print(pOutFile, (TR::X86HelperCallSnippet  *)snippet);
          break;
       case TR::Snippet::IsFPConvertToInt:
-         print(pOutFile, (TR_X86FPConvertToIntSnippet  *)snippet);
+         print(pOutFile, (TR::X86FPConvertToIntSnippet  *)snippet);
          break;
       case TR::Snippet::IsFPConvertToLong:
-         print(pOutFile, (TR_X86FPConvertToLongSnippet  *)snippet);
+         print(pOutFile, (TR::X86FPConvertToLongSnippet  *)snippet);
          break;
 #ifdef TR_TARGET_64BIT
       case TR::Snippet::IsFPConvertAMD64:
-         print(pOutFile, (TR_AMD64FPConversionSnippet *)snippet);
+         print(pOutFile, (TR::AMD64FPConversionSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::Isfbits2i:
-         print(pOutFile, (TR_X86fbits2iSnippet  *)snippet);
+         print(pOutFile, (TR::X86fbits2iSnippet  *)snippet);
          break;
       case TR::Snippet::IsUnresolvedDataIA32:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
@@ -289,7 +289,7 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
    }
 
 int32_t
-TR_Debug::printRestartJump(TR::FILE *pOutFile, TR_X86RestartSnippet * snippet, uint8_t *bufferPos)
+TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, uint8_t *bufferPos)
    {
    int32_t size = snippet->estimateRestartJumpLength(JMP4, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
    printPrefix(pOutFile, NULL, bufferPos, size);
@@ -299,7 +299,7 @@ TR_Debug::printRestartJump(TR::FILE *pOutFile, TR_X86RestartSnippet * snippet, u
 
 #ifdef J9_PROJECT_SPECIFIC
 int32_t
-TR_Debug::printRestartJump(TR::FILE *pOutFile, TR_AMD64WriteBarrierSnippet * snippet, uint8_t *bufferPos)
+TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::AMD64WriteBarrierSnippet * snippet, uint8_t *bufferPos)
    {
    int32_t size = snippet->estimateRestartJumpLength(JMP4, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
    printPrefix(pOutFile, NULL, bufferPos, size);
@@ -311,7 +311,7 @@ TR_Debug::printRestartJump(TR::FILE *pOutFile, TR_AMD64WriteBarrierSnippet * sni
 
 
 int32_t
-TR_Debug::printRestartJump(TR::FILE *pOutFile, TR_X86RestartSnippet * snippet, uint8_t *bufferPos, int32_t branchOp, const char *branchOpName)
+TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, uint8_t *bufferPos, int32_t branchOp, const char *branchOpName)
    {
    int32_t size = snippet->estimateRestartJumpLength((TR_X86OpCodes) branchOp, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
    printPrefix(pOutFile, NULL, bufferPos, size);

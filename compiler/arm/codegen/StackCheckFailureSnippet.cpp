@@ -53,7 +53,7 @@ uint8_t *loadArgumentItem(TR_ARMOpCodes op, uint8_t *buffer, TR::RealRegister *r
    return(buffer+4);
    }
 
-uint8_t *TR_ARMStackCheckFailureSnippet::emitSnippetBody()
+uint8_t *TR::ARMStackCheckFailureSnippet::emitSnippetBody()
    {
    uint8_t *buffer = cg()->getBinaryBufferCursor();
 
@@ -151,7 +151,7 @@ uint8_t *TR_ARMStackCheckFailureSnippet::emitSnippetBody()
    return buffer + 4;
    }
 
-uint32_t TR_ARMStackCheckFailureSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::ARMStackCheckFailureSnippet::getLength(int32_t estimatedSnippetStart)
    {
    TR::ResolvedMethodSymbol *bodySymbol=cg()->comp()->getJittedMethodSymbol();
    int32_t length = 20; // mov/sub, add, bl, sub, b

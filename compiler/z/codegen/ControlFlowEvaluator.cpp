@@ -2889,7 +2889,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          // NULLCHK snippet label.
          TR::LabelSymbol * snippetLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          TR::SymbolReference *symRef = node->getSymbolReference();
-         cg->addSnippet(new (cg->trHeapMemory()) TR_S390HelperCallSnippet(cg, node, snippetLabel, symRef));
+         cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, snippetLabel, symRef));
 
          if (!firstChild->getOpCode().isCall() &&
                reference->getOpCode().isLoadVar() &&

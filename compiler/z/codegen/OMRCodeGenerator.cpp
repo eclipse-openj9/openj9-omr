@@ -49,7 +49,7 @@
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/RegisterIterator.hpp"             // for RegisterIterator
 #include "codegen/RegisterPair.hpp"                 // for RegisterPair
-#include "codegen/Snippet.hpp"                      // for TR_S390Snippet, etc
+#include "codegen/Snippet.hpp"                      // for TR::S390Snippet, etc
 #include "codegen/StorageInfo.hpp"
 #include "codegen/SystemLinkage.hpp"                // for toSystemLinkage, etc
 #include "codegen/TreeEvaluator.hpp"                // for TreeEvaluator, etc
@@ -485,13 +485,13 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _processorInfo(),
      _extentOfLitPool(-1),
      _recompPatchInsnList(getTypedAllocator<TR::Instruction*>(self()->comp()->allocator())),
-     _targetList(getTypedAllocator<TR_S390TargetAddressSnippet*>(self()->comp()->allocator())),
+     _targetList(getTypedAllocator<TR::S390TargetAddressSnippet*>(self()->comp()->allocator())),
      _constantHash(self()->comp()->allocator()),
      _constantHashCur(_constantHash),
-     _constantList(getTypedAllocator<TR_S390ConstantDataSnippet*>(self()->comp()->allocator())),
-     _writableList(getTypedAllocator<TR_S390WritableDataSnippet*>(self()->comp()->allocator())),
+     _constantList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
+     _writableList(getTypedAllocator<TR::S390WritableDataSnippet*>(self()->comp()->allocator())),
      _transientLongRegisters(self()->trMemory()),
-     _snippetDataList(getTypedAllocator<TR_S390ConstantDataSnippet*>(self()->comp()->allocator())),
+     _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(self()->comp()->allocator())),
      _returnTypeInfoInstruction(NULL),
      _ARSaveAreaForTM(NULL),
@@ -4410,9 +4410,9 @@ TR_S390Peephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * i
    if (performTransformation(comp(), "O^O S390 PEEPHOLE: Converting LARL;EX into EXRL instr=[%p]\n", _cursor))
       {
       // fetch the dispatched SS instr
-      TR_S390ConstantDataSnippet * cnstDataSnip = _cursor->getMemoryReference()->getConstantDataSnippet();
+      TR::S390ConstantDataSnippet * cnstDataSnip = _cursor->getMemoryReference()->getConstantDataSnippet();
       TR_ASSERT( (cnstDataSnip->getKind() == TR::Snippet::IsConstantInstruction),"The constant data snippet kind should be ConstantInstruction!\n");
-      TR::Instruction * cnstDataInstr = ((TR_S390ConstantInstructionSnippet *)cnstDataSnip)->getInstruction();
+      TR::Instruction * cnstDataInstr = ((TR::S390ConstantInstructionSnippet *)cnstDataSnip)->getInstruction();
 
       // EX Dispatch would have created a load of the literal pool address, a register which is then killed
       // immediately after its use in the EX instruction. Since we are transforming the EX to an EXRL, this
@@ -4470,7 +4470,7 @@ TR_S390Peephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instruction * i
       _cg->replaceInst(oldCursor, newEXRLInst);
 
       // remove the instr constant data snippet
-      ((TR_S390ConstantInstructionSnippet *)cnstDataSnip)->setIsRefed(false);
+      ((TR::S390ConstantInstructionSnippet *)cnstDataSnip)->setIsRefed(false);
       (_cg->getConstantInstructionSnippets()).remove(cnstDataSnip);
 
       return true;
@@ -5563,7 +5563,7 @@ OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
 
 // Helpers for profiled interface slots
 void
-OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR_S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)
+OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)
    {
    if (_interfaceSnippetToPICsListHashTab == NULL)
       {_interfaceSnippetToPICsListHashTab = new (self()->trHeapMemory()) TR_HashTab(self()->comp()->trMemory(), heapAlloc, 10, true);}
@@ -5573,7 +5573,7 @@ OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR_S390ConstantDataSnippet
    }
 
 TR::list<TR_OpaqueClassBlock*> *
-OMR::Z::CodeGenerator::getPICsListForInterfaceSnippet(TR_S390ConstantDataSnippet * ifcSnippet)
+OMR::Z::CodeGenerator::getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet)
    {
    if (_interfaceSnippetToPICsListHashTab == NULL)
       return NULL;
@@ -5649,7 +5649,7 @@ bool
 OMR::Z::CodeGenerator::anyLitPoolSnippets()
    {
    CS2::HashIndex hi;
-   TR_S390ConstantDataSnippet *cursor1 = NULL;
+   TR::S390ConstantDataSnippet *cursor1 = NULL;
     if (!_targetList.empty())
       {
       return true;
@@ -7447,7 +7447,7 @@ TR_S390OutOfLineCodeSection * OMR::Z::CodeGenerator::findS390OutOfLineCodeSectio
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::Constant Data List Functions
 ////////////////////////////////////////////////////////////////////////////////
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size, bool isWarm)
    {
    // *this    swipeable for debugging purposes
@@ -7456,7 +7456,7 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    key.c      = c;
    key.size   = size;
    key.isWarm = isWarm;
-   TR_S390ConstantDataSnippet * data;
+   TR::S390ConstantDataSnippet * data;
 
    // Can only share data snippets for literal pool address when inlined site indices are the same
    // for now conservatively create a new literal pool data snippet per unique node
@@ -7489,7 +7489,7 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
-   data = new (self()->trHeapMemory()) TR_S390ConstantDataSnippet(self(), node, c, size);
+   data = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
    if (isWarm)
       data->setWarmSnippet();  // Set as a warm snippet if requested.
    key.c = (void *)data->getRawData();
@@ -7506,31 +7506,31 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    return data;
    }
 
-TR_S390ConstantInstructionSnippet *
+TR::S390ConstantInstructionSnippet *
 OMR::Z::CodeGenerator::createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr)
    {
-   TR_S390ConstantInstructionSnippet * cis = new (cg->trHeapMemory()) TR_S390ConstantInstructionSnippet(cg,node,instr);
+   TR::S390ConstantInstructionSnippet * cis = new (cg->trHeapMemory()) TR::S390ConstantInstructionSnippet(cg,node,instr);
    _constantList.push_front(cis);
    return cis;
    }
 
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, bool writable)
    {
    // *this    swipeable for debugging purposes
 
    if (writable)
       {
-      TR_S390WritableDataSnippet * cursor;
-      cursor = new (self()->trHeapMemory()) TR_S390WritableDataSnippet(self(), node, c, size);
+      TR::S390WritableDataSnippet * cursor;
+      cursor = new (self()->trHeapMemory()) TR::S390WritableDataSnippet(self(), node, c, size);
       _writableList.push_front(cursor);
-      return (TR_S390ConstantDataSnippet *) cursor;
+      return (TR::S390ConstantDataSnippet *) cursor;
       }
    else
       {
-      TR_S390ConstantDataSnippet * cursor;
-      cursor = new (self()->trHeapMemory()) TR_S390ConstantDataSnippet(self(), node, c, size);
+      TR::S390ConstantDataSnippet * cursor;
+      cursor = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
       TR_S390ConstantDataSnippetKey key;
       key.c = (void *)cursor->getRawData();
       key.size = size;
@@ -7540,17 +7540,17 @@ OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, 
       }
    }
 
-TR_S390LabelTableSnippet *
+TR::S390LabelTableSnippet *
 OMR::Z::CodeGenerator::createLabelTable(TR::Node * node, int32_t size)
    {
-   TR_S390LabelTableSnippet * labelTableSnippet = new (self()->trHeapMemory()) TR_S390LabelTableSnippet(self(), node, size);
+   TR::S390LabelTableSnippet * labelTableSnippet = new (self()->trHeapMemory()) TR::S390LabelTableSnippet(self(), node, size);
    _snippetDataList.push_front(labelTableSnippet);
    return labelTableSnippet;
    }
 
 
 void
-OMR::Z::CodeGenerator::addDataConstantSnippet(TR_S390ConstantDataSnippet * snippet)
+OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet)
    {
    _snippetDataList.push_front(snippet);
    }
@@ -7564,7 +7564,7 @@ int32_t
 OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm)
    {
    // *this    swipeable for debugging purposes
-   TR_S390ConstantDataSnippet * cursor;
+   TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
    int32_t offset = targetAddressSnippetSize;
@@ -7645,7 +7645,7 @@ int32_t
 OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
    {
    // *this    swipeable for debugging purposes
-   TR_S390ConstantDataSnippet * cursor;
+   TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
    int32_t exp;
@@ -7734,11 +7734,11 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
    {
    // *this    swipeable for debugging purposes
    // If you change logic here, be sure to do similar change in
-   // the method : TR_S390ConstantDataSnippet *OMR::Z::CodeGenerator::getFirstConstantData()
+   // the method : TR::S390ConstantDataSnippet *OMR::Z::CodeGenerator::getFirstConstantData()
 
    TR_ConstHashCursor constCur(_constantHash);
-   TR_S390ConstantDataSnippet * cursor;
-   TR_S390EyeCatcherDataSnippet * eyeCatcher = NULL;
+   TR::S390ConstantDataSnippet * cursor;
+   TR::S390EyeCatcherDataSnippet * eyeCatcher = NULL;
    uint8_t * codeOffset;
    bool first;
    int32_t size;
@@ -7839,7 +7839,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
          {
          if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )
             {
-            eyeCatcher = (TR_S390EyeCatcherDataSnippet *)(*snippetDataIterator);
+            eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
             }
          else
             {
@@ -7865,7 +7865,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
    }
 
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value)
    {
    TR_ASSERT( dt == TR::Int64, "create64BitLiteralPoolSnippet is only for data constants\n");
@@ -7902,10 +7902,10 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    return linkage;
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
    {
-   TR_S390ConstantDataSnippet * targetSnippet = NULL;
+   TR::S390ConstantDataSnippet * targetSnippet = NULL;
 
    // offset in the symbol reference points to the constant node
    // get this constant node
@@ -7993,51 +7993,51 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
 
 
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c, bool isWarm)
    {
    return self()->findOrCreateConstant(node, &c, 2, isWarm);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate4ByteConstant(TR::Node * node, int32_t c, bool isWarm)
    {
    return self()->findOrCreateConstant(node, &c, 4, isWarm);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate8ByteConstant(TR::Node * node, int64_t c, bool isWarm)
    {
    return self()->findOrCreateConstant(node, &c, 8, isWarm);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::Create4ByteConstant(TR::Node * node, int32_t c, bool writable)
    {
    return self()->CreateConstant(node, &c, 4, writable);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::Create8ByteConstant(TR::Node * node, int64_t c, bool writable)
    {
    return self()->CreateConstant(node, &c, 8, writable);
    }
 
-TR_S390WritableDataSnippet *
+TR::S390WritableDataSnippet *
 OMR::Z::CodeGenerator::CreateWritableConstant(TR::Node * node)
    {
    if (TR::Compiler->target.is64Bit())
       {
-      return (TR_S390WritableDataSnippet *) self()->Create8ByteConstant(node, 0, true);
+      return (TR::S390WritableDataSnippet *) self()->Create8ByteConstant(node, 0, true);
       }
    else
       {
-      return (TR_S390WritableDataSnippet *) self()->Create4ByteConstant(node, 0, true);
+      return (TR::S390WritableDataSnippet *) self()->Create4ByteConstant(node, 0, true);
       }
    }
 
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::getFirstConstantData()
    {
    // Logic in this method should always be kept in sync with
@@ -8046,7 +8046,7 @@ OMR::Z::CodeGenerator::getFirstConstantData()
    // hense the first emited constant may not be iterator.getFirst(),
    // but the first constant with biggest size
    //
-   TR_S390ConstantDataSnippet * cursor;
+   TR::S390ConstantDataSnippet * cursor;
    TR_ConstHashCursor constCur(_constantHash);
    int32_t exp;
 
@@ -8170,44 +8170,44 @@ OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
 
 
 
-TR_S390LookupSwitchSnippet *
+TR::S390LookupSwitchSnippet *
 OMR::Z::CodeGenerator::CreateLookupSwitchSnippet(TR::Node * node, TR::Snippet * s)
    {
-   _targetList.push_front((TR_S390LookupSwitchSnippet *) s);
-   return (TR_S390LookupSwitchSnippet *) s;
+   _targetList.push_front((TR::S390LookupSwitchSnippet *) s);
+   return (TR::S390LookupSwitchSnippet *) s;
    }
 
 
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Snippet * s)
    {
-   TR_S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR_S390TargetAddressSnippet(self(), node, s);
+   TR::S390TargetAddressSnippet * targetsnippet;
+   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
    _targetList.push_front(targetsnippet);
    return targetsnippet;
    }
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::LabelSymbol * s)
    {
-   TR_S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR_S390TargetAddressSnippet(self(), node, s);
+   TR::S390TargetAddressSnippet * targetsnippet;
+   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
    _targetList.push_front(targetsnippet);
    return targetsnippet;
    }
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Symbol * s)
    {
    TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
-   TR_S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR_S390TargetAddressSnippet(self(), node, s);
+   TR::S390TargetAddressSnippet * targetsnippet;
+   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
    _targetList.push_front(targetsnippet);
    return targetsnippet;
    }
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::CodeGenerator::findOrCreateTargetAddressSnippet(TR::Node * node, uintptrj_t addr)
    {
    TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
@@ -8223,14 +8223,14 @@ OMR::Z::CodeGenerator::findOrCreateTargetAddressSnippet(TR::Node * node, uintptr
          }
       }
 
-   TR_S390TargetAddressSnippet * targetsnippet;
+   TR::S390TargetAddressSnippet * targetsnippet;
 
-   targetsnippet = new (self()->trHeapMemory()) TR_S390TargetAddressSnippet(self(), node, addr);
+   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, addr);
    _targetList.push_front(targetsnippet);
    return targetsnippet;
    }
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::CodeGenerator::getFirstTargetAddress()
    {
    if(_targetList.empty())
@@ -9221,8 +9221,8 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
       return;
       }
    TR_ConstHashCursor constCur(_constantHash);
-   TR_S390EyeCatcherDataSnippet * eyeCatcher = NULL;
-   TR_S390ConstantDataSnippet *cursor = NULL;
+   TR::S390EyeCatcherDataSnippet * eyeCatcher = NULL;
+   TR::S390ConstantDataSnippet *cursor = NULL;
    int32_t size;
    int32_t exp;
 
@@ -9264,7 +9264,7 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
       if ((*snippetDataIterator)->isWarmSnippet() == isWarm)
          {
          if((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData)
-            eyeCatcher = (TR_S390EyeCatcherDataSnippet *)(*snippetDataIterator);
+            eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
          else
             self()->getDebug()->print(outFile,*snippetDataIterator);
          }

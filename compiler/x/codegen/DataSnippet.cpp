@@ -31,7 +31,7 @@
 
 namespace TR { class Node; }
 
-TR_IA32DataSnippet::TR_IA32DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
+TR::IA32DataSnippet::IA32DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
    : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false)
    {
 
@@ -42,7 +42,7 @@ TR_IA32DataSnippet::TR_IA32DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void
 
 
 void
-TR_IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
+TR::IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    {
    // add dummy class unload/redefinition assumption.
    if (_isClassAddress)
@@ -67,7 +67,7 @@ TR_IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    }
 
 
-uint8_t *TR_IA32DataSnippet::emitSnippetBody()
+uint8_t *TR::IA32DataSnippet::emitSnippetBody()
    {
    // *this   swipeable for debugging purposes
 
@@ -92,7 +92,7 @@ uint8_t *TR_IA32DataSnippet::emitSnippetBody()
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_IA32DataSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::IA32DataSnippet * snippet)
    {
    // *this   swipeable for debugger
    if (pOutFile == NULL)
@@ -140,7 +140,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_IA32DataSnippet * snippet)
       }
    }
 
-uint32_t TR_IA32DataSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::IA32DataSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this   swipeable for debugging purposes
    return _length;

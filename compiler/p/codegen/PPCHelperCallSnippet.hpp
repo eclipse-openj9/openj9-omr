@@ -32,18 +32,20 @@ namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
-class TR_PPCHelperCallSnippet : public TR::Snippet
+namespace TR {
+
+class PPCHelperCallSnippet : public TR::Snippet
    {
    TR::SymbolReference      *_destination;
    TR::LabelSymbol          *_restartLabel;
 
    public:
 
-   TR_PPCHelperCallSnippet(TR::CodeGenerator    *cg,
-                           TR::Node             *node,
-                           TR::LabelSymbol      *snippetlab,
-                           TR::SymbolReference  *helper,
-                           TR::LabelSymbol      *restartLabel=NULL)
+   PPCHelperCallSnippet(TR::CodeGenerator    *cg,
+                        TR::Node             *node,
+                        TR::LabelSymbol      *snippetlab,
+                        TR::SymbolReference  *helper,
+                        TR::LabelSymbol      *restartLabel=NULL)
       : TR::Snippet(cg, node, snippetlab, (restartLabel!=NULL && helper->canCauseGC())),
         _destination(helper),
         _restartLabel(restartLabel)
@@ -66,19 +68,19 @@ class TR_PPCHelperCallSnippet : public TR::Snippet
    virtual uint32_t getLength(int32_t estimatedSnippetStart);
    };
 
-class TR_PPCArrayCopyCallSnippet : public TR_PPCHelperCallSnippet
+class PPCArrayCopyCallSnippet : public TR::PPCHelperCallSnippet
    {
    TR::RealRegister::RegNum _lengthRegNum;
 
    public:
 
-   TR_PPCArrayCopyCallSnippet(TR::CodeGenerator    *cg,
-                              TR::Node             *node,
-                              TR::LabelSymbol      *snippetlab,
-                              TR::SymbolReference  *helper,
-                              TR::RealRegister::RegNum lengthRegNum,
-                              TR::LabelSymbol      *restartLabel=NULL)
-      : TR_PPCHelperCallSnippet(cg, node, snippetlab, helper, restartLabel),
+   PPCArrayCopyCallSnippet(TR::CodeGenerator    *cg,
+                           TR::Node             *node,
+                           TR::LabelSymbol      *snippetlab,
+                           TR::SymbolReference  *helper,
+                           TR::RealRegister::RegNum lengthRegNum,
+                           TR::LabelSymbol      *restartLabel=NULL)
+      : TR::PPCHelperCallSnippet(cg, node, snippetlab, helper, restartLabel),
         _lengthRegNum(lengthRegNum)
       {
       }
@@ -92,5 +94,7 @@ class TR_PPCArrayCopyCallSnippet : public TR_PPCHelperCallSnippet
 
    virtual uint32_t getLength(int32_t estimatedSnippetStart);
    };
+
+}
 
 #endif

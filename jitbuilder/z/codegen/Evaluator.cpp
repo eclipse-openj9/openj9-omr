@@ -30,21 +30,21 @@
 
 
 uint32_t
-TR_S390RestoreGPR7Snippet::getLength(int32_t estimatedSnippetStart)
+TR::S390RestoreGPR7Snippet::getLength(int32_t estimatedSnippetStart)
    {
    NOT_IMPLEMENTED;
    return 0;
    }
 
 uint8_t *
-TR_S390RestoreGPR7Snippet::emitSnippetBody()
+TR::S390RestoreGPR7Snippet::emitSnippetBody()
    {
    NOT_IMPLEMENTED;
    return NULL;
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_S390RestoreGPR7Snippet *snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::S390RestoreGPR7Snippet *snippet)
    {
    NOT_IMPLEMENTED;
    }

@@ -2549,7 +2549,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
          generateLabelInstruction(LABEL, node, restartLabel, allDeps, cg);
 
          TR_ASSERT(divisorRegister != NULL, "Divide check snippet needs divisor in a register");
-         cg->addSnippet(new (cg->trHeapMemory()) TR_X86DivideCheckSnippet(restartLabel,
+         cg->addSnippet(new (cg->trHeapMemory()) TR::X86DivideCheckSnippet(restartLabel,
                                                       overflowSnippetLabel,
                                                       divisionLabel,
                                                       node->getOpCode(),

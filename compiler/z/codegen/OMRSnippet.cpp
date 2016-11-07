@@ -31,7 +31,7 @@
 #include "codegen/RealRegister.hpp"             // for RealRegister
 #include "codegen/Register.hpp"                 // for Register
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                  // for TR_S390Snippet, etc
+#include "codegen/Snippet.hpp"                  // for TR::S390Snippet, etc
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "compile/Compilation.hpp"              // for Compilation
 #include "control/Options.hpp"
@@ -46,7 +46,7 @@
 #include "infra/Assert.hpp"                     // for TR_ASSERT
 #include "ras/Debug.hpp"                        // for TR_Debug
 #include "runtime/Runtime.hpp"                  // for ::TR_HelperAddress, etc
-#include "z/codegen/CallSnippet.hpp"            // for TR_S390CallSnippet
+#include "z/codegen/CallSnippet.hpp"            // for TR::S390CallSnippet
 #include "z/codegen/S390HelperCallSnippet.hpp"
 
 namespace TR { class Node; }
@@ -257,64 +257,64 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
    switch (snippet->getKind())
       {
       case TR::Snippet::IsCall:
-         print(pOutFile, (TR_S390CallSnippet *) snippet);
+         print(pOutFile, (TR::S390CallSnippet *) snippet);
          break;
       case TR::Snippet::IsHelperCall:
-         print(pOutFile, (TR_S390HelperCallSnippet *) snippet);
+         print(pOutFile, (TR::S390HelperCallSnippet *) snippet);
          break;
 #if J9_PROJECT_SPECIFIC
       case TR::Snippet::IsForceRecomp:
-         print(pOutFile, (TR_S390ForceRecompilationSnippet *) snippet);
+         print(pOutFile, (TR::S390ForceRecompilationSnippet *) snippet);
          break;
       case TR::Snippet::IsForceRecompData:
-         print(pOutFile, (TR_S390ForceRecompilationDataSnippet *) snippet);
+         print(pOutFile, (TR::S390ForceRecompilationDataSnippet *) snippet);
          break;
       case TR::Snippet::IsUnresolvedCall:
-         print(pOutFile, (TR_S390UnresolvedCallSnippet *) snippet);
+         print(pOutFile, (TR::S390UnresolvedCallSnippet *) snippet);
          break;
       case TR::Snippet::IsVirtual:
-         print(pOutFile, (TR_S390VirtualSnippet *) snippet);
+         print(pOutFile, (TR::S390VirtualSnippet *) snippet);
          break;
       case TR::Snippet::IsVirtualUnresolved:
-         print(pOutFile, (TR_S390VirtualUnresolvedSnippet *) snippet);
+         print(pOutFile, (TR::S390VirtualUnresolvedSnippet *) snippet);
          break;
       case TR::Snippet::IsInterfaceCall:
-         print(pOutFile, (TR_S390InterfaceCallSnippet *) snippet);
+         print(pOutFile, (TR::S390InterfaceCallSnippet *) snippet);
          break;
       case TR::Snippet::IsStackCheckFailure:
-         print(pOutFile, (TR_S390StackCheckFailureSnippet *) snippet);
+         print(pOutFile, (TR::S390StackCheckFailureSnippet *) snippet);
          break;
 #endif
       case TR::Snippet::IsLabelTable:
-         print(pOutFile, (TR_S390LabelTableSnippet *) snippet);
+         print(pOutFile, (TR::S390LabelTableSnippet *) snippet);
          break;
       case TR::Snippet::IsConstantData:
       case TR::Snippet::IsWritableData:
       case TR::Snippet::IsEyeCatcherData:
       case TR::Snippet::IsDeclTramp:
       case TR::Snippet::IsSortJumpTramp:
-         print(pOutFile, (TR_S390ConstantDataSnippet *) snippet);
+         print(pOutFile, (TR::S390ConstantDataSnippet *) snippet);
          break;
       case TR::Snippet::IsTargetAddress:
-         print(pOutFile, (TR_S390TargetAddressSnippet *) snippet);
+         print(pOutFile, (TR::S390TargetAddressSnippet *) snippet);
          break;
       case TR::Snippet::IsLookupSwitch:
-         print(pOutFile, (TR_S390LookupSwitchSnippet *) snippet);
+         print(pOutFile, (TR::S390LookupSwitchSnippet *) snippet);
          break;
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *) snippet);
          break;
       case TR::Snippet::IsInterfaceCallData:
-         print(pOutFile, (TR_S390InterfaceCallDataSnippet *) snippet);
+         print(pOutFile, (TR::S390InterfaceCallDataSnippet *) snippet);
          break;
       case TR::Snippet::IsWarmToColdTrampoline:
-         print(pOutFile, (TR_S390WarmToColdTrampolineSnippet *) snippet);
+         print(pOutFile, (TR::S390WarmToColdTrampolineSnippet *) snippet);
          break;
       case TR::Snippet::IsConstantInstruction:
-         print(pOutFile, (TR_S390ConstantInstructionSnippet *) snippet);
+         print(pOutFile, (TR::S390ConstantInstructionSnippet *) snippet);
          break;
       case TR::Snippet::IsRestoreGPR7:
-         print(pOutFile, (TR_S390RestoreGPR7Snippet *) snippet);
+         print(pOutFile, (TR::S390RestoreGPR7Snippet *) snippet);
          break;
 
       /* These types are frontend specific - we use virtual dispatch

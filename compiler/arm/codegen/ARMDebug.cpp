@@ -1062,37 +1062,37 @@ TR_Debug::printa(TR::FILE *pOutFile, TR::Snippet * snippet)
    switch (snippet->getKind())
       {
       case TR::Snippet::IsCall:
-         print(pOutFile, (TR_ARMCallSnippet *)snippet);
+         print(pOutFile, (TR::ARMCallSnippet *)snippet);
          break;
       case TR::Snippet::IsUnresolvedCall:
-         print(pOutFile, (TR_ARMUnresolvedCallSnippet *)snippet);
+         print(pOutFile, (TR::ARMUnresolvedCallSnippet *)snippet);
          break;
       case TR::Snippet::IsVirtualUnresolved:
-         print(pOutFile, (TR_ARMVirtualUnresolvedSnippet *)snippet);
+         print(pOutFile, (TR::ARMVirtualUnresolvedSnippet *)snippet);
          break;
       case TR::Snippet::IsInterfaceCall:
-         print(pOutFile, (TR_ARMInterfaceCallSnippet *)snippet);
+         print(pOutFile, (TR::ARMInterfaceCallSnippet *)snippet);
          break;
       case TR::Snippet::IsStackCheckFailure:
-         print(pOutFile, (TR_ARMStackCheckFailureSnippet *)snippet);
+         print(pOutFile, (TR::ARMStackCheckFailureSnippet *)snippet);
          break;
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
          break;
       case TR::Snippet::IsRecompilation:
-         print(pOutFile, (TR_ARMRecompilationSnippet *)snippet);
+         print(pOutFile, (TR::ARMRecompilationSnippet *)snippet);
          break;
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsHelperCall:
-         print(pOutFile, (TR_ARMHelperCallSnippet *)snippet);
+         print(pOutFile, (TR::ARMHelperCallSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsMonitorEnter:
-         //print(pOutFile, (TR_ARMMonitorEnterSnippet *)snippet);
+         //print(pOutFile, (TR::ARMMonitorEnterSnippet *)snippet);
          trfprintf(pOutFile, "** MonitorEnterSnippet **\n");
          break;
       case TR::Snippet::IsMonitorExit:
-         //print(pOutFile, (TR_ARMMonitorExitSnippet *)snippet);
+         //print(pOutFile, (TR::ARMMonitorExitSnippet *)snippet);
          trfprintf(pOutFile, "** MonitorExitSnippet **\n");
          break;
       default:
@@ -1101,7 +1101,7 @@ TR_Debug::printa(TR::FILE *pOutFile, TR::Snippet * snippet)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
    {
    TR::Node            *callNode     = snippet->getNode();
    TR::SymbolReference *glueRef      = _cg->getSymRef(snippet->getHelper());;
@@ -1218,7 +1218,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMCallSnippet * snippet)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMUnresolvedCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMUnresolvedCallSnippet * snippet)
    {
    TR::SymbolReference *methodSymRef = snippet->getNode()->getSymbolReference();
    TR::MethodSymbol    *methodSymbol = methodSymRef->getSymbol()->castToMethodSymbol();
@@ -1246,7 +1246,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMUnresolvedCallSnippet * snippet)
          break;
       }
 
-   print(pOutFile, (TR_ARMCallSnippet *)snippet);
+   print(pOutFile, (TR::ARMCallSnippet *)snippet);
    bufferPos += (snippet->getLength(0) - 12);
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
@@ -1258,7 +1258,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMUnresolvedCallSnippet * snippet)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMVirtualUnresolvedSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMVirtualUnresolvedSnippet * snippet)
    {
    TR::SymbolReference *callSymRef = snippet->getNode()->getSymbolReference();
 
@@ -1282,7 +1282,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMVirtualUnresolvedSnippet * snippet)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMInterfaceCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMInterfaceCallSnippet * snippet)
    {
    TR::SymbolReference *callSymRef = snippet->getNode()->getSymbolReference();
    TR::SymbolReference *glueRef    = _cg->getSymRef(TR_ARMinterfaceCallHelper);
@@ -1354,7 +1354,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMInterfaceCallSnippet * snippet)
 
 #ifdef J9_PROJECT_SPECIFIC
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMHelperCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMHelperCallSnippet * snippet)
    {
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
@@ -1376,7 +1376,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_ARMHelperCallSnippet * snippet)
 #endif
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMStackCheckFailureSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMStackCheckFailureSnippet * snippet)
    {
    uint8_t *bufferPos  = snippet->getSnippetLabel()->getCodeLocation();
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
@@ -1485,7 +1485,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::UnresolvedDataSnippet * snippet)
 #endif
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_ARMRecompilationSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    {
    // *this    swipeable for debugging purposes
    uint8_t             *cursor        = snippet->getSnippetLabel()->getCodeLocation();

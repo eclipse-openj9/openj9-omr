@@ -55,18 +55,18 @@ int jitDebugPPC;
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
-#include "codegen/Snippet.hpp"                     // for TR_PPCSnippet, etc
+#include "codegen/Snippet.hpp"                     // for TR::PPCSnippet, etc
 #include "ras/Debug.hpp"                           // for TR_Debug
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "p/codegen/CallSnippet.hpp"               // for TR_PPCCallSnippet, etc
+#include "p/codegen/CallSnippet.hpp"               // for TR::PPCCallSnippet, etc
 #include "p/codegen/InterfaceCastSnippet.hpp"
 #include "p/codegen/StackCheckFailureSnippet.hpp"
 #endif
 
-class TR_PPCForceRecompilationSnippet;
-class TR_PPCRecompilationSnippet;
+namespace TR { class PPCForceRecompilationSnippet; }
+namespace TR { class PPCRecompilationSnippet; }
 
 extern const char * ppcOpCodeToNameMap[][2];
 
@@ -263,12 +263,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCLabelInstruction * instr)
 #ifdef J9_PROJECT_SPECIFIC
             case TR::Snippet::IsCall:
             case TR::Snippet::IsUnresolvedCall:
-               callSym = ((TR_PPCCallSnippet *)snippet)->getNode()->getSymbolReference();
+               callSym = ((TR::PPCCallSnippet *)snippet)->getNode()->getSymbolReference();
                break;
             case TR::Snippet::IsVirtual:
             case TR::Snippet::IsVirtualUnresolved:
             case TR::Snippet::IsInterfaceCall:
-               callSym = ((TR_PPCCallSnippet *)snippet)->getNode()->getSymbolReference();
+               callSym = ((TR::PPCCallSnippet *)snippet)->getNode()->getSymbolReference();
                break;
 #endif
             case TR::Snippet::IsHelperCall:
@@ -278,7 +278,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCLabelInstruction * instr)
             case TR::Snippet::IsLockReservationEnter:
             case TR::Snippet::IsLockReservationExit:
             case TR::Snippet::IsArrayCopyCall:
-               callSym = ((TR_PPCHelperCallSnippet *)snippet)->getDestination();
+               callSym = ((TR::PPCHelperCallSnippet *)snippet)->getDestination();
                break;
             }
          if (callSym)
@@ -999,36 +999,36 @@ TR_Debug::printp(TR::FILE *pOutFile, TR::Snippet * snippet)
       {
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsCall:
-         print(pOutFile, (TR_PPCCallSnippet *)snippet);
+         print(pOutFile, (TR::PPCCallSnippet *)snippet);
          break;
       case TR::Snippet::IsUnresolvedCall:
-         print(pOutFile, (TR_PPCUnresolvedCallSnippet *)snippet);
+         print(pOutFile, (TR::PPCUnresolvedCallSnippet *)snippet);
          break;
       case TR::Snippet::IsVirtual:
-         print(pOutFile, (TR_PPCVirtualSnippet *)snippet);
+         print(pOutFile, (TR::PPCVirtualSnippet *)snippet);
          break;
       case TR::Snippet::IsVirtualUnresolved:
-         print(pOutFile, (TR_PPCVirtualUnresolvedSnippet *)snippet);
+         print(pOutFile, (TR::PPCVirtualUnresolvedSnippet *)snippet);
          break;
       case TR::Snippet::IsInterfaceCall:
-         print(pOutFile, (TR_PPCInterfaceCallSnippet *)snippet);
+         print(pOutFile, (TR::PPCInterfaceCallSnippet *)snippet);
          break;
       case TR::Snippet::IsInterfaceCastSnippet:
-         print(pOutFile, (TR_PPCInterfaceCastSnippet *)snippet);
+         print(pOutFile, (TR::PPCInterfaceCastSnippet *)snippet);
          break;
       case TR::Snippet::IsStackCheckFailure:
-         print(pOutFile, (TR_PPCStackCheckFailureSnippet *)snippet);
+         print(pOutFile, (TR::PPCStackCheckFailureSnippet *)snippet);
          break;
       case TR::Snippet::IsForceRecompilation:
-         print(pOutFile, (TR_PPCForceRecompilationSnippet *)snippet);
+         print(pOutFile, (TR::PPCForceRecompilationSnippet *)snippet);
          break;
       case TR::Snippet::IsRecompilation:
-         print(pOutFile, (TR_PPCRecompilationSnippet *)snippet);
+         print(pOutFile, (TR::PPCRecompilationSnippet *)snippet);
          break;
 #endif
       case TR::Snippet::IsArrayCopyCall:
       case TR::Snippet::IsHelperCall:
-         print(pOutFile, (TR_PPCHelperCallSnippet *)snippet);
+         print(pOutFile, (TR::PPCHelperCallSnippet *)snippet);
          break;
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);

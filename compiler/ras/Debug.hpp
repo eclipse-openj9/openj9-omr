@@ -137,24 +137,24 @@ namespace TR { class X86FPRegRegInstruction;               }
 namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
 class TR_X86RegisterDependencyGroup;
-class TR_X86RestartSnippet;
-class TR_S390LookupSwitchSnippet;
-class TR_X86PicDataSnippet;
-class TR_IA32ConstantDataSnippet;
-class TR_IA32DataSnippet;
-class TR_X86DivideCheckSnippet;
-class TR_X86FPConvertToIntSnippet;
-class TR_X86FPConvertToLongSnippet;
-class TR_X86fbits2iSnippet;
-class TR_X86GuardedDevirtualSnippet;
-class TR_X86HelperCallSnippet;
-class TR_X86ScratchArgHelperCallSnippet;
+namespace TR { class X86RestartSnippet; }
+namespace TR { class S390LookupSwitchSnippet; }
+namespace TR { class X86PicDataSnippet; }
+namespace TR { class IA32ConstantDataSnippet; }
+namespace TR { class IA32DataSnippet; }
+namespace TR { class X86DivideCheckSnippet; }
+namespace TR { class X86FPConvertToIntSnippet; }
+namespace TR { class X86FPConvertToLongSnippet; }
+namespace TR { class X86fbits2iSnippet; }
+namespace TR { class X86GuardedDevirtualSnippet; }
+namespace TR { class X86HelperCallSnippet; }
+namespace TR { class X86ScratchArgHelperCallSnippet; }
 namespace TR { class UnresolvedDataSnippet; }
-class TR_X86UnresolvedVirtualCallSnippet;
+namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class AMD64Imm64Instruction;    }
 namespace TR { class AMD64Imm64SymInstruction; }
 namespace TR { class AMD64RegImm64Instruction; }
-class TR_AMD64FPConversionSnippet;
+namespace TR { class AMD64FPConversionSnippet; }
 
 struct TR_VFPState;
 namespace TR { class X86VFPSaveInstruction;        }
@@ -164,18 +164,18 @@ namespace TR { class X86VFPReleaseInstruction;     }
 namespace TR { class X86VFPCallCleanupInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
-class TR_X86CallSnippet;
-class TR_IA32WriteBarrierSnippet;
-class TR_AMD64WriteBarrierSnippet;
-class TR_X86JNIPauseSnippet;
-class TR_X86PassJNINullSnippet;
-class TR_X86HeapAllocationSnippet;
-class TR_X86CheckFailureSnippet;
-class TR_X86CheckFailureSnippetWithResolve;
-class TR_X86BoundCheckWithSpineCheckSnippet;
-class TR_X86SpineCheckSnippet;
-class TR_X86ForceRecompilationSnippet;
-class TR_X86RecompilationSnippet;
+namespace TR { class X86CallSnippet; }
+namespace TR { class IA32WriteBarrierSnippet; }
+namespace TR { class AMD64WriteBarrierSnippet; }
+namespace TR { class X86JNIPauseSnippet; }
+namespace TR { class X86PassJNINullSnippet; }
+namespace TR { class X86HeapAllocationSnippet; }
+namespace TR { class X86CheckFailureSnippet; }
+namespace TR { class X86CheckFailureSnippetWithResolve; }
+namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
+namespace TR { class X86SpineCheckSnippet; }
+namespace TR { class X86ForceRecompilationSnippet; }
+namespace TR { class X86RecompilationSnippet; }
 #endif
 
 namespace TR { class PPCDepInstruction;                  }
@@ -202,28 +202,28 @@ namespace TR { class PPCMemInstruction;                  }
 namespace TR { class PPCTrg1MemInstruction;              }
 namespace TR { class PPCControlFlowInstruction;          }
 namespace TR { class PPCVirtualGuardNOPInstruction;      }
-class TR_PPCUnresolvedCallSnippet;
-class TR_PPCVirtualSnippet;
-class TR_PPCVirtualUnresolvedSnippet;
-class TR_PPCInterfaceCallSnippet;
-class TR_PPCHelperCallSnippet;
-class TR_PPCMonitorEnterSnippet;
-class TR_PPCMonitorExitSnippet;
-class TR_PPCReadMonitorSnippet;
-class TR_PPCHeapAllocSnippet;
+namespace TR { class PPCUnresolvedCallSnippet; }
+namespace TR { class PPCVirtualSnippet; }
+namespace TR { class PPCVirtualUnresolvedSnippet; }
+namespace TR { class PPCInterfaceCallSnippet; }
+namespace TR { class PPCHelperCallSnippet; }
+namespace TR { class PPCMonitorEnterSnippet; }
+namespace TR { class PPCMonitorExitSnippet; }
+namespace TR { class PPCReadMonitorSnippet; }
+namespace TR { class PPCHeapAllocSnippet; }
 
-class TR_PPCAllocPrefetchSnippet;
+namespace TR { class PPCAllocPrefetchSnippet; }
 
-class TR_PPCLockReservationEnterSnippet;
-class TR_PPCLockReservationExitSnippet;
-class TR_PPCArrayCopyCallSnippet;
+namespace TR { class PPCLockReservationEnterSnippet; }
+namespace TR { class PPCLockReservationExitSnippet; }
+namespace TR { class PPCArrayCopyCallSnippet; }
 
 #ifdef J9_PROJECT_SPECIFIC
-class TR_PPCInterfaceCastSnippet;
-class TR_PPCStackCheckFailureSnippet;
-class TR_PPCForceRecompilationSnippet;
-class TR_PPCRecompilationSnippet;
-class TR_PPCCallSnippet;
+namespace TR { class PPCInterfaceCastSnippet; }
+namespace TR { class PPCStackCheckFailureSnippet; }
+namespace TR { class PPCForceRecompilationSnippet; }
+namespace TR { class PPCRecompilationSnippet; }
+namespace TR { class PPCCallSnippet; }
 #endif
 
 
@@ -247,16 +247,16 @@ namespace TR { class ARMMultipleMoveInstruction; }
 class TR_ARMMemoryReference;
 class TR_ARMOperand2;
 class TR_ARMRealRegister;
-class TR_ARMCallSnippet;
-class TR_ARMUnresolvedCallSnippet;
-class TR_ARMVirtualSnippet;
-class TR_ARMVirtualUnresolvedSnippet;
-class TR_ARMInterfaceCallSnippet;
-class TR_ARMHelperCallSnippet;
-class TR_ARMMonitorEnterSnippet;
-class TR_ARMMonitorExitSnippet;
-class TR_ARMStackCheckFailureSnippet;
-class TR_ARMRecompilationSnippet;
+namespace TR { class ARMCallSnippet; }
+namespace TR { class ARMUnresolvedCallSnippet; }
+namespace TR { class ARMVirtualSnippet; }
+namespace TR { class ARMVirtualUnresolvedSnippet; }
+namespace TR { class ARMInterfaceCallSnippet; }
+namespace TR { class ARMHelperCallSnippet; }
+namespace TR { class ARMMonitorEnterSnippet; }
+namespace TR { class ARMMonitorExitSnippet; }
+namespace TR { class ARMStackCheckFailureSnippet; }
+namespace TR { class ARMRecompilationSnippet; }
 class TR_ARMRegisterDependencyGroup;
 
 namespace TR { class S390LabelInstruction; }
@@ -316,18 +316,18 @@ namespace TR { class S390SInstruction; }
 namespace TR { class S390SIInstruction; }
 namespace TR { class S390SILInstruction; }
 namespace TR { class S390NOPInstruction; }
-class TR_S390WarmToColdTrampolineSnippet;
-class TR_S390RestoreGPR7Snippet;
-class TR_S390CallSnippet;
-class TR_S390ConstantDataSnippet;
-class TR_S390WritableDataSnippet;
-class TR_S390TargetAddressSnippet;
-class TR_S390HelperCallSnippet;
-class TR_S390InterfaceCallDataSnippet;
-class TR_S390JNICallDataSnippet;
+namespace TR { class S390WarmToColdTrampolineSnippet; }
+namespace TR { class S390RestoreGPR7Snippet; }
+namespace TR { class S390CallSnippet; }
+namespace TR { class S390ConstantDataSnippet; }
+namespace TR { class S390WritableDataSnippet; }
+namespace TR { class S390TargetAddressSnippet; }
+namespace TR { class S390HelperCallSnippet; }
+namespace TR { class S390InterfaceCallDataSnippet; }
+namespace TR { class S390JNICallDataSnippet; }
 
-class TR_S390StackCheckFailureSnippet;
-class TR_S390HeapAllocSnippet;
+namespace TR { class S390StackCheckFailureSnippet; }
+namespace TR { class S390HeapAllocSnippet; }
 class TR_S390RegisterDependencyGroup;
 namespace TR { class S390RRSInstruction; }
 namespace TR { class S390RIEInstruction; }
@@ -335,12 +335,12 @@ namespace TR { class S390RISInstruction; }
 namespace TR { class S390IEInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
-class TR_S390ForceRecompilationSnippet;
-class TR_S390ForceRecompilationDataSnippet;
-class TR_S390UnresolvedCallSnippet;
-class TR_S390VirtualSnippet;
-class TR_S390VirtualUnresolvedSnippet;
-class TR_S390InterfaceCallSnippet;
+namespace TR { class S390ForceRecompilationSnippet; }
+namespace TR { class S390ForceRecompilationDataSnippet; }
+namespace TR { class S390UnresolvedCallSnippet; }
+namespace TR { class S390VirtualSnippet; }
+namespace TR { class S390VirtualUnresolvedSnippet; }
+namespace TR { class S390InterfaceCallSnippet; }
 #endif
 
 TR_Debug *createDebugObject(TR::Compilation *);
@@ -582,7 +582,7 @@ public:
 #if defined(TR_TARGET_POWER)
    virtual const char * getOpCodeName(TR::InstOpCode *);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
-   void print(TR::FILE *, TR_PPCHelperCallSnippet *);
+   void print(TR::FILE *, TR::PPCHelperCallSnippet *);
 #endif
 #if defined(TR_TARGET_ARM)
    virtual void printARMDelayedOffsetInstructions(TR::FILE *pOutFile, TR::ARMMemInstruction *instr);
@@ -590,7 +590,7 @@ public:
    virtual const char * getOpCodeName(TR_ARMOpCode *);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    const char * getName(uint32_t realRegisterIndex, TR_RegisterSizes = (TR_RegisterSizes)-1);
-   void print(TR::FILE *, TR_ARMHelperCallSnippet *);
+   void print(TR::FILE *, TR::ARMHelperCallSnippet *);
 #endif
 #if defined(TR_TARGET_S390)
    virtual const char * getOpCodeName(TR::InstOpCode *);
@@ -661,11 +661,11 @@ public:
 
 
    void printLabelInstruction(TR::FILE *, const char *, TR::LabelSymbol *label);
-   int32_t printRestartJump(TR::FILE *, TR_X86RestartSnippet *, uint8_t *);
-   int32_t printRestartJump(TR::FILE *, TR_X86RestartSnippet *, uint8_t *, int32_t, const char *);
+   int32_t printRestartJump(TR::FILE *, TR::X86RestartSnippet *, uint8_t *);
+   int32_t printRestartJump(TR::FILE *, TR::X86RestartSnippet *, uint8_t *, int32_t, const char *);
 
 #ifdef J9_PROJECT_SPECIFIC
-   int32_t printRestartJump(TR::FILE *, TR_AMD64WriteBarrierSnippet *, uint8_t *);
+   int32_t printRestartJump(TR::FILE *, TR::AMD64WriteBarrierSnippet *, uint8_t *);
 #endif
 
    char * printSymbolName(TR::FILE *, TR::Symbol *, TR::SymbolReference *, TR::MemoryReference *mr=NULL)  ;
@@ -819,42 +819,42 @@ public:
    void printx(TR::FILE *, TR::Snippet *);
 
 #ifdef J9_PROJECT_SPECIFIC
-   void print(TR::FILE *, TR_X86CallSnippet *);
-   void print(TR::FILE *, TR_X86PicDataSnippet *);
-   void print(TR::FILE *, TR_X86UnresolvedVirtualCallSnippet *);
-   void print(TR::FILE *, TR_IA32WriteBarrierSnippet *);
+   void print(TR::FILE *, TR::X86CallSnippet *);
+   void print(TR::FILE *, TR::X86PicDataSnippet *);
+   void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *);
+   void print(TR::FILE *, TR::IA32WriteBarrierSnippet *);
 #ifdef TR_TARGET_64BIT
-   uint8_t *printArgs(TR::FILE *, TR_AMD64WriteBarrierSnippet *, bool, uint8_t *);
-   void print(TR::FILE *, TR_AMD64WriteBarrierSnippet *);
+   uint8_t *printArgs(TR::FILE *, TR::AMD64WriteBarrierSnippet *, bool, uint8_t *);
+   void print(TR::FILE *, TR::AMD64WriteBarrierSnippet *);
 #endif
-   void print(TR::FILE *, TR_X86JNIPauseSnippet *);
-   void print(TR::FILE *, TR_X86PassJNINullSnippet *);
-   void print(TR::FILE *, TR_X86HeapAllocationSnippet *);
-   void print(TR::FILE *, TR_X86CheckFailureSnippet *);
-   void print(TR::FILE *, TR_X86CheckFailureSnippetWithResolve *);
-   void print(TR::FILE *, TR_X86BoundCheckWithSpineCheckSnippet *);
-   void print(TR::FILE *, TR_X86SpineCheckSnippet *);
-   void print(TR::FILE *, TR_X86ForceRecompilationSnippet *);
-   void print(TR::FILE *, TR_X86RecompilationSnippet *);
+   void print(TR::FILE *, TR::X86JNIPauseSnippet *);
+   void print(TR::FILE *, TR::X86PassJNINullSnippet *);
+   void print(TR::FILE *, TR::X86HeapAllocationSnippet *);
+   void print(TR::FILE *, TR::X86CheckFailureSnippet *);
+   void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
+   void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);
+   void print(TR::FILE *, TR::X86SpineCheckSnippet *);
+   void print(TR::FILE *, TR::X86ForceRecompilationSnippet *);
+   void print(TR::FILE *, TR::X86RecompilationSnippet *);
 #endif
 
-   void print(TR::FILE *, TR_IA32ConstantDataSnippet *);
-   void print(TR::FILE *, TR_IA32DataSnippet *);
-   void print(TR::FILE *, TR_X86DivideCheckSnippet *);
-   void print(TR::FILE *, TR_X86FPConvertToIntSnippet *);
-   void print(TR::FILE *, TR_X86FPConvertToLongSnippet *);
-   void print(TR::FILE *, TR_X86fbits2iSnippet *);
-   void print(TR::FILE *, TR_X86GuardedDevirtualSnippet *);
-   void print(TR::FILE *, TR_X86HelperCallSnippet *);
-   void printBody(TR::FILE *, TR_X86HelperCallSnippet *, uint8_t *bufferPos);
-   void print(TR::FILE *, TR_X86ScratchArgHelperCallSnippet *);
+   void print(TR::FILE *, TR::IA32ConstantDataSnippet *);
+   void print(TR::FILE *, TR::IA32DataSnippet *);
+   void print(TR::FILE *, TR::X86DivideCheckSnippet *);
+   void print(TR::FILE *, TR::X86FPConvertToIntSnippet *);
+   void print(TR::FILE *, TR::X86FPConvertToLongSnippet *);
+   void print(TR::FILE *, TR::X86fbits2iSnippet *);
+   void print(TR::FILE *, TR::X86GuardedDevirtualSnippet *);
+   void print(TR::FILE *, TR::X86HelperCallSnippet *);
+   void printBody(TR::FILE *, TR::X86HelperCallSnippet *, uint8_t *bufferPos);
+   void print(TR::FILE *, TR::X86ScratchArgHelperCallSnippet *);
 
 
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
 
 #ifdef TR_TARGET_64BIT
    uint8_t *printArgumentFlush(TR::FILE *, TR::Node *, bool, uint8_t *);
-   void print(TR::FILE *, TR_AMD64FPConversionSnippet *);
+   void print(TR::FILE *, TR::AMD64FPConversionSnippet *);
 #endif
 #endif
 #ifdef TR_TARGET_POWER
@@ -905,33 +905,33 @@ public:
    void printInstructionComment(TR::FILE *pOutFile, int32_t tabStops, TR::Instruction *instr);
 
    void printp(TR::FILE *, TR::Snippet *);
-   void print(TR::FILE *, TR_PPCMonitorEnterSnippet *);
-   void print(TR::FILE *, TR_PPCMonitorExitSnippet *);
-   void print(TR::FILE *, TR_PPCReadMonitorSnippet *);
-   void print(TR::FILE *, TR_PPCHeapAllocSnippet *);
-   void print(TR::FILE *, TR_PPCAllocPrefetchSnippet *);
+   void print(TR::FILE *, TR::PPCMonitorEnterSnippet *);
+   void print(TR::FILE *, TR::PPCMonitorExitSnippet *);
+   void print(TR::FILE *, TR::PPCReadMonitorSnippet *);
+   void print(TR::FILE *, TR::PPCHeapAllocSnippet *);
+   void print(TR::FILE *, TR::PPCAllocPrefetchSnippet *);
 
 
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
 
 #ifdef J9_PROJECT_SPECIFIC
-   void print(TR::FILE *, TR_PPCStackCheckFailureSnippet *);
-   void print(TR::FILE *, TR_PPCInterfaceCastSnippet *);
-   void print(TR::FILE *, TR_PPCUnresolvedCallSnippet *);
-   void print(TR::FILE *, TR_PPCVirtualSnippet *);
-   void print(TR::FILE *, TR_PPCVirtualUnresolvedSnippet *);
-   void print(TR::FILE *, TR_PPCInterfaceCallSnippet *);
-   void print(TR::FILE *, TR_PPCForceRecompilationSnippet *);
-   void print(TR::FILE *, TR_PPCRecompilationSnippet *);
-   void print(TR::FILE *, TR_PPCCallSnippet *);
+   void print(TR::FILE *, TR::PPCStackCheckFailureSnippet *);
+   void print(TR::FILE *, TR::PPCInterfaceCastSnippet *);
+   void print(TR::FILE *, TR::PPCUnresolvedCallSnippet *);
+   void print(TR::FILE *, TR::PPCVirtualSnippet *);
+   void print(TR::FILE *, TR::PPCVirtualUnresolvedSnippet *);
+   void print(TR::FILE *, TR::PPCInterfaceCallSnippet *);
+   void print(TR::FILE *, TR::PPCForceRecompilationSnippet *);
+   void print(TR::FILE *, TR::PPCRecompilationSnippet *);
+   void print(TR::FILE *, TR::PPCCallSnippet *);
 #endif
 
 
 
    void printMemoryReferenceComment(TR::FILE *pOutFile, TR::MemoryReference *mr);
-   void print(TR::FILE *, TR_PPCLockReservationEnterSnippet *);
-   void print(TR::FILE *, TR_PPCLockReservationExitSnippet *);
-   uint8_t* print(TR::FILE *pOutFile, TR_PPCArrayCopyCallSnippet *snippet, uint8_t *cursor);
+   void print(TR::FILE *, TR::PPCLockReservationEnterSnippet *);
+   void print(TR::FILE *, TR::PPCLockReservationExitSnippet *);
+   uint8_t* print(TR::FILE *pOutFile, TR::PPCArrayCopyCallSnippet *snippet, uint8_t *cursor);
 
 #endif
 #ifdef TR_TARGET_ARM
@@ -969,16 +969,16 @@ public:
    void printInstructionComment(TR::FILE *pOutFile, int32_t tabStops, TR::Instruction *instr);
 
    void printa(TR::FILE *, TR::Snippet *);
-   void print(TR::FILE *, TR_ARMCallSnippet *);
-   void print(TR::FILE *, TR_ARMUnresolvedCallSnippet *);
-   void print(TR::FILE *, TR_ARMVirtualSnippet *);
-   void print(TR::FILE *, TR_ARMVirtualUnresolvedSnippet *);
-   void print(TR::FILE *, TR_ARMInterfaceCallSnippet *);
-   void print(TR::FILE *, TR_ARMMonitorEnterSnippet *);
-   void print(TR::FILE *, TR_ARMMonitorExitSnippet *);
-   void print(TR::FILE *, TR_ARMStackCheckFailureSnippet *);
+   void print(TR::FILE *, TR::ARMCallSnippet *);
+   void print(TR::FILE *, TR::ARMUnresolvedCallSnippet *);
+   void print(TR::FILE *, TR::ARMVirtualSnippet *);
+   void print(TR::FILE *, TR::ARMVirtualUnresolvedSnippet *);
+   void print(TR::FILE *, TR::ARMInterfaceCallSnippet *);
+   void print(TR::FILE *, TR::ARMMonitorEnterSnippet *);
+   void print(TR::FILE *, TR::ARMMonitorExitSnippet *);
+   void print(TR::FILE *, TR::ARMStackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
-   void print(TR::FILE *, TR_ARMRecompilationSnippet *);
+   void print(TR::FILE *, TR::ARMRecompilationSnippet *);
    void printARM(TR::FILE *, uint8_t *, uint8_t *);
 #endif
 #ifdef TR_TARGET_S390
@@ -1051,28 +1051,28 @@ public:
    uint8_t * printS390ArgumentsFlush(TR::FILE *, TR::Node *, uint8_t *, int32_t);
 
    void printz(TR::FILE *, TR::Snippet *);
-   void print(TR::FILE *, TR_S390CallSnippet *);
+   void print(TR::FILE *, TR::S390CallSnippet *);
 
-   void print(TR::FILE *, TR_S390ConstantDataSnippet *);
-   void print(TR::FILE *, TR_S390TargetAddressSnippet *);
+   void print(TR::FILE *, TR::S390ConstantDataSnippet *);
+   void print(TR::FILE *, TR::S390TargetAddressSnippet *);
 
-   void print(TR::FILE *, TR_S390LookupSwitchSnippet *);
-   void print(TR::FILE *, TR_S390HelperCallSnippet *);
+   void print(TR::FILE *, TR::S390LookupSwitchSnippet *);
+   void print(TR::FILE *, TR::S390HelperCallSnippet *);
 #ifdef J9_PROJECT_SPECIFIC
-   void print(TR::FILE *, TR_S390ForceRecompilationSnippet *);
-   void print(TR::FILE *, TR_S390ForceRecompilationDataSnippet *);
-   void print(TR::FILE *, TR_S390UnresolvedCallSnippet *);
-   void print(TR::FILE *, TR_S390VirtualSnippet *);
-   void print(TR::FILE *, TR_S390VirtualUnresolvedSnippet *);
-   void print(TR::FILE *, TR_S390InterfaceCallSnippet *);
+   void print(TR::FILE *, TR::S390ForceRecompilationSnippet *);
+   void print(TR::FILE *, TR::S390ForceRecompilationDataSnippet *);
+   void print(TR::FILE *, TR::S390UnresolvedCallSnippet *);
+   void print(TR::FILE *, TR::S390VirtualSnippet *);
+   void print(TR::FILE *, TR::S390VirtualUnresolvedSnippet *);
+   void print(TR::FILE *, TR::S390InterfaceCallSnippet *);
 #endif
-   void print(TR::FILE *, TR_S390StackCheckFailureSnippet *);
+   void print(TR::FILE *, TR::S390StackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
-   void print(TR::FILE *, TR_S390HeapAllocSnippet *);
-   void print(TR::FILE *, TR_S390InterfaceCallDataSnippet *);
-   void print(TR::FILE *, TR_S390JNICallDataSnippet *);
-   void print(TR::FILE *, TR_S390WarmToColdTrampolineSnippet *);
-   void print(TR::FILE *, TR_S390RestoreGPR7Snippet *);
+   void print(TR::FILE *, TR::S390HeapAllocSnippet *);
+   void print(TR::FILE *, TR::S390InterfaceCallDataSnippet *);
+   void print(TR::FILE *, TR::S390JNICallDataSnippet *);
+   void print(TR::FILE *, TR::S390WarmToColdTrampolineSnippet *);
+   void print(TR::FILE *, TR::S390RestoreGPR7Snippet *);
 
    // Assembly related snippet display
    void printGPRegisterStatus(TR::FILE *pOutFile, TR::Machine *machine);

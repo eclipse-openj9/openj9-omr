@@ -294,7 +294,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
       else if (label != NULL)
          {
          cg()->addRelocation(new (cg()->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, label));
-         ((TR_ARMCallSnippet *)getCallSnippet())->setCallRA(cursor+4);
+         ((TR::ARMCallSnippet *)getCallSnippet())->setCallRA(cursor+4);
          }
       else
          {

@@ -31,7 +31,9 @@
 
 namespace TR { class Node; }
 
-template <class T> class TR_ARMConstant
+namespace TR {
+
+template <class T> class ARMConstant
    {
    TR_Array<TR::Instruction *>     _instructionPairs;
    int32_t                         _tocOffset;
@@ -43,7 +45,7 @@ template <class T> class TR_ARMConstant
 
    TR_ALLOC(TR_Memory::ARMConstant)
 
-   TR_ARMConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
+   ARMConstant(TR::CodeGenerator * cg, T v, TR::Node *n=NULL, bool ps=false) : _instructionPairs(cg->trMemory()), _value(v), _node(n), _isUnloadablePicSite(ps) {};
 
    T getConstantValue() {return _value;}
    bool isUnloadablePicSite() {return _isUnloadablePicSite;}
@@ -70,13 +72,13 @@ template <class T> class TR_ARMConstant
    TR::Node *getNode() { return _node; }
    };
 
-class TR_ARMConstantDataSnippet
+class ARMConstantDataSnippet
    {
 #if 0
-   List< TR_ARMConstant<double> >     _doubleConstants;
-   List< TR_ARMConstant<float> >      _floatConstants;
+   List< TR::ARMConstant<double> >     _doubleConstants;
+   List< TR::ARMConstant<float> >      _floatConstants;
 #endif
-   List< TR_ARMConstant<intptrj_t> > _addressConstants;
+   List< TR::ARMConstant<intptrj_t> > _addressConstants;
    uint8_t                                *_snippetBinaryStart;
    TR::CodeGenerator                       *_cg;
 
@@ -84,7 +86,7 @@ class TR_ARMConstantDataSnippet
 
    TR_ALLOC(TR_Memory::ARMConstantDataSnippet)
 
-   TR_ARMConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _addressConstants(cg->trMemory())
+   ARMConstantDataSnippet(TR::CodeGenerator *cg) : _cg(cg), _addressConstants(cg->trMemory())
       /* , _doubleConstants(cg->trMemory()), _floatConstants(cg->trMemory()) */
       {
       };
@@ -113,5 +115,8 @@ class TR_ARMConstantDataSnippet
    virtual void print(TR::FILE *outFile);
 #endif
 
-};
+   };
+
+}
+
 #endif

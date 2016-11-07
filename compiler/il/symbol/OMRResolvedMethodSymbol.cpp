@@ -1416,12 +1416,13 @@ bool
 OMR::ResolvedMethodSymbol::supportsInduceOSR(TR_ByteCodeInfo bci,
                                            TR::Block *blockToOSRAt,
                                            TR::ResolvedMethodSymbol *calleeSymbolIfCallNode,
-                                           TR::Compilation *comp)
+                                           TR::Compilation *comp,
+                                           bool runCleanup)
    {
    if (!comp->supportsInduceOSR())
       return false;
 
-   if (self()->cannotAttemptOSR(bci, blockToOSRAt, calleeSymbolIfCallNode, comp))
+   if (self()->cannotAttemptOSR(bci, blockToOSRAt, calleeSymbolIfCallNode, comp, runCleanup))
       return false;
 
    return true;
@@ -1446,7 +1447,8 @@ bool
 OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
                                           TR::Block *blockToOSRAt,
                                           TR::ResolvedMethodSymbol *calleeSymbolIfCallNode,
-                                          TR::Compilation *comp)
+                                          TR::Compilation *comp,
+                                          bool runCleanup)
    {
    if (comp->getOption(TR_TraceOSR))
       traceMsg(comp, "Checking if OSR can be attempted at bytecode index %d\n", bci.getByteCodeIndex());
@@ -1480,14 +1482,7 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
    int32_t callSite = bci.getCallerIndex();
    int32_t byteCodeIndex = bci.getByteCodeIndex();
 
-   TR_OSRMethodData *osrMethodData = comp->getOSRCompilationData()->findOSRMethodData(callSite, self());
-   if (!osrMethodData)
-      {
-      if (comp->getOption(TR_TraceOSR))
-         traceMsg(comp, "Top level OSR method data is NULL - bci: %d.%d symbol: %s\n", callSite, byteCodeIndex, self()->getResolvedMethod()->signature(comp->trMemory()));
-      return true;
-      }
-
+   TR_OSRMethodData *osrMethodData = comp->getOSRCompilationData()->findOrCreateOSRMethodData(callSite, self());
    TR::Block * OSRCatchBlock = osrMethodData->getOSRCatchBlock();
 
    // Walk up the inlined call stack and safety check every call to see if OSR is safe - note that we only check
@@ -1541,18 +1536,20 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
       symToCheckOSRBlocksReachability = calleeSymbolIfCallNode;
 
    if (comp->getMethodSymbol() != symToCheckOSRBlocksReachability
-       && !symToCheckOSRBlocksReachability->cleanupUnreachableOSRBlocks(callSite, comp))
+       && !symToCheckOSRBlocksReachability->allCallerOSRBlocksArePresent(callSite, comp))
       {
+      if (runCleanup)
+         symToCheckOSRBlocksReachability->cleanupUnreachableOSRBlocks(callSite, comp);
       if (comp->getOption(TR_TraceOSR))
          traceMsg(comp, "Some caller OSR blocks are not present\n");
 
       return true;
       }
 
-   if (!blockToOSRAt->hasExceptionSuccessor(OSRCatchBlock) && comp->getHCRMode() != TR::osr)
+   if (blockToOSRAt && (!OSRCatchBlock || !blockToOSRAt->hasExceptionSuccessor(OSRCatchBlock)))
       {
       if (comp->getOption(TR_TraceOSR))
-         traceMsg(comp, "Missing OSR exception successor - cannot OSR\n");
+         traceMsg(comp, "Missing OSR exception successor block_%d for block_%d - cannot OSR\n", OSRCatchBlock->getNumber(), blockToOSRAt->getNumber());
       return true;
       }
 
@@ -1562,10 +1559,36 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
    return false;
    }
 
-
-
-
 bool
+OMR::ResolvedMethodSymbol::allCallerOSRBlocksArePresent(int32_t inlinedSiteIndex, TR::Compilation *comp)
+   {
+   TR_OSRMethodData *osrMethodData = inlinedSiteIndex > -1 ? comp->getOSRCompilationData()->findCallerOSRMethodData(comp->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, self())) : NULL;
+   TR::Block * OSRCatchBlock = osrMethodData ? osrMethodData->getOSRCatchBlock() : NULL;
+
+   bool allCallersOSRCodeBlocksAreStillInCFG = true;
+   while (osrMethodData)
+      {
+      TR::Block * CallerOSRCodeBlock = osrMethodData->getOSRCodeBlock();
+      if (!CallerOSRCodeBlock ||
+          CallerOSRCodeBlock->isUnreachable())
+         {
+         if (comp->getOption(TR_TraceOSR))
+            traceMsg(comp, "Osr catch block at inlined site index %d is absent\n", osrMethodData->getInlinedSiteIndex());
+
+         return false;
+         }
+      else if (comp->getOption(TR_TraceOSR))
+         traceMsg(comp, "Osr catch block at inlined site index %d is present\n", osrMethodData->getInlinedSiteIndex());
+
+      if (osrMethodData->getInlinedSiteIndex() > -1)
+         osrMethodData = comp->getOSRCompilationData()->findCallerOSRMethodData(osrMethodData);
+      else
+         osrMethodData = NULL;
+      }
+   return true;
+   }
+
+void
 OMR::ResolvedMethodSymbol::cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex, TR::Compilation *comp)
    {
    TR_OSRMethodData *osrMethodData = inlinedSiteIndex > -1 ? comp->getOSRCompilationData()->findCallerOSRMethodData(comp->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, self())) : NULL;
@@ -1621,8 +1644,6 @@ OMR::ResolvedMethodSymbol::cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex,
             cursorOsrMethodData = NULL;
          }
       }
-
-   return allCallersOSRCodeBlocksAreStillInCFG;
    }
 
 

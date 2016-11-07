@@ -8367,32 +8367,10 @@ TR_ColdBlockOutlining::reorderColdBlocks()
       {
       TR::Block *currentBlock = currentTree->getNode()->getBlock();
 
-      // PLX: do not separate block with internal call
-      // and the next block. The same for ASM block
-#if 0
-      if (currentBlock->isGenAsmBlock() &&
-          currentBlock->getNextBlock())
-         {
-         // KP: Make sure we don't skip the block that was originally the last.
-         if (currentBlock->getExit() == lastTree) break;
-         currentBlock = currentBlock->getNextBlock();
-         if (currentBlock->getExit() == lastTree) break;
-         currentBlock = currentBlock->getNextBlock();
-         }
-#endif
-
       if (currentBlock == NULL) break;
       exitTree = currentBlock->getExit();
 
       if (exitTree == lastTree) break;
-
-      // have to check if a getNextTreeTop still exists as the current block may have been swung down to be the new last block
-      // For PLX, we have to move user marked cold block
-      //if (exitTree->getNextTreeTop() && exitTree->getNextTreeTop()->getNode()->getBlock()->isGenAsmBlock())
-#if 0
-      if ( exitTree->getNextTreeTop() && exitTree->getNextTreeTop()->getNode()->getBlock()->isGenAsmBlock())
-         continue;
-#endif
 
       if (!coldBlock(currentBlock, comp())/*currentBlock->isCold()*/ /* && !currentBlock->isRare(comp()) */)
          {
@@ -8427,49 +8405,13 @@ TR_ColdBlockOutlining::reorderColdBlocks()
            predBlock->getExit()->getNextTreeTop()->getNode()->getBlock() == currentBlock &&
            currentBlock->getEntry()->getNode()->getLabel() == NULL)
           continue;
-
-       if (predBlock->isGenAsmFlowBlock() && !predBlock->isSuperCold())
-          {
-          //traceMsg(comp(), "Cold Block Outlining: one predeccessor %d of block_%d is genAsmFlow block \n", predBlock->getNumber(), currentBlock->getNumber());
-          foundAsmGenFlowPredBlock = true;
-          break;
-          }
        }
      if (foundAsmGenFlowPredBlock)
         {
         continue;
         }
 
-     // Second, check if this block is gen asm flow block and
-     // any successor of this block is not fall through and hot, continue if yes
-     if (currentBlock->isGenAsmFlowBlock())
-        {
-        TR::list<TR::CFGEdge*> & successors = ((TR::CFGNode *)currentBlock)->getSuccessors();
-        bool foundNonColdSuccessor = false;
-        for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
-          {
-          TR::Block *succBlock = (*succEdge)->getTo()->asBlock();
-
-          // we can alwasy insert a long jump if currentBlock is fall through of predBlock
-          if (currentBlock->getExit() && currentBlock->getExit()->getNextTreeTop() &&
-              currentBlock->getExit()->getNextTreeTop()->getNode()->getBlock() == succBlock &&
-              succBlock->getEntry()->getNode()->getLabel() == NULL)
-             continue;
-
-          if (!succBlock->isSuperCold())
-             {
-             //traceMsg(comp(), "Cold Block Outlining: one successor %d of block_%d(genAsmFlowBlock) is not cold \n", succBlock->getNumber(),currentBlock->getNumber());
-             foundNonColdSuccessor = true;
-             break;
-             }
-          }
-        if (foundNonColdSuccessor)
-           {
-           continue;
-           }
-        }
-
-      if (!startBlock)
+     if (!startBlock)
          startBlock = currentBlock;
 
       numBlocks++;

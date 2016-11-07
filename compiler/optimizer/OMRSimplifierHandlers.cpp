@@ -15723,10 +15723,6 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       block->setHasCalls(true);
    if (nextBlock->hasCallToSuperCold())
      block->setHasCallToSuperCold(true);
-   if (nextBlock->isGenAsmBlock())
-      block->setIsGenAsmBlock(true);
-   if (nextBlock->isGenAsmFlowBlock())
-      block->setIsGenAsmFlowBlock(true);
 
    block->setIsCold(nextBlock->isCold());
    block->setIsSuperCold(nextBlock->isSuperCold());

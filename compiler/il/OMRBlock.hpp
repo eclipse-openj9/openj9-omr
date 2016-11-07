@@ -413,12 +413,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    void setIsAdded()                                  { _flags.set(_isAdded); }
    bool isAdded()                                     { return _flags.testAny(_isAdded); }
 
-   void setIsGenAsmBlock(bool b)                      { _flags.set(_isGenAsmBlock, b); }
-   bool isGenAsmBlock()                               { return _flags.testAny(_isGenAsmBlock); }
-
-   void setIsGenAsmFlowBlock(bool b)                  { _flags.set(_isGenAsmFlowBlock, b); }
-   bool isGenAsmFlowBlock()                           { return _flags.testAny(_isGenAsmFlowBlock); }
-
    void setIsOSRCodeBlock()                           { _flags.set(_isOSRCodeBlock); }
    bool isOSRCodeBlock()                              { return _flags.testAny(_isOSRCodeBlock); }
 
@@ -507,8 +501,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _hasBeenVisited                       = 0x00000400,
       _isPRECandidate                       = 0x00000800,
       _isAdded                              = 0x00001000,
-      _isGenAsmBlock                        = 0x00010000,
-      _isGenAsmFlowBlock                    = 0x00100000,
       _isOSRCodeBlock                       = 0x00004000,
       _isOSRCatchBlock                      = 0x00008000,
       _createdAtCodeGen                     = 0x00080000,

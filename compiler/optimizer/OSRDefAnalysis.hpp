@@ -43,7 +43,7 @@ class TR_OSRDefInfo : public TR_UseDefInfo
    void performFurtherAnalysis(AuxiliaryData &aux);
    virtual void processReachingDefinition(void* vblockInfo, AuxiliaryData &aux);
    void buildOSRDefs(void *blockInfo, AuxiliaryData &aux);
-   void buildOSRDefs(TR::Node *node, void *analysisInfo, TR_OSRPoint *osrPoint, TR::Node *parent, AuxiliaryData &aux);
+   void buildOSRDefs(TR::Node *node, void *analysisInfo, TR_OSRPoint *osrPoint, TR_OSRPoint *osrPoint2, TR::Node *parent, AuxiliaryData &aux);
    void addSharingInfo(AuxiliaryData &aux);
 
    TR::ResolvedMethodSymbol *_methodSymbol;

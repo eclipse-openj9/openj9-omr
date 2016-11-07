@@ -305,17 +305,20 @@ class TR_OSRPoint
    public:
    TR_ALLOC(TR_Memory::OSR);
 
-   TR_OSRPoint(TR::Node *node, TR_OSRMethodData *methodData, TR_Memory *m);
+   TR_OSRPoint(TR::Node *node, int32_t induceOffset, TR_OSRMethodData *methodData, TR_Memory *m);
    TR_OSRMethodData *getOSRMethodData() { return _methodData; }
 
    void setOSRIndex(uint32_t index) { _index = index; }
    uint32_t getOSRIndex() { return _index; }
-   TR_ByteCodeInfo& getByteCodeInfo() {return _bcinfo;}
+   TR_ByteCodeInfo& getNodeByteCodeInfo() {return _nodeBCInfo;}
+   TR_ByteCodeInfo& getInduceByteCodeInfo() {return _induceBCInfo;}
+   bool induceAfter() { return _induceBCInfo.getByteCodeIndex() > _nodeBCInfo.getByteCodeIndex(); }
 
    private:
    TR_OSRMethodData                   *_methodData;
    uint32_t                            _index;
-   TR_ByteCodeInfo                     _bcinfo;
+   TR_ByteCodeInfo                     _nodeBCInfo;
+   TR_ByteCodeInfo                     _induceBCInfo;
    };
 
 

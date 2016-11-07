@@ -843,6 +843,7 @@ public:
     * incorrect answers if you fail to supply the TreeTop
     */
    bool isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode = NULL);
+   int32_t getOSRInductionOffset(TR::Node *node);
 
    // for OSR
    TR_OSRCompilationData* getOSRCompilationData() {return _osrCompilationData;}

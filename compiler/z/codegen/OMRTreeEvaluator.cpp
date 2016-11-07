@@ -6309,7 +6309,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
          {
          TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
-         if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
+         if (valueNode->getOpCode().isLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
             {
             if (valueNode->getOpCode().isIndirect() || !valueNode->getSymbolReference()->getSymbol()->isRegisterSymbol())
                {
@@ -6339,7 +6339,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
                return true;
                }
             }
-         else if (valueNode->getOpCode().isConversion() && valueNode->isSingleRefUnevaluated())
+         else if (valueNode->getOpCode().isConversion() && valueNode->isSingleRefUnevaluated() && !valueNode->hasUnresolvedSymbolReference())
             {
             TR::Node* conversionNode = valueNode;
 

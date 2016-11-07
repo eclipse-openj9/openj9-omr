@@ -1573,17 +1573,6 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
          }
       }
 
-   // TODO: remove this disable once z codegen snippets issue has been fixed
-   //       see github issue #427
-   if (TR::Compiler->target.cpu.isZ())
-      {
-      static char *enableZPrivArgRemat = feGetEnv("TR_enablePrivArgRematForZ");
-      if (!enableZPrivArgRemat)
-         {
-         suitableForRemat = false;
-         }
-      }
-
    // TODO: remove this diable once we have finished vetting all changes
    //       and bug fixes for priv arg remat have been contributed
    //       see github issue #437

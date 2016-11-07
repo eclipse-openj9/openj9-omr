@@ -57,6 +57,18 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 	J9ThreadMonitorTracing *tracing = (self->library->flags & J9THREAD_LIB_FLAG_JLM_ENABLED) ? monitor->tracing : NULL;
 #endif /* OMR_THR_JLM */
 
+#if defined(OMR_THR_SPIN_WAKE_CONTROL)
+	BOOLEAN spinning = FALSE;
+
+ 	if (monitor->spinThreads >= self->library->maxSpinThreads) {
+ 		result = -1;
+ 		goto done;
+ 	}
+
+	VM_AtomicSupport::add(&monitor->spinThreads, 1);
+	spinning = TRUE;
+#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
+
 	for (uintptr_t spinCount3 = monitor->spinCount3; spinCount3 > 0; spinCount3--) {
 		for (uintptr_t spinCount2 = monitor->spinCount2; spinCount2 > 0; spinCount2--) {
 			/* Try to put 0 into the target field (-1 indicates free)'. */
@@ -107,6 +119,11 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 	}
 #endif /* OMR_THR_JLM */
 done:
+#if defined(OMR_THR_SPIN_WAKE_CONTROL)
+	if (spinning) {
+		VM_AtomicSupport::subtract(&monitor->spinThreads, 1);
+	}
+#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 	return result;
 }
 

@@ -203,6 +203,19 @@
 #undef OMR_NOTIFY_POLICY_CONTROL
 
 /**
+ * This flag enables new synchronization prototypes which  
+ * -- prevent large number of threads to spin at a time on a monitor 
+ * -- avoid the thundering herd problem on wake up
+ *
+ * The prototypes provide the following features
+ * -- track number of threads spinning on a monitor
+ * -- wake threads only when no thread is spinning on a monitor
+ * -- limit/control number of threads that are woken up per monitor
+ * -- limit/control number of threads that are allowed to spin per monitor
+ */
+#undef OMR_THR_SPIN_WAKE_CONTROL
+
+/**
  * This enables the option to select different algorithms for yielding.
  */
 #undef OMR_THR_YIELD_ALG

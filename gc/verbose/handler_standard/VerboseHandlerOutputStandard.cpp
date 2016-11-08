@@ -846,12 +846,12 @@ MM_VerboseHandlerOutputStandard::outputMemoryInfoInnerStanza(MM_EnvironmentBase 
 				(size_t) stats->_totalFreeTenureHeapSize, (size_t) stats->_totalTenureHeapSize,
 				(size_t) ((stats->_totalTenureHeapSize == 0) ? 0 : ((uintptr_t)(((uint64_t)stats->_totalFreeTenureHeapSize*100) / (uint64_t)stats->_totalTenureHeapSize))));
 		if (MICRO_FRAGMENTATION == (MICRO_FRAGMENTATION & stats->_tenureFragmentation)) {
-			bufPos += omrstr_printf(tenureMemInfoBuffer, INITIAL_BUFFER_SIZE - bufPos, " micro-fragmented=\"%zu\"", (size_t) stats->_microFragmentedSize);
+			bufPos += omrstr_printf(tenureMemInfoBuffer + bufPos, INITIAL_BUFFER_SIZE - bufPos, " micro-fragmented=\"%zu\"", (size_t) stats->_microFragmentedSize);
 		}
 		if (MACRO_FRAGMENTATION == (MACRO_FRAGMENTATION & stats->_tenureFragmentation)) {
-			bufPos += omrstr_printf(tenureMemInfoBuffer, INITIAL_BUFFER_SIZE - bufPos, " macro-fragmented=\"%zu\"", (size_t) stats->_macroFragmentedSize);
+			bufPos += omrstr_printf(tenureMemInfoBuffer + bufPos, INITIAL_BUFFER_SIZE - bufPos, " macro-fragmented=\"%zu\"", (size_t) stats->_macroFragmentedSize);
 		}
-		bufPos += omrstr_printf(tenureMemInfoBuffer, INITIAL_BUFFER_SIZE - bufPos, ">");
+		bufPos += omrstr_printf(tenureMemInfoBuffer + bufPos, INITIAL_BUFFER_SIZE - bufPos, ">");
 		writer->formatAndOutput(env, indent, tenureMemInfoBuffer);
 
 		outputMemType(env, indent + 1, "soa", (stats->_totalFreeTenureHeapSize - stats->_totalFreeLOAHeapSize), (stats->_totalTenureHeapSize - stats->_totalLOAHeapSize));

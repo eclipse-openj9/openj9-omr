@@ -95,6 +95,10 @@ typedef enum {
    ADDSDRegMem,     // Add Scalar Double-FP Register, Memory
    ADDPDRegReg,     // Add Packed Double-FP Register, Register
    ADDPDRegMem,     // Add Packed Double-FP Register, Memory
+   LADD1MemReg,     // Locked Add byte  Memory, Register
+   LADD2MemReg,     // Locked Add word  Memory, Register
+   LADD4MemReg,     // Locked Add dword Memory, Register
+   LADD8MemReg,     // Locked Add qword Memory, Register (AMD64)
    LXADD1MemReg,    // Locked Exchange and Add byte  Memory, Register
    LXADD2MemReg,    // Locked Exchange and Add word  Memory, Register
    LXADD4MemReg,    // Locked Exchange and Add dword Memory, Register
@@ -960,6 +964,7 @@ inline TR_X86OpCodes ADDMemImm4     (bool is64Bit){ return is64Bit? ADD8MemImm4 
 inline TR_X86OpCodes ADDMemReg      (bool is64Bit){ return is64Bit? ADD8MemReg      : ADD4MemReg      ; }
 inline TR_X86OpCodes ADDRegReg      (bool is64Bit){ return is64Bit? ADD8RegReg      : ADD4RegReg      ; }
 inline TR_X86OpCodes ADDRegMem      (bool is64Bit){ return is64Bit? ADD8RegMem      : ADD4RegMem      ; }
+inline TR_X86OpCodes LADDMemReg     (bool is64Bit){ return is64Bit? LADD8MemReg     : LADD4MemReg     ; }
 inline TR_X86OpCodes LXADDMemReg    (bool is64Bit){ return is64Bit? LXADD8MemReg    : LXADD4MemReg    ; }
 inline TR_X86OpCodes ADCMemImm4     (bool is64Bit){ return is64Bit? ADC8MemImm4     : ADC4MemImm4     ; }
 inline TR_X86OpCodes ADCMemReg      (bool is64Bit){ return is64Bit? ADC8MemReg      : ADC4MemReg      ; }

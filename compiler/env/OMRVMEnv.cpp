@@ -65,7 +65,7 @@ OMR::VMEnv::heapTailPaddingSizeInBytes()
 uint64_t
 OMR::VMEnv::getUSecClock()
    {
-#ifdef LINUX
+#if defined(LINUX) || defined(OSX)
    struct timeval tp;
    struct timezone tzp;
 

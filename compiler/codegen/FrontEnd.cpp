@@ -32,7 +32,7 @@
 #include "env/jittypes.h"                      // for uintptrj_t, etc
 #include "env/PersistentInfo.hpp"              // for PersistentInfo
 
-#ifdef LINUX
+#if defined(LINUX) || defined(OSX)
 #include <unistd.h>                 // for getpid, intptr_t, pid_t
 #endif
 
@@ -189,7 +189,7 @@ TR_FrontEnd::getFormattedName(
       bool suffix)
    {
 
-#ifdef LINUX
+#if defined(LINUX) || defined(OSX)
    // FIXME: TODO: This is a temporary implementation -- we ignore the suffix format and
    // use the pid only
 

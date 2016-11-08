@@ -292,12 +292,14 @@ signatureCharSS_S_testMethodType  * OpCodesTest::_sRem = 0;
 
 signatureCharII_I_testMethodType  * OpCodesTest::_iDiv = 0;
 signatureCharII_I_testMethodType  * OpCodesTest::_iMul = 0;
+signatureCharII_I_testMethodType  * OpCodesTest::_iMulh = 0;
 signatureCharII_I_testMethodType  * OpCodesTest::_iRem = 0;
 signatureCharII_I_testMethodType  * OpCodesTest::_iAdd = 0;
 signatureCharII_I_testMethodType  * OpCodesTest::_iSub = 0;
 unsignedSignatureCharII_I_testMethodType  * OpCodesTest::_iuRem = 0;
 unsignedSignatureCharII_I_testMethodType  * OpCodesTest::_iuDiv = 0;
 unsignedSignatureCharII_I_testMethodType  * OpCodesTest::_iuMul = 0;
+unsignedSignatureCharII_I_testMethodType  * OpCodesTest::_iuMulh = 0;
 
 signatureCharJJ_J_testMethodType  * OpCodesTest::_lAdd = 0;
 signatureCharJJ_J_testMethodType  * OpCodesTest::_lSub = 0;
@@ -790,6 +792,7 @@ OpCodesTest::compileIntegerArithmeticTestMethods()
    _iSub = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::isub, "iSub", _argTypesBinaryInt, TR::Int32, rc));
    _iDiv = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::idiv, "iDiv", _argTypesBinaryInt, TR::Int32, rc));
    _iMul = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imul, "iMul", _argTypesBinaryInt, TR::Int32, rc));
+   _iMulh = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imulh, "iMulh", _argTypesBinaryInt, TR::Int32, rc));
    _iRem = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::irem, "iRem", _argTypesBinaryInt, TR::Int32, rc));
    }
 
@@ -1062,6 +1065,28 @@ OpCodesTest::invokeIntegerArithmeticTests()
       iBinaryCons = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imul,
             resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &intMulArr[i][1]));
       OMR_CT_EXPECT_EQ(iBinaryCons, mul(intMulArr[i][0], intMulArr[i][1]), iBinaryCons(intMulArr[i][0], INT_PLACEHOLDER_2));
+      }
+
+   //imulh
+   testCaseArrLength = sizeof(intMulArr) / sizeof(intMulArr[0]);
+   for(uint32_t i = 0; i < testCaseArrLength; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_iMulh, imulh(intMulArr[i][0], intMulArr[i][1]), _iMulh(intMulArr[i][0], intMulArr[i][1]));
+
+      sprintf(resolvedMethodName, "iMulhConst1_Testcase%d", i);
+      iBinaryCons = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imulh,
+            resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 4, 1, &intMulArr[i][0], 2, &intMulArr[i][1]));
+      OMR_CT_EXPECT_EQ(iBinaryCons, imulh(intMulArr[i][0], intMulArr[i][1]), iBinaryCons(INT_PLACEHOLDER_1, INT_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "iMulhConst2_Testcase%d", i);
+      iBinaryCons = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imulh,
+            resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 1, &intMulArr[i][0]));
+      OMR_CT_EXPECT_EQ(iBinaryCons, imulh(intMulArr[i][0], intMulArr[i][1]), iBinaryCons(INT_PLACEHOLDER_1, intMulArr[i][1]));
+
+      sprintf(resolvedMethodName, "iMulhConst3_Testcase%d", i);
+      iBinaryCons = (signatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::imulh,
+            resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &intMulArr[i][1]));
+      OMR_CT_EXPECT_EQ(iBinaryCons, imulh(intMulArr[i][0], intMulArr[i][1]), iBinaryCons(intMulArr[i][0], INT_PLACEHOLDER_2));
       }
 
    //idiv

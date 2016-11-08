@@ -2478,6 +2478,15 @@
    S390OpProp_UsesRegPairForTarget |
    S390OpProp_SetsOperand1,
 
+      // MFY
+   S390OpProp_Is32Bit |
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_UsesRegPairForTarget |
+   S390OpProp_LongDispSupported |
+   S390OpProp_IsYForm |
+   S390OpProp_SetsOperand1,
+
       // MADB
    S390OpProp_DoubleFP |
    S390OpProp_UsesTarget |
@@ -2537,6 +2546,14 @@
    S390OpProp_Is32Bit |
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
+   S390OpProp_SetsOperand1,
+
+      // MHY
+   S390OpProp_Is32Bit |
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_IsYForm |
    S390OpProp_SetsOperand1,
 
       // MHI

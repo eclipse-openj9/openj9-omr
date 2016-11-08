@@ -285,7 +285,8 @@ MandelbrotMethod::buildIL()
    x2Loop->   IndexAt(pInt8,
    x2Loop->      Load("line"),
    x2Loop->      Load("x")),
-   x2Loop->   Load("bits"));
+   x2Loop->   ConvertTo(Int8,
+   x2Loop->      Load("bits")));
 
    Return();
 
@@ -330,7 +331,7 @@ main(int argc, char *argv[])
    MandelbrotFunctionType *mandelbrot = (MandelbrotFunctionType *)entry;
    const int height = N;
    const int max_x = (N + 7) / 8;
-   const int size = height * max_x * sizeof(uint8_t) + 3;
+   const int size = height * max_x * sizeof(uint8_t);
    uint8_t *buffer = (uint8_t *) malloc(size);
    double *cr0 = (double *) malloc(8 * max_x * sizeof(double));
 

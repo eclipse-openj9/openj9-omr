@@ -696,12 +696,12 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode)
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
 
-   if (potentialOSRPoint && tt && !self()->getOption(TR_FullSpeedDebug))
+   if (potentialOSRPoint && !self()->getOption(TR_FullSpeedDebug))
       {
       TR_ByteCodeInfo &bci = node->getByteCodeInfo();
       TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
          self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
-      potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self());
+      potentialOSRPoint = method->supportsInduceOSR(bci, tt ? tt->getEnclosingBlock() : NULL, NULL, self(), false);
       }
 
    return potentialOSRPoint;

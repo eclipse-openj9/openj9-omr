@@ -137,7 +137,8 @@ public:
    const char * signature(TR_Memory * m) { return _resolvedMethod->signature(m); }
 
    bool genIL(TR_FrontEnd *fe, TR::Compilation *comp, TR::SymbolReferenceTable *symRefTab, TR::IlGenRequest & customRequest);
-   bool cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex, TR::Compilation *comp);
+   bool allCallerOSRBlocksArePresent(int32_t inlinedSiteIndex, TR::Compilation *comp);
+   void cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex, TR::Compilation *comp);
    void insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots);
    bool sharesStackSlots(TR::Compilation *comp);
    void resetLiveLocalIndices();
@@ -266,8 +267,8 @@ public:
    bool catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Compilation *comp);
 
    void setCannotAttemptOSR(int32_t);
-   bool cannotAttemptOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
-   bool supportsInduceOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp);
+   bool cannotAttemptOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp, bool runCleanup = true);
+   bool supportsInduceOSR(TR_ByteCodeInfo bci, TR::Block *blockToOSRAt, TR::ResolvedMethodSymbol *calleeSymbolIfCallNode, TR::Compilation *comp, bool runCleanup = true);
 
    void setShouldNotAttemptOSR(int32_t n);
 

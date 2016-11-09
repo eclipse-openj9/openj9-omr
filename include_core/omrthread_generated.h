@@ -158,7 +158,6 @@ typedef struct J9ThreadMonitorTracing {
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 #define J9_ABSTRACT_MONITOR_FIELDS_4 \
     uintptr_t spinlockState; \
-    uintptr_t lockingWord; \
     uintptr_t spinCount1; \
     uintptr_t spinCount2; \
     uintptr_t spinCount3; \

@@ -41,7 +41,7 @@
 #include "runtime/Runtime.hpp"                   // for ::TR_HelperAddress
 #include "x/codegen/X86Instruction.hpp"
 
-uint8_t *TR_X86FPConversionSnippet::emitSnippetBody()
+uint8_t *TR::X86FPConversionSnippet::emitSnippetBody()
    {
    // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
@@ -50,7 +50,7 @@ uint8_t *TR_X86FPConversionSnippet::emitSnippetBody()
    }
 
 
-uint8_t *TR_X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
+uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    {
    // *this    swipeable for debugging purposes
 
@@ -71,7 +71,7 @@ uint8_t *TR_X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    }
 
 
-uint8_t *TR_X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
+uint8_t *TR::X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
    {
    // *this    swipeable for debugging purposes
 
@@ -163,7 +163,7 @@ uint8_t *TR_X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86FPConvertToIntSnippet  * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToIntSnippet  * snippet)
    {
    // *this    swipeable for debugging purposes
 
@@ -231,7 +231,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86FPConvertToIntSnippet  * snippet)
    }
 
 
-uint32_t TR_X86FPConvertToIntSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::X86FPConvertToIntSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    uint32_t length = 11;
@@ -263,7 +263,7 @@ uint32_t TR_X86FPConvertToIntSnippet::getLength(int32_t estimatedSnippetStart)
 
 // Each _registerAction is a union of actionFlags
 //
-const uint8_t TR_X86FPConvertToLongSnippet::_registerActions[16] =
+const uint8_t TR::X86FPConvertToLongSnippet::_registerActions[16] =
    { 0x1e,   // 0
      0x14,   // 1
      0x0e,   // 2
@@ -282,7 +282,7 @@ const uint8_t TR_X86FPConvertToLongSnippet::_registerActions[16] =
      0x00};  // 15
 
 
-uint8_t *TR_X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
+uint8_t *TR::X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
    {
    // *this    swipeable for debugging purposes
 
@@ -354,7 +354,7 @@ uint8_t *TR_X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86FPConvertToLongSnippet  * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToLongSnippet  * snippet)
    {
    // *this    swipeable for debugging purposes
 
@@ -363,7 +363,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86FPConvertToLongSnippet  * snippet)
 
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
 
-   uint8_t action = TR_X86FPConvertToLongSnippet::_registerActions[snippet->getAction() & 0x7f ];
+   uint8_t action = TR::X86FPConvertToLongSnippet::_registerActions[snippet->getAction() & 0x7f ];
 
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
 
@@ -453,7 +453,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86FPConvertToLongSnippet  * snippet)
 
 
 
-void TR_X86FPConvertToLongSnippet::analyseLongConversion()
+void TR::X86FPConvertToLongSnippet::analyseLongConversion()
    {
    // *this    swipeable for debugging purposes
 
@@ -481,7 +481,7 @@ void TR_X86FPConvertToLongSnippet::analyseLongConversion()
    }
 
 
-uint32_t TR_X86FPConvertToLongSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::X86FPConvertToLongSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    uint32_t length = 5;
@@ -533,7 +533,7 @@ uint32_t TR_X86FPConvertToLongSnippet::getLength(int32_t estimatedSnippetStart)
    return length + estimateRestartJumpLength(estimatedSnippetStart + length);
    }
 
-uint8_t *TR_X86fbits2iSnippet::emitSnippetBody()
+uint8_t *TR::X86fbits2iSnippet::emitSnippetBody()
    {
    // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
@@ -566,7 +566,7 @@ uint8_t *TR_X86fbits2iSnippet::emitSnippetBody()
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86fbits2iSnippet  * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::X86fbits2iSnippet  * snippet)
    {
    // *this    swipeable for debugging purposes
 
@@ -603,7 +603,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86fbits2iSnippet  * snippet)
    }
 
 
-uint32_t TR_X86fbits2iSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::X86fbits2iSnippet::getLength(int32_t estimatedSnippetStart)
    {
    // *this    swipeable for debugging purposes
    uint32_t length = 6;  // 6 for test instruction

@@ -46,7 +46,7 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 #include "codegen/RegisterDependency.hpp"
 
 class TR_FrontEnd;
-class TR_S390JNICallDataSnippet;
+namespace TR { class S390JNICallDataSnippet; }
 class TR_S390PrivateLinkage;
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Compilation; }

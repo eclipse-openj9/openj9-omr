@@ -11491,7 +11491,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
       uds->setBranchInstruction(cursor);
 
       // create a patchable data in litpool
-      TR_S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
+      TR::S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
       litpool->setUnresolvedDataSnippet(uds);
 
       TR::S390RILInstruction * LRLinst;
@@ -12343,7 +12343,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZRC, node, boundCheckFailureLabel); // not find !!
             instr->setStartInternalControlFlow();
             }
-         cg->addSnippet(new (cg->trHeapMemory()) TR_S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
+         cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
                                                      comp->getSymRefTab()->findOrCreateArrayBoundsCheckSymbolRef(comp->getMethodSymbol())));
          cg->stopUsingRegister(alenReg);
 
@@ -12454,7 +12454,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             {
             instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BPRC, node, boundCheckFailureLabel);   // if the searching byte is NOT found
             }
-         cg->addSnippet(new (cg->trHeapMemory()) TR_S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
+         cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, boundCheckFailureLabel,
                                                      comp->getSymRefTab()->findOrCreateArrayBoundsCheckSymbolRef(comp->getMethodSymbol())));
          cg->stopUsingRegister(alenReg);
 

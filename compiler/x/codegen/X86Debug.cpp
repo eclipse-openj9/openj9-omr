@@ -47,7 +47,7 @@
 #include "infra/Assert.hpp"                      // for TR_ASSERT
 #include "infra/List.hpp"                        // for ListIterator, List
 #include "ras/Debug.hpp"                         // for TR_Debug, etc
-#include "x/codegen/DataSnippet.hpp"             // for TR_IA32DataSnippet
+#include "x/codegen/DataSnippet.hpp"             // for TR::IA32DataSnippet
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                  // for TR_X86OpCode, etc
@@ -55,7 +55,7 @@
 #include "env/CompilerEnv.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "x/codegen/CallSnippet.hpp"             // for TR_X86CallSnippet
+#include "x/codegen/CallSnippet.hpp"             // for TR::X86CallSnippet
 #include "x/codegen/WriteBarrierSnippet.hpp"
 #endif
 
@@ -1652,7 +1652,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
       {
       // This must be an absolute memory reference (a constant data snippet or a label)
       //
-      TR_IA32DataSnippet *cds = mr->getDataSnippet();
+      TR::IA32DataSnippet *cds = mr->getDataSnippet();
       TR::LabelSymbol *label = NULL;
       if (cds)
          label = cds->getSnippetLabel();
@@ -2259,7 +2259,7 @@ getInterpretedMethodNameHelper(TR::MethodSymbol *methodSymbol,
 
 #ifdef J9_PROJECT_SPECIFIC
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86CallSnippet  * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::X86CallSnippet  * snippet)
    {
    // *this   swipeable for debugger
    if (pOutFile == NULL)
@@ -2490,7 +2490,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
 #ifdef J9_PROJECT_SPECIFIC
 uint8_t*
 TR_Debug::printArgs(TR::FILE *pOutFile,
-                    TR_AMD64WriteBarrierSnippet * snippet,
+                    TR::AMD64WriteBarrierSnippet * snippet,
                     bool restoreRegs,
                     uint8_t *bufferPos)
    {
@@ -2670,7 +2670,7 @@ TR_Debug::printArgs(TR::FILE *pOutFile,
    }
 
 static uint8_t *
-estimateJumpSize(TR_AMD64WriteBarrierSnippet * snippet,
+estimateJumpSize(TR::AMD64WriteBarrierSnippet * snippet,
                  uint8_t * bufferPos)
    {
    TR::LabelSymbol *restartLabel = snippet->getRestartLabel();
@@ -2696,7 +2696,7 @@ estimateJumpSize(TR_AMD64WriteBarrierSnippet * snippet,
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_AMD64WriteBarrierSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::AMD64WriteBarrierSnippet * snippet)
    {
    if (pOutFile == NULL)
       return;

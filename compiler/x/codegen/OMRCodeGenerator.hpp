@@ -58,8 +58,8 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "codegen/GCStackAtlas.hpp"
 
 class TR_GCStackMap;
-class TR_IA32ConstantDataSnippet;
-class TR_IA32DataSnippet;
+namespace TR { class IA32ConstantDataSnippet; }
+namespace TR { class IA32DataSnippet; }
 class TR_OutlinedInstructions;
 namespace OMR { namespace X86 { class CodeGenerator; } }
 namespace TR { class CodeGenerator; }
@@ -574,14 +574,14 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpDataSnippets(TR::FILE *pOutFile, bool isWarm = 0);
 #endif
 
-   TR_IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
-   TR_IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
-   TR_IA32ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
-   TR_IA32ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c, bool isWarm = 0);
-   TR_IA32DataSnippet *create2ByteData(TR::Node *, int16_t c, bool isWarm = 0);
-   TR_IA32DataSnippet *create4ByteData(TR::Node *, int32_t c, bool isWarm = 0);
-   TR_IA32DataSnippet *create8ByteData(TR::Node *, int64_t c, bool isWarm = 0);
-   TR_IA32DataSnippet *create16ByteData(TR::Node *, void *c, bool isWarm = 0);
+   TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
+   TR::IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
+   TR::IA32ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
+   TR::IA32ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c, bool isWarm = 0);
+   TR::IA32DataSnippet *create2ByteData(TR::Node *, int16_t c, bool isWarm = 0);
+   TR::IA32DataSnippet *create4ByteData(TR::Node *, int32_t c, bool isWarm = 0);
+   TR::IA32DataSnippet *create8ByteData(TR::Node *, int64_t c, bool isWarm = 0);
+   TR::IA32DataSnippet *create16ByteData(TR::Node *, void *c, bool isWarm = 0);
 
    bool supportsCMOV() {return (_targetProcessorInfo.supportsCMOVInstructions());}
 
@@ -646,7 +646,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
 
-   TR_IA32ConstantDataSnippet     *findOrCreateConstant(TR::Node *, void *c, uint8_t size, bool isWarm=0);
+   TR::IA32ConstantDataSnippet     *findOrCreateConstant(TR::Node *, void *c, uint8_t size, bool isWarm=0);
 
    TR::RealRegister             *_frameRegister;
 
@@ -658,7 +658,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction                 *_lastCatchAppendInstruction;
    TR_BetterSpillPlacement        *_betterSpillPlacements;
 
-   TR::list<TR_IA32DataSnippet*>          _dataSnippetList;
+   TR::list<TR::IA32DataSnippet*>          _dataSnippetList;
    TR::list<TR::Register*>               _spilledIntRegisters;
    TR::list<TR::Register*>               _liveDiscardableRegisters;
    TR::list<TR::Register*>               _dependentDiscardableRegisters;

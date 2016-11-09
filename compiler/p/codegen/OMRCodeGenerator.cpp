@@ -2437,7 +2437,7 @@ bool OMR::Power::CodeGenerator::isSnippetMatched(TR::Snippet *snippet, int32_t s
       {
       case TR::Snippet::IsHelperCall:
          {
-         TR_PPCHelperCallSnippet *helperSnippet = (TR_PPCHelperCallSnippet *)snippet;
+         TR::PPCHelperCallSnippet *helperSnippet = (TR::PPCHelperCallSnippet *)snippet;
          if (helperSnippet->getRestartLabel()==NULL && helperSnippet->getDestination()==symRef)
             return true;
          return false;

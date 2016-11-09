@@ -88,19 +88,19 @@ class TR_GCStackMap;
 class TR_OpaquePseudoRegister;
 class TR_PseudoRegister;
 class TR_RegisterCandidate;
-class TR_S390ConstantDataSnippet;
-class TR_S390ConstantInstructionSnippet;
-class TR_S390DeclTrampSnippet;
-class TR_S390EyeCatcherDataSnippet;
+namespace TR { class S390ConstantDataSnippet; }
+namespace TR { class S390ConstantInstructionSnippet; }
+namespace TR { class S390DeclTrampSnippet; }
+namespace TR { class S390EyeCatcherDataSnippet; }
 namespace TR { class S390ImmInstruction; }
-class TR_S390LabelTableSnippet;
-class TR_S390LookupSwitchSnippet;
+namespace TR { class S390LabelTableSnippet; }
+namespace TR { class S390LookupSwitchSnippet; }
 class TR_S390OutOfLineCodeSection;
 class TR_S390PrivateLinkage;
 class TR_S390ScratchRegisterManager;
-class TR_S390SortJumpTrampSnippet;
-class TR_S390TargetAddressSnippet;
-class TR_S390WritableDataSnippet;
+namespace TR { class S390SortJumpTrampSnippet; }
+namespace TR { class S390TargetAddressSnippet; }
+namespace TR { class S390WritableDataSnippet; }
 class TR_StorageReference;
 namespace OMR { class Linkage; }
 namespace TR { class CodeGenerator; }
@@ -385,8 +385,8 @@ public:
    void setLabelHashTable(TR_HashTab *notPrintLabelHashTab) {_notPrintLabelHashTab = notPrintLabelHashTab;}
    TR_HashTab * getLabelHashTable() {return _notPrintLabelHashTab;}
 
-   void addPICsListForInterfaceSnippet(TR_S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist);
-   TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR_S390ConstantDataSnippet * ifcSnippet);
+   void addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist);
+   TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet);
 
    void doInstructionSelection();
    void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
@@ -863,7 +863,7 @@ public:
               }
         };
 
-    typedef CS2::HashTable<TR_S390ConstantDataSnippetKey,TR_S390ConstantDataSnippet *, TR::Allocator, constantHashInfo> TR_ConstantSnippetHash;
+    typedef CS2::HashTable<TR_S390ConstantDataSnippetKey,TR::S390ConstantDataSnippet *, TR::Allocator, constantHashInfo> TR_ConstantSnippetHash;
     typedef TR_ConstantSnippetHash::Cursor TR_ConstHashCursor;
 
 
@@ -874,29 +874,29 @@ public:
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
    void emitDataSnippets(bool isWarm = 0);
    bool hasDataSnippets() { return (_constantList.empty() && _writableList.empty() && _snippetDataList.empty() && _constantHash.IsEmpty()) ? false : true; }
-   TR::list<TR_S390ConstantDataSnippet*> &getConstantInstructionSnippets() { return _constantList; }
-   TR::list<TR_S390ConstantDataSnippet*> &getConstantDataStringSnippets() { return _constantList; }
+   TR::list<TR::S390ConstantDataSnippet*> &getConstantInstructionSnippets() { return _constantList; }
+   TR::list<TR::S390ConstantDataSnippet*> &getConstantDataStringSnippets() { return _constantList; }
    TR_ConstHashCursor getConstantDataSnippets() { return _constantHashCur;}
-   TR_S390ConstantDataSnippet * getConstantDataSnippet(CS2::HashIndex hi) { return _constantHash.DataAt(hi);}
+   TR::S390ConstantDataSnippet * getConstantDataSnippet(CS2::HashIndex hi) { return _constantHash.DataAt(hi);}
 
 
-   TR_S390ConstantDataSnippet * create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value);
-   TR_S390ConstantDataSnippet * createLiteralPoolSnippet(TR::Node * node);
-   TR_S390ConstantInstructionSnippet *createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr);
-   TR_S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size, bool isWarm = 0);
-   TR_S390ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
-   TR_S390ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
-   TR_S390ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
-   TR_S390ConstantDataSnippet *Create4ByteConstant(TR::Node *, int32_t c, bool writable);
-   TR_S390ConstantDataSnippet *Create8ByteConstant(TR::Node *, int64_t c, bool writable);
-   TR_S390ConstantDataSnippet *CreateConstant(TR::Node *, void *c, uint16_t size, bool writable);
-   TR_S390ConstantDataSnippet *getFirstConstantData();
+   TR::S390ConstantDataSnippet * create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value);
+   TR::S390ConstantDataSnippet * createLiteralPoolSnippet(TR::Node * node);
+   TR::S390ConstantInstructionSnippet *createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr);
+   TR::S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *Create4ByteConstant(TR::Node *, int32_t c, bool writable);
+   TR::S390ConstantDataSnippet *Create8ByteConstant(TR::Node *, int64_t c, bool writable);
+   TR::S390ConstantDataSnippet *CreateConstant(TR::Node *, void *c, uint16_t size, bool writable);
+   TR::S390ConstantDataSnippet *getFirstConstantData();
 
-   TR_S390LabelTableSnippet *createLabelTable(TR::Node *, int32_t);
+   TR::S390LabelTableSnippet *createLabelTable(TR::Node *, int32_t);
 
    // Writable Data List functions
    bool hasWritableDataSnippets() { return _writableList.empty() ? false : true; }
-   TR_S390WritableDataSnippet *CreateWritableConstant(TR::Node *);
+   TR::S390WritableDataSnippet *CreateWritableConstant(TR::Node *);
 
    // OutOfLineCodeSection List functions
    TR::list<TR_S390OutOfLineCodeSection*> &getS390OutOfLineCodeSectionList() {return _outOfLineCodeSectionList;}
@@ -911,7 +911,7 @@ public:
 
 
    // Snippet Data functions
-   void addDataConstantSnippet(TR_S390ConstantDataSnippet * snippet);
+   void addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet);
 
    // Identify the Inst selection phase
    bool getDoingInstructionSelection() { return _cgFlags.testAny(S390CG_doingInstructionSelection); }
@@ -922,12 +922,12 @@ public:
    int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
    void emitTargetAddressSnippets(bool isWarm = 0);
    bool hasTargetAddressSnippets() { return _targetList.empty() ? false : true; }
-   TR_S390LookupSwitchSnippet  *CreateLookupSwitchSnippet(TR::Node *,  TR::Snippet* s);
-   TR_S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Snippet* s);
-   TR_S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::LabelSymbol * s);
-   TR_S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Symbol* s);
-   TR_S390TargetAddressSnippet *findOrCreateTargetAddressSnippet(TR::Node *, uintptrj_t s);
-   TR_S390TargetAddressSnippet *getFirstTargetAddress();
+   TR::S390LookupSwitchSnippet  *CreateLookupSwitchSnippet(TR::Node *,  TR::Snippet* s);
+   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Snippet* s);
+   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::LabelSymbol * s);
+   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Symbol* s);
+   TR::S390TargetAddressSnippet *findOrCreateTargetAddressSnippet(TR::Node *, uintptrj_t s);
+   TR::S390TargetAddressSnippet *getFirstTargetAddress();
 
    // Transient Long Registers
 
@@ -1133,15 +1133,15 @@ public:
    int32_t                        _extentOfLitPool;  // excludes snippets
    uint64_t                       _availableHPRSpillMask;
 
-   TR::list<TR_S390TargetAddressSnippet*> _targetList;
+   TR::list<TR::S390TargetAddressSnippet*> _targetList;
 
 protected:
-   TR::list<TR_S390ConstantDataSnippet*>  _constantList;
-   TR::list<TR_S390ConstantDataSnippet*>  _snippetDataList;
+   TR::list<TR::S390ConstantDataSnippet*>  _constantList;
+   TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
 
 private:
-   TR::list<TR_S390WritableDataSnippet*>  _writableList;
+   TR::list<TR::S390WritableDataSnippet*>  _writableList;
    TR::list<TR_S390OutOfLineCodeSection*> _outOfLineCodeSectionList;
 
    CS2::HashTable<TR::Register *, TR::RealRegister::RegNum, TR::Allocator> _previouslyAssignedTo;

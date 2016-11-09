@@ -2883,8 +2883,8 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
 
          TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(helper, false, false, false);
 
-         TR_X86HelperCallSnippet *snippet = new (cg->trHeapMemory())
-            TR_X86HelperCallSnippet(cg, node, restartLabel, snippetLabel, helperSymRef);
+         TR::X86HelperCallSnippet *snippet = new (cg->trHeapMemory())
+            TR::X86HelperCallSnippet(cg, node, restartLabel, snippetLabel, helperSymRef);
 
          cg->addSnippet(snippet);
 

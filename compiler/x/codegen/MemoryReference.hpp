@@ -25,7 +25,7 @@
 #include <stdint.h>        // for uint8_t
 #include "env/jittypes.h"  // for intptrj_t
 
-class TR_IA32DataSnippet;
+namespace TR { class IA32DataSnippet; }
 class TR_ScratchRegisterManager;
 namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
@@ -72,7 +72,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReferenceConnector
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(br, ir, s, disp, cg) {}
 
-   MemoryReference(TR_IA32DataSnippet *cds,
+   MemoryReference(TR::IA32DataSnippet *cds,
       TR::CodeGenerator *cg) :
          OMR::MemoryReferenceConnector(cds, cg) {}
 

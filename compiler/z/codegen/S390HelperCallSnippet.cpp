@@ -36,12 +36,12 @@
 #include "infra/Assert.hpp"                     // for TR_ASSERT
 #include "ras/Debug.hpp"                        // for TR_Debug
 #include "runtime/Runtime.hpp"
-#include "z/codegen/CallSnippet.hpp"            // for TR_S390CallSnippet
+#include "z/codegen/CallSnippet.hpp"            // for TR::S390CallSnippet
 
 namespace TR { class Node; }
 
 uint8_t *
-TR_S390HelperCallSnippet::emitSnippetBody()
+TR::S390HelperCallSnippet::emitSnippetBody()
    {
    uint8_t * cursor = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(cursor);
@@ -52,7 +52,7 @@ TR_S390HelperCallSnippet::emitSnippetBody()
    if (jitInduceOSR)
       {
       // Flush in-register arguments back to the stack for interpreter
-      cursor = TR_S390CallSnippet::S390flushArgumentsToStack(cursor, callNode, getSizeOfArguments(), cg());
+      cursor = TR::S390CallSnippet::S390flushArgumentsToStack(cursor, callNode, getSizeOfArguments(), cg());
       }
 
 
@@ -133,7 +133,7 @@ TR_S390HelperCallSnippet::emitSnippetBody()
    }
 
 uint32_t
-TR_S390HelperCallSnippet::getLength(int32_t)
+TR::S390HelperCallSnippet::getLength(int32_t)
    {
    uint32_t length;
    TR::SymbolReference * helperSymRef = getHelperSymRef();
@@ -143,7 +143,7 @@ TR_S390HelperCallSnippet::getLength(int32_t)
 
    if (helperSymRef == cg()->symRefTab()->element(TR_induceOSRAtCurrentPC))
       {
-      length += TR_S390CallSnippet::instructionCountForArguments(getNode(), cg());
+      length += TR::S390CallSnippet::instructionCountForArguments(getNode(), cg());
       }
 
    length += getLoadVMThreadInstructionLength(cg());
@@ -154,7 +154,7 @@ TR_S390HelperCallSnippet::getLength(int32_t)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_S390HelperCallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::S390HelperCallSnippet * snippet)
    {
    // *this    swipeable for debugging purposes
    if (pOutFile == NULL)

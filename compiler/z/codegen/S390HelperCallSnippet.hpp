@@ -30,7 +30,9 @@ namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
-class TR_S390HelperCallSnippet : public TR::Snippet
+namespace TR {
+
+class S390HelperCallSnippet : public TR::Snippet
    {
    TR::LabelSymbol           *_reStartLabel;         ///< Label of Return Address in Main Line Code.
    TR::SymbolReference      *_helperSymRef;         ///< Helper Symbol Reference.
@@ -38,12 +40,12 @@ class TR_S390HelperCallSnippet : public TR::Snippet
 
    public:
 
-   TR_S390HelperCallSnippet(TR::CodeGenerator        *cg,
-                            TR::Node                 *node,
-                            TR::LabelSymbol           *snippetlab,
-                            TR::SymbolReference      *helper,
-                            TR::LabelSymbol           *restartlab = NULL,
-			                int32_t                  s = 0)
+   S390HelperCallSnippet(TR::CodeGenerator        *cg,
+                         TR::Node                 *node,
+                         TR::LabelSymbol           *snippetlab,
+                         TR::SymbolReference      *helper,
+                         TR::LabelSymbol           *restartlab = NULL,
+                         int32_t                  s = 0)
       : TR::Snippet(cg, node, snippetlab, (restartlab == NULL)),
         _reStartLabel(restartlab),
         _helperSymRef(helper),
@@ -76,5 +78,7 @@ class TR_S390HelperCallSnippet : public TR::Snippet
 
    virtual uint32_t getLength(int32_t);
    };
+
+}
 
 #endif

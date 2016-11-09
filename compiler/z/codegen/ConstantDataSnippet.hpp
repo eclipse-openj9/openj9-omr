@@ -37,10 +37,12 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class UnresolvedDataSnippet; }
 
+namespace TR {
+
 /**
  * ConstantDataSnippet is used to hold shared data
  */
-class TR_S390ConstantDataSnippet : public TR::Snippet
+class S390ConstantDataSnippet : public TR::Snippet
    {
    protected:
    union
@@ -60,8 +62,8 @@ class TR_S390ConstantDataSnippet : public TR::Snippet
 
    public:
 
-   TR_S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint16_t size);
-   TR_S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, char *c);
+   S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint16_t size);
+   S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, char *c);
 
    virtual Kind getKind() { return IsConstantData; }
 
@@ -120,14 +122,14 @@ class TR_S390ConstantDataSnippet : public TR::Snippet
 
    };
 
-class TR_S390ConstantInstructionSnippet : public TR_S390ConstantDataSnippet
+class S390ConstantInstructionSnippet : public TR::S390ConstantDataSnippet
    {
    TR::Instruction * _instruction;
    bool             _isRefed;
 
    public:
 
-   TR_S390ConstantInstructionSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Instruction *);
+   S390ConstantInstructionSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Instruction *);
    TR::Instruction * getInstruction() { return _instruction; }
    Kind getKind() { return IsConstantInstruction; }
    virtual uint32_t getLength(int32_t estimatedSnippetStart) { return 8; }
@@ -141,13 +143,13 @@ class TR_S390ConstantInstructionSnippet : public TR_S390ConstantDataSnippet
 /**
  * Create constant data snippet with method ep and complete method signature
  */
-class TR_S390EyeCatcherDataSnippet : public TR_S390ConstantDataSnippet
+class S390EyeCatcherDataSnippet : public TR::S390ConstantDataSnippet
    {
    uint8_t *  _value;
 
    public:
 
-   TR_S390EyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *);
+   S390EyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *);
 
    uint8_t *emitSnippetBody();
    Kind getKind() { return IsEyeCatcherData; }
@@ -157,14 +159,14 @@ class TR_S390EyeCatcherDataSnippet : public TR_S390ConstantDataSnippet
  * Create constant data snippet with pointer to full eye-catcher.
  * This is used as a small eyecatcher in warm code.
  */
-class TR_S390WarmEyeCatcherDataSnippet : public TR_S390ConstantDataSnippet
+class S390WarmEyeCatcherDataSnippet : public TR::S390ConstantDataSnippet
    {
    uint8_t *  _value;
    TR::LabelSymbol * _fullEyeCatcherSnippet;
 
    public:
 
-   TR_S390WarmEyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *);
+   S390WarmEyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *);
 
    uint8_t *emitSnippetBody();
    Kind getKind() { return IsEyeCatcherData; }
@@ -173,11 +175,11 @@ class TR_S390WarmEyeCatcherDataSnippet : public TR_S390ConstantDataSnippet
 /**
  * WritableDataSnippet is used to hold patchable data
  */
-class TR_S390WritableDataSnippet : public TR_S390ConstantDataSnippet
+class S390WritableDataSnippet : public TR::S390ConstantDataSnippet
    {
    public:
 
-   TR_S390WritableDataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint16_t size);
+   S390WritableDataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint16_t size);
 
    virtual Kind getKind() { return IsWritableData; }
    };
@@ -185,7 +187,7 @@ class TR_S390WritableDataSnippet : public TR_S390ConstantDataSnippet
 /**
  * TargetAddress Snippet is used to hold address of snippet which exceed the branch limit
  */
-class TR_S390TargetAddressSnippet : public TR::Snippet
+class S390TargetAddressSnippet : public TR::Snippet
    {
    uintptrj_t   _targetaddress;
    TR::Snippet *_targetsnippet;
@@ -194,10 +196,10 @@ class TR_S390TargetAddressSnippet : public TR::Snippet
 
    public:
 
-   TR_S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *targetLabel);
-   TR_S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Snippet *s);
-   TR_S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, uintptrj_t addr);
-   TR_S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Symbol *sym);
+   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *targetLabel);
+   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Snippet *s);
+   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, uintptrj_t addr);
+   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Symbol *sym);
 
    TR::Snippet *getTargetSnippet()   { return _targetsnippet; }
    uintptrj_t  getTargetAddress()   { return _targetaddress; }
@@ -210,11 +212,11 @@ class TR_S390TargetAddressSnippet : public TR::Snippet
    };
 
 
-class TR_S390LookupSwitchSnippet : public TR_S390TargetAddressSnippet
+class S390LookupSwitchSnippet : public TR::S390TargetAddressSnippet
    {
    public:
 
-   TR_S390LookupSwitchSnippet(TR::CodeGenerator *cg, TR::Node* switchNode);
+   S390LookupSwitchSnippet(TR::CodeGenerator *cg, TR::Node* switchNode);
 
    virtual Kind getKind() { return IsLookupSwitch; }
    virtual uint8_t *emitSnippetBody();
@@ -222,7 +224,7 @@ class TR_S390LookupSwitchSnippet : public TR_S390TargetAddressSnippet
    };
 
 
-class TR_S390InterfaceCallDataSnippet : public TR_S390ConstantDataSnippet
+class S390InterfaceCallDataSnippet : public TR::S390ConstantDataSnippet
    {
    TR::Instruction * _firstCLFI;
    uint8_t _numInterfaceCallCacheSlots;
@@ -232,16 +234,16 @@ class TR_S390InterfaceCallDataSnippet : public TR_S390ConstantDataSnippet
 
    public:
 
-  TR_S390InterfaceCallDataSnippet(TR::CodeGenerator *,
-                                  TR::Node *,
-                                  uint8_t,
-                                  bool useCLFIandBRCL = false);
+  S390InterfaceCallDataSnippet(TR::CodeGenerator *,
+                               TR::Node *,
+                               uint8_t,
+                               bool useCLFIandBRCL = false);
 
-  TR_S390InterfaceCallDataSnippet(TR::CodeGenerator *,
-                                  TR::Node *,
-                                  uint8_t,
-                                  uint8_t *,
-                                  bool useCLFIandBRCL = false);
+  S390InterfaceCallDataSnippet(TR::CodeGenerator *,
+                               TR::Node *,
+                               uint8_t,
+                               uint8_t *,
+                               bool useCLFIandBRCL = false);
 
    virtual Kind getKind() { return IsInterfaceCallData; }
    virtual uint8_t *emitSnippetBody();
@@ -271,7 +273,7 @@ class TR_S390InterfaceCallDataSnippet : public TR_S390ConstantDataSnippet
   };
 
 
-class TR_S390JNICallDataSnippet : public TR_S390ConstantDataSnippet
+class S390JNICallDataSnippet : public TR::S390ConstantDataSnippet
    {
    /** Base register for this snippet */
    TR::Register *  _baseRegister;
@@ -298,7 +300,7 @@ class TR_S390JNICallDataSnippet : public TR_S390ConstantDataSnippet
 
    public:
 
-  TR_S390JNICallDataSnippet(TR::CodeGenerator *,
+  S390JNICallDataSnippet(TR::CodeGenerator *,
                                   TR::Node *);
 
    virtual Kind getKind() { return IsJNICallData; }
@@ -340,10 +342,10 @@ class TR_S390JNICallDataSnippet : public TR_S390ConstantDataSnippet
    uint32_t getLength(int32_t estimatedSnippetStart);
   };
 
-class TR_S390LabelTableSnippet : public TR_S390ConstantDataSnippet
+class S390LabelTableSnippet : public TR::S390ConstantDataSnippet
    {
    public:
-   TR_S390LabelTableSnippet(TR::CodeGenerator *cg, TR::Node *node, uint32_t size);
+   S390LabelTableSnippet(TR::CodeGenerator *cg, TR::Node *node, uint32_t size);
    virtual Kind getKind() { return IsLabelTable; }
    virtual uint8_t *emitSnippetBody();
    virtual uint32_t getLength(int32_t estimatedSnippetStart);
@@ -357,10 +359,10 @@ class TR_S390LabelTableSnippet : public TR_S390ConstantDataSnippet
    TR::LabelSymbol **_labelTable;
    };
 
-class TR_S390DeclTrampSnippet : public TR_S390ConstantDataSnippet
+class S390DeclTrampSnippet : public TR::S390ConstantDataSnippet
    {
    public:
-   TR_S390DeclTrampSnippet(TR::CodeGenerator *cg, TR::LabelSymbol *label);
+   S390DeclTrampSnippet(TR::CodeGenerator *cg, TR::LabelSymbol *label);
    virtual Kind getKind() { return IsDeclTramp; }
    virtual uint8_t *emitSnippetBody();
    TR::LabelSymbol *getLabel() { return _label; }
@@ -370,10 +372,10 @@ class TR_S390DeclTrampSnippet : public TR_S390ConstantDataSnippet
    TR::LabelSymbol *_label;
    };
 
-class TR_S390SortJumpTrampSnippet : public TR_S390ConstantDataSnippet
+class S390SortJumpTrampSnippet : public TR::S390ConstantDataSnippet
    {
    public:
-   TR_S390SortJumpTrampSnippet(TR::CodeGenerator *cg, TR::LabelSymbol *label);
+   S390SortJumpTrampSnippet(TR::CodeGenerator *cg, TR::LabelSymbol *label);
    virtual Kind getKind() { return IsSortJumpTramp; }
    virtual uint8_t *emitSnippetBody();
    TR::LabelSymbol *getLabel() { return _label; }
@@ -382,5 +384,7 @@ class TR_S390SortJumpTrampSnippet : public TR_S390ConstantDataSnippet
    private:
    TR::LabelSymbol *_label;
    };
+
+}
 
 #endif

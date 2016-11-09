@@ -855,7 +855,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                      {
                      if (genBinary)
                         {
-                        cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
+                        cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
                                              self()->getS390RealRegister(regNum), offset, self()->cg());
                         }
                      else
@@ -885,7 +885,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                      {
                      if (genBinary)
                         {
-                        cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::ST, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
+                        cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::ST, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
                                              offset, self()->cg());
                         }
                      else
@@ -912,7 +912,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 #endif
                   if (genBinary)
                      {
-                     cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::STE, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::STE, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
                                           offset, self()->cg());
                      }
                   else
@@ -931,7 +931,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 #endif
                   if (genBinary)
                      {
-                     cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
                                           offset, self()->cg());
                      }
                   else
@@ -948,9 +948,9 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                case TR::DecimalLongDouble:
                   if (genBinary)
                      {
-                     cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
                                           offset, self()->cg());
-                     cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(REGNUM(regNum+2)),
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::STD, (uint8_t *) cursor, self()->getS390RealRegister(REGNUM(regNum+2)),
                                           offset+8, self()->cg());
                      }
                   else
@@ -978,7 +978,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                case TR::VectorDouble:
                   if (genBinary)
                      {
-                     cursor =  (void *) TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::VST, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::VST, (uint8_t *) cursor, self()->getS390RealRegister(regNum),
                                           offset, self()->cg());
                      }
                   else
@@ -3058,7 +3058,7 @@ void
 OMR::Z::Linkage::performCallNativeFunctionForLinkage(TR::Node * callNode, TR_DispatchType dispatchType, TR::Register * &javaReturnRegister, TR::SystemLinkage * systemLinkage,
       TR::RegisterDependencyConditions * &deps, TR::Register * javaLitOffsetReg, TR::Register * methodAddressReg, bool isJNIGCPoint)
    {
-   TR_S390JNICallDataSnippet * jniCallDataSnippet = NULL;
+   TR::S390JNICallDataSnippet * jniCallDataSnippet = NULL;
    TR::LabelSymbol * returnFromJNICallLabel = generateLabelSymbol(self()->cg());
    intptrj_t targetAddress = (intptrj_t) 0;
 

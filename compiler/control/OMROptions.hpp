@@ -391,7 +391,7 @@ enum TR_CompilationOptions
    TR_DisableWriteBarriersRangeCheck      = 0x00100000 + 9,
    TR_Randomize                           = 0x00200000 + 9,
    TR_BreakOnWriteBarrier                 = 0x00400000 + 9,
-   TR_BreakOnWriteBarrierSnippet          = 0x00800000 + 9,
+   BreakOnWriteBarrierSnippet             = 0x00800000 + 9,
    TR_Enable64BitRegsOn32Bit              = 0x01000000 + 9,
    TR_CountWriteBarriersRT                = 0x02000000 + 9,
    TR_DisableNoServerDuringStartup        = 0x04000000 + 9,  // set TR_NoOptServer during startup and insert GCR trees

@@ -30,7 +30,7 @@
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
 
-uint8_t *TR_X86DivideCheckSnippet::emitSnippetBody()
+uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    {
    // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
@@ -98,7 +98,7 @@ uint8_t *TR_X86DivideCheckSnippet::emitSnippetBody()
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_X86DivideCheckSnippet  * snippet) // TODO:FIX THIS!!!
+TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TODO:FIX THIS!!!
    {
    // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
@@ -166,7 +166,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_X86DivideCheckSnippet  * snippet) // TODO
 
 
 
-uint32_t TR_X86DivideCheckSnippet::getLength(int32_t estimatedSnippetStart)
+uint32_t TR::X86DivideCheckSnippet::getLength(int32_t estimatedSnippetStart)
    {
    TR::RealRegister *realDivisorReg  = toRealRegister(_divideInstruction->getSourceRegister());
    TR::RealRegister *realDividendReg = toRealRegister(_divideInstruction->getTargetRegister());

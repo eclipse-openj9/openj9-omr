@@ -44,7 +44,7 @@ namespace OMR { typedef TR_S390SystemLinkage SystemLinkageConnector; }
 #include "infra/Array.hpp"                     // for TR_Array
 #include "infra/Assert.hpp"                    // for TR_ASSERT
 
-class TR_S390JNICallDataSnippet;
+namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class Block; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -217,10 +217,10 @@ public:
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
          intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
-         TR_S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
+         TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint = true);
 
    virtual TR::Register * callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR_S390JNICallDataSnippet * jniCallDataSnippet,
+      intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel, TR::S390JNICallDataSnippet * jniCallDataSnippet,
       bool isJNIGCPoint = true);
 
    virtual TR::Register *

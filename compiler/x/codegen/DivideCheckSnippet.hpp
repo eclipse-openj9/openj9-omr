@@ -20,27 +20,29 @@
 #define DIVIDECHECKSNIPPET_INCL
 
 #include <stdint.h>                      // for int32_t, uint32_t, uint8_t
-#include "codegen/Snippet.hpp"           // for TR_X86Snippet::Kind, etc
+#include "codegen/Snippet.hpp"           // for TR::X86Snippet::Kind, etc
 #include "il/DataTypes.hpp"              // for TR::DataType
-#include "x/codegen/RestartSnippet.hpp"  // for TR_X86RestartSnippet
+#include "x/codegen/RestartSnippet.hpp"  // for TR::X86RestartSnippet
 #include "x/codegen/X86Instruction.hpp"  // for TR::X86RegRegInstruction
 
 namespace TR { class CodeGenerator; }
 namespace TR { class ILOpCode; }
 namespace TR { class LabelSymbol; }
 
-class TR_X86DivideCheckSnippet  : public TR_X86RestartSnippet
+namespace TR {
+
+class X86DivideCheckSnippet  : public TR::X86RestartSnippet
    {
    public:
 
-   TR_X86DivideCheckSnippet(TR::LabelSymbol           *restartLabel,
+   X86DivideCheckSnippet(TR::LabelSymbol           *restartLabel,
                             TR::LabelSymbol           *snippetLabel,
                             TR::LabelSymbol           *divideLabel,
                             TR::ILOpCode               &divOp,
                             TR::DataType               type,
                             TR::X86RegRegInstruction  *divideInstruction,
                             TR::CodeGenerator         *cg)
-      : TR_X86RestartSnippet(cg, divideInstruction->getNode(), restartLabel, snippetLabel, true),
+      : TR::X86RestartSnippet(cg, divideInstruction->getNode(), restartLabel, snippetLabel, true),
         _divOp(divOp),
         _type(type),
         _divideLabel(divideLabel),
@@ -67,5 +69,7 @@ class TR_X86DivideCheckSnippet  : public TR_X86RestartSnippet
    TR::ILOpCode              &_divOp;
    TR::DataType              _type;
    };
+
+}
 
 #endif

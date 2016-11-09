@@ -21,28 +21,30 @@
 
 #include <stdint.h>                      // for uint8_t, int32_t, uint32_t
 #include "codegen/RealRegister.hpp"      // for toRealRegister
-#include "codegen/Snippet.hpp"           // for TR_X86Snippet::Kind, etc
+#include "codegen/Snippet.hpp"           // for TR::X86Snippet::Kind, etc
 #include "il/SymbolReference.hpp"        // for SymbolReference
 #include "infra/Assert.hpp"              // for TR_ASSERT
-#include "x/codegen/RestartSnippet.hpp"  // for TR_X86RestartSnippet
+#include "x/codegen/RestartSnippet.hpp"  // for TR::X86RestartSnippet
 #include "codegen/X86Instruction.hpp"  // for TR::X86RegInstruction, etc
 
 namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
-class TR_X86FPConversionSnippet : public TR_X86RestartSnippet
+namespace TR {
+
+class X86FPConversionSnippet : public TR::X86RestartSnippet
    {
    TR::SymbolReference *_helperSymRef;
 
    public:
 
-   TR_X86FPConversionSnippet(TR::CodeGenerator   *codeGen,
-                              TR::Node            *node,
-                              TR::LabelSymbol      *restartlab,
-                              TR::LabelSymbol      *snippetlab,
-                              TR::SymbolReference *helperSymRef)
-      : TR_X86RestartSnippet(codeGen, node, restartlab, snippetlab, helperSymRef->canCauseGC()),
+   X86FPConversionSnippet(TR::CodeGenerator   *codeGen,
+                          TR::Node            *node,
+                          TR::LabelSymbol      *restartlab,
+                          TR::LabelSymbol      *snippetlab,
+                          TR::SymbolReference *helperSymRef)
+      : TR::X86RestartSnippet(codeGen, node, restartlab, snippetlab, helperSymRef->canCauseGC()),
            _helperSymRef(helperSymRef)
       {
       // The code generation for this snippet does not allow a proper GC map
@@ -61,18 +63,18 @@ class TR_X86FPConversionSnippet : public TR_X86RestartSnippet
    };
 
 
-class TR_X86FPConvertToIntSnippet  : public TR_X86FPConversionSnippet
+class X86FPConvertToIntSnippet  : public TR::X86FPConversionSnippet
    {
    TR::X86RegInstruction  *_convertInstruction;
 
    public:
 
-   TR_X86FPConvertToIntSnippet(TR::LabelSymbol            *restartlab,
-                                TR::LabelSymbol            *snippetlab,
-                                TR::SymbolReference       *helperSymRef,
-                                TR::X86RegInstruction     *convertInstr,
-                                TR::CodeGenerator *codeGen)
-      : TR_X86FPConversionSnippet(codeGen, convertInstr->getNode(), restartlab, snippetlab, helperSymRef),
+   X86FPConvertToIntSnippet(TR::LabelSymbol            *restartlab,
+                            TR::LabelSymbol            *snippetlab,
+                            TR::SymbolReference       *helperSymRef,
+                            TR::X86RegInstruction     *convertInstr,
+                            TR::CodeGenerator *codeGen)
+      : TR::X86FPConversionSnippet(codeGen, convertInstr->getNode(), restartlab, snippetlab, helperSymRef),
            _convertInstruction(convertInstr) {}
 
    TR::X86RegInstruction  * getConvertInstruction() {return _convertInstruction;}
@@ -82,7 +84,7 @@ class TR_X86FPConvertToIntSnippet  : public TR_X86FPConversionSnippet
    };
 
 
-class TR_X86FPConvertToLongSnippet  : public TR_X86FPConversionSnippet
+class X86FPConvertToLongSnippet  : public TR::X86FPConversionSnippet
    {
    TR::X86RegMemInstruction          *_loadHighInstruction,
                                     *_loadLowInstruction;
@@ -108,14 +110,14 @@ class TR_X86FPConvertToLongSnippet  : public TR_X86FPConversionSnippet
       kNeedFXCH    = 0x80
       };
 
-   TR_X86FPConvertToLongSnippet(TR::LabelSymbol                    *restartlab,
-                                 TR::LabelSymbol                    *snippetlab,
-                                 TR::SymbolReference               *helperSymRef,
-                                 TR::X86FPST0STiRegRegInstruction  *clobInstr,
-                                 TR::X86RegMemInstruction          *loadHighInstr,
-                                 TR::X86RegMemInstruction          *loadLowInstr,
-                                 TR::CodeGenerator *codeGen)
-      : TR_X86FPConversionSnippet(codeGen, clobInstr->getNode(), restartlab, snippetlab, helperSymRef),
+   X86FPConvertToLongSnippet(TR::LabelSymbol                    *restartlab,
+                             TR::LabelSymbol                    *snippetlab,
+                             TR::SymbolReference               *helperSymRef,
+                             TR::X86FPST0STiRegRegInstruction  *clobInstr,
+                             TR::X86RegMemInstruction          *loadHighInstr,
+                             TR::X86RegMemInstruction          *loadLowInstr,
+                             TR::CodeGenerator *codeGen)
+      : TR::X86FPConversionSnippet(codeGen, clobInstr->getNode(), restartlab, snippetlab, helperSymRef),
            _loadHighInstruction(loadHighInstr),
            _loadLowInstruction(loadLowInstr),
            _clobberInstruction(clobInstr),
@@ -136,17 +138,17 @@ class TR_X86FPConvertToLongSnippet  : public TR_X86FPConversionSnippet
    };
 
 
-class TR_X86fbits2iSnippet : public TR_X86RestartSnippet
+class X86fbits2iSnippet : public TR::X86RestartSnippet
    {
    TR::X86RegImmInstruction  *_instruction;
 
    public:
 
-   TR_X86fbits2iSnippet(TR::LabelSymbol            *restartlab,
-                         TR::LabelSymbol            *snippetlab,
-                         TR::X86RegImmInstruction  *instr,
-                         TR::CodeGenerator *codeGen)
-      : TR_X86RestartSnippet(codeGen, instr->getNode(), restartlab, snippetlab, false),
+   X86fbits2iSnippet(TR::LabelSymbol            *restartlab,
+                     TR::LabelSymbol            *snippetlab,
+                     TR::X86RegImmInstruction  *instr,
+                     TR::CodeGenerator *codeGen)
+      : TR::X86RestartSnippet(codeGen, instr->getNode(), restartlab, snippetlab, false),
         _instruction(instr) {}
 
    TR::X86RegImmInstruction  *getInstruction() {return _instruction;}
@@ -161,25 +163,25 @@ class TR_X86fbits2iSnippet : public TR_X86RestartSnippet
    virtual Kind getKind() {return Isfbits2i;}
    };
 
-class TR_AMD64FPConversionSnippet : public TR_X86FPConversionSnippet
+class AMD64FPConversionSnippet : public TR::X86FPConversionSnippet
    {
 public:
    virtual Kind getKind() {return IsFPConvertAMD64;}
 
 #if !defined(TR_TARGET_64BIT)
-   TR_AMD64FPConversionSnippet(TR::LabelSymbol *, TR::LabelSymbol *, TR::SymbolReference *, TR::X86RegInstruction  *, TR::CodeGenerator *)
-      : TR_X86FPConversionSnippet(0, 0, 0, 0, 0) { }
+   AMD64FPConversionSnippet(TR::LabelSymbol *, TR::LabelSymbol *, TR::SymbolReference *, TR::X86RegInstruction  *, TR::CodeGenerator *)
+      : TR::X86FPConversionSnippet(0, 0, 0, 0, 0) { }
 
    virtual uint32_t getLength(int32_t estimatedSnippetStart) { return 0; }
    uint8_t *genFPConversion(uint8_t *buffer) { return buffer; }
 #else
 
-   TR_AMD64FPConversionSnippet(TR::LabelSymbol            *restartlab,
-                               TR::LabelSymbol            *snippetlab,
-                               TR::SymbolReference       *helperSymRef,
-                               TR::X86RegInstruction  *convertInstr,
-                               TR::CodeGenerator *codeGen)
-      : TR_X86FPConversionSnippet(codeGen, convertInstr->getNode(), restartlab, snippetlab, helperSymRef),
+   AMD64FPConversionSnippet(TR::LabelSymbol            *restartlab,
+                            TR::LabelSymbol            *snippetlab,
+                            TR::SymbolReference       *helperSymRef,
+                            TR::X86RegInstruction  *convertInstr,
+                            TR::CodeGenerator *codeGen)
+      : TR::X86FPConversionSnippet(codeGen, convertInstr->getNode(), restartlab, snippetlab, helperSymRef),
            _convertInstruction(convertInstr->getIA32RegRegInstruction()) {}
 
    TR::X86RegRegInstruction  * getConvertInstruction() {return _convertInstruction;}
@@ -190,5 +192,7 @@ private:
 
 #endif
    };
+
+}
 
 #endif

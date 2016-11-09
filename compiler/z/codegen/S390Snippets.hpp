@@ -25,23 +25,24 @@ namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
+namespace TR {
 
 /**
  * Create trampolines from warm code to cold code, when branch targets is not
  * reachable by compare-and-branch instructions.
  */
-class TR_S390WarmToColdTrampolineSnippet : public TR::Snippet
+class S390WarmToColdTrampolineSnippet : public TR::Snippet
    {
    TR::LabelSymbol * _targetLabel;
 
 public:
-   TR_S390WarmToColdTrampolineSnippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::LabelSymbol *targetLabel)
+   S390WarmToColdTrampolineSnippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::LabelSymbol *targetLabel)
       : TR::Snippet(cg, c, lab, false), _targetLabel(targetLabel)
       {
       setWarmSnippet();
       }
 
-   TR_S390WarmToColdTrampolineSnippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::Snippet *targetSnippet)
+   S390WarmToColdTrampolineSnippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::Snippet *targetSnippet)
       : TR::Snippet(cg, c, lab, false), _targetLabel(targetSnippet->getSnippetLabel())
       {
       setWarmSnippet();
@@ -60,17 +61,17 @@ public:
    };
 
 
-class TR_S390RestoreGPR7Snippet : public TR::Snippet
+class S390RestoreGPR7Snippet : public TR::Snippet
    {
    TR::LabelSymbol * _targetLabel;
 
 public:
-   TR_S390RestoreGPR7Snippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::LabelSymbol *targetLabel)
+   S390RestoreGPR7Snippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::LabelSymbol *targetLabel)
       : TR::Snippet(cg, c, lab, false), _targetLabel(targetLabel)
       {
       }
 
-   TR_S390RestoreGPR7Snippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::Snippet *targetSnippet)
+   S390RestoreGPR7Snippet(TR::CodeGenerator* cg, TR::Node *c, TR::LabelSymbol *lab, TR::Snippet *targetSnippet)
       : TR::Snippet(cg, c, lab, false), _targetLabel(targetSnippet->getSnippetLabel())
       {
       }
@@ -86,5 +87,7 @@ public:
    virtual Kind getKind() { return IsRestoreGPR7; }
 
    };
+
+}
 
 #endif

@@ -36,9 +36,12 @@
 
 namespace TR { class CodeGenerator; }
 
+namespace TR {
+
 void createCCPreLoadedCode(uint8_t *CCPreLoadedCodeBase, uint8_t *CCPreLoadedCodeTop, void ** CCPreLoadedCodeTable, TR::CodeGenerator *cg);
 uint32_t getCCPreLoadedCodeSize();
 
+}
 
 #define PPC_INSTRUCTION_LENGTH 4
 
@@ -178,8 +181,8 @@ void ppcCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *
    callBacks[1] = (void *)&ppcCreateHelperTrampolines;
    callBacks[2] = (void *)NULL;
    callBacks[3] = (void *)NULL;
-   callBacks[4] = (void *)createCCPreLoadedCode;
-   *CCPreLoadedCodeSize = getCCPreLoadedCodeSize();
+   callBacks[4] = (void *)TR::createCCPreLoadedCode;
+   *CCPreLoadedCodeSize = TR::getCCPreLoadedCodeSize();
    *numHelpers = TR_PPCnumRuntimeHelpers;
    }
 
@@ -244,8 +247,8 @@ void amd64CodeCacheParameters(int32_t *trampolineSize, OMR::CodeCacheCodeGenCall
    callBacks->createHelperTrampolines = &amd64CreateHelperTrampolines;
    callBacks->createMethodTrampoline = NULL;
    callBacks->patchTrampoline = NULL;
-   callBacks->createCCPreLoadedCode = createCCPreLoadedCode;
-   *CCPreLoadedCodeSize = getCCPreLoadedCodeSize();
+   callBacks->createCCPreLoadedCode = TR::createCCPreLoadedCode;
+   *CCPreLoadedCodeSize = TR::getCCPreLoadedCodeSize();
    *numHelpers = TR_AMD64numRuntimeHelpers;
    }
 
@@ -266,8 +269,8 @@ void ia32CodeCacheParameters(int32_t *trampolineSize, OMR::CodeCacheCodeGenCallb
    callBacks->createHelperTrampolines = NULL;
    callBacks->createMethodTrampoline = NULL;
    callBacks->patchTrampoline = NULL;
-   callBacks->createCCPreLoadedCode = createCCPreLoadedCode;
-   *CCPreLoadedCodeSize = getCCPreLoadedCodeSize();
+   callBacks->createCCPreLoadedCode = TR::createCCPreLoadedCode;
+   *CCPreLoadedCodeSize = TR::getCCPreLoadedCodeSize();
    *numHelpers = 0;
    }
 
@@ -552,13 +555,13 @@ void setupCodeCacheParameters(int32_t *trampolineSize, OMR::CodeCacheCodeGenCall
    }
 
 uint32_t
-getCCPreLoadedCodeSize()
+TR::getCCPreLoadedCodeSize()
    {
    return 0;
    }
 
 void
-createCCPreLoadedCode(uint8_t *CCPreLoadedCodeBase,
+TR::createCCPreLoadedCode(uint8_t *CCPreLoadedCodeBase,
                       uint8_t *CCPreLoadedCodeTop,
                       void ** CCPreLoadedCodeTable,
                       TR::CodeGenerator *cg)

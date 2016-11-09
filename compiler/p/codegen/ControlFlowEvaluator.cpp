@@ -32,7 +32,7 @@
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/RegisterPair.hpp"                  // for RegisterPair
-#include "codegen/Snippet.hpp"                       // for TR_PPCSnippet, etc
+#include "codegen/Snippet.hpp"                       // for TR::PPCSnippet, etc
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/Compilation.hpp"                   // for Compilation, etc
 #include "compile/SymbolReferenceTable.hpp"
@@ -3757,7 +3757,7 @@ OMR::Power::TreeEvaluator::generateNullTestInstructions(
       if (snippetLabel == NULL)
          {
          snippetLabel = generateLabelSymbol(cg);
-         cg->addSnippet(new (cg->trHeapMemory()) TR_PPCHelperCallSnippet(cg, node, snippetLabel, symRef));
+         cg->addSnippet(new (cg->trHeapMemory()) TR::PPCHelperCallSnippet(cg, node, snippetLabel, symRef));
          }
 
       // trampoline kills gr11

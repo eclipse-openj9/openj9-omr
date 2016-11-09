@@ -34,7 +34,7 @@ namespace OMR { typedef OMR::X86::Snippet SnippetConnector; }
 #include "compiler/codegen/OMRSnippet.hpp"
 #include "env/CompilerEnv.hpp"
 
-class TR_X86GuardedDevirtualSnippet;
+namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }

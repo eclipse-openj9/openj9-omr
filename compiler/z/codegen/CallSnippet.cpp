@@ -49,7 +49,7 @@
 #define TR_S390_ARG_SLOT_SIZE 4
 
 uint8_t *
-TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buffer, TR::RealRegister * reg, int32_t offset,
+TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buffer, TR::RealRegister * reg, int32_t offset,
    TR::CodeGenerator * cg)
    {
    TR::RealRegister * stackPtr = cg->getStackPointerRealRegister();
@@ -63,7 +63,7 @@ TR_S390CallSnippet::storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buf
    }
 
 uint8_t *
-TR_S390CallSnippet::loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buffer, TR::RealRegister * reg, int32_t offset)
+TR::S390CallSnippet::loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buffer, TR::RealRegister * reg, int32_t offset)
    {
    TR::RealRegister * stackPtr = cg()->getStackPointerRealRegister();
    TR::InstOpCode opCode(op);
@@ -77,7 +77,7 @@ TR_S390CallSnippet::loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buff
 
 
 uint8_t *
-TR_S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * callNode, int32_t argSize, TR::CodeGenerator * cg)
+TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * callNode, int32_t argSize, TR::CodeGenerator * cg)
    {
    int32_t intArgNum = 0, floatArgNum = 0, offset;
    TR::Machine *machine = cg->machine();
@@ -211,7 +211,7 @@ TR_S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * callN
  * @return the total instruction length in bytes for setting up arguments
  */
 int32_t
-TR_S390CallSnippet::instructionCountForArguments(TR::Node * callNode, TR::CodeGenerator * cg)
+TR::S390CallSnippet::instructionCountForArguments(TR::Node * callNode, TR::CodeGenerator * cg)
    {
    int32_t intArgNum = 0, floatArgNum = 0, count = 0;
    TR::Linkage* linkage = cg->getLinkage(callNode->getSymbol()->castToMethodSymbol()->getLinkageConvention());
@@ -269,7 +269,7 @@ TR_S390CallSnippet::instructionCountForArguments(TR::Node * callNode, TR::CodeGe
    }
 
 uint8_t *
-TR_S390CallSnippet::getCallRA()
+TR::S390CallSnippet::getCallRA()
    {
    //Return Address is the address of the instr follows the branch instr
    TR_ASSERT( getBranchInstruction() != NULL, "CallSnippet: branchInstruction is NULL");
@@ -278,7 +278,7 @@ TR_S390CallSnippet::getCallRA()
 
 
 TR_RuntimeHelper
-TR_S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataType type, TR::CodeGenerator * cg)
+TR::S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataType type, TR::CodeGenerator * cg)
    {
    bool synchronised = methodSymbol->isSynchronised();
 
@@ -379,7 +379,7 @@ TR_S390CallSnippet::getHelper(TR::MethodSymbol * methodSymbol, TR::DataType type
       }
    }
 
-TR_RuntimeHelper TR_S390CallSnippet::getInterpretedDispatchHelper(
+TR_RuntimeHelper TR::S390CallSnippet::getInterpretedDispatchHelper(
    TR::SymbolReference *methodSymRef,
    TR::DataType        type)
    {
@@ -411,15 +411,15 @@ TR_RuntimeHelper TR_S390CallSnippet::getInterpretedDispatchHelper(
 
 
 uint8_t *
-TR_S390CallSnippet::emitSnippetBody()
+TR::S390CallSnippet::emitSnippetBody()
    {
-   TR_ASSERT(0, "TR_S390CallSnippet::emitSnippetBody not implemented");
+   TR_ASSERT(0, "TR::S390CallSnippet::emitSnippetBody not implemented");
    return NULL;
    }
 
 
 uint32_t
-TR_S390CallSnippet::getLength(int32_t  estimatedSnippetStart)
+TR::S390CallSnippet::getLength(int32_t  estimatedSnippetStart)
    {
    // *this   swipeable for debugger
    // length = instructionCountForArgsInBytes + (BASR + L(or LG) + BASR +3*sizeof(uintptrj_t)) + NOPs
@@ -434,7 +434,7 @@ TR_S390CallSnippet::getLength(int32_t  estimatedSnippetStart)
 
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR_S390CallSnippet * snippet)
+TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
    {
    uint8_t * bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    TR::Node * callNode = snippet->getNode();

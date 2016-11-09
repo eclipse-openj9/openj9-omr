@@ -154,7 +154,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"breakOnPrint=",     "D{regex}\traise trap when print an item whose name matches regex", TR::Options::setRegex, offsetof(OMR::Options,_breakOnPrint), 0, "P"},
    {"breakOnThrow=",       "D{regex}\traise trap when throwing an exception whose class name matches regex", TR::Options::setRegex, offsetof(OMR::Options,             _breakOnThrow), 0, "P"},
    {"breakOnWriteBarrier", "D\tinsert breakpoint instruction ahead of inline write barrier", SET_OPTION_BIT(TR_BreakOnWriteBarrier), "F" },
-   {"breakOnWriteBarrierSnippet", "D\tinsert breakpoint instruction at beginning of write barrier snippet", SET_OPTION_BIT(TR_BreakOnWriteBarrierSnippet), "F" },
+   {"breakOnWriteBarrierSnippet", "D\tinsert breakpoint instruction at beginning of write barrier snippet", SET_OPTION_BIT(BreakOnWriteBarrierSnippet), "F" },
    {"checkGRA",                "D\tPreserve stores that would otherwise be removed by GRA, and then verify that the stored value matches the global register", SET_OPTION_BIT(TR_CheckGRA), "F"},
    {"classesWithFoldableFinalFields=",   "O{regex}\tAllow hard-coding of values of final fields in the specified classes.  Default is to fold anything considered safe.", TR::Options::setRegex, offsetof(OMR::Options, _classesWithFolableFinalFields), 0, "F"},
    {"classExtendRatSize=",   "M<nnn>\tsize of runtime assumption table for class extend",

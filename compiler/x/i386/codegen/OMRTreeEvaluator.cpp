@@ -597,7 +597,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairReturnEvaluator(TR::Node
    if (cg->enableSinglePrecisionMethods() &&
        comp->getJittedMethodSymbol()->usesSinglePrecisionMode())
       {
-      TR_IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
+      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
       generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
       }
 

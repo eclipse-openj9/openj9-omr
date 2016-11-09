@@ -1053,11 +1053,11 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
 
       if (callSymRef->isUnresolved() || codeGen->comp()->compileRelocatableCode())
          {
-         snippet = new (self()->trHeapMemory()) TR_ARMUnresolvedCallSnippet(codeGen, callNode, label, argSize);
+         snippet = new (self()->trHeapMemory()) TR::ARMUnresolvedCallSnippet(codeGen, callNode, label, argSize);
          }
       else
          {
-         snippet = new (self()->trHeapMemory()) TR_ARMCallSnippet(codeGen, callNode, label, argSize);
+         snippet = new (self()->trHeapMemory()) TR::ARMCallSnippet(codeGen, callNode, label, argSize);
          }
 
       codeGen->addSnippet(snippet);

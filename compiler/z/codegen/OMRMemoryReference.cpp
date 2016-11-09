@@ -43,7 +43,7 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterPair.hpp"                 // for RegisterPair
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                      // for TR_S390Snippet, etc
+#include "codegen/Snippet.hpp"                      // for TR::S390Snippet, etc
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "compile/Compilation.hpp"                  // for Compilation
@@ -553,7 +553,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
          else
             {
             uintptrj_t staticAddressValue = (uintptrj_t) symbol->getStaticSymbol()->getStaticAddress();
-            TR_S390ConstantDataSnippet * targetsnippet;
+            TR::S390ConstantDataSnippet * targetsnippet;
             if (TR::Compiler->target.is64Bit())
                {
                targetsnippet = cg->findOrCreate8ByteConstant(0, staticAddressValue);
@@ -680,7 +680,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
    if (symRef && symRef->isLiteralPoolAddress())
       {
       TR_ASSERT(cg->supportsOnDemandLiteralPool() == true, "May not be here with Literal Pool On Demand disabled\n");
-      TR_S390ConstantDataSnippet * targetsnippet = self()->createLiteralPoolSnippet(rootLoadOrStore, cg);
+      TR::S390ConstantDataSnippet * targetsnippet = self()->createLiteralPoolSnippet(rootLoadOrStore, cg);
 
       self()->initSnippetPointers(targetsnippet, cg);
       }
@@ -748,7 +748,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node *addressChild, bool canUseInde
    self()->setupCausesImplicitNullPointerException(cg);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::MemoryReference::createLiteralPoolSnippet(TR::Node * node, TR::CodeGenerator * cg)
    {
    return cg->createLiteralPoolSnippet(node);
@@ -820,17 +820,17 @@ OMR::Z::MemoryReference::initSnippetPointers(TR::Snippet * s, TR::CodeGenerator 
       }
    else if (s->getKind() == TR::Snippet::IsTargetAddress)
       {
-      self()->setTargetAddressSnippet((TR_S390TargetAddressSnippet *) s);
+      self()->setTargetAddressSnippet((TR::S390TargetAddressSnippet *) s);
       }
    else if (s->getKind() == TR::Snippet::IsWritableData ||
             s->getKind() == TR::Snippet::IsConstantInstruction ||
             s->getKind() == TR::Snippet::IsConstantData)
       {
-      self()->setConstantDataSnippet((TR_S390ConstantDataSnippet *) s);
+      self()->setConstantDataSnippet((TR::S390ConstantDataSnippet *) s);
       }
    else if (s->getKind() == TR::Snippet::IsLookupSwitch)
       {
-      self()->setLookupSwitchSnippet((TR_S390LookupSwitchSnippet *) s);
+      self()->setLookupSwitchSnippet((TR::S390LookupSwitchSnippet *) s);
       }
    }
 
@@ -1061,43 +1061,43 @@ OMR::Z::MemoryReference::setUnresolvedSnippet(TR::UnresolvedDataSnippet *s)
    return (TR::UnresolvedDataSnippet *) (_targetSnippet = (TR::Snippet *) s);
    }
 
-TR_S390TargetAddressSnippet *
+TR::S390TargetAddressSnippet *
 OMR::Z::MemoryReference::getTargetAddressSnippet()
    {
-   return self()->isTargetAddressSnippet() ? (TR_S390TargetAddressSnippet *)_targetSnippet : NULL;
+   return self()->isTargetAddressSnippet() ? (TR::S390TargetAddressSnippet *)_targetSnippet : NULL;
    }
 
-TR_S390TargetAddressSnippet *
-OMR::Z::MemoryReference::setTargetAddressSnippet(TR_S390TargetAddressSnippet *s)
+TR::S390TargetAddressSnippet *
+OMR::Z::MemoryReference::setTargetAddressSnippet(TR::S390TargetAddressSnippet *s)
    {
    self()->setTargetAddressSnippet();
-   return (TR_S390TargetAddressSnippet *) (_targetSnippet = s);
+   return (TR::S390TargetAddressSnippet *) (_targetSnippet = s);
    }
 
-TR_S390ConstantDataSnippet *
+TR::S390ConstantDataSnippet *
 OMR::Z::MemoryReference::getConstantDataSnippet()
    {
-   return self()->isConstantDataSnippet() ? (TR_S390ConstantDataSnippet *)_targetSnippet : NULL;
+   return self()->isConstantDataSnippet() ? (TR::S390ConstantDataSnippet *)_targetSnippet : NULL;
    }
 
-TR_S390ConstantDataSnippet *
-OMR::Z::MemoryReference::setConstantDataSnippet(TR_S390ConstantDataSnippet *s)
+TR::S390ConstantDataSnippet *
+OMR::Z::MemoryReference::setConstantDataSnippet(TR::S390ConstantDataSnippet *s)
    {
    self()->setConstantDataSnippet();
-   return (TR_S390ConstantDataSnippet *) (_targetSnippet = s);
+   return (TR::S390ConstantDataSnippet *) (_targetSnippet = s);
    }
 
-TR_S390LookupSwitchSnippet *
+TR::S390LookupSwitchSnippet *
 OMR::Z::MemoryReference::getLookupSwitchSnippet()
    {
-   return self()->isLookupSwitchSnippet() ? (TR_S390LookupSwitchSnippet *)_targetSnippet : NULL;
+   return self()->isLookupSwitchSnippet() ? (TR::S390LookupSwitchSnippet *)_targetSnippet : NULL;
    }
 
-TR_S390LookupSwitchSnippet *
-OMR::Z::MemoryReference::setLookupSwitchSnippet(TR_S390LookupSwitchSnippet *s)
+TR::S390LookupSwitchSnippet *
+OMR::Z::MemoryReference::setLookupSwitchSnippet(TR::S390LookupSwitchSnippet *s)
    {
    self()->setLookupSwitchSnippet();
-   return (TR_S390LookupSwitchSnippet *) (_targetSnippet = s);
+   return (TR::S390LookupSwitchSnippet *) (_targetSnippet = s);
    }
 
 void
@@ -3652,7 +3652,7 @@ generateS390MemoryReference(TR::CodeGenerator * cg)
 TR::MemoryReference *
 generateS390MemoryReference(int32_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
-   TR_S390ConstantDataSnippet * targetsnippet = cg->findOrCreate4ByteConstant(node, iValue);
+   TR::S390ConstantDataSnippet * targetsnippet = cg->findOrCreate4ByteConstant(node, iValue);
 
    return generateS390MemoryReference(targetsnippet, cg, treg, node);
    }
@@ -3660,7 +3660,7 @@ generateS390MemoryReference(int32_t iValue, TR::DataType type, TR::CodeGenerator
 TR::MemoryReference *
 generateS390MemoryReference(int64_t iValue, TR::DataType type, TR::CodeGenerator * cg, TR::Register * treg, TR::Node *node)
    {
-   TR_S390ConstantDataSnippet * targetsnippet = cg->findOrCreate8ByteConstant(node, iValue);
+   TR::S390ConstantDataSnippet * targetsnippet = cg->findOrCreate8ByteConstant(node, iValue);
    return generateS390MemoryReference(targetsnippet, cg, treg, node);
    }
 

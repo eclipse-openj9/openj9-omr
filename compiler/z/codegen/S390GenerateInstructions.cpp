@@ -63,7 +63,7 @@
 #include "infra/Assert.hpp"                       // for TR_ASSERT
 #include "infra/List.hpp"                         // for List
 #include "ras/Debug.hpp"                          // for TR_DebugBase
-#include "z/codegen/CallSnippet.hpp"              // for TR_S390CallSnippet
+#include "z/codegen/CallSnippet.hpp"              // for TR::S390CallSnippet
 #include "z/codegen/S390Instruction.hpp"          // for etc
 
 
@@ -317,7 +317,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
       // Generate a temporary warm trampoline for warm -> cold code cache branches.
       if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
          {
-         TR_S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR_S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
+         TR::S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR::S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
          ((TR::S390RIEInstruction*)returnInstruction)->setWarmToColdTrampolineSnippet(trampolineSnippet);
          cg->addSnippet(trampolineSnippet);
          }
@@ -418,7 +418,7 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
       // Generate a temporary warm trampoline for warm -> cold code cache branches.
       if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
          {
-         TR_S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR_S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
+         TR::S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR::S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
          ((TR::S390RIEInstruction*)cursor)->setWarmToColdTrampolineSnippet(trampolineSnippet);
          cg->addSnippet(trampolineSnippet);
          }
@@ -791,8 +791,8 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
@@ -831,8 +831,8 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction * nop = new (INSN_HEAP) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, cg);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
@@ -883,8 +883,8 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -955,8 +955,8 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr =generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -1005,8 +1005,8 @@ generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -1573,8 +1573,8 @@ generateSS2Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -1618,8 +1618,8 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -1656,8 +1656,8 @@ generateSS3Instruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
          //so we will assume that at this moment the second child of BCDCHKNode is the label.
          TR::LabelSymbol * label = (TR::LabelSymbol *)BCDCHKNode->getChild(1);
 
-         TR_S390RestoreGPR7Snippet * restoreSnippet =
-                        new (INSN_HEAP) TR_S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
+         TR::S390RestoreGPR7Snippet * restoreSnippet =
+                        new (INSN_HEAP) TR::S390RestoreGPR7Snippet(cg, n,  TR::LabelSymbol::create(INSN_HEAP,cg), label);
          cg->addSnippet(restoreSnippet);
          TR::Instruction* brcInstr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, n, restoreSnippet->getSnippetLabel());
 
@@ -2273,7 +2273,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
    AOTcgDiag2(comp, "\nimm=%x isHelper=%x\n", imm, isHelper);
 
-   TR_S390TargetAddressSnippet * targetsnippet;
+   TR::S390TargetAddressSnippet * targetsnippet;
 
    // Since N3 generate TR::InstOpCode::BRASL -- only need 1 instruction, and no worry
    // about the displacement
@@ -2394,7 +2394,7 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
       }
 
    TR_ASSERT( s->isCallSnippet(), "targetSnippet is NOT CallSnippet ");
-   ((TR_S390CallSnippet *) s)->setBranchInstruction(callInstr);
+   ((TR::S390CallSnippet *) s)->setBranchInstruction(callInstr);
    return callInstr;
    }
 
@@ -2437,7 +2437,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Compilation *comp = cg->comp();
    bool alloc = false;
    TR::Instruction * cursor;
-   TR_S390ConstantDataSnippet * targetsnippet = 0;
+   TR::S390ConstantDataSnippet * targetsnippet = 0;
    TR::MemoryReference * dataref = 0;
    TR::S390RILInstruction *LRLinst = 0;
    if (cg->isLiteralPoolOnDemandOn() && (base == 0))
@@ -2517,7 +2517,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
 
    if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
       {
-      TR_S390ConstantDataSnippet *targetSnippet;
+      TR::S390ConstantDataSnippet *targetSnippet;
       if(op == TR::InstOpCode::LG)
          targetSnippet = cg->findOrCreate8ByteConstant(node, (int64_t)imm);
       else
@@ -2614,14 +2614,14 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
    bool alloc = false;
    TR::Instruction * cursor;
-   TR_S390ConstantDataSnippet * targetsnippet = 0;
+   TR::S390ConstantDataSnippet * targetsnippet = 0;
    TR::MemoryReference * dataref = 0;
    TR::S390RILInstruction *LGRLinst = 0;
    TR::Compilation *comp = cg->comp();
 
    if (TR::InstOpCode(op).getInstructionFormat() == RIL_FORMAT)
       {
-      TR_S390ConstantDataSnippet * constDataSnip = cg->create64BitLiteralPoolSnippet(TR::Int64, imm);
+      TR::S390ConstantDataSnippet * constDataSnip = cg->create64BitLiteralPoolSnippet(TR::Int64, imm);
 
       // HCR in generateRegLitRefInstruction 64-bit: register const data snippet used by Z6
       if (comp->getOption(TR_EnableHCR) && isPICCandidate )
@@ -2936,7 +2936,7 @@ generateEXDispatch(TR::Node * node, TR::CodeGenerator *cg, TR::Register * maskRe
          }
 
       //create a memory reference to that instruction
-      TR_S390ConstantInstructionSnippet * cis = cg->createConstantInstruction(cg, node, instr);
+      TR::S390ConstantInstructionSnippet * cis = cg->createConstantInstruction(cg, node, instr);
       TR::MemoryReference * tempMR = generateS390MemoryReference(cis, cg, litPool, node);
 
       //the memory reference should create a constant data snippet

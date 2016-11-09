@@ -56,7 +56,7 @@ namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
 namespace TR { class UnresolvedDataSnippet; }
 
-#define TR_S390MemRef_UnresolvedDataSnippet      0x01
+#define S390MemRef_UnresolvedDataSnippet         0x01
 #define MemRef_TargetAddressSnippet              0x02
 #define MemRef_ConstantDataSnippet               0x04
 #define MemRef_LookupSwitchSnippet               0x08
@@ -210,17 +210,17 @@ TR::Instruction *setTargetSnippetInstruction(TR::Instruction *i)
    return _targetSnippetInstruction = i;
    }
 
-TR_S390TargetAddressSnippet *getTargetAddressSnippet();
+TR::S390TargetAddressSnippet *getTargetAddressSnippet();
 
-TR_S390TargetAddressSnippet *setTargetAddressSnippet(TR_S390TargetAddressSnippet *s);
+TR::S390TargetAddressSnippet *setTargetAddressSnippet(TR::S390TargetAddressSnippet *s);
 
-TR_S390ConstantDataSnippet *getConstantDataSnippet();
+TR::S390ConstantDataSnippet *getConstantDataSnippet();
 
-TR_S390ConstantDataSnippet *setConstantDataSnippet(TR_S390ConstantDataSnippet *s);
+TR::S390ConstantDataSnippet *setConstantDataSnippet(TR::S390ConstantDataSnippet *s);
 
-TR_S390LookupSwitchSnippet *getLookupSwitchSnippet();
+TR::S390LookupSwitchSnippet *getLookupSwitchSnippet();
 
-TR_S390LookupSwitchSnippet *setLookupSwitchSnippet(TR_S390LookupSwitchSnippet *s);
+TR::S390LookupSwitchSnippet *setLookupSwitchSnippet(TR::S390LookupSwitchSnippet *s);
 
 
 TR_StorageReference *getStorageReference()                           { return _storageReference; }
@@ -326,8 +326,8 @@ bool refsRegister(TR::Register *reg)
 int32_t getDisp()          {return _displacement;}
 void setDisp(int32_t f)    {_displacement=f;}
 
-bool isUnresolvedDataSnippet()  {return _flags.testAny(TR_S390MemRef_UnresolvedDataSnippet);}
-void setUnresolvedDataSnippet() {_flags.set(TR_S390MemRef_UnresolvedDataSnippet);}
+bool isUnresolvedDataSnippet()  {return _flags.testAny(S390MemRef_UnresolvedDataSnippet);}
+void setUnresolvedDataSnippet() {_flags.set(S390MemRef_UnresolvedDataSnippet);}
 
 bool isTargetAddressSnippet()  {return _flags.testAny(MemRef_TargetAddressSnippet);}
 void setTargetAddressSnippet() {_flags.set(MemRef_TargetAddressSnippet);}
@@ -362,7 +362,7 @@ void bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg);
 
 void populateThroughEvaluation(TR::Node * rootLoadOrStore, TR::CodeGenerator *cg);
 void populateMemoryReference(TR::Node *subTree, TR::CodeGenerator *cg);
-TR_S390ConstantDataSnippet* createLiteralPoolSnippet(TR::Node *rootNode, TR::CodeGenerator *cg);
+TR::S390ConstantDataSnippet* createLiteralPoolSnippet(TR::Node *rootNode, TR::CodeGenerator *cg);
 void populateLoadAddrTree(TR::Node* subTree, TR::CodeGenerator* cg);
 void populateAloadTree(TR::Node* subTree, TR::CodeGenerator* cg, bool privateArea = false);
 void populateShiftLeftTree(TR::Node* subTree, TR::CodeGenerator* cg);

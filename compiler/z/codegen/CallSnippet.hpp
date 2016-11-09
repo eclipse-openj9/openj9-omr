@@ -24,7 +24,7 @@
 #include "codegen/InstOpCode.hpp"     // for InstOpCode, etc
 #include "il/DataTypes.hpp"           // for DataTypes
 #include "runtime/Runtime.hpp"        // for TR_RuntimeHelper
-#include "codegen/Snippet.hpp"  // for TR_S390Snippet, etc
+#include "codegen/Snippet.hpp"  // for TR::S390Snippet, etc
 
 #include "z/codegen/S390Instruction.hpp"
 
@@ -36,7 +36,9 @@ namespace TR { class Node; }
 namespace TR { class RealRegister; }
 namespace TR { class SymbolReference; }
 
-class TR_S390CallSnippet : public TR::Snippet
+namespace TR {
+
+class S390CallSnippet : public TR::Snippet
    {
    int32_t  sizeOfArguments;
    TR::Instruction *branchInstruction;
@@ -47,12 +49,12 @@ class TR_S390CallSnippet : public TR::Snippet
                                                  TR::DataType        type);
    public:
 
-   TR_S390CallSnippet(TR::CodeGenerator *cg, TR::Node *c, TR::LabelSymbol *lab, int32_t s)
+   S390CallSnippet(TR::CodeGenerator *cg, TR::Node *c, TR::LabelSymbol *lab, int32_t s)
       : TR::Snippet(cg, c, lab, false), sizeOfArguments(s),branchInstruction(NULL), _realMethodSymbolReference(NULL)
       {
       }
 
-   TR_S390CallSnippet(TR::CodeGenerator *cg, TR::Node *c, TR::LabelSymbol *lab, TR::SymbolReference *symRef, int32_t s)
+   S390CallSnippet(TR::CodeGenerator *cg, TR::Node *c, TR::LabelSymbol *lab, TR::SymbolReference *symRef, int32_t s)
       : TR::Snippet(cg, c, lab, false), sizeOfArguments(s),branchInstruction(NULL), _realMethodSymbolReference(symRef)
       {
       }
@@ -89,5 +91,6 @@ class TR_S390CallSnippet : public TR::Snippet
 
    };
 
+}
 
 #endif

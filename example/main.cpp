@@ -47,6 +47,7 @@ testMain(int argc, char ** argv, char **envp)
 	exampleVM._omrVM = NULL;
 	exampleVM.rootTable = NULL;
 	exampleVM.objectTable = NULL;
+	exampleVM._vmAccessMutex = NULL;
 
 	/* Initialize the VM */
 	omr_error_t rc = OMR_Initialize(&exampleVM, &exampleVM._omrVM);
@@ -58,6 +59,9 @@ testMain(int argc, char ** argv, char **envp)
 	 */
 	int j9rc = (int) omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT);
 	Assert_MM_true(0 == j9rc);
+
+	/* Set up the vm access mutex */
+	omrthread_rwmutex_init(&exampleVM._vmAccessMutex, 0, "VM exclusive access");
 
 	/* Initialize root table */
 	exampleVM.rootTable = hashTableNew(
@@ -138,6 +142,11 @@ testMain(int argc, char ** argv, char **envp)
 	omrtty_printf("ALL TESTS PASSED\n");
 
 	/* Shut down */
+
+	if (NULL != exampleVM._vmAccessMutex) {
+		omrthread_rwmutex_destroy(exampleVM._vmAccessMutex);
+		exampleVM._vmAccessMutex = NULL;
+	}
 
 	/* Shut down the dispatcher therads */
 	rc = OMR_GC_ShutdownDispatcherThreads(omrVMThread);

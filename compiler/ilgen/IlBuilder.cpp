@@ -1263,6 +1263,15 @@ IlBuilder::And(TR::IlValue *left, TR::IlValue *right)
    }
 
 TR::IlValue *
+IlBuilder::Or(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::orOpCode, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is Or %d | %d\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   ILB_REPLAY("%s = %s->Or(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return returnValue;
+   }
+
+TR::IlValue *
 IlBuilder::Xor(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::xorOpCode, left, right);

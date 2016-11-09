@@ -1797,7 +1797,7 @@ TR_InlinerBase::addGuardForVirtual(
    bool skipHCRGuardCreation = false;
 
    // addGuardForVirtual: create an HCRGuard after the original guard
-   if (!disableHCRGuards && comp()->getHCRMode() == TR::traditional && guard->_kind != TR_HCRGuard && !skipHCRGuardForCallee)
+   if (!disableHCRGuards && comp()->getHCRMode() != TR::none && guard->_kind != TR_HCRGuard && !skipHCRGuardForCallee)
       {
       createdHCRAndVirtualGuard = true;
 
@@ -1836,7 +1836,7 @@ TR_InlinerBase::addGuardForVirtual(
          // printf("Inserting a HCRGuard %p after virtual guard %p in %s\n", hcrBlock, block1, comp()->signature());
          }
       }
-   else if (!disableHCRGuards && comp()->getHCRMode() == TR::traditional)
+   else if (!disableHCRGuards && comp()->getHCRMode() != TR::none)
       createdHCRGuard = true;
 
    bool appendTestToBlock1 = false;
@@ -1949,7 +1949,20 @@ TR_InlinerBase::addGuardForVirtual(
        (guard->_kind == TR_HierarchyGuard))
       shouldAttemptOSR = false;
 
-   if (callerSymbol->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp()))
+   // a failed guard can be handled in one of two ways: 1) we simply branch to a block which will
+   // do a virtual call on the correct receiver for the method we want to run or 2) we could
+   // transfer control from the compiled code back to the interpreter using an On-Stack-Replacement
+   // (OSR) mechanism.
+   //
+   // Hot-Code-Replace or HCR mode is where the compiler is running in a mode that assumes methods
+   // could be redefined at runtime. The compiler can support this mode using traditional virtual
+   // guards with calls or by using OSR elsewhere in the compiler.
+   //
+   // When running with HCR implemented using OSR plain HCR guards will be processed later in the
+   // compilation and those later processes will handle them using OSR so we don't want to complicate
+   // that with additional OSR at this point
+   if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
+       && callerSymbol->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp(), false))
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 
@@ -3767,7 +3780,7 @@ bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerB
    TR_VirtualGuardSelection *guard;
    static const char *disableHCRGuards2 = feGetEnv("TR_DisableHCRGuards");
 
-   if (!disableHCRGuards2 && comp()->getHCRMode() == TR::traditional && !comp()->compileRelocatableCode() && !inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeSymbol))
+   if (!disableHCRGuards2 && comp()->getHCRMode() != TR::none && !comp()->compileRelocatableCode() && !inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeSymbol))
       {
       tempreceiverClass = _initialCalleeMethod->classOfMethod();
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
@@ -4022,7 +4035,7 @@ void TR_InlinerBase::applyPolicyToTargets(TR_CallStack *callStack, TR_CallSite *
 
       bool realGuard = false;
 
-      if (comp()->getHCRMode() == TR::traditional)
+      if (comp()->getHCRMode() != TR::none)
          {
          if (calltarget->_guard->_kind != TR_HCRGuard)
             {
@@ -4794,14 +4807,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
 
       {
       return true;
-      }
-
-   if (guard->_kind == TR_NoGuard && comp()->getHCRMode() == TR::osr)
-      {
-      if (callNodeTreeTop->getNextTreeTop()->getNode()->getOpCodeValue() != TR::BBEnd)
-         blockContainingTheCall->split(callNodeTreeTop->getNextTreeTop(), callerSymbol->getFlowGraph(), true);
-      if (callNodeTreeTop->getPrevTreeTop()->getNode()->getOpCodeValue() != TR::BBStart)
-         blockContainingTheCall = blockContainingTheCall->split(callNodeTreeTop, callerSymbol->getFlowGraph(), true);
       }
 
    comp()->incInlinedCalls();

@@ -59,7 +59,7 @@ MatMult::Store2D(TR::IlBuilder *bldr,
                  TR::IlValue *N,
                  TR::IlValue *value)
    {
-   bldr->StoreAt(pDouble,
+   bldr->StoreAt(
    bldr->   IndexAt(pDouble,
                base,
    bldr->      Add(
@@ -169,7 +169,7 @@ VectorMatMult::VectorStore2D(TR::IlBuilder *bldr,
                              TR::IlValue *N,
                              TR::IlValue *value)
    {
-   bldr->VectorStoreAt(pDouble,
+   bldr->VectorStoreAt(
    bldr->   IndexAt(pDouble,
                base,
    bldr->      Add(

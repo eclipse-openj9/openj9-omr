@@ -134,7 +134,7 @@ DotProduct::buildIL()
       Load("length"),
       ConstInt32(1));
 
-   loop->StoreAt(pDouble,
+   loop->StoreAt(
    loop->   IndexAt(pDouble,
    loop->      Load("result"),
    loop->      Load("i")),

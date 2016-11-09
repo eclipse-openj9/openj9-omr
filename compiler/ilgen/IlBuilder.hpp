@@ -176,7 +176,7 @@ public:
    TR::IlValue *CreateLocalStruct(TR::IlType *structType);
    TR::IlValue *Load(const char *name);
    void Store(const char *name, TR::IlValue *value);
-   void StoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *value);
+   void StoreAt(TR::IlValue *address, TR::IlValue *value);
    TR::IlValue *LoadAt(TR::IlType *dt, TR::IlValue *address);
    TR::IlValue *LoadIndirect(const char *type, const char *field, TR::IlValue *object);
    TR::IlValue *StoreField(const char *name, TR::IlValue *object, TR::IlValue *value);
@@ -186,7 +186,7 @@ public:
    TR::IlValue *VectorLoad(const char *name);
    TR::IlValue *VectorLoadAt(TR::IlType *dt, TR::IlValue *address);
    void VectorStore(const char *name, TR::IlValue *value);
-   void VectorStoreAt(TR::IlType *dt, TR::IlValue *address, TR::IlValue *value);
+   void VectorStoreAt(TR::IlValue *address, TR::IlValue *value);
 
    // control
    void StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value);

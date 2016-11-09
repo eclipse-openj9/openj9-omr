@@ -99,9 +99,6 @@ class TR_OrderBlocks : public TR_BlockOrderingOptimization
    bool            needBetterChoice( TR::CFG *cfg, TR::CFGNode  *block, TR::CFGNode  *prevBlock);
    bool            cannotFollowBlock(TR::Block *block, TR::Block *prevBlock);
    bool            mustFollowBlock(TR::Block *block, TR::Block *prevBlock);
-   bool            hasOtherHotAsmFlowPredeccessors(TR::Block *block, TR::Block *prevBlock);
-   bool            asmFlowHasNonFallThroughHotSuccessors(TR::Block *block);
-   bool            safeToMoveAway(TR::Block *block, TR::Block *prevBlock);
 
    TR::CFGNode *    findSuitablePathInList(List<TR::CFGNode> & list, TR::CFGNode *prevBlock);
    TR::CFGNode *    findBestPath(TR::CFGNode *prevBlock);

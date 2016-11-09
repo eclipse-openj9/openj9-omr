@@ -114,7 +114,7 @@ bool TR_OrderBlocks::needBetterChoice(TR::CFG *cfg, TR::CFGNode *block, TR::CFGN
 
    // Choose a better one if a cold block follows a hot block
    if (bestSucc != comp()->getStartBlock() && bestSucc->asBlock()->isSuperCold() &&
-       !block->asBlock()->isSuperCold() && safeToMoveAway(bestSucc->asBlock(),block->asBlock()))
+       !block->asBlock()->isSuperCold())
       {
       if (trace()) traceMsg(comp(), "\t\tneedBetterChoice: hot block_%d:cold_%d: follows a cold block bestSucc_%d:cold_%d\n",block->getNumber(), block->asBlock()->isSuperCold(), bestSucc->getNumber(), block->asBlock()->isSuperCold());
       return true;
@@ -155,92 +155,6 @@ bool TR_OrderBlocks::mustFollowBlock(TR::Block *block, TR::Block *prevBlock)
       }
 
    return false;
-   }
-
-// returns TRUE if block has a hot predeccessor with asmFlow  and it's not prevBlock
-bool TR_OrderBlocks::safeToMoveAway(TR::Block *block, TR::Block *prevBlock)
-   {
-   //The ordering based on HW Profile may violate PLX's asmFlow restriction
-   if (_changeBlockOrderBasedOnHWProfile)
-      return true;
-#if 1
-    if (hasOtherHotAsmFlowPredeccessors(block, prevBlock) ||
-        asmFlowHasNonFallThroughHotSuccessors(block))
-       {
-       if (trace()) traceMsg(comp(), "\t\tit's not safe to move block_%d away  \n", block->getNumber());
-       return false;
-       }
-    else
-       {
-       if (trace()) traceMsg(comp(), "\t\tit's safe to move block_%d away  \n", block->getNumber());
-       return true;
-       }
-#endif
-   }
-
-// returns TRUE if block has a hot predeccessor with asmFlow  and it's not prevBlock
-bool TR_OrderBlocks::hasOtherHotAsmFlowPredeccessors(TR::Block *block, TR::Block *prevBlock)
-   {
-   //if (!block->isSuperCold()) return false;
-
-   TR::list<TR::CFGEdge*> & predecessors = ((TR::CFGNode *)block)->getPredecessors();
-   bool foundAsmGenFlowPredBlock = false;
-   for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
-    {
-    TR::Block *predBlock = (*predEdge)->getFrom()->asBlock();
-
-    // we can alwasy insert a long jump if block is fall through of prevBlock, don't care block 0
-    if (prevBlock != NULL && predBlock == prevBlock && block->getEntry() && block->getEntry()->getNode() &&block->getEntry()->getNode()->getLabel() == NULL)
-       continue;
-    if (predBlock->getNumber() == 0)
-       continue;
-
-    if (predBlock->isGenAsmFlowBlock() && !predBlock->isSuperCold())
-       {
-
-       if (trace())
-          traceMsg(comp(), "\thasOtherHotAsmFlowPredeccessors: one predeccessor %d of block_%d is genAsmFlow block \n", predBlock->getNumber(), block->getNumber());
-
-       foundAsmGenFlowPredBlock = true;
-       break;
-       }
-    }
-
-   return foundAsmGenFlowPredBlock;
-   }
-
-// returns TRUE if block has a hot non-fall through successor
-bool TR_OrderBlocks::asmFlowHasNonFallThroughHotSuccessors(TR::Block *block)
-   {
-
-   //if (!(block->isGenAsmFlowBlock() && block->isSuperCold())) return false;
-   if (!block->isGenAsmFlowBlock()) return false;
-
-   TR::list<TR::CFGEdge*> & successors = ((TR::CFGNode *)block)->getSuccessors();
-   bool foundNonColdSuccessor = false;
-   for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
-    {
-    TR::Block *succBlock = (*succEdge)->getTo()->asBlock();
-
-    //skip fall-through successors and 1
-    if (block->getExit() && block->getExit()->getNextTreeTop() &&
-        block->getExit()->getNextTreeTop()->getNode()->getBlock() == succBlock &&
-        succBlock->getEntry()->getNode()->getLabel() == NULL)
-       continue;
-    if (succBlock->getNumber() == 1)
-       continue;
-
-    if (!succBlock->isSuperCold())
-       {
-
-       if (trace())
-          traceMsg(comp(), "\tasmFlowHasNonFallThroughHotSuccessors: one successor %d of block_%d(genAsmFlowBlock) is not cold \n", succBlock->getNumber(),block->getNumber()) ;
-
-       foundNonColdSuccessor = true;
-       break;
-       }
-    }
-   return foundNonColdSuccessor;
    }
 
 //Return the first valid block in the list. If HW Profile info exists return the first valid block only if there are no
@@ -739,7 +653,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
       if (!_changeBlockOrderBasedOnHWProfile)
          {
          // Bail if it is cold and we still have hot block to chose from
-         if (candBlock->isSuperCold() && safeToMoveAway(candBlock, block->asBlock()))
+         if (candBlock->isSuperCold())
             {
             if (!_hotPathList.isEmpty())
                {
@@ -1765,14 +1679,7 @@ void TR_OrderBlocks::generateNewOrder(TR_BlockList & newBlockOrder)
 
         if (block->asBlock()->isSuperCold())
            {
-           bool notSafe =!safeToMoveAway(block->asBlock(), NULL);
-           if (notSafe)
-             {
-              addToOrderedBlockList(block, _hotPathList, false);
-              block->asBlock()->setIsSuperCold(false);
-             }
-           else
-              addToOrderedBlockList(block, _coldPathList, false);
+           addToOrderedBlockList(block, _coldPathList, false);
            }
         else
            addToOrderedBlockList(block, _hotPathList, false);

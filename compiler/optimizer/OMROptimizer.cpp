@@ -1941,7 +1941,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       int32_t origSymRefCount = comp()->getSymRefCount();
       int32_t origNodeCount = comp()->getNodeCount();
       int32_t origCfgNodeCount = comp()->getFlowGraph()->getNextNodeNumber();
-      int32_t origOptMsgIndex = comp()->getOptMessageIndex();
+      int32_t origOptMsgIndex = self()->getOptMessageIndex();
 
       if (comp()->isOutermostMethod() && (comp()->getFlowGraph()->getMaxFrequency() < 0))
          {
@@ -2047,7 +2047,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       manager->setTrace(origTraceSetting);
 
-      int32_t finalOptMsgIndex = comp()->getOptMessageIndex();
+      int32_t finalOptMsgIndex = self()->getOptMessageIndex();
       if ((finalOptMsgIndex != origOptMsgIndex ) &&  !manager->getDoesNotRequireTreeDumps())
            comp()->reportOptimizationPhaseForSnap(optNum);
 

@@ -654,8 +654,6 @@ public:
    void setPeekingSymRefTab(TR::SymbolReferenceTable *symRefTab) { _peekingSymRefTab = symRefTab; }
    int32_t getMaxPeekedBytecodeSize() const { return TR::Options::getMaxPeekedBytecodeSize() >> (_optimizationPlan->getReduceMaxPeekedBytecode());}
 
-   int32_t getOptMessageIndex();
-
    void AddCopyPropagationRematerializationCandidate(TR::SymbolReference * sr);
    void RemoveCopyPropagationRematerializationCandidate(TR::SymbolReference * sr);
    bool IsCopyPropagationRematerializationCandidate(TR::SymbolReference * sr);
@@ -872,9 +870,6 @@ public:
 
    bool supressEarlyInlining() { return _noEarlyInline; }
    void setSupressEarlyInlining(bool b) { _noEarlyInline = b; }
-
-   TR::SparseBitVector &getUnreferencedAutoOrParmOrExternals() { return _unreferencedAutoOrParmOrExternals; }
-   TR::SparseBitVector &getExternalSparseBitVector() { return _externalSparseBitVector; }
 
    void setHasColdBlocks()
       {
@@ -1140,11 +1135,6 @@ private:
    TR_OSRCompilationData                *_osrCompilationData;
 
    TR::Block *                         _currentBlock;
-
-   TR::SparseBitVector _unreferencedAutoOrParmOrExternals;
-
-   // Move to Optimizer (UseDefInfo)
-   TR::SparseBitVector _externalSparseBitVector;
 
    // for TR_Debug usage
    ToNumberMap    _toNumberMap; // maps TR::LabelSymbol, etc. objects to numbers

@@ -3607,7 +3607,6 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
    //
    //comp()->printMemStatsBefore("GRA_offer_autos");
    int32_t symRefNumber;
-   TR::SparseBitVector &unreferencedSym = comp()->getUnreferencedAutoOrParmOrExternals();
    for (symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
       {
       symRef = symRefTab->getSymRef(symRefNumber);
@@ -3771,7 +3770,6 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
    // Offer all FP autos now
    //
    int32_t symRefNumber;
-   TR::SparseBitVector &unreferencedSym = comp()->getUnreferencedAutoOrParmOrExternals();
    for (symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
       {
       symRef = symRefTab->getSymRef(symRefNumber);

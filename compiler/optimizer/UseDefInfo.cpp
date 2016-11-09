@@ -1021,7 +1021,6 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
 
    _numStaticsAndFields = _numSymbols;
 
-   TR::SparseBitVector &isExternal = comp()->getExternalSparseBitVector();
    for (refIter.SetToFirstOne(); refIter.Valid(); refIter.SetToNextOne())
       {
       symRefNumber = refIter;
@@ -1913,7 +1912,6 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
 
       int32_t i, ii;
       TR_Method *method = comp()->getMethodSymbol()->getMethod();
-      TR::SparseBitVector &externalSym = comp()->getExternalSparseBitVector();
       TR_BitVectorIterator bvi(*analysisInfo);
       while (bvi.hasMoreElements())
          {

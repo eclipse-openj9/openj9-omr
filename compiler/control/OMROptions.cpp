@@ -2455,6 +2455,17 @@ OMR::Options::jitPreProcess()
 #endif
    _HWProfileSuperColdOnlySteps = 0;
 
+#if defined(TR_HOST_POWER)
+   _bigCalleeThreshold = 300;
+#else
+   _bigCalleeThreshold = 400;
+#endif
+   _bigCalleeThresholdForColdCallsAtWarm = 400;
+   _bigCalleeThresholdForColdCallsAtHot = 500;
+   _bigCalleeFreqCutoffAtWarm = 0;
+   _bigCalleeHotOptThreshold = 600;
+   _bigCalleeFreqCutoffAtHot = 40;
+   _bigCalleeScorchingOptThreshold = 800;
 #if defined(TR_HOST_S390)
    _inlinerVeryLargeCompiledMethodThreshold = 230;
 #elif defined(TR_HOST_X86)
@@ -2464,7 +2475,6 @@ OMR::Options::jitPreProcess()
 #else
    _inlinerVeryLargeCompiledMethodThreshold = 300;
 #endif
-
    _inlinerVeryLargeCompiledMethodFaninThreshold = 1;
    _maxSzForVPInliningWarm = 8;
    _largeCompiledMethodExemptionFreqCutoff = 10000;
@@ -2673,17 +2683,6 @@ OMR::Options::jitPreProcess()
       _dltOptLevel = -1;
       _maxStaticPICSlots = 4;
       _hotMaxStaticPICSlots = -2; // -N means it will default to N*_maxStaticPICSlots
-#if defined(TR_HOST_POWER)
-      _bigCalleeThreshold = 300;
-#else
-      _bigCalleeThreshold = 400;
-#endif
-      _bigCalleeThresholdForColdCallsAtWarm = 400;
-      _bigCalleeThresholdForColdCallsAtHot = 500;
-      _bigCalleeFreqCutoffAtWarm = 0;
-      _bigCalleeHotOptThreshold = 600;
-      _bigCalleeFreqCutoffAtHot = 40;
-      _bigCalleeScorchingOptThreshold = 800;
       _insertGCRTrees = false;
       _GCRCount=-1; // indicates to use the default value
       _GCRResetCount = INT_MAX;
@@ -5032,9 +5031,7 @@ void OMR::Options::setLocalAggressiveAOT()
    // More conservative recompilation through sampling
    self()->setOption(TR_ConservativeCompilation, true);
 
-   self()->setOption(TR_EnableGRACostBenefitModel);
-
-   _bigCalleeThreshold = 200; // use a lower value to inline less and save compilation time
+   _bigCalleeThreshold = 150; // use a lower value to inline less and save compilation time
 
 #ifdef J9ZOS390
    _inlinerVeryLargeCompiledMethodThreshold = 200; // down from 230

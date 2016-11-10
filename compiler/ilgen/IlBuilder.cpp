@@ -652,7 +652,7 @@ IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
 TR::IlValue *
 IlBuilder::CreateLocalArray(int32_t numElements, TR::IlType *elementType)
    {
-   uint32_t size = numElements * TR::DataType::getSize(elementType->getPrimitiveType());
+   uint32_t size = numElements * elementType->getSize();
    TR::SymbolReference *localArraySymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);

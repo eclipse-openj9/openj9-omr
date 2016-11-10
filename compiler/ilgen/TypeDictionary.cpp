@@ -165,7 +165,7 @@ public:
 
    TR::SymbolReference *getFieldSymRef(const char *name);
    bool isStruct() { return true; }
-   virtual size_t getSize();
+   virtual size_t getSize() { return _size; }
 
 protected:
    FieldInfo * findField(const char *fieldName);
@@ -192,7 +192,7 @@ StructType::AddField(const char *name, TR::IlType *typeInfo)
    else
       _firstField = fieldInfo;
    _lastField = fieldInfo;
-   _size += TR::DataType::getSize(primitiveType);
+   _size += typeInfo->getSize();
    }
 
 FieldInfo *
@@ -256,19 +256,6 @@ StructType::getFieldSymRef(const char *fieldName)
    return (TR::IlReference *)symRef;
    }
 
-size_t
-StructType::getSize()
-   {
-   size_t size = 0;
-   FieldInfo *currentField = _firstField;
-   while (currentField != NULL)
-      {
-      size += TR::DataType::getSize(currentField->getPrimitiveType());
-      currentField = currentField->getNext();
-      }
-   return size;
-   }
-
 class PointerType : public TR::IlType
    {
 public:
@@ -290,6 +277,8 @@ public:
    virtual const char *getName() { return _name; }
 
    virtual TR::DataType getPrimitiveType() { return TR::Address; }
+
+   virtual size_t getSize() { return TR::DataType::getSize(TR::Address); }
 
    TR::SymbolReference *getSymRef();
 

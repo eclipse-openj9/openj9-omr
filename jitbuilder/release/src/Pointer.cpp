@@ -52,11 +52,13 @@ static void printDouble(double val)
    printf("%lf", val);
    }
 
-static void printPointer(int64_t val)
+static void printPointer(void* val)
    {
    #define PRINTPOINTER_LINE LINETOSTR(__LINE__)
-   printf("%lx", val);
+   printf("%p", val);
    }
+
+int32_t PointerMethod::staticInt32 = 3;
 
 PointerMethod::PointerMethod(TR::TypeDictionary *d)
    : MethodBuilder(d)
@@ -150,6 +152,16 @@ PointerMethod::buildIL()
       LoadAt(pDouble,
          LoadAt(ppDouble,
             Load("ppDouble"))));
+
+   PrintString(this, "\nOther pointers:\n");
+
+   PrintString(this, "   staticInt32[");
+   Call("printPointer", 1,
+      ConstAddress(&staticInt32));
+   PrintString(this, "] = ");
+   Call("printInt32", 1,
+      LoadAt(pInt32,
+         ConstAddress(&staticInt32)));
 
    PrintString(this, "\n");
 

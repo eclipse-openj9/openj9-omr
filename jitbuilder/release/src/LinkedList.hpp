@@ -27,11 +27,11 @@ namespace TR { class TypeDictionary; }
 typedef struct Element
    {
    struct Element *next;
-   int key;
-   int val;
+   int16_t key;
+   int32_t val;
    } Element;
 
-typedef int32_t (LinkedListFunctionType)(Element *, int32_t);
+typedef int32_t (LinkedListFunctionType)(Element *, int16_t);
 
 class LinkedListMethod : public TR::MethodBuilder
    {

@@ -22,7 +22,7 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-goal: call conststring dotproduct iterfib linkedlist localarray mandelbrot nestedloop pointer recfib simple switch pow2
+goal: call conststring dotproduct iterfib linkedlist localarray structarray mandelbrot nestedloop pointer recfib simple switch pow2
 
 all: goal
 
@@ -33,6 +33,7 @@ test: goal
 	./iterfib
 	./linkedlist
 	./localarray
+	./structarray
 	./nestedloop
 	./pointer
 	./recfib
@@ -148,6 +149,13 @@ Pow2.o: src/Pow2.cpp src/Pow2.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
+structarray : libjitbuilder.a StructArray.o
+	g++ -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
+
+StructArray.o: src/StructArray.cpp src/StructArray.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
 
 clean:
-	@rm -f call conststring dotproduct iterfib linkedlist localarray mandelbrot matmult nestedloop pointer recfib simple switch pow2 *.o
+	@rm -f call conststring dotproduct iterfib linkedlist localarray structarray mandelbrot matmult nestedloop pointer recfib simple switch pow2 *.o

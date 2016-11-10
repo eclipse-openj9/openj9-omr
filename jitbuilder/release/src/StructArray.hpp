@@ -17,29 +17,39 @@
  ******************************************************************************/
 
 
-#ifndef POINTER_INCL
-#define POINTER_INCL
+#ifndef STRUCTARRAY_INCL
+#define STRUCTARRAY_INCL
 
 #include "ilgen/MethodBuilder.hpp"
 
 namespace TR { class TypeDictionary; }
 
-typedef void (PointerFunctionType)(int32_t *, float *, double **);
+typedef void* (CreateStructArrayFunctionType)(int);
 
-class PointerMethod : public TR::MethodBuilder
+typedef void (ReadStructArrayFunctionType)(void*, int);
+
+class CreateStructArrayMethod : public TR::MethodBuilder
    {
    private:
 
-   void PrintString (TR::IlBuilder *bldr, const char *s);
-   TR::IlType *pInt32;
-   TR::IlType *pFloat;
-   TR::IlType *pDouble;
-   TR::IlType *ppDouble;
-   static int32_t staticInt32;
+   TR::IlType *StructType;
+   TR::IlType *pStructType;
 
    public:
-   PointerMethod(TR::TypeDictionary *);
+   CreateStructArrayMethod(TR::TypeDictionary *);
    virtual bool buildIL();
    };
 
-#endif // !defined(POINTER_INCL)
+class ReadStructArrayMethod : public TR::MethodBuilder
+   {
+   private:
+
+   TR::IlType *StructType;
+   TR::IlType *pStructType;
+
+   public:
+   ReadStructArrayMethod(TR::TypeDictionary *);
+   virtual bool buildIL();
+   };
+
+#endif // !defined(LOCALARRAY_INCL)

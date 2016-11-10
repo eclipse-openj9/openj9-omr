@@ -231,6 +231,7 @@ class TR_VirtualGuard
 
    bool                    isInlineGuard()  { return _callNode == NULL; }
    TR::Node                *getCallNode()    { TR_ASSERT(!isInlineGuard(), "assertion failure"); return _callNode; }
+   TR_ByteCodeInfo         &getByteCodeInfo() { return _bcInfo; }
    void                    setCannotBeRemoved() { _cannotBeRemoved = true; }
    bool                    canBeRemoved()   { return !_cannotBeRemoved; }
 
@@ -289,6 +290,7 @@ class TR_VirtualGuard
    // These reference locations are non-null only for MutableCallSiteGuards
    uintptrj_t                *_mutableCallSiteObject;
    TR::KnownObjectTable::Index _mutableCallSiteEpoch;
+   TR_ByteCodeInfo           _bcInfo;
    };
 
 #endif

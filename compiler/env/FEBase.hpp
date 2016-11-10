@@ -56,8 +56,6 @@ class FECommon : public ::TR_FrontEnd
 
    // need this so z codegen can create a sym ref to compare to another sym ref it cannot possibly be equal to
    virtual uintptrj_t getOffsetOfIndexableSizeField() { return -1; }
-
-   virtual void outOfMemory(TR::Compilation *comp, const char *reason);
    };
 
 template <class T> struct FETraits {};

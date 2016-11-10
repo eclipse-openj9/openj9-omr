@@ -243,7 +243,6 @@ public:
    // --------------------------------------------------------------------------
 
    virtual TR_Debug * createDebug(TR::Compilation * comp = NULL);
-   virtual void outOfMemory(TR::Compilation *, const char *);
 
    // --------------------------------------------------------------------------
 

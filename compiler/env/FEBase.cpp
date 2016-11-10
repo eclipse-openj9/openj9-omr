@@ -50,20 +50,6 @@ TR::FECommon::createDebug( TR::Compilation *comp)
    return createDebugObject(comp);
    }
 
-void feOutOfMemory(void *, TR::Compilation *comp, const char *reason)
-   {
-   throw TR::CompilationException();
-   }
-
-void
-TR::FECommon::outOfMemory(TR::Compilation *comp, const char *reason)
-   {
-   // FIXME: This will break when we have more than a single thread
-   // FIXME: This is going to crash if outOfMemory is ever called from
-   // outside of setjmp block
-   feOutOfMemory(0, comp, reason);
-   }
-
 
 //                 .o.                          oooo
 //                .888.                         `888

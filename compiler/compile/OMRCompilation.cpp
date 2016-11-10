@@ -707,6 +707,13 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode)
    return potentialOSRPoint;
    }
 
+int32_t
+OMR::Compilation::getOSRInductionOffset(TR::Node *node)
+   {
+   if (self()->getHCRMode() == TR::osr && node->getOpCodeValue() != TR::asynccheck)
+      return 3;
+   return 0;
+   }
 
 bool
 OMR::Compilation::isProfilingCompilation()

@@ -542,6 +542,9 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
       }
 
    TR::Node *induceOSRCallNode = TR::Node::createWithSymRef(refNode, TR::call, numChildren - firstArgIndex, induceOSRSymRef);
+   TR_OSRPoint *point = self()->findOSRPoint(refNode);
+   TR_ASSERT(point, "Could not find osr point for bytecode %d:%d!", refNode->getByteCodeInfo().getCallerIndex(), refNode->getByteCodeInfo().getByteCodeIndex());
+   induceOSRCallNode->getByteCodeInfo().setByteCodeIndex(point->getInduceByteCodeInfo().getByteCodeIndex());
 
    if (copyChildren)
       {
@@ -770,7 +773,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
       self()->genOSRHelperCall(inlinedSiteIndex, self()->comp()->getSymRefTab());
       }
 
-   self()->insertStoresForDeadStackSlotsBeforeInducingOSR(self()->comp(), inlinedSiteIndex, induceOSRCallTree, callSymbolForDeadSlots);
+   self()->insertStoresForDeadStackSlotsBeforeInducingOSR(self()->comp(), inlinedSiteIndex, insertionPoint->getNode()->getByteCodeInfo(), induceOSRCallTree, callSymbolForDeadSlots);
    traceMsg(self()->comp(), "last real tree n%dn\n", enclosingBlock->getLastRealTreeTop()->getNode()->getGlobalIndex());
    return induceOSRCallTree;
    }
@@ -886,12 +889,13 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          TR::Block * block = tt->getEnclosingBlock();
          // Add the OSR point to the list
          TR::Block * OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(ttnode);
-         TR_OSRPoint *osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode, osrMethodData, self()->comp()->trMemory());
+         int32_t osrOffset = self()->comp()->getOSRInductionOffset(ttnode);
+         TR_OSRPoint *osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode, osrOffset, osrMethodData, self()->comp()->trMemory());
          osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
          if (self()->comp()->getOption(TR_TraceOSR))
-            traceMsg(self()->comp(), "osr point added for [%p] at %d:%d\n",
+            traceMsg(self()->comp(), "osr point added for [%p] at %d:%d with induction offset %d\n",
                ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
-               ttnode->getByteCodeInfo().getByteCodeIndex());
+               ttnode->getByteCodeInfo().getByteCodeIndex(), osrOffset);
 
          // Add an exception edge from the current block to the OSR catch block if there isn't already one
          auto edge = block->getExceptionSuccessors().begin();
@@ -1467,16 +1471,13 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
       return true;
       }
 
-   // TODO re-enable this with a check of a flag specifically used to track
-   // if a node is an original node rather than just checking doNotProfile
-   // which has other uses too
-   /*if (bci.doNotProfile())
+   if (bci.doNotProfile())
      {
      if (comp->getOption(TR_TraceOSR))
         traceMsg(comp, "Node was not present at IL gen time\n");
 
      return true; // if this is a call node created by the optimizer (string peepholes) it may not exist in the bytecodes
-     }*/
+     }
 
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
    int32_t callSite = bci.getCallerIndex();
@@ -1650,7 +1651,7 @@ OMR::ResolvedMethodSymbol::cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex,
 
 
 void
-OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots)
+OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots)
    {
    if (!comp->osrStateIsReliable())
       {
@@ -1659,7 +1660,6 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
       }
 
    TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
-   TR_ByteCodeInfo &byteCodeInfo = induceOSRTree->getNode()->getByteCodeInfo();
    int32_t callSite = byteCodeInfo.getCallerIndex();
    int32_t byteCodeIndex = byteCodeInfo.getByteCodeIndex();
    TR_OSRMethodData *osrMethodData;
@@ -1718,7 +1718,7 @@ OMR::ResolvedMethodSymbol::findOSRPoint(TR::Node *node)
    {
    for (intptrj_t i = 0; i < _osrPoints.size(); ++i)
       {
-      TR_ByteCodeInfo& bcinfo = _osrPoints[i]->getByteCodeInfo();
+      TR_ByteCodeInfo& bcinfo = _osrPoints[i]->getNodeByteCodeInfo();
       if (bcinfo.getByteCodeIndex() == node->getByteCodeIndex() &&
          bcinfo.getCallerIndex() == node->getInlinedSiteIndex())
          return _osrPoints[i];

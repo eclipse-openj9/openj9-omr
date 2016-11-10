@@ -76,6 +76,8 @@
 #include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                       // for ::LABEL, etc
+#include "x/codegen/BinaryCommutativeAnalyser.hpp"
+#include "x/codegen/SubtractAnalyser.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
@@ -2429,6 +2431,141 @@ TR::Register *OMR::X86::TreeEvaluator::andORStringEvaluator(TR::Node *node, TR::
    return resultReg;
    }
 
+TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {   
+   /*
+    *overflowCHK
+    *   =>child1(Operation)
+    *   =>child2(Operand1)
+    *   =>child3(Operand2)
+    */
+ 
+   TR_X86OpCodes op;
+   TR::Node *operationNode = node->getFirstChild();
+   TR::Node *operand1 = node->getSecondChild();
+   TR::Node *operand2 = node->getThirdChild();
+   //it is fine that nodeIs64Bit is false for long operand on 32bits platform because
+   //the analyzers below don't use *op* in this case anyways
+   bool nodeIs64Bit = TR::Compiler->target.is32Bit()? false: getNodeIs64Bit(operand1, cg);
+   switch (node->getOverflowCHKOperation())
+      {
+      //add group
+      case TR::ladd:
+      case TR::iadd:
+         op = ADDRegReg(nodeIs64Bit);
+         break;
+      case TR::sadd:
+         op = ADD2RegReg;
+         break;
+      case TR::badd:
+         op = ADD1RegReg;
+         break;
+      //sub group
+      case TR::lsub:
+      case TR::isub:
+         op = SUBRegReg(nodeIs64Bit);
+         break;
+      case TR::ssub:
+         op = SUB2RegReg;
+         break;
+      case TR::bsub:
+         op = SUB1RegReg;
+         break;
+      //mul group
+      case TR::imul:
+         op = IMULRegReg(nodeIs64Bit);
+         break;
+      case TR::lmul:
+         //TODO: leaving lmul overflowCHK on 32bit platform for later since there is no pending demand for this.
+         // the 32 bits lmul needs several instructions including to multiplications between the lower and higher parts
+         // of the registers and additions of the intermediate results. See TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser
+         // Therefore the usual way of only detecting the OF for the last instruction of sequence won't work for this case.
+         // The implementation needs to detect OF flags after all the instructions involving higher parts of the registers for
+         // both operands and intermediate results.
+         TR_ASSERT(TR::Compiler->target.is64Bit(), "overflowCHK for lmul on 32 bits is not currently supported\n");
+         op = IMULRegReg(nodeIs64Bit);
+         break;
+      default:
+         TR_ASSERT(0 , "unsupported OverflowCHK opcode %s on node %p\n", cg->comp()->getDebug()->getName(node->getOpCode()), node);
+      }
+
+   //make sure the overflowCHK has a catch block first
+   TR::Block *overflowCatchBlock = NULL;
+   TR::list<TR::CFGEdge*> excepSucc =cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
+   for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e)
+      {
+      TR::Block *dest = toBlock((*e)->getTo());
+      if (dest->getCatchBlockExtension()->_catchType == TR::Block::CanCatchOverflowCheck)
+            overflowCatchBlock = dest;
+      }
+   TR_ASSERT(overflowCatchBlock != NULL, "OverflowChk node %p doesn't have overflow catch block\n", node);
+
+   bool operationChildEvaluatedAlready = operationNode->getRegister()? true : false;
+   if (!operationChildEvaluatedAlready)
+      {
+      operationNode->setNodeRequiresConditionCodes(true);
+      cg->evaluate(operationNode);
+      cg->decReferenceCount(operand1);
+      cg->decReferenceCount(operand2);
+      }
+   else 
+   // we need to do the operation again when the Operation node has been evaluated already under a different treetop
+   // TODO: there is still a chance that the flags might still be avaiable and we could detect it and avoid repeating
+   // the operantion 
+      {
+      TR_X86BinaryCommutativeAnalyser  addMulAnalyser(cg);
+      TR_X86SubtractAnalyser subAnalyser(cg);
+      node->setNodeRequiresConditionCodes(true);
+      bool needsEflags = true;
+      switch (node->getOverflowCHKOperation())
+         {
+         // add group
+         case TR::badd:
+         case TR::sadd:
+         case TR::iadd:
+            addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
+            break;
+         case TR::ladd:
+            TR::Compiler->target.is32Bit() ? addMulAnalyser.longAddAnalyserWithExplicitOperands(node, operand1, operand2) 
+                                           : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
+            break;
+         // sub group
+         case TR::bsub:
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV1RegReg, needsEflags);
+            break;
+         case TR::ssub:
+         case TR::isub:
+            subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg, needsEflags);
+            break;
+         case TR::lsub:
+            TR::Compiler->target.is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2) 
+                                           : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg, needsEflags);
+            break;
+         // mul group
+         case TR::imul:
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg);
+            break;
+         case TR::lmul:
+            addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg);
+            break;
+         }
+      }
+
+   cg->setVMThreadRequired(true);
+   //the BBStartEvaluator will generate the label but in this case the catch block might not been evaluated yet
+   TR::Node * bbstartNode = overflowCatchBlock->getEntry()->getNode();
+   TR_ASSERT((bbstartNode->getOpCodeValue() == TR::BBStart), "catch block entry %p must be TR::BBStart\n", bbstartNode);
+   if (!bbstartNode->getLabel()) 
+      {
+      TR::LabelSymbol *label = generateLabelSymbol(cg);
+      bbstartNode->setLabel(label);
+      }
+
+   generateLabelInstruction(JO4, node, overflowCatchBlock->getEntry()->getNode()->getLabel(), cg);
+   cg->setVMThreadRequired(false);
+   cg->decReferenceCount(operationNode);
+   return NULL;
+   }
 
 extern "C" void *fwdHalfWordCopyTable;
 

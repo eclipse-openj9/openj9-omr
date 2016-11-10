@@ -4671,14 +4671,14 @@ OMR::Node::setArrayComponentClassInNode(TR_OpaqueClassBlock *c)
    }
 
 TR::ILOpCodes
-OMR::Node::setOverflowCHKInfo(TR::ILOpCodes op)
+OMR::Node::setOverflowCHKOperation(TR::ILOpCodes op)
    {
    TR_ASSERT(self()->getOpCodeValue() == TR::OverflowCHK, "set OverflowCHK operation info for no OverflowCHK node");
    return _unionBase._extension.getExtensionPtr()->setElem<TR::ILOpCodes>(3, op);
    }
 
 TR::ILOpCodes
-OMR::Node::getOverflowCHKInfo()
+OMR::Node::getOverflowCHKOperation()
    {
    TR_ASSERT(self()->getOpCodeValue() == TR::OverflowCHK, "get OverflowCHK operation info for no OverflowCHK node ");
    return _unionBase._extension.getExtensionPtr()->getElem<TR::ILOpCodes>(3);
@@ -8477,7 +8477,7 @@ bool
 OMR::Node::chkOpsNodeRequiresConditionCodes()
    {
    TR::ILOpCode op = self()->getOpCode();
-   return op.isArithmetic() || op.isLoadConst();
+   return op.isArithmetic() || op.isLoadConst() || op.isOverflowCHK();
    }
 
 const char *

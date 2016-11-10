@@ -838,8 +838,8 @@ public:
    void *                  getMonitorInfo();
    void *                  setMonitorInfo(void *info);
 
-   TR::ILOpCodes           getOverflowCHKInfo();
-   TR::ILOpCodes           setOverflowCHKInfo(TR::ILOpCodes op);
+   TR::ILOpCodes           getOverflowCHKOperation();
+   TR::ILOpCodes           setOverflowCHKOperation(TR::ILOpCodes op);
    /**
     * UnionBase functions end
     */

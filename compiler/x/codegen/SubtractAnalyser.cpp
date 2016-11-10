@@ -38,21 +38,67 @@
 #include "codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"             // for TR_X86OpCodes, etc
 
-void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
-                                                      TR_X86OpCodes regRegOpCode,
-                                                      TR_X86OpCodes regMemOpCode,
-                                                      TR_X86OpCodes copyOpCode,
-                                                      bool needsEflags, // false by default
-                                                      TR::Node *borrow)  // 0 by default
+/*
+ * \brief 
+ * this API is for check nodes(like OverflowCHK) with sub operation where the operands 
+ * are given explicitly by the caller and are not the first and second child of the given root node
+ *
+ * \param root
+ *     the check node
+ * \param firstChild, secondChild 
+ *     the operands for the sub operation 
+ */
+void TR_X86SubtractAnalyser::integerSubtractAnalyserWithExplicitOperands(TR::Node      *root,
+                                                                         TR::Node      *firstChild,
+                                                                         TR::Node      *secondChild,
+                                                                         TR_X86OpCodes regRegOpCode,
+                                                                         TR_X86OpCodes regMemOpCode,
+                                                                         TR_X86OpCodes copyOpCode,
+                                                                         bool needsEflags, // false by default
+                                                                         TR::Node *borrow)  // 0 by default
    {
-   // *this    swipeable for debugging purposes
-   TR::Node *firstChild;
-   TR::Node *secondChild;
-   firstChild  = root->getFirstChild();
-   secondChild = root->getSecondChild();
-   TR::Register *firstRegister  = firstChild->getRegister();
-   TR::Register *secondRegister = secondChild->getRegister();
+   TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported opcode %s for integerSubtractAnalyserWithExplicitOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
+   TR::Register *tempReg = integerSubtractAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, copyOpCode, needsEflags, borrow);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   _cg->stopUsingRegister(tempReg);
+   }
 
+/*
+ * \brief 
+ * this API is for regular sub operation nodes where the first child and second child are the operands by default
+ */
+void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node      *root,
+                                                     TR_X86OpCodes regRegOpCode,
+                                                     TR_X86OpCodes regMemOpCode,
+                                                     TR_X86OpCodes copyOpCode,
+                                                     bool needsEflags, // false by default
+                                                     TR::Node *borrow)  // 0 by default
+   {
+   TR::Node *firstChild = root->getFirstChild();
+   TR::Node *secondChild = root->getSecondChild();
+   TR::Register *targetRegister = NULL;
+   targetRegister = integerSubtractAnalyserImpl(root, firstChild, secondChild, regRegOpCode, regMemOpCode, copyOpCode, needsEflags, borrow);
+   root->setRegister(targetRegister);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   }
+
+/*
+ * users should call the integerSubtractAnalyser or integerSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ */
+TR::Register* TR_X86SubtractAnalyser::integerSubtractAnalyserImpl(TR::Node     *root,
+                                                                  TR::Node     *firstChild,
+                                                                  TR::Node     *secondChild,
+                                                                  TR_X86OpCodes regRegOpCode,
+                                                                  TR_X86OpCodes regMemOpCode,
+                                                                  TR_X86OpCodes copyOpCode,
+                                                                  bool needsEflags, 
+                                                                  TR::Node *borrow)  
+   {
+   TR::Register *targetRegister = NULL;
+   TR::Register *firstRegister = firstChild->getRegister();
+   TR::Register *secondRegister = secondChild->getRegister();
    setInputs(firstChild, firstRegister, secondChild, secondRegister);
 
    bool loadedConst = false;
@@ -138,7 +184,7 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
                generateRegRegInstruction(copyOpCode, root, thirdReg, firstRegister, _cg);
                }
             }
-         root->setRegister(thirdReg);
+         targetRegister = thirdReg;
          if (getSubReg3Reg2())
             {
             generateRegRegInstruction(regRegOpCode, root, thirdReg, secondRegister, _cg);
@@ -162,24 +208,22 @@ void TR_X86SubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
             generateRegMemInstruction(regMemOpCode, root, firstRegister, tempMR, _cg);
             tempMR->decNodeReferenceCounts(_cg);
             }
-         root->setRegister(firstRegister);
+         targetRegister = firstRegister;
          }
       }
    else if (getSubReg1Reg2())
       {
       generateRegRegInstruction(regRegOpCode, root, firstRegister, secondRegister, _cg);
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       }
    else // assert getSubReg1Mem2() == true
       {
       TR::MemoryReference  *tempMR = generateX86MemoryReference(secondChild, _cg);
       generateRegMemInstruction(regMemOpCode, root, firstRegister, tempMR, _cg);
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       tempMR->decNodeReferenceCounts(_cg);
       }
-
-   _cg->decReferenceCount(firstChild);
-   _cg->decReferenceCount(secondChild);
+   return targetRegister;
    }
 
 // Volatile memory operands are not allowed in long subtractions
@@ -198,19 +242,51 @@ static bool isVolatileMemoryOperand(TR::Node *node)
    return false;
    }
 
+/*
+ * \brief 
+ * this API is for check nodes(like OverflowCHK) with an lsub operation where the operands 
+ * are given explicitly by the caller and are not the first and second child of the given root node
+ *
+ * \param root
+ *     the check node
+ * \param firstChild, secondChild 
+ *     the operands for the lsub operation 
+ */
+void TR_X86SubtractAnalyser::longSubtractAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
+   {
+   TR_ASSERT(root->getOpCodeValue() == TR::OverflowCHK, "unsupported opcode %s for longSubtractAnalyserWithExplicitOperands on node %p\n", _cg->comp()->getDebug()->getName(root->getOpCodeValue()), root);
+   TR::Register *tempReg = longSubtractAnalyserImpl(root, firstChild, secondChild);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   _cg->stopUsingRegister(tempReg);
+   }
+
+/*
+ * \brief 
+ * this API is intended for regular lsub operation nodes where the first child and second child are the operands by default
+ */
 void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
-   TR::Node *firstChild;
-   TR::Node *secondChild;
-   firstChild  = root->getFirstChild();
-   secondChild = root->getSecondChild();
+   TR::Node *firstChild = root->getFirstChild();
+   TR::Node *secondChild = root->getSecondChild();
+   TR::Register *targetRegister = NULL;
+   targetRegister = longSubtractAnalyserImpl(root, firstChild, secondChild);
+   root->setRegister(targetRegister);
+   _cg->decReferenceCount(firstChild);
+   _cg->decReferenceCount(secondChild);
+   }
+
+/*
+ * users should call the longSubtractAnalyser or longSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly 
+ */
+TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
+   {
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();
+   TR::Register *targetRegister = NULL;
 
    bool firstHighZero      = false;
-   bool secondHighZero     = false;
-   bool useSecondHighOrder = false;
+   bool secondHighZero     = false; bool useSecondHighOrder = false;
 
    TR_X86OpCodes regRegOpCode = SUB4RegReg;
    TR_X86OpCodes regMemOpCode = SUB4RegMem;
@@ -291,7 +367,7 @@ void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
       TR::Register     *lowThird  = _cg->allocateRegister();
       TR::Register     *highThird = _cg->allocateRegister();
       TR::RegisterPair *thirdReg  = _cg->allocateRegisterPair(lowThird, highThird);
-      root->setRegister(thirdReg);
+      targetRegister = thirdReg;
       generateRegRegInstruction(MOV4RegReg, root, lowThird, firstRegister->getLowOrder(), _cg);
 
       if (firstHighZero)
@@ -356,7 +432,7 @@ void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
          generateRegRegInstruction(regRegOpCode, root, firstRegister->getLowOrder(), secondRegister->getLowOrder(), _cg);
          generateRegRegInstruction(SBB4RegReg, root, firstRegister->getHighOrder(), secondRegister->getHighOrder(), _cg);
          }
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       }
    else // assert getSubReg1Mem2() == true
       {
@@ -382,12 +458,11 @@ void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
          generateRegMemInstruction(SBB4RegMem, root, firstRegister->getHighOrder(), highMR, _cg);
          }
 
-      root->setRegister(firstRegister);
+      targetRegister = firstRegister;
       lowMR->decNodeReferenceCounts(_cg);
       }
 
-   _cg->decReferenceCount(firstChild);
-   _cg->decReferenceCount(secondChild);
+   return targetRegister;
    }
 
 const uint8_t TR_X86SubtractAnalyser::_actionMap[NUM_ACTIONS] =

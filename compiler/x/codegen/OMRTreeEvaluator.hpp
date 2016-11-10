@@ -227,6 +227,7 @@ class TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compressStringEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
    static TR::Register *compressStringNoCheckEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
    static TR::Register *andORStringEvaluator(TR::Node *node, TR::CodeGenerator *cg);

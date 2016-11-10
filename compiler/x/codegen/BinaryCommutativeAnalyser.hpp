@@ -51,11 +51,27 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
         _reversedOperands(false)
       {}
 
-   void genericAnalyser(TR::Node       *root,
+   void genericAnalyserWithExplicitOperands(TR::Node      *root,
+                                            TR::Node      *firstChild,
+                                            TR::Node      *secondChild,
+                                            TR_X86OpCodes regRegOpCode,
+                                            TR_X86OpCodes regMemOpCode,
+                                            TR_X86OpCodes copyOpCode,
+                                            bool          nonClobberingDestination = false);
+
+   void genericAnalyser(TR::Node      *root,
                         TR_X86OpCodes regRegOpCode,
                         TR_X86OpCodes regMemOpCode,
                         TR_X86OpCodes copyOpCode,
-                        bool           nonClobberingDestination = false);
+                        bool          nonClobberingDestination = false);
+
+   TR::Register *genericAnalyserImpl(TR::Node      *root,
+                                     TR::Node      *firstChild,
+                                     TR::Node      *secondChild,
+                                     TR_X86OpCodes regRegOpCode,
+                                     TR_X86OpCodes regMemOpCode,
+                                     TR_X86OpCodes copyOpCode,
+                                     bool          nonClobberingDestination);
 
    void genericLongAnalyser(TR::Node       *root,
                             TR_X86OpCodes lowRegRegOpCode,
@@ -70,9 +86,27 @@ class TR_X86BinaryCommutativeAnalyser  : public TR_Analyser
                            TR_X86OpCodes regRegOpCode,
                            TR_X86OpCodes regMemOpCode,
                            bool needsEflags = false,
-                           TR::Node       *carry = 0);
+                           TR::Node       *carry = 0);// 0 by default
 
+   void integerAddAnalyserWithExplicitOperands(TR::Node       *root,
+                                               TR::Node *firstChild,
+                                               TR::Node *secondChild,
+                                               TR_X86OpCodes regRegOpCode,
+                                               TR_X86OpCodes regMemOpCode,
+                                               bool needsEflags = false, 
+                                               TR::Node *carry = 0);
+
+   TR::Register* integerAddAnalyserImpl(TR::Node       *root,
+                           TR::Node *firstChild,
+                           TR::Node *secondChild,
+                           TR_X86OpCodes regRegOpCode,
+                           TR_X86OpCodes regMemOpCode,
+                           bool needsEflags, 
+                           TR::Node *carry);
+
+   void longAddAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
    void longAddAnalyser(TR::Node *root);
+   TR::Register* longAddAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild);
 
    void longMultiplyAnalyser(TR::Node *root);
    void longDualMultiplyAnalyser(TR::Node *root);

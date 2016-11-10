@@ -505,7 +505,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _nodeAddressOfCachedStatic(NULL),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
-     _nonDestructiveToDestructiveOpCode(self()->comp()->allocator("PEEPHOLE"),TR::InstOpCode::BAD),
      _bucketPlusIndexRegisters(self()->comp()->allocator()),
      _currentDEPEND(NULL),
      _outgoingArgLevelDuringTreeEvaluation(0)
@@ -759,31 +758,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->getS390Linkage()->setParameterLinkageRegisterIndex(comp->getJittedMethodSymbol());
 
-   if(comp->getOptLevel() != noOpt)
-     {
-     // Initialize table that will help to change non-destructive opcodes to destructive opcodes
-     // when target and source register are the same
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::AHIK] = TR::InstOpCode::AHI;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::AGHIK] = TR::InstOpCode::AGHI;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::ARK] = TR::InstOpCode::AR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::AGRK] = TR::InstOpCode::AGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::ALGRK] = TR::InstOpCode::ALGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::NRK] = TR::InstOpCode::NR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::NGRK] = TR::InstOpCode::NGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::ORK] = TR::InstOpCode::OR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::OGRK] = TR::InstOpCode::OGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::XRK] = TR::InstOpCode::XR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::XGRK] = TR::InstOpCode::XGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SLAK] = TR::InstOpCode::SLA;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SLLK] = TR::InstOpCode::SLL;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SRAK] = TR::InstOpCode::SRA;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SRLK] = TR::InstOpCode::SRL;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SLRK] = TR::InstOpCode::SLR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SLGRK] = TR::InstOpCode::SLGR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SRK] = TR::InstOpCode::SR;
-     _nonDestructiveToDestructiveOpCode[TR::InstOpCode::SGRK] = TR::InstOpCode::SGR;
-     }
-   
    self()->getS390Linkage()->initS390RealRegisterLinkage();
    self()->setAccessStaticsIndirectly(true);
    }
@@ -10968,55 +10942,6 @@ OMR::Z::CodeGenerator::parseEditParm(uint8_t *parm,
    trailingStr = (lastDigit != length - 1);
    return true;
    }
-
-bool OMR::Z::CodeGenerator::replaceWithDestructiveFormIfPossible(TR::Instruction* inst)
-  {
-  TR::InstOpCode::Mnemonic replacementOpCodeValue=_nonDestructiveToDestructiveOpCode[inst->getOpCodeValue()];
-  TR::Register *targetReg=NULL;
-
-  if(replacementOpCodeValue != TR::InstOpCode::BAD && (targetReg = inst->getRegisterOperand(1)) == inst->getRegisterOperand(2) &&
-     performTransformation(self()->comp(), "\nO^O S390 PEEPHOLE rewrite: change %s to %s because source and target operands are the same in [%p]\n",
-                           TR::InstOpCode::opCodeToNameMap[inst->getOpCodeValue()] , TR::InstOpCode::opCodeToNameMap[replacementOpCodeValue], inst))
-    {
-    switch(TR::InstOpCode(replacementOpCodeValue).getInstructionFormat())
-      {
-      case RR_FORMAT:
-        generateRRInstruction(self(), replacementOpCodeValue, inst->getNode(), targetReg, inst->getRegisterOperand(3), inst);
-        break;
-      case RRE_FORMAT:
-        generateRREInstruction(self(), replacementOpCodeValue, inst->getNode(), targetReg, inst->getRegisterOperand(3), inst);
-        break;
-      case RI_FORMAT:
-        generateRIInstruction(self(), replacementOpCodeValue, inst->getNode(), targetReg, toS390RIEInstruction(inst)->getSourceImmediate16(), inst);
-        break;
-      case RS_FORMAT:
-        {
-        auto oldMR = toS390RSInstruction(inst)->getMemoryReference();
-        if (oldMR)
-           {
-           auto reusedMR = reuseS390MemoryReference(oldMR, 0, inst->getNode(), self(), false);
-           generateRSInstruction(self(), replacementOpCodeValue, inst->getNode(), targetReg, reusedMR, inst);
-           }
-        else
-           {
-           generateRSInstruction(self(), replacementOpCodeValue, inst->getNode(), targetReg, toS390RSInstruction(inst)->getSourceImmediate(), inst);
-           }
-        break;
-        }
-      default:
-        TR_ASSERT(false,"Uncoded type of replacement instruction. replacement OpCode=%d inst=[%p]\n,",
-                  TR::InstOpCode::opCodeToNameMap[replacementOpCodeValue], inst);
-        break;
-      }
-    self()->deleteInst(inst);
-    int32_t i,n;
-    n=inst->getNumRegisterOperands();
-    for(i=0;i<n;i++)
-      inst->getRegisterOperand(i+1)->decTotalUseCount();
-    return true;
-    }
-  return false;
-  }
 
 
 

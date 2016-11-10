@@ -980,6 +980,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"poisonDeadSlots",    "O\tpaints all dead slots with deadf00d", SET_OPTION_BIT(TR_PoisonDeadSlots), "F"},
    {"prepareForOSREvenIfThatDoesNothing",   "O\temit the call to prepareForOSR even if there is no slot sharing", SET_OPTION_BIT(TR_EnablePrepareForOSREvenIfThatDoesNothing), "F"},
    {"printAbsoluteTimestampInVerboseLog", "O\tPrint Absolute Timestamp in vlog", SET_OPTION_BIT(TR_PrintAbsoluteTimestampInVerboseLog), "F", NOT_IN_SUBSET},
+   {"printErrorInfoOnCompFailure",        "O\tPrint compilation error info to stderr", SET_OPTION_BIT(TR_PrintErrorInfoOnCompFailure), "F", NOT_IN_SUBSET},
    {"privatizeOverlaps",  "O\tif BCD storageRefs are going to overlap then do the move through a temp", SET_OPTION_BIT(TR_PrivatizeOverlaps), "F"},
    {"profile",            "O\tcompile a profiling method body", SET_OPTION_BIT(TR_Profile), "F"},
    {"profilingCompNodecountThreshold=", "M<nnn>\tthreshold for doubling the method to do a profiling compile is considered expensive",

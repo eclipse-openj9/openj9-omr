@@ -1661,6 +1661,13 @@ void OMR::Compilation::resetVisitCounts(vcount_t count, TR::TreeTop *start)
       tt->getNode()->resetVisitCounts(count);
    }
 
+void OMR::Compilation::reportFailure(const char *reason)
+   {
+   traceMsg(self(), "Compilation Failed Because: %s\n", reason);
+   if (TR::Options::getCmdLineOptions()->getOption(TR_PrintErrorInfoOnCompFailure))
+      fprintf(stderr, "Compilation Failed Because: %s\n", reason);
+   }
+
 void OMR::Compilation::AddCopyPropagationRematerializationCandidate(TR::SymbolReference * sr)
    {
    _copyPropagationRematerializationCandidates[sr->getReferenceNumber()] = 1;

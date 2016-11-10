@@ -175,7 +175,7 @@ enum TR_CompilationOptions
    TR_TraceValueNumbers                   = 0x00008000 + 2,
    TR_TraceLiveness                       = 0x00010000 + 2,
    TR_BreakAfterCompile                   = 0x00020000 + 2,
-   //Available                            = 0x00040000 + 2,
+   TR_PrintErrorInfoOnCompFailure         = 0x00040000 + 2,
    TR_DisableArrayCopyOpts                = 0x00080000 + 2,
    TR_NoResumableTrapHandler              = 0x00100000 + 2,
    TR_disableInterfaceCallCaching         = 0x00200000 + 2,

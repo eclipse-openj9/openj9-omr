@@ -884,7 +884,7 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          skipNextTT = false;
       // check potential OSR point using a node to avoid a check for the exception successor
       // which we are responsible for creating if we decide to continue with this OSR point
-      if (self()->comp()->isPotentialOSRPoint(NULL, tt->getNode()))
+      if (self()->comp()->isPotentialOSRPoint(tt->getNode()))
          {
          TR::Block * block = tt->getEnclosingBlock();
          // Add the OSR point to the list

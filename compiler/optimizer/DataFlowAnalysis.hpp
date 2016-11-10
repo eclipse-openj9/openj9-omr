@@ -187,7 +187,7 @@ class TR_DataFlowAnalysis : public TR::Allocatable<TR_DataFlowAnalysis, TR::Allo
       if (node != NULL && tt->getNode() != node)
          return node->exceptionsRaised() != 0;
       return (tt->getNode()->exceptionsRaised() != 0 ||
-              (comp()->isPotentialOSRPoint(tt)));
+              (comp()->isPotentialOSRPointWithSupport(tt)));
       }
    bool areSyntacticallyEquivalent(TR::Node *, TR::Node *);
    template<class Container>static void copyFromInto(Container *from, Container *to)

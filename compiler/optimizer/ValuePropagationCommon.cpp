@@ -553,7 +553,7 @@ void TR::ValuePropagation::removeChildren(TR::Node *node, bool anchorIt)
 
 static bool canCauseOSR(TR::TreeTop *tt, TR::Compilation *comp)
    {
-   if (comp->isPotentialOSRPoint(tt))
+   if (comp->isPotentialOSRPointWithSupport(tt))
       return true;
 
    return false;

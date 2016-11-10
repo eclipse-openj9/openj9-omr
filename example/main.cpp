@@ -30,6 +30,7 @@
 #include "ObjectAllocationInterface.hpp"
 #include "ObjectModel.hpp"
 #include "omr.h"
+#include "omrgc.h"
 #include "omrgcstartup.hpp"
 #include "omrvm.h"
 #include "StartupManagerImpl.hpp"
@@ -43,25 +44,18 @@ testMain(int argc, char ** argv, char **envp)
 	/* Start up */
 	OMR_VM_Example exampleVM;
 	OMR_VMThread *omrVMThread = NULL;
-	omrthread_t self = NULL;
 	exampleVM._omrVM = NULL;
 	exampleVM.rootTable = NULL;
 	exampleVM.objectTable = NULL;
 	exampleVM._vmAccessMutex = NULL;
 
 	/* Initialize the VM */
-	omr_error_t rc = OMR_Initialize(&exampleVM, &exampleVM._omrVM);
+	omr_error_t rc = OMR_Initialize_VM(&exampleVM._omrVM, &omrVMThread, &exampleVM, NULL);
 	Assert_MM_true(OMR_ERROR_NONE == rc);
 
-	/* Recursive omrthread_attach() (i.e. re-attaching a thread that is already attached) is cheaper and less fragile
-	 * than non-recursive. If performing a sequence of function calls that are likely to attach & detach internally,
-	 * it is more efficient to call omrthread_attach() before the entire block.
-	 */
-	int j9rc = (int) omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT);
-	Assert_MM_true(0 == j9rc);
-
 	/* Set up the vm access mutex */
-	omrthread_rwmutex_init(&exampleVM._vmAccessMutex, 0, "VM exclusive access");
+	intptr_t rw_rc = omrthread_rwmutex_init(&exampleVM._vmAccessMutex, 0, "VM exclusive access");
+	Assert_MM_true(J9THREAD_RWMUTEX_OK == rw_rc);
 
 	/* Initialize root table */
 	exampleVM.rootTable = hashTableNew(
@@ -73,22 +67,6 @@ testMain(int argc, char ** argv, char **envp)
 			exampleVM._omrVM->_runtime->_portLibrary, OMR_GET_CALLSITE(), 0, sizeof(ObjectEntry), 0, 0, OMRMEM_CATEGORY_MM,
 			objectTableHashFn, objectTableHashEqualFn, NULL, NULL);
 
-	/* Initialize heap and collector */
-	{
-		/* This has to be done in local scope because MM_StartupManager has a destructor that references the OMR VM */
-		MM_StartupManagerImpl startupManager(exampleVM._omrVM);
-		rc = OMR_GC_IntializeHeapAndCollector(exampleVM._omrVM, &startupManager);
-	}
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-
-	/* Attach current thread to the VM */
-	rc = OMR_Thread_Init(exampleVM._omrVM, NULL, &omrVMThread, "GCTestMailThread");
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-
-	/* Kick off the dispatcher therads */
-	rc = OMR_GC_InitializeDispatcherThreads(omrVMThread);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-	
 	OMRPORT_ACCESS_FROM_OMRVM(exampleVM._omrVM);
 	omrtty_printf("VM/GC INITIALIZED\n");
 
@@ -105,13 +83,12 @@ testMain(int argc, char ** argv, char **envp)
 
 	/* Allocate objects without collection until heap exhausted */
 	uintptr_t allocatedFlags = 0;
-	uintptr_t size = extensions->objectModel.adjustSizeInBytes(24);
-	MM_AllocateDescription mm_allocdescription(size, allocatedFlags, true, true);
+	uintptr_t allocSize = 24;
 	uintptr_t allocatedCount = 0;
+	uintptr_t adjustedSize = extensions->objectModel.adjustSizeInBytes(allocSize);
 	while (true) {
-		omrobjectptr_t obj = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), false);
+		omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_AllocateNoGC(omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, allocSize, allocatedFlags);
 		if (NULL != obj) {
-			extensions->objectModel.setObjectSize(obj, mm_allocdescription.getBytesRequested());
 			RootEntry rEntry = {"root1", obj};
 			RootEntry *entryInTable = (RootEntry *)hashTableAdd(exampleVM.rootTable, &rEntry);
 			if (NULL == entryInTable) {
@@ -130,39 +107,16 @@ testMain(int argc, char ** argv, char **envp)
 	omrtty_printf("thread allocated %d tlh bytes, %d non-tlh bytes, from %d allocations before NULL\n",
 		allocationStats->tlhBytesAllocated(), allocationStats->nontlhBytesAllocated(), allocatedCount);
 	uintptr_t allocationTotalBytes = allocationStats->tlhBytesAllocated() + allocationStats->nontlhBytesAllocated();
-	uintptr_t allocatedTotalBytes = size * allocatedCount;
+	uintptr_t allocatedTotalBytes = adjustedSize * allocatedCount;
 	Assert_MM_true(allocatedTotalBytes == allocationTotalBytes);
 
 	/* Force GC to print verbose system allocation stats -- should match thread allocation stats from before GC */
-	omrobjectptr_t obj = (omrobjectptr_t)allocationInterface->allocateObject(env, &mm_allocdescription, env->getMemorySpace(), true);
-	env->unwindExclusiveVMAccessForGC();
+	omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_Allocate(omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, allocSize, allocatedFlags);
 	Assert_MM_false(NULL == obj);
-	extensions->objectModel.setObjectSize(obj, mm_allocdescription.getBytesRequested());
 
 	omrtty_printf("ALL TESTS PASSED\n");
 
 	/* Shut down */
-
-	if (NULL != exampleVM._vmAccessMutex) {
-		omrthread_rwmutex_destroy(exampleVM._vmAccessMutex);
-		exampleVM._vmAccessMutex = NULL;
-	}
-
-	/* Shut down the dispatcher therads */
-	rc = OMR_GC_ShutdownDispatcherThreads(omrVMThread);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-
-	/* Shut down collector */
-	rc = OMR_GC_ShutdownCollector(omrVMThread);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-
-	/* Detach from VM */
-	rc = OMR_Thread_Free(omrVMThread);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
-
-	/* Shut down heap */
-	rc = OMR_GC_ShutdownHeap(exampleVM._omrVM);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
 
 	/* Free object hash table */
 	hashTableForEachDo(exampleVM.objectTable, objectTableFreeFn, &exampleVM);
@@ -173,8 +127,10 @@ testMain(int argc, char ** argv, char **envp)
 	hashTableFree(exampleVM.rootTable);
 	exampleVM.rootTable = NULL;
 
-	/* Balance the omrthread_attach_ex() issued above */
-	omrthread_detach(self);
+	if (NULL != exampleVM._vmAccessMutex) {
+		omrthread_rwmutex_destroy(exampleVM._vmAccessMutex);
+		exampleVM._vmAccessMutex = NULL;
+	}
 
 	/* Shut down VM
 	 * This destroys the port library and the omrthread library.
@@ -183,8 +139,8 @@ testMain(int argc, char ** argv, char **envp)
 	 * (This also shuts down trace functionality, so the trace assertion
 	 * macros might not work after this.)
 	 */
-	rc = OMR_Shutdown(exampleVM._omrVM);
-	Assert_MM_true(OMR_ERROR_NONE == rc);
+	rc = OMR_Shutdown_VM(exampleVM._omrVM, omrVMThread);
+	/* Can not assert the value of rc since the portlibrary and trace engine have been shutdown */
 
 	return rc;
 }

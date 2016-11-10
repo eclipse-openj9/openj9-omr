@@ -21,18 +21,19 @@ DEPSUFF=.depend.mk
 #
 
 AR_PATH?=ar
-AS_PATH?=as
 M4_PATH?=m4
 SED_PATH?=sed
 AR_PATH?=ar
 PERL_PATH?=perl
 
 ifeq ($(C_COMPILER),gcc)
+    AS_PATH?=as
     CC_PATH?=gcc
     CXX_PATH?=g++
 endif
 
 ifeq ($(C_COMPILER),clang)
+    AS_PATH?=clang
     CC_PATH?=clang
     CXX_PATH?=clang++
 endif
@@ -151,10 +152,15 @@ S_CMD?=$(AS_PATH)
 
 S_INCLUDES=$(PRODUCT_INCLUDES)
 S_DEFINES+=$(HOST_DEFINES) $(TARGET_DEFINES)
-S_FLAGS+=--noexecstack
+
+ifeq ($(C_COMPILER),clang)
+    S_FLAGS+=-Wa,--noexecstack
+else
+    S_FLAGS+=--noexecstack
+    S_FLAGS_DEBUG+=--gstabs
+endif
 
 S_DEFINES_DEBUG+=DEBUG
-S_FLAGS_DEBUG+=--gstabs
 
 ifeq ($(HOST_ARCH),x)
     ifeq ($(HOST_BITS),32)
@@ -162,7 +168,11 @@ ifeq ($(HOST_ARCH),x)
     endif
     
     ifeq ($(HOST_BITS),64)
-        S_FLAGS+=--64
+        ifeq ($(C_COMPILER),clang)
+            S_FLAGS+=-march=x86-64 -c
+        else
+	    S_FLAGS+=--64
+        endif
     endif
 endif
 

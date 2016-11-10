@@ -33,49 +33,49 @@ $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen:
 	mkdir -p $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/env/jittypes.h: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/env/jittypes.h $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/env
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/env/defines.h: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/env/defines.h $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/env
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/DataTypes.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/DataTypes.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/DataTypesEnum.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/DataTypesEnum.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/ILOpCodes.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/ILOpCodes.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/ILOpCodesEnum.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/ILOpCodesEnum.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlGen.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlGen.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
-	cp -u $< $@
+	cp -u $< $@ || cp $< $@
 
 JITBUILDER_FILES=$(RELEASE_DIR)/Makefile \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/env/defines.h \

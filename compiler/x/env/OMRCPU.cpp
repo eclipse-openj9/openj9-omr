@@ -23,8 +23,8 @@
 #include "env/ProcessorInfo.hpp"
 
 
-#ifdef LINUX
-extern "C" bool jitGetCPUID(TR_X86CPUIDBuffer *buf);
+#if defined(LINUX) || defined(OSX)
+extern "C" bool jitGetCPUID(TR_X86CPUIDBuffer *buf) asm ("jitGetCPUID");
 #else
 extern "C" bool _cdecl jitGetCPUID(TR_X86CPUIDBuffer *buf);
 #endif

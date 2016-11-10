@@ -46,7 +46,7 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "x/codegen/X86Register.hpp"           // for TR_X86FPStackRegister, etc
 #include "env/CompilerEnv.hpp"
 
-#ifdef LINUX
+#if defined(LINUX) || defined(OSX)
 #include <sys/time.h>                          // for timeval
 #endif
 

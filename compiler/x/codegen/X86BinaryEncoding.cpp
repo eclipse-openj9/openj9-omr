@@ -3070,7 +3070,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
       if (getNode()->getOpCode().hasSymbolReference() &&
           methodSymRef &&
             (methodSymRef->getReferenceNumber()==TR_referenceArrayCopy ||
-#if defined(LINUX)  // AOT_JIT_GAP
+#if defined(LINUX) || defined(OSX)  // AOT_JIT_GAP
              methodSymRef->getReferenceNumber()==TR_AMD64getTimeOfDay
 #else
              methodSymRef->getReferenceNumber()==TR_AMD64GetSystemTimeAsFileTime

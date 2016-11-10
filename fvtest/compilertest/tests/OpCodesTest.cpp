@@ -612,7 +612,7 @@ OpCodesTest::compileOpCodeMethod(int32_t opCodeArgsNum,
          }
       }
 
-   TR::IlType **argIlTypes = new TR::IlType*[numArgs];
+   TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
    for (uint32_t a=0;a < opCodeArgsNum;a++)
       argIlTypes[a] = types.PrimitiveType(argTypes[a]);
 

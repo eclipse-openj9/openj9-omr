@@ -40,8 +40,7 @@
 /* J9VMAtomicFunctions*/
 #ifndef _J9VMATOMICFUNCTIONS_
 #define _J9VMATOMICFUNCTIONS_
-extern uintptr_t compareAndSwapUDATA(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue, uintptr_t *spinlock);
-extern uint32_t compareAndSwapU32(uint32_t *location, uint32_t oldValue, uint32_t newValue, uintptr_t *spinlock);
+extern uintptr_t compareAndSwapUDATA(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue);
 #endif /* _J9VMATOMICFUNCTIONS_ */
 
 
@@ -71,7 +70,7 @@ omrmem_categories_increment_counters(OMRMemCategory *category, uintptr_t size)
 	/* Increment block count */
 	do {
 		oldValue = category->liveAllocations;
-	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue + 1, & category->liveAllocationsLockWord) != oldValue);
+	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue + 1) != oldValue);
 
 	omrmem_categories_increment_bytes(category, size);
 }
@@ -91,7 +90,7 @@ omrmem_categories_increment_bytes(OMRMemCategory *category, uintptr_t size)
 	/* Increment bytes */
 	do {
 		oldValue = category->liveBytes;
-	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue + size, &category->liveBytesLockWord) != oldValue);
+	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue + size) != oldValue);
 }
 
 /**
@@ -109,7 +108,7 @@ omrmem_categories_decrement_counters(OMRMemCategory *category, uintptr_t size)
 	/* Decrement block count */
 	do {
 		oldValue = category->liveAllocations;
-	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue - 1, & category->liveAllocationsLockWord) != oldValue);
+	} while (compareAndSwapUDATA(&category->liveAllocations, oldValue, oldValue - 1) != oldValue);
 
 	omrmem_categories_decrement_bytes(category, size);
 }
@@ -129,7 +128,7 @@ omrmem_categories_decrement_bytes(OMRMemCategory *category, uintptr_t size)
 	/* Decrement size */
 	do {
 		oldValue = category->liveBytes;
-	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue - size, &category->liveBytesLockWord) != oldValue);
+	} while (compareAndSwapUDATA(&category->liveBytes, oldValue, oldValue - size) != oldValue);
 }
 
 /**

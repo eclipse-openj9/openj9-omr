@@ -66,7 +66,7 @@ CreateStructArrayMethod::buildIL()
             Load("size"),
             ConstInt32(StructType->getSize()))));
 
-   TR::IlBuilder* fillArray = nullptr;
+   TR::IlBuilder* fillArray = NULL;
    ForLoopUp("i", &fillArray,
       ConstInt32(0),
       Load("size"),
@@ -119,7 +119,7 @@ ReadStructArrayMethod::ReadStructArrayMethod(TR::TypeDictionary *d)
 bool
 ReadStructArrayMethod::buildIL()
    {
-   TR::IlBuilder* readArray = nullptr;
+   TR::IlBuilder* readArray = NULL;
    ForLoopUp("i", &readArray,
       ConstInt32(0),
       Load("size"),

@@ -2668,6 +2668,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             if ( realReg->getState() == TR::RealRegister::Free && realReg->getHighWordRegister()->getState() == TR::RealRegister::Free)
                {
                dcbInstr->setAssignableReg(realReg);
+               realReg->setHasBeenAssignedInMethod(true);
                break;
                }
             }
@@ -2899,7 +2900,7 @@ TR_S390Peephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
    if (s390current->isCall())  return true;
    if (s390current->isAsmGen()) return true;
    if (s390current->isBranchOp()) return true;
-
+   if (s390current->getOpCodeValue() == TR::InstOpCode::DCB) return true;
 
    return false;
    }
@@ -10571,6 +10572,8 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
 
 /**
  * Create a snippet of the debug counter address and generate a DCB (DebugCounterBump) pseudo-instruction that will be ignored during register assignment
+ * Be aware that the constituent add immediate instruction (ASI/AGSI) sets condition codes for sign and overflow
+ * In most cases the condition code is 2; for result greater than zero and no overflow
  *
  * @param cursor     Current binary encoding cursor
  * @param counter    The debug counter to increment

@@ -6473,5 +6473,8 @@
    S390OpProp_IsCall,
 
 	   // DCB
-	0,
+   S390OpProp_SetsSignFlag |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_IsLoad |
+   S390OpProp_IsStore,
 

@@ -842,7 +842,8 @@ public:
     * and is primarily intended for ILGen before blocks are created - you risk
     * incorrect answers if you fail to supply the TreeTop
     */
-   bool isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode = NULL);
+   bool isPotentialOSRPoint(TR::Node *node);
+   bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
    int32_t getOSRInductionOffset(TR::Node *node);
 
    // for OSR

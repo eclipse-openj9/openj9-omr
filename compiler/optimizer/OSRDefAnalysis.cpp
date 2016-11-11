@@ -383,7 +383,7 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
          }
 
       TR_OSRPoint *point = NULL;
-      if (comp()->isPotentialOSRPoint(treeTop))
+      if (comp()->isPotentialOSRPointWithSupport(treeTop))
          {
          point = _methodSymbol->findOSRPoint(node);
          TR_ASSERT(point != NULL, "Cannot find an OSR point for node %p", node);
@@ -831,7 +831,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             }
 
 
-         if (comp()->isPotentialOSRPoint(tt))
+         if (comp()->isPotentialOSRPointWithSupport(tt))
             {
             osrPoint = comp()->getMethodSymbol()->findOSRPoint(tt->getNode());
             TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", tt->getNode());
@@ -1087,7 +1087,7 @@ void TR_OSRExceptionEdgeRemoval::newperform()
       TR::TreeTop *treeTop;
       for (treeTop = block->getEntry(); treeTop != block->getExit(); treeTop = treeTop->getNextTreeTop())
          {
-         if (comp()->isPotentialOSRPoint(treeTop))
+         if (comp()->isPotentialOSRPointWithSupport(treeTop))
             {
             blockCanOSR = true;
             break;

@@ -666,15 +666,10 @@ bool OMR::Compilation::isShortRunningMethod(int32_t callerIndex)
    return false;
    }
 
-bool OMR::Compilation::isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode)
+bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    {
    static char *disableAsyncCheckOSR = feGetEnv("TR_disableAsyncCheckOSR");
    static char *disableGuardedCallOSR = feGetEnv("TR_disableGuardedCallOSR");
-   TR::Node *node;
-   if (tt)
-      node = tt->getNode();
-   else
-      node = ttNode;
 
    bool potentialOSRPoint = false;
    if (self()->getHCRMode() == TR::osr)
@@ -696,12 +691,27 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::TreeTop *tt, TR::Node *ttNode)
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
 
+   return potentialOSRPoint;
+   }
+
+bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
+   {
+   TR::Node *node = tt->getNode();
+
+   bool potentialOSRPoint = self()->isPotentialOSRPoint(node);
+
    if (potentialOSRPoint && !self()->getOption(TR_FullSpeedDebug))
       {
+      // When in OSR HCR mode we need to make sure we check the BCI of the original
+      // call node to ensure we see the correct state of the doNotProfile flag
+      if (self()->getHCRMode() == TR::osr &&
+          (node->getOpCode().isCheck() || node->getOpCodeValue() == TR::treetop))
+         node = node->getFirstChild();
+      
       TR_ByteCodeInfo &bci = node->getByteCodeInfo();
       TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
          self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
-      potentialOSRPoint = method->supportsInduceOSR(bci, tt ? tt->getEnclosingBlock() : NULL, NULL, self(), false);
+      potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self(), false);
       }
 
    return potentialOSRPoint;
@@ -1484,8 +1494,7 @@ OMR::Compilation::removeVirtualGuard(TR_VirtualGuard *guard)
    {
    for (auto current = _virtualGuards.begin(); current != _virtualGuards.end(); ++current)
       {
-      if ((*current)->getKind() != TR_HCRGuard &&
-    ((*current)->getCalleeIndex() == guard->getCalleeIndex()) &&
+      if (((*current)->getCalleeIndex() == guard->getCalleeIndex()) &&
           ((*current)->getByteCodeIndex() == guard->getByteCodeIndex()))
          {
          if (self()->getOption(TR_TraceRelocatableDataDetailsCG))

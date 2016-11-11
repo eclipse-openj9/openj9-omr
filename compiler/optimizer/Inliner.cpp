@@ -1573,15 +1573,6 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
          }
       }
 
-   // TODO: remove this diable once we have finished vetting all changes
-   //       and bug fixes for priv arg remat have been contributed
-   //       see github issue #437
-   static char *enablePrivArgRemat = feGetEnv("TR_enablePrivArgRemat");
-   if (!enablePrivArgRemat)
-      {
-      suitableForRemat = false;
-      }
-
    if (suitableForRemat)
       {
       static char *dumpRematTrees = feGetEnv("TR_DumpPrivArgRematTrees");

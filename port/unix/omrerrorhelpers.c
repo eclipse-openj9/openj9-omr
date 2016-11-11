@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -53,6 +53,7 @@ const char *
 errorMessage(struct OMRPortLibrary *portLibrary, int32_t errorCode)
 {
 	PortlibPTBuffers_t ptBuffers;
+	char *errString = strerror(errorCode);
 
 	ptBuffers = omrport_tls_peek(portLibrary);
 	if (0 == ptBuffers->errorMessageBufferSize) {
@@ -63,8 +64,23 @@ errorMessage(struct OMRPortLibrary *portLibrary, int32_t errorCode)
 		ptBuffers->errorMessageBufferSize = J9ERROR_DEFAULT_BUFFER_SIZE;
 	}
 
+#if defined(AIXPPC)
+	/* On AIX, strerror() returns an error string based on current locale encoding. When printing out the error message in file_write_using_iconv(),
+	 * The NLS message (UTF-8) + the error string is converted from UTF-8 to locale encoding. So non-UTF-8 error string needs to be converted to UTF-8 here.
+	 */
+	if (0 != strcmp(nl_langinfo(CODESET), "UTF-8")) {
+		char stackBuf[512];
+		uintptr_t bufLen = sizeof(stackBuf);
+
+		memset(stackBuf, '\0', bufLen);
+		if (0 < portLibrary->str_convert(portLibrary, J9STR_CODE_PLATFORM_RAW, J9STR_CODE_UTF8, errString, strlen(errString), stackBuf, bufLen)) {
+			errString = stackBuf;
+		}
+	}
+#endif /* defined(AIXPPC) */
+
 	/* Copy from OS to ptBuffers */
-	portLibrary->str_printf(portLibrary, ptBuffers->errorMessageBuffer, ptBuffers->errorMessageBufferSize, "%s", strerror(errorCode));
+	portLibrary->str_printf(portLibrary, ptBuffers->errorMessageBuffer, ptBuffers->errorMessageBufferSize, "%s", errString);
 	ptBuffers->errorMessageBuffer[ptBuffers->errorMessageBufferSize - 1] = '\0';
 	return ptBuffers->errorMessageBuffer;
 }

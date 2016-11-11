@@ -160,6 +160,7 @@ static int32_t convertPlatformToMutf8(struct OMRPortLibrary *portLibrary, uint32
 static int32_t convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertWideToMutf8(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertUtf8ToMutf8(struct OMRPortLibrary *portLibrary, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
+static int32_t convertPlatformToUtf8(struct OMRPortLibrary *portLibrary, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertMutf8ToWide(const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertPlatformToWide(struct OMRPortLibrary *portLibrary, charconvState_t encodingState, uint32_t codePage, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
 static int32_t convertWideToPlatform(struct OMRPortLibrary *portLibrary, charconvState_t encodingState, const uint8_t **inBuffer, uintptr_t *inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize);
@@ -231,7 +232,7 @@ omrstr_printf(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, c
  *  	- OMRPORT_ERROR_STRING_MEM_ALLOCATE_FAILED if the port library could not allocate a working buffer
  *  	The following translations are supported:
  *  	ANSI code page to modified UTF-8 (Windows only)
- *  	platform raw to [wide, modified UTF-8]
+ *  	platform raw to [wide, modified UTF-8, UTF-8]
  *  	modified UTF-8 to [platform raw, wide]
  *  	[Latin-1, UTF-8] to modified UTF-8
  *  	wide to [modified UTF-8, platform raw]
@@ -258,6 +259,9 @@ omrstr_convert(struct OMRPortLibrary *portLibrary, int32_t fromCode, int32_t toC
 			break;
 		case J9STR_CODE_WIDE:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
+			break;
+		case J9STR_CODE_UTF8:
+			result = convertPlatformToUtf8(portLibrary, (const uint8_t*)inBuffer, inBufferSize, outBuffer, outBufferSize);
 			break;
 		default:
 			result = OMRPORT_ERROR_STRING_UNSUPPORTED_ENCODING;
@@ -2617,6 +2621,9 @@ convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, const uint8_t *inBuff
 		 * depending on the length of the buffer
 		 */
 		if (platformPartCount < 0) { /* conversion error or output buffer too small */
+#if defined(J9STR_USE_ICONV)
+			iconv_free(portLibrary, OMRPORT_UTF16_TO_LANG_ICONV_DESCRIPTOR, encodingState);
+#endif
 			return platformPartCount;
 		} else {
 			resultSize += platformPartCount;
@@ -2631,6 +2638,60 @@ convertMutf8ToPlatform(struct OMRPortLibrary *portLibrary, const uint8_t *inBuff
 #endif
 	return resultSize;
 }
+
+/*
+* convert platform encoding to UTF-8.
+ * @param[in]  inBuffer        input string  to be converted.
+ * @param[in]  inBufferSize  input string size in bytes.
+ * @param[in] outBuffer    user-allocated output buffer that stores converted characters, ignored if inBufferSize is 0.
+ * @param[in]  outBufferSize output buffer size in bytes (zero to request the required output buffer size)
+*/
+static int32_t
+convertPlatformToUtf8(struct OMRPortLibrary *portLibrary, const uint8_t *inBuffer, uintptr_t inBufferSize, uint8_t *outBuffer, uintptr_t outBufferSize)
+{
+	int32_t resultSize = 0;
+#if defined(J9STR_USE_ICONV)
+	/* J9STR_USE_ICONV is defined on LINUX, AIXPPC and J9ZOS390 at the beginning of the file */
+	char* inbuf =  (char*)inBuffer;
+	char* outbuf = (char*)outBuffer;
+	size_t inbytesleft = inBufferSize;
+	size_t outbytesleft = outBufferSize - 1 /* space for null-terminator */ ;
+	charconvState_t converter = iconv_get(portLibrary, OMRPORT_LANG_TO_UTF8_ICONV_DESCRIPTOR, utf8, nl_langinfo(CODESET));
+
+	if (J9VM_INVALID_ICONV_DESCRIPTOR == converter) {
+		/* no converter available for this code set. Just dump the platform chars */
+		strncpy(outbuf, inbuf, outBufferSize);
+		outbuf[outBufferSize - 1] = '\0';
+		return OMRPORT_ERROR_STRING_ICONV_OPEN_FAILED;
+	}
+
+	while ((outbytesleft > 0) && (inbytesleft > 0)) {
+		if ((size_t)-1 == iconv(converter, &inbuf, &inbytesleft, &outbuf, &outbytesleft)) {
+			if (errno == E2BIG) {
+				iconv_free(portLibrary, OMRPORT_LANG_TO_UTF8_ICONV_DESCRIPTOR, converter);
+				return OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL;
+			}
+
+			/* if we couldn't translate this character, copy one byte verbatim */
+			*outbuf = *inbuf;
+			outbuf++;
+			inbuf++;
+			inbytesleft--;
+			outbytesleft--;
+		}
+	}
+
+	iconv_free(portLibrary, OMRPORT_LANG_TO_UTF8_ICONV_DESCRIPTOR, converter);
+	*outbuf = '\0';
+
+	/* outbytesleft started at (outBufferSize -1).
+	 * To find how much we wrote, subtract outbytesleft, then add 1 for the null terminator */
+	resultSize = outBufferSize - 1 - outbytesleft + 1;
+#endif /* defined(J9STR_USE_ICONV) */
+	/* Do nothing on Windows as OS_ENCODING_CODE_PAGE is UTF-8 on Windows */
+	return resultSize;
+}
+
 
 /*
  * Convert wide char (UTF-16) encoding to modified UTF-8.

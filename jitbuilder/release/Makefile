@@ -22,7 +22,7 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-goal: call conststring dotproduct iterfib linkedlist localarray structarray mandelbrot nestedloop pointer recfib simple switch pow2
+goal: call conststring dotproduct iterfib linkedlist localarray structarray mandelbrot nestedloop pointer recfib simple switch pow2 controlflowtests
 
 all: goal
 
@@ -40,6 +40,7 @@ test: goal
 	./simple
 	./switch
 	./pow2
+	./controlflowtests
 
 call : libjitbuilder.a Call.o
 	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
@@ -153,6 +154,13 @@ structarray : libjitbuilder.a StructArray.o
 	g++ -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
 
 StructArray.o: src/StructArray.cpp src/StructArray.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+controlflowtests : libjitbuilder.a ControlFlowTests.o
+	g++ -g -fno-rtti -o $@ ControlFlowTests.o -L. -ljitbuilder -ldl
+
+ControlFlowTests.o: src/ControlFlowTests.cpp src/ControlFlowTests.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

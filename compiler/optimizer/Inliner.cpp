@@ -1790,7 +1790,11 @@ TR_InlinerBase::addGuardForVirtual(
       {
       createdHCRAndVirtualGuard = true;
 
+      // we merge virtual guards and OSR guards for simplicity in most modes
+      // when using OSR to implement HCR we keep the HCR guards distinct since they
+      // will undergo special processing later in the compilation
       if (virtualGuard &&
+          comp()->getHCRMode() != TR::osr &&
           comp()->cg()->supportsMergingOfHCRGuards())
          {
          TR::Node *guardNode = virtualGuard->getNode();

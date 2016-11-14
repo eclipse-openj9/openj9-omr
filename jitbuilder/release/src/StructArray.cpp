@@ -167,11 +167,12 @@ main(int argc, char *argv[])
       exit(-1);
       }
 
-   printf("Step 2: define type dictionary\n");
-   StructArrayTypeDictionary types;
+   printf("Step 2: define type dictionaries\n");
+   StructArrayTypeDictionary createMethodTypes;
+   StructArrayTypeDictionary readMethodTypes;
 
    printf("Step 3: compile createMethod builder\n");
-   CreateStructArrayMethod createMethod(&types);
+   CreateStructArrayMethod createMethod(&createMethodTypes);
    uint8_t *createEntry;
    int32_t rc = compileMethodBuilder(&createMethod, &createEntry);
    if (rc != 0)
@@ -181,7 +182,7 @@ main(int argc, char *argv[])
       }
 
    printf("Step 4: compile readMethod builder\n");
-   ReadStructArrayMethod readMethod(&types);
+   ReadStructArrayMethod readMethod(&readMethodTypes);
    uint8_t *readEntry;
    rc = compileMethodBuilder(&readMethod, &readEntry);
    if (rc != 0)

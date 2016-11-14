@@ -314,8 +314,9 @@ main(int argc, char *argv[])
    printMatrix(A, N, "A");
    printMatrix(B, N, "B");
 
-   printf("Step 3: define type dictionary\n");
+   printf("Step 3: define type dictionaries\n");
    TR::TypeDictionary types;
+   TR::TypeDictionary vectypes;
 
    printf("Step 4: compile MatMult method builder\n");
    MatMult method(&types);
@@ -333,7 +334,7 @@ main(int argc, char *argv[])
    printMatrix(C, N, "C");
 
    printf("Step 6: compile VectorMatMult method builder\n");
-   VectorMatMult vecmethod(&types);
+   VectorMatMult vecmethod(&vectypes);
    uint8_t *vecentry=0;
    rc = compileMethodBuilder(&vecmethod, &vecentry);
    if (rc != 0)

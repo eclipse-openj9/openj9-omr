@@ -95,7 +95,7 @@ portLib_get390zLinuxMachineType()
    const char procHeader[] = "processor ";
    const int PROC_LINE_SIZE = 69;
    const int PROC_HEADER_SIZE = sizeof(procHeader) - 1;
-   TR_S390MachineType ret_machine = TR_DEFAULT_S390_MACHINE;  /* return value */
+   TR_S390MachineType ret_machine = TR_UNDEFINED_S390_MACHINE;  /* return value */
 
    ::FILE * fp = fopen("/proc/cpuinfo", "r");
    if (fp)

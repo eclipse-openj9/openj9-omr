@@ -87,7 +87,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _neverWrittenSymbols(allocator),
              _volatileOrAliasedToVolatileSymbols(allocator),
              _onceWrittenSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
-             _onceReadSymbolsIndices(allocator, TR::SparseBitVector(allocator)),
+             _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
              _nodeSideTableToSymRefNumMap(allocator),
              _symRefToLocalIndexMap(allocator),
              _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
@@ -107,7 +107,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       TR::BitVector _neverWrittenSymbols;
       TR::BitVector _volatileOrAliasedToVolatileSymbols;
       TR::deque<TR::SparseBitVector> _onceWrittenSymbolsIndices;
-      CS2::ArrayOf<TR::SparseBitVector, TR::Allocator> _onceReadSymbolsIndices;
+      TR::deque<TR::SparseBitVector> _onceReadSymbolsIndices;
 
       CS2::ArrayOf<int32_t, TR::Allocator>             _nodeSideTableToSymRefNumMap;
       CS2::ArrayOf<uint32_t, TR::Allocator>            _symRefToLocalIndexMap;

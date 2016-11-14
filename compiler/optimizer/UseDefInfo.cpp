@@ -140,7 +140,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    aux._nodeSideTableToSymRefNumMap.GrowTo(comp()->getNodeCount());
 
    aux._neverReadSymbols.GrowTo(numSymRefs);
-   aux._onceReadSymbolsIndices.GrowTo(numSymRefs);
    if (_hasLoadsAsDefs &&
        !cannotOmitTrivialDefs &&
        (comp()->getMethodHotness() < hot))

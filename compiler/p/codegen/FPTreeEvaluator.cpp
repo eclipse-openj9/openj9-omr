@@ -1981,7 +1981,7 @@ TR::Register *OMR::Power::TreeEvaluator::dcmpltEvaluator(TR::Node *node, TR::Cod
    int64_t imm = 0;
    if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
       {
-      imm = (TR::RealRegister::FPCC_FL << 21 | TR::RealRegister::FPCC_FL << 16 | TR::RealRegister::FPCC_FU << 11);
+      imm = (TR::RealRegister::CRCC_LT <<  TR::RealRegister::pos_RT | TR::RealRegister::CRCC_LT <<  TR::RealRegister::pos_RA | TR::RealRegister::CRCC_SO << TR::RealRegister::pos_RB);
       }
    return compareFloatAndSetOrderedBoolean(TR::InstOpCode::blt, TR::InstOpCode::bad, imm, node, cg);
    }
@@ -1998,7 +1998,7 @@ TR::Register *OMR::Power::TreeEvaluator::dcmpgtEvaluator(TR::Node *node, TR::Cod
    int64_t imm = 0;
    if (TR::Compiler->target.cpu.id() >= TR_PPCp9)
       {
-      imm = (TR::RealRegister::FPCC_FG << 21 | TR::RealRegister::FPCC_FG << 16 | TR::RealRegister::FPCC_FU << 11);
+      imm = (TR::RealRegister::CRCC_GT <<  TR::RealRegister::pos_RT | TR::RealRegister::CRCC_GT <<  TR::RealRegister::pos_RA | TR::RealRegister::CRCC_SO << TR::RealRegister::pos_RB);
       }
    return compareFloatAndSetOrderedBoolean(TR::InstOpCode::bgt, TR::InstOpCode::bad, imm, node, cg);
    }

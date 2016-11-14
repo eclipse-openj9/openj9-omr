@@ -21,8 +21,10 @@
 #define laddrx	ldx
 #define laddru	ldu
 #define staddr	std
-#define staddrx	stdx
-#define staddru	stdu
+#define staddrx stdx
+#define staddru stdu
+#define ShiftLI sldi
+#define ShiftRI srdi
 #define ADDR	.llong
 #define CmpAddr	1
 #define ALen	8
@@ -33,8 +35,10 @@
 #define laddrx	lwzx
 #define laddru	lwzu
 #define staddr	stw
-#define staddrx	stwx
-#define staddru	stwu
+#define staddrx stwx
+#define staddru stwu
+#define ShiftLI slwi
+#define ShiftRI srwi
 #define ADDR	.long
 #define CmpAddr	0
 #define ALen	4
@@ -287,7 +291,7 @@
         .macro lvx      vrt, ra, rb
         .int 0x7c0000ce | \vrt << 21 | \ra << 16 | \rb << 11
         .endm
-	.macro lxvw4x   xt, ra, rb
+        .macro lxvw4x   xt, ra, rb
         .int 0x7c000618 | (\xt & 31) << 21 | \ra << 16 | \rb << 11 | (\xt & 32) >> 5
         .endm
         .macro lxvw4ux  xt, ra, rb
@@ -409,18 +413,21 @@
         .int 0x100005c8 | \vrt << 21 | \vra << 16
         .endm
 
-	.macro vpmsumw	vrt, vra, vrb
+        .macro vpmsumw  vrt, vra, vrb
         .int 0x10000488 | (\vrt & 31) << 21 | (\vra & 31) << 16 | (\vrb & 31) << 11 | (\vra & 32) >> 3 | (\vrb & 32) >> 4 | (\vrt & 32) >> 5
         .endm
-	.macro vpmsumd	vrt, vra, vrb
-	.int 0x100004c8 | (\vrt & 31) << 21 | (\vra & 31) << 16 | (\vrb & 31) << 11 | (\vra & 32) >> 3 | (\vrb & 32) >> 4 | (\vrt & 32) >> 5
-	.endm
-
-        .macro mfvsrd	ra, vrs
-	.int 0x7c000066 | \ra << 16 | (\vrs & 31) << 21 | (\vrs & 32) >> 5
+        .macro vpmsumd  vrt, vra, vrb
+        .int 0x100004c8 | (\vrt & 31) << 21 | (\vra & 31) << 16 | (\vrb & 31) << 11 | (\vra & 32) >> 3 | (\vrb & 32) >> 4 | (\vrt & 32) >> 5
         .endm
-        .macro mtvsrd	vrt, ra
-	.int 0x7c000166 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
+
+        .macro mfvsrd   ra, vrs
+        .int 0x7c000066 | \ra << 16 | (\vrs & 31) << 21 | (\vrs & 32) >> 5
+        .endm
+        .macro mtvsrd   vrt, ra
+        .int 0x7c000166 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
+        .endm
+        .macro mtvsrwz  vrt, ra
+        .int 0x7c0001e6 | \ra < 16 | (\vrt & 31) < 21 | (\vrt & 32) > 5
         .endm
 #endif
 
@@ -436,20 +443,22 @@
 #define VNCIPHER(vrt,vra,vrb)           .long 0x10000548 | vrt < 21 | vra < 16 | vrb < 11
 #define VNCIPHERLAST(vrt,vra,vrb)       .long 0x10000549 | vrt < 21 | vra < 16 | vrb < 11
 #define VSBOX(vrt,vra)                  .long 0x100005c8 | vrt < 21 | vra < 16
-#define VPMSUMW(vrt,vra,vrb)		.long 0x10000488 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
-#define VPMSUMD(vrt,vra,vrb)		.long 0x100004c8 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
-#define MFVSRD(ra, vrs)			.long 0x7c000066 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 5
-#define MTVSRD(vrt, ra)			.long 0x7c000166 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
+#define VPMSUMW(vrt,vra,vrb)            .long 0x10000488 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
+#define VPMSUMD(vrt,vra,vrb)            .long 0x100004c8 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
+#define MFVSRD(ra,vrs)                  .long 0x7c000066 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 5
+#define MTVSRD(vrt,ra)                  .long 0x7c000166 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
+#define MTVSRWZ(vrt,ra)                 .long 0x7c0001e6 | ra < 16 | (vrt & 31) < 21 | (vrt & 32) > 5
 #else
 #define VCIPHER(vrt,vra,vrb)            vcipher         vrt, vra, vrb
 #define VCIPHERLAST(vrt,vra,vrb)        vcipherlast     vrt, vra, vrb
 #define VNCIPHER(vrt,vra,vrb)           vncipher        vrt, vra, vrb
 #define VNCIPHERLAST(vrt,vra,vrb)       vncipherlast    vrt, vra, vrb
 #define VSBOX(vrt,vra)                  vsbox           vrt, vra, vrb
-#define VPMSUMW(vrt,vra,vrb)		vpmsumw		vrt, vra, vrb
-#define VPMSUMD(vrt,vra,vrb)		vpmsumd		vrt, vra, vrb
-#define MFVSRD(ra, vrs)			mfvsrd		ra, vrs
-#define MTVSRD(vrt, ra)			mtvsrd		vrt, ra
+#define VPMSUMW(vrt,vra,vrb)            vpmsumw         vrt, vra, vrb
+#define VPMSUMD(vrt,vra,vrb)            vpmsumd         vrt, vra, vrb
+#define MFVSRD(ra,vrs)                  mfvsrd          ra, vrs
+#define MTVSRD(vrt,ra)                  mtvsrd          vrt, ra
+#define MTVSRWZ(vrt,ra)                 mtvsrwz         vrt, ra
 #endif
 
 #if defined(LINUXPPC64)

@@ -157,7 +157,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    aux._neverReferencedSymbols.GrowTo(numSymRefs);
    aux._neverWrittenSymbols.GrowTo(numSymRefs);
-   aux._onceWrittenSymbols.GrowTo(numSymRefs);
    aux._onceWrittenSymbolsIndices.GrowTo(numSymRefs);
 
    aux._volatileOrAliasedToVolatileSymbols.GrowTo(numSymRefs);

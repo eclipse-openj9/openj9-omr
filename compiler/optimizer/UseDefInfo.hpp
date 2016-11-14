@@ -80,7 +80,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       private:
          AuxiliaryData(int32_t numSymRefs, ncount_t nodeCount, TR::Allocator allocator) :
              _onceReadSymbols(numSymRefs, BitVector(allocator), allocator),
-             _onceWrittenSymbols(allocator, BitVector(allocator)),
+             _onceWrittenSymbols(numSymRefs, BitVector(allocator), allocator),
              _defsForSymbol(allocator, BitVector(allocator)),
              _symsKilledByMustKills(allocator, TR::SparseBitVector(allocator)),
              _neverReadSymbols(allocator),
@@ -100,7 +100,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
             {}
 
       TR::deque<BitVector> _onceReadSymbols;
-      CS2::ArrayOf<BitVector,TR::Allocator> _onceWrittenSymbols;
+      TR::deque<BitVector> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
       CS2::ArrayOf<BitVector, TR::Allocator> _defsForSymbol;
       CS2::ArrayOf<TR::SparseBitVector, TR::Allocator> _symsKilledByMustKills;    // symbol localIndex killed by function call due to mustDef

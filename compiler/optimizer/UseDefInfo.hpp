@@ -32,6 +32,7 @@
 #include "il/Symbol.hpp"            // for Symbol
 #include "il/SymbolReference.hpp"   // for SymbolReference
 #include "infra/Assert.hpp"         // for TR_ASSERT
+#include "infra/deque.hpp"          // for TR::deque
 #include "infra/TRlist.hpp"         // for TR::list
 
 class TR_ReachingDefinitions;
@@ -77,28 +78,28 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    class AuxiliaryData
       {
       private:
-         AuxiliaryData(TR::Compilation *c) :
-             _onceReadSymbols(c->allocator("UseDefAux"), BitVector(c->allocator("UseDefAux"))),
-             _onceWrittenSymbols(c->allocator("UseDefAux"), BitVector(c->allocator("UseDefAux"))),
-             _defsForSymbol(c->allocator("UseDefAux"), BitVector(c->allocator("UseDefAux"))),
-             _symsKilledByMustKills(c->allocator("UseDefAux"), TR::SparseBitVector(c->allocator("UseDefAux"))),
-             _neverReadSymbols(c->allocator("UseDefAux")),
-             _neverReferencedSymbols(c->allocator("UseDefAux")),
-             _neverWrittenSymbols(c->allocator("UseDefAux")),
-             _volatileOrAliasedToVolatileSymbols(c->allocator("UseDefAux")),
-             _onceWrittenSymbolsIndices(c->allocator("UseDefAux"), TR::SparseBitVector(c->allocator("UseDefAux"))),
-             _onceReadSymbolsIndices(c->allocator("UseDefAux"), TR::SparseBitVector(c->allocator("UseDefAux"))),
-             _nodeSideTableToSymRefNumMap(c->allocator("UseDefAux")),
-             _symRefToLocalIndexMap(c->allocator("UseDefAux")),
-             _expandedAtoms(c->allocator("UseDefAux"), CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
-             _sideTableToUseDefMap(c->allocator("UseDefAux")),
-             _numAliases(c->allocator("UseDefAux")),
-             _nodesByGlobalIndex(c->allocator("UseDefAux")),
-             _loadsBySymRefNum(c->allocator("UseDefAux")),
-             _defsForOSR(c->allocator("UseDefAux"), TR_UseDefInfo::BitVector(c->allocator("UseDefAux")))
+         AuxiliaryData(int32_t numSymRefs, ncount_t nodeCount, TR::Allocator allocator) :
+             _onceReadSymbols(numSymRefs, BitVector(allocator), allocator),
+             _onceWrittenSymbols(allocator, BitVector(allocator)),
+             _defsForSymbol(allocator, BitVector(allocator)),
+             _symsKilledByMustKills(allocator, TR::SparseBitVector(allocator)),
+             _neverReadSymbols(allocator),
+             _neverReferencedSymbols(allocator),
+             _neverWrittenSymbols(allocator),
+             _volatileOrAliasedToVolatileSymbols(allocator),
+             _onceWrittenSymbolsIndices(allocator, TR::SparseBitVector(allocator)),
+             _onceReadSymbolsIndices(allocator, TR::SparseBitVector(allocator)),
+             _nodeSideTableToSymRefNumMap(allocator),
+             _symRefToLocalIndexMap(allocator),
+             _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
+             _sideTableToUseDefMap(allocator),
+             _numAliases(allocator),
+             _nodesByGlobalIndex(allocator),
+             _loadsBySymRefNum(allocator),
+             _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
             {}
 
-      CS2::ArrayOf<BitVector,TR::Allocator> _onceReadSymbols;
+      TR::deque<BitVector> _onceReadSymbols;
       CS2::ArrayOf<BitVector,TR::Allocator> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
       CS2::ArrayOf<BitVector, TR::Allocator> _defsForSymbol;

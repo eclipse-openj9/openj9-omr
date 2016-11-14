@@ -726,6 +726,19 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes unsignedSubtractOpCode(TR::DataType type)
+      {    
+      switch(type)
+         {
+         case TR::Int8:    return TR::busub;
+         case TR::Int16:   return TR::csub;
+         case TR::Int32:   return TR::iusub;
+         case TR::Int64:   return TR::lusub;
+         default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
+         }
+      return TR::BadILOp;
+      }    
+
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {
       switch(type)

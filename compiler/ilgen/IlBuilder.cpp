@@ -1256,6 +1256,18 @@ IlBuilder::SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    }
 
 TR::IlValue *
+IlBuilder::UnsignedSubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::IlValue *unsignedSubValue = operationWithOverflow(TR::ILOpCode::unsignedSubtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedSubWithOverflow %d + %d\n", this, unsignedSubValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   return unsignedSubValue;
+   }
+
+TR::IlValue *
 IlBuilder::MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
    appendBlock(); 

@@ -90,7 +90,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
              _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
              _sideTableToUseDefMap(allocator),
-             _numAliases(allocator),
+             _numAliases(numSymRefs, allocator),
              _nodesByGlobalIndex(allocator),
              _loadsBySymRefNum(allocator),
              _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
@@ -113,7 +113,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       protected:
       CS2::ArrayOf<uint32_t, TR::Allocator> _sideTableToUseDefMap;
       private:
-      CS2::ArrayOf<uint32_t, TR::Allocator> _numAliases;
+      TR::deque<uint32_t> _numAliases;
       CS2::ArrayOf<TR::Node *, TR::Allocator> _nodesByGlobalIndex;
       CS2::ArrayOf<TR::Node *, TR::Allocator> _loadsBySymRefNum;
 

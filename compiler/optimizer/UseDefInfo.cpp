@@ -134,8 +134,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    TR::SymbolReferenceTable *symRefTab = comp()->getSymRefTab();
    int32_t numSymRefs = comp()->getSymRefCount();
 
-   aux._numAliases.GrowTo(numSymRefs);
-
    _sideTableToSymRefNumMap.GrowTo(numSymRefs);
 
    aux._neverReadSymbols.GrowTo(numSymRefs);

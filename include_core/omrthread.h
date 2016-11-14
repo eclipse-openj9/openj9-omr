@@ -102,6 +102,9 @@ or omrthread priority value.
 #define J9THREAD_LIB_NOTIFY_POLICY_SIGNAL 0
 #define J9THREAD_LIB_NOTIFY_POLICY_BROADCAST 1
 
+#define OMRTHREAD_MINIMUM_SPIN_THREADS 1
+#define OMRTHREAD_MINIMUM_WAKE_THREADS 1
+
 #include "thread_api.h"
 
 

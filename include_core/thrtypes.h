@@ -113,6 +113,10 @@ typedef struct J9ThreadLibrary {
 	uintptr_t defaultMonitorSpinCount1;
 	uintptr_t defaultMonitorSpinCount2;
 	uintptr_t defaultMonitorSpinCount3;
+#if defined(OMR_THR_SPIN_WAKE_CONTROL)
+ 	uintptr_t maxSpinThreads;
+ 	uintptr_t maxWakeThreads;
+#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 #endif /* OMR_THR_THREE_TIER_LOCKING */
 	TLSKEY attachedLibKey;
 #if defined(OMR_THR_ADAPTIVE_SPIN)

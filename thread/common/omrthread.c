@@ -309,26 +309,6 @@ omrthread_init(omrthread_library_t lib)
 	lib->flags |= J9THREAD_LIB_FLAG_DESTROY_MUTEX_ON_MONITOR_FREE;
 #endif
 
-#ifdef OMR_THR_THREE_TIER_LOCKING
-	/*
-	 * VMDESIGN WIP 1320
-	 * TODO: Remove this code when performance analysis is complete.
-	 */
-	{
-		const char *fastNotifyEnv;
-
-		fastNotifyEnv = getenv("J9VM_THR_FAST_NOTIFY");
-		if (fastNotifyEnv) {
-			if (*fastNotifyEnv == '1') {
-				lib->flags |= J9THREAD_LIB_FLAG_FAST_NOTIFY;
-			}
-		}
-		if (lib->flags & J9THREAD_LIB_FLAG_FAST_NOTIFY) {
-			printf("fast notify enabled\n");
-		}
-	}
-#endif /* OMR_THR_THREE_TIER_LOCKING */
-
 	if (omrthread_attr_init(&lib->systemThreadAttr) != J9THREAD_SUCCESS) {
 		goto init_cleanup10;
 	}

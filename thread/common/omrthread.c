@@ -3577,7 +3577,6 @@ monitor_init(omrthread_monitor_t monitor, uintptr_t flags, omrthread_library_t l
 #ifdef OMR_THR_THREE_TIER_LOCKING
 	monitor->blocking = NULL;
 	monitor->spinlockState = J9THREAD_MONITOR_SPINLOCK_UNOWNED;
-	monitor->lockingWord = 0;
 
 	/* check if we should spin on system monitors that are backing a Object monitor
 	 * the default is now that we do not spin.

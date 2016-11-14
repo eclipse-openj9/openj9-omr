@@ -26,7 +26,6 @@
 typedef struct J9GCSpinlock {
     intptr_t target;
     j9sem_t osSemaphore;
-    uintptr_t lockingWord;
     uintptr_t spinCount1;
     uintptr_t spinCount2;
     uintptr_t spinCount3;

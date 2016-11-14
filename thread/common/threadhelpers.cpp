@@ -38,7 +38,7 @@ omrthread_monitor_unpin(omrthread_monitor_t monitor, omrthread_t self)
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 
 /**
- * Spin on a monitor's lockingWord field until we can atomically swap out a value of SPINLOCK_UNOWNED
+ * Spin on a monitor's spinlockState field until we can atomically swap out a value of SPINLOCK_UNOWNED
  * for the value SPINLOCK_OWNED.
  *
  * @param[in] self the current omrthread_t
@@ -129,7 +129,7 @@ done:
 
 /**
   * Try to atomically swap out a value of SPINLOCK_UNOWNED from
-  * a monitor's lockingWord field for the value SPINLOCK_OWNED.
+  * a monitor's spinlockState field for the value SPINLOCK_OWNED.
   *
   * @param[in] self the current omrthread_t
   * @param[in] monitor the monitor whose spinlock will be acquired

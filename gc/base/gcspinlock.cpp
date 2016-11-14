@@ -148,7 +148,6 @@ omrgc_spinlock_init(J9GCSpinlock *spinlock)
 	intptr_t result;
 
 	spinlock->target = -1;
-	spinlock->lockingWord = 0;
 
 	result = j9sem_init(&spinlock->osSemaphore, 0);
 

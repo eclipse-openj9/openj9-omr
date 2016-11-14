@@ -125,7 +125,6 @@ public:
 	 * else retain the <b>oldValue</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
 	 * 
@@ -144,7 +143,6 @@ public:
 	 * else retain the <b>oldValue</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
 	 * 
@@ -163,7 +161,6 @@ public:
 	 * else retain the <b>oldValue</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param oldValue The expected value at memory address
 	 * @param newValue The new value to be stored at memory address
 	 * 
@@ -181,7 +178,6 @@ public:
 	 * to by <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param addend The value to be added
 	 *
 	 * @return The value at memory location <b>address</b> AFTER the add is completed
@@ -198,7 +194,6 @@ public:
 	 * to by <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param addend The value to be added
 	 *
 	 * @return The value at memory location <b>address</b>
@@ -215,7 +210,6 @@ public:
 	 * to by <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param addend The value to be added
 	 *
 	 * @return The value at memory location <b>address</b>
@@ -232,7 +226,6 @@ public:
 	 * to by <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param addend The value to be added
 	 *
 	 * @return The value at memory location <b>address</b>
@@ -249,7 +242,6 @@ public:
 	 * to by <b>address</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param value The value to be subtracted
 	 * 
 	 * @return The value at memory location <b>address</b>
@@ -266,7 +258,6 @@ public:
 	 * to by <b>address</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param value The value to be subtracted
 	 * 
 	 * @return The value at memory location <b>address</b>
@@ -283,7 +274,6 @@ public:
 	 * to by <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param value The value to be subtracted
 	 *
 	 * @return The value at memory location <b>address</b>
@@ -299,7 +289,6 @@ public:
 	 * Stores <b>value</b> at memory location pointed to be <b>address</b>.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param value The value to be stored
 	 * 
 	 * @note This method can spin indefinitely while attempting to write the new value.
@@ -315,7 +304,6 @@ public:
 	 * Stores <b>value</b> at memory location pointed to be <b>address</b>.
 	 *
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param value The value to be stored
 	 *
 	 * @note This method can spin indefinitely while attempting to write the new value.
@@ -345,7 +333,6 @@ public:
 	 * Subtracts <b>subtrahend</b> from the value stored at memory location pointed to by <b>address</b>, saturing to zero.
 	 * 
 	 * @param address The memory location to be updated
-	 * @param lockingWord The location used to lock the slot for exchange
 	 * @param subtrahend The value to be subtracted
 	 * 
 	 * @return The value at memory location <b>address</b> AFTER the subtraction operation has been completed

@@ -92,7 +92,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _sideTableToUseDefMap(allocator),
              _numAliases(numSymRefs, allocator),
              _nodesByGlobalIndex(nodeCount, allocator),
-             _loadsBySymRefNum(allocator),
+             _loadsBySymRefNum(numSymRefs, allocator),
              _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
             {}
 
@@ -115,7 +115,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       private:
       TR::deque<uint32_t> _numAliases;
       TR::deque<TR::Node *> _nodesByGlobalIndex;
-      CS2::ArrayOf<TR::Node *, TR::Allocator> _loadsBySymRefNum;
+      TR::deque<TR::Node *> _loadsBySymRefNum;
 
       protected:
       // used only in TR_OSRDefInfo - should extend AuxiliaryData really:

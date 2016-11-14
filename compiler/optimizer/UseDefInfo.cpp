@@ -169,8 +169,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
          }
       }
 
-   aux._loadsBySymRefNum.GrowTo(numSymRefs);
-
    aux._neverWrittenSymbols.SetAll(numSymRefs);
    aux._neverReadSymbols.SetAll(numSymRefs);
 

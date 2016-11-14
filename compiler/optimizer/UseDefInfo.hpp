@@ -91,7 +91,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
              _sideTableToUseDefMap(allocator),
              _numAliases(numSymRefs, allocator),
-             _nodesByGlobalIndex(allocator),
+             _nodesByGlobalIndex(nodeCount, allocator),
              _loadsBySymRefNum(allocator),
              _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
             {}
@@ -114,7 +114,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       CS2::ArrayOf<uint32_t, TR::Allocator> _sideTableToUseDefMap;
       private:
       TR::deque<uint32_t> _numAliases;
-      CS2::ArrayOf<TR::Node *, TR::Allocator> _nodesByGlobalIndex;
+      TR::deque<TR::Node *> _nodesByGlobalIndex;
       CS2::ArrayOf<TR::Node *, TR::Allocator> _loadsBySymRefNum;
 
       protected:

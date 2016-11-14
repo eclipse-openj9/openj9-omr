@@ -169,7 +169,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
          }
       }
 
-   aux._nodesByGlobalIndex.GrowTo(comp()->getNodeCount());
    aux._loadsBySymRefNum.GrowTo(numSymRefs);
 
    aux._neverWrittenSymbols.SetAll(numSymRefs);

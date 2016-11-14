@@ -1495,7 +1495,8 @@ OMR::Compilation::removeVirtualGuard(TR_VirtualGuard *guard)
    for (auto current = _virtualGuards.begin(); current != _virtualGuards.end(); ++current)
       {
       if (((*current)->getCalleeIndex() == guard->getCalleeIndex()) &&
-          ((*current)->getByteCodeIndex() == guard->getByteCodeIndex()))
+          ((*current)->getByteCodeIndex() == guard->getByteCodeIndex()) &&
+          ((*current)->getKind() == guard->getKind()))
          {
          if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
             traceMsg(self(), "removeVirtualGuard %p, kind %d bcindex %d calleeindex %d\n", *current, (*current)->getKind(), (*current)->getByteCodeIndex(), (*current)->getCalleeIndex());

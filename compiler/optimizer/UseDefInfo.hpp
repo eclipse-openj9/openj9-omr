@@ -88,7 +88,6 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
              _volatileOrAliasedToVolatileSymbols(allocator),
              _onceWrittenSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
              _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
-             _symRefToLocalIndexMap(allocator),
              _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
              _sideTableToUseDefMap(allocator),
              _numAliases(allocator),
@@ -108,7 +107,6 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       TR::deque<TR::SparseBitVector> _onceWrittenSymbolsIndices;
       TR::deque<TR::SparseBitVector> _onceReadSymbolsIndices;
 
-      CS2::ArrayOf<uint32_t, TR::Allocator>            _symRefToLocalIndexMap;
       CS2::ArrayOf<CS2::Pair<TR::Node *, TR::TreeTop *>, TR::Allocator> _expandedAtoms;    //TR::Node            **_expandedNodes;
 
 
@@ -288,7 +286,15 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    void fillInDataStructures(AuxiliaryData &aux);
 
    bool indexSymbolsAndNodes(AuxiliaryData &aux);
-   bool findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, bool considerImplicitStores = false);
+   bool findUseDefNodes(
+      TR::Block *block,
+      TR::Node *node,
+      TR::Node *parent,
+      TR::TreeTop *treeTop,
+      AuxiliaryData &aux,
+      TR::deque<uint32_t> &symRefToLocalIndexMap,
+      bool considerImplicitStores = false
+      );
    bool assignAdjustedNodeIndex(TR::Block *, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, bool considerImplicitStores = false);
    bool childIndexIndicatesImplicitStore(TR::Node * node, int32_t childIndex);
    void insertData(TR::Block *, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, TR::SparseBitVector &, bool considerImplicitStores = false);

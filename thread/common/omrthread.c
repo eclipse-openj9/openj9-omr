@@ -164,10 +164,10 @@ omrthread_t global_lock_owner = UNOWNED;
 #else /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
 #define NOTIFY_WRAPPER(thread) \
 	do { \
-		if (J9THREAD_LIB_NOTIFY_POLICY_SIGNAL == (thread)->library->notifyPolicy) { \
-			J9OSCOND_NOTIFY((thread)->condition); \
-		} else { \
+		if (J9_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_NOTIFY_POLICY_BROADCAST)) { \
 			J9OSCOND_NOTIFY_ALL((thread)->condition); \
+		} else { \
+			J9OSCOND_NOTIFY((thread)->condition); \
 		} \
 	} while (0)
 #endif /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
@@ -643,13 +643,6 @@ init_spinParameters(omrthread_library_t lib)
 		return -1;
 	}
 #endif
-
-#if !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL)
-	lib->notifyPolicy = J9THREAD_LIB_NOTIFY_POLICY_SIGNAL;
-	if (init_threadParam("notifyPolicy", &lib->notifyPolicy)) {
-		return -1;
-	}
-#endif /* !defined(WIN32) && defined(OMR_NOTIFY_POLICY_CONTROL) */
 
 #if defined(OMR_THR_THREE_TIER_LOCKING)
 #if defined(OMR_THR_SPIN_WAKE_CONTROL)

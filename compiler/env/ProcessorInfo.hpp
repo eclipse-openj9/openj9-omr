@@ -29,7 +29,6 @@ enum TR_S390MachineType
    TR_MULTIPRISE7000          =  7060,
    TR_FREEWAY                 =  2064,  // z900
    TR_Z800                    =  2066,  // z800 - entry-level, less powerful variant of the z900
-   TR_DEFAULT_S390_MACHINE    =  TR_FREEWAY,
    TR_MIRAGE                  =  1090,
    TR_MIRAGE2                 =  1091,
    TR_TREX                    =  2084,  // z990

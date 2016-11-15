@@ -1879,7 +1879,7 @@ OMR::ResolvedMethodSymbol::removeTree(TR::TreeTop *tt)
       prev->setNextTreeTop(next);
    else
       {
-      TR_ASSERT(_firstTreeTop == tt, "treetops are not forming a single doubly linked list");
+      TR_ASSERT(_firstTreeTop == tt, "treetops are not forming a single doubly linked list: node address = %p, global index = %d", node, (node ? node->getGlobalIndex() : -1));
       _firstTreeTop = next;
       }
    if (next != NULL)

@@ -259,7 +259,7 @@ MethodBuilder::connectTrees()
 
    TR::TreeTop *lastTree = blocks[currentBlock-1]->getExit();
 
-   while (!_connectTreesWorklist->isEmpty())
+   do
       {
 
       // iterate on the worklist pulling trees and blocks into this builder
@@ -304,7 +304,7 @@ MethodBuilder::connectTrees()
             _connectTreesWorklist->add(builder);
             }
          }
-      }
+      } while (!_connectTreesWorklist->isEmpty());
 
    return true;
    }

@@ -299,8 +299,6 @@ OMR::Compilation::Compilation(
    _optimizationPlan(optimizationPlan),
    _verboseOptTransformationCount(0),
    _currentBlock(NULL),
-   _unreferencedAutoOrParmOrExternals(self()->allocator("unreferenced external or auto or Parm")),
-   _externalSparseBitVector(self()->allocator("external")),
    _monitorAutoSymRefsInCompiledMethod(getTypedAllocator<TR::SymbolReference*>(self()->allocator())),
    _aotMethodCodeStart(NULL),
    _failCHtableCommitFlag(false),
@@ -1810,11 +1808,6 @@ void OMR::Compilation::setUsesPreexistence(bool v)
    if (v)
       TR_ASSERT(self()->ilGenRequest().details().supportsInvalidation(), "Can't use preexistence on ilgen request that does not support invalidation");
    _usesPreexistence = v;
-   }
-
-int32_t OMR::Compilation::getOptMessageIndex()
-   {
-   return (self()->getOptimizer()? self()->getOptimizer()->getOptMessageIndex():0);
    }
 
 // Dump the trees for the method and return the number of nodes in the trees.

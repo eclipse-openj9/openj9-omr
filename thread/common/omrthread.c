@@ -657,11 +657,6 @@ init_spinParameters(omrthread_library_t lib)
   	}
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 
-	lib->secondarySpinForObjectMonitors = 0;
-	if (init_threadParam("secondarySpinForObjectMonitors", &lib->secondarySpinForObjectMonitors)) {
-		return -1;
-	}
-
 	return init_spinCounts(lib);
 
 #else
@@ -3555,7 +3550,7 @@ monitor_init(omrthread_monitor_t monitor, uintptr_t flags, omrthread_library_t l
 	 * the default is now that we do not spin.
 	 */
 	if ((J9THREAD_MONITOR_OBJECT != (flags & J9THREAD_MONITOR_OBJECT))
-	 || (0 != lib->secondarySpinForObjectMonitors)
+		|| J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_SECONDARY_SPIN_OBJECT_MONITORS_ENABLED)
 	) {
 		monitor->flags |= J9THREAD_MONITOR_TRY_ENTER_SPIN;
 	}

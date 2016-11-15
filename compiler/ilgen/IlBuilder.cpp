@@ -1088,6 +1088,11 @@ static TR::ILOpCodes addOpCode(TR::DataType type)
    return TR::ILOpCode::addOpCode(type, TR::Compiler->target.is64Bit());
    }
 
+static TR::ILOpCodes unsignedAddOpCode(TR::DataType type)
+   {
+   return TR::ILOpCode::unsignedAddOpCode(type, TR::Compiler->target.is64Bit());
+   }
+
 TR::IlValue *
 IlBuilder::Add(TR::IlValue *left, TR::IlValue *right)
    {
@@ -1210,6 +1215,31 @@ IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    TR::IlValue *addValue = operationWithOverflow(op, leftNode, rightNode, handler);
    TraceIL("IlBuilder[ %p ]::%d is AddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    //ILB_REPLAY("%s = %s->AddWithOverflow(%s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_BUILDER(*handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return addValue;
+   }
+
+TR::IlValue *
+IlBuilder::UnsignedAddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+   {
+   appendBlock(); 
+
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::ILOpCodes op;
+   if (left->getSymbol()->getDataType() == TR::Address)
+      {    
+      if (right->getSymbol()->getDataType() == TR::Int32)
+         op = TR::aiuadd;
+      else if (right->getSymbol()->getDataType() == TR::Int64)
+         op = TR::aluadd;
+      else 
+         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
+      }    
+   else op = unsignedAddOpCode(leftNode->getDataType());
+
+   TR::IlValue *addValue = operationWithOverflow(op, leftNode, rightNode, handler);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedAddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   //ILB_REPLAY("%s = %s->UnsignedAddWithOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 

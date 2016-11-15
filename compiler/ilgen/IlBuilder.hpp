@@ -151,6 +151,7 @@ public:
    // arithmetic
    TR::IlValue *Add(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *UnsignedAddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Sub(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *Mul(TR::IlValue *left, TR::IlValue *right);

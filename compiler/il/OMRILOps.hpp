@@ -691,6 +691,20 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes unsignedAddOpCode(TR::DataType type, bool is64Bit)
+      {    
+      switch(type)
+         {
+         case TR::Int8:     return TR::buadd;
+         case TR::Int16:    return TR::cadd;
+         case TR::Int32:    return TR::iuadd;
+         case TR::Int64:    return TR::luadd;
+	 case TR::Address:  return (is64Bit) ? TR::aladd : TR::aiadd;
+         default: TR_ASSERT(0, "no add opcode for this datatype");
+         }
+      return TR::BadILOp;
+      }    
+ 
    static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
       switch(type)

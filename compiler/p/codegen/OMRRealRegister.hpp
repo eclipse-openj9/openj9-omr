@@ -80,10 +80,11 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
 
    enum CRCC {
       //Condition Register Condition Code (CRCC)
-      CRCC_LT = 0x0, // less than
-      CRCC_GT = 0x1, // greater than
-      CRCC_EQ = 0x2, // equal
-      CRCC_SO = 0x3  // summary overflow
+      CRCC_LT = 0x0,    // less than
+      CRCC_GT = 0x1,    // greater than
+      CRCC_EQ = 0x2,    // equal
+      CRCC_SO = 0x3,    // summary overflow
+      CRCC_FU = CRCC_SO // floating-point unordered
    };
 
    bool getUseVSR() { return _useVSR; }

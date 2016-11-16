@@ -3281,7 +3281,7 @@ static void lookupScheme3(TR::Node *node, bool unbalanced, TR::CodeGenerator *cg
 
       TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
       recordInfo->data3 = orderedPairSequence1;
-      cg->getAheadOfTimeCompile()->getRelocationList().push_front(new (cg->trHeapMemory()) TR_PPCPairedRelocation(
+      cg->getAheadOfTimeCompile()->getRelocationList().push_front(new (cg->trHeapMemory()) TR::PPCPairedRelocation(
                                      rel1,
                                      rel2,
                                      (uint8_t *)recordInfo,
@@ -3509,7 +3509,7 @@ static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
 
       TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
       recordInfo->data3 = orderedPairSequence1;
-      cg->getAheadOfTimeCompile()->getRelocationList().push_front(new (cg->trHeapMemory()) TR_PPCPairedRelocation(
+      cg->getAheadOfTimeCompile()->getRelocationList().push_front(new (cg->trHeapMemory()) TR::PPCPairedRelocation(
                                      rel1,
                                      rel2,
                                      (uint8_t *)recordInfo,

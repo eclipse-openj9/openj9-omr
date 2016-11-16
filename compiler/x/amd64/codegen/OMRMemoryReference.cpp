@@ -388,7 +388,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          if (sr.getSymbol()->isStatic())
             {
             if (cg->needClassAndMethodPointerRelocations())
-               cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(displacementLocation, (uint8_t *)&_symbolReference,
+               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)&_symbolReference,
                                                                                         (uint8_t *)containingInstruction->getNode()->getInlinedSiteIndex(),
                                                                                         TR_ClassAddress, cg),__FILE__, __LINE__,
                                                                                         containingInstruction->getNode());
@@ -401,7 +401,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isCountForRecompile())
          {
          if (cg->needRelocationsForStatics())
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(
+            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(
                                    displacementLocation, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                  __FILE__,
                                  __LINE__,
@@ -410,15 +410,15 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isRecompilationCounter())
          {
          if (cg->needRelocationsForStatics())
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
+            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isGCRPatchPoint())
          {
          if (cg->needRelocationsForStatics())
             {
-            TR_ExternalRelocation* r= new (cg->trHeapMemory())
-                           TR_ExternalRelocation(displacementLocation,
+            TR::ExternalRelocation* r= new (cg->trHeapMemory())
+                           TR::ExternalRelocation(displacementLocation,
                                                       0,
                                                       TR_AbsoluteMethodAddress, cg);
             cg->addAOTRelocation(r, __FILE__, __LINE__, containingInstruction->getNode());
@@ -427,13 +427,13 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       else if (sr.getSymbol()->isCompiledMethod())
          {
          if (cg->needRelocationsForStatics())
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(displacementLocation, 0, TR_RamMethod, cg),
+            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_RamMethod, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       else if (sr.getSymbol()->isStartPC())
          {
          if (cg->needRelocationsForStatics())
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
+            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
       }
@@ -441,7 +441,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       {
       if (self()->needsCodeAbsoluteExternalRelocation())
          {
-         cg->addAOTRelocation(new (cg->trHeapMemory()) TR_ExternalRelocation(displacementLocation,
+         cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation,
                                                                                  (uint8_t *)0,
                                                                                  TR_AbsoluteMethodAddress, cg),
                               __FILE__,

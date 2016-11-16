@@ -20,7 +20,7 @@
 #define PPCAOTRELOCATION_INCL
 
 #include <stdint.h>                         // for uint8_t
-#include "codegen/Relocation.hpp"           // for TR_LabelRelocation
+#include "codegen/Relocation.hpp"           // for TR::LabelRelocation
 #include "env/TRMemory.hpp"                 // for TR_Memory, etc
 #include "runtime/Runtime.hpp"
 
@@ -29,13 +29,15 @@ namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
-class TR_PPCRelocation
+namespace TR {
+
+class PPCRelocation
    {
    public:
    TR_ALLOC(TR_Memory::PPCRelocation)
 
-   TR_PPCRelocation(TR::Instruction *src,
-                    uint8_t           *trg,
+   PPCRelocation(TR::Instruction *src,
+                 uint8_t           *trg,
        TR_ExternalRelocationTargetKind k):
       _srcInstruction(src), _relTarget(trg), _kind(k)
       {}
@@ -57,15 +59,15 @@ class TR_PPCRelocation
    TR_ExternalRelocationTargetKind  _kind;
    };
 
-class TR_PPCPairedRelocation: public TR_PPCRelocation
+class PPCPairedRelocation: public TR::PPCRelocation
    {
    public:
-   TR_PPCPairedRelocation(TR::Instruction *src1,
-                          TR::Instruction *src2,
-                          uint8_t           *trg,
-                          TR_ExternalRelocationTargetKind k,
-                          TR::Node *node) :
-      TR_PPCRelocation(src1, trg, k), _src2Instruction(src2), _node(node)
+   PPCPairedRelocation(TR::Instruction *src1,
+                       TR::Instruction *src2,
+                       uint8_t           *trg,
+                       TR_ExternalRelocationTargetKind k,
+                       TR::Node *node) :
+      TR::PPCRelocation(src1, trg, k), _src2Instruction(src2), _node(node)
       {}
 
    TR::Instruction *getSource2Instruction() {return _src2Instruction;}
@@ -86,15 +88,15 @@ class TR_PPCPairedRelocation: public TR_PPCRelocation
 //   lis  gr3, addr_hi
 //   addi gr3, gr3, addr_lo
 //
-class TR_PPCPairedLabelAbsoluteRelocation : public TR_LabelRelocation
+class PPCPairedLabelAbsoluteRelocation : public TR::LabelRelocation
    {
    public:
-   TR_PPCPairedLabelAbsoluteRelocation(TR::Instruction *src1,
-				       TR::Instruction *src2,
-                                       TR::Instruction *src3,
-                                       TR::Instruction *src4,
-				       TR::LabelSymbol *label)
-      : TR_LabelRelocation(0, label), _instr1(src1), _instr2(src2), _instr3(src3), _instr4(src4) {}
+   PPCPairedLabelAbsoluteRelocation(TR::Instruction *src1,
+                                    TR::Instruction *src2,
+                                    TR::Instruction *src3,
+                                    TR::Instruction *src4,
+                                    TR::LabelSymbol *label)
+      : TR::LabelRelocation(0, label), _instr1(src1), _instr2(src2), _instr3(src3), _instr4(src4) {}
    virtual void apply(TR::CodeGenerator *cg);
 
    private:
@@ -103,5 +105,11 @@ class TR_PPCPairedLabelAbsoluteRelocation : public TR_LabelRelocation
    TR::Instruction *_instr3;
    TR::Instruction *_instr4;
    };
+
+}
+
+typedef TR::PPCRelocation TR_PPCRelocation;
+typedef TR::PPCPairedRelocation TR_PPCPairedRelocation;
+typedef TR::PPCPairedLabelAbsoluteRelocation TR_PPCPairedLabelAbsoluteRelocation;
 
 #endif

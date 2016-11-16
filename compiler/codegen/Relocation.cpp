@@ -36,101 +36,101 @@
 #include "infra/Link.hpp"                   // for TR_LinkHead, TR_Link
 #include "runtime/Runtime.hpp"
 
-void TR_Relocation::apply(TR::CodeGenerator *codeGen)
+void TR::Relocation::apply(TR::CodeGenerator *codeGen)
    {
    TR_ASSERT(0, "Should never get here");
    }
 
-void TR_Relocation::trace(TR::Compilation* comp)
+void TR::Relocation::trace(TR::Compilation* comp)
    {
    TR_ASSERT(0, "Should never get here");
    }
 
-void TR_Relocation::setDebugInfo(TR_RelocationDebugInfo* info)
+void TR::Relocation::setDebugInfo(TR::RelocationDebugInfo* info)
    {
    this->_genData= info;
    }
 
-TR_RelocationDebugInfo* TR_Relocation::getDebugInfo()
+TR::RelocationDebugInfo* TR::Relocation::getDebugInfo()
    {
    return this->_genData;
    }
-void TR_8BitLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative8BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag2(codeGen->comp(), "TR_8BitLabelRelativeRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelRelative8BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply8BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR_12BitLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative12BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag2(codeGen->comp(), "TR_12BitLabelRelativeRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelRelative12BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply12BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), isCheckDisp());
    }
 
-void TR_16BitLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag2(codeGen->comp(), "TR_16BitLabelRelativeRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelRelative16BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    if(getAddressDifferenceDivisor() == 1)
    codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    else
      codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), getAddressDifferenceDivisor(), isInstructionOffset());
    }
 
-void TR_24BitLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative24BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag2(codeGen->comp(), "TR_24BitLabelRelativeRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelRelative24BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply24BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR_32BitLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag2(codeGen->comp(), "TR_32BitLabelRelativeRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelRelative32BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply32BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
-void TR_LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
    intptrj_t *cursor = (intptrj_t *)getUpdateLocation();
-   AOTcgDiag2(codeGen->comp(), "TR_LabelAbsoluteRelocation::apply cursor=%x label=%x\n", cursor, getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LabelAbsoluteRelocation::apply cursor=%x label=%x\n", cursor, getLabel());
    *cursor = (intptrj_t)getLabel()->getCodeLocation();
    }
 
-void TR_InstructionAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::InstructionAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
    intptrj_t *cursor = (intptrj_t*)getUpdateLocation();
    intptrj_t address = (intptrj_t)getInstruction()->getBinaryEncoding();
    if (useEndAddress())
       address += getInstruction()->getBinaryLength();
-   AOTcgDiag2(codeGen->comp(), "TR_InstructionAbsoluteRelocation::apply cursor=%x instruction=%x\n", cursor, address);
+   AOTcgDiag2(codeGen->comp(), "TR::InstructionAbsoluteRelocation::apply cursor=%x instruction=%x\n", cursor, address);
    *cursor = address;
    }
 
 
-void TR_16BitLoadLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LoadLabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   AOTcgDiag3(codeGen->comp(), "TR_16BitLoadLabelRelativeRelocation::apply lastInstruction=%x startLabel=%x endLabel=%x\n", getLastInstruction(), getStartLabel(), getEndLabel());
+   AOTcgDiag3(codeGen->comp(), "TR::LoadLabelRelative16BitRelocation::apply lastInstruction=%x startLabel=%x endLabel=%x\n", getLastInstruction(), getStartLabel(), getEndLabel());
    codeGen->apply16BitLoadLabelRelativeRelocation(getLastInstruction(), getStartLabel(), getEndLabel(), getDeltaToStartLabel());
    }
 
-void TR_32BitLoadLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LoadLabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   AOTcgDiag3(codeGen->comp(), "TR_32BitLoadLabelRelativeRelocation::apply lastInstruction=%x startLabel=%x endLabel=%x\n", getLastInstruction(), getStartLabel(), getEndLabel());
+   AOTcgDiag3(codeGen->comp(), "TR::LoadLabelRelative32BitRelocation::apply lastInstruction=%x startLabel=%x endLabel=%x\n", getLastInstruction(), getStartLabel(), getEndLabel());
    codeGen->apply32BitLoadLabelRelativeRelocation(getLastInstruction(), getStartLabel(), getEndLabel(), getDeltaToStartLabel());
    }
 
-void TR_64BitLoadLabelRelativeRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LoadLabelRelative64BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   AOTcgDiag2(codeGen->comp(), "TR_64BitLoadLabelRelativeRelocation::apply lastInstruction=%x label=%x\n", getLastInstruction(), getLabel());
+   AOTcgDiag2(codeGen->comp(), "TR::LoadLabelRelative64BitRelocation::apply lastInstruction=%x label=%x\n", getLastInstruction(), getLabel());
    codeGen->apply64BitLoadLabelRelativeRelocation(getLastInstruction(), getLabel());
    }
 
-uint8_t TR_ExternalRelocation::collectModifier()
+uint8_t TR::ExternalRelocation::collectModifier()
    {
    // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
@@ -150,7 +150,7 @@ uint8_t TR_ExternalRelocation::collectModifier()
       }
 
    int32_t distance = updateLocation - aotMethodCodeStart;
-   AOTcgDiag1(comp, "TR_ExternalRelocation::collectModifier distance=%x\n", distance);
+   AOTcgDiag1(comp, "TR::ExternalRelocation::collectModifier distance=%x\n", distance);
 
    if (distance < MIN_SHORT_OFFSET || distance > MAX_SHORT_OFFSET)
       return RELOCATION_TYPE_WIDE_OFFSET;
@@ -158,18 +158,18 @@ uint8_t TR_ExternalRelocation::collectModifier()
    return 0;
    }
 
-void TR_ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
+void TR::ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
    TR::Compilation *comp = codeGen->comp();
-   AOTcgDiag0(comp, "TR_ExternalRelocation::addAOTRelocation\n");
+   AOTcgDiag0(comp, "TR::ExternalRelocation::addAOTRelocation\n");
    if (comp->getOption(TR_AOT))
       {
-      TR_LinkHead<TR_IteratedExternalRelocation>& aot = codeGen->getAheadOfTimeCompile()->getAOTRelocationTargets();
+      TR_LinkHead<TR::IteratedExternalRelocation>& aot = codeGen->getAheadOfTimeCompile()->getAOTRelocationTargets();
       uint32_t narrowSize = getNarrowSize();
       uint32_t wideSize = getWideSize();
       flags8_t modifier(collectModifier());
-      TR_IteratedExternalRelocation *r;
+      TR::IteratedExternalRelocation *r;
 
       AOTcgDiag1(comp, "target=%x\n", _targetAddress);
       if (_targetAddress2)
@@ -224,9 +224,9 @@ void TR_ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
             return;
             }
          }
-      TR_IteratedExternalRelocation *temp =   _targetAddress2 ?
-         new (codeGen->trHeapMemory()) TR_IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, codeGen) :
-         new (codeGen->trHeapMemory()) TR_IteratedExternalRelocation(_targetAddress, _kind, modifier, codeGen);
+      TR::IteratedExternalRelocation *temp =   _targetAddress2 ?
+         new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _targetAddress2, _kind, modifier, codeGen) :
+         new (codeGen->trHeapMemory()) TR::IteratedExternalRelocation(_targetAddress, _kind, modifier, codeGen);
 
       aot.add(temp);
       if (_targetAddress2)
@@ -250,11 +250,11 @@ void TR_ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
       }
    }
 
-void TR_ExternalRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::ExternalRelocation::apply(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
    TR::Compilation *comp = codeGen->comp();
-   AOTcgDiag1(comp, "TR_ExternalRelocation::apply updateLocation=%x \n", getUpdateLocation());
+   AOTcgDiag1(comp, "TR::ExternalRelocation::apply updateLocation=%x \n", getUpdateLocation());
    if (comp->getOption(TR_AOT))
       {
       uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
@@ -264,9 +264,9 @@ void TR_ExternalRelocation::apply(TR::CodeGenerator *codeGen)
       }
    }
 
-void TR_ExternalRelocation::trace(TR::Compilation* comp)
+void TR::ExternalRelocation::trace(TR::Compilation* comp)
    {
-   TR_RelocationDebugInfo* data = this->getDebugInfo();
+   TR::RelocationDebugInfo* data = this->getDebugInfo();
    uint8_t* updateLocation;
    TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
 
@@ -289,29 +289,29 @@ void TR_ExternalRelocation::trace(TR::Compilation* comp)
       }
    }
 
-uint8_t* TR_BeforeBinaryEncodingExternalRelocation::getUpdateLocation()
+uint8_t* TR::BeforeBinaryEncodingExternalRelocation::getUpdateLocation()
    {
-   if (NULL == TR_ExternalRelocation::getUpdateLocation())
+   if (NULL == TR::ExternalRelocation::getUpdateLocation())
       setUpdateLocation(getUpdateInstruction()->getBinaryEncoding());
-   return TR_ExternalRelocation::getUpdateLocation();
+   return TR::ExternalRelocation::getUpdateLocation();
    }
 
-TR_32BitExternalOrderedPairRelocation::TR_32BitExternalOrderedPairRelocation(
+TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation(
                  uint8_t                         *location1,
                  uint8_t                         *location2,
                  uint8_t                         *target,
                  TR_ExternalRelocationTargetKind  k,
                  TR::CodeGenerator                *codeGen) :
-   TR_ExternalRelocation(), _update2Location(location2)
+   TR::ExternalRelocation(), _update2Location(location2)
    {
-   AOTcgDiag0(codeGen->comp(), "TR_32BitExternalOrderedPairRelocation::TR_32BitExternalOrderedPairRelocation\n");
+   AOTcgDiag0(codeGen->comp(), "TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation\n");
    setUpdateLocation(location1);
    setTargetAddress(target);
    setTargetKind(k);
    }
 
 
-uint8_t TR_32BitExternalOrderedPairRelocation::collectModifier()
+uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    {
    TR::Compilation *comp = TR::comp();
    uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
@@ -335,7 +335,7 @@ uint8_t TR_32BitExternalOrderedPairRelocation::collectModifier()
 
    int32_t iLoc = updateLocation - aotMethodCodeStart;
    int32_t iLoc2 = updateLocation2 - aotMethodCodeStart;
-   AOTcgDiag0(comp, "TR_32BitExternalOrderedPairRelocation::collectModifier\n");
+   AOTcgDiag0(comp, "TR::ExternalOrderedPair32BitRelocation::collectModifier\n");
    if ( (iLoc < MIN_SHORT_OFFSET  || iLoc > MAX_SHORT_OFFSET ) || (iLoc2 < MIN_SHORT_OFFSET || iLoc2 > MAX_SHORT_OFFSET ) )
       return RELOCATION_TYPE_WIDE_OFFSET | RELOCATION_TYPE_ORDERED_PAIR;
 
@@ -343,13 +343,13 @@ uint8_t TR_32BitExternalOrderedPairRelocation::collectModifier()
    }
 
 
-void TR_32BitExternalOrderedPairRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    TR::Compilation *comp = codeGen->comp();
-   AOTcgDiag0(comp, "TR_32BitExternalOrderedPairRelocation::apply\n");
+   AOTcgDiag0(comp, "TR::ExternalOrderedPair32BitRelocation::apply\n");
    if (comp->getOption(TR_AOT))
       {
-      TR_IteratedExternalRelocation *rec = getRelocationRecord();
+      TR::IteratedExternalRelocation *rec = getRelocationRecord();
       uint8_t *codeStart = (uint8_t *)comp->getAotMethodCodeStart();
       TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
       if (TR::Compiler->target.cpu.isPower() &&
@@ -369,7 +369,7 @@ void TR_32BitExternalOrderedPairRelocation::apply(TR::CodeGenerator *codeGen)
    }
 
 // remember to update the debug extensions when add or changing relocations.
-char *TR_ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds] =
+char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds] =
    {
    "TR_ConstantPool (0)",
    "TR_HelperAddress (1)",
@@ -429,7 +429,7 @@ char *TR_ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalRe
    "TR_InlinedVirtualMethod (55)",
    };
 
-uintptr_t TR_ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =
+uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =
    {
    0,          // not used
    0,          // TR_CountForRecompile
@@ -440,7 +440,7 @@ uintptr_t TR_ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =
    0           // TR_HeapSizeForBarrierRange0
    };
 
-char *TR_ExternalRelocation::_globalValueNames[TR_NumGlobalValueItems] =
+char *TR::ExternalRelocation::_globalValueNames[TR_NumGlobalValueItems] =
    {
    "not used (0)",
    "TR_CountForRecompile (1)",
@@ -452,8 +452,8 @@ char *TR_ExternalRelocation::_globalValueNames[TR_NumGlobalValueItems] =
    };
 
 
-TR_IteratedExternalRelocation::TR_IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
-      : TR_Link<TR_IteratedExternalRelocation>(),
+TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
+      : TR_Link<TR::IteratedExternalRelocation>(),
         _numberOfRelocationSites(0),
         _targetAddress(target),
         _targetAddress2(NULL),
@@ -465,11 +465,11 @@ TR_IteratedExternalRelocation::TR_IteratedExternalRelocation(uint8_t *target, TR
         _full(false),
         _kind(k)
       {
-      AOTcgDiag0(TR::comp(), "TR_IteratedExternalRelocation::TR_IteratedExternalRelocation\n");
+      AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::IteratedExternalRelocation\n");
       }
 
-TR_IteratedExternalRelocation::TR_IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
-      : TR_Link<TR_IteratedExternalRelocation>(),
+TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen)
+      : TR_Link<TR::IteratedExternalRelocation>(),
         _numberOfRelocationSites(0),
         _targetAddress(target),
         _targetAddress2(target2),
@@ -481,21 +481,21 @@ TR_IteratedExternalRelocation::TR_IteratedExternalRelocation(uint8_t *target, ui
         _full(false),
         _kind(k)
       {
-      AOTcgDiag0(TR::comp(), "TR_IteratedExternalRelocation::TR_IteratedExternalRelocation\n");
+      AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::IteratedExternalRelocation\n");
       }
 
-void TR_IteratedExternalRelocation::initialiseRelocation(TR::CodeGenerator *codeGen)
+void TR::IteratedExternalRelocation::initialiseRelocation(TR::CodeGenerator *codeGen)
    {
    // *this    swipeable for debugging purposes
-   AOTcgDiag0(TR::comp(), "TR_IteratedExternalRelocation::initialiseRelocation\n");
+   AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::initialiseRelocation\n");
    _relocationDataCursor = codeGen->getAheadOfTimeCompile()->initialiseAOTRelocationHeader(this);
    }
 
-void TR_IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)
+void TR::IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)
    {
    // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
-   AOTcgDiag1(comp, "TR_IteratedExternalRelocation::addRelocationEntry _relocationDataCursor=%x\n", _relocationDataCursor);
+   AOTcgDiag1(comp, "TR::IteratedExternalRelocation::addRelocationEntry _relocationDataCursor=%x\n", _relocationDataCursor);
    if (!needsWideOffsets())
       {
       *(uint16_t *)_relocationDataCursor = (uint16_t)locationOffset;
@@ -508,7 +508,7 @@ void TR_IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)
       }
    }
 
-void TR_32BitLabelTableRelocation::apply(TR::CodeGenerator *codeGen)
+void TR::LabelTable32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
    codeGen->apply32BitLabelTableRelocation((int32_t *)getUpdateLocation(), getLabel());
    }

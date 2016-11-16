@@ -108,7 +108,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          {
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
          TR::SymbolReference *reloSymRef= (reloType==TR_ClassAddress)?getNode()->getSymbolReference():getSymbolReference();
-         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) reloSymRef,
+         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) reloSymRef,
                                                                                 getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                                 (TR_ExternalRelocationTargetKind) reloType, cg()),
                                    __FILE__, __LINE__, getNode());
@@ -120,7 +120,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       case TR_JNIVirtualTargetAddress:
          {
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
-         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *)getNode()->getSymbolReference(),
+         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getNode()->getSymbolReference(),
                   getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
                         (TR_ExternalRelocationTargetKind) reloType, cg()),
                         __FILE__, __LINE__, getNode());
@@ -129,7 +129,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_DataAddress:
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
-         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
+         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(),
                                   getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                                 (TR_ExternalRelocationTargetKind) reloType, cg()),
                                   __FILE__,__LINE__, getNode());
@@ -137,7 +137,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_ArrayCopyHelper:
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
-         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) getSymbolReference(),
+         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getSymbolReference(),
                                                                                 (TR_ExternalRelocationTargetKind) reloType, cg()),
                                 __FILE__, __LINE__, getNode());
          break;
@@ -146,12 +146,12 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          AOTcgDiag1(comp, "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
          if (TR::Compiler->target.is64Bit())
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor), TR_AbsoluteHelperAddress, cg()),
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor), TR_AbsoluteHelperAddress, cg()),
                                 __FILE__, __LINE__, getNode());
             }
          else
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *)(intptr_t) *((uint32_t*) cursor), TR_AbsoluteHelperAddress, cg()),
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)(intptr_t) *((uint32_t*) cursor), TR_AbsoluteHelperAddress, cg()),
                                 __FILE__, __LINE__, getNode());
             }
          break;
@@ -161,13 +161,13 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
          if (TR::Compiler->target.is64Bit())
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor),
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) *((uint64_t*) cursor),
                   (TR_ExternalRelocationTargetKind) reloType, cg()),
                   __FILE__, __LINE__, getNode());
             }
          else
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *)(intptr_t) *((uint32_t*) cursor),
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)(intptr_t) *((uint32_t*) cursor),
                   (TR_ExternalRelocationTargetKind) reloType, cg()),
                   __FILE__, __LINE__, getNode());
             }
@@ -175,7 +175,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_GlobalValue:
          AOTcgDiag2(comp, "add TR_GlobalValue (countForRecompile) cursor=%x\n", reloType, cursor);
-         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile,
+         cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile,
                                                                                 TR_GlobalValue, cg()),
                                   __FILE__, __LINE__, getNode());
          break;
@@ -185,7 +185,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
       case TR_ClassPointer:
          {
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-         TR_Relocation *relo;
+         TR::Relocation *relo;
          //for optimizations where we are trying to relocate either profiled j9class or getfrom signature we can't use node to get the target address
          //so we need to pass it to relocation in targetaddress2 for now
          //two instances where use this relotype in such way are: profile checkcast and arraystore check object check optimiztaions
@@ -197,7 +197,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             else
                targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);
             }
-         relo = new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
+         relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
          cg()->addAOTRelocation(relo, __FILE__, __LINE__, getNode());
          }
          break;
@@ -400,7 +400,7 @@ TR::S390WarmEyeCatcherDataSnippet::emitSnippetBody()
 
    // Pointer to Full EyeCatcher Snippet Label
    TR_ASSERT(_fullEyeCatcherSnippet != NULL, "Warm EyeCatcher does not have a corresponding full EyeCatcher.");
-   cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation(cursor, _fullEyeCatcherSnippet));
+   cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _fullEyeCatcherSnippet));
    cursor += sizeof(intptrj_t);
    return cursor;
    }
@@ -451,7 +451,7 @@ TR::S390TargetAddressSnippet::emitSnippetBody()
       {
       *(intptrj_t *) cursor = 0;
       AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation(cursor, _targetsnippet->getSnippetLabel()));
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _targetsnippet->getSnippetLabel()));
       cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
                                 __FILE__, __LINE__, getNode());
       }
@@ -465,7 +465,7 @@ TR::S390TargetAddressSnippet::emitSnippetBody()
       else
          {
          AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation(cursor, _targetlabel));
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _targetlabel));
          cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
                                    __FILE__, __LINE__, getNode());
          }
@@ -988,7 +988,7 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          }
 
       AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
@@ -1002,8 +1002,8 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
        *(intptrj_t *) cursor = (intptrj_t) (_returnFromJNICallLabel->getCodeLocation());
 
        AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-       cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation(cursor, _returnFromJNICallLabel));
-       cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, NULL, TR_AbsoluteMethodAddress, cg()),
+       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _returnFromJNICallLabel));
+       cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_AbsoluteMethodAddress, cg()),
              __FILE__, __LINE__, getNode());
 
        cursor += TR::Compiler->om.sizeofReferenceAddress();
@@ -1049,7 +1049,7 @@ TR::S390JNICallDataSnippet::emitSnippetBody()
          TR_ASSERT(0,"JNI relocation not supported.");
          }
 
-      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
+      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) callNode->getSymbolReference(),
                callNode  ? (uint8_t *)(intptr_t)callNode->getInlinedSiteIndex() : (uint8_t *)-1,
                      (TR_ExternalRelocationTargetKind) reloType, cg()),
                      __FILE__, __LINE__, callNode);
@@ -1427,7 +1427,7 @@ TR::S390LabelTableSnippet::emitSnippetBody()
       {
       if (_labelTable[i])
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR_32BitLabelTableRelocation(cursor, _labelTable[i]));
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelTable32BitRelocation(cursor, _labelTable[i]));
          *(uint32_t *) cursor = cursor - snip;
          }
       else
@@ -1465,7 +1465,7 @@ TR::S390DeclTrampSnippet::emitSnippetBody()
    *(uint32_t *) cursor = 0x50d0a000;
    cursor += 4;
    *(uint16_t *) cursor = 0xc0f4;
-   cg()->addRelocation(new (cg()->trHeapMemory()) TR_32BitLabelRelativeRelocation(cursor, _label));
+   cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, _label));
    cursor += 6;
    *(uint32_t *) cursor = 0xdead;
    cursor += 2;
@@ -1494,7 +1494,7 @@ TR::S390SortJumpTrampSnippet::emitSnippetBody()
    *(uint32_t *) cursor = 0x50d0a000;
    cursor += 4;
    *(uint16_t *) cursor = 0xc0f4;
-   cg()->addRelocation(new (cg()->trHeapMemory()) TR_32BitLabelRelativeRelocation(cursor, _label));
+   cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, _label));
    cursor += 6;
    *(uint32_t *) cursor = 0xdead;
    cursor += 2;

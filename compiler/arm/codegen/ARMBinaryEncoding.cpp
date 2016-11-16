@@ -80,7 +80,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
       }
 
    cg->addAOTRelocation(
-      new (cg->trHeapMemory()) TR_ExternalRelocation(cursor,
+      new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                      (uint8_t *)symRef,
                                      TR_HelperAddress, cg),
       __FILE__, __LINE__, node);
@@ -108,7 +108,7 @@ uint8_t *TR::ARMLabelInstruction::generateBinaryEncoding()
          if (destination != 0)
             *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, destination);
          else
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
          }
       else
          {
@@ -117,7 +117,7 @@ uint8_t *TR::ARMLabelInstruction::generateBinaryEncoding()
          insertTargetRegister(toARMCursor(cursor));
          insertSource1Register(toARMCursor(cursor));
          *((uint32_t *)cursor) |= 1 << 25;    // set the I bit
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR_8BitLabelRelativeRelocation(cursor, label));
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative8BitRelocation(cursor, label));
          }
       cursor += ARM_INSTRUCTION_LENGTH;
       }
@@ -216,13 +216,13 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       switch(getReloKind())
          {
          case TR_AbsoluteHelperAddress:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_RamMethod:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_BodyInfoAddress:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          default:
             TR_ASSERT(false, "Unsupported AOT relocation type specified.");
@@ -234,7 +234,7 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       //
       void **locationToPatch = (void**)cursor;
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
-      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
 
    cursor += ARM_INSTRUCTION_LENGTH;
@@ -293,7 +293,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
          }
       else if (label != NULL)
          {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, label));
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
          ((TR::ARMCallSnippet *)getCallSnippet())->setCallRA(cursor+4);
          }
       else
@@ -335,7 +335,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 
                // no need to add 4 to cursor, it is done below in the
                // common path
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(
+               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
                   cursor,
                   NULL,
                   TR_AbsoluteMethodAddress,
@@ -612,7 +612,7 @@ uint8_t *TR::ARMVirtualGuardNOPInstruction::generateBinaryEncoding()
    if (label->getCodeLocation() == NULL)
       {
       _site->setDestination(cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
 #ifdef DEBUG
    if (debug("traceVGNOP"))

@@ -26,7 +26,7 @@
 #include "codegen/Machine.hpp"                 // for Machine
 #include "codegen/MemoryReference.hpp"         // for MemoryReference
 #include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "codegen/Relocation.hpp"              // for TR_ExternalRelocation, etc
+#include "codegen/Relocation.hpp"              // for TR::ExternalRelocation, etc
 #include "compile/Compilation.hpp"             // for Compilation
 #include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
 #include "env/CompilerEnv.hpp"
@@ -109,7 +109,7 @@ uint8_t *TR::PPCLabelInstruction::generateBinaryEncoding()
              }
           else
              {
-             cg()->addRelocation(new (cg()->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, label));
+             cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
              }
           cursor += 4;
       }
@@ -279,7 +279,7 @@ uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
          if (!getFarRelocation())
             {
             insertConditionRegister((uint32_t *)cursor);
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR_16BitLabelRelativeRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, label));
             }
          else // too far - need fix up
             {
@@ -294,7 +294,7 @@ uint8_t *TR::PPCConditionalBranchInstruction::generateBinaryEncoding()
             cursor += 4;
 
             cursor = extraOpCode.copyBinaryToBuffer(cursor);
-            cg()->addRelocation(new (cg()->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, label));
+            cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
             }
          }
       }
@@ -379,13 +379,13 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
          switch(getReloKind())
             {
             case TR_AbsoluteHelperAddress:
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
+               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
                break;
             case TR_RamMethod:
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
                break;
             case TR_BodyInfoAddress:
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
+               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
                break;
             default:
                TR_ASSERT(false, "Unsupported AOT relocation type specified.");
@@ -409,7 +409,7 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       //
       void **locationToPatch = (void**)(cursor - (TR::Compiler->target.is64Bit()?4:0));
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
-      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
 
    }
@@ -954,7 +954,7 @@ uint8_t *TR::PPCVirtualGuardNOPInstruction::generateBinaryEncoding()
    if (label->getCodeLocation() == NULL)
       {
       _site->setDestination(cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR_LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation((uint8_t *) (&_site->getDestination()), label));
 
 #ifdef DEBUG
    if (debug("traceVGNOP"))

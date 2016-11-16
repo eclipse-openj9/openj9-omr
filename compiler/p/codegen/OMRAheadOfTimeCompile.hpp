@@ -39,14 +39,14 @@ class OMR_EXTENSIBLE AheadOfTimeCompile : public OMR::AheadOfTimeCompile
    public:
    AheadOfTimeCompile(uint32_t *headerSizeMap, TR::Compilation * c)
        : OMR::AheadOfTimeCompile(headerSizeMap, c),
-        _relocationList(getTypedAllocator<TR_PPCRelocation*>(c->allocator()))
+        _relocationList(getTypedAllocator<TR::PPCRelocation*>(c->allocator()))
      {
      }
 
-   TR::list<TR_PPCRelocation*>& getRelocationList() {return _relocationList;}
+   TR::list<TR::PPCRelocation*>& getRelocationList() {return _relocationList;}
 
    private:
-   TR::list<TR_PPCRelocation*> _relocationList;
+   TR::list<TR::PPCRelocation*> _relocationList;
    };
 
 } // namespace Power

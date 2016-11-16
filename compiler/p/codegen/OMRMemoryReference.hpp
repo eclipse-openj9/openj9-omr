@@ -41,7 +41,7 @@ namespace OMR { typedef OMR::Power::MemoryReference MemoryReferenceConnector; }
 #include "il/SymbolReference.hpp"           // for SymbolReference
 #include "il/symbol/StaticSymbol.hpp"       // for StaticSymbol
 
-class TR_PPCPairedRelocation;
+namespace TR { class PPCPairedRelocation; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
@@ -66,7 +66,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    intptrj_t _offset;
 
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
-   TR_PPCPairedRelocation *_staticRelocation;
+   TR::PPCPairedRelocation *_staticRelocation;
    TR::SymbolReference *_symbolReference;
    TR::RegisterDependencyConditions *_conditions;
 
@@ -213,8 +213,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       return (_unresolvedSnippet = s);
       }
 
-   TR_PPCPairedRelocation *getStaticRelocation() {return _staticRelocation;}
-   TR_PPCPairedRelocation *setStaticRelocation(TR_PPCPairedRelocation *r)
+   TR::PPCPairedRelocation *getStaticRelocation() {return _staticRelocation;}
+   TR::PPCPairedRelocation *setStaticRelocation(TR::PPCPairedRelocation *r)
       {
       return (_staticRelocation = r);
       }

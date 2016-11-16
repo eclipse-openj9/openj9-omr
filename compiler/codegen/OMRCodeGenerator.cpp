@@ -44,7 +44,7 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterPair.hpp"                 // for RegisterPair
 #include "codegen/RegisterUsage.hpp"                // for RegisterUsage
-#include "codegen/Relocation.hpp"                   // for TR_Relocation, etc
+#include "codegen/Relocation.hpp"                   // for TR::Relocation, etc
 #include "codegen/Snippet.hpp"                      // for Snippet
 #include "codegen/StorageInfo.hpp"                  // for TR_StorageInfo, etc
 #include "codegen/TreeEvaluator.hpp"                // for TreeEvaluator
@@ -265,8 +265,8 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
      _nodesSpineCheckedList(getTypedAllocator<TR::Node*>(TR::comp()->allocator())),
      _collectedSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _allSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
-     _relocationList(getTypedAllocator<TR_Relocation*>(TR::comp()->allocator())),
-     _aotRelocationList(getTypedAllocator<TR_Relocation*>(TR::comp()->allocator())),
+     _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
+     _aotRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _jniCallSites(getTypedAllocator<TR_Pair<TR_ResolvedMethod,TR::Instruction> *>(TR::comp()->allocator())),
      _lowestSavedReg(0),
@@ -3746,7 +3746,7 @@ TR::list<OMR::RegisterUsage*> *OMR::CodeGenerator::stopRecordingRegisterUsage()
    }
 
 
-void OMR::CodeGenerator::addRelocation(TR_Relocation *r)
+void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
    {
    if (r->isAOTRelocation())
       {
@@ -3758,12 +3758,12 @@ void OMR::CodeGenerator::addRelocation(TR_Relocation *r)
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR_Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node)
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node)
    {
    TR_ASSERT(generatingFileName, "AOT relocation location has improper NULL filename specified");
    if (self()->comp()->compileRelocatableCode())
       {
-      TR_RelocationDebugInfo *genData = new(self()->trHeapMemory()) TR_RelocationDebugInfo;
+      TR::RelocationDebugInfo *genData = new(self()->trHeapMemory()) TR::RelocationDebugInfo;
       genData->file = generatingFileName;
       genData->line = generatingLineNumber;
       genData->node = node;
@@ -3772,7 +3772,7 @@ void OMR::CodeGenerator::addAOTRelocation(TR_Relocation *r, char *generatingFile
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR_Relocation *r, TR_RelocationDebugInfo* info)
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info)
    {
    if (self()->comp()->compileRelocatableCode())
       {

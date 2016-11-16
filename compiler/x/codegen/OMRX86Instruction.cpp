@@ -1967,7 +1967,7 @@ void TR::X86MemTableInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssig
          //
          for (ncount_t i = 0; i < getNumRelocations(); i++)
             {
-            TR_LabelRelocation *relocation = getRelocation(i);
+            TR::LabelRelocation *relocation = getRelocation(i);
             TR::LabelSymbol *targetLabel = relocation->getLabel();
             if (targetLabel->getInstruction())
                {

@@ -78,12 +78,14 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
       pos_CX     = 3
    } PPCOperandPosition;
 
-   typedef enum {
-      FPCC_FL = 0x0, // less than
-      FPCC_FG = 0x1, // greater than
-      FPCC_FE = 0x2, // equal
-      FPCC_FU = 0x3  // unordered
-   } PPCFloatingPointConditionCode;
+   enum CRCC {
+      //Condition Register Condition Code (CRCC)
+      CRCC_LT = 0x0,    // less than
+      CRCC_GT = 0x1,    // greater than
+      CRCC_EQ = 0x2,    // equal
+      CRCC_SO = 0x3,    // summary overflow
+      CRCC_FU = CRCC_SO // floating-point unordered
+   };
 
    bool getUseVSR() { return _useVSR; }
    void setUseVSR(bool value) { _useVSR = value; }

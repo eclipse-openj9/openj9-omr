@@ -204,6 +204,13 @@ public:
    void CloseStruct(const char *structName);
 
    TR::IlType * GetFieldType(const char *structName, const char *fieldName);
+
+   /**
+    * @brief Returns the offset of a field in a struct
+    * @param structName the name of the struct containing the field
+    * @param fieldName the name of the field in the struct
+    * @return the memory offset of the field in bytes
+    */
    size_t OffsetOf(const char *structName, const char *fieldName);
 
    TR::IlType *PrimitiveType(TR::DataType primitiveType)

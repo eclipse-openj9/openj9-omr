@@ -133,7 +133,6 @@ typedef struct J9ThreadLibrary {
 	OMRMemCategory condvarCategory;
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 	omrthread_monitor_t globalMonitor;
-	uintptr_t useRealtimeScheduling;
 #if defined(OMR_THR_YIELD_ALG)
 	uintptr_t yieldAlgorithm;
 	uintptr_t yieldUsleepMultiplier;

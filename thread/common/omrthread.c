@@ -426,11 +426,15 @@ omrthread_lib_control(const char *key, uintptr_t value)
 		 || (J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_ENABLED == value)
 		) {
 			omrthread_library_t lib = GLOBAL_DATA(default_library);
-			if (value != lib->useRealtimeScheduling) {
+			if (value != (lib->flags & J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED)) {
 				pool_state state;
 				omrthread_t walkThread = NULL;
 
-				lib->useRealtimeScheduling = value;
+				if (J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_ENABLED == value) {
+					omrthread_lib_set_flags(J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED);
+				} else {
+					omrthread_lib_clear_flags(J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED);
+				}
 
 				/* re-initialize the priority map */
 				rc = initialize_priority_map();
@@ -460,14 +464,14 @@ omrthread_lib_control(const char *key, uintptr_t value)
 	return rc;
 }
 
-uintptr_t
+BOOLEAN
 omrthread_lib_use_realtime_scheduling(void)
 {
 #if defined(LINUX) || defined(OSX)
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
-	return lib->useRealtimeScheduling;
+	return J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED);
 #else /* defined(LINUX) || defined(OSX) */
-	return 0;
+	return FALSE;
 #endif /* defined(LINUX) || defined(OSX) */
 }
 

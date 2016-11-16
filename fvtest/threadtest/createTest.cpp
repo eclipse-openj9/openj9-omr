@@ -54,7 +54,7 @@ protected:
 		portLib = omrTestEnv->getPortLibrary();
 #if defined(LINUX)
 		if (omrTestEnv->realtime) {
-			omrthread_lib_control(J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING, 1);
+			omrthread_lib_control(J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING, J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_ENABLED);
 		}
 		if (omrthread_lib_use_realtime_scheduling()) {
 			initRealtimePrioMap();

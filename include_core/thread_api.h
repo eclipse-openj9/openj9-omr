@@ -627,7 +627,7 @@ omrthread_lib_clear_flags(uintptr_t flags);
 
 #if defined(LINUX) || defined(OSX)
 #define J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING "use_realtime_scheduling"
-#define J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_ENABLED ((uintptr_t) 1)
+#define J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_ENABLED ((uintptr_t) J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED)
 #define J9THREAD_LIB_CONTROL_USE_REALTIME_SCHEDULING_DISABLED ((uintptr_t) 0)
 #endif /* defined(LINUX) || defined(OSX) */
 
@@ -1113,9 +1113,9 @@ omrthread_yield_new(uintptr_t sequentialYields);
 
 /**
  * Returns whether or not realtime thread scheduling is being used
- * @return 1 if realtime scheduling is in use, 0 otherwise
+ * @return TRUE if realtime scheduling is in use, FALSE otherwise
  */
-uintptr_t
+BOOLEAN
 omrthread_lib_use_realtime_scheduling(void);
 
 /**

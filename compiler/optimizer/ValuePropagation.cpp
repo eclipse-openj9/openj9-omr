@@ -7268,7 +7268,6 @@ void TR::ValuePropagation::doDelayedTransformations()
       transformConverterCall(converterCallTree);
       }
    _converterCalls.deleteAll();
-#endif
 
    ListIterator<TR::TreeTop> objCloneIt(&_objectCloneCalls);
    ListIterator<ObjCloneInfo> objCloneTypeIt(&_objectCloneTypes);
@@ -7299,6 +7298,7 @@ void TR::ValuePropagation::doDelayedTransformations()
       }
    _arrayCloneCalls.deleteAll();
    _arrayCloneTypes.deleteAll();
+#endif
 
    ListIterator<TR_TreeTopWrtBarFlag> treesIt(&_unknownTypeArrayCopyTrees);
    TR_TreeTopWrtBarFlag *unknownTypeArrayCopyTree;

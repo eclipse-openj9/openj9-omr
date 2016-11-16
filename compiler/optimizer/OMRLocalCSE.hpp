@@ -194,8 +194,8 @@ class LocalCSE : public TR::Optimization
    void killAllAvailableExpressions();
    void killAllDataStructures(SharedSparseBitVector &);
    void killAvailableExpressions(int32_t);
-   void killAvailableExpressionsUsingAliases(int32_t, TR_NodeKillAliasSetInterface &);
-   void killAvailableExpressionsUsingAliases(int32_t, SharedSparseBitVector &);
+   void killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &);
+   void killAvailableExpressionsUsingAliases(SharedSparseBitVector &);
    void killAllInternalPointersBasedOnThisPinningArray(TR::SymbolReference *symRef);
 
    bool areSyntacticallyEquivalent(TR::Node *, TR::Node *, bool *);
@@ -237,8 +237,6 @@ class LocalCSE : public TR::Optimization
    HashTable _hashTableWithSyms;
    HashTable _hashTableWithCalls;
    HashTable _hashTableWithConsts;
-   HashTable _fpHashTable;
-   HashTable _fpHashTableWithSyms;
 
    int32_t _numNullCheckNodes;
    int32_t _numNodes;

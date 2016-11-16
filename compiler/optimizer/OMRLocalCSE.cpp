@@ -706,7 +706,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
       if (previouslyAvailable)
          {
          if (hasAliases)
-            killAvailableExpressionsUsingAliases(symRefNum, UseDefAliases);
+            killAvailableExpressionsUsingAliases(UseDefAliases);
          if (node->getOpCode().isLikeDef())
             killAvailableExpressions(symRefNum);
          }
@@ -1432,7 +1432,7 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
       if (_volatileState != VOLATILE_ONLY)
          {
          if (node->getOpCode().hasSymbolReference() && UseDefAliases.containsAny(tmp, comp()))
-            killAvailableExpressionsUsingAliases(node->getSymbolReference()->getReferenceNumber(), UseDefAliases);
+            killAvailableExpressionsUsingAliases(UseDefAliases);
          }
       else
          {
@@ -1446,7 +1446,7 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
                processedAliases[c] = 1;
             }
          if (node->getOpCode().hasSymbolReference() && processedAliases.Intersects(tmp))
-            killAvailableExpressionsUsingAliases(node->getSymbolReference()->getReferenceNumber(), processedAliases);
+            killAvailableExpressionsUsingAliases(processedAliases);
          }
       }
 
@@ -1499,7 +1499,7 @@ void OMR::LocalCSE::killAvailableExpressions(int32_t symRefNum)
    }
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(int32_t symRefNum, SharedSparseBitVector &aliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(SharedSparseBitVector &aliases)
    {
    SharedSparseBitVector tmp(_availableLoadExprs);
    _availableLoadExprs -= aliases;
@@ -1536,7 +1536,7 @@ void OMR::LocalCSE::killAvailableExpressionsUsingAliases(int32_t symRefNum, Shar
 
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(int32_t symRefNum, TR_NodeKillAliasSetInterface &UseDefAliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &UseDefAliases)
    {
    SharedSparseBitVector tmp(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableLoadExprs);
@@ -1704,31 +1704,29 @@ int32_t OMR::LocalCSE::hash(TR::Node *parent, TR::Node *node)
       }
 
    int32_t hashValue;
+   if (node->getOpCode().hasSymbolReference() &&
+       ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
       {
-      if (node->getOpCode().hasSymbolReference() &&
-          ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
+      if (node->getOpCode().isCall())
          {
-         if (node->getOpCode().isCall())
-            {
-            hashValue = 1 + ((h ^ g) % (_hashTableWithCalls._numBuckets-1));
-            TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithCalls._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithCalls size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithCalls._numBuckets);
-            }
-         else
-            {
-            hashValue = 1 + ((h ^ g) % (_hashTableWithSyms._numBuckets-1));
-            TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithSyms._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithSyms size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithSyms._numBuckets);
-            }
-         }
-      else if (node->getOpCode().isLoadConst())
-         {
-         hashValue = 1 + (( (h ^ g) + (int32_t)node->getConstValue()) % (_hashTableWithConsts._numBuckets-1));
-         TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithConsts._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithConsts size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithConsts._numBuckets);
+         hashValue = 1 + ((h ^ g) % (_hashTableWithCalls._numBuckets-1));
+         TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithCalls._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithCalls size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithCalls._numBuckets);
          }
       else
          {
-         hashValue = 1 + ((h ^ g) % (_hashTable._numBuckets-1));
-         TR_ASSERT(hashValue >= 0 && hashValue < _hashTable._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTable size %d\n",hashValue,node,node->getOpCode().getName(),_hashTable._numBuckets);
+         hashValue = 1 + ((h ^ g) % (_hashTableWithSyms._numBuckets-1));
+         TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithSyms._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithSyms size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithSyms._numBuckets);
          }
+      }
+   else if (node->getOpCode().isLoadConst())
+      {
+      hashValue = 1 + (( (h ^ g) + (int32_t)node->getConstValue()) % (_hashTableWithConsts._numBuckets-1));
+      TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithConsts._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithConsts size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithConsts._numBuckets);
+      }
+   else
+      {
+      hashValue = 1 + ((h ^ g) % (_hashTable._numBuckets-1));
+      TR_ASSERT(hashValue >= 0 && hashValue < _hashTable._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTable size %d\n",hashValue,node,node->getOpCode().getName(),_hashTable._numBuckets);
       }
 
    return hashValue;

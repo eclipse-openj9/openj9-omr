@@ -350,7 +350,7 @@ enum {
 				if (0 == ((monitor)->flags & J9THREAD_MONITOR_DISABLE_SPINNING)) { \
 					(monitor)->flags |= J9THREAD_MONITOR_DISABLE_SPINNING; \
 					DISABLE_RAW_MONITOR_SPIN((thread), (monitor)); \
-					if (0 == (thread)->library->adaptSpinKeepSampling) { \
+					if (!J9_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_ADAPTIVE_SPIN_KEEP_SAMPLING)) { \
 						ADAPT_DISABLE_SAMPLING((thread), (monitor)); \
 					} \
 				} \

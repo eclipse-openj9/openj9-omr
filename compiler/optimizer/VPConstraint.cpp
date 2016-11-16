@@ -680,9 +680,11 @@ bool TR::VPResolvedClass::isPrimitiveArray(TR::Compilation *comp)
 
 bool TR::VPResolvedClass::isJavaLangObject(TR::ValuePropagation *vp)
    {
+#ifdef J9_PROJECT_SPECIFIC
    void *javaLangObject = vp->comp()->getObjectClassPointer();
    if (javaLangObject)
       return javaLangObject == _class;
+#endif
 
    return (_len == 18 && !strncmp(_sig, "Ljava/lang/Object;", 18));
    }
@@ -3553,6 +3555,7 @@ TR::VPConstraint *TR::VPKnownObject::intersect1(TR::VPConstraint *other, TR::Val
 
 TR::VPConstraint *TR::VPConstString::intersect1(TR::VPConstraint *other, TR::ValuePropagation *vp)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TRACER(vp, this, other);
 
    if (other->asConstString())
@@ -3595,6 +3598,8 @@ TR::VPConstraint *TR::VPConstString::intersect1(TR::VPConstraint *other, TR::Val
       if (!location) return NULL;
       return TR::VPClass::create(vp, this, NULL, NULL, NULL, location);
       }
+#endif
+
    return NULL;
    }
 

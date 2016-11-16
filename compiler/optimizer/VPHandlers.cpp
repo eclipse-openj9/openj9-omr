@@ -1577,7 +1577,6 @@ TR::Node *constrainAload(TR::ValuePropagation *vp, TR::Node *node)
                if (classInfo && classInfo->isInitialized())
                   isClassInitialized = true;
 
-#ifdef J9_PROJECT_SPECIFIC
                if (classOfStatic != vp->comp()->getSystemClassPointer() &&
                    isClassInitialized &&
                    !vp->comp()->getOption(TR_AOT) &&
@@ -1612,7 +1611,6 @@ TR::Node *constrainAload(TR::ValuePropagation *vp, TR::Node *node)
                         }
                      }
                   }
-#endif
                }
 
             if (!foundInfo)
@@ -4822,6 +4820,7 @@ static void devirtualizeCall(TR::ValuePropagation *vp, TR::Node *node)
    // java/lang/Object for the purposes of devirtualization.
    if ( constraint->getArrayInfo())
       {
+#ifdef J9_PROJECT_SPECIFIC
       thisType = vp->comp()->getObjectClassPointer();
       if (!thisType)
          {
@@ -4830,6 +4829,7 @@ static void devirtualizeCall(TR::ValuePropagation *vp, TR::Node *node)
          return;
          }
       constraint = TR::VPFixedClass::create(vp, thisType);
+#endif
       }
 
 
@@ -4838,6 +4838,7 @@ static void devirtualizeCall(TR::ValuePropagation *vp, TR::Node *node)
         (constraint->asObjectLocation() &&
          (constraint->asObjectLocation()->isClassObject() == TR_yes)))
       {
+#ifdef J9_PROJECT_SPECIFIC
       thisType = vp->comp()->getClassClassPointer();
       if (!thisType)
          {
@@ -4846,6 +4847,7 @@ static void devirtualizeCall(TR::ValuePropagation *vp, TR::Node *node)
          return;
          }
       constraint = TR::VPFixedClass::create(vp, thisType);
+#endif
       }
 
    // The fixed type may be different than the type of the this pointer.
@@ -9501,6 +9503,7 @@ static TR::Node *constrainIfcmpeqne(TR::ValuePropagation *vp, TR::Node *node, bo
             {
             case TR_VftTest:
                   {
+#ifdef J9_PROJECT_SPECIFIC
                   instanceofObjectRef = node->getFirstChild();
                   TR::Node *classChild = node->getSecondChild();
                   bool foldedGuard = false;
@@ -9544,6 +9547,7 @@ static TR::Node *constrainIfcmpeqne(TR::ValuePropagation *vp, TR::Node *node, bo
                      else
                         instanceofOnBranch = true;
                      }
+#endif
                   }
                break;
             case TR_MethodTest:

@@ -1922,6 +1922,7 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
          }
       }
 
+#ifdef J9_PROJECT_SPECIFIC
    static bool disableCountingMonitors = feGetEnv("TR_disableCountingMonitors")? true: false;
    if (initializeMonitorAutos && !disableCountingMonitors)
       {
@@ -1940,6 +1941,7 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
             }
          }
       }
+#endif
    }
 
 

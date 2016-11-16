@@ -2900,6 +2900,7 @@ OMR::Node::isClassUnloadingConst()
 TR_OpaqueClassBlock *
 OMR::Node::getMonitorClass(TR_ResolvedMethod * vmMethod)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::Compilation * c = TR::comp();
    TR::Node * object = self()->getOpCodeValue() != TR::tstart ? self()->getFirstChild() : self()->getThirdChild();
    if (self()->isStaticMonitor())
@@ -2925,6 +2926,7 @@ OMR::Node::getMonitorClass(TR_ResolvedMethod * vmMethod)
           return (TR_OpaqueClassBlock *)symRef->getSymbol()->castToLocalObjectSymbol()->getClassSymbolReference()->getSymbol()->castToStaticSymbol()->getStaticAddress();
          }
       }
+#endif
    return 0;
    }
 

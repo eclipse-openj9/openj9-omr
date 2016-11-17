@@ -276,7 +276,6 @@ OMR::Compilation::Compilation(
    _useLongRegAllocation(false),
    _resolvedMethodSymbolReferences(m),
    _inlinedCallSites(m),
-   _monitorAutos(m),
    _peekingArgInfo(m),
    _inlinedCallStack(m),
    _inlinedCallArgInfoStack(m),
@@ -299,7 +298,6 @@ OMR::Compilation::Compilation(
    _optimizationPlan(optimizationPlan),
    _verboseOptTransformationCount(0),
    _currentBlock(NULL),
-   _monitorAutoSymRefsInCompiledMethod(getTypedAllocator<TR::SymbolReference*>(self()->allocator())),
    _aotMethodCodeStart(NULL),
    _failCHtableCommitFlag(false),
    _numReservedIPICTrampolines(0),
@@ -320,20 +318,6 @@ OMR::Compilation::Compilation(
    _tlsManager(*self())
    {
    _aotClassInfo = new (m->trHeapMemory()) TR::list<TR::AOTClassInfo*>(getTypedAllocator<TR::AOTClassInfo*>(self()->allocator()));
-
-   if (TR::isJ9())
-      {
-      _ObjectClassPointer   = fe->getClassFromSignature("Ljava/lang/Object;", 18, _method);
-      _RunnableClassPointer = fe->getClassFromSignature("Ljava/lang/Runnable;", 20, _method);
-      _StringClassPointer   = fe->getClassFromSignature("Ljava/lang/String;", 18, _method);
-      _SystemClassPointer   = fe->getClassFromSignature("Ljava/lang/System;", 18, _method);
-      _ReferenceClassPointer = fe->getClassFromSignature("Ljava/lang/ref/Reference;", 25, _method);
-      _JITHelpersClassPointer = fe->getClassFromSignature("Lcom/ibm/jit/JITHelpers;", 24, _method);
-      }
-   else
-      {
-      _ObjectClassPointer = _RunnableClassPointer = _StringClassPointer = _SystemClassPointer = _ReferenceClassPointer = _JITHelpersClassPointer = NULL;
-      }
 
    //Avoid expensive initialization and uneeded option checking if we are doing AOT Loads
    if (_optimizationPlan && _optimizationPlan->getIsAotLoad())
@@ -727,12 +711,6 @@ bool
 OMR::Compilation::isProfilingCompilation()
    {
    return _recompilationInfo ? _recompilationInfo->isProfilingCompilation() : false;
-   }
-
-TR_OpaqueClassBlock *
-OMR::Compilation::getClassClassPointer()
-   {
-   return _ObjectClassPointer ? self()->fe()->getClassClassPointer(_ObjectClassPointer) : 0;
    }
 
 #if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WIN32)
@@ -1308,40 +1286,6 @@ void OMR::Compilation::resetInlineDepth()
 
    _inlinedFramesAdded = 0;
    }
-
-void OMR::Compilation::addMonitorAuto(TR::RegisterMappedSymbol * a, int32_t callerIndex)
-   {
-   List<TR::RegisterMappedSymbol> * autos = _monitorAutos[callerIndex + 1];
-   if (!autos)
-      _monitorAutos[callerIndex + 1] = autos = new (self()->trHeapMemory()) List<TR::RegisterMappedSymbol>(self()->trMemory());
-
-   autos->add(a);
-   }
-
-
-void OMR::Compilation::addAsMonitorAuto(TR::SymbolReference* symRef, bool dontAddIfDLT)
-   {
-   symRef->getSymbol()->setHoldsMonitoredObject();
-   int32_t siteIndex = self()->getCurrentInlinedSiteIndex();
-   if (!self()->isPeekingMethod())
-      {
-      self()->addMonitorAuto(symRef->getSymbol()->castToRegisterMappedSymbol(), siteIndex);
-      if (!dontAddIfDLT)
-         {
-         if (siteIndex == -1)
-            self()->getMonitorAutoSymRefsInCompiledMethod()->push_front(symRef);
-         }
-      else
-         {
-         // only add the symref into the list for initialization when not in DLT and not peeking.
-         // in DLT, we already use the corresp. slot to store the locked object from the interpreter
-         // so initializing the symRef later in the block can overwrite the first store.
-         if (!self()->isDLT() && siteIndex == -1)
-            self()->getMonitorAutoSymRefsInCompiledMethod()->push_front(symRef);
-         }
-      }
-   }
-
 
 int32_t OMR::Compilation::convertNonDeterministicInput(int32_t i, int32_t max, TR_RandomGenerator *randomGenerator, int32_t min, bool emitVerbose)
    {

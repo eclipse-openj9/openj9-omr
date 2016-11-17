@@ -684,26 +684,6 @@ public:
    void setNodeOpCodeLength( int32_t opCodeLen ) { _nodeOpCodeLength = opCodeLen; }
    void incrNodeOpCodeLength( int32_t incr ) { _nodeOpCodeLength += incr; }
 
-
-   // ==========================================================================
-   // J9
-   //
-
-   // cache some VM pointers
-   TR_OpaqueClassBlock *getObjectClassPointer() { return _ObjectClassPointer; }
-   TR_OpaqueClassBlock *getRunnableClassPointer() { return _RunnableClassPointer; }
-   TR_OpaqueClassBlock *getStringClassPointer() { return _StringClassPointer; }
-   TR_OpaqueClassBlock *getSystemClassPointer() { return _SystemClassPointer; }
-   TR_OpaqueClassBlock *getReferenceClassPointer() { return _ReferenceClassPointer; }
-   TR_OpaqueClassBlock *getJITHelpersClassPointer() { return _JITHelpersClassPointer; }
-   TR_OpaqueClassBlock *getClassClassPointer();
-
-   TR_Array<List<TR::RegisterMappedSymbol> * > & getMonitorAutos() { return _monitorAutos; }
-
-   void addMonitorAuto(TR::RegisterMappedSymbol *, int32_t callerIndex);
-   void addAsMonitorAuto(TR::SymbolReference* symRef, bool dontAddIfDLT);
-   TR::list<TR::SymbolReference*> * getMonitorAutoSymRefsInCompiledMethod() { return &_monitorAutoSymRefsInCompiledMethod; }
-
    // ==========================================================================
    // CHTable
    //
@@ -1050,12 +1030,6 @@ private:
    TR_RegisterCandidates             *_globalRegisterCandidates;
    TR::SymbolReferenceTable          *_currentSymRefTab;
    TR::Recompilation                  *_recompilationInfo;
-   TR_OpaqueClassBlock               *_ObjectClassPointer;
-   TR_OpaqueClassBlock               *_RunnableClassPointer;
-   TR_OpaqueClassBlock               *_StringClassPointer;
-   TR_OpaqueClassBlock               *_SystemClassPointer;
-   TR_OpaqueClassBlock               *_ReferenceClassPointer;
-   TR_OpaqueClassBlock               *_JITHelpersClassPointer;
    TR_OptimizationPlan               *_optimizationPlan;
 
    TR_RandomGenerator*                 _primaryRandom; // Used to spawn other RandomGenerators to keep nondeterminism contained
@@ -1064,8 +1038,6 @@ private:
    TR_Array<TR::ResolvedMethodSymbol*> _methodSymbols;
    TR_Array<TR::SymbolReference*>      _resolvedMethodSymbolReferences;
    TR_Array<TR_InlinedCallSiteInfo>   _inlinedCallSites;
-   TR_Array<List<TR::RegisterMappedSymbol> *> _monitorAutos;
-   TR::list<TR::SymbolReference*>           _monitorAutoSymRefsInCompiledMethod;
    TR_Stack<int32_t>                  _inlinedCallStack;
    TR_Stack<TR_PrexArgInfo *>         _inlinedCallArgInfoStack;
    TR::list<TR_DevirtualizedCallInfo*>     _devirtualizedCalls;

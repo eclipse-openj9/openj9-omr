@@ -149,9 +149,9 @@ class StructArrayTypeDictionary : public TR::TypeDictionary
       TR::TypeDictionary()
       {
       DefineStruct("Struct");
-      DefineField("Struct", "type", Int8, offsetof(Struct, type));
-      DefineField("Struct", "value", Int32, offsetof(Struct, value));
-      CloseStruct("Struct", sizeof(Struct));
+      DefineField("Struct", "type", Int8);
+      DefineField("Struct", "value", Int32);
+      CloseStruct("Struct");
       }
    };
 

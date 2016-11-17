@@ -165,12 +165,12 @@ class LinkedListTypeDictionary : public TR::TypeDictionary
    LinkedListTypeDictionary() :
       TR::TypeDictionary()
       {
-      TR::IlType *ElementType = DefineStruct("Element");
+      TR::IlType *ElementType = DEFINE_STRUCT(Element);
       TR::IlType *pElementType = PointerTo("Element");
-      DefineField("Element", "next", pElementType);
-      DefineField("Element", "key", Int16);
-      DefineField("Element", "val", Int32);
-      CloseStruct("Element");
+      DEFINE_FIELD(Element, next, pElementType);
+      DEFINE_FIELD(Element, key, Int16);
+      DEFINE_FIELD(Element, val, Int32);
+      CLOSE_STRUCT(Element);
       }
    };
 

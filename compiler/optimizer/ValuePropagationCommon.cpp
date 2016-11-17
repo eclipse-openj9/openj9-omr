@@ -3442,6 +3442,7 @@ const char* transformedTargetName (TR::RecognizedMethod rm)
       }
    }
 
+#ifdef J9_PROJECT_SPECIFIC
 void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::ValuePropagation::ObjCloneInfo *cloneInfo)
    {
    TR_OpaqueClassBlock *j9class = cloneInfo->_clazz;
@@ -3454,10 +3455,8 @@ void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::V
 
    TR::SymbolReference * symRef = callNode->getSymbolReference();
    TR::ResolvedMethodSymbol *method = symRef->getSymbol()->getResolvedMethodSymbol();
-#ifdef J9_PROJECT_SPECIFIC
    if (method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
       objNode = callNode->getLastChild();
-#endif
 
    if (!performTransformation(comp(), "%sInlining object clone call [%p] as new object and JITHelpers object copy\n", OPT_DETAILS, callNode))
       return;
@@ -3467,10 +3466,9 @@ void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::V
    char *className = TR::Compiler->cls.classNameChars(comp(), j9class, classNameLength);
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.type/(%s)/(%s)/%s", className, comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness())), callTree);
 
-#ifdef J9_PROJECT_SPECIFIC
-    if (method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
-       callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode->getFirstChild(), TR::treetop, 1, callNode->getFirstChild())));
-#endif
+    // Preserve children for callNode
+    anchorAllChildren(callNode, callTree);
+    prepareToReplaceNode(callNode); // This will remove the usedef info, valueNumber info and all children of the node
 
     if (callTree->getNode()->getOpCode().isCheck())
       {
@@ -3478,10 +3476,6 @@ void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::V
       TR::Node *passthrough = TR::Node::create(callNode, TR::PassThrough, 1, objNode);
       callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, callTree->getNode()->getOpCodeValue(), 1, passthrough, callTree->getNode()->getSymbolReference())));
       TR::Node::recreate(callTree->getNode(), TR::treetop);
-      }
-   else
-      {
-      callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(objNode, TR::treetop, 1, objNode)));
       }
 
    if (!cloneInfo->_isFixed)
@@ -3541,7 +3535,6 @@ void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::V
    objCopy->setAndIncChild(2, callNode);
    objCopy->setAndIncChild(3, TR::Node::create(callNode, (TR::Compiler->target.is64Bit() ? TR::a2l : TR::a2i), 1, loadaddr));
 
-   objNode->recursivelyDecReferenceCount();
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, callNode)));
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, objCopy)));
 
@@ -3560,10 +3553,8 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
    TR::SymbolReference * symRef = callNode->getSymbolReference();
    TR::ResolvedMethodSymbol *method = symRef->getSymbol()->getResolvedMethodSymbol();
 
-#ifdef J9_PROJECT_SPECIFIC
    if (method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
       objNode = callNode->getLastChild();
-#endif
 
    if (!performTransformation(comp(), "%sInlining array clone call [%p] as new array and arraycopy\n", OPT_DETAILS, callNode))
       return;
@@ -3575,19 +3566,19 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
    char *className = TR::Compiler->cls.classNameChars(comp(), j9arrayClass, classNameLength);
    TR::DebugCounter::prependDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "inlineClone.type/(%s)/(%s)/%s", className, comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness())), callTree);
    TR::Node *lenNode = TR::Node::create(callNode, TR::arraylength, 1, objNode);
+    // Preserve children for callNode
+    anchorAllChildren(callNode, callTree);
+    prepareToReplaceNode(callNode); // This will remove the usedef info, valueNumber info and all children of the node
 
    if (callTree->getNode()->getOpCode().isCheck())
       {
       TR_ASSERT(callTree->getNode()->getOpCodeValue() == TR::NULLCHK, "it only makes sense to do this array clone transform for checks with a NULLCHK - how did we get here otherwise??");
-      TR::Node *passthrough = TR::Node::create(callNode, TR::PassThrough, 1, callNode->getChild(0));
+      TR::Node *passthrough = TR::Node::create(callNode, TR::PassThrough, 1, objNode);
       callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, callTree->getNode()->getOpCodeValue(), 1, passthrough, callTree->getNode()->getSymbolReference())));
       TR::Node::recreate(callTree->getNode(), TR::treetop);
       }
-   else
-      {
-      callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(objNode, TR::treetop, 1, objNode)));
-      }
-  callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, lenNode)));
+
+   callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, lenNode)));
 
    if (TR::Compiler->cls.isPrimitiveClass(comp(), j9class))
       {
@@ -3605,14 +3596,12 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
          callNode->setCanSkipZeroInitialization(true);
          }
       }
-#ifdef J9_PROJECT_SPECIFIC
    else
       {
       TR::Node *loadaddr = TR::Node::createWithSymRef(callNode, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(callNode->getSymbolReference()->getOwningMethodSymbol(comp()), 0, j9class));
       TR::SymbolReference *symRef = comp()->getSymRefTab()->findOrCreateANewArraySymbolRef(objNode->getSymbolReference()->getOwningMethodSymbol(comp()));
       TR::Node::recreateWithoutProperties(callNode, TR::anewarray, 2, lenNode, loadaddr, symRef);
       }
-#endif
    TR::Node *newArray = callNode;
    newArray->setIsNonNull(true);
 
@@ -3621,7 +3610,6 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
       TR::Node::create(callNode, TR::lmul, 2, TR::Node::create(callNode, TR::i2l, 1, lenNode), TR::Node::lconst(lenNode, elementSize)) :
       TR::Node::create(callNode, TR::imul, 2, lenNode, TR::Node::iconst(lenNode, elementSize));
 
-   objNode->recursivelyDecReferenceCount();
 
    TR::Node *srcStart = TR::Compiler->target.is64Bit() ?
       TR::Node::create(callNode, TR::aladd, 2, objNode, TR::Node::lconst(objNode, TR::Compiler->om.contiguousArrayHeaderSizeInBytes())) :
@@ -3632,10 +3620,8 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
    TR::Node *arraycopy = NULL;
    if (TR::Compiler->cls.isPrimitiveClass(comp(), j9class))
       arraycopy = TR::Node::createArraycopy(srcStart, destStart, lengthInBytes);
-#ifdef J9_PROJECT_SPECIFIC
    else
       arraycopy = TR::Node::createArraycopy(objNode, newArray, srcStart, destStart, lengthInBytes);
-#endif
 
    arraycopy->setByteCodeInfo(callNode->getByteCodeInfo());
    arraycopy->getByteCodeInfo().setDoNotProfile(1);
@@ -3670,7 +3656,6 @@ void TR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Opa
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, arraycopy)));
    }
 
-#ifdef J9_PROJECT_SPECIFIC
 void TR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    {
 

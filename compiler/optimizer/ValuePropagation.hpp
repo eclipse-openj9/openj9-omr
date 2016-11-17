@@ -689,9 +689,6 @@ class ValuePropagation : public TR::Optimization
    void transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
-#ifdef J9_PROJECT_SPECIFIC
-   void transformConverterCall(TR::TreeTop *);
-#endif
 
    struct ObjCloneInfo {
       TR_ALLOC(TR_Memory::ValuePropagation)
@@ -702,8 +699,12 @@ class ValuePropagation : public TR::Optimization
          : _clazz(clazz), _isFixed(isFixed)  { }
    };
 
+#ifdef J9_PROJECT_SPECIFIC
+   void transformConverterCall(TR::TreeTop *);
    void transformObjectCloneCall(TR::TreeTop *, ObjCloneInfo *cloneInfo);
    void transformArrayCloneCall(TR::TreeTop *, TR_OpaqueClassBlock *j9class);
+#endif
+
 
 
    TR::TreeTop *createPrimitiveArrayNodeWithoutFlags(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference * lenRef, bool useFlagsOnOriginalArraycopy, bool isOptimizedReferenceArraycopy);

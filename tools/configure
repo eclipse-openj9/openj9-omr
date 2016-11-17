@@ -631,31 +631,18 @@ GREP
 CPP
 ac_ct_CXX
 CXXFLAGS
+CXX
 OBJEXT
 EXEEXT
 ac_ct_CC
 CPPFLAGS
 LDFLAGS
 CFLAGS
-libprefix
-objext
-arlibext
-solibext
-exeext
-CXXLINKEXE
-CXXLINKSHARED
-CXXLINK
-CCLINKEXE
-CCLINKSHARED
-CCLINK
-CXX
 CC
 build_os
 build_vendor
 build_cpu
 build
-CXX_BUILD
-BUILD_CC
 target_alias
 host_alias
 build_alias
@@ -701,8 +688,6 @@ enable_option_checking
       ac_precious_vars='build_alias
 host_alias
 target_alias
-BUILD_CC
-CXX_BUILD
 CC
 CFLAGS
 LDFLAGS
@@ -1321,8 +1306,6 @@ if test -n "$ac_init_help"; then
   cat <<\_ACEOF
 
 Some influential environment variables:
-  BUILD_CC    The C compiler targeting the build platform
-  CXX_BUILD   The C++ compiler targeting the build platform
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2167,34 +2150,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-##
-## Tools are never cross compiled. Make the host platform the current build platform.
-##
-
-if test "$host" != "$build"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: tools will not be cross compiled" >&5
-$as_echo "$as_me: tools will not be cross compiled" >&6;}
-   CC=""
-   CXX=""
-fi
-
-
-
-if test "x" != "x$BUILD_CC"; then :
-  CC="$BUILD_CC"
-fi
-
-
-
-if test "x" != "x$BUILD_CXX"; then :
-  CXX="$BUILD_CC"
-fi
-
-host="$build"
-host_alias="$build_alias"
-cross_compiling="no"
-ac_tool_prefix=
-
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   if test -f "$ac_dir/install-sh"; then
@@ -2330,20 +2285,6 @@ esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OMR_BUILD_ARCH" >&5
 $as_echo "$OMR_BUILD_ARCH" >&6; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3391,46 +3332,6 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-
-CCLINK=${CCLINK:-"\$(CC)"}
-CCLINKSHARED=${CCLINKSHARED:-"\$(CCLINK)"}
-CCLINKEXE=${CCLINKEXE:-"\$(CCLINK)"}
-
-CXXLINK=${CXXLINK:-"\$(CXX)"}
-CXXLINKSHARED=${CXXLINKSHARED:-"\$(CXXLINK)"}
-CXXLINKEXE=${CXXLINKEXE:-"\$(CXXLINK)"}
-
-: ${AR=ar}
-: ${AS=as}
-: ${OBJCOPY=objcopy}
-
-case $OMR_HOST_OS in #(
-  win) :
-
-		: ${objext=.$OBJEXT}
-		: ${exeext=.$EXEEXT}
-		: ${arlibext=.lib}
-		: ${solibext=.dll}
-		: ${libprefix=''}
-	 ;; #(
-  osx) :
-
-		: ${objext=.$OBJEXT}
-		: ${exeext=''}
-		: ${arlibext=.a}
-		: ${solibext=.dylib}
-		: ${libprefix=lib}
-	 ;; #(
-  *) :
-
-		: ${objext=.$OBJEXT}
-		: ${exeext=''}
-		: ${arlibext=.a}
-		: ${solibext=.so}
-		: ${libprefix=lib}
-
- ;;
-esac
 
 
 ac_ext=c

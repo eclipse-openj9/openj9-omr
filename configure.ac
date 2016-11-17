@@ -596,6 +596,17 @@ AC_CONFIG_FILES([
 
 AC_CONFIG_HEADERS([include_core/omrcfg.h:include_core/omrcfg.h.in])
 
-AC_CONFIG_SUBDIRS([tools])
+###
+### Configure the build tools
+###
+# The build tools are executed on the build machine, not the host machine.
+# If cross-compiling, unset CC and CXX so that configure detects the compiler
+# on the build machine.
+# toolconfig/configure must be run from the subdirectory so that it doesn't
+# overwrite output from this configure script.
+AC_CONFIG_COMMANDS([toolconfigure],
+	[(cd tools && sh ./configure $OMR_HOSTCONFIG_ENV)],
+	[AS_IF([test "$cross_compiling" = "yes"],
+		[OMR_HOSTCONFIG_ENV="CC= CXX="])])
 
 AC_OUTPUT

@@ -112,7 +112,7 @@ void OMR::X86::TreeEvaluator::coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGe
 
       if (reg && reg->getKind() == TR_X87 /* && child->getReferenceCount() > 1 */)
          {
-         coerceFPRToXMMR(child, reg, cg);
+         TR::TreeEvaluator::coerceFPRToXMMR(child, reg, cg);
          }
       }
    }
@@ -324,7 +324,7 @@ TR::Register *OMR::X86::TreeEvaluator::performFload(TR::Node *node, TR::MemoryRe
 TR::Register *OMR::X86::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *tempMR = generateX86MemoryReference(node, cg);
-   TR::Register *targetRegister = performFload(node, tempMR, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::performFload(node, tempMR, cg);
    tempMR->decNodeReferenceCounts(cg);
    return targetRegister;
    }
@@ -367,14 +367,14 @@ TR::Register *OMR::X86::TreeEvaluator::performDload(TR::Node *node, TR::MemoryRe
 TR::Register *OMR::X86::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *tempMR = generateX86MemoryReference(node, cg);
-   TR::Register *targetRegister = performDload(node, tempMR, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::performDload(node, tempMR, cg);
    tempMR->decNodeReferenceCounts(cg);
    return targetRegister;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool     nodeIs64Bit    = getNodeIs64Bit(node, cg);
+   bool     nodeIs64Bit    = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
    bool     nodeIsIndirect = node->getOpCode().isIndirect()? 1 : 0;
    TR::Node *valueChild     = node->getChild(nodeIsIndirect);
 
@@ -397,7 +397,7 @@ TR::Register *OMR::X86::TreeEvaluator::floatingPointStoreEvaluator(TR::Node *nod
 
       // Generate an integer store
       //
-      integerStoreEvaluator(node, cg);
+      TR::TreeEvaluator::integerStoreEvaluator(node, cg);
       return NULL;
       }
 
@@ -512,11 +512,11 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
        returnRegister->getKind() == TR_FPR)
       {
       // TODO: Modify linkage to allow the returned value to remain in an XMMR.
-      returnRegister = coerceXMMRToFPR(node->getFirstChild(), returnRegister, cg);
+      returnRegister = TR::TreeEvaluator::coerceXMMRToFPR(node->getFirstChild(), returnRegister, cg);
       }
    else if (returnRegister->mayNeedPrecisionAdjustment())
       {
-      insertPrecisionAdjustment(returnRegister, node, cg);
+      TR::TreeEvaluator::insertPrecisionAdjustment(returnRegister, node, cg);
       }
 
    // Restore the default FPCW if it has been forced to single precision mode.
@@ -601,42 +601,42 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
 
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::daddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::dsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::dmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, true, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::ddivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return fpBinaryArithmeticEvaluator(node, false, cg);
+   return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -655,17 +655,17 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
          {
          // TODO: We should do this for IA32 eventually
          TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_AMD64doubleRemainder : TR_AMD64floatRemainder, false, false, false);
-         targetRegister = performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
+         targetRegister = TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
          }
       else
          {
          TR::SymbolReference *helperSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(nodeIsDouble ? TR_IA32doubleRemainderSSE : TR_IA32floatRemainderSSE, false, false, false);
-         targetRegister = performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
+         targetRegister = TR::TreeEvaluator::performHelperCall(node, helperSymRef, nodeIsDouble ? TR::dcall : TR::fcall, false, cg);
          }
       }
    else
       {
-      targetRegister = commonFPRemEvaluator(node, cg, nodeIsDouble);
+      targetRegister = TR::TreeEvaluator::commonFPRemEvaluator(node, cg, nodeIsDouble);
       }
 
 
@@ -706,13 +706,13 @@ TR::Register *OMR::X86::TreeEvaluator::commonFPRemEvaluator(TR::Node          *n
    TR_ASSERT(divisorReg->getKind() == TR_X87, "X87 Instructions only.");
 
    if (divisorReg->needsPrecisionAdjustment())
-      insertPrecisionAdjustment(divisorReg, divisor, cg);
+      TR::TreeEvaluator::insertPrecisionAdjustment(divisorReg, divisor, cg);
 
    TR::Register *dividendReg = cg->evaluate( dividend);
    TR_ASSERT(dividendReg->getKind() == TR_X87, "X87 Instructions only.");
 
    if (dividendReg->needsPrecisionAdjustment())
-      insertPrecisionAdjustment(dividendReg, dividend, cg);
+      TR::TreeEvaluator::insertPrecisionAdjustment(dividendReg, dividend, cg);
 
    if (isDouble)
       dividendReg = cg->doubleClobberEvaluate(dividend);
@@ -960,7 +960,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
       floatReg  = cg->evaluate(child);
       if (floatReg  && floatReg->needsPrecisionAdjustment())
          {
-         insertPrecisionAdjustment(floatReg, node, cg);
+         TR::TreeEvaluator::insertPrecisionAdjustment(floatReg, node, cg);
          }
       }
 
@@ -1174,7 +1174,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       TR::Register *highReg   = cg->allocateRegister(TR_GPR);
       TR::Register *doubleReg = cg->evaluate(child);
       if (doubleReg->getKind() == TR_FPR)
-         doubleReg = coerceXMMRToFPR(child, doubleReg, cg);
+         doubleReg = TR::TreeEvaluator::coerceXMMRToFPR(child, doubleReg, cg);
 
       TR::RegisterDependencyConditions  *deps;
 
@@ -1196,7 +1196,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       if (doubleReg && doubleReg->needsPrecisionAdjustment())
          {
-         insertPrecisionAdjustment(doubleReg, node, cg);
+         TR::TreeEvaluator::insertPrecisionAdjustment(doubleReg, node, cg);
          }
 
       generateLabelInstruction(LABEL, node, startLabel, cg);
@@ -1414,7 +1414,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
          cvttOpCode   = CVTTSS2SIReg4Reg;
          }
 
-      coerceFPOperandsToXMMRs(node, cg);
+      TR::TreeEvaluator::coerceFPOperandsToXMMRs(node, cg);
 
       TR::Node        *child          = node->getFirstChild();
       TR::Register    *sourceRegister = NULL;
@@ -1501,7 +1501,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
    else
       {
       TR_ASSERT(TR::Compiler->target.is32Bit(), "assertion failure");
-      return fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToInt, false, false, false), cg);
+      return TR::TreeEvaluator::fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToInt, false, false, false), cg);
       }
    }
 
@@ -1509,7 +1509,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
 TR::Register *OMR::X86::TreeEvaluator::f2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 uses f2iEvaluator for this");
-   return fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToLong, false, false, false), cg);
+   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32floatToLong, false, false, false), cg);
    }
 
 
@@ -1541,7 +1541,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGene
          targetRegister->setIsSinglePrecision(false);
          if (targetRegister->needsPrecisionAdjustment())
             {
-            insertPrecisionAdjustment(targetRegister, node, cg);
+            TR::TreeEvaluator::insertPrecisionAdjustment(targetRegister, node, cg);
             }
          }
       }
@@ -1581,7 +1581,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGene
 
    if (cg->useSSEForDoublePrecision())
       {
-      coerceFPOperandsToXMMRs(node, cg);
+      TR::TreeEvaluator::coerceFPOperandsToXMMRs(node, cg);
 
       TR::Node        *child          = node->getFirstChild();
       TR::Register    *sourceRegister = cg->evaluate(child);
@@ -1624,7 +1624,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGene
       }
    else
       {
-      return fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToInt, false, false, false), cg);
+      return TR::TreeEvaluator::fpConvertToInt(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToInt, false, false, false), cg);
       }
    }
 
@@ -1633,7 +1633,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGene
    {
    TR_ASSERT(TR::Compiler->target.is32Bit(), "AMD64 uses f2iEvaluator for this");
 
-   return fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToLong, false, false, false), cg);
+   return TR::TreeEvaluator::fpConvertToLong(node, cg->symRefTab()->findOrCreateRuntimeHelper(TR_IA32doubleToLong, false, false, false), cg);
    }
 
 
@@ -1644,7 +1644,7 @@ TR::Register *OMR::X86::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGene
 
    if (cg->useSSEForDoublePrecision())
       {
-      coerceFPOperandsToXMMRs(node, cg);
+      TR::TreeEvaluator::coerceFPOperandsToXMMRs(node, cg);
       targetRegister = cg->doubleClobberEvaluate(child);
       targetRegister->setIsSinglePrecision(true);
       generateRegRegInstruction(CVTSD2SSRegReg, node, targetRegister, targetRegister, cg);
@@ -1732,7 +1732,7 @@ TR::Register *OMR::X86::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Code
             }
 
          if (child->getReferenceCount() > 1)
-            performIload(child, generateX86MemoryReference(*tempMR, 0, cg), cg);
+            TR::TreeEvaluator::performIload(child, generateX86MemoryReference(*tempMR, 0, cg), cg);
          }
       tempMR->decNodeReferenceCounts(cg);
       }
@@ -1960,7 +1960,7 @@ TR::Register *OMR::X86::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::Co
    if (cg->useSSEForSinglePrecision())
       {
       if (globalReg->getKind() != TR_FPR)
-         globalReg = coerceFPRToXMMR(child, globalReg, cg);
+         globalReg = TR::TreeEvaluator::coerceFPRToXMMR(child, globalReg, cg);
 
       machine->setXMMGlobalRegister(globalRegNum - machine->getNumGlobalGPRs(), globalReg);
       cg->decReferenceCount(child);
@@ -2019,7 +2019,7 @@ TR::Register *OMR::X86::TreeEvaluator::dRegStoreEvaluator(TR::Node *node, TR::Co
    if (cg->useSSEForDoublePrecision())
       {
       if (globalReg->getKind() != TR_FPR)
-         globalReg = coerceFPRToXMMR(child, globalReg, cg);
+         globalReg = TR::TreeEvaluator::coerceFPRToXMMR(child, globalReg, cg);
 
       machine->setXMMGlobalRegister(globalRegNum - machine->getNumGlobalGPRs(), globalReg);
       cg->decReferenceCount(child);
@@ -2317,60 +2317,60 @@ bool OMR::X86::TreeEvaluator::canUseFCOMIInstructions(TR::Node *node, TR::CodeGe
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            FCOMRegReg, FCOMRegMem, FCOMIRegReg,
                                                            UCOMISSRegReg, UCOMISSRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            DCOMRegReg, DCOMRegMem, DCOMIRegReg,
                                                            UCOMISDRegReg, UCOMISDRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, true, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            FCOMRegReg, FCOMRegMem, FCOMIRegReg,
                                                            UCOMISSRegReg, UCOMISSRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            DCOMRegReg, DCOMRegMem, DCOMIRegReg,
                                                            UCOMISDRegReg, UCOMISDRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
+   return TR::TreeEvaluator::generateBranchOrSetOnFPCompare(node, accRegister, false, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareFloatEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            FCOMRegReg, FCOMRegMem, FCOMIRegReg,
                                                            UCOMISSRegReg, UCOMISSRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateFPCompareResult(node, accRegister, cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, accRegister, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::compareDoubleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   bool useFCOMIInstructions = canUseFCOMIInstructions(node, cg);
-   TR::Register *accRegister = compareFloatOrDoubleForOrder(node,
+   bool useFCOMIInstructions = TR::TreeEvaluator::canUseFCOMIInstructions(node, cg);
+   TR::Register *accRegister = TR::TreeEvaluator::compareFloatOrDoubleForOrder(node,
                                                            DCOMRegReg, DCOMRegMem, DCOMIRegReg,
                                                            UCOMISDRegReg, UCOMISDRegMem,
                                                            useFCOMIInstructions, cg);
-   return generateFPCompareResult(node, accRegister, cg);
+   return TR::TreeEvaluator::generateFPCompareResult(node, accRegister, cg);
    }

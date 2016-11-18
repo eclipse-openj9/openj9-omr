@@ -837,7 +837,7 @@ OMR::Z::TreeEvaluator::floadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    //traceMsg(comp,"In fload evaluator for Node %p. isRegisterSymbol = %d\n",node,node->getSymbolReference()->getSymbol()->isRegisterSymbol());
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return fRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::fRegLoadEvaluator(node, cg);
    else
      return floadHelper(node, cg, NULL);
    }
@@ -846,7 +846,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::dloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return dRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::dRegLoadEvaluator(node, cg);
    else
      return dloadHelper(node, cg, NULL);
    }
@@ -855,7 +855,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::fstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     fRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::fRegStoreEvaluator(node, cg);
    else
      fstoreHelper(node, cg);
    return NULL;
@@ -865,7 +865,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::dstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     dRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::dRegStoreEvaluator(node, cg);
    else
      dstoreHelper(node, cg);
    return NULL;
@@ -1116,13 +1116,13 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 OMR::Z::TreeEvaluator::dremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floatRemHelper(node, cg);
+   return TR::TreeEvaluator::floatRemHelper(node, cg);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::fremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floatRemHelper(node, cg);
+   return TR::TreeEvaluator::floatRemHelper(node, cg);
    }
 
 TR::Register *
@@ -2352,25 +2352,25 @@ OMR::Z::TreeEvaluator::dRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
 TR::Register *
 OMR::Z::TreeEvaluator::dceilEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floorCeilEvaluator(node, cg, TR::InstOpCode::FIDBR, (int8_t)0x6);
+   return TR::TreeEvaluator::floorCeilEvaluator(node, cg, TR::InstOpCode::FIDBR, (int8_t)0x6);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::dfloorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floorCeilEvaluator(node, cg, TR::InstOpCode::FIDBR, (int8_t)0x7);
+   return TR::TreeEvaluator::floorCeilEvaluator(node, cg, TR::InstOpCode::FIDBR, (int8_t)0x7);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::fceilEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floorCeilEvaluator(node, cg, TR::InstOpCode::FIEBR, (int8_t)0x6);
+   return TR::TreeEvaluator::floorCeilEvaluator(node, cg, TR::InstOpCode::FIEBR, (int8_t)0x6);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::ffloorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   return floorCeilEvaluator(node, cg, TR::InstOpCode::FIEBR, (int8_t)0x7);
+   return TR::TreeEvaluator::floorCeilEvaluator(node, cg, TR::InstOpCode::FIEBR, (int8_t)0x7);
    }
 
 TR::Register *

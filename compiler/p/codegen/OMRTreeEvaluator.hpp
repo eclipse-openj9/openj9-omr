@@ -50,7 +50,7 @@ namespace OMR
 namespace Power
 {
 
-class TreeEvaluator: public OMR::TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    {
 
    public:

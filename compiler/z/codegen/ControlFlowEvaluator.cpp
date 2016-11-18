@@ -1240,7 +1240,7 @@ bool OMR::Z::TreeEvaluator::isCandidateForButestEvaluation(TR::Node * node)
 bool OMR::Z::TreeEvaluator::isCandidateForCompareEvaluation(TR::Node * node)
    {
    return node->getOpCode().isIf() &&
-          isSingleRefUnevalAndCompareOrBu2iOverCompare(node->getFirstChild()) &&
+          TR::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(node->getFirstChild()) &&
           node->getSecondChild()->getOpCode().isLoadConst() &&
           node->getSecondChild()->getType().isInt32();
    }
@@ -1251,7 +1251,7 @@ bool OMR::Z::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(TR::Nod
       return false;
 
    if (node->getOpCodeValue() == TR::bu2i)
-      return isSingleRefUnevalAndCompareOrBu2iOverCompare(node->getFirstChild());
+      return TR::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(node->getFirstChild());
 
    return false;
    }
@@ -1329,16 +1329,16 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
       return NULL;
       }
 
-   if (isCandidateForButestEvaluation(node))
+   if (TR::TreeEvaluator::isCandidateForButestEvaluation(node))
       {
       TR::Node * cmpNode = node;
       TR::Node * butestNode = node->getFirstChild();
       TR::Node * valueNode = node->getSecondChild();
 
-      return inlineIfButestEvaluator(butestNode, cg, cmpNode, valueNode);
+      return TR::TreeEvaluator::inlineIfButestEvaluator(butestNode, cg, cmpNode, valueNode);
       }
 
-   if (isCandidateForCompareEvaluation(node))
+   if (TR::TreeEvaluator::isCandidateForCompareEvaluation(node))
       {
       TR::Node *ifNode = node;
       TR::Node *cmpNode = node->getFirstChild();
@@ -1346,7 +1346,7 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
          cmpNode = cmpNode->getFirstChild();
       TR::Node *valueNode = node->getSecondChild();
 
-      return inlineIfBifEvaluator(ifNode, cg, cmpNode, valueNode);
+      return TR::TreeEvaluator::inlineIfBifEvaluator(ifNode, cg, cmpNode, valueNode);
       }
 
    TR::Node * firstChild = node-> getFirstChild(), * secondChild = node->getSecondChild();
@@ -1371,14 +1371,14 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
    bool inlined = false;
    TR::Register *reg;
 
-   reg = inlineIfArraycmpEvaluator(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined)
       {
       generateMergedHCRGuardCodeIfNeeded(node, cg);
       return reg;
       }
 
-   reg = inlineIfTestDataClassHelper(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfTestDataClassHelper(node, cg, inlined);
    if(inlined)
       {
       generateMergedHCRGuardCodeIfNeeded(node, cg);
@@ -1426,7 +1426,7 @@ TR::Register* OMR::Z::TreeEvaluator::ifFoldingHelper(TR::Node *node, TR::CodeGen
 
 
    bool inlined = false;
-   TR::Register *reg = inlineIfTestDataClassHelper(node, cg, inlined);
+   TR::Register *reg = TR::TreeEvaluator::inlineIfTestDataClassHelper(node, cg, inlined);
    if(inlined)
       return reg;
 
@@ -1447,11 +1447,11 @@ OMR::Z::TreeEvaluator::ificmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Register *reg;
 
 
-   reg = inlineIfArraycmpEvaluator(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined) return reg;
 
    bool handledBIF = false;
-   TR::Register *result = ifFoldingHelper(node, cg, handledBIF);
+   TR::Register *result = TR::TreeEvaluator::ifFoldingHelper(node, cg, handledBIF);
    if (handledBIF)
       return result;
 
@@ -1470,11 +1470,11 @@ OMR::Z::TreeEvaluator::ificmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Register *reg;
 
 
-   reg = inlineIfArraycmpEvaluator(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined) return reg;
 
    bool handledBIF = false;
-   TR::Register *result = ifFoldingHelper(node, cg, handledBIF);
+   TR::Register *result = TR::TreeEvaluator::ifFoldingHelper(node, cg, handledBIF);
    if (handledBIF)
       return result;
 
@@ -1493,11 +1493,11 @@ OMR::Z::TreeEvaluator::ificmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Register *reg;
 
 
-   reg = inlineIfArraycmpEvaluator(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined) return reg;
 
    bool handledBIF = false;
-   TR::Register *result = ifFoldingHelper(node, cg, handledBIF);
+   TR::Register *result = TR::TreeEvaluator::ifFoldingHelper(node, cg, handledBIF);
    if (handledBIF)
       return result;
 
@@ -1515,11 +1515,11 @@ OMR::Z::TreeEvaluator::ificmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
    TR::Register *reg;
 
-   reg = inlineIfArraycmpEvaluator(node, cg, inlined);
+   reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined) return reg;
 
    bool handledBIF = false;
-   TR::Register *result = ifFoldingHelper(node, cg, handledBIF);
+   TR::Register *result = TR::TreeEvaluator::ifFoldingHelper(node, cg, handledBIF);
    if (handledBIF)
       return result;
 
@@ -1652,7 +1652,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifacmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifacmpeq", node, cg);
-   return ificmpeqEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
 /**
@@ -1662,7 +1662,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifacmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifacmpne", node, cg);
-   return ificmpeqEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
    }
 
 /**
@@ -1694,7 +1694,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifbcmplt", node, cg);
-   return ificmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
 /**
@@ -1704,7 +1704,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifbcmpge", node, cg);
-   return ificmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
 /**
@@ -1714,7 +1714,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifbcmpgt", node, cg);
-   return ificmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
 /**
@@ -1724,7 +1724,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifbcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifbcmple", node, cg);
-   return ificmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
 /**
@@ -1752,7 +1752,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifscmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifscmplt", node, cg);
-   return ificmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
 /**
@@ -1762,7 +1762,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifscmpge", node, cg);
-   return ificmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
 /**
@@ -1772,7 +1772,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifscmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifscmpgt", node, cg);
-   return ificmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
 /**
@@ -1782,7 +1782,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifscmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifscmple", node, cg);
-   return ificmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
 /**
@@ -1810,7 +1810,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifsucmplt", node, cg);
-   return ificmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpltEvaluator(node, cg);
    }
 
 /**
@@ -1820,7 +1820,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifsucmpge", node, cg);
-   return ificmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgeEvaluator(node, cg);
    }
 
 /**
@@ -1830,7 +1830,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifsucmpgt", node, cg);
-   return ificmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpgtEvaluator(node, cg);
    }
 
 /**
@@ -1840,7 +1840,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::ifsucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("ifsucmple", node, cg);
-   return ificmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::ificmpleEvaluator(node, cg);
    }
 
 
@@ -2093,7 +2093,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::acmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("acmpeq", node, cg);
-   return icmpeqEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpeqEvaluator(node, cg);
    }
 
 /**
@@ -2125,7 +2125,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bcmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bcmplt", node, cg);
-   return icmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
 /**
@@ -2135,7 +2135,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bcmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bcmpge", node, cg);
-   return icmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
 /**
@@ -2145,7 +2145,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bcmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bcmpgt", node, cg);
-   return icmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
 /**
@@ -2155,7 +2155,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bcmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bcmple", node, cg);
-   return icmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
 /**
@@ -2183,7 +2183,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::scmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("scmplt", node, cg);
-   return icmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
 /**
@@ -2193,7 +2193,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::scmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("scmpge", node, cg);
-   return icmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
 /**
@@ -2203,7 +2203,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::scmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("scmpgt", node, cg);
-   return icmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
 /**
@@ -2213,7 +2213,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::scmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("scmple", node, cg);
-   return icmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
 /**
@@ -2241,7 +2241,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sucmpltEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sucmplt", node, cg);
-   return icmpltEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpltEvaluator(node, cg);
    }
 
 /**
@@ -2251,7 +2251,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sucmpgeEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sucmpge", node, cg);
-   return icmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgeEvaluator(node, cg);
    }
 
 /**
@@ -2261,7 +2261,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sucmpgtEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sucmpgt", node, cg);
-   return icmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpgtEvaluator(node, cg);
    }
 
 /**
@@ -2271,7 +2271,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sucmpleEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sucmple", node, cg);
-   return icmpleEvaluator(node, cg);
+   return TR::TreeEvaluator::icmpleEvaluator(node, cg);
    }
 
 /**
@@ -2296,21 +2296,21 @@ TR::Register *
 OMR::Z::TreeEvaluator::lucmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lucmp", node, cg);
-   return badILOpEvaluator(node, cg);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::icmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("icmp", node, cg);
-   return badILOpEvaluator(node, cg);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::iucmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("iucmp", node, cg);
-   return badILOpEvaluator(node, cg);
+   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
    }
 
 void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::CodeGenerator * cg, tableKind tableKindToBeEvaluated, int32_t numBranchTableEntries, TR::Register * selectorReg, TR::Register * branchTableReg, TR::Register *reg1)
@@ -2479,7 +2479,7 @@ OMR::Z::TreeEvaluator::tableEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          break;
       }
 
-   tableEvaluatorCaseLabelHelper(node,cg, tableKindToBeEvaluated, numBranchTableEntries, selectorReg, branchTableReg, reg1);
+   TR::TreeEvaluator::tableEvaluatorCaseLabelHelper(node,cg, tableKindToBeEvaluated, numBranchTableEntries, selectorReg, branchTableReg, reg1);
 
    TR::Instruction *cursor = generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, selectorReg, deps);
    ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
@@ -3085,7 +3085,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::NULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("NULLCHK", node, cg);
-   return evaluateNULLCHKWithPossibleResolve(node, false, cg);
+   return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, false, cg);
    }
 
 /**
@@ -3156,7 +3156,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("resolveAndNULLCHK", node, cg);
-   return evaluateNULLCHKWithPossibleResolve(node, true, cg);
+   return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, true, cg);
    }
 
 
@@ -3217,11 +3217,11 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
          TR::S390RXInstruction * instr = (TR::S390RXInstruction *)daaInstr;
          TR::MemoryReference * mr = instr->getMemoryReference();
 
-         addToRegDep(daaDeps, instr->getRegisterOperand(1), false);
+         TR::TreeEvaluator::addToRegDep(daaDeps, instr->getRegisterOperand(1), false);
          if (mr)
          {
-               addToRegDep(daaDeps, (TR::Register *)mr->getBaseRegister(), false);
-               addToRegDep(daaDeps, (TR::Register *)mr->getIndexRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr->getBaseRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr->getIndexRegister(), false);
          }
 
          break;
@@ -3231,11 +3231,11 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
          TR::S390RXYInstruction * instr = (TR::S390RXYInstruction *)daaInstr;
          TR::MemoryReference * mr = instr->getMemoryReference();
 
-         addToRegDep(daaDeps, instr->getRegisterOperand(1), true);
+         TR::TreeEvaluator::addToRegDep(daaDeps, instr->getRegisterOperand(1), true);
          if (mr)
             {
-               addToRegDep(daaDeps, (TR::Register *)mr->getBaseRegister(), true);
-               addToRegDep(daaDeps, (TR::Register *)mr->getIndexRegister(), true);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr->getBaseRegister(), true);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr->getIndexRegister(), true);
             }
             break;
          }
@@ -3247,14 +3247,14 @@ void OMR::Z::TreeEvaluator::createDAACondDeps(TR::Node * node, TR::RegisterDepen
 
          if (mr1)
             {
-               addToRegDep(daaDeps, (TR::Register *)mr1->getBaseRegister(), false);
-               addToRegDep(daaDeps, (TR::Register *)mr1->getIndexRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr1->getBaseRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr1->getIndexRegister(), false);
             }
 
          if (mr2)
             {
-               addToRegDep(daaDeps, (TR::Register *)mr2->getBaseRegister(), false);
-               addToRegDep(daaDeps, (TR::Register *)mr2->getIndexRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr2->getBaseRegister(), false);
+               TR::TreeEvaluator::addToRegDep(daaDeps, (TR::Register *)mr2->getIndexRegister(), false);
             }
          break;
          }
@@ -3321,7 +3321,7 @@ OMR::Z::TreeEvaluator::butestEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("butest", node, cg);
 
-   commonButestEvaluator(node, cg);
+   TR::TreeEvaluator::commonButestEvaluator(node, cg);
    TR::Register *ccReg = getConditionCode(node, cg);
 
    node->setRegister(ccReg);
@@ -3360,7 +3360,7 @@ OMR::Z::TreeEvaluator::inlineIfButestEvaluator(TR::Node * node, TR::CodeGenerato
 
    TR::RegisterDependencyConditions *deps = getGLRegDepsDependenciesFromIfNode(cg, cmpOpNode);
 
-   commonButestEvaluator(node, cg);
+   TR::TreeEvaluator::commonButestEvaluator(node, cg);
 
    TR::InstOpCode::S390BranchCondition cond = getButestBranchCondition(cmpOpNode->getOpCodeValue(), cmpValNode->getInt());
    TR::Instruction * instr = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, cond, cmpOpNode, cmpOpNode->getBranchDestination()->getNode()->getLabel(), deps);
@@ -3555,7 +3555,7 @@ int32_t OMR::Z::TreeEvaluator::countReferencesInTree(TR::Node *treeNode, TR::Nod
    int32_t sum=0;
    for(int32_t i = 0 ; i < treeNode->getNumChildren() ; i++)
       {
-      sum += countReferencesInTree(treeNode->getChild(i), node);
+      sum += TR::TreeEvaluator::countReferencesInTree(treeNode->getChild(i), node);
       }
    return sum;
    }
@@ -3575,7 +3575,7 @@ OMR::Z::TreeEvaluator::treeContainsAllOtherUsesForNode(TR::Node *treeNode, TR::N
    if (numberOfInstancesToFind == 0)
       return true;
 
-   int32_t instancesFound = countReferencesInTree(treeNode, node);
+   int32_t instancesFound = TR::TreeEvaluator::countReferencesInTree(treeNode, node);
 
    //traceMsg(cg->comp(), "numberOfInstancesToFind = %d instancesFound = %d\n",numberOfInstancesToFind,instancesFound);
 
@@ -3599,8 +3599,8 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       traceMsg(comp, "Starting evaluation of ternary node %p condition %p (in reg %p) trueVal %p (in reg %p) falseVal %p (in reg %p)\n",node,condition,condition->getRegister(), trueVal, trueVal->getRegister(), falseVal, falseVal->getRegister());
 
   TR::Register *trueReg = 0;
-  if(treeContainsAllOtherUsesForNode(condition,trueVal) &&
-     (!trueVal->isUnneededConversion() || treeContainsAllOtherUsesForNode(condition, trueVal->getFirstChild())))
+  if(TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition,trueVal) &&
+     (!trueVal->isUnneededConversion() || TR::TreeEvaluator::treeContainsAllOtherUsesForNode(condition, trueVal->getFirstChild())))
      {
      if (comp->getOption(TR_TraceCG))
         traceMsg(comp, "Calling evaluate (instead of clobber evaluate for node %p because all other uses are in the compare tree)\n",trueVal);
@@ -3624,7 +3624,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (comp->getOption(TR_TraceCG))
          traceMsg(comp, "First Child %p is a compare\n",condition);
 
-      TR::InstOpCode::Mnemonic compareOp = getCompareOpFromNode(cg, condition);
+      TR::InstOpCode::Mnemonic compareOp = TR::TreeEvaluator::getCompareOpFromNode(cg, condition);
 
       TR::Node *firstChild = condition->getFirstChild();
       TR::Node *secondChild = condition->getSecondChild();
@@ -3635,7 +3635,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       cg->decReferenceCount(firstChild);
       cg->decReferenceCount(secondChild);
 
-      TR::InstOpCode::S390BranchCondition bc = getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
+      TR::InstOpCode::S390BranchCondition bc = TR::TreeEvaluator::getBranchConditionFromCompareOpCode(condition->getOpCodeValue());
 
       if (comp->getOption(TR_TraceCG))
          traceMsg(comp, "Emitting a compare between reg %p and %p instruction\n", firstReg, secondReg);
@@ -3652,7 +3652,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          generateRRFInstruction(cg, is64BitRegister ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BERC)>>4, true);
       }
       else
-         generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(mapBranchConditionToLOCRCondition(bc))>>4, true);
+         generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc))>>4, true);
       }
    else
       {

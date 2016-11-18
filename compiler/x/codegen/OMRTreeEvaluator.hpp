@@ -56,7 +56,7 @@ namespace OMR
 namespace X86
 {
 
-class TreeEvaluator: public OMR::TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    {
 
    public:

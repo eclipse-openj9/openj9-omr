@@ -5231,7 +5231,7 @@ OMR::Z::TreeEvaluator::narrowCastEvaluator(TR::Node * node, TR::CodeGenerator * 
       targetRegister = targetRegister->getLowOrder();
    else
      {
-      targetRegister = passThroughEvaluator(node, cg);
+      targetRegister = TR::TreeEvaluator::passThroughEvaluator(node, cg);
       if(targetRegister->getStartOfRangeNode() == firstChild)
         targetRegister->setStartOfRangeNode(node);
       return targetRegister;
@@ -5335,20 +5335,20 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
    if (otherSize == addrSize)
       {
       //CASE(1);
-      return passThroughEvaluator(node, cg);
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
       }
    else if (dirToAddr && otherSize > addrSize) //i.e. (otherSize)2a
       {
       //CASE(2);
       switch (addrSize)
          {
-      case 56:         return extendCastEvaluator<false, 56, 64>(node, cg);   break;
-      case 48:         return extendCastEvaluator<false, 48, 64>(node, cg);   break;
-      case 40:         return extendCastEvaluator<false, 40, 64>(node, cg);   break;
-      case 32:         return narrowCastEvaluator<false, 32>(node, cg);         break;
-      case 24:         return narrowCastEvaluator<false, 24>(node, cg);         break;
-      case 16:         return narrowCastEvaluator<false, 16>(node, cg);         break;
-      case 8:          return narrowCastEvaluator<false,  8>(node, cg);         break;
+      case 56:         return TR::TreeEvaluator::extendCastEvaluator<false, 56, 64>(node, cg);   break;
+      case 48:         return TR::TreeEvaluator::extendCastEvaluator<false, 48, 64>(node, cg);   break;
+      case 40:         return TR::TreeEvaluator::extendCastEvaluator<false, 40, 64>(node, cg);   break;
+      case 32:         return TR::TreeEvaluator::narrowCastEvaluator<false, 32>(node, cg);         break;
+      case 24:         return TR::TreeEvaluator::narrowCastEvaluator<false, 24>(node, cg);         break;
+      case 16:         return TR::TreeEvaluator::narrowCastEvaluator<false, 16>(node, cg);         break;
+      case 8:          return TR::TreeEvaluator::narrowCastEvaluator<false,  8>(node, cg);         break;
       default:
          TR_ASSERT(0, "Invalid Address Precision (%d)\n", addrSize);
          break;
@@ -5387,14 +5387,14 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
       //CASE(6);
       switch (addrSize)
          {
-      case 56:         return extendCastEvaluator<false, 56, 64>(node, cg);   break;
-      case 48:         return extendCastEvaluator<false, 48, 64>(node, cg);   break;
-      case 40:         return extendCastEvaluator<false, 40, 64>(node, cg);   break;
+      case 56:         return TR::TreeEvaluator::extendCastEvaluator<false, 56, 64>(node, cg);   break;
+      case 48:         return TR::TreeEvaluator::extendCastEvaluator<false, 48, 64>(node, cg);   break;
+      case 40:         return TR::TreeEvaluator::extendCastEvaluator<false, 40, 64>(node, cg);   break;
                        // NOTE 31, on purpose!
-      case 32:         return extendCastEvaluator<false, 31, 64>(node, cg); break;
-      case 24:         return extendCastEvaluator<false, 24, (otherSize>32) ? 64:32>(node, cg);       break;
-      case 16:         return extendCastEvaluator<false, 16, (otherSize>32) ? 64:32>(node, cg);       break;
-      case 8:          return extendCastEvaluator<false,  8, (otherSize>32) ? 64:32>(node, cg);       break;
+      case 32:         return TR::TreeEvaluator::extendCastEvaluator<false, 31, 64>(node, cg); break;
+      case 24:         return TR::TreeEvaluator::extendCastEvaluator<false, 24, (otherSize>32) ? 64:32>(node, cg);       break;
+      case 16:         return TR::TreeEvaluator::extendCastEvaluator<false, 16, (otherSize>32) ? 64:32>(node, cg);       break;
+      case 8:          return TR::TreeEvaluator::extendCastEvaluator<false,  8, (otherSize>32) ? 64:32>(node, cg);       break;
       default:
          TR_ASSERT(0, "Invalid Address Precision (%d)\n", addrSize);
          break;
@@ -7072,7 +7072,7 @@ OMR::Z::TreeEvaluator::aloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    PRINT_ME("aload", node, cg);
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return aRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::aRegLoadEvaluator(node, cg);
 
    return aloadHelper(node, cg, NULL);
    }
@@ -7262,7 +7262,7 @@ OMR::Z::TreeEvaluator::iloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("iload", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return iRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::iRegLoadEvaluator(node, cg);
    else
      return iloadHelper(node, cg, NULL);
    }
@@ -7277,7 +7277,7 @@ OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lload", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return lRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::lRegLoadEvaluator(node, cg);
    else if (!cg->evaluateNodeInRegPair(node) &&
       (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()))
       {
@@ -7298,7 +7298,7 @@ OMR::Z::TreeEvaluator::sloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sload", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return iRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::iRegLoadEvaluator(node, cg);
    else
      return sloadHelper(node, cg, NULL);
    }
@@ -7314,7 +7314,7 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Compilation *comp = cg->comp();
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return iRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::iRegLoadEvaluator(node, cg);
 
 
    TR::Register * tempReg;
@@ -7392,7 +7392,7 @@ OMR::Z::TreeEvaluator::istoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    bool adjustRefCnt = false;
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-      iRegStoreEvaluator(node, cg);
+      TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    else
       istoreHelper(node, cg);
    if (adjustRefCnt)
@@ -7411,7 +7411,7 @@ OMR::Z::TreeEvaluator::lstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lstore", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     lRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::lRegStoreEvaluator(node, cg);
    else if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       lstoreHelper64(node, cg);
@@ -7433,7 +7433,7 @@ OMR::Z::TreeEvaluator::sstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sstore", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     iRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    else
      sstoreHelper(node, cg);
    return NULL;
@@ -7448,7 +7448,7 @@ OMR::Z::TreeEvaluator::cstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("cstore", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     iRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    else
      sstoreHelper(node, cg);
    return NULL;
@@ -7463,7 +7463,7 @@ OMR::Z::TreeEvaluator::astoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("astore", node, cg);
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     iRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
    else
      astoreHelper(node, cg);
    return NULL;
@@ -7502,7 +7502,7 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
      {
-     iRegStoreEvaluator(node, cg);
+     TR::TreeEvaluator::iRegStoreEvaluator(node, cg);
      return NULL;
      }
    // Use MVI when we can
@@ -10413,7 +10413,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
          {
          source1Reg = cg->evaluate(source1Node);
          source2Reg = cg->evaluate(source2Node);
-         lengthReg = evaluateLengthMinusOneForMemoryCmp(lengthNode, cg, true, lenMinusOne);
+         lengthReg = TR::TreeEvaluator::evaluateLengthMinusOneForMemoryCmp(lengthNode, cg, true, lenMinusOne);
 
          if (isWideChar)
             {
@@ -10751,7 +10751,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 TR::Register *
 OMR::Z::TreeEvaluator::memcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return arraycmpHelper(node, cg, false);
+   return TR::TreeEvaluator::arraycmpHelper(node, cg, false);
    }
 
 
@@ -10785,15 +10785,15 @@ OMR::Z::TreeEvaluator::inlineIfArraycmpEvaluator(TR::Node *node, TR::CodeGenerat
    TR::Register *ret;
    if (opNode->getOpCodeValue() == TR::arraycmp)
       {
-      ret = arraycmpHelper(opNode,
-                           cg,
-                           isWide,        //isWideChar
-                           isEqualCmp,    //isEqualCmp
-                           compareVal,    //cmpValue
-                           compareTarget, //compareTarget
-                           node,          //ificmpNode
-                           false,         //needResultReg
-                           true);         //return102
+      ret = TR::TreeEvaluator::arraycmpHelper(opNode,
+                                              cg,
+                                              isWide,        //isWideChar
+                                              isEqualCmp,    //isEqualCmp
+                                              compareVal,    //cmpValue
+                                              compareTarget, //compareTarget
+                                              node,          //ificmpNode
+                                              false,         //needResultReg
+                                              true);         //return102
       }
    else
       {
@@ -11301,7 +11301,7 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
 
    if (!cg->inlineDirectCall(node, resultReg))
       {
-      resultReg = performCall(node, false, cg);
+      resultReg = TR::TreeEvaluator::performCall(node, false, cg);
        // on 64bit, lcall returns 64bit registers
       if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
          {
@@ -11337,7 +11337,7 @@ OMR::Z::TreeEvaluator::indirectCallEvaluator(TR::Node * node, TR::CodeGenerator 
 #endif
       }
 
-   TR::Register * returnRegister = performCall(node, true, cg);
+   TR::Register * returnRegister = TR::TreeEvaluator::performCall(node, true, cg);
 
    // on 64bit, lcall returns 64bit registers
    if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
@@ -11934,15 +11934,16 @@ OMR::Z::TreeEvaluator::arraycmpEvaluator(TR::Node * node, TR::CodeGenerator * cg
          bool    clobber = (comp->getOption(TR_DisableSSOpts) || elems>256 || elems==0 || node->isArrayCmpSign());
          if (!node->isArrayCmpSign())
             {
-            resultReg = arraycmpHelper(node,
-                                       cg,
-                                       false, //isWideChar
-                                       true,  //isEqualCmp
-                                       0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
-                                       NULL,  //compareTarget
-                                       NULL,  //ificmpNode
-                                       true,  //needResultReg
-                                       true); //return102
+            resultReg = TR::TreeEvaluator::arraycmpHelper(
+                            node,
+                            cg,
+                            false, //isWideChar
+                            true,  //isEqualCmp
+                            0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
+                            NULL,  //compareTarget
+                            NULL,  //ificmpNode
+                            true,  //needResultReg
+                            true); //return102
             // node->setRegister(resultReg);
             return resultReg;
             }
@@ -11961,15 +11962,16 @@ OMR::Z::TreeEvaluator::arraycmpEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
          if (!node->isArrayCmpSign())
             {
-            resultReg = arraycmpHelper(node,
-                                       cg,
-                                       false, //isWideChar
-                                       true,  //isEqualCmp
-                                       0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
-                                       NULL,  //compareTarget
-                                       NULL,  //ificmpNode
-                                       true,  //needResultReg
-                                       true); //return102
+            resultReg = TR::TreeEvaluator::arraycmpHelper(
+                          node,
+                          cg,
+                          false, //isWideChar
+                          true,  //isEqualCmp
+                          0,     //cmpValue. It means it is equivalent to do "arraycmp(A,B) == 0"
+                          NULL,  //compareTarget
+                          NULL,  //ificmpNode
+                          true,  //needResultReg
+                          true); //return102
 
             // node->setRegister(resultReg);
             return resultReg;
@@ -14489,7 +14491,7 @@ TR::Register *OMR::Z::TreeEvaluator::bitOpMemEvaluator(TR::Node * node, TR::Code
    if (byteDstReg!=NULL) cg->decReferenceCount(byteDstNode);
    if (byteLenNode) cg->decReferenceCount(byteLenNode);
 
-   return getConditionCodeOrFold(node, cg, foldType, parent);
+   return TR::TreeEvaluator::getConditionCodeOrFold(node, cg, foldType, parent);
    }
 
 
@@ -14526,7 +14528,7 @@ TR::Register *OMR::Z::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeG
    else
       TR_ASSERT(false, "Invalid type for libmFuncEvaluator.\n");
 
-   TR::Register *trgReg = directCallEvaluator(node, cg);
+   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
    return trgReg;
    }
 
@@ -14564,7 +14566,7 @@ TR::Register *OMR::Z::TreeEvaluator::libxloptFuncEvaluator(TR::Node *node, TR::C
    node->setSymbolReference(callSymRef);
 
    // And finally evaluate the tree
-   TR::Register *trgReg = directCallEvaluator(node,cg);
+   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node,cg);
 
    return trgReg;
    }
@@ -16158,9 +16160,9 @@ TR::Register *OMR::Z::TreeEvaluator::inlineIfTestDataClassHelper(TR::Node *node,
  */
 TR::Register *OMR::Z::TreeEvaluator::getConditionCodeOrFold(TR::Node *node, TR::CodeGenerator *cg, TR_FoldType foldType, TR::Node *parent){
    switch(foldType){
-      case TR_FoldNone: return getConditionCodeOrFoldIf(node, cg, false, NULL);
-      case TR_FoldIf: return getConditionCodeOrFoldIf(node, cg, true, parent);
-      case TR_FoldLookup: return foldLookup(cg, parent);
+      case TR_FoldNone: return TR::TreeEvaluator::getConditionCodeOrFoldIf(node, cg, false, NULL);
+      case TR_FoldIf: return TR::TreeEvaluator::getConditionCodeOrFoldIf(node, cg, true, parent);
+      case TR_FoldLookup: return TR::TreeEvaluator::foldLookup(cg, parent);
       case TR_FoldNoIPM: return NULL;
       default: TR_ASSERT(false, "unexpected folding type\n");
    }
@@ -16332,7 +16334,7 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
    TR_ASSERT(node->getNumChildren() <= 1, "Unary node must only contain 1 or less children");
 
    TR::Node   *firstChild = node->getFirstChild();
-   TR::Register *returnReg = tryToReuseInputVectorRegs(node, cg);
+   TR::Register *returnReg = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
    TR::Register *sourceReg1 = cg->evaluate(firstChild);
 
    switch (op)
@@ -16361,7 +16363,7 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
 
-   TR::Register *targetReg  = tryToReuseInputVectorRegs(node, cg);
+   TR::Register *targetReg  = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
    TR::Register *sourceReg1 = cg->evaluate(firstChild);
    TR::Register *sourceReg2 = cg->evaluate(secondChild);
 
@@ -16421,7 +16423,7 @@ OMR::Z::TreeEvaluator::inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator 
    TR::Node *secondChild = node->getSecondChild();
    TR::Node *thirdChild  = node->getThirdChild();
 
-   TR::Register *targetReg  = tryToReuseInputVectorRegs(node, cg);
+   TR::Register *targetReg  = TR::TreeEvaluator::tryToReuseInputVectorRegs(node, cg);
 
    TR::Register *sourceReg1 = cg->evaluate(firstChild);
    TR::Register *sourceReg2 = cg->evaluate(secondChild);
@@ -16465,7 +16467,7 @@ OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::BAD;
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return vRegLoadEvaluator(node, cg);
+     return TR::TreeEvaluator::vRegLoadEvaluator(node, cg);
 
    if (node->getOpCodeValue() == TR::vload ||
        node->getOpCodeValue() == TR::vloadi)
@@ -16527,7 +16529,7 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::BAD;
 
    if (node->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     return vRegStoreEvaluator(node, cg);
+     return TR::TreeEvaluator::vRegStoreEvaluator(node, cg);
 
    if (node->getOpCodeValue() == TR::vstore ||
        node->getOpCodeValue() == TR::vstorei)
@@ -16556,13 +16558,13 @@ OMR::Z::TreeEvaluator::vstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vdremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineVectorBinaryOp(node, cg, TR::InstOpCode::BAD);
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::BAD);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::vdmaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineVectorTernaryOp(node, cg, TR::InstOpCode::VFMA);
+   return TR::TreeEvaluator::inlineVectorTernaryOp(node, cg, TR::InstOpCode::VFMA);
    }
 
 TR::Register *
@@ -18279,8 +18281,8 @@ OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VLC);
-      case TR::VectorDouble: return inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFPSO);
+      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VLC);
+      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFPSO);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18401,8 +18403,8 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          case TR::VectorInt8:
          case TR::VectorInt16:
          case TR::VectorInt32:
-         case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VA);
-         case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFA);
+         case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VA);
+         case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFA);
          default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
          }
       }
@@ -18427,8 +18429,8 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          case TR::VectorInt8:
          case TR::VectorInt16:
          case TR::VectorInt32:
-         case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VS);
-         case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFS);
+         case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VS);
+         case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFS);
          default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
          }
       }
@@ -18441,7 +18443,7 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
-      case TR::VectorInt32: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VML);
+      case TR::VectorInt32: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VML);
       case TR::VectorInt64:
          {
          // emulated, no Z instruction available
@@ -18488,7 +18490,7 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cg->decReferenceCount(node->getChild(1));
          return returnReg;
          }
-      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
+      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18586,8 +18588,8 @@ OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: return vDivOrRemHelper(node, cg, true);
-      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
+      case TR::VectorInt64: return TR::TreeEvaluator::vDivOrRemHelper(node, cg, true);
+      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18595,25 +18597,25 @@ OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return vDivOrRemHelper(node, cg, false);
+   return TR::TreeEvaluator::vDivOrRemHelper(node, cg, false);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VN);
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VN);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VO);
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VO);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VX);
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VX);
    }
 
 /**
@@ -18700,8 +18702,8 @@ OMR::Z::TreeEvaluator::vcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ);
-      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE);
+      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ);
+      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18715,8 +18717,8 @@ OMR::Z::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: targetReg = inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ); break;
-      case TR::VectorDouble: targetReg = inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE); break;
+      case TR::VectorInt64: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VCEQ); break;
+      case TR::VectorDouble: targetReg = TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCE); break;
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); break;
       }
 
@@ -18733,7 +18735,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return vcmpgtEvaluator(node, cg);
+   return TR::TreeEvaluator::vcmpgtEvaluator(node, cg);
    }
 
 TR::Register *
@@ -18745,8 +18747,8 @@ OMR::Z::TreeEvaluator::vcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: return inlineVectorBinaryOp(node, cg, op);
-      case TR::VectorDouble: return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCH);
+      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, op);
+      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCH);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18755,7 +18757,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::vcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    node->swapChildren();
-   return vcmpgeEvaluator(node, cg);
+   return TR::TreeEvaluator::vcmpgeEvaluator(node, cg);
    }
 
 TR::Register *
@@ -18764,7 +18766,7 @@ OMR::Z::TreeEvaluator::vcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::InstOpCode::Mnemonic op = node->getOpCode().isUnsignedCompare() ? TR::InstOpCode::VCHL : TR::InstOpCode::VCH;
 
    if (node->getFirstChild()->getDataType() == TR::VectorDouble)
-      return inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCHE);
+      return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFCHE);
    else
       {
       TR::Node *firstChild = node->getFirstChild();

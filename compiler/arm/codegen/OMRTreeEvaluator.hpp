@@ -51,7 +51,7 @@ namespace OMR
 namespace ARM
 {
 
-class TreeEvaluator: public OMR::TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    {
 public:
    static TR::Register *badILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);

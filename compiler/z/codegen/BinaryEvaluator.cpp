@@ -1988,7 +1988,7 @@ OMR::Z::TreeEvaluator::addrAddHelper(TR::Node *node, TR::CodeGenerator *cg)
    else if (node->getOpCodeValue() == TR::aladd)
       {
       if (cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD)
-         return laddEvaluator(node, cg);
+         return TR::TreeEvaluator::laddEvaluator(node, cg);
       else
          {
          TR_S390BinaryCommutativeAnalyser temp(cg);
@@ -3416,11 +3416,11 @@ OMR::Z::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
       if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
          {
-         return dualMulHelper64(node, lmulNode, lumulhNode, cg);
+         return TR::TreeEvaluator::dualMulHelper64(node, lmulNode, lumulhNode, cg);
          }
       else
          {
-         return dualMulHelper32(node, lmulNode, lumulhNode, cg);
+         return TR::TreeEvaluator::dualMulHelper32(node, lmulNode, lumulhNode, cg);
          }
       }
    }
@@ -3621,7 +3621,7 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    bool needsUnsignedHighMulOnly = (node->getOpCodeValue() == TR::lumulh) && !node->isDualCyclic();
    if (node->isDualCyclic() || needsUnsignedHighMulOnly)
       {
-      return dualMulEvaluator(node, cg);
+      return TR::TreeEvaluator::dualMulEvaluator(node, cg);
       }
 
    TR::Node * firstChild = node->getFirstChild();
@@ -3903,7 +3903,7 @@ OMR::Z::TreeEvaluator::lmulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    bool needsUnsignedHighMulOnly = (node->getOpCodeValue() == TR::lumulh) && !node->isDualCyclic();
    if (node->isDualCyclic() || needsUnsignedHighMulOnly)
       {
-      return dualMulEvaluator(node, cg);
+      return TR::TreeEvaluator::dualMulEvaluator(node, cg);
       }
 
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
@@ -4756,7 +4756,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bandEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("band", node, cg);
-   return iandEvaluator(node, cg);
+   return TR::TreeEvaluator::iandEvaluator(node, cg);
    }
 
 /**
@@ -4766,7 +4766,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sandEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sand", node, cg);
-   return iandEvaluator(node, cg);
+   return TR::TreeEvaluator::iandEvaluator(node, cg);
    }
 
 /**
@@ -4776,7 +4776,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::candEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("cand", node, cg);
-   return iandEvaluator(node, cg);
+   return TR::TreeEvaluator::iandEvaluator(node, cg);
    }
 
 
@@ -4881,7 +4881,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::borEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bor", node, cg);
-   return iorEvaluator(node, cg);
+   return TR::TreeEvaluator::iorEvaluator(node, cg);
    }
 
 /**
@@ -4891,7 +4891,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sor", node, cg);
-   return iorEvaluator(node, cg);
+   return TR::TreeEvaluator::iorEvaluator(node, cg);
    }
 
 /**
@@ -4901,7 +4901,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::corEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("cor", node, cg);
-   return iorEvaluator(node, cg);
+   return TR::TreeEvaluator::iorEvaluator(node, cg);
    }
 
 /**
@@ -5005,7 +5005,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bxorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bxor", node, cg);
-   return ixorEvaluator(node, cg);
+   return TR::TreeEvaluator::ixorEvaluator(node, cg);
    }
 
 /**
@@ -5015,7 +5015,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sxorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sxor", node, cg);
-   return ixorEvaluator(node, cg);
+   return TR::TreeEvaluator::ixorEvaluator(node, cg);
    }
 
 /**
@@ -5025,7 +5025,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::cxorEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("cxor", node, cg);
-   return ixorEvaluator(node, cg);
+   return TR::TreeEvaluator::ixorEvaluator(node, cg);
    }
 
 TR::Register *
@@ -5034,7 +5034,7 @@ OMR::Z::TreeEvaluator::dexpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR_ASSERT(0, "This evaluator is not functionally correct. Do Not use.");
 
 
-   return libmFuncEvaluator(node, cg);
+   return TR::TreeEvaluator::libmFuncEvaluator(node, cg);
    }
 
 TR::Register *
@@ -5043,5 +5043,5 @@ OMR::Z::TreeEvaluator::fexpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR_ASSERT(0, "This evaluator is not functionally correct. Do Not use.");
 
 
-   return libmFuncEvaluator(node, cg);
+   return TR::TreeEvaluator::libmFuncEvaluator(node, cg);
    }

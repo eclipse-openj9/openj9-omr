@@ -24,9 +24,14 @@
 
 namespace TR { class TypeDictionary; }
 
-typedef void* (CreateStructArrayFunctionType)(int);
+struct Struct {
+   uint8_t type;
+   int32_t value;
+};
 
-typedef void (ReadStructArrayFunctionType)(void*, int);
+typedef Struct* (CreateStructArrayFunctionType)(int);
+
+typedef void (ReadStructArrayFunctionType)(Struct*, int);
 
 class CreateStructArrayMethod : public TR::MethodBuilder
    {

@@ -3925,14 +3925,6 @@ TR::Register *OMR::X86::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::Code
    }
 
 
-
-TR::Register *OMR::X86::TreeEvaluator::ifInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   // Comparing instanceof to a constant
-   return TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg);
-   }
-
-
 void OMR::X86::TreeEvaluator::compareGPRegisterToConstantForEquality(TR::Node          *node,
                                                                  int32_t           value,
                                                                  TR::Register      *cmpRegister,

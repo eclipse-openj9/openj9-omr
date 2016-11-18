@@ -441,18 +441,3 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
    cg->decReferenceCount(child);
    return treg;
    }
-
-
-// Comparing instanceof to a constant
-//
-TR::Register *OMR::X86::AMD64::TreeEvaluator::ifInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "TR::TreeEvaluator::ifInstanceOfHelper not implemented");
-   return NULL;
-   // TODO:AMD64: The ifInstanceOfHelper mechanism could use some cleaning up.
-   // Rather than changing the opcode, and then having VMisInstanceOfEvaluator
-   // check that opcode, it seems cleaner just to pass in any necessary
-   // information to VMisInstanceOfEvaluator via arguments.  It's not a real
-   // evaluator anyway, so we can add arguments to it (and we should also
-   // probably rename it.)
-   }

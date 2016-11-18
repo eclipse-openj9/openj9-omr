@@ -74,7 +74,6 @@
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 
-static TR::Register *ifInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg);
 static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg);
 
 // The following functions are simple enough to inline, and are called often
@@ -1441,7 +1440,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
    {
    if (canBeHandledByIfInstanceOfHelper(node, cg))
       {
-      return ifInstanceOfHelper(node, cg);
+      return TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg);
       }
    else if (canBeHandledByIfArrayCmpHelper(node, cg))
       {
@@ -1543,7 +1542,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
       }
    else if (canBeHandledByIfInstanceOfHelper(node, cg))
       {
-      return ifInstanceOfHelper(node, cg);
+      return TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg);
       }
    else if (canBeHandledByIfArrayCmpHelper(node, cg))
       {

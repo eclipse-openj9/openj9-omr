@@ -100,18 +100,11 @@ bool isNZDoublePowerOfTwo(double value);
 bool isIntegralExponentInRange(TR::Node *parent, TR::Node *exponent, int64_t maxNegativeExponent, int64_t maxPositiveExponent, TR::Simplifier * s);
 TR::Node *reduceExpTwoAndGreaterToMultiplication(int32_t exponentValue, TR::Node *baseNode, TR::ILOpCodes multOp, TR::Block *block, TR::Simplifier *s, int32_t maxExponent);
 TR::Node *replaceExpWithMult(TR::Node *node,TR::Node *valueNode,TR::Node *exponentNode,TR::Block *block,TR::Simplifier *s);
-bool propagateSignState(TR::Node *node, TR::Node *child, int32_t shiftAmount, TR::Block *block, TR::Simplifier *s);
-bool propagateSignStateUnaryConversion(TR::Node *node, TR::Block *block, TR::Simplifier *s);
-void convertStringToPacked(char *result, int32_t resultLen, bool resultIsEvenPrecision, char *source, int32_t sourceLen, uint32_t signCode);
-void convertStringToZoned(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading);
-void convertStringToZonedSeparate(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading);
-void convertStringToUnicode(char *result, int32_t resultLen, char *source, int32_t sourceLen);
-void convertStringToUnicodeSeparate(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading);
-TR::Node *removeOperandWidening(TR::Node *node, TR::Node *parent, TR::Block *block, TR::Simplifier * s);
 bool decodeConversionOpcode(TR::ILOpCode op, TR::DataType nodeDataType, TR::DataType &sourceDataType, TR::DataType &targetDataType);
 int32_t floatToInt(float value, bool roundUp);
 int32_t doubleToInt(double value, bool roundUp);
 void removePaddingNode(TR::Node *node, TR::Simplifier *s);
 void stopUsingSingleNode(TR::Node *node, bool removePadding, TR::Simplifier *s);
+TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block);
 
 #endif

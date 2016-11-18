@@ -6368,54 +6368,63 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
    // value i+3 with the bound.
    //
    TR::Node *valueNode = controllingBranch->getNode()->getFirstChild();
+   bool valueCouldBeEvaluatedBeforeTest = valueNode->getReferenceCount() > 1;
    if (valueNode->getOpCode().isConversion())
-      valueNode = valueNode->getFirstChild();
-   bool usesUnchangedValueInLoopTest = false;
-   if (valueNode->getOpCode().isLoadVarDirect() && valueNode->getReferenceCount() > 1)
       {
-      // The condition makes sure that the load is not commoned across a
-      // store
+      valueNode = valueNode->getFirstChild();
+      if (valueNode->getReferenceCount() > 1)
+         valueCouldBeEvaluatedBeforeTest = true;
+      }
 
-      comp()->incVisitCount();
-      rcount_t futureUseCount = valueNode->getReferenceCount();
-      ///bool storeSeen = false;
-      for (TR::TreeTop *tt = controllingBranch->getPrevTreeTop();
-           tt &&
-           (tt->getNode()->getOpCodeValue() != TR::BBStart ||
-            tt->getNode()->getBlock()->isExtensionOfPreviousBlock());
-           tt = tt->getPrevTreeTop())
+   bool usesUnchangedValueInLoopTest = false;
+   if (valueNode->getOpCode().isLoadVarDirect())
+      {
+      // If the load is unevaluated before the test tree, it sees the new value.
+      if (valueCouldBeEvaluatedBeforeTest)
          {
-         TR::Node *curNode = tt->getNode();
-         if (curNode->getOpCode().isStoreDirect() &&
-             curNode->getSymbolReference() == valueNode->getSymbolReference())
+         // The load might be evaluated earlier. Now we require that it appear
+         // beneath every store (of the same variable) in this extended block,
+         // so that the load sees the value from the beginning of the extended
+         // block.
+         //
+         // If there are no such stores, this incoming value must already be
+         // the new value. Otherwise, it will hopefully be the old value from
+         // the start of the iteration.
+         //
+         comp()->incVisitCount();
+         for (TR::TreeTop *tt = controllingBranch->getPrevTreeTop();
+              tt &&
+              (tt->getNode()->getOpCodeValue() != TR::BBStart ||
+               tt->getNode()->getBlock()->isExtensionOfPreviousBlock());
+              tt = tt->getPrevTreeTop())
             {
-            //storeSeen = true;
-            if (trace())
-               traceMsg(comp(), "\tFound store %p of symRef %p\n", curNode, valueNode->getSymbolReference()->getSymbol());
-            if (curNode->containsNode(valueNode, comp()->getVisitCount()))  //valueNode is used in the store subtree
-               usesUnchangedValueInLoopTest = true;
-            else
+            TR::Node *curNode = tt->getNode();
+            if (curNode->getOpCode().isStoreDirect() &&
+                curNode->getSymbolReference() == valueNode->getSymbolReference())
                {
-               if (trace()) traceMsg(comp(), "\tRejected - tested value commoned across a store %p\n", tt->getNode());
+               if (trace())
+                  traceMsg(comp(), "\tFound store %p of symRef %p\n", curNode, valueNode->getSymbolReference()->getSymbol());
+               if (curNode->containsNode(valueNode, comp()->getVisitCount()))  //valueNode is used in the store subtree
+                  usesUnchangedValueInLoopTest = true;
+               else
+                  {
+                  if (trace()) traceMsg(comp(), "\tRejected - tested value commoned across a store %p\n", tt->getNode());
+                  return false;
+                  }
+               }
+            }
+
+         if (usesUnchangedValueInLoopTest)
+            {
+            if (!isIVUnchangedInLoop(loop, controllingBranch->getEnclosingBlock(), valueNode))
+               {
+               // The loop test may be looking at an intermediate value.
+               if (trace())
+                  traceMsg(comp(), "\tReject - IV node has been changed in one of the blocks that is not part of the loop test in the loop\n");
                return false;
                }
             }
-         // if !storeSeen, then the store must have been in some other block
-         // and so the load is not the unchanged value in the loop test
-         //
          }
-
-
-      if (usesUnchangedValueInLoopTest)
-         {
-         if (!isIVUnchangedInLoop(loop, controllingBranch->getEnclosingBlock(), valueNode))
-            {
-            if (trace())
-               traceMsg(comp(), "\tReject - IV node has been changed in one of the blocks that is not part of the loop test in the loop\n");
-            return false;
-            }
-         }
-
       }
    else
       {

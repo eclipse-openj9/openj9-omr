@@ -22,12 +22,12 @@
 #include <stddef.h>                 // for NULL
 #include <stdint.h>                 // for int32_t
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/arrayof.h"            // for StaticArrayOf
 #include "cs2/tableof.h"            // for TableOf
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Block.hpp"             // for Block
 #include "il/Node.hpp"              // for vcount_t
 #include "infra/Cfg.hpp"            // for CFG
+#include "infra/deque.hpp"
 
 class TR_FrontEnd;
 namespace TR { class CFGEdge; }
@@ -51,16 +51,15 @@ class TR_Dominators
    TR_ALLOC(TR_Memory::Dominators)
 
    TR_Dominators(TR::Compilation *, bool post = false);
-   TR_Dominators(TR::Compilation *c, TR::ResolvedMethodSymbol* methSym, bool post = false);
    TR::Block       *getDominator(TR::Block *);
    int             dominates(TR::Block *block, TR::Block *other);
 
-   TR::Compilation * comp()          {return _compilation;}
+   TR::Compilation * comp()         { return _compilation; }
    TR_Memory *      trMemory()      { return comp()->trMemory(); }
    TR_StackMemory   trStackMemory() { return trMemory(); }
    bool trace() { return _trace; }
 
-   CS2::StaticArrayOf<int32_t, TR::Allocator> _dfNumbers;
+   TR::deque<int32_t> _dfNumbers;
 
    protected:
 
@@ -68,9 +67,8 @@ class TR_Dominators
 
    private:
 
-   class BBInfo
+   struct BBInfo
       {
-      public:
       BBInfo(TR::Allocator allocator) :
          _bucket(allocator), _block(NULL), _parent(-1), _idom(-1), _ancestor(-1), _label(-1), _child(-1), _sdno(-1), _size(0)
          {}
@@ -94,12 +92,27 @@ class TR_Dominators
 #endif
       };
 
-   class StackInfo
+   struct StackInfo
       {
-      public:
-      std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator curIterator;
-      TR::list<TR::CFGEdge*> * list;
-      int32_t                  parent;
+      typedef TR::list<TR::CFGEdge*> list_type;
+      typedef std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator iterator_type;
+      StackInfo(list_type &list, iterator_type position, int32_t parent) :
+         list(list),
+         listPosition(position),
+         parent(parent)
+         {
+         }
+
+      StackInfo(const StackInfo &other) :
+         list(other.list),
+         listPosition(other.listPosition),
+         parent(other.parent)
+         {
+         }
+
+      list_type &list;
+      iterator_type listPosition;
+      int32_t parent;
       };
 
    BBInfo& getInfo(int32_t index) {return _info[index];}
@@ -113,8 +126,8 @@ class TR_Dominators
 
 
    TR::Compilation *_compilation;
-   CS2::StaticArrayOf<BBInfo, TR::Allocator>  _info;
-   CS2::StaticArrayOf<TR::Block *, TR::Allocator> _dominators;
+   TR::deque<BBInfo>  _info;
+   TR::deque<TR::Block *> _dominators;
    int32_t         _numNodes;
    int32_t         _topDfNum;
    vcount_t        _visitCount;

@@ -24,7 +24,6 @@
 #include "compile/Compilation.hpp"             // for Compilation, etc
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                       // for StaticArrayOf, etc
 #include "cs2/bitvectr.h"                      // for ABitVector<>::BitRef
 #include "cs2/sparsrbit.h"
 #include "cs2/tableof.h"                       // for TableOf
@@ -39,11 +38,11 @@
 #include "infra/TRCfgNode.hpp"                 // for CFGNode
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
-TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
-   : _compilation(c),
-   	 _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
-   	 _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), 0),
-   	 _dominators(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
+TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
+   _compilation(c),
+   _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
+   _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
+   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, static_cast<TR::Block *>(NULL), c->allocator())
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
 
@@ -91,12 +90,12 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
 
    if (_postDominators)
       {
-      if (_dfNumbers.ValueAt(cfg->getStart()->getNumber()) < 0)
+      if (_dfNumbers[cfg->getStart()->getNumber()] < 0)
          _dfNumbers[cfg->getStart()->getNumber()] = _topDfNum++;
       }
    else
       {
-      if (_dfNumbers.ValueAt(cfg->getEnd()->getNumber()) < 0)
+      if (_dfNumbers[cfg->getEnd()->getNumber()] < 0)
          _dfNumbers[cfg->getEnd()->getNumber()] = _topDfNum++;
       }
 
@@ -118,7 +117,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
    #if DEBUG
       for (block = toBlock(cfg->getFirstNode()); block; block = toBlock(block->getNext()))
          {
-         TR_ASSERT(_dfNumbers.ValueAt(block->getNumber()) >= 0, "Unreachable block in the CFG");
+         TR_ASSERT(_dfNumbers[block->getNumber()] >= 0, "Unreachable block in the CFG");
          }
    #endif
 
@@ -126,106 +125,16 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post)
       traceMsg(comp(), "End of %sdominator calculation\n", _postDominators ? "post-" : "");
 
    // Release no-longer-used CS2 data
-   _info.ShrinkTo(0);
+   _info.clear();
    }
-
-// The following constructor needs to be shortened by finding common code with the
-// constructor above
-TR_Dominators::TR_Dominators(TR::Compilation *c, TR::ResolvedMethodSymbol* methSym, bool post)
-   : _compilation(c),
-     _cfg(methSym->getFlowGraph()),
-   	 _info(methSym->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
-   	 _dfNumbers(methSym->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), 0),
-   	 _dominators(methSym->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), NULL)
-   {
-   LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
-
-   _postDominators = post;
-   _isValid = true;
-   _topDfNum = 0;
-   _visitCount = c->incOrResetVisitCount();
-   _trace = comp()->getOption(TR_TraceDominators);
-
-   TR::Block *block;
-   TR::CFG *cfg = methSym->getFlowGraph();
-
-   _cfg = methSym->getFlowGraph();
-   _numNodes = cfg->getNumberOfNodes()+1;
-
-   if (trace())
-      {
-      traceMsg(comp(), "Starting %sdominator calculation\n", _postDominators ? "post-" : "");
-      traceMsg(comp(), "   Number of nodes is %d\n", _numNodes-1);
-      }
-
-   if (_postDominators)
-      _dfNumbers[cfg->getStart()->getNumber()] = -1;
-   else
-      _dfNumbers[cfg->getEnd()->getNumber()] = -1;
-
-   findDominators(toBlock( _postDominators ? cfg->getEnd() : cfg->getStart() ));
-
-   int32_t i;
-   for (i = _topDfNum; i > 1; i--)
-      {
-      BBInfo &info = getInfo(i);
-      TR::Block *dominated = info._block;
-      TR::Block *dominator = getInfo(info._idom)._block;
-      _dominators[dominated->getNumber()] = dominator;
-      if (trace())
-         traceMsg(comp(), "   %sDominator of block_%d is block_%d\n", _postDominators ? "post-" : "",
-                                      dominated->getNumber(), dominator->getNumber());
-      }
-
-   // The exit block may not be reachable from the entry node. In this case just
-   // give the exit block the highest depth-first numbering.
-   // No other blocks should be unreachable.
-   //
-
-   if (_postDominators)
-      {
-      if (_dfNumbers.ValueAt(cfg->getStart()->getNumber()) < 0)
-         _dfNumbers[cfg->getStart()->getNumber()] = _topDfNum++;
-      }
-   else
-      {
-      if (_dfNumbers.ValueAt(cfg->getEnd()->getNumber()) < 0)
-         _dfNumbers[cfg->getEnd()->getNumber()] = _topDfNum++;
-      }
-
-   // Assert that we've found every node in the cfg.
-   //
-   if (_topDfNum != _numNodes-1)
-      {
-      if (_postDominators)
-         {
-         _isValid = false;
-         if (trace())
-            traceMsg(comp(), "Some blocks are not reachable from exit. Post-dominator info is invalid.\n");
-         return;
-         }
-      else
-         TR_ASSERT(false, "Unreachable block in the CFG %d %d", _topDfNum, _numNodes-1);
-      }
-
-   #if DEBUG
-      for (block = toBlock(cfg->getFirstNode()); block; block = toBlock(block->getNext()))
-         {
-         TR_ASSERT(_dfNumbers.ValueAt(block->getNumber()) >= 0, "Unreachable block in the CFG");
-         }
-   #endif
-
-   if (trace())
-      traceMsg(comp(), "End of %sdominator calculation\n", _postDominators ? "post-" : "");
-
-   // Release no-longer-used CS2 data
-   _info.ShrinkTo(0);
-   }
-
 
 TR::Block * TR_Dominators::getDominator(TR::Block *block)
    {
-   return _dominators.ValueAt(block->getNumber());
+   if (block->getNumber() >= _dominators.size())
+      {
+      return NULL;
+      }
+   return _dominators[block->getNumber()];
    }
 
 int TR_Dominators::dominates(TR::Block *block, TR::Block *other)
@@ -233,7 +142,7 @@ int TR_Dominators::dominates(TR::Block *block, TR::Block *other)
 
    if (other == block)
       return 1;
-   for (TR::Block *d = other; d != NULL && _dfNumbers.ValueAt(d->getNumber()) >= _dfNumbers.ValueAt(block->getNumber()); d = getDominator(d))
+   for (TR::Block *d = other; d != NULL && _dfNumbers[d->getNumber()] >= _dfNumbers[block->getNumber()]; d = getDominator(d))
       {
       if (d == block)
          return 1;
@@ -285,7 +194,7 @@ void TR_Dominators::findDominators(TR::Block *start)
          TR_SuccessorIterator bi(w._block);
          for (succ = bi.getFirst(); succ != NULL; succ = bi.getNext())
             {
-            u = eval(_dfNumbers.ValueAt(toBlock(succ->getTo())->getNumber())+1);
+            u = eval(_dfNumbers[toBlock(succ->getTo())->getNumber()]+1);
             u = getInfo(u)._sdno;
             if (u < w._sdno)
                w._sdno = u;
@@ -296,7 +205,7 @@ void TR_Dominators::findDominators(TR::Block *start)
          TR_PredecessorIterator bi(w._block);
          for (pred = bi.getFirst(); pred != NULL; pred = bi.getNext())
             {
-            u = eval(_dfNumbers.ValueAt(toBlock(pred->getFrom())->getNumber())+1);
+            u = eval(_dfNumbers[toBlock(pred->getFrom())->getNumber()]+1);
             u = getInfo(u)._sdno;
             if (u < w._sdno)
                w._sdno = u;
@@ -338,49 +247,51 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
 
    // Set up to start at the start block
    //
+   TR::deque<StackInfo> stack(comp()->allocator());
+
+   /*
+    * Seed an initial list of successors using a dummy loop edge connecting the start to itself.
+    */
    TR::CFGEdge dummyEdge;
-   TR::list<TR::CFGEdge*> dummyList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
-   dummyList.push_front(&dummyEdge);
-   CS2::ArrayOf<StackInfo, TR::Allocator> stack(_numNodes/2, comp()->allocator());
-   stack[0].curIterator = dummyList.begin();
-   stack[0].list = &dummyList;
+   TR::list<TR::CFGEdge*> startList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   startList.push_front(&dummyEdge);
 
-   stack[0].parent = -1;
-   int32_t stackTop = 1;
-   while (stackTop>0) {
-      auto next = stack[--stackTop].curIterator;
-      auto list = stack[stackTop].list;
-      TR::CFGNode* succ = _postDominators ? (*next)->getFrom() : (*next)->getTo();
-      TR::Block *block;
-      if (succ)
-         block = toBlock(succ);
-      else
-         block = start;
+   StackInfo seed(startList, startList.begin(), -1);
+   stack.push_back(seed);
 
-      TR::Block *nextBlock;
+   while (!stack.empty()) {
+      StackInfo current(stack.back());
+      stack.pop_back();
+      TR_ASSERT(current.listPosition != current.list.end(), "Successor list has already been exhausted.");
+      TR::CFGNode* succ = _postDominators ? (*current.listPosition)->getFrom() : (*current.listPosition)->getTo();
+      TR::Block *block = succ ? toBlock(succ) : start;
+
       if (block->getVisitCount() == _visitCount)
          {
          // This block has already been processed. Just set up the next block
          // at this level.
          //
+         StackInfo::iterator_type next(current.listPosition);
          ++next;
-         if (next != list->end())
+         if (next != current.list.end())
             {
             if (trace())
                {
-               if (_postDominators)
-                  traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-               else
-                  traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
-
+               traceMsg(
+                  comp(),
+                  "Insert block_%d at level %d\n",
+                  toBlock( _postDominators ? (*next)->getFrom() : (*next)->getTo() )->getNumber(),
+                  stack.size()
+                  );
                }
-            stack[stackTop++].curIterator = next;
+
+            stack.push_back(StackInfo(current.list, next, current.parent));
             }
          continue;
          }
 
       if (trace())
-         traceMsg(comp(), "At level %d block_%d becomes block_%d\n", stackTop, block->getNumber(), _topDfNum);
+         traceMsg(comp(), "At level %d block_%d becomes block_%d\n", stack.size(), block->getNumber(), _topDfNum);
 
       block->setVisitCount(_visitCount);
       _dfNumbers[block->getNumber()] = _topDfNum++;
@@ -394,67 +305,61 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
       binfo._ancestor = 0;
       binfo._child = 0;
       binfo._size = 1;
-      binfo._parent = stack[stackTop].parent;
+      binfo._parent = current.parent;
 
       // Set up the next block at this level
       //
+      StackInfo::iterator_type next(current.listPosition);
       ++next;
-      if (next != list->end())
+      if (next != current.list.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock(_postDominators ? (*next)->getFrom() : (*next)->getTo())->getNumber(),
+               stack.size()
+               );
             }
 
-         stack[stackTop++].curIterator = next;
+         stack.push_back(StackInfo(current.list, next, current.parent));
          }
 
       // Set up the successors to be processed
       //
-      if (_postDominators)
-         list = &(block->getExceptionPredecessors());
-      else
-         list = &(block->getExceptionSuccessors());
-
-      next = list->begin();
-      if (next != list->end())
+      StackInfo::list_type &exceptionSuccessors = _postDominators ? block->getExceptionPredecessors() : block->getExceptionSuccessors();
+      StackInfo::iterator_type firstExceptionSuccessor = exceptionSuccessors.begin();
+      if (firstExceptionSuccessor != exceptionSuccessors.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock( _postDominators ? (*firstExceptionSuccessor)->getFrom() : (*firstExceptionSuccessor)->getTo())->getNumber(),
+               stack.size()
+               );
             }
 
-         stack[stackTop].curIterator = next;
-         stack[stackTop].list = list;
-         stack[stackTop].parent = _topDfNum;
-         stackTop++;
+         stack.push_back(StackInfo(exceptionSuccessors, firstExceptionSuccessor, _topDfNum));
          }
 
-      if (_postDominators)
-         list = &(block->getPredecessors());
-      else
-         list = &(block->getSuccessors());
-
-      next = list->begin();
-      if (next != list->end())
+      StackInfo::list_type &successors = _postDominators ? block->getPredecessors() : block->getSuccessors();
+      StackInfo::iterator_type firstSuccessor = successors.begin();
+      if (firstSuccessor != successors.end())
          {
          if (trace())
             {
-            if (_postDominators)
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getFrom())->getNumber(), stackTop);
-            else
-               traceMsg(comp(), "Insert block_%d at level %d\n", toBlock((*next)->getTo())->getNumber(), stackTop);
+            traceMsg(
+               comp(),
+               "Insert block_%d at level %d\n",
+               toBlock( _postDominators ? (*firstSuccessor)->getFrom() : (*firstSuccessor)->getTo() )->getNumber(),
+               stack.size()
+               );
             }
-         stack[stackTop].list = list;
-         stack[stackTop].curIterator = next;
-         stack[stackTop].parent = _topDfNum;
-         stackTop++;
+
+         stack.push_back(StackInfo(successors, firstSuccessor, _topDfNum));
          }
       }
    }

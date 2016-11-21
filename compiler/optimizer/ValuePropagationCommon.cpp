@@ -3446,8 +3446,8 @@ const char* transformedTargetName (TR::RecognizedMethod rm)
 void TR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, TR::ValuePropagation::ObjCloneInfo *cloneInfo)
    {
    TR_OpaqueClassBlock *j9class = cloneInfo->_clazz;
-   static char *disableObjectCloneOpt = feGetEnv("TR_disableFastObjectClone");
-   if (disableObjectCloneOpt)
+   static char *enableObjectCloneOpt = feGetEnv("TR_enableFastObjectClone");
+   if (!enableObjectCloneOpt)
       return;
 
    TR::Node *callNode = callTree->getNode()->getFirstChild();

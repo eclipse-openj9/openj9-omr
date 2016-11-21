@@ -1513,8 +1513,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
          {
          if (symRef->getSymbol()->getParmSymbol() || comp()->getOption(TR_DontJitIfSlotsSharedByRefAndNonRef))
             {
-            traceMsg(comp(), "stack mapping can't handle a parameter slot that is shared between refs and nonrefs 0");
-            throw TR::CompilationException();
+            comp()->failCompilation<TR::CompilationException>("stack mapping can't handle a parameter slot that is shared between refs and nonrefs 0");
             }
 
          slotSharedbyRefAndNonRef = true;
@@ -1536,8 +1535,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
                {
                if (symRef2->getSymbol()->getParmSymbol() || comp()->getOption(TR_DontJitIfSlotsSharedByRefAndNonRef))
                   {
-                  traceMsg(comp(), "stack mapping can't handle a parameter slot that is shared between refs and nonrefs 1");
-                  throw TR::CompilationException();
+                  comp()->failCompilation<TR::CompilationException>("stack mapping can't handle a parameter slot that is shared between refs and nonrefs 1");
                   }
                slotSharedbyRefAndNonRef = true;
                symRef2->getSymbol()->setSlotSharedByRefAndNonRef(true); // An address slot is being shared with an int slot.
@@ -1560,8 +1558,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
                {
                if (symRef2->getSymbol()->getParmSymbol() || comp()->getOption(TR_DontJitIfSlotsSharedByRefAndNonRef))
                   {
-                  traceMsg(comp(), "stack mapping can't handle a parameter slot that is shared between refs and nonrefs 3");
-                  throw TR::CompilationException();
+                  comp()->failCompilation<TR::CompilationException>("stack mapping can't handle a parameter slot that is shared between refs and nonrefs 3");
                   }
                slotSharedbyRefAndNonRef = true;
                symRef2->getSymbol()->setSlotSharedByRefAndNonRef(true); // An address slot is being shared with an int slot.
@@ -1591,8 +1588,7 @@ OMR::SymbolReferenceTable::findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * own
          _numInternalPointers++;
          if (_numInternalPointers > comp()->maxInternalPointers())
             {
-            traceMsg(comp(), "Excessive number of internal pointers");
-            throw TR::ExcessiveComplexity();
+            comp()->failCompilation<TR::ExcessiveComplexity>("Excessive number of internal pointers");
             }
          }
       else

@@ -495,8 +495,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                // distances are guaranteed.
                //
                TR_ASSERT(0, "short form branch displacement too large: instr=%p, distance=%d\n", this, distance);
-               traceMsg(comp, "short form branch displacement too large");
-               throw TR::CompilationException();
+               comp->failCompilation<TR::CompilationException>("short form branch displacement too large");
                }
 
             cursor = getOpCode().copyBinaryToBuffer(instructionStart);

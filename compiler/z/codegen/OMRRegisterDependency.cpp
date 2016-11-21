@@ -779,8 +779,7 @@ TR_S390RegisterDependencyGroup::checkDependencyGroup(TR::Instruction * currentIn
          cg->getDebug()->printRegisterDependencies(comp->getOutFile(), this, numberOfRegisters);
          }
       TR_ASSERT( 0, "checkDependencyGroup::Insufficient available pairs to satisfy all reg deps.\n");
-      traceMsg(comp, "checkDependencyGroup::Insufficient available pairs to satisfy all reg deps, abort compilation\n");
-      throw TR::CompilationException();
+      comp->failCompilation<TR::CompilationException>("checkDependencyGroup::Insufficient available pairs to satisfy all reg deps, abort compilation\n");
       }
 
    // Check for dups, cause an assertion

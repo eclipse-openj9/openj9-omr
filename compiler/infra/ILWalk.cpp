@@ -661,8 +661,7 @@ void TR::ILValidator::soundnessRule(TR::TreeTop *location, bool condition, const
       static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
       if (!continueAfterValidationError)
          {
-         traceMsg(comp(), "Validation error");
-         throw TR::CompilationException();
+         comp()->failCompilation<TR::CompilationException>("Validation error");
          }
       }
    }
@@ -683,8 +682,7 @@ void TR::ILValidator::validityRule(Location &location, bool condition, const cha
       static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
       if (!continueAfterValidationError)
          {
-         traceMsg(comp(), "Validation error");
-         throw TR::CompilationException();
+         comp()->failCompilation<TR::CompilationException>("Validation error");
          }
       }
    }

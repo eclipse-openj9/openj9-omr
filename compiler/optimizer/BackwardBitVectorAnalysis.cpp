@@ -223,8 +223,8 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
 
       if (this->_analysisInterrupted)
          {
-         traceMsg(this->comp(), "interrupted in backward bit vector analysis");
-         throw TR::CompilationInterrupted();
+         TR::Compilation *comp = this->comp();
+         comp->failCompilation<TR::CompilationInterrupted>("interrupted in backward bit vector analysis");
          }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
@@ -1045,8 +1045,8 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
 
       if (this->_analysisInterrupted)
          {
-         traceMsg(this->comp(), "interrupted in backward bit vector analysis");
-         throw TR::CompilationInterrupted();
+         TR::Compilation *comp = this->comp();
+         comp->failCompilation<TR::CompilationInterrupted>("interrupted in backward bit vector analysis");
          }
 
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();

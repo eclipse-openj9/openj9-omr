@@ -472,8 +472,7 @@ void TR_OSRCompilationData::checkOSRLimits()
       if (comp->getOptions()->isAnyVerboseOptionSet(TR_VerboseOSR, TR_VerboseOSRDetails))
          TR_VerboseLog::writeLineLocked(TR_Vlog_OSR, "OSR COMPILE ABORT in %s: frame size %d, scratch size %d, stack size %d were not accommodated by the VM\n",
                   comp->signature(), maxFrameSize, getMaxScratchBufferSize(), maxStackFrameSize);
-      traceMsg(comp, "OSR buffers could not be enlarged to accomodate compiled method");
-      throw TR::CompilationException();
+      comp->failCompilation<TR::CompilationException>("OSR buffers could not be enlarged to accomodate compiled method");
       }
    }
 

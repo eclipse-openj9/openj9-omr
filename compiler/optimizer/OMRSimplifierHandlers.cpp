@@ -12341,9 +12341,8 @@ TR::Node *i2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::b2i)))
       return result;
 
-   // 90762 zLinux perlbench perf degradation when we enable cancelling out of i2b and bu2i. todo: investigate why perf degrades when we enable this
-//   if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::bu2i)))
-//      return result;
+   if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::bu2i)))
+      return result;
 
    if ((result = foldDemotionConversion(node, TR::s2i, TR::s2b, s)))
       return result;
@@ -12371,6 +12370,9 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    TR::Node * result;
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::s2i)))
+      return result;
+
+   if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::su2i)))
       return result;
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -13287,6 +13289,9 @@ TR::Node *s2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
    TR::Node * result;
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::b2s)))
+      return result;
+
+   if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::bu2s)))
       return result;
 
    if (result = foldRedundantAND(node, TR::sand, TR::sconst, 0xFF, s))

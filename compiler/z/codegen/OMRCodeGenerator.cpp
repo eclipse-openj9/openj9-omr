@@ -498,6 +498,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _notPrintLabelHashTab(NULL),
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
+     _currentBCDCHKHandlerLabel(NULL),
      _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _killedRestrictedRegisters(NULL),

@@ -67,6 +67,7 @@
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
 #include "infra/Assert.hpp"                        // for TR_ASSERT
+#include "infra/deque.hpp"
 #include "ras/Debug.hpp"                           // for TR_DebugBase
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
@@ -1155,11 +1156,10 @@ bool OMR::Z::Instruction::getKilledRegisters(TR::list<TR::Register *> &killedReg
 
 static bool isInternalControlFlowOneEntryOneExit(TR::Instruction *regionEnd, TR::Compilation *comp)
   {
-  CS2::ArrayOf<TR::LabelSymbol *, TR::Allocator> labels(comp->allocator("ITF"));
+  TR::deque<TR::LabelSymbol *> labels(comp->allocator());
   TR::Instruction *curr=NULL;
   TR::Instruction *regionStart=NULL;
   bool done=false;
-  int32_t n=0;
 
   // Collect all the labels and start of region
   for(curr=regionEnd;!done;curr=curr->getPrev())
@@ -1167,7 +1167,7 @@ static bool isInternalControlFlowOneEntryOneExit(TR::Instruction *regionEnd, TR:
     if(curr->isLabel())
       {
       TR::LabelSymbol *labelSym=toS390LabelInstruction(curr)->getLabelSymbol();
-      labels[n++]  = labelSym;
+      labels.push_back(labelSym);
       labelSym->isStartInternalControlFlow();
       done=true;
       regionStart=curr->getPrev();
@@ -1187,12 +1187,14 @@ static bool isInternalControlFlowOneEntryOneExit(TR::Instruction *regionEnd, TR:
       {
       TR::S390LabeledInstruction *labeledInstr=(TR::S390LabeledInstruction *)curr;
       TR::LabelSymbol *targetLabel=labeledInstr->getLabelSymbol();
-      int32_t i;
       bool found=false;
-      for(i=0;i<n && !found;i++)
+      for(auto it = labels.begin(); it != labels.end(); ++it)
         {
-        if(labels.ValueAt(i) == targetLabel)
+        if(*it == targetLabel)
+          {
           found = true;
+          break;
+          }
         }
       if(!found)
         return false; // Found a branch to an outside label

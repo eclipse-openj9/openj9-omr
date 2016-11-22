@@ -75,6 +75,53 @@ protected:
    };
 
 
+/**
+ * @brief Convenience API for defining JitBuilder structs from C/C++ structs (PODs)
+ * 
+ * These macros simply allow the name of C/C++ structs and fields to be used to
+ * define JitBuilder structs. This can help ensure a consistent API between a
+ * VM struct and JitBuilder's representation of the same struct. Their definitions
+ * expand to calls to `TR::TypeDictionary` methods that create a representation
+ * corresponding to that specified type.
+ * 
+ * ## Usage
+ * 
+ * Given the following struct:
+ * 
+ * ```c++
+ * struct MyStruct {
+ *    int32_t id;
+ *    int32_t* val;
+ * };
+ * 
+ * a JitBuilder representation of this struct can be defined as follows:
+ * 
+ * ```c++
+ * TR::TypeDictionary d;
+ * d.DEFINE_STRUCT(MyStruct);
+ * d.DEFINE_FIELD(MyStruct, id, Int32);
+ * d.DEFINE_FIELD(MyStruct, val, pInt32);
+ * d.CLOSE_STRUCT(MyStruct);
+ * ```
+ * 
+ * This definition will expand to the following:
+ * 
+ * ```c++
+ * TR::TypeDictionary d;
+ * d.DefineStruct("MyStruct");
+ * d.DefineField("MyStruct", "id", Int32, offsetof(MyStruct, id));
+ * d.DefineField("MyStruct", "val", pInt32, offsetof(MyStruct, val));
+ * d.CloseStruct("MyStruct", sizeof(MyStruct));
+ * ```
+ */
+#define DEFINE_STRUCT(structName) \
+   DefineStruct(#structName)
+#define DEFINE_FIELD(structName, fieldName, filedIlType) \
+   DefineField(#structName, #fieldName, filedIlType, offsetof(structName, fieldName))
+#define CLOSE_STRUCT(structName) \
+   CloseStruct(#structName, sizeof(structName))
+
+
 class TypeDictionary
    {
 public:
@@ -157,6 +204,14 @@ public:
    void CloseStruct(const char *structName);
 
    TR::IlType * GetFieldType(const char *structName, const char *fieldName);
+
+   /**
+    * @brief Returns the offset of a field in a struct
+    * @param structName the name of the struct containing the field
+    * @param fieldName the name of the field in the struct
+    * @return the memory offset of the field in bytes
+    */
+   size_t OffsetOf(const char *structName, const char *fieldName);
 
    TR::IlType *PrimitiveType(TR::DataType primitiveType)
       {

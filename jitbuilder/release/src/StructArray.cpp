@@ -34,6 +34,12 @@ void printStructElems(uint8_t type, int32_t value)
    printf("StructType { type = %#x, value = %d }\n", type, value);
    }
 
+void printElemOffsets(int32_t typeOffset, int32_t valueOffset)
+   {
+   #define PRINTELEMOFFSETS_LINE LINETOSTR(__LINE__)
+   printf("StructType: OffsetOf(type) = %d, OffsetOf(value) = %d\n", typeOffset, valueOffset);
+   }
+
 
 CreateStructArrayMethod::CreateStructArrayMethod(TR::TypeDictionary *d)
    : MethodBuilder(d)
@@ -114,11 +120,24 @@ ReadStructArrayMethod::ReadStructArrayMethod(TR::TypeDictionary *d)
                   2,
                   Int8,
                   Int32);
+
+   DefineFunction("printElemOffsets",
+                  __FILE__,
+                  PRINTELEMOFFSETS_LINE,
+                  (void *)&printElemOffsets,
+                  NoType,
+                  2,
+                  Int32,
+                  Int32);
    }
 
 bool
 ReadStructArrayMethod::buildIL()
    {
+   Call("printElemOffsets", 2,
+      ConstInt32(typeDictionary()->OffsetOf("Struct", "type")),
+      ConstInt32(typeDictionary()->OffsetOf("Struct", "value")));
+
    TR::IlBuilder* readArray = NULL;
    ForLoopUp("i", &readArray,
       ConstInt32(0),
@@ -149,9 +168,9 @@ class StructArrayTypeDictionary : public TR::TypeDictionary
       TR::TypeDictionary()
       {
       DefineStruct("Struct");
-      DefineField("Struct", "type", Int8, offsetof(Struct, type));
-      DefineField("Struct", "value", Int32, offsetof(Struct, value));
-      CloseStruct("Struct", sizeof(Struct));
+      DefineField("Struct", "type", Int8);
+      DefineField("Struct", "value", Int32);
+      CloseStruct("Struct");
       }
    };
 

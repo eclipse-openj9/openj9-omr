@@ -3673,16 +3673,69 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
   return node->getRegister();
 }
 
+TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node* node, int8_t size, TR_X86OpCodes op, TR::CodeGenerator* cg)
+   {
+   // There are two versions of native exchange helpers:
+   //     2 nodes: exchange with [address]
+   //     3 nodes: exchange with [address+offset]
+   TR::Register* object = cg->evaluate(node->getFirstChild());
+   TR::Register* offset = node->getNumChildren() == 2 ? NULL : cg->evaluate(node->getSecondChild());
+   TR::Register* value = TR::TreeEvaluator::intOrLongClobberEvaluate(node->getLastChild(), size == 8, cg);
+   // Assume that the offset is positive and not pathologically large (i.e., > 2^31).
+   if (offset && TR::Compiler->target.is32Bit() && size == 8)
+      {
+      offset = offset->getLowOrder();
+      }
+
+   generateMemRegInstruction(op, node, generateX86MemoryReference(object, offset, 0, cg), value, cg);
+
+   node->setRegister(value);
+
+   // Clean up children nodes
+   for (uint16_t i = 0; i < node->getNumChildren(); i++)
+      {
+      cg->decReferenceCount(node->getChild(i));
+      }
+   return value;
+   }
+
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    static bool useJapaneseCompression = (feGetEnv("TR_JapaneseComp") != NULL);
 
    TR::Compilation *comp = cg->comp();
-
-   if (comp->getSymRefTab()->isNonHelper(node->getSymbolReference(), TR::SymbolReferenceTable::singlePrecisionSQRTSymbol))
+   TR::SymbolReference* SymRef = node->getSymbolReference();
+   if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::singlePrecisionSQRTSymbol))
       {
       return inlineSinglePrecisionSQRT(node, cg);
+      }
+   if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
+      {
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 4, LADD4MemReg, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 8, LADD8MemReg, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 4, LXADD4MemReg, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 8, LXADD8MemReg, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 4, XCHG4MemReg, cg);
+         }
+      if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
+         {
+         return performSimpleAtomicMemoryUpdate(node, 8, XCHG8MemReg, cg);
+         }
       }
 
    // If the method to be called is marked as an inline method, see if it can
@@ -3789,31 +3842,6 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
        (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_orderWrites) ||
        (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_reachabilityFence) ||
 
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicBoolean_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_getAndAdd) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_getAndIncrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_getAndDecrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_addAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_decrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicInteger_incrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicReference_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndAdd) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndIncrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndDecrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_addAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_decrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerArray_incrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicReferenceArray_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndAdd) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndIncrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndDecrement) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_addAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_decrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_incrementAndGet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicReference_getAndSet) ||
        (symbol->getRecognizedMethod()==TR::sun_nio_ch_NativeThread_current) ||
        (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_copyMemory) ||
        (symbol->getRecognizedMethod()==TR::java_lang_String_hashCodeImplCompressed) ||

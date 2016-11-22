@@ -717,6 +717,45 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
    IA32OpProp_Needs16BitOperandPrefix        |
    IA32OpProp_UsesTarget,
 
+   IA32OpProp_ModifiesTarget                 | // LADD1MemReg
+   IA32OpProp_ByteSource                     |
+   IA32OpProp_ByteTarget                     |
+   IA32OpProp_ModifiesOverflowFlag           |
+   IA32OpProp_ModifiesSignFlag               |
+   IA32OpProp_ModifiesZeroFlag               |
+   IA32OpProp_ModifiesParityFlag             |
+   IA32OpProp_ModifiesCarryFlag              |
+   IA32OpProp_UsesTarget,
+
+   IA32OpProp_ModifiesTarget                 | // LADD2MemReg
+   IA32OpProp_Needs16BitOperandPrefix        |
+   IA32OpProp_ShortSource                    |
+   IA32OpProp_ShortTarget                    |
+   IA32OpProp_ModifiesOverflowFlag           |
+   IA32OpProp_ModifiesSignFlag               |
+   IA32OpProp_ModifiesZeroFlag               |
+   IA32OpProp_ModifiesParityFlag             |
+   IA32OpProp_ModifiesCarryFlag              |
+   IA32OpProp_UsesTarget,
+
+   IA32OpProp_ModifiesTarget                 | // LADD4MemReg
+   IA32OpProp_IntSource                      |
+   IA32OpProp_IntTarget                      |
+   IA32OpProp_ModifiesOverflowFlag           |
+   IA32OpProp_ModifiesSignFlag               |
+   IA32OpProp_ModifiesZeroFlag               |
+   IA32OpProp_ModifiesParityFlag             |
+   IA32OpProp_ModifiesCarryFlag              |
+   IA32OpProp_UsesTarget,
+
+   IA32OpProp_ModifiesTarget                 | // LADD8MemReg (AMD64)
+   IA32OpProp_ModifiesOverflowFlag           |
+   IA32OpProp_ModifiesSignFlag               |
+   IA32OpProp_ModifiesZeroFlag               |
+   IA32OpProp_ModifiesParityFlag             |
+   IA32OpProp_ModifiesCarryFlag              |
+   IA32OpProp_UsesTarget,
+
    IA32OpProp_ModifiesTarget                 | // LXADD1MemReg
    IA32OpProp_ModifiesSource                 |
    IA32OpProp_ByteSource                     |
@@ -6486,6 +6525,29 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
 
    IA32OpProp2_SourceIsMemRef                | // ADDPDRegMem
    IA32OpProp2_XMMTarget,
+
+   IA32OpProp2_SetsCCForTest                 | // LADD1MemReg
+   IA32OpProp2_SetsCCForCompare              |
+   IA32OpProp2_SupportsLockPrefix            |
+   IA32OpProp2_NeedsLockPrefix,
+
+   IA32OpProp2_SetsCCForTest                 | // LADD2MemReg
+   IA32OpProp2_SetsCCForCompare              |
+   IA32OpProp2_SupportsLockPrefix            |
+   IA32OpProp2_NeedsLockPrefix,
+
+   IA32OpProp2_SetsCCForTest                 | // LADD4MemReg
+   IA32OpProp2_SetsCCForCompare              |
+   IA32OpProp2_SupportsLockPrefix            |
+   IA32OpProp2_NeedsLockPrefix,
+
+   IA32OpProp2_SetsCCForTest                 | // LADD8MemReg (AMD64)
+   IA32OpProp2_SetsCCForCompare              |
+   IA32OpProp2_SupportsLockPrefix            |
+   IA32OpProp2_LongSource                    |
+   IA32OpProp2_LongTarget                    |
+   IA32OpProp2_SupportsLockPrefix            |
+   IA32OpProp2_NeedsLockPrefix,
 
    IA32OpProp2_SetsCCForTest                 | // LXADD1MemReg
    IA32OpProp2_SetsCCForCompare              |

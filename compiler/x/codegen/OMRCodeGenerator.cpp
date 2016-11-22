@@ -3266,35 +3266,8 @@ void OMR::X86::CodeGenerator::simulateNodeEvaluation(TR::Node * node, TR_Registe
 
 bool OMR::X86::CodeGenerator::suppressInliningOfRecognizedMethod(TR::RecognizedMethod method)
    {
-   if (self()->isMethodInAtomicLongGroup(method))
-      return true;
 #ifdef J9_PROJECT_SPECIFIC
-   if ((method==TR::java_util_concurrent_atomic_AtomicBoolean_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_getAndAdd) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_getAndIncrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_getAndDecrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_addAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_decrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicInteger_incrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicReference_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndAdd) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndIncrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndDecrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_addAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_decrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerArray_incrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicReferenceArray_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndAdd) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndIncrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndDecrement) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_getAndSet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_addAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_decrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicIntegerFieldUpdater_incrementAndGet) ||
-      (method==TR::java_util_concurrent_atomic_AtomicReference_getAndSet) ||
-      (method==TR::java_lang_Object_clone) ||
+   if ((method==TR::java_lang_Object_clone) ||
       (method==TR::java_lang_Integer_rotateLeft))
       {
       return true;

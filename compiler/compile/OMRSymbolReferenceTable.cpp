@@ -708,6 +708,18 @@ OMR::SymbolReferenceTable::findOrCreateRuntimeHelper(TR_RuntimeHelper index, boo
    return symRef;
    }
 
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index)
+   {
+   if (!element(index))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      sym->setHelper();
+      sym->setIsInlinedByCG();
+      element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);
+      }
+   return element(index);
+   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateNewObjectSymbolRef(TR::ResolvedMethodSymbol *)
@@ -822,8 +834,8 @@ OMR::SymbolReferenceTable::findOrCreateDivCheckSymbolRef(TR::ResolvedMethodSymbo
    }
 
 /*
- * The overflowCheck symbol reference is for use only aliasing set in OMR::SymbolReference::getUseonlyAliasesBV. 
- * we want to make sure defs are not moved across the overflowCHK in case an exception is thrown and the 
+ * The overflowCheck symbol reference is for use only aliasing set in OMR::SymbolReference::getUseonlyAliasesBV.
+ * we want to make sure defs are not moved across the overflowCHK in case an exception is thrown and the
  * catch block might get stale values.
  */
 TR::SymbolReference *

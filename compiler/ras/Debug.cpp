@@ -1650,6 +1650,22 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<killsAllMethod>";
          case TR::SymbolReferenceTable::usesAllMethodSymbol:
             return "<usesAllMethod>";
+         case TR::SymbolReferenceTable::atomicAdd32BitSymbol:
+             return "<atomicAdd32Bit>";
+         case TR::SymbolReferenceTable::atomicAdd64BitSymbol:
+             return "<atomicAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
+             return "<atomicFetchAndAdd32Bit>";
+         case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:
+             return "<atomicFetchAndAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicSwap32BitSymbol:
+             return "<atomicSwap32Bit>";
+         case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
+             return "<atomicSwap64Bit>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwap32BitSymbol:
+             return "<atomicCompareAndSwap32Bit>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwap64BitSymbol:
+             return "<atomicCompareAndSwap64Bit>";
          }
       }
 
@@ -2101,6 +2117,14 @@ static const char *commonNonhelperSymbolNames[] =
    "<j9methodExtraField>",
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
+   "<atomicAdd32Bit>",
+   "<atomicAdd64Bit>",
+   "<atomicFetchAndAdd32Bit>",
+   "<atomicFetchAndAdd64Bit>",
+   "<atomicSwap32Bit>",
+   "<atomicSwap64Bit>",
+   "<atomicCompareAndSwap32Bit>",
+   "<atomicCompareAndSwap64Bit>",
    "<pythonFrame_CodeObject>",
    "<pythonFrame_FastLocals>",
    "<pythonFrame_Globals>",

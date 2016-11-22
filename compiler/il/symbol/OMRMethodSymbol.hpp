@@ -98,7 +98,7 @@ public:
       PreservesAllRegisters        = 0x00004000,
       JITInternalNative            = 0x00008000, ///< Inl native, JIT linkage
       SystemLinkageDispatch        = 0x00010000,
-
+      InlinedByCG                  = 0x00020000,
       MayHaveLongOps               = 0x00040000, ///< this group is only used by resolved method symbols
       MayHaveLoops                 = 0x00080000,
       MayHaveNestedLoops           = 0x00100000,
@@ -173,6 +173,9 @@ public:
    bool isVMInternalNative()                   { return _methodFlags.testAny(VMInternalNative);}
    bool isJITInternalNative()                  { return _methodFlags.testAny(JITInternalNative);}
    bool isNative()                             { return _methodFlags.testAny(JNI | VMInternalNative | JITInternalNative);}
+
+   void setIsInlinedByCG()                     { _methodFlags.set(InlinedByCG); }
+   bool isInlinedByCG()                        { return _methodFlags.testAny(InlinedByCG); }
 
    void setHasVeryRefinedAliasSets(bool b)     { _methodFlags.set(HasVeryRefinedAliasSets, b);}
    bool hasVeryRefinedAliasSets()              { return _methodFlags.testAny(HasVeryRefinedAliasSets);}

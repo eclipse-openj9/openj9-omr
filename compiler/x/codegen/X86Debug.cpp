@@ -2798,6 +2798,10 @@ static const char * opCodeToNameMap[IA32NumOpCodes] =
    "ADDSDRegMem",
    "ADDPDRegReg",
    "ADDPDRegMem",
+   "LADD1MemReg",
+   "LADD2MemReg",
+   "LADD4MemReg",
+   "LADD8MemReg", // (AMD64)
    "LXADD1MemReg",
    "LXADD2MemReg",
    "LXADD4MemReg",
@@ -3681,6 +3685,10 @@ static const char * opCodeToMnemonicMap[IA32NumOpCodes] =
    "addsd",          // ADDSDRegMem
    "addpd",          // ADDPDRegReg
    "addpd",          // ADDPDRegMem
+   "lock add",       // LADD1MemReg
+   "lock add",       // LADD2MemReg
+   "lock add",       // LADD4MemReg
+   "lock add",       // LADD8MemReg (AMD64)
    "lock xadd",      // LXADD1MemReg
    "lock xadd",      // LXADD2MemReg
    "lock xadd",      // LXADD4MemReg

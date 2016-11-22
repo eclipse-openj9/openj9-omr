@@ -127,7 +127,6 @@ typedef struct J9ThreadLibrary {
 	uintptr_t adaptSpinSampleCountStopRatio;
 	uintptr_t adaptSpinKeepSampling;
 #endif /* OMR_THR_ADAPTIVE_SPIN */
-	uintptr_t secondarySpinForObjectMonitors;
 	OMRMemCategory threadLibraryCategory;
 	OMRMemCategory nativeStackCategory;
 #if defined(OMR_THR_FORK_SUPPORT)

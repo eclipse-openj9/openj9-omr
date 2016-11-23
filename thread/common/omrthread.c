@@ -626,11 +626,6 @@ init_spinParameters(omrthread_library_t lib)
 	if (init_threadParam("adaptSpinSampleCountStopRatio", &lib->adaptSpinSampleCountStopRatio)) {
 		return -1;
 	}
-
-	lib->adaptSpinKeepSampling = 0;
-	if (init_threadParam("adaptSpinKeepSampling", &lib->adaptSpinKeepSampling)) {
-		return -1;
-	}
 #endif
 
 #if (defined(OMR_THR_YIELD_ALG))

@@ -125,7 +125,6 @@ typedef struct J9ThreadLibrary {
 	uintptr_t adaptSpinSlowPercent;
 	uintptr_t adaptSpinSampleStopCount;
 	uintptr_t adaptSpinSampleCountStopRatio;
-	uintptr_t adaptSpinKeepSampling;
 #endif /* OMR_THR_ADAPTIVE_SPIN */
 	OMRMemCategory threadLibraryCategory;
 	OMRMemCategory nativeStackCategory;

@@ -791,7 +791,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    int32_t blockNum = -1;
    TR_BitVector *liveVars = NULL;
    TR::TreeTop *tt;
-   TR_OSRPoint *osrPoint;
+   TR_OSRPoint *osrPoint = NULL;
 
    vcount_t visitCount = comp()->incVisitCount();
    block = comp()->getStartBlock();
@@ -830,6 +830,10 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
                }
             }
 
+         maintainLiveness(tt->getNode(), NULL, -1, visitCount, &liveLocals, _liveVars, block);
+
+         if (osrPoint && osrPoint->induceAfter())
+             buildOSRLiveRangeInfo(tt->getPrevTreeTop()->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
 
          if (comp()->isPotentialOSRPointWithSupport(tt))
             {
@@ -840,11 +844,6 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             osrPoint = NULL;
 
          if (osrPoint && !osrPoint->induceAfter())
-             buildOSRLiveRangeInfo(tt->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
-
-         maintainLiveness(tt->getNode(), NULL, -1, visitCount, &liveLocals, _liveVars, block);
-
-         if (osrPoint && osrPoint->induceAfter())
              buildOSRLiveRangeInfo(tt->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
          }
 

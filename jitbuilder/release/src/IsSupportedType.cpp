@@ -83,11 +83,9 @@ int main()
    assert(true == TR::TypeDictionary::is_supported<double**>::value);
    assert(true == TR::TypeDictionary::is_supported<void**>::value);
 
-   std::cout << "Step 10: test enum types\n";
-   assert(true == TR::TypeDictionary::is_supported<Int8Enum>::value);
-
-   std::cout << "Step 11: test unsupported types\n";
+   std::cout << "Step 10: test unsupported types\n";
    assert(false == TR::TypeDictionary::is_supported<int[10]>::value);
+   assert(false == TR::TypeDictionary::is_supported<Int8Enum>::value);
    assert(false == TR::TypeDictionary::is_supported<StructType>::value);
    assert(false == TR::TypeDictionary::is_supported<UnionType>::value);
    assert(false == TR::TypeDictionary::is_supported<StructType*>::value);

@@ -105,12 +105,12 @@ int main()
    assert(true == ppVoid_type->baseType()->isPointer());
    assert(TR::NoType == ppVoid_type->baseType()->baseType()->getPrimitiveType());
 
-   std::cout << "Step 12: test enum types\n";
-   assert(TR::Int8 == d.toIlType<Int8Enum>()->getPrimitiveType());
-   assert(TR::Int64 == d.toIlType<Int64Enum>()->getPrimitiveType());
-
 #ifdef EXPECTED_FAIL
    /* Note: If enabled, the following tests should result in compilation errors. */
+
+   // test enum types
+   assert(TR::Int8 == d.toIlType<Int8Enum>()->getPrimitiveType());
+   assert(TR::Int64 == d.toIlType<Int64Enum>()->getPrimitiveType());
 
    // test array type
    d.toIlType<int[10]>();
@@ -135,7 +135,7 @@ int main()
 
 #endif // defined(EXPECTED_FAIL)
 
-   std::cout << "Step 13: shutdown JIT\n";
+   std::cout << "Step 12: shutdown JIT\n";
    shutdownJit();
    
    std::cout << "PASS\n";

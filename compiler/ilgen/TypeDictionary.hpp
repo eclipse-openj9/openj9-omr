@@ -253,14 +253,13 @@ public:
     * - `is_supported<double**>::value == true` because JitBuilder can derive the corresponding type `PointerTo(pFloat)` or `PointerTo(PointerTo(Float))`
     * - `is_supported<uint16_t>::value == true` because JitBuilder provides the equivalent type `Int16`
     * - `is_supported<SomeStruct>::value == false` because JitBuilder cannot derive the type of a struct
-    * - `is_supported<SomeEnum>::value == true` because JitBuilder can derive a type that is equivalent to the underlying type of the enum
+    * - `is_supported<SomeEnum>::value == false` because JitBuilder cannot derive a type that is equivalent to the underlying type of the enum
     * - `is_supported<void>::value == true` because JitBuilder directly provides the corresponding `NoType`
     */
    template <typename T>
    struct is_supported {
       static const bool value =  std::is_arithmetic<T>::value // note: is_arithmetic = is_integral || is_floating_point
-                              || std::is_void<T>::value
-                              || std::is_enum<T>::value;
+                              || std::is_void<T>::value;
    };
    template <typename T>
    struct is_supported<T*> {
@@ -283,7 +282,6 @@ public:
     * - all integral types (int, long, etc.)
     * - all floating point types (float, double)
     * - void
-    * - all enum types
     * - pointers to all the above types
     * 
     * Note that many user defined types (e.g. structs and arrays) are not
@@ -319,9 +317,6 @@ public:
     * family and size is used to select the function that gets selected.
     * 
     * For types that do not belong to a family (e.g. `void`), the size is not needed.
-    * 
-    * For enum types, `toIlType<>` is recursively called on the underlying type
-    * of the enum, which can be determined using `std::underlying_type<>`.
     * 
     * For pointer types, `std::remove_pointer<>` is used to get the type being
     * pointed to. Iff `is_supported<>::value` evaluates to true for this type,
@@ -397,10 +392,6 @@ public:
    // void
    template <typename T>
    TR::IlType* toIlType(typename std::enable_if<std::is_void<T>::value>::type* = 0) { return NoType; }
-
-   // enum
-   template <typename T>
-   TR::IlType* toIlType(typename std::enable_if<std::is_enum<T>::value>::type* = 0) { return toIlType<typename std::underlying_type<T>::type>(); }
 
    // pointer
    template <typename T>

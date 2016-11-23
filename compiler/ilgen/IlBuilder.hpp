@@ -183,6 +183,8 @@ public:
    TR::IlValue *LoadIndirect(const char *type, const char *field, TR::IlValue *object);
    TR::IlValue *StoreField(const char *name, TR::IlValue *object, TR::IlValue *value);
    TR::IlValue *IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index);
+   TR::IlValue *AtomicAddWithOffset(TR::IlValue *baseAddress, TR::IlValue *offset, TR::IlValue *value);
+   TR::IlValue *AtomicAdd(TR::IlValue *baseAddress, TR::IlValue * value);
    
    // vector memory
    TR::IlValue *VectorLoad(const char *name);

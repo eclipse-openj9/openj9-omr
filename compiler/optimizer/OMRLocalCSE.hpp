@@ -19,11 +19,13 @@
 #ifndef OMR_LOCALCSE_INCL
 #define OMR_LOCALCSE_INCL
 
+#include <map>                         // for std::multimap
 #include <stddef.h>                    // for NULL
 #include <stdint.h>                    // for int32_t, uint32_t
 #include "env/TRMemory.hpp"            // for Allocator, TR_Memory, etc
 #include "cs2/arrayof.h"               // for ArrayOf
 #include "cs2/tableof.h"               // for TableOf
+#include "env/TypedAllocator.hpp"      // for TR::typed_allocator
 #include "il/DataTypes.hpp"            // for DataTypes
 #include "il/Node.hpp"                 // for vcount_t, rcount_t
 #include "il/SymbolReference.hpp"      // for SharedSparseBitVector, etc
@@ -145,18 +147,7 @@ class LocalCSE : public TR::Optimization
    virtual void prePerformOnBlocks();
    virtual void postPerformOnBlocks();
 
-   struct HashTableEntry
-      {
-      HashTableEntry *_next;
-      TR::Node        *_node;
-      };
-
-   struct HashTable
-      {
-      int32_t          _numBuckets;
-      HashTableEntry **_buckets;
-      };
-
+   typedef std::multimap<int32_t, TR::Node*, std::less<int32_t>, TR::typed_allocator<void*, TR::Region>> HashTable;
 
    protected:
 
@@ -176,6 +167,7 @@ class LocalCSE : public TR::Optimization
    bool doExtraPassForVolatiles();
    int32_t hash(TR::Node *parent, TR::Node *node);
    void addToHashTable(TR::Node *node, int32_t hashValue);
+   void removeFromHashTable(HashTable *hashTable, int32_t hashValue);
    TR::Node *replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference *,/* TR::SymbolReference *,*/ TR::Node *, TR::Node *, TR::Node *, TR::Node *, int32_t);
    void examineNode(TR::Node *, SharedSparseBitVector &, TR::Node *, int32_t, int32_t *, bool *, int32_t);
    void commonNode(TR::Node *, int32_t, TR::Node *, TR::Node *);
@@ -194,8 +186,9 @@ class LocalCSE : public TR::Optimization
    void killAllAvailableExpressions();
    void killAllDataStructures(SharedSparseBitVector &);
    void killAvailableExpressions(int32_t);
-   void killAvailableExpressionsUsingAliases(int32_t, TR_NodeKillAliasSetInterface &);
-   void killAvailableExpressionsUsingAliases(int32_t, SharedSparseBitVector &);
+   void killAvailableExpressionsUsingBitVector(HashTable *hashTable, SharedSparseBitVector &vec);
+   void killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &);
+   void killAvailableExpressionsUsingAliases(SharedSparseBitVector &);
    void killAllInternalPointersBasedOnThisPinningArray(TR::SymbolReference *symRef);
 
    bool areSyntacticallyEquivalent(TR::Node *, TR::Node *, bool *);
@@ -233,12 +226,10 @@ class LocalCSE : public TR::Optimization
    SharedSparseBitVector _availablePinningArrayExprs;
    SharedSparseBitVector _killedPinningArrayExprs;
 
-   HashTable _hashTable;
-   HashTable _hashTableWithSyms;
-   HashTable _hashTableWithCalls;
-   HashTable _hashTableWithConsts;
-   HashTable _fpHashTable;
-   HashTable _fpHashTableWithSyms;
+   HashTable *_hashTable;
+   HashTable *_hashTableWithSyms;
+   HashTable *_hashTableWithCalls;
+   HashTable *_hashTableWithConsts;
 
    int32_t _numNullCheckNodes;
    int32_t _numNodes;

@@ -62,6 +62,7 @@
 #define MAX_DEPTH 3000
 #define MAX_COPY_PROP 400
 #define REPLACE_MARKER (MAX_SCOUNT-2)
+#define NUM_BUCKETS 107
 
 #define VOLATILE_ONLY 0
 #define NON_VOLATILE_ONLY 1
@@ -282,7 +283,6 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    // along with local CSE. Also the total number of nodes are counted for
    // allocating data structures for local commoning.
    //
-   int32_t symRefCount = comp()->getSymRefCount();
    _possiblyRelevantNodes.Clear();
    _relevantNodes.Clear();
    _availableLoadExprs.Clear();
@@ -319,22 +319,11 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    memset(_replacedNodesAsArray, 0, _numNodes*sizeof(TR::Node*));
    memset(_replacedNodesByAsArray, 0, _numNodes*sizeof(TR::Node*));
 
-   _hashTable._numBuckets = 107;
-   _hashTable._buckets = (HashTableEntry**)trMemory()->allocateStackMemory(_hashTable._numBuckets*sizeof(HashTableEntry*));
-   memset(_hashTable._buckets, 0, _hashTable._numBuckets*sizeof(HashTableEntry*));
-
-   _hashTableWithSyms._numBuckets = symRefCount;
-   _hashTableWithSyms._buckets = (HashTableEntry**)trMemory()->allocateStackMemory(_hashTableWithSyms._numBuckets*sizeof(HashTableEntry*));
-   memset(_hashTableWithSyms._buckets, 0, _hashTableWithSyms._numBuckets*sizeof(HashTableEntry*));
-
-   _hashTableWithCalls._numBuckets = symRefCount;
-   _hashTableWithCalls._buckets = (HashTableEntry**)trMemory()->allocateStackMemory(_hashTableWithCalls._numBuckets*sizeof(HashTableEntry*));
-   memset(_hashTableWithCalls._buckets, 0, _hashTableWithCalls._numBuckets*sizeof(HashTableEntry*));
-
-   _hashTableWithConsts._numBuckets = 107;
-   _hashTableWithConsts._buckets = (HashTableEntry**)trMemory()->allocateStackMemory(_hashTableWithConsts._numBuckets*sizeof(HashTableEntry*));
-   memset(_hashTableWithConsts._buckets, 0, _hashTableWithConsts._numBuckets*sizeof(HashTableEntry*));
-
+   TR::typed_allocator<void*, TR::Region> alloc(stackMemoryRegion);
+   _hashTable = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
+   _hashTableWithSyms = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
+   _hashTableWithCalls = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
+   _hashTableWithConsts = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
 
    _nextReplacedNode = 0;
    SharedSparseBitVector seenAvailableLoadedSymbolReferences(comp()->allocator());
@@ -706,7 +695,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
       if (previouslyAvailable)
          {
          if (hasAliases)
-            killAvailableExpressionsUsingAliases(symRefNum, UseDefAliases);
+            killAvailableExpressionsUsingAliases(UseDefAliases);
          if (node->getOpCode().isLikeDef())
             killAvailableExpressions(symRefNum);
          }
@@ -1325,61 +1314,47 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
       traceMsg(comp(),"\n");
       }
 
-   int32_t hashValue = hash(parent, node);
-   HashTableEntry *firstEntry;
+   HashTable *hashTable;
    if (node->getOpCode().hasSymbolReference() && ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
       {
       if (node->getOpCode().isCall())
+         hashTable = _hashTableWithCalls;
+      else
+         hashTable = _hashTableWithSyms;
+      }
+   else if (node->getOpCode().isLoadConst())
+      hashTable = _hashTableWithConsts;
+   else
+      hashTable = _hashTable;
+
+   int32_t hashValue = hash(parent, node);
+   auto range = hashTable->equal_range(hashValue);
+
+   for(auto it = range.first; it != range.second;)
+      {
+      TR::Node *other = it->second;
+      bool remove = false;
+      if (areSyntacticallyEquivalent(other, node, &remove))
          {
-         firstEntry = _hashTableWithCalls._buckets[hashValue];
+         if (trace())
+            traceMsg(comp(), "node %p is syntactically equivalent to other %p\n",node,other);
+         return other;
+         }
+
+      if (remove)
+         {
+         if (trace())
+            traceMsg(comp(), "remove is true, removing entry %p\n", other);
+         auto nextIt = it;
+         ++nextIt;
+         hashTable->erase(it);
+         it = nextIt;
+         _killedNodes[other->getGlobalIndex()]=true;
          }
       else
          {
-         firstEntry = _hashTableWithSyms._buckets[hashValue];
+         ++it;
          }
-      }
-   else if (node->getOpCode().isLoadConst())
-      firstEntry = _hashTableWithConsts._buckets[hashValue];
-   else
-      firstEntry = _hashTable._buckets[hashValue];
-
-   if (!(firstEntry == NULL))
-      {
-      HashTableEntry *entry;
-      HashTableEntry *prevEntry = firstEntry;
-      for (entry = firstEntry->_next; entry != firstEntry; entry = entry->_next)
-         {
-         TR::Node *other = entry->_node;
-         bool remove = false;
-         if (areSyntacticallyEquivalent(other, node, &remove))
-            {
-            if (trace())
-               traceMsg(comp(), "node %p is syntactically equivalent to other %p\n",node,other);
-            return other;
-            }
-
-         if (remove)
-            {
-            if (trace())
-               traceMsg(comp(), "remove is true, removing entry %p\n",entry->_node);
-            prevEntry->_next = entry->_next;
-            _killedNodes[other->getGlobalIndex()]=true;
-            }
-         else
-            {
-            prevEntry = entry;
-            }
-         }
-
-      bool remove = false;
-      if (areSyntacticallyEquivalent(entry->_node, node, &remove))
-         {
-         if (trace())
-            traceMsg(comp(), "spot 2: node %p is syntactically equivalent to other %p\n",node,entry->_node);
-         return entry->_node;
-         }
-      if (trace())
-         traceMsg(comp(), "spot 2: remove = %d\n",remove);
       }
 
    if ((node->getOpCode().isArrayRef()) &&
@@ -1432,7 +1407,7 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
       if (_volatileState != VOLATILE_ONLY)
          {
          if (node->getOpCode().hasSymbolReference() && UseDefAliases.containsAny(tmp, comp()))
-            killAvailableExpressionsUsingAliases(node->getSymbolReference()->getReferenceNumber(), UseDefAliases);
+            killAvailableExpressionsUsingAliases(UseDefAliases);
          }
       else
          {
@@ -1446,7 +1421,7 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
                processedAliases[c] = 1;
             }
          if (node->getOpCode().hasSymbolReference() && processedAliases.Intersects(tmp))
-            killAvailableExpressionsUsingAliases(node->getSymbolReference()->getReferenceNumber(), processedAliases);
+            killAvailableExpressionsUsingAliases(processedAliases);
          }
       }
 
@@ -1462,13 +1437,13 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
 void OMR::LocalCSE::killAllAvailableExpressions()
    {
  //  traceMsg(comp(), "killAllAvailableExpressions 1 setting _availableCallExprs[0] to false\n");
-   _hashTable._buckets[0] = NULL;
-   _hashTableWithSyms._buckets[0] = NULL;
+   removeFromHashTable(_hashTable, 0);
+   removeFromHashTable(_hashTableWithSyms, 0);
    _availableLoadExprs[0]=false;
    _availablePinningArrayExprs[0]=false;
    _availableCallExprs[0]=false;
-   _hashTableWithConsts._buckets[0] = NULL;
-   _hashTableWithCalls._buckets[0] = NULL;
+   removeFromHashTable(_hashTableWithConsts, 0);
+   removeFromHashTable(_hashTableWithCalls, 0);
    }
 
 void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolReference *symRef)
@@ -1492,80 +1467,65 @@ void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolRef
 //
 void OMR::LocalCSE::killAvailableExpressions(int32_t symRefNum)
    {
-   _hashTableWithSyms._buckets[symRefNum] = NULL;
+   removeFromHashTable(_hashTableWithSyms, symRefNum);
    _availableLoadExprs[symRefNum]=false;
    _availablePinningArrayExprs[symRefNum]=false;
    _availableCallExprs[symRefNum]=false;
    }
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(int32_t symRefNum, SharedSparseBitVector &aliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable, SharedSparseBitVector &vec)
+   {
+   SharedSparseBitVector::Cursor c(vec);
+   for (c.SetToFirstOne(); c.Valid(); c.SetToNextOne())
+      {
+      int32_t nextSymRefNum = c;
+
+      auto range = hashTable->equal_range(nextSymRefNum);
+      if (range.first != range.second)
+         {
+         auto lastItem = range.second;
+         --lastItem;
+         _killedNodes[lastItem->second->getGlobalIndex()]=true;
+
+         hashTable->erase(range.first, range.second);
+         }
+      }
+   }
+
+
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(SharedSparseBitVector &aliases)
    {
    SharedSparseBitVector tmp(_availableLoadExprs);
    _availableLoadExprs -= aliases;
 
    tmp.Andc(_availableLoadExprs);
 
-   SharedSparseBitVector::Cursor c(tmp);
-   for (c.SetToFirstOne(); c.Valid(); c.SetToNextOne())
-      {
-      int32_t nextSymRefNum = c;
-
-      if (_hashTableWithSyms._buckets[nextSymRefNum] != NULL)
-         {
-         _killedNodes[_hashTableWithSyms._buckets[nextSymRefNum]->_node->getGlobalIndex()]=true;
-         _hashTableWithSyms._buckets[nextSymRefNum] = NULL;
-         }
-      }
+   killAvailableExpressionsUsingBitVector(_hashTableWithSyms, tmp);
 
    SharedSparseBitVector tmp2(_availableCallExprs);
    _availableCallExprs -= aliases;
    tmp2.Andc(_availableCallExprs);
-   SharedSparseBitVector::Cursor c2(tmp2);
-    for(c2.SetToFirstOne(); c2.Valid(); c2.SetToNextOne())
-       {
-       int32_t nextSymRefNum = c2;
 
-       if (_hashTableWithCalls._buckets[nextSymRefNum] != NULL)
-          {
-          _killedNodes[_hashTableWithCalls._buckets[nextSymRefNum]->_node->getGlobalIndex()]=true;
-          _hashTableWithCalls._buckets[nextSymRefNum] = NULL;
-          }
-       }
+   killAvailableExpressionsUsingBitVector(_hashTableWithCalls, tmp2);
    }
 
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(int32_t symRefNum, TR_NodeKillAliasSetInterface &UseDefAliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &UseDefAliases)
    {
    SharedSparseBitVector tmp(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availablePinningArrayExprs);
    tmp.Andc(_availableLoadExprs);
 
-   SharedSparseBitVector::Cursor c(tmp);
-   for(c.SetToFirstOne(); c.Valid(); c.SetToNextOne()) {
-      int32_t nextSymRefNum = c;
-      if (_hashTableWithSyms._buckets[nextSymRefNum] != NULL){
-         _killedNodes[_hashTableWithSyms._buckets[nextSymRefNum]->_node->getGlobalIndex()]=true;
-         _hashTableWithSyms._buckets[nextSymRefNum] = NULL;
-      }
-   }
+   killAvailableExpressionsUsingBitVector(_hashTableWithSyms, tmp);
 
    SharedSparseBitVector tmp2(_availableCallExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableCallExprs);
    tmp2.Andc(_availableCallExprs);
 
-   SharedSparseBitVector::Cursor c2(tmp2);
-    for(c2.SetToFirstOne(); c2.Valid(); c2.SetToNextOne())
-       {
-       int32_t nextSymRefNum = c2;
-       if (_hashTableWithCalls._buckets[nextSymRefNum] != NULL)
-          {
-          _killedNodes[_hashTableWithCalls._buckets[nextSymRefNum]->_node->getGlobalIndex()]=true;
-          _hashTableWithCalls._buckets[nextSymRefNum] = NULL;
-          }
-      }
+   killAvailableExpressionsUsingBitVector(_hashTableWithCalls, tmp2);
    }
 
 
@@ -1576,22 +1536,14 @@ void OMR::LocalCSE::killAllDataStructures(SharedSparseBitVector &seenAvailableLo
 
    seenAvailableLoadedSymbolReferences.Truncate();
 
-   int32_t i;
-   for (i=0;i<_hashTable._numBuckets;i++)
-      _hashTable._buckets[i] = NULL;
-
    _availableLoadExprs.Clear();
    _availablePinningArrayExprs.Clear();
    _availableCallExprs.Clear();
 
-   for (i=0;i<_hashTableWithSyms._numBuckets;i++)
-      _hashTableWithSyms._buckets[i] = NULL;
-
-   for (i=0;i<_hashTableWithConsts._numBuckets;i++)
-      _hashTableWithConsts._buckets[i] = NULL;
-
-   for (i=0;i<_hashTableWithCalls._numBuckets;i++)
-      _hashTableWithCalls._buckets[i] = NULL;
+   _hashTable->clear();
+   _hashTableWithSyms->clear();
+   _hashTableWithConsts->clear();
+   _hashTableWithCalls->clear();
 
    killAllAvailableExpressions();
    }
@@ -1625,21 +1577,14 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
 
       seenAvailableLoadedSymbolReferences.Truncate();
 
-      for (i=0;i<_hashTable._numBuckets;i++)
-         _hashTable._buckets[i] = NULL;
-
       _availableLoadExprs.Clear();
       _availablePinningArrayExprs.Clear();
       _availableCallExprs.Clear();
 
-      for (i=0;i<_hashTableWithSyms._numBuckets;i++)
-         _hashTableWithSyms._buckets[i] = NULL;
-
-      for (i=0;i<_hashTableWithConsts._numBuckets;i++)
-         _hashTableWithConsts._buckets[i] = NULL;
-
-      for (i=0;i<_hashTableWithCalls._numBuckets;i++)
-         _hashTableWithCalls._buckets[i] = NULL;
+      _hashTable->clear();
+      _hashTableWithSyms->clear();
+      _hashTableWithConsts->clear();
+      _hashTableWithCalls->clear();
       return;
       }
 
@@ -1703,35 +1648,21 @@ int32_t OMR::LocalCSE::hash(TR::Node *parent, TR::Node *node)
       h ^= g >> 24;
       }
 
-   int32_t hashValue;
-      {
-      if (node->getOpCode().hasSymbolReference() &&
-          ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
-         {
-         if (node->getOpCode().isCall())
-            {
-            hashValue = 1 + ((h ^ g) % (_hashTableWithCalls._numBuckets-1));
-            TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithCalls._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithCalls size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithCalls._numBuckets);
-            }
-         else
-            {
-            hashValue = 1 + ((h ^ g) % (_hashTableWithSyms._numBuckets-1));
-            TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithSyms._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithSyms size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithSyms._numBuckets);
-            }
-         }
-      else if (node->getOpCode().isLoadConst())
-         {
-         hashValue = 1 + (( (h ^ g) + (int32_t)node->getConstValue()) % (_hashTableWithConsts._numBuckets-1));
-         TR_ASSERT(hashValue >= 0 && hashValue < _hashTableWithConsts._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTableWithConsts size %d\n",hashValue,node,node->getOpCode().getName(),_hashTableWithConsts._numBuckets);
-         }
-      else
-         {
-         hashValue = 1 + ((h ^ g) % (_hashTable._numBuckets-1));
-         TR_ASSERT(hashValue >= 0 && hashValue < _hashTable._numBuckets, "LocalCSE hash problem - hashValue %d on node %p %s outside of _hashTable size %d\n",hashValue,node,node->getOpCode().getName(),_hashTable._numBuckets);
-         }
-      }
+   int32_t hashValue = h ^ g;
+   // This value is NUM_BUCKETS - 1 (or symRefCount - 1)
+   // for historical reasons.
+   // It may be possible to remove the modulo, however:
+   // - 0 cannot be returned if we get to this point
+   // - the semantics of LocalCSE could slightly change, which
+   //   may have other effects
+   int32_t modVal = NUM_BUCKETS - 1;
+   if (node->getOpCode().hasSymbolReference() &&
+       ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
+      modVal = comp()->getSymRefCount() - 1;
+   else if (node->getOpCode().isLoadConst())
+      hashValue += (int32_t)node->getConstValue();
 
-   return hashValue;
+   return 1 + (hashValue % modVal);
    }
 
 void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
@@ -1760,57 +1691,32 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
       _arrayRefNodes.add(node);
       }
 
-   HashTableEntry *entry = (HashTableEntry*)trMemory()->allocateStackMemory(sizeof(HashTableEntry));
-   entry->_node = node;
+   auto pair = std::make_pair(hashValue, node);
 
-   HashTableEntry *prevEntry;
-   bool hasSymRef = false;
-   if (node->getOpCode().hasSymbolReference())
-      hasSymRef = true;
-
-   if (hasSymRef && ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
+   if (node->getOpCode().hasSymbolReference() && ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
       {
       if (node->getOpCode().isCall())
          {
-         prevEntry = _hashTableWithCalls._buckets[hashValue];
+         _hashTableWithCalls->insert(pair);
          _availableCallExprs[node->getSymbolReference()->getReferenceNumber()]=true;
          }
       else
          {
-         prevEntry = _hashTableWithSyms._buckets[hashValue];
+         _hashTableWithSyms->insert(pair);
          _availableLoadExprs[node->getSymbolReference()->getReferenceNumber()]=true;
          }
       }
    else if (node->getOpCode().isLoadConst())
-      prevEntry = _hashTableWithConsts._buckets[hashValue];
+      _hashTableWithConsts->insert(pair);
    else
-      prevEntry = _hashTable._buckets[hashValue];
+      _hashTable->insert(pair);
+   }
 
-   if (!(prevEntry == NULL))
-      {
-      entry->_next = prevEntry->_next;
-      prevEntry->_next = entry;
-      }
-   else
-      entry->_next = entry;
 
-   if (hasSymRef && ((node->getOpCodeValue() != TR::loadaddr) || _loadaddrAsLoad))
-      {
-      if (node->getOpCode().isCall())
-         {
-         _hashTableWithCalls._buckets[hashValue] = entry;
-         _availableCallExprs[node->getSymbolReference()->getReferenceNumber()]=true;
-         }
-      else
-         {
-         _hashTableWithSyms._buckets[hashValue] = entry;
-         _availableLoadExprs[node->getSymbolReference()->getReferenceNumber()]=true;
-         }
-      }
-   else if (node->getOpCode().isLoadConst())
-      _hashTableWithConsts._buckets[hashValue] = entry;
-   else
-      _hashTable._buckets[hashValue] = entry;
+void OMR::LocalCSE::removeFromHashTable(HashTable *hashTable, int32_t hashValue)
+   {
+   auto range = hashTable->equal_range(hashValue);
+   hashTable->erase(range.first, range.second);
    }
 
 

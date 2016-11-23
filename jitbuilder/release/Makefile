@@ -22,7 +22,7 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-goal: call conststring dotproduct iterfib linkedlist localarray mandelbrot nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype
+goal: call conststring dotproduct iterfib linkedlist localarray mandelbrot nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype atomicoperations
 
 all: goal
 
@@ -43,6 +43,7 @@ test: goal
 	./controlflowtests
 	./issupportedtype
 	./toiltype
+	./atomicoperations
 
 call : libjitbuilder.a Call.o
 	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
@@ -137,6 +138,11 @@ simple : libjitbuilder.a Simple.o
 Simple.o: src/Simple.cpp src/Simple.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
+atomicoperations : libjitbuilder.a AtomicOperations.o
+	g++ -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
+
+AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
+	g++ -o $@ $(CXXFLAGS) $<
 
 switch : libjitbuilder.a Switch.o
 	g++ -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
@@ -189,4 +195,4 @@ BadToIlType.o: src/ToIlType.cpp
 
 
 clean:
-	@rm -f call conststring dotproduct iterfib linkedlist localarray mandelbrot matmult nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype badtoiltype *.o
+	@rm -f call conststring dotproduct iterfib linkedlist localarray mandelbrot matmult nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype badtoiltype atomicoperations *.o

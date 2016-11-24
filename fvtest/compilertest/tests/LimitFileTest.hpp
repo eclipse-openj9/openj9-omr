@@ -33,7 +33,10 @@ class LimitFileTest : public ::testing::Test
    void createVLog(const char *vlog, const char *limitFile = NULL);
    void createAndCheckVLog(const char *vlog, const char *limitFile = NULL, int *iNegLine = NULL);
 
-   void checkVLogForMethod(const char *vlog, const char *method, bool compiled, int *foundOnLine = NULL);
+   void checkVLogForMethod(const char *vlog, const char *method, const char *level = "warm", int *foundOnLine = NULL);
+
+   protected:
+   void delayUnlink(const char *file);
 
    private:
    std::vector<const char *> _vlog;

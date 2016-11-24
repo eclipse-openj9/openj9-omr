@@ -43,6 +43,12 @@ TestCompiler::LimitFileTest::~LimitFileTest()
    }
 
 void
+TestCompiler::LimitFileTest::delayUnlink(const char *file)
+   {
+   _vlog.push_back(file);
+   }
+
+void
 TestCompiler::LimitFileTest::compileTests()
    {
    ::TestCompiler::OpCodesTest unaryTest;
@@ -96,13 +102,14 @@ TestCompiler::LimitFileTest::generateVLog(const char *vlog, const char *limitFil
  *
  * @param[in] vlog The log from the test.
  * @param[in] method The name of the method to search for.
- * @param[in] compiled Assert that the method was or was not compiled.
- * @param[out] The line of the log that the method is on. This can be
- *             used in a limit file parameter. This parameter is only
- *             valid when compiled is true.
+ * @param[in] level Assert the level the method was compiled at.
+ *            Using NULL asserts the method was not compiled.
+ * @param[out] foundOnLine The line of the log that the method is on.
+ *             This can be used in a limit file parameter. This
+ *             parameter is only valid when compiled is true.
  */
 void
-TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *method, bool compiled, int *foundOnLine)
+TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *method, const char *level, int *foundOnLine)
    {
    std::ifstream vlogFile(vlog);
    ASSERT_TRUE(vlogFile.is_open());
@@ -113,7 +120,7 @@ TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *me
    for(int i = 1; std::getline(vlogFile, line); ++i)
       {
       // If method hasn't been compiled, it shouldn't be anywhere in the vlog
-      if(!compiled)
+      if(level == NULL)
          {
          ASSERT_EQ(line.find(method), std::string::npos);
          continue;
@@ -129,9 +136,9 @@ TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *me
          case '+':
             if(line.find(method) != std::string::npos)
                {
-               ASSERT_NE(line.find("(warm"), std::string::npos);
+               ASSERT_NE(line.find(level), std::string::npos);
                foundPlus = true;
-               if(compiled && foundOnLine)
+               if(foundOnLine)
                   *foundOnLine = i;
                }
             break;
@@ -146,7 +153,7 @@ TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *me
          }
       }
 
-   if(!compiled)
+   if(level == NULL)
       return;
 
    // If asserting compilation, we should have found both a compilation
@@ -173,7 +180,7 @@ TestCompiler::LimitFileTest::checkVLogForMethod(const char *vlog, const char *me
 void
 TestCompiler::LimitFileTest::createVLog(const char *vlog, const char *limitFile)
    {
-   _vlog.push_back(vlog);
+   delayUnlink(vlog);
 
    /* This creates the new process, runs generateVLog, and asserts it exits
     * with a status code of 0.
@@ -199,8 +206,8 @@ TestCompiler::LimitFileTest::createAndCheckVLog(const char *vlog, const char *li
    {
    createVLog(vlog, limitFile);
 
-   checkVLogForMethod(vlog, "iNeg", true, methodLine);
-   checkVLogForMethod(vlog, "iReturn", true);
+   checkVLogForMethod(vlog, "iNeg", "warm", methodLine);
+   checkVLogForMethod(vlog, "iReturn", "warm");
    }
 
 namespace TestCompiler {
@@ -246,8 +253,8 @@ TEST_F(LimitFileTest, UseLimitFileRangeTest)
    std::string limitArg = std::string("(") + limitFile + "," + iNegLineStr + "," + iNegLineStr + ")";
    createVLog(vlog, limitArg.c_str());
 
-   checkVLogForMethod(vlog, "iNeg", true);
-   checkVLogForMethod(vlog, "iReturn", false);
+   checkVLogForMethod(vlog, "iNeg", "warm");
+   checkVLogForMethod(vlog, "iReturn", NULL);
    }
 
 // Use (limitfile,n) notation.
@@ -263,7 +270,7 @@ TEST_F(LimitFileTest, UseLimitFileBoundTest)
    iNegLine++; // Start at line after iNeg.
    std::string limitArg = std::string("(") + limitFile + "," + std::to_string(static_cast<long long>(iNegLine)) + ")";
    createVLog(vlog, limitArg.c_str());
-   checkVLogForMethod(vlog, "iNeg", false);
+   checkVLogForMethod(vlog, "iNeg", NULL);
    }
 
 }

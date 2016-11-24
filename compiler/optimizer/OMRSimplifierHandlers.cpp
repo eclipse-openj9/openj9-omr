@@ -11042,7 +11042,7 @@ TR::Node *iandSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          {
          if (performTransformation(s->comp(), "%sReduced iand with iconst 65536 in node [%s] to %s\n", s->optDetailString(), node->getName(s->getDebug()), "su2i"))
             {
-            TR::Node::recreate(node, firstChildOp == TR::s2i ? TR::su2i : TR::su2i);
+            TR::Node::recreate(node, TR::su2i);
             foundZeroExtension = true;
             }
          }

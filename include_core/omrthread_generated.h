@@ -131,7 +131,6 @@ typedef struct J9ThreadMonitorTracing {
 	uint64_t enter_time;
 	uint64_t holdtime_sum;
 	uint64_t holdtime_avg;
-	uint64_t spin_time;
 	uintptr_t volatile holdtime_count;
 	uintptr_t enter_pause_count;
 #endif /* OMR_THR_JLM_HOLD_TIMES */

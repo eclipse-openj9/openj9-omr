@@ -448,7 +448,6 @@ enum {
 				(monitor)->tracing->holdtime_avg = 0; \
 				(monitor)->tracing->spin2_count = 0; \
 				(monitor)->tracing->yield_count = 0; \
-				(monitor)->tracing->spin_time = 0; \
 			} \
 			if (isSlowEnter) { \
 				(monitor)->tracing->slow_count++; \

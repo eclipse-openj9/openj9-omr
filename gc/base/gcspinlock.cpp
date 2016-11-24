@@ -34,7 +34,6 @@
 			tracing->holdtime_avg = 0;\
 			tracing->spin2_count = 0;\
 			tracing->yield_count = 0;\
-			tracing->spin_time = 0;\
 		}\
 	} while (0)
 

@@ -622,6 +622,7 @@ void TR_SinkStores::recordPlacementForDefAlongEdge(TR_EdgeStorePlacement *edgePl
          (*edgeInfo->_symbolsUsedOrKilled) |= (*_usedSymbolsToMove);
          (*edgeInfo->_symbolsUsedOrKilled) |= (*_killedSymbolsToMove);
          _allEdgePlacements.add(edgePlacement);
+	 optimizer()->setRequestOptimization(OMR::basicBlockOrdering, true);
 
          if (_placementsForEdgesToBlock[toBlockNumber] == NULL)
             _placementsForEdgesToBlock[toBlockNumber] = new (trStackMemory()) TR_EdgeStorePlacementList(trMemory());

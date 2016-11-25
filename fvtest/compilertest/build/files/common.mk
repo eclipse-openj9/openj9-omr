@@ -198,6 +198,7 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/tests/FooIlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/LimitFileTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/OMRTestEnv.cpp \
+    $(JIT_PRODUCT_DIR)/tests/OptionSetTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/OpCodesTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/PPCOpCodesTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/Qux2Test.cpp \

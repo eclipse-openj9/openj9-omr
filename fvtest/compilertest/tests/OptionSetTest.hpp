@@ -16,37 +16,27 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef TEST_LIMITFILE_INCL
-#define TEST_LIMITFILE_INCL
+#ifndef TEST_OPTIONSET_INCL
+#define TEST_OPTIONSET_INCL
 
-#include <vector>
-#include "gtest/gtest.h"
+#include "LimitFileTest.hpp"
+
+#include <map>
+#include <string>
 
 namespace TestCompiler {
 
-class LimitFileTest : public ::testing::Test
+typedef std::map<const std::string, int> MethodSets;
+
+class OptionSetTest : public LimitFileTest
    {
    public:
-   LimitFileTest();
-   ~LimitFileTest();
-
-   void createVLog(const char *vlog, const char *limitFile = NULL);
-   void createAndCheckVLog(const char *vlog, const char *limitFile = NULL, int *iNegLine = NULL);
-
-   void checkVLogForMethod(const char *vlog, const char *method, const char *level = "warm", int *foundOnLine = NULL);
-
-   protected:
-   void delayUnlink(const char *file);
+   void applyOptionSets(const char *limitFile, const char *newFile, const TestCompiler::MethodSets &methods);
 
    private:
-   std::vector<const char *> _vlog;
-
-   bool fileExists(const char *name);
-   void generateVLog(const char *vlog, const char *limitFile = NULL);
-
-   void compileTests();
+   std::string getMethodFromLine(const std::string &line);
    };
 
 }
 
-#endif // !defined(TEST_LIMITFILE_INCL)
+#endif // !defined(TEST_OPTIONSET_INCL)

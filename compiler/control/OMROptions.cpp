@@ -3276,7 +3276,7 @@ OMR::Options::processOptionSet(
             endOpt = options + strlen(EXCLUDED_METHOD_OPTIONS_PREFIX);
             }
          //filter starts with a limitfile subset index
-         else if (*options >= '0' && *options < '9')
+         else if (*options >= '0' && *options <= '9')
             {
             filterHeader = options;
             // Option subset represented by an index (used in limitfiles)

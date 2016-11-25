@@ -503,7 +503,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       bool containsNonInlineGuard = false;
       bool checkCastTreesWillBeEliminated = false;
       if (!shouldOnlySpecializeLoops() && !refineAliases())
-         checkCastTreesWillBeEliminated = detectInvariantTrees(&checkCastTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
+         checkCastTreesWillBeEliminated = detectInvariantTrees(naturalLoop, &checkCastTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
       else
          checkCastTrees.deleteAll();
 
@@ -540,11 +540,11 @@ int32_t TR_LoopVersioner::performWithoutDominators()
              _nonInlineGuardConditionalsWillNotBeEliminated ||
              _loopTransferDone)
             {
-            conditionalsWillBeEliminated = detectInvariantTrees(&conditionalTrees, true, &containsNonInlineGuard, reverseBranchInLoops);
+            conditionalsWillBeEliminated = detectInvariantTrees(naturalLoop, &conditionalTrees, true, &containsNonInlineGuard, reverseBranchInLoops);
             }
          else
             {
-            conditionalsWillBeEliminated = detectInvariantTrees(&conditionalTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
+            conditionalsWillBeEliminated = detectInvariantTrees(naturalLoop, &conditionalTrees, false, &containsNonInlineGuard, reverseBranchInLoops);
             if (containsNonInlineGuard)
                {
                _neitherLoopCold = true;
@@ -1576,12 +1576,16 @@ TR::Node *TR_LoopVersioner::findCallNodeInBlockForGuard(TR::Node *node)
    }
 
 
-bool TR_LoopVersioner::detectInvariantTrees(List<TR::TreeTop> *trees, bool onlyDetectHighlyBiasedBranches, bool *containsNonInlineGuard, SharedSparseBitVector &reverseBranchInLoops)
+bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<TR::TreeTop> *trees, bool onlyDetectHighlyBiasedBranches, bool *containsNonInlineGuard, SharedSparseBitVector &reverseBranchInLoops)
    {
    bool foundInvariantTrees = false;
    ListElement<TR::TreeTop> *nextTree = trees->getListHead();
    ListElement<TR::TreeTop> *prevTree = NULL;
    TR::TreeTop *onlyNonInlineGuardConditional = NULL;
+
+
+   TR_ScratchList<TR::Block> blocksInWhileLoop(trMemory());
+   whileLoop->getBlocks(&blocksInWhileLoop);
 
    for (;nextTree;)
       {
@@ -1660,7 +1664,7 @@ bool TR_LoopVersioner::detectInvariantTrees(List<TR::TreeTop> *trees, bool onlyD
             if (!includeComparisonTree)
                {
                TR::Node *callNode = findCallNodeInBlockForGuard(node);
-               if (callNode)
+               if (callNode && blocksInWhileLoop.find(node->getBranchDestination()->getEnclosingBlock()))
                   {
                   nextRealNode = callNode;
                   includeComparisonTree = true;
@@ -1704,7 +1708,7 @@ bool TR_LoopVersioner::detectInvariantTrees(List<TR::TreeTop> *trees, bool onlyD
             if (!includeComparisonTree)
                {
                TR::Node *callNode = findCallNodeInBlockForGuard(node);
-               if (callNode)
+               if (callNode && blocksInWhileLoop.find(node->getBranchDestination()->getEnclosingBlock()))
                   {
                   nextRealNode = callNode;
                   includeComparisonTree = true;
@@ -3529,7 +3533,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
               !node->getSymbolReference()->getSymbol()->isAutoOrParm()) ||
              !node->getOpCode().hasSymbolReference()))
           {
-          traceMsg(comp(), "Added invariant node %s\n", node->getOpCode().getName());
+          traceMsg(comp(), "Added invariant node %p %s\n", node, node->getOpCode().getName());
           invariantNodes->add(new (trStackMemory()) TR_NodeParentSymRef(node, parent, NULL));
           }
        }

@@ -178,8 +178,7 @@ class TR_Structure
       if (f > SHRT_MAX-1)
          {
          TR_ASSERT(0, "nesting depth must be less than or equal to SHRT_MAX-1");
-         traceMsg(comp(), "nesting depth must be less than or equal to SHRT_MAX-1");
-         throw TR::CompilationException();
+         comp()->failCompilation<TR::CompilationException>("nesting depth must be less than or equal to SHRT_MAX-1");
          }
       _nestingDepth = f;
       }
@@ -191,8 +190,7 @@ class TR_Structure
       if (f > SHRT_MAX-1)
          {
          TR_ASSERT(0, "nesting depth must be less than or equal to SHRT_MAX-1");
-         traceMsg(comp(), "nesting depth must be less than or equal to SHRT_MAX-1");
-         throw TR::CompilationException();
+         comp()->failCompilation<TR::CompilationException>("nesting depth must be less than or equal to SHRT_MAX-1");
          }
       _anyCyclicRegionNestingDepth = f;
       }
@@ -207,8 +205,7 @@ class TR_Structure
       if (f > SHRT_MAX-1)
          {
          TR_ASSERT(0, "max nesting depth must be less than or equal to SHRT_MAX-1");
-         traceMsg(comp(), "max nesting depth must be less than or equal to SHRT_MAX-1");
-         throw TR::CompilationException();
+         comp()->failCompilation<TR::CompilationException>("max nesting depth must be less than or equal to SHRT_MAX-1");
          }
       _maxNestingDepth = f;
       }

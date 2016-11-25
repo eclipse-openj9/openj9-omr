@@ -98,7 +98,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
       //TR_ASSERT(0, "osr def analysis failed. need to undo whatever we did for OSR and disable OSR but we don't. Implementation is not completed.\n");
       traceMsg(comp(), "compilation failed for %s because osr def analysis failed\n",
             optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
-      throw TR::ILGenFailure();
+      comp()->failCompilation<TR::ILGenFailure>("compilation failed because osr def analysis failed");
       }
    comp()->printMemStatsAfter("computeOSRDefInfo");
 

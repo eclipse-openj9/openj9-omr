@@ -66,11 +66,11 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
       {
       if (jitConfig()->isCodeCacheFull())
          {
-         throw TR::CodeCacheError();
+         comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
          }
       else
          {
-         throw TR::RecoverableCodeCacheError();
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Failed to allocate code memory");
          }
       }
 

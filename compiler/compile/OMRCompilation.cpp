@@ -850,8 +850,7 @@ int32_t OMR::Compilation::compile()
       //
       if (_methodSymbol->catchBlocksHaveRealPredecessors(_methodSymbol->getFlowGraph(), self()))
          {
-         traceMsg(self(), "Catch blocks have real predecessors");
-         throw TR::CompilationException();
+         self()->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
          }
 
       if ((debug("dumpInitialTrees") || self()->getOption(TR_TraceTrees)) && self()->getOutFile() != NULL)
@@ -900,8 +899,7 @@ int32_t OMR::Compilation::compile()
          static char *abortafterilgen = feGetEnv("TR_TOSS_IL");
          if(abortafterilgen)
             {
-            traceMsg(self(), "Aborting after IL Gen due to TR_TOSS_IL");
-            throw TR::CompilationException();
+            self()->failCompilation<TR::CompilationException>("Aborting after IL Gen due to TR_TOSS_IL");
             }
 
 
@@ -1186,8 +1184,7 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
    if (inlinedCallStackSize >= TR_ByteCodeInfo::maxCallerIndex)
       {
       TR_ASSERT(0, "max number of inlined calls exceeded");
-      traceMsg(self(), "max number of inlined calls exceeded");
-      throw TR::ExcessiveComplexity();
+      self()->failCompilation<TR::ExcessiveComplexity>("max number of inlined calls exceeded");
       }
 
    if (inlinedCallStackSize > _maxInlineDepth)
@@ -1661,6 +1658,13 @@ void OMR::Compilation::resetVisitCounts(vcount_t count, TR::TreeTop *start)
       tt->getNode()->resetVisitCounts(count);
    }
 
+void OMR::Compilation::reportFailure(const char *reason)
+   {
+   traceMsg(self(), "Compilation Failed Because: %s\n", reason);
+   if (TR::Options::getCmdLineOptions()->getOption(TR_PrintErrorInfoOnCompFailure))
+      fprintf(stderr, "Compilation Failed Because: %s\n", reason);
+   }
+
 void OMR::Compilation::AddCopyPropagationRematerializationCandidate(TR::SymbolReference * sr)
    {
    _copyPropagationRematerializationCandidates[sr->getReferenceNumber()] = 1;
@@ -1817,14 +1821,12 @@ void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
    _numReservedIPICTrampolines = 0;
    if ( self()->cg()->committedToCodeCache() || !newCodeCache )
       {
-      traceMsg(self(), "Already committed to current code cache");
-
       if (newCodeCache)
          {
-         throw TR::RecoverableCodeCacheError();
+         self()->failCompilation<TR::RecoverableCodeCacheError>("Already committed to current code cache");
          }
 
-      throw TR::CodeCacheError();
+      self()->failCompilation<TR::CodeCacheError>("Already committed to current code cache");
       }
    }
 
@@ -2066,8 +2068,7 @@ OMR::Compilation::incVisitCount()
    if (_visitCount == MAX_VCOUNT-1)
       {
       TR_ASSERT(0, "_visitCount equals MAX_VCOUNT-1");
-      traceMsg(self(), "_visitCount equals MAX_VCOUNT-1");
-      throw TR::CompilationException();
+      self()->failCompilation<TR::CompilationException>("_visitCount equals MAX_VCOUNT-1");
       }
    return ++_visitCount;
    }

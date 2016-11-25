@@ -1295,8 +1295,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
 // Called by switchDispatch().
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    {
-   traceMsg(TR::comp(), "Automatically failing on lookup scheme 4");
-   throw TR::CompilationException();
+   TR::comp()->failCompilation<TR::CompilationException>("Automatically failing on lookup scheme 4");
 
 /*  TODO implement lookups
    int32_t  total = node->getNumChildren();

@@ -147,8 +147,7 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
 
    if (_methodIndex >= MAX_CALLER_INDEX)
       {
-      traceMsg(comp, "Exceeded MAX_CALLER_INDEX");
-      throw TR::MaxCallerIndexExceeded();
+      comp->failCompilation<TR::MaxCallerIndexExceeded>("Exceeded MAX_CALLER_INDEX");
       }
 
    if (_resolvedMethod->isSynchronized())
@@ -1032,9 +1031,8 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
             if (trace)
                traceMsg(self()->comp(), "#%d shares pending push slot\n", symRef->getReferenceNumber());
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
-              {
-               traceMsg(self()->comp(), "Pending push slot sharing detected");
-               throw TR::ILGenFailure();
+               {
+               self()->comp()->failCompilation<TR::ILGenFailure>("Pending push slot sharing detected");
                }
             }
 
@@ -1065,8 +1063,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
                traceMsg(self()->comp(), "#%d shares auto slot\n", symRef->getReferenceNumber());
             if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
                {
-               traceMsg(self()->comp(), "Auto/parm slot sharing detected");
-               throw TR::ILGenFailure();
+               self()->comp()->failCompilation<TR::ILGenFailure>("Auto/parm slot sharing detected");
                }
             }
          // Certain special temps go into the OSR buffer, but most don't
@@ -1223,8 +1220,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             {
             if (self()->catchBlocksHaveRealPredecessors(comp->getFlowGraph(), comp))
                {
-               traceMsg(comp, "Catch blocks have real predecessors");
-               throw TR::CompilationException();
+               comp->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
                }
             }
 
@@ -1774,8 +1770,7 @@ OMR::ResolvedMethodSymbol::setTempIndex(int32_t index, TR_FrontEnd * fe)
    {
    if ((_tempIndex = index) < 0)
       {
-      traceMsg(self()->comp(), "TR::ResolvedMethodSymbol::_tempIndex overflow");
-      throw TR::CompilationException();
+      self()->comp()->failCompilation<TR::CompilationException>("TR::ResolvedMethodSymbol::_tempIndex overflow");
       }
    return index;
    }

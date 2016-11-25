@@ -100,12 +100,6 @@ TR_FrontEnd::resizeCodeMemory(TR::Compilation *, uint8_t *, uint32_t numBytes)
    notImplemented("resizeCodeMemory");
    }
 
-void
-TR_FrontEnd::outOfMemory(TR::Compilation *, const char *)
-   {
-   notImplemented("outOfMemory");
-   }
-
 /*
  * Return conservative approximation of code-cache base.
  */

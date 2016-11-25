@@ -375,8 +375,7 @@ OMR::CodeGenPhase::performRegisterAssigningPhase(TR::CodeGenerator * cg, TR::Cod
 
       if (comp->compilationShouldBeInterrupted(AFTER_REGISTER_ASSIGNMENT_CONTEXT))
          {
-         traceMsg(comp, "interrupted after RA");
-         throw TR::CompilationInterrupted();
+         comp->failCompilation<TR::CompilationInterrupted>("interrupted after RA");
          }
       }
 
@@ -426,8 +425,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
    // check interrupt
    if (comp->compilationShouldBeInterrupted(AFTER_INSTRUCTION_SELECTION_CONTEXT))
       {
-      traceMsg(comp, "interrupted after instruction selection");
-      throw TR::CompilationInterrupted();
+      comp->failCompilation<TR::CompilationInterrupted>("interrupted after instruction selection");
       }
    }
 

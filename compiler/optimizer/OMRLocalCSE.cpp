@@ -405,8 +405,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
    {
    if (depth > MAX_DEPTH)
       {
-      traceMsg(comp(), "scratch space in local CSE");
-      throw TR::ExcessiveComplexity();
+      comp()->failCompilation<TR::ExcessiveComplexity>("scratch space in local CSE");
       }
 
    // If register pressure is high at this point, then nothing should be commoned or copy propagated across this point

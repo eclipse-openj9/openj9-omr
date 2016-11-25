@@ -740,6 +740,13 @@ public:
    static const char *getHotnessName(TR_Hotness t);
    const char *getHotnessName();
 
+   template<typename Exception>
+   void failCompilation(const char *reason)
+      {
+      OMR::Compilation::reportFailure(reason);
+      throw Exception();
+      }
+
    void setOptimizationPlan(TR_OptimizationPlan *optimizationPlan ) {_optimizationPlan = optimizationPlan;}
    TR_OptimizationPlan * getOptimizationPlan() {return _optimizationPlan;}
 
@@ -951,6 +958,7 @@ public:
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
+   void reportFailure(const char *reason);
 
 protected:
    TR::Options *_options;

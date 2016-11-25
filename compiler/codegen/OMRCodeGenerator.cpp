@@ -2407,14 +2407,13 @@ OMR::CodeGenerator::reserveCodeCache()
       // We may reach this point if all code caches have been used up
       // If some code caches have some space but cannot be used because they are reserved
       // we will throw an exception in the call to getDesignatedCodeCache
-      traceMsg(self()->comp(), "Cannot reserve code cache");
 
       if (self()->comp()->compileRelocatableCode())
          {
-         throw TR::RecoverableCodeCacheError();
+         self()->comp()->failCompilation<TR::RecoverableCodeCacheError>("Cannot reserve code cache");
          }
 
-      throw TR::CodeCacheError();
+      self()->comp()->failCompilation<TR::CodeCacheError>("Cannot reserve code cache");
       }
    }
 

@@ -724,6 +724,7 @@ TR::Register *
 TR_AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
    TR::SymbolReference *methodSymRef = callNode->getSymbolReference();
+   TR_ASSERT(methodSymRef->getSymbol()->castToMethodSymbol()->isComputed(), "system linkage only supports computed indirect call for now %p\n", callNode);
 
    // Evaluate VFT
    //
@@ -901,11 +902,7 @@ TR::Register *TR_AMD64SystemLinkage::buildDirectDispatch(
    return returnReg;
    }
 
-
-
-
 static const TR::RealRegister::RegNum NOT_ASSIGNED = (TR::RealRegister::RegNum)-1;
-
 
 uint32_t
 TR_AMD64SystemLinkage::getAlignment(TR::DataType type)

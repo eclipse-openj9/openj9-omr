@@ -55,7 +55,6 @@ CallMethod::CallMethod(TR::TypeDictionary *types)
                   Int32,
                   Int32);
    }
-#undef DOUBLESUM_LINE
 
 bool
 CallMethod::buildIL()
@@ -80,6 +79,50 @@ CallMethod::buildIL()
    return true;
    }
 
+ComputedCallMethod::ComputedCallMethod(TR::TypeDictionary *types)
+   : MethodBuilder(types)
+   {
+   DefineLine(LINETOSTR(__LINE__));
+   DefineFile(__FILE__);
+
+   DefineName("test_computed_call");
+   DefineParameter("n", Int32);
+   DefineReturnType(Int32);
+
+   DefineFunction((char *)"doublesum",
+                  (char *)__FILE__,
+                  (char *)DOUBLESUM_LINE,
+                  (void *)&doublesum,
+                  Int32,
+                  2,
+                  Int32,
+                  Int32);
+   }
+#undef DOUBLESUM_LINE
+
+bool
+ComputedCallMethod::buildIL()
+   {
+   Store("sum",
+      ConstInt32(0));
+
+   IlBuilder *loop=NULL;
+   ForLoopUp("i", &loop,
+             ConstInt32(0),
+             Load("n"),
+             ConstInt32(1));
+
+   loop->Store("sum",
+   loop->   ComputedCall("doublesum", 3,
+   loop->      ConstAddress((void*) &doublesum),
+   loop->      Load("sum"),
+   loop->      Load("i")));
+
+   Return(
+      Load("sum"));
+
+   return true;
+   }
 
 int
 main(int argc, char *argv[])
@@ -95,7 +138,7 @@ main(int argc, char *argv[])
    printf("Step 2: define type dictionary\n");
    TR::TypeDictionary types;
 
-   printf("Step 3: compile method builder\n");
+   printf("Step 3: compile Call method builder\n");
    CallMethod method(&types);
    uint8_t *entry=0;
    int32_t rc = compileMethodBuilder(&method, &entry);
@@ -105,12 +148,26 @@ main(int argc, char *argv[])
       exit(-2);
       }
 
-   printf("Step 3: invoke compiled code\n");
+   printf("Step 4: invoke compiled Call method\n");
    CallFunctionType *call=(CallFunctionType *)entry;
    for (int32_t n=0;n < 10;n++)
       printf("call(%2d) = %d\n", n, call(n));
 
-   printf ("Step 4: shutdown JIT\n");
+   printf("Step 5: compile ComputedCall method builder\n");
+   ComputedCallMethod computedCallMethod(&types);
+   rc = compileMethodBuilder(&computedCallMethod, &entry);
+   if (rc != 0)
+      {
+      fprintf(stderr,"FAIL: compilation error %d\n", rc);
+      exit(-2);
+      }
+
+   printf("Step 6: invoke compiled ComputedCall method\n");
+   call=(CallFunctionType *)entry;
+   for (int32_t n=0;n < 10;n++)
+      printf("call(%2d) = %d\n", n, call(n));
+
+   printf ("Step 7: shutdown JIT\n");
    shutdownJit();
 
    printf("PASS\n");

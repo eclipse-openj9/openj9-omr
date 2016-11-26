@@ -1125,6 +1125,7 @@ TR_S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR:
 
       if (callNode->getOpCode().isIndirect())
          {
+         TR_ASSERT(callNode->getSymbolReference()->getSymbol()->castToMethodSymbol()->isComputed(), "system linkage only supports computed indirect call for now %p\n", callNode);
          // get the address of the function descriptor
          TR::Register *targetReg = codeGen->evaluate(callNode->getFirstChild());
          generateRRInstruction(codeGen, TR::InstOpCode::BASR, callNode, systemReturnAddressRegister, targetReg, deps);

@@ -31,4 +31,11 @@ class CallMethod : public TR::MethodBuilder
    virtual bool buildIL();
    };
 
+class ComputedCallMethod : public TR::MethodBuilder
+   {
+   public:
+   ComputedCallMethod(TR::TypeDictionary *types);
+   virtual bool buildIL();
+   };
+
 #endif // !defined(CALL_INCL)

@@ -193,7 +193,10 @@ public:
    void StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value);
    void AppendBuilder(TR::IlBuilder *builder);
    TR::IlValue *Call(const char *name, int32_t numArgs, ...);
-   TR::IlValue *Call(const char *name, int32_t numArgs, TR::IlValue ** paramValues);
+   TR::IlValue *Call(const char *name, int32_t numArgs, TR::IlValue **argValues);
+   TR::IlValue *ComputedCall(const char *name, int32_t numArgs, ...);
+   TR::IlValue *ComputedCall(const char *name, int32_t numArgs, TR::IlValue **args);
+   TR::IlValue *genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlValue ** paramValues, bool isDirectCall = true);
    void Goto(TR::IlBuilder **dest);
    void Return();
    void Return(TR::IlValue *value);
@@ -367,6 +370,7 @@ protected:
    void appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBuilder **builder, uint32_t catchType);
    TR::IlValue *operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler);
    virtual void setHandlerInfo(uint32_t catchType);
+   TR::IlValue **processCallArgs(TR::Compilation *comp, int numArgs, va_list args);
    };
 
 } // namespace OMR

@@ -1406,7 +1406,19 @@ OMR::SymbolReferenceTable::findOrCreateCPSymbol(
    return symRef;
    }
 
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateComputedStaticMethodSymbol(
+   mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod * resolvedMethod)
+   {
+   return findOrCreateMethodSymbol(owningMethodIndex, cpIndex, resolvedMethod, TR::MethodSymbol::ComputedStatic, false /*isUnresolvedInCP*/);
+   }
 
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateStaticMethodSymbol(
+   mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod * resolvedMethod)
+   {
+   return findOrCreateMethodSymbol(owningMethodIndex, cpIndex, resolvedMethod, TR::MethodSymbol::Static, false /*isUnresolvedInCP*/);
+   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateMethodSymbol(

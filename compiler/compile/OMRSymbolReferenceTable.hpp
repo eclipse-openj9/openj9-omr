@@ -296,6 +296,8 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateRecompilationCounterSymbolRef(void *counterAddress);
 
    TR::SymbolReference * findOrCreateMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod *, TR::MethodSymbol::Kinds, bool = false);
+   TR::SymbolReference * findOrCreateComputedStaticMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod * resolvedMethod);
+   TR::SymbolReference * findOrCreateStaticMethodSymbol(mcount_t owningMethodIndex, int32_t cpIndex, TR_ResolvedMethod * resolvedMethod);
    TR::SymbolReference * findJavaLangClassFromClassSymbolRef();
 
    // FE, CG, optimizer

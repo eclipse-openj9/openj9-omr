@@ -930,11 +930,20 @@ TR::IlValue *
 IlBuilder::ConvertTo(TR::IlType *t, TR::IlValue *v)
    {
    appendBlock();
-   TR::IlValue *convertedValue = NewValue(t);
    TR::DataType t1 = v->getSymbol()->getDataType();
    TR::DataType t2 = t->getPrimitiveType();
+   if (t1 == t2)
+      {
+      TraceIL("IlBuilder[ %p ]::%d is ConvertTo (already has type %s) %d\n", this, v->getCPIndex(), t->getName(), v->getCPIndex());
+      return v;
+      }
+
    TR::ILOpCodes convertOp = TR::DataType::getDataTypeConversion(v->getSymbol()->getDataType(), t->getPrimitiveType());
+   TR_ASSERT(convertOp != TR::BadILOp, "Builder [ %p ] unknown conversion requested for value %d (TR::DataType %d) to type %s", this, v->getCPIndex(), (int)(v->getSymbol()->getDataType()), t->getName());
+
    TR::Node *result = TR::Node::create(convertOp, 1, loadValue(v));
+
+   TR::IlValue *convertedValue = NewValue(t);
    storeNode(convertedValue, result);
    TraceIL("IlBuilder[ %p ]::%d is ConvertTo(%s) %d\n", this, convertedValue->getCPIndex(), t->getName(), v->getCPIndex());
    ILB_REPLAY("%s = %s->ConvertTo(%s, %s);", REPLAY_VALUE(convertedValue), REPLAY_BUILDER(this), REPLAY_TYPE(t), REPLAY_VALUE(value));

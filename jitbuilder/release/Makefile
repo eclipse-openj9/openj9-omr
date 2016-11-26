@@ -42,6 +42,7 @@ ALL_TESTS = \
             simple \
             structarray \
             switch \
+            thunks \
             toiltype \
             worklist
 
@@ -70,6 +71,7 @@ all_goal: common_goal
 	./recfib
 	./structarray
 	./switch
+	./thunks
 	./toiltype
 
 
@@ -245,6 +247,13 @@ worklist : libjitbuilder.a Worklist.o
 	g++ -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl
 
 Worklist.o: src/Worklist.cpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+thunks : libjitbuilder.a Thunk.o
+	g++ -g -fno-rtti -o $@ Thunk.o -L. -ljitbuilder -ldl
+
+Thunk.o: src/Thunk.cpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

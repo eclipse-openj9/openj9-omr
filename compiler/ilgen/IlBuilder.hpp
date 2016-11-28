@@ -100,8 +100,8 @@ public:
       _connectedTrees(false),
       _comesBack(true),
       _haveReplayName(false),
-      _rpILCpp(0),
-      _isHandler(false)
+      _isHandler(false),
+      _rpILCpp(0)
       {
       }
    IlBuilder(TR::IlBuilder *source);

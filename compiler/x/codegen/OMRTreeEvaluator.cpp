@@ -2463,12 +2463,16 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       //sub group
       case TR::lsub:
       case TR::isub:
+      case TR::lusub:
+      case TR::iusub:
          op = SUBRegReg(nodeIs64Bit);
          break;
       case TR::ssub:
+      case TR::csub:
          op = SUB2RegReg;
          break;
       case TR::bsub:
+      case TR::busub:
          op = SUB1RegReg;
          break;
       //mul group
@@ -2531,13 +2535,17 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
             break;
          // sub group
          case TR::bsub:
+	 case TR::busub:
             subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV1RegReg, needsEflags);
             break;
          case TR::ssub:
          case TR::isub:
+	 case TR::csub:
+	 case TR::iusub:
             subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg, needsEflags);
             break;
          case TR::lsub:
+	 case TR::lusub:
             TR::Compiler->target.is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2) 
                                            : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg, needsEflags);
             break;
@@ -2561,7 +2569,23 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       bbstartNode->setLabel(label);
       }
 
-   generateLabelInstruction(JO4, node, overflowCatchBlock->getEntry()->getNode()->getLabel(), cg);
+   bool isUnsigned = false;
+   switch (node->getOverflowCHKOperation())
+   {
+       case TR::buadd:
+       case TR::cadd:
+       case TR::iuadd:
+       case TR::luadd:
+       case TR::busub:
+       case TR::csub:
+       case TR::iusub:
+       case TR::lusub:
+           isUnsigned = true;
+           break;
+   }
+
+   TR_X86OpCodes opcode = isUnsigned? JB4: JO4; 
+   generateLabelInstruction(opcode, node, overflowCatchBlock->getEntry()->getNode()->getLabel(), cg);
    cg->setVMThreadRequired(false);
    cg->decReferenceCount(operationNode);
    return NULL;

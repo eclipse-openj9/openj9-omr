@@ -1498,7 +1498,7 @@ TR::Register *OMR::X86::TreeEvaluator::bsubEvaluator(TR::Node *node, TR::CodeGen
 
    if (NEED_CC(node))
       {
-      TR_ASSERT(node->getOpCodeValue() == TR::bsub,
+      TR_ASSERT(node->getOpCodeValue() == TR::bsub || node->getOpCodeValue() == TR::busub,
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(node->getOpCode()));
 
       // we need eflags from integerAddAnalyser for the CC sequence
@@ -1743,6 +1743,20 @@ TR::Register *OMR::X86::TreeEvaluator::csubEvaluator(TR::Node *node, TR::CodeGen
    TR::MemoryReference *tempMR              = NULL;
    bool                 oursIsTheOnlyMemRef = true;
    TR::Compilation     *comp                = cg->comp();
+
+   if (NEED_CC(node))
+      {    
+      TR_ASSERT(node->getOpCodeValue() == TR::csub,
+                "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(node->getOpCode()));
+
+      // we need eflags from integerAddAnalyser for the CC sequence
+      TR_X86SubtractAnalyser(cg).integerSubtractAnalyser(node, SUB2RegReg,
+                                                               SUB2RegMem,
+                                                               MOV4RegReg,
+                                                               true/* produce eflags */);
+      targetRegister = node->getRegister();
+      return targetRegister;
+      }  
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be

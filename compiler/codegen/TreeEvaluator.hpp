@@ -24,7 +24,7 @@
 namespace TR
 {
 
-class TreeEvaluator: public OMR::TreeEvaluatorConnector
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluatorConnector
    {
 
    };

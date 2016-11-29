@@ -60,7 +60,7 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedEqualityTest(TR::Node * node, 
    TR::Node            *castClassNode    = node->getSecondChild();
    TR::SymbolReference *castClassSymRef  = castClassNode->getSymbolReference();
 
-   if (!isStaticClassSymRef(castClassSymRef))
+   if (!TR::TreeEvaluator::isStaticClassSymRef(castClassSymRef))
       {
       return true;
       }
@@ -107,7 +107,7 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(TR::Node * node, TR:
    TR::MethodSymbol    *helperSym        = node->getSymbol()->castToMethodSymbol();
    TR::SymbolReference *castClassSymRef  = castClassNode->getSymbolReference();
 
-   if (!isStaticClassSymRef(castClassSymRef))
+   if (!TR::TreeEvaluator::isStaticClassSymRef(castClassSymRef))
       {
       // We could theoretically do a super test on something with no sym, but it would require significant
       // changes to platform code. The benefit is little at this point (shows up from reference arraycopy reductions)
@@ -328,7 +328,7 @@ TR::Register *OMR::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeGener
 
 bool OMR::TreeEvaluator::nodeIsIArithmeticOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u)
    {
-   return nodeIsIAddOverflowCheck(node, u) || nodeIsISubOverflowCheck(node, u);
+   return TR::TreeEvaluator::nodeIsIAddOverflowCheck(node, u) || TR::TreeEvaluator::nodeIsISubOverflowCheck(node, u);
    }
 
 bool OMR::TreeEvaluator::nodeIsIAddOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u)
@@ -385,7 +385,7 @@ bool OMR::TreeEvaluator::nodeIsISubOverflowCheck(TR::Node *node, TR_ArithmeticOv
 
 bool OMR::TreeEvaluator::nodeIsLArithmeticOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u)
    {
-   return nodeIsLAddOverflowCheck(node, u) || nodeIsLSubOverflowCheck(node, u);
+   return TR::TreeEvaluator::nodeIsLAddOverflowCheck(node, u) || TR::TreeEvaluator::nodeIsLSubOverflowCheck(node, u);
    }
 
 bool OMR::TreeEvaluator::nodeIsLAddOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u)
@@ -507,7 +507,7 @@ void OMR::TreeEvaluator::evaluateNodesWithFutureUses(TR::Node *node, TR::CodeGen
       }
 
    for (int32_t i = 0; i<node->getNumChildren(); i++)
-      evaluateNodesWithFutureUses(node->getChild(i), cg);
+      TR::TreeEvaluator::evaluateNodesWithFutureUses(node->getChild(i), cg);
    }
 
 // This routine detects every subtree S of a node N that meets the following criteria:
@@ -536,7 +536,7 @@ void OMR::TreeEvaluator::initializeStrictlyFutureUseCounts(TR::Node *node, vcoun
       node->setVisitCount(visitCount);
 
       for (int32_t i = 0; i<node->getNumChildren(); i++)
-         initializeStrictlyFutureUseCounts(node->getChild(i), visitCount, cg);
+         TR::TreeEvaluator::initializeStrictlyFutureUseCounts(node->getChild(i), visitCount, cg);
       }
 
    if (node->getReferenceCount() > 0)

@@ -448,7 +448,7 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Compilation *comp = cg->comp();
    if (!comp->useCompressedPointers())
       {
-      return addressCastEvaluator<64, true>(node, cg);
+      return TR::TreeEvaluator::addressCastEvaluator<64, true>(node, cg);
       }
 
    // if comp->useCompressedPointers

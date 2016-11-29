@@ -56,7 +56,7 @@ namespace OMR
 namespace X86
 {
 
-class TreeEvaluator: public OMR::TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    {
 
    public:
@@ -156,7 +156,6 @@ class TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *c2iEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ibits2fEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *ifInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareFloatAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareDoubleAndBranchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compareFloatAndSetEvaluator(TR::Node *node, TR::CodeGenerator *cg);

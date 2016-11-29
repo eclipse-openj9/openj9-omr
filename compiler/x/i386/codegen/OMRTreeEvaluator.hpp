@@ -47,7 +47,7 @@ namespace X86
 namespace i386
 {
 
-class TreeEvaluator: public OMR::X86::TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
    {
 
    public:

@@ -28,9 +28,10 @@ namespace OMR { class TreeEvaluator; }
 namespace OMR { typedef OMR::TreeEvaluator TreeEvaluatorConnector; }
 #endif
 
-#include <stddef.h>     // for NULL
-#include <stdint.h>     // for int32_t, etc
-#include "il/Node.hpp"  // for vcount_t
+#include <stddef.h>               // for NULL
+#include <stdint.h>               // for int32_t, etc
+#include "infra/Annotations.hpp"  // for OMR_EXTENSIBLE
+#include "il/Node.hpp"            // for vcount_t
 
 class TR_OpaqueClassBlock;
 namespace TR { class SymbolReference; }
@@ -42,7 +43,7 @@ typedef TR::Register *(* TR_TreeEvaluatorFunctionPointer)(TR::Node *node, TR::Co
 namespace OMR
 {
 
-class TreeEvaluator
+class OMR_EXTENSIBLE TreeEvaluator
    {
    public:
    static bool instanceOfOrCheckCastNeedEqualityTest(TR::Node * castClassNode, TR::CodeGenerator *cg);

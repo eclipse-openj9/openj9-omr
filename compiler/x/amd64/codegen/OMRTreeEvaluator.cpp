@@ -52,7 +52,7 @@
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *targetRegister = loadConstant(node, node->getLongInt(), TR_RematerializableAddress, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::loadConstant(node, node->getLongInt(), TR_RematerializableAddress, cg);
 
    node->setRegister(targetRegister);
    return targetRegister;
@@ -60,7 +60,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::aconstEvaluator(TR::Node *node, TR
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *targetRegister = loadConstant(node, node->getLongInt(), TR_RematerializableLong, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::loadConstant(node, node->getLongInt(), TR_RematerializableLong, cg);
 
    node->setRegister(targetRegister);
    return targetRegister;
@@ -91,7 +91,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
             {
             node->setChild(1, valueChild->getFirstChild());
             TR::Node::recreate(node, TR::dstorei);
-            floatingPointStoreEvaluator(node, cg);
+            TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
             node->setChild(1, valueChild);
             TR::Node::recreate(node, TR::lstorei);
             }
@@ -99,7 +99,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
             {
             node->setChild(0, valueChild->getFirstChild());
             TR::Node::recreate(node, TR::dstore);
-            floatingPointStoreEvaluator(node, cg);
+            TR::TreeEvaluator::floatingPointStoreEvaluator(node, cg);
             node->setChild(0, valueChild);
             TR::Node::recreate(node, TR::lstore);
             }
@@ -108,14 +108,14 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR
          }
       }
 
-   return integerStoreEvaluator(node, cg);
+   return TR::TreeEvaluator::integerStoreEvaluator(node, cg);
    }
 
 // also handles ilload
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
-   TR::Register *reg = loadMemory(node, sourceMR, TR_RematerializableLong, node->getOpCode().isIndirect(), cg);
+   TR::Register *reg = TR::TreeEvaluator::loadMemory(node, sourceMR, TR_RematerializableLong, node->getOpCode().isIndirect(), cg);
 
    reg->setMemRef(sourceMR);
    node->setRegister(reg);
@@ -125,17 +125,17 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR:
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return logicalEvaluator(node, _logicalOpPackage[landOpPackage], cg);
+   return TR::TreeEvaluator::logicalEvaluator(node, _logicalOpPackage[landOpPackage], cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return logicalEvaluator(node, _logicalOpPackage[lorOpPackage], cg);
+   return TR::TreeEvaluator::logicalEvaluator(node, _logicalOpPackage[lorOpPackage], cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return logicalEvaluator(node, _logicalOpPackage[lxorOpPackage], cg);
+   return TR::TreeEvaluator::logicalEvaluator(node, _logicalOpPackage[lxorOpPackage], cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -181,7 +181,7 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::C
          regMemOpCode = MOVSXReg8Mem4;
          regRegOpCode = MOVSXReg8Reg4;
          }
-      return conversionAnalyser(node, regMemOpCode, regRegOpCode, cg);
+      return TR::TreeEvaluator::conversionAnalyser(node, regMemOpCode, regRegOpCode, cg);
       }
    }
 
@@ -239,32 +239,32 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::
       return targetRegister;
       }
    else
-      return conversionAnalyser(node, L4RegMem, MOVZXReg8Reg4, cg); // This zero-extends on AMD64
+      return TR::TreeEvaluator::conversionAnalyser(node, L4RegMem, MOVZXReg8Reg4, cg); // This zero-extends on AMD64
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVSXReg8Mem1, MOVSXReg8Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg8Mem1, MOVSXReg8Reg1, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg8Mem1, MOVZXReg8Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem1, MOVZXReg8Reg1, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::s2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVSXReg8Mem2, MOVSXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg8Mem2, MOVSXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg8Mem2, MOVZXReg8Reg2, cg);
    }
 
 TR::Register *OMR::X86::AMD64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -440,19 +440,4 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
    node->setRegister(treg);
    cg->decReferenceCount(child);
    return treg;
-   }
-
-
-// Comparing instanceof to a constant
-//
-TR::Register *OMR::X86::AMD64::TreeEvaluator::ifInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "TR::TreeEvaluator::ifInstanceOfHelper not implemented");
-   return NULL;
-   // TODO:AMD64: The ifInstanceOfHelper mechanism could use some cleaning up.
-   // Rather than changing the opcode, and then having VMisInstanceOfEvaluator
-   // check that opcode, it seems cleaner just to pass in any necessary
-   // information to VMisInstanceOfEvaluator via arguments.  It's not a real
-   // evaluator anyway, so we can add arguments to it (and we should also
-   // probably rename it.)
    }

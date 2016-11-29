@@ -35,7 +35,7 @@ extern TR::Register *intOrLongClobberEvaluate(TR::Node *node, bool nodeIs64Bit, 
 
 TR::Register *OMR::X86::TreeEvaluator::bconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *reg = loadConstant(node, node->getInt(), TR_RematerializableByte, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableByte, cg);
    node->setRegister(reg);
 
    if (cg->enableRegisterInterferences())
@@ -46,21 +46,21 @@ TR::Register *OMR::X86::TreeEvaluator::bconstEvaluator(TR::Node *node, TR::CodeG
 
 TR::Register *OMR::X86::TreeEvaluator::sconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *reg = loadConstant(node, node->getInt(), TR_RematerializableShort, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableShort, cg);
    node->setRegister(reg);
    return reg;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *reg = loadConstant(node, node->getInt(), TR_RematerializableChar, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableChar, cg);
    node->setRegister(reg);
    return reg;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::iconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *reg = loadConstant(node, node->getInt(), TR_RematerializableInt, cg);
+   TR::Register *reg = TR::TreeEvaluator::loadConstant(node, node->getInt(), TR_RematerializableInt, cg);
    node->setRegister(reg);
    return reg;
    }
@@ -70,7 +70,7 @@ TR::Register *OMR::X86::TreeEvaluator::negEvaluatorHelper(TR::Node        *node,
                                                TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
-   TR::Register *targetRegister = intOrLongClobberEvaluate(firstChild, getNodeIs64Bit(node, cg), cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(firstChild, TR::TreeEvaluator::getNodeIs64Bit(node, cg), cg);
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);
    generateRegInstruction(negInstr, node, targetRegister, cg);
@@ -79,14 +79,14 @@ TR::Register *OMR::X86::TreeEvaluator::negEvaluatorHelper(TR::Node        *node,
 
 TR::Register *OMR::X86::TreeEvaluator::integerNegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return negEvaluatorHelper(node, NEGReg(getNodeIs64Bit(node, cg)), cg);
+   return TR::TreeEvaluator::negEvaluatorHelper(node, NEGReg(TR::TreeEvaluator::getNodeIs64Bit(node, cg)), cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
-   bool is64Bit = getNodeIs64Bit(node, cg);
-   TR::Register *targetRegister = intOrLongClobberEvaluate(child, is64Bit, cg);
+   bool is64Bit = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(child, is64Bit, cg);
    node->setRegister(targetRegister);
    TR::Register *signRegister = cg->allocateRegister(TR_GPR);
    generateRegRegInstruction(MOVRegReg(is64Bit), node, signRegister, targetRegister, cg);
@@ -100,7 +100,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Register *targetRegister = negEvaluatorHelper(node, NEG1Reg, cg);
+   TR::Register *targetRegister = TR::TreeEvaluator::negEvaluatorHelper(node, NEG1Reg, cg);
 
    if (cg->enableRegisterInterferences())
       cg->getLiveRegisters(TR_GPR)->setByteRegisterAssociation(targetRegister);
@@ -110,7 +110,7 @@ TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGen
 
 TR::Register *OMR::X86::TreeEvaluator::snegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return negEvaluatorHelper(node, NEG2Reg, cg);
+   return TR::TreeEvaluator::negEvaluatorHelper(node, NEG2Reg, cg);
    }
 
 // also handles i2s, i2c, s2b, a2s, a2c, a2b, a2bu
@@ -238,37 +238,37 @@ TR::Register *OMR::X86::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGene
      reg4mem1Op = MOVSXReg4Mem1;
      reg4reg1Op = MOVSXReg4Reg1;
      }
-   return conversionAnalyser(node, reg4mem1Op, reg4reg1Op, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, reg4mem1Op, reg4reg1Op, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bu2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg4Mem1, MOVZXReg4Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem1, MOVZXReg4Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::b2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVSXReg2Mem1, MOVSXReg2Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg2Mem1, MOVSXReg2Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bu2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg2Mem1, MOVZXReg2Reg1, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg2Mem1, MOVZXReg2Reg1, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVSXReg4Mem2, MOVSXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVSXReg4Mem2, MOVSXReg4Reg2, cg);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
    }
 
 // s2b handled by i2b
 
 TR::Register *OMR::X86::TreeEvaluator::c2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
+   return TR::TreeEvaluator::conversionAnalyser(node, MOVZXReg4Mem2, MOVZXReg4Reg2, cg);
    }

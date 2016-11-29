@@ -22,6 +22,7 @@
 #include "cs2/cs2.h"
 #include "cs2/allocator.h"
 #include "cs2/bitmanip.h"
+#include "cs2/bitvectr.h"
 
 #ifdef CS2_ALLOCINFO
 #define allocate(x) allocate(x, __FILE__, __LINE__)
@@ -49,7 +50,7 @@ typedef uint64_t SparseBitIndex;
 typedef uint32_t SparseBitIndex;
 #endif
 
-template <class Allocator = CS2::allocator>
+template <class Allocator>
 class ASparseBitVector : private Allocator {
   class SparseBitRef;
   public:
@@ -1788,7 +1789,7 @@ bool ASparseBitVector<Allocator>::Andc(const B2 &inputVector) {
     SparseBitIndex pc = s->PopulationCount();
 
 
-    if (BitVector::hasFastRandomLookup()) {
+    if (inputVector.hasFastRandomLookup()) {
       if (sHighBits>lastOne) break;
 
       while (j<pc) {
@@ -2431,8 +2432,6 @@ ASparseBitVector<Allocator>::operator&=(const B2 &v) {
   return *this;
 }
 
-
-typedef ASparseBitVector<> SparseBitVector;
 }
 
 #ifdef CS2_ALLOCINFO

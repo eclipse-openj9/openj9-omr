@@ -40,7 +40,7 @@ namespace CS2 {
 
 typedef uint32_t ListIndex;
 
-template <class AElementType, class Allocator = CS2::allocator, uint32_t segmentBits = 8>
+template <class AElementType, class Allocator, uint32_t segmentBits = 8>
  class ListOf : public BaseArrayOf<AElementType, Allocator, segmentBits>  {
   public:
 

@@ -29,12 +29,8 @@
 #include <stdio.h>
 #include "cs2/cs2.h"
 #include <memory.h>
-#include "cs2/hashtab.h"
-#include "cs2/arrayof.h"
 
 namespace CS2 {
-
-  typedef exception allocator_exception;
 
   // Basic CS2 allocator class
   // CS2 allocators are per-instance, and should not have any non-static
@@ -43,10 +39,8 @@ namespace CS2 {
   // objects will share the same memory pool
   class malloc_allocator {
   public:
-      void *allocate(size_t size, const char *name=NULL) {
-      void *ret = (void *) malloc(size);
-      //      if (ret==0) throw allocator_exception(); disable for now
-      return ret;
+    void *allocate(size_t size, const char *name=NULL) {
+      return malloc(size);
     }
     void deallocate(void *pointer, size_t size, const char *name=NULL) {
       free(pointer);
@@ -58,132 +52,7 @@ namespace CS2 {
     template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return o;}
   };
 
-  template <class base_allocator = CS2::malloc_allocator>
-  class trace_allocator: private base_allocator {
-  public:
-    void *allocate(size_t size, const char *name=NULL ) {
-      void *ret = (void *) base_allocator::allocate(size);
-      printf ("%s %ld a %p\n", name?name:"", size, ret);
-      return ret;
-    }
-    void deallocate(void *pointer, size_t size, const char *name=NULL) {
-      printf ("%s %ld d %p\n", name?name:"", size, pointer);
-      base_allocator::deallocate(pointer,size);
-    }
-    void *reallocate(size_t newsize, void *pointer, size_t size, const char *name=NULL) {
-      void *ret = base_allocator::reallocate(newsize,pointer,size);
-      printf ("%s %ld r %p->%p\n", name?name:"", newsize, pointer, ret);
-      return ret;
-    }
-
-    template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return base_allocator::stats(o, a);}
-    trace_allocator(const base_allocator &a = base_allocator()) : base_allocator(a) {}
-  };
-
-  template <class base_allocator = CS2::malloc_allocator, bool base_stats = false>
-  class account_allocator: private base_allocator {
-  private:
-    struct AllocationRecord {
-      uint64_t _count;
-      uint64_t _size;
-
-      void bump(size_t size) { _count+=1; _size += size; }
-      void debump(size_t size) { _count-=1; _size -= size; }
-
-      AllocationRecord(size_t size=0) : _count(1), _size(size) {}
-
-      template <class ostr> friend
-      ostr & operator<< (ostr &o, const struct AllocationRecord &a) {
-        return o << "\t" << a._size << " bytes / " << a._count << "";
-        }
-    };
-
-    HashTable<const char *, AllocationRecord, base_allocator> accounting;
-  public:
-    void *allocate(size_t size, const char *name=NULL ) {
-      void *ret = (void *) base_allocator::allocate(size, name);
-
-      HashIndex hi;
-      if (!name) name="**unknown**";
-
-      if (accounting.Locate((const char *)name, hi)) {
-        accounting[hi].bump(size);
-      } else {
-        accounting.Add((const char *)name, AllocationRecord(size));
-      }
-      return ret;
-    }
-    void deallocate(void *pointer, size_t size, const char *name=NULL) {
-
-      HashIndex hi;
-      if(!name) name="**unknown**";
-      if (accounting.Locate((const char *)name, hi)) {
-        accounting[hi].debump(size);
-        if (accounting[hi]._count==0) accounting.Remove(hi);
-      }
-
-      base_allocator::deallocate(pointer,size, name);
-    }
-
-    void *reallocate(size_t newsize, void *pointer, size_t size, const char *name=NULL) {
-      HashIndex hi;
-      if (!name) name="**unknown**";
-      if (accounting.Locate(name, hi)) {
-        accounting[hi].debump(size);
-        accounting[hi].bump(newsize);
-      }
-
-      return base_allocator::reallocate(newsize,pointer,size, name);
-    }
-
-
-    struct stat_sort {
-      stat_sort(size_t s=0, size_t c=0, const char *n=NULL) : size(s), count(c), name(n){}
-
-      bool operator< (const struct stat_sort s2) {
-        return size > s2.size;
-      }
-      size_t size, count;
-      const char *name;
-
-      stat_sort &operator=(const stat_sort &s){
-        size = s.size;
-        count = s.count;
-        name = s.name;
-        return *this;
-      }
-      template <class ostr> friend
-      ostr & operator<< (ostr &o, const struct stat_sort &a) {
-        return o << a.size << " (" << a.count << ")" << "\t" << (a.name?a.name:"");
-      }
-    };
-
-    template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) {
-      ArrayOf<struct stat_sort, allocator> sstats(a);
-
-      uint32_t count=0;
-      typename HashTable<const char *, AllocationRecord, base_allocator>::Cursor ac(accounting);
-      for (ac.SetToFirst(); ac.Valid(); ac.SetToNext()){
-        count++;
-      }
-      sstats.GrowTo(count);
-      count=0;
-      for (ac.SetToFirst(); ac.Valid(); ac.SetToNext()){
-        sstats[count++] = stat_sort(accounting[ac]._size, accounting[ac]._count, accounting.KeyAt(ac));
-      }
-      sstats.Sort();
-
-      o << "Allocator stats:\n"
-        << sstats;
-      if (base_stats) return base_allocator::stats(o, a);
-      return o;
-    }
-
-    account_allocator(const base_allocator &a = base_allocator()) : base_allocator(a), accounting(a) {}
-    account_allocator(const account_allocator &a) : base_allocator(a), accounting(a) {}
-  };
-
-  template <class base_allocator = CS2::malloc_allocator>
+  template <class base_allocator>
   class stat_allocator: private base_allocator {
   public:
     void *allocate(size_t size, const char *name = NULL) {
@@ -250,109 +119,7 @@ namespace CS2 {
   uint64_t high_watermark;
   };
 
-  template <class base_allocator = CS2::malloc_allocator>
-  class check_allocator: private base_allocator {
-    struct allocation_record {
-      size_t size;
-      const char *name;
-
-      allocation_record(size_t s, const char *n) {
-        size =s; name = n;
-      }
-    };
-
-    HashTable<void *, allocation_record, base_allocator> record_table;
-  public:
-
-    check_allocator(const base_allocator &a = base_allocator()) : base_allocator(a), record_table(a) {}
-    check_allocator(const check_allocator &c) : base_allocator(base_allocator(c)), record_table(c) {}
-
-    ~check_allocator() {
-      typename HashTable<void *, allocation_record, base_allocator>::Cursor rc(record_table);
-      for (rc.SetToFirst(); rc.Valid(); rc.SetToNext()) {
-        allocation_record &r = record_table[rc];
-        printf("Leftover pointer: %p[%ld] %s\n", record_table.KeyAt(rc),r.size, r.name?r.name:"");
-      }
-      printf("Allocator check complete\n");
-    }
-
-    void *allocate(size_t size, const char *name=NULL) {
-      void *ret = base_allocator::allocate(size+2*sizeof(void *), name);
-      memcpy(ret, &ret, sizeof(void *));
-      memcpy((char *)ret+size+sizeof(void *), &ret, sizeof(void *));
-      ret = (void *)((char *)ret + sizeof(void *));
-
-      HashIndex hi;
-      if (record_table.Locate(ret, hi)){
-        struct allocation_record x = record_table[hi];
-
-        printf("duplicate return: %p\n*alloc1=%s[%ld]\n*alloc2=%s[%ld]\n",
-               ret,  x.name?x.name:"", x.size,name?name:"",  size);
-      }
-      record_table.Add(ret, allocation_record(size, name), hi);
-
-      return ret;
-    }
-    void deallocate(void *pointer, size_t size, const char *name=NULL) {
-      HashIndex hi;
-      if (!record_table.Locate(pointer, hi)) {
-        printf("not found: %p %ld (%s)\n", pointer, size, name?name:"");
-        return;
-      }
-      struct allocation_record x = record_table[hi];
-      record_table.Remove(hi);
-      if (size != x.size) {
-        printf("mismatched size: %ld!=%ld\n*alloc=%s\n*dealloc=%s\n",
-               size, x.size, name?name:"", x.name?x.name:"");
-        CS2Assert(false, ("Overflow: %p", pointer));
-      }
-      pointer = (void *)((char *)pointer - sizeof(void *));
-      if (memcmp(pointer, &pointer, sizeof(void *)))
-        printf("buffer underflow: %p!=%p\n*alloc=%s[%ld]\n*dealloc=%s[%ld]\n",
-               pointer, *(void **)pointer, x.name?x.name:"", x.size,name?name:"",  size);
-      if (memcmp((char *)pointer+size+sizeof(void *), &pointer, sizeof(void *))) {
-        printf("buffer overflow: %p!=%p\n*alloc=%s[%ld]\n*dealloc=%s[%ld]\n",
-               pointer, *(void **)((char *)pointer+size+4), x.name?x.name:"", x.size,name?name:"", size);
-        CS2Assert(false, ("Overflow: %p", pointer));
-      }
-
-      base_allocator::deallocate(pointer, size+2*sizeof(void *), name);
-    }
-    void *reallocate(size_t newsize, void *pointer, size_t size, const char *name = NULL) {
-      HashIndex hi;
-      if (!record_table.Locate(pointer, hi)) {
-        printf("not found: %p %d (%s)\n", pointer, hi, name?name:NULL);
-        return NULL;
-      }
-
-      struct allocation_record x = record_table[hi];
-      record_table.Remove(hi);
-
-      pointer = (void *)((char *)pointer - sizeof(void *));
-
-      if (size != x.size)
-        printf("mismatched size: %ld!=%ld\n*alloc=%s\n*dealloc=%s\n",
-               size, x.size, x.name, name);
-      if (memcmp(pointer, &pointer, sizeof(void *)))
-        printf("buffer underflow: %p!=%p\n*alloc=%s[%ld]\n*dealloc=%s[%ld]\n",
-               pointer, *(void **)pointer, x.name?x.name:"", x.size,name?name:"", size);
-      if (memcmp((char *)pointer+size+sizeof(void *), &pointer, sizeof(void *))){
-        printf("buffer overflow: %p!=%p\n*alloc=%s[%ld]\n*dealloc=%s[%ld]\n",
-               pointer, *(void **)((char *)pointer+size+4), x.name?x.name:"", x.size,name?name:"", size);
-      }
-      void *ret = base_allocator::reallocate(newsize+2*sizeof(void *), pointer, size+2*sizeof(void *), name);
-      memcpy(ret, &ret, sizeof(void *));
-      memcpy((char *)ret+newsize+sizeof(void *), &ret, sizeof(void *));
-      ret = (void *)((char *)ret + sizeof(void *));
-
-      record_table.Add(ret, allocation_record(newsize, name), hi);
-      return ret;
-    }
-
-    template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return base_allocator::stats(o, a);}
-  };
-
-  template <size_t segmentsize = 65536, uint32_t segmentcount= 10, class base_allocator = CS2::malloc_allocator>
+  template <size_t segmentsize = 65536, uint32_t segmentcount= 10, class base_allocator = ::CS2::malloc_allocator>
   class heap_allocator : private base_allocator {
   private:
 
@@ -603,29 +370,7 @@ namespace CS2 {
     friend bool operator !=(const shared_allocator &left, const shared_allocator &right) { return !(operator ==(left, right)); }
   };
 
-  template <class base_allocator>
-    class named_allocator: private base_allocator {
-    const char *allocator_name;
-  public:
-    named_allocator(base_allocator b = base_allocator(), const char *name = NULL) : base_allocator(b), allocator_name(name) {}
-
-    void *allocate(size_t size, const char *name = NULL) {
-      return base_allocator::allocate(size, name?name:allocator_name);
-    }
-
-    void deallocate(void *pointer, size_t size, const char *name = NULL) {
-      return base_allocator::deallocate(pointer, size, name?name:allocator_name);
-    }
-
-    void *reallocate(size_t newsize, void *pointer, size_t size, const char *name=NULL) {
-      return base_allocator::reallocate(newsize, pointer, size, name?name:allocator_name);
-    }
-
-    template <class ostr, class allocator> ostr& stats(ostr &o, allocator &a) { return base_allocator::stats(o, a);}
-
-  };
-
-  template <size_t segmentsize = 65536, class base_allocator = CS2::allocator>
+  template <size_t segmentsize = 65536, class base_allocator = ::CS2::malloc_allocator>
   class arena_allocator : private base_allocator {
 
     struct Segment {
@@ -705,7 +450,6 @@ namespace CS2 {
     size_t allocated;
   };
 
-  class allocator : public malloc_allocator { };
 }
 
 #endif // CS2_ALLOCATOR_H

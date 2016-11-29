@@ -262,18 +262,18 @@ TR::Instruction *TR_ShrinkWrap::findJumpInstructionsInBlock (int32_t blockNum, T
 
    TR_ASSERT(current != _swBlockInfo[blockNum]._startInstr, "Current should not have been able to make it all the way back to the start instruction without encountering a jump\n");
 
-   CS2::HashTable<TR::Instruction *, bool> setOfJumps;
+   CS2::HashTable<TR::Instruction *, bool, TR::Allocator> setOfJumps(comp()->allocator());
    findJumpInstructionsInCodeRegion(_swBlockInfo[blockNum]._startInstr, _swBlockInfo[blockNum]._endInstr, setOfJumps);
 
    //Populate jmpInstrs from setOfJumps
-   CS2::HashTable<TR::Instruction *, bool>::Cursor h(setOfJumps);
+   CS2::HashTable<TR::Instruction *, bool, TR::Allocator>::Cursor h(setOfJumps);
    for (h.SetToFirst(); h.Valid(); h.SetToNext())
       jmpInstrs->push_front(setOfJumps.KeyAt(h));
 
    return current;
    }
 
-void TR_ShrinkWrap::findJumpInstructionsInCodeRegion (TR::Instruction *firstInstr, TR::Instruction *lastInstr, CS2::HashTable<TR::Instruction *, bool> & setOfJumps)
+void TR_ShrinkWrap::findJumpInstructionsInCodeRegion (TR::Instruction *firstInstr, TR::Instruction *lastInstr, CS2::HashTable<TR::Instruction *, bool, TR::Allocator> & setOfJumps)
    {
    TR::Instruction *loc = lastInstr;
    while (loc != firstInstr)

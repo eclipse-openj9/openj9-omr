@@ -1688,7 +1688,7 @@ OMR::Node::getAndDecChild(int32_t c)
 
 
 TR::Node *
-OMR::Node::duplicateTreeWithCommoningImpl(CS2::HashTable<TR::Node*, TR::Node*, CS2::allocator> &nodeMapping)
+OMR::Node::duplicateTreeWithCommoningImpl(CS2::HashTable<TR::Node*, TR::Node*, TR::Allocator> &nodeMapping)
    {
    CS2::HashIndex hashIndex = 0;
 
@@ -1737,9 +1737,9 @@ OMR::Node::duplicateTree(bool duplicateChildren)
  * Method to duplicate an entire subtree. Tries to do so 'safely' by maintaining a mapping of visited (and duplicated) nodes
  */
 TR::Node *
-OMR::Node::duplicateTreeWithCommoning()
+OMR::Node::duplicateTreeWithCommoning(TR::Allocator allocator)
    {
-   CS2::HashTable<TR::Node*, TR::Node*, CS2::allocator> nodeMapping;
+   CS2::HashTable<TR::Node*, TR::Node*, TR::Allocator> nodeMapping(allocator);
    return self()->duplicateTreeWithCommoningImpl(nodeMapping);
    }
 

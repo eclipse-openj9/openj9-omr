@@ -5175,7 +5175,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
 void OMR::Z::TreeEvaluator::evaluateRegLoads(TR::Node *node, TR::CodeGenerator *cg)
    {
    using namespace CS2;
-   QueueOf<TR::Node*> queue;
+   QueueOf<TR::Node*, TR::Allocator> queue(cg->comp()->allocator());
    queue.Push(node);
    TR::BitVector visited(cg->comp()->allocator());
    while (!queue.IsEmpty())

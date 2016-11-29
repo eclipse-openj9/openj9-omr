@@ -63,7 +63,7 @@ namespace CS2 {
 /// \ingroup CompilerServices
 ///
 // ------------------------------------------------------------------------
-template <class AElementType, class Allocator = CS2::allocator, size_t segmentBits = 8>
+template <class AElementType, class Allocator, size_t segmentBits = 8>
 class BaseArrayOf : private Allocator {
 public:
 
@@ -396,7 +396,7 @@ CS2_ARTEMP inline unsigned long CS2_BASEARDECL::MemoryUsage() const {
 }
 
 
-template <class AElementType, class Allocator = CS2::allocator, size_t segmentBits = 8, class Initializer = AElementType>
+template <class AElementType, class Allocator, size_t segmentBits = 8, class Initializer = AElementType>
   class ArrayOf : public CS2_BASEARDECL {
 
   using CS2_BASEARDECL::fNumberOfSegments;
@@ -742,7 +742,7 @@ private:
   uint32_t     fNumInitialized;
 };
 
-template <class AElementType, class Allocator = CS2::allocator, size_t segmentBits = 8, class Initializer = AElementType>
+template <class AElementType, class Allocator, size_t segmentBits = 8, class Initializer = AElementType>
   class StaticArrayOf : public ArrayOf<AElementType, Allocator, segmentBits, Initializer> {
   public:
     StaticArrayOf (size_t size,

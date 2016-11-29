@@ -76,7 +76,7 @@ class TR_ShrinkWrap : public TR::Optimization
    void prePerformOnBlocks();
    void analyzeInstructions();
    TR::Instruction *findJumpInstructionsInBlock (int32_t blockNum, TR::list<TR::Instruction*> *jmpInstrs);
-   void findJumpInstructionsInCodeRegion (TR::Instruction *firstInstr, TR::Instruction *endInstr, CS2::HashTable<TR::Instruction *, bool> & setOfJumps);
+   void findJumpInstructionsInCodeRegion (TR::Instruction *firstInstr, TR::Instruction *endInstr, CS2::HashTable<TR::Instruction *, bool, TR::Allocator> &setOfJumps);
    void computeSaveRestoreSets(TR_RegisterAnticipatability &registerAnticipatability, TR_RegisterAvailability &registerAvailability);
    void doPlacement(TR_RegisterAnticipatability &registerAnticipatability, TR_RegisterAvailability &registerAvailability);
    PreservedRegisterInfo *findPreservedRegisterInfo(int32_t regIndex);

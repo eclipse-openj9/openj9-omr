@@ -834,9 +834,6 @@ int32_t OMR::Compilation::compile()
    // Force a crash during compilation if the crashDuringCompile option is set
    TR_ASSERT_FATAL(!self()->getOption(TR_CrashDuringCompilation), "crashDuringCompile option is set");
 
-   int32_t optRtn = 0;
-   int32_t cgRtn = 0;
-
    {
    LexicalTimer t("compile", self()->signature(), self()->phaseTimer());
    TR::LexicalMemProfiler mp("compile", self()->signature(), self()->phaseMemProfiler());
@@ -878,7 +875,7 @@ int32_t OMR::Compilation::compile()
       TR_DebuggingCounters::initializeCompilation();
       if (printCodegenTime) optTime.startTiming(self());
 
-      optRtn = self()->performOptimizations();
+      self()->performOptimizations();
 
       self()->printMemStatsAfter("optimization");
 
@@ -894,31 +891,29 @@ int32_t OMR::Compilation::compile()
          }
 #endif
 
-      if (optRtn == 0)
+      static char *abortafterilgen = feGetEnv("TR_TOSS_IL");
+      if(abortafterilgen)
          {
-         static char *abortafterilgen = feGetEnv("TR_TOSS_IL");
-         if(abortafterilgen)
-            {
-            self()->failCompilation<TR::CompilationException>("Aborting after IL Gen due to TR_TOSS_IL");
-            }
-
-
-         if (_recompilationInfo)
-            _recompilationInfo->beforeCodeGen();
-
-         {
-           if (printCodegenTime) codegenTime.startTiming(self());
-           cgRtn = self()->cg()->generateCode();
-
-           self()->printMemStatsAfter("all codegen");
-
-           if (printCodegenTime) codegenTime.stopTiming(self());
+         self()->failCompilation<TR::CompilationException>("Aborting after IL Gen due to TR_TOSS_IL");
          }
 
-         if (_recompilationInfo && (cgRtn == 0))
-            _recompilationInfo->endOfCompilation();
+      if (_recompilationInfo)
+         _recompilationInfo->beforeCodeGen();
 
-         }
+        {
+        if (printCodegenTime)
+           codegenTime.startTiming(self());
+
+        self()->cg()->generateCode();
+
+        self()->printMemStatsAfter("all codegen");
+
+        if (printCodegenTime)
+           codegenTime.stopTiming(self());
+        }
+
+      if (_recompilationInfo)
+         _recompilationInfo->endOfCompilation();
 
 #ifdef J9_PROJECT_SPECIFIC
       if (self()->getOptions()->getVerboseOption(TR_VerboseInlining))
@@ -1012,16 +1007,10 @@ int32_t OMR::Compilation::compile()
    // If that happened we want to fail the compilation at this point.
    //
    if (_methodSymbol->unimplementedOpcode())
-      return COMPILATION_UNIMPL_OPCODE;
+      throw TR::UnimplementedOpCode();
 
    if (!_ilGenSuccess)
-      return COMPILATION_IL_GEN_FAILURE;
-
-   if (optRtn != COMPILATION_SUCCEEDED)
-     return optRtn;
-
-   if (cgRtn != COMPILATION_SUCCEEDED)
-     return cgRtn;
+      throw TR::ILGenFailure();
 
 #ifdef J9_PROJECT_SPECIFIC
    if (self()->getOption(TR_TraceCG))
@@ -1071,11 +1060,10 @@ TR_YesNoMaybe OMR::Compilation::isCpuExpensiveCompilation(int64_t threshold)
    return t < 0 ? TR_maybe : (t > threshold ? TR_yes : TR_no);
    }
 
-int32_t OMR::Compilation::performOptimizations()
+void OMR::Compilation::performOptimizations()
    {
    // *this    swipeable for debugging purposes
 
-   int32_t optRtn = 0;
    _optimizer = TR::Optimizer::createOptimizer(self(), self()->getJittedMethodSymbol(), false);
 
    // This opt is needed if certain ilgen input is seen but there is no optimizer created at this point.
@@ -1093,15 +1081,13 @@ int32_t OMR::Compilation::performOptimizations()
       }
 
    if (_optimizer)
-      optRtn = _optimizer->optimize();
+      _optimizer->optimize();
 
    if (!self()->getOption(TR_EnableSpecializedEpilogues) &&
        self()->getOption(TR_DisableShrinkWrapping) &&
        !TR::Compiler->target.cpu.isZ() && // 390 now uses UseDefs in CodeGenPrep
        !self()->getOptions()->getVerboseOption(TR_VerboseCompYieldStats))
       _optimizer = NULL;
-
-   return optRtn;
    }
 
 bool OMR::Compilation::incInlineDepth(TR::ResolvedMethodSymbol * method, TR_ByteCodeInfo & bcInfo, int32_t cpIndex, TR::SymbolReference *callSymRef, bool directCall, TR_PrexArgInfo *argInfo)

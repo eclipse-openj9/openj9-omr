@@ -144,7 +144,7 @@ class Optimizer
          const OptimizationStrategy *strategy = NULL, uint16_t VNType = 0);
 
    // Optimize the current method
-   int32_t optimize();
+   void optimize();
 
    // Get the method symbol
    TR::ResolvedMethodSymbol *getMethodSymbol()  { return _methodSymbol; }

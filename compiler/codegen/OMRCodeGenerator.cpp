@@ -1355,7 +1355,7 @@ OMR::CodeGenerator::enableRefinedAliasSets()
 
 
 
-int32_t
+void
 OMR::CodeGenerator::generateCode()
    {
    LexicalTimer t("Code Generation", self()->comp()->phaseTimer());
@@ -1363,7 +1363,6 @@ OMR::CodeGenerator::generateCode()
    LexicalXmlTag cgMsg(self());
 
    self()->getCodeGeneratorPhase().performAll();
-   return 0;
    }
 
 

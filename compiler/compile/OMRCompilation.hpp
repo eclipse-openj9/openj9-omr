@@ -124,8 +124,9 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 // compilation.
 #define COMPILATION_SUCCEEDED          0
 #define COMPILATION_REQUESTED          1
-#define COMPILATION_IL_GEN_FAILURE     8
-#define COMPILATION_UNIMPL_OPCODE     12
+#define COMPILATION_IL_GEN_FAILURE     2
+#define COMPILATION_UNIMPL_OPCODE      3
+#define COMPILATION_FAILED             4
 #define COMPILATION_METADATA_CREATION_FAILURE 24
 #define COMPILATION_INTERRUPTED -1
 #define COMPILATION_LOOPS_OR_BASICBLOCKS_EXCEEDED -2
@@ -723,8 +724,7 @@ public:
 
    static void shutdown(TR_FrontEnd *);
 
-   int32_t performOptimizations();
-   int32_t generateCode();
+   void performOptimizations();
 
    bool isOptServer() const { return _isOptServer;}
    bool isServerInlining() const { return _isServerInlining; }

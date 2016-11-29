@@ -957,7 +957,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
 
    if (instr->getOpCodeValue() == TR::InstOpCode::DCB)
       {
-      trfprintf(pOutFile, "Debug Counter Bump");
+      
+      if (static_cast<TR::S390DebugCounterBumpInstruction*>(instr)->getAssignableReg())
+         {
+         print(pOutFile, static_cast<TR::S390DebugCounterBumpInstruction*>(instr)->getAssignableReg());
+         }
+      else
+         {
+         trfprintf(pOutFile, "Spill Reg");
+         }
+         
+      trfprintf(pOutFile, ", Debug Counter Bump");
       }
 
    if (instr->getOpCodeValue() == TR::InstOpCode::FENCE)

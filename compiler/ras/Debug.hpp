@@ -169,7 +169,6 @@ namespace TR { class IA32WriteBarrierSnippet; }
 namespace TR { class AMD64WriteBarrierSnippet; }
 namespace TR { class X86JNIPauseSnippet; }
 namespace TR { class X86PassJNINullSnippet; }
-namespace TR { class X86HeapAllocationSnippet; }
 namespace TR { class X86CheckFailureSnippet; }
 namespace TR { class X86CheckFailureSnippetWithResolve; }
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
@@ -829,7 +828,6 @@ public:
 #endif
    void print(TR::FILE *, TR::X86JNIPauseSnippet *);
    void print(TR::FILE *, TR::X86PassJNINullSnippet *);
-   void print(TR::FILE *, TR::X86HeapAllocationSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippetWithResolve *);
    void print(TR::FILE *, TR::X86BoundCheckWithSpineCheckSnippet *);

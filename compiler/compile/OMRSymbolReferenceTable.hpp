@@ -240,8 +240,8 @@ class SymbolReferenceTable
    TR::SymbolReference * getSymRef(CommonNonhelperSymbol i);
    TR::SymbolReference * getSymRef(int32_t i) { return baseArray.element(i); }
 
-   TR::SymbolReference * createRuntimeHelper(TR_RuntimeHelper, bool = false, bool = false, bool preservesAllRegisters = false);
-   TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper, bool, bool, bool preservesAllRegisters);
+   TR::SymbolReference * createRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters);
+   TR::SymbolReference * findOrCreateRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters);
 
    TR::SymbolReference * findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index);
 

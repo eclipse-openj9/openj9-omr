@@ -1053,7 +1053,10 @@ bool OMR::CodeGenerator::isMethodInAtomicLongGroup (TR::RecognizedMethod rm)
 TR::Linkage *
 OMR::CodeGenerator::getLinkage(TR_LinkageConventions lc)
    {
-   return _linkages[lc] ? _linkages[lc] : self()->createLinkage(lc);
+   if (lc == TR_None)
+      return NULL;
+   else
+      return _linkages[lc] ? _linkages[lc] : self()->createLinkage(lc);
    }
 
 void OMR::CodeGenerator::initializeLinkage()

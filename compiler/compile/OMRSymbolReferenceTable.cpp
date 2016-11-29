@@ -25,7 +25,7 @@
 #include <string.h>                            // for strlen, strncmp, etc
 #include "codegen/CodeGenerator.hpp"           // for CodeGenerator
 #include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, feGetEnv
-#include "env/KnownObjectTable.hpp"        // for KnownObjectTable, etc
+#include "env/KnownObjectTable.hpp"            // for KnownObjectTable, etc
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/Machine.hpp"                 // for Machine
 #include "codegen/RealRegister.hpp"            // for RealRegister
@@ -677,11 +677,12 @@ OMR::SymbolReferenceTable::createIsOverriddenSymbolRef(TR::ResolvedMethodSymbol 
 
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::createRuntimeHelper(
-   TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters)
+OMR::SymbolReferenceTable::createRuntimeHelper(TR_RuntimeHelper index,
+                                               bool             canGCandReturn,
+                                               bool             canGCandExcept,
+                                               bool             preservesAllRegisters)
    {
-
-   TR::MethodSymbol * methodSymbol = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+   TR::MethodSymbol * methodSymbol = TR::MethodSymbol::create(trHeapMemory(),runtimeHelperLinkage(index));
    methodSymbol->setHelper();
    methodSymbol->setMethodAddress(runtimeHelperValue(index));
 
@@ -699,7 +700,10 @@ OMR::SymbolReferenceTable::createRuntimeHelper(
    }
 
 TR::SymbolReference *
-OMR::SymbolReferenceTable::findOrCreateRuntimeHelper(TR_RuntimeHelper index, bool canGCandReturn, bool canGCandExcept, bool preservesAllRegisters)
+OMR::SymbolReferenceTable::findOrCreateRuntimeHelper(TR_RuntimeHelper index,
+                                                     bool             canGCandReturn,
+                                                     bool             canGCandExcept,
+                                                     bool             preservesAllRegisters)
    {
 
    TR::SymbolReference * symRef = baseArray.element(index);
@@ -713,7 +717,7 @@ OMR::SymbolReferenceTable::findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbo
    {
    if (!element(index))
       {
-      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_Helper);
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(),TR_None);
       sym->setHelper();
       sym->setIsInlinedByCG();
       element(index) = new (trHeapMemory()) TR::SymbolReference(self(), index, sym);

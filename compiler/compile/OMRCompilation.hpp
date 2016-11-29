@@ -118,16 +118,17 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 
 #define TR_NOP_TRANSLATE_TABLE_SIZE 256
 
-
-
 // Return codes from the compilation. Any non-zero return code will abort the
 // compilation.
-#define COMPILATION_SUCCEEDED          0
-#define COMPILATION_REQUESTED          1
-#define COMPILATION_IL_GEN_FAILURE     2
-#define COMPILATION_UNIMPL_OPCODE      3
-// Keep this the last one
-#define COMPILATION_FAILED             4
+enum CompilationReturnCodes
+   {
+   COMPILATION_SUCCEEDED = 0,
+   COMPILATION_REQUESTED,
+   COMPILATION_IL_GEN_FAILURE,
+   COMPILATION_UNIMPL_OPCODE,
+   // Keep this the last one
+   COMPILATION_FAILED
+   };
 
 #if defined(DEBUG)
    // For a production build the body of of TR::Compilation::diagnostic is empty, so

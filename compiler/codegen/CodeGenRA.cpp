@@ -409,11 +409,12 @@ OMR::CodeGenerator::prepareRegistersForAssignment()
       km = registerCursor->getKindAsMask();
 
       /*
-       * Sometimes real registers marked as being a TR_FPR register can be used as a TR_VRF register
-       * isFPRUsedAsVFR is used to check for this
-       * if true, RA is told is may need to assign TR_VRF as well as TR_FPR registers if a TR_FPR real register is seen
+       * Sometimes TR_VRF virtual registers need to be assigned even when there are no TR_VRF real registers
+       * This can occur when there is a full overlap between TR_VRF and TR_FPR real registers and they are all marked as TR_FPR
+       * isFPRUsedAsVRF is used to indicate if assignment is necessary
+       * if true, RA is told it may need to assign TR_VRF as well as TR_FPR registers if a TR_FPR real register is seen
        */
-      if (registerCursor->getKind() == TR_FPR && self()->isFPRUsedAsVFR())
+      if (registerCursor->getKind() == TR_FPR && self()->isFPRUsedAsVRF())
          km |= TO_KIND_MASK(TR_VRF);
 
       if (!(foundKindsMask & km))

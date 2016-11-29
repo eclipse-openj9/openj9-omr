@@ -618,7 +618,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual void simulateNodeEvaluation (TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary);
 
-   bool isFPRUsedAsVFR() { return _targetProcessorInfo.supportsSSE2(); }
+   bool isFPRUsedAsVRF() { return _targetProcessorInfo.supportsSSE2(); }
 
    protected:
 

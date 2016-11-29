@@ -750,13 +750,13 @@ OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg)
    }
 
 void
-OMR::Block::uncommonNodesBetweenBlocks(TR::Compilation *comp, TR::Block *newBlock)
+OMR::Block::uncommonNodesBetweenBlocks(TR::Compilation *comp, TR::Block *newBlock, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR_ScratchList<TR::SymbolReference> symbolReferenceTempsA(self()->trMemory());
    TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(self()->trMemory());
    TR_ScratchList<TR::SymbolReference> symbolReferenceTempsC(self()->trMemory());
 
-   TR_HandleInjectedBasicBlock ibb(comp, NULL, comp->getMethodSymbol(),
+   TR_HandleInjectedBasicBlock ibb(comp, NULL, methodSymbol? methodSymbol: comp->getMethodSymbol(),
                                    symbolReferenceTempsA,
                                    injectedBasicBlockTemps,
                                    symbolReferenceTempsC);
@@ -793,7 +793,12 @@ OMR::Block::isTargetOfJumpWhoseTargetCanBeChanged(TR::Compilation * comp)
    }
 
 TR::Block *
-OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors)
+OMR::Block::splitWithGivenMethodSymbol(TR::ResolvedMethodSymbol *methodSymbol, TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors){
+   return self()->split(startOfNewBlock, cfg, fixupCommoning, copyExceptionSuccessors, methodSymbol);
+}
+
+TR::Block *
+OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR_Structure * structure = cfg->getStructure();
    cfg->setStructure(NULL);
@@ -814,7 +819,7 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
 
    if (fixupCommoning)
       {
-      self()->uncommonNodesBetweenBlocks(comp, block2);
+      self()->uncommonNodesBetweenBlocks(comp, block2, methodSymbol);
       }
 
    self()->moveSuccessors(block2);

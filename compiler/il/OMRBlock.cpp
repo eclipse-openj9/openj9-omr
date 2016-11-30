@@ -1336,13 +1336,21 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
 
       if (isExceptionEdge)
          {
-         newBlock->setHandlerInfo(
-            to->getCatchType(),
-            to->getInlineDepth(),
-            to->getHandlerIndex(),
-            to->getOwningMethod(),
-            c);
-         TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
+         if (to->isOSRCatchBlock())
+            newBlock->setHandlerInfoWithOutBCInfo(
+                  TR::Block::CanCatchOSR, 
+                  to->getInlineDepth(), 
+                  -1, 
+                  to->getOwningMethod(), 
+                  c);
+         else
+            newBlock->setHandlerInfo(
+               to->getCatchType(),
+               to->getInlineDepth(),
+               to->getHandlerIndex(),
+               to->getOwningMethod(),
+               c);
+            TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
          TR::SymbolReferenceTable *srtab = c->getSymRefTab();
          TR::SymbolReference *excSR = srtab->findOrCreateExcpSymbolRef();
          TR::SymbolReference *throwSR = srtab->findOrCreateAThrowSymbolRef(method);

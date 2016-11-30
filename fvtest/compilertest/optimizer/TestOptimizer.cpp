@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2016, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,25 +16,15 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-// NOTE: This file will be deleted once IPATHS are fixed for test
+#include "optimizer/Optimizer.hpp"
 
-#ifndef TR_OPTIMIZER_INCL
-#define TR_OPTIMIZER_INCL
+const OptimizationStrategy *TestCompiler::Optimizer::_mockStrategy = NULL;
 
-#include "optimizer/TestOptimizer.hpp"
-
-namespace TR
-{
-
-class Optimizer : public TestCompiler::OptimizerConnector
+const OptimizationStrategy *
+TestCompiler::Optimizer::optimizationStrategy(TR::Compilation *c)
    {
-   public:
-
-   Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, bool isIlGen,
-         const OptimizationStrategy *strategy = NULL, uint16_t VNType = 0) :
-      TestCompiler::OptimizerConnector(comp, methodSymbol, isIlGen, strategy, VNType) {}
-   };
-
-}
-
-#endif
+   if(TestCompiler::Optimizer::_mockStrategy)
+      return TestCompiler::Optimizer::_mockStrategy;
+   else
+      return OMR::OptimizerConnector::optimizationStrategy(c);
+   }

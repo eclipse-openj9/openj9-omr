@@ -53,8 +53,6 @@ class BuilderTest : public TestDriver
    virtual void invokeNestedControlFlowLoopTests();
 
    protected:
-   virtual void allocateTestData();
-   virtual void deallocateTestData();
    virtual void compileTestMethods();
    virtual void invokeTests();
 
@@ -113,7 +111,6 @@ class RecursiveFibonnaciMethod : public TR::MethodBuilder
    public:
    RecursiveFibonnaciMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class IterativeFibonnaciMethod : public TR::MethodBuilder
@@ -121,7 +118,6 @@ class IterativeFibonnaciMethod : public TR::MethodBuilder
    public:
    IterativeFibonnaciMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class DoWhileFibonnaciMethod : public TR::MethodBuilder
@@ -129,7 +125,6 @@ class DoWhileFibonnaciMethod : public TR::MethodBuilder
    public:
    DoWhileFibonnaciMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class DoWhileWithBreakMethod : public TR::MethodBuilder
@@ -137,7 +132,6 @@ class DoWhileWithBreakMethod : public TR::MethodBuilder
    public:
    DoWhileWithBreakMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class DoWhileWithContinueMethod : public TR::MethodBuilder
@@ -145,7 +139,6 @@ class DoWhileWithContinueMethod : public TR::MethodBuilder
    public:
    DoWhileWithContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class DoWhileWithBreakAndContinueMethod : public TR::MethodBuilder
@@ -153,7 +146,6 @@ class DoWhileWithBreakAndContinueMethod : public TR::MethodBuilder
    public:
    DoWhileWithBreakAndContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class WhileDoFibonnaciMethod : public TR::MethodBuilder
@@ -161,7 +153,6 @@ class WhileDoFibonnaciMethod : public TR::MethodBuilder
    public:
    WhileDoFibonnaciMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class WhileDoWithBreakMethod : public TR::MethodBuilder
@@ -169,7 +160,6 @@ class WhileDoWithBreakMethod : public TR::MethodBuilder
    public:
    WhileDoWithBreakMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class WhileDoWithContinueMethod : public TR::MethodBuilder
@@ -177,7 +167,6 @@ class WhileDoWithContinueMethod : public TR::MethodBuilder
    public:
    WhileDoWithContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class WhileDoWithBreakAndContinueMethod : public TR::MethodBuilder
@@ -185,7 +174,6 @@ class WhileDoWithBreakAndContinueMethod : public TR::MethodBuilder
    public:
    WhileDoWithBreakAndContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class BasicForLoopUpMethod : public TR::MethodBuilder
@@ -193,7 +181,6 @@ class BasicForLoopUpMethod : public TR::MethodBuilder
 	public:
 	BasicForLoopUpMethod(TR::TypeDictionary *types, BuilderTest *test);
 	virtual bool buildIL();
-	BuilderTest *bldTest() { return static_cast<BuilderTest *>(test());}
 	};
 
 class BasicForLoopDownMethod : public TR::MethodBuilder
@@ -201,7 +188,6 @@ class BasicForLoopDownMethod : public TR::MethodBuilder
 	public:
 	BasicForLoopDownMethod(TR::TypeDictionary *types, BuilderTest *test);
 	virtual bool buildIL();
-	BuilderTest *bldTest() { return static_cast<BuilderTest *>(test());}
 	};
 
 class ForLoopUPIfThenElseMethod : public TR::MethodBuilder
@@ -209,7 +195,6 @@ class ForLoopUPIfThenElseMethod : public TR::MethodBuilder
    public:
    ForLoopUPIfThenElseMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test());}
    };
 
 class WhileDoIfThenElseMethod : public TR::MethodBuilder
@@ -217,7 +202,6 @@ class WhileDoIfThenElseMethod : public TR::MethodBuilder
    public:
    WhileDoIfThenElseMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test());}
    };
 
 class DoWhileIfThenElseMethod : public TR::MethodBuilder
@@ -225,7 +209,6 @@ class DoWhileIfThenElseMethod : public TR::MethodBuilder
    public:
    DoWhileIfThenElseMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test());}
    };
 
 class ShootoutNestedLoopMethod : public TR::MethodBuilder
@@ -233,7 +216,6 @@ class ShootoutNestedLoopMethod : public TR::MethodBuilder
    public:
    ShootoutNestedLoopMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class AbsDiffIfThenElseMethod : public TR::MethodBuilder
@@ -241,7 +223,6 @@ class AbsDiffIfThenElseMethod : public TR::MethodBuilder
    public:
    AbsDiffIfThenElseMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class MaxIfThenMethod : public TR::MethodBuilder
@@ -249,7 +230,6 @@ class MaxIfThenMethod : public TR::MethodBuilder
    public:
    MaxIfThenMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class SubIfFalseThenMethod : public TR::MethodBuilder
@@ -257,7 +237,6 @@ class SubIfFalseThenMethod : public TR::MethodBuilder
    public:
    SubIfFalseThenMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class IfThenElseLoopMethod : public TR::MethodBuilder
@@ -265,7 +244,6 @@ class IfThenElseLoopMethod : public TR::MethodBuilder
    public:
    IfThenElseLoopMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class ForLoopContinueMethod : public TR::MethodBuilder
@@ -273,7 +251,6 @@ class ForLoopContinueMethod : public TR::MethodBuilder
    public:
    ForLoopContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class ForLoopBreakMethod : public TR::MethodBuilder
@@ -281,7 +258,6 @@ class ForLoopBreakMethod : public TR::MethodBuilder
    public:
    ForLoopBreakMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 class ForLoopBreakAndContinueMethod : public TR::MethodBuilder
@@ -289,7 +265,6 @@ class ForLoopBreakAndContinueMethod : public TR::MethodBuilder
    public:
    ForLoopBreakAndContinueMethod(TR::TypeDictionary *types, BuilderTest *test);
    virtual bool buildIL();
-   BuilderTest *bldTest() { return static_cast<BuilderTest *>(test()); }
    };
 
 } // namespace TestCompiler

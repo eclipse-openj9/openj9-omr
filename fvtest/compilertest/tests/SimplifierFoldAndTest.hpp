@@ -29,10 +29,8 @@ class SimplifierFoldAndTest : public TestDriver
 
    protected:
 
-   virtual void allocateTestData();
    virtual void compileTestMethods();
    virtual void invokeTests();
-   virtual void deallocateTestData();
 
    private:
 

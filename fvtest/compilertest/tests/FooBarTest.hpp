@@ -32,10 +32,8 @@ class FooBarTest : public TestDriver
    static TR::ResolvedMethod * barMethod() { return _barCompilee; }
 
    protected:
-   virtual void allocateTestData();
    virtual void compileTestMethods();
    virtual void invokeTests();
-   virtual void deallocateTestData();
 
    private:
    const static int32_t _dataArraySize = 100;

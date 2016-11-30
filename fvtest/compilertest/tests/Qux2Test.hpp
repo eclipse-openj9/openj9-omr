@@ -26,10 +26,8 @@ typedef int32_t (testMethodType)(int32_t);
 class Qux2Test : public TestDriver
    {
    protected:
-   virtual void allocateTestData();
    virtual void compileTestMethods();
    virtual void invokeTests();
-   virtual void deallocateTestData();
 
    private:
 

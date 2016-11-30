@@ -18,35 +18,20 @@
 
 #include <stdio.h>
 
-#ifdef MS_WINDOWS
-#undef BYTE
-#include "windows.h"
-#define PATH_MAX MAXPATHLEN
-#else
-#include <dlfcn.h>
-#endif
-
 #include <errno.h>
 
 #include "TestDriver.hpp"
-#include "il/Node.hpp"
-#include "il/Symbol.hpp"
-#include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"
 #include "compile/Method.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "ilgen/MethodBuilder.hpp"
-#include "gtest/gtest.h"
 
 namespace TestCompiler
 {
 void
 TestDriver::RunTest()
    {
-   allocateTestData();
    compileTestMethods();
    invokeTests();
-   deallocateTestData();
    }
 
 int32_t

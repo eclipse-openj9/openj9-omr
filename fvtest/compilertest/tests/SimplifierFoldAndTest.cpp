@@ -30,16 +30,6 @@ namespace TestCompiler
 SimplifierFoldAndTest::TestCompiledMethodType SimplifierFoldAndTest::testCompiledMethod = 0;
 
 void
-SimplifierFoldAndTest::allocateTestData()
-   {
-   }
-
-void
-SimplifierFoldAndTest::deallocateTestData()
-   {
-   }
-
-void
 SimplifierFoldAndTest::compileTestMethods()
    {
    int32_t rc = 0;

@@ -36,16 +36,6 @@ BarMethodType  * FooBarTest::_bar = 0;
 TR::ResolvedMethod * FooBarTest::_barCompilee;
 
 void
-FooBarTest::allocateTestData()
-   {
-   }
-
-void
-FooBarTest::deallocateTestData()
-   {
-   }
-
-void
 FooBarTest::compileTestMethods()
    {
    int32_t rc = 0;

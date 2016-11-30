@@ -3836,6 +3836,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case RubyHelper_vm_setconstant:         return "vm_setconstant";
          case RubyHelper_rb_vm_env_write:        return "rb_vm_env_write";
          case RubyHelper_vm_jit_stack_check:     return "vm_jit_stack_check";
+         case RubyHelper_rb_str_freeze:          return "rb_str_freeze"; 
+         case RubyHelper_rb_ivar_set:            return "rb_ivar_set"; 
          }
       }
 #endif

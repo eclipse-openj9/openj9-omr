@@ -847,7 +847,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
       TR::RealRegister *mBase = toRealRegister(self()->getModBase());
       self()->getUnresolvedSnippet()->setAddressOfDataReference(cursor);
       self()->getUnresolvedSnippet()->setMemoryReference(self());
-      cg->addRelocation(new (cg->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, self()->getUnresolvedSnippet()->getSnippetLabel()));
+      cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, self()->getUnresolvedSnippet()->getSnippetLabel()));
       *wcursor = 0xEA000000; // insert a branch to the snippet
       wcursor++;
       cursor += ARM_INSTRUCTION_LENGTH;

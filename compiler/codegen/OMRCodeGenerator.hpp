@@ -77,8 +77,8 @@ class TR_OSRMethodData;
 class TR_PseudoRegister;
 class TR_RegisterCandidate;
 class TR_RegisterCandidates;
-class TR_Relocation;
-class TR_RelocationDebugInfo;
+namespace TR { class Relocation; }
+namespace TR { class RelocationDebugInfo; }
 class TR_ResolvedMethod;
 class TR_ScratchRegisterManager;
 namespace TR { class GCStackAtlas; }
@@ -1059,12 +1059,12 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Relocations
    //
-   TR::list<TR_Relocation*>& getRelocationList() {return _relocationList;}
-   TR::list<TR_Relocation*>& getAOTRelocationList() {return _aotRelocationList;}
+   TR::list<TR::Relocation*>& getRelocationList() {return _relocationList;}
+   TR::list<TR::Relocation*>& getAOTRelocationList() {return _aotRelocationList;}
 
-   void addRelocation(TR_Relocation *r);
-   void addAOTRelocation(TR_Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node);
-   void addAOTRelocation(TR_Relocation *r, TR_RelocationDebugInfo *info);
+   void addRelocation(TR::Relocation *r);
+   void addAOTRelocation(TR::Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node);
+   void addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info);
 
    void addProjectSpecializedRelocation(uint8_t *location,
                                           uint8_t *target,
@@ -1888,8 +1888,8 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR_BackingStore*> _internalPointerSpillFreeList;
    TR::list<TR_BackingStore*> _collectedSpillList;
    TR::list<TR_BackingStore*> _allSpillList;
-   TR::list<TR_Relocation *> _relocationList;
-   TR::list<TR_Relocation *> _aotRelocationList;
+   TR::list<TR::Relocation *> _relocationList;
+   TR::list<TR::Relocation *> _aotRelocationList;
    TR::list<uint8_t*> _breakPointList;
 
    TR::list<TR::SymbolReference*> _variableSizeSymRefPendingFreeList;

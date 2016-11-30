@@ -69,8 +69,10 @@ typedef enum
    TR_NumGlobalValueItems           = 9
    } TR_GlobalValueItem;
 
+namespace TR {
+
 /** encapsulates debug information about a relocation record */
-struct TR_RelocationDebugInfo
+struct RelocationDebugInfo
    {
    /** the file name of the code that generated the associated RR*/
    char* file;
@@ -82,25 +84,25 @@ struct TR_RelocationDebugInfo
    TR_ALLOC(TR_Memory::RelocationDebugInfo);
    };
 
-class TR_Relocation
+class Relocation
    {
    uint8_t *_updateLocation;
-   TR_RelocationDebugInfo* _genData;
+   TR::RelocationDebugInfo* _genData;
 
    public:
    TR_ALLOC(TR_Memory::Relocation)
 
-   TR_Relocation() : _updateLocation(NULL) {}
-   TR_Relocation(uint8_t *p) : _updateLocation(p) {}
+   Relocation() : _updateLocation(NULL) {}
+   Relocation(uint8_t *p) : _updateLocation(p) {}
 
    virtual uint8_t *getUpdateLocation()           {return _updateLocation;}
    uint8_t *setUpdateLocation(uint8_t *p) {return (_updateLocation = p);}
 
    virtual bool isAOTRelocation() { return true; }
 
-   TR_RelocationDebugInfo* getDebugInfo();
+   TR::RelocationDebugInfo* getDebugInfo();
 
-   void setDebugInfo(TR_RelocationDebugInfo* info);
+   void setDebugInfo(TR::RelocationDebugInfo* info);
 
    /**dumps a trace of the internals - override as required */
    virtual void trace(TR::Compilation* comp);
@@ -110,13 +112,13 @@ class TR_Relocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_LabelRelocation : public TR_Relocation
+class LabelRelocation : public TR::Relocation
    {
    TR::LabelSymbol *_label;
    public:
-   TR_LabelRelocation() : TR_Relocation(), _label(NULL) {}
-   TR_LabelRelocation(uint8_t *p, TR::LabelSymbol *l) : TR_Relocation(p),
-                                                       _label(l) {}
+   LabelRelocation() : TR::Relocation(), _label(NULL) {}
+   LabelRelocation(uint8_t *p, TR::LabelSymbol *l) : TR::Relocation(p),
+                                                     _label(l) {}
 
    TR::LabelSymbol *getLabel()                  {return _label;}
    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) {return (_label = l);}
@@ -124,43 +126,43 @@ class TR_LabelRelocation : public TR_Relocation
    bool isAOTRelocation() { return false; }
    };
 
-class TR_8BitLabelRelativeRelocation : public TR_LabelRelocation
+class LabelRelative8BitRelocation : public TR::LabelRelocation
    {
    public:
-   TR_8BitLabelRelativeRelocation() : TR_LabelRelocation() {}
-   TR_8BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l) {}
+   LabelRelative8BitRelocation() : TR::LabelRelocation() {}
+   LabelRelative8BitRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l) {}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_12BitLabelRelativeRelocation : public TR_LabelRelocation
+class LabelRelative12BitRelocation : public TR::LabelRelocation
    {
    bool _isCheckDisp;
    public:
-   TR_12BitLabelRelativeRelocation() : TR_LabelRelocation() {}
-   TR_12BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l, bool isCheckDisp = true)
-      : TR_LabelRelocation(p, l), _isCheckDisp(isCheckDisp) {}
+   LabelRelative12BitRelocation() : TR::LabelRelocation() {}
+   LabelRelative12BitRelocation(uint8_t *p, TR::LabelSymbol *l, bool isCheckDisp = true)
+      : TR::LabelRelocation(p, l), _isCheckDisp(isCheckDisp) {}
    bool isCheckDisp() {return _isCheckDisp;}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
 
-class TR_16BitLabelRelativeRelocation : public TR_LabelRelocation
+class LabelRelative16BitRelocation : public TR::LabelRelocation
    {
    // field _instructionOffser is used for 16-bit relocation when we need to specify where relocation starts relative to the first byte of the instruction.
-   //Eg.: BranchPreload instruction BPP (48-bit instruction), where 16-bit relocation is at 32-47 bits, TR_16BitLabelRelativeRelocation(*p,*l, 4, true)
+   //Eg.: BranchPreload instruction BPP (48-bit instruction), where 16-bit relocation is at 32-47 bits, TR::LabelRelative16BitRelocation(*p,*l, 4, true)
    //
-   // The regular TR_16BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l) only supports instructions with 16-bit relocations,
+   // The regular TR::LabelRelative16BitRelocation(uint8_t *p, TR::LabelSymbol *l) only supports instructions with 16-bit relocations,
    // where the relocation is 2 bytes (hardcoded value) form the start of the instruction
    bool _instructionOffset;
    int8_t _addressDifferenceDivisor;
    public:
-   TR_16BitLabelRelativeRelocation()
-      : TR_LabelRelocation(), _addressDifferenceDivisor(1) {}
-   TR_16BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l), _addressDifferenceDivisor(1) {}
-   TR_16BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l, int8_t divisor, bool isInstOffset = false)
-      : TR_LabelRelocation(p, l), _addressDifferenceDivisor(divisor), _instructionOffset(isInstOffset) {}
+   LabelRelative16BitRelocation()
+      : TR::LabelRelocation(), _addressDifferenceDivisor(1) {}
+   LabelRelative16BitRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l), _addressDifferenceDivisor(1) {}
+   LabelRelative16BitRelocation(uint8_t *p, TR::LabelSymbol *l, int8_t divisor, bool isInstOffset = false)
+      : TR::LabelRelocation(p, l), _addressDifferenceDivisor(divisor), _instructionOffset(isInstOffset) {}
 
    bool isInstructionOffset()  {return _instructionOffset;}
    bool setInstructionOffset(bool b) {return (_instructionOffset = b);}
@@ -170,33 +172,33 @@ class TR_16BitLabelRelativeRelocation : public TR_LabelRelocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_24BitLabelRelativeRelocation : public TR_LabelRelocation
+class LabelRelative24BitRelocation : public TR::LabelRelocation
    {
    public:
-   TR_24BitLabelRelativeRelocation() : TR_LabelRelocation() {}
-   TR_24BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l) {}
+   LabelRelative24BitRelocation() : TR::LabelRelocation() {}
+   LabelRelative24BitRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l) {}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_32BitLabelRelativeRelocation : public TR_LabelRelocation
+class LabelRelative32BitRelocation : public TR::LabelRelocation
    {
    public:
-   TR_32BitLabelRelativeRelocation() : TR_LabelRelocation() {}
-   TR_32BitLabelRelativeRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l) {}
+   LabelRelative32BitRelocation() : TR::LabelRelocation() {}
+   LabelRelative32BitRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l) {}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_InstructionAbsoluteRelocation : public TR_Relocation
+class InstructionAbsoluteRelocation : public TR::Relocation
    {
    public:
-   TR_InstructionAbsoluteRelocation(uint8_t *updateLocation,
+   InstructionAbsoluteRelocation(uint8_t *updateLocation,
                                     TR::Instruction *i,
                                     bool useEndAddr) /* specified if the start or
                                                         the end address of the instruction
                                                         is required */
-      : TR_Relocation(updateLocation), _instruction(i), _useEndAddr(useEndAddr) {}
+      : TR::Relocation(updateLocation), _instruction(i), _useEndAddr(useEndAddr) {}
    virtual void apply(TR::CodeGenerator *cg);
 
    bool isAOTRelocation() { return false; }
@@ -212,17 +214,17 @@ class TR_InstructionAbsoluteRelocation : public TR_Relocation
 
 //FIXME: these label absolute relocations should really be a subclass of instruction
 // absolute.
-class TR_LabelAbsoluteRelocation : public TR_LabelRelocation
+class LabelAbsoluteRelocation : public TR::LabelRelocation
    {
    public:
-   TR_LabelAbsoluteRelocation() : TR_LabelRelocation() {}
-   TR_LabelAbsoluteRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l) {}
+   LabelAbsoluteRelocation() : TR::LabelRelocation() {}
+   LabelAbsoluteRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l) {}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
 
-class TR_16BitLoadLabelRelativeRelocation : public TR_Relocation
+class LoadLabelRelative16BitRelocation : public TR::Relocation
    {
    TR::Instruction *_lastInstruction;
    TR::LabelSymbol *_startLabel;
@@ -230,9 +232,9 @@ class TR_16BitLoadLabelRelativeRelocation : public TR_Relocation
    int32_t _deltaToStartLabel;   // used to catch potentially nasty register dep related bugs
 
    public:
-   TR_16BitLoadLabelRelativeRelocation() : TR_Relocation() {}
-   TR_16BitLoadLabelRelativeRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
-      : TR_Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
+   LoadLabelRelative16BitRelocation() : TR::Relocation() {}
+   LoadLabelRelative16BitRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
+      : TR::Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
    TR::Instruction *getLastInstruction() {return _lastInstruction;}
    TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
 
@@ -250,7 +252,7 @@ class TR_16BitLoadLabelRelativeRelocation : public TR_Relocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_32BitLoadLabelRelativeRelocation : public TR_Relocation
+class LoadLabelRelative32BitRelocation : public TR::Relocation
    {
    TR::Instruction *_lastInstruction;
    TR::LabelSymbol *_startLabel;
@@ -258,9 +260,9 @@ class TR_32BitLoadLabelRelativeRelocation : public TR_Relocation
    int32_t _deltaToStartLabel;   // used to catch potentially nasty register dep related bugs
 
    public:
-   TR_32BitLoadLabelRelativeRelocation() : TR_Relocation() {}
-   TR_32BitLoadLabelRelativeRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
-      : TR_Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
+   LoadLabelRelative32BitRelocation() : TR::Relocation() {}
+   LoadLabelRelative32BitRelocation(TR::Instruction *i, TR::LabelSymbol *start, TR::LabelSymbol *end, int32_t delta)
+      : TR::Relocation(NULL), _lastInstruction(i), _startLabel(start), _endLabel(end), _deltaToStartLabel(delta) {}
    TR::Instruction *getLastInstruction() {return _lastInstruction;}
    TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
 
@@ -278,13 +280,13 @@ class TR_32BitLoadLabelRelativeRelocation : public TR_Relocation
    virtual void apply(TR::CodeGenerator *codeGen);
    };
 
-class TR_64BitLoadLabelRelativeRelocation : public TR_LabelRelocation
+class LoadLabelRelative64BitRelocation : public TR::LabelRelocation
    {
    TR::Instruction *_lastInstruction;
    public:
-   TR_64BitLoadLabelRelativeRelocation() : TR_LabelRelocation() {}
-   TR_64BitLoadLabelRelativeRelocation(TR::Instruction *i, TR::LabelSymbol *l)
-      : TR_LabelRelocation(NULL, l), _lastInstruction(i) {}
+   LoadLabelRelative64BitRelocation() : TR::LabelRelocation() {}
+   LoadLabelRelative64BitRelocation(TR::Instruction *i, TR::LabelSymbol *l)
+      : TR::LabelRelocation(NULL, l), _lastInstruction(i) {}
    TR::Instruction *getLastInstruction() {return _lastInstruction;}
    TR::Instruction *setLastInstruction(TR::Instruction *i) {return (_lastInstruction = i);}
 
@@ -295,22 +297,22 @@ class TR_64BitLoadLabelRelativeRelocation : public TR_LabelRelocation
 #define MIN_SHORT_OFFSET         -32768
 #define MAX_SHORT_OFFSET         32767
 
-class TR_IteratedExternalRelocation : public TR_Link<TR_IteratedExternalRelocation>
+class IteratedExternalRelocation : public TR_Link<TR::IteratedExternalRelocation>
    {
    public:
-   TR_IteratedExternalRelocation() : TR_Link<TR_IteratedExternalRelocation>(),
-                                     _numberOfRelocationSites(0),
-                                     _targetAddress(NULL),
-                                     _targetAddress2(NULL),
-                                     _relocationData(NULL),
-                                     _relocationDataCursor(NULL),
-                                     _sizeOfRelocationData(0),
-                                     _recordModifier(0),
-                                     _full(false),
-                                     _kind(TR_ConstantPool) {}
+   IteratedExternalRelocation() : TR_Link<TR::IteratedExternalRelocation>(),
+                                  _numberOfRelocationSites(0),
+                                  _targetAddress(NULL),
+                                  _targetAddress2(NULL),
+                                  _relocationData(NULL),
+                                  _relocationDataCursor(NULL),
+                                  _sizeOfRelocationData(0),
+                                  _recordModifier(0),
+                                  _full(false),
+                                  _kind(TR_ConstantPool) {}
 
-   TR_IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen);
-   TR_IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen);
+   IteratedExternalRelocation(uint8_t *target, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen);
+   IteratedExternalRelocation(uint8_t *target, uint8_t *target2, TR_ExternalRelocationTargetKind k, flags8_t modifier, TR::CodeGenerator *codeGen);
 
    uint32_t getNumberOfRelocationSites() {return _numberOfRelocationSites;}
    uint32_t setNumberOfRelocationSites(uint32_t s)
@@ -362,34 +364,34 @@ class TR_IteratedExternalRelocation : public TR_Link<TR_IteratedExternalRelocati
    TR_ExternalRelocationTargetKind _kind;
    };
 
-class TR_ExternalRelocation : public TR_Relocation
+class ExternalRelocation : public TR::Relocation
    {
    public:
-   TR_ExternalRelocation()
-      : TR_Relocation(),
+   ExternalRelocation()
+      : TR::Relocation(),
         _targetAddress(NULL),
         _targetAddress2(NULL),
         _kind(TR_ConstantPool),
         _relocationRecord(NULL)
         {}
 
-   TR_ExternalRelocation(uint8_t                        *p,
-                              uint8_t                        *target,
-                              TR_ExternalRelocationTargetKind kind,
-                              TR::CodeGenerator *codeGen)
-      : TR_Relocation(p),
+   ExternalRelocation(uint8_t                        *p,
+                      uint8_t                        *target,
+                      TR_ExternalRelocationTargetKind kind,
+                      TR::CodeGenerator *codeGen)
+      : TR::Relocation(p),
         _targetAddress(target),
         _targetAddress2(NULL),
         _kind(kind),
         _relocationRecord(NULL)
         {}
 
-   TR_ExternalRelocation(uint8_t                        *p,
-                              uint8_t                        *target,
-                              uint8_t                        *target2,
-                              TR_ExternalRelocationTargetKind  kind,
-                              TR::CodeGenerator *codeGen)
-      : TR_Relocation(p),
+   ExternalRelocation(uint8_t                        *p,
+                      uint8_t                        *target,
+                      uint8_t                        *target2,
+                      TR_ExternalRelocationTargetKind  kind,
+                      TR::CodeGenerator *codeGen)
+      : TR::Relocation(p),
         _targetAddress(target),
         _targetAddress2(target2),
         _kind(kind),
@@ -404,7 +406,7 @@ class TR_ExternalRelocation : public TR_Relocation
    TR_ExternalRelocationTargetKind getTargetKind()                                  {return _kind;}
    TR_ExternalRelocationTargetKind setTargetKind(TR_ExternalRelocationTargetKind k) {return (_kind = k);}
 
-   TR_IteratedExternalRelocation *getRelocationRecord()
+   TR::IteratedExternalRelocation *getRelocationRecord()
       {return _relocationRecord;}
 
    void trace(TR::Compilation* comp);
@@ -436,7 +438,7 @@ class TR_ExternalRelocation : public TR_Relocation
    private:
    uint8_t                         *_targetAddress;
    uint8_t                         *_targetAddress2;
-   TR_IteratedExternalRelocation   *_relocationRecord;
+   TR::IteratedExternalRelocation   *_relocationRecord;
    TR_ExternalRelocationTargetKind  _kind;
    static char                     *_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds];
    static uintptr_t                 _globalValueList[TR_NumGlobalValueItems];
@@ -444,14 +446,14 @@ class TR_ExternalRelocation : public TR_Relocation
    static char                     *_globalValueNames[TR_NumGlobalValueItems];
    };
 
-class TR_32BitExternalOrderedPairRelocation: public TR_ExternalRelocation
+class ExternalOrderedPair32BitRelocation: public TR::ExternalRelocation
    {
    public:
-   TR_32BitExternalOrderedPairRelocation(uint8_t *location1,
-                                         uint8_t *location2,
-                                         uint8_t *target,
-                                         TR_ExternalRelocationTargetKind  k,
-                                         TR::CodeGenerator *codeGen);
+   ExternalOrderedPair32BitRelocation(uint8_t *location1,
+                                      uint8_t *location2,
+                                      uint8_t *target,
+                                      TR_ExternalRelocationTargetKind  k,
+                                      TR::CodeGenerator *codeGen);
 
    uint8_t *getLocation2() {return _update2Location;}
    void setLocation2(uint8_t *l) {_update2Location = l;}
@@ -465,30 +467,30 @@ class TR_32BitExternalOrderedPairRelocation: public TR_ExternalRelocation
    uint8_t                         *_update2Location;
    };
 
-class TR_BeforeBinaryEncodingExternalRelocation : public TR_ExternalRelocation
+class BeforeBinaryEncodingExternalRelocation : public TR::ExternalRelocation
    {
    private:
    TR::Instruction  *_instruction;
 
    public:
-   TR_BeforeBinaryEncodingExternalRelocation()
-      : TR_ExternalRelocation()
+   BeforeBinaryEncodingExternalRelocation()
+      : TR::ExternalRelocation()
         {}
 
-   TR_BeforeBinaryEncodingExternalRelocation(TR::Instruction *instr,
-                                             uint8_t *target,
-                                             TR_ExternalRelocationTargetKind kind,
-                                             TR::CodeGenerator *codeGen)
-      : TR_ExternalRelocation(NULL, target, kind, codeGen),
+   BeforeBinaryEncodingExternalRelocation(TR::Instruction *instr,
+                                          uint8_t *target,
+                                          TR_ExternalRelocationTargetKind kind,
+                                          TR::CodeGenerator *codeGen)
+      : TR::ExternalRelocation(NULL, target, kind, codeGen),
         _instruction(instr)
          {}
 
-   TR_BeforeBinaryEncodingExternalRelocation(TR::Instruction *instr,
-                                             uint8_t *target,
-                                             uint8_t *target2,
-                                             TR_ExternalRelocationTargetKind kind,
-                                             TR::CodeGenerator *codeGen)
-      : TR_ExternalRelocation(NULL, target, target2, kind, codeGen),
+   BeforeBinaryEncodingExternalRelocation(TR::Instruction *instr,
+                                          uint8_t *target,
+                                          uint8_t *target2,
+                                          TR_ExternalRelocationTargetKind kind,
+                                          TR::CodeGenerator *codeGen)
+      : TR::ExternalRelocation(NULL, target, target2, kind, codeGen),
         _instruction(instr)
          {}
 
@@ -498,12 +500,34 @@ class TR_BeforeBinaryEncodingExternalRelocation : public TR_ExternalRelocation
 
    };
 
-class TR_32BitLabelTableRelocation : public TR_LabelRelocation
+class LabelTable32BitRelocation : public TR::LabelRelocation
    {
    public:
-   TR_32BitLabelTableRelocation() : TR_LabelRelocation() {}
-   TR_32BitLabelTableRelocation(uint8_t *p, TR::LabelSymbol *l)
-      : TR_LabelRelocation(p, l) {}
+   LabelTable32BitRelocation() : TR::LabelRelocation() {}
+   LabelTable32BitRelocation(uint8_t *p, TR::LabelSymbol *l)
+      : TR::LabelRelocation(p, l) {}
    virtual void apply(TR::CodeGenerator *codeGen);
    };
+
+}
+
+typedef TR::RelocationDebugInfo TR_RelocationDebugInfo;
+typedef TR::Relocation TR_Relocation;
+typedef TR::LabelRelocation TR_LabelRelocation;
+typedef TR::LabelRelative8BitRelocation TR_8BitLabelRelativeRelocation;
+typedef TR::LabelRelative12BitRelocation TR_12BitLabelRelativeRelocation;
+typedef TR::LabelRelative16BitRelocation TR_16BitLabelRelativeRelocation;
+typedef TR::LabelRelative24BitRelocation TR_24BitLabelRelativeRelocation;
+typedef TR::LabelRelative32BitRelocation TR_32BitLabelRelativeRelocation;
+typedef TR::InstructionAbsoluteRelocation TR_InstructionAbsoluteRelocation;
+typedef TR::LabelAbsoluteRelocation TR_LabelAbsoluteRelocation;
+typedef TR::LoadLabelRelative16BitRelocation TR_16BitLoadLabelRelativeRelocation;
+typedef TR::LoadLabelRelative32BitRelocation TR_32BitLoadLabelRelativeRelocation;
+typedef TR::LoadLabelRelative64BitRelocation TR_64BitLoadLabelRelativeRelocation;
+typedef TR::IteratedExternalRelocation TR_IteratedExternalRelocation;
+typedef TR::ExternalRelocation TR_ExternalRelocation;
+typedef TR::ExternalOrderedPair32BitRelocation TR_32BitExternalOrderedPairRelocation;
+typedef TR::BeforeBinaryEncodingExternalRelocation TR_BeforeBinaryEncodingExternalRelocation;
+typedef TR::LabelTable32BitRelocation TR_32BitLabelTableRelocation;
+
 #endif

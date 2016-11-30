@@ -32,12 +32,12 @@
 #include "il/symbol/LabelSymbol.hpp"        // for LabelSymbol
 #include "runtime/Runtime.hpp"              // for LO_VALUE
 
-void TR_PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
+void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
    {
    if (cg->comp()->getOption(TR_AOT))
       {
       cg->addAOTRelocation(
-         new (cg->trHeapMemory()) TR_32BitExternalOrderedPairRelocation(
+         new (cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
             getSourceInstruction()->getBinaryEncoding(),
             getSource2Instruction()->getBinaryEncoding(),
             getRelocationTarget(),
@@ -49,7 +49,7 @@ void TR_PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
    }
 
 
-void TR_PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
+void TR::PPCPairedLabelAbsoluteRelocation::apply(TR::CodeGenerator *cg)
    {
    intptrj_t p = (intptrj_t)getLabel()->getCodeLocation();
 

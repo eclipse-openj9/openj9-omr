@@ -1109,7 +1109,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          getUnresolvedSnippet()->setAddressOfDataReference(cursor);
          getUnresolvedSnippet()->setMemoryReference(self());
          getUnresolvedSnippet()->setDataRegister(target);
-         cg->addRelocation(new (cg->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, getUnresolvedSnippet()->getSnippetLabel()));
+         cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, getUnresolvedSnippet()->getSnippetLabel()));
          *wcursor = 0x48000000;                        // b SnippetLabel;
          wcursor++;
          cursor += PPC_INSTRUCTION_LENGTH;
@@ -1226,7 +1226,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 
       getUnresolvedSnippet()->setAddressOfDataReference(cursor);
       getUnresolvedSnippet()->setMemoryReference(self());
-      cg->addRelocation(new (cg->trHeapMemory()) TR_24BitLabelRelativeRelocation(cursor, getUnresolvedSnippet()->getSnippetLabel()));
+      cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, getUnresolvedSnippet()->getSnippetLabel()));
       *wcursor = 0x48000000;                        // b SnippetLabel;
       wcursor++;
       cursor += PPC_INSTRUCTION_LENGTH;
@@ -1655,7 +1655,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
          {
          TR::Instruction                 *rel1, *rel2;
          uint8_t                        *relocationTarget;
-         TR_PPCPairedRelocation         *staticRelocation;
+         TR::PPCPairedRelocation         *staticRelocation;
          TR::Register                    *reg = _baseRegister = cg->allocateRegister();
          TR_ExternalRelocationTargetKind relocationKind;
          intptrj_t                        addr;
@@ -1717,7 +1717,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
             recordInfo->data1 = (uintptr_t)relocationTarget;
             recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
             recordInfo->data3 = orderedPairSequence1;
-            staticRelocation = new (cg->trHeapMemory()) TR_PPCPairedRelocation(rel1, rel2, (uint8_t *)recordInfo, relocationKind, node);
+            staticRelocation = new (cg->trHeapMemory()) TR::PPCPairedRelocation(rel1, rel2, (uint8_t *)recordInfo, relocationKind, node);
             cg->getAheadOfTimeCompile()->getRelocationList().push_front(staticRelocation);
 
             if (!specialCase)

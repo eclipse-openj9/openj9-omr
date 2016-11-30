@@ -43,7 +43,7 @@ namespace OMR { typedef OMR::ARM::MemoryReference MemoryReferenceConnector; }
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "il/symbol/StaticSymbol.hpp"
 
-class TR_ARMPairedRelocation;
+namespace TR { class ARMPairedRelocation; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
@@ -65,7 +65,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    TR::Register *_modBase;
 
    TR::UnresolvedDataSnippet *_unresolvedSnippet;
-   TR_ARMPairedRelocation *_staticRelocation;
+   TR::ARMPairedRelocation *_staticRelocation;
    TR::SymbolReference _symbolReference;
 
    uint8_t                       _flag;
@@ -172,8 +172,8 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       return (_unresolvedSnippet = s);
       }
 
-   TR_ARMPairedRelocation *getStaticRelocation() {return _staticRelocation;}
-   TR_ARMPairedRelocation *setStaticRelocation(TR_ARMPairedRelocation *r)
+   TR::ARMPairedRelocation *getStaticRelocation() {return _staticRelocation;}
+   TR::ARMPairedRelocation *setStaticRelocation(TR::ARMPairedRelocation *r)
       {
       return (_staticRelocation = r);
       }

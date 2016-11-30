@@ -34,7 +34,7 @@ namespace OMR { typedef OMR::AheadOfTimeCompile AheadOfTimeCompileConnector; }
 #include "runtime/Runtime.hpp"      // for TR_ExternalRelocationTargetKind
 
 class TR_Debug;
-class TR_IteratedExternalRelocation;
+namespace TR { class IteratedExternalRelocation; }
 namespace TR { class AheadOfTimeCompile; }
 
 namespace OMR
@@ -58,7 +58,7 @@ class OMR_EXTENSIBLE AheadOfTimeCompile
    TR_Debug *   getDebug();
    TR_Memory *      trMemory();
 
-   TR_LinkHead<TR_IteratedExternalRelocation>& getAOTRelocationTargets() {return _aotRelocationTargets;}
+   TR_LinkHead<TR::IteratedExternalRelocation>& getAOTRelocationTargets() {return _aotRelocationTargets;}
 
    uint32_t getSizeOfAOTRelocations()             {return _sizeOfAOTRelocations;}
    uint32_t setSizeOfAOTRelocations(uint32_t s)   {return (_sizeOfAOTRelocations = s);}
@@ -78,7 +78,7 @@ class OMR_EXTENSIBLE AheadOfTimeCompile
       }
 
    virtual void     processRelocations() = 0;
-   virtual uint8_t *initialiseAOTRelocationHeader(TR_IteratedExternalRelocation *relocation) = 0;
+   virtual uint8_t *initialiseAOTRelocationHeader(TR::IteratedExternalRelocation *relocation) = 0;
 
    // virtual void dumpRelocationData() = 0;
    void dumpRelocationData() {}
@@ -88,7 +88,7 @@ class OMR_EXTENSIBLE AheadOfTimeCompile
 
    private:
    TR::Compilation *                           _comp;
-   TR_LinkHead<TR_IteratedExternalRelocation> _aotRelocationTargets;
+   TR_LinkHead<TR::IteratedExternalRelocation> _aotRelocationTargets;
    uint32_t                                   _sizeOfAOTRelocations;
    uint8_t                                   *_relocationData;
    uint32_t                                  *_aotRelocationKindToHeaderSizeMap;

@@ -44,7 +44,7 @@
 #include "x/codegen/X86Ops.hpp"                       // for TR_X86OpCodes, etc
 #include "env/CompilerEnv.hpp"
 
-class TR_LabelRelocation;
+namespace TR { class LabelRelocation; }
 class TR_VirtualGuardSite;
 namespace TR { class X86RegMemInstruction; }
 namespace TR { class X86RegRegInstruction; }
@@ -1540,7 +1540,7 @@ class X86MemInstruction : public TR::Instruction
 
 class X86MemTableInstruction : public TR::X86MemInstruction
    {
-   TR_LabelRelocation **_relocations;
+   TR::LabelRelocation **_relocations;
    ncount_t _numRelocations, _capacity;
 
    public:
@@ -1548,13 +1548,13 @@ class X86MemTableInstruction : public TR::X86MemInstruction
    X86MemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::CodeGenerator *cg):
       TR::X86MemInstruction(op, node, mr, cg),_numRelocations(0),_capacity(numEntries)
       {
-      _relocations = (TR_LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
+      _relocations = (TR::LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
       }
 
    X86MemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg):
       TR::X86MemInstruction(op, node, mr, deps, cg),_numRelocations(0),_capacity(numEntries)
       {
-      _relocations = (TR_LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
+      _relocations = (TR::LabelRelocation**)cg->trMemory()->allocateHeapMemory(numEntries * sizeof(_relocations[0]));
       }
 
    virtual char *description() { return "X86MemTable"; }
@@ -1564,13 +1564,13 @@ class X86MemTableInstruction : public TR::X86MemInstruction
    ncount_t getNumRelocations()    { return _numRelocations; }
    ncount_t getRelocationCapacity(){ return _capacity; }
 
-   void addRelocation(TR_LabelRelocation *r)
+   void addRelocation(TR::LabelRelocation *r)
       {
       TR_ASSERT(_numRelocations < _capacity, "Can't add another relocation to a X86MemTableInstruction that is already full");
       _relocations[_numRelocations++] = r;
       }
 
-   TR_LabelRelocation *getRelocation(ncount_t index)
+   TR::LabelRelocation *getRelocation(ncount_t index)
       {
       TR_ASSERT(0 <= index && index < _numRelocations, "X86MemTableInstruction::getRelocation - index %d is out of range (0-%d)", index, _numRelocations);
       return _relocations[index];

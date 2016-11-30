@@ -329,7 +329,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
             }
          else
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(requestors[i],
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                          (uint8_t *)(addr),
                                                                                          (uint8_t *)fixedSequence4,
                                                                                          TR_FixedSequenceAddress2,
@@ -346,7 +346,7 @@ OMR::ConstantDataSnippet::emitFloatingPointConstant(
 
          TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data3 = orderedPairSequence1;
-         cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR_32BitExternalOrderedPairRelocation(iloc1,
+         cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
                                                                                                 iloc2,
                                                                                                 (uint8_t *)recordInfo,
                                                                                                 TR_AbsoluteMethodAddressOrderedPair,
@@ -391,8 +391,8 @@ OMR::ConstantDataSnippet::emitAddressConstant(
 
          if (kind != TR_NoRelocation)
             {
-            TR_Relocation *relo;
-            relo = new (cg()->trHeapMemory()) TR_ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
+            TR::Relocation *relo;
+            relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
             cg()->addAOTRelocation(relo, __FILE__, __LINE__, node);
             }
          }
@@ -435,7 +435,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
             }
          else
             {
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(requestors[i],
+            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                          (uint8_t *)(addr),
                                                                                          (uint8_t *)fixedSequence4,
                                                                                          TR_FixedSequenceAddress2,
@@ -452,7 +452,7 @@ OMR::ConstantDataSnippet::emitAddressConstant(
 
          TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
          recordInfo->data3 = orderedPairSequence1;
-         cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR_32BitExternalOrderedPairRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
+         cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
                                 __FILE__, __LINE__, requestors[i]->getNode());
          }
       }

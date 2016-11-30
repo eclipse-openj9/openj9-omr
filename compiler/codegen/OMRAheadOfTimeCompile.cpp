@@ -19,7 +19,7 @@
 #include "codegen/AheadOfTimeCompile.hpp"
 
 #include "codegen/CodeGenerator.hpp"         // for CodeGenerator
-#include "codegen/Relocation.hpp"            // for TR_Relocation
+#include "codegen/Relocation.hpp"            // for TR::Relocation
 #include "compile/Method.hpp"                // for TR_AOTMethodInfo
 #include "compile/ResolvedMethod.hpp"        // for TR_ResolvedMethod
 #include "compile/SymbolReferenceTable.hpp"  // for SymbolReferenceTable

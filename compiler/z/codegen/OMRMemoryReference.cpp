@@ -2882,7 +2882,7 @@ OMR::Z::MemoryReference::calcDisplacement(uint8_t * cursor, TR::Instruction * in
          //
          if(cursor != NULL)
             {
-            cg->addRelocation(new (cg->trHeapMemory()) TR_12BitLabelRelativeRelocation(cursor, snippet->getSnippetLabel()));
+            cg->addRelocation(new (cg->trHeapMemory()) TR::LabelRelative12BitRelocation(cursor, snippet->getSnippetLabel()));
             }
          }
       }

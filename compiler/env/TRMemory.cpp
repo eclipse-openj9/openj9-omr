@@ -273,7 +273,7 @@ const char * objectName[] =
    "DecimalReduction",
 
    "TR_PreviousNodeConversion",
-   "TR_RelocationDebugInfo",
+   "TR::RelocationDebugInfo",
    "TR::AOTClassInfo",
    "TR_SharedCache",
 

@@ -212,7 +212,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
       if (typeAddress == -1)
          {
          if (doAOTRelocation)
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(
+            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                               cursor,
                               (uint8_t *)value,
                               (uint8_t *)seqKind,
@@ -232,7 +232,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                recordInfo->data3 = (uintptr_t)seqKind;
 
-               cg->addAOTRelocation(new (cg->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(
+               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  (uint8_t *)recordInfo,
                                  (TR_ExternalRelocationTargetKind)typeAddress, cg),
@@ -250,7 +250,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                 recordInfo->data2 = (uintptr_t)targetAddress2;
                 recordInfo->data3 = (uintptr_t)seqKind;
 
-                cg->addAOTRelocation(new (cg->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(
+                cg->addAOTRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                   cursor,
                                   (uint8_t *)recordInfo,
                                   (TR_ExternalRelocationTargetKind)typeAddress, cg),
@@ -263,7 +263,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
             {
             if (doAOTRelocation)
                {
-               cg->addAOTRelocation(new (cg->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(
+               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  targetAddress,
                                  targetAddress2,
@@ -276,7 +276,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
          else
             {
             if (doAOTRelocation)
-               cg->addAOTRelocation(new (cg->trHeapMemory()) TR_BeforeBinaryEncodingExternalRelocation(
+               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  cursor,
                                  (uint8_t *)value,
                                  (uint8_t *)seqKind,

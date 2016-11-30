@@ -37,7 +37,7 @@ TR::S390WarmToColdTrampolineSnippet::emitSnippetBody()
 
    if (getIsUsed())
       {
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR_32BitLabelRelativeRelocation(cursor, getTargetLabel()));
+      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, getTargetLabel()));
 
       // BRCL 0xf, <target>
       *(int16_t *) cursor = 0xC0F4;

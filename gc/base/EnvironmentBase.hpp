@@ -161,9 +161,9 @@ public:
 	MM_ScavengerStats _scavengerStats;
 	MM_ScavengerHotFieldStats _hotFieldStats; /**< hot field statistics for this GC thread */
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	bool _concurrentScavengerInProgress; /**< thread local flag/state, if concurrent scavenger is in progress */
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uint64_t _concurrentScavengerSwitchCount; /**< local counter of cycle start and cycle end transitions */
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 
 private:
 
@@ -609,9 +609,9 @@ public:
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_allocationTracker(NULL)
 #endif /* OMR_GC_SEGREGATED_HEAP */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		,_concurrentScavengerInProgress(false)
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		,_concurrentScavengerSwitchCount(0)
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 
 	{
 		_typeId = __FUNCTION__;
@@ -651,9 +651,9 @@ public:
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_allocationTracker(NULL)
 #endif /* OMR_GC_SEGREGATED_HEAP */
-#if defined(OMR_GC_MODRON_SCAVENGER)
-		,_concurrentScavengerInProgress(false)
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		,_concurrentScavengerSwitchCount(0)
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	{
 		_typeId = __FUNCTION__;
 	}

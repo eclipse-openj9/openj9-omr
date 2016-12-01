@@ -205,7 +205,6 @@ void ppcCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *
 #define IS_32BIT_RIP(x,rip)  ((intptrj_t)(x) == (intptrj_t)(rip) + (int32_t)((intptrj_t)(x) - (intptrj_t)(rip)))
 #define TRAMPOLINE_SIZE    16
 #define CALL_INSTR_LENGTH  5
-extern "C" void _patchingFence16(void *startAddr, intptrj_t runtimeFlags);
 
 void amd64CodeCacheConfig(int32_t ccSizeInByte, uint32_t *numTempTrampolines)
    {

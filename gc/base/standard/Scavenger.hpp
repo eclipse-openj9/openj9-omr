@@ -121,6 +121,8 @@ private:
 		concurrent_state_complete
 	} _concurrentState;
 	
+	uint64_t _concurrentScavengerSwitchCount; /**< global counter of cycle start and cycle end transitions */
+	
 	/* TODO: put it parent Collector class and share with Balanced? */ 
 	volatile bool _forceConcurrentTermination;
 #endif
@@ -686,6 +688,7 @@ public:
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, _masterGCThread(env)
 		, _concurrentState(concurrent_state_idle)
+		, _concurrentScavengerSwitchCount(0)
 		, _forceConcurrentTermination(false)		
 #endif		
 		, _omrVM(env->getOmrVM())

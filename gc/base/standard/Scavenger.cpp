@@ -4584,19 +4584,17 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 void
 MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
 {
-    if (concurrent_state_scan == _concurrentState) {
-    	if (!env->_concurrentScavengerInProgress) {
-    		env->_concurrentScavengerInProgress = true;
-    		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 1);
-    		_cli->scavenger_switchConcurrentForThread(env);
-    	}
-    } else if (concurrent_state_idle == _concurrentState) {
-    	if (env->_concurrentScavengerInProgress) {
-    		env->_concurrentScavengerInProgress = false;
-    		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), 0);
-    		_cli->scavenger_switchConcurrentForThread(env);
-    	}
-    }
+	/* If a thread local counter is behind the global one (or ahead in case of a rollover), we need to trigger a switch.
+	 * It means we recently transitioned from a cycle start to cycle end or vice versa.
+	 * If state is idle, we just completed a cycle. If state is scan (or rarely complete), we just started a cycle (and possibly even complete concurrent work)
+	 */
+
+   	Assert_MM_false((concurrent_state_init == _concurrentState) || (concurrent_state_roots == _concurrentState));
+	if (env->_concurrentScavengerSwitchCount != _concurrentScavengerSwitchCount) {
+		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), _concurrentState, _concurrentScavengerSwitchCount, env->_concurrentScavengerSwitchCount);
+		env->_concurrentScavengerSwitchCount = _concurrentScavengerSwitchCount;
+		_cli->scavenger_switchConcurrentForThread(env);
+	}
 }
 
 void
@@ -4605,6 +4603,9 @@ MM_Scavenger::triggerConcurrentScavengerTransition(MM_EnvironmentBase *env, MM_A
 	/* About to block. A dedicated master GC thread will take over for the duration of STW phase (start or end) */
 	_masterGCThread.garbageCollect(env, allocDescription);
 	/* STW phase is complete */
+
+	/* count every cycle start and cycle end transition */
+	_concurrentScavengerSwitchCount += 1;
 
 	/* Ensure switchConcurrentForThread is invoked for each mutator thread. It will be done indirectly,
 	 * first time a thread acquires VM access after exclusive VM access is released, through a VM access hook. */

@@ -47,7 +47,6 @@ namespace CS2 {
 // to customize the hash table for specific key-types.
 // ------------------------------------------------------------------------
 
-class allocator;
 typedef uint32_t HashIndex;
 typedef uint32_t HashValue; // If this is changed, then the Hash_FNV constants *must* be updated
 
@@ -149,7 +148,7 @@ struct HashInfo<CompoundHashKey<First, Second> > {
 };
 
 template <typename AKeyType, typename ADataType,
-          class Allocator = CS2::allocator,
+          class Allocator,
           class AHashInfo = CS2::HashInfo<AKeyType> >
 class HashTable : private Allocator {
  private:

@@ -335,7 +335,7 @@ private:
   bool fIsRunning;
 };
 
-template <class Meter, class Allocator = CS2::allocator>
+template <class Meter, class Allocator>
   class PhaseMeasuringNode : private Allocator
 {
  public:
@@ -444,7 +444,7 @@ template <class Meter, class Allocator = CS2::allocator>
  * thread-safe; it maintains the current meter hierarchy for each
  * threads using the meter.
  */
-template <class Meter, class Allocator = CS2::allocator>
+template <class Meter, class Allocator>
 class PhaseMeasuringSummary
 {
 
@@ -669,7 +669,7 @@ inline void PhaseMeasuringSummary<Meter, Allocator>::DumpSummary(ostream & out, 
  * Metering starts when Start() is called. When Stop() is called, the meter is
  * stopped and the metric us submitted to gPhaseMeasuringSummary.
  */
-template <class Meter, class Allocator = CS2::allocator, class PhaseMeasuringSummary = CS2::PhaseMeasuringSummary<Meter, Allocator> >
+template <class Meter, class Allocator, class PhaseMeasuringSummary = CS2::PhaseMeasuringSummary<Meter, Allocator> >
 class PhaseProfiler {
  private:
   ListIndex fIndex;
@@ -711,7 +711,7 @@ class PhaseProfiler {
  * starts at construction and ends at destruction. The metric is automatically reported
  * to gPhaseMeasuringSummary.
  */
-template <class Meter, class Allocator = CS2::allocator, class PhaseMeasuringSummary = CS2::PhaseMeasuringSummary<Meter, Allocator> >
+template <class Meter, class Allocator, class PhaseMeasuringSummary = CS2::PhaseMeasuringSummary<Meter, Allocator> >
 class LexicalBlockProfiler : private PhaseProfiler<Meter, Allocator> {
 private:
   // Should not be copy constructed or copied.
@@ -782,7 +782,7 @@ typedef RunnableMeter<Timer> RunnableTimer;
 // so can use
 //   typedef PhaseTimingSummary<Allocator> PhaseTimingSummary;
 //
-template <class Allocator = CS2::allocator>
+template <class Allocator>
 class PhaseTimingSummary : public PhaseMeasuringSummary<RunnableTimer, Allocator>
 {
 private:
@@ -803,7 +803,7 @@ public:
 // so can use
 //   typedef LexicalBlockTimer<Allocator> LexicalTimer;
 //
-template <class Allocator = CS2::allocator, class PhaseTimingSummary = CS2::PhaseMeasuringSummary<RunnableTimer, Allocator> >
+template <class Allocator, class PhaseTimingSummary = CS2::PhaseMeasuringSummary<RunnableTimer, Allocator> >
 class LexicalBlockTimer : public LexicalBlockProfiler<RunnableTimer, Allocator, PhaseTimingSummary> {
 private:
   // Should not be copy constructed or copied.

@@ -63,7 +63,7 @@ const uint32_t kZeroBits      = 0x00000000ul;
 const uint32_t kBitWordSize   = 8 * sizeof(BitWord);
 const uint32_t kShortWordSize = 8 * sizeof(ShortWord);
 
-template <class Allocator = CS2::allocator>
+template <class Allocator>
 class ABitVector : private Allocator {
 private:
   class BitRef;
@@ -1675,7 +1675,6 @@ bool ABitVector<Allocator>::Xor (const ABitVector<Allocator> &inputVector,
   return changed;
 }
 
-typedef ABitVector<>  BitVector;
 }
 
 #ifdef CS2_ALLOCINFO

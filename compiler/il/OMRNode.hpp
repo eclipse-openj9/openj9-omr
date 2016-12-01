@@ -51,7 +51,6 @@ class TR_NodeUseAliasSetInterface;
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;
 class TR_ResolvedMethod;
-namespace CS2 { class allocator; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Block; }
 namespace TR { class CodeGenerator; }
@@ -358,7 +357,7 @@ public:
    TR::Node *             getAndDecChild(int32_t c);
 
    TR::Node *             duplicateTree(bool duplicateChildren = true);
-   TR::Node *             duplicateTreeWithCommoning();
+   TR::Node *             duplicateTreeWithCommoning(TR::Allocator allocator);
    TR::Node *             duplicateTree_DEPRECATED(bool duplicateChildren = true);
    bool                   isUnsafeToDuplicateAndExecuteAgain(int32_t *nodeVisitBudget);
 
@@ -1544,7 +1543,7 @@ protected:
    TR::ILOpCodes setOpCodeValue(TR::ILOpCodes op);
 
    // Misc helpers
-   TR::Node * duplicateTreeWithCommoningImpl(CS2::HashTable<TR::Node*, TR::Node*, CS2::allocator> &nodeMapping);
+   TR::Node * duplicateTreeWithCommoningImpl(CS2::HashTable<TR::Node *, TR::Node *, TR::Allocator> &nodeMapping);
 
    bool collectSymbolReferencesInNode(TR_BitVector &symbolReferencesInNode, vcount_t visitCount);
 

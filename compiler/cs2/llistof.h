@@ -40,7 +40,7 @@ namespace CS2 {
 #define CS2_LL_TEMP template <class ADataType, class Allocator>
 #define CS2_LL_DECL LinkedListOf <ADataType, Allocator>
 
-template <class ADataType, class Allocator = CS2::allocator>
+template <class ADataType, class Allocator>
 class LinkedListOf : private Allocator {
   public:
   LinkedListOf (const Allocator &a = Allocator()) : Allocator(a), fFirst(NULL) {}
@@ -528,7 +528,7 @@ unsigned long CS2_LL_DECL::MemoryUsage() const {
   return mem;
 }
 
-template <class ADataType, class Allocator = CS2::allocator>
+template <class ADataType, class Allocator>
 class QueueOf : public LinkedListOf<ADataType, Allocator>
    {
    public:
@@ -539,7 +539,7 @@ class QueueOf : public LinkedListOf<ADataType, Allocator>
    void Push(const ADataType &data) { Add(data, true); }
    ADataType Pop() { ADataType head = *(Head()); Remove(); return head; }
    };
-template <class ADataType, class Allocator = CS2::allocator>
+template <class ADataType, class Allocator>
 class StackOf : public QueueOf<ADataType, Allocator>
    {
    public:

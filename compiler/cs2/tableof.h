@@ -40,7 +40,7 @@ namespace CS2{
 
 typedef size_t TableIndex;
 
-template <class AElementType, class Allocator = CS2::allocator, uint32_t segmentBits = 8, template<class = Allocator>class SupportingBitVector = ASparseBitVector>
+template <class AElementType, class Allocator, uint32_t segmentBits = 8, template<class = Allocator>class SupportingBitVector = ASparseBitVector>
 class TableOf : public CS2_TAR_DECL {
   public:
 

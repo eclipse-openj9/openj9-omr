@@ -5485,7 +5485,7 @@ static void cleanseIntegralNodeFlagsInSubtree(TR::Compilation *comp, TR::Node *n
          OPT_DETAILS_LOOP_VERSIONER, node->getGlobalIndex());
 
    using namespace CS2;
-   QueueOf<ncount_t> queue;
+   QueueOf<ncount_t, TR::Allocator> queue(comp->allocator());
    queue.Push(node->getNodePoolIndex());
    TR::Node *tmp = NULL;
    TR::SparseBitVector seen(comp->allocator());

@@ -38,6 +38,8 @@ S390OpCodesTest::compileIntegerArithmeticTestMethods()
    _lDiv = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::ldiv, "lDiv", _argTypesBinaryLong, TR::Int64, rc));
    _lRem = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lrem, "lRem", _argTypesBinaryLong, TR::Int64, rc));
    _luDiv = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::ludiv, "luDiv", _argTypesBinaryLong, TR::Int64, rc));
+
+   _iuMulh = (unsignedSignatureCharII_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::iumulh, "iuMulh", _argTypesBinaryInt, TR::Int32, rc));
    }
 
 void
@@ -357,6 +359,11 @@ S390OpCodesTest::invokeIntegerArithmeticTests()
             resolvedMethodName, _argTypesBinaryLong, TR::Int64, rc, 2, 2, &longMulArr[i][1]));
       OMR_CT_EXPECT_EQ(lBinaryCons, mul(longMulArr[i][0], longMulArr[i][1]), lBinaryCons(longMulArr[i][0], LONG_PLACEHOLDER_2));
       }
+
+   // iumulh
+   OMR_CT_EXPECT_EQ(_iuMulh, iumulh(UINT_MAXIMUM, UINT_MINIMUM), _iuMulh(UINT_MAXIMUM, UINT_MINIMUM));
+   OMR_CT_EXPECT_EQ(_iuMulh, iumulh(UINT_MINIMUM, UINT_POS), _iuMulh(UINT_MINIMUM, UINT_POS));
+   OMR_CT_EXPECT_EQ(_iuMulh, iumulh(UINT_POS, UINT_MAXIMUM), _iuMulh(UINT_POS, UINT_MAXIMUM));
 
    //ldiv
    //TODO: _lDiv(LONG_INT, 0)

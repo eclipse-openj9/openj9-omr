@@ -3741,37 +3741,46 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    }
 
 /**
- * imulhEvaluator - multiply 2 words but the result is the high word
+ * imulhEvaluator - multiply 2 words but the result is the high word.
+ *
+ * Handles imulh and iumulh.
+ *
  */
 TR::Register *
 OMR::Z::TreeEvaluator::mulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
-   PRINT_ME("imul", node, cg);
+   bool isUnsigned = (node->getOpCodeValue() == TR::iumulh);
+   PRINT_ME("imulh", node, cg);
    TR::Node * firstChild = node->getFirstChild();
-   TR::Node * secondChild = node->getSecondChild();
+   TR::Node * secondChild = node->getSecondChild();   
    TR::Register * firstRegister = cg->gprClobberEvaluate(firstChild);
    TR::Register * targetRegister = cg->allocateRegister();
-   TR::Instruction * cursor;
+   TR::Instruction * cursor = NULL;
 
    TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
    TR::RegisterPair * targetRegisterPair = cg->allocateConsecutiveRegisterPair(firstRegister, targetRegister);
-
    dependencies->addPostCondition(targetRegisterPair, TR::RealRegister::EvenOddPair);
    dependencies->addPostCondition(targetRegister, TR::RealRegister::LegalEvenOfPair);
    dependencies->addPostCondition(firstRegister, TR::RealRegister::LegalOddOfPair);
-   if (secondChild->getOpCode().isLoadConst())
-      {
-      PRINT_ME("iconst", node, cg);
-      int32_t value = secondChild->getInt();
 
-      cursor = generateS390ImmOp(cg, TR::InstOpCode::M, node, targetRegisterPair->getLowOrder(), targetRegisterPair, value);
+   if(secondChild->getOpCode().isLoadConst() && secondChild->getInt() == 0)
+      {
+      cursor = generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister, targetRegister);
       }
    else
       {
       TR::Register * secondRegister = cg->evaluate(secondChild);
-      cursor = generateRRInstruction(cg, TR::InstOpCode::MR, node, targetRegisterPair, secondRegister);
+      if(isUnsigned)
+         {
+         cursor = generateRREInstruction(cg, TR::InstOpCode::MLR, node, targetRegisterPair, secondRegister);
+         }
+      else
+         {
+         cursor = generateRRInstruction(cg, TR::InstOpCode::MR, node, targetRegisterPair, secondRegister);
+         }
       }
+
    cursor->setDependencyConditions(dependencies);
 
    node->setRegister(targetRegister);
@@ -3788,11 +3797,33 @@ TR::Register *
 OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("imul", node, cg);
-   TR::Node * secondChild = node->getSecondChild();
-   TR::Node * firstChild = node->getFirstChild();
+   TR::Node* secondChild = node->getSecondChild();
+   TR::Node* firstChild = node->getFirstChild();
+   TR::Node* halfwordNode = NULL;
+   TR::Node* regNode = NULL;
 
-   TR::Register * targetRegister;
-   TR::Register * sourceRegister;
+   TR::Register * targetRegister = NULL;
+   TR::Register * sourceRegister = NULL;
+   bool isMultHalf = false;
+
+   if(firstChild->getOpCodeValue() == TR::s2i &&
+      firstChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
+      firstChild->isSingleRefUnevaluated() &&
+      firstChild->getFirstChild()->isSingleRefUnevaluated())
+      {
+      isMultHalf = true;
+      halfwordNode = firstChild;
+      regNode = secondChild;
+      }
+   else if(secondChild->getOpCodeValue() == TR::s2i &&
+           secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
+           secondChild->isSingleRefUnevaluated() &&
+           secondChild->getFirstChild()->isSingleRefUnevaluated())
+      {
+      isMultHalf = true;
+      halfwordNode = secondChild;
+      regNode = firstChild;
+      }
 
    if (secondChild->getOpCode().isLoadConst())
       {
@@ -3850,6 +3881,16 @@ OMR::Z::TreeEvaluator::imulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
 
       node->setRegister(targetRegister);
+      }
+   else if(isMultHalf)
+      {
+      // Emit MH directly
+      targetRegister = cg->evaluate(regNode);
+      TR::MemoryReference* tmpMR = generateS390MemoryReference(halfwordNode->getFirstChild(), cg);
+      generateRXInstruction(cg, TR::InstOpCode::MH, node, targetRegister, tmpMR);
+      node->setRegister(targetRegister);
+      tmpMR->stopUsingMemRefRegister(cg);
+      cg->decReferenceCount(halfwordNode->getFirstChild());
       }
    else
       {

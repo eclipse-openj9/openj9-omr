@@ -396,9 +396,11 @@ class OpCodesTest : public TestDriver
    static signatureCharII_I_testMethodType *_iSub;
    static signatureCharII_I_testMethodType *_iDiv;
    static signatureCharII_I_testMethodType *_iMul;
+   static signatureCharII_I_testMethodType *_iMulh;
    static signatureCharII_I_testMethodType *_iRem;
    static unsignedSignatureCharII_I_testMethodType *_iuDiv;
    static unsignedSignatureCharII_I_testMethodType *_iuMul;
+   static unsignedSignatureCharII_I_testMethodType *_iuMulh;
    static unsignedSignatureCharII_I_testMethodType *_iuRem;
 
    static signatureCharJJ_J_testMethodType *_lAdd;
@@ -700,6 +702,8 @@ class OpCodesTest : public TestDriver
    template <typename T> static T mul(T a, T b) { return a * b;}
    template <typename T> static T div(T a, T b) { return a / b;}
    template <typename T> static T rem(T a, T b) { return a % b;}
+   template <typename T> static T imulh(T a, T b) { return (int32_t)((((int64_t)a * (int64_t)b) >> 32) & 0x00000000ffffffff);}
+   template <typename T> static T iumulh(T a, T b) { return (uint32_t)((((uint64_t)a * (uint64_t)b) >> 32) & 0x00000000ffffffff);}
 
    template <typename T> static T txor(T a, T b) { return a ^ b;}
    template <typename T> static T tor(T a, T b) { return a | b;}

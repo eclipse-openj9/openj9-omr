@@ -405,6 +405,7 @@
    {0xE3, 0x3B, RXY_FORMAT},  // LZRF
    {0xE3, 0x2A, RXY_FORMAT},  // LZRG
    {0x5C, 0x00, RX_FORMAT},   // M
+   {0xE3, 0x5C, RXY_FORMAT},   // MFY
    {0xED, 0x1E, RXF_FORMAT},  // MADB
    {0xB3, 0x1E, RRF_FORMAT},  // MADBR
    {0xED, 0x0E, RXF_FORMAT},  // MAEB
@@ -416,6 +417,7 @@
    {0xB3, 0x17, RRE_FORMAT},  // MEEBR
    {0xA7, 0x0D, RI_FORMAT},   // MGHI
    {0x4C, 0x00, RX_FORMAT},   // MH
+   {0xE3, 0x7C, RXY_FORMAT},  // MHY
    {0xA7, 0x0C, RI_FORMAT},   // MHI
    {0xE3, 0x86, RXY_FORMAT},  // MLG
    {0xB9, 0x86, RRE_FORMAT},  // MLGR

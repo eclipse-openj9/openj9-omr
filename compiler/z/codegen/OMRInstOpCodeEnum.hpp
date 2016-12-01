@@ -404,6 +404,7 @@
    LZRF,                // Load and Zero Rightmost Byte
    LZRG,                // Load and Zero Rightmost Byte
    M,                   // Multiply (64 < 32)
+   MFY,                 // Multiply (64 < 32)
    MADB,                // Multiply and Add (LB)
    MADBR,               // Multiply and Add (LB)
    MAEB,                // Multiply and Add (SB)
@@ -415,6 +416,7 @@
    MEEBR,               // Multiply (SB)
    MGHI,                // Multiply Halfword Immediate
    MH,                  // Multiply Halfword (32)
+   MHY,                 // Multiply Halfword (32)
    MHI,                 // Multiply Halfword Immediate (32)
    MLG,                 // (LongDisp) Multiply Logical ( 128<64 )
    MLGR,                // Multiply Logical ( 128<64 )

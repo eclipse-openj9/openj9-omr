@@ -1837,6 +1837,10 @@ TR::InstOpCode::Mnemonic OMR::Z::Instruction::opCodeCanBeAdjustedTo(TR::InstOpCo
          return TR::InstOpCode::LHY;
       case TR::InstOpCode::MS:
          return TR::InstOpCode::MSY;
+      case TR::InstOpCode::M:
+         return TR::InstOpCode::MFY;
+      case TR::InstOpCode::MH:
+         return TR::InstOpCode::MHY;
       case TR::InstOpCode::N:
          return TR::InstOpCode::NY;
       case TR::InstOpCode::NI:

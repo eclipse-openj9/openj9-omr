@@ -21,16 +21,28 @@ SED_PATH?=sed
 AR_PATH?=ar
 PERL_PATH?=perl
 
+# The default OS X `as` binary acts differently than clang's built-in
+# assembler, despite identifying as the same in `as --version`.
+# Notably, the `-D` flag does not seem to be supported in `as`.
+ifeq ($(OS),osx)
+   AS_PATH?=clang
+else
+   AS_PATH?=as
+endif
+
 ifeq ($(C_COMPILER),gcc)
-    AS_PATH?=as
     CC_PATH?=gcc
     CXX_PATH?=g++
 endif
 
 ifeq ($(C_COMPILER),clang)
-    AS_PATH?=clang
     CC_PATH?=clang
     CXX_PATH?=clang++
+endif
+
+AS_VERSION:=$(shell $(AS_PATH) --version)
+ifneq (,$(findstring LLVM,$(AS_VERSION)))
+    LLVM_ASSEMBLER:=1
 endif
 
 # This is the script that's used to generate TRBuildName.cpp
@@ -158,7 +170,7 @@ S_CMD?=$(AS_PATH)
 S_INCLUDES=$(PRODUCT_INCLUDES)
 S_DEFINES+=$(HOST_DEFINES) $(TARGET_DEFINES)
 
-ifeq ($(C_COMPILER),clang)
+ifeq ($(LLVM_ASSEMBLER),1)
     S_FLAGS+=-Wa,--noexecstack
 else
     S_FLAGS+=--noexecstack
@@ -177,7 +189,7 @@ ifeq ($(HOST_ARCH),x)
     endif
     
     ifeq ($(HOST_BITS),64)
-        ifeq ($(C_COMPILER),clang)
+        ifeq ($(LLVM_ASSEMBLER),1)
             S_FLAGS+=-march=x86-64 -c
         else
             S_FLAGS+=--64

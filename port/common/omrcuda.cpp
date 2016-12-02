@@ -49,16 +49,6 @@
 
 #define LENGTH_OF(array) (sizeof(array) / sizeof((array)[0]))
 
-/**
- * The minimum supported driver version.
- */
-#define J9CUDA_DRIVER_VERSION_MINIMUM 5050
-
-/**
- * The minimum supported runtime version.
- */
-#define J9CUDA_RUNTIME_VERSION_MINIMUM 5050
-
 namespace
 {
 
@@ -812,7 +802,11 @@ openDriver(OMRPortLibrary *portLibrary)
 			goto fail;
 		}
 
-		if (version < J9CUDA_DRIVER_VERSION_MINIMUM) {
+		/**
+		 * The minimum supported driver version is defined by
+		 * the version of the toolkit used at compile time.
+		 */
+		if (version < CUDA_VERSION) {
 			goto fail;
 		}
 	}
@@ -905,7 +899,11 @@ openRuntimeAndGetVersion(OMRPortLibrary *portLibrary, uint32_t bestVersion, cons
 			goto fail;
 		}
 
-		if (version < J9CUDA_RUNTIME_VERSION_MINIMUM) {
+		/**
+		 * The minimum supported runtime version is defined by
+		 * the version of the toolkit used at compile time.
+		 */
+		if (version < CUDA_VERSION) {
 			goto fail;
 		}
 
@@ -994,11 +992,32 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 
 #define OMRCUDA_LIBRARY_ENTRY(major, minor) { ((major) * 1000) + ((minor) * 10), OMRCUDA_LIBRARY_NAME(major, minor) }
 
+/*
+ * Include forward-compatible support for runtime libraries.
+ */
+#if 8000 <= CUDA_VERSION
+	OMRCUDA_LIBRARY_ENTRY(8, 0),
+#endif /* 8000 <= CUDA_VERSION */
+
+#if 7050 <= CUDA_VERSION
 	OMRCUDA_LIBRARY_ENTRY(7, 5),
+#endif /* 7050 <= CUDA_VERSION */
+
+#if 7000 <= CUDA_VERSION
 	OMRCUDA_LIBRARY_ENTRY(7, 0),
+#endif /* 7000 <= CUDA_VERSION */
+
+#if 6050 <= CUDA_VERSION
 	OMRCUDA_LIBRARY_ENTRY(6, 5),
+#endif /* 6050 <= CUDA_VERSION */
+
+#if 6000 <= CUDA_VERSION
 	OMRCUDA_LIBRARY_ENTRY(6, 0),
+#endif /* 6000 <= CUDA_VERSION */
+
+#if 5050 <= CUDA_VERSION
 	OMRCUDA_LIBRARY_ENTRY(5, 5)
+#endif /* 5050 <= CUDA_VERSION */
 
 #undef OMRCUDA_LIBRARY_ENTRY
 #undef OMRCUDA_LIBRARY_NAME
@@ -1073,11 +1092,11 @@ attemptInitialization(OMRPortLibrary *portLibrary)
 		/* initialization *has* not been attempted */
 		uint32_t newState = J9CUDA_STATE_INITIALIZED;
 
-		if (openRuntime(portLibrary) < J9CUDA_RUNTIME_VERSION_MINIMUM) {
+		if (0 == openRuntime(portLibrary)) {
 			goto fail;
 		}
 
-		if (openDriver(portLibrary) < J9CUDA_DRIVER_VERSION_MINIMUM) {
+		if (0 == openDriver(portLibrary)) {
 fail:
 			globals->deviceCount = 0;
 			newState = J9CUDA_STATE_FAILED;

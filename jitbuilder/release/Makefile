@@ -74,6 +74,7 @@ all_goal: common_goal
 	./switch
 	./thunks
 	./toiltype
+	./transactionaloperations
 
 
 # In general, only compile and run tests that are known to work on all platforms
@@ -243,6 +244,11 @@ toiltype : libjitbuilder.a ToIlType.o
 ToIlType.o: src/ToIlType.cpp
 	g++ -o $@ $(CXXFLAGS) $<
 
+transactionaloperations : libjitbuilder.a TransactionalOperations.o
+	g++ -g -fno-rtti -o $@ TransactionalOperations.o -L. -ljitbuilder -ldl
+
+TransactionalOperations.o: src/TransactionalOperations.cpp src/TransactionalOperations.hpp
+	g++ -o $@ $(CXXFLAGS) $<
 
 worklist : libjitbuilder.a Worklist.o
 	g++ -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl

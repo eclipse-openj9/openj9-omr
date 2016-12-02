@@ -2021,6 +2021,8 @@ private:
 
    static bool validateOptionsTables(void *feBase, TR_FrontEnd *fe);
 
+   static bool compareOptionsForBinarySearch(const TR::OptionTable &a, const TR::OptionTable &b);
+
    static char *processOptionSet(char *options, char *envOptions, TR::Options *jitBase, bool isAOT);
    static char *processOptionSet(char *options, char *envOptions, TR::OptionSet *optionSet);
    static char *processOptionSet(char *options, TR::OptionSet *optionSet, void *jitBase, bool isAOT);

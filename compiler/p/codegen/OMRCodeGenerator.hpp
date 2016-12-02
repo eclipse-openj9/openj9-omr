@@ -95,7 +95,8 @@ extern TR::Instruction *loadConstant(TR::CodeGenerator *cg,
                                     int64_t         value,
                                     TR::Register    *targetRegister,
                                     TR::Instruction *cursor=NULL,
-                                    bool            isPicSite=false);
+                                    bool            isPicSite=false,
+                                    bool            useTOC=true);
 
 extern TR::Instruction *fixedSeqMemAccess(TR::CodeGenerator *cg,
                                          TR::Node          *node,
@@ -237,6 +238,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::RealRegister *getTOCBaseRegister()                       {return _tocBaseRegister;}
    TR::RealRegister *setTOCBaseRegister(TR::RealRegister *r)  {return (_tocBaseRegister = r);}
+
+   uintptrj_t *getTOCBase();
 
    TR_PPCScratchRegisterManager* generateScratchRegisterManager(int32_t capacity = 32);
 

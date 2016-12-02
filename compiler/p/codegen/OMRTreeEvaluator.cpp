@@ -185,7 +185,7 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int32_t va
    return(cursor);
    }
 
-TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite)
+TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor, bool isPicSite, bool useTOC)
    {
    if ((TR::getMinSigned<TR::Int32>() <= value) && (value <= TR::getMaxSigned<TR::Int32>()))
       {
@@ -202,7 +202,7 @@ TR::Instruction *loadConstant(TR::CodeGenerator *cg, TR::Node * node, int64_t va
 
    bool canUseTOC = (!TR::isJ9() || !isPicSite) &&
                     !comp->getOption(TR_DisableTOCForConsts);
-   if (canUseTOC)
+   if (canUseTOC && useTOC)
       offset = TR_PPCTableOfConstants::lookUp((int8_t *)&value, sizeof(int64_t), true, 0, cg);
 
    if (offset != PTOC_FULL_INDEX)

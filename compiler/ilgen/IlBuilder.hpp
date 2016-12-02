@@ -201,6 +201,8 @@ public:
    TR::IlValue *IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index);
    TR::IlValue *AtomicAddWithOffset(TR::IlValue *baseAddress, TR::IlValue *offset, TR::IlValue *value);
    TR::IlValue *AtomicAdd(TR::IlValue *baseAddress, TR::IlValue * value);
+   void Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **fallThroughBuilder);
+   void TransactionAbort();
    
    // vector memory
    TR::IlValue *VectorLoad(const char *name);

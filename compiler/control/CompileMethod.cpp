@@ -201,7 +201,7 @@ registerTrampoline(uint8_t *start, uint32_t size, const char *name)
    }
 
 static void
-printCompFailureInfo(TR::Compilation * comp, const char * reason)
+printCompFailureInfo(TR::JitConfig *jitConfig, TR::Compilation * comp, const char * reason)
    {
    if (comp)
       {
@@ -213,6 +213,14 @@ printCompFailureInfo(TR::Compilation * comp, const char * reason)
          fprintf(stderr, "JIT: terminated compile of %s: %s\n", comp->signature(), reason ? reason : "<no reason provided>");
          fflush(stderr);
          }
+
+      if (jitConfig->options.verboseFlags != 0)
+         {
+         TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL,"%s failed compilation", comp->signature());
+         }
+
+      if (comp->getOutFile() != NULL && comp->getOption(TR_TraceAll))
+         traceMsg(comp, "<result success=\"false\">exception thrown by the compiler</result>\n");
       }
    }
 
@@ -329,7 +337,7 @@ compileMethodFromDetails(
          translationTime = TR::Compiler->vm.getUSecClock() - translationTime;
          totalCompilationTime+=translationTime;
 
-         if (rc == 0) // success!
+         if (rc == COMPILATION_SUCCEEDED) // success!
             {
 
             // not ready yet...
@@ -359,16 +367,9 @@ compileMethodFromDetails(
                                      translationTime/1000,
                                      translationTime%1000);
             }
-         else /* of rc == 0 */
+         else /* of rc == COMPILATION_SUCCEEDED */
             {
-            // Failure
-            if (jitConfig->options.verboseFlags != 0)
-               {
-               const char *signature = compilee.signature(&trMemory);
-               TR_VerboseLog::writeLineLocked(TR_Vlog_COMPFAIL,"%s failed compilation", signature);
-               }
-            if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
-               traceMsg((&compiler), "<result success=\"false\">compiler returned with failure %d</result>\n", rc);
+            TR_ASSERT(false, "compiler error code %d returned\n", rc);
             }
 
          if (compiler.getOption(TR_BreakAfterCompile))
@@ -379,17 +380,31 @@ compileMethodFromDetails(
          }
       catch (const std::exception &exception)
          {
+         // failed! :-(
+
 #if defined(J9ZOS390)
          // Compiling with -Wc,lp64 results in a crash on z/OS when trying
          // to call the what() virtual method of the exception.
-         printCompFailureInfo(&compiler, "");
+         printCompFailureInfo(jitConfig, &compiler, "");
 #else
-         printCompFailureInfo(&compiler, exception.what());
+         printCompFailureInfo(jitConfig, &compiler, exception.what());
 #endif
-
-         // failed! :-(
-         if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
-            traceMsg((&compiler), "<result success=\"false\">longjmp invoked from the compiler</result>\n");
+         try
+            {
+            throw;
+            }
+         catch (const TR::ILGenFailure &e)
+            {
+            rc = COMPILATION_IL_GEN_FAILURE;
+            }
+         catch (const TR::UnimplementedOpCode &e)
+            {
+            rc = COMPILATION_UNIMPL_OPCODE;
+            }
+         catch (...)
+            {
+            rc = COMPILATION_FAILED;
+            }
          }
 
       // A better place to do this would have been the destructor for

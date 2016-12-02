@@ -118,34 +118,17 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 
 #define TR_NOP_TRANSLATE_TABLE_SIZE 256
 
-
-
 // Return codes from the compilation. Any non-zero return code will abort the
 // compilation.
-#define COMPILATION_SUCCEEDED          0
-#define COMPILATION_REQUESTED          1
-#define COMPILATION_IL_GEN_FAILURE     8
-#define COMPILATION_UNIMPL_OPCODE     12
-#define COMPILATION_METADATA_CREATION_FAILURE 24
-#define COMPILATION_INTERRUPTED -1
-#define COMPILATION_LOOPS_OR_BASICBLOCKS_EXCEEDED -2
-#define COMPILATION_OUT_OF_MEMORY_RELOCATION_DATA -3
-#define COMPILATION_MAX_CALLER_INDEX_EXCEEDED     -4
-#define COMPILATION_HEAP_LIMIT_EXCEEDED           -5
-#define COMPILATION_NEEDED_AT_HIGHER_LEVEL        -6
-#define COMPILATION_REMOVE_EDGE_NESTING_DEPTH_EXCEEDED -7
-#define COMPILATION_ALL_CODE_CACHES_RESERVED -8
-#define COMPILATION_ILLEGAL_CODE_CACHE_SWITCH -21
-#define COMPILATION_NULL_SUBSTITUTE_CODE_CACHE -22
-#define COMPILATION_CODE_MEMORY_EXHAUSTED -23
-#define COMPILATION_GCRPATCH_FAILURE -24
-#define COMPILATION_MAX_DEPTH_EXCEEDED -25
-#define COMPILATION_MAX_NODE_COUNT_EXCEEDED -26
-#define COMPILATION_LAMBDA_ENFORCE_SCORCHING -27
-#define COMPILATION_INTERNAL_POINTER_EXCEED_LIMIT -28
-#define COMPILATION_CHTABLE_COMMIT_FAILURE -29
-#define COMPILATION_CLASS_CHAIN_PERSISTANCE_FAILURE -30
-#define COMPILATION_LOW_PHYSICAL_MEMORY -31
+enum CompilationReturnCodes
+   {
+   COMPILATION_SUCCEEDED = 0,
+   COMPILATION_REQUESTED,
+   COMPILATION_IL_GEN_FAILURE,
+   COMPILATION_UNIMPL_OPCODE,
+   // Keep this the last one
+   COMPILATION_FAILED
+   };
 
 #if defined(DEBUG)
    // For a production build the body of of TR::Compilation::diagnostic is empty, so
@@ -723,8 +706,7 @@ public:
 
    static void shutdown(TR_FrontEnd *);
 
-   int32_t performOptimizations();
-   int32_t generateCode();
+   void performOptimizations();
 
    bool isOptServer() const { return _isOptServer;}
    bool isServerInlining() const { return _isServerInlining; }

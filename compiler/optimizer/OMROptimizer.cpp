@@ -979,7 +979,7 @@ TR_ValueNumberInfo *OMR::Optimizer::createValueNumberInfo(bool requiresGlobals, 
    return valueNumberInfo;
    }
 
-int32_t OMR::Optimizer::optimize()
+void OMR::Optimizer::optimize()
    {
    TR::Compilation::CompilationPhaseScope mainCompilationPhaseScope(comp());
 
@@ -1140,8 +1140,6 @@ int32_t OMR::Optimizer::optimize()
 
    comp()->setOptimizer(stackedOptimizer);
    _stackedOptimizer = false;
-
-   return 0;
    }
 
 void OMR::Optimizer::dumpPostOptTrees()

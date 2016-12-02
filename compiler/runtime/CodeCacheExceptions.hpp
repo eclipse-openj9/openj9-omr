@@ -26,17 +26,11 @@
 
 namespace TR {
 
-// For:
-//    COMPILATION_NULL_SUBSTITUTE_CODE_CACHE
-//    COMPILATION_CODE_MEMORY_EXHAUSTED
 struct CodeCacheError : public virtual std::bad_alloc
    {
    virtual const char* what() const throw() { return "Code Cache Error"; }
    };
 
-// For:
-//    COMPILATION_ALL_CODE_CACHES_RESERVED
-//    COMPILATION_ILLEGAL_CODE_CACHE_SWITCH
 struct RecoverableCodeCacheError : public virtual std::bad_alloc
    {
    virtual const char* what() const throw() { return "Recoverable Code Cache Error"; }

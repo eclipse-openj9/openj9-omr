@@ -1865,7 +1865,8 @@ IlBuilder::ForLoop(bool countsUp,
                    TR::IlValue *increment)
    {
    //ILB_REPLAY_BEGIN();
-
+   
+   methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(loopCode != NULL, "ForLoop needs to have loopCode builder");
    *loopCode = createBuilderIfNeeded(*loopCode);
 
@@ -1934,6 +1935,7 @@ IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlB
    {
    //ILB_REPLAY_BEGIN();
 
+   methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(body != NULL, "doWhileLoop needs to have a body");
 
    if (!_methodBuilder->symbolDefined(whileCondition))
@@ -1978,6 +1980,7 @@ IlBuilder::WhileDoLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlB
    {
    //ILB_REPLAY_BEGIN();
 
+   methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(body != NULL, "WhileDo needs to have a body");
    TraceIL("IlBuilder[ %p ]::WhileDoLoop while %s do body %p\n", this, whileCondition, *body);
 

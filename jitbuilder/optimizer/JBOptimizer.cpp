@@ -116,6 +116,7 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::andSimplification,                         OMR::IfEnabled                },  //clean up after versioner
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end
    { OMR::generalStoreSinking                                                      },
+   { OMR::basicBlockOrdering,                        OMR::IfEnabled                },
    { OMR::treesCleansing,                            OMR::IfEnabled                },
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end
    { OMR::localCSE,                                  OMR::IfEnabled                }, // common up expressions for sunk stores

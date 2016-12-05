@@ -80,7 +80,7 @@ class VirtualMachineOperandStack : public VirtualMachineState
     * @param sizeHint initial size used to allocate the stack; will grow larger if needed
     * @param elementType TR::IlType representing the underlying type of the virtual machine's operand stack entries
     * @param stackTop previously allocated and initialized VirtualMachineRegister representing the top of stack
-    * /
+    */
    VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, VirtualMachineRegister *stackTop);
    /**
     * @brief constructor used to copy the stack from another state

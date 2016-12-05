@@ -226,7 +226,7 @@ verifyResult3(STACKVALUETYPE top)
    if (verbose) cout << "\tResult 3: top value == 3: ";
    REPORT1(top == 3, "top", top);
 
-   OperandStackTestMethod::verifyStack("3", 2, 3, 3, 2, 1);
+   OperandStackTestMethod::verifyStack("3", 2, 3, 1, 2, 3);
    }
 
 void
@@ -236,7 +236,7 @@ verifyResult4(STACKVALUETYPE popValue)
    if (verbose) cout << "\tResult 4: pop value == 3: ";
    REPORT1(popValue == 3, "popValue", popValue);
 
-   OperandStackTestMethod::verifyStack("4", 2, 3, 3, 2, 1);
+   OperandStackTestMethod::verifyStack("4", 2, 3, 1, 2, 3);
    }
 
 void
@@ -246,7 +246,7 @@ verifyResult5(STACKVALUETYPE popValue)
    if (verbose) cout << "\tResult 5: pop value == 2: ";
    REPORT1(popValue == 2, "popValue", popValue);
 
-   OperandStackTestMethod::verifyStack("5", 2, 3, 3, 2, 1);
+   OperandStackTestMethod::verifyStack("5", 2, 3, 1, 2, 3);
    }
 
 void
@@ -256,7 +256,7 @@ verifyResult6(STACKVALUETYPE top)
    if (verbose) cout << "\tResult 6: top == 5: ";
    REPORT1(top == 5, "top", top);
 
-   OperandStackTestMethod::verifyStack("6", 2, 2, 5, 1);
+   OperandStackTestMethod::verifyStack("6", 2, 2, 1, 5);
    }
 
 void
@@ -300,7 +300,7 @@ void
 verifyResult11()
    {
    if (verbose) cout << "Commit();\n";
-   OperandStackTestMethod::verifyStack("11", 3, 4, 3, 3, 4, 5);
+   OperandStackTestMethod::verifyStack("11", 3, 4, 5, 4, 3, 3);
    }
 
 void
@@ -309,7 +309,7 @@ verifyResult12(STACKVALUETYPE top)
    if (verbose) cout << "Pop(); Pop(); if (3 " << result12Operator << " 3) { Push(11); } else { Push(99); } Commit(); Top();\n";
    if (verbose) cout << "\tResult 12: top == " << expectedResult12Top << ": ";
    REPORT1(top == expectedResult12Top, "top", top);
-   OperandStackTestMethod::verifyStack("11", 3, 3, expectedResult12Top, 4, 5);
+   OperandStackTestMethod::verifyStack("11", 3, 3, 5, 4, expectedResult12Top);
    }
 
 bool
@@ -440,9 +440,9 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
    TR::IlValue *v1 = POP(b);
    TR::IlValue *v2 = POP(b);
    if (useEqual)
-      b->IfCmpEqual(&thenBB, v1, v2);
+      b->IfCmpEqual(thenBB, v1, v2);
    else
-      b->IfCmpNotEqual(&thenBB, v1, v2);
+      b->IfCmpNotEqual(thenBB, v1, v2);
    b->AddFallThroughBuilder(elseBB);
 
    PUSH(thenBB, thenBB->ConstInteger(_valueType, 11));

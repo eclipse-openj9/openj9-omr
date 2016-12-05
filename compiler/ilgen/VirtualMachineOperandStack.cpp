@@ -83,7 +83,7 @@ VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
       b->   IndexAt(pElement,
                stack,
       b->      ConstInt32(i - _stackOffset)),
-            Pick(i)); // should generalize, maybe delegate element storage ?
+            Pick(_stackTop-i)); // should generalize, maybe delegate element storage ?
       }
    }
 

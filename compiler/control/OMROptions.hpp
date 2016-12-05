@@ -108,8 +108,7 @@ enum TR_CompilationOptions
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,
    TR_OptimizeForSpace           = 0x00004000,
-   TR_FullSpeedDebug             = 0x00008000,
-   TR_MimicInterpreterFrameShape = 0x00008000, // ** NOTE ** Alias for TR_FullSpeedDebug until we're prepared to separate these two concepts
+   TR_MimicInterpreterFrameShape = 0x00008000,
 
    TR_TraceBC                    = 0x00010000,
    TR_TraceInfo                  = 0x00020000,
@@ -267,7 +266,7 @@ enum TR_CompilationOptions
    TR_EnableNewAllocationProfiling        = 0x00010000 + 5, // enable tracing of fields load and store
    TR_IgnoreIEEERestrictions              = 0x00020000 + 5, // enable more aggressive, nonIEEE compliant xforms
    TR_ProcessHugeMethods                  = 0x00040000 + 5, // allow processing of huge methods
-   // Available                           = 0x00080000 + 5,
+   TR_FullSpeedDebug                      = 0x00080000 + 5,
    TR_DynamicThreadPriority               = 0x00100000 + 5,
    TR_UseIdleTime                         = 0x00200000 + 5,
    TR_UseOptLevelAdjustment               = 0x00400000 + 5,

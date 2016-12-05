@@ -58,7 +58,7 @@ RULE.cpp=$(eval $(DEF_RULE.cpp))
 #
 # Compile .s file into .o file
 #
-ifeq ($(C_COMPILER),clang)
+ifeq ($(LLVM_ASSEMBLER),1)
 
 define DEF_RULE.s
 $(1): $(2)

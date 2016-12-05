@@ -99,8 +99,8 @@ public:
       _partOfSequence(false),
       _connectedTrees(false),
       _comesBack(true),
-      _haveReplayName(false),
       _isHandler(false),
+      _haveReplayName(false),
       _rpILCpp(0)
       {
       }
@@ -136,6 +136,9 @@ public:
    bool TraceEnabled_log();
    void TraceIL_log(const char *s, ...);
 
+   // create a new local value (temporary variable)
+   TR::IlValue *NewValue(TR::IlType *dt);
+
    // constants
    TR::IlValue *NullAddress();
    TR::IlValue *ConstInt8(int8_t value);
@@ -144,9 +147,19 @@ public:
    TR::IlValue *ConstInt64(int64_t value);
    TR::IlValue *ConstFloat(float value);
    TR::IlValue *ConstDouble(double value);
-   TR::IlValue *ConstAddress(void* value);
-   TR::IlValue *ConstString(const char *value);
+   TR::IlValue *ConstAddress(const void * const value);
+   TR::IlValue *ConstString(const char * const value);
    TR::IlValue *ConstzeroValueForValue(TR::IlValue *v);
+
+   TR::IlValue *Const(int8_t value)             { return ConstInt8(value); }
+   TR::IlValue *Const(int16_t value)            { return ConstInt16(value); }
+   TR::IlValue *Const(int32_t value)            { return ConstInt32(value); }
+   TR::IlValue *Const(int64_t value)            { return ConstInt64(value); }
+   TR::IlValue *Const(float value)              { return ConstFloat(value); }
+   TR::IlValue *Const(double value)             { return ConstDouble(value); }
+   TR::IlValue *Const(const void * const value) { return ConstAddress(value); }
+
+   TR::IlValue *ConstInteger(TR::IlType *intType, int64_t value);
 
    // arithmetic
    TR::IlValue *Add(TR::IlValue *left, TR::IlValue *right);
@@ -319,7 +332,6 @@ protected:
    TR::IlValue *lookupSymbol(const char *name);
    void defineSymbol(const char *name, TR::IlValue *v);
    TR::IlValue *newValue(TR::DataType dt);
-   TR::IlValue *newValue(TR::IlType *dt);
    void defineValue(const char *name, TR::IlType *dt);
 
    TR::Node *loadValue(TR::IlValue *v);

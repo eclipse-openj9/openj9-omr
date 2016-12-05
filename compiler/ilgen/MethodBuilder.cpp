@@ -41,6 +41,7 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/BytecodeBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
+#include "ilgen/VirtualMachineState.hpp"
 
 #define OPT_DETAILS "O^O ILBLD: "
 
@@ -77,7 +78,7 @@
 namespace OMR
 {
 
-MethodBuilder::MethodBuilder(TR::TypeDictionary *types)
+MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
    : TR::IlBuilder(asMethodBuilder(), types),
    _methodName(""),
    _returnType(NoType),
@@ -91,7 +92,8 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types)
    _useBytecodeBuilders(false),
    _countBlocksWorklist(0),
    _connectTreesWorklist(0),
-   _allBytecodeBuilders(0)
+   _allBytecodeBuilders(0),
+   _vmState(vmState)
    {
    REPLAY({
       std::fstream rpHpp("ReplayMethod.hpp",std::fstream::out);
@@ -107,11 +109,13 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types)
       (*_rpCpp) << "#include \"ReplayMethod.hpp\"" << std::endl << std::endl;
       (*_rpCpp) << "ReplayMethod::ReplayMethod(TR::TypeDictionary *types)" << std::endl;
       (*_rpCpp) << "\t: TR::MethodBuilder(types) {" << std::endl;
+      // } to match open one in string in prev line so editors can match properly
 
       _rpILCpp = new std::fstream("ReplayMethodBuildIL.cpp",std::fstream::out);
       (*_rpILCpp) << "#include \"ilgen/TypeDictionary.hpp\"" << std::endl << std::endl;
       (*_rpILCpp) << "#include \"ReplayMethod.hpp\"" << std::endl << std::endl;
       (*_rpILCpp) << "bool ReplayMethod::buildIL() {" << std::endl;
+      // } to match open one in string in prev line so editors can match properly
 
       strcpy(_replayName, "this");
       _haveReplayName = true;
@@ -397,6 +401,14 @@ MethodBuilder::OrphanBytecodeBuilder(int32_t bcIndex, char *name)
    orphan->initialize(_details, _methodSymbol, _fe, _symRefTab);
    orphan->setupForBuildIL();
    return orphan;
+   }
+
+void
+MethodBuilder::AppendBuilder(TR::BytecodeBuilder *bb)
+   {
+   this->OMR::IlBuilder::AppendBuilder(bb);
+   if (_vmState)
+      bb->propagateVMState(_vmState);
    }
 
 void

@@ -29,6 +29,7 @@
 
 namespace TR { class BytecodeBuilder; }
 namespace TR { class MethodBuilder; }
+namespace OMR { class VirtualMachineState; }
 
 namespace OMR
 {
@@ -47,20 +48,31 @@ public:
    void AddFallThroughBuilder(TR::BytecodeBuilder *ftb);
 
    void AddSuccessorBuilders(uint32_t numBuilders, ...);
-   void AddSuccessorBuilder(TR::BytecodeBuilder *b) { AddSuccessorBuilders(1, b); }
+   void AddSuccessorBuilder(TR::BytecodeBuilder **b) { AddSuccessorBuilders(1, b); }
 
+   OMR::VirtualMachineState *initialVMState()                { return _initialVMState; }
+   OMR::VirtualMachineState *vmState()                       { return _vmState; }
+   void setVMState(OMR::VirtualMachineState *vmState)        { _vmState = vmState; }
+
+   void propagateVMState(OMR::VirtualMachineState *fromVMState);
+
+   void Goto(TR::BytecodeBuilder *dest);
+   void IfCmpEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpNotEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
 
 protected:
-   virtual void appendBlock(TR::Block *block = 0, bool addEdge=true);
-
    TR::BytecodeBuilder       * _fallThroughBuilder;
    List<TR::BytecodeBuilder> * _successorBuilders;
    int32_t                     _bcIndex;
    char                      * _name;
+   OMR::VirtualMachineState  * _initialVMState;
+   OMR::VirtualMachineState  * _vmState;
 
+   virtual void appendBlock(TR::Block *block = 0, bool addEdge=true);
    void addAllSuccessorBuildersToWorklist();
    bool connectTrees();
    virtual void setHandlerInfo(uint32_t catchType);
+   void transferVMState(TR::BytecodeBuilder **b);
    };
 
 } // namespace OMR

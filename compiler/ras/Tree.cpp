@@ -2942,6 +2942,7 @@ int32_t childTypes[] =
    TR::NoType,                     // TR::ResolveAndNULLCHK
    TR::NoType,                     // TR::DIVCHK
    TR::NoType,                     // TR::OverflowCHK
+   TR::NoType,                     // TR::UnsignedOverflowCHK
    TR::Int32,                     // TR::BNDCHK
    TR::Int32,                     // TR::ArrayCopyBNDCHK
    TR::Int32,                     // TR::BNDCHKwithSpineCHK

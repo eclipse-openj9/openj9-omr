@@ -11816,6 +11816,12 @@ TR::Node *constrainOverflowChk(TR::ValuePropagation *vp, TR::Node *node)
    return node;
    }
 
+TR::Node *constrainUnsignedOverflowChk(TR::ValuePropagation *vp, TR::Node *node)
+   {
+   constrainChildren(vp,node);
+   return node; 
+   }
+
 TR::Node *constrainDivChk(TR::ValuePropagation *vp, TR::Node *node)
    {
    constrainChildren(vp, node);

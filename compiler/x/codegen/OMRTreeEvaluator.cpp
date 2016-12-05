@@ -2447,7 +2447,7 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
    //it is fine that nodeIs64Bit is false for long operand on 32bits platform because
    //the analyzers below don't use *op* in this case anyways
    bool nodeIs64Bit = TR::Compiler->target.is32Bit()? false: TR::TreeEvaluator::getNodeIs64Bit(operand1, cg);
-   switch (node->getOverflowCHKOperation())
+   switch (node->getOverflowCheckOperation())
       {
       //add group
       case TR::ladd:
@@ -2521,7 +2521,7 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       TR_X86SubtractAnalyser subAnalyser(cg);
       node->setNodeRequiresConditionCodes(true);
       bool needsEflags = true;
-      switch (node->getOverflowCHKOperation())
+      switch (node->getOverflowCheckOperation())
          {
          // add group
          case TR::badd:
@@ -2570,7 +2570,7 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       }
 
    bool isUnsigned = false;
-   switch (node->getOverflowCHKOperation())
+   switch (node->getOverflowCheckOperation())
    {
        case TR::buadd:
        case TR::cadd:

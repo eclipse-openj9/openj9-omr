@@ -261,7 +261,9 @@ public:
    bool isTwoChildrenAddress()  const { return isArrayRef(); }
    bool isCase()                const { return getOpCodeValue() == TR::Case; }
    bool isAnchor()              const { return getOpCodeValue() == TR::compressedRefs; }
-   bool isOverflowCHK()         const { return getOpCodeValue() == TR::OverflowCHK; }
+   bool isOverflowCheck()         const { return (getOpCodeValue() == TR::OverflowCHK)         || 
+                                               (getOpCodeValue() == TR::UnsignedOverflowCHK); 
+                                      }
 
    bool hasPinningArrayPointer()
       {

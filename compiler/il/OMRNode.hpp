@@ -837,8 +837,8 @@ public:
    void *                  getMonitorInfo();
    void *                  setMonitorInfo(void *info);
 
-   TR::ILOpCodes           getOverflowCHKOperation();
-   TR::ILOpCodes           setOverflowCHKOperation(TR::ILOpCodes op);
+   TR::ILOpCodes           getOverflowCheckOperation();
+   TR::ILOpCodes           setOverflowCheckOperation(TR::ILOpCodes op);
    /**
     * UnionBase functions end
     */

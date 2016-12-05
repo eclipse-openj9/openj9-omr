@@ -1176,7 +1176,7 @@ TR::Node*
 IlBuilder::genOverflowCHKTreeTop(TR::Node *operationNode, TR::ILOpCodes overflow)
    {
    TR::Node *overflowChkNode = TR::Node::createWithRoomForOneMore(overflow, 3, symRefTab()->findOrCreateOverflowCheckSymbolRef(_methodSymbol), operationNode, operationNode->getFirstChild(), operationNode->getSecondChild());
-   overflowChkNode->setOverflowCHKOperation(operationNode->getOpCodeValue());
+   overflowChkNode->setOverflowCheckOperation(operationNode->getOpCodeValue());
    genTreeTop(overflowChkNode);
    return overflowChkNode;
    }

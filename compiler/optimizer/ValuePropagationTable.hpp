@@ -58,6 +58,7 @@ TR::Node *constrainCmpne(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainCondBranch(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainDivChk(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainOverflowChk(TR::ValuePropagation *vp, TR::Node *node);
+TR::Node *constrainUnsignedOverflowChk(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainDload(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainFload(TR::ValuePropagation *vp, TR::Node *node);
 TR::Node *constrainFloatCmp(TR::ValuePropagation *vp, TR::Node *node);
@@ -781,6 +782,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainResolveNullChk,  // TR::ResolveAndNULLCHK
    constrainDivChk,          // TR::DIVCHK
    constrainOverflowChk,     // TR::OverflowCHK
+   constrainUnsignedOverflowChk,     // TR::UnsignedOverflowCHK
    constrainBndChk,          // TR::BNDCHK
    constrainArrayCopyBndChk, // TR::ArrayCopyBNDCHK
    constrainBndChkWithSpineChk, // TR::BNDCHKwithSpineCHK

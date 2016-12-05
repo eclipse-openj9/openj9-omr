@@ -639,6 +639,7 @@
    dftSimplifier,           // TR::ResolveAndNULLCHK
    divchkSimplifier,        // TR::DIVCHK
    dftSimplifier,           // TR::OverflowCHK
+   dftSimplifier,           // TR::UnsignedOverflowCHK
    bndchkSimplifier,        // TR::BNDCHK
    arraycopybndchkSimplifier, // TR::ArrayCopyBNDCHK
    bndchkwithspinechkSimplifier, // TR::BNDCHKwithSpineCHK

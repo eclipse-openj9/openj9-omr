@@ -18,7 +18,7 @@
 
 
 #ifndef ATOMICOPS_INCL
-#define ATOMICOPS_IMPL
+#define ATOMICOPS_INCL
 
 #include "ilgen/MethodBuilder.hpp"
 

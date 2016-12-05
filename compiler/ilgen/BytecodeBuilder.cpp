@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -215,40 +215,112 @@ OMR::BytecodeBuilder::transferVMState(TR::BytecodeBuilder **b)
    }
 
 void
+OMR::BytecodeBuilder::Goto(TR::BytecodeBuilder **dest)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   Goto(*dest);
+   }
+
+void
 OMR::BytecodeBuilder::Goto(TR::BytecodeBuilder *dest)
    {
    AddSuccessorBuilder(&dest);
-   OMR::IlBuilder::Goto((TR::IlBuilder **)&dest);
+   OMR::IlBuilder::Goto(dest);
    }
 
 void
 OMR::BytecodeBuilder::IfCmpEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
    {
-   bool added = false;
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpEqual(*dest, v1, v2);
+   }
 
-   if (*dest != NULL)
-      {
-      AddSuccessorBuilder(dest);
-      added = true;
-      }
-   OMR::IlBuilder::IfCmpEqual((TR::IlBuilder **)dest, v1, v2);
+void
+OMR::BytecodeBuilder::IfCmpEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpEqual(dest, v1, v2);
+   }
 
-   if (!added)
-      AddSuccessorBuilder(dest); // if dest didn't exist previously, it can't be a merge
+void
+OMR::BytecodeBuilder::IfCmpEqualZero(TR::BytecodeBuilder **dest, TR::IlValue *c)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpEqualZero(*dest, c);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpEqualZero(TR::BytecodeBuilder *dest, TR::IlValue *c)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpEqualZero(dest, c);
    }
 
 void
 OMR::BytecodeBuilder::IfCmpNotEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
    {
-   bool added = false;
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpNotEqual(*dest, v1, v2);
+   }
 
-   if (*dest != NULL)
-      {
-      AddSuccessorBuilder(dest);
-      added = true;
-      }
-   OMR::IlBuilder::IfCmpNotEqual((TR::IlBuilder **)dest, v1, v2);
+void
+OMR::BytecodeBuilder::IfCmpNotEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpNotEqual(dest, v1, v2);
+   }
 
-   if (!added)
-      AddSuccessorBuilder(dest); // if dest didn't exist previously, it can't be a merge
+void
+OMR::BytecodeBuilder::IfCmpNotEqualZero(TR::BytecodeBuilder **dest, TR::IlValue *c)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpNotEqualZero(*dest, c);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpNotEqualZero(TR::BytecodeBuilder *dest, TR::IlValue *c)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpNotEqualZero(dest, c);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpLessThan(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpLessThan(*dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpLessThan(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpLessThan(dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpGreaterThan(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpGreaterThan(*dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpGreaterThan(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpGreaterThan(dest, v1, v2);
    }

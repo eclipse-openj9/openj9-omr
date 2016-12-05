@@ -214,6 +214,7 @@ public:
    TR::IlValue *ComputedCall(const char *name, int32_t numArgs, TR::IlValue **args);
    TR::IlValue *genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlValue ** paramValues, bool isDirectCall = true);
    void Goto(TR::IlBuilder **dest);
+   void Goto(TR::IlBuilder *dest);
    void Return();
    void Return(TR::IlValue *value);
    virtual void ForLoop(bool countsUp,
@@ -287,11 +288,18 @@ public:
       }
 
    void IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition);
+   void IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition);
    void IfCmpNotEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpNotEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpEqualZero(TR::IlBuilder **target, TR::IlValue *condition);
+   void IfCmpEqualZero(TR::IlBuilder *target, TR::IlValue *condition);
    void IfCmpEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+
    void IfThenElse(TR::IlBuilder **thenPath,
                    TR::IlBuilder **elsePath,
                    TR::IlValue *condition);

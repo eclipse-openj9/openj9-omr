@@ -1055,8 +1055,15 @@ void
 IlBuilder::Goto(TR::IlBuilder **dest)
    {
    *dest = createBuilderIfNeeded(*dest);
-   TraceIL("IlBuilder[ %p ]::Goto %p\n", this, *dest);
-   appendGoto((*dest)->getEntry());
+   Goto(*dest);
+   }
+
+void
+IlBuilder::Goto(TR::IlBuilder *dest)
+   {
+   TR_ASSERT(dest != NULL, "This goto implementation requires a non-NULL builder object");
+   TraceIL("IlBuilder[ %p ]::Goto %p\n", this, dest);
+   appendGoto(dest->getEntry());
    setDoesNotComeBack();
 
    ILB_REPLAY("%s->Goto(%s);", REPLAY_BUILDER(this), REPLAY_BUILDER(dest));
@@ -1561,54 +1568,95 @@ void
 IlBuilder::IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpNotEqualZero(*target, condition);
+   }
+
+void
+IlBuilder::IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpNotEqualZero requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpNotEqualZero(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(condition));
-   TraceIL("IlBuilder[ %p ]::IfCmpNotEqualZero %d? -> [ %p ] B%d\n", this, condition->getCPIndex(), (*target), (*target)->getEntry()->getNumber());
-   ifCmpNotEqualZero(condition, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpNotEqualZero %d? -> [ %p ] B%d\n", this, condition->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpNotEqualZero(condition, target->getEntry());
    }
 
 void
 IlBuilder::IfCmpNotEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpNotEqual(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpNotEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpNotEqual requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpNotEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
-   TraceIL("IlBuilder[ %p ]::IfCmpNotEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), (*target), (*target)->getEntry()->getNumber());
-   ifCmpNotEqual(left, right, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpNotEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpNotEqual(left, right, target->getEntry());
    }
 
 void
 IlBuilder::IfCmpEqualZero(TR::IlBuilder **target, TR::IlValue *condition)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpEqualZero(*target, condition);
+   }
+
+void
+IlBuilder::IfCmpEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpEqualZero requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpEqualZero(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(condition));
-   TraceIL("IlBuilder[ %p ]::IfCmpEqualZero %d == 0? -> [ %p ] B%d\n", this, condition->getCPIndex(), *target, (*target)->getEntry()->getNumber());
-   ifCmpEqualZero(condition, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpEqualZero %d == 0? -> [ %p ] B%d\n", this, condition->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpEqualZero(condition, target->getEntry());
    }
 
 void
 IlBuilder::IfCmpEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpEqual(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpEqual requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
-   TraceIL("IlBuilder[ %p ]::IfCmpEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), (*target), (*target)->getEntry()->getNumber());
-   ifCmpEqual(left, right, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpEqual(left, right, target->getEntry());
    }
 
 void
 IlBuilder::IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpLessThan(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpLessThan requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpLessThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
-   TraceIL("IlBuilder[ %p ]::IfCmpLessThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), (*target), (*target)->getEntry()->getNumber());
-   ifCmpLessThan(left, right, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpLessThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpLessThan(left, right, target->getEntry());
    }
 
 void
 IlBuilder::IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
    {
    *target = createBuilderIfNeeded(*target);
+   IfCmpGreaterThan(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
    ILB_REPLAY("%s->IfCmpGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
-   TraceIL("IlBuilder[ %p ]::IfCmpGreatThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), (*target), (*target)->getEntry()->getNumber());
-   ifCmpGreaterThan(left, right, (*target)->getEntry());
+   TraceIL("IlBuilder[ %p ]::IfCmpGreatThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpGreaterThan(left, right, target->getEntry());
    }
 
 void

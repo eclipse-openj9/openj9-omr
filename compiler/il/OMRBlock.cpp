@@ -750,13 +750,13 @@ OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg)
    }
 
 void
-OMR::Block::uncommonNodesBetweenBlocks(TR::Compilation *comp, TR::Block *newBlock)
+OMR::Block::uncommonNodesBetweenBlocks(TR::Compilation *comp, TR::Block *newBlock, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR_ScratchList<TR::SymbolReference> symbolReferenceTempsA(self()->trMemory());
    TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(self()->trMemory());
    TR_ScratchList<TR::SymbolReference> symbolReferenceTempsC(self()->trMemory());
 
-   TR_HandleInjectedBasicBlock ibb(comp, NULL, comp->getMethodSymbol(),
+   TR_HandleInjectedBasicBlock ibb(comp, NULL, methodSymbol? methodSymbol: comp->getMethodSymbol(),
                                    symbolReferenceTempsA,
                                    injectedBasicBlockTemps,
                                    symbolReferenceTempsC);
@@ -793,7 +793,12 @@ OMR::Block::isTargetOfJumpWhoseTargetCanBeChanged(TR::Compilation * comp)
    }
 
 TR::Block *
-OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors)
+OMR::Block::splitWithGivenMethodSymbol(TR::ResolvedMethodSymbol *methodSymbol, TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors){
+   return self()->split(startOfNewBlock, cfg, fixupCommoning, copyExceptionSuccessors, methodSymbol);
+}
+
+TR::Block *
+OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommoning, bool copyExceptionSuccessors, TR::ResolvedMethodSymbol *methodSymbol)
    {
    TR_Structure * structure = cfg->getStructure();
    cfg->setStructure(NULL);
@@ -814,7 +819,7 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
 
    if (fixupCommoning)
       {
-      self()->uncommonNodesBetweenBlocks(comp, block2);
+      self()->uncommonNodesBetweenBlocks(comp, block2, methodSymbol);
       }
 
    self()->moveSuccessors(block2);
@@ -1331,13 +1336,21 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
 
       if (isExceptionEdge)
          {
-         newBlock->setHandlerInfo(
-            to->getCatchType(),
-            to->getInlineDepth(),
-            to->getHandlerIndex(),
-            to->getOwningMethod(),
-            c);
-         TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
+         if (to->isOSRCatchBlock())
+            newBlock->setHandlerInfoWithOutBCInfo(
+                  TR::Block::CanCatchOSR, 
+                  to->getInlineDepth(), 
+                  -1, 
+                  to->getOwningMethod(), 
+                  c);
+         else
+            newBlock->setHandlerInfo(
+               to->getCatchType(),
+               to->getInlineDepth(),
+               to->getHandlerIndex(),
+               to->getOwningMethod(),
+               c);
+            TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
          TR::SymbolReferenceTable *srtab = c->getSymRefTab();
          TR::SymbolReference *excSR = srtab->findOrCreateExcpSymbolRef();
          TR::SymbolReference *throwSR = srtab->findOrCreateAThrowSymbolRef(method);

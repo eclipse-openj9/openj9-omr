@@ -35,8 +35,11 @@ FIXED_SRCBASE=$(subst \,/,$(JIT_SRCBASE))
 FIXED_OBJBASE=$(subst \,/,$(JIT_OBJBASE))
 FIXED_DLL_DIR=$(subst \,/,$(JIT_DLL_DIR))
 
-# TODO - "debug" as default?
-BUILD_CONFIG?=prod
+#
+# Default to debug build to catch linting errors in code guarded by
+# `#ifdef DEBUG`
+#
+BUILD_CONFIG?=debug
 
 #
 # This is where we setup our component dirs

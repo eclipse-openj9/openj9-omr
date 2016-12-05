@@ -5704,6 +5704,16 @@ TR::Node *constrainAcall(TR::ValuePropagation *vp, TR::Node *node)
             TR::VPResolvedClass *newTypeConstraint = NULL;
             if (constraint)
                {
+               // Do nothing if the class of the object doesn't implement Cloneable
+               if (constraint->getClass() && !vp->comp()->fej9()->isCloneable(constraint->getClass()))
+                  {
+                  if (vp->trace())
+                     traceMsg(vp->comp(), "Object Clone: Class of node %p is not cloneable, quit\n", node);
+
+                  TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "inlineClone/unsuitable/(%s)/%s/block_%d", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness()), vp->_curTree->getEnclosingBlock()->getNumber()));
+
+                  return node;
+                  }
                if ( constraint->isFixedClass() )
                   {
                   newTypeConstraint = TR::VPFixedClass::create(vp, constraint->getClass());

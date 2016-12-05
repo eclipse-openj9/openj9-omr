@@ -122,11 +122,7 @@ public:
    template <typename AllocatorType>
    static TR::StaticSymbol * createNamed(AllocatorType m, TR::DataType d, void * addr, const char * name);
 
-   const char *getName()
-      {
-      TR_ASSERT(isNamed(),"Must have called makeNamed() to get a valid name");
-      return _name;
-      }
+   const char *getName();
 
 private:
 

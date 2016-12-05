@@ -122,8 +122,8 @@ public:
    template <typename AllocatorType>
    static TR::RegisterMappedSymbol * createMethodMetaDataSymbol(AllocatorType m, const char *name, TR_MethodMetaDataType type = TR_MethodMetaDataType_Default);
 
-   TR_MethodMetaDataType   getMethodMetaDataType()                            { TR_ASSERT(isMethodMetaData(), "should be method metadata!"); return _type;   }
-   void                    setMethodMetaDataType(TR_MethodMetaDataType type)  { TR_ASSERT(isMethodMetaData(), "should be method metadata!"); _type = type;   }
+   TR_MethodMetaDataType getMethodMetaDataType();
+   void                  setMethodMetaDataType(TR_MethodMetaDataType type);
 
 protected:
    friend class ::TR_DebugExt;

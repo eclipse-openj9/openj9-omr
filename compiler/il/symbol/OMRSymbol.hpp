@@ -146,28 +146,28 @@ public:
    TR::StaticSymbol                           *getMethodTypeTableEntrySymbol();
    TR::AutomaticSymbol                        *getRegisterSymbol();
 
-   // The inline To methods perform an explicit (debug) assume that the symbol is a correct type
+   // These methods perform an explicit (debug) assume that the symbol is a correct type
    // and then return the symbol explicitly cast to the type.
    //
-   inline TR::RegisterMappedSymbol            *castToRegisterMappedSymbol();
-   inline TR::AutomaticSymbol                 *castToAutoSymbol();
-   inline TR::AutomaticSymbol                 *castToVariableSizeSymbol();
-   inline TR::AutomaticSymbol                 *castToAutoMarkerSymbol();
-   inline TR::ParameterSymbol                 *castToParmSymbol();
-   inline TR::AutomaticSymbol                 *castToInternalPointerAutoSymbol();
-   inline TR::AutomaticSymbol                 *castToLocalObjectSymbol();
-   inline TR::ResolvedMethodSymbol            *castToResolvedMethodSymbol();
-   inline TR::MethodSymbol                    *castToMethodSymbol();
-   inline TR::Symbol                          *castToShadowSymbol();
-   inline TR::RegisterMappedSymbol            *castToMethodMetaDataSymbol();
-   inline TR::LabelSymbol                     *castToLabelSymbol();
-   inline TR::ResolvedMethodSymbol            *castToJittedMethodSymbol();
-   inline TR::AutomaticSymbol                 *castToRegisterSymbol();
+   TR::RegisterMappedSymbol            *castToRegisterMappedSymbol();
+   TR::AutomaticSymbol                 *castToAutoSymbol();
+   TR::AutomaticSymbol                 *castToVariableSizeSymbol();
+   TR::AutomaticSymbol                 *castToAutoMarkerSymbol();
+   TR::ParameterSymbol                 *castToParmSymbol();
+   TR::AutomaticSymbol                 *castToInternalPointerAutoSymbol();
+   TR::AutomaticSymbol                 *castToLocalObjectSymbol();
+   TR::ResolvedMethodSymbol            *castToResolvedMethodSymbol();
+   TR::MethodSymbol                    *castToMethodSymbol();
+   TR::Symbol                          *castToShadowSymbol();
+   TR::RegisterMappedSymbol            *castToMethodMetaDataSymbol();
+   TR::LabelSymbol                     *castToLabelSymbol();
+   TR::ResolvedMethodSymbol            *castToJittedMethodSymbol();
+   TR::AutomaticSymbol                 *castToRegisterSymbol();
 
-   inline TR::StaticSymbol                    *castToStaticSymbol();
-   inline TR::StaticSymbol                    *castToNamedStaticSymbol();
-   inline TR::StaticSymbol                    *castToCallSiteTableEntrySymbol();
-   inline TR::StaticSymbol                    *castToMethodTypeTableEntrySymbol();
+   TR::StaticSymbol                    *castToStaticSymbol();
+   TR::StaticSymbol                    *castToNamedStaticSymbol();
+   TR::StaticSymbol                    *castToCallSiteTableEntrySymbol();
+   TR::StaticSymbol                    *castToMethodTypeTableEntrySymbol();
 
    int32_t getOffset();
 
@@ -604,116 +604,5 @@ public:
 
    };
 }
-
-// If these implementations are to be moved, they need to be un-defined as inline.
-TR::RegisterMappedSymbol * OMR::Symbol::castToRegisterMappedSymbol()
-   {
-   TR_ASSERT(isRegisterMappedSymbol(), "OMR::Symbol::castToRegisterMappedSymbol, symbol is not a register mapped symbol");
-   return (TR::RegisterMappedSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::castToAutoSymbol()
-   {
-   TR_ASSERT(isAuto(), "OMR::Symbol::castToAutoSymbo, symbol is not an automatic symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
-
-TR::ParameterSymbol * OMR::Symbol::castToParmSymbol()
-   {
-   TR_ASSERT(isParm(), "OMR::Symbol::castToParmSymbol, symbol is not a parameter symbol");
-   return (TR::ParameterSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::castToInternalPointerAutoSymbol()
-   {
-   TR_ASSERT(isInternalPointerAuto(), "OMR::Symbol::castToInternalAutoSymbol, symbol is not an internal pointer automatic symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::castToLocalObjectSymbol()
-   {
-   TR_ASSERT(isLocalObject(), "OMR::Symbol::castToLocalObjectSymbol, symbol is not an internal pointer automatic symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
-
-TR::StaticSymbol * OMR::Symbol::castToStaticSymbol()
-   {
-   TR_ASSERT(isStatic(), "OMR::Symbol::castToStaticSymbol, symbol is not a static symbol");
-   return (TR::StaticSymbol *)this;
-   }
-
-TR::StaticSymbol * OMR::Symbol::castToNamedStaticSymbol()
-   {
-   TR_ASSERT(isNamed() && isStatic(), "OMR::Symbol::castToNamedStaticSymbol, symbol is not a named static symbol");
-   return (TR::StaticSymbol *)this;
-   }
-
-TR::MethodSymbol * OMR::Symbol::castToMethodSymbol()
-   {
-   TR_ASSERT(isMethod(), "OMR::Symbol::castToMethodSymbol, symbol[%p] is not a method symbol",
-         this);
-   return (TR::MethodSymbol *)this;
-   }
-
-TR::ResolvedMethodSymbol * OMR::Symbol::castToResolvedMethodSymbol()
-   {
-   TR_ASSERT(isResolvedMethod(), "OMR::Symbol::castToResolvedMethodSymbol, symbol is not a resolved method symbol");
-   return (TR::ResolvedMethodSymbol *)this;
-   }
-
-TR::Symbol * OMR::Symbol::castToShadowSymbol()
-   {
-   TR_ASSERT(isShadow(), "OMR::Symbol::castToShadowSymbol, symbol is not a shadow symbol");
-   return (TR::Symbol *)this;
-   }
-
-TR::RegisterMappedSymbol * OMR::Symbol::castToMethodMetaDataSymbol()
-   {
-   TR_ASSERT(isMethodMetaData(), "OMR::Symbol::castToMethodMetaDataSymbol, symbol is not a meta data symbol");
-   return (TR::RegisterMappedSymbol *)this;
-   }
-
-TR::LabelSymbol * OMR::Symbol::castToLabelSymbol()
-   {
-   TR_ASSERT(isLabel(), "OMR::Symbol::castToLabelSymbol, symbol is not a label symbol");
-   return (TR::LabelSymbol *)this;
-   }
-
-TR::ResolvedMethodSymbol * OMR::Symbol::castToJittedMethodSymbol()
-   {
-   TR_ASSERT(isJittedMethod(), "OMR::Symbol::castToJittedMethodSymbol, symbol is not a resolved method symbol");
-   return (TR::ResolvedMethodSymbol *)this;
-   }
-
-TR::StaticSymbol *OMR::Symbol::castToCallSiteTableEntrySymbol()
-   {
-   TR_ASSERT(isCallSiteTableEntry(), "OMR::Symbol::castToCallSiteTableEntrySymbol expected a call site table entry symbol");
-   return (TR::StaticSymbol*)this;
-   }
-
-TR::StaticSymbol *OMR::Symbol::castToMethodTypeTableEntrySymbol()
-   {
-   TR_ASSERT(isMethodTypeTableEntry(), "OMR::Symbol::castToMethodTypeTableEntrySymbol expected a method type table entry symbol");
-   return (TR::StaticSymbol*)this;
-   }
-
-
-TR::AutomaticSymbol *OMR::Symbol::castToRegisterSymbol()
-   {
-   TR_ASSERT(isRegisterSymbol(), "OMR::Symbol::castToRegisterSymbol expected a register symbol");
-   return (TR::AutomaticSymbol*)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::castToAutoMarkerSymbol()
-   {
-   TR_ASSERT(isAutoMarkerSymbol(), "OMR::Symbol::castToAutoMarkerSymbol, symbol is not a auto marker symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
-
-TR::AutomaticSymbol * OMR::Symbol::castToVariableSizeSymbol()
-   {
-   TR_ASSERT(isVariableSizeSymbol(), "OMR::Symbol::castToVariableSizeSymbol, symbol is not a VariableSizeSymbol symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
 
 #endif

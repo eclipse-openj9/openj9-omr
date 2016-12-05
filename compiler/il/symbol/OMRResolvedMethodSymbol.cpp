@@ -991,7 +991,7 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
    {
    bool trace = self()->comp()->getOption(TR_TraceOSR);
    // Use first node of the method for bytecode info
-   TR_ASSERT(self()->getFirstTreeTop(), "first tree top is NULL in %s", signature(self()->comp()->trMemory()));
+   TR_ASSERT(self()->getFirstTreeTop(), "first tree top is NULL in %s", self()->signature(self()->comp()->trMemory()));
    TR::Node *firstNode = self()->getFirstTreeTop()->getNode();
 
    // Create the OSR helper symbol reference
@@ -2130,6 +2130,99 @@ OMR::ResolvedMethodSymbol::getArrayCopyTempSlot(TR_FrontEnd * fe)
    if (_arrayCopyTempSlot == -1)
       _arrayCopyTempSlot = self()->incTempIndex(fe);
    return _arrayCopyTempSlot;
+   }
+
+// Getters
+
+uint32_t&
+OMR::ResolvedMethodSymbol::getLocalMappingCursor()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _localMappingCursor;
+   }
+void
+OMR::ResolvedMethodSymbol::setLocalMappingCursor(uint32_t i)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   _localMappingCursor = i;
+   }
+
+uint32_t
+OMR::ResolvedMethodSymbol::getProloguePushSlots()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _prologuePushSlots;
+   }
+uint32_t
+OMR::ResolvedMethodSymbol::setProloguePushSlots(uint32_t s)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return (_prologuePushSlots = s);
+   }
+
+uint32_t
+OMR::ResolvedMethodSymbol::getScalarTempSlots()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _scalarTempSlots;
+   }
+uint32_t
+OMR::ResolvedMethodSymbol::setScalarTempSlots(uint32_t s)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return (_scalarTempSlots = s);
+   }
+
+uint32_t
+OMR::ResolvedMethodSymbol::getObjectTempSlots()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _objectTempSlots;
+   }
+uint32_t
+OMR::ResolvedMethodSymbol::setObjectTempSlots(uint32_t s)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return (_objectTempSlots = s);
+   }
+
+bool
+OMR::ResolvedMethodSymbol::containsOnlySinglePrecision()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _methodFlags.testAny(OnlySinglePrecision);
+   }
+void
+OMR::ResolvedMethodSymbol::setContainsOnlySinglePrecision(bool b)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   _methodFlags.set(OnlySinglePrecision, b);
+   }
+
+bool
+OMR::ResolvedMethodSymbol::usesSinglePrecisionMode()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _methodFlags.testAny(SinglePrecisionMode);
+   }
+void
+OMR::ResolvedMethodSymbol::setUsesSinglePrecisionMode(bool b)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   _methodFlags.set(SinglePrecisionMode, b);
+   }
+
+bool
+OMR::ResolvedMethodSymbol::isNoTemps()
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   return _methodFlags.testAny(NoTempsSet);
+   }
+void
+OMR::ResolvedMethodSymbol::setNoTemps(bool b)
+   {
+   TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
+   _methodFlags.set(NoTempsSet, b);
    }
 
 //Explicit instantiations

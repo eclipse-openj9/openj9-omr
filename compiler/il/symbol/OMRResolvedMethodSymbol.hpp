@@ -373,26 +373,26 @@ public:
    template <typename AllocatorType>
    static TR::ResolvedMethodSymbol * createJittedMethodSymbol(AllocatorType m, TR_ResolvedMethod *, TR::Compilation *);
 
-   uint32_t&   getLocalMappingCursor()                { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _localMappingCursor;}
-   void        setLocalMappingCursor(uint32_t i)      { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); _localMappingCursor = i;}
+   uint32_t&   getLocalMappingCursor();
+   void        setLocalMappingCursor(uint32_t i);
 
-   uint32_t    getProloguePushSlots()                 { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _prologuePushSlots;}
-   uint32_t    setProloguePushSlots(uint32_t s)       { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return (_prologuePushSlots = s);}
+   uint32_t    getProloguePushSlots();
+   uint32_t    setProloguePushSlots(uint32_t s);
 
-   uint32_t    getScalarTempSlots()                   { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _scalarTempSlots;}
-   uint32_t    setScalarTempSlots(uint32_t s)         { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return (_scalarTempSlots = s);}
+   uint32_t    getScalarTempSlots();
+   uint32_t    setScalarTempSlots(uint32_t s);
 
-   uint32_t    getObjectTempSlots()                   { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _objectTempSlots;}
-   uint32_t    setObjectTempSlots(uint32_t s)         { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return (_objectTempSlots = s);}
+   uint32_t    getObjectTempSlots();
+   uint32_t    setObjectTempSlots(uint32_t s);
 
-   bool        containsOnlySinglePrecision()          { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _methodFlags.testAny(OnlySinglePrecision);}
-   void        setContainsOnlySinglePrecision(bool b) { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); _methodFlags.set(OnlySinglePrecision, b);}
+   bool        containsOnlySinglePrecision();
+   void        setContainsOnlySinglePrecision(bool b);
 
-   bool        usesSinglePrecisionMode()              { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _methodFlags.testAny(SinglePrecisionMode);}
-   void        setUsesSinglePrecisionMode(bool b)     { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); _methodFlags.set(SinglePrecisionMode, b);}
+   bool        usesSinglePrecisionMode();
+   void        setUsesSinglePrecisionMode(bool b);
 
-   bool        isNoTemps()                            { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); return _methodFlags.testAny(NoTempsSet);}
-   void        setNoTemps(bool b=true)                { TR_ASSERT(isJittedMethod(), "Should have been created as a jitted method."); _methodFlags.set(NoTempsSet, b);}
+   bool        isNoTemps();
+   void        setNoTemps(bool b=true);
 
 private:
    uint32_t                                  _localMappingCursor;

@@ -61,6 +61,14 @@ TR::StaticSymbol * OMR::StaticSymbol::createNamed(AllocatorType m, TR::DataType 
    }
 
 
+const char *
+OMR::StaticSymbol::getName()
+   {
+   TR_ASSERT(self()->isNamed(),"Must have called makeNamed() to get a valid name");
+   return _name;
+   }
+
+
 //Explicit Instantiations
 template TR::StaticSymbol * OMR::StaticSymbol::createNamed(TR_HeapMemory m, TR::DataType d, const char * name) ;
 template TR::StaticSymbol * OMR::StaticSymbol::createNamed(TR_HeapMemory m, TR::DataType d, void * addr, const char * name) ;

@@ -139,6 +139,13 @@ OMR::LabelSymbol::makeRelativeLabelSymbol(intptr_t offset)
    self()->setName(name);
    }
 
+intptr_t
+OMR::LabelSymbol::getDistance()
+   {
+   TR_ASSERT(self()->isRelativeLabel(), "Must be a relative label to have a valid offset!");
+   return _offset;
+   }
+
 TR::LabelSymbol *
 generateLabelSymbol(TR::CodeGenerator *cg)
    {

@@ -34,6 +34,7 @@ ALL_TESTS = \
             linkedlist \
             localarray \
             nestedloop \
+            operandstacktests \
             pointer \
             pow2 \
             recfib \
@@ -153,6 +154,13 @@ nestedloop : libjitbuilder.a NestedLoop.o
 	g++ -g -fno-rtti -o $@ NestedLoop.o -L. -ljitbuilder -ldl
 
 NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+operandstacktests : libjitbuilder.a OperandStackTests.o
+	g++ -g -fno-rtti -o $@ OperandStackTests.o -L. -ljitbuilder -ldl
+
+OperandStackTests.o: src/OperandStackTests.cpp src/OperandStackTests.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

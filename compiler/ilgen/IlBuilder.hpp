@@ -389,9 +389,10 @@ protected:
 
    virtual bool connectTrees();
 
-   TR::Node *genOverflowCHKTreeTop(TR::Node *operationNode);
+   TR::Node *genOverflowCHKTreeTop(TR::Node *operationNode, TR::ILOpCodes overflow);
+   TR::ILOpCodes getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue);
    void appendExceptionHandler(TR::Block *blockThrowsException, TR::IlBuilder **builder, uint32_t catchType);
-   TR::IlValue *operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler);
+   TR::IlValue *genOperationWithOverflowCHK(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler, TR::ILOpCodes overflow);
    virtual void setHandlerInfo(uint32_t catchType);
    TR::IlValue **processCallArgs(TR::Compilation *comp, int numArgs, va_list args);
    };

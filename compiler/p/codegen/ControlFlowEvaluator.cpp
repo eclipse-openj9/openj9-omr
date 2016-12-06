@@ -429,7 +429,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mne
 
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::Mnemonic branchOp, TR::Node *node, TR::CodeGenerator *cg, bool isSigned)
    {
-   return compareIntsForOrder(branchOp, node->getBranchDestination()->getNode()->getLabel(), node, cg, isSigned, false, false);
+   return TR::TreeEvaluator::compareIntsForOrder(branchOp, node->getBranchDestination()->getNode()->getLabel(), node, cg, isSigned, false, false);
    }
 
 static void fixDepsForLongCompare(TR::RegisterDependencyConditions *deps, TR::Register *src1High, TR::Register *src1Low, TR::Register *src2High, TR::Register *src2Low)
@@ -751,7 +751,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::Mn
 
 TR::Register *OMR::Power::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::Mnemonic branchOp, TR::InstOpCode::Mnemonic reversedBranchOp, TR::Node *node, TR::CodeGenerator *cg, bool isSigned)
    {
-   return compareLongsForOrder(branchOp, reversedBranchOp, node->getBranchDestination()->getNode()->getLabel(), node, cg, isSigned, false, false);
+   return TR::TreeEvaluator::compareLongsForOrder(branchOp, reversedBranchOp, node->getBranchDestination()->getNode()->getLabel(), node, cg, isSigned, false, false);
    }
 
 TR::Register *compareLongAndSetOrderedBoolean(TR::InstOpCode::Mnemonic compareOp, TR::InstOpCode::Mnemonic branchOp, TR::Node *node, TR::CodeGenerator *cg)
@@ -1228,7 +1228,7 @@ TR::Register *OMR::Power::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::C
 TR::Register *OMR::Power::TreeEvaluator::compareIntsForEquality(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic branchOp = node->getOpCode().isCompareTrueIfEqual() ? TR::InstOpCode::beq : TR::InstOpCode::bne;
-   return compareIntsForEquality(branchOp, node->getBranchDestination()->getNode()->getLabel(),
+   return TR::TreeEvaluator::compareIntsForEquality(branchOp, node->getBranchDestination()->getNode()->getLabel(),
                                  node, cg, false, false);
    }
 
@@ -1491,7 +1491,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareIntsForEquality(TR::InstOpCode::
 // for ifacmpeq, opcode has been temporarily set to ificmpeq
 TR::Register *OMR::Power::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForEquality(node, cg);
+   TR::TreeEvaluator::compareIntsForEquality(node, cg);
    return NULL;
    }
 
@@ -1500,7 +1500,7 @@ TR::Register *OMR::Power::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::C
 TR::Register *OMR::Power::TreeEvaluator::ificmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild=node->getFirstChild(), *secondChild=node->getSecondChild();
-   compareIntsForOrder(TR::InstOpCode::blt, node, cg, true);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::blt, node, cg, true);
    if (secondChild->getOpCode().isLoadConst() && secondChild->getInt()>=0)
       firstChild->setIsNonNegative(true);
    return NULL;
@@ -1508,50 +1508,50 @@ TR::Register *OMR::Power::TreeEvaluator::ificmpltEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::Power::TreeEvaluator::ificmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::bge, node, cg, true);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::bge, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ificmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::bgt, node, cg, true);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::bgt, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ificmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::ble, node, cg, true);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::ble, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifiucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::blt, node, cg, false);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::blt, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifiucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::bge, node, cg, false);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::bge, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifiucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::bgt, node, cg, false);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::bgt, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifiucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareIntsForOrder(TR::InstOpCode::ble, node, cg, false);
+   TR::TreeEvaluator::compareIntsForOrder(TR::InstOpCode::ble, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::InstOpCode::Mnemonic branchOp = node->getOpCode().isCompareTrueIfEqual() ? TR::InstOpCode::beq : TR::InstOpCode::bne;
-   return compareLongsForEquality(branchOp, node->getBranchDestination()->getNode()->getLabel(),
+   return TR::TreeEvaluator::compareLongsForEquality(branchOp, node->getBranchDestination()->getNode()->getLabel(),
                                  node, cg, false, false);
    }
 
@@ -1608,7 +1608,7 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode:
                {
                TR::Node::recreate(node, node->getOpCode().isCompareTrueIfEqual() ? TR::icmpeq : TR::icmpne);
                }
-            return compareIntsForEquality(branchOp, dstLabel, node, cg, isHint, likeliness);
+            return TR::TreeEvaluator::compareIntsForEquality(branchOp, dstLabel, node, cg, isHint, likeliness);
             }
          }
       }
@@ -1731,56 +1731,56 @@ TR::Register *OMR::Power::TreeEvaluator::compareLongsForEquality(TR::InstOpCode:
 // for ifacmpeq, opcode has been temporarily set to iflcmpeq
 TR::Register *OMR::Power::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForEquality(node, cg);
+   TR::TreeEvaluator::compareLongsForEquality(node, cg);
    return NULL;
    }
 
 
 TR::Register *OMR::Power::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::blt, TR::InstOpCode::bgt, node, cg, true);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::blt, TR::InstOpCode::bgt, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::bge, TR::InstOpCode::ble, node, cg, true);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::bge, TR::InstOpCode::ble, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::bgt, TR::InstOpCode::blt, node, cg, true);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::bgt, TR::InstOpCode::blt, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::ble, TR::InstOpCode::bge, node, cg, true);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::ble, TR::InstOpCode::bge, node, cg, true);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::blt, TR::InstOpCode::bgt, node, cg, false);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::blt, TR::InstOpCode::bgt, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::bge, TR::InstOpCode::ble, node, cg, false);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::bge, TR::InstOpCode::ble, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::bgt, TR::InstOpCode::blt, node, cg, false);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::bgt, TR::InstOpCode::blt, node, cg, false);
    return NULL;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iflucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   compareLongsForOrder(TR::InstOpCode::ble, TR::InstOpCode::bge, node, cg, false);
+   TR::TreeEvaluator::compareLongsForOrder(TR::InstOpCode::ble, TR::InstOpCode::bge, node, cg, false);
    return NULL;
    }
 
@@ -1789,12 +1789,12 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::C
    if (TR::Compiler->target.is64Bit())
       {
       TR::Node::recreate(node, TR::iflcmpeq);
-      iflcmpeqEvaluator(node, cg);
+      TR::TreeEvaluator::iflcmpeqEvaluator(node, cg);
       }
    else
       {
       TR::Node::recreate(node, TR::ificmpeq);
-      ificmpeqEvaluator(node, cg);
+      TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
       }
    TR::Node::recreate(node, TR::ifacmpeq);
    return NULL;
@@ -1805,12 +1805,12 @@ TR::Register *OMR::Power::TreeEvaluator::ifacmpneEvaluator(TR::Node *node, TR::C
    if (TR::Compiler->target.is64Bit())
       {
       TR::Node::recreate(node, TR::iflcmpne);
-      iflcmpeqEvaluator(node, cg);
+      TR::TreeEvaluator::iflcmpeqEvaluator(node, cg);
       }
    else
       {
       TR::Node::recreate(node, TR::ificmpne);
-      ificmpeqEvaluator(node, cg);
+      TR::TreeEvaluator::ificmpeqEvaluator(node, cg);
       }
    TR::Node::recreate(node, TR::ifacmpne);
    return NULL;
@@ -2029,7 +2029,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpltEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmp4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmp4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2079,7 +2079,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpleEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmp4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmp4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2126,7 +2126,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpgeEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmp4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmp4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2173,7 +2173,7 @@ TR::Register *OMR::Power::TreeEvaluator::icmpgtEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmp4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmp4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2198,7 +2198,7 @@ TR::Register *OMR::Power::TreeEvaluator::iucmpltEvaluator(TR::Node *node, TR::Co
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmpl4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmpl4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2215,7 +2215,7 @@ TR::Register *OMR::Power::TreeEvaluator::iucmpleEvaluator(TR::Node *node, TR::Co
    TR::Register   *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg    = cg->allocateRegister();
 
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmpl4, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmpl4, cg);
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -2239,7 +2239,7 @@ TR::Register *OMR::Power::TreeEvaluator::iucmpgeEvaluator(TR::Node *node, TR::Co
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmpl4, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmpl4, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2256,7 +2256,7 @@ TR::Register *OMR::Power::TreeEvaluator::iucmpgtEvaluator(TR::Node *node, TR::Co
    TR::Register   *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg    = cg->allocateRegister();
 
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmpl4, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmpl4, cg);
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
@@ -2419,7 +2419,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmp8, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmp8, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2468,7 +2468,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmp8, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmp8, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2522,7 +2522,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmp8, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmp8, cg);
       }
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2576,7 +2576,7 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::Cod
    else
       {
       TR::Register   *src2Reg = cg->evaluate(secondChild);
-      genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmp8, cg);
+      TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmp8, cg);
       }
 
    node->setRegister(trgReg);
@@ -2596,7 +2596,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::Co
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg  = cg->allocateRegister();
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmpl8, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::blt, TR::InstOpCode::cmpl8, cg);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2615,7 +2615,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::Co
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg  = cg->allocateRegister();
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmpl8, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::ble, TR::InstOpCode::cmpl8, cg);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2634,7 +2634,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::Co
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg  = cg->allocateRegister();
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmpl8, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bge, TR::InstOpCode::cmpl8, cg);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2653,7 +2653,7 @@ TR::Register *OMR::Power::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::Co
    TR::Register *src1Reg = cg->evaluate(firstChild);
    TR::Register *src2Reg = cg->evaluate(secondChild);
    TR::Register *trgReg  = cg->allocateRegister();
-   genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmpl8, cg);
+   TR::TreeEvaluator::genBranchSequence(node, src1Reg, src2Reg, trgReg, TR::InstOpCode::bgt, TR::InstOpCode::cmpl8, cg);
 
    node->setRegister(trgReg);
    cg->decReferenceCount(firstChild);
@@ -2765,17 +2765,17 @@ TR::Register *OMR::Power::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lcmpeqEvaluator(node, cg);
+      return TR::TreeEvaluator::lcmpeqEvaluator(node, cg);
    else
-      return icmpeqEvaluator(node, cg);
+      return TR::TreeEvaluator::icmpeqEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lcmpneEvaluator(node, cg);
+      return TR::TreeEvaluator::lcmpneEvaluator(node, cg);
    else
-      return icmpneEvaluator(node, cg);
+      return TR::TreeEvaluator::icmpneEvaluator(node, cg);
    }
 
 
@@ -3819,7 +3819,7 @@ TR::Register *OMR::Power::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::
    TR::Register *trgReg = cg->evaluate(reference);
    TR::Instruction *gcPoint;
 
-   gcPoint = generateNullTestInstructions(cg, trgReg, node);
+   gcPoint = TR::TreeEvaluator::generateNullTestInstructions(cg, trgReg, node);
 
    gcPoint->PPCNeedsGCMap(0xFFFFFFFF);
 
@@ -3880,7 +3880,7 @@ TR::Register *OMR::Power::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::
 
 TR::Register *OMR::Power::TreeEvaluator::NULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return evaluateNULLCHKWithPossibleResolve(node, false, cg);
+   return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, false, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -3938,14 +3938,14 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
             // which corresponds to an ifcmp fall-through
             TR::InstOpCode::Mnemonic branchOp = cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg);
             TR::InstOpCode::Mnemonic reverseBranchOp = cmp2branch(valueToCheck->getOpCodeValue(), cg);
-            compareLongsForOrder(branchOp, reverseBranchOp, slowPathLabel, valueToCheck, cg,
+            TR::TreeEvaluator::compareLongsForOrder(branchOp, reverseBranchOp, slowPathLabel, valueToCheck, cg,
                                  valueToCheck->getOpCode().isUnsignedCompare(), true, PPCOpProp_BranchUnlikely);
             }
          else
             {
             // switch branches since we want to go to OOL on node evaluating to 0
             // which corresponds to an ifcmp fall-through
-            compareIntsForOrder(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
+            TR::TreeEvaluator::compareIntsForOrder(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
                                 slowPathLabel, valueToCheck, cg, valueToCheck->getOpCode().isUnsignedCompare(),
                                 true, PPCOpProp_BranchUnlikely);
             }
@@ -3958,12 +3958,12 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
             {
             // switch branches since we want to go to OOL on node evaluating to 0
             // which corresponds to an ifcmp fall-through
-            compareLongsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
+            TR::TreeEvaluator::compareLongsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
                                     slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
             }
          else
             {
-            compareIntsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
+            TR::TreeEvaluator::compareIntsForEquality(cmp2branch(valueToCheck->getOpCode().getOpCodeForReverseBranch(), cg),
                                    slowPathLabel, valueToCheck, cg, true, PPCOpProp_BranchUnlikely);
             }
          }
@@ -3992,7 +3992,7 @@ TR::Register *OMR::Power::TreeEvaluator::ZEROCHKEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::Power::TreeEvaluator::resolveAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return evaluateNULLCHKWithPossibleResolve(node, true, cg);
+   return TR::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(node, true, cg);
    }
 
 

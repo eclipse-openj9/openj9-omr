@@ -458,7 +458,7 @@ TR::Register *OMR::Power::TreeEvaluator::floadEvaluator(TR::Node *node, TR::Code
    generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, tempReg, tempMR);
    if (needSync)
       {
-      postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
+      TR::TreeEvaluator::postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
       }
    tempMR->decNodeReferenceCounts(cg);
 
@@ -546,7 +546,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
       generateTrg1MemInstruction(cg, opcode, node, tempReg, tempMR);
       if (needSync)
          {
-         postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
+         TR::TreeEvaluator::postSyncConditions(node, cg, tempReg, tempMR, TR::InstOpCode::isync);
          }
       }
 
@@ -559,7 +559,7 @@ TR::Register *OMR::Power::TreeEvaluator::dloadHelper(TR::Node *node, TR::CodeGen
 TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister(TR_FPR));
-   return dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
+   return TR::TreeEvaluator::dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
    }
 
 
@@ -685,7 +685,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
 
    if (child->getOpCode().isLoadConst())
       {
-      TR::Register *resReg = dconstEvaluator(node, cg);
+      TR::Register *resReg = TR::TreeEvaluator::dconstEvaluator(node, cg);
       cg->decReferenceCount(child);
       return resReg;
       }
@@ -702,7 +702,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
          }
 
       TR::Register *resReg = node->setRegister(cg->allocateRegister(TR_VSX_VECTOR));
-      return dloadHelper(child, cg, resReg, TR::InstOpCode::lxvdsx);
+      return TR::TreeEvaluator::dloadHelper(child, cg, resReg, TR::InstOpCode::lxvdsx);
       }
    else
       {
@@ -795,7 +795,7 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
             secondChild = newNode;
             }
 
-         dloadHelper(secondChild, cg, resReg, TR::InstOpCode::lxsdx);
+         TR::TreeEvaluator::dloadHelper(secondChild, cg, resReg, TR::InstOpCode::lxsdx);
 	      }
          else
 	      {
@@ -867,7 +867,7 @@ TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::Cod
       else
          node->setChild(childIndex, child->getFirstChild());
       TR::Node::recreate(node, indirect?TR::istorei:TR::istore);
-      istoreEvaluator(node, cg);
+      TR::TreeEvaluator::istoreEvaluator(node, cg);
       node->setChild(childIndex, child);
       TR::Node::recreate(node, indirect?TR::fstorei:TR::fstore);
       cg->decReferenceCount(child);
@@ -887,7 +887,7 @@ TR::Register *OMR::Power::TreeEvaluator::fstoreEvaluator(TR::Node *node, TR::Cod
    generateMemSrc1Instruction(cg, TR::InstOpCode::stfs, node, tempMR, valueReg);
    if (needSync)
       {
-      postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
+      TR::TreeEvaluator::postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
       }
    cg->decReferenceCount(child);
    tempMR->decNodeReferenceCounts(cg);
@@ -913,7 +913,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
       else
          node->setChild(childIndex, child->getFirstChild());
       TR::Node::recreate(node, indirect?TR::lstorei:TR::lstore);
-      lstoreEvaluator(node, cg);
+      TR::TreeEvaluator::lstoreEvaluator(node, cg);
       node->setChild(childIndex, child);
       TR::Node::recreate(node, indirect?TR::dstorei:TR::dstore);
       cg->decReferenceCount(child);
@@ -981,7 +981,7 @@ TR::Register* OMR::Power::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::Cod
       generateMemSrc1Instruction(cg, TR::InstOpCode::stfd, node, tempMR, valueReg);
       if (needSync)
          {
-         postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
+         TR::TreeEvaluator::postSyncConditions(node, cg, valueReg, tempMR, TR::InstOpCode::sync);
          }
       }
    tempMR->decNodeReferenceCounts(cg);
@@ -1183,7 +1183,7 @@ TR::Register *OMR::Power::TreeEvaluator::fremEvaluator(TR::Node *node, TR::CodeG
    addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
    addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
    addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
-   generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
+   TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
 
    // all registers on dep are now not used any longer, except source1
    dependencies->stopUsingDepRegs(cg, source1Reg);
@@ -1235,7 +1235,7 @@ TR::Register *OMR::Power::TreeEvaluator::dremEvaluator(TR::Node *node, TR::CodeG
    addDependency(dependencies, NULL, TR::RealRegister::fp3, TR_FPR, cg);
    addDependency(dependencies, NULL, TR::RealRegister::fp4, TR_FPR, cg);
    addDependency(dependencies, NULL, TR::RealRegister::fp5, TR_FPR, cg);
-   generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
+   TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdoubleRemainder, node, dependencies, cg);
 
    node->setRegister(source1Reg);
    cg->decReferenceCount(child1);
@@ -1389,7 +1389,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
       addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
-      generateHelperBranchAndLinkInstruction(TR_PPCinteger2Double, node, dependencies, cg);
+      TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCinteger2Double, node, dependencies, cg);
       if (node->getOpCodeValue() == TR::i2f || node->getOpCodeValue() == TR::iu2f)
          generateTrg1Src1Instruction(cg, TR::InstOpCode::frsp, node, trgReg, trgReg);
 
@@ -1440,7 +1440,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      trgReg = int2dbl(node, cg->evaluate(child), cg->canClobberNodesRegister(child), cg);
+      trgReg = TR::TreeEvaluator::int2dbl(node, cg->evaluate(child), cg->canClobberNodesRegister(child), cg);
       trgReg->setIsSinglePrecision();
       cg->decReferenceCount(child);
       }
@@ -1480,7 +1480,7 @@ TR::Register *OMR::Power::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      trgReg = int2dbl(node, cg->evaluate(child), cg->canClobberNodesRegister(child), cg);
+      trgReg = TR::TreeEvaluator::int2dbl(node, cg->evaluate(child), cg->canClobberNodesRegister(child), cg);
       cg->decReferenceCount(child);
       }
    node->setRegister(trgReg);
@@ -1538,7 +1538,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2dbl(TR::Node *node, TR::CodeGenera
       addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
 
-      generateHelperBranchAndLinkInstruction(TR_PPClong2Double, node, dependencies, cg);
+      TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Double, node, dependencies, cg);
 
       dependencies->stopUsingDepRegs(cg, trgReg);
 
@@ -1593,7 +1593,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
       addDependency(dependencies, NULL, TR::RealRegister::gr4, TR_GPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::gr11, TR_GPR, cg);
 
-      generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
+      TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
 
       dependencies->stopUsingDepRegs(cg, trgReg);
 
@@ -1628,7 +1628,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
       addDependency(dependencies, NULL, TR::RealRegister::fp1, TR_FPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::fp2, TR_FPR, cg);
 
-      generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
+      TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPClong2Float, node, dependencies, cg);
 
       dependencies->stopUsingDepRegs(cg, trgReg);
 
@@ -1661,7 +1661,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      trgReg = long2float(node, cg);
+      trgReg = TR::TreeEvaluator::long2float(node, cg);
       }
    node->setRegister(trgReg);
    return trgReg;
@@ -1688,7 +1688,7 @@ TR::Register *OMR::Power::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGe
       }
    else
       {
-      trgReg = long2dbl(node, cg);
+      trgReg = TR::TreeEvaluator::long2dbl(node, cg);
       }
    node->setRegister(trgReg);
    return trgReg;
@@ -1862,7 +1862,7 @@ TR::Register *OMR::Power::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGe
       addDependency(dependencies, NULL, TR::RealRegister::fp6, TR_FPR, cg);
       addDependency(dependencies, NULL, TR::RealRegister::fp7, TR_FPR, cg);
 
-      generateHelperBranchAndLinkInstruction(TR_PPCdouble2Long, node, dependencies, cg);
+      TR::TreeEvaluator::generateHelperBranchAndLinkInstruction(TR_PPCdouble2Long, node, dependencies, cg);
 
       dependencies->stopUsingDepRegs(cg, trgReg->getHighOrder(), trgReg->getLowOrder());
       cg->machine()->setLinkRegisterKilled(true);
@@ -2342,7 +2342,7 @@ TR::Register *OMR::Power::TreeEvaluator::dxfrsEvaluator(TR::Node *node, TR::Code
 
    TR::Node *tmp_node = TR::Node::create(node, TR::dconst, 0);
    tmp_node->setDouble(0.0);
-   TR::Register *tmpReg = dconstEvaluator(tmp_node, cg);
+   TR::Register *tmpReg = TR::TreeEvaluator::dconstEvaluator(tmp_node, cg);
    tmp_node->unsetRegister();
 
    TR::Register *condReg = cg->allocateRegister(TR_CCR);
@@ -2409,13 +2409,13 @@ TR::Register *OMR::Power::TreeEvaluator::dnintEvaluator(TR::Node *node, TR::Code
       {
       const_node = TR::Node::create(node, TR::dconst, 0);
       const_node->setDouble(CONSTANT64(0x10000000000000));   // 2**52
-      tmp1Reg = dconstEvaluator(const_node, cg);
+      tmp1Reg = TR::TreeEvaluator::dconstEvaluator(const_node, cg);
       }
    else
       {
       const_node = TR::Node::create(node, TR::fconst, 0);
       const_node->setFloat(0x800000);   // 2**23
-      tmp1Reg = fconstEvaluator(const_node, cg);
+      tmp1Reg = TR::TreeEvaluator::fconstEvaluator(const_node, cg);
       }
 
    const_node->unsetRegister();
@@ -2434,12 +2434,12 @@ TR::Register *OMR::Power::TreeEvaluator::dnintEvaluator(TR::Node *node, TR::Code
 
    const_node = TR::Node::create(node, TR::fconst, 0);
    const_node->setFloat(0.5);
-   tmp1Reg = fconstEvaluator(const_node, cg);
+   tmp1Reg = TR::TreeEvaluator::fconstEvaluator(const_node, cg);
    const_node->unsetRegister();
 
    const_node = TR::Node::create(node, TR::fconst, 0);
    const_node->setFloat(-0.5);
-   tmp2Reg = fconstEvaluator(const_node, cg);
+   tmp2Reg = TR::TreeEvaluator::fconstEvaluator(const_node, cg);
    const_node->unsetRegister();
 
    generateTrg1Src2Instruction(cg, TR::InstOpCode::fadd, node, tmp1Reg, srcReg, tmp1Reg);

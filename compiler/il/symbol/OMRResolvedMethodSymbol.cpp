@@ -180,12 +180,12 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
         ((_resolvedMethod->getRecognizedMethod() == TR::java_lang_Math_copySign_F) ||
          (_resolvedMethod->getRecognizedMethod() == TR::java_lang_Math_copySign_D))))
       {
-      setCanReplaceWithHWInstr(true);
+      self()->setCanReplaceWithHWInstr(true);
       }
 
    if (_resolvedMethod->isJNINative())
       {
-      setJNI();
+      self()->setJNI();
 #if defined(TR_TARGET_POWER)
       switch(_resolvedMethod->getRecognizedMethod())
          {

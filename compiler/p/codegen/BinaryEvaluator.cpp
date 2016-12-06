@@ -821,9 +821,9 @@ TR::Register *OMR::Power::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::asubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lsubEvaluator(node, cg);
+      return TR::TreeEvaluator::lsubEvaluator(node, cg);
    else
-      return isubEvaluator(node, cg);
+      return TR::TreeEvaluator::isubEvaluator(node, cg);
    }
 
 // also handles TR::asub  in 64-bit mode
@@ -1367,11 +1367,11 @@ OMR::Power::TreeEvaluator::dualMulEvaluator(TR::Node * node, TR::CodeGenerator *
 
    if (TR::Compiler->target.is64Bit())
          {
-         return dualMulHelper64(node, lmulNode, lumulhNode, cg);
+         return TR::TreeEvaluator::dualMulHelper64(node, lmulNode, lumulhNode, cg);
          }
       else
          {
-         return dualMulHelper32(node, lmulNode, lumulhNode, cg);
+         return TR::TreeEvaluator::dualMulHelper32(node, lmulNode, lumulhNode, cg);
          }
       }
    }
@@ -1383,7 +1383,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeG
 
    if (node->isDualCyclic())
       {
-      return dualMulEvaluator(node, cg);
+      return TR::TreeEvaluator::dualMulEvaluator(node, cg);
       }
 
    if (TR::Compiler->target.is64Bit())
@@ -1616,7 +1616,7 @@ TR::Register *OMR::Power::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::Code
    bool needsUnsignedHighMulOnly = (node->getOpCodeValue() == TR::lumulh) && !node->isDualCyclic();
    if (node->isDualCyclic() || needsUnsignedHighMulOnly)
       {
-      return dualMulEvaluator(node, cg);
+      return TR::TreeEvaluator::dualMulEvaluator(node, cg);
       }
 
    // lmulh is generated for constant ldiv and the second child is the magic number

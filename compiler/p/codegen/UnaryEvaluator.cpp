@@ -135,7 +135,7 @@ TR::Register *OMR::Power::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
 
    if (TR::Compiler->target.is64Bit())
       {
-      return inegEvaluator(node, cg);
+      return TR::TreeEvaluator::inegEvaluator(node, cg);
       }
    else
       {
@@ -267,9 +267,9 @@ TR::Register *OMR::Power::TreeEvaluator::b2iEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::b2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return b2lEvaluator(node, cg);
+      return TR::TreeEvaluator::b2lEvaluator(node, cg);
    else
-      return b2iEvaluator(node, cg);
+      return TR::TreeEvaluator::b2iEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::s2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -443,9 +443,9 @@ TR::Register *OMR::Power::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::su2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iu2lEvaluator(node, cg);
+      return TR::TreeEvaluator::iu2lEvaluator(node, cg);
    else
-      return s2iEvaluator(node, cg);
+      return TR::TreeEvaluator::s2iEvaluator(node, cg);
    }
 
 
@@ -475,9 +475,9 @@ TR::Register *OMR::Power::TreeEvaluator::su2iEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::s2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return s2lEvaluator(node, cg);
+      return TR::TreeEvaluator::s2lEvaluator(node, cg);
    else
-      return s2iEvaluator(node, cg);
+      return TR::TreeEvaluator::s2iEvaluator(node, cg);
    }
 
 // also handles s2b
@@ -541,17 +541,17 @@ TR::Register *OMR::Power::TreeEvaluator::i2sEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::i2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return s2lEvaluator(node, cg);
+      return TR::TreeEvaluator::s2lEvaluator(node, cg);
    else
-      return passThroughEvaluator(node, cg);
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::iu2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iu2lEvaluator(node, cg);
+      return TR::TreeEvaluator::iu2lEvaluator(node, cg);
    else
-      return passThroughEvaluator(node, cg);
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::l2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -775,10 +775,10 @@ TR::Register *OMR::Power::TreeEvaluator::l2aEvaluator(TR::Node *node, TR::CodeGe
          return source;
          }
       else
-         return passThroughEvaluator(node, cg);
+         return TR::TreeEvaluator::passThroughEvaluator(node, cg);
       }
    else
-      return l2iEvaluator(node, cg);
+      return TR::TreeEvaluator::l2iEvaluator(node, cg);
    }
 
 
@@ -913,41 +913,41 @@ TR::Register *OMR::Power::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeG
 TR::Register *OMR::Power::TreeEvaluator::bu2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return bu2lEvaluator(node, cg);
+      return TR::TreeEvaluator::bu2lEvaluator(node, cg);
    else
-      return bu2iEvaluator(node, cg);
+      return TR::TreeEvaluator::bu2iEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::a2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return l2iEvaluator(node, cg);
+      return TR::TreeEvaluator::l2iEvaluator(node, cg);
    else
-      return passThroughEvaluator(node, cg);
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::a2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return passThroughEvaluator(node, cg);
+      return TR::TreeEvaluator::passThroughEvaluator(node, cg);
    else
-      return iu2lEvaluator(node, cg);
+      return TR::TreeEvaluator::iu2lEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::a2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return l2bEvaluator(node, cg);
+      return TR::TreeEvaluator::l2bEvaluator(node, cg);
    else
-      return i2bEvaluator(node, cg);
+      return TR::TreeEvaluator::i2bEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::a2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return l2sEvaluator(node, cg);
+      return TR::TreeEvaluator::l2sEvaluator(node, cg);
    else
-      return i2sEvaluator(node, cg);
+      return TR::TreeEvaluator::i2sEvaluator(node, cg);
    }
 
 #if 1
@@ -955,86 +955,86 @@ TR::Register *OMR::Power::TreeEvaluator::a2sEvaluator(TR::Node *node, TR::CodeGe
 TR::Register *OMR::Power::TreeEvaluator::ifacmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iflucmpltEvaluator(node, cg);
+      return TR::TreeEvaluator::iflucmpltEvaluator(node, cg);
    else
-      return ifiucmpltEvaluator(node, cg);
+      return TR::TreeEvaluator::ifiucmpltEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iflucmpgeEvaluator(node, cg);
+      return TR::TreeEvaluator::iflucmpgeEvaluator(node, cg);
    else
-      return ifiucmpgeEvaluator(node, cg);
+      return TR::TreeEvaluator::ifiucmpgeEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iflucmpgtEvaluator(node, cg);
+      return TR::TreeEvaluator::iflucmpgtEvaluator(node, cg);
    else
-      return ifiucmpgtEvaluator(node, cg);
+      return TR::TreeEvaluator::ifiucmpgtEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::ifacmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return iflucmpleEvaluator(node, cg);
+      return TR::TreeEvaluator::iflucmpleEvaluator(node, cg);
    else
-      return ifiucmpleEvaluator(node, cg);
+      return TR::TreeEvaluator::ifiucmpleEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lucmpltEvaluator(node, cg);
+      return TR::TreeEvaluator::lucmpltEvaluator(node, cg);
    else
-      return iucmpltEvaluator(node, cg);
+      return TR::TreeEvaluator::iucmpltEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lucmpgeEvaluator(node, cg);
+      return TR::TreeEvaluator::lucmpgeEvaluator(node, cg);
    else
-      return iucmpgeEvaluator(node, cg);
+      return TR::TreeEvaluator::iucmpgeEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lucmpgtEvaluator(node, cg);
+      return TR::TreeEvaluator::lucmpgtEvaluator(node, cg);
    else
-      return iucmpgtEvaluator(node, cg);
+      return TR::TreeEvaluator::iucmpgtEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::acmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (TR::Compiler->target.is64Bit())
-      return lucmpleEvaluator(node, cg);
+      return TR::TreeEvaluator::lucmpleEvaluator(node, cg);
    else
-      return iucmpleEvaluator(node, cg);
+      return TR::TreeEvaluator::iucmpleEvaluator(node, cg);
    }
 #endif
 
 TR::Register *OMR::Power::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::dcall);
-   TR::Register *trgReg = directCallEvaluator(node, cg);
+   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
    return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::strcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::icall);
-   TR::Register *trgReg = directCallEvaluator(node, cg);
+   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
    return trgReg;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::strcFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::acall);
-   TR::Register *trgReg = directCallEvaluator(node, cg);
+   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
    return trgReg;
    }
 
@@ -1062,11 +1062,11 @@ TR::Register *OMR::Power::TreeEvaluator::dfloorEvaluator(TR::Node *node, TR::Cod
       }
       else
         const_node->setDouble(-1.0);
-      tmp1Reg = dconstEvaluator(const_node, cg);
+      tmp1Reg = TR::TreeEvaluator::dconstEvaluator(const_node, cg);
 
       const_node_max = TR::Node::create(node, TR::dconst, 0);
       const_node_max->setDouble(CONSTANT64(0x10000000000000));                      // 2**52
-      tmp5Reg = dconstEvaluator(const_node_max, cg);
+      tmp5Reg = TR::TreeEvaluator::dconstEvaluator(const_node_max, cg);
    }
    else
    {
@@ -1081,11 +1081,11 @@ TR::Register *OMR::Power::TreeEvaluator::dfloorEvaluator(TR::Node *node, TR::Cod
       }
       else
         const_node->setFloat(-1.0);
-      tmp1Reg = fconstEvaluator(const_node, cg);
+      tmp1Reg = TR::TreeEvaluator::fconstEvaluator(const_node, cg);
 
       const_node_max = TR::Node::create( node, TR::fconst, 0);
       const_node_max->setFloat(0x800000);
-      tmp5Reg = fconstEvaluator(const_node_max, cg);
+      tmp5Reg = TR::TreeEvaluator::fconstEvaluator(const_node_max, cg);
    }
 
    const_node->unsetRegister();

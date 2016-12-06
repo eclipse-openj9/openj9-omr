@@ -101,6 +101,7 @@ private:
 	OMR_VMThread* _lastExclusiveAccessResponder; /**< last thread to respond to last exclusive access request */
 	uintptr_t _exclusiveAccessHaltedThreads; /**< number of threads halted by last exclusive access request */
 	bool _exclusiveAccessBeatenByOtherThread; /**< true if last exclusive access request had to wait for another GC thread */
+	uintptr_t _exclusiveCount; /**< count of number of times this thread has acquired but not yet released exclusive access */
 
 protected:
 	bool _allocationFailureReported;	/**< verbose: used to report af-start/af-end once per allocation failure even more then one GC cycle need to resolve AF */
@@ -393,7 +394,7 @@ public:
 	bool
 	inquireExclusiveVMAccessForGC()
 	{
-		return (_omrVMThread->exclusiveCount > 0);
+		return (_exclusiveCount > 0);
 	}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -587,6 +588,7 @@ public:
 		,_lastExclusiveAccessResponder(NULL)
 		,_exclusiveAccessHaltedThreads(0)
 		,_exclusiveAccessBeatenByOtherThread(false)
+		,_exclusiveCount(0)
 		,_allocationFailureReported(false)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_regionWorkList(NULL)
@@ -629,6 +631,12 @@ public:
 		,_threadScanned(false)
 		,_allocationContext(NULL)
 		,_commonAllocationContext(NULL)
+		,_exclusiveAccessTime(0)
+		,_meanExclusiveAccessIdleTime(0)
+		,_lastExclusiveAccessResponder(NULL)
+		,_exclusiveAccessHaltedThreads(0)
+		,_exclusiveAccessBeatenByOtherThread(false)
+		,_exclusiveCount(0)
 		,_allocationFailureReported(false)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_regionWorkList(NULL)

@@ -131,6 +131,7 @@ class typed_allocator : public typed_allocator<void, Alloc>
 
    private:
    typed_allocator() throw(); /* delete */
+   typed_allocator &operator =(const typed_allocator &); /* delete */
    };
 
 }

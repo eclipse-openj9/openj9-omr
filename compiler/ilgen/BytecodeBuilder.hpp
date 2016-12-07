@@ -43,6 +43,11 @@ public:
 
    virtual bool isBytecodeBuilder() { return true; }
 
+   /**
+    * @brief bytecode index for this builder object
+    */
+   int32_t bcIndex() { return _bcIndex; }
+
    virtual uint32_t countBlocks();
 
    void AddFallThroughBuilder(TR::BytecodeBuilder *ftb);

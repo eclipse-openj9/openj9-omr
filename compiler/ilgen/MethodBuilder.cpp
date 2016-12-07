@@ -93,7 +93,9 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _countBlocksWorklist(0),
    _connectTreesWorklist(0),
    _allBytecodeBuilders(0),
-   _vmState(vmState)
+   _vmState(vmState),
+   _bytecodeWorklist(NULL),
+   _bytecodeHasBeenInWorklist(NULL)
    {
    REPLAY({
       std::fstream rpHpp("ReplayMethod.hpp",std::fstream::out);
@@ -409,6 +411,7 @@ MethodBuilder::AppendBuilder(TR::BytecodeBuilder *bb)
    this->OMR::IlBuilder::AppendBuilder(bb);
    if (_vmState)
       bb->propagateVMState(_vmState);
+   addBytecodeBuilderToWorklist(bb);
    }
 
 void
@@ -577,7 +580,7 @@ MethodBuilder::addToTreeConnectingWorklist(TR::BytecodeBuilder *builder)
    }
 
 void
-MethodBuilder::addBytecodeBuilderToList(TR::BytecodeBuilder* bcBuilder)
+MethodBuilder::addToAllBytecodeBuildersList(TR::BytecodeBuilder* bcBuilder)
    {
    if (NULL == _allBytecodeBuilders)
       {
@@ -586,6 +589,43 @@ MethodBuilder::addBytecodeBuilderToList(TR::BytecodeBuilder* bcBuilder)
       setUseBytecodeBuilders();
       }
    _allBytecodeBuilders->add(bcBuilder);
+   }
+
+void
+MethodBuilder::AppendBytecodeBuilder(TR::BytecodeBuilder *builder)
+   {
+   IlBuilder::AppendBuilder(builder);
+   
+   }
+
+void
+MethodBuilder::addBytecodeBuilderToWorklist(TR::BytecodeBuilder *builder)
+   {
+   if (_bytecodeWorklist == NULL)
+      {
+      _bytecodeWorklist = new (comp()->trHeapMemory()) TR_BitVector(32, comp()->trMemory());
+      _bytecodeHasBeenInWorklist = new (comp()->trHeapMemory()) TR_BitVector(32, comp()->trMemory());
+      }
+
+   int32_t b_bci = builder->bcIndex();
+   if (!_bytecodeHasBeenInWorklist->get(b_bci))
+      {
+      _bytecodeWorklist->set(b_bci);
+      _bytecodeHasBeenInWorklist->set(b_bci);
+      }
+   }
+
+int32_t
+MethodBuilder::GetNextBytecodeFromWorklist()
+   {
+   if (_bytecodeWorklist == NULL || _bytecodeWorklist->isEmpty())
+      return -1;
+
+   TR_BitVectorIterator it(*_bytecodeWorklist);
+   int32_t bci=it.getFirstElement();
+   if (bci > -1)
+      _bytecodeWorklist->reset(bci);
+   return bci;
    }
 
 } // namespace OMR

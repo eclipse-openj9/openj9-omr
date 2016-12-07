@@ -18,7 +18,7 @@
 
 
 #ifndef SIMPLE_INCL
-#define SIMPLE_IMPL
+#define SIMPLE_INCL
 
 #include "ilgen/MethodBuilder.hpp"
 
@@ -29,4 +29,4 @@ class SimpleMethod : public TR::MethodBuilder
    virtual bool buildIL();
    };
 
-#endif // !defined(POINTER_INCL)
+#endif // !defined(SIMPLE_INCL)

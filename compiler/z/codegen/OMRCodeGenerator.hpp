@@ -524,9 +524,16 @@ public:
 
    void buildRegisterMapForInstruction(TR_GCStackMap *map);
 
+   // BCDCHK node
    TR::Node * _currentCheckNode;
    void setCurrentCheckNodeBeingEvaluated(TR::Node * n) { _currentCheckNode = n; }
    TR::Node * getCurrentCheckNodeBeingEvaluated(){ return _currentCheckNode; }
+
+   // BCDCHK node exception handler label
+   TR::LabelSymbol* _currentBCDCHKHandlerLabel;
+   void setCurrentBCDCHKHandlerLabel(TR::LabelSymbol * l) { _currentBCDCHKHandlerLabel = l; }
+   TR::LabelSymbol* getCurrentBCDCHKHandlerLabel(){ return _currentBCDCHKHandlerLabel; }
+
    TR::RegisterDependencyConditions * _currentBCDRegDeps;
    void setCurrentCheckNodeRegDeps(TR::RegisterDependencyConditions * daaDeps) {_currentBCDRegDeps = daaDeps;}
    TR::RegisterDependencyConditions * getCurrentCheckNodeRegDeps() {return _currentBCDRegDeps;}

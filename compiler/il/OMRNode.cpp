@@ -4049,6 +4049,8 @@ OMR::Node::swapChildren()
    TR::Node *firstChild = self()->getFirstChild();
    self()->setFirst(self()->getSecondChild());
    self()->setSecond(firstChild);
+   if (self()->getOpCode().isIf())
+      self()->setSwappedChildren(!self()->childrenWereSwapped());
    }
 
 TR::Node *

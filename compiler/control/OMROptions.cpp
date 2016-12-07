@@ -4780,14 +4780,11 @@ char *
 OMR::Options::setVerboseBits(char *option, void *base, TR::OptionTable *entry)
    {
    VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)base+entry->parm1);
-   if (entry->parm2 != 0) // This is used for -Xjit:verbose  without any options and will set first and third bit
+   if (entry->parm2 != 0) // This is used for -Xjit:verbose without any options
       {
-      intptrj_t parm2 = entry->parm2;
-      for (int32_t i = 0; parm2; i++, parm2 >>= 1)
-         {
-         if (parm2 & 1)
-            verboseOptionFlags->set((TR_VerboseFlags)i);
-         }
+      // Since no verbose options are specified, add the default options,
+      // specified in parm2 of the options table
+      verboseOptionFlags->maskWord(0, entry->parm2);
       }
    else // This is used for -Xjit:verbose={}  construct
       {

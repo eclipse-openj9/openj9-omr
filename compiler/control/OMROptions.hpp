@@ -990,7 +990,7 @@ enum TR_CompilationOptions
    TR_EnableMetadataBytecodePCToIAMap                 = 0x00800000 + 30,
    TR_DisableHardwareProfilerReducedWarmUpgrades      = 0x01000000 + 30,
    TR_DontAddHWPDataToIProfiler                       = 0x02000000 + 30,
-   // Available                                       = 0x04000000 + 30,
+   TR_InlineNativeOnly                                = 0x04000000 + 30,
    TR_DisableMultiTargetInlining                      = 0x08000000 + 30,
    TR_DisableHardwareProfilerDuringStartup            = 0x10000000 + 30,
    TR_RestrictInlinerDuringStartup                    = 0x20000000 + 30,

@@ -133,7 +133,7 @@ public:
     */
    void makeRelativeLabelSymbol(intptr_t offset);
 
-   intptr_t getDistance() { TR_ASSERT(isRelativeLabel(), "Must be a relative label to have a valid offset!");  return _offset; }
+   intptr_t getDistance();
 private:
    intptr_t     _offset;
   };

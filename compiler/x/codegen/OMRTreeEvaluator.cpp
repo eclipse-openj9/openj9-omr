@@ -135,12 +135,12 @@ TR::Register *OMR::X86::TreeEvaluator::intOrLongClobberEvaluate(TR::Node *node, 
    // TODO:AMD64: This belongs in CodeGenerator.  In fact, this whole clobberEvaluate interface needs another look.
    if (nodeIs64Bit)
       {
-      TR_ASSERT(getNodeIs64Bit(node, cg), "nodeIs64Bit must be consistent with node size");
+      TR_ASSERT(TR::TreeEvaluator::getNodeIs64Bit(node, cg), "nodeIs64Bit must be consistent with node size");
       return cg->longClobberEvaluate(node);
       }
    else
       {
-      TR_ASSERT(!getNodeIs64Bit(node, cg), "nodeIs64Bit must be consistent with node size");
+      TR_ASSERT(!TR::TreeEvaluator::getNodeIs64Bit(node, cg), "nodeIs64Bit must be consistent with node size");
       return cg->intClobberEvaluate(node);
       }
    }

@@ -176,11 +176,7 @@ public:
                                                    uint32_t               s,
                                                    TR_FrontEnd *          fe);
 
-   TR::ILOpCodes getKind()
-      {
-      TR_ASSERT(isLocalObject(), "Should be local object");
-      return _kind;
-      }
+   TR::ILOpCodes getKind();
 
    TR::SymbolReference *getClassSymbolReference();
    TR::SymbolReference *setClassSymbolReference(TR::SymbolReference *s);
@@ -228,20 +224,12 @@ public:
    template <typename AllocatorType>
    static TR::AutomaticSymbol * createInternalPointer(AllocatorType m, TR::DataType d, uint32_t s, TR_FrontEnd * fe);
 
-   TR::AutomaticSymbol *getPinningArrayPointer()
-      {
-      TR_ASSERT(isInternalPointer(), "Should be internal pointer");
-      return _pinningArrayPointer;
-      }
+   TR::AutomaticSymbol *getPinningArrayPointer();
 
    // Expose base name on derived calls.
    using TR::Symbol::setPinningArrayPointer;
 
-   TR::AutomaticSymbol *setPinningArrayPointer(TR::AutomaticSymbol *s)
-      {
-      TR_ASSERT(isInternalPointer(), "Should be internal pointer");
-      return (_pinningArrayPointer = s);
-      }
+   TR::AutomaticSymbol *setPinningArrayPointer(TR::AutomaticSymbol *s);
 
 private:
 
@@ -262,17 +250,9 @@ public:
    template <typename AllocatorType>
    static TR::AutomaticSymbol * createVariableSized(AllocatorType m, uint32_t s);
 
-   uint32_t getActiveSize()
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _activeSize;
-      }
+   uint32_t getActiveSize();
 
-   uint32_t setActiveSize(uint32_t s)
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return (_activeSize = s);
-      }
+   uint32_t setActiveSize(uint32_t s);
 
    /**
     * Flags for variable size symbols
@@ -284,53 +264,21 @@ public:
       IsSingleUse                   = 0x04, ///< a temp ref created for a one off privatization in a single evaluator (doesn't use refCounts so automatically freed)
       };
 
-   bool isReferenced()
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _variableSizeSymbolFlags.testAny(IsReferenced);
-      }
+   bool isReferenced();
 
-   void setIsReferenced(bool b = true)
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      _variableSizeSymbolFlags.set(IsReferenced, b);
-      }
+   void setIsReferenced(bool b = true);
 
-   bool isAddressTaken()
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _variableSizeSymbolFlags.testAny(IsAddressTaken);
-      }
+   bool isAddressTaken();
 
-   void setIsAddressTaken(bool b = true)
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      _variableSizeSymbolFlags.set(IsAddressTaken, b);
-      }
+   void setIsAddressTaken(bool b = true);
 
-   bool isSingleUse()
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _variableSizeSymbolFlags.testAny(IsSingleUse);
-      }
+   bool isSingleUse();
 
-   void setIsSingleUse(bool b = true)
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      _variableSizeSymbolFlags.set(IsSingleUse, b);
-      }
+   void setIsSingleUse(bool b = true);
 
-   TR::Node *getNodeToFreeAfter()
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _nodeToFreeAfter;
-      }
+   TR::Node *getNodeToFreeAfter();
 
-   TR::Node *setNodeToFreeAfter(TR::Node *n)
-      {
-      TR_ASSERT(isVariableSizeSymbol(), "Should be variable sized symbol");
-      return _nodeToFreeAfter = n;
-      }
+   TR::Node *setNodeToFreeAfter(TR::Node *n);
 
 private:
 

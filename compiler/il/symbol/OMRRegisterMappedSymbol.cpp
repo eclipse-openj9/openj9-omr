@@ -100,6 +100,20 @@ OMR::RegisterMappedSymbol::setLiveLocalIndexUninitialized()
    _liveLocalIndex = USHRT_MAX;
    }
 
+TR_MethodMetaDataType
+OMR::RegisterMappedSymbol::getMethodMetaDataType()
+   {
+   TR_ASSERT(self()->isMethodMetaData(), "should be method metadata!");
+   return _type;
+   }
+
+void
+OMR::RegisterMappedSymbol::setMethodMetaDataType(TR_MethodMetaDataType type)
+   {
+   TR_ASSERT(self()->isMethodMetaData(), "should be method metadata!");
+   _type = type;
+}
+
 template <typename AllocatorType>
 TR::RegisterMappedSymbol *
 OMR::RegisterMappedSymbol::createMethodMetaDataSymbol(AllocatorType m, const char *name, TR_MethodMetaDataType type)

@@ -39,7 +39,7 @@ namespace OMR
 namespace Z
 {
 
-class CodeGenPhase : public OMR::CodeGenPhase
+class OMR_EXTENSIBLE CodeGenPhase : public OMR::CodeGenPhase
    {
    protected:
 

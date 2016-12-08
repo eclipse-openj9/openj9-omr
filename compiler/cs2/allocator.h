@@ -27,8 +27,9 @@
 #define CS2_ALLOCATOR_H
 
 #include <stdio.h>
-#include "cs2/cs2.h"
 #include <memory.h>
+#include "cs2/cs2.h"
+#include "env/TypedAllocator.hpp"
 
 namespace CS2 {
 
@@ -365,6 +366,11 @@ namespace CS2 {
       // no need to copy the allocator being shared
       return *this;
     }
+
+    // Enable automatic conversion into a form compatible with C++ standard library containers
+    template <typename T>
+    operator TR::typed_allocator<T, shared_allocator>() { return TR::typed_allocator<T, shared_allocator>(*this); }
+
     friend bool operator ==(const shared_allocator &left, const shared_allocator &right) { return &left.base == &right.base; }
 
     friend bool operator !=(const shared_allocator &left, const shared_allocator &right) { return !(operator ==(left, right)); }

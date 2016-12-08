@@ -52,6 +52,12 @@ public:
       return !operator ==(lhs, rhs);
       }
 
+   // Enable automatic conversion into a form compatible with C++ standard library containers
+   template<typename T> operator TR::typed_allocator<T, Region& >()
+      {
+      return TR::typed_allocator<T, Region& >(*this);
+      }
+
 private:
    size_t round(size_t bytes);
 

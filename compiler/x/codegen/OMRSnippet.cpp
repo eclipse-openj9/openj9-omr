@@ -50,7 +50,6 @@ namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "x/codegen/HeapAllocationSnippet.hpp"
 #include "x/codegen/JNIPauseSnippet.hpp"
 #include "x/codegen/PassJNINullSnippet.hpp"
 #include "x/codegen/WriteBarrierSnippet.hpp"
@@ -99,9 +98,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsJNIPause:
          return "JNI Pause Snippet";
-         break;
-      case TR::Snippet::IsHeapAllocation:
-         return "Heap Allocation Snippet";
          break;
       case TR::Snippet::IsScratchArgHelperCall:
          return "Helper Call Snippet with scratch-reg argument";
@@ -157,12 +153,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::Isfbits2i:
          return "fbits2i Snippet";
          break;
-      case TR::Snippet::IsMonitorEnter:
-         return "Monitor Enter Snippet";
-         break;
-      case TR::Snippet::IsMonitorExit:
-         return "Monitor Exit Snippet";
-         break;
       case TR::Snippet::IsPassJNINull:
          return "Pass JNI Null Snippet";
          break;
@@ -195,9 +185,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          break;
       case TR::Snippet::IsUnresolvedVirtualCall:
          print(pOutFile, (TR::X86UnresolvedVirtualCallSnippet *)snippet);
-         break;
-      case TR::Snippet::IsHeapAllocation:
-         print(pOutFile, (TR::X86HeapAllocationSnippet  *)snippet);
          break;
       case TR::Snippet::IsWriteBarrier:
          print(pOutFile, (TR::IA32WriteBarrierSnippet *)snippet);
@@ -275,13 +262,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
          break;
 #endif
-
-      // FIXME: extend this to the remaining snippet types too
-      case TR::Snippet::IsMonitorEnter:
-      case TR::Snippet::IsMonitorExit:
-         snippet->print(pOutFile, this);
-         break;
-
       case TR::Snippet::IsRestart:
       default:
          TR_ASSERT(0, "unexpected snippet kind: %d", snippet->getKind());

@@ -45,15 +45,6 @@ class TestDriver
    int32_t compileMethodBuilder(TR::MethodBuilder *m, uint8_t **entry);
 
    CompileFunctionType *_compileTestMethodFunction;
-
-   private:
-
-   #ifdef MS_WINDOWS
-   HMODULE _libraryHandle;
-   #else
-   void *_libraryHandle;
-   #endif
-
    };
 
 }// namespace TestCompiler

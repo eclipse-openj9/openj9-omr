@@ -4600,9 +4600,27 @@ MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
 void
 MM_Scavenger::triggerConcurrentScavengerTransition(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
 {
+	if (OMR_GC_CYCLE_TYPE_SCAVENGE != env->_cycleState->_type) {
+		/* if we are called from another GC cycle, we need to remember it, and create a Scavenger specific cycle state */
+		Assert_MM_true(NULL == env->_cycleState->_externalCycleState);
+		Assert_MM_true(isConcurrentInProgress());
+		MM_CycleState *externalCycleState = env->_cycleState;
+		_cycleState = MM_CycleState();
+		env->_cycleState = &_cycleState;
+		env->_cycleState->_type = _cycleType;
+		env->_cycleState->_collectionStatistics = &_collectionStatistics;
+		env->_cycleState->_externalCycleState = externalCycleState;
+	}
+
 	/* About to block. A dedicated master GC thread will take over for the duration of STW phase (start or end) */
 	_masterGCThread.garbageCollect(env, allocDescription);
 	/* STW phase is complete */
+
+	/* restore an external cycle state, if any */
+	if (NULL != env->_cycleState->_externalCycleState) {
+		env->_cycleState = env->_cycleState->_externalCycleState;
+		env->_cycleState->_externalCycleState = NULL;
+	}
 
 	/* count every cycle start and cycle end transition */
 	_concurrentScavengerSwitchCount += 1;

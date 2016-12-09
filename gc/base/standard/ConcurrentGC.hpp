@@ -351,6 +351,10 @@ private:
 	void completeConcurrentSweepForKickoff(MM_EnvironmentStandard *env);
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	void completeConcurrentScavenge(MM_EnvironmentStandard *env);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 #if defined(OMR_GC_LARGE_OBJECT_AREA)		
 	void updateMeteringHistoryBeforeGC(MM_EnvironmentStandard *env);
 	void updateMeteringHistoryAfterGC(MM_EnvironmentStandard *env);

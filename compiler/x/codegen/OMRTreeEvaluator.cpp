@@ -4773,6 +4773,152 @@ TR::Register *OMR::X86::TreeEvaluator::atomicorEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
+TR::Register *                                                                                                                                                             
+OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)                                                                                             
+   {                                                                                                                                                                       
+   /*         
+   .Lstart:
+      xbegin       .Lfallback
+      jmp          .LfallThrough
+   .Lfallback:
+      test         eax, 0x2
+      jne          .Ltransient
+      jmp          .Lpersistent
+   .Lend:  
+   */                                                                                                                                                                      
+   TR::Node *persistentFailureNode = node->getFirstChild();
+   TR::Node *transientFailureNode = node->getSecondChild();                                                                                                                
+   TR::Node *fallThroughNode = node->getThirdChild();
+   TR::Node *GRANode = NULL;                                                                                                                                               
+                                                                                                                                                                           
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                           
+   startLabel->setStartInternalControlFlow();                                                                                                                              
+   TR::LabelSymbol *endLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                             
+   endLabel->setEndInternalControlFlow();                                                                                                                                  
+                    
+   TR::LabelSymbol *fallbackLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                    
+   TR::LabelSymbol *persistentFailureLabel = persistentFailureNode->getBranchDestination()->getNode()->getLabel();                                                         
+   TR::LabelSymbol *transientFailureLabel  = transientFailureNode->getBranchDestination()->getNode()->getLabel();     
+   TR::LabelSymbol *fallThroughLabel = fallThroughNode->getBranchDestination()->getNode()->getLabel();    
+
+   //if LabelSymbol isn't ready yet, generate a new one and assign to the node.
+   if(!fallThroughLabel){
+      fallThroughLabel = generateLabelSymbol(cg); 
+      fallThroughNode->getBranchDestination()->getNode()->setLabel(fallThroughLabel);
+   }         
+
+   if(!transientFailureLabel){
+       transientFailureLabel = generateLabelSymbol(cg); 
+       transientFailureNode->getBranchDestination()->getNode()->setLabel(transientFailureLabel);
+   }                                
+  
+   //in case user will make transientFailure goto persistenFailure, in which case the label will mess up at this point
+   //we'd better re-generate the label and set it to persistentFailure node again.
+   if(!persistentFailureLabel || persistentFailureLabel != persistentFailureNode->getBranchDestination()->getNode()->getLabel()){
+      persistentFailureLabel = generateLabelSymbol(cg);  
+      persistentFailureNode->getBranchDestination()->getNode()->setLabel(persistentFailureLabel);
+   }     
+       
+   TR::Register *accReg = cg->allocateRegister();                                                                                                                          
+   TR::RegisterDependencyConditions *endLabelConditions;
+   TR::RegisterDependencyConditions *fallThroughConditions = NULL;
+   TR::RegisterDependencyConditions *persistentConditions = NULL;
+   TR::RegisterDependencyConditions *transientConditions = NULL;
+
+   if (fallThroughNode->getNumChildren() != 0)
+      {
+      GRANode = fallThroughNode->getFirstChild();
+      cg->evaluate(GRANode);
+      List<TR::Register> popRegisters(cg->trMemory());
+      fallThroughConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      cg->decReferenceCount(GRANode);
+      }
+
+   if (persistentFailureNode->getNumChildren() != 0)
+      {
+      GRANode = persistentFailureNode->getFirstChild();
+      cg->evaluate(GRANode);
+      List<TR::Register> popRegisters(cg->trMemory());
+      persistentConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      cg->decReferenceCount(GRANode);
+      }
+
+   if (transientFailureNode->getNumChildren() != 0)
+      {
+      GRANode = transientFailureNode->getFirstChild();
+      cg->evaluate(GRANode);
+      List<TR::Register> popRegisters(cg->trMemory());
+      transientConditions = generateRegisterDependencyConditions(GRANode, cg, 0, &popRegisters);
+      cg->decReferenceCount(GRANode);
+      }
+
+   //startLabel
+   //add place holder register so that eax would not contain any useful value before xbegin
+   TR::Register *dummyReg = cg->allocateRegister();
+   dummyReg->setPlaceholderReg();
+   TR::RegisterDependencyConditions *startLabelConditions = generateRegisterDependencyConditions((uint8_t)0, 1, cg);
+   startLabelConditions->addPostCondition(dummyReg, TR::RealRegister::eax, cg);
+   startLabelConditions->stopAddingConditions();
+   cg->stopUsingRegister(dummyReg);
+   generateLabelInstruction(LABEL, node, startLabel, startLabelConditions, cg);
+
+   //xbegin, if fallback then go to fallbackLabel
+   generateLongLabelInstruction(XBEGIN4, node, fallbackLabel, cg);  
+
+   //jump to  fallThrough Path
+   if (fallThroughConditions)
+      generateLabelInstruction(JMP4, node, fallThroughLabel, fallThroughConditions, cg);
+   else
+      generateLabelInstruction(JMP4, node, fallThroughLabel, cg);
+
+   endLabelConditions = generateRegisterDependencyConditions((uint8_t)0, 1, cg);
+   endLabelConditions->addPostCondition(accReg, TR::RealRegister::eax, cg);
+   endLabelConditions->stopAddingConditions();
+  
+   //Label fallback begin:
+   generateLabelInstruction(LABEL, node, fallbackLabel, cg);
+
+   //test eax, 0x2
+   generateRegImmInstruction(TEST1AccImm1, node, accReg, 0x2, cg);
+   cg->stopUsingRegister(accReg);
+
+   //jne to transientFailure
+   if (transientConditions)
+      generateLabelInstruction(JNE4, node, transientFailureLabel, transientConditions, cg);
+   else
+      generateLabelInstruction(JNE4, node, transientFailureLabel, cg);
+
+   //jmp to persistent begin:
+   if (persistentConditions)
+      generateLabelInstruction(JMP4, node, persistentFailureLabel, persistentConditions, cg);
+   else
+      generateLabelInstruction(JMP4, node, persistentFailureLabel, cg);
+
+   //Label finish
+   generateLabelInstruction(LABEL, node, endLabel, endLabelConditions, cg);
+
+   cg->decReferenceCount(persistentFailureNode);
+   cg->decReferenceCount(transientFailureNode);
+   
+   return NULL;
+   }
+
+TR::Register *
+OMR::X86::TreeEvaluator::tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   generateInstruction(XEND, node, cg);
+   return NULL;
+   }
+
+TR::Register *
+OMR::X86::TreeEvaluator::tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   //For now, we hardcode an abort reason as 0x04 just for simplicity.
+   //TODO: Find a way to detect the real abort reason here
+   generateImmInstruction(XABORT, node, 0x04, cg);
+   return NULL;
+   }
+
 TR::Register *
 OMR::X86::TreeEvaluator::VMarrayStoreCheckArrayCopyEvaluator(TR::Node*, TR::CodeGenerator*)
    {

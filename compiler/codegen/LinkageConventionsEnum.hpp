@@ -21,15 +21,21 @@
 
 // Linkage conventions
 //
+// A "Linkage Convention" is the abstraction of one group of similar calling conventions;
+// actual interpretation is up to the Front End / Code Generator combination.
+// For example, by default, TR_System is interpreted as:
+//     X86-32 Windows and Linux: cdecl calling convention
+//     X86-64 Windows:           Microsoft x64 calling convention
+//     X86-64 Linux:             System V AMD64 ABI
+//
+
 enum TR_LinkageConventions
    {
-   TR_Private           = 0,
-   TR_System            = 1,
-   TR_AllRegister       = 2,
-   TR_InterpretedStatic = 3,
-   TR_Helper            = 4,
-   TR_J9JNILinkage      = 5,
-   TR_NumLinkages       = 6
+   #include "codegen/LinkageConventions.enum"
+   TR_NumLinkages,
+
+   // Force size to be at least 32-bit, as it may be cast to/from integers
+   TR_LinkageForceSize = 0x7fffffff
    };
 
 #endif

@@ -38,10 +38,10 @@ TR_RuntimeHelperTable runtimeHelpers;
 
 extern "C" void *PyTuple_GetItem(void*,int);
 
-void
-TR_RuntimeHelperTable::setAddress(TR_RuntimeHelper h, void *a)
+void*
+TR_RuntimeHelperTable::translateAddress(void * a)
    {
-   _helpers[h] = a;
+   return a;
    }
 
 void

@@ -6723,7 +6723,12 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                if (linkage->getPreserved(reg))
                   {
                      // Dangling else above
-                     if (reg != linkage->getStaticBaseRegister() &&
+                     if (reg == linkage->getExtCodeBaseRegister())
+                        {
+                        if (_cg->isExtCodeBaseFreeForAssignment())
+                           p = self()->addGlobalReg(reg, p);
+                        }
+                     else if (reg != linkage->getStaticBaseRegister() &&
                            reg != linkage->getPrivateStaticBaseRegister() &&
                            reg != linkage->getStackPointerRegister())
                         p = self()->addGlobalReg(reg, p);
@@ -6743,7 +6748,12 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                if (linkage->getPreserved(reg))
                   {
                      // Dangling else above
-                     if (reg != linkage->getLitPoolRegister() &&
+                     if (reg == linkage->getExtCodeBaseRegister())
+                        {
+                        if (_cg->isExtCodeBaseFreeForAssignment())
+                           p = self()->addGlobalReg(reg, p);
+                        }
+                     else if (reg != linkage->getLitPoolRegister() &&
                            reg != linkage->getStaticBaseRegister() &&
                            reg != linkage->getPrivateStaticBaseRegister() &&
                            reg != linkage->getStackPointerRegister())
@@ -6783,7 +6793,11 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                // might use GPR6 on 64-bit for lit pool reg
                p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
                }
-            p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
+            if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && _cg->isExtCodeBaseFreeForAssignment())
+               {
+               // register 7 is hard coded for now
+               p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
+               }
             p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
             p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
             p = self()->addGlobalReg(TR::RealRegister::HPR10, p);

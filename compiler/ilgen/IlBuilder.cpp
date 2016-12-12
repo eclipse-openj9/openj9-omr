@@ -1213,7 +1213,7 @@ IlBuilder::genOperationWithOverflowCHK(TR::ILOpCodes op, TR::Node *leftNode, TR:
    }
 
 // This function takes 4 arguments and generate the addValue.
-// This function is called by AddWithOverflow and UnsignedAddWithOverflow.
+// This function is called by AddWithOverflow and AddWithUnsignedOverflow.
 TR::ILOpCodes 
 IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
    {
@@ -1249,14 +1249,14 @@ IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    }
 
 TR::IlValue *
-IlBuilder::UnsignedAddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+IlBuilder::AddWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
    TR::ILOpCodes opcode = getOpCode(left, right);
    TR::IlValue *addValue = genOperationWithOverflowCHK(opcode, leftNode, rightNode, handler, TR::UnsignedOverflowCHK);
-   TraceIL("IlBuilder[ %p ]::%d is UnsignedAddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
-   //ILB_REPLAY("%s = %s->UnsignedAddWithOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::%d is AddWithUnsignedOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   //ILB_REPLAY("%s = %s->AddWithUnsignedOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 
@@ -1273,7 +1273,7 @@ IlBuilder::SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    }
 
 TR::IlValue *
-IlBuilder::UnsignedSubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+IlBuilder::SubWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
    appendBlock(); 
 

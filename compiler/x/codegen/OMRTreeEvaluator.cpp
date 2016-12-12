@@ -2431,7 +2431,31 @@ TR::Register *OMR::X86::TreeEvaluator::andORStringEvaluator(TR::Node *node, TR::
    return resultReg;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Block *OMR::X86::TreeEvaluator::getOverflowCatchBlock(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   //make sure the overflowCHK has a catch block first
+   TR::Block *overflowCatchBlock = NULL;
+   TR::list<TR::CFGEdge*> excepSucc =cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
+   for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e) 
+      {    
+      TR::Block *dest = toBlock((*e)->getTo());
+      if (dest->getCatchBlockExtension()->_catchType == TR::Block::CanCatchOverflowCheck)
+            overflowCatchBlock = dest;
+      }    
+   TR_ASSERT(overflowCatchBlock != NULL, "OverflowChk node %p doesn't have overflow catch block\n", node);
+
+   //the BBStartEvaluator will generate the label but in this case the catch block might not been evaluated yet
+   TR::Node * bbstartNode = overflowCatchBlock->getEntry()->getNode();
+   TR_ASSERT((bbstartNode->getOpCodeValue() == TR::BBStart), "catch block entry %p must be TR::BBStart\n", bbstartNode);
+   if (!bbstartNode->getLabel())
+      {
+      TR::LabelSymbol *label = generateLabelSymbol(cg);
+      bbstartNode->setLabel(label);
+      }
+   return overflowCatchBlock;
+   }
+
+void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *node, TR::CodeGenerator *cg)
    {   
    /*
     *overflowCHK
@@ -2463,16 +2487,12 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       //sub group
       case TR::lsub:
       case TR::isub:
-      case TR::lusub:
-      case TR::iusub:
          op = SUBRegReg(nodeIs64Bit);
          break;
       case TR::ssub:
-      case TR::csub:
          op = SUB2RegReg;
          break;
       case TR::bsub:
-      case TR::busub:
          op = SUB1RegReg;
          break;
       //mul group
@@ -2493,17 +2513,6 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
          TR_ASSERT(0 , "unsupported OverflowCHK opcode %s on node %p\n", cg->comp()->getDebug()->getName(node->getOpCode()), node);
       }
 
-   //make sure the overflowCHK has a catch block first
-   TR::Block *overflowCatchBlock = NULL;
-   TR::list<TR::CFGEdge*> excepSucc =cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
-   for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e)
-      {
-      TR::Block *dest = toBlock((*e)->getTo());
-      if (dest->getCatchBlockExtension()->_catchType == TR::Block::CanCatchOverflowCheck)
-            overflowCatchBlock = dest;
-      }
-   TR_ASSERT(overflowCatchBlock != NULL, "OverflowChk node %p doesn't have overflow catch block\n", node);
-
    bool operationChildEvaluatedAlready = operationNode->getRegister()? true : false;
    if (!operationChildEvaluatedAlready)
       {
@@ -2515,7 +2524,7 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
    else 
    // we need to do the operation again when the Operation node has been evaluated already under a different treetop
    // TODO: there is still a chance that the flags might still be avaiable and we could detect it and avoid repeating
-   // the operantion 
+   // the operation 
       {
       TR_X86BinaryCommutativeAnalyser  addMulAnalyser(cg);
       TR_X86SubtractAnalyser subAnalyser(cg);
@@ -2535,17 +2544,13 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
             break;
          // sub group
          case TR::bsub:
-	 case TR::busub:
             subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV1RegReg, needsEflags);
             break;
          case TR::ssub:
          case TR::isub:
-	 case TR::csub:
-	 case TR::iusub:
             subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg, needsEflags);
             break;
          case TR::lsub:
-	 case TR::lusub:
             TR::Compiler->target.is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2) 
                                            : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg, needsEflags);
             break;
@@ -2560,34 +2565,22 @@ TR::Register *OMR::X86::TreeEvaluator::OverflowCHKEvaluator(TR::Node *node, TR::
       }
 
    cg->setVMThreadRequired(true);
-   //the BBStartEvaluator will generate the label but in this case the catch block might not been evaluated yet
-   TR::Node * bbstartNode = overflowCatchBlock->getEntry()->getNode();
-   TR_ASSERT((bbstartNode->getOpCodeValue() == TR::BBStart), "catch block entry %p must be TR::BBStart\n", bbstartNode);
-   if (!bbstartNode->getLabel()) 
-      {
-      TR::LabelSymbol *label = generateLabelSymbol(cg);
-      bbstartNode->setLabel(label);
-      }
-
-   bool isUnsigned = false;
-   switch (node->getOverflowCheckOperation())
-   {
-       case TR::buadd:
-       case TR::cadd:
-       case TR::iuadd:
-       case TR::luadd:
-       case TR::busub:
-       case TR::csub:
-       case TR::iusub:
-       case TR::lusub:
-           isUnsigned = true;
-           break;
    }
 
-   TR_X86OpCodes opcode = isUnsigned? JB4: JO4; 
+TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_X86OpCodes opcode;
+   if (node->getOpCodeValue() == TR::OverflowCHK)
+       opcode = JO4; 
+   else if (node->getOpCodeValue() == TR::UnsignedOverflowCHK)
+       opcode = JB4; 
+   else 
+       TR_ASSERT(0, "unrecognized overflow operation in overflowCHKEvaluator");
+   TR::Block *overflowCatchBlock = TR::TreeEvaluator::getOverflowCatchBlock(node, cg);
+   TR::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(node, cg);
    generateLabelInstruction(opcode, node, overflowCatchBlock->getEntry()->getNode()->getLabel(), cg);
    cg->setVMThreadRequired(false);
-   cg->decReferenceCount(operationNode);
+   cg->decReferenceCount(node->getFirstChild());
    return NULL;
    }
 
@@ -3292,6 +3285,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
    TR_RuntimeHelper helper ;
    if (sourceByte)
       {
+      
       TR_ASSERT(!node->isTargetByteArrayTranslate(), "Both source and target are byte for array translate");
       if (arraytranslateOT)
       {

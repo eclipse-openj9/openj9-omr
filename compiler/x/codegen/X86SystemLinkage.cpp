@@ -864,8 +864,10 @@ TR::X86SystemLinkage::layoutTypeOnStack(
          dataCursor += 4;
          break;
       case TR::Int64:
-      case TR::Address:
          dataCursor += 8;
+         break;
+      case TR::Address:
+         dataCursor += TR::Compiler->target.is32Bit() ? 4 : 8;
          break;
       case TR::Aggregate:
       default:

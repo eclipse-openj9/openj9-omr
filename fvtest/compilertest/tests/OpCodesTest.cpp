@@ -150,7 +150,7 @@ TR::DataType OpCodesTest::_argTypesTernaryFloat[_numberOfTernaryArgs] = {TR::Int
 TR::DataType OpCodesTest::_argTypesTernaryDouble[_numberOfTernaryArgs] = {TR::Int32,TR::Double, TR::Double};
 TR::DataType OpCodesTest::_argTypesTernaryAddress[_numberOfTernaryArgs] = {TR::Int32,TR::Address, TR::Address};
 
-TR::DataType OpCodesTest::_argTypesBinaryAddressByte[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
+TR::DataType OpCodesTest::_argTypesBinaryAddressByte[_numberOfBinaryArgs] = {TR::Address, TR::Int8};
 TR::DataType OpCodesTest::_argTypesBinaryAddressShort[_numberOfBinaryArgs] = {TR::Address,TR::Int16};
 TR::DataType OpCodesTest::_argTypesBinaryAddressInt[_numberOfBinaryArgs] = {TR::Address, TR::Int32};
 TR::DataType OpCodesTest::_argTypesBinaryAddressLong[_numberOfBinaryArgs] = {TR::Address, TR::Int64};

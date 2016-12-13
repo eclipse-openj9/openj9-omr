@@ -111,7 +111,7 @@
 #  define TR_HOST_32BIT 1
 #elif defined(__PPC__) || defined(_ARCH_PPC)
 #  define HOST_ARCH ARCH_POWER
-#  if defined(__PPC64__) || defined(_ARCH_PPC64)
+#  if defined(__PPC64__) || defined(__64BIT__)
 #    define TR_HOST_64BIT 1
 #  else
 #    define TR_HOST_32BIT 1

@@ -91,8 +91,11 @@ test: omr_algotest omr_utiltest
 ifeq (1,$(OMR_EXAMPLE))
 test: omr_vmtest omr_gctest omr_rastest omr_subscriberforktest
 endif
-ifeq (1,$(OMR_JIT))
-test: omr_jittest omr_jitbuildertest
+ifeq (1,$(OMR_TEST_COMPILER))
+test: omr_jittest
+endif
+ifeq (1,$(OMR_JITBUILDER))
+test: omr_jitbuildertest
 endif
 ifeq (1,$(OMR_PORT))
 test: omr_porttest
@@ -104,4 +107,4 @@ ifeq (1,$(OMR_OMRSIG))
 test: omr_sigtest
 endif
 
-.PHONY: all test omr_algotest omr_gctest omr_porttest omr_rastest omr_subscriberforktest omr_sigtest omr_threadextendedtest omr_threadtest omr_utiltest omr_vmtest 
+.PHONY: all test omr_algotest omr_gctest omr_jitbuildertest omr_jittest omr_porttest omr_rastest omr_subscriberforktest omr_sigtest omr_threadextendedtest omr_threadtest omr_utiltest omr_vmtest 

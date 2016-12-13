@@ -26,6 +26,8 @@
 
 #undef OMR_GC
 #undef OMR_JIT
+#undef OMR_JITBUILDER
+#undef OMR_TEST_COMPILER
 #undef OMR_PORT
 #undef OMR_THREAD
 #undef OMR_OMRSIG

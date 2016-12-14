@@ -380,6 +380,13 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    self()->comp()->setReturnInfo(returnInfo);
    }
 
+uintptrj_t *
+OMR::Power::CodeGenerator::getTOCBase()
+    {
+        TR_PPCTableOfConstants *pTOC = toPPCTableOfConstants(self()->comp()->getPersistentInfo()->getPersistentTOC());
+        return pTOC->getTOCBase();
+    }
+
 TR_PPCScratchRegisterManager*
 OMR::Power::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {

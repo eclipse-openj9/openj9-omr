@@ -67,9 +67,6 @@
 #include "MemorySubSpaceFlat.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
 #include "ObjectModel.hpp"
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-#include "Scavenger.hpp"
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #include "SpinLimiter.hpp"
 #include "SublistIterator.hpp"
 #include "SublistPuddle.hpp"
@@ -2375,23 +2372,6 @@ MM_ConcurrentGC::completeConcurrentSweepForKickoff(MM_EnvironmentStandard *env)
 }
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-void
-MM_ConcurrentGC::completeConcurrentScavenge(MM_EnvironmentStandard *env)
-{
-	if (_extensions->concurrentScavenger && _extensions->scavenger->isConcurrentInProgress()) {
-		/* we do not have the cycle state yet, so we will build a temp one to give an idea to scavenger it's triggered from an external cycle */
-		Assert_MM_true(NULL == env->_cycleState);
-		MM_CycleState tempCycleState;
-		env->_cycleState = &tempCycleState;
-		env->_cycleState->_type = _cycleType;
-		_extensions->scavenger->triggerConcurrentScavengerTransition(env, NULL);
-		env->_cycleState = NULL;
-	}
-}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-
-
 /**
  *
  * Do some initialization work.
@@ -2921,10 +2901,6 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 	 */
 	completeConcurrentSweep(envStandard);
 #endif /* OMR_GC_CONCURRENT_SWEEP */
-
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	completeConcurrentScavenge(envStandard);
-#endif
 
 	/* Ensure caller acquired exclusive VM access before calling */
 	Assert_MM_true(env->inquireExclusiveVMAccessForGC());

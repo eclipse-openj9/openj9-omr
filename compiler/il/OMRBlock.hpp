@@ -510,12 +510,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _isSpecialized                        = 0x00800000   // Block has been specialized by loop specializer
       };
 
-   enum //  flag bits for _moreflags
-      {
-      // lowest 8 bits are used for partial flags. Public declaration above.
-
-      };
-
    TR::TreeTop *                         _pEntry;
    TR::TreeTop *                         _pExit;
 

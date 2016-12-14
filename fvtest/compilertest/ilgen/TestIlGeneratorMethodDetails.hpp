@@ -37,6 +37,7 @@ class TR_InlineBlocks;
 class TR_ResolvedMethod;
 class TR_IlGenerator;
 namespace TR { class Compilation; }
+namespace TR { class IlVerifier; }
 namespace TR { class ResolvedMethod; }
 namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReferenceTable; }
@@ -51,9 +52,15 @@ class OMR_EXTENSIBLE IlGeneratorMethodDetails : public OMR::IlGeneratorMethodDet
 
 public:
 
-   IlGeneratorMethodDetails() : _method(NULL) { }
+   IlGeneratorMethodDetails() :
+      _method(NULL),
+      _ilVerifier(NULL)
+      { }
 
-   IlGeneratorMethodDetails(TR::ResolvedMethod *method) : _method(method) { }
+   IlGeneratorMethodDetails(TR::ResolvedMethod *method) :
+      _method(method),
+      _ilVerifier(NULL)
+      { }
 
    IlGeneratorMethodDetails(TR_ResolvedMethod *method);
 
@@ -71,9 +78,13 @@ public:
                                           bool forceClassLookahead,
                                           TR_InlineBlocks *blocksToInline);
 
+   TR::IlVerifier * getIlVerifier() { return _ilVerifier; }
+   void setIlVerifier(TR::IlVerifier * ilVerifier) { _ilVerifier = ilVerifier; }
+
 protected:
 
    TR::ResolvedMethod * _method;
+   TR::IlVerifier     * _ilVerifier;
    };
 
 }

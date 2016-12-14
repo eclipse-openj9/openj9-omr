@@ -89,6 +89,7 @@
 #include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 #include "ras/DebugCounter.hpp"                // for TR_DebugCounterGroup, etc
+#include "ras/IlVerifier.hpp"                  // for TR::IlVerifier
 #include "control/Recompilation.hpp"           // for TR_Recompilation, etc
 #include "runtime/CodeCacheExceptions.hpp"
 
@@ -314,6 +315,7 @@ OMR::Compilation::Compilation(
    _gpuPtxCount(0),
    _scratchSpaceLimit(TR::Options::_scratchSpaceLimit),
    _cpuTimeAtStartOfCompilation(-1),
+   _ilVerifier(NULL),
    _bitVectorPool(self()),
    _tlsManager(*self())
    {
@@ -894,6 +896,11 @@ int32_t OMR::Compilation::compile()
             dumpOptDetails(self(), "failed while verifying compressedRefs anchors\n");
          }
 #endif
+
+      if (_ilVerifier && _ilVerifier->verify(_methodSymbol))
+         {
+         self()->failCompilation<TR::CompilationException>("Aborting after Optimization due to verifier failure");
+         }
 
       static char *abortafterilgen = feGetEnv("TR_TOSS_IL");
       if(abortafterilgen)

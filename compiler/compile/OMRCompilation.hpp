@@ -93,6 +93,7 @@ namespace TR { class CodeCache; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class IlGenRequest; }
+namespace TR { class IlVerifier; }
 namespace TR { class Instruction; }
 namespace TR { class KnownObjectTable; }
 namespace TR { class LabelSymbol; }
@@ -656,6 +657,8 @@ public:
    void verifyBlocks(TR::ResolvedMethodSymbol *s = 0);
    void verifyCFG(TR::ResolvedMethodSymbol *s = 0);
 
+   void setIlVerifier(TR::IlVerifier *ilVerifier) { _ilVerifier = ilVerifier; }
+
 #ifdef DEBUG
    void dumpMethodGraph(int index, TR::ResolvedMethodSymbol * = 0);
 #endif
@@ -1138,6 +1141,8 @@ private:
 
    size_t                            _scratchSpaceLimit;
    int64_t                           _cpuTimeAtStartOfCompilation;
+
+   TR::IlVerifier                    *_ilVerifier;
 
    int32_t _gpuBlockDimX;
    void * _gpuParms;

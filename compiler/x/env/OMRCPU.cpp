@@ -108,6 +108,12 @@ OMR::X86::CPU::getX86ProcessorFeatureFlags2(TR::Compilation *comp)
    return self()->queryX86TargetCPUID(comp)->_featureFlags2;
    }
 
+uint32_t
+OMR::X86::CPU::getX86ProcessorFeatureFlags8(TR::Compilation *comp)
+   {
+   return self()->queryX86TargetCPUID(comp)->_featureFlags8;
+   }
+
 bool
 OMR::X86::CPU::testOSForSSESupport(TR::Compilation *comp)
    {
@@ -144,5 +150,8 @@ OMR::X86::CPU::getX86OSSupportsSSE2(TR::Compilation *comp)
 bool
 OMR::X86::CPU::getX86SupportsTM(TR::Compilation *comp)
    {
-   return false;
+   uint32_t flags8 = self()->getX86ProcessorFeatureFlags8(comp);
+   if ((flags8 & TR_RTM) != 0x00000000)
+         return true;
+   else return false;
    }

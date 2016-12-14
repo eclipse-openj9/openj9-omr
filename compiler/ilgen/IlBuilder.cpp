@@ -1677,19 +1677,49 @@ IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  *                ---- ...
  *                |
  *                ---- tend
+ *
+ * \note
+ *      If user's platform doesn't support TM, go to persistentFailure path directly/
+ *      In this case, current IlBuilder walks around transientFailureBuilder and transactionBuilder
+ *      and goes to persistentFailureBuilder.
+ *      
+ *      _currentBuilder
+ *          |
+ *          ->Goto()
+ *              |   transientFailureBuilder 
+ *              |   transactionBuilder
+ *              |-->persistentFailurie
  */
 void
 IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **transactionBuilder)
     {   
+    //This assertion is to rule out platforms which don't have tstart evaluator yet. 
+    TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
+    
     //ILB_REPLAY("%s->TransactionBegin(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(persistentFailureBuilder), REPLAY_BUILDER(transientFailureBuilder), REPLAY_BUILDER(transactionBuilder)); 
     TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
-   
+
     appendBlock();
 
     TR::Block *mergeBlock = emptyBlock();
     *persistentFailureBuilder = createBuilderIfNeeded(*persistentFailureBuilder);
     *transientFailureBuilder = createBuilderIfNeeded(*transientFailureBuilder);
     *transactionBuilder = createBuilderIfNeeded(*transactionBuilder);
+
+    if (!comp()->cg()->getSupportsTM())
+       {
+       //if user's processor doesn't support TM.
+       //we will walk around transaction and transientFailure paths
+
+       Goto(persistentFailureBuilder);
+
+       AppendBuilder(*transactionBuilder);
+       AppendBuilder(*transientFailureBuilder);
+
+       AppendBuilder(*persistentFailureBuilder);
+       appendBlock(mergeBlock);
+       return;
+       }
 
     TR::Node *persistentFailureNode = TR::Node::create(TR::branch, 0, (*persistentFailureBuilder)->getEntry()->getEntry());
     TR::Node *transientFailureNode = TR::Node::create(TR::branch, 0, (*transientFailureBuilder)->getEntry()->getEntry());

@@ -56,6 +56,7 @@ public:
    uint32_t getX86ProcessorSignature(TR::Compilation *comp);
    uint32_t getX86ProcessorFeatureFlags(TR::Compilation *comp);
    uint32_t getX86ProcessorFeatureFlags2(TR::Compilation *comp);
+   uint32_t getX86ProcessorFeatureFlags8(TR::Compilation *comp);
 
    bool testOSForSSESupport(TR::Compilation *comp);
    bool getX86OSSupportsSSE(TR::Compilation *comp);

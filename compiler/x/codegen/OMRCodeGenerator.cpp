@@ -240,9 +240,21 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    if (TR::Compiler->target.cpu.getX86SupportsTM(comp) && !comp->getOption(TR_DisableTM))
       {
-      if (TR::Compiler->target.is64Bit())
-         self()->setSupportsTM(); // disable tm on 32bits for now
-      }
+
+	 /**
+	  * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel, 
+	  * we will return false for any versions before Broadwell.
+	  *
+	  * TODO: Need to figure out from which mode of Broadwell start supporting TM
+	  */
+      if (!_targetProcessorInfo.isIntelHaswell())
+         {
+         if (TR::Compiler->target.is64Bit())
+            {
+            self()->setSupportsTM(); // disable tm on 32bits for now
+            }
+         }
+	  }
 
    if (!forceX87 &&
        (TR::Compiler->target.is64Bit() ||

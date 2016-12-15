@@ -806,10 +806,14 @@ int32_t OMR::Compilation::compile()
       {
       self()->getDebug()->printHeader();
       static char *randomExercisePeriodStr = feGetEnv("TR_randomExercisePeriod");
-      if (self()->getOption(TR_Randomize) || randomExercisePeriodStr > 0)
+      if (self()->getOption(TR_Randomize) || randomExercisePeriodStr != NULL)
          traceMsg(self(), "Random seed is %d%s\n", _options->getRandomSeed(), self()->getOption(TR_RandomSeedSignatureHash)? " hashed with signature":"");
-      if (randomExercisePeriodStr > 0)
-         TR_RandomGenerator::exercise(atoi(randomExercisePeriodStr), self());
+      if (randomExercisePeriodStr != NULL)
+         {
+         auto period = atoi(randomExercisePeriodStr);
+         if (period > 0)
+            TR_RandomGenerator::exercise(period, self());
+         }
       }
 
    if (printCodegenTime) compTime.startTiming(self());

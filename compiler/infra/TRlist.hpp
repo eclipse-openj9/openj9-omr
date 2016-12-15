@@ -29,16 +29,19 @@ namespace TR
    template <class T> class list : public std::list<T, TR::typed_allocator<T, TR::Allocator> >
       {
       public:
-         list(TR::typed_allocator<T, TR::Allocator> ta) :
+      list(TR::typed_allocator<T, TR::Allocator> ta) :
          std::list<T, TR::typed_allocator<T, TR::Allocator> > (ta)
-            {
-            }
+         {
+         }
 
-#if defined(OSX)
-         void remove(const T& value)
-            {
-            this->remove_if([value](const T& value2){return value == value2;});
-            }
+#if defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 4000
+      /* A bug in libc++ before 4.0 caused std::list::remove to call the
+       * default constructor of TR::typed_allocator, which is not implemented.
+       */
+      void remove(const T& value)
+         {
+         this->remove_if([value](const T& value2){return value == value2;});
+         }
 #endif
 
       };

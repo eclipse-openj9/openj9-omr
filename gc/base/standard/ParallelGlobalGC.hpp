@@ -299,6 +299,8 @@ public:
 	}
 #endif /* OMR_GC_MODRON_COMPACTION */
 
+	virtual void completeConcurrentCycle(MM_EnvironmentBase *env);
+
 	MM_ParallelGlobalGC(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli)
 		: MM_GlobalCollector(env, cli)
 		, _extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))

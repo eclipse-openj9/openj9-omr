@@ -22,28 +22,63 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-goal: call conststring dotproduct iterfib linkedlist localarray mandelbrot nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype atomicoperations
+# NOTE: replay purposefully left out of the list
+ALL_TESTS = \
+            atomicoperations \
+            call \
+            conststring \
+            controlflowtests \
+            dotproduct \
+            issupportedtype \
+            iterfib \
+            linkedlist \
+            localarray \
+            nestedloop \
+            operandstacktests \
+            pointer \
+            pow2 \
+            recfib \
+            simple \
+            structarray \
+            switch \
+            toiltype
 
-all: goal
-
-test: goal
+goal: $(ALL_TESTS)
+	./atomicoperations
 	./call
 	./conststring
+	./controlflowtests
 	./dotproduct
+	./issupportedtype
 	./iterfib
 	./linkedlist
 	./localarray
 	./nestedloop
 	./pointer
+	./pow2
 	./recfib
 	./simple
-	./switch
-	./pow2
 	./structarray
-	./controlflowtests
-	./issupportedtype
+	./switch
 	./toiltype
-	./atomicoperations
+
+all: goal
+
+test: goal $(ALL_TESTS)
+
+atomicoperations : libjitbuilder.a AtomicOperations.o
+	g++ -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
+
+AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+badtoiltype : libjitbuilder.a BadToIlType.o
+	g++ -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl
+
+BadToIlType.o: src/ToIlType.cpp
+	g++ -o $@ -DEXPECTED_FAIL $(CXXFLAGS) $<
+
 
 call : libjitbuilder.a Call.o
 	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
@@ -51,17 +86,34 @@ call : libjitbuilder.a Call.o
 Call.o: src/Call.cpp src/Call.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
+
 conststring : libjitbuilder.a ConstString.o	
 	g++ -g -fno-rtti -o $@ ConstString.o -L. -ljitbuilder -ldl
 
 ConstString.o: src/ConstString.cpp src/ConstString.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
+
+controlflowtests : libjitbuilder.a ControlFlowTests.o
+	g++ -g -fno-rtti -o $@ ControlFlowTests.o -L. -ljitbuilder -ldl
+
+ControlFlowTests.o: src/ControlFlowTests.cpp src/ControlFlowTests.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
 dotproduct : libjitbuilder.a DotProduct.o
 	g++ -g -fno-rtti -o $@ DotProduct.o -L. -ljitbuilder -ldl
 
 DotProduct.o: src/DotProduct.cpp src/DotProduct.hpp
 	g++ -o $@ $(CXXFLAGS) $<
+
+
+issupportedtype : libjitbuilder.a IsSupportedType.o
+	g++ -g -fno-rtti -o $@ IsSupportedType.o -L. -ljitbuilder -ldl
+
+IsSupportedType.o: src/IsSupportedType.cpp
+	g++ -o $@ $(CXXFLAGS) $<
+
 
 iterfib : libjitbuilder.a IterativeFib.o
 	g++ -g -fno-rtti -o $@ IterativeFib.o -L. -ljitbuilder -ldl
@@ -105,10 +157,24 @@ NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
+operandstacktests : libjitbuilder.a OperandStackTests.o
+	g++ -g -fno-rtti -o $@ OperandStackTests.o -L. -ljitbuilder -ldl
+
+OperandStackTests.o: src/OperandStackTests.cpp src/OperandStackTests.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
 pointer : libjitbuilder.a Pointer.o
 	g++ -g -fno-rtti -o $@ Pointer.o -L. -ljitbuilder -ldl
 
 Pointer.o: src/Pointer.cpp src/Pointer.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+pow2 : libjitbuilder.a Pow2.o
+	g++ -g -fno-rtti -o $@ Pow2.o -L. -ljitbuilder -ldl
+
+Pow2.o: src/Pow2.cpp src/Pow2.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
@@ -138,25 +204,6 @@ simple : libjitbuilder.a Simple.o
 Simple.o: src/Simple.cpp src/Simple.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
-atomicoperations : libjitbuilder.a AtomicOperations.o
-	g++ -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
-
-AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
-	g++ -o $@ $(CXXFLAGS) $<
-
-switch : libjitbuilder.a Switch.o
-	g++ -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
-
-Switch.o: src/Switch.cpp src/Switch.hpp
-	g++ -o $@ $(CXXFLAGS) $<
-
-
-pow2 : libjitbuilder.a Pow2.o
-	g++ -g -fno-rtti -o $@ Pow2.o -L. -ljitbuilder -ldl
-
-Pow2.o: src/Pow2.cpp src/Pow2.hpp
-	g++ -o $@ $(CXXFLAGS) $<
-
 
 structarray : libjitbuilder.a StructArray.o
 	g++ -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
@@ -165,17 +212,10 @@ StructArray.o: src/StructArray.cpp src/StructArray.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
-controlflowtests : libjitbuilder.a ControlFlowTests.o
-	g++ -g -fno-rtti -o $@ ControlFlowTests.o -L. -ljitbuilder -ldl
+switch : libjitbuilder.a Switch.o
+	g++ -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
 
-ControlFlowTests.o: src/ControlFlowTests.cpp src/ControlFlowTests.hpp
-	g++ -o $@ $(CXXFLAGS) $<
-
-
-issupportedtype : libjitbuilder.a IsSupportedType.o
-	g++ -g -fno-rtti -o $@ IsSupportedType.o -L. -ljitbuilder -ldl
-
-IsSupportedType.o: src/IsSupportedType.cpp
+Switch.o: src/Switch.cpp src/Switch.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
@@ -186,13 +226,6 @@ ToIlType.o: src/ToIlType.cpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 
-badtoiltype : libjitbuilder.a BadToIlType.o
-	g++ -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl
-
-BadToIlType.o: src/ToIlType.cpp
-	g++ -o $@ -DEXPECTED_FAIL $(CXXFLAGS) $<
-
-
 
 clean:
-	@rm -f call conststring dotproduct iterfib linkedlist localarray mandelbrot matmult nestedloop pointer recfib simple switch pow2 structarray controlflowtests issupportedtype toiltype badtoiltype atomicoperations *.o
+	@rm -f $(ALL_TESTS) replay *.o

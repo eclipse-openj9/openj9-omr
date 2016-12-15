@@ -201,6 +201,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCache.cpp \

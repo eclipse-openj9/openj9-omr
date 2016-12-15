@@ -18,10 +18,14 @@
 
 include/compiler/
 
+atomicoperations
+badtoiltype
 call
 conststring
+controlflowtests
 dotproduct
 iterfib
+issupportedtype
 jitbuilder.tgz
 linkedlist
 localarray
@@ -33,7 +37,4 @@ pow2
 recfib
 simple
 switch
-controlflowtests
-issupportedtype
 toiltype
-badtoiltype

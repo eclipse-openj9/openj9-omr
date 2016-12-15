@@ -83,9 +83,11 @@ public:
    virtual TR::MethodBuilder    * asMethodBuilder() { return NULL; }
 
    TR::Compilation              * comp()             const { return _comp; }
+   TR::IlGeneratorMethodDetails * details()          const { return _details; }
    TR::FrontEnd                 * fe()               const { return _fe; }
    TR::SymbolReferenceTable     * symRefTab()              { return _symRefTab; }
    TR::CFG                      * cfg();
+   TR::TypeDictionary           * typeDictionary()         { return _types; }
 
    TR::Block                   ** blocks()           const { return _blocks; }
    int32_t                        numBlocks()        const { return _numBlocks; }

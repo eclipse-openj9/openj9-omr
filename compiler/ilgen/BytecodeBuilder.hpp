@@ -29,6 +29,7 @@
 
 namespace TR { class BytecodeBuilder; }
 namespace TR { class MethodBuilder; }
+namespace OMR { class VirtualMachineState; }
 
 namespace OMR
 {
@@ -47,20 +48,47 @@ public:
    void AddFallThroughBuilder(TR::BytecodeBuilder *ftb);
 
    void AddSuccessorBuilders(uint32_t numBuilders, ...);
-   void AddSuccessorBuilder(TR::BytecodeBuilder *b) { AddSuccessorBuilders(1, b); }
+   void AddSuccessorBuilder(TR::BytecodeBuilder **b) { AddSuccessorBuilders(1, b); }
 
+   OMR::VirtualMachineState *initialVMState()                { return _initialVMState; }
+   OMR::VirtualMachineState *vmState()                       { return _vmState; }
+   void setVMState(OMR::VirtualMachineState *vmState)        { _vmState = vmState; }
+
+   void propagateVMState(OMR::VirtualMachineState *fromVMState);
+
+   // The following control flow services are meant to hide the similarly named services
+   // provided by the IlBuilder class. The reason these implementations exist is to
+   // automatically manage the propagation of virtual machine states between bytecode
+   // builders. By using these services, and AddFallthroughBuilder(), users do not have
+   // to do anything to propagate VM states; it's all just taken care of under the covers.
+   void Goto(TR::BytecodeBuilder **dest);
+   void Goto(TR::BytecodeBuilder *dest);
+   void IfCmpEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpEqualZero(TR::BytecodeBuilder **dest, TR::IlValue *c);
+   void IfCmpEqualZero(TR::BytecodeBuilder *dest, TR::IlValue *c);
+   void IfCmpNotEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpNotEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpNotEqualZero(TR::BytecodeBuilder **dest, TR::IlValue *c);
+   void IfCmpNotEqualZero(TR::BytecodeBuilder *dest, TR::IlValue *c);
+   void IfCmpLessThan(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpLessThan(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpGreaterThan(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2);
+   void IfCmpGreaterThan(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2);
 
 protected:
-   virtual void appendBlock(TR::Block *block = 0, bool addEdge=true);
-
    TR::BytecodeBuilder       * _fallThroughBuilder;
    List<TR::BytecodeBuilder> * _successorBuilders;
    int32_t                     _bcIndex;
    char                      * _name;
+   OMR::VirtualMachineState  * _initialVMState;
+   OMR::VirtualMachineState  * _vmState;
 
+   virtual void appendBlock(TR::Block *block = 0, bool addEdge=true);
    void addAllSuccessorBuildersToWorklist();
    bool connectTrees();
    virtual void setHandlerInfo(uint32_t catchType);
+   void transferVMState(TR::BytecodeBuilder **b);
    };
 
 } // namespace OMR

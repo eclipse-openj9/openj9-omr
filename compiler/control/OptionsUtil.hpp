@@ -123,6 +123,14 @@ struct OptionTable
     * A field used to determine if option has been seen on the command line
     */
    bool enabled;
+
+   /**
+    * A field used to determine whether or not this is the option to find
+    * in the table. This is used in the binary search in
+    * OMR::Options::processOption.
+    */
+   bool isOptionToFind;
+
    };
 
 

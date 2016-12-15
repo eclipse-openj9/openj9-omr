@@ -3419,7 +3419,7 @@ OMR::Options::compareOptionsForBinarySearch(const TR::OptionTable &a, const TR::
    // Check which option is the one passed in (optionToFind). We want to match
    // only up to the number of characters of the option in the table, not the one
    // passed in.
-   if (a.msg == "optionToFind")
+   if (a.isOptionToFind)
       lengthOfTableEntry = b.length;
    else
       lengthOfTableEntry = a.length;
@@ -3443,9 +3443,11 @@ OMR::Options::processOption(
       ++option;
       }
 
-   // Set the length of all options in the table
+   // Set the length of all options in the table and set the isOptionToFind
+   // field to false.
    for (TR::OptionTable* i = table; i < (table + numEntries); i++)
       {
+      i->isOptionToFind = false;
       if (!i->length)
          i->length = strlen(i->name);
       }
@@ -3458,10 +3460,10 @@ OMR::Options::processOption(
    optionToFind.length = strlen(optionToFind.name);
 
    // Since STL binary search requires total ordering, there need to be a way to differentiate
-   // between the option to find and an option in the table. The msg field is used here to
-   // specify which option is the option to find. Note that this is not normal usage of the
-   // msg field.
-   optionToFind.msg = "optionToFind";
+   // between the option to find and an option in the table. The isOptionToFind field is used
+   // here to specify which option is the option to find.
+
+   optionToFind.isOptionToFind = true;
 
    TR::OptionTable *first, *last, *opt;
 

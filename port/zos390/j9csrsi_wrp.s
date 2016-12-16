@@ -1,6 +1,6 @@
 ***********************************************************************
 *
-* (c) Copyright IBM Corp. 1991, 2015
+* (c) Copyright IBM Corp. 1991, 2016
 *
 *  This program and the accompanying materials are made available
 *  under the terms of the Eclipse Public License v1.0 and
@@ -43,6 +43,17 @@ R8       EQU   8      Base register (XPLINK assembler prolog)
 R9       EQU   9      Base register (USING instruction)
 R10      EQU   10     Base register (USING instruction)
 R15      EQU   15     Entry address of CSRSI service (CALL macro)
+*
+CVT_ADDR        EQU X'10'   Absolute address of CVT
+CSRSI_cvtcsrt   EQU X'220'  Offset of CSRSI_cvtcsrt
+CSRSI_addr      EQU X'30'   Offset of CSRSI_addr
+CSRSI_cvtdcb    EQU X'74'   Offset of CSRSI_cvtdcb
+CSRSI_cvtoslv4  EQU X'4F4'  Offset of CSRSI_cvtoslv4
+*
+CSRSI_cvtosext  EQU X'08'   Mask for CSRSI_cvtdcb.CSRSI_cvtosext
+CSRSI_cvtcsrsi  EQU X'80'   Mask for CSRSI_cvtoslv4.CSRSI_cvtcsrsi
+*
+CSRSI_NOSERVICE EQU 8       Return code: service not available
 *
 * SYSPARM should be set either in makefile or on command-line to
 * switch between 64-bit and 31-bit XPLINK prolog or epilog.
@@ -93,7 +104,7 @@ _J9CSRSI CELQPRLG PARMWRDS=1,BASEREG=8,EXPORT=YES
 .JMP2    ANOP
 _J9CSRSI ALIAS C'j9csrsi_wrp'
 *
-* Set the value of base registers 
+* Set the value of base registers
 *
          LR    R2,R1
          LA    R3,4095(,R1)
@@ -109,18 +120,36 @@ _J9CSRSI ALIAS C'j9csrsi_wrp'
          USING IOARGS+12285,R6
          USING IOARGS+16380,R10
 *
-* Bring CSRSI entry into virtual storage.
-* After the LOAD call, R0 contains entry point address
-* of the requested load module.
-* No explicit error handling routine and instead rely on
-* system issuing ABEND call in the event of failure.
+* Assume the service is not available: the call to CSRSI will update
+* the return code accordingly.
 *
-         LOAD  EP=CSRSI
+         LA    R0,CSRSI_NOSERVICE
+         ST    R0,RETC
+*
+* Because we use the second technique to call CSRSI described at [1],
+* we must verify that the service is available by checking that both
+* CVTOSEXT and CVTCSRSI bits are set in the CVT.
+*
+* [1] https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.1.0
+*                 /com.ibm.zos.v2r1.ieaa700/CSRSI_Description.htm
+*
+         L     R15,CVT_ADDR
+*
+* check that CSRSI_cvtdcb.CSRSI_cvtosext is set
+*
+         TM    CSRSI_cvtdcb(R15),CSRSI_cvtosext
+         JE    @1LEXIT
+*
+* check that CSRSI_cvtoslv4.CSRSI_cvtcsrsi is set
+*
+         TM    CSRSI_cvtoslv4(R15),CSRSI_cvtcsrsi
+         JE    @1LEXIT
 *
 * CALL macro expects R15 contains the entry address of
 * the called program.
 *
-         LR    R15,R0
+         L     R15,CSRSI_cvtcsrt(R15)
+         L     R15,CSRSI_addr(R15)
 *
 * Initiate executable form of the CALL macro.
 * Pass set of addresses to CALL macro as per CSRSI
@@ -135,11 +164,9 @@ _J9CSRSI ALIAS C'j9csrsi_wrp'
 *
          CALL  (15),(REQ,INFOAL,INFOAREA,RETC),PLIST4=YES,MF=(E,CPLIST)
 *
-* Relinquish control of loaded CSRSI module.
-*
-         DELETE EP=CSRSI
-*
          DROP  R2,R3,R9,R6,R10
+*
+@1LEXIT  DS    0H
 *
 * Branch based on setting of the 64-bit mode.
 *

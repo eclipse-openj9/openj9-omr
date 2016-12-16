@@ -24,10 +24,6 @@
 #include "MemorySubSpace.hpp"
 #include "ModronAssertions.h"
 #include "OMRVMThreadListIterator.hpp"
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-#include "Scavenger.hpp"
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-
 
 class MM_MemorySubSpace;
 class MM_MemorySpace;
@@ -196,9 +192,10 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	completeConcurrentScavenge(env);
-#endif
+	/* There might be a colliding concurrent cycle in progress, that must be completed before we start this one.
+	 * Specific Collector subclass will have exact knowledge if that is the case.
+	 */
+	completeConcurrentCycle(env);
 
 	/* Record the master GC thread CPU time at the start to diff later */
 	_masterThreadCpuTimeStart = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
@@ -405,23 +402,3 @@ MM_Collector::isMarked(void *objectPtr)
 	Assert_MM_unreachable();
 	return false;
 }
-
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-void
-MM_Collector::completeConcurrentScavenge(MM_EnvironmentBase *env)
-{
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-
-	/* if we are about to start STW GC that is different then Scavenger (Concurrent STW phase or plain Parallel Global GC), we have to complete the Scavenger cycle first */
-	if (extensions->concurrentScavenger && (OMR_GC_CYCLE_TYPE_SCAVENGE != _cycleType) && extensions->scavenger->isConcurrentInProgress()) {
-		/* we do not have the cycle state yet, so we will build a temp one to give an idea to scavenger it's triggered from an external cycle */
-		Assert_MM_true(NULL == env->_cycleState);
-		MM_CycleState tempCycleState;
-		env->_cycleState = &tempCycleState;
-		env->_cycleState->_type = _cycleType;
-		extensions->scavenger->triggerConcurrentScavengerTransition(env, NULL);
-		env->_cycleState = NULL;
-	}
-}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-

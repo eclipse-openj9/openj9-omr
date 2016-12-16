@@ -506,6 +506,10 @@ public:
 	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 
 	 */ 
 	void triggerConcurrentScavengerTransition(MM_EnvironmentBase *envBase, MM_AllocateDescription *allocDescription);
+	/**
+	 * complete (trigger end) of a Concurrent Scavenger Cycle
+	 */
+	void completeConcurrentScavenger(MM_EnvironmentBase *envBase);
 
 	/* worker thread */
 	void workThreadProcessRoots(MM_EnvironmentStandard *env);

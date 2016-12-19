@@ -116,10 +116,12 @@ public:
 	uintptr_t getMaxSpaceForObjectInEvacuateMemory(omrobjectptr_t objectPtr);
 
 	void masterSetupForGC(MM_EnvironmentBase *envBase);
+	void masterTeardownForSuccessfulGC(MM_EnvironmentBase* env);
+	void masterTeardownForAbortedGC(MM_EnvironmentBase *env);
+
 	void poisonEvacuateSpace();
 
-	void rebuildFreeListForEvacuate(MM_EnvironmentBase* env);
-	void rebuildFreeListForBackout(MM_EnvironmentBase *env);
+	void cacheRanges(MM_MemorySubSpace *subSpace, void **base, void **top);
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);

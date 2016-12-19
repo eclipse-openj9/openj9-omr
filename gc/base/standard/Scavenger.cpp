@@ -383,6 +383,7 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 
 	/* Find tenure memory sub spaces for collection ( allocate and survivor are context specific) */
 	/* Find the allocate, survivor and tenure memory sub spaces for collection */
+	/* Evacuate range for GC is what allocate space is for allocation */
 	_evacuateMemorySubSpace = _activeSubSpace->getMemorySubSpaceAllocate();
 	_survivorMemorySubSpace = _activeSubSpace->getMemorySubSpaceSurvivor();
 	_tenureMemorySubSpace = _activeSubSpace->getTenureMemorySubSpace();
@@ -400,22 +401,9 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 	_tenureMask = calculateTenureMask();
 	
 	_activeSubSpace->masterSetupForGC(env);
-	
-	/* evacuate range for GC is what allocate space is for allocation */
-	GC_MemorySubSpaceRegionIterator allocateRegionIterator(_evacuateMemorySubSpace);
-	MM_HeapRegionDescriptor* region = allocateRegionIterator.nextRegion();
-	Assert_MM_true(NULL != region);
-	Assert_MM_true(NULL == allocateRegionIterator.nextRegion());
-	_evacuateSpaceBase = region->getLowAddress();
-	_evacuateSpaceTop = region->getHighAddress();
 
-	/* cache survivor ranges */
-	GC_MemorySubSpaceRegionIterator survivorRegionIterator(_survivorMemorySubSpace);
-	region = survivorRegionIterator.nextRegion();
-	Assert_MM_true(NULL != region);
-	Assert_MM_true(NULL == survivorRegionIterator.nextRegion());
-	_survivorSpaceBase = region->getLowAddress();
-	_survivorSpaceTop = region->getHighAddress();
+	_activeSubSpace->cacheRanges(_evacuateMemorySubSpace, &_evacuateSpaceBase, &_evacuateSpaceTop);
+	_activeSubSpace->cacheRanges(_survivorMemorySubSpace, &_survivorSpaceBase, &_survivorSpaceTop);
 
 	/* assume that value of RS Overflow flag will not be changed until scavengeRememberedSet() call, so handle it first */
 	_isRememberedSetInOverflowAtTheBeginning = isRememberedSetInOverflowState();
@@ -3343,25 +3331,10 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 	}
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (_extensions->concurrentScavenger) {
-		if (concurrent_state_idle == _concurrentState) {
-			_concurrentState = concurrent_state_init;
-			_forceConcurrentTermination = false;
-		}
-		scavengeIncremental(env, 3);
-		if (concurrent_state_scan == _concurrentState) {
-			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_evacuate);
-			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
-
-		}
-	}
-	else
+	scavengeIncremental(env, 3);
+#else
+	scavenge(env);
 #endif
-	{
-		_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_evacuate);
-		/* And perform the scavenge */
-		scavenge(env);
-	}
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (!isConcurrentInProgress())
@@ -3392,25 +3365,8 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 				_activeSubSpace->poisonEvacuateSpace();
 			}
 
-			/* Build free list in evacuate profile */
-			_activeSubSpace->rebuildFreeListForEvacuate(env);
-
-			/* Flip the memory space allocate profile */
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (!_extensions->concurrentScavenger)
-#endif
-			{
-				_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
-				_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
-			}
-			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::restore_allocation_and_set_survivor);
-
-
-#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
-			/* Adjust memory between the semi spaces where applicable */
-			_activeSubSpace->checkResize(env);
-			_activeSubSpace->performResize(env);
-#endif
+			/* Build free list in evacuate profile. Perform resize. */
+			_activeSubSpace->masterTeardownForSuccessfulGC(env);
 
 			/* Defer to collector language interface */
 			_cli->scavenger_masterThreadGarbageCollect_scavengeSuccess(env);
@@ -3431,9 +3387,13 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 			}
 		} else {
 			/* Build free list in survivor profile - the scavenge was unsuccessful, so rebuild the free list */
-			_activeSubSpace->rebuildFreeListForBackout(env);
+			_activeSubSpace->masterTeardownForAbortedGC(env);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::backout);
+			/* Although evacuate is functionally irrelevant at this point since we are finishing the cycle,
+			 * it is still useful for debugging (CS must not see live objects in Evacuate).
+			 * Thus re-caching evacuate ranges to point to reserved/empty space of Survivor */
+			_evacuateMemorySubSpace = _activeSubSpace->getMemorySubSpaceSurvivor();
+			_activeSubSpace->cacheRanges(_evacuateMemorySubSpace, &_evacuateSpaceBase, &_evacuateSpaceTop);
 #endif
 		}
 
@@ -4424,6 +4384,12 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncre
 
 	while (!timeout) {
 		switch (_concurrentState) {
+		case concurrent_state_idle:
+		{
+			_concurrentState = concurrent_state_init;
+			_forceConcurrentTermination = false;
+			continue;
+		}
 		case concurrent_state_init:
 		{
 			/* initialize the mark map */
@@ -4438,19 +4404,33 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncre
 			/* initialize all the roots */
 			scavengeRoots(env);
 
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
+
 			_concurrentState = concurrent_state_scan;
+
+			if (backOutFlagRaised()) {
+				/* if we aborted during root processing, continue with the cycle while still in STW mode */
+				continue;
+			}
+
 			timeout = true;
 		}
 			break;
 
 		case concurrent_state_scan:
 		{
-			// todo: normally scan work should be done by scavengeConcurrent
-			Assert_MM_unreachable();
+			/* This is just for corner cases that must be run in STW mode.
+			 * Default main scan phase is done by scavengeConcurrent. */
 
+			Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
 			timeout = scavengeScan(env, scavengeIncrementEndTime);
 
 			_concurrentState = concurrent_state_complete;
+
+			if (backOutFlagRaised()) {
+				continue;
+			}
+
 			timeout = true;
 		}
 			break;
@@ -4465,7 +4445,6 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncre
 		}
 			break;
 
-		case concurrent_state_idle:
 		default:
 			Assert_MM_unreachable();
 		}

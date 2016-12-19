@@ -56,7 +56,8 @@ VirtualMachineOperandStack::VirtualMachineOperandStack(OMR::VirtualMachineOperan
    _stackMax(other->_stackMax),
    _stackTop(other->_stackTop),
    _elementType(other->_elementType),
-   _pushAmount(other->_pushAmount)
+   _pushAmount(other->_pushAmount),
+   _stackOffset(other->_stackOffset)
    {
    int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
    _stack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(numBytes);

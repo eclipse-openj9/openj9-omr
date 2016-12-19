@@ -1440,11 +1440,13 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    bool aix_style_linkage = (TR::Compiler->target.isAIX() || (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()));
    int32_t                        refNum = callSymRef->getReferenceNumber();
 
-   //JIT pseudo-TOC is preserved once in prologue as required by FrontEnd.
+   //This is not JIT pseudo TOC, but jit-module system TOC.
 
    if(aix_style_linkage)
          {
          //Implies TOC needs to be restored (ie not 32bit ppc-linux-be)
+         //This is wrong with regard to where system TOC is restored from, but happens to be right for JIT
+         //for the time being.
          if(TR::Compiler->target.cpu.isBigEndian())
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
          else
@@ -1462,8 +1464,9 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          (uintptrj_t)callSymbol->getMethodAddress(),
          dependencies, callSymRef?callSymRef:callNode->getSymbolReference());
 
-   //Restore JIT TOC as required by FrontEnd.
-   TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
+   //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
+   //         ABI-conforming module of dynamic code.  Plus, linux32 has no system TOC.
+   //TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
    }
 
 

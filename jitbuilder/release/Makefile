@@ -24,7 +24,6 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 # NOTE: replay purposefully left out of the list
 ALL_TESTS = \
-            atomicoperations \
             call \
             conststring \
             controlflowtests \
@@ -44,7 +43,6 @@ ALL_TESTS = \
             toiltype
 
 goal: $(ALL_TESTS)
-	./atomicoperations
 	./call
 	./conststring
 	./controlflowtests
@@ -71,7 +69,6 @@ atomicoperations : libjitbuilder.a AtomicOperations.o
 
 AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
 	g++ -o $@ $(CXXFLAGS) $<
-
 
 badtoiltype : libjitbuilder.a BadToIlType.o
 	g++ -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl

@@ -1513,6 +1513,7 @@ IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlVal
 TR::IlValue *
 IlBuilder::AtomicAddWithOffset(TR::IlValue * baseAddress, TR::IlValue * offset, TR::IlValue * value)
    {
+   TR_ASSERT(comp()->cg()->supportsAtomicAdd(), "this platform doesn't support AtomicAdd() yet");
    TR_ASSERT(baseAddress->getSymbol()->getDataType() == TR::Address, "baseAddress must be TR::Address");
    TR_ASSERT(offset == NULL || offset->getSymbol()->getDataType() == TR::Int32 || offset->getSymbol()->getDataType() == TR::Int64, "offset must be TR::Int32/64 or NULL");
 

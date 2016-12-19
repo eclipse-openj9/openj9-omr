@@ -78,7 +78,7 @@ uint8_t *TR::ARMStackCheckFailureSnippet::emitSnippetBody()
    // then the prologue must have already loaded it into R11; otherwise,
    // the snippet needs to load the number into R11.
    //
-   const TR_ARMLinkageProperties &linkage = cg()->getLinkage()->getProperties();
+   const TR::ARMLinkageProperties &linkage = cg()->getLinkage()->getProperties();
    uint32_t frameSize = cg()->getFrameSizeInBytes();
    int32_t offset = linkage.getOffsetToFirstLocal();
    uint32_t base, rotate;
@@ -157,7 +157,7 @@ uint32_t TR::ARMStackCheckFailureSnippet::getLength(int32_t estimatedSnippetStar
    int32_t length = 20; // mov/sub, add, bl, sub, b
    uint32_t base, rotate;
    uint32_t frameSize = cg()->getFrameSizeInBytes();
-//   const TR_ARMLinkageProperties &linkage = cg()->getLinkage()->getProperties();
+//   const TR::ARMLinkageProperties &linkage = cg()->getLinkage()->getProperties();
 //   uint32_t offset = linkage.getOffsetToFirstLocal();
    if (!constantIsImmed8r(frameSize, &base, &rotate)) /* &&
        (constantIsImmed8r(frameSize-offset, &base, &rotate) ||

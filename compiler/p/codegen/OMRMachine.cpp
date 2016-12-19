@@ -135,7 +135,7 @@ void OMR::Power::Machine::initREGAssociations()
    int icount;
    int nextV = 0;
    int lastFPRv, lastVRFv;
-   const TR_PPCLinkageProperties &linkage = _cg->getProperties();
+   const TR::PPCLinkageProperties &linkage = _cg->getProperties();
 
    // We assume the volatile/preserved registers to be consecutive
    // because the private linkage will either be a single volatile set or

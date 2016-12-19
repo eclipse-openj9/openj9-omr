@@ -994,7 +994,7 @@ TR::Register *OMR::Power::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Co
    {
    bool isDouble = node->getOpCodeValue() == TR::dreturn;
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
-   const TR_PPCLinkageProperties &linkageProperties = cg->getProperties();
+   const TR::PPCLinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineReturnRegister =
                 linkageProperties.getFloatReturnRegister();
    TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
@@ -2507,7 +2507,7 @@ TR::Register *OMR::Power::TreeEvaluator::dsqrtEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   const TR_PPCLinkageProperties &properties = cg->getProperties();
+   const TR::PPCLinkageProperties &properties = cg->getProperties();
 
    TR::Register *spReg = cg->machine()->getPPCRealRegister(properties.getNormalStackPointerRegister());
    TR::Register *trgReg = cg->allocateRegister();
@@ -2522,7 +2522,7 @@ TR::Register *OMR::Power::TreeEvaluator::deallocaEvaluator(TR::Node *node, TR::C
    {
    TR::Node * firstChild = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(firstChild);
-   const TR_PPCLinkageProperties &properties = cg->getProperties();
+   const TR::PPCLinkageProperties &properties = cg->getProperties();
 
    // TODO: restore stack chain
    TR::Register *spReg = cg->machine()->getPPCRealRegister(properties.getNormalStackPointerRegister());

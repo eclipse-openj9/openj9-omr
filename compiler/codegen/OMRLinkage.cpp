@@ -33,7 +33,7 @@ OMR::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    {
    // The "this" pointer of synchronized and JVMPI methods must be on the stack.
    // TODO: The PPC implementation is superior, but it uses
-   // interfaces currently only supported by TR_PPCPrivateLinkage.  The first
+   // interfaces currently only supported by TR::PPCPrivateLinkage.  The first
    // order of business: currently, every platform's Linkage can access the
    // Compilation and/or CodeGenerator, but the common one can't.  This
    // prevents us from checking that the current method is synchronized and so

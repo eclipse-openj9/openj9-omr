@@ -34,7 +34,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
-TR_ARMLinkageProperties TR_ARMSystemLinkage::properties =
+TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
     {                           // TR_System
     IntegersInRegisters|        // linkage properties
 #if defined(__VFP_FP__) && !defined(__SOFTFP__)
@@ -163,7 +163,7 @@ TR_ARMLinkageProperties TR_ARMSystemLinkage::properties =
 #endif
     };
 
-void TR_ARMSystemLinkage::initARMRealRegisterLinkage()
+void TR::ARMSystemLinkage::initARMRealRegisterLinkage()
    {
 #if 0
    // Each real register's weight is set to match this linkage convention
@@ -194,17 +194,17 @@ void TR_ARMSystemLinkage::initARMRealRegisterLinkage()
 #endif
    }
 
-uint32_t TR_ARMSystemLinkage::getRightToLeft()
+uint32_t TR::ARMSystemLinkage::getRightToLeft()
    {
    return getProperties().getRightToLeft();
    }
 
-void TR_ARMSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
+void TR::ARMSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
 #if 0
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
-   const TR_ARMLinkageProperties&    linkage           = getProperties();
+   const TR::ARMLinkageProperties&    linkage           = getProperties();
    TR_ARMCodeGenerator              *codeGen           = cg();
    TR_ARMMachine                    *machine           = codeGen->getARMMachine();
    uint32_t                          stackIndex;
@@ -300,7 +300,7 @@ void TR_ARMSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
 #endif
    }
 
-void TR_ARMSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
+void TR::ARMSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
    {
 #if 0
    p->setOffset(stackIndex);
@@ -317,26 +317,26 @@ void TR_ARMSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &s
 #endif
    }
 
-TR_ARMLinkageProperties& TR_ARMSystemLinkage::getProperties()
+TR::ARMLinkageProperties& TR::ARMSystemLinkage::getProperties()
    {
    return properties;
    }
 
-void TR_ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
+void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
    TR_ASSERT(0, "unimplemented");
    }
 
-void TR_ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
+void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
    TR_ASSERT(0, "unimplemented");
    }
 
-TR::MemoryReference *TR_ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,
+TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,
                                                                       int32_t               offset,
                                                                       TR::Register          *argReg,
                                                                       TR_ARMOpCodes         opCode,
-                                                                      TR_ARMMemoryArgument &memArg)
+                                                                      TR::ARMMemoryArgument &memArg)
    {
    int32_t                spOffset = offset - (getProperties().getNumIntArgRegs() * TR::Compiler->om.sizeofReferenceAddress());
    TR::RealRegister    *sp       = cg()->machine()->getARMRealRegister(properties.getStackPointerRegister());
@@ -349,7 +349,7 @@ TR::MemoryReference *TR_ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t     
    return result;
    }
 
-int32_t TR_ARMSystemLinkage::buildArgs(TR::Node                            *callNode,
+int32_t TR::ARMSystemLinkage::buildArgs(TR::Node                            *callNode,
                                        TR::RegisterDependencyConditions *dependencies,
                                        TR::Register*                       &vftReg,
                                        bool                                isJNI)
@@ -357,12 +357,12 @@ int32_t TR_ARMSystemLinkage::buildArgs(TR::Node                            *call
    return buildARMLinkageArgs(callNode, dependencies, vftReg, TR_System, isJNI);
    }
 
-TR::Register *TR_ARMSystemLinkage::buildDirectDispatch(TR::Node *callNode)
+TR::Register *TR::ARMSystemLinkage::buildDirectDispatch(TR::Node *callNode)
    {
    return buildARMLinkageDirectDispatch(callNode, true);
    }
 
-TR::Register *TR_ARMSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
+TR::Register *TR::ARMSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
    TR_ASSERT(0, "unimplemented");
    return NULL;

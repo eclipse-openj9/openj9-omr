@@ -30,29 +30,31 @@ namespace TR { class Node; }
 namespace TR { class ParameterSymbol; }
 namespace TR { class RegisterDependencyConditions; }
 
-class TR_IA32SystemLinkage : public TR_X86SystemLinkage
+namespace TR {
+
+class IA32SystemLinkage : public TR::X86SystemLinkage
    {
    public:
 
-   TR_IA32SystemLinkage(TR::CodeGenerator *cg);
+   IA32SystemLinkage(TR::CodeGenerator *cg);
    void setUpStackSizeForCallNode(TR::Node*);
    protected:
    virtual int32_t buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode);
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode, bool spillFPRegs);
-   int32_t layoutParm(TR::Node*, int32_t&, uint16_t&, uint16_t&, parmLayoutResult&);
-   int32_t layoutParm(TR::ParameterSymbol*, int32_t&, uint16_t&, uint16_t&, parmLayoutResult&);
+   int32_t layoutParm(TR::Node*, int32_t&, uint16_t&, uint16_t&, TR::parmLayoutResult&);
+   int32_t layoutParm(TR::ParameterSymbol*, int32_t&, uint16_t&, uint16_t&, TR::parmLayoutResult&);
    virtual TR::Register *buildVolatileAndReturnDependencies(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
    private:
    virtual uint32_t getAlignment(TR::DataType);
    };
 
 #if 0
-class TR_IA32SystemLinkage : public TR_IA32PrivateLinkage
+class IA32SystemLinkage : public TR::IA32PrivateLinkage
    {
    public:
 
-   TR_IA32SystemLinkage(TR::CodeGenerator *cg);
+   IA32SystemLinkage(TR::CodeGenerator *cg);
 
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode, bool spillFPRegs);
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode);
@@ -66,5 +68,7 @@ class TR_IA32SystemLinkage : public TR_IA32PrivateLinkage
 
    };
 #endif
+
+}
 
 #endif

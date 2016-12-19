@@ -97,7 +97,7 @@ static int32_t getFirstMaskedBit(int16_t mask); ///< formward reference
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390Linkage member functions
+// TR::S390Linkage member functions
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -1534,7 +1534,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
       // Interface mapping flags take these constraints into account and the
       // flags describe what float registers are used for parameter passing.
       // Use these flags to guide decisions below.
-      TR_S390zOSSystemLinkage *zosLinkage = (TR_S390zOSSystemLinkage *)this;
+      TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
       xplinkInterfaceMappingFlags = zosLinkage->calculateInterfaceMappingFlags(method);
       }
 
@@ -1576,7 +1576,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                {
                if (self()->isFloatParmDescriptors())
                   { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
+                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
 
                   if (val != 0)
                      index = numFloatArgs;
@@ -1593,7 +1593,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                {
                if (self()->isFloatParmDescriptors())
                   { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
+                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
                   if (val != 0)
                      index = numFloatArgs;
                   }
@@ -1616,7 +1616,7 @@ OMR::Z::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol * met
                {
                if (self()->isFloatParmDescriptors())
                   { // XPLink: handle large separation of float args constraint
-                  int32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
+                  int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkInterfaceMappingFlags, numFloatArgs);
                   if (val != 0)
                     index = numFloatArgs;
                   }
@@ -2461,7 +2461,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
     if (self()->isFloatParmDescriptors())
        { // these flags are used to help determine if float parm is needs to be put in memory
        TR_ASSERT( self()->isXPLinkLinkageType(), "invalid platform target for float parm descriptors");
-       TR_S390zOSSystemLinkage *zosLinkage = (TR_S390zOSSystemLinkage *)this;
+       TR::S390zOSSystemLinkage *zosLinkage = (TR::S390zOSSystemLinkage *)this;
        xplinkCallDescriptorFlags = zosLinkage->calculateCallDescriptorFlags(callNode);
        }
 
@@ -2506,8 +2506,8 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                {
                if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
                   { // XPLink: handle large separation of float args constraint
-                  uint32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-                  if (TR_S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
+                  uint32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
+                  if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
                      self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
                   }
                argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
@@ -2530,8 +2530,8 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          case TR::DecimalDouble:
             if (self()->isFloatParmDescriptors() && (numFloatArgs < self()->getNumFloatArgumentRegisters()))
                { // XPLink: handle large separation of float args constraint
-               int32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR_S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
+               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
+               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
                   self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
                }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
@@ -2558,8 +2558,8 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
             if (self()->isFloatParmDescriptors() && (numFloatArgs < (self()->getNumFloatArgumentRegisters()-1)))
                { // XPLink: handle large separation of float args constraint
-               int32_t val = TR_S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
-               if (TR_S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
+               int32_t val = TR::S390zOSSystemLinkage::getFloatParmDescriptorFlag(xplinkCallDescriptorFlags, numFloatArgs);
+               if (TR::S390zOSSystemLinkage::isFloatDescriptorFlagUnprototyped(val))
                   self()->setProperty(AllParmsOnStack); // temporarily set so float gets flushed to stack
                }
             argRegister = self()->pushArg(callNode, child, numIntegerArgs, numFloatArgs, &stackOffset, dependencies);
@@ -3111,7 +3111,7 @@ OMR::Z::Linkage::buildNativeDispatch(TR::Node * callNode,
    /*********************************/
    self()->setupBuildArgForLinkage(callNode, dispatchType, deps, isFastJNI, isPassReceiver, killMask, GlobalRegDeps, hasGlRegDeps, systemLinkage);
 
-   // omr todo: this should be cleaned up with TR_S390PrivateLinkage::setupBuildArgForLinkage and JNI Dispatch
+   // omr todo: this should be cleaned up with TR::S390PrivateLinkage::setupBuildArgForLinkage and JNI Dispatch
    //if (dispatchType == TR_JNIDispatch)  return NULL;
 
 

@@ -31,7 +31,9 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
 
-class TR_AMD64SystemLinkage : public TR_X86SystemLinkage
+namespace TR {
+
+class AMD64SystemLinkage : public TR::X86SystemLinkage
    {
    public:
 
@@ -39,10 +41,10 @@ class TR_AMD64SystemLinkage : public TR_X86SystemLinkage
    virtual void setUpStackSizeForCallNode(TR::Node* node);
 
    protected:
-   TR_AMD64SystemLinkage(TR::CodeGenerator *cg) : TR_X86SystemLinkage(cg) {}
+   AMD64SystemLinkage(TR::CodeGenerator *cg) : TR::X86SystemLinkage(cg) {}
 
-   virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult);
-   virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, parmLayoutResult&);
+   virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult &layoutResult);
+   virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, TR::parmLayoutResult&);
    virtual uint32_t getAlignment(TR::DataType type);
 
    virtual int32_t buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
@@ -52,12 +54,12 @@ class TR_AMD64SystemLinkage : public TR_X86SystemLinkage
 
    TR::Register *buildVolatileAndReturnDependencies(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
    private:
-   bool layoutTypeInRegs(TR::DataType type, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult&);
+   bool layoutTypeInRegs(TR::DataType type, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult&);
 
    };
 
 
-class TR_AMD64Win64FastCallLinkage : public virtual TR_AMD64SystemLinkage
+class AMD64Win64FastCallLinkage : public virtual TR::AMD64SystemLinkage
    {
    // Register                  Status        Use
    // --------                  ------        ---
@@ -92,11 +94,11 @@ class TR_AMD64Win64FastCallLinkage : public virtual TR_AMD64SystemLinkage
 
    public:
 
-   TR_AMD64Win64FastCallLinkage(TR::CodeGenerator *cg);
+   AMD64Win64FastCallLinkage(TR::CodeGenerator *cg);
    };
 
 
-class TR_AMD64ABILinkage : public virtual TR_AMD64SystemLinkage
+class AMD64ABILinkage : public virtual TR::AMD64SystemLinkage
    {
    // Register                  Status        Use
    // --------                  ------        ---
@@ -134,10 +136,12 @@ class TR_AMD64ABILinkage : public virtual TR_AMD64SystemLinkage
 
    public:
 
-   TR_AMD64ABILinkage(TR::CodeGenerator *cg);
+   AMD64ABILinkage(TR::CodeGenerator *cg);
 
    virtual void mapIncomingParms(TR::ResolvedMethodSymbol *method, uint32_t &stackIndex);
 
    };
+
+}
 
 #endif

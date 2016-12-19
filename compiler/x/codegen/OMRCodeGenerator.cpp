@@ -498,17 +498,17 @@ OMR::X86::CodeGenerator::createLinkage(TR_LinkageConventions lc)
          if (TR::Compiler->target.isLinux() || TR::Compiler->target.isOSX())
             {
 #if defined(TR_TARGET_64BIT)
-            linkage = new (self()->trHeapMemory()) TR_AMD64ABILinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::AMD64ABILinkage(self());
 #else
-            linkage = new (self()->trHeapMemory()) TR_IA32SystemLinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::IA32SystemLinkage(self());
 #endif
             }
          else if (TR::Compiler->target.isWindows())
             {
 #if defined(TR_TARGET_64BIT)
-            linkage = new (self()->trHeapMemory()) TR_AMD64Win64FastCallLinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::AMD64Win64FastCallLinkage(self());
 #else
-            linkage = new (self()->trHeapMemory()) TR_IA32SystemLinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::IA32SystemLinkage(self());
 #endif
             }
          else

@@ -65,7 +65,7 @@
 uint32_t
 mappedOffsetToFirstLocal(
       TR::CodeGenerator *cg,
-      const TR_PPCLinkageProperties &linkage)
+      const TR::PPCLinkageProperties &linkage)
    {
    TR::Machine *machine = cg->machine();
 
@@ -80,7 +80,7 @@ mappedOffsetToFirstLocal(
    }
 
 
-TR_PPCSystemLinkage::TR_PPCSystemLinkage(TR::CodeGenerator *cg)
+TR::PPCSystemLinkage::PPCSystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)
    {
    int i = 0;
@@ -354,15 +354,15 @@ TR_PPCSystemLinkage::TR_PPCSystemLinkage(TR::CodeGenerator *cg)
    }
 
 
-const TR_PPCLinkageProperties&
-TR_PPCSystemLinkage::getProperties()
+const TR::PPCLinkageProperties&
+TR::PPCSystemLinkage::getProperties()
    {
    return _properties;
    }
 
 
 void
-TR_PPCSystemLinkage::initPPCRealRegisterLinkage()
+TR::PPCSystemLinkage::initPPCRealRegisterLinkage()
    {
    // *this    swipeable for debugging purposes
    // Each real register's weight is set to match this linkage convention
@@ -419,7 +419,7 @@ TR_PPCSystemLinkage::initPPCRealRegisterLinkage()
 
 
 uint32_t
-TR_PPCSystemLinkage::getRightToLeft()
+TR::PPCSystemLinkage::getRightToLeft()
    {
    // *this    swipeable for debugging purposes
    return getProperties().getRightToLeft();
@@ -427,14 +427,14 @@ TR_PPCSystemLinkage::getRightToLeft()
 
 
 bool
-TR_PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
+TR::PPCSystemLinkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    {
    return(parm->getAllocatedIndex()>=0  && parm->isParmHasToBeOnStack());
    }
 
 
 uintptr_t
-TR_PPCSystemLinkage::calculateActualParameterOffset(
+TR::PPCSystemLinkage::calculateActualParameterOffset(
       uintptr_t o,
       TR::ParameterSymbol& p)
    {
@@ -455,7 +455,7 @@ TR_PPCSystemLinkage::calculateActualParameterOffset(
    }
 
 
-uintptr_t TR_PPCSystemLinkage::calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p)
+uintptr_t TR::PPCSystemLinkage::calculateParameterRegisterOffset(uintptr_t o, TR::ParameterSymbol& p)
    {
    TR::ResolvedMethodSymbol    * bodySymbol = comp()->getJittedMethodSymbol();
    if (1 || (p.getDataType() == TR::Aggregate) || (p.getSize() >= sizeof(uint64_t)))
@@ -474,7 +474,7 @@ uintptr_t TR_PPCSystemLinkage::calculateParameterRegisterOffset(uintptr_t o, TR:
 
 
 void
-TR_PPCSystemLinkage::mapParameters(
+TR::PPCSystemLinkage::mapParameters(
       TR::ResolvedMethodSymbol *method,
       List<TR::ParameterSymbol> &parmList)
    {
@@ -482,7 +482,7 @@ TR_PPCSystemLinkage::mapParameters(
    uint32_t   stackIndex = method->getLocalMappingCursor();
    ListIterator<TR::ParameterSymbol> parameterIterator(&parmList);
    TR::ParameterSymbol              *parmCursor = parameterIterator.getFirst();
-   const TR_PPCLinkageProperties&    linkage           = getProperties();
+   const TR::PPCLinkageProperties&    linkage           = getProperties();
    int32_t                          offsetToFirstParm = linkage.getOffsetToFirstParm();
    int32_t offset_from_top = 0;
    int32_t slot_size = sizeof(uintptrj_t);
@@ -527,12 +527,12 @@ TR_PPCSystemLinkage::mapParameters(
 
 
 void
-TR_PPCSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
+TR::PPCSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
    // *this    swipeable for debugging purposes
    ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol *localCursor = automaticIterator.getFirst();
-   const TR_PPCLinkageProperties& linkage = getProperties();
+   const TR::PPCLinkageProperties& linkage = getProperties();
    TR::Machine *machine = cg()->machine();
    uint32_t stackIndex;
    int32_t lowGCOffset;
@@ -596,7 +596,7 @@ TR_PPCSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
 
 
 void
-TR_PPCSystemLinkage::mapSingleAutomatic(
+TR::PPCSystemLinkage::mapSingleAutomatic(
       TR::AutomaticSymbol *p,
       uint32_t &stackIndex)
    {
@@ -622,20 +622,20 @@ TR_PPCSystemLinkage::mapSingleAutomatic(
 
 
 void
-TR_PPCSystemLinkage::createPrologue(TR::Instruction *cursor)
+TR::PPCSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
    createPrologue(cursor, comp()->getJittedMethodSymbol()->getParameterList());
    }
 
 
 void
-TR_PPCSystemLinkage::createPrologue(
+TR::PPCSystemLinkage::createPrologue(
       TR::Instruction *cursor,
       List<TR::ParameterSymbol> &parmList)
    {
    // *this    swipeable for debugging purposes
    TR::Machine *machine = cg()->machine();
-   const TR_PPCLinkageProperties &properties = getProperties();
+   const TR::PPCLinkageProperties &properties = getProperties();
    TR::ResolvedMethodSymbol        *bodySymbol = comp()->getJittedMethodSymbol();
    // Stack Pointer Register may currently be set to "alternate"
    cg()->setStackPointerRegister(machine->getPPCRealRegister(properties.getNormalStackPointerRegister()));
@@ -757,12 +757,12 @@ TR_PPCSystemLinkage::createPrologue(
 
 
 void
-TR_PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
+TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
    // *this    swipeable for debugging purposes
    int32_t blockNumber = cursor->getNext()->getBlockIndex();
    TR::Machine *machine = cg()->machine();
-   const TR_PPCLinkageProperties &properties = getProperties();
+   const TR::PPCLinkageProperties &properties = getProperties();
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
    TR::RealRegister *sp = cg()->getStackPointerRegister();
    TR::RealRegister *sp2 = sp;
@@ -851,13 +851,13 @@ TR_PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    }
 
-int32_t TR_PPCSystemLinkage::buildArgs(TR::Node *callNode,
+int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                                        TR::RegisterDependencyConditions *dependencies)
 
    {
    // *this    swipeable for debugging purposes
-   const TR_PPCLinkageProperties &properties = getProperties();
-   TR_PPCMemoryArgument *pushToMemory = NULL;
+   const TR::PPCLinkageProperties &properties = getProperties();
+   TR::PPCMemoryArgument *pushToMemory = NULL;
    TR::Register       *tempRegister;
    int32_t   argIndex = 0, memArgs = 0, i;
    int32_t   argSize = 0;
@@ -979,7 +979,7 @@ int32_t TR_PPCSystemLinkage::buildArgs(TR::Node *callNode,
    /* End result of Step 1 - determined number of memory arguments! */
    if (memArgs > 0)
       {
-      pushToMemory = new (trStackMemory()) TR_PPCMemoryArgument[memArgs];
+      pushToMemory = new (trStackMemory()) TR::PPCMemoryArgument[memArgs];
       }
 
    numIntegerArgs = 0;
@@ -1428,10 +1428,10 @@ int32_t TR_PPCSystemLinkage::buildArgs(TR::Node *callNode,
    return argSize;
    }
 
-void TR_PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
+void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
                                            TR::SymbolReference *callSymRef,
                                            TR::RegisterDependencyConditions *dependencies,
-                                           const TR_PPCLinkageProperties &pp,
+                                           const TR::PPCLinkageProperties &pp,
                                            int32_t argSize)
    {
    TR::Instruction             *gcPoint;
@@ -1467,11 +1467,11 @@ void TR_PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    }
 
 
-TR::Register *TR_PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
+TR::Register *TR::PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
    {
    TR::SymbolReference *callSymRef = callNode->getSymbolReference();
 
-   const TR_PPCLinkageProperties &pp = getProperties();
+   const TR::PPCLinkageProperties &pp = getProperties();
    TR::RegisterDependencyConditions *dependencies =
       new (trHeapMemory()) TR::RegisterDependencyConditions(
          pp.getNumberOfDependencyGPRegisters(),
@@ -1535,7 +1535,7 @@ TR::Register *TR_PPCSystemLinkage::buildDirectDispatch(TR::Node *callNode)
    }
 
 
-void TR_PPCSystemLinkage::buildVirtualDispatch(TR::Node                            *callNode,
+void TR::PPCSystemLinkage::buildVirtualDispatch(TR::Node                            *callNode,
                                                TR::RegisterDependencyConditions *dependencies,
                                                uint32_t                            sizeOfArguments)
    {
@@ -1554,10 +1554,10 @@ void TR_PPCSystemLinkage::buildVirtualDispatch(TR::Node                         
    //Ensure we set dependencies on the following registers when building the arguments to the call.
    //Result register
    TR::Register        *gr3=dependencies->searchPreConditionRegister(TR::RealRegister::gr3);
-   TR_ASSERT((gr3 != NULL), "TR_PPCSystemLinkage::buildVirtualDispatch no dependence set on return register gr3.");
+   TR_ASSERT((gr3 != NULL), "TR::PPCSystemLinkage::buildVirtualDispatch no dependence set on return register gr3.");
 #endif
 
-   const TR_PPCLinkageProperties &properties = getProperties();
+   const TR::PPCLinkageProperties &properties = getProperties();
 
    //Scratch register.
    TR::Register        *gr0=dependencies->searchPreConditionRegister(TR::RealRegister::gr0);
@@ -1566,9 +1566,9 @@ void TR_PPCSystemLinkage::buildVirtualDispatch(TR::Node                         
    //Native Stack Pointer (C Stack)
    TR::RealRegister *grSysStackReg=cg()->machine()->getPPCRealRegister(properties.getNormalStackPointerRegister());
 
-   TR_ASSERT((gr0 != NULL),            "TR_PPCSystemLinkage::buildVirtualDispatch no dependence set on scratch register gr0.");
-   TR_ASSERT((grTOCReg != NULL),       "TR_PPCSystemLinkage::buildVirtualDispatch no dependence set on Library TOC register gr2.");
-   TR_ASSERT((grSysStackReg != NULL),  "TR_PPCSystemLinkage::buildVirtualDispatch no dependence set on Native C Stack register gr1.");
+   TR_ASSERT((gr0 != NULL),            "TR::PPCSystemLinkage::buildVirtualDispatch no dependence set on scratch register gr0.");
+   TR_ASSERT((grTOCReg != NULL),       "TR::PPCSystemLinkage::buildVirtualDispatch no dependence set on Library TOC register gr2.");
+   TR_ASSERT((grSysStackReg != NULL),  "TR::PPCSystemLinkage::buildVirtualDispatch no dependence set on Native C Stack register gr1.");
 
    cg()->evaluate(callNode->getChild(0));
    cg()->decReferenceCount(callNode->getChild(0));
@@ -1602,9 +1602,9 @@ void TR_PPCSystemLinkage::buildVirtualDispatch(TR::Node                         
    }
 
 
-TR::Register *TR_PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
+TR::Register *TR::PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
-   const TR_PPCLinkageProperties &pp = getProperties();
+   const TR::PPCLinkageProperties &pp = getProperties();
    TR::RegisterDependencyConditions *dependencies =
       new (trHeapMemory()) TR::RegisterDependencyConditions(
          pp.getNumberOfDependencyGPRegisters(),
@@ -1665,18 +1665,18 @@ TR::Register *TR_PPCSystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    return(returnRegister);
    }
 
-void TR_PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
+void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
    {
    setParameterLinkageRegisterIndex(method, method->getParameterList());
    }
 
-void TR_PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parmList)
+void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parmList)
    {
    // *this    swipeable for debugging purposes
    ListIterator<TR::ParameterSymbol>   paramIterator(&parmList);
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;
-   const TR_PPCLinkageProperties& properties = getProperties();
+   const TR::PPCLinkageProperties& properties = getProperties();
 
    while ( (paramCursor!=NULL) &&
            ( (numIntArgs < properties.getNumIntArgRegs()) ||

@@ -6545,7 +6545,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       int32_t p = 0;
-      static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR_dontInitializeGlobalRegisterTableFromLinkage");
+      static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR::dontInitializeGlobalRegisterTableFromLinkage");
       bool enableHighWordGRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
       if (dontInitializeGlobalRegisterTableFromLinkage)
          {
@@ -6925,7 +6925,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    self()->setLast8BitGlobalGPRRegisterNumber(25);    // Index of last global 8bit Reg
 
    // additional (forced) restricted regs.
-   // Similar code in TR_S390PrivateLinkage::initS390RealRegisterLinkage() for RA
+   // Similar code in TR::S390PrivateLinkage::initS390RealRegisterLinkage() for RA
 
    for (int32_t i = self()->getFirstGlobalGPRRegisterNumber(); i < self()->getLastGlobalGPRRegisterNumber(); ++i)
       {

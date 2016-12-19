@@ -75,17 +75,17 @@
 #define  GPREGINDEX(i)   (i-TR::RealRegister::FirstGPR)
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390zOSSystemLinkage for J9
+// TR::S390zOSSystemLinkage for J9
 ////////////////////////////////////////////////////////////////////////////////
 
 TR::SystemLinkage *
-TR_S390SystemLinkage::self()
+TR::S390SystemLinkage::self()
    {
    return static_cast<TR::SystemLinkage *>(this);
    }
 
 void
-TR_S390SystemLinkage::initS390RealRegisterLinkage()
+TR::S390SystemLinkage::initS390RealRegisterLinkage()
    {
    int32_t icount = 0, ret_count=0;
 
@@ -161,7 +161,7 @@ TR_S390SystemLinkage::initS390RealRegisterLinkage()
 
 // Non-Java use
 void
-TR_S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList)
+TR::S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList)
 {
    ListIterator<TR::ParameterSymbol> parameterIterator((parameterList != NULL)? parameterList : &method->getParameterList());
    parameterIterator.reset();
@@ -207,7 +207,7 @@ TR_S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_t
  * Non-Java use
  */
 TR::SymbolReference *
-TR_S390SystemLinkage::createAutoMarkerSymbol(TR_S390AutoMarkers markerType)
+TR::S390SystemLinkage::createAutoMarkerSymbol(TR_S390AutoMarkers markerType)
    {
    char *name = NULL;
    switch (markerType)
@@ -239,7 +239,7 @@ TR_S390SystemLinkage::createAutoMarkerSymbol(TR_S390AutoMarkers markerType)
  * The operation depends on supplied opcode
  */
 TR::Instruction *
-TR_S390SystemLinkage::getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
+TR::S390SystemLinkage::getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
    {
    int16_t FPRSaveMask;
    int32_t offset, firstSaved, lastSaved, beginSaveOffset;
@@ -280,7 +280,7 @@ TR_S390SystemLinkage::getputFPRs(TR::InstOpCode::Mnemonic opcode, TR::Instructio
  * The operation depends on supplied opcode
  */
 TR::Instruction *
-TR_S390SystemLinkage::getputARs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
+TR::S390SystemLinkage::getputARs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
    {
    int16_t ARSaveMask;
    int32_t offset, firstSaved, lastSaved, beginSaveOffset;
@@ -317,7 +317,7 @@ TR_S390SystemLinkage::getputARs(TR::InstOpCode::Mnemonic opcode, TR::Instruction
    }
 
 TR::Instruction *
-TR_S390SystemLinkage::getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
+TR::S390SystemLinkage::getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction * cursor, TR::Node *node, TR::RealRegister *spReg)
    {
    int16_t HPRSaveMask;
    int32_t offset, firstSaved, lastSaved, beginSaveOffset;
@@ -381,7 +381,7 @@ TR_S390SystemLinkage::getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instructio
  *   instruction  sequence
  */
 TR::Instruction *
-TR_S390SystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, int32_t value, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded)
+TR::S390SystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, int32_t value, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded)
    {
    bool smallPositiveValue = (value<MAXDISP && value>=0);
    bool largeValue = (value<MIN_IMMEDIATE_VAL || value>MAX_IMMEDIATE_VAL);
@@ -420,7 +420,7 @@ TR_S390SystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, in
  * Reverse the bit ordering of the save mask
  */
 uint16_t
-TR_S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
+TR::S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
    {
    TR_ASSERT(NUM_S390_GPR == NUM_S390_FPR, "need special flip bits for FPR");
    uint16_t i, outputMask;
@@ -437,7 +437,7 @@ TR_S390SystemLinkage::flipBitsRegisterSaveMask(uint16_t mask)
    }
 
 
-TR_S390zOSSystemLinkage::TR_S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
+TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    : TR::ZOSBaseSystemLinkageConnector(codeGen, TR_SystemXPLink)
    {
    // linkage properties
@@ -552,7 +552,7 @@ TR_S390zOSSystemLinkage::TR_S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
  * linkage for incoming floating point parameters.
  */
 uint32_t
-TR_S390zOSSystemLinkage::calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method)
+TR::S390zOSSystemLinkage::calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol *method)
    {
    uint32_t callDescValue;
 
@@ -617,7 +617,7 @@ TR_S390zOSSystemLinkage::calculateInterfaceMappingFlags(TR::ResolvedMethodSymbol
  * Calculate "Return value adjust" component of XPLink call descriptor
  */
 uint32_t
-TR_S390zOSSystemLinkage::calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength)
+TR::S390zOSSystemLinkage::calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength)
    {
    // 5 bit values for "return value adjust" field of XPLink descriptor
    #define XPLINK_RVA_RETURN_VOID_OR_UNUSED    0x00
@@ -697,7 +697,7 @@ TR_S390zOSSystemLinkage::calculateReturnValueAdjustFlag(TR::DataType dataType, i
  * determined.
  */
 bool
-TR_S390zOSSystemLinkage::updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataType dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset)
+TR::S390zOSSystemLinkage::updateFloatParmDescriptorFlags(uint32_t *parmDescriptorFields, TR::Symbol *funcSymbol, int32_t parmCount, int32_t argSize, TR::DataType dataType, int32_t *floatParmNum, uint32_t *lastFloatParmAreaOffset, uint32_t *parmAreaOffset)
    {
    uint32_t gprSize = cg()->machine()->getGPRSize();
 
@@ -765,7 +765,7 @@ TR_S390zOSSystemLinkage::updateFloatParmDescriptorFlags(uint32_t *parmDescriptor
    }
 
 TR::Register *
-TR_S390zOSSystemLinkage::loadEnvironmentIntoRegister(TR::Node * callNode, TR::RegisterDependencyConditions * deps, bool loadIntoEnvironmentRegister)
+TR::S390zOSSystemLinkage::loadEnvironmentIntoRegister(TR::Node * callNode, TR::RegisterDependencyConditions * deps, bool loadIntoEnvironmentRegister)
    {
    // Important note: this should only be called in pre-prologue phase for routines we know are
    // not leaf routines.
@@ -789,7 +789,7 @@ TR_S390zOSSystemLinkage::loadEnvironmentIntoRegister(TR::Node * callNode, TR::Re
  * WCode use
  */
 int32_t
-TR_S390zOSSystemLinkage::getOutgoingParameterBlockSize()
+TR::S390zOSSystemLinkage::getOutgoingParameterBlockSize()
    {
    //
    // Calculate size of outgoing argument area
@@ -806,9 +806,9 @@ TR_S390zOSSystemLinkage::getOutgoingParameterBlockSize()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S390zLinuxSystemLinkage for J9
+// TR::S390zLinuxSystemLinkage for J9
 ////////////////////////////////////////////////////////////////////////////////
-TR_S390zLinuxSystemLinkage::TR_S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen)
+TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen)
    : TR::SystemLinkage(codeGen,TR_SystemLinux)
    {
    // linkage properties
@@ -951,7 +951,7 @@ TR_S390zLinuxSystemLinkage::TR_S390zLinuxSystemLinkage(TR::CodeGenerator * codeG
  * Front-end customization of callNativeFunction
  */
 void
-TR_S390SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::S390SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -963,7 +963,7 @@ TR_S390SystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::Regis
  * @return return value will be return value from system routine copied to private linkage return reg
  */
 TR::Register *
-TR_S390SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::S390SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -974,7 +974,7 @@ TR_S390SystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDepend
  * Front-end customization of callNativeFunction
  */
 void
-TR_S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -985,11 +985,11 @@ TR_S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::Re
    }
 
 /**
- * TR_S390zOSSystemLinkage::callNativeFunction - call System routine
+ * TR::S390zOSSystemLinkage::callNativeFunction - call System routine
  * return value will be return value from system routine copied to private linkage return reg
  */
 TR::Register *
-TR_S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -1106,7 +1106,7 @@ TR_S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDep
  * Front-end customization of callNativeFunction
  */
 void
-TR_S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
+TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
@@ -1148,7 +1148,7 @@ TR_S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR:
  * @return return value will be return reg
  */
 TR::Register *
-TR_S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
+TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
    TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
    TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
    TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
@@ -1251,7 +1251,7 @@ TR_S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
  * @todo (cleanup) should remove this method and use base class version.
  */
 void
-TR_S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList)
+TR::S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_t stackIndex, List<TR::ParameterSymbol> *parameterList)
 {
    ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
    parameterIterator.reset();
@@ -1405,7 +1405,7 @@ TR_S390zLinuxSystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, i
 
 #if 0
 void
-TR_S390zLinuxSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex)
+TR::S390zLinuxSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex)
    {
    size_t align = 1;
    size_t size = p->getSize();
@@ -1443,7 +1443,7 @@ TR_S390zLinuxSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t
 #endif
 
 void
-TR_S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method)
+TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method)
   	{
 		{
      	mapStack(method,0);
@@ -1456,7 +1456,7 @@ TR_S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method)
  * The offsets will be fixed up (at the end /in createPrologue) when the stackFrameSize is known
  */
 void
-TR_S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackIndex)
+TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stackIndex)
    {
    int32_t i;
 
@@ -1595,7 +1595,7 @@ TR_S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stack
    setLocalsAreaEndOffset(stackIndex);
    }
 
-void TR_S390SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex)
+void TR::S390SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex)
    {
    size_t align = 1;
    size_t size = p->getSize();
@@ -1619,14 +1619,14 @@ void TR_S390SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t 
    setStrictestAutoSymbolAlignment(align); // API affected if (align > current strictest)
    }
 
-bool TR_S390SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
+bool TR::S390SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)
    {
    return parm->getAllocatedIndex() >=  0 &&  parm->isParmHasToBeOnStack();
    }
 
 
 TR::Instruction*
-TR_S390SystemLinkage::saveGPRsInPrologue2(TR::Instruction * cursor)
+TR::S390SystemLinkage::saveGPRsInPrologue2(TR::Instruction * cursor)
    {
    int16_t GPRSaveMask = 0;
    int32_t offset = 0;
@@ -1708,7 +1708,7 @@ TR_S390SystemLinkage::saveGPRsInPrologue2(TR::Instruction * cursor)
    }
 
 TR::Instruction*
-TR_S390SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
+TR::S390SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
    {
    int16_t GPRSaveMask = 0;
    bool hasSavedSP = false;
@@ -1790,7 +1790,7 @@ TR_S390SystemLinkage::saveGPRsInPrologue(TR::Instruction * cursor)
    }
 
 TR::Linkage::FrameType
-TR_S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction)
+TR::S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instruction **callInstruction)
    {
    FrameType ft = standardFrame;
 
@@ -1931,9 +1931,9 @@ bool OMR::Z::Linkage::checkPreservedRegisterUsage(bool *regs, int32_t regsSize)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_390SystemLinkage::createPrologue() - create prolog for System linkage
+// TR::390SystemLinkage::createPrologue() - create prolog for System linkage
 ////////////////////////////////////////////////////////////////////////////////
-void TR_S390SystemLinkage::createPrologue(TR::Instruction * cursor)
+void TR::S390SystemLinkage::createPrologue(TR::Instruction * cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Prologue");
    TR::RealRegister * spReg = getNormalStackPointerRealRegister();
@@ -1966,7 +1966,7 @@ void TR_S390SystemLinkage::createPrologue(TR::Instruction * cursor)
 
    //  We assume frame size is less than 32k
    //TR_ASSERT(stackFrameSize<=MAX_IMMEDIATE_VAL,
-   //      "TR_S390SystemLinkage::createPrologue -- Frame size (0x%x) greater than 0x7FFF\n",stackFrameSize);
+   //      "TR::S390SystemLinkage::createPrologue -- Frame size (0x%x) greater than 0x7FFF\n",stackFrameSize);
 
    //Now that stackFrame size is known, map stack
    mapStack(bodySymbol, stackFrameSize);
@@ -2100,7 +2100,7 @@ void TR_S390SystemLinkage::createPrologue(TR::Instruction * cursor)
 
 
 TR::Instruction*
-TR_S390SystemLinkage::restoreGPRsInEpilogue2(TR::Instruction *cursor)
+TR::S390SystemLinkage::restoreGPRsInEpilogue2(TR::Instruction *cursor)
    {
    int16_t GPRSaveMask = 0;
    int32_t offset = 0;
@@ -2162,7 +2162,7 @@ TR_S390SystemLinkage::restoreGPRsInEpilogue2(TR::Instruction *cursor)
    }
 
 TR::Instruction*
-TR_S390SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
+TR::S390SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
    {
    int16_t GPRSaveMask = 0;
    bool    hasRestoreSP = false;
@@ -2245,7 +2245,7 @@ TR_S390SystemLinkage::restoreGPRsInEpilogue(TR::Instruction *cursor)
 /**
  * Create epilog for System linkage
  */
-void TR_S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
+void TR::S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
    {
    TR::Delimiter delimiter (comp(), comp()->getOption(TR_TraceCG), "Epilogue");
 
@@ -2332,7 +2332,7 @@ void TR_S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
    ((TR::S390RegInstruction *)cursor)->setJITExit();
    }
 
-void TR_S390SystemLinkage::notifyHasalloca()
+void TR::S390SystemLinkage::notifyHasalloca()
    {
    TR::RealRegister::RegNum alternateSP = getAlternateStackPointerRegister();
    TR::RealRegister * alternateStackReg = getS390RealRegister(getAlternateStackPointerRegister());
@@ -2357,7 +2357,7 @@ void TR_S390SystemLinkage::notifyHasalloca()
    }
 
 int32_t
-TR_S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
+TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {
    int32_t gpr2Offset = TR::Compiler->target.is64Bit() ? 16 : 8;
    int32_t fpr0Offset = TR::Compiler->target.is64Bit() ? 128 : 64;
@@ -2373,7 +2373,7 @@ TR_S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcRe
       case TR::RealRegister::FPR7:
       case TR::RealRegister::GPR0:
       case TR::RealRegister::GPR1:
-         TR_ASSERT(false,"ERROR: TR_zLinuxSystemLinkage::getRegisterSaveOffset called for volatile reg: %d",srcReg);
+         TR_ASSERT(false,"ERROR: TR::zLinuxSystemLinkage::getRegisterSaveOffset called for volatile reg: %d",srcReg);
          return -1;
       case TR::RealRegister::GPR2: return gpr2Offset;
       default: return gpr2Offset + (srcReg - TR::RealRegister::GPR2) * cg()->machine()->getGPRSize();
@@ -2381,7 +2381,7 @@ TR_S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcRe
    }
 
 int32_t
-TR_S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
+TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {
    int32_t offset;
    if ((srcReg >= TR::RealRegister::GPR4) && (srcReg <= TR::RealRegister::GPR15))
@@ -2391,7 +2391,7 @@ TR_S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
       }
    else
       {
-      TR_ASSERT(false, "ERROR: TR_S390zOSSystemLinkage::getRegisterSaveOffset called for volatile reg: %d\n",srcReg);
+      TR_ASSERT(false, "ERROR: TR::S390zOSSystemLinkage::getRegisterSaveOffset called for volatile reg: %d\n",srcReg);
       return -1;
       }
    }
@@ -2576,7 +2576,7 @@ void OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstru
 
 bool OMR::Z::Linkage::canDataTypeBePassedByReference(TR::DataType type) { return false; }
 
-bool TR_S390zLinuxSystemLinkage::canDataTypeBePassedByReference(TR::DataType type)
+bool TR::S390zLinuxSystemLinkage::canDataTypeBePassedByReference(TR::DataType type)
    {
 
    if (type == TR::Aggregate)
@@ -2587,7 +2587,7 @@ bool TR_S390zLinuxSystemLinkage::canDataTypeBePassedByReference(TR::DataType typ
 
 bool OMR::Z::Linkage::isSymbolPassedByReference(TR::Symbol *sym) { return false; }
 
-bool TR_S390zLinuxSystemLinkage::isSymbolPassedByReference(TR::Symbol *sym)
+bool TR::S390zLinuxSystemLinkage::isSymbolPassedByReference(TR::Symbol *sym)
    {
    if(!canDataTypeBePassedByReference(sym->getDataType()))
       return false;
@@ -2616,7 +2616,7 @@ TR::Z::ZOSBaseSystemLinkage::isAggregateReturnedInIntRegistersAndMemory(int32_t 
    }
 
 bool
-TR_S390zOSSystemLinkage::isAggregateReturnedInIntRegisters(int32_t aggregateLenth)
+TR::S390zOSSystemLinkage::isAggregateReturnedInIntRegisters(int32_t aggregateLenth)
    {
    return aggregateLenth  <= (getNumIntegerArgumentRegisters()* cg()->machine()->getGPRSize());
    }
@@ -2631,7 +2631,7 @@ TR_S390zOSSystemLinkage::isAggregateReturnedInIntRegisters(int32_t aggregateLent
  * determine floating point register likage for outgoing parameters.
  */
 uint32_t
-TR_S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
+TR::S390zOSSystemLinkage::calculateCallDescriptorFlags(TR::Node *callNode)
    {
    #define XPLINK_FLOAT_PARM_UNPROTYPED_CALL 0x08
    uint32_t callDescValue;

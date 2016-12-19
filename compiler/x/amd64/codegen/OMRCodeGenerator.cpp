@@ -21,7 +21,7 @@
 #include <limits.h>                       // for INT_MAX
 #include <stdint.h>                       // for uint32_t, int16_t, int32_t, etc
 #include "codegen/FrontEnd.hpp"           // for feGetEnv
-#include "codegen/Linkage.hpp"            // for TR_X86LinkageProperties
+#include "codegen/Linkage.hpp"            // for TR::X86LinkageProperties
 #include "codegen/RealRegister.hpp"       // for TR::RealRegister::RegNum
 #include "codegen/Register.hpp"           // for Register
 #include "codegen/RegisterConstants.hpp"  // for TR_GlobalRegisterNumber

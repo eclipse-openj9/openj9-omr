@@ -56,7 +56,7 @@
 #include "ras/Debug.hpp"                         // for TR_DebugBase
 #include "codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                  // for ::MOVSSRegMem, etc
-#include "x/codegen/X86SystemLinkage.hpp"        // for toX86SystemLinkage, etc
+#include "x/codegen/X86SystemLinkage.hpp"        // for TR::toX86SystemLinkage, etc
 
 #ifdef DEBUG
 static uint32_t accumOrigSize = 0;
@@ -67,7 +67,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    {
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
-   const TR_X86LinkageProperties&    linkage           = self()->getProperties();
+   const TR::X86LinkageProperties&    linkage           = self()->getProperties();
    int32_t                           offsetToFirstParm = linkage.getOffsetToFirstParm();
    uint32_t                          stackIndex        = linkage.getOffsetToFirstLocal();
    TR::GCStackAtlas                  *atlas             = self()->cg()->getStackAtlas();
@@ -279,7 +279,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
       self()->mapIncomingParms(method);
    else
-      toX86SystemLinkage(self()->cg()->getLinkage())->mapIncomingParms(method, stackIndex);
+      TR::toX86SystemLinkage(self()->cg()->getLinkage())->mapIncomingParms(method, stackIndex);
 
    method->setLocalMappingCursor(stackIndex);
 
@@ -327,7 +327,7 @@ void OMR::X86::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
 
    ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
-   const TR_X86LinkageProperties&    linkage           = self()->getProperties();
+   const TR::X86LinkageProperties&    linkage           = self()->getProperties();
    int32_t                           offsetToFirstParm = linkage.getOffsetToFirstParm();
    uint32_t                          stackIndex        = linkage.getOffsetToFirstLocal();
    TR::GCStackAtlas                  *atlas             = self()->cg()->getStackAtlas();
@@ -415,7 +415,7 @@ void OMR::X86::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    if (self()->comp()->getMethodSymbol()->getLinkageConvention() != TR_System)
       self()->mapIncomingParms(method);
    else
-      toX86SystemLinkage(self()->cg()->getLinkage())->mapIncomingParms(method, stackIndex);
+      TR::toX86SystemLinkage(self()->cg()->getLinkage())->mapIncomingParms(method, stackIndex);
 
    method->setLocalMappingCursor(stackIndex);
 

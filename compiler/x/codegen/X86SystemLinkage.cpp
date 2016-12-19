@@ -43,23 +43,23 @@
 #include "x/codegen/X86Ops.hpp"                // for TR_X86OpCodes, etc
 #include "env/CompilerEnv.hpp"
 
-TR_X86SystemLinkage::TR_X86SystemLinkage(TR::CodeGenerator *cg)
+TR::X86SystemLinkage::X86SystemLinkage(TR::CodeGenerator *cg)
    : TR::Linkage(cg)
    {
    }
 
-const TR_X86LinkageProperties& TR_X86SystemLinkage::getProperties()
+const TR::X86LinkageProperties& TR::X86SystemLinkage::getProperties()
    {
    return _properties;
    }
 
-TR::Register *TR_X86SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
+TR::Register *TR::X86SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
-   TR_ASSERT(0, "TR_X86SystemLinkage::buildIndirectDispatch is not supported");
+   TR_ASSERT(0, "TR::X86SystemLinkage::buildIndirectDispatch is not supported");
    return NULL;
    }
 
-int32_t TR_X86SystemLinkage::computeMemoryArgSize(
+int32_t TR::X86SystemLinkage::computeMemoryArgSize(
       TR::Node *callNode,
       int32_t first,
       int32_t last,
@@ -70,7 +70,7 @@ int32_t TR_X86SystemLinkage::computeMemoryArgSize(
    int32_t i;
    for (i = first; i != last; i += direction)
       {
-      parmLayoutResult layoutResult;
+      TR::parmLayoutResult layoutResult;
       TR::Node *child = callNode->getChild(i);
 
       layoutParm(child, sizeOfOutGoingArgs, numIntArgs, numFloatArgs, layoutResult);
@@ -87,7 +87,7 @@ static const TR::RealRegister::RegNum NOT_ASSIGNED = (TR::RealRegister::RegNum)-
 // to find them (either on stack or in a global register).
 //
 TR::Instruction *
-TR_X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
+TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
    {
    TR::Machine *machine = cg()->machine();
    TR::RealRegister *framePointer = machine->getX86RealRegister(TR::RealRegister::vfp);
@@ -99,7 +99,7 @@ TR_X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
    const TR::RealRegister::RegNum noReg = TR::RealRegister::NoReg;
    TR_ASSERT(noReg == 0, "noReg must be zero so zero-initializing movStatus will work");
 
-   TR_MovStatus movStatus[TR::RealRegister::NumRegisters] = {{(TR::RealRegister::RegNum)0,(TR::RealRegister::RegNum)0,(TR_MovDataTypes)0}};
+   TR::MovStatus movStatus[TR::RealRegister::NumRegisters] = {{(TR::RealRegister::RegNum)0,(TR::RealRegister::RegNum)0,(TR_MovDataTypes)0}};
 
    // We must always do the stores first, then the reg-reg copies, then the
    // loads, so that we never clobber a register we will need later.  However,
@@ -278,7 +278,7 @@ TR_X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
 
 
 TR::Instruction *
-TR_X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
+TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
    {
    // For IA32, if disableShrinkWrapping, usePushForPreservedRegs will be true; otherwise false;
    //          For X64,  shrinkWraping is always on, and usePushForPreservedRegs always false;
@@ -333,7 +333,7 @@ TR_X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
 
 
 void
-TR_X86SystemLinkage::createPrologue(TR::Instruction *cursor)
+TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
    {
 #if defined(DEBUG)
    // TODO:AMD64: Get this into the debug DLL
@@ -427,7 +427,7 @@ TR_X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
 
-   const TR_X86LinkageProperties &properties = getProperties();
+   const TR::X86LinkageProperties &properties = getProperties();
 
    const uint32_t outgoingArgSize = cg()->getLargestOutgoingArgSize();
 
@@ -617,7 +617,7 @@ TR_X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
 
 TR::Instruction *
-TR_X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
+TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
    {
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
    const int32_t localSize   = _properties.getOffsetToFirstLocal() - bodySymbol->getLocalMappingCursor();
@@ -675,7 +675,7 @@ TR_X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
 
 
 void
-TR_X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
+TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
    TR::RealRegister    *espReal      = machine()->getX86RealRegister(TR::RealRegister::esp);
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
@@ -740,11 +740,11 @@ TR_X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
 // TODO: add struct/union support in this function
 void
-TR_X86SystemLinkage::copyLinkageInfoToParameterSymbols()
+TR::X86SystemLinkage::copyLinkageInfoToParameterSymbols()
    {
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>paramIterator(&(bodySymbol->getParameterList()));
-   const TR_X86LinkageProperties &properties = getProperties();
+   const TR::X86LinkageProperties &properties = getProperties();
    uint16_t numIntArgs = 0, numFloatArgs = 0;
    int32_t sizeOfOutGoingArgs = 0;
    int32_t maxIntArgs   = properties.getNumIntegerArgumentRegisters();
@@ -752,13 +752,13 @@ TR_X86SystemLinkage::copyLinkageInfoToParameterSymbols()
 
   for (TR::ParameterSymbol *paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
       {
-      parmLayoutResult layoutResult;
+      TR::parmLayoutResult layoutResult;
       layoutParm(paramCursor, sizeOfOutGoingArgs, numIntArgs, numFloatArgs, layoutResult);
-      if (layoutResult.abstract & parmLayoutResult::IN_LINKAGE_REG_PAIR)
+      if (layoutResult.abstract & TR::parmLayoutResult::IN_LINKAGE_REG_PAIR)
          {
          TR_ASSERT(false, "haven't provide register pair support yet.\n");
          }
-      else if (layoutResult.abstract & parmLayoutResult::IN_LINKAGE_REG)
+      else if (layoutResult.abstract & TR::parmLayoutResult::IN_LINKAGE_REG)
          {
          paramCursor->setLinkageRegisterIndex(layoutResult.regs[0].regIndex);
          }
@@ -772,7 +772,7 @@ TR_X86SystemLinkage::copyLinkageInfoToParameterSymbols()
 
 
 void
-TR_X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
+TR::X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
    {
    TR_ASSERT(!getProperties().passArgsRightToLeft(), "Right-to-left not yet implemented on AMD64");
    int32_t sizeOfOutGoingArgs = 0;
@@ -782,9 +782,9 @@ TR_X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
 
    for (TR::ParameterSymbol *parmCursor = parameterIterator.getFirst(); parmCursor; parmCursor = parameterIterator.getNext())
       {
-      parmLayoutResult layoutResult;
+      TR::parmLayoutResult layoutResult;
       layoutParm(parmCursor, sizeOfOutGoingArgs, numIntArgs, numFloatArgs, layoutResult);
-      if (layoutResult.abstract & parmLayoutResult::ON_STACK)
+      if (layoutResult.abstract & TR::parmLayoutResult::ON_STACK)
          {
          parmCursor->setParameterOffset(layoutResult.offset + bump);
          if (comp()->getOption(TR_TraceCG))
@@ -795,7 +795,7 @@ TR_X86SystemLinkage::mapIncomingParms(TR::ResolvedMethodSymbol *method)
 
 
 void
-TR_X86SystemLinkage::copyGlRegDepsToParameterSymbols(
+TR::X86SystemLinkage::copyGlRegDepsToParameterSymbols(
       TR::Node *bbStart,
       TR::CodeGenerator *cg)
    {
@@ -820,7 +820,7 @@ TR_X86SystemLinkage::copyGlRegDepsToParameterSymbols(
 
 
 int32_t
-TR_X86SystemLinkage::getParameterStartingPos(
+TR::X86SystemLinkage::getParameterStartingPos(
       int32_t &dataCursor,
       uint32_t align)
    {
@@ -839,10 +839,10 @@ TR_X86SystemLinkage::getParameterStartingPos(
 
 
 int32_t
-TR_X86SystemLinkage::layoutTypeOnStack(
+TR::X86SystemLinkage::layoutTypeOnStack(
       TR::DataType type,
       int32_t &dataCursor,
-      parmLayoutResult &layoutResult)
+      TR::parmLayoutResult &layoutResult)
    {
    uint32_t typeAlign = getAlignment(type);
    layoutResult.offset = getParameterStartingPos(dataCursor, typeAlign);

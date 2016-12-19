@@ -34,17 +34,19 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
 template <class T> class List;
 
-class TR_PPCSystemLinkage : public TR::Linkage
+namespace TR {
+
+class PPCSystemLinkage : public TR::Linkage
    {
    protected:
 
-   TR_PPCLinkageProperties _properties;
+   TR::PPCLinkageProperties _properties;
 
    public:
 
-   TR_PPCSystemLinkage(TR::CodeGenerator *cg);
+   PPCSystemLinkage(TR::CodeGenerator *cg);
 
-   virtual const TR_PPCLinkageProperties& getProperties();
+   virtual const TR::PPCLinkageProperties& getProperties();
    virtual uintptr_t calculateActualParameterOffset(uintptr_t, TR::ParameterSymbol&);
    virtual uintptr_t calculateParameterRegisterOffset(uintptr_t, TR::ParameterSymbol&);
 
@@ -72,7 +74,7 @@ class TR_PPCSystemLinkage : public TR::Linkage
          TR::Node *callNode,
          TR::SymbolReference *callSymRef,
          TR::RegisterDependencyConditions *dependencies,
-         const TR_PPCLinkageProperties &pp,
+         const TR::PPCLinkageProperties &pp,
          int32_t argSize);
 
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode);
@@ -83,5 +85,7 @@ class TR_PPCSystemLinkage : public TR::Linkage
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parmList);
    virtual void mapParameters(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parmList);
    };
+
+}
 
 #endif

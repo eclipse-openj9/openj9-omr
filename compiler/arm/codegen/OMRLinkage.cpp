@@ -81,7 +81,7 @@ TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)
    TR::ResolvedMethodSymbol   *bodySymbol = codeGen->comp()->getJittedMethodSymbol();
    TR::Node                 *firstNode  = codeGen->comp()->getStartTree()->getNode();
 
-   const TR_ARMLinkageProperties& properties = self()->getProperties();
+   const TR::ARMLinkageProperties& properties = self()->getProperties();
 
    ListIterator<TR::ParameterSymbol> paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol *paramCursor = paramIterator.getFirst();
@@ -152,7 +152,7 @@ TR::Instruction *OMR::ARM::Linkage::loadUpArguments(TR::Instruction *cursor)
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    uint32_t                 numIntArgs = 0;
-   const TR_ARMLinkageProperties& properties = self()->getProperties();
+   const TR::ARMLinkageProperties& properties = self()->getProperties();
 
    while (paramCursor != NULL && numIntArgs < properties.getNumIntArgRegs())
       {
@@ -215,7 +215,7 @@ TR::Instruction *OMR::ARM::Linkage::flushArguments(TR::Instruction *cursor)
    ListIterator<TR::ParameterSymbol>   paramIterator(&(bodySymbol->getParameterList()));
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    uint32_t                 numIntArgs = 0;
-   const TR_ARMLinkageProperties& properties = self()->getProperties();
+   const TR::ARMLinkageProperties& properties = self()->getProperties();
 
    while (paramCursor != NULL && numIntArgs < properties.getNumIntArgRegs())
       {
@@ -483,10 +483,10 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
                                            TR_LinkageConventions               conventions,
                                            bool                                isVirtualOrJNI)
    {
-   const TR_ARMLinkageProperties &properties = self()->getProperties();
+   const TR::ARMLinkageProperties &properties = self()->getProperties();
    TR::Compilation *comp = TR::comp();
    TR::CodeGenerator  *codeGen      = self()->cg();
-   TR_ARMMemoryArgument *pushToMemory = NULL;
+   TR::ARMMemoryArgument *pushToMemory = NULL;
    void                 *stackMark;
 
    bool isHelper  = (conventions == TR_Helper);
@@ -627,7 +627,7 @@ printf("%s: numIntegerArgs %d numMemArgs %d\n", sig,  numIntegerArgs, numMemArgs
    TR::StackMemoryRegion stackMemoryRegion(*self()->trMemory());
    if (numMemArgs > 0)
       {
-      pushToMemory = new(self()->trStackMemory()) TR_ARMMemoryArgument[numMemArgs];
+      pushToMemory = new(self()->trStackMemory()) TR::ARMMemoryArgument[numMemArgs];
       }
 
    if (specialArgReg)
@@ -1015,7 +1015,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
    TR::MethodSymbol     *callSymbol = callSymRef->getSymbol()->castToMethodSymbol();
    TR_J9VMBase *fej9 = (TR_J9VMBase *)(self()->comp()->fe());
 
-   const TR_ARMLinkageProperties &pp = self()->getProperties();
+   const TR::ARMLinkageProperties &pp = self()->getProperties();
    TR::RegisterDependencyConditions *dependencies =
       new (self()->trHeapMemory()) TR::RegisterDependencyConditions(pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/,
                                              pp.getNumberOfDependencyGPRegisters() + 8 /*pp.getNumFloatArgRegs()*/, self()->trMemory());
@@ -1125,4 +1125,4 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
    return(returnRegister);
    }
 
-bool TR_ARMLinkageProperties::_isBigEndian;
+bool TR::ARMLinkageProperties::_isBigEndian;

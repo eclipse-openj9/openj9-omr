@@ -61,7 +61,7 @@ uint8_t *TR::AMD64FPConversionSnippet::genFPConversion(uint8_t *buffer)
    TR::RealRegister          *targetRegister  = toRealRegister(_convertInstruction->getTargetRegister());
    TR::RealRegister::RegNum   targetReg       = targetRegister->getRegisterNumber();
    TR::Machine               *machine         = cg()->machine();
-   const TR_X86LinkageProperties &properties = cg()->getProperties();
+   const TR::X86LinkageProperties &properties = cg()->getProperties();
 
    uint8_t *originalBuffer = buffer;
 

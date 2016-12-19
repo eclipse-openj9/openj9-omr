@@ -527,7 +527,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
       generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
       }
 
-   const TR_X86LinkageProperties &linkageProperties = cg->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineReturnRegister =
       (returnRegister->isSinglePrecision())? linkageProperties.getFloatReturnRegister() : linkageProperties.getDoubleReturnRegister();
 
@@ -644,7 +644,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpRemEvaluator(TR::Node *node, TR::CodeGe
    bool         nodeIsDouble = node->getDataType() == TR::Double;
    TR::Register *targetRegister;
    TR::Compilation *comp = cg->comp();
-   const TR_X86LinkageProperties &linkageProperties = cg->getLinkage(comp->getJittedMethodSymbol()->getLinkageConvention())->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = cg->getLinkage(comp->getJittedMethodSymbol()->getLinkageConvention())->getProperties();
 
    if (cg->useSSEForDoublePrecision()) // Note: both float and double helpers use SSE2
       {

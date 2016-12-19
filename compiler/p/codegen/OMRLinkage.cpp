@@ -78,10 +78,10 @@ bool OMR::Power::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    return(false);
    }
 
-TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argSize, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR_PPCMemoryArgument &memArg, uint32_t length)
+TR::MemoryReference *OMR::Power::Linkage::getOutgoingArgumentMemRef(int32_t argSize, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::PPCMemoryArgument &memArg, uint32_t length)
    {
    TR::Machine *machine = self()->cg()->machine();
-   const TR_PPCLinkageProperties& properties = self()->getProperties();
+   const TR::PPCLinkageProperties& properties = self()->getProperties();
 
    TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(machine->getPPCRealRegister(properties.getNormalStackPointerRegister()),
                                                                               argSize+properties.getOffsetToFirstParm(), length, self()->cg());
@@ -105,7 +105,7 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
    {
    #define  REAL_REGISTER(ri)  machine->getPPCRealRegister(ri)
    #define  REGNUM(ri)         ((TR::RealRegister::RegNum)(ri))
-   const TR_PPCLinkageProperties& properties = self()->getProperties();
+   const TR::PPCLinkageProperties& properties = self()->getProperties();
    TR::Machine *machine = self()->cg()->machine();
    TR::RealRegister      *stackPtr   = self()->cg()->getStackPointerRegister();
    TR::ResolvedMethodSymbol    *bodySymbol = self()->comp()->getJittedMethodSymbol();
@@ -495,7 +495,7 @@ TR::Instruction *OMR::Power::Linkage::loadUpArguments(TR::Instruction *cursor)
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    TR::Node                 *firstNode = self()->comp()->getStartTree()->getNode();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;
-   const TR_PPCLinkageProperties& properties = self()->getProperties();
+   const TR::PPCLinkageProperties& properties = self()->getProperties();
 
    while ( (paramCursor!=NULL) &&
            ( (numIntArgs < properties.getNumIntArgRegs()) ||
@@ -589,7 +589,7 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    TR::Node                 *firstNode = self()->comp()->getStartTree()->getNode();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;
-   const TR_PPCLinkageProperties& properties = self()->getProperties();
+   const TR::PPCLinkageProperties& properties = self()->getProperties();
 
    while ( (paramCursor!=NULL) &&
            ( (numIntArgs < properties.getNumIntArgRegs()) ||

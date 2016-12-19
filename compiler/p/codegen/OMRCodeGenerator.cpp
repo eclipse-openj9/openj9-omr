@@ -361,7 +361,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      }
 
    // Initialize linkage reg arrays
-   TR_PPCLinkageProperties linkageProperties = self()->getProperties();
+   TR::PPCLinkageProperties linkageProperties = self()->getProperties();
    for (i=0; i < linkageProperties.getNumIntArgRegs(); i++)
      _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
    for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)
@@ -1962,11 +1962,11 @@ OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR_PPCSystemLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::PPCSystemLinkage(self());
          break;
 
       default:
-         linkage = new (self()->trHeapMemory()) TR_PPCSystemLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::PPCSystemLinkage(self());
       }
 
    self()->setLinkage(lc, linkage);

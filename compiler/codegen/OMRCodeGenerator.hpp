@@ -370,6 +370,8 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_HasRandomGenerator randomizer;
 
+   virtual bool supportsAtomicAdd() {return false;}
+
    // --------------------------------------------------------------------------
    // Infrastructure
    //

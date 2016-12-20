@@ -1097,7 +1097,16 @@ IlBuilder::Return(TR::IlValue *value)
 TR::IlValue *
 IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    {
-   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::subtractOpCode, left, right);
+   TR::IlValue *returnValue = NULL;
+   if (left->getSymbol()->getDataType() == TR::Address)
+      {
+      if (right->getSymbol()->getDataType() == TR::Int32)
+         returnValue = binaryOpFromNodes(TR::aiadd, loadValue(left), loadValue(Sub(ConstInt32(0), right)));
+      else if (right->getSymbol()->getDataType() == TR::Int64)
+         returnValue = binaryOpFromNodes(TR::aladd, loadValue(left), loadValue(Sub(ConstInt64(0), right)));
+      }
+   if (returnValue == NULL)
+      returnValue=binaryOpFromOpMap(TR::ILOpCode::subtractOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Sub %d - %d\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->Sub(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;

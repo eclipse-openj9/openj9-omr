@@ -881,12 +881,9 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRMethodData& osrMe
    return out;
    }
 
-TR_OSRPoint::TR_OSRPoint(TR::Node *node, int32_t induceOffset, TR_OSRMethodData *methodData, TR_Memory *m)
-   : _methodData(methodData)
+TR_OSRPoint::TR_OSRPoint(TR_ByteCodeInfo &bcInfo, TR_OSRMethodData *methodData, TR_Memory *m)
+   : _methodData(methodData), _bcInfo(bcInfo)
    {
-   _nodeBCInfo = node->getByteCodeInfo();
-   _induceBCInfo = node->getByteCodeInfo();
-   _induceBCInfo.setByteCodeIndex(_induceBCInfo.getByteCodeIndex() + induceOffset);
    }
 
 TR_OSRSlotSharingInfo::TR_OSRSlotSharingInfo(TR::Compilation* _comp) :

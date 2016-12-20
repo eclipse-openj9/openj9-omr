@@ -127,6 +127,7 @@ public:
    TR::Block *getExit()  { return _exitBlock; }
 
    void setDoesNotComeBack() { _comesBack = false; }
+   void setComesBack()       { _comesBack = true; }
    bool comesBack()          { return _comesBack; }
 
    bool blocksHaveBeenCounted() { return _count > -1; }

@@ -240,6 +240,7 @@ IlBuilder::defineValue(const char *name, TR::IlType *type)
    {
    TR::DataType dt = type->getPrimitiveType();
    TR::SymbolReference *newSymRef = symRefTab()->createTemporary(methodSymbol(), dt);
+   newSymRef->getSymbol()->setNotCollected();
    defineSymbol(name, newSymRef);
    }
 
@@ -247,6 +248,7 @@ TR::IlValue *
 IlBuilder::newValue(TR::DataType dt)
    {
    TR::SymbolReference *newSymRef = symRefTab()->createTemporary(methodSymbol(), dt);
+   newSymRef->getSymbol()->setNotCollected();
    char *name = (char *) _comp->trMemory()->allocateHeapMemory(5 * sizeof(char));
    sprintf(name, "_T%-3d", newSymRef->getCPIndex());
    newSymRef->getSymbol()->getAutoSymbol()->setName(name);

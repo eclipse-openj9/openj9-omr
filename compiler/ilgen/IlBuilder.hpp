@@ -375,6 +375,8 @@ protected:
    void ifCmpGreaterThan(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
    void ifCmpGreaterOrEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
 
+   void integerizeAddresses(TR::IlValue **leftPtr, TR::IlValue **rightPtr);
+
    void appendGoto(TR::Block *destBlock);
 
    virtual void appendBlock(TR::Block *block = 0, bool addEdge=true);

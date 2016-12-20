@@ -1379,9 +1379,23 @@ IlBuilder::EqualTo(TR::IlValue *left, TR::IlValue *right)
    return returnValue;
    }
 
+void
+IlBuilder::integerizeAddresses(TR::IlValue **leftPtr, TR::IlValue **rightPtr)
+   {
+   TR::IlValue *left = *leftPtr;
+   TR::IlValue *right = *rightPtr;
+   if (left->getSymbol()->getDataType() == TR::Address)
+      {
+      TR_ASSERT(right->getSymbol()->getDataType() == TR::Address, "expecting both operands to be addresses");
+      *leftPtr = ConvertTo(Word, left);
+      *rightPtr = ConvertTo(Word, right);
+      }
+   }
+
 TR::IlValue *
 IlBuilder::LessThan(TR::IlValue *left, TR::IlValue *right)
    {
+   integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLT, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is LessThan %d < %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->LessThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
@@ -1391,6 +1405,7 @@ IlBuilder::LessThan(TR::IlValue *left, TR::IlValue *right)
 TR::IlValue *
 IlBuilder::LessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    {
+   integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is LessOrEqualTo %d <= %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->LessOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
@@ -1400,6 +1415,7 @@ IlBuilder::LessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
 TR::IlValue *
 IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
    {
+   integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGT, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is GreaterThan %d > %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->GreaterThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
@@ -1409,6 +1425,7 @@ IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
 TR::IlValue *
 IlBuilder::GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    {
+   integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is GreaterOrEqualTo %d >= %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->GreaterOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
@@ -1747,6 +1764,7 @@ IlBuilder::ifCmpEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
 void
 IlBuilder::ifCmpLessThan(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
    {
+   integerizeAddresses(&left, &right);
    appendBlock();
    TR::Node *leftNode = loadValue(left);
    ifjump(comp()->il.opCodeForIfCompareLessThan(leftNode->getDataType()),
@@ -1759,6 +1777,7 @@ IlBuilder::ifCmpLessThan(TR::IlValue *left, TR::IlValue *right, TR::Block *targe
 void
 IlBuilder::ifCmpLessOrEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
    {
+   integerizeAddresses(&left, &right);
    appendBlock();
    TR::Node *leftNode = loadValue(left);
    ifjump(comp()->il.opCodeForIfCompareLessOrEquals(leftNode->getDataType()),
@@ -1771,6 +1790,7 @@ IlBuilder::ifCmpLessOrEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *ta
 void
 IlBuilder::ifCmpGreaterThan(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
    {
+   integerizeAddresses(&left, &right);
    appendBlock();
    TR::Node *leftNode = loadValue(left);
    ifjump(comp()->il.opCodeForIfCompareGreaterThan(leftNode->getDataType()),
@@ -1783,6 +1803,7 @@ IlBuilder::ifCmpGreaterThan(TR::IlValue *left, TR::IlValue *right, TR::Block *ta
 void
 IlBuilder::ifCmpGreaterOrEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
    {
+   integerizeAddresses(&left, &right);
    appendBlock();
    TR::Node *leftNode = loadValue(left);
    ifjump(comp()->il.opCodeForIfCompareGreaterOrEquals(leftNode->getDataType()),

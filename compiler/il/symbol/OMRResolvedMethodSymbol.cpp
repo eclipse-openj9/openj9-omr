@@ -1234,13 +1234,9 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
          TR::Optimizer *optimizer = NULL;
          TR::Optimizer *previousOptimizer = NULL;
-         if (doOSR
-             || comp->getMethodHotness() >= cold)
-            {
-            optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
-            previousOptimizer = comp->getOptimizer();
-            comp->setOptimizer(optimizer);
-            }
+         optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
+         previousOptimizer = comp->getOptimizer();
+         comp->setOptimizer(optimizer);
 
          self()->detectInternalCycles(comp->getFlowGraph(), comp);
 

@@ -64,7 +64,7 @@
 
 static const OptimizationStrategy tacticalGlobalRegisterAllocatorOpts[] =
    {
-//   { OMR::inductionVariableAnalysis,             OMR::IfLoops                      },
+   { OMR::inductionVariableAnalysis,             OMR::IfLoops                      },
    { OMR::loopCanonicalization,                  OMR::IfLoops                      },
    { OMR::liveRangeSplitter,                     OMR::IfLoops                      },
    { OMR::redundantGotoElimination,              OMR::IfNotProfiling               }, // need to be run before global register allocator
@@ -100,7 +100,7 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::treeSimplification                                                       },
    { OMR::blockSplitter                                                            },
    { OMR::treeSimplification                                                       },
-//   { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
+   { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
    { OMR::generalLoopUnroller,                       OMR::IfLoops                  },
    { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // extend blocks; move trees around if reqd
    { OMR::treeSimplification                                                       }, // revisit; not really required ?
@@ -156,8 +156,8 @@ Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymb
       const OptimizationStrategy *strategy, uint16_t VNType)
    : OMR::Optimizer(comp, methodSymbol, isIlGen, strategy, VNType)
    {
-//   _opts[OMR::inductionVariableAnalysis] =
-//      new (comp->allocator()) TR::OptimizationManager(self(), TR_InductionVariableAnalysis::create, OMR::inductionVariableAnalysis, "O^O INDUCTION VARIABLE ANALYSIS: ");
+   _opts[OMR::inductionVariableAnalysis] =
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_InductionVariableAnalysis::create, OMR::inductionVariableAnalysis, "O^O INDUCTION VARIABLE ANALYSIS: ");
    _opts[OMR::partialRedundancyElimination] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_PartialRedundancy::create, OMR::partialRedundancyElimination, "O^O PARTIAL REDUNDANCY ELIMINATION: ");
    _opts[OMR::isolatedStoreElimination] =

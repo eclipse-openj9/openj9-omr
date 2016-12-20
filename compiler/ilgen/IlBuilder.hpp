@@ -183,7 +183,9 @@ public:
    TR::IlValue *NotEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *EqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *LessThan(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *LessOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *GreaterThan(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
 
    // memory
@@ -297,8 +299,12 @@ public:
    void IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
 
    void IfThenElse(TR::IlBuilder **thenPath,
                    TR::IlBuilder **elsePath,
@@ -365,7 +371,9 @@ protected:
    void ifCmpEqualZero(TR::IlValue *condition, TR::Block *target);
    void ifCmpEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
    void ifCmpLessThan(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
+   void ifCmpLessOrEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
    void ifCmpGreaterThan(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
+   void ifCmpGreaterOrEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
 
    void appendGoto(TR::Block *destBlock);
 

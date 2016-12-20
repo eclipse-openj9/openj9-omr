@@ -287,6 +287,25 @@ TR::ILOpCodes OMR::IL::opCodesForCompareLessThan[] =
    TR::BadILOp,  // TR::Aggregate
    };
 
+TR::ILOpCodes OMR::IL::opCodesForCompareLessOrEquals[] =
+   {
+   TR::BadILOp,  // NoType
+   TR::bcmple,   // Int8
+   TR::scmple,   // Int16
+   TR::icmple,   // Int32
+   TR::lcmple,   // Int64
+   TR::fcmple,   // Float
+   TR::dcmple,   // Double
+   TR::acmple,   // Address
+   TR::vcmple,   // TR::VectorInt8
+   TR::vcmple,   // TR::VectorInt16
+   TR::vcmple,   // TR::VectorInt32
+   TR::vcmple,   // TR::VectorInt64
+   TR::vcmple,   // TR::VectorFloat
+   TR::vcmple,   // TR::VectorDouble
+   TR::BadILOp,  // TR::Aggregate
+   };
+
 TR::ILOpCodes OMR::IL::opCodesForIfCompareLessThan[] =
    {
    TR::BadILOp,   // NoType
@@ -297,6 +316,25 @@ TR::ILOpCodes OMR::IL::opCodesForIfCompareLessThan[] =
    TR::iffcmplt,  // Float
    TR::ifdcmplt,  // Double
    TR::ifacmplt,  // Address
+   TR::BadILOp,   // TR::VectorInt8
+   TR::BadILOp,   // TR::VectorInt16
+   TR::BadILOp,   // TR::VectorInt32
+   TR::BadILOp,   // TR::VectorInt64
+   TR::BadILOp,   // TR::VectorFloat
+   TR::BadILOp,   // TR::VectorDouble
+   TR::BadILOp,   // TR::Aggregate
+   };
+
+TR::ILOpCodes OMR::IL::opCodesForIfCompareLessOrEquals[] =
+   {
+   TR::BadILOp,   // NoType
+   TR::ifbcmple,  // Int8
+   TR::ifscmple,  // Int16
+   TR::ificmple,  // Int32
+   TR::iflcmple,  // Int64
+   TR::iffcmple,  // Float
+   TR::ifdcmple,  // Double
+   TR::ifacmple,  // Address
    TR::BadILOp,   // TR::VectorInt8
    TR::BadILOp,   // TR::VectorInt16
    TR::BadILOp,   // TR::VectorInt32
@@ -325,6 +363,25 @@ TR::ILOpCodes OMR::IL::opCodesForCompareGreaterThan[] =
    TR::BadILOp,  // TR::Aggregate
    };
 
+TR::ILOpCodes OMR::IL::opCodesForCompareGreaterOrEquals[] =
+   {
+   TR::BadILOp,  // NoType
+   TR::bcmpge,   // Int8
+   TR::scmpge,   // Int16
+   TR::icmpge,   // Int32
+   TR::lcmpge,   // Int64
+   TR::fcmpge,   // Float
+   TR::dcmpge,   // Double
+   TR::acmpge,   // Address
+   TR::vcmpge,   // TR::VectorInt8
+   TR::vcmpge,   // TR::VectorInt16
+   TR::vcmpge,   // TR::VectorInt32
+   TR::vcmpge,   // TR::VectorInt64
+   TR::vcmpge,   // TR::VectorFloat
+   TR::vcmpge,   // TR::VectorDouble
+   TR::BadILOp,  // TR::Aggregate
+   };
+
 TR::ILOpCodes OMR::IL::opCodesForIfCompareGreaterThan[] =
    {
    TR::BadILOp,   // NoType
@@ -335,6 +392,25 @@ TR::ILOpCodes OMR::IL::opCodesForIfCompareGreaterThan[] =
    TR::iffcmpgt,  // Float
    TR::ifdcmpgt,  // Double
    TR::ifacmpgt,  // Address
+   TR::BadILOp,   // TR::VectorInt8
+   TR::BadILOp,   // TR::VectorInt16
+   TR::BadILOp,   // TR::VectorInt32
+   TR::BadILOp,   // TR::VectorInt64
+   TR::BadILOp,   // TR::VectorFloat
+   TR::BadILOp,   // TR::VectorDouble
+   TR::BadILOp,   // TR::Aggregate
+   };
+
+TR::ILOpCodes OMR::IL::opCodesForIfCompareGreaterOrEquals[] =
+   {
+   TR::BadILOp,   // NoType
+   TR::ifbcmpge,  // Int8
+   TR::ifscmpge,  // Int16
+   TR::ificmpge,  // Int32
+   TR::iflcmpge,  // Int64
+   TR::iffcmpge,  // Float
+   TR::ifdcmpge,  // Double
+   TR::ifacmpge,  // Address
    TR::BadILOp,   // TR::VectorInt8
    TR::BadILOp,   // TR::VectorInt16
    TR::BadILOp,   // TR::VectorInt32
@@ -386,13 +462,25 @@ static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForIfCompareNotEquals) 
 static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareLessThan) / sizeof(OMR::IL::opCodesForCompareLessThan[0])),
               "OMR::IL::opCodesForCompareLessThan is not the correct size");
 
+static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareLessOrEquals) / sizeof(OMR::IL::opCodesForCompareLessOrEquals[0])),
+              "OMR::IL::opCodesForCompareLessThan is not the correct size");
+
 static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForIfCompareLessThan) / sizeof(OMR::IL::opCodesForIfCompareLessThan[0])),
+              "OMR::IL::opCodesForIfCompareLessThan is not the correct size");
+
+static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForIfCompareLessOrEquals) / sizeof(OMR::IL::opCodesForIfCompareLessOrEquals[0])),
               "OMR::IL::opCodesForIfCompareLessThan is not the correct size");
 
 static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareGreaterThan) / sizeof(OMR::IL::opCodesForCompareGreaterThan[0])),
               "OMR::IL::opCodesForCompareGreaterThan is not the correct size");
 
+static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForCompareGreaterOrEquals) / sizeof(OMR::IL::opCodesForCompareGreaterOrEquals[0])),
+              "OMR::IL::opCodesForCompareGreaterThan is not the correct size");
+
 static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForIfCompareGreaterThan) / sizeof(OMR::IL::opCodesForIfCompareGreaterThan[0])),
+              "OMR::IL::opCodesForIfCompareGreaterThan is not the correct size");
+
+static_assert(TR::NumOMRTypes == (sizeof(OMR::IL::opCodesForIfCompareGreaterOrEquals) / sizeof(OMR::IL::opCodesForIfCompareGreaterOrEquals[0])),
               "OMR::IL::opCodesForIfCompareGreaterThan is not the correct size");
 
 
@@ -565,11 +653,27 @@ OMR::IL::opCodeForCompareLessThan(TR::DataType dt)
    }
 
 TR::ILOpCodes
+OMR::IL::opCodeForCompareLessOrEquals(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForCompareLessOrEquals[dt];
+   }
+
+TR::ILOpCodes
 OMR::IL::opCodeForIfCompareLessThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
    return OMR::IL::opCodesForIfCompareLessThan[dt];
+   }
+
+TR::ILOpCodes
+OMR::IL::opCodeForIfCompareLessOrEquals(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForIfCompareLessOrEquals[dt];
    }
 
 TR::ILOpCodes
@@ -581,9 +685,24 @@ OMR::IL::opCodeForCompareGreaterThan(TR::DataType dt)
    }
 
 TR::ILOpCodes
+OMR::IL::opCodeForCompareGreaterOrEquals(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForCompareGreaterOrEquals[dt];
+   }
+
+TR::ILOpCodes
 OMR::IL::opCodeForIfCompareGreaterThan(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
    return OMR::IL::opCodesForIfCompareGreaterThan[dt];
+   }
+TR::ILOpCodes
+OMR::IL::opCodeForIfCompareGreaterOrEquals(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForIfCompareGreaterOrEquals[dt];
    }

@@ -1367,7 +1367,7 @@ TR::IlValue *
 IlBuilder::ShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::shiftRightOpCode, v, amount);
-   TraceIL("IlBuilder[ %p ]::%d is shr %d << %d\n", this, returnValue->getCPIndex(), v->getCPIndex(), amount->getCPIndex());
+   TraceIL("IlBuilder[ %p ]::%d is shr %d >> %d\n", this, returnValue->getCPIndex(), v->getCPIndex(), amount->getCPIndex());
    ILB_REPLAY("%s = %s->ShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
    }
@@ -1376,7 +1376,7 @@ TR::IlValue *
 IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::unsignedShiftRightOpCode, v, amount);
-   TraceIL("IlBuilder[ %p ]::%d is shr %d << %d\n", this, returnValue->getCPIndex(), v->getCPIndex(), amount->getCPIndex());
+   TraceIL("IlBuilder[ %p ]::%d is unsigned shr %d >> %d\n", this, returnValue->getCPIndex(), v->getCPIndex(), amount->getCPIndex());
    ILB_REPLAY("%s = %s->UnsignedShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
    }

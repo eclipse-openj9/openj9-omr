@@ -78,7 +78,7 @@ public:
 
    TR::Compilation *comp()                const       { return _compilation; }
    TR_Memory *trMemory()                   const       { return _trMemory; }
-   TR::ResolvedMethodSymbol *methodSymbol() const       { return _methodSymbol; }
+   virtual TR::ResolvedMethodSymbol *methodSymbol() const   { return _methodSymbol; }
    ResolvedMethod          *method()       const       { return _method; }
 
    int32_t  bcIndex()                      const       { return _bcIndex; }

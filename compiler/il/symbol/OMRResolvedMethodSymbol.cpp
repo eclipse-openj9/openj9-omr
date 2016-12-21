@@ -1738,7 +1738,7 @@ OMR::ResolvedMethodSymbol::addAutomatic(TR::AutomaticSymbol *p)
    {
    if (!_automaticList.find(p))
       {
-      bool compiledMethod = self()->comp()->getMethodSymbol() == self();
+      bool compiledMethod = self()->comp()->getJittedMethodSymbol() == self();
 
       TR::CodeGenerator *cg = self()->comp()->cg();
       if (cg->getMappingAutomatics() && compiledMethod)
@@ -1825,7 +1825,7 @@ OMR::ResolvedMethodSymbol::getAutoSymRefs(int32_t slot)
    TR_Memory * m = self()->comp()->trMemory();
    if (!_autoSymRefs)
       {
-      if (self()->comp()->getMethodSymbol() == self())
+      if (self()->comp()->getJittedMethodSymbol() == self())
          _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, 100, true);
       else
          _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, _resolvedMethod->numberOfParameterSlots() + _resolvedMethod->numberOfTemps() + 5, true);

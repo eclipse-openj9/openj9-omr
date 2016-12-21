@@ -74,7 +74,7 @@ public:
    bool                           genIL();
    int32_t                        currentByteCodeIndex();
    TR::Block                    * getCurrentBlock();
-   TR::ResolvedMethodSymbol     * methodSymbol()          const { return _methodSymbol; }
+   virtual TR::ResolvedMethodSymbol     * methodSymbol()          const { return _methodSymbol; }
 
    // Many tests should just need to define their own version of this function
    virtual bool                   injectIL() = 0;

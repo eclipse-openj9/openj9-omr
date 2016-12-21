@@ -22,7 +22,9 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-# NOTE: replay purposefully left out of the list
+# NOTE: replay purposefully left out of these lists
+
+# These tests may not work on all platforms
 ALL_TESTS = \
             call \
             conststring \
@@ -42,27 +44,40 @@ ALL_TESTS = \
             switch \
             toiltype
 
-goal: $(ALL_TESTS)
-	./call
-	./conststring
+# Compile all the tests by default
+all: $(ALL_TESTS)
+
+# These tests should run properly on all platforms
+common_goal: $(ALL_TESTS)
 	./controlflowtests
-	./dotproduct
 	./issupportedtype
 	./iterfib
-	./linkedlist
-	./localarray
 	./nestedloop
-	./pointer
 	./pow2
-	./recfib
 	./simple
-	./structarray
-	./switch
 	./toiltype
 
-all: goal
+# Additional tests that may not work properly on all platforms
+all_goal: common_goal
+	./call
+	./conststring
+	./dotproduct
+	./linkedlist
+	./localarray
+	./pointer
+	./recfib
+	./structarray
+	./switch
 
-test: goal $(ALL_TESTS)
+
+# In general, only compile and run tests that are known to work on all platforms
+test: common_goal all
+
+# For platforms where everything can run:
+testall: all_goal all
+
+
+# Rules for individual examples
 
 atomicoperations : libjitbuilder.a AtomicOperations.o
 	g++ -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl

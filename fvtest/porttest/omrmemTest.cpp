@@ -647,11 +647,11 @@ TEST(PortMemTest, mem_test7_allocate32)
 
 static uint32_t childrenOfDummyCategoryOne[] = {DUMMY_CATEGORY_TWO, DUMMY_CATEGORY_THREE, OMRMEM_CATEGORY_PORT_LIBRARY, OMRMEM_CATEGORY_UNKNOWN};
 
-static OMRMemCategory dummyCategoryOne = {"Dummy One", DUMMY_CATEGORY_ONE, 0, 0, 0, 0, 4, childrenOfDummyCategoryOne};
+static OMRMemCategory dummyCategoryOne = {"Dummy One", DUMMY_CATEGORY_ONE, 0, 0, 4, childrenOfDummyCategoryOne};
 
-static OMRMemCategory dummyCategoryTwo = {"Dummy Two", DUMMY_CATEGORY_TWO, 0, 0, 0, 0, 0, NULL};
+static OMRMemCategory dummyCategoryTwo = {"Dummy Two", DUMMY_CATEGORY_TWO, 0, 0, 0, NULL};
 
-static OMRMemCategory dummyCategoryThree = {"Dummy Three", DUMMY_CATEGORY_THREE, 0, 0, 0, 0, 0, NULL};
+static OMRMemCategory dummyCategoryThree = {"Dummy Three", DUMMY_CATEGORY_THREE, 0, 0, 0, NULL};
 
 static OMRMemCategory *categoryList[3] = {&dummyCategoryOne, &dummyCategoryTwo, &dummyCategoryThree};
 

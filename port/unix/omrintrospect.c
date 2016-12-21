@@ -95,7 +95,6 @@ typedef struct {
 	volatile uintptr_t in_count;
 	volatile uintptr_t out_count;
 	uintptr_t initial_value;
-	uintptr_t spinlock;
 	volatile uintptr_t released;
 } barrier_r;
 
@@ -103,7 +102,6 @@ typedef struct {
 	int descriptor_pair[2];
 	volatile uintptr_t sem_value;
 	volatile uintptr_t initial_value;
-	uintptr_t spinlock;
 } sem_t_r;
 
 /*
@@ -189,13 +187,13 @@ barrier_init_r(barrier_r *barrier, int value)
 
 	do {
 		old_value = barrier->initial_value;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, value, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, value) != old_value);
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, value, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, value) != old_value);
 	do {
 		old_value = barrier->released;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->released, old_value, 0, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->released, old_value, 0) != old_value);
 
 	return 0;
 }
@@ -286,7 +284,7 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 		deadline = spec.tv_sec + seconds;
 	}
 
-	if ((compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 1, &barrier->spinlock)) != 0) {
+	if ((compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 1)) != 0) {
 		/* barrier->released should have been 0, write something into the pipe so that poll doesn't block,
 		 * converts this to a busy wait
 		 */
@@ -295,7 +293,7 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 	}
 
 	/* wait until all entrants have arrived */
-	while ((compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1, &barrier->spinlock)) > 0) {
+	while ((compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1)) > 0) {
 		if ((result = barrier_block_until_poked(barrier, deadline)) == -1) {
 			/* timeout or error */
 			break;
@@ -330,9 +328,9 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* decrement the wait count */
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value - 1, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value - 1) != old_value);
 
-	if (old_value == 1 && (compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 0, &barrier->spinlock))) {
+	if (old_value == 1 && (compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 0))) {
 		/* we're the last through the barrier so wake everyone up */
 		write(barrier->descriptor_pair[1], &byte, 1);
 	}
@@ -340,7 +338,7 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* if we're entering a barrier with a negative count then count us out but we don't need to do anything */
 
 	/* wait until we are formally released */
-	while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1, &barrier->spinlock) > 0 || !barrier->released) {
+	while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1) > 0 || !barrier->released) {
 		if ((result = barrier_block_until_poked(barrier, deadline)) < 0) {
 			/* timeout or error */
 			break;
@@ -350,7 +348,7 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* increment the out count */
 	do {
 		old_value = barrier->out_count;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->out_count, old_value, old_value + 1, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->out_count, old_value, old_value + 1) != old_value);
 
 	return result;
 }
@@ -377,7 +375,7 @@ barrier_update_r(barrier_r *barrier, int new_value)
 
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value + difference, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, old_value + difference) != old_value);
 
 	if (old_value < 0 || (old_value == 0 && barrier->initial_value != 0)) {
 		int restore_value = old_value;
@@ -385,14 +383,14 @@ barrier_update_r(barrier_r *barrier, int new_value)
 		/* barrier was already exited, so undo update and return error */
 		do {
 			old_value = barrier->in_count;
-		} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, restore_value, &barrier->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t *)&barrier->in_count, old_value, restore_value) != old_value);
 
 		return -1;
 	} else {
 		/* we've updated the in_count so update the initial_value */
 		do {
 			old_value = barrier->initial_value;
-		} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, new_value, &barrier->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, new_value) != old_value);
 
 		/* don't need to notify anyone if updated_value is <= 0 as release will do it when called */
 
@@ -426,8 +424,8 @@ barrier_destroy_r(barrier_r *barrier, int block)
 	/* decrement the wait count */
 	if (block) {
 		do {
-			current = compareAndSwapUDATA((uintptr_t *)&barrier->out_count, -1, -1, &barrier->spinlock);
-			in = compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1, &barrier->spinlock);
+			current = compareAndSwapUDATA((uintptr_t *)&barrier->out_count, -1, -1);
+			in = compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1);
 		} while (current + in < barrier->initial_value);
 	}
 }
@@ -451,7 +449,6 @@ sem_init_r(sem_t_r *sem, int value)
 
 	sem->initial_value = value;
 	sem->sem_value = value;
-	sem->spinlock = 0;
 
 	return 0;
 }
@@ -500,9 +497,9 @@ sem_timedwait_r(sem_t_r *sem, uintptr_t seconds)
 	}
 
 	while (1) {
-		old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1, &sem->spinlock);
+		old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1);
 		while (old_value > 0) {
-			if (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1, &sem->spinlock) == old_value) {
+			if (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1) == old_value) {
 				/* successfully acquired lock */
 				return 0;
 			}
@@ -551,9 +548,9 @@ sem_trywait_r(sem_t_r *sem)
 	uintptr_t old_value = 0;
 
 	/* try to get the lock */
-	old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1, &sem->spinlock);
+	old_value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, -1, -1);
 	while (old_value > 0) {
-		int value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1, &sem->spinlock);
+		int value = compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - 1);
 		if (value == old_value) {
 			/* successfully acquired lock */
 			return 0;
@@ -584,7 +581,7 @@ sem_post_r(sem_t_r *sem)
 	/* release the lock */
 	do {
 		old_value = sem->sem_value;
-	} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value + 1, &sem->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value + 1) != old_value);
 
 	/* wake up a waiter */
 	if (write(sem->descriptor_pair[1], &byte, 1) != 1) {
@@ -615,13 +612,13 @@ sem_destroy_r(sem_t_r *sem)
 	/* prevent the semaphore from being acquired by subtracting initial value*/
 	do {
 		old_value = sem->sem_value;
-	} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - sem->initial_value, &sem->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value - sem->initial_value) != old_value);
 
 	if (old_value != sem->initial_value) {
 		/* undo the block and return error */
 		do {
 			old_value = sem->sem_value;
-		} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value + sem->initial_value, &sem->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t *)&sem->sem_value, old_value, old_value + sem->initial_value) != old_value);
 
 		/* semaphore is still in use */
 		return -1;

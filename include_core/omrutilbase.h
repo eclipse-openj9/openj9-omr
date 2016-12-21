@@ -26,10 +26,8 @@ extern "C" {
 #endif /* defined(__cplusplus) */
 
 /* ---------------- AtomicFunctions.cpp ---------------- */
-uintptr_t compareAndSwapUDATA(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue, uintptr_t *spinlock);
-uintptr_t compareAndSwapUDATANoSpinlock(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue);
-uint32_t compareAndSwapU32(uint32_t *location, uint32_t oldValue, uint32_t newValue, uintptr_t *spinlock);
-uint32_t compareAndSwapU32NoSpinlock(uint32_t *location, uint32_t oldValue, uint32_t newValue);
+uintptr_t compareAndSwapUDATA(uintptr_t *location, uintptr_t oldValue, uintptr_t newValue);
+uint32_t compareAndSwapU32(uint32_t *location, uint32_t oldValue, uint32_t newValue);
 void issueReadBarrier(void);
 void issueReadWriteBarrier(void);
 void issueWriteBarrier(void);

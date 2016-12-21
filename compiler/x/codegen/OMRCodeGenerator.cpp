@@ -156,6 +156,8 @@ void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
             uint32_t extended_model = getCPUModel(_processorSignature) + (getCPUExtendedModel(_processorSignature) << 4);
             switch (extended_model)
                {
+               case 0x4f:
+                  _processorDescription |= TR_ProcessorIntelBroadwell; break;
                case 0x3f:
                case 0x3c:
                   _processorDescription |= TR_ProcessorIntelHaswell; break;

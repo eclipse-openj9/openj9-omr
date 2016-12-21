@@ -194,7 +194,8 @@ struct TR_X86ProcessorInfo
       TR_ProcessorIntelWestmere    = 0x0000000c,
       TR_ProcessorIntelSandyBridge = 0x0000000d,
       TR_ProcessorIntelIvyBridge   = 0x0000000e,
-      TR_ProcessorIntelHaswell     = 0x0000000f
+      TR_ProcessorIntelHaswell     = 0x0000000f,
+      TR_ProcessorIntelBroadwell   = 0x00000010
       };
 
 
@@ -256,6 +257,7 @@ struct TR_X86ProcessorInfo
    bool isIntelSandyBridge()  { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSandyBridge; }
    bool isIntelIvyBridge()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelIvyBridge; }
    bool isIntelHaswell()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelHaswell; }
+   bool isIntelBroadwell()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelBroadwell; }
    bool isIntelOldMachine() ;
 
    bool isAMDK6()             { return (_processorDescription & 0x000000fe) == TR_ProcessorAMDK5; } // accept either K5 or K6

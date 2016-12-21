@@ -47,7 +47,7 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 
 class TR_FrontEnd;
 namespace TR { class S390JNICallDataSnippet; }
-class TR_S390PrivateLinkage;
+namespace TR { class S390PrivateLinkage; }
 namespace TR { class AutomaticSymbol; }
 namespace TR { class Compilation; }
 namespace TR { class Instruction; }
@@ -205,14 +205,18 @@ enum TR_S390LinkageRelocations
  */
 #define TR_FirstSpecialLinkageIndex  0x10
 
+namespace TR {
+
 /**
  * Pseudo-safe downcast function, since all linkages must be S390 linkages
  */
-inline TR_S390PrivateLinkage *
+inline TR::S390PrivateLinkage *
 toS390PrivateLinkage(TR::Linkage * l)
    {
-   return (TR_S390PrivateLinkage *) l;
+   return (TR::S390PrivateLinkage *) l;
    }
+
+}
 
 /**
  * 390 Automatic Marker Symbol Types
@@ -225,7 +229,7 @@ enum TR_S390AutoMarkers
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S390Linkage Definition
+//  TR::S390Linkage Definition
 ////////////////////////////////////////////////////////////////////////////////
 
 // Normal Stack Pointer Register refers to the register defined by the

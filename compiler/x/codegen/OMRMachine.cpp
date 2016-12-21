@@ -305,7 +305,7 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
    TR_RegisterMask                 interference      = virtReg->getInterference();
    TR_RegisterMask                 byteRegisterInterference = interference & 0x80000000;
    TR::RealRegister             *freeRegister      = NULL;
-   const TR_X86LinkageProperties &linkageProperties = self()->cg()->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = self()->cg()->getProperties();
 
    for (i = first; i <= last; i++)
       {
@@ -1531,7 +1531,7 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentIns
 void OMR::X86::Machine::setGPRWeightsFromAssociations()
    {
    // *this    swipeable for debugging purposes
-   const TR_X86LinkageProperties &linkageProperties = self()->cg()->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = self()->cg()->getProperties();
 
    for (int i = TR::RealRegister::FirstGPR;
         i <= TR::RealRegister::LastAssignableGPR;
@@ -1628,7 +1628,7 @@ OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 #define UNUSED_WEIGHT       0xFFFF
 
 void
-OMR::X86::Machine::initialiseRegisterFile(const struct TR_X86LinkageProperties &properties)
+OMR::X86::Machine::initialiseRegisterFile(const struct TR::X86LinkageProperties &properties)
    {
    // *this    swipeable for debugging purposes
    int reg;
@@ -1757,7 +1757,7 @@ OMR::X86::Machine::initialiseRegisterFile(const struct TR_X86LinkageProperties &
    }
 
 uint32_t*
-OMR::X86::Machine::getGlobalRegisterTable(const struct TR_X86LinkageProperties& property)
+OMR::X86::Machine::getGlobalRegisterTable(const struct TR::X86LinkageProperties& property)
    {
    uint32_t * allocationOrder = property.getRegisterAllocationOrder();
    for (int i = 0; i < self()->getNumGlobalGPRs() + _numGlobalFPRs; i++)

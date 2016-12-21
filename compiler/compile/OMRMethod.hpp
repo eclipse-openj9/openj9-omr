@@ -37,7 +37,7 @@ class TR_GlobalRegisterAllocator;
 class TR_InlinerBase;
 class TR_OpaqueClassBlock;
 class TR_ResolvedMethod;
-class TR_S390SystemLinkage;
+namespace TR { class S390SystemLinkage; }
 class TR_Value;
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }

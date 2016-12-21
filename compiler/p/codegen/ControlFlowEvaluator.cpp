@@ -805,7 +805,7 @@ TR::Register *OMR::Power::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Co
    {
    TR::Compilation *comp = cg->comp();
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
-   const TR_PPCLinkageProperties &linkageProperties = cg->getProperties();
+   const TR::PPCLinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineReturnRegister =
                 linkageProperties.getIntegerReturnRegister();
    TR::RegisterDependencyConditions *dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 0, cg->trMemory());
@@ -820,7 +820,7 @@ TR::Register *OMR::Power::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Co
 TR::Register *OMR::Power::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *returnRegister = cg->evaluate(node->getFirstChild());
-   const TR_PPCLinkageProperties &linkageProperties = cg->getProperties();
+   const TR::PPCLinkageProperties &linkageProperties = cg->getProperties();
    TR::RegisterDependencyConditions *dependencies;
    if (TR::Compiler->target.is64Bit())
       {

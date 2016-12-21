@@ -48,7 +48,7 @@ namespace TR { class Symbol; }
 template <class T> class List;
 
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S390zOSSystemLinkage Definition
+//  TR::S390zOSSystemLinkage Definition
 ////////////////////////////////////////////////////////////////////////////////
 
 enum TR_XPLinkFrameType
@@ -76,13 +76,15 @@ enum TR_XPLinkCallTypes {
    TR_XPLinkCallType_BASR33    =7      ///< BASR  r3,r3
    };
 
-class TR_S390zOSSystemLinkage : public TR::ZOSBaseSystemLinkageConnector
+namespace TR {
+
+class S390zOSSystemLinkage : public TR::ZOSBaseSystemLinkageConnector
    {
    TR::RealRegister::RegNum _environmentPointerRegister;
 
 public:
 
-   TR_S390zOSSystemLinkage(TR::CodeGenerator * cg) ;
+   S390zOSSystemLinkage(TR::CodeGenerator * cg);
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
          intptrj_t targetAddress, TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
@@ -150,14 +152,14 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S390zLinuxSystemLinkage Definition
+//  TR::S390zLinuxSystemLinkage Definition
 ////////////////////////////////////////////////////////////////////////////////
-class TR_S390zLinuxSystemLinkage : public TR::SystemLinkage
+class S390zLinuxSystemLinkage : public TR::SystemLinkage
    {
    TR::RealRegister::RegNum _GOTPointerRegister;
 public:
 
-   TR_S390zLinuxSystemLinkage(TR::CodeGenerator * cg) ;
+   S390zLinuxSystemLinkage(TR::CodeGenerator * cg);
 
    virtual void generateInstructionsForCall(TR::Node * callNode, TR::RegisterDependencyConditions * deps, intptrj_t targetAddress,
          TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
@@ -177,9 +179,6 @@ public:
    virtual bool isSymbolPassedByReference(TR::Symbol *sym);
    };
 
-
-////////////////////////////////////////////////////////////////////////////////
-//  TR_S39PLXSystemLinkage Definition
-////////////////////////////////////////////////////////////////////////////////
+}
 
 #endif

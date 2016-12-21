@@ -57,7 +57,7 @@ namespace TR { class CodeGenerator; }
 namespace TR { class ConstantDataSnippet; }
 namespace TR { class PPCImmInstruction; }
 namespace TR { class Snippet; }
-struct TR_PPCLinkageProperties;
+namespace TR { struct PPCLinkageProperties; }
 
 extern TR::Instruction *loadAddressConstantInSnippet(TR::CodeGenerator *cg,
                                     TR::Node        *node,
@@ -213,7 +213,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // different from evaluateNode in that it returns a clobberable register
    TR::Register *gprClobberEvaluate(TR::Node *node);
 
-   const TR_PPCLinkageProperties &getProperties() { return *_linkageProperties; }
+   const TR::PPCLinkageProperties &getProperties() { return *_linkageProperties; }
 
    RegisterAssignmentDirection getAssignmentDirection() {return _assignmentDirection;}
    RegisterAssignmentDirection setAssignmentDirection(RegisterAssignmentDirection d)
@@ -561,7 +561,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister              *_tocBaseRegister;
    TR::PPCImmInstruction            *_returnTypeInfoInstruction;
    TR::ConstantDataSnippet       *_constantData;
-   const TR_PPCLinkageProperties   *_linkageProperties;
+   const TR::PPCLinkageProperties   *_linkageProperties;
    TR_BitVector                    *_blockCallInfo;
    TR_Array<TR::SymbolReference *>  *_trackStatics;
    TR_Array<TR_PPCLoadLabelItem *> *_trackItems;

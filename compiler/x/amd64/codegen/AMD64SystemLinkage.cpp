@@ -68,8 +68,8 @@ enum
    };
 
 
-TR_AMD64Win64FastCallLinkage::TR_AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
-   : TR_AMD64SystemLinkage(cg)
+TR::AMD64Win64FastCallLinkage::AMD64Win64FastCallLinkage(TR::CodeGenerator *cg)
+   : TR::AMD64SystemLinkage(cg)
    {
    uint8_t r, p;
 
@@ -263,8 +263,8 @@ TR_AMD64Win64FastCallLinkage::TR_AMD64Win64FastCallLinkage(TR::CodeGenerator *cg
    }
 
 
-TR_AMD64ABILinkage::TR_AMD64ABILinkage(TR::CodeGenerator *cg)
-   : TR_AMD64SystemLinkage(cg)
+TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
+   : TR::AMD64SystemLinkage(cg)
    {
    uint8_t r, p;
 
@@ -456,7 +456,7 @@ TR_AMD64ABILinkage::TR_AMD64ABILinkage(TR::CodeGenerator *cg)
 
 
 TR::Register *
-TR_AMD64SystemLinkage::buildVolatileAndReturnDependencies(
+TR::AMD64SystemLinkage::buildVolatileAndReturnDependencies(
       TR::Node *callNode,
       TR::RegisterDependencyConditions *deps)
    {
@@ -604,7 +604,7 @@ TR_AMD64SystemLinkage::buildVolatileAndReturnDependencies(
 
 // Build arguments for system linkage dispatch.
 //
-int32_t TR_AMD64SystemLinkage::buildArgs(
+int32_t TR::AMD64SystemLinkage::buildArgs(
       TR::Node *callNode,
       TR::RegisterDependencyConditions *deps)
    {
@@ -620,7 +620,7 @@ int32_t TR_AMD64SystemLinkage::buildArgs(
             numFloatArgs = 0;
    int32_t first, last, direction;
    int32_t numCopiedRegs = 0;
-   TR::Register *copiedRegs[TR_X86LinkageProperties::MaxArgumentRegisters];
+   TR::Register *copiedRegs[TR::X86LinkageProperties::MaxArgumentRegisters];
 
    if (getProperties().passArgsRightToLeft())
       {
@@ -649,18 +649,18 @@ int32_t TR_AMD64SystemLinkage::buildArgs(
    int32_t i;
    for (i = first; i != last; i += direction)
       {
-      parmLayoutResult layoutResult;
+      TR::parmLayoutResult layoutResult;
       TR::RealRegister::RegNum rregIndex = noReg;
       TR::Node *child = callNode->getChild(i);
 
       layoutParm(child, sizeOfOutGoingArgs, numIntArgs, numFloatArgs, layoutResult);
 
-      if (layoutResult.abstract & parmLayoutResult::IN_LINKAGE_REG_PAIR)
+      if (layoutResult.abstract & TR::parmLayoutResult::IN_LINKAGE_REG_PAIR)
          {
          // TODO: AMD64 SysV ABI might put a struct into a pair of linkage registerr
          TR_ASSERT(false, "haven't support linkage_reg_pair yet.\n");
          }
-      else if (layoutResult.abstract & parmLayoutResult::IN_LINKAGE_REG)
+      else if (layoutResult.abstract & TR::parmLayoutResult::IN_LINKAGE_REG)
          {
          TR_RegisterKinds regKind = layoutResult.regs[0].regKind;
          uint32_t regIndex = layoutResult.regs[0].regIndex;
@@ -721,7 +721,7 @@ int32_t TR_AMD64SystemLinkage::buildArgs(
 
 
 TR::Register *
-TR_AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
+TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
    TR::SymbolReference *methodSymRef = callNode->getSymbolReference();
    TR_ASSERT(methodSymRef->getSymbol()->castToMethodSymbol()->isComputed(), "system linkage only supports computed indirect call for now %p\n", callNode);
@@ -780,7 +780,7 @@ TR_AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    }
 
 
-TR::Register *TR_AMD64SystemLinkage::buildDirectDispatch(
+TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
       TR::Node *callNode,
       bool spillFPRegs)
    {
@@ -905,7 +905,7 @@ TR::Register *TR_AMD64SystemLinkage::buildDirectDispatch(
 static const TR::RealRegister::RegNum NOT_ASSIGNED = (TR::RealRegister::RegNum)-1;
 
 uint32_t
-TR_AMD64SystemLinkage::getAlignment(TR::DataType type)
+TR::AMD64SystemLinkage::getAlignment(TR::DataType type)
    {
    switch(type)
       {
@@ -932,7 +932,7 @@ TR_AMD64SystemLinkage::getAlignment(TR::DataType type)
 
 
 void
-TR_AMD64ABILinkage::mapIncomingParms(
+TR::AMD64ABILinkage::mapIncomingParms(
       TR::ResolvedMethodSymbol *method,
       uint32_t &stackIndex)
    {
@@ -948,7 +948,7 @@ TR_AMD64ABILinkage::mapIncomingParms(
 
    // 1st: handle parameters which are passed through stack
    //
-   TR_X86SystemLinkage::mapIncomingParms(method);
+   TR::X86SystemLinkage::mapIncomingParms(method);
 
    // 2nd: handle parameters which are passed through linkage registers, but are
    // not assigned any register after RA (or say, by their first usage point,
@@ -985,11 +985,11 @@ TR_AMD64ABILinkage::mapIncomingParms(
 
 
 bool
-TR_AMD64SystemLinkage::layoutTypeInRegs(
+TR::AMD64SystemLinkage::layoutTypeInRegs(
       TR::DataType type,
       uint16_t &intArgs,
       uint16_t &floatArgs,
-      parmLayoutResult &layoutResult)
+      TR::parmLayoutResult &layoutResult)
    {
    int oldIntArgs = intArgs, oldFloatArgs = floatArgs;
 
@@ -1041,22 +1041,22 @@ FAIL_TO_LAYOUT_IN_REGS:
 
 
 int32_t
-TR_AMD64SystemLinkage::layoutParm(
+TR::AMD64SystemLinkage::layoutParm(
       TR::Node *parmNode,
       int32_t &dataCursor,
       uint16_t &intReg,
       uint16_t &floatReg,
-      parmLayoutResult &layoutResult)
+      TR::parmLayoutResult &layoutResult)
    {
    //AMD64 SysV ABI:  if the size of an object is larger than four eightbytes, or it contains unaligned fields, it has class MEMORY.
    if (parmNode->getSize() > 4*AMD64_STACK_SLOT_SIZE) goto LAYOUT_ON_STACK;
 
    if (layoutTypeInRegs(parmNode->getDataType(), intReg, floatReg, layoutResult))
       {
-      layoutResult.abstract |= parmLayoutResult::IN_LINKAGE_REG;
+      layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG;
 
       if (parmNode->getSize() > GPR_REG_WIDTH)
-         layoutResult.abstract |= parmLayoutResult::IN_LINKAGE_REG_PAIR;
+         layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG_PAIR;
 
       if (comp()->getOption(TR_TraceCG))
          traceMsg(comp(), "layout param node %p in register\n", parmNode);
@@ -1066,7 +1066,7 @@ TR_AMD64SystemLinkage::layoutParm(
       }
 
 LAYOUT_ON_STACK:
-   layoutResult.abstract |= parmLayoutResult::ON_STACK;
+   layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmNode->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "layout param node %p on stack\n", parmNode);
@@ -1076,22 +1076,22 @@ LAYOUT_ON_STACK:
 
 // TODO: Try to combine the 2 layoutParm functions.
 int32_t
-TR_AMD64SystemLinkage::layoutParm(
+TR::AMD64SystemLinkage::layoutParm(
       TR::ParameterSymbol *parmSymbol,
       int32_t &dataCursor,
       uint16_t &intReg,
       uint16_t &floatReg,
-      parmLayoutResult &layoutResult)
+      TR::parmLayoutResult &layoutResult)
    {
    //AMD64 SysV ABI:  if the size of an object is larger than four eightbytes, or it contains unaligned fields, it has class MEMORY.
    if (parmSymbol->getSize() > 4*AMD64_STACK_SLOT_SIZE) goto LAYOUT_ON_STACK;
 
    if (layoutTypeInRegs(parmSymbol->getDataType(), intReg, floatReg, layoutResult))
       {
-      layoutResult.abstract |= parmLayoutResult::IN_LINKAGE_REG;
+      layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG;
 
       if (parmSymbol->getSize() > GPR_REG_WIDTH)
-         layoutResult.abstract |= parmLayoutResult::IN_LINKAGE_REG_PAIR;
+         layoutResult.abstract |= TR::parmLayoutResult::IN_LINKAGE_REG_PAIR;
 
       if (comp()->getOption(TR_TraceCG))
          traceMsg(comp(), "layout param symbol %p in register\n", parmSymbol);
@@ -1101,7 +1101,7 @@ TR_AMD64SystemLinkage::layoutParm(
       }
 
 LAYOUT_ON_STACK:
-   layoutResult.abstract |= parmLayoutResult::ON_STACK;
+   layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmSymbol->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "layout param symbol %p on stack\n", parmSymbol);
@@ -1110,9 +1110,9 @@ LAYOUT_ON_STACK:
 
 
 void
-TR_AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
+TR::AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
    {
-   const TR_X86LinkageProperties     &properties = getProperties();
+   const TR::X86LinkageProperties     &properties = getProperties();
    uint16_t intReg = 0, floatReg = 0;
    // AMD64 SysV ABI: The end of the input argument area shall be aligned on a 16 (32, if __m256 is passed on stack) byte boundary. In other words, the value (%rsp + 8) is always a multiple of 16 (32) when control is transferred to the function entry point.
    int32_t alignment = AMD64_DEFAULT_STACK_ALIGNMENT;
@@ -1123,7 +1123,7 @@ TR_AMD64SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
 
    for (int32_t i= node->getFirstArgumentIndex(); i<node->getNumChildren(); ++i)
       {
-      parmLayoutResult fakeParm;
+      TR::parmLayoutResult fakeParm;
       TR::Node *parmNode = node->getChild(i);
       int32_t parmAlign = layoutParm(parmNode, sizeOfOutGoingArgs, intReg, floatReg, fakeParm);
       if (parmAlign == 32)

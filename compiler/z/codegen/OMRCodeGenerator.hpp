@@ -96,7 +96,7 @@ namespace TR { class S390ImmInstruction; }
 namespace TR { class S390LabelTableSnippet; }
 namespace TR { class S390LookupSwitchSnippet; }
 class TR_S390OutOfLineCodeSection;
-class TR_S390PrivateLinkage;
+namespace TR { class S390PrivateLinkage; }
 class TR_S390ScratchRegisterManager;
 namespace TR { class S390SortJumpTrampSnippet; }
 namespace TR { class S390TargetAddressSnippet; }
@@ -507,7 +507,7 @@ public:
 
 //Convenience accessor methods
    TR::Linkage *getS390Linkage();
-   TR_S390PrivateLinkage *getS390PrivateLinkage();
+   TR::S390PrivateLinkage *getS390PrivateLinkage();
    TR::SystemLinkage * getS390SystemLinkage();
 
    TR::RealRegister *getStackPointerRealRegister(TR::Symbol *symbol = NULL);

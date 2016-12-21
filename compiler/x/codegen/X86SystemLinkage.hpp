@@ -32,6 +32,8 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
 
+namespace TR {
+
 typedef struct parmLayoutResult
    {
    enum statusEnum
@@ -56,12 +58,12 @@ typedef struct parmLayoutResult
       }
    } parmLayoutResult;
 
-class TR_X86SystemLinkage : public TR::Linkage
+class X86SystemLinkage : public TR::Linkage
    {
    protected:
-   TR_X86SystemLinkage(TR::CodeGenerator *cg);
+   X86SystemLinkage(TR::CodeGenerator *cg);
 
-   TR_X86LinkageProperties _properties;
+   TR::X86LinkageProperties _properties;
 
    TR::Instruction* copyParametersToHomeLocation(TR::Instruction *cursor);
 
@@ -73,16 +75,16 @@ class TR_X86SystemLinkage : public TR::Linkage
 
    int32_t computeMemoryArgSize(TR::Node *callNode, int32_t first, int32_t last, int8_t direction);
    int32_t getParameterStartingPos(int32_t &dataCursor, uint32_t align);
-   int32_t layoutTypeOnStack(TR::DataType, int32_t&, parmLayoutResult&);
+   int32_t layoutTypeOnStack(TR::DataType, int32_t&, TR::parmLayoutResult&);
    virtual int32_t buildArgs(TR::Node *callNode, TR::RegisterDependencyConditions *deps) = 0;
    virtual uint32_t getAlignment(TR::DataType) = 0;
-   virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult) = 0;
-   virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, parmLayoutResult&) = 0;
+   virtual int32_t layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult &layoutResult) = 0;
+   virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, TR::parmLayoutResult&) = 0;
 
    virtual TR::Register* buildVolatileAndReturnDependencies(TR::Node*, TR::RegisterDependencyConditions*) = 0;
    public:
 
-   const TR_X86LinkageProperties& getProperties();
+   const TR::X86LinkageProperties& getProperties();
 
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode) = 0;
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode, bool spillFPRegs) = 0;
@@ -97,6 +99,8 @@ class TR_X86SystemLinkage : public TR::Linkage
    virtual void setUpStackSizeForCallNode(TR::Node *node) = 0;
    };
 
-inline TR_X86SystemLinkage *toX86SystemLinkage(TR::Linkage *l) {return (TR_X86SystemLinkage *)l;}
+inline TR::X86SystemLinkage *toX86SystemLinkage(TR::Linkage *l) {return (TR::X86SystemLinkage *)l;}
+
+}
 
 #endif

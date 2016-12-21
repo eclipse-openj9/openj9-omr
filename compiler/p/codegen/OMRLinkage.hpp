@@ -51,16 +51,6 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class ResolvedMethodSymbol; }
 template <class T> class List;
 
-class TR_PPCMemoryArgument
-   {
-   public:
-   TR_ALLOC(TR_Memory::PPCMemoryArgument)
-
-   TR::Register           *argRegister;
-   TR::MemoryReference *argMemory;
-   TR::InstOpCode::Mnemonic          opCode;
-   };
-
 inline void
 addDependency(
       TR::RegisterDependencyConditions *dep,
@@ -79,6 +69,18 @@ addDependency(
    dep->addPostCondition(vreg, rnum);
    }
 
+namespace TR {
+
+class PPCMemoryArgument
+   {
+   public:
+   TR_ALLOC(TR_Memory::PPCMemoryArgument)
+
+   TR::Register           *argRegister;
+   TR::MemoryReference *argMemory;
+   TR::InstOpCode::Mnemonic          opCode;
+   };
+
 
 // linkage properties
 #define CallerCleanup       0x01
@@ -96,7 +98,7 @@ addDependency(
 #define CallerAllocatesBackingStore 0x20
 #define PPC_Reserved                0x40
 
-struct TR_PPCLinkageProperties
+struct PPCLinkageProperties
    {
    uint32_t _properties;
    uint32_t _registerFlags[TR::RealRegister::NumRegisters];
@@ -366,6 +368,7 @@ struct TR_PPCLinkageProperties
    uint32_t getNumberOfDependencyGPRegisters() const {return _numberOfDependencyGPRegisters;}
    };
 
+}
 
 namespace OMR
 {
@@ -383,7 +386,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    virtual void mapStack(TR::ResolvedMethodSymbol *method);
    virtual void mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex);
    virtual void initPPCRealRegisterLinkage();
-   virtual TR::MemoryReference *getOutgoingArgumentMemRef(int32_t argSize, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR_PPCMemoryArgument &memArg, uint32_t len);
+   virtual TR::MemoryReference *getOutgoingArgumentMemRef(int32_t argSize, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::PPCMemoryArgument &memArg, uint32_t len);
    virtual TR::Instruction *saveArguments(TR::Instruction *cursor, bool fsd=false, bool saveOnly=false);
    virtual TR::Instruction *saveArguments(TR::Instruction *cursor, bool fsd, bool saveOnly, List<TR::ParameterSymbol> &parmList);
    virtual TR::Instruction *loadUpArguments(TR::Instruction *cursor);
@@ -401,7 +404,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    TR::Register *pushDoubleArg(TR::Node *child);
 
-   virtual const TR_PPCLinkageProperties& getProperties() = 0;
+   virtual const TR::PPCLinkageProperties& getProperties() = 0;
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 

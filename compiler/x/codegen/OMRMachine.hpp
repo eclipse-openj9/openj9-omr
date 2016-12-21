@@ -51,7 +51,7 @@ namespace TR { class MemoryReference; }
 namespace TR { class Node; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class SymbolReference; }
-struct TR_X86LinkageProperties;
+namespace TR { struct X86LinkageProperties; }
 template <typename ListKind> class List;
 
 #define TR_X86_REGISTER_FILE_SIZE (TR::RealRegister::NumRegisters)
@@ -129,8 +129,8 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
 
    public:
-   void initialiseRegisterFile(const struct TR_X86LinkageProperties&);
-   uint32_t* getGlobalRegisterTable(const struct TR_X86LinkageProperties&);
+   void initialiseRegisterFile(const struct TR::X86LinkageProperties&);
+   uint32_t* getGlobalRegisterTable(const struct TR::X86LinkageProperties&);
    int32_t getGlobalReg(TR::RealRegister::RegNum reg);
 
    TR::RealRegister *getX86RealRegister(TR::RealRegister::RegNum regNum)

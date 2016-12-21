@@ -1248,7 +1248,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
 
    TR::Node     *firstChild     = node->getFirstChild();
    TR::Register *returnRegister = cg->evaluate(firstChild);
-   const TR_X86LinkageProperties &linkageProperties = cg->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineReturnRegister =
       linkageProperties.getIntegerReturnRegister();
 

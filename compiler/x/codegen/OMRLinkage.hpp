@@ -85,10 +85,12 @@ typedef enum { Int4, Int8, Float4, Float8, NumMovDataTypes } TR_MovDataTypes;
 
 typedef enum { MemReg, RegMem, RegReg, NumMovOperandTypes }  TR_MovOperandTypes;
 
-struct TR_MovStatus // What kind of RegReg movs must be applied to a given register
+namespace TR {
+
+struct MovStatus // What kind of RegReg movs must be applied to a given register
    {
    // NOTE: sourceReg is not to be moved to targetReg.  Rather, we're building
-   // a kind of doubly-linked list, with a TR_MovStatus for each register R such
+   // a kind of doubly-linked list, with a TR::MovStatus for each register R such
    // that sourceReg will be moved to R and R will be moved to targetReg.
    //
    TR::RealRegister::RegNum sourceReg;        // Which reg will be copied over the given reg
@@ -96,7 +98,7 @@ struct TR_MovStatus // What kind of RegReg movs must be applied to a given regis
    TR_MovDataTypes          outgoingDataType; // Type of data originally in the given reg
    };
 
-struct TR_X86LinkageProperties
+struct X86LinkageProperties
    {
 
    // Limits applicable to all linkages.  They must cover both integer and float registers.
@@ -261,6 +263,8 @@ struct TR_X86LinkageProperties
 
    };
 
+}
+
 namespace OMR
 {
 
@@ -315,7 +319,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       // default of -1.
       }
 
-   virtual const ::TR_X86LinkageProperties& getProperties() = 0;
+   virtual const ::TR::X86LinkageProperties& getProperties() = 0;
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 
@@ -436,4 +440,5 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    };
 }
 }
+
 #endif

@@ -24,8 +24,8 @@
  */
 #ifndef Z_SYSTEMLINKAGE_CONNECTOR
 #define Z_SYSTEMLINKAGE_CONNECTOR
-class TR_S390SystemLinkage;
-namespace OMR { typedef TR_S390SystemLinkage SystemLinkageConnector; }
+namespace TR { class S390SystemLinkage; }
+namespace OMR { typedef TR::S390SystemLinkage SystemLinkageConnector; }
 #endif
 
 #include <stddef.h>                            // for NULL, size_t
@@ -56,26 +56,28 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SystemLinkage; }
 template <class T> class List;
 
+namespace TR {
+
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S390SystemLinkage Definition
+//  TR::S390SystemLinkage Definition
 ////////////////////////////////////////////////////////////////////////////////
-class TR_AllocaPatchGroup
+class AllocaPatchGroup
    {
 public:
    TR::Instruction *ahi;
    TR::Instruction *mvc;
    TR::Instruction *auxMvc;
 
-   TR_AllocaPatchGroup() : ahi(NULL), mvc(NULL), auxMvc(NULL)
+   AllocaPatchGroup() : ahi(NULL), mvc(NULL), auxMvc(NULL)
       {
       }
    };
 
-class TR_VaStartPatchGroup
+class VaStartPatchGroup
    {
 public:
    TR::Instruction * instrToBePatched[4];
-   TR_VaStartPatchGroup()
+   VaStartPatchGroup()
       {
       for (int i = 0; i < 4; ++i)
          instrToBePatched[i] = NULL;
@@ -83,7 +85,7 @@ public:
    };
 
 
-class TR_S390SystemLinkage : public TR::Linkage
+class S390SystemLinkage : public TR::Linkage
    {
    TR::RealRegister::RegNum _normalStackPointerRegister;
    TR::RealRegister::RegNum _alternateStackPointerRegister;
@@ -201,7 +203,7 @@ public:
 
 
 public:
-   TR_S390SystemLinkage(TR::CodeGenerator * cg, TR_S390LinkageConventions elc=TR_S390LinkageDefault, TR_LinkageConventions lc=TR_System)
+   S390SystemLinkage(TR::CodeGenerator * cg, TR_S390LinkageConventions elc=TR_S390LinkageDefault, TR_LinkageConventions lc=TR_System)
       : TR::Linkage(cg, elc,lc),
         _notifiedOfalloca(false),
         _notifiedOfDebugHooks(false),
@@ -281,5 +283,7 @@ public:
    virtual TR::Instruction *getputHPRs(TR::InstOpCode::Mnemonic opcode, TR::Instruction *cursor, TR::Node *node, TR::RealRegister *spReg=0);
 
    };
+
+}
 
 #endif

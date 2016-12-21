@@ -83,7 +83,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
 class TR_BackingStore;
 namespace TR { class Machine; }
 namespace TR { class CodeGenerator; }
-struct TR_ARMLinkageProperties;
+namespace TR { struct ARMLinkageProperties; }
 namespace TR { class ARMImmInstruction; }
 class TR_ARMOpCode;
 namespace TR { class ARMConstantDataSnippet; }
@@ -144,7 +144,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::Register *gprClobberEvaluate(TR::Node *node);
 
-   const TR_ARMLinkageProperties &getProperties() { return *_linkageProperties; }
+   const TR::ARMLinkageProperties &getProperties() { return *_linkageProperties; }
 
    RegisterAssignmentDirection getAssignmentDirection() {return _assignmentDirection;}
    RegisterAssignmentDirection setAssignmentDirection(RegisterAssignmentDirection d)
@@ -229,7 +229,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister            *_methodMetaDataRegister;
    TR::ARMImmInstruction          *_returnTypeInfoInstruction;
    TR::ARMConstantDataSnippet       *_constantData;
-   TR_ARMLinkageProperties   *_linkageProperties;
+   TR::ARMLinkageProperties   *_linkageProperties;
    List<TR_ARMOutOfLineCodeSection> _outOfLineCodeSectionList;
    // Internal Control Flow Depth Counters
    int32_t                          _internalControlFlowNestingDepth;

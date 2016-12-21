@@ -57,23 +57,23 @@ TR::Linkage *OMR::ARM::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
 //    case TR_InterpretedStatic:
-//       linkage = new (self()->trHeapMemory()) TR_ARMInterpretedStaticLinkage(this);
+//       linkage = new (self()->trHeapMemory()) TR::ARMInterpretedStaticLinkage(this);
 //       break;
       case TR_Private:
-         linkage = new (self()->trHeapMemory()) TR_ARMPrivateLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::ARMPrivateLinkage(self());
          break;
       case TR_System:
-         linkage = new (self()->trHeapMemory()) TR_ARMSystemLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
          break;
 //    case TR_AllRegister:
-//       linkage = new (self()->trHeapMemory()) TR_ARMAllRegisterLinkage(this);
+//       linkage = new (self()->trHeapMemory()) TR::ARMAllRegisterLinkage(this);
 //       break;
       case TR_Helper:
-         linkage = new (self()->trHeapMemory()) TR_ARMHelperLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::ARMHelperLinkage(self());
          break;
       default :
          TR_ASSERT(0, "using system linkage for unrecognized convention %d\n", lc);
-         linkage = new (self()->trHeapMemory()) TR_ARMSystemLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
       }
    self()->setLinkage(lc, linkage);
    return linkage;
@@ -215,7 +215,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
      }
 
    // Initialize linkage reg arrays
-   TR_ARMLinkageProperties linkageProperties = self()->getProperties();
+   TR::ARMLinkageProperties linkageProperties = self()->getProperties();
    for (i=0; i < linkageProperties.getNumIntArgRegs(); i++)
      _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
    for (i=0; i < linkageProperties.getNumFloatArgRegs(); i++)

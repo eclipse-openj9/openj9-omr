@@ -1112,7 +1112,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet), getName(methodSymRef));
 
    TR::Machine *machine = _cg->machine();
-   const TR_ARMLinkageProperties &linkage = _cg->getLinkage(methodSymbol->getLinkageConvention())->getProperties();
+   const TR::ARMLinkageProperties &linkage = _cg->getLinkage(methodSymbol->getLinkageConvention())->getProperties();
 
    uint32_t numIntArgs   = 0;
    uint32_t numFloatArgs = 0;
@@ -1387,7 +1387,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMStackCheckFailureSnippet * snippet)
    bool saveLR = (_cg->getSnippetList().size() <= 1 &&
                   !bodySymbol->isEHAware()                     &&
                   !_cg->machine()->getLinkRegisterKilled()) ? true : false;
-   const TR_ARMLinkageProperties &linkage = _cg->getLinkage()->getProperties();
+   const TR::ARMLinkageProperties &linkage = _cg->getLinkage()->getProperties();
    uint32_t frameSize = _cg->getFrameSizeInBytes();
    int32_t offset = linkage.getOffsetToFirstLocal();
    uint32_t base, rotate;

@@ -17,7 +17,7 @@
  *******************************************************************************/
 
 #ifndef ARM_SYSTEMLINKAGE_INCL
-#define ARM_SYSTEmLINKAGE_INCL
+#define ARM_SYSTEMLINKAGE_INCL
 
 #include "codegen/Linkage.hpp"
 
@@ -32,13 +32,15 @@ namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
 namespace TR { class ResolvedMethodSymbol; }
 
-class TR_ARMSystemLinkage : public TR::Linkage
+namespace TR {
+
+class ARMSystemLinkage : public TR::Linkage
    {
-   static TR_ARMLinkageProperties properties;
+   static TR::ARMLinkageProperties properties;
 
    public:
 
-   TR_ARMSystemLinkage(TR::CodeGenerator *codeGen) : TR::Linkage(codeGen) {}
+   ARMSystemLinkage(TR::CodeGenerator *codeGen) : TR::Linkage(codeGen) {}
 
    virtual uint32_t getRightToLeft();
    virtual void mapStack(TR::ResolvedMethodSymbol *method);
@@ -49,9 +51,9 @@ class TR_ARMSystemLinkage : public TR::Linkage
                                                             int32_t               argOffset,
                                                             TR::Register          *argReg,
                                                             TR_ARMOpCodes         opCode,
-                                                            TR_ARMMemoryArgument &memArg);
+                                                            TR::ARMMemoryArgument &memArg);
 
-   virtual TR_ARMLinkageProperties& getProperties();
+   virtual TR::ARMLinkageProperties& getProperties();
 
    virtual void createPrologue(TR::Instruction *cursor);
    virtual void createEpilogue(TR::Instruction *cursor);
@@ -64,5 +66,7 @@ class TR_ARMSystemLinkage : public TR::Linkage
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode);
    virtual TR::Register *buildIndirectDispatch(TR::Node *callNode);
    };
+
+}
 
 #endif

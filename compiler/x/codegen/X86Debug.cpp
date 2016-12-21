@@ -2388,7 +2388,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
    TR::MethodSymbol *methodSymbol = callNode->getSymbol()->castToMethodSymbol();
    TR::Linkage *linkage = _cg->getLinkage();
 
-   const TR_X86LinkageProperties &linkageProperties = linkage->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = linkage->getProperties();
 
    int32_t   numGPArgs = 0;
    int32_t   numFPArgs = 0;

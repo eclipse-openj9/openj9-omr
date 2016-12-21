@@ -128,7 +128,7 @@
 
 class TR_IGNode;
 namespace TR { class DebugCounterBase; }
-class TR_S390PrivateLinkage;
+namespace TR { class S390PrivateLinkage; }
 namespace TR { class SimpleRegex; }
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
@@ -1030,7 +1030,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
    }
 
 TR::Linkage * OMR::Z::CodeGenerator::getS390Linkage() {return (self()->getLinkage());}
-TR_S390PrivateLinkage * OMR::Z::CodeGenerator::getS390PrivateLinkage() {return toS390PrivateLinkage(self()->getLinkage());}
+TR::S390PrivateLinkage * OMR::Z::CodeGenerator::getS390PrivateLinkage() {return TR::toS390PrivateLinkage(self()->getLinkage());}
 
 
 TR::SystemLinkage * OMR::Z::CodeGenerator::getS390SystemLinkage() {return toSystemLinkage(self()->getLinkage());}
@@ -7858,7 +7858,7 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    switch (lc)
       {
       case TR_Helper:
-         linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
+         linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          break;
 
       case TR_Private:
@@ -7866,9 +7866,9 @@ OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
 
       case TR_System:
          if (TR::Compiler->target.isLinux())
-            linkage = new (self()->trHeapMemory()) TR_S390zLinuxSystemLinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::S390zLinuxSystemLinkage(self());
          else
-            linkage = new (self()->trHeapMemory()) TR_S390zOSSystemLinkage(self());
+            linkage = new (self()->trHeapMemory()) TR::S390zOSSystemLinkage(self());
          break;
 
       default :

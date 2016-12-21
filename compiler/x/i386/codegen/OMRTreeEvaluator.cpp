@@ -606,7 +606,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairReturnEvaluator(TR::Node
    TR::Register *lowRegister    = returnRegister->getLowOrder();
    TR::Register *highRegister   = returnRegister->getHighOrder();
 
-   const TR_X86LinkageProperties &linkageProperties = cg->getProperties();
+   const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
    TR::RealRegister::RegNum machineLowReturnRegister =
       linkageProperties.getLongLowReturnRegister();
 
@@ -1474,7 +1474,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
          TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
          dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
          dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-         TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+         TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
          TR::IA32LinkageUtils::pushLongArg(secondChild, cg);
          TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
          instr = generateHelperCallInstruction(node, TR_IA32longMultiply, dependencies, cg);
@@ -1566,7 +1566,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
    TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
    dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
    dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-   TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+   TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
    TR::IA32LinkageUtils::pushLongArg(secondChild, cg);
    TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
    TR::X86ImmSymInstruction  *instr =
@@ -1680,7 +1680,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
    dependencies->addPostCondition(firstRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
    dependencies->addPostCondition(secondRegister->getLowOrder(), TR::RealRegister::NoReg, cg);
 
-   TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+   TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
    TR::IA32LinkageUtils::pushLongArg(secondChild, cg);
    TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
    TR::X86ImmSymInstruction  *instr =
@@ -1812,7 +1812,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShlEvaluator(TR::Node *n
       TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
       dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
       dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-      TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+      TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
       TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
       TR::IA32LinkageUtils::pushIntegerWordArg(secondChild, cg);
       TR::X86ImmSymInstruction  *instr = generateHelperCallInstruction(node, TR_IA32longShiftLeft, dependencies, cg);
@@ -1958,7 +1958,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShrEvaluator(TR::Node *n
       TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
       dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
       dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-      TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+      TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
       TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
       TR::IA32LinkageUtils::pushIntegerWordArg(secondChild, cg);
       TR::X86ImmSymInstruction  *instr = generateHelperCallInstruction(node, TR_IA32longShiftRightArithmetic, dependencies, cg);
@@ -2021,7 +2021,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairUshrEvaluator(TR::Node *
       TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)0, 2, cg);
       dependencies->addPostCondition(lowRegister, TR::RealRegister::eax, cg);
       dependencies->addPostCondition(highRegister, TR::RealRegister::edx, cg);
-      TR_IA32PrivateLinkage *linkage = toIA32PrivateLinkage(cg->getLinkage(TR_Private));
+      TR::IA32PrivateLinkage *linkage = TR::toIA32PrivateLinkage(cg->getLinkage(TR_Private));
       TR::IA32LinkageUtils::pushLongArg(firstChild, cg);
       TR::IA32LinkageUtils::pushIntegerWordArg(secondChild, cg);
       TR::X86ImmSymInstruction  *instr = generateHelperCallInstruction(node, TR_IA32longShiftRightLogical, dependencies, cg);

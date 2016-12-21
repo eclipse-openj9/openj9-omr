@@ -96,7 +96,7 @@ TR::RegisterDependencyConditions* TR_PPCScratchRegisterDependencyConditions::cre
       dependencies->addPostCondition(post->_ccrDeps[i].getRegister(), post->_ccrDeps[i].getRealRegister(), post->_ccrDeps[i].getFlags());
       }
 
-   const TR_PPCLinkageProperties& properties = cg->getLinkage()->getProperties();
+   const TR::PPCLinkageProperties& properties = cg->getLinkage()->getProperties();
    if (liveVSXVectorReg)
       {
       for (int32_t i=TR::RealRegister::FirstVSR; i<=TR::RealRegister::LastVSR; i++)

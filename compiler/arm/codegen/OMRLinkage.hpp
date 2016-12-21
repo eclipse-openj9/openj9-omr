@@ -39,18 +39,6 @@ namespace OMR { typedef OMR::ARM::Linkage LinkageConnector; }
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }
 
-class TR_ARMMemoryArgument
-   {
-   public:
-   TR_ALLOC(TR_Memory::ARMMemoryArgument)
-
-   TR::Register           *argRegister;
-   TR::MemoryReference *argMemory;
-   TR_ARMOpCodes          opCode;
-
-//   void *operator new[](size_t s, int flag) {return jitStackAlloc(s);}
-   };
-
 static inline void addDependency(TR::RegisterDependencyConditions *dep,
                           TR::Register *vreg,
                           TR::RealRegister ::RegNum rnum,
@@ -62,6 +50,20 @@ static inline void addDependency(TR::RegisterDependencyConditions *dep,
    dep->addPreCondition(vreg, rnum);
    dep->addPostCondition(vreg, rnum);
    }
+
+namespace TR {
+
+class ARMMemoryArgument
+   {
+   public:
+   TR_ALLOC(TR_Memory::ARMMemoryArgument)
+
+   TR::Register           *argRegister;
+   TR::MemoryReference *argMemory;
+   TR_ARMOpCodes          opCode;
+
+//   void *operator new[](size_t s, int flag) {return jitStackAlloc(s);}
+   };
 
 // linkage properties
 #define CallerCleanup       0x01
@@ -78,7 +80,7 @@ static inline void addDependency(TR::RegisterDependencyConditions *dep,
 #define FloatArgument               0x10
 #define CallerAllocatesBackingStore 0x20
 
-struct TR_ARMLinkageProperties
+struct ARMLinkageProperties
    {
    uint32_t                                _properties;
    uint32_t                                _registerFlags[TR::RealRegister::NumRegisters];
@@ -277,6 +279,8 @@ struct TR_ARMLinkageProperties
 
    };
 
+}
+
 namespace OMR
 {
 namespace ARM
@@ -296,7 +300,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
                                                             int32_t               argOffset,
                                                             TR::Register          *argReg,
                                                             TR_ARMOpCodes         opCode,
-                                                            TR_ARMMemoryArgument &memArg) = 0;
+                                                            TR::ARMMemoryArgument &memArg) = 0;
    virtual TR::Instruction *saveArguments(TR::Instruction *cursor);
    virtual TR::Instruction *flushArguments(TR::Instruction *cursor);
    virtual TR::Instruction *loadUpArguments(TR::Instruction *cursor);
@@ -309,7 +313,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    TR::Register *pushFloatArg(TR::Node *child);
    TR::Register *pushDoubleArg(TR::Node *child);
 
-   virtual TR_ARMLinkageProperties& getProperties() = 0;
+   virtual TR::ARMLinkageProperties& getProperties() = 0;
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 

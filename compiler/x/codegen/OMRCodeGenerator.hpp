@@ -69,7 +69,7 @@ namespace TR { class X86LabelInstruction;       }
 namespace TR { class X86MemTableInstruction;    }
 namespace TR { class X86ScratchRegisterManager; }
 namespace TR { class X86VFPSaveInstruction;     }
-struct TR_X86LinkageProperties;
+namespace TR { struct X86LinkageProperties; }
 
 namespace TR {
 
@@ -372,7 +372,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Register *floatClobberEvaluate(TR::Node *node);
    TR::Register *doubleClobberEvaluate(TR::Node *node);
 
-   const TR_X86LinkageProperties &getProperties() { return *_linkageProperties; }
+   const TR::X86LinkageProperties &getProperties() { return *_linkageProperties; }
 
    RegisterAssignmentDirection getAssignmentDirection() {return _assignmentDirection;}
    RegisterAssignmentDirection setAssignmentDirection(RegisterAssignmentDirection d)
@@ -645,7 +645,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    static TR_X86PaddingTable _old32BitPaddingTable;
 
    TR::X86ImmInstruction *_returnTypeInfoInstruction;
-   const TR_X86LinkageProperties  *_linkageProperties;
+   const TR::X86LinkageProperties  *_linkageProperties;
 
    private:
 

@@ -21,7 +21,7 @@
 #include <stdio.h>                         // for NULL, printf
 #include "codegen/CodeGenerator.hpp"       // for CodeGenerator
 #include "codegen/IA32LinkageUtils.hpp"    // for IA32LinkageUtils
-#include "codegen/Linkage.hpp"             // for TR_X86LinkageProperties, etc
+#include "codegen/Linkage.hpp"             // for TR::X86LinkageProperties, etc
 #include "codegen/Machine.hpp"             // for Machine
 #include "codegen/RealRegister.hpp"        // for TR::RealRegister::RegNum, etc
 #include "codegen/RegisterConstants.hpp"   // for TR_RegisterKinds::TR_X87
@@ -60,9 +60,9 @@ enum
    IA32_DEFAULT_STACK_ALIGNMENT=4
    };
 
-TR_IA32SystemLinkage::TR_IA32SystemLinkage(
+TR::IA32SystemLinkage::IA32SystemLinkage(
       TR::CodeGenerator *cg) :
-   TR_X86SystemLinkage(cg)
+   TR::X86SystemLinkage(cg)
    {
    _properties._properties = CallerCleanup | AlwaysDedicateFramePointerRegister;
    // for shrinkwrapping, we cannot use pushes for the preserved regs. pushes/pops need to be in sequence and this is not compatible with shrinkwrapping as registers need not be saved/restored in sequenc
@@ -152,7 +152,7 @@ TR_IA32SystemLinkage::TR_IA32SystemLinkage(
    }
 
 uint32_t
-TR_IA32SystemLinkage::getAlignment(TR::DataType type)
+TR::IA32SystemLinkage::getAlignment(TR::DataType type)
    {
    switch(type)
       {
@@ -179,9 +179,9 @@ TR_IA32SystemLinkage::getAlignment(TR::DataType type)
 
 
 int32_t
-TR_IA32SystemLinkage::layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult)
+TR::IA32SystemLinkage::layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult &layoutResult)
    {
-   layoutResult.abstract |= parmLayoutResult::ON_STACK;
+   layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmNode->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "layout param node %p on stack\n", parmNode);
@@ -189,9 +189,9 @@ TR_IA32SystemLinkage::layoutParm(TR::Node *parmNode, int32_t &dataCursor, uint16
    }
 
 int32_t
-TR_IA32SystemLinkage::layoutParm(TR::ParameterSymbol *parmSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, parmLayoutResult &layoutResult)
+TR::IA32SystemLinkage::layoutParm(TR::ParameterSymbol *parmSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult &layoutResult)
    {
-   layoutResult.abstract |= parmLayoutResult::ON_STACK;
+   layoutResult.abstract |= TR::parmLayoutResult::ON_STACK;
    int32_t align = layoutTypeOnStack(parmSymbol->getDataType(), dataCursor, layoutResult);
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "layout param symbol %p on stack\n", parmSymbol);
@@ -200,14 +200,14 @@ TR_IA32SystemLinkage::layoutParm(TR::ParameterSymbol *parmSymbol, int32_t &dataC
 
 
 void
-TR_IA32SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
+TR::IA32SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
    {
-   const TR_X86LinkageProperties     &properties = getProperties();
+   const TR::X86LinkageProperties     &properties = getProperties();
    int32_t  sizeOfOutGoingArgs= 0;
    uint16_t intReg = 0, floatReg = 0;
    for (int32_t i= node->getFirstArgumentIndex(); i<node->getNumChildren(); ++i)
       {
-      parmLayoutResult fakeParm;
+      TR::parmLayoutResult fakeParm;
       TR::Node *parmNode = node->getChild(i);
       layoutParm(parmNode, sizeOfOutGoingArgs, intReg, floatReg, fakeParm);
       }
@@ -222,14 +222,14 @@ TR_IA32SystemLinkage::setUpStackSizeForCallNode(TR::Node* node)
    }
 
 TR::Register *
-TR_IA32SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
+TR::IA32SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    {
-   TR_ASSERT(false, "TR_IA32SystemLinkage::buildIndirectDispatch is not supported.\n");
+   TR_ASSERT(false, "TR::IA32SystemLinkage::buildIndirectDispatch is not supported.\n");
    return NULL;
    }
 
 TR::Register *
-TR_IA32SystemLinkage::buildVolatileAndReturnDependencies(
+TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
     TR::Node *callNode,
     TR::RegisterDependencyConditions *deps)
    {
@@ -300,7 +300,7 @@ TR_IA32SystemLinkage::buildVolatileAndReturnDependencies(
    return returnReg;
    }
 
-int32_t TR_IA32SystemLinkage::buildArgs(
+int32_t TR::IA32SystemLinkage::buildArgs(
       TR::Node *callNode,
       TR::RegisterDependencyConditions *deps)
    {
@@ -338,7 +338,7 @@ int32_t TR_IA32SystemLinkage::buildArgs(
    return argSize;
    }
 
-TR::Register *TR_IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, bool spillFPRegs)
+TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, bool spillFPRegs)
    {
    TR::RealRegister    *stackPointerReg = machine()->getX86RealRegister(TR::RealRegister::esp);
    TR::SymbolReference *methodSymRef    = callNode->getSymbolReference();

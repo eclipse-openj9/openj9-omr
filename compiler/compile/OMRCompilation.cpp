@@ -497,10 +497,8 @@ OMR::Compilation::maxInternalPointers()
 bool
 OMR::Compilation::isOutermostMethod()
    {
-#ifdef J9_PROJECT_SPECIFIC
    if ((self()->getInlineDepth() != 0) || self()->isPeekingMethod())
       return false;
-#endif
    return true;
    }
 
@@ -1153,11 +1151,11 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
    int32_t maxCallerIndex = TR_ByteCodeInfo::maxCallerIndex;
    //This restriction is due to a limited number of bits allocated to callerIndex in TR_ByteCodeInfo
    //For example, in Java TR_ByteCodeInfo::maxCallerIndex is set to 4095 (12 bits and one used for signness)
-	if (self()->getNumInlinedCallSites() >= maxCallerIndex)
-		{
-		traceMsg(self(), "The maximum number of inlined methods %d is reached\n", TR_ByteCodeInfo::maxCallerIndex);
-		return false;
-		}
+   if (self()->getNumInlinedCallSites() >= maxCallerIndex)
+      {
+      traceMsg(self(), "The maximum number of inlined methods %d is reached\n", TR_ByteCodeInfo::maxCallerIndex);
+      return false;
+      }
 
    //in jsr292 "smart" inliner can run multiple times. we need to reconstruct a callstack
    //for all the callsites with the caller indices != -1 to make sure each catch block
@@ -1189,7 +1187,7 @@ bool OMR::Compilation::incInlineDepth(TR_OpaqueMethodBlock *methodInfo, TR::Reso
       _maxInlineDepth = inlinedCallStackSize;
       }
 
-	return true;
+   return true;
    }
 
 void OMR::Compilation::decInlineDepth(bool removeInlinedCallSitesEntry)

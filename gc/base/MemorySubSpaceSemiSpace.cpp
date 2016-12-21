@@ -460,23 +460,24 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 }
 
 void
-MM_MemorySubSpaceSemiSpace::masterSetupForGC(MM_EnvironmentBase *envBase)
+MM_MemorySubSpaceSemiSpace::cacheRanges(MM_MemorySubSpace *subSpace, void **base, void **top)
+{
+	GC_MemorySubSpaceRegionIterator regionIterator(subSpace);
+	MM_HeapRegionDescriptor* region = regionIterator.nextRegion();
+	Assert_MM_true(NULL != region);
+	Assert_MM_true(NULL == regionIterator.nextRegion());
+	*base = region->getLowAddress();
+	*top = region->getHighAddress();
+}
+
+void
+MM_MemorySubSpaceSemiSpace::masterSetupForGC(MM_EnvironmentBase *env)
 {
 	/* cache allocate (effectively evacuate for GC) ranges */
-	GC_MemorySubSpaceRegionIterator allocateRegionIterator(_memorySubSpaceAllocate);
-	MM_HeapRegionDescriptor* region = allocateRegionIterator.nextRegion();
-	Assert_MM_true(NULL != region);
-	Assert_MM_true(NULL == allocateRegionIterator.nextRegion());
-	_allocateSpaceBase = region->getLowAddress();
-	_allocateSpaceTop = region->getHighAddress();
+	cacheRanges(_memorySubSpaceAllocate, &_allocateSpaceBase, &_allocateSpaceTop);
+	cacheRanges(_memorySubSpaceSurvivor, &_survivorSpaceBase, &_survivorSpaceTop);
 
-	/* cache survivor ranges */
-	GC_MemorySubSpaceRegionIterator survivorRegionIterator(_memorySubSpaceSurvivor);
-	region = survivorRegionIterator.nextRegion();
-	Assert_MM_true(NULL != region);
-	Assert_MM_true(NULL == survivorRegionIterator.nextRegion());
-	_survivorSpaceBase = region->getLowAddress();
-	_survivorSpaceTop = region->getHighAddress();
+	flip(env, set_evacuate);
 }
 
 void
@@ -506,17 +507,34 @@ MM_MemorySubSpaceSemiSpace::tilt(MM_EnvironmentBase *env, uintptr_t survivorSpac
 }
 
 void
-MM_MemorySubSpaceSemiSpace::rebuildFreeListForEvacuate(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSemiSpace::masterTeardownForSuccessfulGC(MM_EnvironmentBase *env)
 {
 	_memorySubSpaceEvacuate->rebuildFreeList(env);
+
+	/* Flip the memory space allocate profile */
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+	flip(env, set_allocate);
+	flip(env, disable_allocation);
+#endif
+	flip(env, restore_allocation_and_set_survivor);
+
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* Adjust memory between the semi spaces where applicable */
+	checkResize(env);
+	performResize(env);
+#endif
 }
 
 
 void
-MM_MemorySubSpaceSemiSpace::rebuildFreeListForBackout(MM_EnvironmentBase *env)
+MM_MemorySubSpaceSemiSpace::masterTeardownForAbortedGC(MM_EnvironmentBase *env)
 {
 	/* Build free list in survivor */
 	_memorySubSpaceSurvivor->rebuildFreeList(env);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	flip(env, backout);
+#endif
 }
 
 /**

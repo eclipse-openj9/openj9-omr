@@ -477,6 +477,8 @@ OMR_Shutdown_VM(OMR_VM *omrVM, OMR_VMThread *omrVMThread)
 		}
 #endif /* OMR_GC */
 
+		omr_ras_cleanupMethodDictionary(omrVM);
+
 		omr_ras_cleanupHealthCenter(omrVM, &(omrVM->_hcAgent));
 
 		rc = omr_ras_cleanupTraceEngine(omrVMThread);

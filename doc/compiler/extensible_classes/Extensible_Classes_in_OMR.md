@@ -6,7 +6,8 @@ that you read that document first.
 
 ## Projects
 
-We currently have X projects as part of our OMR suite. These are
+We currently have a few projects using extensible classes in the OMR suite.
+These are:
 
 | Project    | Location |
 |------------|----------|
@@ -21,7 +22,6 @@ Each project is given a namespace as follows:
 - `OMR`
 - `JitBuilder`
 - `Test`
-- `TR` (namespace for concrete classes)
 
 Each project also provides some specializations for the various supported architectures. These are also assigned
 namespaces as follows:
@@ -32,6 +32,9 @@ namespaces as follows:
   - `AMD64`: for 64-bit x86 (x86-64)
   - `i386`: for 32-bit x86 (x86-32)
 - `Z`: for the IBM z Systems architecture
+
+Additionally, there is a `TR` namespace, used by all projects. This namespace
+holds all concrete classes.
 
 ## Directories
 
@@ -86,7 +89,8 @@ and also:
 ```
 ## Connectors
 
-Class extension connectors are named by taking the extension class's name and appending `Connector` (yes, it's un-creative but it works).
+Class extension connectors are named by taking the extension class' name and
+appending `Connector` .
 As an example:
 
 ```c++
@@ -94,4 +98,26 @@ namespace OMR { namespace X86 { class CodeCache; } }
 namespace OMR { typedef OMR::X86::CodeCache CodeCacheConnector; } // `OMR` is specified for clarity
 ```
 
-[guard convention?]
+These are located above `#include` directives in header files, and are guarded
+from redefinition by defining a macro at the same time. This ensures the
+connector is `typedef`ed to the most specialized version of a class. For example:
+
+```c++
+#ifndef OMR_OPTIMIZATION_CONNECTOR
+#define OMR_OPTIMIZATION_CONNECTOR
+namespace OMR { class Optimization; }
+namespace OMR { typedef OMR::Optimization OptimizationConnector; }
+#endif
+```
+
+## Linting
+
+Extensible classes can be linted for common problems using `OMRChecker`, a
+clang-based linter. This can be run on the Test compiler using `make lint` in
+the root directory, or other projects by using their `linter.mk` makefiles.
+
+For the linter to know a class is extensible, they are marked as extensible by
+adding an `OMR_EXTENSIBLE` annotation to their definition:
+```c++
+class OMR_EXTENSIBLE Optimization
+```

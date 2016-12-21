@@ -4223,8 +4223,29 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
    ListIterator<TR::Block> bi (&blocksInRegion);
    TR::Block *nextBlock;
    for (nextBlock = bi.getCurrent(); nextBlock; nextBlock = bi.getNext())
+      {
       if (nextBlock->hasExceptionPredecessors())
          return;
+
+      //bail out if there is any exception edges to OSRCatchBlock because there is no
+      //safe way to split those edges. Also, there is no need to check if the OSRCatchBlock is 
+      //within the loop because loop strider already skips any loop that contains a 
+      //catch block
+      if (nextBlock->hasExceptionSuccessors())
+         {
+         TR_SuccessorIterator sit(nextBlock);
+         for (TR::CFGEdge *e = sit.getFirst(); e != NULL; e = sit.getNext())
+            {
+            TR::Block *dest = toBlock(e->getTo());
+            if (dest->isOSRCatchBlock())
+               {
+               if (trace())
+                  traceMsg(comp(),"reject loop %d because dest (block_%d) of an exit edge is OSRCatchBlock\n", loopStructure->getNumber(), dest->getNumber());
+               return;
+               }
+            }
+         }
+      }
 
    TR_RegionStructure *parentStructure = regionStructure->getParent()->asRegion();
    TR_StructureSubGraphNode *subNode = NULL;

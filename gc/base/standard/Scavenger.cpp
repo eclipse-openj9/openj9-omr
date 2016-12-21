@@ -4026,6 +4026,9 @@ MM_Scavenger::reportGCIncrementEnd(MM_EnvironmentStandard *env)
 		stats->_endTime,
 		J9HOOK_MM_PRIVATE_GC_INCREMENT_END,
 		stats);
+
+	/* reset fragmentation indicator after reporting fragmentation */
+	stats->_tenureFragmentation = NO_FRAGMENTATION;
 }
 
 uintptr_t

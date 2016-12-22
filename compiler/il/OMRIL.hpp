@@ -54,9 +54,13 @@ class OMR_EXTENSIBLE IL
    static TR::ILOpCodes opCodesForCompareNotEquals[];
    static TR::ILOpCodes opCodesForIfCompareNotEquals[];
    static TR::ILOpCodes opCodesForCompareLessThan[];
+   static TR::ILOpCodes opCodesForCompareLessOrEquals[];
    static TR::ILOpCodes opCodesForIfCompareLessThan[];
+   static TR::ILOpCodes opCodesForIfCompareLessOrEquals[];
    static TR::ILOpCodes opCodesForCompareGreaterThan[];
+   static TR::ILOpCodes opCodesForCompareGreaterOrEquals[];
    static TR::ILOpCodes opCodesForIfCompareGreaterThan[];
+   static TR::ILOpCodes opCodesForIfCompareGreaterOrEquals[];
 
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);
@@ -75,9 +79,13 @@ class OMR_EXTENSIBLE IL
    TR::ILOpCodes opCodeForCompareNotEquals(TR::DataType dt);
    TR::ILOpCodes opCodeForIfCompareNotEquals(TR::DataType dt);
    TR::ILOpCodes opCodeForCompareLessThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareLessOrEquals(TR::DataType dt);
    TR::ILOpCodes opCodeForIfCompareLessThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareLessOrEquals(TR::DataType dt);
    TR::ILOpCodes opCodeForCompareGreaterThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForCompareGreaterOrEquals(TR::DataType dt);
    TR::ILOpCodes opCodeForIfCompareGreaterThan(TR::DataType dt);
+   TR::ILOpCodes opCodeForIfCompareGreaterOrEquals(TR::DataType dt);
 
    };
 

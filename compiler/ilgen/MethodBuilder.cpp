@@ -369,6 +369,7 @@ MethodBuilder::lookupSymbol(const char *name)
       TR_HashId nameFromSlotID;
       _symbolNameFromSlot->add(symRef->getCPIndex(), nameFromSlotID, (void *)name);
       }
+   symRef->getSymbol()->setNotCollected();
    _symbols->add(name, symbolsID, (void *)symRef);
    return symRef;
    }

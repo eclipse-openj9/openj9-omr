@@ -1173,16 +1173,16 @@ IlBuilder::setHandlerInfo(uint32_t catchType)
    }
 
 TR::Node*
-IlBuilder::genOverflowCHKTreeTop(TR::Node *operationNode)
+IlBuilder::genOverflowCHKTreeTop(TR::Node *operationNode, TR::ILOpCodes overflow)
    {
-   TR::Node *overflowChkNode = TR::Node::createWithRoomForOneMore(TR::OverflowCHK, 3, symRefTab()->findOrCreateOverflowCheckSymbolRef(_methodSymbol), operationNode, operationNode->getFirstChild(), operationNode->getSecondChild());
-   overflowChkNode->setOverflowCHKOperation(operationNode->getOpCodeValue());
+   TR::Node *overflowChkNode = TR::Node::createWithRoomForOneMore(overflow, 3, symRefTab()->findOrCreateOverflowCheckSymbolRef(_methodSymbol), operationNode, operationNode->getFirstChild(), operationNode->getSecondChild());
+   overflowChkNode->setOverflowCheckOperation(operationNode->getOpCodeValue());
    genTreeTop(overflowChkNode);
    return overflowChkNode;
    }
 
 TR::IlValue *
-IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler)
+IlBuilder::genOperationWithOverflowCHK(TR::ILOpCodes op, TR::Node *leftNode, TR::Node *rightNode, TR::IlBuilder **handler, TR::ILOpCodes overflow)
    {
    /*
     * BB1:
@@ -1202,7 +1202,7 @@ IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node 
     *    continue
     */
    TR::Node *operationNode = binaryOpNodeFromNodes(op, leftNode, rightNode);
-   TR::Node *overflowChkNode = genOverflowCHKTreeTop(operationNode);
+   TR::Node *overflowChkNode = genOverflowCHKTreeTop(operationNode, overflow);
 
    TR::Block *blockWithOverflowCHK = _currentBlock;
    TR::IlValue *resultValue = newValue(operationNode->getDataType());
@@ -1212,53 +1212,51 @@ IlBuilder::operationWithOverflow(TR::ILOpCodes op, TR::Node *leftNode, TR::Node 
    return resultValue;
    }
 
+// This function takes 4 arguments and generate the addValue.
+// This function is called by AddWithOverflow and AddWithUnsignedOverflow.
+TR::ILOpCodes 
+IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
+   {
+   appendBlock();
+
+   TR::ILOpCodes op;
+   if (leftValue->getSymbol()->getDataType() == TR::Address)
+      {
+      if (rightValue->getSymbol()->getDataType() == TR::Int32)
+         op = TR::aiadd;
+      else if (rightValue->getSymbol()->getDataType() == TR::Int64)
+         op = TR::aladd;
+      else 
+         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
+      }    
+   else 
+      {
+      op = addOpCode(leftValue->getSymbol()->getDataType());
+      }
+   return op; 
+   }
+
 TR::IlValue *
 IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
-   appendBlock(); 
-
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
-   TR::ILOpCodes op;
-   if (left->getSymbol()->getDataType() == TR::Address)
-      {
-      if (right->getSymbol()->getDataType() == TR::Int32)
-         op = TR::aiadd;
-      else if (right->getSymbol()->getDataType() == TR::Int64)
-         op = TR::aladd;
-      else
-         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
-      }
-   else op = addOpCode(leftNode->getDataType());
-
-   TR::IlValue *addValue = operationWithOverflow(op, leftNode, rightNode, handler);
+   TR::ILOpCodes opcode = getOpCode(left, right);
+   TR::IlValue *addValue = genOperationWithOverflowCHK(opcode, leftNode, rightNode, handler, TR::OverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is AddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    //ILB_REPLAY("%s = %s->AddWithOverflow(%s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_BUILDER(*handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 
 TR::IlValue *
-IlBuilder::UnsignedAddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+IlBuilder::AddWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
-   appendBlock(); 
-
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
-   TR::ILOpCodes op;
-   if (left->getSymbol()->getDataType() == TR::Address)
-      {    
-      if (right->getSymbol()->getDataType() == TR::Int32)
-         op = TR::aiuadd;
-      else if (right->getSymbol()->getDataType() == TR::Int64)
-         op = TR::aluadd;
-      else 
-         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
-      }    
-   else op = unsignedAddOpCode(leftNode->getDataType());
-
-   TR::IlValue *addValue = operationWithOverflow(op, leftNode, rightNode, handler);
-   TraceIL("IlBuilder[ %p ]::%d is UnsignedAddWithOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
-   //ILB_REPLAY("%s = %s->UnsignedAddWithOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TR::ILOpCodes opcode = getOpCode(left, right);
+   TR::IlValue *addValue = genOperationWithOverflowCHK(opcode, leftNode, rightNode, handler, TR::UnsignedOverflowCHK);
+   TraceIL("IlBuilder[ %p ]::%d is AddWithUnsignedOverflow %d + %d\n", this, addValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   //ILB_REPLAY("%s = %s->AddWithUnsignedOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 
@@ -1269,19 +1267,19 @@ IlBuilder::SubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
 
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
-   TR::IlValue *subValue = operationWithOverflow(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TR::IlValue *subValue = genOperationWithOverflowCHK(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler, TR::OverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is SubWithOverflow %d + %d\n", this, subValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    return subValue;
    }
 
 TR::IlValue *
-IlBuilder::UnsignedSubWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
+IlBuilder::SubWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlValue *right)
    {
    appendBlock(); 
 
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
-   TR::IlValue *unsignedSubValue = operationWithOverflow(TR::ILOpCode::unsignedSubtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TR::IlValue *unsignedSubValue = genOperationWithOverflowCHK(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler, TR::UnsignedOverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedSubWithOverflow %d + %d\n", this, unsignedSubValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    //ILB_REPLAY("%s = %s->UnsignedSubWithOverflow(%s, %s, %s);", REPLAY_VALUE(unsignedSubValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return unsignedSubValue;
@@ -1294,7 +1292,7 @@ IlBuilder::MulWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
 
    TR::Node *leftNode = loadValue(left);
    TR::Node *rightNode = loadValue(right);
-   TR::IlValue *mulValue = operationWithOverflow(TR::ILOpCode::multiplyOpCode(leftNode->getDataType()), leftNode, rightNode, handler);
+   TR::IlValue *mulValue = genOperationWithOverflowCHK(TR::ILOpCode::multiplyOpCode(leftNode->getDataType()), leftNode, rightNode, handler, TR::OverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is MulWithOverflow %d + %d\n", this, mulValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    return mulValue;
    }

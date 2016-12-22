@@ -226,7 +226,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *OverflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *overflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *compressStringEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
    static TR::Register *compressStringNoCheckEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
    static TR::Register *andORStringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -345,6 +345,10 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg);
 
    static intptrj_t integerConstNodeValue(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Block *getOverflowCatchBlock(TR::Node *node, TR::CodeGenerator *cg);
+
+   static void genArithmeticInstructionsForOverflowCHK(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *performCall(TR::Node *node, bool isIndirect, bool spillFPRegs, TR::CodeGenerator *cg);
 

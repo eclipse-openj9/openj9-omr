@@ -614,6 +614,7 @@
    TR::TreeEvaluator::resolveAndNULLCHKEvaluator,       // TR::ResolveAndNULLCHK
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::DIVCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::OverflowCHK
+   TR::TreeEvaluator::badILOpEvaluator,                    // TR::UnsignedOverflowCHK
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::BNDCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::ArrayCopyBNDCHK (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::BNDCHKwithSpineCHK (J9)

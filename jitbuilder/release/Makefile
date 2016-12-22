@@ -66,6 +66,7 @@ all_goal: common_goal
 	./dotproduct
 	./linkedlist
 	./localarray
+	./operandstacktests
 	./pointer
 	./recfib
 	./structarray

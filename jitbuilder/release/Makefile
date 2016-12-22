@@ -42,7 +42,8 @@ ALL_TESTS = \
             simple \
             structarray \
             switch \
-            toiltype
+            toiltype \
+            worklist
 
 # Compile all the tests by default
 all: $(ALL_TESTS)
@@ -56,6 +57,7 @@ common_goal: $(ALL_TESTS)
 	./pow2
 	./simple
 	./toiltype
+	./worklist
 
 # Additional tests that may not work properly on all platforms
 all_goal: common_goal
@@ -68,6 +70,7 @@ all_goal: common_goal
 	./recfib
 	./structarray
 	./switch
+	./toiltype
 
 
 # In general, only compile and run tests that are known to work on all platforms
@@ -237,6 +240,12 @@ toiltype : libjitbuilder.a ToIlType.o
 ToIlType.o: src/ToIlType.cpp
 	g++ -o $@ $(CXXFLAGS) $<
 
+
+worklist : libjitbuilder.a Worklist.o
+	g++ -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl
+
+Worklist.o: src/Worklist.cpp
+	g++ -o $@ $(CXXFLAGS) $<
 
 
 clean:

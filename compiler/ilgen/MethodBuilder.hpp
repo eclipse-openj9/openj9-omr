@@ -32,6 +32,7 @@
 
 class TR_HashTabInt;
 class TR_HashTabString;
+class TR_BitVector;
 namespace TR { class BytecodeBuilder; }
 namespace TR { class ResolvedMethod; }
 namespace OMR { class VirtualMachineState; }
@@ -51,6 +52,8 @@ class MethodBuilder : public TR::IlBuilder
 
    bool usesBytecodeBuilders()                               { return _useBytecodeBuilders; }
    void setUseBytecodeBuilders()                             { _useBytecodeBuilders = true; }
+
+   void addToAllBytecodeBuildersList(TR::BytecodeBuilder *bcBuilder);
    void addToTreeConnectingWorklist(TR::BytecodeBuilder *builder);
    void addToBlockCountingWorklist(TR::BytecodeBuilder *builder);
 
@@ -115,7 +118,29 @@ class MethodBuilder : public TR::IlBuilder
                        int32_t          numParms,
                        TR::IlType     ** parmTypes);
 
-   void addBytecodeBuilderToList(TR::BytecodeBuilder* bcBuilder);
+   /**
+    * @brief append the first bytecode builder object to this method
+    * @param builder the bytecode builder object to add, usually for bytecode index 0
+    * A side effect of this call is that the builder is added to the worklist so that
+    * all other bytecodes can be processed by asking for GetNextBytecodeFromWorklist()
+    */
+   void AppendBytecodeBuilder(TR::BytecodeBuilder *builder);
+
+   /**
+    * @brief add a bytecode builder to the worklist
+    * @param bcBuilder is the bytecode builder whose bytecode index will be added to the worklist
+    */
+   void addBytecodeBuilderToWorklist(TR::BytecodeBuilder* bcBuilder);
+
+   /**
+    * @brief get lowest index bytecode from the worklist
+    * @returns lowest bytecode index or -1 if worklist is empty
+    * It is important to use the worklist because it guarantees no bytecode will be
+    * processed before at least one predecessor bytecode has been processed, which
+    * means there should be a non-NULL VirtualMachineState object on the associated
+    * BytecodeBuilder object.
+    */
+   int32_t GetNextBytecodeFromWorklist();
    
    protected:
    void initMaps();
@@ -152,6 +177,9 @@ class MethodBuilder : public TR::IlBuilder
    List<TR::BytecodeBuilder> * _connectTreesWorklist;
    List<TR::BytecodeBuilder> * _allBytecodeBuilders;
    OMR::VirtualMachineState  * _vmState;
+
+   TR_BitVector              * _bytecodeWorklist;
+   TR_BitVector              * _bytecodeHasBeenInWorklist;
 
    std::fstream              * _rpCpp;
    };

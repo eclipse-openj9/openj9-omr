@@ -57,7 +57,7 @@ TR::BytecodeBuilder::initialize(TR::IlGeneratorMethodDetails * details,
     this->OMR::IlInjector::initialize(details, methodSymbol, fe, symRefTab);
 
     //addBytecodeBuilderToList relies on _comp and it won't be ready until now
-    _methodBuilder->addBytecodeBuilderToList(this);
+    _methodBuilder->addToAllBytecodeBuildersList(this);
     }
 
 void
@@ -138,6 +138,7 @@ OMR::BytecodeBuilder::AddFallThroughBuilder(TR::BytecodeBuilder *ftb)
    if (b != ftb)
       TraceIL("IlBuilder[ %p ]:: fallThrough successor changed to [ %p ]\n", this, b);
    _fallThroughBuilder = b;
+    _methodBuilder->addBytecodeBuilderToWorklist(ftb);
 
    // add explicit goto and register the actual fall-through block
    TR::IlBuilder *tgtb = b;
@@ -161,6 +162,7 @@ OMR::BytecodeBuilder::AddSuccessorBuilders(uint32_t numExits, ...)
       TR::BytecodeBuilder **builder = (TR::BytecodeBuilder **) va_arg(exits, TR::BytecodeBuilder **);
       transferVMState(builder);            // may change what builder points at!
       _successorBuilders->add(*builder);   // must be the bytecode builder that comes back from transferVMState()
+      _methodBuilder->addBytecodeBuilderToWorklist(*builder);
       TraceIL("IlBuilder[ %p ]:: successor [ %p ]\n", this, *builder);
       }
    va_end(exits);

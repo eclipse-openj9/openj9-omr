@@ -174,20 +174,27 @@ VirtualMachineOperandStack::copyTo(VirtualMachineOperandStack *copy)
 void
 VirtualMachineOperandStack::checkSize()
    {
-   if (_stackTop == _stackMax)
+   if (_stackTop == _stackMax - 1)
       grow();
    }
 
 void
-VirtualMachineOperandStack::grow()
+VirtualMachineOperandStack::grow(int32_t growAmount)
    {
-   int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
+   if (growAmount == 0)
+      growAmount = (_stackMax >> 1);
 
-   int32_t newMax = _stackMax + (_stackMax >> 1);
+   // if _stackMax == 1, growAmount would still be zero, so bump to 1
+   if (growAmount == 0)
+      growAmount = 1;
+
+   int32_t newMax = _stackMax + growAmount;
    int32_t newBytes = newMax * sizeof(TR::IlValue *);
    TR::IlValue ** newStack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(newBytes);
 
    memset(newStack, 0, newBytes);
+
+   int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
    memcpy(newStack, _stack, numBytes);
 
    _stack = newStack;

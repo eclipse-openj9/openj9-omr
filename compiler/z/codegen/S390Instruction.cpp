@@ -2132,18 +2132,20 @@ TR::S390RILInstruction::generateBinaryEncoding()
             {
             scratchReg = cg()->getExtCodeBaseRealRegister();
             }
-         else if (getOpCode().getOpCodeValue() == TR::InstOpCode::LGRL  ||
-                  getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL  ||
-                  getOpCode().getOpCodeValue() == TR::InstOpCode::LLGFRL )
+
+         if (getOpCode().getOpCodeValue() == TR::InstOpCode::LGRL  ||
+             getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL  ||
+             getOpCode().getOpCodeValue() == TR::InstOpCode::LLGFRL )
             {
-            scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
+            sourceReg = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
+            if (!scratchReg) scratchReg = sourceReg;
             }
          else if (getOpCode().getOpCodeValue() == TR::InstOpCode::STGRL ||
                   getOpCode().getOpCodeValue() == TR::InstOpCode::STRL ||
                   getOpCode().getOpCodeValue() == TR::InstOpCode::LRL)
             {
-            scratchReg  = assignBestSpillRegister();
-            sourceReg  = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
+            sourceReg = (TR::RealRegister * )((TR::S390RegInstruction *)this)->getRegisterOperand(1);
+            if (!scratchReg) scratchReg  = assignBestSpillRegister();
 
             spillNeeded = true;
             }
@@ -2199,10 +2201,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
          if (getOpCode().getOpCodeValue() == TR::InstOpCode::LGRL)
             {
-            // LG scratchReg, 0(,scratchReg)
+            // LG sourceReg, 0(,scratchReg)
             //
-            *(int32_t *) cursor  = boi(0xE3000000);                  // LG  scratchReg, 0(,scratchReg)
-            scratchReg->setRegisterField((uint32_t *)cursor);
+            *(int32_t *) cursor  = boi(0xE3000000);                  // LG  sourceReg, 0(,scratchReg)
+            sourceReg->setRegisterField((uint32_t *)cursor);
             scratchReg->setBaseRegisterField((uint32_t *)cursor);
             cursor += 4;
             *(int16_t *) cursor  = bos(0x0004);
@@ -2210,10 +2212,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
             }
          else if (getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL)
             {
-            // LGF scratchReg, 0(,scratchReg)
+            // LGF sourceReg, 0(,scratchReg)
             //
-            *(int32_t *) cursor  = boi(0xE3000000);                  // LGF scratchReg, 0(,scratchReg)
-            scratchReg->setRegisterField((uint32_t *)cursor);
+            *(int32_t *) cursor  = boi(0xE3000000);                  // LGF sourceReg, 0(,scratchReg)
+            sourceReg->setRegisterField((uint32_t *)cursor);
             scratchReg->setRegister2Field((uint32_t *)cursor);
             cursor += 4;
             *(int16_t *) cursor  = bos(0x0014);
@@ -2221,10 +2223,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
             }
          else if (getOpCode().getOpCodeValue() == TR::InstOpCode::LLGFRL)
             {
-            // LGF scratchReg, 0(,scratchReg)
+            // LLGF sourceReg, 0(,scratchReg)
             //
-            *(int32_t *) cursor  = boi(0xE3000000);                  // LLGF scratchReg, 0(,scratchReg)
-            scratchReg->setRegisterField((uint32_t *)cursor);
+            *(int32_t *) cursor  = boi(0xE3000000);                  // LLGF sourceReg, 0(,scratchReg)
+            sourceReg->setRegisterField((uint32_t *)cursor);
             scratchReg->setRegister2Field((uint32_t *)cursor);
             cursor += 4;
             *(int16_t *) cursor  = bos(0x0016);

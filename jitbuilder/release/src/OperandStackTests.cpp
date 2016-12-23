@@ -85,9 +85,6 @@ class TestState : public OMR::VirtualMachineState
       _stackTop->MergeInto(((TestState *)other)->_stackTop, b);
       }
 
-   virtual int32_t growsUp()                { return true; }
-   virtual int32_t stackPtrStartingOffset() { return 0; }
-
    OMR::VirtualMachineOperandStack * _stack;
    OMR::VirtualMachineRegister     * _stackTop;
    };
@@ -169,16 +166,18 @@ main(int argc, char *argv[])
    cout << "Step 6: shutdown JIT\n";
    shutdownJit();
 
-   if (verbose) cout << "Number passing tests: " << numPassingTests << "\n";
-   if (verbose) cout << "Number failing tests: " << numFailingTests << "\n";
+   cout << "Number passing tests: " << numPassingTests << "\n";
+   cout << "Number failing tests: " << numFailingTests << "\n";
 
    if (numFailingTests == 0)
       cout << "ALL PASS\n";
+   else
+      cout << "SOME FAILURES\n";
    }
 
 
 STACKVALUETYPE *OperandStackTestMethod::_realStack = NULL;
-STACKVALUETYPE *OperandStackTestMethod::_realStackTop = _realStack;
+STACKVALUETYPE *OperandStackTestMethod::_realStackTop = _realStack - 1;
 int32_t OperandStackTestMethod::_realStackSize = -1;
 
 static void Fail()
@@ -327,8 +326,8 @@ OperandStackTestMethod::verifyStack(const char *step, int32_t max, int32_t num, 
 
    STACKVALUETYPE *realSP = *verifySP;
 
-   if (verbose) cout << "\tResult " << step << ": realSP-_realStack == " << num << ": ";
-   REPORT2((realSP-_realStack) == num, "_realStackTop-_realStack", (realSP-_realStack), "num", num);
+   if (verbose) cout << "\tResult " << step << ": realSP-_realStack == " << (num-1) << ": ";
+   REPORT2((realSP-_realStack) == (num-1), "_realStackTop-_realStack", (realSP-_realStack), "num-1", (num-1));
 
    va_list args;
    va_start(args, num);
@@ -355,7 +354,7 @@ OperandStackTestMethod::OperandStackTestMethod(TR::TypeDictionary *d)
 
    _realStackSize = 32;
    _realStack = (STACKVALUETYPE *) malloc (_realStackSize * sizeof(STACKVALUETYPE));
-   _realStackTop = _realStack;
+   _realStackTop = _realStack - 1;
    memset(_realStack, 0, _realStackSize*sizeof(STACKVALUETYPE));
 
    _valueType = STACKVALUEILTYPE;
@@ -462,9 +461,9 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
 bool
 OperandStackTestMethod::buildIL()
    {
-   TR::IlType *pValueType = _types->PointerTo(_valueType);
+   TR::IlType *pElementType = _types->PointerTo(Word);
    TR::IlValue *realStackTopAddress = ConstAddress(&_realStackTop);
-   OMR::VirtualMachineRegister *stackTop = new OMR::VirtualMachineRegister(this, "SP", pValueType, sizeof(STACKVALUETYPE), realStackTopAddress);
+   OMR::VirtualMachineRegister *stackTop = new OMR::VirtualMachineRegister(this, "SP", pElementType, sizeof(STACKVALUETYPE), realStackTopAddress);
    OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 32, _valueType, stackTop);
 
    TestState *vmState = new TestState(stack, stackTop);

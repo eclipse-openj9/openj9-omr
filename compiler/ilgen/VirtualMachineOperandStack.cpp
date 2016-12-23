@@ -162,9 +162,7 @@ VirtualMachineOperandStack::Dup(TR::IlBuilder *b)
    {
    TR_ASSERT(_stackTop >= 0, "cannot dup: stack empty");
    TR::IlValue *top = _stack[_stackTop];
-   checkSize();
-   _stack[++_stackTop] = top;
-   _stackTopRegister->Adjust(b, +_pushAmount);
+   Push(b, top);
    }
 
 void

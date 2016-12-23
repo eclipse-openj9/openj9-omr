@@ -1619,6 +1619,154 @@ IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    return AtomicAddWithOffset(baseAddress, NULL, value);    
    }
 
+
+/**
+ * \brief
+ *  The service is for generating a treetop for transaction begin when the user needs to use transactional memory.
+ *  At the end of transaction path, service will automatically generate transaction end instruction.
+ *
+ * \verbatim
+ *   
+ *    +---------------------------------+
+ *    |<block_$tstart>                  |
+ *    |==============                   |
+ *    | TSTART                          |
+ *    |    |                            |
+ *    |    |_ <block_$persistentFailure>|
+ *    |    |_ <block_$transientFailure> |
+ *    |    |_ <block_$transaction>      |+------------------------+----------------------------------+
+ *    |                                 |                         |                                  |
+ *    +---------------------------------+                         |                                  |
+ *                       |                                        |                                  |
+ *                       v                                        V                                  V
+ *    +-----------------------------------------+   +-------------------------------+    +-------------------------+     
+ *    |<block_$transaction>                     |   |<block_$persistentFailure>     |    |<block_$transientFailure>|      
+ *    |====================                     |   |===========================    |    |=========================|
+ *    |     add (For illustration, we take add  |   |AtomicAdd (For illustration, we|    |   ...                   |
+ *    |     ... as an example. User could       |   |...       take atomicAdd as an |    |   ...                   |
+ *    |     ... replace it with other non-atomic|   |...       example. User could  |    |   ...                   |
+ *    |     ... operations.)                    |   |...       replace it with other|    |   ...                   |
+ *    |     ...                                 |   |...       atomic operations.)  |    |   ...                   |
+ *    |     TEND                                |   |...                            |    |   ...                   |
+ *    |goto --> block_$merge                    |   |goto->block_$merge             |    |goto->block_$merge       |
+ *    +----------------------------------------+    +-------------------------------+    +-------------------------+
+ *                      |                                          |                                 |
+ *                      |                                          |                                 |
+ *                      |------------------------------------------+---------------------------------+
+ *                      |
+ *                      v             
+ *              +----------------+     
+ *              | block_$merge   |     
+ *              | ============== |   
+ *              |      ...       |
+ *              +----------------+   
+ *
+ * \endverbatim 
+ *
+ * \structure & \param value
+ *     tstart
+ *       |
+ *       ----persistentFailure // This is a permanent failure, try atomic way to do it instead
+ *       |
+ *       ----transientFailure // Temporary failure, user can retry 
+ *       |
+ *       ----transaction // Success, use general(non-atomic) way to do it
+ *                |
+ *                ---- non-atomic operations
+ *                |
+ *                ---- ...
+ *                |
+ *                ---- tend
+ *
+ * \note
+ *      If user's platform doesn't support TM, go to persistentFailure path directly/
+ *      In this case, current IlBuilder walks around transientFailureBuilder and transactionBuilder
+ *      and goes to persistentFailureBuilder.
+ *      
+ *      _currentBuilder
+ *          |
+ *          ->Goto()
+ *              |   transientFailureBuilder 
+ *              |   transactionBuilder
+ *              |-->persistentFailurie
+ */
+void
+IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **transactionBuilder)
+    {   
+    //This assertion is to rule out platforms which don't have tstart evaluator yet. 
+    TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
+    
+    //ILB_REPLAY("%s->TransactionBegin(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(persistentFailureBuilder), REPLAY_BUILDER(transientFailureBuilder), REPLAY_BUILDER(transactionBuilder)); 
+    TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
+
+    appendBlock();
+
+    TR::Block *mergeBlock = emptyBlock();
+    *persistentFailureBuilder = createBuilderIfNeeded(*persistentFailureBuilder);
+    *transientFailureBuilder = createBuilderIfNeeded(*transientFailureBuilder);
+    *transactionBuilder = createBuilderIfNeeded(*transactionBuilder);
+
+    if (!comp()->cg()->getSupportsTM())
+       {
+       //if user's processor doesn't support TM.
+       //we will walk around transaction and transientFailure paths
+
+       Goto(persistentFailureBuilder);
+
+       AppendBuilder(*transactionBuilder);
+       AppendBuilder(*transientFailureBuilder);
+
+       AppendBuilder(*persistentFailureBuilder);
+       appendBlock(mergeBlock);
+       return;
+       }
+
+    TR::Node *persistentFailureNode = TR::Node::create(TR::branch, 0, (*persistentFailureBuilder)->getEntry()->getEntry());
+    TR::Node *transientFailureNode = TR::Node::create(TR::branch, 0, (*transientFailureBuilder)->getEntry()->getEntry());
+    TR::Node *transactionNode = TR::Node::create(TR::branch, 0, (*transactionBuilder)->getEntry()->getEntry());
+
+    TR::Node *tStartNode = TR::Node::create(TR::tstart, 3, persistentFailureNode, transientFailureNode, transactionNode);   
+    tStartNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionEntrySymbolRef(comp()->getMethodSymbol()));
+    
+    genTreeTop(tStartNode);
+
+    //connecting the block having tstart with persistentFailure's and transaction's blocks 
+    cfg()->addEdge(_currentBlock, (*persistentFailureBuilder)->getEntry());
+    cfg()->addEdge(_currentBlock, (*transientFailureBuilder)->getEntry());
+    cfg()->addEdge(_currentBlock, (*transactionBuilder)->getEntry());
+
+    appendNoFallThroughBlock();
+    AppendBuilder(*transientFailureBuilder);
+    gotoBlock(mergeBlock);
+
+    AppendBuilder(*persistentFailureBuilder);
+    gotoBlock(mergeBlock);
+
+    AppendBuilder(*transactionBuilder);
+    
+    //ending the transaction at the end of transactionBuilder
+    appendBlock();
+    TR::Node *tEndNode=TR::Node::create(TR::tfinish,0);
+    tEndNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionExitSymbolRef(comp()->getMethodSymbol()));
+    genTreeTop(tEndNode);
+
+	//Three IlBuilders above merged here
+    appendBlock(mergeBlock);
+
+	}  
+
+/**
+ * Generate XABORT instruction to abort transaction
+ */
+void
+IlBuilder::TransactionAbort()
+    {
+    TraceIL("IlBuilder[ %p ]::transactionAbort", this);
+    TR::Node *tAbortNode = TR::Node::create(TR::tabort, 0);
+    tAbortNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionAbortSymbolRef(comp()->getMethodSymbol()));
+    genTreeTop(tAbortNode);
+    }
+
 void
 IlBuilder::IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition)
    {

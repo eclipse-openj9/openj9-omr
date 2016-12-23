@@ -275,6 +275,10 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   
+   static TR::Register *tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *tfinishEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    // routines for both float and double
    static TR::Register *fpReturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *fpRemEvaluator(TR::Node *node, TR::CodeGenerator *cg);

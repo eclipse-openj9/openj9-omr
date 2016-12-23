@@ -564,9 +564,9 @@
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::monent (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::monexit (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::monexitfence (J9)
-   TR::TreeEvaluator::badILOpEvaluator,                  // TR::tstart (J9, WCode)
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::tfinish (J9, WCode)
-   TR::TreeEvaluator::badILOpEvaluator,                 // TR::tabort(J9, WCode)
+   TR::TreeEvaluator::tstartEvaluator,                  // TR::tstart 
+   TR::TreeEvaluator::tfinishEvaluator,                 // TR::tfinish 
+   TR::TreeEvaluator::tabortEvaluator,                 // TR::tabort
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::instanceof (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::checkcast (J9)
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::checkcastAndNULLCHK (J9)

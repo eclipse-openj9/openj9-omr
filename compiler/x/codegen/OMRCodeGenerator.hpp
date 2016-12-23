@@ -194,7 +194,8 @@ struct TR_X86ProcessorInfo
       TR_ProcessorIntelWestmere    = 0x0000000c,
       TR_ProcessorIntelSandyBridge = 0x0000000d,
       TR_ProcessorIntelIvyBridge   = 0x0000000e,
-      TR_ProcessorIntelHaswell     = 0x0000000f
+      TR_ProcessorIntelHaswell     = 0x0000000f,
+      TR_ProcessorIntelBroadwell   = 0x00000010
       };
 
 
@@ -237,8 +238,6 @@ struct TR_X86ProcessorInfo
    bool supportsSFence()                   {return _featureFlags.testAny(TR_SSE | TR_MMXInstructions);}
    bool prefersMultiByteNOP()              {return getX86Architecture() && isGenuineIntel() && !isIntelPentium();}
 
-   bool supportsAtomicAdd()                {return true;} //we have common helpers for atomic primitives
-
    uint32_t getCPUStepping(uint32_t signature)       {return (signature & CPUID_SIGNATURE_STEPPING_MASK);}
    uint32_t getCPUModel(uint32_t signature)          {return (signature & CPUID_SIGNATURE_MODEL_MASK) >> 4;}
    uint32_t getCPUFamily(uint32_t signature)         {return (signature & CPUID_SIGNATURE_FAMILY_MASK) >> 8;}
@@ -256,6 +255,7 @@ struct TR_X86ProcessorInfo
    bool isIntelSandyBridge()  { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSandyBridge; }
    bool isIntelIvyBridge()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelIvyBridge; }
    bool isIntelHaswell()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelHaswell; }
+   bool isIntelBroadwell()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelBroadwell; }
    bool isIntelOldMachine() ;
 
    bool isAMDK6()             { return (_processorDescription & 0x000000fe) == TR_ProcessorAMDK5; } // accept either K5 or K6
@@ -275,6 +275,7 @@ private:
    flags8_t   _vendorFlags;
    flags32_t  _featureFlags;  // cache feature flags for re-use
    flags32_t  _featureFlags2;  // cache feature flags 2 for re-use
+   flags32_t  _featureFlags8;  // cache feature flags 8 for re-use
 
    uint32_t _processorDescription;
 
@@ -358,6 +359,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool getSupportsEncodeUtf16BigWithSurrogateTest();
 
    bool supportsMergingOfHCRGuards();
+
+   bool supportsAtomicAdd()                {return true;}
+   bool hasTMEvaluator()                       {return true;}
 
    void performNonLinearRegisterAssignmentAtBranch(TR::X86LabelInstruction *branchInstruction, TR_RegisterKinds kindsToBeAssigned);
    void prepareForNonLinearRegisterAssignmentAtMerge(TR::X86LabelInstruction *mergeInstruction);

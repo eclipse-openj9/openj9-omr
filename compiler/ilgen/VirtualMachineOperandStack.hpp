@@ -169,7 +169,7 @@ class VirtualMachineOperandStack : public VirtualMachineState
    protected:
    void copyTo(OMR::VirtualMachineOperandStack *copy);
    void checkSize();
-   void grow();
+   void grow(int32_t growAmount = 0);
 
    private:
    TR::MethodBuilder *_mb;

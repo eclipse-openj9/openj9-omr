@@ -464,7 +464,7 @@ OperandStackTestMethod::buildIL()
    TR::IlType *pElementType = _types->PointerTo(Word);
    TR::IlValue *realStackTopAddress = ConstAddress(&_realStackTop);
    OMR::VirtualMachineRegister *stackTop = new OMR::VirtualMachineRegister(this, "SP", pElementType, sizeof(STACKVALUETYPE), realStackTopAddress);
-   OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 32, _valueType, stackTop);
+   OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 1, _valueType, stackTop);
 
    TestState *vmState = new TestState(stack, stackTop);
    setVMState(vmState);
@@ -492,7 +492,7 @@ bool
 OperandStackTestUsingStructMethod::buildIL()
    {
    OMR::VirtualMachineRegisterInStruct *stackTop = new OMR::VirtualMachineRegisterInStruct(this, "Thread", "thread", "sp", "SP");
-   OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 32, _valueType, stackTop);
+   OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 1, _valueType, stackTop);
 
    TestState *vmState = new TestState(stack, stackTop);
    setVMState(vmState);

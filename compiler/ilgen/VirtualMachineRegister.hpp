@@ -143,12 +143,9 @@ class VirtualMachineRegister : public OMR::VirtualMachineState
     */
    virtual void Adjust(TR::IlBuilder *b, TR::IlValue *amount)
       {
-      b->Store(_localName,
-      b->   Add(
-      b->      Load(_localName),
-      b->      Mul(
-                  amount,
-      b->         ConstInteger(_elementType, _adjustByStep))));
+      TR::IlValue *off=b->Mul(amount,
+                       b->    ConstInteger(_elementType, _adjustByStep));
+      adjust(b, off);
       }
 
    /**
@@ -160,14 +157,17 @@ class VirtualMachineRegister : public OMR::VirtualMachineState
     */
    virtual void Adjust(TR::IlBuilder *b, int64_t amount)
       {
-      b->Store(_localName,
-      b->   Add(
-      b->      Load(_localName),
-      b->      ConstInteger(_elementType, amount * _adjustByStep)));
+      adjust(b, b->ConstInteger(_elementType, amount * _adjustByStep));
       }
 
    protected:
-
+   void adjust(TR::IlBuilder *b, TR::IlValue *rawAmount)
+      {
+      b->Store(_localName,
+      b->   Add(
+      b->      Load(_localName),
+               rawAmount));
+      }
    const char  * const _localName;
    TR::IlValue * _addressOfRegister;
    TR::IlType  * _pointerToRegisterType;

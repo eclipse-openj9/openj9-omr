@@ -21,18 +21,18 @@
 #ifndef TR_OPTIMIZER_INCL
 #define TR_OPTIMIZER_INCL
 
-#include "optimizer/OMROptimizer.hpp"
+#include "optimizer/TestOptimizer.hpp"
 
 namespace TR
 {
 
-class Optimizer : public OMR::OptimizerConnector
+class Optimizer : public TestCompiler::OptimizerConnector
    {
    public:
 
    Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol, bool isIlGen,
          const OptimizationStrategy *strategy = NULL, uint16_t VNType = 0) :
-      OMR::OptimizerConnector(comp, methodSymbol, isIlGen, strategy, VNType) {}
+      TestCompiler::OptimizerConnector(comp, methodSymbol, isIlGen, strategy, VNType) {}
    };
 
 }

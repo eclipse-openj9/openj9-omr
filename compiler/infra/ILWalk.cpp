@@ -99,6 +99,12 @@ TR::NodeIterator::NodeIterator(TR::TreeTop *start, TR::Optimization *opt, const 
    ,_stack(opt->comp()->trMemory(), 5, false, stackAlloc)
    {}
 
+TR::NodeIterator::NodeIterator(TR::TreeTop *start, TR::Compilation *comp)
+   :TreeTopIteratorImpl(start, NULL, NULL)
+   ,_checklist(comp)
+   ,_stack(comp->trMemory(), 5, false, stackAlloc)
+   {}
+
 bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
    {
    // One PreorderNodeIterator "is at" another if both follow the same node
@@ -123,6 +129,12 @@ bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
 
 TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
    :NodeIterator(start, opt, name)
+   {
+   push(start->getNode());
+   }
+
+TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp)
+   :NodeIterator(start, comp)
    {
    push(start->getNode());
    }

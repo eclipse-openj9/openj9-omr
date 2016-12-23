@@ -32,16 +32,6 @@ class Qux2IlInjector;
 testMethodType  * Qux2Test::_qux2 = 0;
 
 void
-Qux2Test::allocateTestData()
-   {
-   }
-
-void
-Qux2Test::deallocateTestData()
-   {
-   }
-
-void
 Qux2Test::compileTestMethods()
    {
    int32_t rc = 0;

@@ -55,16 +55,6 @@ ForLoopBreakAndContinueFunctionType *BuilderTest::_forLoopBreakAndContinueMethod
 bool BuilderTest::_traceEnabled = false;
 
 void
-BuilderTest::allocateTestData()
-   {
-   }
-
-void
-BuilderTest::deallocateTestData()
-   {
-   }
-
-void
 BuilderTest::compileTestMethods()
    {
    int32_t rc = 0;

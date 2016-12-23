@@ -532,16 +532,6 @@ signatureCharILL_L_testMethodType * OpCodesTest::_aternary = 0;
 
 
 void
-OpCodesTest::allocateTestData()
-   {
-   }
-
-void
-OpCodesTest::deallocateTestData()
-   {
-   }
-
-void
 OpCodesTest::compileTestMethods()
    {
    }

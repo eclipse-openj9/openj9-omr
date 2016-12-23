@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2016, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,27 +14,27 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
- *******************************************************************************/
+ ******************************************************************************/
 
-#include "ilgen/IlInjector.hpp"
+#ifndef IlVerifier_hpp
+#define IlVerifier_hpp
 
-namespace TR { class TypeDictionary; }
+namespace TR { class ResolvedMethodSymbol; }
 
-namespace TestCompiler
-{
-class SimplifierFoldAndIlInjector : public TR::IlInjector
+namespace TR {
+
+class IlVerifier
    {
    public:
-
-   TR_ALLOC(TR_Memory::IlGenerator)
-
-   SimplifierFoldAndIlInjector(TR::TypeDictionary* types, TestDriver* test)
-   :
-      TR::IlInjector(types, test)
-      {
-      // Void
-      }
-
-   bool injectIL();
+   /**
+    * Verify the IL of a method has certain properties.
+    *
+    * @return 0 on success, or a non-zero error code. If 0 is returned,
+    * compilation stops.
+    */
+   virtual int32_t verify(TR::ResolvedMethodSymbol *methodSymbol) = 0; 
    };
+
 }
+
+#endif

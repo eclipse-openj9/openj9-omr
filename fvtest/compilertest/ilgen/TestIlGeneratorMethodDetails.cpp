@@ -30,7 +30,8 @@ namespace TestCompiler
 {
 
 IlGeneratorMethodDetails::IlGeneratorMethodDetails(TR_ResolvedMethod *method) :
-   _method(static_cast<TR::ResolvedMethod *>(method))
+   _method(static_cast<TR::ResolvedMethod *>(method)),
+   _ilVerifier(NULL)
    {
    }
 

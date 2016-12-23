@@ -205,8 +205,8 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/tests/Qux2Test.cpp \
     $(JIT_PRODUCT_DIR)/tests/Qux2IlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/SimplifierFoldAndTest.cpp \
-    $(JIT_PRODUCT_DIR)/tests/SimplifierFoldAndIlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/S390OpCodesTest.cpp \
+    $(JIT_PRODUCT_DIR)/tests/OptTestDriver.cpp \
     $(JIT_PRODUCT_DIR)/tests/TestDriver.cpp \
     $(JIT_PRODUCT_DIR)/tests/X86OpCodesTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/main.cpp \
@@ -238,6 +238,7 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/IlInjector.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/TestIlGeneratorMethodDetails.cpp \
+    $(JIT_PRODUCT_DIR)/optimizer/TestOptimizer.cpp \
     $(JIT_PRODUCT_DIR)/runtime/TestCodeCacheManager.cpp \
     $(JIT_PRODUCT_DIR)/runtime/TestJitConfig.cpp
 

@@ -143,10 +143,8 @@ typedef uintptrj_t (signatureCharLL_L_testMethodType)(uintptrj_t, uintptrj_t);
 class OpCodesTest : public TestDriver
    {
    public:
-   virtual void allocateTestData();
    virtual void compileTestMethods();
    virtual void invokeTests();
-   virtual void deallocateTestData();
 
    virtual void compileIntegerArithmeticTestMethods();
    virtual void compileMemoryOperationTestMethods();

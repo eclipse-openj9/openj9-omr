@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2016, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,26 +16,15 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "TestDriver.hpp"
+#include "optimizer/Optimizer.hpp"
 
-namespace TestCompiler
-{
-class SimplifierFoldAndTest : public TestDriver
+const OptimizationStrategy *TestCompiler::Optimizer::_mockStrategy = NULL;
+
+const OptimizationStrategy *
+TestCompiler::Optimizer::optimizationStrategy(TR::Compilation *c)
    {
-   public:
-
-   // int64_t testCompiledMethod(int32_t x);
-   typedef int64_t (*TestCompiledMethodType)(int32_t);
-
-   protected:
-
-   virtual void allocateTestData();
-   virtual void compileTestMethods();
-   virtual void invokeTests();
-   virtual void deallocateTestData();
-
-   private:
-
-   static TestCompiledMethodType testCompiledMethod;
-   };
-}
+   if(TestCompiler::Optimizer::_mockStrategy)
+      return TestCompiler::Optimizer::_mockStrategy;
+   else
+      return OMR::OptimizerConnector::optimizationStrategy(c);
+   }

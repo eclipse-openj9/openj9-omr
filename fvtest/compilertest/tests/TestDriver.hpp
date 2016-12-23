@@ -25,7 +25,6 @@
 namespace TR { class IlGeneratorMethodDetails; }
 namespace TR { class MethodBuilder; }
 
-typedef uint8_t * (*CompileFunctionType)(TR::IlGeneratorMethodDetails &, TR_Hotness);
 extern "C" uint8_t *compileMethod(TR::IlGeneratorMethodDetails &, TR_Hotness, int32_t &);
 
 namespace TestCompiler
@@ -37,14 +36,10 @@ class TestDriver
    {
    public:
    void RunTest();
-   virtual void allocateTestData() = 0;
    virtual void compileTestMethods() = 0;
    virtual void invokeTests() = 0;
-   virtual void deallocateTestData() = 0;
 
    int32_t compileMethodBuilder(TR::MethodBuilder *m, uint8_t **entry);
-
-   CompileFunctionType *_compileTestMethodFunction;
    };
 
 }// namespace TestCompiler

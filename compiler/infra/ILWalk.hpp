@@ -123,6 +123,7 @@ class NodeIterator: protected TreeTopIteratorImpl // abstract
    NodeChecklist       _checklist;
 
    NodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   NodeIterator(TR::TreeTop *start, TR::Compilation *comp);
 
    int32_t stackDepth()
       {
@@ -160,6 +161,7 @@ class PreorderNodeIterator: public NodeIterator
    public:
 
    PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp);
 
    TR::Node    *currentNode();
    void         stepForward();

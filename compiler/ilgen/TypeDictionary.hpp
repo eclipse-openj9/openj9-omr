@@ -68,6 +68,8 @@ public:
    virtual TR::IlType *baseType() { return NULL; }
 
    virtual bool isStruct() {return false; }
+   virtual bool isUnion() { return false; }
+
    virtual size_t getSize();
 
 protected:
@@ -224,7 +226,7 @@ public:
    TR::IlType *PointerTo(const char *structName);
    TR::IlType *PointerTo(TR::DataType baseType)  { return PointerTo(_primitiveType[baseType]); }
 
-   TR::IlReference *FieldReference(const char *structName, const char *fieldName);
+   TR::IlReference *FieldReference(const char *typeName, const char *fieldName);
    TR_Memory *trMemory() { return _trMemory; }
 
    //TR::IlReference *ArrayReference(TR::IlType *arrayType);

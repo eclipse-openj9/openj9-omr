@@ -28,6 +28,7 @@
 #include "env/Region.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/TRMemory.hpp"
+#include "infra/BitVector.hpp"
 
 
 namespace OMR
@@ -285,6 +286,121 @@ StructType::getFieldSymRef(const char *fieldName)
    return (TR::IlReference *)symRef;
    }
 
+class UnionType : public TR::IlType
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
+
+   UnionType(const char *name, TR_Memory* trMemory) :
+      TR::IlType(name),
+      _firstField(0),
+      _lastField(0),
+      _size(0),
+      _closed(false),
+      _symRefBV(4, trMemory),
+      _trMemory(trMemory)
+      { }
+
+   TR::DataType getPrimitiveType()                 { return TR::Address; }
+   void Close();
+
+   void AddField(const char *name, TR::IlType *fieldType);
+   TR::IlType * getFieldType(const char *fieldName);
+
+   TR::SymbolReference *getFieldSymRef(const char *name);
+   virtual bool isUnion() { return true; }
+   virtual size_t getSize() { return _size; }
+
+protected:
+   FieldInfo * findField(const char *fieldName);
+
+   FieldInfo * _firstField;
+   FieldInfo * _lastField;
+   size_t      _size;
+   bool        _closed;
+   TR_BitVector _symRefBV;
+   TR_Memory* _trMemory;
+   };
+
+void
+UnionType::AddField(const char *name, TR::IlType *typeInfo)
+   {
+   if (_closed)
+      return;
+
+   auto fieldSize = typeInfo->getSize();
+   if (fieldSize > _size) _size = fieldSize;
+
+   FieldInfo *fieldInfo = new (PERSISTENT_NEW) FieldInfo(name, 0 /* no offset */, typeInfo);
+   if (0 != _lastField)
+      _lastField->setNext(fieldInfo);
+   else
+      _firstField = fieldInfo;
+   _lastField = fieldInfo;
+   }
+
+void
+UnionType::Close()
+   {
+   _closed = true;
+   }
+
+FieldInfo *
+UnionType::findField(const char *fieldName)
+   {
+   FieldInfo *info = _firstField;
+   while (NULL != info)
+      {
+      if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
+         return info;
+      info = info->_next;
+      }
+   return NULL;
+   }
+
+TR::IlType *
+UnionType::getFieldType(const char *fieldName)
+   {
+   FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return NULL;
+   return info->_type;
+   }
+
+TR::IlReference *
+UnionType::getFieldSymRef(const char *fieldName)
+   {
+   FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return NULL;
+
+   TR::SymbolReference *symRef = info->getSymRef();
+   if (NULL == symRef)
+      {
+      // create a symref for the new field and set its bitvector
+      TR::Compilation *comp = TR::comp();
+      auto symRefTab = comp->getSymRefTab();
+      TR::DataType type = info->getPrimitiveType();
+
+      TR::Symbol *symbol = TR::Symbol::createShadow(comp->trHeapMemory(), type);
+      symRef = new (comp->trHeapMemory()) TR::SymbolReference(symRefTab, symbol, comp->getMethodSymbol()->getResolvedMethodIndex(), -1);
+      symRef->setOffset(0);
+      symRef->setReallySharesSymbol();
+
+      TR_SymRefIterator sit(_symRefBV, symRefTab);
+      for (TR::SymbolReference *sr = sit.getNext(); sr; sr = sit.getNext())
+          {
+          symRefTab->makeSharedAliases(symRef, sr);
+          }
+
+      _symRefBV.set(symRef->getReferenceNumber());
+
+      info->cacheSymRef(symRef);
+      }
+
+   return static_cast<TR::IlReference *>(symRef);
+   }
+
 class PointerType : public TR::IlType
    {
 public:
@@ -324,6 +440,7 @@ TypeDictionary::TypeDictionary() :
    _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) )
    {
    _structsByName = new (PERSISTENT_NEW) TR_HashTabString(trMemory());
+   _unionsByName = new (PERSISTENT_NEW) TR_HashTabString(trMemory());
 
    // primitive types
    NoType       = _primitiveType[TR::NoType]                = new (PERSISTENT_NEW) OMR::PrimitiveType("NoType", TR::NoType);
@@ -475,11 +592,25 @@ TypeDictionary::PointerTo(TR::IlType *baseType)
    }
 
 TR::IlReference *
-TypeDictionary::FieldReference(const char *structName, const char *fieldName)
+TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    {
    TR_HashId structID = 0;
-   _structsByName->locate(structName, structID);
-   StructType *theStruct = (StructType *) _structsByName->getData(structID);
-   return theStruct->getFieldSymRef(fieldName);
+
+   auto found = _structsByName->locate(typeName, structID);
+   if (found)
+      {
+      StructType *theStruct = (StructType *) _structsByName->getData(structID);
+      return theStruct->getFieldSymRef(fieldName);
+      }
+
+   found = _unionsByName->locate(typeName, structID);
+   if (found)
+      {
+      UnionType *theUnion = (UnionType *) _unionsByName->getData(structID);
+      return theUnion->getFieldSymRef(fieldName);
+      }
+
+   TR_ASSERT(false, "No type with name `%s`", typeName);
+   return NULL;
    }
 } // namespace OMR

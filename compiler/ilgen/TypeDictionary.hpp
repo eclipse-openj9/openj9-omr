@@ -133,6 +133,7 @@ public:
    ~TypeDictionary() throw();
 
    TR::IlType * LookupStruct(const char *structName);
+   TR::IlType * LookupUnion(const char *unionName);
 
    /**
     * @brief Begin definition of a new structure type
@@ -214,6 +215,11 @@ public:
     * @return the memory offset of the field in bytes
     */
    size_t OffsetOf(const char *structName, const char *fieldName);
+
+   TR::IlType * DefineUnion(const char *unionName);
+   void UnionField(const char *unionName, const char *fieldName, TR::IlType *type);
+   void CloseUnion(const char *unionName);
+   TR::IlType * UnionFieldType(const char *unionName, const char *fieldName);
 
    TR::IlType *PrimitiveType(TR::DataType primitiveType)
       {
@@ -406,6 +412,7 @@ protected:
    TR::Region *_memoryRegion;
    TR_Memory *_trMemory;
    TR_HashTabString * _structsByName;
+   TR_HashTabString * _unionsByName;
 
    // convenience for primitive types
    TR::IlType       * _primitiveType[TR::NumOMRTypes];

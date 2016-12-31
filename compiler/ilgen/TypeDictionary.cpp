@@ -506,6 +506,15 @@ TypeDictionary::LookupStruct(const char *structName)
    }
 
 TR::IlType *
+TypeDictionary::LookupUnion(const char *unionName)
+   {
+   TR_HashId unionID = 0;
+   if (_unionsByName->locate(unionName, unionID))
+      return (TR::IlType *) _unionsByName->getData(unionID);
+   return NULL;
+   }
+
+TR::IlType *
 TypeDictionary::DefineStruct(const char *structName)
    {
    TR_HashId structID=0;
@@ -577,6 +586,47 @@ TypeDictionary::CloseStruct(const char *structName)
    }
 
 TR::IlType *
+TypeDictionary::DefineUnion(const char *unionName)
+   {
+   TR_HashId unionID=0;
+   _unionsByName->locate(unionName, unionID);
+
+   UnionType *newType = new (PERSISTENT_NEW) UnionType(unionName, _trMemory);
+   _unionsByName->add(unionName, unionID, (void *) newType);
+
+   return (TR::IlType *) newType;
+   }
+
+void
+TypeDictionary::UnionField(const char *unionName, const char *fieldName, TR::IlType *type)
+   {
+   TR_HashId unionID=0;
+   if (_unionsByName->locate(unionName, unionID))
+      {
+      UnionType *unionType = (UnionType *) _unionsByName->getData(unionID);
+      unionType->AddField(fieldName, type);
+      }
+   }
+
+void
+TypeDictionary::CloseUnion(const char *unionName)
+   {
+   TR_HashId unionID = 0;
+   _unionsByName->locate(unionName, unionID);
+   UnionType *theUnion = (UnionType *) _unionsByName->getData(unionID);
+   theUnion->Close();
+   }
+
+TR::IlType *
+TypeDictionary::UnionFieldType(const char *unionName, const char *fieldName)
+   {
+   TR_HashId unionID = 0;
+   _unionsByName->locate(unionName, unionID);
+   UnionType *theUnion = (UnionType *) _unionsByName->getData(unionID);
+   return theUnion->getFieldType(fieldName);
+   }
+
+TR::IlType *
 TypeDictionary::PointerTo(const char *structName)
    {
    TR_HashId structID = 0;
@@ -594,19 +644,19 @@ TypeDictionary::PointerTo(TR::IlType *baseType)
 TR::IlReference *
 TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    {
-   TR_HashId structID = 0;
+   TR_HashId typeID = 0;
 
-   auto found = _structsByName->locate(typeName, structID);
+   auto found = _structsByName->locate(typeName, typeID);
    if (found)
       {
-      StructType *theStruct = (StructType *) _structsByName->getData(structID);
+      StructType *theStruct = (StructType *) _structsByName->getData(typeID);
       return theStruct->getFieldSymRef(fieldName);
       }
 
-   found = _unionsByName->locate(typeName, structID);
+   found = _unionsByName->locate(typeName, typeID);
    if (found)
       {
-      UnionType *theUnion = (UnionType *) _unionsByName->getData(structID);
+      UnionType *theUnion = (UnionType *) _unionsByName->getData(typeID);
       return theUnion->getFieldSymRef(fieldName);
       }
 

@@ -195,10 +195,10 @@ public:
    TR::IlValue *CreateLocalStruct(TR::IlType *structType);
    TR::IlValue *Load(const char *name);
    void Store(const char *name, TR::IlValue *value);
-   void StoreAt(TR::IlValue *address, TR::IlValue *value);
    TR::IlValue *LoadAt(TR::IlType *dt, TR::IlValue *address);
+   void StoreAt(TR::IlValue *address, TR::IlValue *value);
    TR::IlValue *LoadIndirect(const char *type, const char *field, TR::IlValue *object);
-   TR::IlValue *StoreField(const char *name, TR::IlValue *object, TR::IlValue *value);
+   void StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value);
    TR::IlValue *IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index);
    TR::IlValue *AtomicAddWithOffset(TR::IlValue *baseAddress, TR::IlValue *offset, TR::IlValue *value);
    TR::IlValue *AtomicAdd(TR::IlValue *baseAddress, TR::IlValue * value);
@@ -212,7 +212,6 @@ public:
    void VectorStoreAt(TR::IlValue *address, TR::IlValue *value);
 
    // control
-   void StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value);
    void AppendBuilder(TR::IlBuilder *builder);
    TR::IlValue *Call(const char *name, int32_t numArgs, ...);
    TR::IlValue *Call(const char *name, int32_t numArgs, TR::IlValue **argValues);

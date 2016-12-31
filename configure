@@ -717,6 +717,7 @@ OMR_GC_BATCH_CLEAR_TLH
 OMR_GC_ARRAYLETS
 OMR_GC_ALLOCATION_TAX
 OMR_EXAMPLE
+OMR_RTTI
 OMR_OMRSIG
 OMR_THREAD
 OMR_PORT
@@ -817,6 +818,7 @@ enable_OMR_PORT
 enable_OMR_THREAD
 enable_OMR_OMRSIG
 enable_OMR_EXAMPLE
+enable_OMR_RTTI
 enable_OMR_GC_ALLOCATION_TAX
 enable_OMR_GC_ARRAYLETS
 enable_OMR_GC_BATCH_CLEAR_TLH
@@ -1544,6 +1546,8 @@ Optional Features:
   --disable-OMR_OMRSIG    Enable building the OMRSig library. (Default: yes)
   --enable-OMR_EXAMPLE    Whether we are building OMR against the example
                           code. (Default: no)
+  --enable-OMR_RTTI       Whether we are building OMR with RTTI. (Default: no)
+                                                    
   --disable-OMR_GC_ALLOCATION_TAX
 
   --disable-OMR_GC_ARRAYLETS
@@ -5342,6 +5346,17 @@ else
 fi
 
 
+# Check whether --enable-OMR_RTTI was given.
+if test "${enable_OMR_RTTI+set}" = set; then :
+  enableval=$enable_OMR_RTTI; if test "x${enableval}" = xyes; then :
+  OMR_RTTI=1
+   $as_echo "#define OMR_RTTI 1" >>confdefs.h
+else
+  OMR_RTTI=0
+fi
+else
+  OMR_RTTI=0
+fi
 
 ############### Flags that are always enabled
 # Each flag must have a corresponding entry in omrcfg.h.in

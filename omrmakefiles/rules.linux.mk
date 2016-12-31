@@ -57,9 +57,17 @@ endif
 
 # Compile without exceptions
 ifeq (gcc,$(OMR_TOOLCHAIN))
+ifeq (1,$(OMR_RTTI))
+    GLOBAL_CXXFLAGS+=-fno-exceptions -fno-threadsafe-statics
+else
     GLOBAL_CXXFLAGS+=-fno-exceptions -fno-rtti -fno-threadsafe-statics
+endif
+else
+ifeq (1,$(OMR_RTTI))
+    GLOBAL_CXXFLAGS+=-qrtti -qnoeh
 else
     GLOBAL_CXXFLAGS+=-qnortti -qnoeh
+endif
 endif
 
 ## Position Independent compile flag

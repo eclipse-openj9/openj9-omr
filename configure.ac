@@ -349,6 +349,7 @@ OMRCFG_DEFINE_FLAG_ON([OMR_PORT], [], [Enable building the Port library. (Defaul
 OMRCFG_DEFINE_FLAG_ON([OMR_THREAD], [], [Enable building the Thread library. (Default: yes)])
 OMRCFG_DEFINE_FLAG_ON([OMR_OMRSIG], [], [Enable building the OMRSig library. (Default: yes)])
 OMRCFG_DEFINE_FLAG_OFF([OMR_EXAMPLE], [], [Whether we are building OMR against the example code. (Default: no)])
+OMRCFG_DEFINE_FLAG_OFF([OMR_RTTI], [], [Whether we are building OMR with RTTI. (Default: no)])
 
 ############### Flags that are always enabled
 # Each flag must have a corresponding entry in omrcfg.h.in

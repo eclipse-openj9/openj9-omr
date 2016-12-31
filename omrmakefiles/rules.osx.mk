@@ -23,7 +23,12 @@
 GLOBAL_CPPFLAGS += -DOSX -DJ9HAMMER -D_REENTRANT -D_FILE_OFFSET_BITS=64
 
 # Compile without exceptions
-GLOBAL_CXXFLAGS+=-fno-exceptions -fno-rtti -fno-threadsafe-statics
+
+ifeq (1,$(OMR_RTTI))
+    GLOBAL_CXXFLAGS+=-fno-exceptions -fno-threadsafe-statics
+else
+    GLOBAL_CXXFLAGS+=-fno-exceptions -fno-rtti -fno-threadsafe-statics
+endif
 
 ## Position Independent compile flag
 GLOBAL_CFLAGS+=-fPIC

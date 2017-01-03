@@ -61,13 +61,7 @@ protected:
 public:
 
 private:
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	MMINLINE void generationalWriteBarrierStore(MM_EnvironmentStandard* env, omrobjectptr_t parentObject, omrobjectptr_t childObject);
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	MMINLINE void concurrentWriteBarrierStore(MM_EnvironmentBase* env, omrobjectptr_t parentObject);
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
+	MMINLINE void writeBarrier(OMR_VMThread *omrThread, omrobjectptr_t parentObject, omrobjectptr_t childObject);
 
 protected:
 

@@ -523,6 +523,10 @@ public:
 	bool isConcurrentInProgress() {
 		return concurrent_state_idle != _concurrentState;
 	}
+	
+	bool isMutatorThreadInSyncWithCycle(MM_EnvironmentBase *env) {
+		return (env->_concurrentScavengerSwitchCount == _concurrentScavengerSwitchCount);
+	}
 
 	/**
 	 * Enabled/disable approriate thread local resources when starting or finishing Concurrent Scavenger Cycle

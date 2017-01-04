@@ -1228,25 +1228,28 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       TR::Register * tempReg = root->setRegister(allocateAddSubRegister(root, firstRegister));
       bool done = false;
 
-      if (regToRegOpCode == TR::InstOpCode::AR)
+      if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
          {
-         cursor = generateRRRInstruction(cg(), TR::InstOpCode::ARK, root, tempReg, secondRegister, firstRegister);
-         done = true;
-         }
-      else if (regToRegOpCode == TR::InstOpCode::ALR)
-         {
-         cursor = generateRRRInstruction(cg(), TR::InstOpCode::ALRK, root, tempReg, secondRegister, firstRegister);
-         done = true;
-         }
-      else if (regToRegOpCode == TR::InstOpCode::AGR)
-         {
-         cursor = generateRRRInstruction(cg(), TR::InstOpCode::AGRK, root, tempReg, secondRegister, firstRegister);
-         done = true;
-         }
-      else if (regToRegOpCode == TR::InstOpCode::ALGR)
-         {
-         cursor = generateRRRInstruction(cg(), TR::InstOpCode::ALGRK, root, tempReg, secondRegister, firstRegister);
-         done = true;
+         if (regToRegOpCode == TR::InstOpCode::AR)
+            {
+            cursor = generateRRRInstruction(cg(), TR::InstOpCode::ARK, root, tempReg, secondRegister, firstRegister);
+            done = true;
+            }
+         else if (regToRegOpCode == TR::InstOpCode::ALR)
+            {
+            cursor = generateRRRInstruction(cg(), TR::InstOpCode::ALRK, root, tempReg, secondRegister, firstRegister);
+            done = true;
+            }
+         else if (regToRegOpCode == TR::InstOpCode::AGR)
+            {
+            cursor = generateRRRInstruction(cg(), TR::InstOpCode::AGRK, root, tempReg, secondRegister, firstRegister);
+            done = true;
+            }
+         else if (regToRegOpCode == TR::InstOpCode::ALGR)
+            {
+            cursor = generateRRRInstruction(cg(), TR::InstOpCode::ALGRK, root, tempReg, secondRegister, firstRegister);
+            done = true;
+            }
          }
 
       if (!done)

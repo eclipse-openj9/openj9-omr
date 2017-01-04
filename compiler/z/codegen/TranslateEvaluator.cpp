@@ -127,11 +127,16 @@ TR::Register *inlineTrtEvaluator(
    TR::Register *r1Reg = cg->allocateRegister();
    TR::Register *r2Reg = cg->allocateRegister();
 
+   if (packR2 && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
+      generateRRInstruction(cg, TR::InstOpCode::XR, node, r2Reg, r2Reg);
+      }
+
    TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
    regDeps->addPostCondition(r1Reg, TR::RealRegister::GPR1,DefinesDependentRegister);
    regDeps->addPostCondition(r2Reg, TR::RealRegister::GPR2,DefinesDependentRegister);
 
-   if(lengthNode->getOpCode().isLoadConst())
+   if (lengthNode->getOpCode().isLoadConst())
       {
       uint8_t length = lengthNode->getIntegerNodeValue<uint8_t>();
       cg->decReferenceCount(lengthNode);
@@ -150,26 +155,29 @@ TR::Register *inlineTrtEvaluator(
       cg->decReferenceCount(lengthNode);
       }
 
-   if((opCode == TR::InstOpCode::TRTR) && (TR::Compiler->target.is32Bit()))
+   if ((opCode == TR::InstOpCode::TRTR) && (TR::Compiler->target.is32Bit()))
       {
       TR::MemoryReference *r1BitClearRef = generateS390MemoryReference(r1Reg, 0, cg);
       TR::Instruction *cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, r1Reg, r1BitClearRef);
       cursor->setDependencyConditions(regDeps);
       }
 
-   if (storeRegs)
-      {
-      }
-   else if (packR2)
+   if (packR2)
       {
       TR::Register *conditionCodeReg = getConditionCode(node, cg);
+
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node,  conditionCodeReg, r2Reg, 48, 55, 8);
          }
-      else
+      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
          {
          generateRIEInstruction(cg, TR::InstOpCode::RISBG, node,  conditionCodeReg, r2Reg, 48, 55, 8);
+         }
+      else
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLL, node, r2Reg, 8);
+         generateRRInstruction(cg, TR::InstOpCode::OR, node, conditionCodeReg, r2Reg);
          }
 
       node->setRegister(conditionCodeReg);

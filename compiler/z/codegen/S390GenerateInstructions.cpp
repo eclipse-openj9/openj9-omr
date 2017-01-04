@@ -2302,7 +2302,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::S390RILInstruction *LRLinst = 0;
    if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (op == TR::InstOpCode::L)
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && op == TR::InstOpCode::L)
          {
          targetsnippet = cg->findOrCreate4ByteConstant(node, imm);
          LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LRL, node, treg, targetsnippet, 0);
@@ -2375,20 +2375,21 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::Instruction * cursor;
    TR::Compilation *comp = cg->comp();
 
-   if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
-      TR::S390ConstantDataSnippet *targetSnippet;
-      if(op == TR::InstOpCode::LG)
-         targetSnippet = cg->findOrCreate8ByteConstant(node, (int64_t)imm);
-      else
-         targetSnippet = cg->findOrCreate4ByteConstant(node, (int32_t)imm);
-      targetSnippet->setSymbolReference(new (INSN_HEAP) TR::SymbolReference(comp->getSymRefTab()));
-      targetSnippet->setReloType(reloType);
-      AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n",
-         targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
+      if (op == TR::InstOpCode::LG || op == TR::InstOpCode::L)
+         {
+         TR::S390ConstantDataSnippet *targetSnippet = op == TR::InstOpCode::LG ?
+               targetSnippet = cg->findOrCreate8ByteConstant(node, (int64_t)imm) :
+               targetSnippet = cg->findOrCreate4ByteConstant(node, (int32_t)imm);
 
-      cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
-      return cursor;
+         targetSnippet->setSymbolReference(new (INSN_HEAP) TR::SymbolReference(comp->getSymRefTab()));
+         targetSnippet->setReloType(reloType);
+         AOTcgDiag4(comp, "generateRegLitRefInstruction constantDataSnippet=%x symbolReference=%x symbol=%x reloType=%x\n", targetSnippet, targetSnippet->getSymbolReference(), targetSnippet->getSymbolReference()->getSymbol(), reloType);
+
+         cursor = (TR::S390RILInstruction *) generateRILInstruction(cg, (op == TR::InstOpCode::LG)?TR::InstOpCode::LGRL:TR::InstOpCode::LRL, node, treg, targetSnippet, preced);
+         return cursor;
+         }
       }
 
 
@@ -2483,8 +2484,8 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       {
       TR::S390ConstantDataSnippet * constDataSnip = cg->create64BitLiteralPoolSnippet(TR::Int64, imm);
 
-      // HCR in generateRegLitRefInstruction 64-bit: register const data snippet used by Z6
-      if (comp->getOption(TR_EnableHCR) && isPICCandidate )
+      // HCR in generateRegLitRefInstruction 64-bit: register const data snippet used by z10
+      if (comp->getOption(TR_EnableHCR) && isPICCandidate)
          {
          comp->getSnippetsToBePatchedOnClassRedefinition()->push_front(constDataSnip);
          if (node->isClassUnloadingConst())
@@ -2513,7 +2514,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
    else if (cg->isLiteralPoolOnDemandOn() && (base == 0))
       {
-      if (op == TR::InstOpCode::LG)
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && op == TR::InstOpCode::LG)
          {
          targetsnippet = cg->findOrCreate8ByteConstant(node, imm);
          LGRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LGRL, node, treg, targetsnippet, 0);
@@ -2910,10 +2911,9 @@ generateS390BranchPredictionPreloadInstruction(TR::CodeGenerator * cg, TR::InstO
 TR::Instruction *
 generateSerializationInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Instruction *preced)
    {
-   // BCR R15, 0 is the defacto serialization instruction on Z
-   // On z196, a fast serialization facilty was added, and BCR R14, 0 is preferred.
-
-   TR::InstOpCode::S390BranchCondition cond = TR::InstOpCode::COND_MASK14;
+   // BCR R15, 0 is the defacto serialization instruction on Z, however on z196, a fast serialization
+   // facilty was added, and hence BCR R14, 0 is preferred
+   TR::InstOpCode::S390BranchCondition cond = cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) ? TR::InstOpCode::COND_MASK14 : TR::InstOpCode::COND_MASK15;
 
    // We needed some special handling in TR::Instruction::assignRegisterNoDependencies
    // to recognize real register GPR0 being passed in.
@@ -3214,12 +3214,19 @@ void generateShiftAndKeepSelected64Bit(TR::Node * node, TR::CodeGenerator *cg,
                                        TR::Register * aFirstRegister, TR::Register * aSecondRegister,
                                        int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
    {
-   TR::Compilation * comp = cg->comp();
-
-   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) && (!aSetConditionCode)  && performTransformation(comp, "O^O Using RISBG instead of SLL/SRL pairs."))
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) && !aSetConditionCode)
+      {
       generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
-   else
+      }
+   else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
       generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+      }
+   else
+      {
+      generateRSInstruction(cg, TR::InstOpCode::SLLG, node, aFirstRegister, aSecondRegister, aFromBit + aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, aFirstRegister, aFirstRegister, aFromBit);
+      }
    }
 
 /**
@@ -3231,9 +3238,15 @@ generateShiftAndKeepSelected31Bit(TR::Node * node, TR::CodeGenerator *cg,
                                   TR::Register * aFirstRegister, TR::Register * aSecondRegister,
                                   int aFromBit, int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode)
    {
-   TR::Compilation * comp = cg->comp();
-
-   generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, aFirstRegister, aSecondRegister, aFromBit, aToBit|(aClearOtherBits ? 0x80 : 0x00), aShiftAmount);
+      }
+   else
+      {
+      generateRSInstruction(cg, TR::InstOpCode::SLL, node, aFirstRegister, aFromBit + aShiftAmount);
+      generateRSInstruction(cg, TR::InstOpCode::SRL, node, aFirstRegister, aFromBit);
+      }
    }
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg)

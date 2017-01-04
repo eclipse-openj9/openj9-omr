@@ -182,27 +182,30 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
          thirdReg = cg()->allocateRegister(TR_FPR);
          }
 
-      if (getBinaryReg3Reg2() || (secondRegister != NULL))
+      if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
          {
-         if (regToRegOpCode == TR::InstOpCode::SR)
+         if (getBinaryReg3Reg2() || secondRegister != NULL)
             {
-            generateRRRInstruction(cg(), TR::InstOpCode::SRK, root, thirdReg, firstRegister, secondRegister);
-            done = true;
-            }
-         else if (regToRegOpCode == TR::InstOpCode::SLR)
-            {
-            generateRRRInstruction(cg(), TR::InstOpCode::SLRK, root, thirdReg, firstRegister, secondRegister);
-            done = true;
-            }
-         else if (regToRegOpCode == TR::InstOpCode::SGR)
-            {
-            generateRRRInstruction(cg(), TR::InstOpCode::SGRK, root, thirdReg, firstRegister, secondRegister);
-            done = true;
-            }
-         else if (regToRegOpCode == TR::InstOpCode::SLGR)
-            {
-            generateRRRInstruction(cg(), TR::InstOpCode::SLGRK, root, thirdReg, firstRegister, secondRegister);
-            done = true;
+            if (regToRegOpCode == TR::InstOpCode::SR)
+               {
+               generateRRRInstruction(cg(), TR::InstOpCode::SRK, root, thirdReg, firstRegister, secondRegister);
+               done = true;
+               }
+            else if (regToRegOpCode == TR::InstOpCode::SLR)
+               {
+               generateRRRInstruction(cg(), TR::InstOpCode::SLRK, root, thirdReg, firstRegister, secondRegister);
+               done = true;
+               }
+            else if (regToRegOpCode == TR::InstOpCode::SGR)
+               {
+               generateRRRInstruction(cg(), TR::InstOpCode::SGRK, root, thirdReg, firstRegister, secondRegister);
+               done = true;
+               }
+            else if (regToRegOpCode == TR::InstOpCode::SLGR)
+               {
+               generateRRRInstruction(cg(), TR::InstOpCode::SLGRK, root, thirdReg, firstRegister, secondRegister);
+               done = true;
+               }
             }
          }
 

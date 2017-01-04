@@ -170,7 +170,7 @@ enum TR_CompilationOptions
    TR_EnableParanoidOptCheck              = 0x00000400 + 2,
    TR_AlwaysSafeFatal                     = 0x00000800 + 2, ///< Always fire a safe fatal assert for testing purposes
    TR_DisableReadMonitors                 = 0x00001000 + 2,
-   // Available                           = 0x00002000 + 2,
+   TR_DisableZ10                          = 0x00002000 + 2,
    TR_TraceUseDefs                        = 0x00004000 + 2,
    TR_TraceValueNumbers                   = 0x00008000 + 2,
    TR_TraceLiveness                       = 0x00010000 + 2,
@@ -238,7 +238,7 @@ enum TR_CompilationOptions
    TR_GenerateCompleteInlineRanges        = 0x00020000 + 4,
    TR_DisableInliningOfNatives            = 0x00040000 + 4,
    TR_AssignEveryGlobalRegister           = 0x00080000 + 4,
-   // Available                           = 0x00100000 + 4,
+   TR_DisableZ196                         = 0x00100000 + 4,
    // Available                           = 0x00200000 + 4,
    TR_DisableUpgradingColdCompilations    = 0x00400000 + 4, // for cold methods due to classLoadPhase for instance
    TR_VerboseInterpreterProfiling         = 0x00800000 + 4,

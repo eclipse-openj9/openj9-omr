@@ -518,14 +518,7 @@ TR::Instruction *multiply31Reduction(TR::CodeGenerator * cg, TR::Node * node,
       int32_t numOperations = 0;
       if (shiftValue != 0)
          {
-         if (targetRegister != sourceRegister)
-            {
-            numOperations += 1;
-            }
-         else
-            {
-            numOperations += 1;
-            }
+         numOperations += 1;
          }
       if (value < 0)
          {
@@ -541,17 +534,36 @@ TR::Instruction *multiply31Reduction(TR::CodeGenerator * cg, TR::Node * node,
          {
          if (targetRegister != sourceRegister)
             {
-            cursor = generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister, sourceRegister, shiftValue, preced);
+            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+               {
+               cursor = generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister, sourceRegister, shiftValue, preced);
+               }
+            else
+               {
+               cursor = generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, sourceRegister, shiftValue, preced);
+               }
             }
          else
             {
             cursor = generateRSInstruction(cg, TR::InstOpCode::SLL, node, targetRegister, shiftValue, preced);
             }
          }
+
       if (value < 0)
          {
          cursor = generateRRInstruction(cg, TR::InstOpCode::LCR, node, targetRegister, targetRegister, (cursor != NULL) ? cursor : preced);
          }
+
+      return cursor;
+      }
+
+   // if it is Trex or Danu, then we want to do a multiply instead of a shift/subtract.
+   // But z6 multiply is slow, so we still want to do the decomposition
+   // We also need to disable the optimization in the tree simplifier -- see overloaded
+   // method, TR_S390CodeGenerator::mulDecompositionCostIsJustified()
+
+   if (!cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
       return cursor;
       }
 
@@ -811,8 +823,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
 
    // LL: Store Golden Eagle extended immediate instruction - 6 bytes long
    TR::InstOpCode::Mnemonic ei_immOp = TR::InstOpCode::BAD;
-
-   static char * disableMSFI = feGetEnv("TR_DISABLEMSFI");
 
    bool enableHighWordRA = cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
    switch (memOp)
@@ -1266,7 +1276,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             {
             immOp = TR::InstOpCode::MGHI;
             }
-         else if (!disableMSFI && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
             {
             ei_immOp = TR::InstOpCode::MSGFI;
             }
@@ -1297,7 +1307,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             {
             immOp = TR::InstOpCode::MHI;
             }
-         else if (!disableMSFI && memOp == TR::InstOpCode::MS)
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && memOp == TR::InstOpCode::MS)
             {
             ei_immOp = TR::InstOpCode::MSFI;
             }
@@ -1402,9 +1412,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,
        {
        TR_ASSERT( sourceRegister->getRegisterPair(), "Long value in 32-bit target must be in a register pair : OpCode %s\n", memOp);
        }
-
-    static char * disableMSFI = feGetEnv("TR_DISABLEMSFI");
-    static char * disableRILCMP = feGetEnv("TR_DISABLERILCMP");
 
     switch (memOp)
        {
@@ -1670,7 +1677,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
              {
              immOp=TR::InstOpCode::MGHI;
              }
-         else if (!disableMSFI && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
              {
              ei_immOp=TR::InstOpCode::MSGFI;
              }
@@ -1704,7 +1711,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
              {
              ei_immOp = TR::InstOpCode::CGFI;
              }
-          else if (!disableRILCMP)
+          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
              {
              memOp = TR::InstOpCode::CGRL;
              }
@@ -1714,7 +1721,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
              {
              ei_immOp = TR::InstOpCode::CLGFI;
              }
-          else if (!disableRILCMP)
+          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
              {
              memOp = TR::InstOpCode::CLGRL;
              }
@@ -1728,9 +1735,20 @@ generateS390ImmOp(TR::CodeGenerator * cg,
              {
              ei_immOp = TR::InstOpCode::LLILF;
              }
-          else
+          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
              {
              memOp = TR::InstOpCode::LGRL;
+             }
+          else
+             {
+             // Didn't fit in IILF, so we need two instructions to build the immediate
+             // Note... there is a tradeoff here between going to the lit-pool (extra reg and
+             // potential d-cache) vs the extra cycle for 1 extra instr.   The latter would
+             // seem to be more likely to be a win.
+             //
+             generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, value);
+
+             ei_immOp = TR::InstOpCode::IILF;
              }
           break;
        case TR::InstOpCode::AG:
@@ -2379,6 +2397,12 @@ tryGenerateSIComparisons(TR::Node *node, TR::Node *constNode, TR::Node *otherNod
       }
    else if (operandSize == 2 || operandSize == 4 || operandSize == 8) // we can use the SIL form compares
       {
+      // 16-bit immediates and these instructions are only avaialble on z10 and up
+      if (!cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+         {
+         return 0;
+         }
+
       // The grande forms can only be used if we are allowed to use 64-bit regs
       if (operandSize == 8 && (TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit()))
          {
@@ -3151,7 +3175,8 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
           !isUnsignedCmp &&
           !nonConstNode->getOpCode().isDouble() &&
           getIntegralValue(constNode) == 0 &&
-          !(nonConstNode->getOpCode().hasSymbolReference() && nonConstNode->getSymbolReference()->getSymbol()->isRegisterSymbol()))
+          !(nonConstNode->getOpCode().hasSymbolReference() && nonConstNode->getSymbolReference()->getSymbol()->isRegisterSymbol()) &&
+          (!nonConstNode->force64BitLoad() || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) ))
          {
          // case 1.3
          TR_ASSERT( NULLVALUE == 0, "Can not generate ICM if NULL is not 0");
@@ -3189,7 +3214,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                !nonConstNode->couldIgnoreExtend() &&
                nonConstNode->force64BitLoad();
 
-         if (mustExtend)
+         if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && mustExtend)
             {
             if (isUnsignedCmp)
                {
@@ -4597,12 +4622,15 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
    bool isLoadOrStoreOnConditionCandidateFallthrough  = false;
 
    // Determine if successor blocks maybe candidates for conditional load/stores/moves
-   canadidateLoadStoreConditionalBlock = checkForCandidateBlockForConditionalLoadAndStores(node, cg, cg->getCurrentBlock(), &isLoadOrStoreOnConditionCandidateFallthrough);
-   if (canadidateLoadStoreConditionalBlock)
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
-      // Currently only support if cndidateblock is on fallthrough path
-      if (isLoadOrStoreOnConditionCandidateFallthrough)
-         isLoadOrStoreOnConditionCandidate = true;
+      canadidateLoadStoreConditionalBlock = checkForCandidateBlockForConditionalLoadAndStores(node, cg, cg->getCurrentBlock(), &isLoadOrStoreOnConditionCandidateFallthrough);
+      if (canadidateLoadStoreConditionalBlock)
+         {
+         // Currently only support if cndidateblock is on fallthrough path
+         if (isLoadOrStoreOnConditionCandidateFallthrough)
+            isLoadOrStoreOnConditionCandidate = true;
+         }
       }
 
    bool useBranchOnCount = false;
@@ -5133,7 +5161,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
             generateRSInstruction(cg, TR::InstOpCode::SLDA, node, targetRegister, leftShiftBits);
          else if (leftShiftBits-32 == 0 && !canClobberSrcReg)
             generateRRInstruction(cg, TR::InstOpCode::LR, node, targetRegister->getHighOrder(), srcRegister);
-         else if (leftShiftBits-32 != 0)
+         else if (leftShiftBits-32 != 0 && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
             generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister->getHighOrder(), srcRegister, leftShiftBits-32);
          else if (leftShiftBits-32 !=0 &&
                targetRegister->getHighOrder() == srcRegister)
@@ -5162,7 +5190,20 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
                }
             else
                {
-               generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister, srcRegister, leftShiftBits);
+               if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+                  {
+                  generateRSInstruction(cg, TR::InstOpCode::SLLK, node, targetRegister, srcRegister, leftShiftBits);
+                  }
+               else if (targetRegister == srcRegister)
+                  {
+                  generateRSInstruction(cg, TR::InstOpCode::SLL, node, targetRegister, leftShiftBits);
+                  }
+               else
+                  {
+                  generateRRInstruction(cg, TR::InstOpCode::LR, node, targetRegister, srcRegister);
+                  generateRSInstruction(cg, TR::InstOpCode::SLL, node, targetRegister, leftShiftBits);
+                  }
+
                generateRSInstruction(cg, isSourceSigned ? TR::InstOpCode::SRA : TR::InstOpCode::SRL, node, targetRegister, numberOfExtendBits-numberOfBits);
                }
             }
@@ -5508,10 +5549,11 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
 
-   if (symbol->isStatic()                               &&
-       !symRef->isUnresolved()                          &&
-       !cg->comp()->compileRelocatableCode()                               &&
-       !node->getOpCode().isIndirect()                  &&
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) &&
+       symbol->isStatic() &&
+       !symRef->isUnresolved() &&
+       !cg->comp()->compileRelocatableCode() &&
+       !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
@@ -5626,7 +5668,7 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       bool mustExtend = !node->couldIgnoreExtend() && node->force64BitLoad();
 
-      if (mustExtend)
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && mustExtend)
          {
          if (node->isUnsignedLoad())
             {
@@ -6019,7 +6061,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
             if (node->force64BitLoad())
                {
-               if (!node->isUnsignedLoad())
+               if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !node->isUnsignedLoad())
                   opCode = TR::InstOpCode::LTGF;
                else
                   {
@@ -6028,8 +6070,10 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   }
                }
 
-            if (!node->force64BitLoad() || !node->isUnsignedLoad())
+            if (!node->force64BitLoad() || (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !node->isUnsignedLoad()))
+               {
                generateRXInstruction(cg, opCode, node, tempReg, tempMR);
+               }
 
 #ifdef J9_PROJECT_SPECIFIC
             // Load and Mask not supported for Load and Test, so must mask explicitly
@@ -6070,15 +6114,14 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
 bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node * valueChild)
    {
-   static char * disableSTRL = feGetEnv("TR_DISABLESTRL");
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
 
-   if (!disableSTRL                                     &&
-       symbol->isStatic()                               &&
-       !symRef->isUnresolved()                          &&
-       !cg->comp()->compileRelocatableCode()         &&
-       !node->getOpCode().isIndirect()                  &&
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) &&
+       symbol->isStatic() &&
+       !symRef->isUnresolved() &&
+       !cg->comp()->compileRelocatableCode() &&
+       !node->getOpCode().isIndirect() &&
        !cg->getConditionalMovesEvaluationMode()
       )
       {
@@ -6165,11 +6208,10 @@ bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * 
    {
    int32_t imm;
 
-   static char * disableMVHI = feGetEnv("TR_DISABLEMVHI");
    TR::Compilation *comp = cg->comp();
 
    // All the immediates that use this require non reversed instructions
-   if (isReversed || disableMVHI || cg->getConditionalMovesEvaluationMode())
+   if (!cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || isReversed || cg->getConditionalMovesEvaluationMode())
       {
       return true;
       }
@@ -10614,7 +10656,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
 
             TR::LabelSymbol * EXTargetLabel;
 
-            if (!comp->getOption(TR_DisableInlineEXTarget))
+            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !comp->getOption(TR_DisableInlineEXTarget))
                {
                // Inline the EXRL target so it is always in the instruction cache
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, EXTargetLabel = generateLabelSymbol(cg));
@@ -10651,8 +10693,10 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             source1MemRef= generateS390MemoryReference(source1Reg, 0, cg);
             source2MemRef= generateS390MemoryReference(source2Reg, 0, cg);
 
-            if (!comp->getOption(TR_DisableInlineEXTarget))
+            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !comp->getOption(TR_DisableInlineEXTarget))
+               {
                cursor = new (cg->trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::EXRL, node, lengthReg, EXTargetLabel, cg);
+               }
             else
                {
                cursor = generateSS1Instruction(cg, TR::InstOpCode::CLC, node, 0, source1MemRef, source2MemRef);
@@ -11478,32 +11522,43 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
    if (symRef->isUnresolved())
       {
 #ifdef J9_PROJECT_SPECIFIC
-      TR::UnresolvedDataSnippet * uds;
-      TR::Instruction * cursor;
-
-      // create UnresolvedDataSnippet
-      uds = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
-      cg->addSnippet(uds);
-
-      // generate branch to the unresolved data snippet
-      cursor = generateRegUnresolvedSym(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, symRef, uds);
-
-      uds->setBranchInstruction(cursor);
-
-      // create a patchable data in litpool
-      TR::S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
-      litpool->setUnresolvedDataSnippet(uds);
-
-      TR::S390RILInstruction * LRLinst;
-      LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, 0xBABE, 0);
-      uds->setDataReferenceInstruction(LRLinst);
-      LRLinst->setSymbolReference(uds->getDataSymbolReference());
-      LRLinst->setTargetSnippet(litpool);
-      LRLinst->setTargetSymbol(uds->getDataSymbol());
-      TR_Debug * debugObj = cg->getDebug();
-      if (debugObj)
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
          {
-         debugObj->addInstructionComment(LRLinst, "LoadLitPoolEntry");
+         TR::UnresolvedDataSnippet * uds;
+         TR::Instruction * cursor;
+
+         // create UnresolvedDataSnippet
+         uds = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
+         cg->addSnippet(uds);
+
+         // generate branch to the unresolved data snippet
+         cursor = generateRegUnresolvedSym(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, symRef, uds);
+
+         uds->setBranchInstruction(cursor);
+
+         // create a patchable data in litpool
+         TR::S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
+         litpool->setUnresolvedDataSnippet(uds);
+
+         TR::S390RILInstruction * LRLinst;
+         LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, 0xBABE, 0);
+         uds->setDataReferenceInstruction(LRLinst);
+         LRLinst->setSymbolReference(uds->getDataSymbolReference());
+         LRLinst->setTargetSnippet(litpool);
+         LRLinst->setTargetSymbol(uds->getDataSymbol());
+
+         TR_Debug * debugObj = cg->getDebug();
+
+         if (debugObj)
+            {
+            debugObj->addInstructionComment(LRLinst, "LoadLitPoolEntry");
+            }
+         }
+      else
+         {
+         TR::MemoryReference * mref = generateS390MemoryReference(node, symRef, cg);
+         generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, mref);
+         mref->setBaseNode(node);
          }
 #endif
       }
@@ -13144,7 +13199,15 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
             }
          else
             {
-            generateRSInstruction(cg, TR::InstOpCode::SRAK, node, itersReg, elemsRegister, 6);
+            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+               {
+               generateRSInstruction(cg, TR::InstOpCode::SRAK, node, itersReg, elemsRegister, 6);
+               }
+            else
+               {
+               generateRRInstruction(cg, TR::InstOpCode::LR, node, itersReg, elemsRegister);
+               generateRSInstruction(cg, TR::InstOpCode::SRA, node, itersReg, 6);
+               }
             }
 
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BERC, node, endOfLoop); // repeat loop after character copies
@@ -13633,7 +13696,17 @@ OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node * node, TR::CodeGenerator * c
          if (generateRuntimeMVCOverlap)
             {
             // use strideRegister to hold difference, since it doesn't get used before the real routine. stride = dstAddr - srcAddr
-            cursor = generateRRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::SGRK : TR::InstOpCode::SRK, byteSrcNode, strideRegister, byteDstReg, byteSrcReg);
+            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+               {
+               auto mnemonic = TR::Compiler->target.is64Bit() ? TR::InstOpCode::SGRK : TR::InstOpCode::SRK;
+
+               cursor = generateRRRInstruction(cg, mnemonic, byteSrcNode, strideRegister, byteDstReg, byteSrcReg);
+               }
+            else
+               {
+               cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), byteSrcNode, strideRegister, byteDstReg);
+               cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), byteSrcNode, strideRegister, byteSrcReg);
+            }
 
             //mvc if stride <= 0   (src >= dst)
             cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNHRC, byteSrcNode, mvcRoutine);
@@ -14600,7 +14673,7 @@ TR::Register *OMR::Z::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeG
    TR::Compilation *comp = cg->comp();
 
    static char * disablePrefetch = feGetEnv("TR_DisablePrefetch");
-   if (disablePrefetch)
+   if (!cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || disablePrefetch)
       {
       cg->recursivelyDecReferenceCount(firstChild);
       cg->recursivelyDecReferenceCount(secondChild);
@@ -15040,7 +15113,15 @@ TR::Register *arraycmpWithPadHelper::generateCLCL()
    {
    if (TR::Compiler->target.is64Bit())
       {
-      generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, source2LenReg, paddingReg, 32, 39, 24);
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+         {
+         generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, source2LenReg, paddingReg, 32, 39, 24);
+         }
+      else
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLLG, node, paddingReg, paddingReg, 24);
+         generateRRInstruction(cg, TR::InstOpCode::OGR, node, source2LenReg, paddingReg);
+         }
       }
    else
       {

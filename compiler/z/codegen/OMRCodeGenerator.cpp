@@ -393,7 +393,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return true;
+   return getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -466,11 +466,26 @@ TR_S390ProcessorInfo::checkZ13()
 TR_Processor
 TR_S390ProcessorInfo::getProcessor()
    {
+   TR_Processor result = TR_s370gp7;
+   
    if (supportsArch(TR_S390ProcessorInfo::TR_z13))
-      return TR_s370gp11;
+   	{
+      result = TR_s370gp11;
+      }
    else if (supportsArch(TR_S390ProcessorInfo::TR_zEC12))
-      return TR_s370gp10;
-   return TR_s370gp9;
+      {
+      result = TR_s370gp10;
+      }
+   else if(supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      result = TR_s370gp9;
+      }
+   else if (supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
+      result = TR_s370gp8;
+      }
+      
+   return result;
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -519,25 +534,65 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Do random Disable<Platform> when -Xjit randomGen
    if (comp->getOption(TR_Randomize))
       {
-      switch(randomizer.randomInt(TR::Compiler->target.cpu.id() - TR_s370gp9))
+      switch(randomizer.randomInt(TR::Compiler->target.cpu.id() - TR_s370gp7))
          {
          case 1:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z9);
+            traceMsg(comp,"disablez9");
+            break;
+            }
+
+         case 2:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z10);
+            traceMsg(comp, "disablez10");
+            break;
+            }
+
+         case 3:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
+            traceMsg(comp, "disablez196");
+            break;
+            }
+
+         case 4:
+            {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
             traceMsg(comp, "disablezEC12");
             break;
-         case 2:
+            }
+
+         case 5:
+            {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
             traceMsg(comp, "disablez13");
             break;
+            }
          }
       }
 
-   // Check for -Xjit disable<Platform> Options and target this specific
-   // compilation for the proper target
+   // Check for -Xjit disable options and target this specific compilation for the proper target
+   if (comp->getOption(TR_DisableZ10))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z10);
+      }
+      
+   if (comp->getOption(TR_DisableZ196))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
+      }
+      
    if (comp->getOption(TR_DisableZHelix))
+      {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
+      }
+      
    if (comp->getOption(TR_DisableZ13))
+      {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
+      }
 
    _unlatchedRegisterList =
       (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
@@ -564,7 +619,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       }
 
    // Check if platform supports highword facility - both hardware and OS combination.
-   if (!comp->getOption(TR_MimicInterpreterFrameShape))
+   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
       {
       // On 31-bit zlinux we need to check RAS support
       if (!TR::Compiler->target.isLinux() || TR::Compiler->target.is64Bit() || TR::Compiler->target.cpu.getS390SupportsHPRDebug())
@@ -641,10 +696,27 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsBCDToDFPReduction();
    self()->setSupportsIntDFPConversions();
 
-   if (!comp->getOptions()->getOption(TR_NoResumableTrapHandler) && TR::Compiler->vm.hasResumableTrapHandler(comp))
-      self()->setHasResumableTrapHandler();
+   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
+      self()->setSupportsTranslateAndTestCharString();
 
-   self()->setSupportsAtomicLoadAndAdd();
+      self()->setSupportsBCDToDFPReduction();
+      self()->setSupportsIntDFPConversions();
+
+      if (!comp->getOptions()->getOption(TR_NoResumableTrapHandler) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+         {
+         self()->setHasResumableTrapHandler();
+         }
+      }
+   else
+      {
+      comp->setOption(TR_DisableCompareAndBranchInstruction);
+      }
+
+   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      self()->setSupportsAtomicLoadAndAdd();
+      }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
@@ -1071,18 +1143,46 @@ OMR::Z::CodeGenerator::mulDecompositionCostIsJustified(int32_t numOfOperations, 
    {
    bool trace = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
 
-   int32_t numCycles = 0;
-   numCycles = numOfOperations+1;
-   if (value & (int64_t) CONSTANT64(0x0000000000000001))
+   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
-      numCycles = numCycles-1;
+      int32_t numCycles = 0;
+      numCycles = numOfOperations+1;
+      if (value & (int64_t) CONSTANT64(0x0000000000000001))
+         {
+         numCycles = numCycles-1;
+         }
+      if (trace)
+         if (numCycles <= 3)
+            traceMsg(self()->comp(), "MulDecomp cost is justified\n");
+         else
+            traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
+      return numCycles <= 3;
       }
-   if (trace)
-      if (numCycles <= 3)
-         traceMsg(self()->comp(), "MulDecomp cost is justified\n");
-      else
-         traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:3)\n", numCycles);
-   return numCycles <= 3;
+   else if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
+      {
+      int32_t numCycles = 0;
+      numCycles = numOfOperations+1;
+      if (value & (int64_t) CONSTANT64(0x0000000000000001))
+         {
+         numCycles = numCycles-1;
+         }
+      if (trace)
+         if (numCycles <= 9)
+            traceMsg(self()->comp(), "MulDecomp cost is justified\n");
+         else
+            traceMsg(self()->comp(), "MulDecomp cost is too high. numCycle=%i(max:10)\n", numCycles);
+      return numCycles <= 9;
+      }
+   else
+      {
+      if (value > MAX_IMMEDIATE_VAL || value < MIN_IMMEDIATE_VAL)
+         {
+         // If more than 16 bits, then justify the shift / subtract
+         return OMR::CodeGenerator::mulDecompositionCostIsJustified(numOfOperations, bitPosition, operationType, value);
+         }
+
+      return false;
+      }
    }
 
 /**
@@ -1214,24 +1314,27 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {
    static char * disableASI = feGetEnv("TR_DISABLEASI");
 
-   if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
+   if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
-      if (valueChild->getOpCodeValue() == TR::iadd || valueChild->getOpCodeValue() == TR::isub)
+      if (!disableASI && self()->isMemoryUpdate(node) && valueChild->getSecondChild()->getOpCode().isLoadConst())
          {
-         int32_t value = valueChild->getSecondChild()->getInt();
-
-         if (value < (int32_t) 0x7F && value > (int32_t) 0xFFFFFF80)
+         if (valueChild->getOpCodeValue() == TR::iadd || valueChild->getOpCodeValue() == TR::isub)
             {
-            return true;
+            int32_t value = valueChild->getSecondChild()->getInt();
+
+            if (value < (int32_t) 0x7F && value > (int32_t) 0xFFFFFF80)
+               {
+               return true;
+               }
             }
-         }
-      else if (TR::Compiler->target.is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
-         {
-         int64_t value = valueChild->getSecondChild()->getLongInt();
-
-         if (value < (int64_t) CONSTANT64(0x7F) && value > (int64_t) CONSTANT64(0xFFFFFFFFFFFFFF80))
+         else if (TR::Compiler->target.is64Bit() && (valueChild->getOpCodeValue() == TR::ladd || valueChild->getOpCodeValue() == TR::lsub))
             {
-            return true;
+            int64_t value = valueChild->getSecondChild()->getLongInt();
+
+            if (value < (int64_t) CONSTANT64(0x7F) && value > (int64_t) CONSTANT64(0xFFFFFFFFFFFFFF80))
+               {
+               return true;
+               }
             }
          }
       }
@@ -1837,10 +1940,11 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (!self()->anyLitPoolSnippets())
+   else if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
+
    return litPoolRegIsFree;
    }
 
@@ -4130,6 +4234,375 @@ bool hasDefineToRegister(TR::Instruction * curr, TR::Register * reg)
    }
 
 /**
+ * z10 specific hw performance bug
+ * On z10, applies to GPRs only.
+ * There are cases where load of a GPR and its complemented value are required
+ * in same grouping, causing pipeline flush + late load = perf hit.
+ */
+bool
+TR_S390Peephole::trueCompEliminationForCompare()
+   {
+   // z10 specific
+   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      return false;
+      }
+   TR::Instruction * curr = _cursor;
+   TR::Instruction * prev = _cursor->getPrev();
+   TR::Instruction * next = _cursor->getNext();
+   TR::Register * compReg;
+   TR::Register * trueReg;
+
+   prev = realInstruction(prev, false);
+   next = realInstruction(next, true);
+
+   switch(curr->getKind())
+      {
+      case TR::Instruction::IsRR:
+         compReg = ((TR::S390RRInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RRInstruction *) curr)->getRegisterOperand(1);
+         break;
+      case TR::Instruction::IsRIE:
+         compReg = ((TR::S390RIEInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RIEInstruction *) curr)->getRegisterOperand(1);
+         break;
+      case TR::Instruction::IsRRS:
+         compReg = ((TR::S390RRSInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RRSInstruction *) curr)->getRegisterOperand(1);
+         break;
+      case TR::Instruction::IsRRD: // RRD is encoded use RRF
+      case TR::Instruction::IsRRF:
+         compReg = ((TR::S390RRFInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RRFInstruction *) curr)->getRegisterOperand(1);
+         break;
+      default:
+         // unsupport instruction type, bail
+         return false;
+      }
+
+   // only applies to GPR's
+   if (compReg->getKind() != TR_GPR || trueReg->getKind() != TR_GPR)
+      {
+      return false;
+      }
+
+   if (!hasDefineToRegister(curr, compReg))
+      {
+      return false;
+      }
+
+   TR::Instruction * branchInst = NULL;
+   // current instruction sets condition code or compare flag, check to see
+   // if it has multiple branches using this condition code..if so, abort.
+   TR::Instruction * nextInst = next;
+   while(nextInst && !nextInst->isLabel() && !nextInst->getOpCode().setsCC() &&
+         !nextInst->isCall() && !nextInst->getOpCode().setsCompareFlag())
+      {
+      if(nextInst->isBranchOp())
+         {
+         if(branchInst == NULL)
+            {
+            branchInst = nextInst;
+            }
+         else
+            {
+            // there are multiple branches using the same branch condition
+            // just give up.
+            // we can probably just insert load instructions here still, but
+            // we have to sort out the wild branches first
+            return false;
+            }
+         }
+      nextInst = nextInst->getNext();
+      }
+   if (branchInst && prev && prev->usesRegister(compReg) && !prev->usesRegister(trueReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare case 1 at %p.\n",curr))
+         {
+         swapOperands(trueReg, compReg, curr);
+         if(next && next->usesRegister(trueReg)) insertLoad (comp(), _cg, next->getPrev(), compReg);
+         TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) branchInst)->getBranchCondition();
+         ((TR::S390BranchInstruction *) branchInst)->setBranchCondition(getReverseBranchCondition(branchCond));
+         return true;
+         }
+      else
+         return false;
+      }
+   if (next && next->usesRegister(compReg) && !next->usesRegister(trueReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare case 2 at %p.\n",curr))
+         {
+         if (branchInst && prev && !prev->usesRegister(trueReg))
+            {
+            swapOperands(trueReg, compReg, curr);
+            TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) branchInst)->getBranchCondition();
+            ((TR::S390BranchInstruction *) branchInst)->setBranchCondition(getReverseBranchCondition(branchCond));
+            }
+         else
+            {
+            insertLoad (comp(), _cg, next->getPrev(), compReg);
+            }
+         return true;
+         }
+      else
+         return false;
+      }
+
+   bool loadInserted = false;
+   if (prev && prev->usesRegister(compReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare case 3 at %p.\n",curr))
+         {
+         insertLoad (comp(), _cg, prev, trueReg);
+         loadInserted = true;
+         }
+      }
+   if (next && next->usesRegister(compReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare case 4 at %p.\n",curr))
+         {
+         insertLoad (comp(), _cg, next->getPrev(), trueReg);
+         loadInserted = true;
+         }
+      }
+   return loadInserted ;
+   }
+
+/**
+ * z10 specific hw performance bug
+ * On z10, applies to GPRs only.
+ * There are cases where load of a GPR and its complemented value are required
+ * in same grouping, causing pipeline flush + late load = perf hit.
+ */
+bool
+TR_S390Peephole::trueCompEliminationForCompareAndBranch()
+   {
+   // z10 specific
+   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      return false;
+      }
+
+   TR::Instruction * curr = _cursor;
+   TR::Instruction * prev = _cursor->getPrev();
+   prev = realInstruction(prev, false);
+
+   TR::Instruction * next = _cursor->getNext();
+   next = realInstruction(next, true);
+
+   TR::Register * compReg;
+   TR::Register * trueReg;
+   TR::Instruction * btar = NULL;
+   TR::LabelSymbol * ls = NULL;
+
+   bool isWCodeCmpEqSwap = false;
+
+   switch (curr->getKind())
+      {
+      case TR::Instruction::IsRIE:
+         compReg = ((TR::S390RIEInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RIEInstruction *) curr)->getRegisterOperand(1);
+         btar = ((TR::S390RIEInstruction *) curr)->getBranchDestinationLabel()->getInstruction();
+         break;
+      case TR::Instruction::IsRRS:
+         compReg = ((TR::S390RRSInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RRSInstruction *) curr)->getRegisterOperand(1);
+         break;
+      case TR::Instruction::IsRRD: // RRD is encoded use RRF
+      case TR::Instruction::IsRRF:
+      case TR::Instruction::IsRRF2:
+         compReg = ((TR::S390RRFInstruction *) curr)->getRegisterOperand(2);
+         trueReg = ((TR::S390RRFInstruction *) curr)->getRegisterOperand(1);
+         break;
+      default:
+         // unsupport instruction type, bail
+         return false;
+      }
+
+   // only applies to GPR's
+   if (compReg->getKind() != TR_GPR || trueReg->getKind() != TR_GPR)
+      {
+      return false;
+      }
+
+   if (!hasDefineToRegister(curr, compReg))
+      {
+      return false;
+      }
+
+
+   btar = realInstruction(btar, true);
+   bool backwardBranch = false;
+   if (btar)
+      {
+      backwardBranch = curr->getIndex() - btar->getIndex() > 0;
+      }
+
+   if (backwardBranch)
+      {
+      if ((prev && btar) &&
+          (prev->usesRegister(compReg) || btar->usesRegister(compReg)) &&
+          (!prev->usesRegister(trueReg) && !btar->usesRegister(trueReg)) )
+         {
+         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+         if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 1 at %p.\n",curr))
+            {
+            swapOperands(trueReg, compReg, curr);
+            if (next && next->usesRegister(trueReg)) insertLoad (comp(), _cg, next->getPrev(), compReg);
+            return true;
+            }
+         else
+            return false;
+         }
+      }
+   else
+      {
+      if ((prev && next) &&
+          (prev->usesRegister(compReg) || next->usesRegister(compReg)) &&
+          (!prev->usesRegister(trueReg) && !next->usesRegister(trueReg)) )
+         {
+         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+         if(!isWCodeCmpEqSwap && performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 2 at %p.\n",curr))
+            {
+            swapOperands(trueReg, compReg, curr);
+            if (btar && btar->usesRegister(trueReg)) insertLoad (comp(), _cg, btar->getPrev(), compReg);
+            return true;
+            }
+         else
+            return false;
+         }
+      }
+   if (prev && prev->usesRegister(compReg) && !prev->usesRegister(trueReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(!isWCodeCmpEqSwap && performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 3 at %p.\n",curr))
+         {
+         swapOperands(trueReg, compReg, curr);
+         if (btar && btar->usesRegister(trueReg)) insertLoad (comp(), _cg, btar->getPrev(), compReg);
+         if (next && next->usesRegister(trueReg)) insertLoad (comp(), _cg, next->getPrev(), compReg);
+         return true;
+         }
+      else
+         return false;
+      }
+
+   bool loadInserted = false;
+   if (prev && prev->usesRegister(compReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 4 at %p.\n",curr) )
+         {
+         insertLoad (comp(), _cg, prev, trueReg);
+         loadInserted = true;
+         }
+      }
+   if (btar && btar->usesRegister(compReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 5 at %p.\n",curr) )
+         {
+         insertLoad (comp(), _cg, btar->getPrev(), trueReg);
+         loadInserted = true;
+         }
+      }
+   if (next && next->usesRegister(compReg))
+      {
+      if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+      if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for compare and branch case 6 at %p.\n",curr) )
+         {
+         insertLoad (comp(), _cg, next->getPrev(), trueReg);
+         loadInserted = true;
+         }
+      }
+   return loadInserted;
+   }
+
+bool
+TR_S390Peephole::trueCompEliminationForLoadComp()
+   {
+   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      return false;
+      }
+   TR::Instruction * curr = _cursor;
+   TR::Instruction * next = _cursor->getNext();
+   next = realInstruction(next, true);
+   TR::Instruction * prev = _cursor->getPrev();
+   prev = realInstruction(prev, false);
+
+   TR::Register * srcReg = ((TR::S390RRInstruction *) curr)->getRegisterOperand(2);
+   TR::RealRegister *tempReg = null;
+   if((toRealRegister(srcReg))->getRegisterNumber() == TR::RealRegister::GPR1)
+      {
+      tempReg = _cg->machine()->getS390RealRegister(TR::RealRegister::GPR2);
+      }
+   else
+      {
+      tempReg = _cg->machine()->getS390RealRegister(TR::RealRegister::GPR1);
+      }
+
+   if (prev && prev->defsRegister(srcReg))
+      {
+      // src register is defined in the previous instruction, check to see if it's
+      // used in the next instruction, if so, inject a load after the current insruction
+      if (next && next->usesRegister(srcReg))
+         {
+         insertLoad (comp(), _cg, curr, tempReg);
+         return true;
+         }
+      }
+
+   TR::Instruction * prev2 = NULL;
+   if (prev)
+      {
+      prev2 = realInstruction(prev->getPrev(), false);
+      }
+   if (prev2 && prev2->defsRegister(srcReg))
+      {
+      // src register is defined 2 instructions ago, insert a load before the current instruction
+      // if the true value is used before or after
+      if ((next && next->usesRegister(srcReg)) || (prev && prev->usesRegister(srcReg)))
+         {
+         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+         if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for load complement at %p.\n",curr))
+            {
+            insertLoad (comp(), _cg, curr->getPrev(), tempReg);
+            return true;
+            }
+         else
+            return false;
+         }
+      }
+
+   TR::Instruction * prev3 = NULL;
+   if (prev2)
+      {
+      prev3 = realInstruction(prev2->getPrev(), false);
+      }
+   if (prev3 && prev3->defsRegister(srcReg))
+      {
+      // src registers is defined 3 instructions ago, insert a load before the current instruction
+      // if the true value is use before
+      if(prev && prev->usesRegister(srcReg))
+         {
+         if (comp()->getOption(TR_TraceCG)) { printInfo("\n"); }
+         if(performTransformation(comp(), "O^O S390 PEEPHOLE: true complement elimination for load complement at %p.\n",curr))
+            {
+            insertLoad (comp(), _cg, curr->getPrev(), tempReg);
+            return true;
+            }
+         else
+            return false;
+         }
+      }
+   return false;
+   }
+
+/**
  * Catch pattern where a DAA instruction is followed by 2 BRCL NOPs; The second one to an outlined label, e.g.
  *
  * CVBG    GPR6, 144(GPR5)
@@ -4537,10 +5010,15 @@ TR_S390Peephole::attemptZ7distinctOperants()
 
    TR::Instruction * instr = _cursor;
 
-    if (instr->getOpCodeValue() != TR::InstOpCode::LR && instr->getOpCodeValue() != TR::InstOpCode::LGR)
-       {
-       return false;
-       }
+   if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      return false;
+      }
+
+   if (instr->getOpCodeValue() != TR::InstOpCode::LR && instr->getOpCodeValue() != TR::InstOpCode::LGR)
+      {
+      return false;
+      }
 
    TR::Register *lgrTargetReg = instr->getRegisterOperand(1);
    TR::Register *lgrSourceReg = instr->getRegisterOperand(2);
@@ -5034,6 +5512,18 @@ TR_S390Peephole::perform()
          markBlockThatModifiesRegister(_cursor, reg, curBlockNum);
          }
 
+      // this code is used to handle all compare instruction which sets the compare flag
+      // we can eventually extend this to include other instruction which sets the
+      // condition code and and uses a complemented register
+      if (_cursor->getOpCode().setsCompareFlag() &&
+          _cursor->getOpCodeValue() != TR::InstOpCode::CHLR &&
+          _cursor->getOpCodeValue() != TR::InstOpCode::CLHLR)
+         {
+         trueCompEliminationForCompare();
+         if (comp()->getOption(TR_TraceCG))
+            printInst();
+         }
+
       if (_cursor->isBranchOp())
          forwardBranchTarget();
 
@@ -5162,7 +5652,7 @@ TR_S390Peephole::perform()
             {
             static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
 
-            if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch)
+            if (_cursor->isOutOfLineEX() && !comp()->getCurrentBlock()->isCold() && !(bool)disableEXRLDispatch && _cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
                inlineEXtarget();
             break;
             }
@@ -5243,6 +5733,8 @@ TR_S390Peephole::perform()
             {
             ConditionalBranchReduction(TR::InstOpCode::CR);
 
+            trueCompEliminationForCompareAndBranch();
+
             if (comp()->getOption(TR_TraceCG))
                printInst();
 
@@ -5252,6 +5744,39 @@ TR_S390Peephole::perform()
          case TR::InstOpCode::CGRJ:
             {
             ConditionalBranchReduction(TR::InstOpCode::CGR);
+
+            trueCompEliminationForCompareAndBranch();
+
+            if (comp()->getOption(TR_TraceCG))
+               printInst();
+
+            break;
+            }
+
+         case TR::InstOpCode::CRB:
+         case TR::InstOpCode::CRT:
+         case TR::InstOpCode::CGFR:
+         case TR::InstOpCode::CGRT:
+         case TR::InstOpCode::CLRB:
+         case TR::InstOpCode::CLRJ:
+         case TR::InstOpCode::CLRT:
+         case TR::InstOpCode::CLGRB:
+         case TR::InstOpCode::CLGFR:
+         case TR::InstOpCode::CLGRT:
+            {
+            trueCompEliminationForCompareAndBranch();
+
+            if (comp()->getOption(TR_TraceCG))
+               printInst();
+
+            break;
+            }
+
+         case TR::InstOpCode::LCGFR:
+         case TR::InstOpCode::LCGR:
+         case TR::InstOpCode::LCR:
+            {
+            trueCompEliminationForLoadComp();
 
             if (comp()->getOption(TR_TraceCG))
                printInst();
@@ -5660,8 +6185,13 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
 bool
 OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   return (!self()->comp()->getOptions()->getOption(TR_DisableUTF16BEEncoder) ||
-         (self()->getSupportsVectorRegisters() && !self()->comp()->getOptions()->getOption(TR_DisableSIMDUTF16BEEncoder)));
+   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      {
+      return (!self()->comp()->getOptions()->getOption(TR_DisableUTF16BEEncoder) ||
+               (self()->getSupportsVectorRegisters() && !self()->comp()->getOptions()->getOption(TR_DisableSIMDUTF16BEEncoder)));
+      }
+
+   return false;
    }
 
 TR_S390ScratchRegisterManager*
@@ -5682,6 +6212,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
    TR::Instruction *instr = self()->comp()->getFirstInstruction();
+
    while (instr)
       {
       TR::Register *reg = instr->getRegisterOperand(1);
@@ -5791,7 +6322,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch)
+   if (!(bool)disableEXRLDispatch && getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
@@ -9355,9 +9886,13 @@ bool
 OMR::Z::CodeGenerator::constLoadNeedsLiteralFromPool(TR::Node *node)
    {
    if (node->isClassUnloadingConst() || node->getType().isIntegral() || node->getType().isAddress())
+      {
       return false;
+      }
    else
+      {
       return true;  // Floats/Doubles require literal pool
+      }
    }
 
 void
@@ -9632,6 +10167,15 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       // this is the case we try to remove Compare of two registers, either FPRs or GPRs;
       // we will match CCInstr that has identical opcde and same register operands
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
+
+      // On z10 trueCompElimination may swap the previous compare operands, so give up early
+      if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         if (tReg->getKind() != TR_FPR)
+            {
+            return false;
+            }
+         }
 
       if (opcd == ccInst->getOpCodeValue() && tReg == ccTgtReg &&  sReg == ccSrcReg &&
           performTransformation(self()->comp(), "O^O isActiveCompareCC: RR Compare Op [%s\t %s, %s] can reuse CC from ccInstr [%p]\n",

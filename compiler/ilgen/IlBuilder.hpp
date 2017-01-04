@@ -188,6 +188,7 @@ public:
    TR::IlValue *GreaterThan(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
+   TR::IlValue *UnsignedConvertTo(TR::IlType *t, TR::IlValue *v);
 
    // memory
    TR::IlValue *CreateLocalArray(int32_t numElements, TR::IlType *elementType);
@@ -368,6 +369,7 @@ protected:
    TR::IlValue *binaryOpFromOpMap(OpCodeMapper mapOp, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *binaryOpFromOpCode(TR::ILOpCodes op, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *compareOp(TR_ComparisonTypes ct, bool needUnsigned, TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *convertTo(TR::IlType *t, TR::IlValue *v, bool needUnsigned);
 
    void ifCmpNotEqualZero(TR::IlValue *condition, TR::Block *target);
    void ifCmpNotEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);

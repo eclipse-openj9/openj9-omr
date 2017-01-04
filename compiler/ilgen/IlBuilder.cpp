@@ -132,15 +132,18 @@ IlBuilder::initSequence()
 bool
 IlBuilder::injectIL()
    {
+   TraceIL("Inside injectIL()\n");
    TraceIL("original entry %p\n", cfg()->getStart());
    TraceIL("original exit %p\n", cfg()->getEnd());
 
    setupForBuildIL();
 
-   if (!buildIL())
+   bool rc = buildIL();
+   TraceIL("buildIL() returned %d\n", rc);
+   if (!rc)
       return false;
 
-   bool rc = connectTrees();
+   rc = connectTrees();
    comp()->dumpMethodTrees("after connectTrees");
    cfg()->removeUnreachableBlocks();
    comp()->dumpMethodTrees("after removing unreachable blocks");

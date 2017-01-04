@@ -371,8 +371,7 @@ TR::IlReference *
 UnionType::getFieldSymRef(const char *fieldName)
    {
    FieldInfo *info = findField(fieldName);
-   if (NULL == info)
-      return NULL;
+   TR_ASSERT(info, "Struct %s has no field with name %s\n", getName(), fieldName);
 
    TR::SymbolReference *symRef = info->getSymRef();
    if (NULL == symRef)

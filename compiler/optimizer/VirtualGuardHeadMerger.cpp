@@ -46,6 +46,35 @@ static bool isMergeableGuard(TR::Node *node)
    return mergeOnlyHCRGuards ? node->isHCRGuard() : node->isNopableInlineGuard();
    }
 
+// Splits monitor store from priv args
+// Return the block containing only the priv args if exist
+static TR::Block* splitMonitorStoreFromPrivArg(TR::Block* block, TR::CFG *cfg)
+   {
+   TR::TreeTop *start = block->getFirstRealTreeTop();
+   TR::TreeTop *end = block->getLastRealTreeTop();
+   bool hasMonitorStore = false;
+   TR::TreeTop *firstPrivArg = NULL;
+   for(TR::TreeTop *tt = start; tt && tt != end; tt = tt->getPrevTreeTop())
+      {
+      TR::Node * node = tt->getNode();
+      if (node->getOpCode().hasSymbolReference() && node->getSymbol()->holdsMonitoredObject())
+         hasMonitorStore = true;
+      else if(node->chkIsPrivatizedInlinerArg())
+         {
+         firstPrivArg = tt;
+         // Monitor stores always appear before priv args, so we can safely stop here
+         break;
+         }
+      }
+   if (hasMonitorStore && firstPrivArg)
+      return block->split(firstPrivArg, cfg, true /* fixupCommoning */, false /* copyExceptionSuccessors */);
+   else if (firstPrivArg)
+      return block;
+   else
+      // This block does not contain a priv arg
+      return NULL;
+   }
+
 static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
    TR::TreeTop *branchDest)
    {
@@ -64,13 +93,21 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
+          // It's safe to move the guard if there are only priv arg stores and live monitor stores
+          // ahead of the guard
           if (tt->getNode()->getOpCodeValue() != TR::BBStart
              && tt->getNode()->getOpCodeValue() != TR::BBEnd
              && !tt->getNode()->chkIsPrivatizedInlinerArg()
+             && !(tt->getNode()->getOpCode().hasSymbolReference() && tt->getNode()->getSymbol()->holdsMonitoredObject())
              && !tt->getNode()->isNopableInlineGuard())
                 return false;
 
-         if (tt->getNode()->chkIsPrivatizedInlinerArg() && disablePrivArgMovement)
+         if (tt->getNode()->chkIsPrivatizedInlinerArg() && (disablePrivArgMovement ||
+             // If the priv arg is not for this guard
+             (guardCandidate->getNode()->getInlinedSiteIndex() > -1 &&
+             // if priv arg store does not have the same inlined site index as the guard's caller, that means it is not a priv arg for this guard,
+             // then we cannot move the guard and its priv args up across other calls' priv args
+             tt->getNode()->getInlinedSiteIndex() != TR::comp()->getInlinedCallSite(guardCandidate->getNode()->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())))
             return false;
 
          if (tt->getNode()->isNopableInlineGuard()
@@ -247,7 +284,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                break;
                }
 
-            if (!performTransformation(comp(), "%sRedirecting guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, guard2, guard2Block->getNumber(), cold1->getNumber()))
+            if (!performTransformation(comp(), "%sRedirecting %s guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, guard2->isHCRGuard() ? "HCR" : "runtime", guard2, guard2Block->getNumber(), cold1->getNumber()))
                   continue;
 
             if (guard2->getBranchDestination() != guard1->getBranchDestination())
@@ -260,28 +297,41 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                if (trace())
                   traceMsg(comp(), "  Created new block_%d to hold guard [%p] from block_%d\n", guard2Block->getNumber(), guard2, guard2Block->getNumber());
 
-               // the block created above guard2 contains only privarg treetops if
-               // guard2 is a runtime-patchable guard. We need to move these args up
-               // to the insert point and update the insertion pointers as needed
+               // We should leave code ahead of an HCR guard in place because:
+               // 1, it might have side effect to runtime guards after it, moving it up might cause us to falsely merge
+               //    the subsequent runtime guards
+               // 2, it might contain live monitor, moving it up above a guard can affect the monitor's live range
+               if (!guard2->isHCRGuard())
+                  {
+	          // the block created above guard2 contains only privarg treetops or monitor stores if
+                  // guard2 is a runtime-patchable guard and is safe to merge. We need to move the priv
+                  // args up to the runtime insert point and leave the monitor stores in place
+                  // It's safe to do so because there is no data dependency between the monitor store and
+                  // the priv arg store, because the priv arg store does not load the value from the temp
+                  // holding the monitored object
 
-               //TODO We can safely leave code ahead of an HCR guard in place if no runtime guards are going to be moved or if
-               //     there is no data dependence between the code moved from ahead of the runtime guards and the code ahead
-               //     of the HCR guard. This opt will increase the chances of a patch point not requiring nops (perf opportunity).
-			   TR::Block *privargBlock = guard2Block->getPrevBlock();
 
-			   if (trace())
-				  traceMsg(comp(), "  Moving privarg block_%d after block_%d\n", privargBlock->getNumber(), privargIns->getNumber());
+                  // Split priv arg stores from monitor stores
+                  // Monitor store is generated for the caller of the method guard2 protects, so should appear before
+                  // priv arg stores for the method guard2 protects
+                  TR::Block *privargBlock = splitMonitorStoreFromPrivArg(guard2Block->getPrevBlock(), cfg);
+                  if (privargBlock)
+                     {
+                     if (trace())
+                        traceMsg(comp(), "  Moving privarg block_%d after block_%d\n", privargBlock->getNumber(), privargIns->getNumber());
 
-			   moveBlockAfterDest(cfg, privargBlock, privargIns);
+                     moveBlockAfterDest(cfg, privargBlock, privargIns);
 
-			   if (HCRIns == privargIns)
-				  HCRIns = privargBlock;
-			   if (runtimeIns == privargIns)
-				  runtimeIns = privargBlock;
-			   privargIns = privargBlock;
+                     if (HCRIns == privargIns)
+                        HCRIns = privargBlock;
+                     if (runtimeIns == privargIns)
+                        runtimeIns = privargBlock;
+                     privargIns = privargBlock;
 
-			   // refresh the insertPoint since it could be stale after the above updates
-			   insertPoint = runtimeIns;
+                     // refresh the insertPoint since it could be stale after the above updates
+                     insertPoint = runtimeIns;
+                    }
+                  }
                }
 
             if (insertPoint != guard2Block->getPrevBlock())

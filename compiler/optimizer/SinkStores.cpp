@@ -2438,6 +2438,13 @@ bool TR_SinkStores::treeIsSinkableStore(TR::Node *node, bool sinkIndirectLoads, 
          return false;
          }
 
+      if (node->getOpCode().hasSymbolReference() && node->getSymbol()->holdsMonitoredObject())
+         {
+         if (trace())
+            traceMsg(comp(), "        store holds monitored object, not safe to move it\n");
+         return false;
+         }
+
       if (node->getOpCode().isStore() &&
           (node->dontEliminateStores() ||
           (node->getSymbolReference()->getSymbol()->isAuto() &&

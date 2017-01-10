@@ -83,7 +83,8 @@ open. (Our focus has been dominated by getting this code out into the open!)
 * Charlie Gracie's slides from jFokus in February, 2016
   [A JVMs Journey into Polyglot Runtimes](https://t.co/efCKf6aCB4)
 
-* Mark Stoodley's slides from EclipseCON in March, 2016 OMR: A modern toolkit for building language runtimes, link when available
+* Mark Stoodley's slides from EclipseCON in March, 2016
+  [Eclipse OMR: a modern toolkit for building language runtimes](http://www.slideshare.net/MarkStoodley/omr-a-modern-toolkit-for-building-language-runtimes)
   
 ## How to Build Standalone Eclipse OMR
 ### Basic configuration and compile

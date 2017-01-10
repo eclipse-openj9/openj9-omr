@@ -113,7 +113,6 @@ void simplifyChildren(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       {
       TR::Node * child = node->getChild(i);
       child->decFutureUseCount();
-      child->decFutureUseCount();
       if (child->getVisitCount() != visitCount)
          {
          child = s->simplify(child, block);

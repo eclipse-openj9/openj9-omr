@@ -183,8 +183,9 @@ class TR_LoopStrider : public TR_LoopTransformer
    bool morphExpressionLinearInInductionVariable(TR::Node *, int32_t, TR::Node *, vcount_t);
    TR::Node *getInductionVariableNode(TR::Node *);
    void walkTreesAndFixUseDefs(TR_Structure *, TR::SymbolReference *, TR::NodeChecklist &);
-   void replaceLoadsInStructure(TR_Structure *, int32_t, TR::SymbolReference *, TR::NodeChecklist &, TR::NodeChecklist &);
-   void replaceLoadsInSubtree(TR::Node *, int32_t, TR::SymbolReference *, TR::NodeChecklist &, TR::NodeChecklist &);
+   void replaceLoadsInStructure(TR_Structure *, int32_t, TR::Node *, TR::SymbolReference *, TR::NodeChecklist &, TR::NodeChecklist &);
+   void replaceLoadsInSubtree(TR::Node *, int32_t, TR::Node *, TR::SymbolReference *, TR::NodeChecklist &, TR::NodeChecklist &);
+   void widenComparison(TR::Node *, int32_t, TR::Node *, TR::NodeChecklist &);
    void eliminateSignExtensions(TR::NodeChecklist &);
    void eliminateSignExtensionsInSubtree(TR::Node *, TR::NodeChecklist &, TR::NodeChecklist &, NodeMap &);
    TR::Node *signExtend(TR::Node *, TR::NodeChecklist &, NodeMap &);

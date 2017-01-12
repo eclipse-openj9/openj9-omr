@@ -125,7 +125,7 @@ else
         ifeq (0,$(OMR_ENV_DATA64))
             GLOBAL_ASFLAGS+= -mzarch
         endif
-        GLOBAL_ASFLAGS+= -march=z990 $(J9M31) -o $*.o
+        GLOBAL_ASFLAGS+= -march=z9-109 $(J9M31) -o $*.o
     else
         ifeq (x86,$(OMR_HOST_ARCH))
             ifeq (0,$(OMR_ENV_DATA64))
@@ -369,7 +369,7 @@ ifeq ($(OMR_OPTIMIZE),1)
                 endif
             else
                 ifeq (s390,$(OMR_HOST_ARCH))
-                    OPTIMIZATION_FLAGS+=-O3 -march=z900  -mtune=z9-109 -mzarch
+                    OPTIMIZATION_FLAGS+=-O3 -mtune=z10 -march=z9-109 -mzarch
                 else
                     OPTIMIZATION_FLAGS+=-O
                 endif

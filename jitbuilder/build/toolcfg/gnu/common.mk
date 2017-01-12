@@ -158,12 +158,12 @@ endif
 
 ifeq ($(PLATFORM),s390-linux-gcc)
     CX_DEFINES+=J9VM_TIERED_CODE_CACHE MAXMOVE S390 FULL_ANSI
-    CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -march=z900 -mtune=z9-109 -mzarch
+    CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
 endif
 
 ifeq ($(PLATFORM),s390-linux64-gcc)
     CX_DEFINES+=S390 S39064 FULL_ANSI MAXMOVE J9VM_TIERED_CODE_CACHE
-    CX_FLAGS+=-fPIC -fno-strict-aliasing -march=z900 -mtune=z9-109 -mzarch
+    CX_FLAGS+=-fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
 endif
 
 ifeq ($(C_COMPILER),clang)
@@ -216,11 +216,11 @@ ifeq ($(HOST_ARCH),x)
 endif
 
 ifeq ($(PLATFORM),s390-linux-gcc)
-    S_FLAGS+=-m31 -mzarch -march=z990
+    S_FLAGS+=-m31 -mzarch -march=z9-109
 endif
 
 ifeq ($(PLATFORM),s390-linux64-gcc)
-    S_FLAGS+=-march=z990 -mzarch
+    S_FLAGS+=-march=z9-109 -mzarch
 endif
 
 S_DEFINES+=$(S_DEFINES_EXTRA)

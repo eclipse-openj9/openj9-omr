@@ -123,13 +123,13 @@ endif
 ifeq ($(HOST_ARCH),z)
     ifeq ($(HOST_BITS),32)
         CX_DEFINES+=J9VM_TIERED_CODE_CACHE MAXMOVE S390 FULL_ANSI
-        CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -march=z900 -mtune=z9-109 -mzarch
+        CX_FLAGS+=-m31 -fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
         CX_FLAGS_DEBUG+=-gdwarf-2
     endif
     
     ifeq ($(HOST_BITS),64)
         CX_DEFINES+=S390 S39064 FULL_ANSI MAXMOVE J9VM_TIERED_CODE_CACHE
-        CX_FLAGS+=-fPIC -fno-strict-aliasing -march=z900 -mtune=z9-109 -mzarch
+        CX_FLAGS+=-fPIC -fno-strict-aliasing -mtune=z10 -march=z9-109 -mzarch
     endif
 endif
 
@@ -189,7 +189,7 @@ ifeq ($(HOST_ARCH),x)
 endif
 
 ifeq ($(HOST_ARCH),z)
-    S_FLAGS+=-march=z990 -mzarch
+    S_FLAGS+=-march=z9-109 -mzarch
     
     ifeq ($(HOST_BITS),32)
         S_FLAGS+=-m31

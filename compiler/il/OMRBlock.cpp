@@ -1248,6 +1248,7 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
    {
 
    //traceMsg("Splitting edge (%d,%d)\n", from->getNumber(), to->getNumber());
+   TR_ASSERT(!to->isOSRCatchBlock(), "Splitting edge to OSRCatchBlock (block_%d -> block_%d) is not supported\n", from->getNumber(), to->getNumber());
    TR::Node *exitNode = from->getExit()->getNode();
    TR_Structure *fromContainingLoop = NULL;
    if (from->getStructureOf())
@@ -1336,21 +1337,13 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
 
       if (isExceptionEdge)
          {
-         if (to->isOSRCatchBlock())
-            newBlock->setHandlerInfoWithOutBCInfo(
-                  TR::Block::CanCatchOSR, 
-                  to->getInlineDepth(), 
-                  -1, 
-                  to->getOwningMethod(), 
-                  c);
-         else
-            newBlock->setHandlerInfo(
-               to->getCatchType(),
-               to->getInlineDepth(),
-               to->getHandlerIndex(),
-               to->getOwningMethod(),
-               c);
-            TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
+         newBlock->setHandlerInfo(
+            to->getCatchType(),
+            to->getInlineDepth(),
+            to->getHandlerIndex(),
+            to->getOwningMethod(),
+            c);
+         TR::ResolvedMethodSymbol *method = c->getMethodSymbol();
          TR::SymbolReferenceTable *srtab = c->getSymRefTab();
          TR::SymbolReference *excSR = srtab->findOrCreateExcpSymbolRef();
          TR::SymbolReference *throwSR = srtab->findOrCreateAThrowSymbolRef(method);

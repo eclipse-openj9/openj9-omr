@@ -512,75 +512,9 @@ OMR::Simplifier::simplify(TR::Node * node, TR::Block * block)
 TR::Node *
 OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild, TR::TreeTop *anchorTree, TR::ILOpCodes opcode, bool anchorChildren)
    {
-#ifdef J9_PROJECT_SPECIFIC
-   if (node->getOpCode().isConversionWithFraction() &&
-       firstChild->getOpCode().isConversionWithFraction() &&
-       (node->getDecimalFraction() != firstChild->getDecimalFraction()))
-      {
-      // illegal to fold a pattern like:
-      // pd2f  frac=5
-      //    f2pd frac=0
-      //       f
-      // to just 'f' because the extra digits that should be introduced by the frac=5 in the parent will be lost
-      if (trace())
-         traceMsg(comp(),"disallow unaryCancel of node %p and firstChild %p due to mismatch of decimal fractions (%d != %d)\n",
-                 node,firstChild,node->getDecimalFraction(),firstChild->getDecimalFraction());
-      return 0;
-      }
-   if (firstChild->getOpCodeValue() == opcode &&
-       node->getType().isBCD() && firstChild->getType().isBCD() && firstChild->getFirstChild()->getType().isBCD() &&
-       node->hasIntermediateTruncation())
-      {
-      // illegal to fold if there is an intermediate (firstChild) truncation:
-      // zd2pd p=4         0034
-      //    pd2zd p=2        34
-      //       pdx p=4     1234
-      // if folding is performed to remove zd2pd/pd2zd then the result will be 1234 instead of 0034
-      if (trace())
-         traceMsg(comp(),"disallow unaryCancel of node %p and firstChild %p due to intermediate truncation of node\n",node,firstChild);
-      return 0;
-      }
-   else if (firstChild->getOpCodeValue() == opcode && node->getType().isBCD() && !firstChild->getType().isBCD())
-      {
-      // illegal to fold an intermediate truncation:
-      // dd2zd p=20 srcP=13
-      //   zd2dd (no p specifed, but by data type, must be <= 16 and by srcP must be <= 13)
-      //     zdX p=20
-      // Folding gives an incorrect result if either srcP or the implied p of the zd2dd is less than p on the dd2zd
-      int32_t nodeP = node->getDecimalPrecision();
-      int32_t childP = TR::DataType::getMaxPackedDecimalPrecision();
-      int32_t grandChildP = firstChild->getFirstChild()->getDecimalPrecision();
+   if (!isLegalToUnaryCancel(node, firstChild, opcode))
+      return NULL;
 
-      if (node->hasSourcePrecision())
-         childP = node->getSourcePrecision();
-      else if (firstChild->getDataType().canGetMaxPrecisionFromType())
-         childP = firstChild->getDataType().getMaxPrecisionFromType();
-
-      if (childP < nodeP && childP < grandChildP)
-         {
-         if (trace())
-            traceMsg(comp(),"disallow unaryCancel of node %p and firstChild %p due to intermediate truncation of node\n",node,firstChild);
-         return 0;
-         }
-      }
-   else if (firstChild->getOpCodeValue() == opcode && !node->getType().isBCD() && !firstChild->getType().isBCD())
-      {
-      // illegal to fold an intermediate truncation:
-      // dd2l
-      //   l2dd
-      //     lX
-      // Folding could give an incorrect result because the max precision of a dd is 16 and the max precision of an l is 19
-      if (node->getDataType().canGetMaxPrecisionFromType() && firstChild->getDataType().canGetMaxPrecisionFromType() &&
-          node->getDataType().getMaxPrecisionFromType() > firstChild->getDataType().getMaxPrecisionFromType())
-         {
-         if (trace())
-            traceMsg(comp(),"disallow unaryCancel of node %p and firstChild %p due to intermediate truncation of node\n",node,firstChild);
-         return 0;
-         }
-      }
-#endif
-
-   int32_t bytesLeftAfterTruncation = -1;
    if (firstChild->getOpCodeValue() == opcode &&
        (node->getType().isAggregate() || firstChild->getType().isAggregate()) &&
        (node->getSize() > firstChild->getSize() || node->getSize() != firstChild->getFirstChild()->getSize()))
@@ -631,7 +565,7 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
             traceMsg(comp(),"disallow unaryCancel of node %s (%p) and firstChild %s (%p) due to unequal sizes (nodeSize %d, firstChildSize %d, firstChild->childSize %d)\n",
                     node->getOpCode().getName(),node,firstChild->getOpCode().getName(),firstChild,
                     node->getSize(),firstChild->getSize(),firstChild->getFirstChild()->getSize());
-         return 0;
+         return NULL;
          }
       }
 
@@ -639,7 +573,7 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
        performTransformation(comp(), "%sRemoving node [" POINTER_PRINTF_FORMAT "] %s and its child [" POINTER_PRINTF_FORMAT "] %s\n",
              optDetailString(), node, node->getOpCode().getName(), firstChild, firstChild->getOpCode().getName()))
       {
-      TR::Node * grandChild = firstChild->getFirstChild();
+      TR::Node *grandChild = firstChild->getFirstChild();
       grandChild->incReferenceCount();
       bool anchorChildrenNeeded = anchorChildren &&
          (node->getNumChildren() > 1 ||
@@ -648,122 +582,11 @@ OMR::Simplifier::unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild,
           firstChild->getOpCode().hasSymbolReference());
       prepareToStopUsingNode(node, anchorTree, anchorChildrenNeeded);
       node->recursivelyDecReferenceCount();
-#ifdef J9_PROJECT_SPECIFIC
-      TR_RawBCDSignCode alwaysGeneratedSign = comp()->cg()->alwaysGeneratedSign(node);
-      if (node->getType().isBCD() &&
-          grandChild->getType().isBCD() &&
-          (node->getDecimalPrecision() != grandChild->getDecimalPrecision() || alwaysGeneratedSign != raw_bcd_sign_unknown))
-         {
-         // must maintain the top level node's precision when replacing with the grandchild
-         // (otherwise if the parent of the node is call it will pass a too small or too big value)
-         TR::Node *origOrigGrandChild = grandChild;
-         if (node->getDecimalPrecision() != grandChild->getDecimalPrecision())
-            {
-            TR::Node *origGrandChild = grandChild;
-            grandChild = TR::Node::create(TR::ILOpCode::modifyPrecisionOpCode(grandChild->getDataType()), 1, origGrandChild);
-            origGrandChild->decReferenceCount(); // inc'd an extra time when creating modPrecision node above
-            grandChild->incReferenceCount();
-            grandChild->setDecimalPrecision(node->getDecimalPrecision());
-            dumpOptDetails(comp(), "%sCreate %s [" POINTER_PRINTF_FORMAT "] to reconcile precision mismatch between node %s [" POINTER_PRINTF_FORMAT "] grandChild %s [" POINTER_PRINTF_FORMAT "] (%d != %d)\n",
-                             optDetailString(),
-                             grandChild->getOpCode().getName(),
-                             grandChild,
-                             node->getOpCode().getName(),
-                             node,
-                             origOrigGrandChild->getOpCode().getName(),
-                             origOrigGrandChild,
-                             node->getDecimalPrecision(),
-                             origOrigGrandChild->getDecimalPrecision());
-            }
-         // if the top level was always setting a particular sign code (e.g. ud2pd) then must maintain this side-effect here when cancelling
-         if (alwaysGeneratedSign != raw_bcd_sign_unknown)
-            {
-            TR::Node *origGrandChild = grandChild;
-            TR::ILOpCodes setSignOp = TR::ILOpCode::setSignOpCode(grandChild->getDataType());
-            TR_ASSERT(setSignOp != TR::BadILOp,"could not find setSignOp for type %s on %s (%p)\n",
-                    grandChild->getDataType().toString(),grandChild->getOpCode().getName(),grandChild);
-            grandChild = TR::Node::create(setSignOp, 2,
-                                         origGrandChild,
-                                         TR::Node::iconst(origGrandChild, TR::DataType::getValue(alwaysGeneratedSign)));
-            origGrandChild->decReferenceCount(); // inc'd an extra time when creating setSign node above
-            grandChild->incReferenceCount();
-            grandChild->setDecimalPrecision(origGrandChild->getDecimalPrecision());
-            dumpOptDetails(comp(), "%sCreate %s [" POINTER_PRINTF_FORMAT "] to preserve setsign side-effect between node %s [" POINTER_PRINTF_FORMAT "] grandChild %s [" POINTER_PRINTF_FORMAT "] (sign=0x%x)\n",
-                             optDetailString(),
-                             grandChild->getOpCode().getName(),
-                             grandChild,
-                             node->getOpCode().getName(),
-                             node,
-                             origOrigGrandChild->getOpCode().getName(),
-                             origOrigGrandChild,
-                             TR::DataType::getValue(alwaysGeneratedSign));
-            }
-         }
-      else if (node->getType().isDFP() && firstChild->getType().isBCD())
-         {
-         // zd2dd
-         //   dd2zd p=12 srcP=13
-         //     ddX (p possibly unknown but <= 16)
-         // Folding gives an incorrect result if the truncation on the dd2zd isn't preserved
-         int32_t nodeP = TR::DataType::getMaxPackedDecimalPrecision();
-         int32_t childP = firstChild->getDecimalPrecision();
-         int32_t grandChildP = TR::DataType::getMaxPackedDecimalPrecision();
-
-         if (node->getDataType().canGetMaxPrecisionFromType())
-            {
-            nodeP = node->getDataType().getMaxPrecisionFromType();
-            grandChildP = nodeP;
-            }
-         if (firstChild->hasSourcePrecision())
-            grandChildP = firstChild->getSourcePrecision();
-
-         if (childP < nodeP && childP < grandChildP)
-            {
-            TR::Node *origOrigGrandChild = grandChild;
-            TR::Node *origGrandChild = grandChild;
-            grandChild = TR::Node::create(TR::ILOpCode::modifyPrecisionOpCode(grandChild->getDataType()), 1, origGrandChild);
-            origGrandChild->decReferenceCount(); // inc'd an extra time when creating modPrecision node above
-            grandChild->incReferenceCount();
-            grandChild->setDFPPrecision(childP);
-            dumpOptDetails(comp(), "%sCreate %s [" POINTER_PRINTF_FORMAT "] to reconcile precision mismatch between node %s [" POINTER_PRINTF_FORMAT "] grandChild %s [" POINTER_PRINTF_FORMAT "] (%d != %d)\n",
-                             optDetailString(),
-                             grandChild->getOpCode().getName(),
-                             grandChild,
-                             node->getOpCode().getName(),
-                             node,
-                             origOrigGrandChild->getOpCode().getName(),
-                             origOrigGrandChild,
-                             nodeP,
-                             childP);
-            }
-         }
-      else
-#endif
-         if (bytesLeftAfterTruncation > 0)
-         {
-         TR_ASSERT(bytesLeftAfterTruncation < 8,"bytesLeftAfterTruncation %d should be < 8 for node %p\n",bytesLeftAfterTruncation,node);
-         TR_ASSERT(grandChild->getType().isInt64(),"node %s (%p) should an Int64 type\n",grandChild->getOpCode().getName(),grandChild);
-         uint64_t bitsLeftAfterTruncation = (uint64_t)bytesLeftAfterTruncation*8;
-         uint64_t constantForAnd = (1ull << bitsLeftAfterTruncation)-1;
-         grandChild = TR::Node::create(TR::land, 2, grandChild, TR::Node::lconst(grandChild, constantForAnd));
-         grandChild->getFirstChild()->decReferenceCount(); // inc'd an extra time when creating modPrecision node above
-         grandChild->incReferenceCount();
-         dumpOptDetails(comp(), "%sCreate %s [" POINTER_PRINTF_FORMAT "] 0x%llx to account for %d truncated bytes between node %s [" POINTER_PRINTF_FORMAT "] grandChild %s [" POINTER_PRINTF_FORMAT "]\n",
-                          optDetailString(),
-                          grandChild->getOpCode().getName(),
-                          grandChild,
-                          (uint64_t)constantForAnd,
-                          bytesLeftAfterTruncation,
-                          node->getOpCode().getName(),
-                          node,
-                          grandChild->getFirstChild()->getOpCode().getName(),
-                          grandChild->getFirstChild());
-         }
-
       node->setVisitCount(0);
       return grandChild;
       }
-   return 0;
+
+   return NULL;
    }
 
 //---------------------------------------------------------------------
@@ -822,3 +645,74 @@ OMR::Simplifier::anchorOrderDependentNodesInSubtree(TR::Node *node, TR::Node *re
    else
       anchorChildren(node, anchorTree, 0, node->getReferenceCount() > 1, replacement);
 }
+
+bool
+OMR::Simplifier::isBoundDefinitelyGELength(TR::Node *boundChild, TR::Node *lengthChild)
+   {
+   TR::ILOpCodes boundOp = boundChild->getOpCodeValue();
+   if (boundOp == TR::iadd)
+      {
+      TR::Node *first  = boundChild->getFirstChild();
+      TR::Node *second = boundChild->getSecondChild();
+      if (first == lengthChild)
+         {
+         TR::ILOpCodes secondOp = second->getOpCodeValue();
+         if (second->getOpCode().isArrayLength()                          ||
+             secondOp == TR::bu2i                                          ||
+             secondOp == TR::su2i                                          ||
+
+             (secondOp == TR::iconst &&
+              second->getInt() >= 0)                                      ||
+
+             (secondOp == TR::iand                                     &&
+              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
+              (second->getSecondChild()->getInt() & 80000000) == 0)       ||
+
+             (secondOp == TR::iushr                                    &&
+              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
+              (second->getSecondChild()->getInt() & 0x1f) > 0))
+            {
+            return true;
+            }
+         }
+      else if (second == lengthChild)
+         {
+         TR::ILOpCodes firstOp = first->getOpCodeValue();
+         if (first->getOpCode().isArrayLength()                          ||
+             firstOp == TR::bu2i                                          ||
+             firstOp == TR::su2i                                          ||
+
+             (firstOp == TR::iand                                     &&
+              first->getSecondChild()->getOpCodeValue() == TR::iconst &&
+              (first->getSecondChild()->getInt() & 80000000) == 0)       ||
+
+             (firstOp == TR::iushr &&
+              first->getSecondChild()->getOpCodeValue() == TR::iconst &&
+              (first->getSecondChild()->getInt() & 0x1f) > 0))
+            {
+            return true;
+            }
+         }
+      }
+   else if (boundOp == TR::isub)
+      {
+      TR::Node *first  = boundChild->getFirstChild();
+      TR::Node *second = boundChild->getSecondChild();
+      if (first  == lengthChild)
+         {
+         TR::ILOpCodes secondOp = second->getOpCodeValue();
+         if ((secondOp == TR::iconst &&
+              second->getInt() < 0)                                      ||
+
+             (secondOp == TR::ior                                      &&
+              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
+              (second->getSecondChild()->getInt() & 0x80000000) != 0))
+            {
+            return true;
+            }
+         }
+      }
+
+   return false;
+   }
+

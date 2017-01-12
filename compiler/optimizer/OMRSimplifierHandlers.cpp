@@ -54,10 +54,6 @@
 #include "optimizer/ValueNumberInfo.hpp"
 #include "optimizer/TransformUtil.hpp"
 
-#ifdef J9_PROJECT_SPECIFIC
-#include "env/VMJ9.h"
-#endif
-
 #define OP_PLUS  0
 #define OP_MINUS 1
 #define CLEARBIT32 0x7FFFFFFF
@@ -1578,31 +1574,8 @@ static TR::Node *foldDemotionConversion(TR::Node * node, TR::ILOpCodes opcode, T
    {
    TR::Node * firstChild = node->getFirstChild();
 
-#ifdef J9_PROJECT_SPECIFIC
-   if (node->getOpCode().isConversionWithFraction() &&
-       firstChild->getOpCode().isConversionWithFraction() &&
-       node->getDecimalFraction() != firstChild->getDecimalFraction())
-      {
-      // illegal to fold a pattern like:
-      // pd2d  frac=5
-      //    f2pd frac=0
-      //       f
-      // to just f2d because the extra digits that should be introduced by the frac=5 in the parent will be lost
-      return 0;
-      }
-
-   if (node->getOpCode().isConversionWithFraction() &&
-       !firstChild->getOpCode().isConversionWithFraction() &&
-       node->getDecimalFraction() != 0)
-      {
-      // illegal to fold a pattern like:
-      // pd2f  frac=5
-      //    i2pd
-      //       i
-      // to just i2f because the extra digits that should be introduced by the frac=5 in the parent will be lost
-      return 0;
-      }
-#endif
+   if (!s->isLegalToFold(node, firstChild))
+      return NULL;
 
    if (firstChild->getOpCodeValue() == opcode &&
        performTransformation(s->comp(), "%sFolding conversion node [%s] %s and its child [%s] %s\n",
@@ -1615,7 +1588,8 @@ static TR::Node *foldDemotionConversion(TR::Node * node, TR::ILOpCodes opcode, T
       firstChild->recursivelyDecReferenceCount();
       return node;
       }
-   return 0;
+
+   return NULL;
    }
 
 //---------------------------------------------------------------------
@@ -2547,100 +2521,6 @@ static void ifjlClassSimplifier(TR::Node * node, TR::Simplifier * s)
       }
    }
 
-//---------------------------------------------------------------------
-// Integer boolean OR
-//
-static TR::Node *isUnsafeIorByteChild(TR::Node * child, TR::ILOpCodes b2iOpCode, int32_t mulConst, TR::Simplifier * s)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   if (child->getOpCodeValue() == TR::imul &&
-       child->getSecondChild()->getOpCodeValue() == TR::iconst && child->getSecondChild()->getInt() == mulConst &&
-       child->getFirstChild()->getOpCodeValue() == b2iOpCode && child->getFirstChild()->getReferenceCount() == 1 &&
-       child->getFirstChild()->getFirstChild()->getOpCodeValue() == TR::bloadi &&
-       child->getFirstChild()->getFirstChild()->getReferenceCount() == 1 &&
-       child->getFirstChild()->getFirstChild()->getSymbolReference() == s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int8))
-      {
-      return child->getFirstChild()->getFirstChild()->getFirstChild();
-      }
-#endif
-
-   return 0;
-   }
-
-static TR::Node *isLastUnsafeIorByteChild(TR::Node * child, TR::Simplifier * s)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   if (child->getOpCodeValue() == TR::bu2i && child->getReferenceCount() == 1 &&
-       child->getFirstChild()->getOpCodeValue() == TR::bloadi &&
-       child->getFirstChild()->getReferenceCount() == 1 &&
-       child->getFirstChild()->getSymbolReference() == s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int8))
-      {
-      return child->getFirstChild()->getFirstChild();
-      }
-#endif
-
-   return 0;
-   }
-
-static TR::Node * getUnsafeBaseAddr(TR::Node * node, int32_t isubConst)
-   {
-   if (node->getOpCodeValue() == TR::isub && node->getReferenceCount() == 1 &&
-       node->getSecondChild()->getOpCodeValue() == TR::iconst && node->getSecondChild()->getInt() == isubConst)
-      {
-      return node->getFirstChild();
-      }
-   return 0;
-   }
-
-static TR::Node *isOrOfTwoConsecutiveBytes(TR::Node * ior, TR::Simplifier * s)
-   {
-   // Big Endian
-   // ior
-   //   imul
-   //     b2i
-   //       ibload #231[0x10D06670] Shadow[unknown field]
-   //         address
-   //     iconst 256
-   //   bu2i
-   //     ibload #231[0x10D06670] Shadow[unknown field]
-   //       isub
-   //         ==>address
-   //         iconst -1
-   //
-   // Little Endian
-   // ior
-   //   imul
-   //     b2i
-   //       ibload #231[0x10D06670] Shadow[unknown field]
-   //         isub
-   //           address
-   //           iconst -1
-   //     iconst 256
-   //   bu2i
-   //     ibload #231[0x10D06670] Shadow[unknown field]
-   //       ==>address
-   //
-   TR::Node * byte1, * byte2, * temp, * addr;
-   if ((byte1 = isUnsafeIorByteChild(ior->getFirstChild(), TR::b2i, 256, s)) &&
-       (byte2 = isLastUnsafeIorByteChild(ior->getSecondChild(), s)))
-      {
-      if (TR::Compiler->target.cpu.isLittleEndian())
-         temp = byte1, byte1 = byte2, byte2 = temp;
-
-      if ((addr = getUnsafeBaseAddr(byte2, -1)) && addr == byte1)
-         {
-         byte1->decReferenceCount();
-         return byte1;
-         }
-      }
-   return 0;
-   }
-
-static bool indirectToDirectConvBeneficial(TR::SymbolReference *indirectSymRef, TR::SymbolReference *directSymRef, TR::Simplifier * s)
-   {
-   return true;
-   }
-
 static void transformToLongDivBy10Bitwise(TR::Node * origNode, TR::Node * node, TR::Simplifier * s)
    {
 
@@ -3529,28 +3409,6 @@ static double doubleRecip(double value)
    return u.d;
    }
 
-static bool symRefPairMatches(TR::SymbolReference *actual1, TR::SymbolReference *actual2, TR::SymbolReference *desired1, TR::SymbolReference *desired2)
-   {
-   if (actual1 && actual2 && desired1 && desired2)
-      {
-      if (actual1 == desired1 && actual2 == desired2)
-         return true;
-      if (actual1 == desired2 && actual2 == desired1)
-         return true;
-
-      TR::Symbol *actual1Symbol = actual1->getSymbol();
-      TR::Symbol *actual2Symbol = actual2->getSymbol();
-      TR::Symbol *desired1Symbol = desired1->getSymbol();
-      TR::Symbol *desired2Symbol = desired2->getSymbol();
-
-      if (actual1Symbol == desired1Symbol && actual2Symbol == desired2Symbol)
-         return true;
-      if (actual1Symbol == desired2Symbol && actual2Symbol == desired1Symbol)
-         return true;
-      }
-   return false;
-   }
-
 //---------------------------------------------------------------------
 // Legal check
 // bbStartNode -- start node of nextBlock
@@ -3709,53 +3567,6 @@ static void changeBranchDestinationsForMergeBlocks(TR::Block * block, TR::Block 
          inEdgeIter = ie;
       ie = next;
       }
-   }
-
-static bool callSymbolIsRecognizedPowMethod(TR::ResolvedMethodSymbol *symbol)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   return (symbol &&
-      (symbol->getRecognizedMethod()==TR::java_lang_Math_pow ||
-       symbol->getRecognizedMethod()==TR::java_lang_StrictMath_pow));
-#else
-   return false;
-#endif
-   }
-
-static bool callSymbolIsRecognizedAbsMethod(TR::MethodSymbol * symbol)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   return  (symbol &&
-           ((symbol->getRecognizedMethod()==TR::java_lang_Math_abs_D) ||
-           (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_F) ||
-           (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_I)));
-#else
-   return false;
-#endif
-   }
-
-static TR::Node *foldAbs(TR::Node *node, TR::Simplifier * s)
-   {
-   TR::Node * childNode = NULL;
-
-   if (node->getNumChildren()==1)
-      childNode = node->getFirstChild();
-   else if (node->getNumChildren()==2)
-      {
-      TR_ASSERT(node->getFirstChild()->getOpCodeValue() == TR::loadaddr, "The first child of abs is either the value or loadaddr");
-      childNode = node->getSecondChild();
-      }
-
-   if (childNode &&
-         (childNode->isNonNegative() || (node->getReferenceCount()==1)) &&
-          performTransformation(s->comp(), "%sFolded abs for postive argument on node [%p]\n", s->optDetailString(), node))
-      {
-      TR::TreeTop::create(s->comp(), s->_curTree->getPrevTreeTop(),
-                        TR::Node::create(TR::treetop, 1, childNode));
-      node = s->replaceNode(node, childNode, s->_curTree);
-      s->_alteredBlock = true;
-      }
-   return node;
    }
 
 //
@@ -4977,108 +4788,6 @@ static int64_t floatToLong(float value, bool roundUp)
    return result;
    }
 
-static TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block)
-   {
-   // Walk the extended block to find this node - has to be child of store or tree-top
-   //
-   TR::Block * b = block->startOfExtendedBlock();
-   if (!b)
-      return NULL;
-   do
-      {
-      for (TR::TreeTop* tt = b->getEntry(); tt != b->getExit(); tt = tt->getNextRealTreeTop())
-         {
-         if (tt->getNode()->getNumChildren() == 1 && tt->getNode()->getFirstChild() == callNode)
-            {
-            return tt;
-            }
-         }
-      b = b->getNextBlock();
-      } while (b && b->isExtensionOfPreviousBlock());
-   return NULL;
-   }
-
-//---------------------------------------------------------------------
-/**
- * see if node is a dcall to java.lang.Math.sqrt (or strict equivalent)  *and*
- * all children are f2d then create a call to a single precision call
- * the call will look like
- *
- *     treetop
- *        dcall Method[sqrt]
- *          f2d
- *            fload #111
- *     fstore
- *        d2f
- *          ==> above dcall
- *
- * the treetop is put there in case the call has a side effect.
- * we know it doesn't, so replace the call.  However, because
- * we don't see all the references, we only do this opt if
- * reference count is exactly two.  If we miss more opportunities
- * we can always do a special pass inspecting all calls to see
- * if they feed d2fs.
- */
-//---------------------------------------------------------------------
-static bool convertToSinglePrecisionSQRT(TR::Simplifier *s,TR::Node *sqrtCall)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   if (!s->comp()->cg()->supportsSinglePrecisionSQRT()) return false;
-   if (sqrtCall->getOpCodeValue() != TR::dcall) return false;
-
-   static char *skipit = feGetEnv("TR_NOFSQRT");
-   if (skipit) return false;
-
-   TR::MethodSymbol * symbol = sqrtCall->getSymbol()->castToMethodSymbol();
-   TR::MethodSymbol * methodSymbol = sqrtCall->getSymbol()->getMethodSymbol();
-   if (!methodSymbol ||
-       (methodSymbol->getRecognizedMethod() != TR::java_lang_Math_sqrt &&
-        methodSymbol->getRecognizedMethod() != TR::java_lang_StrictMath_sqrt))
-      {
-      return false;
-      }
-
-   // now check the child
-   TR::Node * f2dChild;
-   int32_t numKids = sqrtCall->getNumChildren();
-   if (2 == numKids)
-     f2dChild= sqrtCall->getSecondChild();// on ia32, actually two children
-   else
-     f2dChild= sqrtCall->getFirstChild();
-
-   if (f2dChild->getOpCodeValue() != TR::f2d) return false; // TODO: could get more aggressive
-
-   if (!performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] (double)sqrt(f2d(x))->(float)sqrt(x)\n",
-                              s->optDetailString(), sqrtCall)) return false;
-
-   TR::SymbolReference *fsqrtSymRef = s->comp()->getSymRefTab()->findOrCreateSinglePrecisionSQRTSymbol();
-
-   TR::TreeTop* callTreeTop = findTreeTop(sqrtCall, s->_curTree->getEnclosingBlock()->startOfExtendedBlock());
-   TR_ASSERT(callTreeTop != NULL, "should have been able to find this tree top (call %p) in block %d",
-           sqrtCall, s->_curTree->getEnclosingBlock()->getNumber());
-
-   TR::Node::recreate(sqrtCall, TR::fcall);
-   sqrtCall->setSymbolReference(fsqrtSymRef);
-
-   // replace child
-   TR::Node *newf2dChild = s->replaceNode(f2dChild,f2dChild->getFirstChild(), s->_curTree);
-   sqrtCall->setChild(numKids-1,newf2dChild);
-
-   TR::Node *callTreeNode = callTreeTop->getNode();
-   if (callTreeNode->getOpCode().isResolveCheck())
-      {
-      if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-         TR::Node::recreate(callTreeNode, TR::treetop);
-      else
-         TR_ASSERT(0, "Null check not expected in call to static method sqrt\n");
-      }
-
-   return true;
-#else
-   return false;
-#endif
-   }
-
 //---------------------------------------------------------------------
 // Double convert to int
 //
@@ -5613,80 +5322,12 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          return s->replaceNode(node, transformed, s->_curTree);
       }
 
+   TR::Node *resultNode = s->simplifyIndirectLoadPatterns(node);
+   if (resultNode != NULL)
+      return resultNode;
+
    TR::Node *firstChild = node->getFirstChild();
-   TR::ILOpCodes nodeOp = node->getOpCodeValue();
-   TR::ILOpCodes childOp = firstChild->getOpCodeValue();
-   TR::SymbolReference *nodeSymref  = node->getSymbolReference();
-   TR_ASSERT(nodeSymref, "Unexpected null symbol reference on load node\n");
-
-   if (nodeOp == TR::aloadi || nodeOp == TR::iloadi || nodeOp == TR::lloadi)
-      {
-      if (childOp == TR::aloadi || childOp == TR::iloadi || childOp == TR::lloadi)
-         {
-         // Complementary reference fields, where a->b->c == a
-         //
-         bool fieldsAreComplementary = false;
-
-         TR::SymbolReference *childSymref = firstChild->getSymbolReference();
-
-#ifdef J9_PROJECT_SPECIFIC
-         if (symRefPairMatches(nodeSymref, childSymref,
-            s->getSymRefTab()->findClassFromJavaLangClassSymbolRef(),
-            s->getSymRefTab()->findJavaLangClassFromClassSymbolRef()))
-            fieldsAreComplementary = true;
-
-         if (symRefPairMatches(nodeSymref, childSymref,
-            s->getSymRefTab()->findClassFromJavaLangClassAsPrimitiveSymbolRef(),
-            s->getSymRefTab()->findJavaLangClassFromClassSymbolRef()))
-            fieldsAreComplementary = true;
-#endif
-
-         TR::Node *grandchild = firstChild->getFirstChild();
-         if (  fieldsAreComplementary
-            && performTransformation(s->comp(), "%sFolded complementary field load [%p]->%s->%s\n",
-               s->optDetailString(), grandchild,
-               nodeSymref ->getName(s->getDebug()),
-               childSymref->getName(s->getDebug())))
-            {
-            TR::Node *replacement = grandchild;
-            if (replacement->getDataType() != node->getDataType())
-               {
-               TR::ILOpCodes convOpCode = TR::ILOpCode::getProperConversion(replacement->getDataType(), node->getDataType(), false);
-               TR_ASSERT(convOpCode != TR::BadILOp, "Conversion between two different data types requires an opcode");
-               replacement = TR::Node::create(convOpCode, 1, grandchild);
-               // Note: be wary of collected refs.  We don't want to convert those accidentally to primitives.
-               }
-            return s->replaceNode(node, replacement, s->_curTree);
-            }
-         }
-
-      TR::Node * somePackedAddress = firstChild;
-      TR::ILOpCodes somePackedOp = childOp;
-
-      if (somePackedAddress->getOpCode().isConversion())
-         {
-         somePackedAddress = somePackedAddress->getFirstChild();
-         somePackedOp = somePackedAddress->getOpCodeValue();
-         }
-
-#ifdef J9_PROJECT_SPECIFIC
-      if (nodeSymref == s->getSymRefTab()->findClassAndDepthFlagsSymbolRef()
-            && somePackedOp == TR::loadaddr && !somePackedAddress->getSymbolReference()->isUnresolved())
-         {
-         TR::SymbolReference *childSymref = somePackedAddress->getSymbolReference();
-         TR_OpaqueClassBlock* clazz = (TR_OpaqueClassBlock *)childSymref->getSymbol()->getStaticSymbol()->getStaticAddress();
-         uintptrj_t konst = s->comp()->fej9()->getClassDepthAndFlagsValue(clazz);
-         TR::Node *konstNode = nodeOp == TR::iloadi ? TR::Node::iconst(node, konst) :
-                              nodeOp == TR::lloadi ? TR::Node::lconst( node, konst) :
-                                                    NULL;
-         return s->replaceNode(node, konstNode, s->_curTree);
-         }
-#endif
-
-      }
-
-   if (
-       firstChild->getOpCodeValue() == TR::loadaddr &&
+   if (firstChild->getOpCodeValue() == TR::loadaddr &&
        !s->comp()->cg()->getLinkage()->isArgumentListSymbol(firstChild->getSymbolReference()->getSymbol(), s->comp())) // argList symbol can grow later on
        {
        bool newOType = false;
@@ -5717,7 +5358,6 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
           (firstChild->getSymbolReference()->getSymbol()->isAutoOrParm() || localStatic) &&
           node->getSymbolReference()->getOffset() == 0 &&
           (node->getSymbol()->isVolatile() == firstChild->getSymbol()->isVolatile()) &&
-          indirectToDirectConvBeneficial(node->getSymbolReference(), firstChild->getSymbolReference(), s) &&
           performTransformation(s->comp(), "%sReplace indirect load %s [" POINTER_PRINTF_FORMAT "] with ",
           s->optDetailString(), node->getOpCode().getName(),node))
          {
@@ -5752,7 +5392,6 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
          return node;
          }
       }
-
 
    if (s->comp()->cg()->getSupportsVectorRegisters())
       {
@@ -5845,10 +5484,9 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
             allowStoreSize = (storeSize == TR::Compiler->om.sizeofReferenceAddress());
 
        if ((storeDataType == addrDataType && isSameType) &&
-           (firstChild->getSymbolReference()->getSymbol()->isAutoOrParm()  || localStatic)
-           && node->getSymbolReference()->getOffset() == 0 &&
+           (firstChild->getSymbolReference()->getSymbol()->isAutoOrParm()  || localStatic) &&
+           node->getSymbolReference()->getOffset() == 0 &&
            (node->getSymbol()->isVolatile() == firstChild->getSymbol()->isVolatile()) &&
-           indirectToDirectConvBeneficial(node->getSymbolReference(), firstChild->getSymbolReference(), s) &&
            performTransformation(s->comp(), "%sReplace indirect store %s [" POINTER_PRINTF_FORMAT "] with ",
             s->optDetailString(), node->getOpCode().getName(),node))
          {
@@ -6164,276 +5802,19 @@ TR::Node *gotoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 TR::Node *ifdCallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
-
-   TR::MethodSymbol * symbol = node->getSymbol()->castToMethodSymbol();
-
-   if (callSymbolIsRecognizedAbsMethod(symbol))
-      {
-      node = foldAbs(node, s);
-      }
-   else if (node->getSymbol() &&
-      callSymbolIsRecognizedPowMethod(node->getSymbol()->getResolvedMethodSymbol()))
-      {
-      static char *skipit = feGetEnv("TR_NOMATHRECOG");
-      if (skipit !=NULL) return node;
-
-      int32_t numChildren = node->getNumChildren();
-      // call can have 2 or 3 args.  In both cases, the last two are the parameters of interest.
-      TR::Node *expNode = node->getChild(numChildren-1);
-      TR::Node *valueNode = node->getChild(numChildren-2);
-
-      // In strictmath.pow(), if both arguments are integers, then the result is exactly equal to the mathematical result
-      // of raising the first argument to the power of the second argument if that result can in fact be represented exactly as a double value.
-      //(In the foregoing descriptions, a floating-point value is considered to be an integer if and only if it is finite and a fixed point of
-      // the method ceil or, equivalently, a fixed point of the method floor. A value is a fixed point of a one-argument method if and only if
-      // the result of applying the method to the value is equal to the value.)
-      if (callSymbolIsRecognizedPowMethod(node->getSymbol()->getResolvedMethodSymbol()))
-         {
-          if (valueNode->getOpCodeValue() == TR::dconst && expNode->getOpCodeValue() == TR::dconst &&
-             (valueNode->getDouble() == 10.0 && expNode->getDouble() == 4.0))
-            {
-            foldDoubleConstant(node, 10000.0, s);
-            }
-
-          return node;
-          }
-
-      TR::Node *newNode = replaceExpWithMult(node,valueNode,expNode,block,s);
-
-      node = newNode;
-      }
-
-   return node;
+   return s->simplifyiCallMethods(node, block);
    }
 
-/**
- * Simplify lcalls.
- *
- * Current implementation focuses on java time functions.
- */
 TR::Node *lcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
-#ifdef J9_PROJECT_SPECIFIC
-   // convert currentTimeMillis into currentTimeMaxPrecision
-   // have to convert block from:
-   // <prvTree>
-   // <tree>
-   //    lcall currentTimeMillis
-   // <nxtTree>
-   //   to:
-   // <prvTree>
-   //   lstore newTemp (newTemp allocated in codegen)
-   //     lcall currentTimeMaxPrecision
-   //
-   // <tree>
-   //    ldiv
-   //      lload newTemp
-   //      <value>
-   if (s->comp()->cg()->getSupportsCurrentTimeMaxPrecision())
-      {
-      int64_t divisor    = s->comp()->cg()->getCurrentTimeMillisDivisor();
-      int64_t multiplier = s->comp()->cg()->getNanoTimeMultiplier();
-      TR::MethodSymbol * methodSymbol = node->getSymbol()->getMethodSymbol();
-      if (methodSymbol)
-         {
-         if ((methodSymbol->getRecognizedMethod() == TR::java_lang_System_currentTimeMillis) &&
-             (methodSymbol->isJNI() || methodSymbol->isVMInternalNative() || methodSymbol->isJITInternalNative()) &&
-             performTransformation(s->comp(), "%sConvert currentTimeMillis to currentTimeMaxPrecision with divide of"  INT64_PRINTF_FORMAT " on node [%p]\n", s->optDetailString(), divisor, node))
-            {
-            TR::Node* lcallNode = TR::Node::createWithSymRef(node, TR::lcall, 0, s->comp()->getSymRefTab()->findOrCreateCurrentTimeMaxPrecisionSymbol());
-            TR::Node * tempResult = TR::Node::create(TR::treetop, 1, lcallNode);
-            TR::TreeTop* callTreeTop = findTreeTop(node, block);
-            TR_ASSERT(callTreeTop != NULL, "should have been able to find this tree top");
-
-            if (node->getNumChildren() >= 1)
-               {
-               s->anchorNode(node->getFirstChild(), s->_curTree);
-               node->getFirstChild()->recursivelyDecReferenceCount();
-               }
-
-            TR::TreeTop* newTree = TR::TreeTop::create(s->comp(), callTreeTop->getPrevTreeTop(), tempResult);
-
-            TR::Node* divConstNode = TR::Node::create(node, TR::lconst);
-            divConstNode->setLongInt(divisor);
-
-            TR::Node::recreate(node, TR::ldiv);
-            node->setNumChildren(2);
-            node->setAndIncChild(0, lcallNode);
-
-            node->setAndIncChild(1, divConstNode);
-
-            TR::Node *callTreeNode = callTreeTop->getNode();
-            if (callTreeNode->getOpCode().isResolveCheck())
-               {
-               if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-                  TR::Node::recreate(callTreeNode, TR::treetop);
-               else
-                  TR_ASSERT(0, "Null check not expected in call to static method in class System\n");
-               }
-
-            s->_alteredBlock = true;
-            }
-         else if (methodSymbol->getRecognizedMethod() == TR::java_lang_System_nanoTime &&
-               (methodSymbol->isJNI() || methodSymbol->isVMInternalNative() || methodSymbol->isJITInternalNative()) &&
-             performTransformation(s->comp(), "%sConvert nanoTime to currentTimeMaxPrecision with multiply of " INT64_PRINTF_FORMAT " on node [%p]\n", s->optDetailString(), multiplier, node))
-            {
-            TR::Node* lcallNode = TR::Node::createWithSymRef(node, TR::lcall, 0, s->comp()->getSymRefTab()->findOrCreateCurrentTimeMaxPrecisionSymbol());
-            TR::Node * tempResult = TR::Node::create(TR::treetop, 1, lcallNode);
-            TR::TreeTop* callTreeTop = findTreeTop(node, block);
-            TR_ASSERT(callTreeTop != NULL, "should have been able to find this tree top");
-
-            if (node->getNumChildren() >= 1)
-               {
-               s->anchorNode(node->getFirstChild(), s->_curTree);
-               node->getFirstChild()->recursivelyDecReferenceCount();
-               }
-
-            TR::TreeTop* newTree = TR::TreeTop::create(s->comp(), callTreeTop->getPrevTreeTop(), tempResult);
-
-            TR::Node* mulConstNode = TR::Node::create(node, TR::lconst);
-            mulConstNode->setLongInt(multiplier);
-
-            TR::Node::recreate(node, TR::lmul);
-            node->setNumChildren(2);
-            node->setAndIncChild(0, lcallNode);
-
-            node->setAndIncChild(1, mulConstNode);
-
-            TR::Node *callTreeNode = callTreeTop->getNode();
-            if (callTreeNode->getOpCode().isResolveCheck())
-               {
-               if (callTreeNode->getOpCodeValue() == TR::ResolveCHK)
-                  TR::Node::recreate(callTreeNode, TR::treetop);
-               else
-                  TR_ASSERT(0, "Null check not expected in call to static method in class System\n");
-               }
-
-            s->_alteredBlock = true;
-            }
-         }
-      }
-   else if (s->comp()->cg()->getSupportsFastCTM() && node->getNumChildren() == 0 && node->getReferenceCount() == 2)
-      {
-      TR::ResolvedMethodSymbol * methodSymbol = node->getSymbol()->getResolvedMethodSymbol();
-      if (methodSymbol &&
-          (methodSymbol->getRecognizedMethod() == TR::java_lang_System_currentTimeMillis) &&
-           (methodSymbol->isVMInternalNative() || methodSymbol->isJITInternalNative()))
-         {
-         // Walk the block to find this node
-         //
-         TR::TreeTop * tt;
-         TR::TreeTop * exitTree = block->getExit();
-         for (tt = block->getEntry(); tt != exitTree; tt = tt->getNextRealTreeTop())
-            {
-            if (((tt->getNode()->getOpCodeValue() == TR::treetop) || (tt->getNode()->getOpCodeValue() == TR::ResolveCHK)) &&
-                tt->getNode()->getFirstChild() == node)
-                break;
-            }
-
-         if (tt != exitTree) // found the call tree
-            {
-            // check if the next tree top is a [i]lstore with this value
-            //
-            TR::Node * nextNode = tt->getNextRealTreeTop()->getNode();
-            TR::ILOpCodes opCode  = nextNode->getOpCodeValue();
-            if ((opCode == TR::lstorei || opCode == TR::lstore) &&
-                nextNode->getOpCode().hasSymbolReference() &&
-                !nextNode->mightHaveVolatileSymbolReference())
-               {
-               TR::Node *valueChild;
-               TR::Node * addressChild;
-               if (opCode == TR::lstorei)
-                  {
-                  valueChild   = nextNode->getSecondChild();
-                  addressChild = nextNode->getFirstChild();
-                  }
-               else
-                  {
-                  valueChild   = nextNode->getFirstChild();
-                  addressChild = 0;
-                  }
-
-               if (node == valueChild &&
-                   performTransformation(s->comp(), "%sFolded long store of currentTimeMillis to use address of destination as argument on node [%p]\n", s->optDetailString(), node))
-                  {
-                  node->setNumChildren(1);
-                  TR::Node * storeAddressNode;
-                  if (addressChild)
-                     {
-                     if (TR::Compiler->target.is64Bit()
-                         )
-                        {
-                        TR::Node* offsetNode = TR::Node::create(node, TR::lconst);
-                        offsetNode->setLongInt((int64_t)nextNode->getSymbolReference()->getOffset());
-                        storeAddressNode = TR::Node::create(TR::aladd, 2, addressChild, offsetNode);
-                        }
-                     else
-                        storeAddressNode = TR::Node::create(TR::aiadd, 2, addressChild,
-                                                        TR::Node::create(node, TR::iconst, 0, (int32_t)nextNode->getSymbolReference()->getOffset()));
-                     }
-                  else
-                     {
-                     storeAddressNode = TR::Node::create(node, TR::loadaddr);
-                     storeAddressNode->setSymbolReference(nextNode->getSymbolReference());
-                     }
-
-                  node->setAndIncChild(0, storeAddressNode);
-                  nextNode->setNOPLongStore(true);
-                  //s->_invalidateUseDefInfo = true;
-                  s->_alteredBlock = true;
-                  }
-               }
-
-            }
-         }
-      }
-   else
-      {
-      TR::MethodSymbol * symbol = node->getSymbol()->castToMethodSymbol();
-
-      if (symbol &&
-          (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_L))
-         {
-         node = foldAbs(node, s);
-         }
-      }
-#endif
-   return node;
+   return s->simplifylCallMethods(node, block);
    }
 
 TR::Node *acallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
-
-#ifdef J9_PROJECT_SPECIFIC
-   if ((node->getOpCode().isCallDirect()) && !node->getSymbolReference()->isUnresolved() &&
-       (node->getSymbol()->isResolvedMethod()) &&
-       ((node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigDecimal_valueOf) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigDecimal_add) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigDecimal_subtract) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigDecimal_multiply) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigInteger_add) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigInteger_subtract) ||
-        (node->getSymbol()->getResolvedMethodSymbol()->getRecognizedMethod() == TR::java_math_BigInteger_multiply)) &&
-       (node->getReferenceCount() == 1) &&
-       performTransformation(s->comp(), "%sRemoved dead BigDecimal/BigInteger call node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
-      {
-      TR::Node *firstChild = node->getFirstChild();
-      s->anchorChildren(node, s->_curTree);
-
-      firstChild->incReferenceCount();
-
-      int i;
-      for (i = 0; i < node->getNumChildren(); i++)
-         node->getChild(i)->recursivelyDecReferenceCount();
-
-      TR::Node::recreate(node, TR::PassThrough);
-      node->setNumChildren(1);
-      }
-#endif
-
-   return node;
+   return s->simplifyaCallMethods(node, block);
    }
 
 TR::Node *vcallSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
@@ -11576,121 +10957,14 @@ TR::Node *iorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
                   }
                }
             }
-#ifdef J9_PROJECT_SPECIFIC
-         else
-            {
-            // optimize java/nio/DirectByteBuffer.getInt(I)I
-            //
-            // Little Endian
-            // ior
-            //   ior
-            //     imul
-            //       bu2i
-            //         ibload #245[0x107AF564] Shadow[<Unsafe shadow sym>]
-            //           isub
-            //             l2i
-            //               lload #202[0x107A1050] Parm[<parm 1 J>]
-            //             iconst -1
-            //       iconst 256
-            //     ior
-            //       imul
-            //         bu2i
-            //           ibload #245[0x107AF564] Shadow[<Unsafe shadow sym>]
-            //             isub
-            //               ==>l2i at [0x107AE8F4]
-            //               iconst -3
-            //         iconst 16777216
-            //       imul
-            //         bu2i
-            //           ibload #245[0x107AF564] Shadow[<Unsafe shadow sym>]
-            //             isub
-            //               ==>l2i at [0x107AE8F4]
-            //               iconst -2
-            //         iconst 65536
-            //   bu2i
-            //     ibload #245[0x107AF564] Shadow[<Unsafe shadow sym>]
-            //       ==>l2i at [0x107AE8F4]
-            //
-            TR::Node * byte1, * byte2, * byte3, * byte4, * temp, * addr;
-            if (firstChild->getSecondChild()->getOpCodeValue() == TR::ior && firstChild->getReferenceCount() == 1 &&
-                (byte1 = isUnsafeIorByteChild(firstChild->getSecondChild()->getFirstChild(), TR::bu2i, 16777216, s)) &&
-                (byte2 = isUnsafeIorByteChild(firstChild->getSecondChild()->getSecondChild(), TR::bu2i, 65536, s)) &&
-                (byte3 = isUnsafeIorByteChild(firstChild->getFirstChild(), TR::bu2i, 256, s)) &&
-                (byte4 = isLastUnsafeIorByteChild(node->getSecondChild(), s)))
-               {
-               if (TR::Compiler->target.cpu.isLittleEndian())
-                  {
-                  temp = byte1, byte1 = byte4, byte4 = temp;
-                  temp = byte2, byte2 = byte3, byte3 = temp;
-                  }
-
-               if ((addr = getUnsafeBaseAddr(byte2, -1)) && addr == byte1 &&
-                   (addr = getUnsafeBaseAddr(byte3, -2)) && addr == byte1 &&
-                   (addr = getUnsafeBaseAddr(byte4, -3)) && addr == byte1 &&
-                   performTransformation(s->comp(), "%sconvert ior to iiload node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
-                  {
-                  TR::Node::recreate(node, TR::iloadi);
-                  node->setNumChildren(1);
-                  node->setSymbolReference(s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int32));
-                  node->setAndIncChild(0, byte1);
-
-                  // now remove the two children
-                  firstChild->recursivelyDecReferenceCount();
-                  secondChild->recursivelyDecReferenceCount();
-
-                  return node;
-                  }
-               }
-            }
-#endif
          }
       }
 
-   // recognize Long.signum(), which maps to TR::lcmp
-   //   ior
-   //     l2i                    <- fc
-   //      lshr                  <- fgc
-   //        load X              <- loadVal
-   //        iconst 63
-   //     l2i                    <- sc
-   //      lushr                 <- sgc
-   //        lneg
-   //          load X
-   //        iconst 63
-   //
-   //
-   //
-   //
-   firstChild = node->getFirstChild();
-   secondChild = node->getSecondChild();
-   if (firstChild->getOpCodeValue() == TR::l2i &&
-      secondChild->getOpCodeValue() == TR::l2i &&
-      firstChild ->getFirstChild()->getOpCodeValue() == TR::lshr &&
-      secondChild->getFirstChild()->getOpCodeValue() == TR::lushr)
+   TR::Node *resultNode = s->simplifyiOrPatterns(node);
+   if (resultNode != NULL)
       {
-      TR::Node * firstGrandChild  =  firstChild->getFirstChild();
-      TR::Node * secondGrandChild = secondChild->getFirstChild();
-      if (secondGrandChild->getFirstChild()->getOpCodeValue() == TR::lneg &&
-         firstGrandChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
-         firstGrandChild->getSecondChild()->getInt() == 63 &&
-         secondGrandChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
-         secondGrandChild->getSecondChild()->getInt() == 63)
-         {
-         TR::Node *loadVal = firstGrandChild->getFirstChild();
-         if (secondGrandChild->getFirstChild()->getFirstChild() == loadVal &&
-            (loadVal->getOpCode().isLoadVar() || loadVal->getOpCode().isLoadReg()) &&
-            performTransformation(s->comp(), "%sTransform ior to lcmp [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
-            {
-            TR::Node::recreate(node, TR::lcmp);
-            TR::Node * constZero = TR::Node::create(secondChild, TR::lconst, 0);
-            constZero->setLongInt(0);
-            node->setFirst(s->replaceNode(firstChild,loadVal, s->_curTree));
-            node->setSecond(s->replaceNode(secondChild, constZero, s->_curTree));
-            return node;
-            }
-         }
+      return resultNode;
       }
-
 
    if(checkAndReplaceRotation<int32_t>(node,block,s))
       {
@@ -12375,17 +11649,11 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::su2i)))
       return result;
 
-#ifdef J9_PROJECT_SPECIFIC
-   TR::Node * address;
-   if (firstChild->getOpCodeValue() == TR::ior && firstChild->getReferenceCount() == 1 &&
-       (address = isOrOfTwoConsecutiveBytes(firstChild, s)) &&
-       performTransformation(s->comp(), "%sconvert ior to isload node [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
+   TR::Node *resultNode = s->simplifyi2sPatterns(node);
+   if (resultNode != NULL)
       {
-      TR::Node::recreate(node, TR::sloadi);
-      node->setSymbolReference(s->getSymRefTab()->findOrCreateUnsafeSymbolRef(TR::Int16));
-      node->setChild(0, address);
+      return resultNode;
       }
-#endif
 
    if (result = foldRedundantAND(node, TR::iand, TR::iconst, 0xFFFF, s))
       return result;
@@ -12838,11 +12106,14 @@ TR::Node *d2fSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          }
       }
 
-   if (firstChild->getReferenceCount() == 2 && convertToSinglePrecisionSQRT(s,firstChild))
+   TR::Node *resultNode = s->simplifyd2fPatterns(node);
+   if (resultNode != NULL)
       {
-      TR_ASSERT(firstChild->getOpCodeValue()== TR::fcall,"Unexpected opcode %d\n",firstChild->getOpCodeValue());
+      firstChild = resultNode;
+      TR_ASSERT(firstChild->getOpCodeValue()== TR::fcall, "Unexpected opcode %d\n", firstChild->getOpCodeValue());
       }
-   //because of the above, this and subsequent d2f's can become parents of fcalls, so clean it up when seen
+
+   // because of the above, this and subsequent d2f's can become parents of fcalls, so clean it up when seen
    if (firstChild->getOpCode().isFloat())
       {
       s->replaceNode(node,firstChild, s->_curTree);
@@ -16195,99 +15466,6 @@ static bool isNodeMulHigh(TR::Node *node)
    return node->getOpCode().isMul() && (mulOp == TR::imulh || mulOp == TR::lmulh || mulOp == TR::lumulh || mulOp == TR::iumulh);
    }
 
-static bool boundGELength(TR::Node * boundChild, TR::Node * lengthChild, TR::Simplifier * s)
-   {
-   TR::ILOpCodes boundOp = boundChild->getOpCodeValue();
-   if (boundOp == TR::iadd)
-      {
-      TR::Node * first  = boundChild->getFirstChild();
-      TR::Node * second = boundChild->getSecondChild();
-      if (first == lengthChild)
-         {
-         TR::ILOpCodes secondOp = second->getOpCodeValue();
-         if (second->getOpCode().isArrayLength()                          ||
-             secondOp == TR::bu2i                                          ||
-             secondOp == TR::su2i                                          ||
-
-             (secondOp == TR::iconst &&
-              second->getInt() >= 0)                                      ||
-
-             (secondOp == TR::iand                                     &&
-              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
-              (second->getSecondChild()->getInt() & 80000000) == 0)       ||
-
-             (secondOp == TR::iushr                                    &&
-              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
-              (second->getSecondChild()->getInt() & 0x1f) > 0))
-            {
-            return true;
-            }
-         }
-      else if (second == lengthChild)
-         {
-         TR::ILOpCodes firstOp = first->getOpCodeValue();
-         if (first->getOpCode().isArrayLength()                          ||
-             firstOp == TR::bu2i                                          ||
-             firstOp == TR::su2i                                          ||
-
-             (firstOp == TR::iand                                     &&
-              first->getSecondChild()->getOpCodeValue() == TR::iconst &&
-              (first->getSecondChild()->getInt() & 80000000) == 0)       ||
-
-             (firstOp == TR::iushr &&
-              first->getSecondChild()->getOpCodeValue() == TR::iconst &&
-              (first->getSecondChild()->getInt() & 0x1f) > 0))
-            {
-            return true;
-            }
-         }
-      }
-   else if (boundOp == TR::isub)
-      {
-      TR::Node * first  = boundChild->getFirstChild();
-      TR::Node * second = boundChild->getSecondChild();
-      if (first  == lengthChild)
-         {
-         TR::ILOpCodes secondOp = second->getOpCodeValue();
-         if ((secondOp == TR::iconst &&
-              second->getInt() < 0)                                      ||
-
-             (secondOp == TR::ior                                      &&
-              second->getSecondChild()->getOpCodeValue() == TR::iconst &&
-              (second->getSecondChild()->getInt() & 0x80000000) != 0))
-            {
-            return true;
-            }
-         }
-      }
-#ifdef J9_PROJECT_SPECIFIC
-   else if (boundChild->getOpCode().isArrayLength())
-      {
-      TR::Node * first = boundChild->getFirstChild();
-
-      if (first->getOpCodeValue() == TR::aloadi       &&
-          lengthChild->getOpCodeValue() == TR::iloadi &&
-          first->getFirstChild() == lengthChild->getFirstChild())
-         {
-         TR::SymbolReference * boundSymRef  = first->getSymbolReference();
-         TR::SymbolReference * lengthSymRef = lengthChild->getSymbolReference();
-         if ((boundSymRef->getSymbol()->getRecognizedField()  == TR::Symbol::Java_lang_String_value &&
-              lengthSymRef->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_String_count) ||
-             (boundSymRef->getSymbol()->getRecognizedField()  == TR::Symbol::Java_lang_StringBuffer_value &&
-              lengthSymRef->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_StringBuffer_count) ||
-             (boundSymRef->getSymbol()->getRecognizedField()  == TR::Symbol::Java_lang_StringBuilder_value &&
-              lengthSymRef->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_StringBuilder_count))
-            {
-            return true;
-            }
-         }
-
-      }
-#endif
-   return false;
-   }
-
-
 /*
  * Simplifier handlers
  */
@@ -17000,7 +16178,8 @@ TR::Node *arraycopybndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simp
       TR::Node * boundChild  = lhsChild;
       TR::Node * lengthChild = rhsChild->getSecondChild();
       TR::Node * indexChild  = rhsChild->getFirstChild();
-      if (lengthChild == boundChild || boundGELength(boundChild, lengthChild, s))
+      if (lengthChild == boundChild || 
+          s->isBoundDefinitelyGELength(boundChild, lengthChild))
          {
          if (indexChild->isZero())
             {
@@ -17035,34 +16214,6 @@ TR::Node *arraycopybndchkSimplifier(TR::Node * node, TR::Block * block, TR::Simp
                   {
                   s->removeNode(node, s->_curTree);
                   return NULL;
-                  }
-               }
-            else if (indexChild->getFirstChild()->getOpCodeValue() == TR::iadd &&
-                     indexChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
-                     indexChild->getSecondChild()->getInt() == -1)
-               {
-               TR::ILOpCodes boundOp        = boundChild->getOpCodeValue();
-               TR::Node     * boundReference = NULL;
-               if (boundChild->getOpCode().isArrayLength() &&
-                   boundChild->getFirstChild()->getOpCodeValue() == TR::aloadi)
-                  {
-                  TR::SymbolReference * boundSymRef  = boundChild->getFirstChild()->getSymbolReference();
-#ifdef J9_PROJECT_SPECIFIC
-                  if (boundSymRef->getSymbol()->getRecognizedField() == TR::Symbol::Java_lang_String_value)
-                     {
-                     boundReference = boundChild->getFirstChild()->getFirstChild();
-                     }
-#endif
-                  }
-               TR::Node * addChild    = indexChild->getFirstChild();
-               TR::Node *offsetChild = NULL;
-               if (addChild->getFirstChild() == lengthChild)
-                  {
-                  offsetChild = addChild->getSecondChild();
-                  }
-               else if (addChild->getSecondChild() == lengthChild)
-                  {
-                  offsetChild = addChild->getFirstChild();
                   }
                }
             }

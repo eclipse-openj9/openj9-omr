@@ -602,60 +602,47 @@ TR::Node *reduceExpTwoAndGreaterToMultiplication(int32_t exponentValue, TR::Node
       TR_ASSERT(false,"reduceExpTwoAndGreaterToMultiplication only valid for values >= 2 and not value=%d\n", exponentValue);
       return NULL;
       }
-#ifdef J9_PROJECT_SPECIFIC
-   bool isPacked = baseNode->getType().isAnyPacked();
-#endif
-   // There are two algorithms here -- they are equivalent in the number of multiply operations however the second is better
-   // for platforms that have a destructive multiply instruction as less clobber evaluates will be required.
-   // The second has the advantage that more parallel multiply operations are created
+
+   TR::Node *resultNode = NULL;
+
+   // There are two algorithms here -- they are equivalent in the number 
+   // of multiply operations however the second is better for platforms 
+   // that have a destructive multiply instruction as less clobber evaluates 
+   // will be required. The second has the advantage that more parallel 
+   // multiply operations are created
    if (s->comp()->cg()->multiplyIsDestructive())
       {
-      TR::Node * node = NULL;
       int32_t bitPosOfLeftMostOne = 32 - leadingZeroes(exponentValue) - 1; // bitPos=0 is the least significant bit so for exponentValue=7 : 32 - 29 - 1 = 2
-      node = baseNode;
+      resultNode = baseNode;
       if (bitPosOfLeftMostOne != 0)
          {
          for (int32_t i = bitPosOfLeftMostOne-1; i >= 0; i--)
             {
-            node = TR::Node::create(multOp, 2, node, node);
-#ifdef J9_PROJECT_SPECIFIC
-            if (isPacked)
-               node->setPDMulPrecision();
-#endif
+            resultNode = TR::Node::create(multOp, 2, resultNode, resultNode);
             dumpOptDetails(s->comp(), "%screated %s [" POINTER_PRINTF_FORMAT "] operation for exponentiation strength reduction (algorithmA/caseA)\n",
-                             s->optDetailString(), node->getOpCode().getName(), node);
+                             s->optDetailString(), resultNode->getOpCode().getName(), resultNode);
             if (((exponentValue >> i)&0x1) != 0)
                {
-               node = TR::Node::create(multOp, 2, node, baseNode);
-#ifdef J9_PROJECT_SPECIFIC
-               if (isPacked)
-                  node->setPDMulPrecision();
-#endif
+               resultNode = TR::Node::create(multOp, 2, resultNode, baseNode);
                dumpOptDetails(s->comp(), "%screated %s [" POINTER_PRINTF_FORMAT "] operation for exponentiation strength reduction (algorithmA/caseB)\n",
-                                s->optDetailString(), node->getOpCode().getName(), node);
+                                s->optDetailString(), resultNode->getOpCode().getName(), resultNode);
                }
             }
          }
-      return node;
       }
    else
       {
       int32_t maxCeiling = ceilingPowerOfTwo(maxExponent);  // if maxExponent=31 then maxCeiling = 32
       int32_t maxCeilingExp = trailingZeroes(maxCeiling);   // (2^x=maxCeiling) so if maxCeiling = 32 then x=maxCeilingExp=5
-      TR::Node * node = NULL;
-      TR::Node ** subTrees = (TR::Node**)s->comp()->trMemory()->allocateStackMemory((maxCeilingExp+1)*sizeof(TR::Node*));
+      TR::Node **subTrees = (TR::Node**)s->comp()->trMemory()->allocateStackMemory((maxCeilingExp+1)*sizeof(TR::Node*));
       subTrees[0] = baseNode;
       int32_t i = 0;
       for (i = 1; exponentValue >= (CONSTANT64(1) << i); ++i) // i can reach maxCeilingExp+1
          {
          int32_t j = i-1;
-         node = subTrees[i] = TR::Node::create(multOp, 2, subTrees[j], subTrees[j]);
-#ifdef J9_PROJECT_SPECIFIC
-         if (isPacked)
-            node->setPDMulPrecision();
-#endif
+         resultNode = subTrees[i] = TR::Node::create(multOp, 2, subTrees[j], subTrees[j]);
          dumpOptDetails(s->comp(), "%screated %s [" POINTER_PRINTF_FORMAT "] operation for exponentiation strength reduction (algorithmB/caseA)\n",
-                          s->optDetailString(), node->getOpCode().getName(), node);
+                          s->optDetailString(), resultNode->getOpCode().getName(), resultNode);
          }
       int32_t j = -1;
       uint32_t mask = 1;
@@ -665,20 +652,21 @@ TR::Node *reduceExpTwoAndGreaterToMultiplication(int32_t exponentValue, TR::Node
             {
             if (j !=-1)
                {
-               node = TR::Node::create(multOp, 2, subTrees[i], subTrees[j]);
-#ifdef J9_PROJECT_SPECIFIC
-               if (isPacked)
-                  node->setPDMulPrecision();
-#endif
-               subTrees[i] = node;
+               resultNode = TR::Node::create(multOp, 2, subTrees[i], subTrees[j]);
+               subTrees[i] = resultNode;
                dumpOptDetails(s->comp(), "%screated %s [" POINTER_PRINTF_FORMAT "] operation for exponentiation strength reduction (algorithmB/caseA))\n",
-                                s->optDetailString(), node->getOpCode().getName(), node);
+                                s->optDetailString(), resultNode->getOpCode().getName(), resultNode);
                }
             j = i;
             }
          }
-      return node;
       }
+
+   TR_ASSERT(resultNode != NULL, "resultNode should not be NULL\n");
+   TR::NodeChecklist visited(s->comp());
+   s->setNodePrecisionIfNeeded(baseNode, resultNode, visited);
+
+   return resultNode;
    }
 
 TR::Node *replaceExpWithMult(TR::Node *node,TR::Node *valueNode,TR::Node *exponentNode,TR::Block *block,TR::Simplifier *s)
@@ -856,240 +844,6 @@ TR::Node *replaceExpWithMult(TR::Node *node,TR::Node *valueNode,TR::Node *expone
    return node;
    }
 
-#ifdef J9_PROJECT_SPECIFIC
-bool propagateSignState(TR::Node *node, TR::Node *child, int32_t shiftAmount, TR::Block *block, TR::Simplifier *s)
-   {
-   bool changedSignState = false;
-   if (!node->hasKnownOrAssumedSignCode() &&
-       child->hasKnownOrAssumedSignCode() &&
-       TR::Node::typeSupportedForSignCodeTracking(node->getDataType()) &&
-       performTransformation(s->comp(),"%sTransfer %sSignCode 0x%x from %s [" POINTER_PRINTF_FORMAT "] to %s [" POINTER_PRINTF_FORMAT "]\n",
-         s->optDetailString(),
-         child->hasKnownSignCode() ? "Known":"Assumed",
-         TR::DataType::getValue(child->getKnownOrAssumedSignCode()),
-         child->getOpCode().getName(),
-         child,
-         node->getOpCode().getName(),
-         node))
-      {
-      node->transferSignCode(child);
-      changedSignState = true;
-      }
-
-   if (!node->hasKnownOrAssumedCleanSign() &&
-       child->hasKnownOrAssumedCleanSign() &&
-       ((node->getDecimalPrecision() >= child->getDecimalPrecision() + shiftAmount) || child->isNonNegative()) &&
-         performTransformation(s->comp(), "%sSet Has%sCleanSign=true on %s [" POINTER_PRINTF_FORMAT "] due to %s already clean %schild %s [" POINTER_PRINTF_FORMAT "]\n",
-            s->optDetailString(),
-            child->hasKnownCleanSign()?"Known":"Assumed",
-            node->getOpCode().getName(),
-            node,
-            !child->isNonNegative()?"a widening of":"an",
-            child->isNonNegative()?">= zero ":"",
-            child->getOpCode().getName(),
-            child))
-      {
-      node->transferCleanSign(child);
-      changedSignState = true;
-      }
-
-   return changedSignState;
-   }
-
-bool propagateSignStateUnaryConversion(TR::Node *node, TR::Block *block, TR::Simplifier *s)
-   {
-   bool validateOp = node->getType().isBCD() &&
-                     ((node->getOpCode().isConversion() && node->getNumChildren()==1)
-#ifdef J9_PROJECT_SPECIFIC
-                      || (node->getOpCode().isConversion() && node->getOpCode().canHavePaddingAddress() && node->getNumChildren()==2)
-#endif
-                     );
-   if (!validateOp)
-      return false;
-
-   TR::Node *child = node->getFirstChild();
-   return propagateSignState(node, child, 0, block, s);
-   }
-
-void convertStringToPacked(char *result, int32_t resultLen, bool resultIsEvenPrecision, char *source, int32_t sourceLen, uint32_t signCode)
-   {
-   TR_ASSERT(signCode >= TR::DataType::getFirstValidSignCode() && signCode <= TR::DataType::getLastValidSignCode(),"invalid signCode 0x%x\n",signCode);
-   TR_ASSERT(TR::DataType::isBCDSignChar(source[0]),"expecting a minus/plus/unsigned and not 0x%x\n",source[0]);
-
-   memset(result, 0, resultLen);
-   result[resultLen-1] = (source[sourceLen-1]<<4) | (uint8_t)signCode;
-
-  int32_t firstDigitIndex = 1;
-  for (int32_t i = resultLen-2,j=sourceLen-2; i >= 0 && j >= firstDigitIndex; i--,j--)
-   {
-   result[i] = (source[j] & 0xf);
-   if (j > firstDigitIndex)
-      {
-      // if there are more source bytes to look at then process the next one
-      j--;
-      result[i] |= (source[j]<<4);
-      }
-   }
-
-   if (resultIsEvenPrecision)
-      result[0] &= 0x0F;
-   }
-
-void convertStringToZoned(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading)
-   {
-   TR_ASSERT(signCode >= TR::DataType::getFirstValidSignCode() && signCode <= TR::DataType::getLastValidSignCode(),"invalid signCode 0x%x\n",signCode);
-   TR_ASSERT(TR::DataType::isBCDSignChar(source[0]),"expecting a minus/plus/unsigned and not 0x%x\n",source[0]);
-
-   for (int32_t k=0; k < resultLen; k++)
-      result[k] = (uint8_t)TR::DataType::getZonedCode();
-
-   int32_t firstDigitIndex = 1;
-   for (int32_t i = resultLen-1,j=sourceLen - 1; i >= 0 && j >= firstDigitIndex; i--,j--)
-      result[i] = (source[j] & 0xf) | TR::DataType::getZonedCode();
-
-   if (signLeading)
-      result[0] = (result[0] & 0xf) | (signCode << 4);
-   else
-      result[resultLen-1] = (result[resultLen - 1] & 0xf) | (signCode<<4);
-   }
-
-void convertStringToZonedSeparate(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading)
-   {
-   TR_ASSERT(signCode == TR::DataType::getZonedSeparatePlus() || signCode == TR::DataType::getZonedSeparateMinus(), "invalid signCode 0x%x\n", signCode);
-   TR_ASSERT(TR::DataType::isBCDSignChar(source[0]),"expecting a minus/plus/unsigned and not 0x%x\n",source[0]);
-
-   for (int32_t k=0; k < resultLen; k++)
-      result[k] = (uint8_t)TR::DataType::getZonedCode();
-
-   int32_t signPos = 0;
-   int32_t firstDigitIndex = 1;
-   int32_t lastDigitIndex = resultLen - 1;
-   if (!signLeading)
-      {
-      signPos = resultLen - 1;
-      firstDigitIndex = 0;
-      lastDigitIndex = resultLen - 2;
-      }
-   result[signPos] = signCode;
-
-   for (int32_t i = lastDigitIndex,j=sourceLen-1; i >= firstDigitIndex && j >= 1; i--,j--)
-      result[i] = (source[j] & 0xf) | TR::DataType::getZonedCode();
-   }
-
-void convertStringToUnicode(char *result, int32_t resultLen, char *source, int32_t sourceLen)
-   {
-   TR_ASSERT(TR::DataType::isBCDSignChar(source[0]),"expecting a minus/plus/unsigned and not 0x%x\n",source[0]);
-   TR_ASSERT(isEven(resultLen), "Can't create a unicode constant with odd length\n");
-
-   for (int32_t k=0; k < resultLen; k+=2)
-      {
-      result[k] = TR::DataType::getUnicodeZeroCodeHigh();
-      result[k + 1] = TR::DataType::getUnicodeZeroCodeLow();
-      }
-
-   int32_t firstDigitIndex = 1;
-   for (int32_t i = resultLen-1,j=sourceLen-1; i >= 0 && j >= firstDigitIndex; i-=2,j--)
-      result[i] = (source[j]&0xf) | TR::DataType::getUnicodeZeroCode();
-   }
-
-void convertStringToUnicodeSeparate(char *result, int32_t resultLen, char *source, int32_t sourceLen, uint32_t signCode, bool signLeading)
-   {
-   TR_ASSERT(signCode == TR::DataType::getUnicodePlusCode() || signCode == TR::DataType::getUnicodeMinusCode(),"invalid signCode 0x%x\n",signCode);
-   TR_ASSERT(TR::DataType::isBCDSignChar(source[0]),"expecting a minus/plus/unsigned and not 0x%x\n",source[0]);
-   TR_ASSERT(isEven(resultLen), "Can't create a unicode constant with odd length\n");
-
-   for (int32_t k=0; k < resultLen; k+=2)
-      {
-      result[k] = TR::DataType::getUnicodeZeroCodeHigh();
-      result[k + 1] = TR::DataType::getUnicodeZeroCodeLow();
-      }
-
-   int32_t signPos = 1;
-   int32_t firstDigitIndex = 3;
-   int32_t lastDigitIndex = resultLen - 1;
-   if (!signLeading)
-      {
-      signPos = resultLen - 1;
-      firstDigitIndex = 1;
-      lastDigitIndex = resultLen - 3;
-      }
-   result[signPos] = signCode;
-
-   for (int32_t i = lastDigitIndex,j=sourceLen-1; i >= firstDigitIndex && j >= 1; i-=2,j--)
-      result[i] = (source[j]&0xf) | TR::DataType::getUnicodeZeroCode();
-   }
-
-TR::Node *removeOperandWidening(TR::Node *node, TR::Node *parent, TR::Block *block, TR::Simplifier * s)
-   {
-   if (s->comp()->getOption(TR_KeepBCDWidening))   // stress-testing option to force more operations through to the evaluators
-      return node;
-
-   // Many packed decimal node types (such as arithmetic/shift/stores) do not need their operands explicitly widened so simple
-   // widening operations (i.e. pdshl by 0 nodes) are be removed here.
-   // This cannot be done globally because other node types (such a packed node under a call) must be explicitly widened.
-   if (node->isSimpleWidening())
-      {
-      return s->replaceNodeWithChild(node, node->getFirstChild(), s->_curTree, block, false); // correctBCDPrecision=false because node is a widening
-      }
-   else if ((node->getOpCodeValue() == TR::i2pd || node->getOpCodeValue() == TR::l2pd) &&
-            node->hasSourcePrecision() &&
-            node->getReferenceCount() == 1 && // the removal of widening may not be valid in the other contexts
-            node->getDecimalPrecision() > node->getSourcePrecision() &&
-            performTransformation(s->comp(), "%sReducing %s [" POINTER_PRINTF_FORMAT "] precision %d to its child integer precision of %d\n",
-               s->optDetailString(), node->getOpCode().getName(), node, node->getDecimalPrecision(), node->getSourcePrecision()))
-      {
-      node->setDecimalPrecision(node->getSourcePrecision());
-      }
-   else if (node->getOpCode().isShift() &&
-            node->getReferenceCount() == 1 &&
-            node->getSecondChild()->getOpCode().isLoadConst())
-      {
-      int32_t adjust = node->getDecimalAdjust(); // adjust is < 0 for right shifts and >= 0 for left shifts
-      int32_t maxShiftedPrecision = adjust+node->getFirstChild()->getDecimalPrecision();
-      if (node->getOpCode().isPackedRightShift() &&
-          node->getDecimalRound() != 0)
-         {
-         maxShiftedPrecision++; // +1 as the rounding can propagate an extra digit across
-         }
-      if ((maxShiftedPrecision > 0) &&
-          (node->getDecimalPrecision() > maxShiftedPrecision) &&
-          performTransformation(s->comp(), "%sReducing %s [" POINTER_PRINTF_FORMAT "] precision %d to the max shifted result precision of %d\n",
-            s->optDetailString(), node->getOpCode().getName(), node, node->getDecimalPrecision(), maxShiftedPrecision))
-         {
-         bool signWasKnownClean = node->hasKnownCleanSign();
-         bool signWasAssumedClean = node->hasAssumedCleanSign();
-
-         node->setDecimalPrecision(maxShiftedPrecision);    // conservatively resets clean sign flags on an a trucation -- but this truncation cannot actually dirty a sign
-
-         if (signWasKnownClean)
-            node->setHasKnownCleanSign(true);
-         if (signWasAssumedClean)
-            node->setHasAssumedCleanSign(true);
-         }
-      }
-   // TODO: figure out the more global check for removing widenings - all unary operations (getNumChildren()==1), how about setSign and other shifts?
-   else if ((node->getOpCodeValue() == TR::pdclean   ||
-             node->getOpCodeValue() == TR::zd2zdsle  ||
-             node->getOpCodeValue() == TR::zdsle2zd  ||
-             node->getOpCodeValue() == TR::zd2pd     ||
-             node->getOpCodeValue() == TR::pd2zd     ||
-             node->getOpCodeValue() == TR::pdSetSign ||
-             node->getOpCodeValue() == TR::pdclear   ||
-             node->getOpCodeValue() == TR::pdclearSetSign) &&
-            node->getReferenceCount() == 1 &&
-            node->getDecimalPrecision() > node->getFirstChild()->getDecimalPrecision() &&
-            performTransformation(s->comp(), "%sReducing %s [" POINTER_PRINTF_FORMAT "] precision %d to its child precision of %d\n",
-               s->optDetailString(), node->getOpCode().getName(), node, node->getDecimalPrecision(), node->getFirstChild()->getDecimalPrecision()))
-      {
-      node->setDecimalPrecision(node->getFirstChild()->getDecimalPrecision());
-      if (node->getOpCode().isConversion())
-         propagateSignStateUnaryConversion(node, block, s);
-      return s->simplify(node, block);
-      }
-   return node;
-   }
-#endif
-
 // NOTE: This function only (and should only) decodes opcodes found in conversionMap table!!!
 bool decodeConversionOpcode(TR::ILOpCode op, TR::DataType nodeDataType, TR::DataType &sourceDataType, TR::DataType &targetDataType)
    {
@@ -1192,3 +946,24 @@ void stopUsingSingleNode(TR::Node *node, bool removePadding, TR::Simplifier *s)
    if (node->getReferenceCount() > 0)
       node->setVisitCount(0);
    }
+
+TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block)
+   {
+   // Walk the extended block to find this node - has to be child of store or tree-top
+   TR::Block * b = block->startOfExtendedBlock();
+   if (!b)
+      return NULL;
+   do
+      {
+      for (TR::TreeTop* tt = b->getEntry(); tt != b->getExit(); tt = tt->getNextRealTreeTop())
+         {
+         if (tt->getNode()->getNumChildren() == 1 && tt->getNode()->getFirstChild() == callNode)
+            {
+            return tt;
+            }
+         }
+      b = b->getNextBlock();
+      } while (b && b->isExtensionOfPreviousBlock());
+   return NULL;
+   }
+

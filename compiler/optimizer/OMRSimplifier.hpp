@@ -30,6 +30,7 @@
 #include "il/Node.hpp"                        // for Node, etc
 #include "il/Node_inlines.hpp"                // for Node::getFirstChild, etc
 #include "infra/Assert.hpp"                   // for TR_ASSERT
+#include "infra/Checklist.hpp"                // for {Node,Block}Checklist
 #include "infra/HashTab.hpp"                  // for TR_HashTabInt
 #include "optimizer/Optimization.hpp"         // for Optimization
 #include "optimizer/OptimizationManager.hpp"  // for OptimizationManager
@@ -56,7 +57,7 @@ typedef enum
    ConditionCodeLast = ConditionCodeInvalid
    } TR_ConditionCodeNumber;
 
-/*
+/**
  * Class Simplifier
  * ================
  *
@@ -121,7 +122,153 @@ class Simplifier : public TR::Optimization
    void prepareToReplaceNode(TR::Node * node);
 
    void anchorOrderDependentNodesInSubtree(TR::Node *node, TR::Node *replacement, TR::TreeTop* anchorTree);
-   TR::Node * unaryCancelOutWithChild(TR::Node * node, TR::Node * firstChild, TR::TreeTop* anchorTree, TR::ILOpCodes opcode, bool anchorChildren=true);
+
+   /**
+    * Checks IL tree patterns to see if parent-child cancellation can be 
+    * done safely.
+    * 
+    * @param[in] node The tree node that we are trying to unary cancel
+    * @param[in] firstChild The first child of node
+    * @param[in] opcode The opcode we compare @p firstChild's opcode against
+    * @return Returns true if node can be canceled; false otherwise
+    */
+   virtual bool isLegalToUnaryCancel(TR::Node *node, TR::Node *firstChild, TR::ILOpCodes opcode) 
+      { return true; }
+
+   /**
+    * Examines node and its first child to see if their operations can cancel 
+    * each other out. If so, replaces node with its grandchild.
+    * 
+    * @param[in/out] node The tree node that we are examining and possibly 
+    * changing if appropriate
+    * @param[in] firstChild The first child of @p node
+    * @param[in] anchorTree The tree to insert node's children in front of  
+    * if @p anchorChildren is true
+    * @param[in] opcode The opcode we compare @p firstChild's opcode against
+    * @param[in] anchorChildren Boolean indicating whether we need to anchor
+    * node's children when node is removed. The default is set to true
+    * @return Returns the grandchild node if cacenllation can be done; 
+    * NULL otherwise
+    */
+   virtual TR::Node *unaryCancelOutWithChild(TR::Node *node, TR::Node *firstChild, TR::TreeTop *anchorTree, TR::ILOpCodes opcode, bool anchorChildren=true);
+
+   /**
+    * Checks IL tree patterns to see if folding can be done safely.
+    * 
+    * @param[in] node The tree node that we are trying to fold
+    * @param[in] firstChild The first child of @p node
+    * @return Returns true if node can be folded; false otherwise
+    */
+   virtual bool isLegalToFold(TR::Node *node, TR::Node *firstChild) 
+      { return true; }
+
+   /**
+    * Checks if the bound value is definitely greater than or equal to 
+    * the length value by examining the IL trees.
+    *
+    * @param[in] boundChild The tree node corresponding to the bound value
+    * @param[in] lengthChild The tree node corresponding to the length value
+    * @return Returns true if bound is definitely great than or equal to 
+    * length; false otherwise
+    */
+   virtual bool isBoundDefinitelyGELength(TR::Node *boundChild, TR::Node *lengthChild);
+
+   /**
+    * Checks to see if the icall method is a recognized method. If so, 
+    * transforms the call into a faster, but functionally equivalent 
+    * sequence of IL trees.
+    *
+    * @param[in/out] node The tree node that is being simplified
+    * @param[in] block The block that the node is in
+    * @return Returns a transformed node if the method is recognized and 
+    * transformations are done; otherwise it returns the original node
+    */
+   virtual TR::Node *simplifyiCallMethods(TR::Node *node, TR::Block *block) 
+      { return node; }
+
+   /**
+    * Checks to see if the lcall method is a recognized method. If so, 
+    * transforms the call into a faster, but functionally equivalent 
+    * sequence of IL trees.
+    *
+    * @param[in/out] node The tree node that is being simplified
+    * @param[in] block The block that the node is in
+    * @return Returns a transformed node if the method is recognized and 
+    * transformations are done; otherwise it returns the original node
+    */
+   virtual TR::Node *simplifylCallMethods(TR::Node *node, TR::Block *block) 
+      { return node; }
+
+   /**
+    * Checks to see if the acall method is a recognized method. If so, 
+    * transforms the call into a faster, but functionally equivalent 
+    * sequence of IL trees.
+    *
+    * @param[in/out] node The tree node that is being simplified
+    * @param[in] block The block that the node is in
+    * @return Returns a transformed node if the method is recognized and 
+    * transformations are done; otherwise it returns the original node
+    */
+   virtual TR::Node *simplifyaCallMethods(TR::Node * node, TR::Block * block) 
+      { return node; }
+
+   /**
+    * simplifyiOrPatterns is called from iorSimplifier handler to recognize 
+    * any additional project-specific IL tree patterns to simplify.
+    * 
+    * @param[in/out] node The tree node that is being checked and transformed
+    * @return Returns a transformed node if the IL tree pattern under node
+    * is recognized and transformations are done; NULL otherwise
+    */
+   virtual TR::Node *simplifyiOrPatterns(TR::Node *node)
+      { return NULL; }
+
+   /**
+    * simplifyi2sPatterns is called from i2sSimplifier handler to recognize 
+    * any additional project-specific IL tree patterns to simplify.
+    * 
+    * @param[in/out] node The tree node that is being checked and transformed
+    * @return Returns a transformed node if the IL tree pattern under node
+    * is recognized and transformations are done; NULL otherwise 
+    */
+   virtual TR::Node *simplifyi2sPatterns(TR::Node *node)
+      { return NULL; }
+
+   /**
+    * simplifyd2fPatterns is called from d2fSimplifier handler to recognize 
+    * any additional project-specific IL tree patterns to simplify.
+    * 
+    * @param[in/out] node The tree node that is being checked and transformed
+    * @return Returns a transformed node if the IL tree pattern under node
+    * is recognized and transformations are done; NULL otherwise 
+    */
+   virtual TR::Node *simplifyd2fPatterns(TR::Node *node)
+      { return NULL; }
+
+   /**
+    * simplifyIndirectLoadPatterns is called from indirectLoadSimplifier 
+    * handler to recognize any additional project-specific IL tree 
+    * patterns to simplify.
+    * 
+    * @param[in/out] node The tree node that is being checked and transformed
+    * @return Returns a transformed node if the IL tree pattern under node
+    * is recognized and transformations are done; NULL otherwise 
+    */
+   virtual TR::Node *simplifyIndirectLoadPatterns(TR::Node *node)
+      { return NULL; }
+
+   /**
+    * This method allows a project to recursively set precision flags 
+    * to node and all of its children if it is needed.
+    *
+    * @param[in] baseNode The tree node whose type determines if we need 
+    * to set the precision flags
+    * @param[in/out] node The tree node whose precision flag is being modified
+    * @param[in/out] visited A check list to keep track of whether a 
+    * particular node has been visited already
+    */
+   virtual void setNodePrecisionIfNeeded(TR::Node *baseNode, TR::Node *node, TR::NodeChecklist &visited)
+      {}
 
    TR::TreeTop         *_curTree;
    TR_UseDefInfo      *_useDefInfo;      // Cached use/def info

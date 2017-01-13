@@ -1441,6 +1441,8 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    int32_t                        refNum = callSymRef->getReferenceNumber();
 
    //This is not JIT pseudo TOC, but jit-module system TOC.
+   //Unfortunately, Ruby JIT is multiplexing gr2(as system module TOC) for JIT-pseudo TOC
+
 
    if(aix_style_linkage)
          {
@@ -1448,7 +1450,11 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          //This is wrong with regard to where system TOC is restored from, but happens to be right for JIT
          //for the time being.
          if(TR::Compiler->target.cpu.isBigEndian())
+            {
+#if !(defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST))
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
+#endif
+            }
          else
             {
             //For Little Endian, load target's Global Entry Point into r12, TOC will be restored at branch target.
@@ -1466,7 +1472,9 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
 
    //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
    //         ABI-conforming module of dynamic code.  Plus, linux32 has no system TOC.
-   //TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
+#if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
+   TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
+#endif
    }
 
 

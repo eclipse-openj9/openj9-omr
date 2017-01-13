@@ -5731,7 +5731,7 @@ OMR::Node::printIsHeapificationAlloc()
 bool
 OMR::Node::isLiveMonitorInitStore()
    {
-   TR_ASSERT((self()->getOpCode().isStore()), "Opcode must be astore");
+   TR_ASSERT(self()->getOpCodeValue() == TR::astore, "Opcode must be astore");
    return (self()->getOpCode().hasSymbolReference() && self()->getSymbol()->holdsMonitoredObject() && _flags.testAny(liveMonitorInitStore));
    }
 
@@ -5748,7 +5748,7 @@ OMR::Node::setLiveMonitorInitStore(bool v)
 bool
 OMR::Node::chkLiveMonitorInitStore()
    {
-   return (self()->getOpCodeValue() == TR::astore) && _flags.testAny(liveMonitorInitStore);
+   return (self()->getOpCodeValue() == TR::astore) && self()->isLiveMonitorInitStore();
    }
 
 const char *
@@ -7187,7 +7187,7 @@ bool
 OMR::Node::isPrivatizedInlinerArg()
    {
    TR_ASSERT(self()->getOpCode().isStoreDirectOrReg(), "assertion failure");
-   return _flags.testAny(privatizedInlinerArg);
+   return _flags.testAny(privatizedInlinerArg) && !self()->chkLiveMonitorInitStore();
    }
 
 void

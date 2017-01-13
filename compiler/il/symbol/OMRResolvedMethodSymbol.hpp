@@ -113,7 +113,7 @@ public:
    void setPendingPushSymRefs(TR_Array<List<TR::SymbolReference> > *l) {_pendingPushSymRefs = l;}
 
    TR_Array<TR_OSRPoint *> &getOSRPoints() { return _osrPoints; }
-   TR_OSRPoint *findOSRPoint(TR::Node *node);
+   TR_OSRPoint *findOSRPoint(TR_ByteCodeInfo &bcInfo);
    uint32_t addOSRPoint(TR_OSRPoint *point) { return _osrPoints.add(point) ; }
    uint32_t getNumOSRPoints() { return _osrPoints.size(); }
    bool sharesStackSlot(TR::SymbolReference *symRef);

@@ -150,18 +150,18 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
                   if (symRef == defSymRef)
                      break;
                TR_ASSERT(symRefOrder < list->getSize(), "symref not found\n");
-               comp()->getOSRCompilationData()->addSlotSharingInfo(point->getNodeByteCodeInfo(),
+               comp()->getOSRCompilationData()->addSlotSharingInfo(point->getByteCodeInfo(),
                      slot, symRefNum, symRefOrder, defSymRef->getSymbol()->getSize(), takesTwoSlots);
                if (trace())
                   {
-                  TR_ByteCodeInfo& bcInfo = point->getNodeByteCodeInfo();
+                  TR_ByteCodeInfo& bcInfo = point->getByteCodeInfo();
                   traceMsg(comp(), "added (callerIndex=%d, bcIndex=%d)->(slot=%d, ref#=%d) at OSR point %d side %d def %d\n",
                         bcInfo.getCallerIndex(), bcInfo.getByteCodeIndex(), slot, symRefNum, i, j, jj);
                   }
                }
             }
          }
-      comp()->getOSRCompilationData()->ensureSlotSharingInfoAt(point->getNodeByteCodeInfo());
+      comp()->getOSRCompilationData()->ensureSlotSharingInfoAt(point->getByteCodeInfo());
       }
    }
 
@@ -365,7 +365,6 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
    TR::TreeTop *treeTop;
    TR_ReachingDefinitions::ContainerType **blockInfo = (TR_ReachingDefinitions::ContainerType**)vblockInfo;
    TR_ReachingDefinitions::ContainerType *analysisInfo = NULL;
-   TR_OSRPoint *osrPoint = NULL;
    TR_OSRPoint *nextOsrPoint = NULL;
 
    comp()->incVisitCount();
@@ -382,22 +381,39 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
          continue;
          }
 
-      TR_OSRPoint *point = NULL;
-      if (comp()->isPotentialOSRPointWithSupport(treeTop))
+      TR_OSRPoint *osrPoint = NULL;
+      bool isPotentialOSRPoint = comp()->isPotentialOSRPointWithSupport(treeTop);
+      if (isPotentialOSRPoint)
          {
-         point = _methodSymbol->findOSRPoint(node);
-         TR_ASSERT(point != NULL, "Cannot find an OSR point for node %p", node);
-         if (!point->induceAfter())
+         osrPoint = _methodSymbol->findOSRPoint(node->getByteCodeInfo());
+         TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", node);
+         }
+      else
+         {
+         osrPoint = NULL;
+         }
+
+      buildOSRDefs(node, analysisInfo, osrPoint, nextOsrPoint, NULL, aux);
+
+      if (isPotentialOSRPoint)
+         {
+         int32_t offset = comp()->getOSRInductionOffset(node);
+         if (offset > 0)
             {
-            osrPoint = point;
-            point = NULL;
+            TR_ByteCodeInfo bcInfo = node->getByteCodeInfo();
+            bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + offset);
+            nextOsrPoint = _methodSymbol->findOSRPoint(bcInfo);
+            TR_ASSERT(nextOsrPoint != NULL, "Cannot find an offset OSR point for node %p", node);
+            }
+         else
+            {
+            nextOsrPoint = NULL;
             }
          }
       else
-         osrPoint = NULL;
-
-      buildOSRDefs(node, analysisInfo, osrPoint, nextOsrPoint, NULL, aux);
-      nextOsrPoint = point;
+         {
+         nextOsrPoint = NULL;
+         }
       }
 
    // Print some debugging information
@@ -421,8 +437,8 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
             traceMsg(comp(), "OSR def info at index %d is empty\n", i);
             continue;
             }
-         TR_ByteCodeInfo& bcinfo = _methodSymbol->getOSRPoints()[i]->getNodeByteCodeInfo();
-         traceMsg(comp(), "OSR defs at index %d bcIndex %d callerIndex %d induceAfter %d\n", i, bcinfo.getByteCodeIndex(), bcinfo.getCallerIndex(), _methodSymbol->getOSRPoints()[i]->induceAfter());
+         TR_ByteCodeInfo& bcinfo = _methodSymbol->getOSRPoints()[i]->getByteCodeInfo();
+         traceMsg(comp(), "OSR defs at index %d bcIndex %d callerIndex %d\n", i, bcinfo.getByteCodeIndex(), bcinfo.getCallerIndex());
          *comp() << info;
          traceMsg(comp(), "\n");
          }
@@ -791,7 +807,6 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    int32_t blockNum = -1;
    TR_BitVector *liveVars = NULL;
    TR::TreeTop *tt;
-   TR_OSRPoint *osrPoint = NULL;
 
    vcount_t visitCount = comp()->incVisitCount();
    block = comp()->getStartBlock();
@@ -830,20 +845,30 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
                }
             }
 
-         maintainLiveness(tt->getNode(), NULL, -1, visitCount, &liveLocals, _liveVars, block);
-
-         if (osrPoint && osrPoint->induceAfter())
-             buildOSRLiveRangeInfo(tt->getPrevTreeTop()->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
-
+         TR_OSRPoint *osrPoint = NULL;
+         TR_OSRPoint *offsetOSRPoint = NULL;
          if (comp()->isPotentialOSRPointWithSupport(tt))
             {
-            osrPoint = comp()->getMethodSymbol()->findOSRPoint(tt->getNode());
+            osrPoint = comp()->getMethodSymbol()->findOSRPoint(tt->getNode()->getByteCodeInfo());
             TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", tt->getNode());
+            int32_t offset = comp()->getOSRInductionOffset(tt->getNode());
+            if (offset > 0)
+               {
+               TR_ByteCodeInfo bcInfo = tt->getNode()->getByteCodeInfo();
+               bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + offset);
+               offsetOSRPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
+               TR_ASSERT(offsetOSRPoint != NULL, "Cannot find an offset OSR point for node %p", tt->getNode());
+               }
             }
          else
             osrPoint = NULL;
 
-         if (osrPoint && !osrPoint->induceAfter())
+         if (offsetOSRPoint)
+             buildOSRLiveRangeInfo(tt->getNode(), _liveVars, offsetOSRPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
+
+         maintainLiveness(tt->getNode(), NULL, -1, visitCount, &liveLocals, _liveVars, block);
+
+         if (osrPoint)
              buildOSRLiveRangeInfo(tt->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
          }
 
@@ -1043,11 +1068,11 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
       }
 
    osrMethodData->setNumSymRefs(numBits);
-   osrMethodData->addLiveRangeInfo(node->getByteCodeIndex(), deadSymRefs);
+   osrMethodData->addLiveRangeInfo(osrPoint->getByteCodeInfo().getByteCodeIndex(), deadSymRefs);
 
    if (comp()->getOption(TR_TraceOSR))
       {
-      traceMsg(comp(), "Dead variables at OSR point %p \n", node);
+      traceMsg(comp(), "Dead variables at OSR point %p of %p bytecode offset %d\n", node, osrMethodData, osrPoint->getByteCodeInfo().getByteCodeIndex());
       if (deadSymRefs)
          deadSymRefs->print(comp());
       else

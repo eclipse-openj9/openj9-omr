@@ -19,8 +19,8 @@
 GLOBAL_CPPFLAGS+=-I$(top_srcdir)/util/a2e/headers
 
 # Specify the minimum arch for 64-bit programs
-GLOBAL_CFLAGS+=-Wc,ARCH\(5\)
-GLOBAL_CXXFLAGS+=-Wc,ARCH\(5\)
+GLOBAL_CFLAGS+=-Wc,ARCH\(7\)
+GLOBAL_CXXFLAGS+=-Wc,ARCH\(7\)
 
 # Enable Warnings as Errors
 ifeq ($(OMR_WARNINGS_AS_ERRORS),1)
@@ -37,7 +37,7 @@ endif
 
 # Enable Optimizations
 ifeq ($(OMR_OPTIMIZE),1)
-    COPTFLAGS=-O3 -Wc,TUNE\(9\) -Wc,inline\(auto,noreport,600,5000\)
+    COPTFLAGS=-O3 -Wc,TUNE\(10\) -Wc,inline\(auto,noreport,600,5000\)
 
     # OMRTODO: The COMPAT=ZOSV1R13 option does not appear to be related to
     # optimizations.  This linker option is supplied only on the compile line,

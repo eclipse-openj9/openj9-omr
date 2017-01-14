@@ -134,22 +134,37 @@ TR_VirtualGuard::createRubyInlineGuard
 (TR_VirtualGuardKind kind, TR::Compilation * comp, int16_t calleeIndex,
  TR::Node* callNode, TR::TreeTop * destination, TR_OpaqueClassBlock *thisClass)
 {
+#ifdef RUBY_PROJECT_SPECIFIC
   //Ensure that ILGen hasn't changed the children's layout we expect.
-  TR_ASSERT(  ((callNode->getNumChildren() == 3) &&
+  TR_ASSERT(  ((callNode->getNumChildren() == 4) &&
        callNode->getSecondChild() &&
        callNode->getSecondChild()->getOpCodeValue() == TR::aconst), "Unexpected children in hierarchy of vm_send_without_block when creating ruby inline guard.");
 
-  TR::Node* receiver = callNode->getThirdChild();
-  TR::Node* callInfo = callNode->getSecondChild();
+  TR::Node* receiver  = callNode->getChild(3);
+  TR::Node* callCache = callNode->getThirdChild();
+  CALL_CACHE cc = reinterpret_cast<CALL_CACHE>(callCache->getAddress());
+
 
   //Call the ruby inline guard routine.
   TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
   TR::SymbolReference *inline_guard_helperSymRef = symRefTab->findOrCreateRuntimeHelper(RubyHelper_vm_send_woblock_inlineable_guard, true, true, false);
 
-  TR::Node* isInlineable = TR::Node::create(TR::lcall, 2);
+  TR::Node* isInlineable = TR::Node::create(TR::lcall, 3);
+
+  // Nail down what the serial numbers are at time of inlining -- these will
+  // match the inlined body serial numbers.
   isInlineable->setSymbolReference(inline_guard_helperSymRef);
-  isInlineable->setAndIncChild(0, TR::Node::aconst(callInfo, (uintptrj_t)callInfo->getAddress()));
-  isInlineable->setAndIncChild(1, receiver);
+
+  // Ensure serial number types are 8 bytes (so lconsts below are correct)
+  static_assert(sizeof(rb_serial_t) == 8, "loads of serial number type are incorrect");
+
+  isInlineable->setAndIncChild(0,
+                               TR::Node::lconst(callCache, cc->method_state));
+
+  isInlineable->setAndIncChild(1,
+                               TR::Node::lconst(callCache, cc->class_serial));
+
+  isInlineable->setAndIncChild(2, receiver);
 
   TR::Node* guard = TR::Node::createif(TR::ificmpne,
 					 isInlineable,
@@ -160,6 +175,9 @@ TR_VirtualGuard::createRubyInlineGuard
 
   TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_RubyInlineTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
   return guard;
+#else
+  return NULL;
+#endif
 }
 
 TR::Node*

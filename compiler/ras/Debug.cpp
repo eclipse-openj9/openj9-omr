@@ -3830,6 +3830,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case RubyHelper_vm_exec_core:           return "vm_exec_core";
          case RubyHelper_rb_class_of:            return "rb_class_of";
          case RubyHelper_vm_send_woblock_inlineable_guard:  return "vm_send_woblock_inlineable_guard";
+         case RubyHelper_vm_send_woblock_jit_inline_frame:  return "vm_send_woblock_jit_inline_frame";
          case RubyHelper_ruby_omr_is_valid_object:  return "ruby_omr_is_valid_object";
          case RubyHelper_rb_class2name:          return "rb_class2name";
          case RubyHelper_vm_opt_aref_with:       return "vm_opt_aref_with";

@@ -4657,7 +4657,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    if (wasSynchronized)
       calleeSymbol->setSynchronised();
 
-   getUtil()->calleeTreeTopPreMergeActions(calleeSymbol, calltarget->_myCallSite);
+   getUtil()->calleeTreeTopPreMergeActions(calleeSymbol, calltarget);
 
    if (tracer()->heuristicLevel())
       comp()->dumpMethodTrees("calleeSymbol: after genIL", calleeSymbol);
@@ -6284,12 +6284,13 @@ TR_InnerPreexistenceInfo::TR_InnerPreexistenceInfo(TR::Compilation * c, TR::Reso
    {
    }
 
-/*
+/**
  * Perform any required tree modifications prior to merging with the callee treetops.
  */
 void
-OMR_InlinerUtil::calleeTreeTopPreMergeActions(TR::ResolvedMethodSymbol *calleeResolvedMethodSymbol, TR_CallSite* callSite)
+OMR_InlinerUtil::calleeTreeTopPreMergeActions(TR::ResolvedMethodSymbol *calleeResolvedMethodSymbol, TR_CallTarget* calltarget)
    {
+   /* By default, nothing is requred */
    }
 
 bool

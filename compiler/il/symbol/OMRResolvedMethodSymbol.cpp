@@ -1239,7 +1239,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
          // add OSR points.
          //
          bool doOSR =
-            comp->getOption(TR_EnableOSR) &&
+            comp->getOption(TR_EnableOSR) && comp->supportsInduceOSR() &&
             !comp->isPeekingMethod()  && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR)) ;
 
          TR::Optimizer *optimizer = NULL;

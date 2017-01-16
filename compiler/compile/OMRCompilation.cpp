@@ -652,6 +652,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    {
    static char *disableAsyncCheckOSR = feGetEnv("TR_disableAsyncCheckOSR");
    static char *disableGuardedCallOSR = feGetEnv("TR_disableGuardedCallOSR");
+   static char *disableMonentOSR = feGetEnv("TR_disableMonentOSR");
 
    bool potentialOSRPoint = false;
    if (self()->getHCRMode() == TR::osr)
@@ -669,6 +670,8 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
             potentialOSRPoint = disableGuardedCallOSR == NULL;
          }
+      else if (node->getOpCodeValue() == TR::monent)
+         potentialOSRPoint = disableMonentOSR == NULL;
       }
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
@@ -702,9 +705,22 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
 int32_t
 OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    {
-   if (self()->getHCRMode() == TR::osr && node->getOpCodeValue() != TR::asynccheck)
-      return 3;
+   if (self()->getHCRMode() == TR::osr)
+      {
+      switch (node->getOpCodeValue())
+         {
+         case TR::monent: return 1;
+         case TR::asynccheck: return 0;
+         default: return 3;
+         }
+      }
    return 0;
+   }
+
+bool
+OMR::Compilation::requiresPreOSRPoint(TR::Node *node)
+   {
+   return node->getOpCodeValue() != TR::monent;
    }
 
 bool

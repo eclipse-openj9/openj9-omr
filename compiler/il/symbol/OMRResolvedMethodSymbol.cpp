@@ -887,12 +887,17 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          TR::Block * block = tt->getEnclosingBlock();
          // Add the OSR point to the list
          TR::Block * OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(ttnode);
-         TR_OSRPoint *osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode->getByteCodeInfo(), osrMethodData, self()->comp()->trMemory());
-         osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
-         if (self()->comp()->getOption(TR_TraceOSR))
-            traceMsg(self()->comp(), "osr point added for [%p] at %d:%d\n",
-               ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
-               ttnode->getByteCodeInfo().getByteCodeIndex());
+         TR_OSRPoint *osrPoint = NULL;
+
+         if (self()->comp()->requiresPreOSRPoint(ttnode))
+            {
+            osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode->getByteCodeInfo(), osrMethodData, self()->comp()->trMemory());
+            osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
+            if (self()->comp()->getOption(TR_TraceOSR))
+               traceMsg(self()->comp(), "osr point added for [%p] at %d:%d\n",
+                  ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
+                  ttnode->getByteCodeInfo().getByteCodeIndex());
+            }
 
          int32_t osrOffset = self()->comp()->getOSRInductionOffset(ttnode);
          if (osrOffset > 0)
@@ -905,6 +910,11 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
                traceMsg(self()->comp(), "offset osr point added for [%p] at offset bci %d:%d\n",
                   ttnode, offsetBCI.getCallerIndex(), offsetBCI.getByteCodeIndex());
             }
+
+         if (self()->comp()->getOption(TR_TraceOSR))
+            TR_ASSERT(osrPoint != NULL, "osr point could not be added for [%p] at or offset from %d:%d\n",
+               ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
+               ttnode->getByteCodeInfo().getByteCodeIndex());
 
          // Add an exception edge from the current block to the OSR catch block if there isn't already one
          auto edge = block->getExceptionSuccessors().begin();

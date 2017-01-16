@@ -815,6 +815,7 @@ public:
    bool isPotentialOSRPoint(TR::Node *node);
    bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
    int32_t getOSRInductionOffset(TR::Node *node);
+   bool requiresPreOSRPoint(TR::Node *node);
 
    // for OSR
    TR_OSRCompilationData* getOSRCompilationData() {return _osrCompilationData;}

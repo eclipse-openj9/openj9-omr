@@ -889,7 +889,7 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          TR::Block * OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(ttnode);
          TR_OSRPoint *osrPoint = NULL;
 
-         if (self()->comp()->requiresPreOSRPoint(ttnode))
+         if (self()->comp()->requiresLeadingOSRPoint(ttnode))
             {
             osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode->getByteCodeInfo(), osrMethodData, self()->comp()->trMemory());
             osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
@@ -912,7 +912,7 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
             }
 
          if (self()->comp()->getOption(TR_TraceOSR))
-            TR_ASSERT(osrPoint != NULL, "osr point could not be added for [%p] at or offset from %d:%d\n",
+            TR_ASSERT(osrPoint != NULL, "neither leading nor trailing osr point could be added for [%p] at or offset from %d:%d\n",
                ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
                ttnode->getByteCodeInfo().getByteCodeIndex());
 

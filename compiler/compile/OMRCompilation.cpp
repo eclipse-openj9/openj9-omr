@@ -718,10 +718,10 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    }
 
 bool
-OMR::Compilation::requiresPreOSRPoint(TR::Node *node)
+OMR::Compilation::requiresLeadingOSRPoint(TR::Node *node)
    {
-   // When there is no OSR induction offset, a pre OSR point is required
-   // This currently only covers async checks as they save the state when the check is performed
+   // Without an induction offset, a leading OSR point is required
+   // This point results in analysis of liveness before the side effect has occured
    if (getOSRInductionOffset(node) == 0)
       {
       return true;
@@ -729,11 +729,10 @@ OMR::Compilation::requiresPreOSRPoint(TR::Node *node)
 
    switch (node->getOpCodeValue())
       {
-      // Monents only require an offset OSR point as they will perform OSR when executing the
-      // monitor and there is no side effect due to the monent
+      // Monents only require a trailing OSR point as they will perform OSR when executing the
+      // monitor and there is no change in liveness due to the monent
       case TR::monent: return false;
-      // Calls require pre and offset OSR points as they may have to store the original and the
-      // modified state, for example when inlining
+      // Calls require leading and trailing OSR points as liveness may change across them
       default: return true;
       }
    }

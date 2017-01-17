@@ -383,7 +383,7 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
       TR_OSRPoint *osrPoint = NULL;
       bool isPotentialOSRPoint = comp()->isPotentialOSRPointWithSupport(treeTop);
-      if (isPotentialOSRPoint && comp()->requiresPreOSRPoint(node))
+      if (isPotentialOSRPoint && comp()->requiresLeadingOSRPoint(node))
          {
          osrPoint = _methodSymbol->findOSRPoint(node->getByteCodeInfo());
          TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", node);
@@ -849,7 +849,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          TR_OSRPoint *offsetOSRPoint = NULL;
          if (comp()->isPotentialOSRPointWithSupport(tt))
             {
-            if (comp()->requiresPreOSRPoint(tt->getNode()))
+            if (comp()->requiresLeadingOSRPoint(tt->getNode()))
                {
                osrPoint = comp()->getMethodSymbol()->findOSRPoint(tt->getNode()->getByteCodeInfo());
                TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", tt->getNode());

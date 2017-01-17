@@ -668,10 +668,10 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
          TR::SymbolReference *callSymRef = callNode->getSymbolReference();
          if (callSymRef->getReferenceNumber() >
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
-            potentialOSRPoint = disableGuardedCallOSR == NULL;
+            potentialOSRPoint = (disableGuardedCallOSR == NULL);
          }
       else if (node->getOpCodeValue() == TR::monent)
-         potentialOSRPoint = disableMonentOSR == NULL;
+         potentialOSRPoint = (disableMonentOSR == NULL);
       }
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
@@ -720,7 +720,22 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
 bool
 OMR::Compilation::requiresPreOSRPoint(TR::Node *node)
    {
-   return node->getOpCodeValue() != TR::monent;
+   // When there is no OSR induction offset, a pre OSR point is required
+   // This currently only covers async checks as they save the state when the check is performed
+   if (getOSRInductionOffset(node) == 0)
+      {
+      return true;
+      }
+
+   switch (node->getOpCodeValue())
+      {
+      // Monents only require an offset OSR point as they will perform OSR when executing the
+      // monitor and there is no side effect due to the monent
+      case TR::monent: return false;
+      // Calls require pre and offset OSR points as they may have to store the original and the
+      // modified state, for example when inlining
+      default: return true;
+      }
    }
 
 bool

@@ -722,7 +722,7 @@ OMR::Compilation::requiresLeadingOSRPoint(TR::Node *node)
    {
    // Without an induction offset, a leading OSR point is required
    // This point results in analysis of liveness before the side effect has occured
-   if (getOSRInductionOffset(node) == 0)
+   if (self()->getOSRInductionOffset(node) == 0)
       {
       return true;
       }

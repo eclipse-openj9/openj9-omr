@@ -4679,6 +4679,7 @@ void TR_LoopStrider::walkTreesAndFixUseDefs(
    replaceLoadsInStructure(
       loopStructure,
       _loopDrivingInductionVar,
+      newIntValue,
       newSymbolReference,
       exLoads,
       visited);
@@ -4688,12 +4689,17 @@ void TR_LoopStrider::walkTreesAndFixUseDefs(
    }
 
 /**
- * Change each load of \p iv in \p structure into \c l2i of \c lload \p newSR.
+ * Replace occurrences of \p iv with \p newSR within \p structure.
  *
- * These are the (ex-) \c iload nodes that are added to \p exLoads.
+ * Each load of \p iv becomes \c l2i of \c lload \p newSR. These are the (ex-)
+ * \c iload nodes that are added to \p exLoads.
+ *
+ * Signed 32-bit comparisons made directly against \p iv, or directly against
+ * \p defRHS, are replaced by the corresponding 64-bit comparisons.
  *
  * \param[in]     structure  where to change loads
  * \param[in]     iv         the symbol reference number of the loads to change
+ * \param[in]     defRHS     the right-hand side of the lone store to \p iv
  * \param[in]     newSR      the new symbol reference to use in place of \p iv
  * \param[in,out] exLoads    the checklist to which the changed loads are added
  * \param[in,out] visited    an empty checklist
@@ -4702,6 +4708,7 @@ void TR_LoopStrider::walkTreesAndFixUseDefs(
 void TR_LoopStrider::replaceLoadsInStructure(
    TR_Structure *structure,
    int32_t iv,
+   TR::Node *defRHS,
    TR::SymbolReference *newSR,
    TR::NodeChecklist &exLoads,
    TR::NodeChecklist &visited)
@@ -4711,13 +4718,13 @@ void TR_LoopStrider::replaceLoadsInStructure(
       TR::Block *b = structure->asBlock()->getBlock();
       TR::TreeTop *end = b->getExit();
       for (TR::TreeTop *tt = b->getEntry(); tt != end; tt = tt->getNextTreeTop())
-         replaceLoadsInSubtree(tt->getNode(), iv, newSR, exLoads, visited);
+         replaceLoadsInSubtree(tt->getNode(), iv, defRHS, newSR, exLoads, visited);
       }
    else
       {
       TR_RegionStructure::Cursor it(*structure->asRegion());
       for (TR_StructureSubGraphNode *n = it.getFirst(); n != NULL; n = it.getNext())
-         replaceLoadsInStructure(n->getStructure(), iv, newSR, exLoads, visited);
+         replaceLoadsInStructure(n->getStructure(), iv, defRHS, newSR, exLoads, visited);
       }
    }
 
@@ -4725,6 +4732,7 @@ void TR_LoopStrider::replaceLoadsInStructure(
 void TR_LoopStrider::replaceLoadsInSubtree(
    TR::Node *node,
    int32_t iv,
+   TR::Node *defRHS,
    TR::SymbolReference *newSR,
    TR::NodeChecklist &exLoads,
    TR::NodeChecklist &visited)
@@ -4734,7 +4742,7 @@ void TR_LoopStrider::replaceLoadsInSubtree(
 
    visited.add(node);
    for (int i = 0; i < node->getNumChildren(); i++)
-      replaceLoadsInSubtree(node->getChild(i), iv, newSR, exLoads, visited);
+      replaceLoadsInSubtree(node->getChild(i), iv, defRHS, newSR, exLoads, visited);
 
    if (node->getOpCodeValue() == TR::iload
        && node->getSymbolReference()->getReferenceNumber() == iv)
@@ -4745,6 +4753,110 @@ void TR_LoopStrider::replaceLoadsInSubtree(
       node->setAndIncChild(0, lload);
       exLoads.add(node);
       }
+
+   widenComparison(node, iv, defRHS, exLoads);
+   }
+
+/**
+ * Widen comparisons against \p iv.
+ *
+ * Signed 32-bit comparisons made directly against \p iv, or directly against
+ * the node that produces the new value of \p iv, are changed into the
+ * corresponding 64-bit comparisons, by wrapping each child in \c i2l.
+ *
+ * For example, when replacing the 32-bit \c i with the 64-bit \c k, consider
+ * the following comparison:
+ *
+   \verbatim
+      ificmpge
+        iload i
+        iload n
+   \endverbatim
+ *
+ * In the course of replaceInStructure(TR_Structure*), it will be rewritten as:
+ *
+   \verbatim
+      ificmpge
+        l2i
+          lload k
+        iload n
+   \endverbatim
+ *
+ * In order to make it  into a more obvious test of \c k, we change it into a
+ * 64-bit comparison using \c i2l like so:
+ *
+   \verbatim
+      iflcmpge
+        i2l
+          l2i
+            lload k
+        i2l
+          iload n
+   \endverbatim
+ *
+ * Because the \c l2i node here is an ex-load, it will cancel the \c i2l later:
+ *
+   \verbatim
+      iflcmpge
+        lload k
+        i2l
+          iload n
+   \endverbatim
+ *
+ * \param[in] node     the possible comparison node to process
+ * \param[in] iv       the symbol reference number of the loads being changed
+ * \param[in] defRHS   the right-hand side of the lone store to \p iv
+ * \param[in] exLoads  the set of \c l2i nodes that were loads of \p iv
+ */
+void TR_LoopStrider::widenComparison(
+   TR::Node *node,
+   int32_t iv,
+   TR::Node *defRHS,
+   TR::NodeChecklist &exLoads)
+   {
+   static const char * const disableEnv =
+      feGetEnv("TR_disableLoopStriderWidenComparison");
+   static const bool disable = disableEnv != NULL && disableEnv[0] != '\0';
+   if (disable)
+      return;
+
+   TR::ILOpCode op = node->getOpCode();
+   TR::ILOpCodes icmp = op.isIf() ? op.convertIfCmpToCmp() : op.getOpCodeValue();
+   TR::ILOpCodes lcmp = TR::BadILOp;
+   switch (icmp)
+      {
+      case TR::icmpeq: lcmp = TR::lcmpeq; break;
+      case TR::icmpne: lcmp = TR::lcmpne; break;
+      case TR::icmplt: lcmp = TR::lcmplt; break;
+      case TR::icmple: lcmp = TR::lcmple; break;
+      case TR::icmpgt: lcmp = TR::lcmpgt; break;
+      case TR::icmpge: lcmp = TR::lcmpge; break;
+      default: return; // Not a 32-bit signed integer comparison.
+      }
+
+   TR::Node *left = node->getChild(0);
+   TR::Node *right = node->getChild(1);
+   bool isLeftIV = left == defRHS || exLoads.contains(left);
+   bool isRightIV = right == defRHS || exLoads.contains(right);
+   if (!isLeftIV && !isRightIV)
+      return;
+
+   if (op.isIf())
+      lcmp = TR::ILOpCode(lcmp).convertCmpToIfCmp();
+
+   if (!performTransformation(comp(),
+         "%s [Sign-Extn] Changing n%un %s into %s\n",
+         optDetailString(),
+         node->getGlobalIndex(),
+         node->getOpCode().getName(),
+         TR::ILOpCode(lcmp).getName()))
+      return;
+
+   TR::Node::recreate(node, lcmp);
+   node->setAndIncChild(0, TR::Node::create(node, TR::i2l, 1, left));
+   node->setAndIncChild(1, TR::Node::create(node, TR::i2l, 1, right));
+   left->decReferenceCount();
+   right->decReferenceCount();
    }
 
 /**

@@ -54,7 +54,7 @@ static TR::Block* splitMonitorStoreFromPrivArg(TR::Block* block, TR::CFG *cfg)
    TR::TreeTop *end = block->getLastRealTreeTop();
    bool hasMonitorStore = false;
    TR::TreeTop *firstPrivArg = NULL;
-   for(TR::TreeTop *tt = start; tt && tt != end; tt = tt->getPrevTreeTop())
+   for(TR::TreeTop *tt = start; tt && tt != end; tt = tt->getNextTreeTop())
       {
       TR::Node * node = tt->getNode();
       if (node->getOpCode().hasSymbolReference() && node->getSymbol()->holdsMonitoredObject())

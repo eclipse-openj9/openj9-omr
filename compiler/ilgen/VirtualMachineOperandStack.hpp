@@ -74,17 +74,7 @@ namespace OMR
 class VirtualMachineOperandStack : public VirtualMachineState
    {
    public:
-   /**
-    * @brief public constructor, must be instantiated inside a compilation because uses heap memory
-    * @param mb TR::MethodBuilder object of the method currently being compiled
-    * @param sizeHint initial size used to allocate the stack; will grow larger if needed
-    * @param elementType TR::IlType representing the underlying type of the virtual machine's operand stack entries
-    * @param stackTop previously allocated and initialized VirtualMachineRegister representing the top of stack
-    * Default behaviour for stack direction is "up" (push is sp++) and offset is -1 (push is *++sp = value)
-    * This is for compatibility with earlier versions of this constructor.
-    */
-   VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, VirtualMachineRegister *stackTop);
-
+  
   /**
     * @brief public constructor, must be instantiated inside a compilation because uses heap memory
     * @param mb TR::MethodBuilder object of the method currently being compiled
@@ -100,11 +90,11 @@ class VirtualMachineOperandStack : public VirtualMachineState
     * In the second case, stackInitialOffset should be 0, because the stack pointer
     * initially points at the bottom of the stack. Other values are possible but would be
     * considered highly unusual. 
-    * Default behaviour for the compatibility constructor will be growsUp is true, and stackInitialOffset is -1.
+    * Default behaviour for compatibility constructor will be optional arguments, growsUp is true, and stackInitialOffset is -1.
     */
 
    VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, VirtualMachineRegister *stackTop,
-    bool growsUp, int32_t stackInitialOffset);
+    bool growsUp = true, int32_t stackInitialOffset = -1);
    /**
     * @brief constructor used to copy the stack from another state
     * @param other the operand stack whose values should be used to initialize this object

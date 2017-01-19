@@ -48,13 +48,6 @@ namespace OMR
    mb->Store("OperandStack_base", stackTopRegister->Load(mb));
    }
 
-   // compatibility with prior constructor. pass same defaults as before for growup and stackOffset
-   VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint,
-   TR::IlType *elementType, OMR::VirtualMachineRegister *stackTopRegister)
-   : VirtualMachineOperandStack(mb, sizeHint,elementType,stackTopRegister, true, -1) 
-   { 
-   }
-
 VirtualMachineOperandStack::VirtualMachineOperandStack(OMR::VirtualMachineOperandStack *other)
    : VirtualMachineState(),
    _mb(other->_mb),

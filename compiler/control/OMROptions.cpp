@@ -3403,6 +3403,29 @@ OMR::Options::processOptionSet(
    return options;
    }
 
+/**
+ * Custom comparison function to compare two options.
+ * Used for STL binary search.
+ *
+ * @param a The first option.
+ * @param b The second option.
+ */
+
+bool
+OMR::Options::compareOptionsForBinarySearch(const TR::OptionTable &a, const TR::OptionTable &b)
+   {
+   int32_t lengthOfTableEntry;
+
+   // Check which option is the one passed in (optionToFind). We want to match
+   // only up to the number of characters of the option in the table, not the one
+   // passed in.
+   if (a.isOptionToFind)
+      lengthOfTableEntry = b.length;
+   else
+      lengthOfTableEntry = a.length;
+
+   return (strnicmp_ignore_locale(a.name, b.name, lengthOfTableEntry) < 0);
+   }
 
 char *
 OMR::Options::processOption(
@@ -3420,95 +3443,44 @@ OMR::Options::processOption(
       ++option;
       }
 
-   // Find the entry for this option string using a binary search
-   //
-   TR::OptionTable *opt;
-   int32_t low = 0, high = numEntries-1;
-   int32_t cmp;
-   int32_t i = numEntries/2;
-   while (1)
+   // Set the length of all options in the table and set the isOptionToFind
+   // field to false.
+   for (TR::OptionTable* i = table; i < (table + numEntries); i++)
       {
-      // Get the length of the option name if first time we've seen it
-      //
-      opt = table+i;
-      if (!opt->length)
-         opt->length = strlen(opt->name);
-      cmp = strnicmp_ignore_locale(option, opt->name, opt->length);
-
-      // Some Z language environments transform:
-      //    '=' to '('
-      //    ':' to ')'
-      //    '_' to '\'
-      //
-      // Ensure, for example, 'log@lf' is the same as 'log=lf'
-      //
-      if (opt->name[opt->length - 1] == '=' &&
-          strlen(option) >= opt->length &&
-          option[opt->length - 1] == '@' &&
-          strnicmp_ignore_locale(option, opt->name, opt->length - 1) == 0)
-         {
-         cmp = 0;
-         }
-
-      if (cmp < 0)
-         {
-         if (i == low)
-            return startOption; // Not found in this table
-         high = i-1;
-         i = (i+low)/2;
-         }
-      else if (cmp > 0)
-         {
-         if (i == high)
-            return startOption; // Not found in this table
-         low = i+1;
-         i = (i+high+1)/2;
-         }
-      else
-         {
-         // Matching entry found
-         //
-         break;
-         }
+      i->isOptionToFind = false;
+      if (!i->length)
+         i->length = strlen(i->name);
       }
 
-   // See if there is a better (longer) match with a subsequent entry
-   //
-   for (i++ ; i < numEntries; i++)
-      {
-      int32_t len = opt->length;
-      if (!option[len] || option[len] == ',' || option[len] == ')')
-         break;
-      TR::OptionTable *next = table+i;
-      if (!next->length)
-         next->length = strlen(next->name);
-      if (next->length <= len || strnicmp_ignore_locale(opt->name, next->name, opt->length) != 0)
-         {
-         // Stop if this entry can't be an extension
-         //
-         break;
-         }
-      cmp = strnicmp_ignore_locale(option, next->name, next->length);
+   // Find the entry for this option string using a binary search
 
-      if (next->name[next->length - 1] == '=' &&
-          strlen(option) >= next->length &&
-          option[next->length - 1] == '@' &&
-          strnicmp_ignore_locale(option, next->name, next->length - 1) == 0)
-         {
-         cmp = 0;
-         }
-      if (cmp < 0)
-         {
-         // Stop if we've gone past any possible match
-         //
-         break;
-         }
-      if (cmp == 0)
-         {
-         // This is a better match
-         //
-         opt = next;
-         }
+   // Create an object for the option to find in the table and set attributes
+   TR::OptionTable optionToFind = TR::OptionTable();
+   optionToFind.name = startOption;
+   optionToFind.length = strlen(optionToFind.name);
+
+   // Since STL binary search requires total ordering, there need to be a way to differentiate
+   // between the option to find and an option in the table. The isOptionToFind field is used
+   // here to specify which option is the option to find.
+
+   optionToFind.isOptionToFind = true;
+
+   TR::OptionTable *first, *last, *opt;
+
+   auto equalRange = std::equal_range(table, (table + numEntries), optionToFind, compareOptionsForBinarySearch);
+
+   first = equalRange.first;
+   last = equalRange.second;
+
+   if (first == last)
+      {
+      // optionToFind not found in the table
+      return startOption;
+      }
+   else
+      {
+      // This is the best (longest) match for the specified option in the table
+      opt = last - 1;
       }
 
    // If we are in an option subset and the option has been marked as not

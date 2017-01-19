@@ -1443,39 +1443,11 @@ uint8_t *TR::X86RegInstruction::generateBinaryEncoding()
       }
    cursor = generateRexPrefix(cursor);
 
-   if (TR::Compiler->target.is64Bit())
+   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   uint8_t *modRM = cursor - 1;
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
-      // We are finished with the prefixes.  For INCs and DECs, the rest of the
-      // binary encoding does not depend on the operand size, so we use the
-      // 8-byte AMD64-approved versions from here on.
-      //
-      TR_X86OpCodes oldOpCode = getOpCodeValue();
-      if (getOpCode().isAMD64DeprecatedDec())
-         setOpCodeValue(DEC8Reg);
-      if (getOpCode().isAMD64DeprecatedInc())
-         setOpCodeValue(INC8Reg);
-
-      // normal binary encoding logic
-      //
-      cursor = getOpCode().copyBinaryToBuffer(cursor);
-      uint8_t *modRM = cursor - 1;
-      if (getOpCode().hasTargetRegisterIgnored() == 0)
-         {
-         applyTargetRegisterToModRMByte(modRM);
-         }
-
-      // restore old opCode
-      //
-      setOpCodeValue(oldOpCode);
-      }
-   else
-      {
-      cursor = getOpCode().copyBinaryToBuffer(cursor);
-      uint8_t *modRM = cursor - 1;
-      if (getOpCode().hasTargetRegisterIgnored() == 0)
-         {
-         applyTargetRegisterToModRMByte(modRM);
-         }
+      applyTargetRegisterToModRMByte(modRM);
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -1488,8 +1460,7 @@ uint8_t TR::X86RegInstruction::getBinaryLengthLowerBound()
    {
    TR_X86OpCode  &opCode = getOpCode();
    uint8_t prefix = opCode.needs16BitOperandPrefix() ? 1 : opCode.needsScalarPrefix() ? 1 : 0;
-   uint8_t opCodeLength = (opCode.isAMD64DeprecatedInc() || opCode.isAMD64DeprecatedDec())? 2 : opCode.getOpCodeLength();
-   return prefix + rexPrefixLength() + opCodeLength;
+   return prefix + rexPrefixLength() + opCode.getOpCodeLength();
    }
 
 int32_t TR::X86RegInstruction::estimateBinaryLength(int32_t currentEstimate)
@@ -1499,8 +1470,7 @@ int32_t TR::X86RegInstruction::estimateBinaryLength(int32_t currentEstimate)
    uint8_t prefixLength = (opCode.needsSSE42OpcodePrefix()) ? 2 : opCode.needs16BitOperandPrefix() ? 1 : opCode.needsScalarPrefix() ? 1 : 0;
    if (getOpCode().needsRepPrefix())
        prefixLength++;
-   uint8_t opCodeLength = (opCode.isAMD64DeprecatedInc() || opCode.isAMD64DeprecatedDec())? 2 : opCode.getOpCodeLength();
-   setEstimatedBinaryLength(opCodeLength + prefixLength + rexPrefixLength());
+   setEstimatedBinaryLength(opCode.getOpCodeLength() + prefixLength + rexPrefixLength());
    return currentEstimate + getEstimatedBinaryLength();
    }
 

@@ -1186,8 +1186,6 @@ extern TR_X86OpCodes XORRegImm4();
 // For instructions not supported on AMD64
 //
 #define IA32OpProp2_IsIA32Only                0x08000000
-#define IA32OpProp2_IsAMD64DeprecatedInc      0x04000000
-#define IA32OpProp2_IsAMD64DeprecatedDec      0x02000000
 
 
 // All testing properties, used to distinguish a conditional branch from an
@@ -1374,10 +1372,6 @@ class TR_X86OpCode
    uint32_t sourceOpTarget() {return _properties[_opCode] & IA32OpProp_SourceOpTarget;}
 
    uint32_t hasDirectionBit() {return _properties[_opCode] & IA32OpProp_HasDirectionBit;}
-
-   uint32_t isAMD64DeprecatedDec() {return _properties2[_opCode] & IA32OpProp2_IsAMD64DeprecatedDec;}
-
-   uint32_t isAMD64DeprecatedInc() {return _properties2[_opCode] & IA32OpProp2_IsAMD64DeprecatedInc;}
 
    uint32_t isIA32Only() {return _properties2[_opCode] & IA32OpProp2_IsIA32Only;}
 

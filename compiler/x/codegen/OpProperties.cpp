@@ -1818,7 +1818,11 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
    IA32OpProp_UsesTarget,
 
    IA32OpProp_ModifiesTarget                 | // DEC2Reg
+#ifdef TR_TARGET_64BIT
+   IA32OpProp_TargetRegisterInModRM          |
+#else
    IA32OpProp_TargetRegisterInOpcode         |
+#endif
    IA32OpProp_Needs16BitOperandPrefix        |
    IA32OpProp_ShortTarget                    |
    IA32OpProp_ModifiesOverflowFlag           |
@@ -1828,7 +1832,11 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
    IA32OpProp_UsesTarget,
 
    IA32OpProp_ModifiesTarget                 | // DEC4Reg
+#ifdef TR_TARGET_64BIT
+   IA32OpProp_TargetRegisterInModRM          |
+#else
    IA32OpProp_TargetRegisterInOpcode         |
+#endif
    IA32OpProp_IntTarget                      |
    IA32OpProp_ModifiesOverflowFlag           |
    IA32OpProp_ModifiesSignFlag               |
@@ -2813,7 +2821,11 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
    IA32OpProp_UsesTarget,
 
    IA32OpProp_ModifiesTarget                 | // INC2Reg
+#ifdef TR_TARGET_64BIT
+   IA32OpProp_TargetRegisterInModRM          |
+#else
    IA32OpProp_TargetRegisterInOpcode         |
+#endif
    IA32OpProp_Needs16BitOperandPrefix        |
    IA32OpProp_ShortTarget                    |
    IA32OpProp_ModifiesOverflowFlag           |
@@ -2823,7 +2835,11 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
    IA32OpProp_UsesTarget,
 
    IA32OpProp_ModifiesTarget                 | // INC4Reg
+#ifdef TR_TARGET_64BIT
+   IA32OpProp_TargetRegisterInModRM          |
+#else
    IA32OpProp_TargetRegisterInOpcode         |
+#endif
    IA32OpProp_IntTarget                      |
    IA32OpProp_ModifiesOverflowFlag           |
    IA32OpProp_ModifiesSignFlag               |
@@ -6958,14 +6974,12 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
    IA32OpProp2_SetsCCForCompare,
 
    IA32OpProp2_SetsCCForTest                 | // DEC2Reg
-   IA32OpProp2_SetsCCForCompare              |
-   IA32OpProp2_IsAMD64DeprecatedDec,
+   IA32OpProp2_SetsCCForCompare,
 
    IA32OpProp2_SetsCCForTest                 | // DEC4Reg
-   IA32OpProp2_SetsCCForCompare              |
-   IA32OpProp2_IsAMD64DeprecatedDec,
+   IA32OpProp2_SetsCCForCompare,
 
-   IA32OpProp2_SetsCCForTest                 | // DEC8RegLong (AMD64)
+   IA32OpProp2_SetsCCForTest                 | // DEC8Reg (AMD64)
    IA32OpProp2_SetsCCForCompare              |
    IA32OpProp2_LongTarget                    |
    IA32OpProp2_Needs64BitOperandPrefix,
@@ -7407,14 +7421,12 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
    IA32OpProp2_SetsCCForCompare,
 
    IA32OpProp2_SetsCCForTest                 | // INC2Reg
-   IA32OpProp2_SetsCCForCompare              |
-   IA32OpProp2_IsAMD64DeprecatedInc,
+   IA32OpProp2_SetsCCForCompare,
 
    IA32OpProp2_SetsCCForTest                 | // INC4Reg
-   IA32OpProp2_SetsCCForCompare              |
-   IA32OpProp2_IsAMD64DeprecatedInc,
+   IA32OpProp2_SetsCCForCompare,
 
-   IA32OpProp2_SetsCCForTest                 | // INC8RegLong (AMD64)
+   IA32OpProp2_SetsCCForTest                 | // INC8Reg (AMD64)
    IA32OpProp2_SetsCCForCompare              |
    IA32OpProp2_LongSource                    |
    IA32OpProp2_LongTarget                    |

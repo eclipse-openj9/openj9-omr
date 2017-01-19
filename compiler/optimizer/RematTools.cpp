@@ -190,13 +190,23 @@ void RematTools::walkNodesCalculatingRematSafety(TR::Compilation *comp,
    {
    for (uint16_t i = 0; i < currentNode->getNumChildren(); ++i)
       {
-      if (visitedNodes.ValueAt(currentNode->getGlobalIndex()))
-         return;
+      if (visitedNodes.ValueAt(currentNode->getChild(i)->getGlobalIndex()))
+         continue;
 
-      visitedNodes[currentNode->getGlobalIndex()] = true;
+      visitedNodes[currentNode->getChild(i)->getGlobalIndex()] = true;
 
       walkNodesCalculatingRematSafety(comp, currentNode->getChild(i),
             scanTargets, enabledSymRefs, unsafeSymRefs, trace, visitedNodes);
+      }
+
+   if (trace)
+      {
+      traceMsg(comp, "Remat Safety Walk visiting n%dn\n", currentNode->getGlobalIndex());
+      traceMsg(comp, "Enabled symrefs: ");
+      (*comp) << enabledSymRefs;
+      traceMsg(comp, "\nUnsafe symrefs: ");
+      (*comp) << unsafeSymRefs;
+      traceMsg(comp, "\n");
       }
 
    // step 1 - add the current node kills to our running kills
@@ -204,7 +214,11 @@ void RematTools::walkNodesCalculatingRematSafety(TR::Compilation *comp,
 
    TR::ILOpCode &opCode = currentNode->getOpCode();
    if (opCode.isLikeDef() && opCode.hasSymbolReference())
+      {
+      if (trace)
+         traceMsg(comp, "Setting symref #%d as unsafe\n", currentNode->getSymbolReference()->getReferenceNumber());
       unsafeSymRefs[currentNode->getSymbolReference()->getReferenceNumber()] = true;
+      }
 
    // update unsafeSymRefs - only set enabledSymRefs since the others are not "live"
    unsafeSymRefs &= enabledSymRefs;
@@ -214,7 +228,18 @@ void RematTools::walkNodesCalculatingRematSafety(TR::Compilation *comp,
    if (scanTargets.ValueAt(currentNode->getGlobalIndex()) && opCode.hasSymbolReference())
       {
       // enable the symref we just found
+      if (trace)
+         traceMsg(comp, "Enabling symref #%d\n", currentNode->getSymbolReference()->getReferenceNumber());
       enabledSymRefs[currentNode->getSymbolReference()->getReferenceNumber()] = true;
+      }
+   if (trace)
+      {
+      traceMsg(comp, "Remat Safety Walk after visiting n%dn\n", currentNode->getGlobalIndex());
+      traceMsg(comp, "Enabled symrefs: ");
+      (*comp) << enabledSymRefs;
+      traceMsg(comp, "\nUnsafe symrefs: ");
+      (*comp) << unsafeSymRefs;
+      traceMsg(comp, "\n");
       }
    }
    

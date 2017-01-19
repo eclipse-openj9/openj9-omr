@@ -542,7 +542,7 @@ enum {
 				if ((self)->tracing->pause_count == (monitor)->tracing->enter_pause_count) { \
 					omrtime_delta_t holdTime = GET_HIRES_CLOCK() - (monitor)->tracing->enter_time; \
 					if (holdTime > 0) { \
-						if ((0 == (self)->library->clock_skew) || ((omrtime_t)holdTime < (self)->library->clock_skew)) { \
+						if ((0 == (self)->library->clock_skew) || ((omrtime_t)holdTime > (self)->library->clock_skew)) { \
 							uintptr_t holdTimeCount = (monitor)->tracing->holdtime_count + 1; \
 							(monitor)->tracing->holdtime_count = holdTimeCount; \
 							(monitor)->tracing->holdtime_sum += (omrtime_t)holdTime; \

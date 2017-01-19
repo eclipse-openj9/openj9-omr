@@ -1228,5 +1228,7 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
          }
       }
 
+   comp()->setOSRInfrastructureRemoved(true);
+
    return 1;
    }

@@ -486,6 +486,9 @@ public:
    bool osrStateIsReliable() { return _osrStateIsReliable;}
    void setOsrStateIsReliable(bool b) { _osrStateIsReliable = b;}
 
+   bool osrInfrastructureRemoved() { return _osrInfrastructureRemoved; }
+   void setOSRInfrastructureRemoved(bool b) { _osrInfrastructureRemoved = b; }
+
    bool mayHaveLoops();
    bool hasLargeNumberOfLoops();
    bool hasNews();
@@ -1083,6 +1086,7 @@ private:
 
    bool                              _osrStateIsReliable;
    bool                              _canAffordOSRControlFlow;
+   bool                              _osrInfrastructureRemoved;
 
    TR_Hotness                        _nextOptLevel;
    int32_t                           _errorCode;

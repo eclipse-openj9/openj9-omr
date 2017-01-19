@@ -304,6 +304,7 @@ OMR::Compilation::Compilation(
    _numReservedIPICTrampolines(0),
    _osrStateIsReliable(true),
    _canAffordOSRControlFlow(true),
+   _osrInfrastructureRemoved(false),
    _phaseTimer("Compilation", self()->allocator("phaseTimer"), self()->getOption(TR_Timing)),
    _phaseMemProfiler("Compilation", self()->allocator("phaseMemProfiler"), self()->getOption(TR_LexicalMemProfiler)),
    _copyPropagationRematerializationCandidates(self()->allocator("CP rematerialization")),
@@ -607,7 +608,7 @@ bool OMR::Compilation::supportsInduceOSR()
       return false;
       }
 
-   if (self()->getOption(TR_MimicInterpreterFrameShape) /* && areSlotsSharedByRefAndNonRef() */)
+   if (self()->getOption(TR_MimicInterpreterFrameShape) && !self()->getOption(TR_FullSpeedDebug)/* && areSlotsSharedByRefAndNonRef() */)
       {
       if (self()->getOption(TR_TraceOSR))
          traceMsg(self(), "MimicInterpreterFrameShape is set - OSR induction is not supported\n");
@@ -625,6 +626,13 @@ bool OMR::Compilation::supportsInduceOSR()
       {
       if (self()->getOption(TR_TraceOSR))
          traceMsg(self(), "Cannot guarantee OSR transfer of control to the interpreter will work for calls preventing induced OSR (e.g. Quad) because of differences in JIT vs interpreter representations\n");
+      return false;
+      }
+
+   if (_osrInfrastructureRemoved)
+      {
+      if (self()->getOption(TR_TraceOSR))
+         traceMsg(self(), "OSR induction cannot be performed after OSR infrastructure has been removed\n");
       return false;
       }
 
@@ -656,7 +664,9 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    bool potentialOSRPoint = false;
    if (self()->getHCRMode() == TR::osr)
       {
-      if (node->getOpCodeValue() == TR::asynccheck)
+      if (_osrInfrastructureRemoved)
+         potentialOSRPoint = false;
+      else if (node->getOpCodeValue() == TR::asynccheck)
          {
          if (disableAsyncCheckOSR == NULL)
             potentialOSRPoint = !self()->isShortRunningMethod(node->getByteCodeInfo().getCallerIndex());

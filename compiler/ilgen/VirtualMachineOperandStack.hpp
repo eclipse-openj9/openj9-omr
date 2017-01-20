@@ -74,14 +74,27 @@ namespace OMR
 class VirtualMachineOperandStack : public VirtualMachineState
    {
    public:
-   /**
+  
+  /**
     * @brief public constructor, must be instantiated inside a compilation because uses heap memory
     * @param mb TR::MethodBuilder object of the method currently being compiled
     * @param sizeHint initial size used to allocate the stack; will grow larger if needed
     * @param elementType TR::IlType representing the underlying type of the virtual machine's operand stack entries
     * @param stackTop previously allocated and initialized VirtualMachineRegister representing the top of stack
+    * @param growsUp to configure virtual machine stack growth direction, set to true if virtual machine stack grows towards larger addresses, false otherwise 
+    * @param stackInitialOffset to configure virtual machine stack stack offset 
+    * set to the difference in elements between initial stack pointer and actual bottom of stack
+    * Some stacks Push by incrementing stack pointer then storing, some by storing and then
+    * incrementing stack pointer. In the first case, stackInitialOffset should be -1
+    * because the stack pointer initially points one element below the bottom of the stack.
+    * In the second case, stackInitialOffset should be 0, because the stack pointer
+    * initially points at the bottom of the stack. Other values are possible but would be
+    * considered highly unusual. 
+    * Default behaviour for compatibility constructor will be optional arguments, growsUp is true, and stackInitialOffset is -1.
     */
-   VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, VirtualMachineRegister *stackTop);
+
+   VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, VirtualMachineRegister *stackTop,
+    bool growsUp = true, int32_t stackInitialOffset = -1);
    /**
     * @brief constructor used to copy the stack from another state
     * @param other the operand stack whose values should be used to initialize this object
@@ -147,24 +160,7 @@ class VirtualMachineOperandStack : public VirtualMachineState
     */
    virtual void Dup(TR::IlBuilder *b);
 
-   /**
-    * @brief virtual function subclasses can use to configure virtual machine stack growth direction
-    * @returns true if the virtual machine stack grows towards larger addresses, false otherwise
-    */
-   virtual bool growsUp() { return true; }
-
-   /**
-    * @brief virtual function subclasses can use to configure virtual machine stack stack offset 
-    * @returns difference in elements between initial stack pointer and actual bottom of stack
-    * Some stacks Push by incrementing stack pointer then storing, some by storing and then
-    * incrementing stack pointer. In the first case, stackPtrStartingOffset() should return -1
-    * because the stack pointer initially points one element below the bottom of the stack.
-    * In the second case, startPtrStartingOffset() should return 0, because the stack pointer
-    * initially points at the bottom of the stack. Other values are possible but would be
-    * considered highly unusual.
-    * Default assumption is the first case, so return -1.
-    */
-   virtual int32_t stackPtrStartingOffset() { return -1; }
+ 
 
    protected:
    void copyTo(OMR::VirtualMachineOperandStack *copy);

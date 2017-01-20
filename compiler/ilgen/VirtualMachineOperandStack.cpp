@@ -28,14 +28,16 @@
 namespace OMR
 {
 
-VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint,
-   TR::IlType *elementType, OMR::VirtualMachineRegister *stackTopRegister)
+   VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint,
+   TR::IlType *elementType, OMR::VirtualMachineRegister *stackTopRegister, bool growsUp, int32_t stackInitialOffset)
    : VirtualMachineState(),
    _mb(mb),
    _stackTopRegister(stackTopRegister),
    _stackMax(sizeHint),
    _stackTop(-1),
-   _elementType(elementType)
+   _elementType(elementType),
+   _pushAmount(growsUp ? +1 : -1),
+   _stackOffset(stackInitialOffset)
    {
    int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
    _stack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(numBytes);
@@ -44,9 +46,6 @@ VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, in
    // store current operand stack pointer base address so we can use it whenever we need
    // to recreate the stack as the interpreter would have
    mb->Store("OperandStack_base", stackTopRegister->Load(mb));
-
-   _pushAmount = (growsUp()) ? +1 : -1;
-   _stackOffset = stackPtrStartingOffset();
    }
 
 VirtualMachineOperandStack::VirtualMachineOperandStack(OMR::VirtualMachineOperandStack *other)

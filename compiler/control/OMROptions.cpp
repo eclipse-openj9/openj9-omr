@@ -112,6 +112,8 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"alwaysWorthInliningThreshold=", "O<nnn>\t", TR::Options::set32BitNumeric, offsetof(OMR::Options, _alwaysWorthInliningThreshold), 0, " %d" },
    {"aot",                "O\tahead-of-time compilation",
         SET_OPTION_BIT(TR_AOT), NULL, NOT_IN_SUBSET},
+   {"aotOnlyFromBootstrap", "O\tahead-of-time compilation allowed only for methods from bootstrap classes",
+        SET_OPTION_BIT(TR_AOTCompileOnlyFromBootstrap), "F", NOT_IN_SUBSET },
    {"aotrtDebugLevel=", "R<nnn>\tprint aotrt debug output according to level", TR::Options::set32BitNumeric, offsetof(OMR::Options,_newAotrtDebugLevel), 0, " %d"},
    {"aotSecondRunDetection",  "M\tperform second run detection for AOT", RESET_OPTION_BIT(TR_NoAotSecondRunDetection), "F", NOT_IN_SUBSET},
    {"assignEveryGlobalRegister", "I\tnever refuse to assign any possible register for GRA in spite of the resulting potential spills", SET_OPTION_BIT(TR_AssignEveryGlobalRegister), "F"},

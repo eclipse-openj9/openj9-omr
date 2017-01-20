@@ -355,8 +355,10 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
          case TR::Float:
             return Float4;
          case TR::Int64:
-         case TR::Address:
+            TR_ASSERT(TR::Compiler->target.is64Bit(), "MOV Int64 on X86-32 is not supported");
             return TR_MovDataTypes::Int8;
+         case TR::Address:
+            return TR::Compiler->target.is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
          default:
             return Int4;
          }
@@ -369,7 +371,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       switch(reg->getKind())
          {
          case TR_GPR:
-            return TR_MovDataTypes::Int8;
+            return TR::Compiler->target.is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
          case TR_FPR:
             return Float8;
          default:

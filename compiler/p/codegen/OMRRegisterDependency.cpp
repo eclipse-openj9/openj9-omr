@@ -34,6 +34,7 @@
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency
 #include "codegen/RegisterPair.hpp"              // for RegisterPair
+#include "codegen/TreeEvaluator.hpp"             // for getHighGlobalRegisterNumberIfAny()
 #include "compile/Compilation.hpp"               // for Compilation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
@@ -156,7 +157,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
 
       if (reg!=NULL /* && reg->getKind()==TR_GPR */)
 	 {
-	 if (child->getHighGlobalRegisterNumber() > -1)
+	 if (TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg) != -1)
 	    numLongs++;
 	 }
       }
@@ -179,15 +180,16 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getGlobalRegisterNumber());
 
       TR::RealRegister::RegNum highRegNum;
+      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg); 
 
-      if (child->getHighGlobalRegisterNumber() > -1)
+      if (validHighRegNum != -1)
          {
-         highRegNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getHighGlobalRegisterNumber());
 
+         highRegNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(validHighRegNum);
          TR::RegisterPair *regPair = reg->getRegisterPair();
          TR_ASSERT(regPair, "assertion failure");
-	 highReg = regPair->getHighOrder();
-	 reg = regPair->getLowOrder();
+         highReg = regPair->getHighOrder();
+         reg = regPair->getLowOrder();
 
          if (highReg->getAssociation() != highRegNum ||
              reg->getAssociation() != regNum)
@@ -222,12 +224,12 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::Register *highCopyReg = NULL;
       TR::RealRegister::RegNum regNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getGlobalRegisterNumber());
 
-
       TR::RealRegister::RegNum highRegNum;
+      TR_GlobalRegisterNumber validHighRegNum = TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg); 
 
-      if (child->getHighGlobalRegisterNumber() > -1)
+      if (validHighRegNum != -1)
          {
-         highRegNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(child->getHighGlobalRegisterNumber());
+         highRegNum = (TR::RealRegister::RegNum)cg->getGlobalRegister(validHighRegNum);
          TR::RegisterPair *regPair = reg->getRegisterPair();
          TR_ASSERT(regPair, "assertion failure");
 	 highReg = regPair->getHighOrder();

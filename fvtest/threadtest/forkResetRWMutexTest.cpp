@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -25,6 +25,9 @@
 #include "omrTest.h"
 #include "thread_api.h"
 #include "threadTestHelp.h"
+#include "testHelper.hpp"
+
+extern ThreadTestEnvironment *omrTestEnv;
 
 #define START_DELAY (1 * 1000)
 #define TIMEOUT (60 * 1000)
@@ -271,7 +274,7 @@ childSiblingWriteChild(testdata_rw_t *testdata, int pipedata[2])
 	if (NULL != t) {
 		testdata->rc = omrthread_join(t);
 		if (testdata->rc & J9THREAD_ERR_OS_ERRNO_SET) {
-			printf("omrthread_join() returned 0x%08x and os_errno=%d\n", (int)testdata->rc, (int)omrthread_get_os_errno());
+			omrTestEnv->log(LEVEL_ERROR, "omrthread_join() returned 0x%08x and os_errno=%d\n", (int)testdata->rc, (int)omrthread_get_os_errno());
 		}
 	}
 	if (0 == testdata->rc) {
@@ -433,7 +436,7 @@ createJoinableThreadNoMacros(omrthread_t *newThread, omrthread_entrypoint_t entr
 		rc = omrthread_create_ex(newThread, &attr, 0, entryProc, entryArg);
 		if (J9THREAD_SUCCESS != rc) {
 			if (rc & J9THREAD_ERR_OS_ERRNO_SET) {
-				printf("omrthread_create_ex() returned 0x%08x and os_errno=%d\n", (int)rc, (int)omrthread_get_os_errno());
+				omrTestEnv->log(LEVEL_ERROR, "omrthread_create_ex() returned 0x%08x and os_errno=%d\n", (int)rc, (int)omrthread_get_os_errno());
 			}
 		}
 	}

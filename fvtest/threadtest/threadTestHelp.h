@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -25,6 +25,9 @@
 
 #include "omrTest.h"
 #include "thread_api.h"
+#include "testHelper.hpp"
+
+extern ThreadTestEnvironment *omrTestEnv;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,7 +38,7 @@ extern "C" {
 		intptr_t _rc = 0; \
 		EXPECT_EQ((_expectedRc), _rc = omrthread_join(_threadToJoin)); \
 		if (_rc & J9THREAD_ERR_OS_ERRNO_SET) { \
-			printf("omrthread_join() returned os_errno=%d\n", (int)omrthread_get_os_errno()); \
+			omrTestEnv->log(LEVEL_ERROR, "omrthread_join() returned os_errno=%d\n", (int)omrthread_get_os_errno()); \
 		} \
 	} while(0)
 

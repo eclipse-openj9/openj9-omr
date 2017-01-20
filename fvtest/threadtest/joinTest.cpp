@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,6 +22,9 @@
 #include "omrTest.h"
 #include "thread_api.h"
 #include "threadTestHelp.h"
+#include "testHelper.hpp"
+
+extern ThreadTestEnvironment *omrTestEnv;
 
 typedef struct JoinThreadHelperData {
 	omrthread_t threadToJoin;
@@ -110,7 +113,7 @@ TEST(JoinTest, joinLiveThread)
 	ASSERT_EQ(J9THREAD_SUCCESS, omrthread_sleep(3000));
 
 	/* resume the child thread */
-	printf("resuming suspendedThr\n");
+	omrTestEnv->log("resuming suspendedThr\n");
 	fflush(stdout);
 	ASSERT_EQ(1, omrthread_resume(suspendedThr));
 
@@ -143,7 +146,7 @@ createThread(omrthread_t *newThread, uintptr_t suspend, omrthread_detachstate_t 
 	EXPECT_EQ(J9THREAD_SUCCESS,
 			  rc = omrthread_create_ex(newThread, &attr, suspend, entryProc, entryArg));
 	if (rc & J9THREAD_ERR_OS_ERRNO_SET) {
-		printf("omrthread_create_ex() returned os_errno=%d\n", (int)omrthread_get_os_errno());
+		omrTestEnv->log(LEVEL_ERROR, "omrthread_create_ex() returned os_errno=%d\n", (int)omrthread_get_os_errno());
 	}
 	ASSERT_EQ(J9THREAD_SUCCESS, omrthread_attr_destroy(&attr));
 }
@@ -151,7 +154,7 @@ createThread(omrthread_t *newThread, uintptr_t suspend, omrthread_detachstate_t 
 static int J9THREAD_PROC
 doNothingHelper(void *entryArg)
 {
-	printf("doNothingHelper() is exiting\n");
+	omrTestEnv->log("doNothingHelper() is exiting\n");
 	fflush(stdout);
 	return 0;
 }
@@ -160,7 +163,7 @@ static int J9THREAD_PROC
 joinThreadHelper(void *entryArg)
 {
 	JoinThreadHelperData *helperData = (JoinThreadHelperData *)entryArg;
-	printf("joinThreadHelper() is invoking omrthread_join()\n");
+	omrTestEnv->log("joinThreadHelper() is invoking omrthread_join()\n");
 	fflush(stdout);
 	VERBOSE_JOIN(helperData->threadToJoin, helperData->expectedRc);
 	return 0;

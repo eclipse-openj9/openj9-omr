@@ -335,6 +335,9 @@
         .int 0x1000002a | \vrt << 21 | \vra << 16 | \vrb << 11 | \vrc << 6
         .endm
 
+        .macro vcmpequw_r    vrt, vra, vrb
+        .int 0x10000086 | 0x400 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
         .macro vcmpequh_r    vrt, vra, vrb
         .int 0x10000046 | 0x400 | \vrt << 21 | \vra << 16 | \vrb << 11
         .endm
@@ -413,6 +416,41 @@
         .int 0x100005c8 | \vrt << 21 | \vra << 16
         .endm
 
+        .macro vmulouw vrt, vra, vrb
+        .int 0x10000088 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vmuleuw vrt, vra, vrb
+        .int 0x10000288 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+
+        .macro vadduqm vrt, vra, vrb
+        .int 0x10000100 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vaddcuq vrt, vra, vrb
+        .int 0x10000140 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+
+        .macro vaddeuqm vrt, vra, vrb, vrc
+        .int 0x1000003C | \vrt << 21 | \vra << 16 | \vrb << 11 | \vrc << 6
+        .endm
+        .macro vaddecuq vrt, vra, vrb, vrc
+        .int 0x1000003D | \vrt << 21 | \vra << 16 | \vrb << 11 | \vrc << 6
+        .endm
+
+        .macro vsubuqm vrt, vra, vrb
+        .int 0x10000500 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vsubcuq vrt, vra, vrb
+        .int 0x10000540 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+
+        .macro vsubeuqm vrt, vra, vrb, vrc
+        .int 0x1000003E | \vrt << 21 | \vra << 16 | \vrb << 11 | \vrc << 6
+        .endm
+        .macro vsubecuq vrt, vra, vrb, vrc
+        .int 0x1000003F | \vrt << 21 | \vra << 16 | \vrb << 11 | \vrc << 6
+        .endm
+
         .macro vpmsumw  vrt, vra, vrb
         .int 0x10000488 | (\vrt & 31) << 21 | (\vra & 31) << 16 | (\vrb & 31) << 11 | (\vra & 32) >> 3 | (\vrb & 32) >> 4 | (\vrt & 32) >> 5
         .endm
@@ -433,6 +471,7 @@
 
 !The record form instructions break the Linux Assembler, this is the workaround for it
 #ifdef AIXPPC
+#define vcmpequw_r vcmpequw.
 #define vcmpequh_r vcmpequh.
 #define andi_r andi.
 #endif
@@ -443,6 +482,16 @@
 #define VNCIPHER(vrt,vra,vrb)           .long 0x10000548 | vrt < 21 | vra < 16 | vrb < 11
 #define VNCIPHERLAST(vrt,vra,vrb)       .long 0x10000549 | vrt < 21 | vra < 16 | vrb < 11
 #define VSBOX(vrt,vra)                  .long 0x100005c8 | vrt < 21 | vra < 16
+#define VMULOUW(vrt, vra, vrb)          .long 0x10000088 | vrt < 21 | vra < 16 | vrb < 11
+#define VMULEUW(vrt, vra, vrb)          .long 0x10000288 | vrt < 21 | vra < 16 | vrb < 11
+#define VADDUQM(vrt, vra, vrb)          .long 0x10000100 | vrt < 21 | vra < 16 | vrb < 11
+#define VADDCUQ(vrt, vra, vrb)          .long 0x10000140 | vrt < 21 | vra < 16 | vrb < 11
+#define VADDEUQM(vrt, vra, vrb, vrc)    .long 0x1000003C | vrt < 21 | vra < 16 | vrb < 11 | vrc < 6
+#define VADDECUQ(vrt, vra, vrb, vrc)    .long 0x1000003D | vrt < 21 | vra < 16 | vrb < 11 | vrc < 6
+#define VSUBUQM(vrt, vra, vrb)          .long 0x10000500 | vrt < 21 | vra < 16 | vrb < 11
+#define VSUBCUQ(vrt, vra, vrb)          .long 0x10000540 | vrt < 21 | vra < 16 | vrb < 11
+#define VSUBEUQM(vrt, vra, vrb, vrc)    .long 0x1000003E | vrt < 21 | vra < 16 | vrb < 11 | vrc < 6
+#define VSUBECUQ(vrt, vra, vrb, vrc)    .long 0x1000003F | vrt < 21 | vra < 16 | vrb < 11 | vrc < 6
 #define VPMSUMW(vrt,vra,vrb)            .long 0x10000488 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
 #define VPMSUMD(vrt,vra,vrb)            .long 0x100004c8 |(vrt & 31) < 21 |(vra & 31) < 16 |(vrb & 31) < 11 |(vra & 32) > 3 |(vrb & 32) > 4 |(vrt & 32) > 5
 #define MFVSRD(ra,vrs)                  .long 0x7c000066 | ra < 16 | (vrs & 31) < 21 | (vrs & 32) > 5
@@ -454,6 +503,16 @@
 #define VNCIPHER(vrt,vra,vrb)           vncipher        vrt, vra, vrb
 #define VNCIPHERLAST(vrt,vra,vrb)       vncipherlast    vrt, vra, vrb
 #define VSBOX(vrt,vra)                  vsbox           vrt, vra, vrb
+#define VMULOUW(vrt, vra, vrb)          vmulouw vrt, vra, vrb
+#define VMULEUW(vrt, vra, vrb)          vmuleuw vrt, vra, vrb
+#define VADDUQM(vrt, vra, vrb)          vadduqm vrt, vra, vrb
+#define VADDCUQ(vrt, vra, vrb)          vaddcuq vrt, vra, vrb
+#define VADDEUQM(vrt, vra, vrb, vrc)    vaddeuqm vrt, vra, vrb, vrc
+#define VADDECUQ(vrt, vra, vrb, vrc)    vaddecuq vrt, vra, vrb, vrc
+#define VSUBUQM(vrt, vra, vrb)          vsubuqm vrt, vra, vrb
+#define VSUBCUQ(vrt, vra, vrb)          vsubcuq vrt, vra, vrb
+#define VSUBEUQM(vrt, vra, vrb, vrc)    vsubeuqm vrt, vra, vrb, vrc
+#define VSUBECUQ(vrt, vra, vrb, vrc)    vsubecuq vrt, vra, vrb, vrc
 #define VPMSUMW(vrt,vra,vrb)            vpmsumw         vrt, vra, vrb
 #define VPMSUMD(vrt,vra,vrb)            vpmsumd         vrt, vra, vrb
 #define MFVSRD(ra,vrs)                  mfvsrd          ra, vrs

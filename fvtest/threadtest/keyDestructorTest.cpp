@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -62,8 +62,7 @@ KeyDestructorTest::detachThread(void *p)
 		omrthread_detach(self);
 		KeyDestructorTest::completed = true;
 	} else {
-		/* Can not use DbgMsg as it relies on omrthread_self() */
-		printf("Error old_self %p != omrthread_self() %p\n", old_self, self);
+		omrTestEnv->log(LEVEL_ERROR, "Error old_self %p != omrthread_self() %p\n", old_self, self);
 		fflush(stdout);
 	}
 }
@@ -80,10 +79,10 @@ KeyDestructorTest::threadproc(void *p)
 		/* set the key value to the omrthread for this thread */
 		rc = pthread_setspecific(KeyDestructorTest::key, (void *)self);
 		if (rc != 0) {
-			DbgMsg::println("Error setting key to self %d", rc);
+			omrTestEnv->log(LEVEL_ERROR, "Error setting key to self %d\n", rc);
 		}
 	} else {
-		DbgMsg::println("Error attaching to omrthread library %d", attachRC);
+		omrTestEnv->log(LEVEL_ERROR, "Error attaching to omrthread library %d\n", attachRC);
 	}
 
 	/* pthread_exit to test the key destructor */

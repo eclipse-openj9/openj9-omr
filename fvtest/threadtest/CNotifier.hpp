@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -41,24 +41,24 @@ protected:
 		if (m_delayBeforeEnter > 0) {
 			Sleep(m_delayBeforeEnter);
 		}
-		DbgMsg::println("Notifier entering");
+		omrTestEnv->log("Notifier entering\n");
 		m_monitor.Enter();
 
 		if (m_delayBeforeNotify > 0) {
 			Sleep(m_delayBeforeNotify);
 		}
 		if (m_notifyAll) {
-			DbgMsg::println("Notifier notifying all ");
+			omrTestEnv->log("Notifier notifying all \n");
 			m_monitor.NotifyAll();
 		} else {
-			DbgMsg::println("Notifier notifying one");
+			omrTestEnv->log("Notifier notifying one\n");
 			m_monitor.Notify();
 		}
 
 		if (m_delayBeforeExit > 0) {
 			Sleep(m_delayBeforeExit);
 		}
-		DbgMsg::println("Notifier exiting");
+		omrTestEnv->log("Notifier exiting\n");
 		m_monitor.Exit();
 		return 0;
 	}

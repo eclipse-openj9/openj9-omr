@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -90,9 +90,9 @@ protected:
 	virtual intptr_t 
 	Run()
 	{
-		DbgMsg::verbosePrint("ENTERING");
+		omrTestEnv->log(LEVEL_VERBOSE, "ENTERING");
 		m_monitor.Enter();
-		DbgMsg::verbosePrint("ENTERED - WAITING");
+		omrTestEnv->log(LEVEL_VERBOSE, "ENTERED - WAITING");
 
 		if (m_timeToWait < 0) {
 			m_waitRetVal =
@@ -106,9 +106,9 @@ protected:
 		}
 		m_doneWaiting = true;
 
-		DbgMsg::verbosePrint("WAITED - EXITING");
+		omrTestEnv->log(LEVEL_VERBOSE, "WAITED - EXITING");
 		m_monitor.Exit();
-		DbgMsg::verbosePrint("EXITED");
+		omrTestEnv->log(LEVEL_VERBOSE, "EXITED");
 		return 0;
 	}
 

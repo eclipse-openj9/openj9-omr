@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -111,7 +111,7 @@ public:
 	BaseEnvironment(int argc, char **argv)
 		: ::testing::Environment()
 		, s_indentLevel(0)
-		, _minLevel(LEVEL_INFO) 
+		, _minLevel(LEVEL_ERROR) 
 		, _argc(argc)
 		, _argv(argv)
 		, portLib(NULL)

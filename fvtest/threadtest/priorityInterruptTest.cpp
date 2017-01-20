@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -38,7 +38,7 @@ isRetvalOk(CWaiter& waiter, intptr_t expected)
 	bool ok = true;
 	if (waiter.GetWaitReturnValue() != expected) {
 		ok = false;
-		DbgMsg::println("Failed:\n\twait returned %s (%d), expected %s\n",
+		omrTestEnv->log(LEVEL_ERROR," Failed:\n\twait returned %s (%d), expected %s\n\n",
 						waiter.GetWaitReturnValueAsString(),
 						waiter.GetWaitReturnValue(),
 						waiter.MapReturnValueToString(expected));
@@ -53,7 +53,7 @@ isRetvalOk(CWaiter& waiter, intptr_t expected1, intptr_t expected2)
 	if ((waiter.GetWaitReturnValue() != expected1)
 		&& (waiter.GetWaitReturnValue() != expected2)) {
 		ok = false;
-		DbgMsg::println("Failed:\n\twait returned %s (%d), expected %s or %s\n",
+		omrTestEnv->log(LEVEL_ERROR, "Failed:\n\twait returned %s (%d), expected %s or %s\n\n",
 						waiter.GetWaitReturnValueAsString(),
 						waiter.GetWaitReturnValue(),
 						waiter.MapReturnValueToString(expected1),

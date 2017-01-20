@@ -4201,6 +4201,11 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCforwardLEArrayCopy:                            return "__forwardLEArrayCopy";
          case TR_PPCLEArrayCopy:                                   return "__leArrayCopy";
 
+         case TR_PPCP256Multiply:                                  return "ECP256MUL_PPC";
+         case TR_PPCP256Mod:                                       return "ECP256MOD_PPC";
+         case TR_PPCP256addNoMod:                                  return "ECP256addNoMod_PPC";
+         case TR_PPCP256subNoMod:                                  return "ECP256subNoMod_PPC";
+
          case TR_PPCencodeUTF16Big:                                return "__encodeUTF16Big";
          case TR_PPCencodeUTF16Little:                             return "__encodeUTF16Little";
 

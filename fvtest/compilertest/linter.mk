@@ -1,5 +1,3 @@
-# Remember the golden rule -- If you're not sure, ask on TRTalk
-#
 # To lint: 
 #
 # PLATFORM=foo-bar-clang make -f linter.mk 

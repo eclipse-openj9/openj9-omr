@@ -33,6 +33,7 @@ class TR_IlGenerator
    virtual TR::Block *getCurrentBlock() = 0;
    virtual int32_t currentCallSiteIndex() { return -1; }
    virtual void setCallerMethod(TR::ResolvedMethodSymbol * caller) {}
+   virtual TR::ResolvedMethodSymbol *methodSymbol() const = 0;
    };
 
 #endif

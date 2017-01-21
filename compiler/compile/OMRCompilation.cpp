@@ -92,6 +92,7 @@
 #include "ras/IlVerifier.hpp"                  // for TR::IlVerifier
 #include "control/Recompilation.hpp"           // for TR_Recompilation, etc
 #include "runtime/CodeCacheExceptions.hpp"
+#include "ilgen/IlGen.hpp"                     // for TR_IlGenerator
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"           // for TR_Recompilation, etc
@@ -2205,6 +2206,9 @@ OMR::Compilation::removePeekingArgInfo()
 TR::ResolvedMethodSymbol *
 OMR::Compilation::getMethodSymbol()
    {
+   static const bool disableReturnCalleeInIlgen = feGetEnv("TR_DisableReturnCalleeInIlgen") ? true: false;
+   if (self()->getCurrentIlGenerator() && !disableReturnCalleeInIlgen)
+      return self()->getCurrentIlGenerator()->methodSymbol();
    if (self()->getOptimizer())
       return self()->getOptimizer()->getMethodSymbol();
    return _methodSymbol;
@@ -2214,6 +2218,9 @@ OMR::Compilation::getMethodSymbol()
 TR_ResolvedMethod *
 OMR::Compilation::getCurrentMethod()
    {
+   static const bool disableReturnCalleeInIlgen = feGetEnv("TR_DisableReturnCalleeInIlgen") ? true: false;
+   if (self()->getCurrentIlGenerator() && !disableReturnCalleeInIlgen)
+      return self()->getCurrentIlGenerator()->methodSymbol()->getResolvedMethod();
    if (self()->getOptimizer())
       return self()->getOptimizer()->getMethodSymbol()->getResolvedMethod();
    return _method;

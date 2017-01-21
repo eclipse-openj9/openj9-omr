@@ -113,7 +113,7 @@ protected:
       int32_t toIndex = fromIndex + relativeBranch;
       if (relativeBranch < 0)
          {
-         this->methodSymbol()->setMayHaveLoops(true);
+         this->_methodSymbol->setMayHaveLoops(true);
 
          IndexPair * ip, * prev = 0, * newIP = new (this->comp()->trStackMemory()) IndexPair(fromIndex, toIndex);
          for (ip = _backwardBranches.getFirst(); ip; prev = ip, ip = ip->getNext())
@@ -123,7 +123,7 @@ protected:
                break;
             if (debug("onlyConsiderProperlyNestedBackwardBranches") && ip->_toIndex == toIndex)
                break;
-            this->methodSymbol()->setMayHaveNestedLoops(true);
+            this->_methodSymbol->setMayHaveNestedLoops(true);
             }
 
          newIP->setNext(ip);

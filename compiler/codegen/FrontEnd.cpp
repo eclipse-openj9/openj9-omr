@@ -264,10 +264,14 @@ TR_FrontEnd::getNewArrayTypeFromClass(TR_OpaqueClassBlock *clazz)
    return 0;
    }
 
+/**
+ * Return the class pointer for an array type.
+ *
+ * This query may return null if the type cannot be determined.
+ */
 TR_OpaqueClassBlock *
 TR_FrontEnd::getClassFromNewArrayType(int32_t arrayType)
    {
-   notImplemented("getClassFromNewArrayType");
    return 0;
    }
 

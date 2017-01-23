@@ -1,12 +1,4 @@
 #
-# For a full explanation of the conventions used in this makefile, please
-# check out the post and FAQ on TRTalk
-#
-# Remember the golden rule -- If you're not sure, ask on TRTalk
-#
-
-#
-#
 # "all" should be the first target to appear so it's the default
 #
 .PHONY: all clean cleanobjs cleandeps cleandll

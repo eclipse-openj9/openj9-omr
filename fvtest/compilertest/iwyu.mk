@@ -1,5 +1,3 @@
-# Remember the golden rule -- If you're not sure, ask on TRTalk
-#
 # include-what-you-use, or iwyu, is a open source tool based on clang
 # that is used to analyse C++ source paths. It will check files that it's
 # given for uses of objects, and suggest including the necessary

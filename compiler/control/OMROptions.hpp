@@ -94,7 +94,7 @@ enum TR_CompilationOptions
 
    // Option word 0
    //
-   // Available                  = 0x00000020,
+   TR_AOTCompileOnlyFromBootstrap= 0x00000020,
    TR_AOT                        = 0x00000040,
    TR_ReportMethodEnter          = 0x00000080,
    TR_ReportMethodExit           = 0x00000100,

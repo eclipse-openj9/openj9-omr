@@ -1065,7 +1065,7 @@ OMR::SymbolReference::setAliasedTo(TR_BitVector &bv, TR::SymbolReferenceTable *s
    }
 
 TR_BitVector *
-OMR::SymbolReference::getSymRefUseDefAliasesBV(TR::Compilation *c,
+OMR::SymbolReference::getUseDefAliasesBV(TR::Compilation *c,
                                                bool isDirectCall,
                                                bool gcSafe)
    {

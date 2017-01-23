@@ -3841,6 +3841,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case RubyHelper_rb_str_freeze:          return "rb_str_freeze"; 
          case RubyHelper_rb_ivar_set:            return "rb_ivar_set"; 
          case RubyHelper_vm_compute_case_dest:   return "vm_compute_case_dest"; 
+         case RubyHelper_vm_getinstancevariable: return "vm_getinstancevariable";
+         case RubyHelper_vm_setinstancevariable: return "vm_setinstancevariable";
          }
       }
 #endif

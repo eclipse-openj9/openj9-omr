@@ -95,6 +95,8 @@ template <typename T>
 typename TR::deque<T>::reference
 TR::deque<T>::operator [](size_type index)
    {
+// In DEBUG, at() is used for correctness due to its bound checking
+// whilst [] is used in PROD for performance
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    return this->at(index);
 #else
@@ -106,6 +108,8 @@ template <typename T>
 typename TR::deque<T>::const_reference
 TR::deque<T>::operator [](size_type index) const
    {
+// In DEBUG, at() is used for correctness due to its bound checking
+// whilst [] is used in PROD for performance
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    return this->at(index);
 #else

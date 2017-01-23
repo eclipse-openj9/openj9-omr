@@ -470,7 +470,7 @@ TR_BitContainer TR_NodeAliasSetInterface<mayKillAliasSet>::getTRAliases(bool isD
    if (_node->getOpCode().hasSymbolReference() && (_node->getOpCode().isLikeDef() || _node->mightHaveVolatileSymbolReference())) //we want the old behavior in these cases
       {
       if (_node->getSymbolReference()->sharesSymbol(includeGCSafePoint))
-         bc = _node->getSymbolReference()->getUseDefAliasesBV(comp, isDirectCall, includeGCSafePoint);
+         bc = _node->getSymbolReference()->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
       else
          bc = _node->getSymbolReference()->getReferenceNumber();
       }

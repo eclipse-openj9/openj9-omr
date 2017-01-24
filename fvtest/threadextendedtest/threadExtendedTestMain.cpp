@@ -43,7 +43,7 @@ testMain(int argc, char **argv, char **envp)
 		uint64_t grindingTime = omrTestEnv->grindTime * 60 * 1000;
 
 		/* keep running the tests until we have run for the requested number of minutes */
-		omrtty_printf("grinding time is %llu millis. (The value can be specified using -grind=<mins>)\n", grindingTime);
+		omrTestEnv->log("grinding time is %llu millis. (The value can be specified using -grind=<mins>)\n", grindingTime);
 		do {
 			result = RUN_ALL_TESTS();
 			end = omrtime_current_time_millis();

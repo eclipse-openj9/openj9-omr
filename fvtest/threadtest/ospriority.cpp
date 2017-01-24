@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -28,6 +28,9 @@
 #include "createTestHelper.h"
 #include "omrutil.h"
 #include "omrutilbase.h"
+#include "testHelper.hpp"
+
+extern ThreadTestEnvironment *omrTestEnv;
 
 /*
  * VM priorities are [0, 11]
@@ -54,7 +57,7 @@ getOsPriority(omrthread_prio_t priority)
 	return ospriority;
 }
 
-char *
+const char *
 mapOSPolicy(intptr_t policy)
 {
 	switch (policy) {
@@ -102,7 +105,7 @@ printMap(void)
 	int k;
 	for (k = 0; k <= VM_PRIO_MAX; k++) {
 		int pol = VMToOSPrioMap[k] >> 24;
-		PRINTF("j9 thread prio mapping: %d -> %d %s\n", k,
+		omrTestEnv->log("j9 thread prio mapping: %d -> %d %s\n", k,
 			   VMToOSPrioMap[k] & 0x00ffffff, mapOSPolicy(pol));
 	}
 }
@@ -155,7 +158,7 @@ initRealtimePrioMap(void)
 		 */
 		if (getCurrentThreadParams(&prio, &policy_regular_thread)) {
 			/* failed to get the current params */
-			PRINTF("Could not get current thread params, assuming default\n");
+			omrTestEnv->log(LEVEL_ERROR, "Could not get current thread params, assuming default\n");
 			prio = 0;
 			policy_regular_thread = SCHED_FIFO;
 		} else {

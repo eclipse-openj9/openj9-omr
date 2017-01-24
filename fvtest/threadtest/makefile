@@ -39,8 +39,7 @@ OBJECTS := \
   rwMutexTest \
   sanityTest \
   sanityTestHelper \
-  threadTestHelp \
-  verbose
+  threadTestHelp 
 
 ifeq (1,$(OMR_THR_FORK_SUPPORT))
   OBJECTS += forkResetTest forkResetRWMutexTest

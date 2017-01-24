@@ -63,32 +63,43 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
+
 static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {
-   switch(convertOpCode)
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
-      case TR::InstOpCode::CEFBR:
-         return TR::InstOpCode::CELFBR;
-         break;
-      case TR::InstOpCode::CDFBR:
-         return TR::InstOpCode::CDLFBR;
-         break;
-      case TR::InstOpCode::CXFBR:
-         return TR::InstOpCode::CXLFBR;
-         break;
-      case TR::InstOpCode::CEGBR:
-         return TR::InstOpCode::CELGBR;
-         break;
-      case TR::InstOpCode::CDGBR:
-         return TR::InstOpCode::CDLGBR;
-         break;
-      case TR::InstOpCode::CXGBR:
-         return TR::InstOpCode::CXLGBR;
-         break;
-      default:
-         return convertOpCode;
-         break;
+      switch(convertOpCode)
+         {
+         case TR::InstOpCode::CEFBR:
+            return TR::InstOpCode::CELFBR;
+            break;
+
+         case TR::InstOpCode::CDFBR:
+            return TR::InstOpCode::CDLFBR;
+            break;
+
+         case TR::InstOpCode::CXFBR:
+            return TR::InstOpCode::CXLFBR;
+            break;
+
+         case TR::InstOpCode::CEGBR:
+            return TR::InstOpCode::CELGBR;
+            break;
+
+         case TR::InstOpCode::CDGBR:
+            return TR::InstOpCode::CDLGBR;
+            break;
+
+         case TR::InstOpCode::CXGBR:
+            return TR::InstOpCode::CXLGBR;
+            break;
+
+         default:
+            break;
+         }
       }
+
+   return convertOpCode;
    }
 
 /**
@@ -96,30 +107,40 @@ static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator
  */
 static TR::InstOpCode::Mnemonic getFloatToIntLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {
-   switch(convertOpCode)
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
-      case TR::InstOpCode::CFEBR:         //short BFP to 32
-         return TR::InstOpCode::CLFEBR;
-         break;
-      case TR::InstOpCode::CFDBR:         //long BFP to 32
-         return TR::InstOpCode::CLFDBR;
-         break;
-      case TR::InstOpCode::CFXBR:         //extended BFP to 32
-         return TR::InstOpCode::CLFXBR;
-         break;
-      case TR::InstOpCode::CGEBR:         //short BFP to 64
-         return TR::InstOpCode::CLGEBR;
-         break;
-      case TR::InstOpCode::CGDBR:         //long BFP to 64
-         return TR::InstOpCode::CLGDBR;
-         break;
-      case TR::InstOpCode::CGXBR:         //extended BFP to 64
-         return TR::InstOpCode::CLGXBR;
-         break;
-      default:
-         return convertOpCode;
-         break;
+      switch(convertOpCode)
+         {
+         case TR::InstOpCode::CFEBR:
+            return TR::InstOpCode::CLFEBR;
+            break;
+
+         case TR::InstOpCode::CFDBR:
+            return TR::InstOpCode::CLFDBR;
+            break;
+
+         case TR::InstOpCode::CFXBR:
+            return TR::InstOpCode::CLFXBR;
+            break;
+
+         case TR::InstOpCode::CGEBR:
+            return TR::InstOpCode::CLGEBR;
+            break;
+
+         case TR::InstOpCode::CGDBR:
+            return TR::InstOpCode::CLGDBR;
+            break;
+
+         case TR::InstOpCode::CGXBR:
+            return TR::InstOpCode::CLGXBR;
+            break;
+
+         default:
+            break;
+         }
       }
+
+   return convertOpCode;
    }
 
 static bool
@@ -162,15 +183,32 @@ genLogicalConversionForInt(TR::Node * node, TR::CodeGenerator * cg, TR::Register
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
+         {
          generateRIEInstruction(cg, TR::InstOpCode::RISBGN, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
-      else
+         }
+      else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+         {
          generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetRegister, targetRegister, shift_amount, (int8_t)(63|0x80), 0);
+         }
+      else
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, shift_amount);
+         generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, targetRegister, shift_amount);
+         }
 
       cg->ensure64BitRegister(targetRegister);
       }
    else
       {
-      generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetRegister, targetRegister, 32+shift_amount, (int8_t)(63|0x80), 0);
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetRegister, targetRegister, 32+shift_amount, (int8_t)(63|0x80), 0);
+         }
+      else
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLL, node, targetRegister, shift_amount);
+         generateRSInstruction(cg, TR::InstOpCode::SRL, node, targetRegister, shift_amount);
+         }
       }
    }
 
@@ -1536,7 +1574,7 @@ l2dHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * longRegister = cg->evaluate(firstChild);
    TR::Register * targetFloatRegister = cg->allocateRegister(TR_FPR);
 
-   if(node->getOpCodeValue() == TR::lu2d)
+   if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && node->getOpCodeValue() == TR::lu2d)
       {
       generateRRFInstruction(cg, TR::InstOpCode::CDLGBR, node, targetFloatRegister, longRegister, (uint8_t)0x0, (uint8_t)0x0);
       cg->decReferenceCount(firstChild);

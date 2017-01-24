@@ -138,10 +138,20 @@ MemToMemVarLenMacroOp::generateLoop()
       _itersReg = _cg->allocateRegister();
 
    if (needs64BitOpCode)
+      {
       generateRSInstruction(_cg, TR::InstOpCode::SRAG, _rootNode, _itersReg, _regLen, 8);
+      }
    else
       {
-      generateRSInstruction(_cg, TR::InstOpCode::SRAK, _rootNode, _itersReg, _regLen, 8);
+      if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         generateRSInstruction(_cg, TR::InstOpCode::SRAK, _rootNode, _itersReg, _regLen, 8);
+         }
+      else
+         {
+         generateRRInstruction(_cg, TR::InstOpCode::LR, _rootNode, _itersReg, _regLen);
+         generateRSInstruction(_cg, TR::InstOpCode::SRA, _rootNode, _itersReg, 8);
+         }
       }
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BERC, _rootNode, bottomOfLoop);
@@ -157,7 +167,7 @@ MemToMemVarLenMacroOp::generateLoop()
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop);
 
-   if (!comp->getOption(TR_DisableInlineEXTarget))
+   if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !comp->getOption(TR_DisableInlineEXTarget))
       {
       if (useEXForRemainder())
          {
@@ -993,7 +1003,7 @@ MemToMemVarLenMacroOp::generateRemainder()
 
       TR::Instruction* cursor = NULL;
 
-      if (comp->getOption(TR_DisableInlineEXTarget) || !needsLoop())
+      if (!_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) || comp->getOption(TR_DisableInlineEXTarget) || !needsLoop())
          {
          cursor = generateInstruction(0, 1);
          }
@@ -1013,7 +1023,7 @@ MemToMemVarLenMacroOp::generateRemainder()
         }
 
 
-      if (!comp->getOption(TR_DisableInlineEXTarget) && needsLoop())
+      if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !comp->getOption(TR_DisableInlineEXTarget) && needsLoop())
          {
          TR_ASSERT(_EXTargetLabel != NULL, "Assert: EXTarget label must not be NULL");
 
@@ -1263,11 +1273,12 @@ MemClearConstLenMacroOp::generateInstruction(int32_t offset, int64_t length, TR:
       cursor = comp->getAppendInstruction();
       cursor = (cursor1 == NULL ? cursor : (isAppend ? cursor : cursor1));
 
-      TR_ASSERT(_srcMR == _dstMR,"memrefs must match if nodes match on node %p\n",_dstNode);
+      TR_ASSERT(_srcMR == _dstMR, "memrefs must match if nodes match on node %p\n", _dstNode);
+
       // For lengths of 1, 2, 4 and 8, the XC sequence is suboptimal, as they require
       // 2 cycles to execute.  If MVI / MVHHI / MVHI / MVGHI are supported, we should
       // generate those instead.
-      if (length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
+      if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && length <= 8 && TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(length))
          {
          switch(length)
             {
@@ -2465,9 +2476,20 @@ MemCpyAtomicMacroOp::generateLoop()
       if (_trace)
          traceMsg(comp, "MemCpyAtomicMacroOp: unknown type routine\n");
 
-      cursor = generateRRRInstruction(_cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::OGRK : TR::InstOpCode::ORK, _srcNode, _alignedReg, _srcReg, _startReg);
+      if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         auto mnemonic = TR::Compiler->target.is64Bit() ? TR::InstOpCode::OGRK : TR::InstOpCode::ORK;
 
-      cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7); // 0x7 == 0x111, last 3 bits}
+         cursor = generateRRRInstruction(_cg, mnemonic, _srcNode, _alignedReg, _srcReg, _startReg);
+         }
+      else
+         {
+         cursor = generateRRInstruction(_cg, TR::InstOpCode::getLoadRegOpCode(), _srcNode, _alignedReg, _srcReg);
+         cursor = generateRRInstruction(_cg, TR::InstOpCode::getOrRegOpCode(), _srcNode, _alignedReg, _startReg);
+         }
+
+
+      cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7);
 
       // NILL/NILF will set condition code to 0 if result 0 (8 byte aligned) or to 1 if result not 0 (
       cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNERC, _srcNode, fourByteLoop); // not aligned with 8 bytes
@@ -2525,9 +2547,19 @@ MemCpyAtomicMacroOp::generateLoop()
          traceMsg(comp, "MemCpyAtomicMacroOp: aligned loop\n");
       if (_destType == TR::Int16)
          {
-         cursor = generateRRRInstruction(_cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::NGRK : TR::InstOpCode::NRK, _srcNode, _alignedReg, _srcReg, _startReg);
+         if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+            {
+            auto mnemonic = TR::Compiler->target.is64Bit() ? TR::InstOpCode::NGRK : TR::InstOpCode::NRK;
 
-         cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7); // 0x7 == 0x111, last 3 bits
+            cursor = generateRRRInstruction(_cg, mnemonic, _srcNode, _alignedReg, _srcReg, _startReg);
+            }
+         else
+            {
+            cursor = generateRRInstruction(_cg, TR::InstOpCode::getLoadRegOpCode(), _srcNode, _alignedReg, _srcReg);
+            cursor = generateRRInstruction(_cg, TR::InstOpCode::getAndRegOpCode(), _srcNode, _alignedReg, _startReg);
+            }
+
+         cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7);
 
          cursor = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::C, _srcNode, _alignedReg, 0x2, TR::InstOpCode::COND_BERC, oolStartLabel2); // 0x2 = 0x010
          cursor = generateOneSTXthenSTYLoopLabel(oolStartLabel2, preDoneCopyLabel2, 2, TR::InstOpCode::LH, TR::InstOpCode::STH, 4, TR::InstOpCode::L, TR::InstOpCode::ST);
@@ -2540,9 +2572,19 @@ MemCpyAtomicMacroOp::generateLoop()
          cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BERC, _srcNode, remainderLabel);
          }
 
-      cursor = generateRRRInstruction(_cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGRK : TR::InstOpCode::ARK, _srcNode, _alignedReg, _srcReg, _startReg);
+      if (_cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         auto mnemonic = TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGRK : TR::InstOpCode::ARK;
 
-      cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7); // 0x7 == 0x111, last 3 bits
+         cursor = generateRRRInstruction(_cg, mnemonic, _srcNode, _alignedReg, _srcReg, _startReg);
+         }
+      else
+         {
+         cursor = generateRRInstruction(_cg, TR::InstOpCode::getLoadRegOpCode(), _srcNode, _alignedReg, _srcReg);
+         cursor = generateRRInstruction(_cg, TR::InstOpCode::getAddRegOpCode(), _srcNode, _alignedReg, _startReg);
+         }
+
+      cursor = generateRILInstruction(_cg, TR::InstOpCode::NILF, _srcNode, _alignedReg, 0x7);
 
       cursor = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::C, _srcNode, _alignedReg, 0x0, TR::InstOpCode::COND_BERC, oolStartLabel4); // 0x0 = 0x000
 

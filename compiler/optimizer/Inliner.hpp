@@ -22,9 +22,6 @@
 //    TR_TransformInlinedFunction
 //    TR_ParameterToArgumentMapper
 //    TR_HandleInjectedBasicBlock
-//    TR_InlinedCallHandler
-//       TR_JNICallHandler
-//       TR_SynthesizableCallHandler
 ///////////////////////////////////////////////////////////////////////////
 
 #ifndef INLINER_INCL

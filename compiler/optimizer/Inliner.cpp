@@ -365,11 +365,16 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
 
    }
 
-//go through each OSR code block b.
-//1) If b corresponds to the top caller (root of the call tree), it doesn't do anything because we have already implanted, during
-//ilgen, a TR::igoto at the end of b which transfers control back to the VM
-//2) Otherwise, replace the last treetop of b (which must be a goto or a return) to a goto to the OSR code block of the caller, and
-//also make the corresponding changes to the CFG
+/**
+ * Go through each OSR code block b.
+ *
+ * 1) If b corresponds to the top caller (root of the call tree), it doesn't do
+ *    anything because we have already implanted, during ilgen, a TR::igoto at
+ *    the end of b which transfers control back to the VM.
+ * 2) Otherwise, replace the last treetop of b (which must be a goto or a
+ *    return) to a goto to the OSR code block of the caller, and also make the
+ *    corresponding changes to the CFG.
+ */
 void
 TR_InlinerBase::linkOSRCodeBlocks()
    {

@@ -20,10 +20,6 @@
 #ifndef J9THREADTEST_CWAITNOTIFYLOOPER_HPP_INCLUDED
 #define J9THREADTEST_CWAITNOTIFYLOOPER_HPP_INCLUDED
 
-#if 0
-#define VERBOSEOUTPUT
-#endif
-
 #include "threadTestLib.hpp"
 
 class CWaitNotifyLooper: public CThread
@@ -51,34 +47,20 @@ protected:
 	{
 
 		omrTestEnv->log(LEVEL_VERBOSE, "thread %p (%p) running\n", m_self, this);
-#if VERBOSEOUTPUT
-		omrTestEnv->log("thread %p entering\n", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p entering\n", m_self);
 		m_monitor.Enter();
-#if VERBOSEOUTPUT
-		omrTestEnv->log("thread %p entered\n", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p entered\n", m_self);
 		while (m_keepRunning) {
-#if VERBOSEOUTPUT
-			omrTestEnv->log("%p N[\n", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p N[\n", m_self);
 			m_monitor.Notify();
-#if VERBOSEOUTPUT
-			omrTestEnv->log("%p N]\n", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p N]\n", m_self);
 			*m_notifyCount = *m_notifyCount + 1;
-#if VERBOSEOUTPUT
-			omrTestEnv->log("%p>W[ ", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p>W[ ", m_self);
 			m_monitor.Wait();
-#if VERBOSEOUTPUT
-			omrTestEnv->log("%p>W] ", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p>W] ", m_self);
 		}
 		*m_doneRunningCount = *m_doneRunningCount + 1;
-#if VERBOSEOUTPUT
-		omrTestEnv->log("thread %p exiting monitor\n", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p exiting monitor\n", m_self);
 		m_monitor.Exit();
 
 		omrTestEnv->log(LEVEL_VERBOSE, "thread %p exiting\n", m_self);

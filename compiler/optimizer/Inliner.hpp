@@ -368,14 +368,11 @@ class TR_InlinerBase: public TR_HasRandomGenerator
 
       void replaceCallNodeReferences(TR::Node *, TR::Node *, uint32_t, TR::Node *, TR::Node *, rcount_t &);
       void cloneChildren(TR::Node *, TR::Node *, uint32_t);
-      //TR::Node * createVftCompareGuard(TR::Node * callNode, TR::TreeTop * destination, bool branchOnOverride, void * thisClass);
-      //TR::Node * createOverriddenBitCompareGuard(TR::Node * callNode, TR::TreeTop * destination, bool branchOnOverride, TR::ResolvedMethodSymbol * calleeSymbol);
-      //TR::Node * createMethodCompareGuard(TR::Node * callNode, TR::TreeTop * destination, bool branchOnOverride, TR::ResolvedMethodSymbol * calleeSymbol);
 
    protected:
       enum
          {
-         //RemoveUnreachableBlocks     = 0x0001,
+         //Available                 = 0x0001,
          InlineVirtuals              = 0x0002,
          InlineSynchronized          = 0x0004,
          FirstPass                   = 0x0008,

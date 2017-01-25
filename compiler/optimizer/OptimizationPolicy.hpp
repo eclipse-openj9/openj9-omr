@@ -31,10 +31,10 @@ class OptimizationPolicy: public TR::Allocatable<OptimizationPolicy, TR::Allocat
 
 	OptimizationPolicy(TR::Compilation *comp) : _comp(comp) {}
 
-	TR::Compilation *comp() { return _comp; }
-   TR_FrontEnd *fe() {return _comp->fe(); }
+	TR::Compilation *comp()   { return _comp; }
+        TR_FrontEnd *fe()         { return _comp->fe(); }
 	TR::Allocator allocator() { return comp()->allocator(); }
-   TR_Memory * trMemory()                    { return comp()->trMemory(); }
+        TR_Memory * trMemory()    { return comp()->trMemory(); }
 
 	private:
 	TR::Compilation *_comp;

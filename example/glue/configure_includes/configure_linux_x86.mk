@@ -28,13 +28,17 @@ include $(CONFIG_INCL_DIR)/configure_common.mk
 CONFIGURE_ARGS += \
   --enable-OMR_EXAMPLE \
   --enable-OMR_GC \
-  --enable-OMR_JITBUILDER \
   --enable-OMR_PORT \
   --enable-OMR_TEST_COMPILER \
   --enable-OMR_THREAD \
   --enable-OMR_OMRSIG \
   --enable-OMR_THR_THREE_TIER_LOCKING \
   --enable-OMR_THR_YIELD_ALG
+
+ifneq (,$(findstring -64,$(SPEC)))
+CONFIGURE_ARGS += \
+  --enable-OMR_JITBUILDER 
+endif
 
 ifeq (linux_x86-64_cmprssptrs_cuda, $(SPEC))
   CONFIGURE_ARGS += \

@@ -31,6 +31,7 @@ namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector;
 #include "infra/HashTab.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 
+#include <map>                                 // for std::map
 #include <stddef.h>                            // for NULL, size_t
 #include <stdint.h>                            // for int32_t, etc
 #include "env/TRMemory.hpp"                    // for Allocator, etc
@@ -417,6 +418,15 @@ class SymbolReferenceTable
    TR::SymbolReference * findAvailableAuto(List<TR::SymbolReference> &, TR::DataType dataType, bool behavesLikeTemp, bool isAdjunct = false);
    void clearAvailableAutos() { _availableAutos.init(); }
 
+   /*
+    * For union type support
+    */
+
+   // Mark two symbol references as shared aliases of each other 
+   void makeSharedAliases(TR::SymbolReference *sr1, TR::SymbolReference *sr2);
+   // Retrieve shared aliases bitvector for a given symbol reference
+   TR_BitVector *getSharedAliases(TR::SymbolReference *sr);
+
    protected:
 
    TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *);
@@ -432,7 +442,6 @@ class SymbolReferenceTable
    TR::SymbolReference *                _constantAreaSymbolReference;
 
    TR::SymbolReference *                _ObjectNewInstanceImplSymRef;
-
 
    TR_Array<TR_BitVector *>            _knownObjectSymrefsByObjectIndex;
 
@@ -469,7 +478,10 @@ class SymbolReferenceTable
 
    SymrefsByOwningMethodAndString      _methodsBySignature;
 
-
+   // Aliasmap is keyed by a symbol reference's reference number
+   typedef TR::typed_allocator<std::pair<int32_t, TR_BitVector *>, TR::Allocator> AliasMapAllocator;
+   typedef std::map<int32_t, TR_BitVector *, std::less<int32_t>, AliasMapAllocator> AliasMap;
+   AliasMap                            *_sharedAliasMap;
 
    TR_FrontEnd *_fe;
    TR::Compilation *_compilation;
@@ -477,7 +489,6 @@ class SymbolReferenceTable
 
    // J9
 #define _numNonUserFieldClasses 4
-
 
    };
 

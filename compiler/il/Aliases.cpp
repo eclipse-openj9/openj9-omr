@@ -797,6 +797,10 @@ OMR::SymbolReference::setSharedShadowAliases(TR_BitVector * aliases, TR::SymbolR
       while (symRef = i.getNext())
          if (symRef->getSymbol() == self()->getSymbol())
             aliases->set(symRef->getReferenceNumber());
+
+      // include symbol reference's own shared alias bitvector
+      if (symRefTab->getSharedAliases(self()) != NULL)
+         *aliases |= *(symRefTab->getSharedAliases(self()));
       }
    else
       aliases->set(self()->getReferenceNumber());

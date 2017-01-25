@@ -3741,7 +3741,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
          if (comp->getOption(TR_TraceCG))
             {
-            traceMsg(comp, "firstReg = %p secondReg = %p trueReg = %p falseReg = %p trueReg->is64BitReg() = %d falseReg->is64BitReg() = %d isLongCompare = %d\n",firstReg,secondReg,trueReg,falseReg,trueReg->is64BitReg(),falseReg->is64BitReg(), condition->getOpCode().isLongCompare());nalLoad,condition->getOpCode().isLongCompare());
+            traceMsg(comp, "firstReg = %p secondReg = %p trueReg = %p falseReg = %p trueReg->is64BitReg() = %d falseReg->is64BitReg() = %d isLongCompare = %d\n", firstReg, secondReg, trueReg, falseReg, trueReg->is64BitReg(), falseReg->is64BitReg(), condition->getOpCode().isLongCompare());
             }
          }
       }

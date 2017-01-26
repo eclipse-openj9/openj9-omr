@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -44,6 +44,62 @@ extern ThreadTestEnvironment *omrTestEnv;
 extern "C" {
 	OMRPortLibrary *portLib;
 }
+
+intptr_t
+omrthread_verboseCall(const char *func, intptr_t retVal)
+{
+        if (retVal != J9THREAD_SUCCESS) {
+                intptr_t errnoSet = retVal & J9THREAD_ERR_OS_ERRNO_SET;
+                omrthread_os_errno_t os_errno = J9THREAD_INVALID_OS_ERRNO;
+#if defined(J9ZOS390)
+                omrthread_os_errno_t os_errno2 = omrthread_get_os_errno2();
+#endif /* J9ZOS390 */
+
+                if (errnoSet) {
+                        os_errno = omrthread_get_os_errno();
+                }
+                retVal &= ~J9THREAD_ERR_OS_ERRNO_SET;
+
+                if (retVal == J9THREAD_ERR_UNSUPPORTED_ATTR) {
+                        if (errnoSet) {
+#if defined(J9ZOS390)
+                                omrTestEnv->log(LEVEL_ERROR, "%s unsupported: retVal %zd (%zx) : errno %zd (%zx) %s, errno2 %zd (%zx)\n", func, retVal, retVal, os_errno, os_errno, strerror((int)os_errno), os_errno2, os_errno2);
+#else /* !J9ZOS390 */
+                                omrTestEnv->log(LEVEL_ERROR, "%s unsupported: retVal %zd (%zx) : errno %zd %s\n", func, retVal, retVal, os_errno, strerror((int)os_errno));
+#endif /* !J9ZOS390 */
+                        } else {
+                                omrTestEnv->log(LEVEL_ERROR, "%s unsupported: retVal %zd (%zx)\n", func, retVal, retVal);
+                        }
+                } else {
+                        if (errnoSet) {
+#if defined(J9ZOS390)
+                                omrTestEnv->log(LEVEL_ERROR, "%s failed: retVal %zd (%zx) : errno %zd (%zx) %s, errno2 %zd (%zx)\n", func, retVal, retVal, os_errno, os_errno, strerror((int)os_errno), os_errno2, os_errno2);
+#else /* !J9ZOS390 */
+                                omrTestEnv->log(LEVEL_ERROR, "%s failed: retVal %zd (%zx) : errno %zd %s\n", func, retVal, retVal, os_errno, strerror((int)os_errno));
+#endif /* !J9ZOS390 */
+                        } else {
+                                omrTestEnv->log(LEVEL_ERROR, "%s failed: retVal %zd (%zx)\n", func, retVal, retVal);
+                        }
+                }
+        } else {
+                omrTestEnv->log("%s\n", func);
+        }
+        return retVal;
+}
+
+intptr_t
+pthread_verboseCall(const char *func, intptr_t retVal)
+{
+        if (retVal != 0) {
+#ifdef J9ZOS390
+                omrTestEnv->log(LEVEL_ERROR, "%s: %s\n", func, strerror(errno));
+#else
+                omrTestEnv->log(LEVEL_ERROR, "%s: %s\n", func, strerror((int)retVal));
+#endif
+        }
+        return retVal;
+}
+
 
 class ThreadCreateTest: public ::testing::Test
 {
@@ -108,19 +164,19 @@ static int numaSetAffinityThreadMain(void *arg);
 static void
 printMismatchU(const char *property, uintptr_t expected, uintptr_t actual)
 {
-	PRINTF("wrong %s: expected=%d, actual=%d\n", property, expected, actual);
+	omrTestEnv->log(LEVEL_ERROR, "wrong %s: expected=%d, actual=%d\n", property, expected, actual);
 }
 
 static void
 printMismatchI(const char *property, intptr_t expected, intptr_t actual)
 {
-	PRINTF("wrong %s: expected=%d, actual=%d\n", property, expected, actual);
+	omrTestEnv->log(LEVEL_ERROR, "wrong %s: expected=%d, actual=%d\n", property, expected, actual);
 }
 
 static void
 printMismatchS(const char *property, const char *expected, const char *actual)
 {
-	PRINTF("wrong %s: expected=%s, actual=%s\n", property, expected, actual);
+	omrTestEnv->log(LEVEL_ERROR, "wrong %s: expected=%s, actual=%s\n", property, expected, actual);
 }
 
 static const char *
@@ -181,7 +237,7 @@ threadmain(void *arg)
 			if (!((osPolicy == OS_SCHED_OTHER) && (expected->osPolicy != OS_SCHED_OTHER))) {
 				data->status |= WRONG_OS_SCHEDPOLICY;
 			} else {
-				PRINTF("  LINUXPPC: ignoring wrong schedpolicy\n");
+				omrTestEnv->log(LEVEL_ERROR, "  LINUXPPC: ignoring wrong schedpolicy\n");
 			}
 #else
 			data->status |= WRONG_OS_SCHEDPOLICY;
@@ -217,7 +273,7 @@ canCreateThread(const create_attr_t *expected, const omrthread_attr_t attr)
 		 * NOTE: It is not guaranteed that tid 0 is invalid in all pthread implementations.
 		 */
 		if (0 == tid) {
-			PRINTF("  LINUX: tid 0 returned\n");
+			omrTestEnv->log(LEVEL_ERROR, "  LINUX: tid 0 returned\n");
 			status |= CREATE_FAILED;
 			return status;
 		}
@@ -259,13 +315,13 @@ isAttrOk(const create_attr_t *expected, const omrthread_attr_t actual)
 	if (actual == NULL) {
 		status |= NULL_ATTR;
 		/* no further checks are possible */
-		PRINTF("attr is NULL\n");
+		omrTestEnv->log(LEVEL_ERROR, "attr is NULL\n");
 		return status;
 	}
 
 	/* both should refer to the same memory */
 	if (expected->name != actual->name) {
-		PRINTF("wrong name\n");
+		omrTestEnv->log(LEVEL_ERROR, "wrong name\n");
 		status |= WRONG_NAME;
 	}
 
@@ -505,7 +561,7 @@ TEST_F(ThreadCreateTest, SetAttrDefault)
 	}
 
 	if (attr != NULL) {
-		PRINTF("destroy didn't NULL attr\n");
+		omrTestEnv->log(LEVEL_ERROR, "destroy didn't NULL attr\n");
 		status |= DESTROY_FAILED;
 	}
 
@@ -542,7 +598,7 @@ TEST_F(ThreadCreateTest, SetAttrBadDestroy)
 		status |= DESTROY_FAILED;
 	}
 	if ((uintptr_t *)attr != ptr) {
-		PRINTF("destroy modified ptr\n");
+		omrTestEnv->log(LEVEL_ERROR, "destroy modified ptr\n");
 		status |= DESTROY_MODIFIED_PTR;
 	}
 	free(ptr);
@@ -604,7 +660,7 @@ TEST_F(ThreadCreateTest, SetAttrStacksize)
 	rc = J9THREAD_VERBOSE(omrthread_attr_set_stacksize(&attr, STACK_DEFAULT_SIZE));
 	if (rc != J9THREAD_SUCCESS) {
 		status |= EXPECTED_VALID;
-		PRINTF("failed to set STACK_DEFAULT_SIZE %x (%d)\n", STACK_DEFAULT_SIZE, STACK_DEFAULT_SIZE);
+		omrTestEnv->log(LEVEL_ERROR, "failed to set STACK_DEFAULT_SIZE %x (%d)\n", STACK_DEFAULT_SIZE, STACK_DEFAULT_SIZE);
 	}
 	status |= isAttrOk(&expected, attr);
 	END_IF_FAILED(status);
@@ -633,7 +689,7 @@ TEST_F(ThreadCreateTest, SetAttrStacksize)
 	rc = J9THREAD_VERBOSE(omrthread_attr_set_stacksize(&attr, 0));
 	if (rc != J9THREAD_SUCCESS) {
 		status |= EXPECTED_VALID;
-		PRINTF("failed to set 0 (default)\n");
+		omrTestEnv->log(LEVEL_ERROR, "failed to set 0 (default)\n");
 	}
 	expected.stacksize = STACK_DEFAULT_SIZE;
 	expected.osStacksize = getOsStacksize(STACK_DEFAULT_SIZE);
@@ -675,7 +731,7 @@ TEST_F(ThreadCreateTest, SetAttrPolicy)
 	}
 	status |= isAttrOk(&expected, attr);
 #if (defined(LINUX) || defined(AIXPPC))
-	PRINTF("  ignoring omrthread_create failure\n");
+	omrTestEnv->log(LEVEL_ERROR, "  ignoring omrthread_create failure\n");
 	status &= ~CREATE_FAILED;
 #endif /* (defined(LINUX) || defined(AIXPPC)) */
 	END_IF_FAILED(status);
@@ -690,7 +746,7 @@ TEST_F(ThreadCreateTest, SetAttrPolicy)
 	}
 	status |= isAttrOk(&expected, attr);
 #if (defined(LINUX) || defined(AIXPPC))
-	PRINTF("  ignoring omrthread_create failure\n");
+	omrTestEnv->log(LEVEL_ERROR, "  ignoring omrthread_create failure\n");
 	status &= ~CREATE_FAILED;
 #endif /* (defined(LINUX) || defined(AIXPPC)) */
 	END_IF_FAILED(status);
@@ -893,7 +949,7 @@ static int numaSetAffinityThreadMain(void *arg)
 		uintptr_t currentAffinity = 0;
 		uintptr_t nodeCount = 1;
 		if (0 != J9THREAD_VERBOSE(omrthread_numa_get_node_affinity(omrthread_self(), &currentAffinity, &nodeCount))) {
-			PRINTF("Failed to get thread affinity\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to get thread affinity\n");
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
@@ -903,7 +959,7 @@ static int numaSetAffinityThreadMain(void *arg)
 		 */
 #if 0
 		if (currentAffinity != data->expectedAffinity) {
-			PRINTF("Thread's initial affinity is different from parent's. Expected:%zu Actual:%zu\n", data->expectedAffinity, currentAffinity);
+			omrTestEnv->log(LEVEL_ERROR, "Thread's initial affinity is different from parent's. Expected:%zu Actual:%zu\n", data->expectedAffinity, currentAffinity);
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
@@ -914,15 +970,15 @@ static int numaSetAffinityThreadMain(void *arg)
 		/* Set the affinity to the highest node which has CPUs associated to it */
 		numaNode = maxNumaNode;
 		while (numaNode > 0) {
-			PRINTF("Setting thread numa affinity to %zu\n", numaNode);
+			omrTestEnv->log(LEVEL_ERROR, "Setting thread numa affinity to %zu\n", numaNode);
 			result = omrthread_numa_set_node_affinity(omrthread_self(), &numaNode, 1, 0);
 
 			if (result == J9THREAD_NUMA_ERR_NO_CPUS_FOR_NODE) {
-				PRINTF("Tried to set thread numa affinity to node %zu, but no CPUs associated with node\n", numaNode);
+				omrTestEnv->log(LEVEL_ERROR, "Tried to set thread numa affinity to node %zu, but no CPUs associated with node\n", numaNode);
 				numaNode--;
 				continue;
 			} else if (result != 0) {
-				PRINTF("Failed to set affinity to %zu\n", numaNode);
+				omrTestEnv->log(LEVEL_ERROR, "Failed to set affinity to %zu\n", numaNode);
 				status |= EXPECTED_VALID;
 				goto endthread;
 			} else {
@@ -933,13 +989,13 @@ static int numaSetAffinityThreadMain(void *arg)
 		/* Verify that it was correctly set */
 		nodeCount = 1;
 		if (0 != J9THREAD_VERBOSE(omrthread_numa_get_node_affinity(omrthread_self(), &currentAffinity, &nodeCount))) {
-			PRINTF("Failed to get thread affinity\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to get thread affinity\n");
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
 
 		if (numaNode != currentAffinity) {
-			PRINTF("Affinity is incorrectly set. Expected:%zu Actual:%zu\n", numaNode, currentAffinity);
+			omrTestEnv->log(LEVEL_ERROR, "Affinity is incorrectly set. Expected:%zu Actual:%zu\n", numaNode, currentAffinity);
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
@@ -947,7 +1003,7 @@ static int numaSetAffinityThreadMain(void *arg)
 		/* Now unset the affinity */
 		currentAffinity = 0;
 		if (0 != J9THREAD_VERBOSE(omrthread_numa_set_node_affinity(omrthread_self(), &currentAffinity, 1, 0))) {
-			PRINTF("Failed to clear affinity\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to clear affinity\n");
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
@@ -955,19 +1011,19 @@ static int numaSetAffinityThreadMain(void *arg)
 		/* Verify that it was correctly cleared */
 		nodeCount = 1;
 		if (0 != J9THREAD_VERBOSE(omrthread_numa_get_node_affinity(omrthread_self(), &currentAffinity, &nodeCount))) {
-			PRINTF("Failed to get thread affinity\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to get thread affinity\n");
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
 
 		if (expectedNodeForNoAffinity != currentAffinity) {
-			PRINTF("Affinity is incorrectly set. Expected:%zu Actual:%zu\n", expectedNodeForNoAffinity, currentAffinity);
+			omrTestEnv->log(LEVEL_ERROR, "Affinity is incorrectly set. Expected:%zu Actual:%zu\n", expectedNodeForNoAffinity, currentAffinity);
 			status |= EXPECTED_VALID;
 			goto endthread;
 		}
 
 	} else {
-		PRINTF("Doesn't look like NUMA is available on this system\n");
+		omrTestEnv->log("Doesn't look like NUMA is available on this system\n");
 	}
 endthread:
 	data->status = status;
@@ -1016,7 +1072,7 @@ TEST_F(ThreadCreateTest, NumaSetAffinity)
 	intptr_t affinityResultCode = 0;
 
 	if (0 != J9THREAD_VERBOSE(omrthread_monitor_init(&monitor, 0))) {
-		PRINTF("Failed to initialize monitor\n");
+		omrTestEnv->log(LEVEL_ERROR, "Failed to initialize monitor\n");
 		status |= NULL_ATTR;
 		goto endtest;
 	}
@@ -1031,23 +1087,23 @@ TEST_F(ThreadCreateTest, NumaSetAffinity)
 	affinityResultCode = omrthread_numa_get_node_affinity(omrthread_self(), &data.expectedAffinity, &nodeCount);
 	if (J9THREAD_NUMA_ERR_AFFINITY_NOT_SUPPORTED == affinityResultCode) {
 		/* this platform can't meaningfully run this test so just end */
-		PRINTF("NUMA-level thread affinity not supported on this platform\n");
+		omrTestEnv->log(LEVEL_ERROR, "NUMA-level thread affinity not supported on this platform\n");
 		goto endtest;
 	}
 	if (J9THREAD_NUMA_OK != affinityResultCode) {
-		PRINTF("Failed to get parent thread's affinity\n");
+		omrTestEnv->log(LEVEL_ERROR, "Failed to get parent thread's affinity\n");
 		status |= CREATE_FAILED;
 		goto endtest;
 	}
 
 	if (J9THREAD_SUCCESS != J9THREAD_VERBOSE(omrthread_create_ex(&thread, J9THREAD_ATTR_DEFAULT, 0, numaSetAffinityThreadMain, &data))) {
-		PRINTF("Failed to create the thread\n");
+		omrTestEnv->log(LEVEL_ERROR, "Failed to create the thread\n");
 		status |= CREATE_FAILED;
 		goto endtest;
 	}
 
 	if (0 != omrthread_monitor_wait(monitor)) {
-		PRINTF("Failed to wait on monitor\n");
+		omrTestEnv->log(LEVEL_ERROR, "Failed to wait on monitor\n");
 		status |= NULL_ATTR;
 		goto endtest;
 	}
@@ -1076,7 +1132,7 @@ numaSetAffinitySuspendedThreadMain(void *arg)
 	}
 
 	if (currentAffinity != data->expectedAffinity) {
-		PRINTF("Affinity different from expected. Expected:%zu Actual:%zu\n", data->expectedAffinity, currentAffinity);
+		omrTestEnv->log(LEVEL_ERROR, "Affinity different from expected. Expected:%zu Actual:%zu\n", data->expectedAffinity, currentAffinity);
 		status |= EXPECTED_VALID;
 		goto endthread;
 	}
@@ -1110,7 +1166,7 @@ TEST_F(ThreadCreateTest, NumaSetAffinitySuspended)
 
 		if (J9THREAD_NUMA_ERR_AFFINITY_NOT_SUPPORTED == affinityResultCode) {
 			/* this platform can't meaningfully run this test so just end */
-			PRINTF("NUMA-level thread affinity not supported on this platform\n");
+			omrTestEnv->log(LEVEL_ERROR, "NUMA-level thread affinity not supported on this platform\n");
 			goto endtest;
 		}
 		/* Create the thread suspended */
@@ -1122,14 +1178,14 @@ TEST_F(ThreadCreateTest, NumaSetAffinitySuspended)
 		/* Set the affinity to the highest node which has CPUs associated to it */
 		numaNode = numaMaxNode;
 		while (numaNode > 0) {
-			PRINTF("Setting thread numa affinity to %zu\n", numaNode);
+			omrTestEnv->log(LEVEL_ERROR, "Setting thread numa affinity to %zu\n", numaNode);
 			result = omrthread_numa_set_node_affinity(thread, &numaNode, 1, 0);
 			if (result == J9THREAD_NUMA_ERR_NO_CPUS_FOR_NODE) {
-				PRINTF("Tried to set thread numa affinity to node %zu, but no CPUs associated with node\n", numaNode);
+				omrTestEnv->log(LEVEL_ERROR, "Tried to set thread numa affinity to node %zu, but no CPUs associated with node\n", numaNode);
 				numaNode--;
 				continue;
 			} else if (result != 0) {
-				PRINTF("Failed to set affinity to %zu\n", numaNode);
+				omrTestEnv->log(LEVEL_ERROR, "Failed to set affinity to %zu\n", numaNode);
 				status |= EXPECTED_VALID;
 				goto endtest;
 			} else {
@@ -1140,20 +1196,20 @@ TEST_F(ThreadCreateTest, NumaSetAffinitySuspended)
 
 		/* Check that the affinity on the suspended thread is indeed what we set it to */
 		if (0 != J9THREAD_VERBOSE(omrthread_numa_get_node_affinity(thread, &expectedAffinityBeforeStart, &nodeCount))) {
-			PRINTF("Failed to get affinity on the thread while it's still suspended\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to get affinity on the thread while it's still suspended\n");
 			status |= EXPECTED_VALID;
 			goto endtest;
 		}
 
 		if (expectedAffinityBeforeStart != data.expectedAffinity) {
-			PRINTF("Suspended thread's deferred affinity is not what it should be. Expected:%zu Actual:%zu\n", data.expectedAffinity, expectedAffinityBeforeStart);
+			omrTestEnv->log(LEVEL_ERROR, "Suspended thread's deferred affinity is not what it should be. Expected:%zu Actual:%zu\n", data.expectedAffinity, expectedAffinityBeforeStart);
 			status |= EXPECTED_VALID;
 			goto endtest;
 		}
 
 		J9THREAD_VERBOSE(omrthread_monitor_enter(monitor));
 		if (1 != omrthread_resume(thread)) {
-			PRINTF("Failed to resume the thread\n");
+			omrTestEnv->log(LEVEL_ERROR, "Failed to resume the thread\n");
 			goto endtest;
 		}
 
@@ -1164,7 +1220,7 @@ TEST_F(ThreadCreateTest, NumaSetAffinitySuspended)
 
 		status |= data.status;
 	} else {
-		PRINTF("Doesn't look like NUMA is available on this system\n");
+		omrTestEnv->log("Doesn't look like NUMA is available on this system\n");
 	}
 
 endtest:
@@ -1193,7 +1249,7 @@ TEST_F(ThreadCreateTest, DISABLED_SetAttrThreadWeight)
 	expected.osThreadweight = OS_HEAVY_WEIGHT;
 	if (J9THREAD_VERBOSE(omrthread_attr_init(&attr)) != J9THREAD_SUCCESS) {
 		status |= INIT_FAILED;
-		PRINTF("failed to init heavyweight thread\n");
+		omrTestEnv->log(LEVEL_ERROR, "failed to init heavyweight thread\n");
 	}
 	status |= isAttrOk(&expected, attr);
 	J9THREAD_VERBOSE(omrthread_attr_destroy(&attr));
@@ -1203,7 +1259,7 @@ TEST_F(ThreadCreateTest, DISABLED_SetAttrThreadWeight)
 	expected.osThreadweight = OS_HEAVY_WEIGHT;
 	if (J9THREAD_VERBOSE(omrthread_attr_init(&attr)) != J9THREAD_SUCCESS) {
 		status |= INIT_FAILED;
-		PRINTF("failed to init mediumweight thread\n");
+		omrTestEnv->log(LEVEL_ERROR, "failed to init mediumweight thread\n");
 	}
 	status |= isAttrOk(&expected, attr);
 	END_IF_FAILED(status);

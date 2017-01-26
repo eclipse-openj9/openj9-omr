@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -47,6 +47,7 @@ unsigned int SanityTest::runTime = 10; /* default test run time of 10 seconds */
 TEST_F(SanityTest, simpleSanity)
 {
 	SimpleSanity();
+	ASSERT_TRUE(SimpleSanity());
 }
 
 TEST_F(SanityTest, SanityTestSingleThread)
@@ -76,27 +77,11 @@ TEST_F(SanityTest, TestWaitNotify)
 
 TEST_F(SanityTest, TestBlockingQueue)
 {
-	bool ok = true;
-	bool caseok = true;
-
 	omrthread_t self;
 	omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT);
 
-	DbgMsg::println("\nTesting blocking queue sanity");
-	DbgMsg::changeIndent(+1);
 	CThread cself(self);
-	DbgMsg::println("1 thread");
-	caseok = TestBlockingQueue(cself, 1);
-	DbgMsg::println(caseok ? "ok" : "failed");
-	ok = ok && caseok;
-	DbgMsg::println("2 threads");
-	caseok = TestBlockingQueue(cself, 2);
-	DbgMsg::println(caseok ? "ok" : "failed");
-	ok = ok && caseok;
-	DbgMsg::println("3 threads\t");
-	caseok = TestBlockingQueue(cself, 3);
-	DbgMsg::println(caseok ? "ok" : "failed");
-	ok = ok && caseok;
-	DbgMsg::changeIndent(-1);
-	DbgMsg::println(ok ? "ok" : "failed");
+	EXPECT_TRUE(TestBlockingQueue(cself, 1)) << "1 thread failed";
+	EXPECT_TRUE(TestBlockingQueue(cself, 2)) << "2 threads failed";
+	EXPECT_TRUE(TestBlockingQueue(cself, 3)) << "3 threads failed";
 }

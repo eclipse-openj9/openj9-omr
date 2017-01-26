@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,6 +21,9 @@
 #define CENTEREXITLOOPER_HPP_INCLUDED
 
 #include "threadTestLib.hpp"
+#include "testHelper.hpp"
+
+extern ThreadTestEnvironment *omrTestEnv;
 
 class CEnterExitLooper: public CThread
 {
@@ -70,8 +73,8 @@ protected:
 	virtual intptr_t
 	Run(void)
 	{
-		DbgMsg::verbosePrint("thread %p running, sleep = %d\n", m_self,
-			m_sleep);
+		omrTestEnv->log(LEVEL_VERBOSE,"thread %p running, sleep = %d\n", 
+			m_self, m_sleep);
 		while (m_keepRunning) {
 			m_monitor.Enter();
 			if (m_sleep > 0) {
@@ -80,7 +83,7 @@ protected:
 			++m_loopCount;
 			m_monitor.Exit();
 		}
-		DbgMsg::verbosePrint("thread %p exiting\n", m_self);
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p exiting\n", m_self);
 		return 0;
 	}
 

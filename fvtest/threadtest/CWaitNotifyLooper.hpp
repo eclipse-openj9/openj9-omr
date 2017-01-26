@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -19,10 +19,6 @@
 
 #ifndef J9THREADTEST_CWAITNOTIFYLOOPER_HPP_INCLUDED
 #define J9THREADTEST_CWAITNOTIFYLOOPER_HPP_INCLUDED
-
-#if 0
-#define VERBOSEOUTPUT
-#endif
 
 #include "threadTestLib.hpp"
 
@@ -50,38 +46,24 @@ protected:
 	Run(void)
 	{
 
-		DbgMsg::verbosePrint("thread %p (%p) running\n", m_self, this);
-#if VERBOSEOUTPUT
-		DbgMsg::print("thread %p entering\n", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p (%p) running\n", m_self, this);
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p entering\n", m_self);
 		m_monitor.Enter();
-#if VERBOSEOUTPUT
-		DbgMsg::print("thread %p entered\n", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p entered\n", m_self);
 		while (m_keepRunning) {
-#if VERBOSEOUTPUT
-			DbgMsg::print("%p N[\n", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p N[\n", m_self);
 			m_monitor.Notify();
-#if VERBOSEOUTPUT
-			DbgMsg::print("%p N]\n", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p N]\n", m_self);
 			*m_notifyCount = *m_notifyCount + 1;
-#if VERBOSEOUTPUT
-			DbgMsg::print("%p>W[ ", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p>W[ ", m_self);
 			m_monitor.Wait();
-#if VERBOSEOUTPUT
-			DbgMsg::print("%p>W] ", m_self);
-#endif
+			omrTestEnv->log(LEVEL_VERBOSE, "%p>W] ", m_self);
 		}
 		*m_doneRunningCount = *m_doneRunningCount + 1;
-#if VERBOSEOUTPUT
-		DbgMsg::println("thread %p exiting monitor", m_self);
-#endif
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p exiting monitor\n", m_self);
 		m_monitor.Exit();
 
-		DbgMsg::verbosePrint("thread %p exiting\n", m_self);
+		omrTestEnv->log(LEVEL_VERBOSE, "thread %p exiting\n", m_self);
 		return 0;
 	}
 

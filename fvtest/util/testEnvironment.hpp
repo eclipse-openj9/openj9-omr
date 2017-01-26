@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -58,6 +58,7 @@ class BaseEnvironment: public ::testing::Environment
 	 * Data members
 	 */
 private:
+	int s_indentLevel;
 protected:
 	LogLevel _minLevel;
 public:
@@ -109,7 +110,8 @@ protected:
 public:
 	BaseEnvironment(int argc, char **argv)
 		: ::testing::Environment()
-		, _minLevel(LEVEL_INFO)
+		, s_indentLevel(0)
+		, _minLevel(LEVEL_ERROR) 
 		, _argc(argc)
 		, _argv(argv)
 		, portLib(NULL)
@@ -121,24 +123,60 @@ public:
 	{
 		return portLib;
 	}
+	
+	virtual void
+	indent(LogLevel ll)
+	{
+        	for (int i = 0; i < s_indentLevel; i++) {
+			logRaw(ll, "\t");
+        	}
+	}
+
+	virtual void
+	changeIndent(int delta)
+	{
+        	s_indentLevel += delta;
+	}
+
 
 	virtual void
 	log(const char *format, ...)
 	{
+		indent(LEVEL_INFO);
 		va_list args;
 		va_start(args, format);
 		log_vprintf(LEVEL_INFO, format, args);
 		va_end(args);
 	}
-	
+
 	virtual void
 	log(LogLevel ll, const char *format, ...)
 	{
+		indent(ll);
 		va_list args;
 		va_start(args, format);
 		log_vprintf(ll, format, args);
 		va_end(args);
 	}
+
+        virtual void
+        logRaw(const char *format, ...)
+        {
+                va_list args;
+                va_start(args, format);
+                log_vprintf(LEVEL_INFO, format, args);
+                va_end(args);
+        }
+	
+        virtual void
+        logRaw(LogLevel ll, const char *format, ...)
+        {
+                va_list args;
+                va_start(args, format);
+                log_vprintf(ll, format, args);
+                va_end(args);
+        }
+
 };
 
 /*

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2007, 2016
+ * (c) Copyright IBM Corp. 2007, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -30,12 +30,12 @@ CEnterExit::CEnterExit(CMonitor& monitor, int sleep) :
 intptr_t
 CEnterExit::Run(void)
 {
-	DbgMsg::verbosePrint("ENTERING\n");
+	omrTestEnv->log(LEVEL_VERBOSE, "ENTERING\n");
 	m_monitor.Enter();
-	DbgMsg::verbosePrint("ENTERED\n");
+	omrTestEnv->log(LEVEL_VERBOSE, "ENTERED\n");
 	omrthread_sleep(m_sleep);
-	DbgMsg::verbosePrint("EXITING\n");
+	omrTestEnv->log(LEVEL_VERBOSE, "EXITING\n");
 	m_monitor.Exit();
-	DbgMsg::verbosePrint("EXITED\n");
+	omrTestEnv->log(LEVEL_VERBOSE, "EXITED\n");
 	return 0;
 }

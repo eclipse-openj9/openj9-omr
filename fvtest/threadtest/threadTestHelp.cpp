@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,7 +34,7 @@ createJoinableThread(omrthread_t *newThread, omrthread_entrypoint_t entryProc, v
 	EXPECT_EQ(J9THREAD_SUCCESS,
 			  rc = omrthread_create_ex(newThread, &attr, 0, entryProc, entryArg));
 	if (rc & J9THREAD_ERR_OS_ERRNO_SET) {
-		printf("omrthread_create_ex() returned os_errno=%d\n", (int)omrthread_get_os_errno());
+		omrTestEnv->log(LEVEL_ERROR, "omrthread_create_ex() returned os_errno=%d\n", (int)omrthread_get_os_errno());
 	}
 	ASSERT_EQ(J9THREAD_SUCCESS, omrthread_attr_destroy(&attr));
 }

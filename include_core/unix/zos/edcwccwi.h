@@ -267,7 +267,6 @@ __bldxfd
 );                                                                              
 #endif /* __XPLINK__ && !LP64 */                                                
 
-#if __EDC_TARGET >= __EDC_LE4202
 typedef
 struct __jumpinfo_vr_ext
 {
@@ -275,7 +274,6 @@ struct __jumpinfo_vr_ext
 	char  __ji_ve_u[14];
 	U_128 __ji_ve_savearea[32];
 } __jumpinfo_vr_ext_t_;
-#endif /* __EDC_TARGET >= __EDC_LE4202 */
 
 #if ((!defined(_LP64) && defined(__XPLINK__))   ||         \                    
      (defined(_LP64)  && (__EDC_TARGET >= __EDC_LE4107)))
@@ -307,7 +305,6 @@ struct __jumpinfo
   unsigned     __ji_fl_res2          :1; /* +5B.5 Reserved           */         
   unsigned     __ji_fl_exp           :1; /* +5B.6 explicit backchain */         
   unsigned     __ji_fl_res2a         :1; /* +5B.7 Reserved           */         
-#if __EDC_TARGET >= __EDC_LE4202
   char         __ji_u4[12];              /* +5C   Reserved       @D4C*/
   __jumpinfo_vr_ext_t_ *__ji_vr_ext;      /* +68   Pointer to VRs
                                                   save area      @D4A*/
@@ -315,9 +312,6 @@ struct __jumpinfo
   char         __ji_u7[4];               /* +6C   Reserved       @D4A*/
 #endif                                   /*                      @D4A*/
   char         __ji_u8[16];              /* +70   Reserved       @D4A*/
-#else  /* not __EDC_TARGET >= __EDC_LE4202 */
-  char         __ji_u4[36];              /* +5C   Reserved           */
-#endif /*     __EDC_TARGET >= __EDC_LE4202 */
   long         __ji_gr[16];              /* +80  resume registers    */         
 #ifndef _LP64                                                                   
   long         __ji_hr[16];              /* +C0  hi regs             */         
@@ -432,7 +426,6 @@ struct  __mcontext
  unsigned    __mc_fl_exp           :1; /* +5B.6 Explicit backchain */           
  unsigned    __mc_fl_res2a         :1; /* +5B.7 Reserved           */           
 /*#@                                                       BEGIN @D5A*/
-#if __EDC_TARGET >= __EDC_LE4202 
  unsigned    __mc_fl_res2b         :2; /* +5C.0 Reserved             */
  unsigned    __mc_fl_vr            :1; /* +5C.2 Vector savearea valid*/
  unsigned    __mc_fl_res2c         :5; /* +5C.x Reserved             */
@@ -440,10 +433,7 @@ struct  __mcontext
  void       *__mc_vr_ext;              /* +68 ptr to vrs save area   */
  __pad31    (__mc__6b,4)               /* +6C 31-bit reserved        */
  char        __mc__6c[16];             /* +70 Reserved               */
-#else
 /*#@                                                         END @D5A*/
- char        __mc__6[36];              /* +5C   Reserved           */           
-#endif                                                        /*#@D5A*/
  long        __mc_gr[16];              /* +80 resume register      */           
 #ifndef _LP64                                                                   
  long        __mc_hr_[16];             /* +C0 hi regs              */           

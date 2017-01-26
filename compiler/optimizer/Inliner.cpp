@@ -4601,6 +4601,8 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    if (tryToInlineTrivialMethod(callStack, calltarget))
       return true;
 
+   if (comp()->getOption(TR_InlineNativeOnly))
+      return false;
    comp()->getFlowGraph()->setMaxFrequency(-1);
    comp()->getFlowGraph()->setMaxEdgeFrequency(-1);
 

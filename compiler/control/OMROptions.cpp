@@ -821,7 +821,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::set32BitNumeric, offsetof(OMR::Options,_inlineCntrWarmCalleeTooBigBucketSize), 0, " %d", NOT_IN_SUBSET},
    {"inlineCntrWarmCallerHasTooManyNodesBucketSize=",    "R<nnn>\tThe unit used to categorize uninlined calls when the warm caller has too many nodes",
         TR::Options::set32BitNumeric, offsetof(OMR::Options,_inlineCntrWarmCallerHasTooManyNodesBucketSize), 0, " %d", NOT_IN_SUBSET},
-
+   {"inlineNativeOnly", "O\tinliner only inline native methods and do not inline other Java methods", SET_OPTION_BIT(TR_InlineNativeOnly), "F" },
    {"inlinerArgumentHeuristicFractionBeyondWarm=", "O<nnn>\tAt hotness above warm, decreases estimated size by 1/N when the inliner's argument heuristic kicks in", TR::Options::set32BitNumeric, offsetof(OMR::Options,_inlinerArgumentHeuristicFractionBeyondWarm), 0, " %d"},
    {"inlinerArgumentHeuristicFractionUpToWarm=",   "O<nnn>\tAt hotness up to and including warm, decreases estimated size by 1/N when the inliner's argument heuristic kicks in", TR::Options::set32BitNumeric, offsetof(OMR::Options,_inlinerArgumentHeuristicFractionUpToWarm), 0, " %d"},
    {"inlinerBorderFrequency=", "O<nnn>\tblock frequency threshold for not inlining at warm", TR::Options::set32BitNumeric, offsetof(OMR::Options, _inlinerBorderFrequency), 0, " %d" },

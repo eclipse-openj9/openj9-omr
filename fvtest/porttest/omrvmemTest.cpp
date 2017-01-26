@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -388,10 +388,10 @@ setDisclaimVirtualMemory(struct OMRPortLibrary *portLibrary, BOOLEAN disclaim)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	if (disclaim) {
-		omrtty_printf("\n *** Disclaiming virtual memory\n\n");
+		portTestEnv->log("\n *** Disclaiming virtual memory\n\n");
 		omrport_control(OMRPORT_CTLDATA_VMEM_ADVISE_OS_ONFREE, 1);
 	} else {
-		omrtty_printf("\n *** Not disclaiming virtual memory\n\n");
+		portTestEnv->log("\n *** Not disclaiming virtual memory\n\n");
 		omrport_control(OMRPORT_CTLDATA_VMEM_ADVISE_OS_ONFREE, 0);
 	}
 }
@@ -446,12 +446,12 @@ omrvmem_bench_write_and_decommit_memory(struct OMRPortLibrary *portLibrary, uint
 			PORTTEST_ERROR_ARGS, "unable to reserve 0x%zx bytes with page size 0x%zx.\n"
 			"\tlastErrorNumber=%d, lastErrorMessage=%s\n ", byteAmount, pageSize, lastErrorNumber, lastErrorMessage);
 		if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
-			omrtty_printf("\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
-			omrtty_printf("\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+			portTestEnv->log(LEVEL_ERROR, "\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+			portTestEnv->log(LEVEL_ERROR, "\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
 		}
 		goto exit;
 	} else {
-		omrtty_printf("\treserved 0x%zx bytes with page size 0x%zx at 0x%zx\n", byteAmount, vmemID.pageSize, memPtr);
+		portTestEnv->log("\treserved 0x%zx bytes with page size 0x%zx at 0x%zx\n", byteAmount, vmemID.pageSize, memPtr);
 	}
 
 	startTimeNanos = omrtime_nano_time();
@@ -477,7 +477,7 @@ omrvmem_bench_write_and_decommit_memory(struct OMRPortLibrary *portLibrary, uint
 	}
 
 	deltaMillis = (omrtime_nano_time() - startTimeNanos) / (1000 * 1000);
-	omrtty_printf("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [write_to_all/decommit] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, numIterations, deltaMillis);
+	portTestEnv->log("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [write_to_all/decommit] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, numIterations, deltaMillis);
 
 	rc = omrvmem_free_memory(memPtr, byteAmount, &vmemID);
 
@@ -544,12 +544,12 @@ omrvmem_bench_force_overcommit_then_decommit(struct OMRPortLibrary *portLibrary,
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unable to reserve and commit 0x%zx bytes with page size 0x%zx.\n"
 						   "\tlastErrorNumber=%d, lastErrorMessage=%s\n ", byteAmount, pageSize, lastErrorNumber, lastErrorMessage);
 		if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
-			omrtty_printf("\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
-			omrtty_printf("\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+			portTestEnv->log(LEVEL_ERROR, "\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+			portTestEnv->log(LEVEL_ERROR, "\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
 		}
 		goto exit;
 	} else {
-		omrtty_printf("reserved and committed 0x%zx bytes of pagesize 0x%zx\n", byteAmount, pageSize);
+		portTestEnv->log("reserved and committed 0x%zx bytes of pagesize 0x%zx\n", byteAmount, pageSize);
 	}
 
 	startTimeNanos = omrtime_nano_time();
@@ -573,7 +573,7 @@ omrvmem_bench_force_overcommit_then_decommit(struct OMRPortLibrary *portLibrary,
 	memset(memPtr, 5, D512M);
 
 	deltaMillis = (omrtime_nano_time() - startTimeNanos) / (1000 * 1000);
-	omrtty_printf("%s pageSize 0x%zx, byteAmount 0x%zx, millis: [force page, decommit pagedout region, write decommitted region] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, deltaMillis);
+	portTestEnv->log("%s pageSize 0x%zx, byteAmount 0x%zx, millis: [force page, decommit pagedout region, write decommitted region] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, deltaMillis);
 
 	rc = omrvmem_free_memory(memPtr, byteAmount, &vmemID);
 
@@ -645,8 +645,8 @@ omrvmem_bench_reserve_write_decommit_and_free_memory(struct OMRPortLibrary *port
 				PORTTEST_ERROR_ARGS, "In iteration %d, unable to reserve and commit 0x%zx bytes with page size 0x%zx.\n"
 				"\tlastErrorNumber=%d, lastErrorMessage=%s\n ", i, byteAmount, pageSize, lastErrorNumber, lastErrorMessage);
 			if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
-				omrtty_printf("\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
-				omrtty_printf("\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+				portTestEnv->log(LEVEL_ERROR, "\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+				portTestEnv->log(LEVEL_ERROR, "\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
 			}
 			goto exit;
 		}
@@ -670,7 +670,7 @@ omrvmem_bench_reserve_write_decommit_and_free_memory(struct OMRPortLibrary *port
 
 	deltaMillis = (omrtime_nano_time() - startTimeNanos) / (1000 * 1000);
 
-	omrtty_printf("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [reserve/write_to_all/decommit/free] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, numIterations, deltaMillis);
+	portTestEnv->log("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [reserve/write_to_all/decommit/free] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, numIterations, deltaMillis);
 
 exit:
 	return reportTestExit(OMRPORTLIB, testName);
@@ -734,14 +734,14 @@ omrvmem_exhaust_virtual_memory(struct OMRPortLibrary *portLibrary, uintptr_t pag
 				PORTTEST_ERROR_ARGS, "unable to reserve and commit 0x%zx bytes with page size 0x%zx.\n"
 				"\tlastErrorNumber=%d, lastErrorMessage=%s\n ", byteAmount, pageSize, lastErrorNumber, lastErrorMessage);
 			if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
-				omrtty_printf("\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
-				omrtty_printf("\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+				portTestEnv->log(LEVEL_ERROR, "\tPortable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+				portTestEnv->log(LEVEL_ERROR, "\t\tREBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
 			}
 			goto exit;
 		} else {
-			omrtty_printf("\treserved 0x%zx bytes\n", byteAmount);
+			portTestEnv->log("\treserved 0x%zx bytes\n", byteAmount);
 			totalAlloc = byteAmount + totalAlloc;
-			omrtty_printf("\ttotal: 0x%zx bytes\n", totalAlloc);
+			portTestEnv->log("\ttotal: 0x%zx bytes\n", totalAlloc);
 		}
 
 		/* write to the memory */
@@ -768,7 +768,7 @@ omrvmem_exhaust_virtual_memory(struct OMRPortLibrary *portLibrary, uintptr_t pag
 		}
 	}
 
-	omrtty_printf("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [reserve/write_to_all/decommit] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, NUM_VMEM_IDS, deltaMillis);
+	portTestEnv->log("%s pageSize 0x%zx, byteAmount 0x%zx, millis for %u iterations: [reserve/write_to_all/decommit] test: %lli\n", disclaim ? "disclaim" : "nodisclaim", pageSize, byteAmount, NUM_VMEM_IDS, deltaMillis);
 
 exit:
 	return reportTestExit(OMRPORTLIB, testName);

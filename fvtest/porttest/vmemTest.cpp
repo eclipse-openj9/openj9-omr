@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,6 +21,8 @@
 #include "omrport.h"
 #include "portTestHelpers.hpp"
 
+extern PortTestEnvironment *portTestEnv;
+
 /**
  * Verify virtual memory functions
  *
@@ -35,7 +37,7 @@ TEST(PortVMemTest, omrvmem_get_available_physical_memory)
 	int32_t status = omrvmem_get_available_physical_memory(&freePhysicalMemorySize);
 #if defined(LINUX) || defined(AIXPPC) || defined(WIN32) || defined(OSX)
 	ASSERT_EQ(0, status) << "Non-zero status from omrvmem_get_available_physical_memory";
-	omrtty_printf("freePhysicalMemorySize = %llu\n", freePhysicalMemorySize);
+	portTestEnv->log("freePhysicalMemorySize = %llu\n", freePhysicalMemorySize);
 #else /*  defined(LINUX) || defined(AIXPPC) || defined(WIN32) || defined(OSX) */
 	ASSERT_EQ(OMRPORT_ERROR_VMEM_NOT_SUPPORTED, status) << "omrvmem_get_available_physical_memory should not be supported";
 #endif /*  defined(LINUX) || defined(AIXPPC) || defined(WIN32) || defined(OSX) */

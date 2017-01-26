@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2001, 2016
+ * (c) Copyright IBM Corp. 2001, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -237,9 +237,9 @@ launchChildProcess(OMRPortLibrary *portLibrary, const char *testname, const char
 		int32_t portableErrno = omrerror_last_error_number();
 		const char *errMsg = omrerror_last_error_message();
 		if (NULL == errMsg) {
-			omrtty_printf("%s: launchChildProcess: omrsysinfo_get_executable_name failed!\n\tportableErrno = %d\n", testname, portableErrno);
+			portTestEnv->log(LEVEL_ERROR, "%s: launchChildProcess: omrsysinfo_get_executable_name failed!\n\tportableErrno = %d\n", testname, portableErrno);
 		} else {
-			omrtty_printf("%s: launchChildProcess: omrsysinfo_get_executable_name failed!\n\tportableErrno = %d portableErrMsg = %s\n", testname, portableErrno, errMsg);
+			portTestEnv->log(LEVEL_ERROR, "%s: launchChildProcess: omrsysinfo_get_executable_name failed!\n\tportableErrno = %d portableErrMsg = %s\n", testname, portableErrno, errMsg);
 		}
 		goto done;
 
@@ -254,12 +254,12 @@ launchChildProcess(OMRPortLibrary *portLibrary, const char *testname, const char
 
 	{
 		int i;
-		omrtty_printf("\n\n");
+		portTestEnv->log("\n\n");
 
 		for (i = 0; i < commandLength; i++) {
-			omrtty_printf("\t\tcommand[%i]: %s\n", i, command[i]);
+			portTestEnv->log("\t\tcommand[%i]: %s\n", i, command[i]);
 		}
-		omrtty_printf("\n\n");
+		portTestEnv->log("\n\n");
 
 		exeoptions = OMRPROCESS_DEBUG;
 	}
@@ -271,9 +271,9 @@ launchChildProcess(OMRPortLibrary *portLibrary, const char *testname, const char
 		int32_t portableErrno = omrerror_last_error_number();
 		const char *errMsg = omrerror_last_error_message();
 		if (NULL == errMsg) {
-			omrtty_printf("%s: launchChildProcess: Failed to start process '%s %s'\n\tportableErrno = %d\n", testname, command[0], command[1], portableErrno);
+			portTestEnv->log(LEVEL_ERROR, "%s: launchChildProcess: Failed to start process '%s %s'\n\tportableErrno = %d\n", testname, command[0], command[1], portableErrno);
 		} else {
-			omrtty_printf("%s: launchChildProcess: Failed to start process '%s %s'\n\tportableErrno = %d portableErrMsg = %s\n", testname, command[0], command[1], portableErrno, errMsg);
+			portTestEnv->log(LEVEL_ERROR, "%s: launchChildProcess: Failed to start process '%s %s'\n\tportableErrno = %d portableErrMsg = %s\n", testname, command[0], command[1], portableErrno, errMsg);
 		}
 
 		processHandle = NULL;
@@ -293,7 +293,7 @@ waitForTestProcess(OMRPortLibrary *portLibrary, OMRProcessHandle processHandle)
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	if (NULL == processHandle) {
-		omrtty_printf("waitForTestProcess: processHandle == NULL\n");
+		portTestEnv->log(LEVEL_ERROR, "waitForTestProcess: processHandle == NULL\n");
 		goto done;
 	}
 
@@ -301,9 +301,9 @@ waitForTestProcess(OMRPortLibrary *portLibrary, OMRProcessHandle processHandle)
 		int32_t portableErrno = omrerror_last_error_number();
 		const char *errMsg = omrerror_last_error_message();
 		if (NULL == errMsg) {
-			omrtty_printf("waitForTestProcess: j9process_waitfor() failed\n\tportableErrno = %d\n" , portableErrno);
+			portTestEnv->log(LEVEL_ERROR, "waitForTestProcess: j9process_waitfor() failed\n\tportableErrno = %d\n" , portableErrno);
 		} else {
-			omrtty_printf("waitForTestProcess: j9process_waitfor() failed\n\tportableErrno = %d portableErrMsg = %s\n" , portableErrno, errMsg);
+			portTestEnv->log(LEVEL_ERROR, "waitForTestProcess: j9process_waitfor() failed\n\tportableErrno = %d portableErrMsg = %s\n" , portableErrno, errMsg);
 		}
 
 		goto done;
@@ -315,9 +315,9 @@ waitForTestProcess(OMRPortLibrary *portLibrary, OMRProcessHandle processHandle)
 		int32_t portableErrno = omrerror_last_error_number();
 		const char *errMsg = omrerror_last_error_message();
 		if (NULL == errMsg) {
-			omrtty_printf("waitForTestProcess: j9process_close() failed\n\tportableErrno = %d\n" , portableErrno);
+			portTestEnv->log(LEVEL_ERROR, "waitForTestProcess: j9process_close() failed\n\tportableErrno = %d\n" , portableErrno);
 		} else {
-			omrtty_printf("waitForTestProcess: j9process_close() failed\n\tportableErrno = %d portableErrMsg = %s\n" , portableErrno, errMsg);
+			portTestEnv->log(LEVEL_ERROR, "waitForTestProcess: j9process_close() failed\n\tportableErrno = %d portableErrMsg = %s\n" , portableErrno, errMsg);
 		}
 		goto done;
 	}

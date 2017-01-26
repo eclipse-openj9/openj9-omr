@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -1426,6 +1426,6 @@ TEST(PortHeapTest, heap_test2)
 		}
 	}
 	/* Output results */
-	omrtty_printf("\nHeap test done%s\n\n", rc == TEST_PASS ? "." : ", failures detected.");
+	portTestEnv->log("\nHeap test done%s\n\n", rc == TEST_PASS ? "." : ", failures detected.");
 	EXPECT_TRUE(TEST_PASS == rc) << "Test Failed!";
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -135,7 +135,7 @@ injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal)
 	/* this is run by the child process. To see the tty_printf output on the console, set OMRPORT_PROCESS_INHERIT_STDOUT | OMRPORT_PROCESS_INHERIT_STDIN
 	 * in the options passed into j9process_create() in launchChildProcess (in testProcessHelpers.c).
 	 */
-	omrtty_printf("\t\tCHILD:	 calling kill: %i %i\n", pid, unixSignal);
+	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, unixSignal);
 	kill(pid, unixSignal);
 	return;
 }
@@ -609,7 +609,7 @@ TEST(PortSigTest, sig_test0)
 		/* z/OS does not always support this, however, pltest should never be run under a configuration that does not support it.
 		 * See implementation of omrsig_can_proctect() and omrsig_startup()
 		 */
-		omrtty_printf("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
+		portTestEnv->log("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
 #endif
 	}
 
@@ -617,7 +617,7 @@ TEST(PortSigTest, sig_test0)
 	if (!omrsig_can_protect(OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->can_protect() must always support 0 | OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION\n");
 # if defined(J9ZOS390)
-		omrtty_printf("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
+		portTestEnv->log("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
 #endif
 
 	}
@@ -934,7 +934,7 @@ TEST(PortSigTest, sig_test6)
 			int signo = (int)(uintptr_t)omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 			int expectedSigno = 0;
 
-			omrtty_printf("\n testing current signal\n");
+			portTestEnv->log("\n testing current signal\n");
 			if (signo != expectedSigno) {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "currentSignal corrupt -- got: %d expected: %d\n", signo, expectedSigno);
 			}
@@ -1104,7 +1104,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 	int pid = getpid();
 
 	reportTestEntry(OMRPORTLIB, testName);
-	omrtty_printf("\tpid: %i\n", pid);
+	portTestEnv->log("\tpid: %i\n", pid);
 
 	handlerInfo.testName = testName;
 
@@ -1140,7 +1140,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		handlerInfo.expectedType = testSignalMap[index].portLibSignalNo;
 
 
-		omrtty_printf("\n\tTesting %s\n", testSignalMap[index].unixSignalString);
+		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].unixSignalString);
 
 		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0; */
 		omrthread_monitor_enter(asyncMonitor);
@@ -1176,7 +1176,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 
 		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>" */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i", pid, signum);
-		omrtty_printf("\t\tlaunching child process with arg %s\n", options);
+		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
 		omrthread_monitor_enter(asyncMonitor);
 
@@ -1206,12 +1206,12 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		 * We will mask the signal on this thread, inject it via kill, and verify that it does
 		 * not get received.
 		 */
-		omrtty_printf("\t\tmasking signal %i on this thread\n", signum);
+		portTestEnv->log("\t\tmasking signal %i on this thread\n", signum);
 		sighold(signum);
 
 		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>_unhandled" */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i_unhandled", pid, signum);
-		omrtty_printf("\t\tlaunching child process with arg %s\n", options);
+		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
 		omrthread_monitor_enter(asyncMonitor);
 		handlerInfo.controlFlag = 0;
@@ -1234,7 +1234,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		}
 
 		/* unblock the signal and handle it */
-		omrtty_printf("\t\tunmasking signal %i on this thread\n", signum);
+		portTestEnv->log("\t\tunmasking signal %i on this thread\n", signum);
 		sigrelse(signum);
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 		if (1 != handlerInfo.controlFlag) {

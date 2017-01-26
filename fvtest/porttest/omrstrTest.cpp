@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -518,7 +518,7 @@ TEST(PortStrTest, str_test3)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	/* First test: The epoch */
-	omrtty_printf("\t This test could fail if you abut the international dateline (westside of dateline)\n");
+	portTestEnv->log("\t This test could fail if you abut the international dateline (westside of dateline)\n");
 	timeMillis = 0;
 	strncpy(expected, "1970 01 Jan 01 XX:00:00", J9STR_BUFFER_SIZE);
 	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d XX:%M:%S", timeMillis, expected);
@@ -580,7 +580,7 @@ TEST(PortStrTest, str_test4)
 	/* February 29th, 2004, 12:00:00, UTC */
 	timeMillis = J9CONST64(1078056000000);
 
-	omrtty_printf("\t This test will fail if you abut the international dateline\n");
+	portTestEnv->log("\t This test will fail if you abut the international dateline\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	omrstr_set_token(tokens, "longtkn", "Long Token Value");
 	omrstr_set_token(tokens, "yyy", "nope nope nope");
@@ -733,49 +733,49 @@ TEST(PortStrTest, str_test5)
 
 	reportTestEntry(OMRPORTLIB, testName);
 
-	omrtty_printf("\n\tThe results of omrstr_test5 are not evaluated as time conversions are specific to a time zone.\n");
-	omrtty_printf("\tTherefore, this is for your viewing pleasure only.\n");
+	portTestEnv->log("\n\tThe results of omrstr_test5 are not evaluated as time conversions are specific to a time zone.\n");
+	portTestEnv->log("\tTherefore, this is for your viewing pleasure only.\n");
 
 	timeMillis = omrtime_current_time_millis();
-	omrtty_printf("\n\tomrtime_current_time_millis returned: %lli\n", timeMillis);
-	omrtty_printf("\t...creating and substituting tokens...\n");
+	portTestEnv->log("\n\tomrtime_current_time_millis returned: %lli\n", timeMillis);
+	portTestEnv->log("\t...creating and substituting tokens...\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	(void)omrstr_subst_tokens(buf, TEST_BUF_LEN, "%Y/%m/%d %H:%M:%S", tokens);
-	omrtty_printf("\tThe current time was converted to: %s\n", buf);
+	portTestEnv->log("\tThe current time was converted to: %s\n", buf);
 
 	timeMillis = J9CONST64(1139952606740);
-	omrtty_printf("\n\t using UTC timeMillis = %lli. \n\t", timeMillis);
-	omrtty_printf("\t...creating and substituting tokens...\n");
+	portTestEnv->log("\n\t using UTC timeMillis = %lli. \n\t", timeMillis);
+	portTestEnv->log("\t...creating and substituting tokens...\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	(void)omrstr_subst_tokens(buf, TEST_BUF_LEN, "%Y/%m/%d %H:%M:%S", tokens);
-	omrtty_printf("\tExpecting local time (in Ottawa, Eastern Standard Time): 2006/02/14 16:30:06 \n", timeMillis);
-	omrtty_printf("\t                                       ... converted to: %s\n", buf);
+	portTestEnv->log("\tExpecting local time (in Ottawa, Eastern Standard Time): 2006/02/14 16:30:06 \n", timeMillis);
+	portTestEnv->log("\t                                       ... converted to: %s\n", buf);
 
 	timeMillis = J9CONST64(1150320606740);
-	omrtty_printf("\n\t using UTC timeMillis = %lli. \n\t ", timeMillis);
-	omrtty_printf("\t...creating and substituting tokens...\n");
+	portTestEnv->log("\n\t using UTC timeMillis = %lli. \n\t ", timeMillis);
+	portTestEnv->log("\t...creating and substituting tokens...\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	(void)omrstr_subst_tokens(buf, TEST_BUF_LEN, "%Y/%m/%d %H:%M:%S", tokens);
-	omrtty_printf("\tExpecting local time (in Ottawa, Eastern Daylight Time): 2006/06/14 17:30:06 \n", timeMillis);
-	omrtty_printf("\t                                       ... converted to: %s\n", buf);
+	portTestEnv->log("\tExpecting local time (in Ottawa, Eastern Daylight Time): 2006/06/14 17:30:06 \n", timeMillis);
+	portTestEnv->log("\t                                       ... converted to: %s\n", buf);
 
 	timeMillis = J9CONST64(1160688606740);
-	omrtty_printf("\n\t using UTC timeMillis = %lli. \n\t ", timeMillis);
-	omrtty_printf("\t...creating and substituting tokens...\n");
+	portTestEnv->log("\n\t using UTC timeMillis = %lli. \n\t ", timeMillis);
+	portTestEnv->log("\t...creating and substituting tokens...\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	(void)omrstr_subst_tokens(buf, TEST_BUF_LEN, "%Y/%m/%d %H:%M:%S", tokens);
-	omrtty_printf("\tExpecting local time (in Ottawa, Eastern Daylight Time): 2006/10/12 17:30:06 \n", timeMillis);
-	omrtty_printf("\t                                       ... converted to: %s\n", buf);
+	portTestEnv->log("\tExpecting local time (in Ottawa, Eastern Daylight Time): 2006/10/12 17:30:06 \n", timeMillis);
+	portTestEnv->log("\t                                       ... converted to: %s\n", buf);
 
 	timeMillis = J9CONST64(1165872606740);
-	omrtty_printf("\n\t using UTC timeMillis = %lli. \n\t", timeMillis);
-	omrtty_printf("\t...creating and substituting tokens...\n");
+	portTestEnv->log("\n\t using UTC timeMillis = %lli. \n\t", timeMillis);
+	portTestEnv->log("\t...creating and substituting tokens...\n");
 	tokens = omrstr_create_tokens(timeMillis);
 	(void)omrstr_subst_tokens(buf, TEST_BUF_LEN, "%Y/%m/%d %H:%M:%S", tokens);
-	omrtty_printf("\tExpecting local time (in Ottawa, Eastern Standard Time): 2006/12/11 16:30:06 \n", timeMillis);
-	omrtty_printf("\t                                       ... converted to: %s\n", buf);
+	portTestEnv->log("\tExpecting local time (in Ottawa, Eastern Standard Time): 2006/12/11 16:30:06 \n", timeMillis);
+	portTestEnv->log("\t                                       ... converted to: %s\n", buf);
 
-	omrtty_printf("\n");
+	portTestEnv->log("\n");
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -1293,21 +1293,21 @@ TEST(PortStrTest, str_convRoundTrip)
 		++codePoint;
 		++numCodePoints;
 	}
-	omrtty_printf("Testing %d code points\n", numCodePoints);
+	portTestEnv->log("Testing %d code points\n", numCodePoints);
 
 	convertedStringLength = omrstr_convert(J9STR_CODE_WIDE, J9STR_CODE_MUTF8,
 										   (char *)unicodeData, 2 * numCodePoints, (char *)mutf8Buffer, bufferSize);
 	if (convertedStringLength < 0) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unicode to MUTF8 test failed: %d", convertedStringLength);
 	}
-	omrtty_printf("mutf string length = %d\n", convertedStringLength);
+	portTestEnv->log("mutf string length = %d\n", convertedStringLength);
 
 	convertedStringLength = omrstr_convert(J9STR_CODE_MUTF8, J9STR_CODE_WIDE,
 										   (char *)mutf8Buffer, convertedStringLength, (char *)unicodeResult, bufferSize);
 	if (convertedStringLength < 0) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "MUTF8 to  unicode test failed: %d", convertedStringLength);
 	}
-	omrtty_printf("mutf string length = %d\n", convertedStringLength);
+	portTestEnv->log("mutf string length = %d\n", convertedStringLength);
 	if (!compareBytes((char *)unicodeData, (char *)unicodeResult, 2 * numCodePoints)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Converted string wrong.");
 	}
@@ -1406,7 +1406,7 @@ TEST(PortStrTest, str_WinacpToMutf8)
 	{
 		uint32_t defaultACP = GetACP();
 		if (1252 != defaultACP) {
-			omrtty_printf("Default ANSI code page = %d, expecting 1252.  Skipping test.\n", defaultACP);
+			portTestEnv->log("Default ANSI code page = %d, expecting 1252.  Skipping test.\n", defaultACP);
 			reportTestExit(OMRPORTLIB, testName);
 		}
 	}
@@ -1456,22 +1456,22 @@ printToBuffer(struct OMRPortLibrary *portLibrary, BOOLEAN precision, char *buffe
 
 	if (stringLength >= 0) {
 		if (precision) {
-			omrtty_printf("\n\tFinish Testing: String in buffer is: \"%s\", length = %d\n", buffer, stringLength);
+			portTestEnv->log("\n\tFinish Testing: String in buffer is: \"%s\", length = %d\n", buffer, stringLength);
 		} else {
-			omrtty_printf("\n\tFinish Testing without precision specifier: String in buffer is: \"%s\", length = %d\n", buffer, stringLength);
+			portTestEnv->log("\n\tFinish Testing without precision specifier: String in buffer is: \"%s\", length = %d\n", buffer, stringLength);
 		}
 
 		if ((stringLength == strlen(expectedOutput))
 			&& (0 == memcmp(buffer, expectedOutput, stringLength))
 		) {
-			omrtty_printf("\n\tComparing against the expected output: PASSED.\n");
+			portTestEnv->log("\n\tComparing against the expected output: PASSED.\n");
 			return TEST_PASS;
 		} else {
-			omrtty_printf("\n\tComparing against the expected output: FAILED. Expected string: \"%s\", length = %d\n", expectedOutput, strlen(expectedOutput));
+			portTestEnv->log(LEVEL_ERROR, "\n\tComparing against the expected output: FAILED. Expected string: \"%s\", length = %d\n", expectedOutput, strlen(expectedOutput));
 			return TEST_FAIL;
 		}
 	} else {
-		omrtty_printf("\n\tComparing against the expected output: FAILED. stringLength < 0, Expected string: \"%s\", length = %d\n", expectedOutput, strlen(expectedOutput));
+		portTestEnv->log(LEVEL_ERROR, "\n\tComparing against the expected output: FAILED. stringLength < 0, Expected string: \"%s\", length = %d\n", expectedOutput, strlen(expectedOutput));
 	}
 }
 
@@ -1502,42 +1502,42 @@ TEST(PortStrTest, str_test_atoe_vsnprintf)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	/* Neither min_width nor precision is specified for a null terminated input string*/
-	omrtty_printf("\n\tTesting case 1\n");
+	portTestEnv->log("\n\tTesting case 1\n");
 	rc |= printToBuffer(OMRPORTLIB, TRUE, buffer0, bufferLength0, expectedOutput1, "%s", nullTerminatedString);
 
 	/* min_width is less than the length of inputString */
-	omrtty_printf("\n\tTesting case 2\n");
+	portTestEnv->log("\n\tTesting case 2\n");
 	rc |= printToBuffer(OMRPORTLIB, FALSE, buffer2, bufferLength2, expectedOutput2, "%*s", 2, nonNullTerminatedString);
 
 	/* min_width is equal to the length of inputString (buffer length > min_width) */
-	omrtty_printf("\n\tTesting case 3\n");
+	portTestEnv->log("\n\tTesting case 3\n");
 	rc |= printToBuffer(OMRPORTLIB, FALSE, buffer1, bufferLength1, expectedOutput1, "%*s", 4, nullTerminatedString);
 
 	/* min_width is greater than the length of inputString (buffer length > min_width) */
-	omrtty_printf("\n\tTesting case 4\n");
+	portTestEnv->log("\n\tTesting case 4\n");
 	rc |= printToBuffer(OMRPORTLIB, FALSE, buffer3, bufferLength3, expectedOutput3, "%*s", 10, nullTerminatedString);
 
 	/* precision is equal to the length of inputString */
-	omrtty_printf("\n\tTesting case 5\n");
+	portTestEnv->log("\n\tTesting case 5\n");
 	rc |= printToBuffer(OMRPORTLIB, TRUE, buffer0, bufferLength0, expectedOutput1, "%.*s", 4, nonNullTerminatedString);
 
 	/* precision is less than the length of inputString */
-	omrtty_printf("\n\tTesting case 6\n");
+	portTestEnv->log("\n\tTesting case 6\n");
 	rc |= printToBuffer(OMRPORTLIB, TRUE, buffer0, bufferLength0, expectedOutput4, "%.*s", 2, nonNullTerminatedString);
 
 	/* both min_width and precision are equal to the length of inputString */
-	omrtty_printf("\n\tTesting case 7\n");
+	portTestEnv->log("\n\tTesting case 7\n");
 	rc |= printToBuffer(OMRPORTLIB, TRUE, buffer0, bufferLength0, expectedOutput1, "%*.*s", 4, 4, nonNullTerminatedString);
 
 	/* the length of inputString is equal to precision but less than min_width */
-	omrtty_printf("\n\tTesting case 8\n");
+	portTestEnv->log("\n\tTesting case 8\n");
 	rc |= printToBuffer(OMRPORTLIB, TRUE, buffer0, bufferLength0, expectedOutput3, "%*.*s", 10, 4, nonNullTerminatedString);
 
 	if (TEST_PASS != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "\n\tTEST FAILED.\n");
 	}
 
-	omrtty_printf("\n");
+	portTestEnv->log("\n");
 	reportTestExit(OMRPORTLIB, testName);
 }
 #endif /* defined(J9ZOS390) */

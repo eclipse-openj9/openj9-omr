@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -176,34 +176,34 @@ TEST(PortSysinfoTest, sysinfo_test0)
 
 
 	pid = omrsysinfo_get_pid();
-	omrtty_printf("PLT pid=%d\n", pid);
+	portTestEnv->log("PLT pid=%d\n", pid);
 
 	osVersion = omrsysinfo_get_OS_version();
-	omrtty_printf("OSversion=%s\n" osVersion ? osVersion : "NULL");
+	portTestEnv->log("OSversion=%s\n" osVersion ? osVersion : "NULL");
 
 	strcpy(envVar, "PATH");		/*case matters?*/
 	/*check rc before use: -1=BOGUS  0=good else nowrite, rc=varLength*/
 	rc = omrsysinfo_get_env(envVar, infoString, bufSize);
-	omrtty_printf("%s=%s\nbufSize=%d rc=%d\n\n", envVar, infoString, bufSize, rc);
+	portTestEnv->log("%s=%s\nbufSize=%d rc=%d\n\n", envVar, infoString, bufSize, rc);
 	/*
 	 * note:  tty_printf has a implementation-dependent limit on out chars
 	 * printf("\n\n%s=%s bufSize=%d rc=%d\n\n",envVar,infoString,bufSize,rc);
 	 */
 
 	osName = omrsysinfo_get_CPU_architecture();
-	omrtty_printf("CPU architecture=%s\n", osName ? osName : "NULL");
+	portTestEnv->log("CPU architecture=%s\n", osName ? osName : "NULL");
 
 	osType = omrsysinfo_get_OS_type();
-	omrtty_printf("OS type=%s\n", osType ? osType : "NULL");
+	portTestEnv->log("OS type=%s\n", osType ? osType : "NULL");
 
 	/*SHOULD omrmem_free_memory() result, eh!!!!!! argv[0] not really used*/
 	/*check rc before use: 0=good -1=error ???*/
 
 	number_CPUs = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE);
-	omrtty_printf("number of CPU(s)=%d\n", number_CPUs);
+	portTestEnv->log("number of CPU(s)=%d\n", number_CPUs);
 
 
-	omrtty_printf("SI test done!\n\n");
+	portTestEnv->log("SI test done!\n\n");
 
 #endif
 done:
@@ -370,7 +370,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_ulimit_iterator)
 	if (0 != rc) {
 
 		if (OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM == rc) {
-			omrtty_printf("\tThis platform does not support the limit iterator\n");
+			portTestEnv->log(LEVEL_ERROR, "\tThis platform does not support the limit iterator\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tomrsysinfo_limit_iterator_init returned: %i\n", rc);
 		}
@@ -382,18 +382,18 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_ulimit_iterator)
 		rc = omrsysinfo_limit_iterator_next(&state, &element);
 
 		if (0 == rc) {
-			omrtty_printf("\t%s:\n", element.name);
+			portTestEnv->log("\t%s:\n", element.name);
 
 			if (OMRPORT_LIMIT_UNLIMITED == element.softValue) {
-				omrtty_printf("\t soft: unlimited\n");
+				portTestEnv->log("\t soft: unlimited\n");
 			} else {
-				omrtty_printf("\t soft: 0x%zX\n", element.softValue);
+				portTestEnv->log("\t soft: 0x%zX\n", element.softValue);
 			}
 
 			if (OMRPORT_LIMIT_UNLIMITED == element.hardValue) {
-				omrtty_printf("\t hard: unlimited\n");
+				portTestEnv->log("\t hard: unlimited\n");
 			} else {
-				omrtty_printf("\t hard: 0x%zX\n", element.hardValue);
+				portTestEnv->log("\t hard: 0x%zX\n", element.hardValue);
 			}
 
 		} else {
@@ -439,7 +439,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 
 	if (rc < 0) {
 		if (OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM == rc) {
-			omrtty_printf("\tThis platform does not support the env iterator\n");
+			portTestEnv->log(LEVEL_ERROR, "\tThis platform does not support the env iterator\n");
 		} else if (OMRPORT_ERROR_SYSINFO_ENV_INIT_CRASHED_COPYING_BUFFER == rc) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tCrash passing in NULL buffer while running single-threaded. This is a failure because no-one else should have been able to modify it\n");
 		} else {
@@ -451,7 +451,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Need a buffer of size %x bytes\n", envSize);
+		portTestEnv->log("Need a buffer of size %x bytes\n", envSize);
 #endif
 	}
 
@@ -471,14 +471,14 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		goto done;
 	}
 
-	omrtty_printf("\tEnvironment:\n\n");
+	portTestEnv->log("\tEnvironment:\n\n");
 
 	l = 0;
 	while (omrsysinfo_env_iterator_hasNext(&state)) {
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 		if (0 == rc) {
-			omrtty_printf("\t%s\n", element.nameAndValue);
+			portTestEnv->log("\t%s\n", element.nameAndValue);
 			l++;
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tomrsysinfo_env_iterator_next returned: %i when 0 was expected\n", rc);
@@ -509,7 +509,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
+		portTestEnv->log("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
 #endif
 	}
 
@@ -519,7 +519,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 #if defined(SI_DEBUG)
-		omrtty_printf("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
+		portTestEnv->log("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
 #endif
 
 		if (0 == rc) {
@@ -552,7 +552,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
+		portTestEnv->log("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
 #endif
 	}
 
@@ -562,7 +562,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 #if defined(SI_DEBUG)
-		omrtty_printf("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
+		portTestEnv->log("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
 #endif
 
 		if (0 == rc) {

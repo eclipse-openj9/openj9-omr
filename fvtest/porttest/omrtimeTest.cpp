@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -617,7 +617,7 @@ J9THREAD_PROC nanoTimeDirectionTest(void *arg)
 		I_64 start = omrtime_nano_time();
 
 		if (0 != omrthread_sleep(sleepMillis)) {
-			omrtty_printf("\tomrthread_sleep() did not return zero.\n");
+			portTestEnv->log(LEVEL_ERROR, "\tomrthread_sleep() did not return zero.\n");
 			omrthread_monitor_enter(tds->monitor);
 			tds->failed = TRUE;
 			omrthread_monitor_exit(tds->monitor);
@@ -626,7 +626,7 @@ J9THREAD_PROC nanoTimeDirectionTest(void *arg)
 
 		finish = omrtime_nano_time();
 		if (finish <= start) {
-			omrtty_printf("\tTime did not go forward after omrthread_sleep, start=%llu, finish=%llu\n", start, finish);
+			portTestEnv->log(LEVEL_ERROR, "\tTime did not go forward after omrthread_sleep, start=%llu, finish=%llu\n", start, finish);
 			omrthread_monitor_enter(tds->monitor);
 			tds->failed = TRUE;
 			omrthread_monitor_exit(tds->monitor);
@@ -639,7 +639,7 @@ J9THREAD_PROC nanoTimeDirectionTest(void *arg)
 	if (omrtimeTestDirectionNumThreads == tds->finishedCount) {
 		omrthread_monitor_notify(tds->monitor);
 	}
-	omrtty_printf("%zu ", tds->finishedCount);
+	portTestEnv->log("%zu ", tds->finishedCount);
 	omrthread_monitor_exit(tds->monitor);
 
 	return 0;

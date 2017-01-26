@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -4011,7 +4011,7 @@ TEST_F(PortFileTest2, file_test_long_file_name)
 		/* now append filePathName with the actual filename */
 		omrstr_printf(filePathName + strlen(filePathName), FILENAME_LENGTH - strlen(filePathName), "\\%s", testName);
 
-		omrtty_printf("\ttesting filename: %s\n", filePathName);
+		portTestEnv->log("\ttesting filename: %s\n", filePathName);
 
 		/* can we open and write to the file? */
 		fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filePathName, EsOpenCreate | EsOpenWrite, 0666);

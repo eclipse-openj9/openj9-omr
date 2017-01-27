@@ -11316,29 +11316,44 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vsub:
       case TR::vmul:
       case TR::vdiv:
-         return true;
+      case TR::vneg:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vrem:
-         return false;
-     case TR::vload:
-     case TR::vloadi:
-     case TR::vstore:
-     case TR::vstorei:
-     case TR::vsplats:
-        return true;
-     case TR::vxor:
-     case TR::vor:
-     case TR::vand:
-        return true;
-     case TR::getvelem:
-        if (dt == TR::Int32 || dt == TR::Double)
-           return true;
-        break;
-     case TR::vsetelem:
-        return true;
-     case TR::vneg:
-     case TR::vushr:
-        return true;
-     default:
+         if (dt == TR::Int32 || dt == TR::Int64)
+            return true;
+         else
+            return false;
+      case TR::vload:
+      case TR::vloadi:
+      case TR::vstore:
+      case TR::vstorei:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
+         if (dt == TR::Int32 || dt == TR::Int64)
+            return true;
+         else
+            return false;
+      case TR::vsplats:
+      case TR::getvelem:
+      case TR::vsetelem:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vushr:
+         if (dt == TR::Int32 || dt == TR::Int64)
+            return true;
+         else
+            return false;
+      default:
         return false;
       }
 

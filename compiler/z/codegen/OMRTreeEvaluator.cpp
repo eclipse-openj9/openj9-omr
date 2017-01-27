@@ -19165,24 +19165,64 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *vectorReg = cg->evaluate(vectorChild);
    TR::Register *returnReg = NULL;
 
-   if (TR::Compiler->target.is32Bit() && cg->use64BitRegsOn32Bit() && node->getSize() == 8)
-      returnReg = cg->allocate64bitRegister();
-   else
-      returnReg = cg->allocateRegister();
+   TR::Register * lowRegister = NULL;
+   TR::Register * highRegister = NULL;
 
+   bool usePairReg = TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit() && vectorChild->getDataType() == TR::VectorInt64;
+
+   if (TR::Compiler->target.is32Bit() && cg->use64BitRegsOn32Bit() && node->getSize() == 8)
+      {
+      returnReg = cg->allocate64bitRegister();
+      }
+   else if (usePairReg)
+      {
+      lowRegister = cg->allocateRegister();
+      highRegister = cg->allocateRegister();
+      returnReg = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
+      }
+   else
+      {
+      returnReg = cg->allocateRegister();
+      }
+
+   /*
+    * Using pair regs to return 64 bit data in 32 bit registers is a special case.
+    * To read 64 bit element 0, it will read 32 bit elements 0 and 1 instead.
+    * To read 64 bit element 1, it will read 32 bit elements 2 and 3 instead.
+    * The index provided to VLGV is adjusted accordingly
+    */
    TR::MemoryReference *memRef = NULL;
    if (elementChild->getOpCode().isLoadConst())
       {
-      memRef = generateS390MemoryReference(elementChild->get64bitIntegralValue(), cg);
+      if (usePairReg)
+         {
+         memRef = generateS390MemoryReference(elementChild->get64bitIntegralValue() * 2, cg);
+         }
+      else
+         {
+         memRef = generateS390MemoryReference(elementChild->get64bitIntegralValue(), cg);
+         }
       }
    else
       {
       TR::Register *elementReg = cg->evaluate(elementChild);
+      if (usePairReg)
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLL, node, elementReg, 1); //shift left by 1 to perform multiplication by 2
+         }
       memRef = generateS390MemoryReference(elementReg, 0 , cg);
       cg->stopUsingRegister(elementReg);
       }
 
-   generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg, vectorReg, memRef, getVectorElementSizeMask(vectorChild));
+   if (usePairReg)
+      {
+      generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg->getHighOrder(), vectorReg, memRef, 2); //original index * 2 is used
+      generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg->getLowOrder(),  vectorReg, generateS390MemoryReference(*memRef, 1, cg), 2); //(original index * 2) + 1 is used
+      }
+   else
+      {
+      generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, returnReg, vectorReg, memRef, getVectorElementSizeMask(vectorChild));
+      }
 
    TR::DataType dt = vectorChild->getDataType();
    bool isUnsigned = (!node->getType().isInt64() && node->isUnsigned());
@@ -19307,14 +19347,27 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       {
       TR::Register *valueReg = cg->evaluate(valueNode);
 
+      bool usePairReg = valueReg->getRegisterPair() != NULL;
+
       TR::MemoryReference *memRef = NULL;
       if (elementNode->getOpCode().isLoadConst())
          {
-         memRef = generateS390MemoryReference(elementNode->get64bitIntegralValue(), cg);
+         if (usePairReg)
+            {
+            memRef = generateS390MemoryReference(elementNode->get64bitIntegralValue() * 2, cg);
+            }
+         else
+            {
+            memRef = generateS390MemoryReference(elementNode->get64bitIntegralValue(), cg);
+            }
          }
       else
          {
          TR::Register *elementReg = cg->evaluate(elementNode);
+         if (usePairReg)
+            {
+            generateRSInstruction(cg, TR::InstOpCode::SLL, node, elementReg, 1); //shift left by 1 to perform multiplication by 2
+            }
          memRef = generateS390MemoryReference(elementReg, 0 , cg);
          cg->stopUsingRegister(elementReg);
          }
@@ -19328,7 +19381,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          }
 
       // On 31-bit an 8-byte sized child may come in a register pair so we have to handle this case specially
-      if (valueReg->getRegisterPair() != NULL)
+      if (usePairReg)
          {
          if (getVectorElementSizeMask(size) == 3)
             {

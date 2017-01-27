@@ -562,11 +562,10 @@ TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::Code
    return TR::TreeEvaluator::dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
    }
 
-
-
 TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
+   static bool disableDirectMove = feGetEnv("TR_disableDirectMove") ? true : false;
 
    if (node->getDataType() == TR::VectorInt8)
       {
@@ -621,48 +620,77 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    else if (node->getDataType() == TR::VectorInt32)
       {
       TR::Register *tempReg = cg->evaluate(child);
-      TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::Int32);
-      generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg), tempReg);
-      cg->stopUsingRegister(tempReg);
-
       TR::Register *resReg = cg->allocateRegister(TR_VRF);
-      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg);
-      tempMR->forceIndexedForm(node, cg);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxsdx, node, resReg, tempMR);
-      tempMR->decNodeReferenceCounts(cg);
+
+      if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
+         {
+         generateMvFprGprInstructions(cg, node, gprLow2fpr, false, resReg, tempReg);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 0x1);
+         }
+      else
+         {
+         TR::SymbolReference    *localTemp = cg->allocateLocalTemp(TR::Int32);
+         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg), tempReg);
+
+         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, localTemp, 4, cg);
+         tempMR->forceIndexedForm(node, cg);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxsdx, node, resReg, tempMR);
+         tempMR->decNodeReferenceCounts(cg);
 #if defined(__LITTLE_ENDIAN__)
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 1);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 1);
 #else
-      generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 0);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, resReg, resReg, 0);
 #endif
+         }
+
+      cg->stopUsingRegister(tempReg);
       node->setRegister(resReg);
       cg->decReferenceCount(child);
+
       return resReg;
       }
    else if (node->getDataType() == TR::VectorInt64)
       {
-      TR::SymbolReference    *temp    = cg->allocateLocalTemp(TR::Int64);
-      TR::MemoryReference *tempMR  = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 8, cg);
       TR::Register *srcReg = cg->evaluate(child);
+      TR::Register *trgReg = cg->allocateRegister(TR_VSX_VECTOR);
 
-      if (TR::Compiler->target.is64Bit())
+      if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
          {
-         generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, tempMR, srcReg);
+         if (TR::Compiler->target.is64Bit())
+            {
+            generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, trgReg, trgReg, trgReg, 0x0);
+            }
+         else
+            {
+            TR::Register *tempVectorReg = cg->allocateRegister(TR_VSX_VECTOR);
+            generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder(), tempVectorReg);
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxpermdi, node, trgReg, trgReg, trgReg, 0x0);
+            cg->stopUsingRegister(tempVectorReg);
+            }
          }
       else
          {
-         TR::MemoryReference *tempMR2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 4, 4, cg);
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR, srcReg->getHighOrder());
-         generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR2, srcReg->getLowOrder());
+         TR::SymbolReference *temp   = cg->allocateLocalTemp(TR::Int64);
+         TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, temp, 8, cg);
+
+         if (TR::Compiler->target.is64Bit())
+            {
+            generateMemSrc1Instruction(cg, TR::InstOpCode::std, node, tempMR, srcReg);
+            }
+         else
+            {
+            TR::MemoryReference *tempMR2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMR, 4, 4, cg);
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR, srcReg->getHighOrder());
+            generateMemSrc1Instruction(cg, TR::InstOpCode::stw, node, tempMR2, srcReg->getLowOrder());
+            }
+
+         TR::Register *tmpReg = cg->allocateRegister();
+         generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
+         tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
+         cg->stopUsingRegister(tmpReg);
+         generateTrg1MemInstruction(cg, TR::InstOpCode::lxvdsx, node, trgReg, tempMR);
          }
-
-      TR::Register *tmpReg = cg->allocateRegister();
-      generateTrg1MemInstruction(cg, TR::InstOpCode::addi2, node, tmpReg, tempMR);
-      tempMR = new (cg->trHeapMemory()) TR::MemoryReference(NULL, tmpReg, 16, cg);
-      cg->stopUsingRegister(tmpReg);
-
-      TR::Register *trgReg = cg->allocateRegister(TR_VSX_VECTOR);
-      generateTrg1MemInstruction(cg, TR::InstOpCode::lxvdsx, node, trgReg, tempMR);
 
       node->setRegister(trgReg);
       cg->decReferenceCount(child);
@@ -671,7 +699,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    else if (node->getDataType() == TR::VectorFloat)
       {
       TR::Register   *srcReg = cg->evaluate(child);
-      TR::Register   *trgReg  = cg->allocateRegister(TR_VSX_VECTOR);
+      TR::Register   *trgReg  = cg->allocateRegister(TR_VRF);
 
       generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvdpsp, node, trgReg, srcReg);
       generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, trgReg, trgReg, 0);

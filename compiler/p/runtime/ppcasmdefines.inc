@@ -416,6 +416,37 @@
         .int 0x100005c8 | \vrt << 21 | \vra << 16
         .endm
 
+        .macro lxvd2x   xt, ra, rb
+        .int 0x7C000698 | (\xt & 31) << 21 | \ra << 16 | \rb << 11 | (\xt & 32) >> 5
+        .endm
+        .macro stxvd2x   xt, ra, rb
+        .int 0x7C000798 | (\xt & 31) << 21 | \ra << 16 | \rb << 11 | (\xt & 32) >> 5
+        .endm
+        .macro vspltw   vrt, vra, uim
+        .int 0x1000028C | \vrt << 21 | (\uim & 3) << 16 | \vra << 11
+        .endm
+        .macro vnor      vrt, vra, vrb
+        .int 0x10000504 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vadduws vrt, vra, vrb
+        .int 0x10000280 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vadduwm vrt, vra, vrb
+        .int 0x10000080 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vaddudm vrt, vra, vrb
+        .int 0x100000C0 | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vmrgew vrt, vra, vrb
+        .int 0x1000078C | \vrt << 21 | \vra << 16 | \vrb << 11
+        .endm
+        .macro vshasigmad vrt, vra, st, six
+        .int 0x100006C2 | \vrt << 21 | \vra << 16 | (\st & 1) << 15 | (\six & 15) << 11
+        .endm
+        .macro vshasigmaw vrt, vra, st, six
+        .int 0x10000682 | \vrt << 21 | \vra << 16 | (\st & 1) << 15 | (\six & 15) << 11
+        .endm
+
         .macro vmulouw vrt, vra, vrb
         .int 0x10000088 | \vrt << 21 | \vra << 16 | \vrb << 11
         .endm
@@ -482,6 +513,13 @@
 #define VNCIPHER(vrt,vra,vrb)           .long 0x10000548 | vrt < 21 | vra < 16 | vrb < 11
 #define VNCIPHERLAST(vrt,vra,vrb)       .long 0x10000549 | vrt < 21 | vra < 16 | vrb < 11
 #define VSBOX(vrt,vra)                  .long 0x100005c8 | vrt < 21 | vra < 16
+#define VSPLTISB(vrt,sim)               .long 0x1000030C | vrt < 21 | sim < 16
+#define VSHASIGMAD(vrt,vra,st,six)      .long 0x100006C2 | vrt < 21 | vra < 16 | (st & 1) < 15 | (six & 15) < 11
+#define VSHASIGMAW(vrt,vra,st,six)      .long 0x10000682 | vrt < 21 | vra < 16 | (st & 1) < 15 | (six & 15) < 11
+#define LXVD2X(xt, ra, rb)              .long 0x7C000698 | (xt & 31) < 21 | ra < 16 | rb < 11 | (xt & 32) > 5
+#define STXVD2X(xt, ra, rb)             .long 0x7C000798 | (xt & 31) < 21 | ra < 16 | rb < 11 | (xt & 32) > 5
+#define VADDUDM(vrt, vra, vrb)          .long 0x100000C0 | vrt < 21 | vra < 16 | vrb < 11
+#define VMRGEW(vrt, vra, vrb)           .long 0x1000078C | vrt < 21 | vra < 16 | vrb < 11
 #define VMULOUW(vrt, vra, vrb)          .long 0x10000088 | vrt < 21 | vra < 16 | vrb < 11
 #define VMULEUW(vrt, vra, vrb)          .long 0x10000288 | vrt < 21 | vra < 16 | vrb < 11
 #define VADDUQM(vrt, vra, vrb)          .long 0x10000100 | vrt < 21 | vra < 16 | vrb < 11
@@ -503,6 +541,13 @@
 #define VNCIPHER(vrt,vra,vrb)           vncipher        vrt, vra, vrb
 #define VNCIPHERLAST(vrt,vra,vrb)       vncipherlast    vrt, vra, vrb
 #define VSBOX(vrt,vra)                  vsbox           vrt, vra, vrb
+#define VSPLTISB(vrt,sim)               vspltisb         vrt, sim
+#define VSHASIGMAD(vrt,vra,st,six)      vshasigmad       vrt, vra, st, six
+#define VSHASIGMAW(vrt,vra,st,six)      vshasigmaw       vrt, vra, st, six
+#define LXVD2X(xt, ra, rb)              lxvd2x   xt, ra, rb
+#define STXVD2X(xt, ra, rb)             stxvd2x   xt, ra, rb
+#define VADDUDM(vrt, vra, vrb)          vaddudm vrt, vra, vrb
+#define VMRGEW(vrt, vra, vrb)           vmrgew vrt, vra, vrb
 #define VMULOUW(vrt, vra, vrb)          vmulouw vrt, vra, vrb
 #define VMULEUW(vrt, vra, vrb)          vmuleuw vrt, vra, vrb
 #define VADDUQM(vrt, vra, vrb)          vadduqm vrt, vra, vrb
@@ -519,6 +564,16 @@
 #define MTVSRD(vrt,ra)                  mtvsrd          vrt, ra
 #define MTVSRWZ(vrt,ra)                 mtvsrwz         vrt, ra
 #endif
+
+#define VSHASIGMA_256_s0(vrt,vra)   VSHASIGMAW(vrt,vra,0,0)
+#define VSHASIGMA_256_s1(vrt,vra)   VSHASIGMAW(vrt,vra,0,15)
+#define VSHASIGMA_256_S0(vrt,vra)   VSHASIGMAW(vrt,vra,1,0)
+#define VSHASIGMA_256_S1(vrt,vra)   VSHASIGMAW(vrt,vra,1,15)
+
+#define VSHASIGMA_512_s0(vrt,vra)   VSHASIGMAD(vrt,vra,0,0)
+#define VSHASIGMA_512_s1(vrt,vra)   VSHASIGMAD(vrt,vra,0,15)
+#define VSHASIGMA_512_S0(vrt,vra)   VSHASIGMAD(vrt,vra,1,0)
+#define VSHASIGMA_512_S1(vrt,vra)   VSHASIGMAD(vrt,vra,1,15)
 
 #if defined(LINUXPPC64)
 #if defined(__LITTLE_ENDIAN__)

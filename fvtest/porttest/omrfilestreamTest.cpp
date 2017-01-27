@@ -697,7 +697,7 @@ TEST(PortFileStreamTest, omrfilestream_test_file_owner_and_group_attributes)
 	}
 
 	if (myGid != fileGid) {
-		outputComment(OMRPORTLIB, "unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
+		portTestEnv->log("unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
 		rc = omrfile_stat(".", 0, &stat);
 		if (rc != 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_stat(%s, ..) returned %d expected %d\n", ".", rc, 0);

@@ -115,12 +115,13 @@ asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *hand
 	omrthread_monitor_t monitor = *(info->monitor);
 
 	omrthread_monitor_enter(monitor);
-
-	outputComment(OMRPORTLIB, "\t\tasyncTestHandler invoked (type = 0x%x)\n", gpType);
+	portTestEnv->changeIndent(2);
+	portTestEnv->log("asyncTestHandler invoked (type = 0x%x)\n", gpType);
 	if (info->expectedType != gpType) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "asyncTestHandler -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
 	}
 
+	portTestEnv->changeIndent(-2);
 	info->controlFlag = 1;
 	omrthread_monitor_notify(monitor);
 	omrthread_monitor_exit(monitor);
@@ -237,23 +238,23 @@ validateGPInfo(struct OMRPortLibrary *portLibrary, uint32_t gpType, omrsig_handl
 
 			switch (infoKind) {
 			case OMRPORT_SIG_VALUE_16:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%04X\n", category, index, name, *(U_16 *)value);
+				portTestEnv->log("info %u:%u: %s=%04X\n", category, index, name, *(U_16 *)value);
 				break;
 			case OMRPORT_SIG_VALUE_32:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%08.8x\n", category, index, name, *(uint32_t *)value);
+				portTestEnv->log("info %u:%u: %s=%08.8x\n", category, index, name, *(uint32_t *)value);
 				break;
 			case OMRPORT_SIG_VALUE_64:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%016.16llx\n", category, index, name, *(uint64_t *)value);
+				portTestEnv->log("info %u:%u: %s=%016.16llx\n", category, index, name, *(uint64_t *)value);
 				break;
 			case OMRPORT_SIG_VALUE_STRING:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%s\n", category, index, name, (const char *)value);
+				portTestEnv->log("info %u:%u: %s=%s\n", category, index, name, (const char *)value);
 				break;
 			case OMRPORT_SIG_VALUE_ADDRESS:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%p\n", category, index, name, *(void **)value);
+				portTestEnv->log("info %u:%u: %s=%p\n", category, index, name, *(void **)value);
 				break;
 			case OMRPORT_SIG_VALUE_FLOAT_64:
 				/* make sure when casting to a float that we get least significant 32-bits. */
-				outputComment(OMRPORTLIB,
+				portTestEnv->log(
 							  "info %u:%u: %s=%016.16llx (f: %f, d: %e)\n",
 							  category, index, name,
 							  *(uint64_t *)value, (float)LOW_U32_FROM_DBL_PTR(value), *(double *)value);
@@ -264,7 +265,7 @@ validateGPInfo(struct OMRPortLibrary *portLibrary, uint32_t gpType, omrsig_handl
 						const uint64_t h = v->high64;
 						const uint64_t l = v->low64;
 
-						outputComment(OMRPORTLIB, "info %u:%u: %s=%016.16llx%016.16llx\n", category, index, name, h, l);
+						portTestEnv->log("info %u:%u: %s=%016.16llx%016.16llx\n", category, index, name, h, l);
 					}
 				break;
 			case OMRPORT_SIG_VALUE_UNDEFINED:
@@ -385,7 +386,7 @@ simpleHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void 
 	SigProtectHandlerInfo *info = (SigProtectHandlerInfo *)handler_arg;
 	const char *testName = info->testName;
 
-	outputComment(OMRPORTLIB, "simpleHandlerFunction invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("simpleHandlerFunction invoked (type = 0x%x)\n", gpType);
 
 	if (info->expectedType != gpType) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "simpleHandlerFunction -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
@@ -421,7 +422,7 @@ crashingHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, voi
 	const char *testName = (const char *)handler_arg;
 	static int recursive = 0;
 
-	outputComment(OMRPORTLIB, "crashingHandlerFunction invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("crashingHandlerFunction invoked (type = 0x%x)\n", gpType);
 
 	if (recursive++) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "handler invoked recursively\n");
@@ -1061,7 +1062,7 @@ TEST(PortSigTest, sig_test8)
 							simpleHandlerFunction, &handlerInfo,
 							flags,
 							&result);
-		outputComment(OMRPORTLIB, "omrsig_test8 protectResult=%d\n", protectResult);
+		portTestEnv->log("omrsig_test8 protectResult=%d\n", protectResult);
 #if defined(WIN64)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");

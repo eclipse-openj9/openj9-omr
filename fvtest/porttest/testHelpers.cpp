@@ -295,6 +295,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 {
 	uintptr_t rc = 1;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	portTestEnv->changeIndent(1);
 
 #if defined(J9ZOS390)
 	char dumpName[EsMaxPath] = {0};
@@ -307,12 +308,12 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 		strncpy(ending, ".X001", 5);
 	}
 
-	outputComment(OMRPORTLIB, "\tchecking for data set: %s\n", dumpName);
+	portTestEnv->log("checking for data set: %s\n", dumpName);
 	FILE *file = fopen(dumpName, "r");
 	if (NULL == file) {
 		outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tdata set: %s does not exist!\n", -1, fileName);
 	} else {
-		outputComment(OMRPORTLIB, "\tdata set: %s exists\n", dumpName);
+		portTestEnv->log("data set: %s exists\n", dumpName);
 		fclose(file);
 		rc = 0;
 	}
@@ -325,7 +326,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 
 	if (0 == fileStatRC) {
 		if (fileStat.isFile) {
-			outputComment(OMRPORTLIB, "\tfile: %s exists\n", fileName);
+			portTestEnv->log("file: %s exists\n", fileName);
 			rc = 0;
 		} else {
 			outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tfile: %s does not exist!\n", -1, fileName);
@@ -336,6 +337,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 	}
 #endif /* defined(J9ZOS390) */
 
+	portTestEnv->changeIndent(-1);
 	return rc;
 }
 

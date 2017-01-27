@@ -135,6 +135,7 @@ TEST(PortHeapTest, heap_test1)
 	uintptr_t j;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	/* Allocate backing storage using mem_allocate and pass in the returned pointer and the allocated size
 	 * Verify heap integrity after each heap operation
@@ -144,11 +145,11 @@ TEST(PortHeapTest, heap_test1)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to allocate %zu bytes for the heap\n", memAllocAmount);
 		goto exit;
 	} else {
-		outputComment(OMRPORTLIB, "allocPtr: 0x%p\n", allocPtr);
+		portTestEnv->log("allocPtr: 0x%p\n", allocPtr);
 	}
 
 	for (j = 0; j < (sizeof(heapSize) / sizeof(heapSize[0])); j++) {
-		outputComment(OMRPORTLIB, "test for heap size %zu bytes\n", heapSize[j]);
+		portTestEnv->log("test for heap size %zu bytes\n", heapSize[j]);
 		for (i = 0; i < 16; i++) {
 			/*we leave the first <heapStartOffset> bytes alone so that we can check if they are corrupted by heap operations*/
 			uint8_t *allocPtrAdjusted = allocPtr + (i + heapStartOffset);
@@ -186,6 +187,7 @@ TEST(PortHeapTest, heap_test1)
 		}
 	}
 	omrmem_free_memory(allocPtr);
+	portTestEnv->changeIndent(-1);
 
 exit:
 	reportTestExit(OMRPORTLIB, testName);
@@ -252,13 +254,13 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "failed to allocate the largest chunk\n");
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Largest possible chunk size: %zu bytes\n", largestAllocSize);
+	portTestEnv->log("Largest possible chunk size: %zu bytes\n", largestAllocSize);
 	walkHeap(OMRPORTLIB, heapBase, testName);
 
 	if (0 == randomSeed) {
 		randomSeed = (int)omrtime_current_time_millis();
 	}
-	outputComment(OMRPORTLIB, "Random seed value: %d. Add -srand:[seed] to the command line to reproduce this test manually.\n", randomSeed);
+	portTestEnv->log("Random seed value: %d. Add -srand:[seed] to the command line to reproduce this test manually.\n", randomSeed);
 	srand(randomSeed);
 
 	while (freeSerialNumber <= serialNumberTop) {
@@ -270,7 +272,7 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 		if (0 == operation) {
 			allocSize = rand() % allocSizeBoundary;
 			while ((subAllocMem = omrheap_allocate(heapBase, allocSize)) == NULL) {
-				/*outputComment(OMRPORTLIB, "**Failed omrheap_allocate, sizeRequested=%d\n", allocSize);*/
+				/*portTestEnv->log(LEVEL_ERROR, "**Failed omrheap_allocate, sizeRequested=%d\n", allocSize);*/
 				allocSize = allocSize * 3 / 4;
 				if (0 == allocSize) {
 					/* No space left on the heap, go to next loop omrmem_free_memory(allocHeapPtr);
@@ -292,7 +294,7 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 
 #if defined(HEAPTEST_VERBOSE)
 			if (0 == allocSerialNumber % outputInterval) {
-				outputComment(OMRPORTLIB, "Alloc: size=%zu, allocSerialNumber=%zu, elementCount=%zu\n", allocSize, allocSerialNumber, pool_numElements(allocPool));
+				portTestEnv->log("Alloc: size=%zu, allocSerialNumber=%zu, elementCount=%zu\n", allocSize, allocSerialNumber, pool_numElements(allocPool));
 			}
 #endif
 			verifySubAllocMem(OMRPORTLIB, subAllocMem, allocSize, heapBase, testName);
@@ -321,7 +323,7 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 
 #if defined(HEAPTEST_VERBOSE)
 			if (0 == reallocSerialNumber % outputInterval) {
-				outputComment(OMRPORTLIB, "Realloc: index=%zu, size=%zu, result=%p, reallocSerialNumber=%zu, elementCount=%zu\n",
+				portTestEnv->log("Realloc: index=%zu, size=%zu, result=%p, reallocSerialNumber=%zu, elementCount=%zu\n",
 							  reallocIndex, allocSize, subAllocMem, freeSerialNumber, pool_numElements(allocPool));
 			}
 #endif
@@ -341,7 +343,7 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 			omrheap_free(heapBase, subAllocPtr);
 #if defined(HEAPTEST_VERBOSE)
 			if (0 == freeSerialNumber % outputInterval) {
-				outputComment(OMRPORTLIB, "Freed: index=%zu, freeSerialNumber=%zu, elementCount=%zu\n", removeIndex, freeSerialNumber, pool_numElements(allocPool));
+				portTestEnv->log("Freed: index=%zu, freeSerialNumber=%zu, elementCount=%zu\n", removeIndex, freeSerialNumber, pool_numElements(allocPool));
 			}
 #endif
 			walkHeap(OMRPORTLIB, heapBase, testName);
@@ -816,7 +818,7 @@ TEST(PortHeapTest, heap_test_pmr_28277_999_760)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to allocate %zu bytes for the heap\n", heapSize);
 		goto exit;
 	} else {
-		outputComment(OMRPORTLIB, "allocPtr: 0x%p\n", allocPtr);
+		portTestEnv->log("\tallocPtr: 0x%p\n", allocPtr);
 	}
 
 	memset(allocPtr, 0xff, heapSize);
@@ -1267,15 +1269,15 @@ iteratePool(struct OMRPortLibrary *portLibrary, J9Pool *allocPool)
 	AllocListElement *element;
 
 	if (0 == pool_numElements(allocPool)) {
-		outputComment(OMRPORTLIB, "Pool has become empty");
+		portTestEnv->log("Pool has become empty");
 	} else {
 		element = pool_startDo(allocPool, &state);
 		do {
-			outputComment(OMRPORTLIB, "[%zu] ", element->allocSerialNumber);
+			portTestEnv->log("[%zu] ", element->allocSerialNumber);
 			element = pool_nextDo(&state);
 		} while (NULL != element);
 	}
-	outputComment(OMRPORTLIB, "\n\n");
+	portTestEnv->log("\n\n");
 #endif
 }
 
@@ -1317,6 +1319,7 @@ walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testN
 	uintptr_t heapSize, firstFreeBlock;
 	uint64_t *lastSlot, *blockTopPaddingCursor;
 	BOOLEAN firstFreeUnmatched = TRUE;
+	portTestEnv->changeIndent(1);
 
 	if (NULL == basePtr) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "\nHeap base is NULL\n");
@@ -1334,9 +1337,9 @@ walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testN
 	blockTopPaddingCursor = &basePtr[SIZE_OF_J9HEAP_HEADER / sizeof(uint64_t)];
 
 #if defined(HEAPTEST_VERBOSE)
-	outputComment(OMRPORTLIB, "J9Heap @ 0x%p: ", heapBase);
-	outputComment(OMRPORTLIB, "%zu|", heapSize);
-	outputComment(OMRPORTLIB, "%zu|", firstFreeBlock);
+	portTestEnv->log("J9Heap @ 0x%p: ", heapBase);
+	portTestEnv->log("%zu|", heapSize);
+	portTestEnv->log("%zu|", firstFreeBlock);
 #endif
 
 	while (((uintptr_t)blockTopPaddingCursor) < ((uintptr_t)lastSlot)) {
@@ -1372,13 +1375,14 @@ walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testN
 			return;
 		}
 #if defined(HEAPTEST_VERBOSE)
-		outputComment(OMRPORTLIB, "%lld|", topBlockSize);
+		portTestEnv->log("%lld|", topBlockSize);
 #endif
 		blockTopPaddingCursor = blockBottomPaddingCursor + 1;
 	}
 #if defined(HEAPTEST_VERBOSE)
-	outputComment(OMRPORTLIB, "\n");
+	portTestEnv->log("\n");
 #endif
+	portTestEnv->changeIndent(-1);
 }
 
 /**
@@ -1413,16 +1417,16 @@ TEST(PortHeapTest, heap_test2)
 	for (i = 0; i < 10; i += 1) {
 		rc |= omrheap_test2(OMRPORTLIB, randomSeed);
 		if (rc) {
-			outputComment(OMRPORTLIB, "omrheap_test2 failed loop %d\n\n", i);
+			portTestEnv->log(LEVEL_ERROR, "omrheap_test2 failed loop %d\n\n", i);
 			break;
 		} else {
-			outputComment(OMRPORTLIB, "omrheap_test2 passed loop %d.\n", i);
+			portTestEnv->log("omrheap_test2 passed loop %d.\n", i);
 			/* we check for time here and terminate this loop if we've run for too long */
 			if ((omrtime_current_time_millis() - timeStart) >= testDurationMin * 60 * 1000) {
-				outputComment(OMRPORTLIB, "We've run for too long, ending the test. This is not a test failure.\n\n");
+				portTestEnv->log("We've run for too long, ending the test. This is not a test failure.\n\n");
 				break;
 			}
-			outputComment(OMRPORTLIB, "\n\n");
+			portTestEnv->log("\n\n");
 		}
 	}
 	/* Output results */

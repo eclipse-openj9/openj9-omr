@@ -1651,6 +1651,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<killsAllMethod>";
          case TR::SymbolReferenceTable::usesAllMethodSymbol:
             return "<usesAllMethod>";
+         case TR::SymbolReferenceTable::synchronizedFieldLoadSymbol:
+            return "<synchronizedFieldLoad>";
          case TR::SymbolReferenceTable::atomicAdd32BitSymbol:
              return "<atomicAdd32Bit>";
          case TR::SymbolReferenceTable::atomicAdd64BitSymbol:
@@ -2122,6 +2124,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<j9methodExtraField>",
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
+   "<synchronizedFieldLoad>",
    "<atomicAdd32Bit>",
    "<atomicAdd64Bit>",
    "<atomicFetchAndAdd32Bit>",

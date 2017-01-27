@@ -455,12 +455,7 @@ TR_BitContainer TR_NodeAliasSetInterface<mayUseAliasSet>::getTRAliases(bool isDi
    TR::Compilation *comp = TR::comp();
    TR_BitContainer bc;
 
-   if (!_node->getOpCode().isLikeUse())
-      {
-      return bc;
-      }
-
-   if (_node->getOpCode().hasSymbolReference())
+   if (_node->getOpCode().isLikeUse() && _node->getOpCode().hasSymbolReference())
       bc = _node->getSymbolReference()->getUseonlyAliasesBV(comp->getSymRefTab());
    // else there is no symbol reference associated with the node, we return an empty bit container
 
@@ -472,15 +467,10 @@ TR_BitContainer TR_NodeAliasSetInterface<mayKillAliasSet>::getTRAliases(bool isD
    TR::Compilation *comp = TR::comp();
    TR_BitContainer bc;
 
-   if (!_node->getOpCode().isLikeDef() && !_node->mightHaveVolatileSymbolReference())
-      {
-      return bc;
-      }
-
-   if (_node->getOpCode().hasSymbolReference()) //we want the old behavior in these cases
+   if (_node->getOpCode().hasSymbolReference() && (_node->getOpCode().isLikeDef() || _node->mightHaveVolatileSymbolReference())) //we want the old behavior in these cases
       {
       if (_node->getSymbolReference()->sharesSymbol(includeGCSafePoint))
-         bc = _node->getSymbolReference()->getSymRefUseDefAliasesBV(comp, isDirectCall, includeGCSafePoint);
+         bc = _node->getSymbolReference()->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
       else
          bc = _node->getSymbolReference()->getReferenceNumber();
       }

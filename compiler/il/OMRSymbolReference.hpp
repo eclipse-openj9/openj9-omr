@@ -302,7 +302,6 @@ protected:
    friend class ::TR_SymAliasSetInterface;
 
    TR_BitVector *getUseonlyAliasesBV(TR::SymbolReferenceTable *symRefTab);
-   TR_BitVector *getSymRefUseDefAliasesBV(TR::Compilation *c, bool isDirectCall = false, bool gcSafe = false);
    TR_BitVector *getUseDefAliasesBV( bool isDirectCall = false, bool gcSafe = false);
 
    enum // flags

@@ -1724,7 +1724,7 @@ TR_Debug::printAliasInfo(TR::FILE *pOutFile, TR::SymbolReference * symRef)
    // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
-   TR_BitVector * useDefAliases = symRef->getSymRefUseDefAliasesBV(_comp);
+   TR_BitVector * useDefAliases = symRef->getUseDefAliasesBV();
    TR_BitVector * useOnlyAliases = symRef->getUseonlyAliasesBV(_comp->getSymRefTab());
    if (useDefAliases || useOnlyAliases)
       {

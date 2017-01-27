@@ -1064,14 +1064,6 @@ OMR::SymbolReference::setAliasedTo(TR_BitVector &bv, TR::SymbolReferenceTable *s
       }
    }
 
-TR_BitVector *
-OMR::SymbolReference::getSymRefUseDefAliasesBV(TR::Compilation *c,
-                                               bool isDirectCall,
-                                               bool gcSafe)
-   {
-   return self()->getUseDefAliasesBV(isDirectCall, gcSafe);
-   }
-
 /**
  * \pre SymRef must be for an ArrayShadow symbol.
  */

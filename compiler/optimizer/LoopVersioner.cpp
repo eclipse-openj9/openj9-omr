@@ -4098,13 +4098,15 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (!refineAliases() && _canPredictIters && !comp()->isProfilingCompilation() &&
          performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
          {
-         TR::Node *duplicateLoopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree();
+         TR::Node *duplicateLoopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTreeForCodeMotion();
          if (isIncreasing)
-            duplicateLoopLimit = TR::Node::create(TR::isub, 2, duplicateLoopLimit, _loopTestTree->getNode()->getFirstChild()->duplicateTree());
+            {
+            duplicateLoopLimit = TR::Node::create(TR::isub, 2, duplicateLoopLimit, _loopTestTree->getNode()->getFirstChild()->duplicateTreeForCodeMotion());
+            }
          else
             {
             //printf("Eliminating an async on decreasing guard in %s\n", comp()->signature());
-            duplicateLoopLimit = TR::Node::create(TR::isub, 2, _loopTestTree->getNode()->getFirstChild()->duplicateTree(), duplicateLoopLimit);
+            duplicateLoopLimit = TR::Node::create(TR::isub, 2, _loopTestTree->getNode()->getFirstChild()->duplicateTreeForCodeMotion(), duplicateLoopLimit);
             }
          collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, duplicateLoopLimit, &comparisonTrees, clonedLoopInvariantBlock, comp()->incVisitCount());
     TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, duplicateLoopLimit, TR::Node::create(duplicateLoopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());

@@ -72,9 +72,9 @@ MM_MarkedObjectPopulator::populateObjectHeapBufferedIteratorCache(omrobjectptr_t
 		} else {
 			/* set startPtr to just past the last object seen */
 #if defined(OMR_GC_MINIMUM_OBJECT_SIZE)
-			state->data1 = ((uintptr_t)object) + J9_GC_MINIMUM_OBJECT_SIZE;
+			state->data1 = ((uintptr_t)object) + OMR_MINIMUM_OBJECT_SIZE;
 #else /* OMR_GC_MINIMUM_OBJECT_SIZE */
-			state->data1 = ((uintptr_t)object) + sizeof(J9Object);
+			state->data1 = ((uintptr_t)object) + sizeof(uintptr_t);
 #endif /* OMR_GC_MINIMUM_OBJECT_SIZE */
 		}
 	}

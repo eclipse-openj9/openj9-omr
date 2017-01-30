@@ -292,16 +292,8 @@ MM_Configuration::initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase*
 
 #endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
-#define MINIMUM_OBJECT_ALIGNMENT 0x8
-#define MINIMUM_OBJECT_ALIGNMENT_SHIFT 0x3
-	uintptr_t objectAlignmentInBytes = OMR_MAX((uintptr_t)1 << omrVM->_compressedPointersShift, MINIMUM_OBJECT_ALIGNMENT);
-	uintptr_t objectAlignmenShift = OMR_MAX(omrVM->_compressedPointersShift, MINIMUM_OBJECT_ALIGNMENT_SHIFT);
-
-	extensions->objectModel.setObjectAlignmentInBytes(objectAlignmentInBytes);
-	extensions->objectModel.setObjectAlignmentShift(objectAlignmenShift);
-
-	omrVM->_objectAlignmentInBytes = objectAlignmentInBytes;
-	omrVM->_objectAlignmentShift = objectAlignmenShift;
+	/* set object alignment factors in the object model and in the OMR VM */
+	extensions->objectModel.setObjectAlignment(omrVM);
 
 	return true;
 }

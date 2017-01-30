@@ -34,7 +34,6 @@ class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
 
 #define J9_GC_OBJECT_ALIGNMENT_IN_BYTES 0x8
-#define J9_GC_MINIMUM_OBJECT_SIZE 0x10
 
 /**
  * Provides information for a given object.
@@ -77,8 +76,8 @@ public:
 		sizeInBytes =  (sizeInBytes + (_objectAlignmentInBytes - 1)) & (uintptr_t)~(_objectAlignmentInBytes - 1);
 
 #if defined(OMR_GC_MINIMUM_OBJECT_SIZE)
-		if (sizeInBytes < J9_GC_MINIMUM_OBJECT_SIZE) {
-			sizeInBytes = J9_GC_MINIMUM_OBJECT_SIZE;
+		if (sizeInBytes < OMR_MINIMUM_OBJECT_SIZE) {
+			sizeInBytes = OMR_MINIMUM_OBJECT_SIZE;
 		}
 #endif /* OMR_GC_MINIMUM_OBJECT_SIZE */
 
@@ -159,21 +158,9 @@ public:
 	}
 
 	MMINLINE uintptr_t
-	getConsumedSizeInSlotsWithHeader(omrobjectptr_t objectPtr)
-	{
-		return MM_Bits::convertBytesToSlots(getConsumedSizeInBytesWithHeader(objectPtr));
-	}
-
-	MMINLINE uintptr_t
 	getConsumedSizeInBytesWithHeader(omrobjectptr_t objectPtr)
 	{
 		return adjustSizeInBytes(getSizeInBytesWithHeader(objectPtr));
-	}
-
-	MMINLINE uintptr_t
-	getConsumedSizeInBytesWithHeaderForMove(omrobjectptr_t objectPtr)
-	{
-		return getConsumedSizeInBytesWithHeader(objectPtr);
 	}
 
 	MMINLINE uintptr_t
@@ -181,30 +168,6 @@ public:
 	{
 #error provide an implementation of how big objects are including any header data associated with each object
 	}
-
-#if defined(OMR_GC_MODRON_COMPACTION)
-	/**
-	 * Before objects are moved during compaction is there any language specific updates
-	 * @param vmThread - the thread performing the work
-	 * @param objectPtr Pointer to an object
-	 */
-	MMINLINE void
-	preMove(OMR_VMThread* vmThread, omrobjectptr_t objectPtr)
-	{
-
-	}
-
-	/**
-	 * After objects are moved during compaction is there any language specific updates
-	 * @param vmThread - the thread performing the work
-	 * @param objectPtr Pointer to an object
-	 */
-	MMINLINE void
-	postMove(OMR_VMThread* vmThread, omrobjectptr_t objectPtr)
-	{
-		/* do nothing */
-	}
-#endif /* OMR_GC_MODRON_COMPACTION */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/**

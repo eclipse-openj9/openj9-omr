@@ -21,6 +21,7 @@
 
 #include "omrcfg.h"
 #include "modronopt.h"
+#include "ModronAssertions.h"
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 

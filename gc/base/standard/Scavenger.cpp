@@ -1111,7 +1111,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 	if (NULL != objectPtr) {
 		if (isObjectInEvacuateMemory(objectPtr)) {
 			/* Object needs to be copy and forwarded.  Check if the work has already been done */
-			MM_ForwardedHeader forwardHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+			MM_ForwardedHeader forwardHeader(objectPtr);
 			omrobjectptr_t forwardPtr = forwardHeader.getForwardedObject();
 
 			if (NULL != forwardPtr) {
@@ -1132,7 +1132,7 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 			}
 		} else if (isObjectInNewSpace(objectPtr)) {
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
-			MM_ForwardedHeader forwardHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+			MM_ForwardedHeader forwardHeader(objectPtr);
 			Assert_MM_true(!forwardHeader.isForwardedPointer());
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
 			/* When slot has been scanned before, and is already copied or forwarded
@@ -1220,7 +1220,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	uintptr_t oldObjectAge = objectAge;
 
 	/* Object is in the evacuate space but not forwarded. */
-	_extensions->objectModel.calculateObjectDetailsForCopy(forwardedHeader, &objectCopySizeInBytes, &objectReserveSizeInBytes, &hotFieldsDescriptor);
+	_extensions->objectModel.calculateObjectDetailsForCopy(env, forwardedHeader, &objectCopySizeInBytes, &objectReserveSizeInBytes, &hotFieldsDescriptor);
 
 	Assert_MM_objectAligned(env, objectReserveSizeInBytes);
 
@@ -2094,7 +2094,7 @@ MM_Scavenger::rememberObject(MM_EnvironmentStandard *env, omrobjectptr_t objectP
 {
 	/* Try to set the REMEMBERED bit in the flags field (if it hasn't already been set) */
 	if(!isObjectInNewSpace(objectPtr)) {
-		if(_extensions->objectModel.atomicSetRemembered(objectPtr)) {
+		if(_extensions->objectModel.atomicSetRememberedState(objectPtr, STATE_REMEMBERED)) {
 			/* The object has been successfully marked as REMEMBERED - allocate an entry in the remembered set */
 			addToRememberedSetFragment(env, objectPtr);
 		}
@@ -2193,7 +2193,7 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 	}
 
 	/* The remembered state of a class object also depends on the class statics */
-	if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
 		return _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
 	}
 
@@ -2209,7 +2209,7 @@ MMINLINE bool
 MM_Scavenger::scavengeRememberedObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
 	bool shouldBeBemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, NULL);
-	if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
 		shouldBeBemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
 	}
 	return shouldBeBemembered;
@@ -2434,7 +2434,7 @@ MM_Scavenger::scavengeRememberedSetList(MM_EnvironmentStandard *env)
 				 */
 				*slotPtr = (omrobjectptr_t)((uintptr_t)*slotPtr | DEFERRED_RS_REMOVE_FLAG);
 				bool shouldBeRemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, slotPtr);
-				if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+				if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
 					shouldBeRemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
 				}
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -2488,7 +2488,7 @@ MM_Scavenger::copyAndForwardThreadSlot(MM_EnvironmentStandard *env, omrobjectptr
 		} else {
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 			if (_extensions->isOld(objectPtr)) {
-				if(_extensions->objectModel.atomicSetObjectCurrentlyReferenced(objectPtr)) {
+				if(_extensions->objectModel.atomicSwitchReferencedState(objectPtr, OMR_TENURED_STACK_OBJECT_RECENTLY_REFERENCED, OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED)) {
 					Trc_MM_ParallelScavenger_copyAndForwardThreadSlot_renewingRememberedObject(env->getLanguageVMThread(), objectPtr,
 							OMR_TENURED_STACK_OBJECT_RECENTLY_REFERENCED);
 				}
@@ -2508,7 +2508,7 @@ MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *obje
 			/* the slot is still pointing at evacuate memory. This means that it must have been left unforwarded
 			 * in the first pass so that we would process it here.
 			 */
-			MM_ForwardedHeader forwardedHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+			MM_ForwardedHeader forwardedHeader(objectPtr);
 			omrobjectptr_t tenuredObjectPtr = forwardedHeader.getForwardedObject();
 
 			Trc_MM_ParallelScavenger_rescanThreadSlot_rememberedObject(env->getLanguageVMThread(), tenuredObjectPtr);
@@ -2518,7 +2518,7 @@ MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *obje
 
 			*objectPtrIndirect = tenuredObjectPtr;
 			rememberObject(env, tenuredObjectPtr);
-			_extensions->objectModel.setObjectCurrentlyReferenced(tenuredObjectPtr);
+			_extensions->objectModel.setRememberedBits(tenuredObjectPtr, OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED);
 		}
 	}
 }
@@ -2893,7 +2893,7 @@ MMINLINE uintptr_t
 MM_Scavenger::copyCacheDistanceMetric(MM_CopyScanCacheStandard* copyCache)
 {
 	/* (best estimate) distance from first reference slot to prospective referent copy location */
-	return ((uintptr_t)copyCache->cacheAlloc - ((uintptr_t)copyCache->scanCurrent + J9_GC_MINIMUM_OBJECT_SIZE));
+	return ((uintptr_t)copyCache->cacheAlloc - ((uintptr_t)copyCache->scanCurrent + OMR_MINIMUM_OBJECT_SIZE));
 }
 
 MMINLINE MM_CopyScanCacheStandard *
@@ -2998,7 +2998,7 @@ MM_Scavenger::backOutFixSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 	omrobjectptr_t objectPtr = *slotPtr;
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+		MM_ForwardedHeader forwardHeader(objectPtr);
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
 			*slotPtr = forwardHeader.getReverseForwardedPointer();
@@ -3019,7 +3019,7 @@ MM_Scavenger::backOutFixSlot(GC_SlotObject *slotObject)
 	omrobjectptr_t objectPtr = slotObject->readReferenceFromSlot();
 
 	if(NULL != objectPtr) {
-		MM_ForwardedHeader forwardHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+		MM_ForwardedHeader forwardHeader(objectPtr);
 		Assert_MM_false(forwardHeader.isForwardedPointer());
 		if (forwardHeader.isReverseForwardedPointer()) {
 			slotObject->writeReferenceToSlot(forwardHeader.getReverseForwardedPointer());
@@ -3050,7 +3050,7 @@ MM_Scavenger::backOutObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t obje
 		}
 	}
 
-	if (_extensions->objectModel.hasIndirectObjectReferents(env->getLanguageVMThread(), objectPtr)) {
+	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
 		_cli->scavenger_backOutIndirectObjectSlots(env, objectPtr);
 	}
 }
@@ -3076,7 +3076,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+				MM_ForwardedHeader header(objectPtr);
 				if (header.isForwardedPointer()) {
 					omrobjectptr_t forwardedObject = header.getForwardedObject();
 					omrobjectptr_t originalObject = header.getObject();
@@ -3115,7 +3115,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 			omrobjectptr_t objectPtr = NULL;
 
 			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+				MM_ForwardedHeader header(objectPtr);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 				uint32_t originalOverlap = header.getPreservedOverlap();
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
@@ -3186,12 +3186,13 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 					omrobjectptr_t objectPtr = NULL;
 					omrobjectptr_t fwdObjectPtr = NULL;
 					while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-						MM_ForwardedHeader header(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET);
+						MM_ForwardedHeader header(objectPtr);
 						fwdObjectPtr = header.getForwardedObject();
 						if (NULL != fwdObjectPtr) {
 							if(_extensions->objectModel.isRemembered(fwdObjectPtr)) {
 								_extensions->objectModel.clearRemembered(fwdObjectPtr);
 							}
+#if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
 							/* Move to the next object - the heap iterator is incapable of dealing with
 							 * tagged class pointers.
 							 */
@@ -3199,12 +3200,16 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 							 * This approach won't work if the flags of the original (i.e. evacuate space)
 							 * object are destroyed.
 							 */
-							if(_extensions->objectModel.isObjectJustHasBeenMoved(fwdObjectPtr)) {
+							if(_extensions->objectModel.hasRecentlyBeenMoved(fwdObjectPtr)) {
 								uintptr_t size = _extensions->objectModel.getSizeInBytesWithHeader(fwdObjectPtr);
 								size = _extensions->objectModel.adjustSizeInBytes(size);
 								evacuateHeapIterator.advance(size);
-							} else
+							} else {
 								evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
+							}
+#else
+							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
+#endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
 						}
 					}
 				}
@@ -3261,7 +3266,7 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 					objectPtr = *slotPtr;
 
 					if(objectPtr) {
-						if (MM_ForwardedHeader(objectPtr, OMR_OBJECT_METADATA_SLOT_OFFSET).isReverseForwardedPointer()) {
+						if (MM_ForwardedHeader(objectPtr).isReverseForwardedPointer()) {
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 							omrtty_printf("{SCAV: Back out remove RS object %p[%p]}\n", objectPtr, *objectPtr);
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */

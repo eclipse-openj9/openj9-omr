@@ -27,6 +27,7 @@
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "GlobalCollector.hpp"
+#include "ObjectAllocationModel.hpp"
 #include "ObjectAllocationInterface.hpp"
 #include "ObjectModel.hpp"
 #include "omr.h"
@@ -87,7 +88,8 @@ testMain(int argc, char ** argv, char **envp)
 	uintptr_t allocatedCount = 0;
 	uintptr_t adjustedSize = extensions->objectModel.adjustSizeInBytes(allocSize);
 	while (true) {
-		omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_AllocateNoGC(omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, allocSize, allocatedFlags);
+		MM_ObjectAllocationModel allocationModel(env, allocSize, allocatedFlags);
+		omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_AllocateObject(omrVMThread, &allocationModel);
 		if (NULL != obj) {
 			RootEntry rEntry = {"root1", obj};
 			RootEntry *entryInTable = (RootEntry *)hashTableAdd(exampleVM.rootTable, &rEntry);
@@ -111,7 +113,8 @@ testMain(int argc, char ** argv, char **envp)
 	Assert_MM_true(allocatedTotalBytes == allocationTotalBytes);
 
 	/* Force GC to print verbose system allocation stats -- should match thread allocation stats from before GC */
-	omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_Allocate(omrVMThread, OMR_EXAMPLE_ALLOCATION_CATEGORY, allocSize, allocatedFlags);
+	MM_ObjectAllocationModel allocationModel(env, allocSize, allocatedFlags);
+	omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_AllocateObject(omrVMThread, &allocationModel);
 	Assert_MM_false(NULL == obj);
 
 	omrtty_printf("ALL TESTS PASSED\n");

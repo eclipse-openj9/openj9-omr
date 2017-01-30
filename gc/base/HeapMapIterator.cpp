@@ -92,7 +92,7 @@ MM_HeapMapIterator::nextObject()
 			omrobjectptr_t nextObject = (omrobjectptr_t)_heapSlotCurrent;
 			uintptr_t sizeInHeapMapBits = 1;
 			if (_useLargeObjectOptimization) {
-				sizeInHeapMapBits = _extensions->objectModel.getConsumedSizeInSlotsWithHeader(nextObject) / J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT;
+				sizeInHeapMapBits = MM_Bits::convertBytesToSlots(_extensions->objectModel.getConsumedSizeInBytesWithHeader(nextObject)) / J9MODRON_HEAP_SLOTS_PER_HEAPMAP_BIT;
 			}
 
 			/* Jump over the body of the object */

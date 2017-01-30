@@ -102,6 +102,10 @@
 #define MINIMUM_OLD_SPACE_SIZE ((uintptr_t) (MINIMUM_VM_SIZE/2))
 #define MINIMUM_NEW_SPACE_SIZE ((uintptr_t) (MINIMUM_VM_SIZE/4))
 
+#define NO_FRAGMENTATION 0
+#define MICRO_FRAGMENTATION 1
+#define MACRO_FRAGMENTATION 2
+
 /**
  * Lock initialization and option structure.
  * Used to describe how locks should be initialized when created.

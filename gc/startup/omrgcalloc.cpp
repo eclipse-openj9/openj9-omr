@@ -27,40 +27,19 @@
 #include "omrgcstartup.hpp"
 
 omrobjectptr_t
-OMR_GC_Allocate(OMR_VMThread * omrVMThread, uintptr_t allocationCategory, uintptr_t size, uintptr_t allocateFlags)
+OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, MM_AllocateInitialization *allocator)
 {
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
-	uintptr_t adjustedSize = env->getExtensions()->objectModel.adjustSizeInBytes(size);
-	uintptr_t adjustedFlags = allocateFlags & ~(uintptr_t)OMR_GC_ALLOCATE_OBJECT_NO_GC;
 
-	omrobjectptr_t objectPtr = NULL;
-	omr_error_t retry = OMR_ERROR_RETRY;
-	while ((NULL == objectPtr) && (retry == OMR_ERROR_RETRY)) {
-		MM_AllocateInitialization withGc(env, allocationCategory, adjustedSize, adjustedFlags);
-		if (withGc.initializeAllocateDescription(env)) {
-			objectPtr = withGc.allocateAndInitializeObject(omrVMThread);
-			if ((NULL == objectPtr) && (NULL == env->getExtensions()->getGlobalCollector())) {
-				/* Lazily create the collector and try to allocate again. */
-				retry = OMR_GC_InitializeCollector(omrVMThread);
-			}
+	/* TODO: Deprecate this -- required for early versions of ruby/omr integration */
+	if (allocator->isGCAllowed() && (NULL == env->getExtensions()->getGlobalCollector())) {
+		/* Lazily create the collector before attempting to allocate. */
+		if (OMR_ERROR_NONE != OMR_GC_InitializeCollector(omrVMThread)) {
+			return NULL;
 		}
 	}
-	return objectPtr;
-}
 
-omrobjectptr_t
-OMR_GC_AllocateNoGC(OMR_VMThread * omrVMThread, uintptr_t allocationCategory, uintptr_t size, uintptr_t allocateFlags)
-{
-	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
-	uintptr_t adjustedSize = env->getExtensions()->objectModel.adjustSizeInBytes(size);
-	uintptr_t adjustedFlags = allocateFlags | (uintptr_t)OMR_GC_ALLOCATE_OBJECT_NO_GC;
-
-	omrobjectptr_t objectPtr = NULL;
-	MM_AllocateInitialization noGc(env, allocationCategory, adjustedSize, adjustedFlags);
-	if (noGc.initializeAllocateDescription(env)) {
-		objectPtr = noGc.allocateAndInitializeObject(omrVMThread);
-	}
-	return objectPtr;
+	return allocator->allocateAndInitializeObject(omrVMThread);
 }
 
 omr_error_t

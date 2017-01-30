@@ -158,11 +158,11 @@ int32_t estimateMemoryBarrierBinaryLength(int32_t barrier, TR::CodeGenerator *cg
    if (barrier & LockOR)
       length = 5;
    else if ((barrier & kLoadFence) && cg->getX86ProcessorInfo().requiresLFENCE())
-      length = TR_X86OpCode::getOpCodeLength(LFENCE);
+      length = TR_X86OpCode(LFENCE).length();
    else if ((barrier & kMemoryFence) == kMemoryFence)
-      length = TR_X86OpCode::getOpCodeLength(MFENCE);
+      length = TR_X86OpCode(MFENCE).length();
    else if (barrier & kStoreFence)
-      length = TR_X86OpCode::getOpCodeLength(SFENCE);
+      length = TR_X86OpCode(SFENCE).length();
 
    return length;
    }
@@ -182,20 +182,9 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   if (self()->getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-
-   if (self()->getOpCode().needsRepPrefix())
-      {
-      *cursor++ = IA32RepPrefix;
-      }
-
-   cursor = self()->generateRexPrefix(cursor);
    // TODO:AMD64: If opcode is RET and previous instruction is a branch or
    // label, use REP RET encoding.  See hammer opt guide section 6.2.
-   cursor = self()->getOpCode().copyBinaryToBuffer(cursor);
+   cursor = self()->getOpCode().binary(cursor, self()->rexBits());
    self()->setBinaryLength(cursor - instructionStart);
    self()->setBinaryEncoding(instructionStart);
    self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
@@ -205,9 +194,7 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
 int32_t OMR::X86::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   self()->setEstimatedBinaryLength(self()->getOpCode().getOpCodeLength() + self()->rexPrefixLength() +
-                                    (self()->getOpCode().needs16BitOperandPrefix() ? 1 : 0) +
-                                    (self()->getOpCode().needsRepPrefix() ? 1 : 0));
+   self()->setEstimatedBinaryLength(self()->getOpCode().length(self()->rexBits()));
    return currentEstimate + self()->getEstimatedBinaryLength();
    }
 
@@ -416,9 +403,6 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
    uint8_t *cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
 
-   if (getOpCodeValue() != LABEL)
-      cursor = generateRexPrefix(cursor);
-
    uint8_t *immediateCursor;
 
    if (getOpCode().hasRelativeBranchDisplacement())
@@ -428,7 +412,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
          {
          // Dummy instruction - stays a long branch and gets a zero distance
          //
-         cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+         cursor = getOpCode().binary(instructionStart, self()->rexBits());
          immediateCursor = cursor;
          *(uint32_t *)cursor = 0;
          cursor += 4;
@@ -469,7 +453,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                getOpCode().convertLongBranchToShort();
                }
 
-            cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+            cursor = getOpCode().binary(instructionStart, self()->rexBits());
             immediateCursor = cursor;
 
             if (label->getCodeLocation() != NULL)
@@ -498,12 +482,12 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
                comp->failCompilation<TR::CompilationException>("short form branch displacement too large");
                }
 
-            cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+            cursor = getOpCode().binary(instructionStart, self()->rexBits());
             immediateCursor = cursor;
 
             if (label->getCodeLocation() != NULL)
                {
-               *(int32_t *)cursor = distance + IA32LengthOfShortBranch - getOpCode().getOpCodeLength() - 4;
+               *(int32_t *)cursor = distance + IA32LengthOfShortBranch - getOpCode().length(self()->rexBits()) - 4;
                }
             else
                {
@@ -522,7 +506,7 @@ uint8_t *TR::X86LabelInstruction::generateBinaryEncoding()
       }
    else // assume absolute code address referencing instruction like push label
       {
-      cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+      cursor = getOpCode().binary(instructionStart, self()->rexBits());
       immediateCursor = cursor;
       cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
       *(uint32_t *)cursor = 0;
@@ -549,8 +533,8 @@ uint8_t TR::X86LabelInstruction::getBinaryLengthLowerBound()
       }
 
    if (getOpCode().isBranchOp())
-      return getOpCode().getOpCodeLength() + rexPrefixLength() + (_permitShortening ? 0 : 4);
-   return getOpCode().getOpCodeLength() + rexPrefixLength() + 4; // assume absolute code reference
+      return getOpCode().length(self()->rexBits()) + (_permitShortening ? 0 : 4);
+   return getOpCode().length(self()->rexBits()) + 4; // assume absolute code reference
    }
 
 
@@ -614,7 +598,7 @@ int32_t TR::X86LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
                }
             }
          }
-      setEstimatedBinaryLength(getOpCode().getOpCodeLength() + rexPrefixLength() + immediateLength);
+      setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + immediateLength);
       }
    else if (getOpCodeValue() == LABEL)
       {
@@ -656,7 +640,7 @@ int32_t TR::X86LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
       }
    else // assume absolute code reference
       {
-      setEstimatedBinaryLength(getOpCode().getOpCodeLength() + rexPrefixLength() + 4); // full offset for absolute address reference
+      setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + 4); // full offset for absolute address reference
       }
    return currentEstimate + getEstimatedBinaryLength();
    }
@@ -963,12 +947,7 @@ uint8_t *TR::X86ImmInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    uint8_t *immediateCursor = cursor;
 
@@ -1002,8 +981,7 @@ uint8_t *TR::X86ImmInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86ImmInstruction::getBinaryLengthLowerBound()
    {
-   uint8_t len = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   len += getOpCode().getOpCodeLength() + rexPrefixLength();
+   uint8_t len = getOpCode().length(self()->rexBits());
    if (getOpCode().hasIntImmediate())
       len += 4;
    else if (getOpCode().hasByteImmediate() || getOpCode().hasSignExtendImmediate())
@@ -1016,11 +994,6 @@ uint8_t TR::X86ImmInstruction::getBinaryLengthLowerBound()
 int32_t TR::X86ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   uint32_t prefixLength = 0;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      prefixLength = 1;
-      }
    uint32_t immediateLength = 1;
    if (getOpCode().hasIntImmediate())
       {
@@ -1030,10 +1003,7 @@ int32_t TR::X86ImmInstruction::estimateBinaryLength(int32_t currentEstimate)
       {
       immediateLength = 2;
       }
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            prefixLength                  +
-                            rexPrefixLength()             +
-                            immediateLength);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + immediateLength);
 
    return currentEstimate + getEstimatedBinaryLength();
    }
@@ -1062,14 +1032,7 @@ uint8_t *TR::X86ImmSnippetInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
-
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    uint8_t *immediateCursor = cursor;
 
@@ -1247,13 +1210,7 @@ uint8_t *TR::X86ImmSymInstruction::generateBinaryEncoding()
    uint8_t *cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
 
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    uint8_t *immediateCursor = cursor;
 
@@ -1437,13 +1394,8 @@ uint8_t *TR::X86RegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-   cursor = generateRexPrefix(cursor);
-
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = generateRepeatedRexPrefix(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -1459,18 +1411,14 @@ uint8_t *TR::X86RegInstruction::generateBinaryEncoding()
 uint8_t TR::X86RegInstruction::getBinaryLengthLowerBound()
    {
    TR_X86OpCode  &opCode = getOpCode();
-   uint8_t prefix = opCode.needs16BitOperandPrefix() ? 1 : opCode.needsScalarPrefix() ? 1 : 0;
-   return prefix + rexPrefixLength() + opCode.getOpCodeLength();
+   return opCode.length(self()->rexBits());
    }
 
 int32_t TR::X86RegInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
    TR_X86OpCode  &opCode = getOpCode();
-   uint8_t prefixLength = (opCode.needsSSE42OpcodePrefix()) ? 2 : opCode.needs16BitOperandPrefix() ? 1 : opCode.needsScalarPrefix() ? 1 : 0;
-   if (getOpCode().needsRepPrefix())
-       prefixLength++;
-   setEstimatedBinaryLength(opCode.getOpCodeLength() + prefixLength + rexPrefixLength());
+   setEstimatedBinaryLength(opCode.length(self()->rexBits()) + rexRepeatCount());
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -1510,38 +1458,8 @@ uint8_t *TR::X86RegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-   if (self()->getOpCode().needsRepPrefix())
-      {
-      *cursor++ = IA32RepPrefix;
-      }
-   if (getOpCode().needsScalarPrefix())
-      {
-      if (getOpCode().singleFPOp())
-         {
-         *cursor++ = IA32ScalarSSEPrefix;
-         }
-      else
-         {
-         TR_ASSERT(getOpCode().doubleFPOp(), "generateBinaryEncoding() ==> scalar prefix not applicable\n");
-         *cursor++ = IA32ScalarSSE2Prefix;
-         }
-      }
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      *cursor++ = SSE42OpcodePrefix[0];
-      //*cursor++ = SSE42OpcodePrefix[1];
-      }
-   cursor = generateRexPrefix(cursor);
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      //*cursor++ = SSE42OpcodePrefix[0];
-      *cursor++ = SSE42OpcodePrefix[1];
-      }
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = generateRepeatedRexPrefix(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -1674,22 +1592,8 @@ uint8_t *TR::X86RegImmInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
-
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      *cursor++ = SSE42OpcodePrefix[0];
-      }
-   cursor = generateRexPrefix(cursor);
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      *cursor++ = SSE42OpcodePrefix[1];
-      }
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = generateRepeatedRexPrefix(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -1724,8 +1628,7 @@ uint8_t *TR::X86RegImmInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86RegImmInstruction::getBinaryLengthLowerBound()
    {
-   uint8_t len = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   len += rexPrefixLength() + getOpCode().getOpCodeLength();
+   uint8_t len = getOpCode().length(self()->rexBits());
 
    if (getOpCode().hasIntImmediate()) len += 4;
    else if (getOpCode().hasShortImmediate()) len += 2;
@@ -1736,15 +1639,6 @@ uint8_t TR::X86RegImmInstruction::getBinaryLengthLowerBound()
 int32_t TR::X86RegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   uint32_t prefixLength = 0;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      prefixLength = 1;
-      }
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      prefixLength = 2;
-      }
    uint32_t immediateLength = 1;
    if (getOpCode().hasIntImmediate())
       {
@@ -1755,10 +1649,7 @@ int32_t TR::X86RegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
       immediateLength = 2;
       }
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            prefixLength                  +
-                            rexPrefixLength()             +
-                            immediateLength);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + rexRepeatCount() + immediateLength);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -1849,13 +1740,7 @@ uint8_t *TR::X86RegImmSymInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
    TR::Compilation *comp = cg()->comp();
-
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -1899,20 +1784,7 @@ uint8_t *TR::X86RegRegImmInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
-
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      *cursor++ = IA32OperandSizeOverridePrefix;
-      }
-
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      *cursor++ = SSE42OpcodePrefix[0];
-      *cursor++ = SSE42OpcodePrefix[1];
-      }
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -1951,9 +1823,7 @@ uint8_t *TR::X86RegRegImmInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86RegRegImmInstruction::getBinaryLengthLowerBound()
    {
-   uint8_t len = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   len += getOpCode().needsSSE42OpcodePrefix() ? 2 : 0;
-   len += rexPrefixLength() + getOpCode().getOpCodeLength();
+   uint8_t len = getOpCode().length(self()->rexBits());
 
    if (getOpCode().hasIntImmediate()) len += 4;
    else if (getOpCode().hasShortImmediate()) len += 2;
@@ -1964,15 +1834,6 @@ uint8_t TR::X86RegRegImmInstruction::getBinaryLengthLowerBound()
 int32_t TR::X86RegRegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   uint32_t prefixLength = 0;
-   if (getOpCode().needs16BitOperandPrefix())
-      {
-      prefixLength = 1;
-      }
-   if (getOpCode().needsSSE42OpcodePrefix())
-      {
-      prefixLength = 2;
-      }
    uint32_t immediateLength = 1;
    if (getOpCode().hasIntImmediate())
       {
@@ -1982,10 +1843,7 @@ int32_t TR::X86RegRegImmInstruction::estimateBinaryLength(int32_t currentEstimat
       {
       immediateLength = 2;
       }
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            prefixLength                  +
-                            rexPrefixLength()             +
-                            immediateLength);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + immediateLength);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -2003,16 +1861,11 @@ uint8_t *TR::X86MemInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    // Explicitly generate a LOCK prefix if one is required.
    //
    if (getOpCode().needsLockPrefix() || (barrier & LockPrefix))
       *cursor++ = IA32LockPrefix;
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    cursor = getMemoryReference()->generateBinaryEncoding(cursor-1, this, cg());
    if (!cursor)
       {
@@ -2031,37 +1884,22 @@ uint8_t TR::X86MemInstruction::getBinaryLengthLowerBound()
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   uint8_t length = getOpCode().needs16BitOperandPrefix() ? 1 : getOpCode().needsScalarPrefix() ? 1 : 0;
-
-   if (getOpCode().needsXacquirePrefix())
-      length++;
-
-   if (getOpCode().needsXreleasePrefix())
-      length++;
-
+   uint8_t length = 0;
    if (getOpCode().needsLockPrefix() || (barrier & LockPrefix))
       length++;
 
-   length += rexPrefixLength();
    length += getMemoryReference()->getBinaryLengthLowerBound(cg());
 
    if (barrier & NeedsExplicitBarrier)
       length += getMemoryBarrierBinaryLengthLowerBound(barrier, cg());
 
-   return getOpCode().getOpCodeLength() + length;
+   return getOpCode().length(self()->rexBits()) + length;
    }
 
 int32_t TR::X86MemInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : getOpCode().needsScalarPrefix() ? 1 : 0;
-
-   if (getOpCode().needsRepPrefix())
-      length++;
-
-   if (getOpCode().needsXacquirePrefix())
-      length++;
-
+   int32_t length = 0;
    if (getOpCode().needsLockPrefix() || (barrier & LockPrefix))
       length++;
 
@@ -2072,7 +1910,7 @@ int32_t TR::X86MemInstruction::estimateBinaryLength(int32_t currentEstimate)
 
    int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() + length + rexPrefixLength() + patchBoundaryPadding);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 
    return currentEstimate + getEstimatedBinaryLength();
    }
@@ -2165,12 +2003,6 @@ uint8_t *TR::X86MemImmInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needsXreleasePrefix())
-      *cursor++ = IA32XreleasePrefix;
-
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    if (!comp->getOption(TR_DisableNewX86VolatileSupport))
       {
       if (barrier & LockPrefix || getOpCode().needsLockPrefix())
@@ -2182,8 +2014,7 @@ uint8_t *TR::X86MemImmInstruction::generateBinaryEncoding()
          *cursor++ = IA32LockPrefix;
       }
 
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
 
    if (cursor)
@@ -2244,15 +2075,14 @@ uint8_t *TR::X86MemImmInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86MemImmInstruction::getBinaryLengthLowerBound()
    {
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->getBinaryLengthLowerBound(cg());
+   int32_t length = getMemoryReference()->getBinaryLengthLowerBound(cg());
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
    if (barrier & NeedsExplicitBarrier)
       length += getMemoryBarrierBinaryLengthLowerBound(barrier, cg());
 
-   length += getOpCode().getOpCodeLength();
+   length += getOpCode().length(self()->rexBits());
 
    if (getOpCode().hasIntImmediate())
       length += 4;
@@ -2261,18 +2091,14 @@ uint8_t TR::X86MemImmInstruction::getBinaryLengthLowerBound()
    else
       length += 1;
 
-   return length + rexPrefixLength();
+   return length;
    }
 
 int32_t TR::X86MemImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->estimateBinaryLength(cg());
+   int32_t length = getMemoryReference()->estimateBinaryLength(cg());
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
-
-   if (getOpCode().needsXreleasePrefix())
-      length++;
 
    if (barrier & LockPrefix)
       length++;
@@ -2289,10 +2115,7 @@ int32_t TR::X86MemImmInstruction::estimateBinaryLength(int32_t currentEstimate)
 
    uint32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            length                        +
-                            rexPrefixLength()             +
-                            patchBoundaryPadding);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 
    return currentEstimate + getEstimatedBinaryLength();
    }
@@ -2360,15 +2183,9 @@ uint8_t *TR::X86MemImmSymInstruction::generateBinaryEncoding()
    setBinaryEncoding(instructionStart);
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
-
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    if (barrier & LockPrefix)
       *cursor++ = IA32LockPrefix;
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (cursor)
       {
@@ -2408,37 +2225,11 @@ uint8_t *TR::X86MemRegInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needsXacquirePrefix())
-      *cursor++ = IA32XacquirePrefix;
-
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
-   if (getOpCode().needsScalarPrefix())
-      {
-      if (getOpCode().singleFPOp())
-         {
-         *cursor++ = IA32ScalarSSEPrefix;
-         }
-      else
-         {
-         TR_ASSERT(getOpCode().doubleFPOp(), "generateBinaryEncoding() ==> scalar prefix not applicable\n");
-         *cursor++ = IA32ScalarSSE2Prefix;
-         }
-      }
-
    // Explicitly generate a LOCK prefix if one is required.
    //
    if (getOpCode().needsLockPrefix() || (barrier & LockPrefix))
       *cursor++ = IA32LockPrefix;
-
-   if (getOpCode().needsRepPrefix())
-      {
-      *cursor++ = IA32RepPrefix;
-      }
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    if (getOpCode().hasSourceRegisterIgnored() == 0)
       {
       toRealRegister(getSourceRegister())->setRegisterFieldInModRM(cursor - 1);
@@ -2483,14 +2274,9 @@ uint8_t *TR::X86MemRegImmInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    if (barrier & LockPrefix)
       *cursor++ = IA32LockPrefix;
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    toRealRegister(getSourceRegister())->setRegisterFieldInModRM(cursor - 1);
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (cursor)
@@ -2532,13 +2318,12 @@ uint8_t TR::X86MemRegImmInstruction::getBinaryLengthLowerBound()
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->getBinaryLengthLowerBound(cg());
+   int32_t length = getMemoryReference()->getBinaryLengthLowerBound(cg());
 
    if (barrier & NeedsExplicitBarrier)
       length += getMemoryBarrierBinaryLengthLowerBound(barrier, cg());
 
-   length += getOpCode().getOpCodeLength();
+   length += getOpCode().length(self()->rexBits());
    if (getOpCode().hasIntImmediate())
       length += 4;
    else if (getOpCode().hasShortImmediate())
@@ -2546,13 +2331,12 @@ uint8_t TR::X86MemRegImmInstruction::getBinaryLengthLowerBound()
    else
       length += 1;
 
-   return length + rexPrefixLength();
+   return length;
    }
 
 int32_t TR::X86MemRegImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->estimateBinaryLength(cg());
+   int32_t length = getMemoryReference()->estimateBinaryLength(cg());
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
@@ -2571,10 +2355,7 @@ int32_t TR::X86MemRegImmInstruction::estimateBinaryLength(int32_t currentEstimat
 
    int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            length                        +
-                            rexPrefixLength()             +
-                            patchBoundaryPadding);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -2591,32 +2372,10 @@ uint8_t *TR::X86RegMemInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    if (barrier & LockPrefix)
       *cursor++ = IA32LockPrefix;
-
-   if (getOpCode().needsScalarPrefix())
-      {
-      if (getOpCode().singleFPOp())
-         {
-         *cursor++ = IA32ScalarSSEPrefix;
-         }
-      else
-         {
-         TR_ASSERT(getOpCode().doubleFPOp(), "generateBinaryEncoding() ==> scalar prefix not applicable\n");
-         *cursor++ = IA32ScalarSSE2Prefix;
-         }
-      }
-
-   if (getOpCode().needsRepPrefix())
-      {
-      *cursor++ = IA32RepPrefix;
-      }
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = generateRepeatedRexPrefix(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
       toRealRegister(getTargetRegister())->setRegisterFieldInModRM(cursor - 1);
@@ -2639,8 +2398,7 @@ uint8_t TR::X86RegMemInstruction::getBinaryLengthLowerBound()
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   uint8_t length = getOpCode().needs16BitOperandPrefix() ? 1 : getOpCode().needsScalarPrefix() ? 1 : 0;
-   length += getMemoryReference()->getBinaryLengthLowerBound(cg());
+   uint8_t length = getMemoryReference()->getBinaryLengthLowerBound(cg());
 
    if (barrier & LockPrefix)
       length++;
@@ -2648,18 +2406,14 @@ uint8_t TR::X86RegMemInstruction::getBinaryLengthLowerBound()
    if (barrier & NeedsExplicitBarrier)
       length += getMemoryBarrierBinaryLengthLowerBound(barrier, cg());
 
-   return getOpCode().getOpCodeLength() + rexPrefixLength() + length;
+   return getOpCode().length(self()->rexBits()) + length;
    }
 
 int32_t TR::X86RegMemInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : getOpCode().needsScalarPrefix() ? 1 : 0;
-   length += getMemoryReference()->estimateBinaryLength(cg());
-
-   if (getOpCode().needsRepPrefix())
-      length++;
+   int32_t length = getMemoryReference()->estimateBinaryLength(cg());
 
    if (barrier & LockPrefix)
       length++;
@@ -2669,7 +2423,7 @@ int32_t TR::X86RegMemInstruction::estimateBinaryLength(int32_t currentEstimate)
 
    int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() + length + rexPrefixLength() + patchBoundaryPadding);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + rexRepeatCount() + length + patchBoundaryPadding);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -2711,14 +2465,10 @@ uint8_t *TR::X86RegMemImmInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   if (getOpCode().needs16BitOperandPrefix())
-      *cursor++ = IA32OperandSizeOverridePrefix;
-
    if (barrier & LockPrefix)
       *cursor++ = IA32LockPrefix;
 
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
       toRealRegister(getTargetRegister())->setRegisterFieldInModRM(cursor - 1);
@@ -2763,8 +2513,7 @@ uint8_t TR::X86RegMemImmInstruction::getBinaryLengthLowerBound()
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   uint8_t length= getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->getBinaryLengthLowerBound(cg());
+   uint8_t length = getMemoryReference()->getBinaryLengthLowerBound(cg());
 
    if (barrier & LockPrefix)
       length++;
@@ -2772,7 +2521,7 @@ uint8_t TR::X86RegMemImmInstruction::getBinaryLengthLowerBound()
    if (barrier & NeedsExplicitBarrier)
       length += getMemoryBarrierBinaryLengthLowerBound(barrier, cg());
 
-   length += getOpCode().getOpCodeLength();
+   length += getOpCode().length(self()->rexBits());
 
    if (getOpCode().hasIntImmediate())
       length += 4;
@@ -2781,15 +2530,14 @@ uint8_t TR::X86RegMemImmInstruction::getBinaryLengthLowerBound()
    else
       length++;
 
-   return length + rexPrefixLength();
+   return length;
    }
 
 int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   int32_t length = getOpCode().needs16BitOperandPrefix() ? 1 : 0;
-   length += getMemoryReference()->estimateBinaryLength(cg());
+   int32_t length = getMemoryReference()->estimateBinaryLength(cg());
 
    if (barrier & LockPrefix)
       length++;
@@ -2806,10 +2554,7 @@ int32_t TR::X86RegMemImmInstruction::estimateBinaryLength(int32_t currentEstimat
 
    int32_t patchBoundaryPadding = (TR::Compiler->target.isSMP() && getMemoryReference()->getSymbolReference().isUnresolved()) ? 1 : 0;
 
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() +
-                            length                        +
-                            rexPrefixLength()             +
-                            patchBoundaryPadding);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + length + patchBoundaryPadding);
 
    return currentEstimate + getEstimatedBinaryLength();
    }
@@ -2823,7 +2568,7 @@ uint8_t *TR::X86FPRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
    applyTargetRegisterToOpCode(opCode);
    setBinaryLength(cursor - instructionStart);
@@ -2839,7 +2584,7 @@ uint8_t *TR::X86FPRegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
 
    applyRegistersToOpCode(opCode, cg()->machine());
@@ -2857,7 +2602,7 @@ uint8_t *TR::X86FPST0ST1RegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
@@ -2872,7 +2617,7 @@ uint8_t *TR::X86FPArithmeticRegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
 
    TR::Machine *machine = cg()->machine();
@@ -2903,7 +2648,7 @@ uint8_t *TR::X86FPST0STiRegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
 
    applySourceRegisterToOpCode(opCode, cg()->machine());
@@ -2922,7 +2667,7 @@ uint8_t *TR::X86FPSTiST0RegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
 
    applyTargetRegisterToOpCode(opCode, cg()->machine());
@@ -2941,7 +2686,7 @@ uint8_t *TR::X86FPCompareRegRegInstruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *opCode = cursor - 1;
 
    applyRegistersToOpCode(opCode, cg()->machine());
@@ -2965,7 +2710,7 @@ uint8_t *TR::X86FPRegMemInstruction::generateBinaryEncoding()
 
    int32_t barrier = memoryBarrierRequired(getOpCode(), getMemoryReference(), cg(), false);
 
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (!cursor)
       {
@@ -2981,7 +2726,7 @@ uint8_t *TR::X86FPRegMemInstruction::generateBinaryEncoding()
 
 uint8_t TR::X86FPRegMemInstruction::getBinaryLengthLowerBound()
    {
-   return getOpCode().getOpCodeLength() + rexPrefixLength();
+   return getOpCode().length(self()->rexBits());
    }
 
 
@@ -2995,7 +2740,7 @@ uint8_t *TR::X86FPMemRegInstruction::generateBinaryEncoding()
 
    setBinaryEncoding(instructionStart);
 
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    cursor = getMemoryReference()->generateBinaryEncoding(cursor - 1, this, cg());
    if (cursor)
@@ -3152,9 +2897,8 @@ uint8_t *TR::AMD64RegImm64Instruction::generateBinaryEncoding()
    uint8_t *cursor = instructionStart;
 
    TR_ASSERT(!getOpCode().needs16BitOperandPrefix(), "Imm64 instructions must have 64-bit operands");
-
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = generateRepeatedRexPrefix(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
    if (getOpCode().hasTargetRegisterIgnored() == 0)
       {
@@ -3175,14 +2919,14 @@ uint8_t *TR::AMD64RegImm64Instruction::generateBinaryEncoding()
 
 uint8_t TR::AMD64RegImm64Instruction::getBinaryLengthLowerBound()
    {
-   return getOpCode().getOpCodeLength() + rexPrefixLength() + 8;
+   return getOpCode().length(self()->rexBits()) + rexRepeatCount() + 8;
    }
 
 
 int32_t TR::AMD64RegImm64Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() + rexPrefixLength() + 8);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + 8);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -3255,9 +2999,7 @@ uint8_t *TR::AMD64RegImm64SymInstruction::generateBinaryEncoding()
    TR::Compilation *comp = cg()->comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   TR_ASSERT(!getOpCode().needs16BitOperandPrefix(), "Imm64 instructions must have 64-bit operands");
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
    uint8_t *modRM = cursor - 1;
 
    if (getOpCode().hasTargetRegisterIgnored() == 0)
@@ -3302,8 +3044,7 @@ uint8_t *TR::AMD64Imm64Instruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
 
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    // Always assume this is an 8-byte immediate.
    //
@@ -3320,13 +3061,13 @@ uint8_t *TR::AMD64Imm64Instruction::generateBinaryEncoding()
 
 uint8_t TR::AMD64Imm64Instruction::getBinaryLengthLowerBound()
    {
-   uint8_t len = getOpCode().getOpCodeLength() + rexPrefixLength() + 8;
+   uint8_t len = getOpCode().length(self()->rexBits()) + 8;
    return len;
    }
 
 int32_t TR::AMD64Imm64Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(getOpCode().getOpCodeLength() + rexPrefixLength() + 8);
+   setEstimatedBinaryLength(getOpCode().length(self()->rexBits()) + 8);
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -3357,8 +3098,7 @@ uint8_t *TR::AMD64Imm64SymInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   cursor = generateRexPrefix(cursor);
-   cursor = getOpCode().copyBinaryToBuffer(cursor);
+   cursor = getOpCode().binary(cursor, self()->rexBits());
 
    TR_ASSERT(getOpCodeValue() == DQImm64, "TR::AMD64Imm64SymInstruction expected to be DQImm64 only");
 

@@ -2985,12 +2985,10 @@ void OMR::X86::CodeGenerator::apply32BitLoadLabelRelativeRelocation(TR::Instruct
    {
    TR::Instruction *movInstructionX86   = movInstruction;
 
-
    TR_ASSERT(movInstructionX86->getOpCodeValue() == MOV4RegImm4,"wrong load instruction used for apply32BitLoadLabelRelativeRelocation\n");
 
    uint8_t *cursor = movInstructionX86->getBinaryEncoding();
-   cursor += movInstructionX86->rexPrefixLength();
-   cursor += movInstructionX86->getOpCode().getOpCodeLength();
+   cursor += movInstructionX86->getOpCode().length(movInstructionX86->rexBits()) + movInstructionX86->rexRepeatCount();
 
    int32_t distance = int32_t(endLabel->getCodeLocation() - startLabel->getCodeLocation());
    TR_ASSERT(IS_32BIT_SIGNED(distance),
@@ -3429,14 +3427,14 @@ uint8_t *OMR::X86::CodeGenerator::generatePadding(uint8_t              *cursor,
          if (length >= 5)
             {
             length -= 5;
-            cursor = TR_X86OpCode::copyBinaryToBuffer(JMP4, cursor);
+            cursor = TR_X86OpCode(JMP4).binary(cursor);
             *(int32_t*)cursor = length;
             cursor += 4;
             }
          else
             {
             length -= 2;
-            cursor = TR_X86OpCode::copyBinaryToBuffer(JMP1, cursor);
+            cursor = TR_X86OpCode(JMP1).binary(cursor);
             *(int8_t*)cursor = length;
             cursor += 1;
             }

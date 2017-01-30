@@ -67,7 +67,7 @@ class X86RestartSnippet  : public TR::Snippet
 
       if (getForceLongRestartJump())
          {
-          bufferCursor = opcode.copyBinaryToBuffer(bufferCursor);
+          bufferCursor = opcode.binary(bufferCursor);
           *(int32_t *)bufferCursor = (int32_t)(destination - (bufferCursor + 4));
           bufferCursor += 4;
          }
@@ -76,13 +76,13 @@ class X86RestartSnippet  : public TR::Snippet
          if (distance >= -128 && distance <= 127)
             {
             opcode.convertLongBranchToShort();
-            bufferCursor = opcode.copyBinaryToBuffer(bufferCursor);
+            bufferCursor = opcode.binary(bufferCursor);
             *bufferCursor = (int8_t)(destination - (bufferCursor + 1));
             bufferCursor++;
             }
          else
             {
-            bufferCursor = opcode.copyBinaryToBuffer(bufferCursor);
+            bufferCursor = opcode.binary(bufferCursor);
             *(int32_t *)bufferCursor = (int32_t)(destination - (bufferCursor + 4));
             bufferCursor += 4;
             }

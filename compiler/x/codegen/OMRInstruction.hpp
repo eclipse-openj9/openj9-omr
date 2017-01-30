@@ -157,9 +157,10 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    // Note the polymorphism
    //
 
-   uint8_t *generateRexPrefix(uint8_t *cursor);
-
-   uint8_t rexPrefixLength();
+   // Number of unnecessary REX bytes for instruction expansion and/or padding
+   uint8_t rexRepeatCount();
+   // Only repeated REX bytes for expansion/padding are generated
+   uint8_t *generateRepeatedRexPrefix(uint8_t *cursor);
 
 #if defined(TR_TARGET_64BIT)
    uint8_t operandSizeRexBits();

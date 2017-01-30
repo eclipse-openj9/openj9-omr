@@ -402,10 +402,10 @@ OMR::X86::Instruction::aboutToAssignRegister(TR::Register *reg, TR_UpperHalfRefC
    }
 
 uint8_t *
-OMR::X86::Instruction::generateRexPrefix(uint8_t *cursor)
+OMR::X86::Instruction::generateRepeatedRexPrefix(uint8_t *cursor)
    {
    uint8_t rex = self()->rexBits();
-   uint8_t numBytes = self()->rexPrefixLength();
+   uint8_t numBytes = self()->rexRepeatCount();
    if (numBytes)
       {
       // If we're forced to add rex prefixes we didn't otherwise need,
@@ -422,9 +422,9 @@ OMR::X86::Instruction::generateRexPrefix(uint8_t *cursor)
    }
 
 uint8_t
-OMR::X86::Instruction::rexPrefixLength()
+OMR::X86::Instruction::rexRepeatCount()
    {
-   return _rexRepeatCount + (self()->rexBits() ? 1 : 0);
+   return _rexRepeatCount;
    }
 
 /* -----------------------------------------------------------------------------

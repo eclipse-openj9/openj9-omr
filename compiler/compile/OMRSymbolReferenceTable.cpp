@@ -117,7 +117,8 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
      _hasUserField(false),
      _aggregateShadowSymbolMap(8, comp->allocator("SymRefTab")),
      _aggregateShadowSymbolReferenceMap(8, comp->allocator("SymRefTab")),
-     _registerSymbolRefs(NULL)
+     _registerSymbolRefs(NULL),
+     _sharedAliasMap(NULL)
    {
    _numHelperSymbols = TR_numRuntimeHelpers + 1;;
 
@@ -1899,3 +1900,60 @@ TR::SymbolReference * & OMR::SymbolReferenceTable::element(CommonNonhelperSymbol
       return nullSymRef;
       }
    }
+
+void OMR::SymbolReferenceTable::makeSharedAliases(TR::SymbolReference *sr1, TR::SymbolReference *sr2)
+   {
+   int32_t symRefNum1 = sr1->getReferenceNumber();
+   int32_t symRefNum2 = sr2->getReferenceNumber();
+   TR_BitVector *aliases1 = NULL;
+   TR_BitVector *aliases2 = NULL;
+
+   TR_ASSERT(sr1->reallySharesSymbol(), "SymRef1 should have its ReallySharesSymbol flag set.\n");
+   TR_ASSERT(sr2->reallySharesSymbol(), "SymRef2 should have its ReallySharesSymbol flag set.\n");
+
+   if (_sharedAliasMap == NULL)
+      {
+      _sharedAliasMap = new (comp()->trHeapMemory()) AliasMap(std::less<int32_t>(), comp()->allocator());
+      }
+    else
+       {
+       AliasMap::iterator iter1 = _sharedAliasMap->find(symRefNum1);
+       if (iter1 != _sharedAliasMap->end())
+          aliases1 = iter1->second;
+       AliasMap::iterator iter2 = _sharedAliasMap->find(symRefNum2);
+       if (iter2 != _sharedAliasMap->end())
+          aliases2 = iter2->second;
+       }
+
+    if (aliases1 == NULL)
+       {
+       aliases1 = new (comp()->trHeapMemory()) TR_BitVector(self()->getNumSymRefs(), comp()->trMemory(), heapAlloc);
+       aliases1->empty();
+       _sharedAliasMap->insert(std::make_pair(symRefNum1, aliases1));
+       }
+ 
+    if (aliases2 == NULL)
+       {
+       aliases2 = new (comp()->trHeapMemory()) TR_BitVector(self()->getNumSymRefs(), comp()->trMemory(), heapAlloc);
+       aliases2->empty();
+       _sharedAliasMap->insert(std::make_pair(symRefNum2, aliases2));
+       }
+
+   aliases1->set(sr2->getReferenceNumber());
+   aliases2->set(sr1->getReferenceNumber());
+   }
+
+TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *sr)
+   {
+   if (_sharedAliasMap == NULL)
+      return NULL;
+
+   AliasMap::iterator match = _sharedAliasMap->find(sr->getReferenceNumber());
+   if (match != _sharedAliasMap->end())
+      {
+      return match->second;
+      }
+
+   return NULL;
+   }
+

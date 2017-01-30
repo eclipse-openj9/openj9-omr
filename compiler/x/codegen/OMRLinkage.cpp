@@ -773,7 +773,7 @@ OMR::X86::Linkage::trStackMemory()
    }
 
 
-TR_X86OpCodes OMR::X86::Linkage::movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
+TR_X86OpCodes OMR::X86::Linkage::_movOpcodes[NumMovOperandTypes][NumMovDataTypes] =
    {
    //    Int4         Int8        Float4         Float8
    {    S4MemReg,    S8MemReg,  MOVSSMemReg,  MOVSDMemReg}, // MemReg

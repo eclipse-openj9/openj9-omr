@@ -144,7 +144,7 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
             // ai := stack
             loadCursor = generateRegMemInstruction(
                loadCursor,
-               movOpcodes[RegMem][movDataType],
+               TR::Linkage::movOpcodes(RegMem, movDataType),
                machine->getX86RealRegister(ai),
                generateX86MemoryReference(framePointer, offset, cg()),
                cg()
@@ -166,7 +166,7 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
             // stack := lri
             cursor = generateMemRegInstruction(
                cursor,
-               movOpcodes[MemReg][movDataType],
+               TR::Linkage::movOpcodes(MemReg, movDataType),
                generateX86MemoryReference(framePointer, offset, cg()),
                machine->getX86RealRegister(sourceIndex),
                cg()
@@ -257,7 +257,7 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
             // regCursor := regCursor.sourceReg
             cursor = generateRegRegInstruction(
                cursor,
-               movOpcodes[RegReg][movStatus[source].outgoingDataType],
+               TR::Linkage::movOpcodes(RegReg, movStatus[source].outgoingDataType),
                machine->getX86RealRegister(regCursor),
                machine->getX86RealRegister(source),
                cg()
@@ -318,7 +318,7 @@ TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
                {
                cursor = generateMemRegInstruction(
                   cursor,
-                  movOpcodes[MemReg][fullRegisterMovType(reg)],
+                  TR::Linkage::movOpcodes(MemReg, fullRegisterMovType(reg)),
                   generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
                   reg,
                   cg()
@@ -659,7 +659,7 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
                {
                cursor = generateRegMemInstruction(
                   cursor,
-                  movOpcodes[RegMem][fullRegisterMovType(reg)],
+                  TR::Linkage::movOpcodes(RegMem, fullRegisterMovType(reg)),
                   reg,
                   generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
                   cg()

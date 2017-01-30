@@ -688,7 +688,7 @@ int32_t TR::AMD64SystemLinkage::buildArgs(
             TR::Register *argReg = cg()->allocateRegister();
             if (vreg->containsCollectedReference())
                argReg->setContainsCollectedReference();
-            generateRegRegInstruction(movOpcodes[RegReg][movType(child->getDataType())], child, argReg, vreg, cg());
+            generateRegRegInstruction(TR::Linkage::movOpcodes(RegReg, movType(child->getDataType())), child, argReg, vreg, cg());
             vreg = argReg;
             copiedRegs[numCopiedRegs++] = vreg;
             }
@@ -698,7 +698,7 @@ int32_t TR::AMD64SystemLinkage::buildArgs(
       else
          {
          // Ideally, we would like to push rather than move
-         generateMemRegInstruction(movOpcodes[MemReg][fullRegisterMovType(vreg)],
+         generateMemRegInstruction(TR::Linkage::movOpcodes(MemReg, fullRegisterMovType(vreg)),
                                    child,
                                    generateX86MemoryReference(espReal, offset, cg()),
                                    vreg,

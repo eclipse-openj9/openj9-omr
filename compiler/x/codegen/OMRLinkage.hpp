@@ -355,8 +355,9 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
          case TR::Float:
             return Float4;
          case TR::Int64:
-         case TR::Address:
             return TR_MovDataTypes::Int8;
+         case TR::Address:
+            return TR::Compiler->target.is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
          default:
             return Int4;
          }
@@ -369,7 +370,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       switch(reg->getKind())
          {
          case TR_GPR:
-            return TR_MovDataTypes::Int8;
+            return TR::Compiler->target.is64Bit() ? TR_MovDataTypes::Int8 : TR_MovDataTypes::Int4;
          case TR_FPR:
             return Float8;
          default:
@@ -378,7 +379,11 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
          }
       }
 
-   static TR_X86OpCodes movOpcodes[NumMovOperandTypes][NumMovDataTypes];
+   static inline TR_X86OpCodes movOpcodes(TR_MovOperandTypes operandType, TR_MovDataTypes dataType)
+      {
+      TR_ASSERT(TR::Compiler->target.is64Bit() || dataType != TR_MovDataTypes::Int8, "MOV Int8 should not occur on X86-32");
+      return _movOpcodes[operandType][dataType];
+      }
 
    TR::Machine *machine() {return _cg->machine();}
    TR::CodeGenerator *cg() {return _cg;}
@@ -398,7 +403,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
       // Initialize the movOp table based on preferred load instructions for this target.
       //
       TR_X86OpCodes op = cg->getXMMDoubleLoadOpCode() ? cg->getXMMDoubleLoadOpCode() : MOVSDRegMem;
-      movOpcodes[RegMem][Float8] = op;
+      _movOpcodes[RegMem][Float8] = op;
       }
 
    void stopUsingKilledRegisters(TR::RegisterDependencyConditions  *deps, TR::Register *returnRegister);
@@ -434,7 +439,8 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    private:
 
-   TR::CodeGenerator *_cg;
+   static TR_X86OpCodes _movOpcodes[NumMovOperandTypes][NumMovDataTypes];
+   TR::CodeGenerator*   _cg;
    uint8_t              _minimumFirstInstructionSize;
 
    };

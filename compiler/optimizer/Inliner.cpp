@@ -365,11 +365,16 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
 
    }
 
-//go through each OSR code block b.
-//1) If b corresponds to the top caller (root of the call tree), it doesn't do anything because we have already implanted, during
-//ilgen, a TR::igoto at the end of b which transfers control back to the VM
-//2) Otherwise, replace the last treetop of b (which must be a goto or a return) to a goto to the OSR code block of the caller, and
-//also make the corresponding changes to the CFG
+/**
+ * Go through each OSR code block b.
+ *
+ * 1) If b corresponds to the top caller (root of the call tree), it doesn't do
+ *    anything because we have already implanted, during ilgen, a TR::igoto at
+ *    the end of b which transfers control back to the VM.
+ * 2) Otherwise, replace the last treetop of b (which must be a goto or a
+ *    return) to a goto to the OSR code block of the caller, and also make the
+ *    corresponding changes to the CFG.
+ */
 void
 TR_InlinerBase::linkOSRCodeBlocks()
    {
@@ -1383,10 +1388,13 @@ TR_InlinerBase::cloneChildren(TR::Node * to, TR::Node * from, uint32_t fromStart
       }
    }
 
-/*
-Finds all nodes that are references to the given call node in callerSymbol and replaces them with the resultNode
-OR
-removes the callNode from callerSymbol
+/**
+ * Finds all nodes that are references to the given call node in callerSymbol
+ * and replaces them with the resultNode
+ *
+ *   OR
+ *
+ * removes the callNode from callerSymbol
 */
 void
 TR_InlinerBase::replaceCallNode(
@@ -1412,9 +1420,10 @@ TR_InlinerBase::replaceCallNode(
       callerSymbol->removeTree(callNodeTreeTop);
    }
 
-/*
-Recursively searches node and replaces all references to callNode with replacemenNode
-*/
+/**
+ * Recursively searches node and replaces all references to callNode with
+ * replacementNode
+ */
 void
 TR_InlinerBase::replaceCallNodeReferences(
    TR::Node * node, TR::Node * parent, uint32_t childIndex,
@@ -1537,7 +1546,7 @@ static bool blocksHaveSameStartingByteCodeInfo(TR::Block *aBlock, TR::Block *bBl
    return (a.getCallerIndex() == b.getCallerIndex()) && (a.getByteCodeIndex() == b.getByteCodeIndex());
    }
 
-/*
+/**
  * Root function for privatized inliner argument rematerialization - this handles calculating remat
  * safety and performing the remat.
  */
@@ -2516,7 +2525,7 @@ TR_TransformInlinedFunction::TR_TransformInlinedFunction(
    {
    }
 
-/*
+/**
  * this is the basic implementation and project specific implementation should always call the basic implementation first
  */
 void
@@ -3137,8 +3146,9 @@ static TR::TreeTop *findPinningArrayStore(TR::Compilation *comp, TR::TreeTop *pr
    return tt;
    }
 
-/*
- * handles the temp sharing between caller and inlined callee by storing a value from the inlined method to a temp of the caller
+/**
+ * handles the temp sharing between caller and inlined callee by storing a
+ * value from the inlined method to a temp of the caller
  */
 TR::TreeTop * OMR_InlinerUtil::storeValueInATemp(
    TR::Compilation *comp,
@@ -3702,8 +3712,9 @@ TR_IndirectCallSite::addTargetIfMethodIsNotOverridenInReceiversHierarchy (TR_Inl
    return inliner->getUtil()->addTargetIfMethodIsNotOverridenInReceiversHierarchy(this);
    }
 
-/*
- * if the initial callee method of this callsite is not overriden add it as the target of the callsite
+/**
+ * if the initial callee method of this callsite is not overriden add it as the
+ * target of the callsite
  */
 bool
 OMR_InlinerUtil::addTargetIfMethodIsNotOverridenInReceiversHierarchy(TR_IndirectCallSite *callsite)
@@ -3711,7 +3722,7 @@ OMR_InlinerUtil::addTargetIfMethodIsNotOverridenInReceiversHierarchy(TR_Indirect
    return false;
    }
 
-/*
+/**
  * find the single implementer and add it as the target of this callsite
  */
 bool
@@ -5538,7 +5549,7 @@ TR_CallSite::signature(TR_Memory *trMemory)
    }
 
 
-/*
+/**
  * create TR_PrexArgInfo for the calltarget
  * create and set the TR_PrexArgument of the calltarget's first argument, namely the receiver, with information provided by the \p guard
  */
@@ -6179,7 +6190,7 @@ OMR_InlinerUtil::OMR_InlinerUtil(TR::Compilation *comp)
 
    }
 
-/*
+/**
  * replace the existing guard with a better one of more specific type if possible
  */
 void
@@ -6189,7 +6200,7 @@ OMR_InlinerUtil::refineInlineGuard(TR::Node *callNode, TR::Block *&block1, TR::B
    {
    }
 
-/*
+/**
  * stop inlining for this callsite if TR_CallSite#_initialCalleeSymbol is certain specific method
  */
 bool
@@ -6222,7 +6233,7 @@ OMR_InlinerUtil::estimateAndRefineBytecodeSize(TR_CallSite* callsite, TR_CallTar
    {
    }
 
-/*
+/**
  * collect arguments information for the given target and store into TR_CallTarget::_prexArgInfo
  * the default implementation does nothing
  */
@@ -6238,7 +6249,7 @@ OMR_InlinerUtil::refineColdness(TR::Node* node, bool& isCold)
    return;
    }
 
-/*
+/**
  * reset branch and block frequency of the target callee method
  */
 void
@@ -6255,7 +6266,7 @@ OMR_InlinerUtil::getTransformInlinedFunction(TR::ResolvedMethodSymbol *callerSym
    return new (comp()->trStackMemory()) TR_TransformInlinedFunction(comp(), tracer(), callerSymbol, calleeSymbol, blockContainingTheCall, callNodeTreeTop, callNode, pam, guard, tempList, availableTemps, availableBasicBlockTemps);
    }
 
-/*
+/**
  * return how many times this call has been invoked. The data could come from some project specific intrumentation, profiler etc
  */
 int32_t
@@ -6301,7 +6312,7 @@ OMR_InlinerPolicy::dontPrivatizeArgumentsForRecognizedMethod(TR::RecognizedMetho
    return false;
    }
 
-/*
+/**
  * return true if the \p calleeMethod is doing a software overflow check which can be replaced by a hardware check
  */
 bool

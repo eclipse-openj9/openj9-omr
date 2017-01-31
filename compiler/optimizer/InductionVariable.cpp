@@ -4878,7 +4878,7 @@ void TR_LoopStrider::widenComparison(
  *
  * \param exLoads the set of \c l2i nodes that used to be \c iload
  * \see detectLoopsForIndVarConversion(TR_Structure*, TR::NodeChecklist&)
- * \see signExtend(TR::Node*, TR::NodeChecklist&, NodeMap&)
+ * \see signExtend(TR::Node*, TR::NodeChecklist&, SignExtMemo&)
  * \see transmuteDescendantsIntoTruncations(TR::Node*, TR::Node*)
  */
 void TR_LoopStrider::eliminateSignExtensions(TR::NodeChecklist &exLoads)
@@ -4887,11 +4887,18 @@ void TR_LoopStrider::eliminateSignExtensions(TR::NodeChecklist &exLoads)
 
    auto alloc = comp()->allocator();
    auto mapAlloc = getTypedAllocator<std::pair<ncount_t, TR::Node*> >(alloc);
-   NodeMap signExtMemo(std::less<ncount_t>(), mapAlloc);
+   SignExtMemo signExtMemo(std::less<ncount_t>(), mapAlloc);
 
    TR::TreeTop *start = comp()->getStartTree();
    for (TR::TreeTop *tt = start; tt != NULL; tt = tt->getNextTreeTop())
       eliminateSignExtensionsInSubtree(tt->getNode(), exLoads, visited, signExtMemo);
+
+   // References from signExtMemo were included in reference counts; so now
+   // release all of them. This avoids incorrectly inflating the reference
+   // count of any pre-existing node that was wrapped in an i2l but for which
+   // the new i2l node was not used.
+   for (auto it = signExtMemo.begin(); it != signExtMemo.end(); ++it)
+      it->second.extended->recursivelyDecReferenceCount();
 
    if (trace())
       comp()->dumpMethodTrees("trees after eliminating sign extensions");
@@ -4902,7 +4909,7 @@ void TR_LoopStrider::eliminateSignExtensionsInSubtree(
    TR::Node *parent,
    TR::NodeChecklist &exLoads,
    TR::NodeChecklist &visited,
-   NodeMap &signExtMemo)
+   SignExtMemo &signExtMemo)
    {
    if (visited.contains(parent))
       return;
@@ -4916,7 +4923,8 @@ void TR_LoopStrider::eliminateSignExtensionsInSubtree(
          continue;
 
       TR::Node *child = node->getFirstChild();
-      TR::Node *extended = signExtend(child, exLoads, signExtMemo);
+      SignExtEntry entry = signExtend(child, exLoads, signExtMemo);
+      TR::Node *extended = entry.extended;
       if (extended == NULL)
          continue;
 
@@ -4943,7 +4951,9 @@ void TR_LoopStrider::eliminateSignExtensionsInSubtree(
  * Attempt to fold an \c i2l operation into \p node.
  *
  * A successful result is a long-typed subtree which computes the same value as
- * \c i2l of \p node, but which doesn't contain any \c i2l operations.
+ * \c i2l of \p node, but which doesn't contain any \c i2l operations, or which
+ * contains exactly one \c i2l operation and fewer \c l2i operations than
+ * appear under \p node.
  *
  * The form of subtree into which an \c i2l may be folded is highly
  * constrained. The only acceptable nodes are constants, translated in the
@@ -5004,23 +5014,44 @@ void TR_LoopStrider::eliminateSignExtensionsInSubtree(
  * The result is the particular \c lload node that appeared as the child of the
  * \c l2i node from \p exLoads.
  *
- * A successful result in general shares as descendants with \p node the \c
- * lload nodes from members of \p exLoads, but nothing else. All other nodes
- * beneath either \p node or the result are referentially transparent. This
- * means that a reference to \c i2l of \p node may be simply replaced by a
+ * Folding \c i2l of an ex-load in this way eliminates not just the \c i2l, but
+ * also the \c l2i.
+ *
+ * For arithmetic nodes, sometimes it isn't possible to eliminate an \c i2l
+ * entirely, but it \em is possible to eliminate \c i2l in one child. Take for
+ * example the left child,
+ *
+   \verbatim
+      i2l                     l{add,sub,mul}          l{add,sub,mul}
+        i{add,sub,mul}          i2l                     left'
+          left          ==>       left          ==>     i2l
+          right                 i2l                       right
+                                  right
+   \endverbatim
+ *
+ * The result is no worse than the original, and it may eliminate an \c l2i on
+ * the left. So this is done in cases where it does in fact eliminate an \c l2i.
+ *
+ * A successful result in general shares as descendants with \p node the
+ * \c lload nodes from members of \p exLoads, and nodes in subtrees that were
+ * wrapped in "moved" \c i2l operations (if any), and no others. All other
+ * nodes beneath either \p node or the result are referentially transparent.
+ * This means that a reference to \c i2l of \p node may be simply replaced by a
  * reference to the resulting long-type subtree.
  *
  * A successful result has a structure parallel to that of \p node. Non-leaf
- * nodes in the result can only be arithmetic nodes, and they correspond
- * exactly to arithmetic nodes in the same position beneath \p node. For
- * example, assuming implicit \c cannotOverflow flags,
+ * nodes in the result can only be arithmetic nodes, corresponding exactly to
+ * arithmetic nodes in the same position beneath \p node; or \c i2l nodes
+ * corresponding exactly to their own children. For example, assuming implicit
+ * \c cannotOverflow flags,
  *
    \verbatim
       isub                          lsub
         imul            (maps to)     lmul
           l2i              ==>          lload k
             lload k
-          iconst 2                      lconst 2
+          iload x                       i2l
+                                          iload  x
         iconst -1                     lconst -1
    \endverbatim
  *
@@ -5051,24 +5082,25 @@ void TR_LoopStrider::eliminateSignExtensionsInSubtree(
  * \see eliminateSignExtensions(TR::NodeChecklist&)
  * \see transmuteDescendantsIntoTruncations(TR::Node*, TR::Node*)
  */
-TR::Node *TR_LoopStrider::signExtend(
+TR_LoopStrider::SignExtEntry TR_LoopStrider::signExtend(
    TR::Node *node,
    TR::NodeChecklist &exLoads,
-   NodeMap &memo)
+   SignExtMemo &memo)
    {
    // With this memoization there is also no need to remember the replacement
    // node for a particular i2l node in eliminateSignExtensions, since a later
    // occurrence of the same i2l will ask about the same child, and get back
    // the same 64-bit equivalent node remembered for that child.
-   NodeMap::iterator entry = memo.find(node->getGlobalIndex());
-   if (entry != memo.end())
-      return entry->second;
+   SignExtMemo::iterator existing = memo.find(node->getGlobalIndex());
+   if (existing != memo.end())
+      return existing->second;
 
-   TR::Node *ext = NULL;
+   SignExtEntry result;
    switch (node->getOpCodeValue())
       {
       case TR::iconst:
-         ext = TR::Node::lconst(node, (int64_t)node->getConst<int32_t>());
+         result.extended = TR::Node::lconst(node, (int64_t)node->getConst<int32_t>());
+         result.cancelsExt = true;
          break;
 
       case TR::l2i:
@@ -5079,62 +5111,115 @@ TR::Node *TR_LoopStrider::signExtend(
                child->getOpCodeValue() == TR::lload,
                "exload l2i n%un's child should be an lload\n",
                node->getGlobalIndex());
-            ext = child;
+            result.extended = child;
+            result.cancelsExt = true;
+            result.cancelsTrunc = true;
             }
          break;
 
       case TR::iadd:
-         ext = signExtendBinOp(TR::ladd, node, exLoads, memo);
+         result = signExtendBinOp(TR::ladd, node, exLoads, memo);
          break;
 
       case TR::isub:
-         ext = signExtendBinOp(TR::lsub, node, exLoads, memo);
+         result = signExtendBinOp(TR::lsub, node, exLoads, memo);
          break;
 
       case TR::imul:
-         ext = signExtendBinOp(TR::lmul, node, exLoads, memo);
+         result = signExtendBinOp(TR::lmul, node, exLoads, memo);
          break;
 
       default:
-         break; // just don't set ext
+         break; // just don't populate result
       }
 
-   if (ext != NULL)
+   if (result.extended != NULL)
       {
-      memo.insert(std::make_pair(node->getGlobalIndex(), ext));
+      result.extended->incReferenceCount();
+      memo.insert(std::make_pair(node->getGlobalIndex(), result));
       if (trace())
          traceMsg(comp(),
             "[Sign-Extn] sign-extended n%un %s into n%un %s\n",
             node->getGlobalIndex(),
             node->getOpCode().getName(),
-            ext->getGlobalIndex(),
-            ext->getOpCode().getName());
+            result.extended->getGlobalIndex(),
+            result.extended->getOpCode().getName());
       }
 
-   return ext;
+   TR_ASSERT(
+      (result.extended != NULL) == (result.cancelsExt || result.cancelsTrunc),
+      "n%un %s should extend if and only if a conversion is canceled\n",
+      node->getGlobalIndex(),
+      node->getOpCode().getName());
+
+   return result;
    }
 
 // part of implementation of signExtend (above)
-TR::Node *TR_LoopStrider::signExtendBinOp(
+TR_LoopStrider::SignExtEntry TR_LoopStrider::signExtendBinOp(
    TR::ILOpCodes op64,
    TR::Node *node,
    TR::NodeChecklist &exLoads,
-   NodeMap &memo)
+   SignExtMemo &memo)
    {
+   const SignExtEntry rejected;
    if (!node->cannotOverflow())
-      return NULL;
+      return rejected;
 
-   TR::Node *extLeft = signExtend(node->getChild(0), exLoads, memo);
+   static const char * const moveDisableEnv =
+      feGetEnv("TR_disableLoopStriderMoveSignExtIntoChild");
+   static const bool moveDisable =
+      moveDisableEnv != NULL && moveDisableEnv[0] != '\0';
+
+   TR::Node * const origLeft = node->getChild(0);
+   const SignExtEntry left = signExtend(origLeft, exLoads, memo);
+   if (moveDisable && !left.cancelsExt)
+      return rejected;
+
+   TR::Node * const origRight = node->getChild(1);
+   const SignExtEntry right = signExtend(origRight, exLoads, memo);
+   if (moveDisable && !right.cancelsExt)
+      return rejected;
+
+   // Never push i2l down into the children in cases where it would increase
+   // the number of i2l nodes in the subtree.
+   if (!left.cancelsExt && !right.cancelsExt)
+      return rejected;
+
+   // There may be no way to eliminate i2l entirely. But in that case we can
+   // still push i2l down into the children, which might cancel an l2i beneath.
+   TR::Node *extLeft = left.extended;
+   TR::Node *extRight = right.extended;
+
+   // Here at least one of extLeft and extRight is non-null, because either
+   // left.cancelsExt or right.cancelsExt.
    if (extLeft == NULL)
-      return NULL;
+      {
+      if (right.cancelsTrunc)
+         extLeft = TR::Node::create(origLeft, TR::i2l, 1, origLeft);
+      else
+         return rejected; // No point in moving i2l
+      }
+   else if (extRight == NULL)
+      {
+      if (left.cancelsTrunc)
+         extRight = TR::Node::create(origRight, TR::i2l, 1, origRight);
+      else
+         return rejected; // No point in moving i2l
+      }
 
-   TR::Node *extRight = signExtend(node->getChild(1), exLoads, memo);
-   if (extRight == NULL)
-      return NULL;
-
+   // Success
    TR::Node *longNode = TR::Node::create(node, op64, 2, extLeft, extRight);
    longNode->setFlags(node->getFlags());
-   return longNode;
+
+   // This result satisfies (cancelsExt || cancelsTrunc) as asserted in
+   // signExtend, because when i2l is pushed down into a child position, the
+   // tests above ensure that the other child has cancelsTrunc.
+   SignExtEntry result;
+   result.extended = longNode;
+   result.cancelsExt = left.cancelsExt && right.cancelsExt;
+   result.cancelsTrunc = left.cancelsTrunc || right.cancelsTrunc;
+   return result;
    }
 
 /**
@@ -5142,7 +5227,7 @@ TR::Node *TR_LoopStrider::signExtendBinOp(
  *
  * This avoids duplicating arithmetic that is already commoned. The
  * corresponding nodes are found by making use of the convenient parallel
- * structure produced by signExtend(TR::Node*, TR::NodeChecklist&, NodeMap&).
+ * structure produced by signExtend(TR::Node*, TR::NodeChecklist&, SignExtMemo&).
  *
  * \param intNode  the original 32-bit int-typed node
  * \param longNode the 64-bit long-typed node corresponding to \p intNode
@@ -5151,6 +5236,22 @@ void TR_LoopStrider::transmuteDescendantsIntoTruncations(
    TR::Node *intNode,
    TR::Node *longNode)
    {
+   if (longNode->getOpCodeValue() == TR::i2l)
+      {
+      // A "moved" (rather than eliminated) i2l node. The child is in the
+      // original subtree, and no conversion is needed.
+      TR::Node *child = longNode->getChild(0);
+      TR_ASSERT(
+         child == intNode,
+         "transmuting n%un %s does not match child n%un %s of n%un i2l\n",
+         intNode->getGlobalIndex(),
+         intNode->getOpCode().getName(),
+         child->getGlobalIndex(),
+         child->getOpCode().getName(),
+         longNode->getGlobalIndex());
+      return;
+      }
+
    TR::ILOpCodes intOp = intNode->getOpCodeValue();
    if (intOp == TR::l2i || intOp == TR::iconst)
       return; // nothing to do

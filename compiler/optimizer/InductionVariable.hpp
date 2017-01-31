@@ -174,10 +174,18 @@ class TR_LoopStrider : public TR_LoopTransformer
    // (64-bit)
    // sign-extension elimination
 
+   struct SignExtEntry
+      {
+      SignExtEntry() : extended(NULL), cancelsExt(false), cancelsTrunc(false) { }
+      TR::Node *extended;
+      bool cancelsExt;
+      bool cancelsTrunc;
+      };
+
    // Maps are keyed by a node's global index, because a node's address could
    // be reused after its reference count decreases to zero.
-   typedef TR::typed_allocator<std::pair<ncount_t, TR::Node*>, TR::Allocator> NodeMapAllocator;
-   typedef std::map<ncount_t, TR::Node*, std::less<ncount_t>, NodeMapAllocator> NodeMap;
+   typedef TR::typed_allocator<std::pair<ncount_t, SignExtEntry>, TR::Allocator> SignExtMemoAllocator;
+   typedef std::map<ncount_t, SignExtEntry, std::less<ncount_t>, SignExtMemoAllocator> SignExtMemo;
 
    void morphExpressionsLinearInInductionVariable(TR_Structure *, vcount_t);
    bool morphExpressionLinearInInductionVariable(TR::Node *, int32_t, TR::Node *, vcount_t);
@@ -187,9 +195,9 @@ class TR_LoopStrider : public TR_LoopTransformer
    void replaceLoadsInSubtree(TR::Node *, int32_t, TR::Node *, TR::SymbolReference *, TR::NodeChecklist &, TR::NodeChecklist &);
    void widenComparison(TR::Node *, int32_t, TR::Node *, TR::NodeChecklist &);
    void eliminateSignExtensions(TR::NodeChecklist &);
-   void eliminateSignExtensionsInSubtree(TR::Node *, TR::NodeChecklist &, TR::NodeChecklist &, NodeMap &);
-   TR::Node *signExtend(TR::Node *, TR::NodeChecklist &, NodeMap &);
-   TR::Node *signExtendBinOp(TR::ILOpCodes, TR::Node *, TR::NodeChecklist &, NodeMap &);
+   void eliminateSignExtensionsInSubtree(TR::Node *, TR::NodeChecklist &, TR::NodeChecklist &, SignExtMemo &);
+   SignExtEntry signExtend(TR::Node *, TR::NodeChecklist &, SignExtMemo &);
+   SignExtEntry signExtendBinOp(TR::ILOpCodes, TR::Node *, TR::NodeChecklist &, SignExtMemo &);
    void transmuteDescendantsIntoTruncations(TR::Node *, TR::Node *);
    void detectLoopsForIndVarConversion(TR_Structure *, TR::NodeChecklist &);
    void extendIVsOnLoopEntry(const TR::list<std::pair<int32_t, int32_t> > &, TR::Block *);

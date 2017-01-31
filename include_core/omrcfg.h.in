@@ -218,6 +218,12 @@
 #undef OMR_THR_SPIN_WAKE_CONTROL
 
 /**
+ * This flag enables the new refactored version of omrthread_spinlock_acquire.
+ * Disabling this flag will enable the old version of omrthread_spinlock_acquire.	
+ */
+#undef OMR_THR_SPIN_CODE_REFACTOR
+
+/**
  * This enables the option to select different algorithms for yielding.
  */
 #undef OMR_THR_YIELD_ALG

@@ -15,6 +15,9 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
+#if defined(AIXPPC)
+#define __IBMCPP_TR1__ 1 /* Need this for AIX */
+#endif /* defined(AIXPPC) */
 
 #include "config.hpp"
 #include <iostream>
@@ -23,17 +26,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sstream>
-#include <sys/fcntl.h>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
+#include <errno.h>
 
+#if defined(OSX)
+#include <sys/fcntl.h>
+#endif /*defined(OSX)*/
+
+#if defined(AIXPPC)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/errno.h>
+
+using std::tr1::make_tuple;
+using std::tr1::get;
+using std::tr1::tuple;
+using std::tr1::unordered_map;
+#endif /*defined(AIXPPC)*/
+
+#if !defined(AIXPPC)
 using std::get;
+using std::make_tuple;
+using std::runtime_error;
+using std::tuple;
+using std::unordered_map;
+#endif /*!defined(AIXPPC)*/
+
 using std::make_pair;
 using std::pair;
-using std::runtime_error;
 using std::string;
 using std::stringstream;
-using std::unordered_map;
 using std::vector;
 
 typedef /*struct Dwarf_Debug_s*/ void *Dwarf_Debug;
@@ -64,6 +88,7 @@ typedef vector<string> str_vect;
 #define DW_DLE_MAF				0x07 /* Memory allocation failure */
 #define DW_DLE_NOB				0x08 /* Not an object file */
 #define DW_DLE_VMM				0x09 /* Dwarf format/library version mismatch */
+
 
 
 #define DW_DLC_READ 0x01
@@ -141,9 +166,7 @@ struct Dwarf_CU_Context
 	static Dwarf_CU_Context *_firstCU;
 	static Dwarf_CU_Context *_currentCU;
 };
-Dwarf_CU_Context * Dwarf_CU_Context::_firstCU;
-Dwarf_CU_Context * Dwarf_CU_Context::_currentCU;
-vector<string> Dwarf_CU_Context::_fileList;
+
 struct Dwarf_Die_s
 {
 	Dwarf_Half _tag;
@@ -158,7 +181,6 @@ struct Dwarf_Die_s
 	
 	static unordered_map<Dwarf_Off, Dwarf_Die> refMap;
 };
-unordered_map<Dwarf_Off,Dwarf_Die> Dwarf_Die_s::refMap;
 struct Dwarf_Attribute_s
 {
 	Dwarf_Half _type;

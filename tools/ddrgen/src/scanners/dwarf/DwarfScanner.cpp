@@ -87,7 +87,8 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 			goto Failed;
 		}
 	}
-
+/* The compilation directory isn't provided in AIX, so we don't need to find the absolute paths from the relative paths */
+#if !defined(AIXPPC)
 	/* Allocate a new file name table to hold the concatenated absolute paths. */
 	fileNamesTableConcat = (char **)malloc(sizeof(char *) * _fileNameCount);
 	if (NULL == fileNamesTableConcat) {
@@ -132,6 +133,8 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 	}
 	_fileNamesTable = fileNamesTableConcat;
+#endif /* !defined(AIXPPC) */
+
 	return DDR_RC_OK;
 
 Failed:
@@ -354,7 +357,6 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 	bool done = false;
 	bool foundTypedef = false;
 	modifiers->_modifierFlags = Modifiers::NO_MOD;
-
 	/* Get the bit field from the member Die before getting the type. */
 	if (DDR_RC_OK == getBitField(typeDie, bitField)) {
 		/* Get all the field tags. */
@@ -666,6 +668,7 @@ DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, bool isS
 					rc = DDR_RC_OK;
 				} else {
 					rc = newType->scanChildInfo(this, die);
+					DEBUGPRINTF("Done scanning child info");
 				}
 			} else {
 				rc = DDR_RC_OK;
@@ -736,6 +739,17 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 				size_t lastDot = fileName.find_last_of(".");
 				dieName = fileName.substr(lastSlash + 1, lastDot - lastSlash - 1) + "Constants";
 				dieName[0] = toupper(dieName[0]);
+
+				/* Check for duplicates and rename if needed */
+				unordered_map<string, int>::iterator nameToFind = _anonymousEnumNames.find(dieName);
+				if (_anonymousEnumNames.end() != nameToFind) {
+					nameToFind->second = nameToFind->second + 1;
+					std::stringstream ss;
+					ss << nameToFind->second;
+					dieName = dieName + ss.str();
+				} else {
+					_anonymousEnumNames.insert(make_pair<string, int>((string)dieName, (int)0));
+				}
 			}
 			/* If the Type is not in the map yet, add it. */
 			if (_typeMap.find(key) == _typeMap.end()) {
@@ -810,7 +824,6 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 	if(-1 == *typeNum) {
 		rc = DDR_RC_ERROR;
 	}
-
 	return rc;
 }
 
@@ -882,7 +895,6 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 	Dwarf_Die die = (Dwarf_Die)data;
 	Dwarf_Die typeDie = NULL;
 	string typedefName = "";
-
 	/* Find and add the typedef's modifiers. */
 	DDR_RC rc = getTypeInfo(die, &typeDie, &typedefName, &newTypedef->_modifiers, &newTypedef->_sizeOf, NULL);
 
@@ -1213,6 +1225,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 			rc = DDR_RC_ERROR;
 			break;
 		} else if (DW_DLV_OK != ret) {
+			DEBUGPRINTF("No entry");
 			/* No more CU's. */
 			break;
 		}
@@ -1246,6 +1259,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 
 		/* Now go over all children DIEs */
 		do {
+			DEBUGPRINTF("Going over child die");
 			Dwarf_Half tag;
 			if (DW_DLV_ERROR == dwarf_tag(childDie, &tag, &error)) {
 				ERRMSG("In dwarf_tag: %s\n", dwarf_errmsg(error));
@@ -1311,8 +1325,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *const ir, const c
 		Dwarf_Unsigned access = DW_DLC_READ;
 		Dwarf_Handler errhand = 0;
 		Dwarf_Ptr errarg = NULL;
-
-		res = dwarf_init((int)fd, access, errhand, errarg, &_debug, &error);
+		res = dwarf_init(fd, access, errhand, errarg, &_debug, &error);
 		if (DW_DLV_OK != res) {
 			if (DW_DLV_ERROR == res) {
 				ERRMSG("Failed to Initialize libDwarf! DW_DLV_ERROR: res: %s\nExiting...\n", dwarf_errmsg(error));

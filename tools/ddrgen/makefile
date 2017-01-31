@@ -18,7 +18,7 @@
 
 top_srcdir := ../..
 VPATH := ../..
-include $(top_srcdir)/toolconfigure.mk
+include $(top_srcdir)/tools/toolconfigure.mk
 
 .DEFAULT_GOAL := all
 

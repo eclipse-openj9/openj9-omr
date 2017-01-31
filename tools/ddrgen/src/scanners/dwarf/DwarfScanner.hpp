@@ -29,9 +29,9 @@ using std::tr1::unordered_map;
 #endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 #include <map>
 
-#if defined(OSX)
-#include "DwarfParser.hpp"
-#else /* defined(OSX) */
+#if defined(OSX) || defined(AIXPPC)
+#include "DwarfFunctions.hpp"
+#else /* defined(OSX) || defined(AIXPPC) */
 #include <dwarf.h>
 #include <libdwarf.h>
 #endif /* defined(OSX) */
@@ -86,6 +86,7 @@ public:
 private:
 	Dwarf_Signed _fileNameCount;
 	char **_fileNamesTable;
+	unordered_map<string, int> _anonymousEnumNames;
 	unordered_map<TypeKey, Type *, KeyHasher> _typeMap;
 	unordered_map<string, Type *> _typeStubMap;
 	Symbol_IR *_ir;

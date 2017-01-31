@@ -480,7 +480,7 @@ OMRCFG_DEFINE_FLAG([OMRTHREAD_LIB_UNIX],[1],
 	)]
 )
 
-AS_IF([test "$cross_compiling" != "yes"],
+AS_IF([[test "$cross_compiling" != "yes"] && [test "$OMR_HOST_OS" != osx] && [test "$OMR_HOST_OS" != aix]],
 	[# Look for libdwarf.h
 	AC_CHECK_HEADER([libdwarf.h], [],
 		[AC_CHECK_HEADER([/usr/include/libdwarf/libdwarf.h],

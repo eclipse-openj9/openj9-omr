@@ -30,6 +30,8 @@ static const char *_errmsgs[] = {
 	"DW_DLE_NOB (8) not an object file or dSYM bundle not found",
 	"DW_DLE_VMM (9) dwarf format/library version mismatch",
 };
+vector<string> Dwarf_CU_Context::_fileList;
+unordered_map<Dwarf_Off,Dwarf_Die> Dwarf_Die_s::refMap;
 
 int
 dwarf_srcfiles(Dwarf_Die die, char ***srcfiles, Dwarf_Signed *filecount, Dwarf_Error *error)

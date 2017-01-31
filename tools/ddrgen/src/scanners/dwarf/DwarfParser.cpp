@@ -16,7 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "DwarfParser.hpp"
+#include "DwarfFunctions.hpp"
 
 /* Statics to create: */
 static void deleteDie(Dwarf_Die die);
@@ -29,6 +29,10 @@ static void parseTagString(char *string, size_t length, Dwarf_Half *tag);
 static int parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 	unordered_map<Dwarf_Die *, Dwarf_Off> *refToPopulate, Dwarf_Error *error);
 static void parseAttrType(char *string, size_t length, Dwarf_Half *type, Dwarf_Half *form);
+Dwarf_CU_Context * Dwarf_CU_Context::_firstCU;
+Dwarf_CU_Context * Dwarf_CU_Context::_currentCU;
+vector<string> Dwarf_CU_Context::_fileList;
+unordered_map<Dwarf_Off,Dwarf_Die> Dwarf_Die_s::refMap;
 
 int
 dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)

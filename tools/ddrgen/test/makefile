@@ -34,7 +34,7 @@ MODULE_CXXFLAGS += -g3 -Wno-error
 else ifeq (msvc,$(OMR_TOOLCHAIN))
 MODULE_CXXFLAGS += /Zi
 else
-MODULE_CXXFLAGS += -qdbgfmt=dwarf
+MODULE_CXXFLAGS += -qdbgfmt=stabstring
 endif
 
 include $(top_srcdir)/omrmakefiles/rules.mk

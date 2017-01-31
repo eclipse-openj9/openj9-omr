@@ -45,8 +45,6 @@
 
 extern PortTestEnvironment *portTestEnv;
 
-#undef HEAPTEST_VERBOSE
-
 /**
  * The amount of metadata used for heap management in bytes.
  * We operate on the internal knowledge of sizeof(J9Heap) = 2*sizeof(uintptr_t), i.e. white box testing.
@@ -69,6 +67,8 @@ typedef struct AllocListElement {
 	void *allocPtr;
 	uintptr_t allocSerialNumber;
 } AllocListElement;
+
+static const int32_t outputInterval = 10;
 
 static void walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testName);
 static void verifySubAllocMem(struct OMRPortLibrary *portLibrary, void *subAllocMem, uintptr_t allocSize, J9Heap *heapBase, const char *testName);
@@ -292,11 +292,9 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 			allocElement->allocSize = allocSize;
 			allocElement->allocSerialNumber = allocSerialNumber;
 
-#if defined(HEAPTEST_VERBOSE)
 			if (0 == allocSerialNumber % outputInterval) {
-				portTestEnv->log("Alloc: size=%zu, allocSerialNumber=%zu, elementCount=%zu\n", allocSize, allocSerialNumber, pool_numElements(allocPool));
+				portTestEnv->log(LEVEL_VERBOSE, "Alloc: size=%zu, allocSerialNumber=%zu, elementCount=%zu\n", allocSize, allocSerialNumber, pool_numElements(allocPool));
 			}
-#endif
 			verifySubAllocMem(OMRPORTLIB, subAllocMem, allocSize, heapBase, testName);
 			walkHeap(OMRPORTLIB, heapBase, testName);
 			iteratePool(OMRPORTLIB, allocPool);
@@ -321,12 +319,10 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 				allocElement->allocSize = allocSize;
 			}
 
-#if defined(HEAPTEST_VERBOSE)
 			if (0 == reallocSerialNumber % outputInterval) {
-				portTestEnv->log("Realloc: index=%zu, size=%zu, result=%p, reallocSerialNumber=%zu, elementCount=%zu\n",
+				portTestEnv->log(LEVEL_VERBOSE, "Realloc: index=%zu, size=%zu, result=%p, reallocSerialNumber=%zu, elementCount=%zu\n",
 							  reallocIndex, allocSize, subAllocMem, freeSerialNumber, pool_numElements(allocPool));
 			}
-#endif
 			walkHeap(OMRPORTLIB, heapBase, testName);
 		} else {
 			uintptr_t removeIndex;
@@ -341,11 +337,9 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 			freeSerialNumber += 1;
 
 			omrheap_free(heapBase, subAllocPtr);
-#if defined(HEAPTEST_VERBOSE)
 			if (0 == freeSerialNumber % outputInterval) {
-				portTestEnv->log("Freed: index=%zu, freeSerialNumber=%zu, elementCount=%zu\n", removeIndex, freeSerialNumber, pool_numElements(allocPool));
+				portTestEnv->log(LEVEL_VERBOSE, "Freed: index=%zu, freeSerialNumber=%zu, elementCount=%zu\n", removeIndex, freeSerialNumber, pool_numElements(allocPool));
 			}
-#endif
 			walkHeap(OMRPORTLIB, heapBase, testName);
 			iteratePool(OMRPORTLIB, allocPool);
 		}
@@ -1264,21 +1258,19 @@ verifySubAllocMem(struct OMRPortLibrary *portLibrary, void *subAllocMem, uintptr
 static void
 iteratePool(struct OMRPortLibrary *portLibrary, J9Pool *allocPool)
 {
-#if defined(HEAPTEST_VERBOSE)
 	pool_state state;
 	AllocListElement *element;
 
 	if (0 == pool_numElements(allocPool)) {
-		portTestEnv->log("Pool has become empty");
+		portTestEnv->log(LEVEL_VERBOSE, "Pool has become empty");
 	} else {
-		element = pool_startDo(allocPool, &state);
+		element = (AllocListElement *)pool_startDo(allocPool, &state);
 		do {
-			portTestEnv->log("[%zu] ", element->allocSerialNumber);
-			element = pool_nextDo(&state);
+			portTestEnv->log(LEVEL_VERBOSE, "[%zu] ", element->allocSerialNumber);
+			element = (AllocListElement *)pool_nextDo(&state);
 		} while (NULL != element);
 	}
-	portTestEnv->log("\n\n");
-#endif
+	portTestEnv->log(LEVEL_VERBOSE, "\n\n");
 }
 
 /**
@@ -1336,11 +1328,9 @@ walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testN
 	lastSlot = &basePtr[heapSize - 1];
 	blockTopPaddingCursor = &basePtr[SIZE_OF_J9HEAP_HEADER / sizeof(uint64_t)];
 
-#if defined(HEAPTEST_VERBOSE)
-	portTestEnv->log("J9Heap @ 0x%p: ", heapBase);
-	portTestEnv->log("%zu|", heapSize);
-	portTestEnv->log("%zu|", firstFreeBlock);
-#endif
+	portTestEnv->log(LEVEL_VERBOSE, "J9Heap @ 0x%p: ", heapBase);
+	portTestEnv->log(LEVEL_VERBOSE, "%zu|", heapSize);
+	portTestEnv->log(LEVEL_VERBOSE, "%zu|", firstFreeBlock);
 
 	while (((uintptr_t)blockTopPaddingCursor) < ((uintptr_t)lastSlot)) {
 		I_64 topBlockSize, bottomBlockSize, absSize;
@@ -1374,14 +1364,10 @@ walkHeap(struct OMRPortLibrary *portLibrary, J9Heap *heapBase, const char *testN
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\nsize in top and bottom block padding don't match @ 0x%p\n", blockTopPaddingCursor);
 			return;
 		}
-#if defined(HEAPTEST_VERBOSE)
-		portTestEnv->log("%lld|", topBlockSize);
-#endif
+		portTestEnv->log(LEVEL_VERBOSE, "%lld|", topBlockSize);
 		blockTopPaddingCursor = blockBottomPaddingCursor + 1;
 	}
-#if defined(HEAPTEST_VERBOSE)
-	portTestEnv->log("\n");
-#endif
+	portTestEnv->log(LEVEL_VERBOSE, "\n");
 	portTestEnv->changeIndent(-1);
 }
 

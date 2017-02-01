@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2015
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -15,7 +15,6 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-
 
 #include "cudaTests.hpp"
 
@@ -79,7 +78,6 @@ static const J9CudaError errors[] = {
 	J9CUDA_ERROR_LAUNCH_PENDING_COUNT_EXCEEDED,
 	J9CUDA_ERROR_NOT_PERMITTED,
 	J9CUDA_ERROR_NOT_SUPPORTED,
-	J9CUDA_ERROR_STARTUP_FAILURE,
 	J9CUDA_ERROR_NOT_FOUND
 };
 

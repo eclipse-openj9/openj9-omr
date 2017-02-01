@@ -1733,6 +1733,14 @@ OMR::Node::duplicateTree(bool duplicateChildren)
    return unsafeNode;
    }
 
+TR::Node *
+OMR::Node::duplicateTreeForCodeMotion()
+   {
+   TR::Node *result = self()->duplicateTree(true);
+   result->resetFlagsForCodeMotion();
+   return result;
+   }
+
 /**
  * Method to duplicate an entire subtree. Tries to do so 'safely' by maintaining a mapping of visited (and duplicated) nodes
  */

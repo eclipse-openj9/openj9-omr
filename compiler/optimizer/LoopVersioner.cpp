@@ -4090,45 +4090,39 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       if (shouldOnlySpecializeLoops())
          {
          int32_t numIters = whileLoop->getEntryBlock()->getFrequency();
-         //if (numIters > 0.90*comp()->getRecompilationInfo()->getMaxBlockCount())
          if (numIters < 0.90*(MAX_BLOCK_COUNT+MAX_COLD_BLOCK_COUNT))
             _canPredictIters = false;
          }
 
       if (!refineAliases() && _canPredictIters && !comp()->isProfilingCompilation() &&
-         performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
+          performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
          {
-         TR::Node *duplicateLoopLimit = _loopTestTree->getNode()->getSecondChild()->duplicateTree();
-         if (isIncreasing)
-            duplicateLoopLimit = TR::Node::create(TR::isub, 2, duplicateLoopLimit, _loopTestTree->getNode()->getFirstChild()->duplicateTree());
-         else
-            {
-            //printf("Eliminating an async on decreasing guard in %s\n", comp()->signature());
-            duplicateLoopLimit = TR::Node::create(TR::isub, 2, _loopTestTree->getNode()->getFirstChild()->duplicateTree(), duplicateLoopLimit);
-            }
-         collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, duplicateLoopLimit, &comparisonTrees, clonedLoopInvariantBlock, comp()->incVisitCount());
-    TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, duplicateLoopLimit, TR::Node::create(duplicateLoopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());
+         TR::Node *lowerBound = _loopTestTree->getNode()->getFirstChild()->duplicateTreeForCodeMotion();
+         TR::Node *upperBound = _loopTestTree->getNode()->getSecondChild()->duplicateTreeForCodeMotion();
+         TR::Node *loopLimit = isIncreasing ?
+            TR::Node::create(TR::isub, 2, upperBound, lowerBound) :
+            TR::Node::create(TR::isub, 2, lowerBound, upperBound);
+
+         collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, loopLimit, &comparisonTrees, clonedLoopInvariantBlock, comp()->incVisitCount());
+         TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, loopLimit, TR::Node::create(loopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());
          nextComparisonNode->setIsMaxLoopIterationGuard(true);
 
          if (trace())
-         {
-         traceMsg(comp(), "Removing async check %p\n", _asyncCheckTree->getNode());
-         }
-
-         //printf("Found versionable loop in %s\n", comp()->signature());
+            {
+            traceMsg(comp(), "Removing async check %p\n", _asyncCheckTree->getNode());
+            }
 
          comp()->setLoopWasVersionedWrtAsyncChecks(true);
          comparisonTrees.add(nextComparisonNode);
          dumpOptDetails(comp(), "The node %p has been created for testing if async check is required\n", nextComparisonNode);
 
-         bool skipIt = comp()->getOption(TR_DisableAsyncCheckVersioning);
-         if (!skipIt)
+         if (!comp()->getOption(TR_DisableAsyncCheckVersioning))
             {
             TR::TreeTop *prevTree = _asyncCheckTree->getPrevTreeTop();
             TR::TreeTop *nextTree = _asyncCheckTree->getNextTreeTop();
             prevTree->join(nextTree);
             }
-         //_loopTestBlock->getStructureOf()->setIsEntryOfShortRunningLoop();
+
          whileLoop->getEntryBlock()->getStructureOf()->setIsEntryOfShortRunningLoop();
          if (trace())
             traceMsg(comp(), "Marked block %p with entry %p\n", whileLoop->getEntryBlock(), whileLoop->getEntryBlock()->getEntry()->getNode());
@@ -4138,12 +4132,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // Construct the tests for invariant expressions that need
    // to be null checked.
    //
-  if (
-      comp()->cg()->performsChecksExplicitly() ||
-      (comp()->getMethodHotness() >= veryHot))
+   if (comp()->cg()->performsChecksExplicitly() ||
+       (comp()->getMethodHotness() >= veryHot))
       {
       if (!nullCheckTrees->isEmpty() &&
-         !shouldOnlySpecializeLoops())
+          !shouldOnlySpecializeLoops())
          {
          buildNullCheckComparisonsTree(nullCheckedReferences, nullCheckTrees, boundCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees, clonedLoopInvariantBlock);
          }

@@ -356,6 +356,7 @@ public:
    TR::Node *             getAndDecChild(int32_t c);
 
    TR::Node *             duplicateTree(bool duplicateChildren = true);
+   TR::Node *             duplicateTreeForCodeMotion();
    TR::Node *             duplicateTreeWithCommoning(TR::Allocator allocator);
    TR::Node *             duplicateTree_DEPRECATED(bool duplicateChildren = true);
    bool                   isUnsafeToDuplicateAndExecuteAgain(int32_t *nodeVisitBudget);

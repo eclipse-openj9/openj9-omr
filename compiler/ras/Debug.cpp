@@ -1747,6 +1747,10 @@ TR_Debug::printAliasInfo(TR::FILE *pOutFile, TR::SymbolReference * symRef)
          trfprintf(pOutFile, "   Usedef Aliases: NULL ");
       trfprintf(pOutFile, "\n");
       }
+   else
+      {
+      trfprintf(pOutFile, "Symref #%d %s has no aliases\n", symRef->getReferenceNumber(), getName(symRef));
+      }
    }
 
 TR::ResolvedMethodSymbol *

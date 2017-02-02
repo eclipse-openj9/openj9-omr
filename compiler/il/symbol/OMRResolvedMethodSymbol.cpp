@@ -1232,7 +1232,9 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
       TR_IlGenerator *ilGen = customRequest.getIlGenerator(self(), fe, comp, symRefTab);
 
-      _methodFlags.set(IlGenSuccess, ilGen->genIL());
+      auto genIL_rc = ilGen->genIL();
+      _methodFlags.set(IlGenSuccess, genIL_rc);
+      traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
 
       if (_methodFlags.testAny(IlGenSuccess))
          {

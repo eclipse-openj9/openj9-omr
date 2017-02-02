@@ -44,6 +44,7 @@ ALL_TESTS = \
             switch \
             thunks \
             toiltype \
+            union \
             worklist
 
 # Compile all the tests by default
@@ -75,6 +76,7 @@ all_goal: common_goal
 	./thunks
 	./toiltype
 	./transactionaloperations
+	./union
 
 
 # In general, only compile and run tests that are known to work on all platforms
@@ -248,6 +250,12 @@ transactionaloperations : libjitbuilder.a TransactionalOperations.o
 	g++ -g -fno-rtti -o $@ TransactionalOperations.o -L. -ljitbuilder -ldl
 
 TransactionalOperations.o: src/TransactionalOperations.cpp src/TransactionalOperations.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+union : libjitbuilder.a Union.o
+	g++ -g -fno-rtti -o $@ Union.o -L. -ljitbuilder -ldl
+
+Union.o: src/Union.cpp src/Union.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 worklist : libjitbuilder.a Worklist.o

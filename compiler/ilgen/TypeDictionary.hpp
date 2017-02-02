@@ -68,6 +68,8 @@ public:
    virtual TR::IlType *baseType() { return NULL; }
 
    virtual bool isStruct() {return false; }
+   virtual bool isUnion() { return false; }
+
    virtual size_t getSize();
 
 protected:
@@ -131,6 +133,7 @@ public:
    ~TypeDictionary() throw();
 
    TR::IlType * LookupStruct(const char *structName);
+   TR::IlType * LookupUnion(const char *unionName);
 
    /**
     * @brief Begin definition of a new structure type
@@ -213,6 +216,11 @@ public:
     */
    size_t OffsetOf(const char *structName, const char *fieldName);
 
+   TR::IlType * DefineUnion(const char *unionName);
+   void UnionField(const char *unionName, const char *fieldName, TR::IlType *type);
+   void CloseUnion(const char *unionName);
+   TR::IlType * UnionFieldType(const char *unionName, const char *fieldName);
+
    TR::IlType *PrimitiveType(TR::DataType primitiveType)
       {
       return _primitiveType[primitiveType];
@@ -224,7 +232,7 @@ public:
    TR::IlType *PointerTo(const char *structName);
    TR::IlType *PointerTo(TR::DataType baseType)  { return PointerTo(_primitiveType[baseType]); }
 
-   TR::IlReference *FieldReference(const char *structName, const char *fieldName);
+   TR::IlReference *FieldReference(const char *typeName, const char *fieldName);
    TR_Memory *trMemory() { return _trMemory; }
 
    //TR::IlReference *ArrayReference(TR::IlType *arrayType);
@@ -404,6 +412,7 @@ protected:
    TR::Region *_memoryRegion;
    TR_Memory *_trMemory;
    TR_HashTabString * _structsByName;
+   TR_HashTabString * _unionsByName;
 
    // convenience for primitive types
    TR::IlType       * _primitiveType[TR::NumOMRTypes];

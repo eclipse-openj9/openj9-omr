@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2001, 2015
+ * (c) Copyright IBM Corp. 2001, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,6 +27,7 @@ TEST(PortHypervisorTest, DISABLED_HypervisorPresent)
 
 	intptr_t rc = 0;
 	BOOLEAN isVirtual = FALSE;
+	portTestEnv->changeIndent(2);
 
 	if (NULL != portTestEnv->hypervisor) {
 		/* -hypervisor *was* specified */
@@ -39,15 +40,15 @@ TEST(PortHypervisorTest, DISABLED_HypervisorPresent)
 		switch (rc) {
 		case J9HYPERVISOR_NOT_PRESENT: {
 			/* Pass case, since -hypervisor was NOT specified; neither was it detected. */
-			outputComment(PORTLIB,
-						  "\t\tTest Passed: No Hypervisor present and j9hypervisor_hypervisor_present()"
+			portTestEnv->log(
+						  "Test Passed: No Hypervisor present and j9hypervisor_hypervisor_present()"
 						  "returned false\n");
 
 			break;
 		}
 		case J9PORT_ERROR_HYPERVISOR_UNSUPPORTED: {
 			/* Pass case; give benefit of doubt since hypervisor detection is NOT supported. */
-			outputComment(PORTLIB, "\t\tThis platform does not support Hypervisor detection\n");
+			portTestEnv->log("This platform does not support Hypervisor detection\n");
 			break;
 		}
 		case J9HYPERVISOR_PRESENT: {
@@ -74,7 +75,7 @@ TEST(PortHypervisorTest, DISABLED_HypervisorPresent)
 		switch (rc) {
 		case J9HYPERVISOR_PRESENT: {
 			/* Pass case, since we detected a hypervisor as also found -hypervisor specified. */
-			outputComment(PORTLIB, "\t\tTest Passed: Expected a hypervisor and"
+			portTestEnv->log("Test Passed: Expected a hypervisor and"
 						  " j9hypervisor_hypervisor_present() returned true\n");
 			break;
 		}
@@ -83,7 +84,7 @@ TEST(PortHypervisorTest, DISABLED_HypervisorPresent)
 				/* If this is a negative test case then we expect hypervisor detection to return
 				 * error code: J9PORT_ERROR_HYPERVISOR_UNSUPPORTED, when -hypervisor is specified.
 				 */
-				outputComment(PORTLIB, "\t\tTest (negative case) passed: Expected an "
+				portTestEnv->log("Test (negative case) passed: Expected an "
 							  "unsupported hypervisor.\n\tj9hypervisor_hypervisor_present() returned "
 							  "-856 (J9PORT_ERROR_HYPERVISOR_UNSUPPORTED).\n");
 			} else {
@@ -104,4 +105,5 @@ TEST(PortHypervisorTest, DISABLED_HypervisorPresent)
 		}
 		};
 	}
+	portTestEnv->changeIndent(-2);
 }

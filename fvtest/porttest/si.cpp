@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -148,8 +148,8 @@ TEST(PortSysinfoTest, sysinfo_test0)
 								 executable_name /* found through API */
 								)
 	) {
-		outputComment(OMRPORTLIB, "Executable name test passed.\n"
-					  "  Expected (argv0=%s).\n  Found=%s.\n",
+		portTestEnv->log("Executable name test passed.\n"
+					  "Expected (argv0=%s).\n  Found=%s.\n",
 					  argv0,
 					  executable_name);
 	} else {
@@ -176,34 +176,34 @@ TEST(PortSysinfoTest, sysinfo_test0)
 
 
 	pid = omrsysinfo_get_pid();
-	omrtty_printf("PLT pid=%d\n", pid);
+	portTestEnv->log("PLT pid=%d\n", pid);
 
 	osVersion = omrsysinfo_get_OS_version();
-	omrtty_printf("OSversion=%s\n" osVersion ? osVersion : "NULL");
+	portTestEnv->log("OSversion=%s\n" osVersion ? osVersion : "NULL");
 
 	strcpy(envVar, "PATH");		/*case matters?*/
 	/*check rc before use: -1=BOGUS  0=good else nowrite, rc=varLength*/
 	rc = omrsysinfo_get_env(envVar, infoString, bufSize);
-	omrtty_printf("%s=%s\nbufSize=%d rc=%d\n\n", envVar, infoString, bufSize, rc);
+	portTestEnv->log("%s=%s\nbufSize=%d rc=%d\n\n", envVar, infoString, bufSize, rc);
 	/*
 	 * note:  tty_printf has a implementation-dependent limit on out chars
 	 * printf("\n\n%s=%s bufSize=%d rc=%d\n\n",envVar,infoString,bufSize,rc);
 	 */
 
 	osName = omrsysinfo_get_CPU_architecture();
-	omrtty_printf("CPU architecture=%s\n", osName ? osName : "NULL");
+	portTestEnv->log("CPU architecture=%s\n", osName ? osName : "NULL");
 
 	osType = omrsysinfo_get_OS_type();
-	omrtty_printf("OS type=%s\n", osType ? osType : "NULL");
+	portTestEnv->log("OS type=%s\n", osType ? osType : "NULL");
 
 	/*SHOULD omrmem_free_memory() result, eh!!!!!! argv[0] not really used*/
 	/*check rc before use: 0=good -1=error ???*/
 
 	number_CPUs = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE);
-	omrtty_printf("number of CPU(s)=%d\n", number_CPUs);
+	portTestEnv->log("number of CPU(s)=%d\n", number_CPUs);
 
 
-	omrtty_printf("SI test done!\n\n");
+	portTestEnv->log("SI test done!\n\n");
 
 #endif
 done:
@@ -225,14 +225,14 @@ TEST(PortSysinfoTest, sysinfo_test1)
 
 	rc = omrsysinfo_get_username(username, J9SYSINFO_TEST1_USERNAME_LENGTH);
 	if (rc == -1) {
-		outputComment(OMRPORTLIB, "omrsysinfo_get_username returns -1.\n");
-		outputComment(OMRPORTLIB, "If this is a supported platform, consider this as a failure\n");
+		portTestEnv->log(LEVEL_ERROR, "omrsysinfo_get_username returns -1.\n");
+		portTestEnv->log(LEVEL_ERROR, "If this is a supported platform, consider this as a failure\n");
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	} else {
 		char msg[256] = "";
 		omrstr_printf(msg, sizeof(msg), "User name returned = \"%s\"\n", username);
-		outputComment(OMRPORTLIB, msg);
+		portTestEnv->log(msg);
 	}
 
 	length = strlen(username);
@@ -257,14 +257,14 @@ TEST(PortSysinfoTest, sysinfo_test2)
 
 	rc = omrsysinfo_get_groupname(groupname, J9SYSINFO_TEST2_GROUPNAME_LENGTH);
 	if (rc == -1) {
-		outputComment(OMRPORTLIB, "omrsysinfo_get_groupname returns -1.\n");
-		outputComment(OMRPORTLIB, "If this is a supported platform, consider this as a failure\n");
+		portTestEnv->log(LEVEL_ERROR, "omrsysinfo_get_groupname returns -1.\n");
+		portTestEnv->log(LEVEL_ERROR, "If this is a supported platform, consider this as a failure\n");
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	} else {
 		char msg[256] = "";
 		omrstr_printf(msg, sizeof(msg), "Group name returned = \"%s\"\n", groupname);
-		outputComment(OMRPORTLIB, msg);
+		portTestEnv->log(msg);
 	}
 
 	length = strlen(groupname);
@@ -295,7 +295,7 @@ TEST(PortSysinfoTest, sysinfo_get_OS_type_test)
 	} else {
 		char msg[256];
 		omrstr_printf(msg, sizeof(msg), "omrsysinfo_get_OS_type returned : \"%s\"\n", osName);
-		outputComment(OMRPORTLIB, msg);
+		portTestEnv->log(msg);
 	}
 
 	osVersion = omrsysinfo_get_OS_version();
@@ -306,7 +306,7 @@ TEST(PortSysinfoTest, sysinfo_get_OS_type_test)
 	} else {
 		char msg[256];
 		omrstr_printf(msg, sizeof(msg), "omrsysinfo_get_OS_version returned : \"%s\"\n", osVersion);
-		outputComment(OMRPORTLIB, msg);
+		portTestEnv->log(msg);
 	}
 
 #if defined(WIN32) || defined(WIN64)
@@ -324,7 +324,6 @@ TEST(PortSysinfoTest, sysinfo_get_OS_type_test)
 		return;
 	}
 #endif
-
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -339,15 +338,15 @@ TEST(PortSysinfoTest, sysinfo_test3)
 
 	rc = omrsysinfo_get_load_average(&loadData);
 	if (rc == -1) {
-		outputComment(OMRPORTLIB, "omrsysinfo_get_load_average returns -1.\n");
-		outputComment(OMRPORTLIB, "If this is a supported platform, consider this as a failure\n");
+		portTestEnv->log(LEVEL_ERROR, "omrsysinfo_get_load_average returns -1.\n");
+		portTestEnv->log(LEVEL_ERROR, "If this is a supported platform, consider this as a failure\n");
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	} else {
-		outputComment(OMRPORTLIB, "Returned data\n");
-		outputComment(OMRPORTLIB, "One Minute Average: %lf\n", loadData.oneMinuteAverage);
-		outputComment(OMRPORTLIB, "Five Minute Average: %lf\n", loadData.fiveMinuteAverage);
-		outputComment(OMRPORTLIB, "Fifteen Minute Average: %lf\n", loadData.fifteenMinuteAverage);
+		portTestEnv->log("Returned data\n");
+		portTestEnv->log("One Minute Average: %lf\n", loadData.oneMinuteAverage);
+		portTestEnv->log("Five Minute Average: %lf\n", loadData.fiveMinuteAverage);
+		portTestEnv->log("Fifteen Minute Average: %lf\n", loadData.fifteenMinuteAverage);
 	}
 
 	reportTestExit(OMRPORTLIB, testName);
@@ -364,13 +363,14 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_ulimit_iterator)
 	J9SysinfoUserLimitElement element;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	rc = omrsysinfo_limit_iterator_init(&state);
 
 	if (0 != rc) {
 
 		if (OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM == rc) {
-			omrtty_printf("\tThis platform does not support the limit iterator\n");
+			portTestEnv->log(LEVEL_ERROR, "This platform does not support the limit iterator\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tomrsysinfo_limit_iterator_init returned: %i\n", rc);
 		}
@@ -382,18 +382,18 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_ulimit_iterator)
 		rc = omrsysinfo_limit_iterator_next(&state, &element);
 
 		if (0 == rc) {
-			omrtty_printf("\t%s:\n", element.name);
+			portTestEnv->log("%s:\n", element.name);
 
 			if (OMRPORT_LIMIT_UNLIMITED == element.softValue) {
-				omrtty_printf("\t soft: unlimited\n");
+				portTestEnv->log(" soft: unlimited\n");
 			} else {
-				omrtty_printf("\t soft: 0x%zX\n", element.softValue);
+				portTestEnv->log(" soft: 0x%zX\n", element.softValue);
 			}
 
 			if (OMRPORT_LIMIT_UNLIMITED == element.hardValue) {
-				omrtty_printf("\t hard: unlimited\n");
+				portTestEnv->log(" hard: unlimited\n");
 			} else {
-				omrtty_printf("\t hard: 0x%zX\n", element.hardValue);
+				portTestEnv->log(" hard: 0x%zX\n", element.hardValue);
 			}
 
 		} else {
@@ -403,6 +403,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_ulimit_iterator)
 
 done:
 
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -432,6 +433,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 #undef SI_DEBUG
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	/* Test 1: NULL buffer - Pass in NULL for buffer, make sure we get back a positive integer describing the size, or a crash */
 	buffer = NULL;
@@ -439,7 +441,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 
 	if (rc < 0) {
 		if (OMRPORT_ERROR_NOT_SUPPORTED_ON_THIS_PLATFORM == rc) {
-			omrtty_printf("\tThis platform does not support the env iterator\n");
+			portTestEnv->log(LEVEL_ERROR, "This platform does not support the env iterator\n");
 		} else if (OMRPORT_ERROR_SYSINFO_ENV_INIT_CRASHED_COPYING_BUFFER == rc) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tCrash passing in NULL buffer while running single-threaded. This is a failure because no-one else should have been able to modify it\n");
 		} else {
@@ -451,7 +453,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Need a buffer of size %x bytes\n", envSize);
+		portTestEnv->log("Need a buffer of size %x bytes\n", envSize);
 #endif
 	}
 
@@ -471,14 +473,14 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		goto done;
 	}
 
-	omrtty_printf("\tEnvironment:\n\n");
+	portTestEnv->log("Environment:\n\n");
 
 	l = 0;
 	while (omrsysinfo_env_iterator_hasNext(&state)) {
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 		if (0 == rc) {
-			omrtty_printf("\t%s\n", element.nameAndValue);
+			portTestEnv->log("%s\n", element.nameAndValue);
 			l++;
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "\tomrsysinfo_env_iterator_next returned: %i when 0 was expected\n", rc);
@@ -509,7 +511,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
+		portTestEnv->log("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
 #endif
 	}
 
@@ -519,7 +521,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 #if defined(SI_DEBUG)
-		omrtty_printf("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
+		portTestEnv->log("si.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
 #endif
 
 		if (0 == rc) {
@@ -552,7 +554,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 	} else {
 		envSize = rc;
 #if defined(SI_DEBUG)
-		omrtty_printf("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
+		portTestEnv->log("Should have a buffer of size %x bytes, using one of size %x instead, which will result in a truncated environment\n", envSize, bufferSizeBytes);
 #endif
 	}
 
@@ -562,7 +564,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_env_iterator)
 		rc = omrsysinfo_env_iterator_next(&state, &element);
 
 #if defined(SI_DEBUG)
-		omrtty_printf("\tsi.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
+		portTestEnv->log("si.c element.nameAndValue @ 0x%p: %s\n", element.nameAndValue, element.nameAndValue);
 #endif
 
 		if (0 == rc) {
@@ -580,6 +582,7 @@ done:
 		omrmem_free_memory(buffer);
 	}
 
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -618,7 +621,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_ADDRESS_SPACE, &currentLimit);
 
 	if (as1 == currentLimit) {
-		outputComment(OMRPORTLIB, "omrsysinfo_set_limit set ADDRESS_SPACE soft max successful\n");
+		portTestEnv->log("omrsysinfo_set_limit set ADDRESS_SPACE soft max successful\n");
 	} else {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set ADDRESS_SPACE soft max FAILED\n");
 		reportTestExit(OMRPORTLIB, testName);
@@ -640,7 +643,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_ADDRESS_SPACE | OMRPORT_LIMIT_HARD, &currentLimit);
 		if (originalMaxLimit == currentLimit) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set ADDRESS_SPACE hard max successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set ADDRESS_SPACE hard max successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set ADDRESS_SPACE hard max FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -659,7 +662,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_ADDRESS_SPACE)
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_ADDRESS_SPACE | OMRPORT_LIMIT_HARD, &currentLimit);
 
 		if (as1 + 1 == currentLimit) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set ADDRESS_SPACE hard max successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set ADDRESS_SPACE hard max successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set ADDRESS_SPACE hard max FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -721,7 +724,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 	rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FILE, &currentLimit);
 
 	if (coreFileSize == currentLimit) {
-		outputComment(OMRPORTLIB, "omrsysinfo_set_limit set CORE_FILE soft max successful\n");
+		portTestEnv->log("omrsysinfo_set_limit set CORE_FILE soft max successful\n");
 	} else {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set CORE_FILE soft max FAILED\n");
 		reportTestExit(OMRPORTLIB, testName);
@@ -744,7 +747,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FILE | OMRPORT_LIMIT_HARD, &currentLimit);
 		if (originalMaxLimit == currentLimit) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set CORE_FILE hard max successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set CORE_FILE hard max successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set CORE_FILE hard max FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -763,7 +766,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FILE)
 
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FILE | OMRPORT_LIMIT_HARD, &currentLimit);
 		if (coreFileSize + 1 == currentLimit) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set CORE_FILE hard max successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set CORE_FILE hard max successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set CORE_FILE hard max FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -811,7 +814,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FLAGS)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (geteuid()) {
-		outputComment(OMRPORTLIB, "You must be root to set core flags\n");
+		portTestEnv->log(LEVEL_ERROR, "You must be root to set core flags\n");
 
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FLAGS, &currentLimit);
 		if (-1 == rc) {
@@ -824,7 +827,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FLAGS)
 		lastErrorNumber = omrerror_last_error_number();
 
 		if (OMRPORT_ERROR_FILE_NOPERMISSION == lastErrorNumber) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit CORE_FLAGS failed as expected because we aren't root.\n");
+			portTestEnv->log(LEVEL_ERROR, "omrsysinfo_set_limit CORE_FLAGS failed as expected because we aren't root.\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit CORE_FLAGS did not fail with the proper error.\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -847,7 +850,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FLAGS)
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FLAGS, &currentLimit);
 		if ((rc == OMRPORT_LIMIT_LIMITED) &&
 			(0 == currentLimit)) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set AIX full core value to 0 successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set AIX full core value to 0 successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set CORE_FLAGS FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -865,7 +868,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_set_limit_CORE_FLAGS)
 		rc = omrsysinfo_get_limit(OMRPORT_RESOURCE_CORE_FLAGS, &currentLimit);
 		if ((OMRPORT_LIMIT_UNLIMITED == rc) &&
 			(U_64_MAX == currentLimit)) {
-			outputComment(OMRPORTLIB, "omrsysinfo_set_limit set AIX full core value to 1 successful\n");
+			portTestEnv->log("omrsysinfo_set_limit set AIX full core value to 1 successful\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_set_limit set CORE_FLAGS FAILED\n");
 			reportTestExit(OMRPORTLIB, testName);
@@ -906,7 +909,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS)
 		 * set to implementation-defined limit, RLIM_INFINITY.
 		 */
 		if (RLIM_INFINITY == curLimit) {
-			outputComment(OMRPORTLIB,
+			portTestEnv->log(
 				"omrsysinfo_get_limit(nofiles): soft limit=RLIM_INFINITY (unlimited).\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS,
@@ -917,7 +920,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS)
 		}
 	} else if (OMRPORT_LIMIT_LIMITED == rc) {
 		if ((((int64_t) curLimit) > 0) && (((int64_t) curLimit) <= INT64_MAX)) {
-			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles) soft limit: %lld.\n",
+			portTestEnv->log("omrsysinfo_get_limit(nofiles) soft limit: %lld.\n",
 				((int64_t) curLimit));
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS,
@@ -938,7 +941,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS)
 	if (OMRPORT_LIMIT_UNLIMITED == rc) {
 		/* Not an error, just that it is not configured.  Ok to compare!. */
 		if (RLIM_INFINITY == maxLimit) {
-			outputComment(OMRPORTLIB,
+			portTestEnv->log(
 				"omrsysinfo_get_limit(nofiles): hard limit = RLIM_INFINITY (unlimited).\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS,
@@ -949,7 +952,7 @@ TEST(PortSysinfoTest, sysinfo_test_sysinfo_get_limit_FILE_DESCRIPTORS)
 		}
 	} else if (OMRPORT_LIMIT_LIMITED == rc) {
 		if ((((int64_t) maxLimit) > 0) && (((int64_t) maxLimit) <= INT64_MAX)) {
-			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles) hard limit: %lld.\n",
+			portTestEnv->log("omrsysinfo_get_limit(nofiles) hard limit: %lld.\n",
 				((int64_t) maxLimit));
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS,
@@ -995,6 +998,7 @@ TEST(PortSysinfoTest, sysinfo_testMemoryInfo)
 	J9MemoryInfo memInfo = {0};
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	rc = omrsysinfo_get_memory_info(&memInfo);
 	if (0 != rc) {
@@ -1054,42 +1058,43 @@ TEST(PortSysinfoTest, sysinfo_testMemoryInfo)
 			(memInfo.timestamp > 0)) {
 
 			/* Print out the memory usage statistics. */
-			outputComment(OMRPORTLIB, "Retrieved memory usage statistics.\n");
-			outputComment(OMRPORTLIB, "Total physical memory: %llu bytes.\n", memInfo.totalPhysical);
-			outputComment(OMRPORTLIB, "Available physical memory: %llu bytes.\n", memInfo.availPhysical);
+			portTestEnv->log("Retrieved memory usage statistics.\n");
+			portTestEnv->log("Total physical memory: %llu bytes.\n", memInfo.totalPhysical);
+			portTestEnv->log("Available physical memory: %llu bytes.\n", memInfo.availPhysical);
 #if defined(WIN32) || defined(OSX)
-			outputComment(OMRPORTLIB, "Total virtual memory: %llu bytes.\n", memInfo.totalVirtual);
-			outputComment(OMRPORTLIB, "Available virtual memory: %llu bytes.\n", memInfo.availVirtual);
+			portTestEnv->log("Total virtual memory: %llu bytes.\n", memInfo.totalVirtual);
+			portTestEnv->log("Available virtual memory: %llu bytes.\n", memInfo.availVirtual);
 #else /* defined(WIN32) || defined(OSX) */
 			/* This may or may not be available depending on whether a limit is set. Print out if this
 			 * is available or else, call this parameter "undefined".
 			 */
 			if (OMRPORT_MEMINFO_NOT_AVAILABLE != memInfo.totalVirtual) {
-				outputComment(OMRPORTLIB, "Total virtual memory: %llu bytes.\n", memInfo.totalVirtual);
+				portTestEnv->log("Total virtual memory: %llu bytes.\n", memInfo.totalVirtual);
 			} else {
-				outputComment(OMRPORTLIB, "Total virtual memory: <undefined>.\n");
+				portTestEnv->log("Total virtual memory: <undefined>.\n");
 			}
 			/* Leave Available Virtual memory parameter as it is on non-Windows Platforms. */
-			outputComment(OMRPORTLIB, "Available virtual memory: <undefined>.\n");
+			portTestEnv->log("Available virtual memory: <undefined>.\n");
 #endif /* defined(WIN32) || defined(OSX) */
-			outputComment(OMRPORTLIB, "Total swap memory: %llu bytes.\n", memInfo.totalSwap);
-			outputComment(OMRPORTLIB, "Swap memory free: %llu bytes.\n", memInfo.availSwap);
+			portTestEnv->log("Total swap memory: %llu bytes.\n", memInfo.totalSwap);
+			portTestEnv->log("Swap memory free: %llu bytes.\n", memInfo.availSwap);
 #if defined(OSX)
-			outputComment(OMRPORTLIB, "Cache memory: <undefined>.\n");
+			portTestEnv->log("Cache memory: <undefined>.\n");
 #else /* defined(OSX) */
-			outputComment(OMRPORTLIB, "Cache memory: %llu bytes.\n", memInfo.cached);
+			portTestEnv->log("Cache memory: %llu bytes.\n", memInfo.cached);
 #endif /* defined(OSX) */
 #if defined(AIXPPC) || defined(WIN32) || defined (OSX)
-			outputComment(OMRPORTLIB, "Buffers memory: <undefined>.\n");
+			portTestEnv->log("Buffers memory: <undefined>.\n");
 #else /* defined(AIXPPC) || defined(WIN32) || defined (OSX) */
-			outputComment(OMRPORTLIB, "Buffers memory: %llu bytes.\n", memInfo.buffered);
+			portTestEnv->log("Buffers memory: %llu bytes.\n", memInfo.buffered);
 #endif /* defined(AIXPPC) || defined(WIN32) || defined (OSX) */
-			outputComment(OMRPORTLIB, "Timestamp: %llu.\n", memInfo.timestamp);
+			portTestEnv->log("Timestamp: %llu.\n", memInfo.timestamp);
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "Invalid memory usage statistics retrieved.\n");
 		}
 	}
 
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -1153,6 +1158,7 @@ TEST(PortSysinfoTest, sysinfo_testProcessorInfo)
 	J9ProcessorInfos currInfo = {0};
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	/* Take a snapshot of processor usage - at t1 (the first iteration). */
 	rc = omrsysinfo_get_processor_info(&prevInfo);
@@ -1199,25 +1205,27 @@ TEST(PortSysinfoTest, sysinfo_testProcessorInfo)
 		(prevInfo.timestamp < currInfo.timestamp)) {
 
 		/* Print out some vital statistics of processor usage - use the current snapshot. */
-		outputComment(OMRPORTLIB, "Available processors: %d.\n", currInfo.totalProcessorCount);
-		outputComment(OMRPORTLIB, "Online processors: %d.\n", n_onln);
-		outputComment(OMRPORTLIB, "Timestamp: %llu.\n", currInfo.timestamp);
+		portTestEnv->log("Available processors: %d.\n", currInfo.totalProcessorCount);
+		portTestEnv->log("Online processors: %d.\n", n_onln);
+		portTestEnv->log("Timestamp: %llu.\n", currInfo.timestamp);
 	}
 
 	/* First, get the diffs in the Totals over iterations t1 to t2. */
 	deltaTotalIdleTime = currInfo.procInfoArray[0].idleTime - prevInfo.procInfoArray[0].idleTime;
 	deltaTotalBusyTime = currInfo.procInfoArray[0].busyTime - prevInfo.procInfoArray[0].busyTime;
 
-	outputComment(OMRPORTLIB, "CPUID: Total\n");
-	outputComment(OMRPORTLIB, "   User time:   %lld.\n", currInfo.procInfoArray[0].userTime);
-	outputComment(OMRPORTLIB, "   System time: %lld.\n", currInfo.procInfoArray[0].systemTime);
-	outputComment(OMRPORTLIB, "   Idle time:   %lld.\n", currInfo.procInfoArray[0].idleTime);
+	portTestEnv->log("CPUID: Total\n");
+	portTestEnv->changeIndent(1);
+	portTestEnv->log("User time:   %lld.\n", currInfo.procInfoArray[0].userTime);
+	portTestEnv->log("System time: %lld.\n", currInfo.procInfoArray[0].systemTime);
+	portTestEnv->log("Idle time:   %lld.\n", currInfo.procInfoArray[0].idleTime);
 #if defined(WIN32) || defined(OSX)
-	outputComment(OMRPORTLIB, "   Wait time:   <undefined>.\n");
+	portTestEnv->log("Wait time:   <undefined>.\n");
 #else /* Non-windows/OSX platforms */
-	outputComment(OMRPORTLIB, "   Wait time:   %lld.\n", currInfo.procInfoArray[0].waitTime);
+	portTestEnv->log("tWait time:   %lld.\n", currInfo.procInfoArray[0].waitTime);
 #endif /* defined(WIN32) || defined(OSX) */
-	outputComment(OMRPORTLIB, "   Busy time:   %lld.\n", currInfo.procInfoArray[0].busyTime);
+	portTestEnv->log("Busy time:   %lld.\n", currInfo.procInfoArray[0].busyTime);
+	portTestEnv->changeIndent(-1);
 
 	/* Start iterating from 1 since 0^th entry represents Totals - already accounted for above. */
 	for (cntr = 1; cntr < currInfo.totalProcessorCount + 1; cntr++) {
@@ -1238,16 +1246,18 @@ TEST(PortSysinfoTest, sysinfo_testProcessorInfo)
 				(OMRPORT_PROCINFO_NOT_AVAILABLE != currInfo.procInfoArray[cntr].busyTime)) {
 
 				/* Print out processor times in each mode for each CPU that is online. */
-				outputComment(OMRPORTLIB, "CPUID: %d\n",  currInfo.procInfoArray[cntr].proc_id);
-				outputComment(OMRPORTLIB, "   User time:   %lld.\n", currInfo.procInfoArray[cntr].userTime);
-				outputComment(OMRPORTLIB, "   System time: %lld.\n", currInfo.procInfoArray[cntr].systemTime);
-				outputComment(OMRPORTLIB, "   Idle time:   %lld.\n", currInfo.procInfoArray[cntr].idleTime);
+				portTestEnv->log("CPUID: %d\n",  currInfo.procInfoArray[cntr].proc_id);
+				portTestEnv->changeIndent(1);
+				portTestEnv->log("User time:   %lld.\n", currInfo.procInfoArray[cntr].userTime);
+				portTestEnv->log("System time: %lld.\n", currInfo.procInfoArray[cntr].systemTime);
+				portTestEnv->log("Idle time:   %lld.\n", currInfo.procInfoArray[cntr].idleTime);
 #if defined(WIN32) || defined(OSX)
-				outputComment(OMRPORTLIB, "   Wait time:   <undefined>.\n");
+				portTestEnv->log("Wait time:   <undefined>.\n");
 #else /* Non-windows/OSX platforms */
-				outputComment(OMRPORTLIB, "   Wait time:   %lld.\n", currInfo.procInfoArray[cntr].waitTime);
+				portTestEnv->log("Wait time:   %lld.\n", currInfo.procInfoArray[cntr].waitTime);
 #endif /* defined(WIN32) || defined(OSX) */
-				outputComment(OMRPORTLIB, "   Busy time:   %lld.\n", currInfo.procInfoArray[cntr].busyTime);
+				portTestEnv->log("Busy time:   %lld.\n", currInfo.procInfoArray[cntr].busyTime);
+				portTestEnv->changeIndent(-1);
 			} else {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "Invalid processor usage statistics retrieved.\n");
 				goto _cleanup;
@@ -1261,7 +1271,7 @@ TEST(PortSysinfoTest, sysinfo_testProcessorInfo)
 	 * processors that otherwise seem online (actually are in sleep mode); not even the Idle ticks.
 	 */
 	if (0 < (deltaTotalBusyTime + deltaTotalIdleTime)) {
-		outputComment(OMRPORTLIB, "Processor times in monotonically increasing order.\n");
+		portTestEnv->log("Processor times in monotonically increasing order.\n");
 	} else {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unexpected change in processor time deltas\ndeltaTotalBusyTime=%lld deltaTotalIdleTime=%lld\n",
 						   deltaTotalBusyTime, deltaTotalIdleTime);
@@ -1270,6 +1280,7 @@ TEST(PortSysinfoTest, sysinfo_testProcessorInfo)
 _cleanup:
 	omrsysinfo_destroy_processor_info(&prevInfo);
 	omrsysinfo_destroy_processor_info(&currInfo);
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -1314,7 +1325,7 @@ TEST(PortSysinfoTest, sysinfo_testOnlineProcessorCount2)
 
 		if ((n_cpus_online > 0) &&
 			(onlineProcessorCount(&procInfo) == n_cpus_online)) {
-			outputComment(OMRPORTLIB, "Number of online processors: %d\n",  n_cpus_online);
+			portTestEnv->log("Number of online processors: %d\n",  n_cpus_online);
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "Invalid online processor count found.\n");
 		}
@@ -1365,7 +1376,7 @@ TEST(PortSysinfoTest, sysinfo_testTotalProcessorCount)
 
 		if ((procInfo.totalProcessorCount > 0) &&
 			(procInfo.totalProcessorCount == n_cpus_total)) {
-			outputComment(OMRPORTLIB, "Total number of processors: %d\n",  n_cpus_total);
+			portTestEnv->log("Total number of processors: %d\n",  n_cpus_total);
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "Invalid processor count retrieved.\n");
 		}
@@ -1396,7 +1407,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_CPU_utilization)
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	} else {
-		outputComment(OMRPORTLIB, "Old utilization timestamp=%llu cpuTime=%lld numberOfCpus=%d.\n",
+		portTestEnv->log("Old utilization timestamp=%llu cpuTime=%lld numberOfCpus=%d.\n",
 					  OldUtil.timestamp, OldUtil.cpuTime, OldUtil.numberOfCpus);
 		if ((OldUtil.cpuTime < 0) || (OldUtil.numberOfCpus <= 0)) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_test_get_CPU_utilization() invalid results.\n");
@@ -1414,9 +1425,9 @@ TEST(PortSysinfoTest, sysinfo_test_get_CPU_utilization)
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	} else {
-		outputComment(OMRPORTLIB, "New utilization timestamp=%llu cpuTime=%lld numberOfCpus=%d.\n",
+		portTestEnv->log("New utilization timestamp=%llu cpuTime=%lld numberOfCpus=%d.\n",
 					  NewUtil.timestamp, NewUtil.cpuTime, NewUtil.numberOfCpus);
-		outputComment(OMRPORTLIB, "timestamp delta=%llu cpuTime delta=%lld\n",
+		portTestEnv->log("timestamp delta=%llu cpuTime delta=%lld\n",
 					  NewUtil.timestamp - OldUtil.timestamp, NewUtil.cpuTime -  OldUtil.cpuTime);
 		if ((NewUtil.cpuTime < OldUtil.cpuTime) || (NewUtil.numberOfCpus != OldUtil.numberOfCpus)) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_test_get_CPU_utilization() invalid results.\n");
@@ -1446,7 +1457,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp1)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unexpected return code rc: %d\n", rc);
 	} else {
 		char *buffer = (char *)omrmem_allocate_memory(rc, OMRMEM_CATEGORY_PORT_LIBRARY);
-		outputComment(OMRPORTLIB, "rc = %d\n", rc);
+		portTestEnv->log("rc = %d\n", rc);
 
 		rc = omrsysinfo_get_tmp(buffer, rc, FALSE);
 		if (0 != rc) {
@@ -1477,7 +1488,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp2)
 	if (0 >= rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unexpected return code rc: %d\n", rc);
 	} else {
-		outputComment(OMRPORTLIB, "rc = %d\n", rc);
+		portTestEnv->log("rc = %d\n", rc);
 		omrmem_free_memory(buffer);
 
 		buffer = (char *)omrmem_allocate_memory(rc, OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -1554,7 +1565,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_tmp3)
 	if (0 != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "error failed to get temp directory rc: %d\n", rc);
 	} else {
-		outputComment(OMRPORTLIB, "TMP = %s\n", buffer);
+		portTestEnv->log("TMP = %s\n", buffer);
 	}
 
 	rc = memcmp(utf8, buffer, strlen((const char *)utf8));
@@ -1754,7 +1765,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_cwd1)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unexpected return code rc: %d\n", rc);
 	} else {
 		char *buffer = (char *)omrmem_allocate_memory(rc, OMRMEM_CATEGORY_PORT_LIBRARY);
-		outputComment(OMRPORTLIB, "rc = %d\n", rc);
+		portTestEnv->log("rc = %d\n", rc);
 
 		rc = omrsysinfo_get_cwd(buffer, rc);
 		if (0 != rc) {
@@ -1784,7 +1795,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_cwd2)
 	if (0 == rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "unexpected return code rc: %d\n", rc);
 	} else {
-		outputComment(OMRPORTLIB, "rc = %d\n", rc);
+		portTestEnv->log("rc = %d\n", rc);
 		omrmem_free_memory(buffer);
 
 		buffer = (char *)omrmem_allocate_memory(rc, OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -1844,7 +1855,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_cwd3)
 	if (0 != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "error failed to create directory rc: %d\n", rc);
 	} else {
-		outputComment(OMRPORTLIB, "mkdir %s\n", utf8);
+		portTestEnv->log("mkdir %s\n", utf8);
 	}
 #if defined(J9ZOS390)
 	rc = atoe_chdir(utf8);
@@ -1854,7 +1865,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_cwd3)
 	if (0 != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "cd %s failed rc: %d\n", utf8, rc);
 	} else {
-		outputComment(OMRPORTLIB, "cd %s\n", utf8);
+		portTestEnv->log("cd %s\n", utf8);
 	}
 #endif /* defined(WIN32) */
 
@@ -1864,7 +1875,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_cwd3)
 	if (0 != rc) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "error failed to get current working directory rc: %d\n", rc);
 	} else {
-		outputComment(OMRPORTLIB, "CWD = %s\n", buffer);
+		portTestEnv->log("CWD = %s\n", buffer);
 	}
 
 	rc = memcmp(utf8, buffer, strlen(buffer));
@@ -1911,7 +1922,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_groups)
 	if (-1 != rc) {
 		struct group *grent = NULL;
 
-		outputComment(OMRPORTLIB, "group list size=%zi\n", rc);
+		portTestEnv->log("group list size=%zi\n", rc);
 
 		for (i = 0; i < rc; i++) {
 			int error = 0;
@@ -1920,10 +1931,14 @@ TEST(PortSysinfoTest, sysinfo_test_get_groups)
 			/* No portlib api to get group name for a give group id */
 			grent = getgrgid(gidList[i]);
 			error = errno;
-			outputComment(OMRPORTLIB, "\tgid=%u", gidList[i]);
+			portTestEnv->changeIndent(1);
+			portTestEnv->log("gid=%u", gidList[i]);
+			portTestEnv->changeIndent(-1);
 			if (NULL == grent) {
 				if (0 == error) {
-					outputComment(OMRPORTLIB, "\tthis group id is not found in group database (not an error as per getgrgid documentation)\n");
+					portTestEnv->changeIndent(1);
+					portTestEnv->log("this group id is not found in group database (not an error as per getgrgid documentation)\n");
+					portTestEnv->changeIndent(-1);
 				} else {
 					outputErrorMessage(PORTTEST_ERROR_ARGS, "\ngetgrgid() returned NULL with errno=%d for group id=%u\n", error, gidList[i]);
 					break;
@@ -1931,7 +1946,9 @@ TEST(PortSysinfoTest, sysinfo_test_get_groups)
 			} else {
 				char *group = grent->gr_name;
 				if (NULL != group) {
-					outputComment(OMRPORTLIB, "\tgroup name=%s\n", group);
+					portTestEnv->changeIndent(1);
+					portTestEnv->log("group name=%s\n", group);
+					portTestEnv->changeIndent(-1);
 				} else {
 					outputErrorMessage(PORTTEST_ERROR_ARGS, "\ngetgrgid() returned NULL as the group name for group id=%u\n", gidList[i]);
 					break;
@@ -1970,7 +1987,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
 		reportTestExit(OMRPORTLIB, testName);
 		return;
 	}
-	outputComment(OMRPORTLIB, "omrsysinfo_get_open_file_count(): Files opened by this process=%lld\n", 
+	portTestEnv->log("omrsysinfo_get_open_file_count(): Files opened by this process=%lld\n", 
 		openCount);
 
 	/* Now, get the current (soft) limit on the resource "nofiles".  We check the current
@@ -1980,7 +1997,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
 	if (OMRPORT_LIMIT_UNLIMITED == rc) {
 		/* Not really an error, just a sentinel.  Comparisons can still work! */
 		if (RLIM_INFINITY == curLimit) {
-			outputComment(OMRPORTLIB, 
+			portTestEnv->log(
 				"omrsysinfo_get_limit(nofiles): soft limit=RLIM_INFINITY (unlimited).\n");
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, 
@@ -1992,7 +2009,7 @@ TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
 	} else if (OMRPORT_LIMIT_LIMITED == rc) {
 		/* Check that the limits received are sane, before comparing against files opened. */
 		if ((((int64_t) curLimit) > 0) && (((int64_t) curLimit) <= INT64_MAX)) {
-			outputComment(OMRPORTLIB, "omrsysinfo_get_limit(nofiles): soft limit=%lld.\n", 
+			portTestEnv->log("omrsysinfo_get_limit(nofiles): soft limit=%lld.\n", 
 				((int64_t) curLimit));
 		} else {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, 

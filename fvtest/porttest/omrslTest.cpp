@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -221,7 +221,7 @@ TEST(PortSlTest, sl_AixDLLMissingDependency)
 	}
 
 	osErrMsg = omrerror_last_error_message();
-	outputComment(OMRPORTLIB, "System error message=\n\"%s\"\n", osErrMsg);
+	portTestEnv->log(LEVEL_ERROR, "System error message=\n\"%s\"\n", osErrMsg);
 	if (!isValidLoadErrorMessage(osErrMsg, possibleMessageStrings)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, " Cannot find valid error code, should have failed with dependency error\n", sharedLibName, omrerror_last_error_message());
 	}
@@ -259,7 +259,7 @@ TEST(PortSlTest, sl_AixDLLWrongPlatform)
 	}
 
 	osErrMsg = omrerror_last_error_message();
-	outputComment(OMRPORTLIB, "System error message=\n\"%s\"\n", osErrMsg);
+	portTestEnv->log(LEVEL_ERROR, "System error message=\n\"%s\"\n", osErrMsg);
 	if (!isValidLoadErrorMessage(osErrMsg, possibleMessageStrings)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Cannot find valid error code, should have failed with wrong platform error\n", sharedLibName, omrerror_last_error_message());
 	}

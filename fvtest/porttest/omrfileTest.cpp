@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -3238,6 +3238,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 	uint64_t length = TEST25_LENGTH;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, testFile, EsOpenRead | EsOpenWrite, 0);
 
@@ -3249,7 +3250,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Locking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", offset, length, lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 1: Got read lock on bytes %lld for %lld\n", offset, length);
+	portTestEnv->log("Child 1: Got read lock on bytes %lld for %lld\n", offset, length);
 
 	omrfile_create_status_file(OMRPORTLIB, testFileLock, testName);
 
@@ -3268,7 +3269,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unlocking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", (offset + 2), (length - 2), lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 1: Released read lock on bytes %lld for %lld\n", offset, length);
+	portTestEnv->log("Child 1: Released read lock on bytes %lld for %lld\n", offset, length);
 #endif /* defined(_WIN32) || defined(OSX) */
 
 
@@ -3280,7 +3281,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Locking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", (offset + 2), length, lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 1: Got write lock on bytes %lld for %lld\n", (offset + 2), length);
+	portTestEnv->log("Child 1: Got write lock on bytes %lld for %lld\n", (offset + 2), length);
 
 #if !defined(_WIN32)
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, offset, (length - 2));
@@ -3291,7 +3292,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unlocking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", offset, (length - 2), lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 1: Released read lock on bytes %lld for %lld\n", offset, (length - 2));
+	portTestEnv->log("Child 1: Released read lock on bytes %lld for %lld\n", offset, (length - 2));
 #endif
 
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, (offset + 2), length);
@@ -3302,8 +3303,9 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unlocking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", (offset + 2), length, lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 1: Released write lock on bytes %lld for %lld\n", (offset + 2), length);
+	portTestEnv->log("Child 1: Released write lock on bytes %lld for %lld\n", (offset + 2), length);
 
+	portTestEnv->changeIndent(-1);
 	FILE_CLOSE_FUNCTION(OMRPORTLIB, fd);
 
 exit:
@@ -3329,6 +3331,7 @@ omrfile_test25_child_2(OMRPortLibrary *portLibrary)
 	uint64_t length = TEST25_LENGTH;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	while (!omrfile_status_file_exists(OMRPORTLIB, testFileLock, testName)) {
 		SleepFor(1);
@@ -3336,7 +3339,7 @@ omrfile_test25_child_2(OMRPortLibrary *portLibrary)
 
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, testFile, EsOpenRead | EsOpenWrite, 0);
 
-	outputComment(OMRPORTLIB, "Child 2: Trying for write lock on bytes %lld for %lld\n", offset, length);
+	portTestEnv->log("Child 2: Trying for write lock on bytes %lld for %lld\n", offset, length);
 	omrfile_create_status_file(OMRPORTLIB, testFileTry, testName);
 
 	lockRc = FILE_LOCK_BYTES_FUNCTION(OMRPORTLIB, fd, OMRPORT_FILE_WRITE_LOCK | OMRPORT_FILE_WAIT_FOR_LOCK, offset, length);
@@ -3347,7 +3350,7 @@ omrfile_test25_child_2(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Locking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", offset, length, lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 2: Got write lock on bytes %lld for %lld\n", offset, length);
+	portTestEnv->log("Child 2: Got write lock on bytes %lld for %lld\n", offset, length);
 
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, offset, length);
 
@@ -3357,10 +3360,10 @@ omrfile_test25_child_2(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Unlocking of bytes %lld for %lld failed: lastErrorNumber=%d, lastErrorMessage=%s\n", offset, length, lastErrorNumber, lastErrorMessage);
 		goto exit;
 	}
-	outputComment(OMRPORTLIB, "Child 2: Released write lock on bytes %lld for %lld\n", offset, length);
+	portTestEnv->log("Child 2: Released write lock on bytes %lld for %lld\n", offset, length);
 
 	FILE_CLOSE_FUNCTION(OMRPORTLIB, fd);
-
+	portTestEnv->changeIndent(-1);
 	omrfile_create_status_file(OMRPORTLIB, testFileDone, testName);
 
 exit:
@@ -3742,7 +3745,7 @@ TEST_F(PortFileTest2, file_test31)
 	}
 
 	if (myGid != fileGid) {
-		outputComment(OMRPORTLIB, "unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
+		portTestEnv->log("unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
 		rc = omrfile_stat(".", 0, &stat);
 		if (rc != 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_stat(%s, ..) returned %d expected %d\n", ".", rc, 0);
@@ -3777,11 +3780,12 @@ TEST_F(PortFileTest2, file_test32)
 	J9FileStat stat;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	/*
 	 * Test a read-writeable file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_stat() Test a read-writeable file\n");
+	portTestEnv->log("omrfile_stat() Test a read-writeable file\n");
 	omrfile_unlink(localFilename);
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenCreate | EsOpenWrite, 0666);
 	if (fd == -1) {
@@ -3823,7 +3827,7 @@ TEST_F(PortFileTest2, file_test32)
 	/*
 	 * Test a readonly file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_stat() Test a readonly file\n");
+	portTestEnv->log("omrfile_stat() Test a readonly file\n");
 	omrfile_unlink(localFilename);
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenCreate | EsOpenRead, 0444);
 
@@ -3866,7 +3870,7 @@ TEST_F(PortFileTest2, file_test32)
 	/*
 	 * Test a writeable file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_stat() Test a writeable file\n");
+	portTestEnv->log("omrfile_stat() Test a writeable file\n");
 	omrfile_unlink(localFilename);
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, localFilename, EsOpenCreate | EsOpenWrite, 0222);
 	if (fd == -1) {
@@ -3916,6 +3920,7 @@ TEST_F(PortFileTest2, file_test32)
 
 done:
 	omrfile_unlink(localFilename);
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -4011,7 +4016,7 @@ TEST_F(PortFileTest2, file_test_long_file_name)
 		/* now append filePathName with the actual filename */
 		omrstr_printf(filePathName + strlen(filePathName), FILENAME_LENGTH - strlen(filePathName), "\\%s", testName);
 
-		omrtty_printf("\ttesting filename: %s\n", filePathName);
+		portTestEnv->log("\ttesting filename: %s\n", filePathName);
 
 		/* can we open and write to the file? */
 		fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filePathName, EsOpenCreate | EsOpenWrite, 0666);
@@ -4120,13 +4125,14 @@ omrfile_test34(struct OMRPortLibrary *portLibrary)
 	const char *fileName = "omrfile_test34.tst";
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	/* delete fileName to have a clean test, ignore the result */
 	(void)omrfile_unlink(fileName);
 
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, fileName, EsOpenCreate | EsOpenRead | EsOpenWrite, 0666);
 	if (-1 == fd) {
-		outputComment(OMRPORTLIB, "%s() failed\n", FILE_OPEN_FUNCTION_NAME);
+		portTestEnv->log(LEVEL_ERROR, "%s() failed\n", FILE_OPEN_FUNCTION_NAME);
 		returnCode = TEST_FAIL;
 		goto exit;
 	}
@@ -4136,26 +4142,26 @@ omrfile_test34(struct OMRPortLibrary *portLibrary)
 #endif /* defined(LINUX) || defined(OSX) */
 	rc = omrfile_stat_filesystem(fileName, 0, &buf_before);
 	if (0 != rc) {
-		outputComment(OMRPORTLIB, "first omrfile_stat_filesystem() returned %d, expected %d\n", rc, 0);
+		portTestEnv->log(LEVEL_ERROR, "first omrfile_stat_filesystem() returned %d, expected %d\n", rc, 0);
 		returnCode = TEST_FAIL;
 		goto exit;
 	}
 	rc = omrfile_stat(fileName, 0, &buf);
 	if (0 != rc) {
-		outputComment(OMRPORTLIB, "first omrfile_stat() returned %d, expected %d\n", rc, 0);
+		portTestEnv->log(LEVEL_ERROR, "first omrfile_stat() returned %d, expected %d\n", rc, 0);
 		returnCode = TEST_FAIL;
 		goto exit;
 	}
 
 	if (buf.isRemote) {
-		outputComment(OMRPORTLIB, "WARNING: Test omrfile_test34 cannot be run on a remote file system.\nSkipping test.\n");
+		portTestEnv->log(LEVEL_WARN, "WARNING: Test omrfile_test34 cannot be run on a remote file system.\nSkipping test.\n");
 		returnCode = TEST_PASS;
 		goto exit;
 	}
 
 	stringToWrite = (char *)omrmem_allocate_memory(J9FILETEST_FILESIZE, OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == stringToWrite) {
-		outputComment(OMRPORTLIB, "Failed to allocate %zu bytes\n", J9FILETEST_FILESIZE);
+		portTestEnv->log(LEVEL_ERROR, "Failed to allocate %zu bytes\n", J9FILETEST_FILESIZE);
 		returnCode = TEST_FAIL;
 		goto exit;
 	}
@@ -4170,7 +4176,7 @@ omrfile_test34(struct OMRPortLibrary *portLibrary)
 #endif /* defined(LINUX) || defined(OSX) */
 	rc = omrfile_stat_filesystem(fileName, 0, &buf_after);
 	if (0 != rc) {
-		outputComment(OMRPORTLIB, "second omrfile_stat_filesystem() returned %d, expected %d\n", rc, 0);
+		portTestEnv->log(LEVEL_ERROR, "second omrfile_stat_filesystem() returned %d, expected %d\n", rc, 0);
 		returnCode = TEST_FAIL;
 		goto exit;
 	}
@@ -4179,7 +4185,7 @@ omrfile_test34(struct OMRPortLibrary *portLibrary)
 
 	/* Checks if the free disk space changed after the file has been created. */
 	if (0 == freeSpaceDelta) {
-		outputComment(OMRPORTLIB, "The amount of free disk space does not change after the creation of a file.\n\
+		portTestEnv->log("The amount of free disk space does not change after the creation of a file.\n\
 			It can be due to a file of exactly %d bytes being deleted during this test, or omrfile_stat_filesystem failing.\n\
 			The test does not work on a remote file system. Ignore failures on remote file systems.\n", J9FILETEST_FILESIZE);
 		returnCode = TEST_FAIL;
@@ -4187,7 +4193,7 @@ omrfile_test34(struct OMRPortLibrary *portLibrary)
 	}
 
 	if (buf_before.totalSizeBytes != buf_after.totalSizeBytes) {
-		outputComment(OMRPORTLIB, "Total disk space changed between runs, it was %llu changed to %llu.\n\
+		portTestEnv->log("Total disk space changed between runs, it was %llu changed to %llu.\n\
 				The disk space should not change between runs.\n", buf_before.totalSizeBytes, buf_after.totalSizeBytes);
 		returnCode = TEST_FAIL;
 		goto exit;
@@ -4199,18 +4205,19 @@ exit:
 	if (-1 != fd) {
 		rc = FILE_CLOSE_FUNCTION(OMRPORTLIB, fd);
 		if (0 != rc) {
-			outputComment(OMRPORTLIB, "%s() returned %d expected %d\n", FILE_CLOSE_FUNCTION_NAME, rc, 0);
+			portTestEnv->log(LEVEL_ERROR, "%s() returned %d expected %d\n", FILE_CLOSE_FUNCTION_NAME, rc, 0);
 		}
 
 		/* Delete the file, expect success */
 		rc = omrfile_unlink(fileName);
 		if (0 != rc) {
-			outputComment(OMRPORTLIB, "omrfile_unlink() returned %d expected %d\n", rc, 0);
+			portTestEnv->log(LEVEL_ERROR, "omrfile_unlink() returned %d expected %d\n", rc, 0);
 		}
 	}
 
 	omrmem_free_memory(stringToWrite);
 
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 
 	return returnCode;
@@ -4439,7 +4446,7 @@ TEST_F(PortFileTest2, file_test38)
 			}
 
 			if (myGid != fileGid) {
-				outputComment(OMRPORTLIB, "Unexpected group ID. Possibly setgid bit set. Comparing to group of the current directory\n");
+				portTestEnv->log("Unexpected group ID. Possibly setgid bit set. Comparing to group of the current directory\n");
 				rc = omrfile_stat(".", 0, &stat);
 				if (0 != rc) {
 					outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_stat(...) failed for current directory with rc=%d\n", rc);
@@ -4484,13 +4491,14 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	int32_t rc = -1;
 
 	reportTestEntry(OMRPORTLIB, testName);
+	portTestEnv->changeIndent(1);
 
 	memset(&stat, 0, sizeof(J9FileStat));
 
 	/*
 	 * Test a read-writeable file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a read-writeable file\n");
+	portTestEnv->log("omrfile_fstat() Test a read-writeable file\n");
 	omrfile_unlink(filename);
 
 	mode = 0666;
@@ -4521,7 +4529,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	/*
 	 * Test a read-only file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a read-only file\n");
+	portTestEnv->log("omrfile_fstat() Test a read-only file\n");
 
 	mode = 0444;
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filename, EsOpenCreate | EsOpenRead, mode);
@@ -4551,7 +4559,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	/*
 	 * Test a write-only file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a write-only file\n");
+	portTestEnv->log("omrfile_fstat() Test a write-only file\n");
 
 	mode = 0222;
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filename, EsOpenCreate | EsOpenWrite, mode);
@@ -4581,7 +4589,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	/*
 	 * Test a user only read-writeable file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a user only read-writeable file\n");
+	portTestEnv->log("omrfile_fstat() Test a user only read-writeable file\n");
 	omrfile_unlink(filename);
 
 	mode = 0600;
@@ -4623,7 +4631,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	/*
 	 * Test a user only read-only file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a user only read-only file\n");
+	portTestEnv->log("omrfile_fstat() Test a user only read-only file\n");
 
 	mode = 0400;
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filename, EsOpenCreate | EsOpenRead, mode);
@@ -4664,7 +4672,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 	/*
 	 * Test a user only write-only file
 	 */
-	outputComment(OMRPORTLIB, "omrfile_fstat() Test a user only write-only file\n");
+	portTestEnv->log("omrfile_fstat() Test a user only write-only file\n");
 
 	mode = 0200;
 	fd = FILE_OPEN_FUNCTION(OMRPORTLIB, filename, EsOpenCreate | EsOpenWrite, mode);
@@ -4703,6 +4711,7 @@ const char *testName = APPEND_ASYNC(omrfile_test39: test file permission bits us
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "5s() failed to create file %s with mode=%d\n", FILE_OPEN_FUNCTION_NAME, filename, mode);
 	}
 
+	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
 #endif

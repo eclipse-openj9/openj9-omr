@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -697,7 +697,7 @@ TEST(PortFileStreamTest, omrfilestream_test_file_owner_and_group_attributes)
 	}
 
 	if (myGid != fileGid) {
-		outputComment(OMRPORTLIB, "unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
+		portTestEnv->log("unexpected group ID.  Possibly setgid bit set. Comparing to group of the current directory\n");
 		rc = omrfile_stat(".", 0, &stat);
 		if (rc != 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_stat(%s, ..) returned %d expected %d\n", ".", rc, 0);
@@ -975,7 +975,7 @@ TEST(PortFileStreamTest, omrfilestream_test_long_file_name)
 		/* now append filePathName with the actual filename */
 		omrstr_printf(filePathName + strlen(filePathName), FILENAME_LENGTH - strlen(filePathName), "\\%s", testName);
 
-		omrtty_printf("\ttesting filename: %s\n", filePathName);
+		portTestEnv->log("\ttesting filename: %s\n", filePathName);
 
 		/* can we open and write to the file? */
 		file = omrfilestream_open(filePathName, EsOpenCreate | EsOpenWrite, 0666);

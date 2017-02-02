@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -597,7 +597,7 @@ TEST(PortMemTest, mem_test7_allocate32)
 	if (0 == randomSeed) {
 		randomSeed = (int)omrtime_current_time_millis();
 	}
-	outputComment(OMRPORTLIB, "Random seed value: %d. Add -srand:[seed] to the command line to reproduce this test manually.\n", randomSeed);
+	portTestEnv->log("Random seed value: %d. Add -srand:[seed] to the command line to reproduce this test manually.\n", randomSeed);
 	srand(randomSeed);
 
 	shuffleArray(OMRPORTLIB, allocBlockSizes, allocBlockSizesLength);

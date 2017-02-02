@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,6 +22,8 @@
 
 #include "testHelpers.hpp"
 #include "omrport.h"
+
+extern PortTestEnvironment *portTestEnv;
 
 typedef struct PortTestStruct {
 	char *fileName;
@@ -58,31 +60,6 @@ static int numTestFailures;
 static int numberFailedTestsInComponent;
 
 /**
- * Control terminal output
- *
- * Duplicated function from UTH.  This function determines what level of tracing is
- * available, a command line option of UTH.  The levels supported are application dependent.
- *
- * Application programs thus decide how much tracing they want, it is possible to display
- * only messages requested, or all messages at the determined level and below
- *
- * Following is proposed levels for port test suites
- *
- * \arg 0 = no tracing
- * \arg 1 = method enter\exit tracing
- * \arg 2 = displays not supported messages
- * \arg 3 = displays comments
- * \arg 4 = displays all messages
- *
- * @return the level of tracing enabled
- */
-static int
-engine_getTraceLevel(void)
-{
-	return 1;
-}
-
-/**
  * Display a message indicating the operation is not supported
  *
  * The port library have various configurations to save size on very small VMs.
@@ -92,16 +69,11 @@ engine_getTraceLevel(void)
  *
  * @param[in] portLibrary The port library
  * @param[in] operation The operation that is not supported
- *
- * @internal @note For UTH environment only, displaying the string is controlled by the verbose
- * level expressed by @ref engine_getTraceLevel.  Outside the UTH environment the messages
- * are always displayed.
  */
 void
 operationNotSupported(struct OMRPortLibrary *portLibrary, const char *operationName)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
-	omrtty_printf("%s not supported in this configuration\n", operationName);
+	portTestEnv->log("%s not supported in this configuration\n", operationName);
 }
 
 /**
@@ -110,18 +82,12 @@ operationNotSupported(struct OMRPortLibrary *portLibrary, const char *operationN
  * @param[in] portLibrary The port library
  * @param[in] testName The test that is starting
  *
- * @note Message is only displayed if verbosity level indicated by
- * @ref engine_getTraceLevel is sufficient
- *
  * @note Clears number of failed tests.  @see outputMessage.
  */
 void
 reportTestEntry(struct OMRPortLibrary *portLibrary, const char *testName)
 {
-	if (engine_getTraceLevel()) {
-		OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
-		omrtty_printf("\nStarting test %s\n", testName);
-	}
+	portTestEnv->log("\nStarting test %s\n", testName);
 	numberFailedTestsInComponent = 0;
 }
 
@@ -133,17 +99,11 @@ reportTestEntry(struct OMRPortLibrary *portLibrary, const char *testName)
  *
  * @return TEST_PASS if no tests failed, else TEST_FAILED as reported
  * by @ref outputMessage
- *
- * @note Message is only displayed if verbosity level indicated by
- * @ref engine_getTraceLevel is sufficient
  */
 int
 reportTestExit(struct OMRPortLibrary *portLibrary, const char *testName)
 {
-	if (engine_getTraceLevel()) {
-		OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
-		omrtty_printf("Ending test %s\n", testName);
-	}
+	portTestEnv->log("Ending test %s\n", testName);
 	EXPECT_TRUE(0 == numberFailedTestsInComponent) << "Test failed!";
 	return 0 == numberFailedTestsInComponent ? TEST_PASS : TEST_FAIL;
 }
@@ -164,15 +124,15 @@ dumpTestFailuresToConsole(struct OMRPortLibrary *portLibrary)
 
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
-	omrtty_printf("-------------------------------------------------------------------------\n");
-	omrtty_printf("-------------------------------------------------------------------------\n\n");
-	omrtty_printf("FAILURES DETECTED. Number of failed tests: %u\n\n", numTestFailures);
+	portTestEnv->log(LEVEL_ERROR, "-------------------------------------------------------------------------\n");
+	portTestEnv->log(LEVEL_ERROR, "-------------------------------------------------------------------------\n\n");
+	portTestEnv->log(LEVEL_ERROR, "FAILURES DETECTED. Number of failed tests: %u\n\n", numTestFailures);
 
 	for (i = 0; i < numTestFailures ; i++) {
-		omrtty_printf("%i: %s\n", i + 1, testFailures[i].testName);
-		omrtty_printf("\t%s line %4zi: %s\n", testFailures[i].fileName, testFailures[i].lineNumber, testFailures[i].errorMessage);
-		omrtty_printf("\t\tLastErrorNumber: %i\n", testFailures[i].portErrorNumber);
-		omrtty_printf("\t\tLastErrorMessage: %s\n\n", testFailures[i].portErrorMessage);
+		portTestEnv->log(LEVEL_ERROR, "%i: %s\n", i + 1, testFailures[i].testName);
+		portTestEnv->log(LEVEL_ERROR, "\t%s line %4zi: %s\n", testFailures[i].fileName, testFailures[i].lineNumber, testFailures[i].errorMessage);
+		portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorNumber: %i\n", testFailures[i].portErrorNumber);
+		portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorMessage: %s\n\n", testFailures[i].portErrorMessage);
 
 		omrmem_free_memory(testFailures[i].fileName);
 		omrmem_free_memory(testFailures[i].testName);
@@ -247,10 +207,6 @@ logTestFailure(struct OMRPortLibrary *portLibrary, const char *fileName, int32_t
  * @param[in] testName Name of the test requesting output
  * @param[in] foramt Format of string to be output
  * @param[in] ... argument list for format string
- *
- * @internal @note For UTH environment only, displaying the string is controlled by the verbose
- * level expressed by @ref engine_getTraceLevel.  Outside the UTH environment the messages
- * are always displayed.
  */
 void
 outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int32_t lineNumber, const char *testName, const char *format, ...)
@@ -277,7 +233,7 @@ outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int
 	if (NULL != portErrorBuf) {
 		strncpy(portErrorBuf, lastErrorMessage, sizePortErrorBuf);
 	} else {
-		omrtty_printf("\n\n******* omrmem_allocate_memory failed to allocate %i bytes, exiting.\n\n", sizePortErrorBuf);
+		portTestEnv->log(LEVEL_ERROR, "\n\n******* omrmem_allocate_memory failed to allocate %i bytes, exiting.\n\n", sizePortErrorBuf);
 		exit(EXIT_OUT_OF_MEMORY);
 	}
 
@@ -292,15 +248,15 @@ outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int
 		omrstr_vprintf(buf, sizeBuf, format, args);
 		va_end(args);
 	} else {
-		omrtty_printf("\n\n******* omrmem_allocate_memory failed to allocate %i bytes, exiting.\n\n", sizeBuf);
+		portTestEnv->log(LEVEL_ERROR, "\n\n******* omrmem_allocate_memory failed to allocate %i bytes, exiting.\n\n", sizeBuf);
 		exit(EXIT_OUT_OF_MEMORY);
 
 	}
 
-	omrtty_printf("%s line %4zi: %s ", fileName, lineNumber, testName);
-	omrtty_printf("%s\n", buf);
-	omrtty_printf("\t\tLastErrorNumber: %i\n", lastErrorNumber);
-	omrtty_printf("\t\tLastErrorMessage: %s\n\n", portErrorBuf);
+	portTestEnv->log(LEVEL_ERROR, "%s line %4zi: %s ", fileName, lineNumber, testName);
+	portTestEnv->log(LEVEL_ERROR, "%s\n", buf);
+	portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorNumber: %i\n", lastErrorNumber);
+	portTestEnv->log(LEVEL_ERROR, "\t\tLastErrorMessage: %s\n\n", portErrorBuf);
 
 	logTestFailure(OMRPORTLIB, fileName, lineNumber, testName, lastErrorNumber, portErrorBuf, buf);
 
@@ -316,9 +272,8 @@ outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int
 void
 HEADING(struct OMRPortLibrary *portLibrary, const char *string)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	const char *dash = "----------------------------------------";
-	omrtty_printf("%s\n%s\n%s\n\n", dash, string, dash);
+	portTestEnv->log("%s\n%s\n%s\n\n", dash, string, dash);
 }
 
 /**
@@ -340,6 +295,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 {
 	uintptr_t rc = 1;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	portTestEnv->changeIndent(1);
 
 #if defined(J9ZOS390)
 	char dumpName[EsMaxPath] = {0};
@@ -352,12 +308,12 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 		strncpy(ending, ".X001", 5);
 	}
 
-	outputComment(OMRPORTLIB, "\tchecking for data set: %s\n", dumpName);
+	portTestEnv->log("checking for data set: %s\n", dumpName);
 	FILE *file = fopen(dumpName, "r");
 	if (NULL == file) {
 		outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tdata set: %s does not exist!\n", -1, fileName);
 	} else {
-		outputComment(OMRPORTLIB, "\tdata set: %s exists\n", dumpName);
+		portTestEnv->log("data set: %s exists\n", dumpName);
 		fclose(file);
 		rc = 0;
 	}
@@ -370,7 +326,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 
 	if (0 == fileStatRC) {
 		if (fileStat.isFile) {
-			outputComment(OMRPORTLIB, "\tfile: %s exists\n", fileName);
+			portTestEnv->log("file: %s exists\n", fileName);
 			rc = 0;
 		} else {
 			outputErrorMessage(OMRPORTLIB, pltestFileName, lineNumber, testName, "\tfile: %s does not exist!\n", -1, fileName);
@@ -381,6 +337,7 @@ verifyFileExists(struct OMRPortLibrary *portLibrary, const char *pltestFileName,
 	}
 #endif /* defined(J9ZOS390) */
 
+	portTestEnv->changeIndent(-1);
 	return rc;
 }
 

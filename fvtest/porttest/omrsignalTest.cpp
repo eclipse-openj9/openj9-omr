@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -115,12 +115,13 @@ asyncTestHandler(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *hand
 	omrthread_monitor_t monitor = *(info->monitor);
 
 	omrthread_monitor_enter(monitor);
-
-	outputComment(OMRPORTLIB, "\t\tasyncTestHandler invoked (type = 0x%x)\n", gpType);
+	portTestEnv->changeIndent(2);
+	portTestEnv->log("asyncTestHandler invoked (type = 0x%x)\n", gpType);
 	if (info->expectedType != gpType) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "asyncTestHandler -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
 	}
 
+	portTestEnv->changeIndent(-2);
 	info->controlFlag = 1;
 	omrthread_monitor_notify(monitor);
 	omrthread_monitor_exit(monitor);
@@ -135,7 +136,7 @@ injectUnixSignal(struct OMRPortLibrary *portLibrary, int pid, int unixSignal)
 	/* this is run by the child process. To see the tty_printf output on the console, set OMRPORT_PROCESS_INHERIT_STDOUT | OMRPORT_PROCESS_INHERIT_STDIN
 	 * in the options passed into j9process_create() in launchChildProcess (in testProcessHelpers.c).
 	 */
-	omrtty_printf("\t\tCHILD:	 calling kill: %i %i\n", pid, unixSignal);
+	portTestEnv->log("\t\tCHILD:	 calling kill: %i %i\n", pid, unixSignal);
 	kill(pid, unixSignal);
 	return;
 }
@@ -237,23 +238,23 @@ validateGPInfo(struct OMRPortLibrary *portLibrary, uint32_t gpType, omrsig_handl
 
 			switch (infoKind) {
 			case OMRPORT_SIG_VALUE_16:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%04X\n", category, index, name, *(U_16 *)value);
+				portTestEnv->log("info %u:%u: %s=%04X\n", category, index, name, *(U_16 *)value);
 				break;
 			case OMRPORT_SIG_VALUE_32:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%08.8x\n", category, index, name, *(uint32_t *)value);
+				portTestEnv->log("info %u:%u: %s=%08.8x\n", category, index, name, *(uint32_t *)value);
 				break;
 			case OMRPORT_SIG_VALUE_64:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%016.16llx\n", category, index, name, *(uint64_t *)value);
+				portTestEnv->log("info %u:%u: %s=%016.16llx\n", category, index, name, *(uint64_t *)value);
 				break;
 			case OMRPORT_SIG_VALUE_STRING:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%s\n", category, index, name, (const char *)value);
+				portTestEnv->log("info %u:%u: %s=%s\n", category, index, name, (const char *)value);
 				break;
 			case OMRPORT_SIG_VALUE_ADDRESS:
-				outputComment(OMRPORTLIB, "info %u:%u: %s=%p\n", category, index, name, *(void **)value);
+				portTestEnv->log("info %u:%u: %s=%p\n", category, index, name, *(void **)value);
 				break;
 			case OMRPORT_SIG_VALUE_FLOAT_64:
 				/* make sure when casting to a float that we get least significant 32-bits. */
-				outputComment(OMRPORTLIB,
+				portTestEnv->log(
 							  "info %u:%u: %s=%016.16llx (f: %f, d: %e)\n",
 							  category, index, name,
 							  *(uint64_t *)value, (float)LOW_U32_FROM_DBL_PTR(value), *(double *)value);
@@ -264,7 +265,7 @@ validateGPInfo(struct OMRPortLibrary *portLibrary, uint32_t gpType, omrsig_handl
 						const uint64_t h = v->high64;
 						const uint64_t l = v->low64;
 
-						outputComment(OMRPORTLIB, "info %u:%u: %s=%016.16llx%016.16llx\n", category, index, name, h, l);
+						portTestEnv->log("info %u:%u: %s=%016.16llx%016.16llx\n", category, index, name, h, l);
 					}
 				break;
 			case OMRPORT_SIG_VALUE_UNDEFINED:
@@ -385,7 +386,7 @@ simpleHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void 
 	SigProtectHandlerInfo *info = (SigProtectHandlerInfo *)handler_arg;
 	const char *testName = info->testName;
 
-	outputComment(OMRPORTLIB, "simpleHandlerFunction invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("simpleHandlerFunction invoked (type = 0x%x)\n", gpType);
 
 	if (info->expectedType != gpType) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "simpleHandlerFunction -- incorrect type. Expecting 0x%x, got 0x%x\n", info->expectedType, gpType);
@@ -421,7 +422,7 @@ crashingHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, voi
 	const char *testName = (const char *)handler_arg;
 	static int recursive = 0;
 
-	outputComment(OMRPORTLIB, "crashingHandlerFunction invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("crashingHandlerFunction invoked (type = 0x%x)\n", gpType);
 
 	if (recursive++) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "handler invoked recursively\n");
@@ -609,7 +610,7 @@ TEST(PortSigTest, sig_test0)
 		/* z/OS does not always support this, however, pltest should never be run under a configuration that does not support it.
 		 * See implementation of omrsig_can_proctect() and omrsig_startup()
 		 */
-		omrtty_printf("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
+		portTestEnv->log("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
 #endif
 	}
 
@@ -617,7 +618,7 @@ TEST(PortSigTest, sig_test0)
 	if (!omrsig_can_protect(OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->can_protect() must always support 0 | OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION\n");
 # if defined(J9ZOS390)
-		omrtty_printf("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
+		portTestEnv->log("OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION is not supported if the default settings for TRAP(ON,SPIE) have been changed. The should both be set to 1\n");
 #endif
 
 	}
@@ -934,7 +935,7 @@ TEST(PortSigTest, sig_test6)
 			int signo = (int)(uintptr_t)omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
 			int expectedSigno = 0;
 
-			omrtty_printf("\n testing current signal\n");
+			portTestEnv->log("\n testing current signal\n");
 			if (signo != expectedSigno) {
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "currentSignal corrupt -- got: %d expected: %d\n", signo, expectedSigno);
 			}
@@ -1061,7 +1062,7 @@ TEST(PortSigTest, sig_test8)
 							simpleHandlerFunction, &handlerInfo,
 							flags,
 							&result);
-		outputComment(OMRPORTLIB, "omrsig_test8 protectResult=%d\n", protectResult);
+		portTestEnv->log("omrsig_test8 protectResult=%d\n", protectResult);
 #if defined(WIN64)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");
@@ -1104,7 +1105,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 	int pid = getpid();
 
 	reportTestEntry(OMRPORTLIB, testName);
-	omrtty_printf("\tpid: %i\n", pid);
+	portTestEnv->log("\tpid: %i\n", pid);
 
 	handlerInfo.testName = testName;
 
@@ -1140,7 +1141,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		handlerInfo.expectedType = testSignalMap[index].portLibSignalNo;
 
 
-		omrtty_printf("\n\tTesting %s\n", testSignalMap[index].unixSignalString);
+		portTestEnv->log("\n\tTesting %s\n", testSignalMap[index].unixSignalString);
 
 		/* asyncTestHandler notifies the monitor once it has set controlFlag to 0; */
 		omrthread_monitor_enter(asyncMonitor);
@@ -1176,7 +1177,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 
 		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>" */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i", pid, signum);
-		omrtty_printf("\t\tlaunching child process with arg %s\n", options);
+		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
 		omrthread_monitor_enter(asyncMonitor);
 
@@ -1206,12 +1207,12 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		 * We will mask the signal on this thread, inject it via kill, and verify that it does
 		 * not get received.
 		 */
-		omrtty_printf("\t\tmasking signal %i on this thread\n", signum);
+		portTestEnv->log("\t\tmasking signal %i on this thread\n", signum);
 		sighold(signum);
 
 		/* build the pid and signal number in the form "-child_omrsig_injectSignal_<PID>_<signal>_unhandled" */
 		omrstr_printf(options, SIG_TEST_SIZE_EXENAME, "-child_omrsig_injectSignal_%i_%i_unhandled", pid, signum);
-		omrtty_printf("\t\tlaunching child process with arg %s\n", options);
+		portTestEnv->log("\t\tlaunching child process with arg %s\n", options);
 
 		omrthread_monitor_enter(asyncMonitor);
 		handlerInfo.controlFlag = 0;
@@ -1234,7 +1235,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 		}
 
 		/* unblock the signal and handle it */
-		omrtty_printf("\t\tunmasking signal %i on this thread\n", signum);
+		portTestEnv->log("\t\tunmasking signal %i on this thread\n", signum);
 		sigrelse(signum);
 		(void)omrthread_monitor_wait_timed(asyncMonitor, 20000, 0);
 		if (1 != handlerInfo.controlFlag) {

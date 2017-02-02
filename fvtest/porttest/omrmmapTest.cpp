@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -71,8 +71,7 @@ protected:
 static uintptr_t
 simpleHandlerFunction(struct OMRPortLibrary *portLibrary, uint32_t gpType, void *gpInfo, void *handler_arg)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
-	outputComment(OMRPORTLIB, " A crash occured, signal handler invoked (type = 0x%x)\n", gpType);
+	portTestEnv->log("A crash occured, signal handler invoked (type = 0x%x)\n", gpType);
 	return OMRPORT_SIG_EXCEPTION_RETURN;
 }
 
@@ -273,7 +272,7 @@ TEST_F(PortMmapTest, mmap_test2)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (!(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE)) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -408,7 +407,7 @@ TEST_F(PortMmapTest, mmap_test3)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (!(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_COPYONWRITE)) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_COPYONWRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_COPYONWRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -543,7 +542,7 @@ TEST_F(PortMmapTest, mmap_test4)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (!(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) || !(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_MSYNC)) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -678,7 +677,7 @@ TEST_F(PortMmapTest, mmap_test5)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (!(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) || !(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_MSYNC)) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -724,6 +723,7 @@ omrmmap_test5_child_1(OMRPortLibrary *portLibrary)
 	const char *mappingName = "C:\\full\\path\\to\\mmapTest5.tst";
 	intptr_t fd;
 	intptr_t rc;
+	portTestEnv->changeIndent(1);
 
 #define J9MMAP_TEST5_BUFFER_SIZE 100
 	char buffer[J9MMAP_TEST5_BUFFER_SIZE];
@@ -771,7 +771,7 @@ omrmmap_test5_child_1(OMRPortLibrary *portLibrary)
 		goto exit;
 	}
 
-	outputComment(OMRPORTLIB, "Child 1: Created file\n");
+	portTestEnv->log("Child 1: Created file\n");
 
 	fileLength = omrfile_length(filename);
 	if (-1 == fileLength) {
@@ -805,7 +805,7 @@ omrmmap_test5_child_1(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Close of file %s after mapping failed: lastErrorNumber=%d, lastErrorMessage=%s\n", filename, lastErrorNumber, lastErrorMessage);
 	}
 
-	outputComment(OMRPORTLIB, "Child 1: Mapped file, readable text = \"%s\"\n", mapAddr + 30);
+	portTestEnv->log("Child 1: Mapped file, readable text = \"%s\"\n", mapAddr + 30);
 
 	omrfile_create_status_file(OMRPORTLIB, "omrmmap_test5_child_1_mapped_file", testName);
 
@@ -813,7 +813,7 @@ omrmmap_test5_child_1(OMRPortLibrary *portLibrary)
 		SleepFor(1);
 	}
 
-	outputComment(OMRPORTLIB, "Child 1: Child 2 has changed file, readable text = \"%s\"\n", mapAddr + 30);
+	portTestEnv->log("Child 1: Child 2 has changed file, readable text = \"%s\"\n", mapAddr + 30);
 
 	if (strcmp(mapAddr + 30, modifiedText) != 0) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Modified string does not match in mapped buffer\n");
@@ -821,7 +821,7 @@ omrmmap_test5_child_1(OMRPortLibrary *portLibrary)
 
 	omrmmap_unmap_file(mmapHandle);
 
-
+	portTestEnv->changeIndent(-1);
 	omrfile_create_status_file(OMRPORTLIB, "omrmmap_test5_child_1_checked_file", testName);
 
 exit:
@@ -838,6 +838,7 @@ omrmmap_test5_child_2(OMRPortLibrary *portLibrary)
 	const char *mappingName = "C:\\full\\path\\to\\mmapTest5.tst";
 	intptr_t fd;
 	intptr_t rc;
+	portTestEnv->changeIndent(1);
 
 #define J9MMAP_TEST5_BUFFER_SIZE 100
 	const char *readableText = "Here is some readable text in the file";
@@ -886,7 +887,7 @@ omrmmap_test5_child_2(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Close of file %s after mapping failed: lastErrorNumber=%d, lastErrorMessage=%s\n", filename, lastErrorNumber, lastErrorMessage);
 	}
 
-	outputComment(OMRPORTLIB, "Child 2: Mapped file, readable text = \"%s\"\n", mapAddr + 30);
+	portTestEnv->log("Child 2: Mapped file, readable text = \"%s\"\n", mapAddr + 30);
 
 	/* Check mapped area */
 	if (strcmp(mapAddr + 30, readableText) != 0) {
@@ -903,7 +904,7 @@ omrmmap_test5_child_2(OMRPortLibrary *portLibrary)
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "Msync failed: lastErrorNumber=%d, lastErrorMessage=%s\n", lastErrorNumber, lastErrorMessage);
 	}
 
-	outputComment(OMRPORTLIB, "Child 2: Changed file, readable text = \"%s\"\n", mapAddr + 30);
+	portTestEnv->log("Child 2: Changed file, readable text = \"%s\"\n", mapAddr + 30);
 
 	omrfile_create_status_file(OMRPORTLIB, "omrmmap_test5_child_2_changed_file", testName);
 
@@ -911,10 +912,10 @@ omrmmap_test5_child_2(OMRPortLibrary *portLibrary)
 		SleepFor(1);
 	}
 
-	outputComment(OMRPORTLIB, "Child 2: Child 1 has checked file, exiting\n");
+	portTestEnv->log("Child 2: Child 1 has checked file, exiting\n");
 
 	omrmmap_unmap_file(mmapHandle);
-
+	portTestEnv->changeIndent(-1);
 
 exit:
 	return reportTestExit(OMRPORTLIB, testName);
@@ -948,7 +949,7 @@ TEST_F(PortMmapTest, mmap_test6)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if (!(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) || !(mmapCapabilities & OMRPORT_MMAP_CAPABILITY_MSYNC)) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE or _MSYNC not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -1074,12 +1075,12 @@ TEST_F(PortMmapTest, mmap_test7)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_PROTECT) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_READ) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_READ not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_READ not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -1192,12 +1193,12 @@ TEST_F(PortMmapTest, mmap_test8)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_PROTECT) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -1340,12 +1341,12 @@ TEST_F(PortMmapTest, mmap_test9)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_PROTECT) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
@@ -1411,7 +1412,7 @@ TEST_F(PortMmapTest, mmap_test9)
 	rc = omrmmap_protect(mapAddr, (uintptr_t)fileLength, OMRPORT_PAGE_PROTECT_READ);
 	if (rc != 0) {
 		if (rc == OMRPORT_PAGE_PROTECT_NOT_SUPPORTED) {
-			outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+			portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		} else {
 			lastErrorMessage = (char *)omrerror_last_error_message();
 			lastErrorNumber = omrerror_last_error_number();
@@ -1429,7 +1430,7 @@ TEST_F(PortMmapTest, mmap_test9)
 
 	/* try to write to region that was set to read only */
 	if (!omrsig_can_protect(signalHandlerFlags)) {
-		outputComment(OMRPORTLIB, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
+		portTestEnv->log(LEVEL_ERROR, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
 		goto exit;
 	} else {
 
@@ -1439,7 +1440,7 @@ TEST_F(PortMmapTest, mmap_test9)
 		writerInfo.shouldCrash = 1;
 		writerInfo.address = mapAddr + 30;
 
-		outputComment(OMRPORTLIB, "Writing to readonly region - we should crash\n");
+		portTestEnv->log("Writing to readonly region - we should crash\n");
 		protectResult = omrsig_protect(protectedWriter, &writerInfo, simpleHandlerFunction, &handlerInfo, signalHandlerFlags, &result);
 
 		if (protectResult == OMRPORT_SIG_EXCEPTION_OCCURRED) {
@@ -1522,18 +1523,18 @@ TEST_F(PortMmapTest, mmap_test10)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_PROTECT) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	/* How big do pages claim to be? */
 	pageSize = omrmmap_get_region_granularity(mapAddr);
-	outputComment(OMRPORTLIB, "Page size is reported as %d\n", pageSize);
+	portTestEnv->log("Page size is reported as %d\n", pageSize);
 	/* Initialize buffer to be written - 128 chars with a string right in the middle */
 	for (i = 0; i < 128 ; i++) {
 		buffer[i] = (char)i;
@@ -1563,7 +1564,7 @@ TEST_F(PortMmapTest, mmap_test10)
 		}
 		i += bufferSize;
 	}
-	outputComment(OMRPORTLIB, "Written out the buffer %d times to fill two pages\n", i / bufferSize);
+	portTestEnv->log("Written out the buffer %d times to fill two pages\n", i / bufferSize);
 
 	rc = omrfile_close(fd);
 	if (-1 == rc) {
@@ -1601,13 +1602,13 @@ TEST_F(PortMmapTest, mmap_test10)
 	}
 	mapAddr = (char *)mmapHandle->pointer;
 
-	outputComment(OMRPORTLIB, "File mapped at location %d\n", mapAddr);
-	outputComment(OMRPORTLIB, "Protecting first page\n");
+	portTestEnv->log("File mapped at location %d\n", mapAddr);
+	portTestEnv->log("Protecting first page\n");
 	/* set the region to read only */
 	rc = omrmmap_protect(mapAddr, (uintptr_t)fileLength / 2, OMRPORT_PAGE_PROTECT_READ);
 	if (rc != 0) {
 		if (rc == OMRPORT_PAGE_PROTECT_NOT_SUPPORTED) {
-			outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+			portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		} else {
 			lastErrorMessage = (char *)omrerror_last_error_message();
 			lastErrorNumber = omrerror_last_error_number();
@@ -1625,7 +1626,7 @@ TEST_F(PortMmapTest, mmap_test10)
 
 	/* try to write to region that was set to read only */
 	if (!omrsig_can_protect(signalHandlerFlags)) {
-		outputComment(OMRPORTLIB, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
+		portTestEnv->log(LEVEL_ERROR, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
 		goto exit;
 	} else {
 
@@ -1635,7 +1636,7 @@ TEST_F(PortMmapTest, mmap_test10)
 		writerInfo.shouldCrash = 1;
 		writerInfo.address = mapAddr + 30;
 
-		outputComment(OMRPORTLIB, "Writing to readonly region - we should crash\n");
+		portTestEnv->log("Writing to readonly region - we should crash\n");
 		protectResult = omrsig_protect(protectedWriter, &writerInfo, simpleHandlerFunction, &handlerInfo, signalHandlerFlags, &result);
 
 		if (protectResult == OMRPORT_SIG_EXCEPTION_OCCURRED) {
@@ -1647,7 +1648,7 @@ TEST_F(PortMmapTest, mmap_test10)
 
 	/* try to write to region that is still writable */
 	if (!omrsig_can_protect(signalHandlerFlags)) {
-		outputComment(OMRPORTLIB, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
+		portTestEnv->log(LEVEL_ERROR, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
 		goto exit;
 	} else {
 
@@ -1657,7 +1658,7 @@ TEST_F(PortMmapTest, mmap_test10)
 		writerInfo.address = mapAddr + pageSize;
 		writerInfo.shouldCrash = 0;
 
-		outputComment(OMRPORTLIB, "Writing to page two region - should be ok\n");
+		portTestEnv->log("Writing to page two region - should be ok\n");
 		protectResult = omrsig_protect(protectedWriter, &writerInfo, simpleHandlerFunction, &handlerInfo, signalHandlerFlags, &result);
 
 		if (protectResult == OMRPORT_SIG_EXCEPTION_OCCURRED) {
@@ -1737,18 +1738,18 @@ TEST_F(PortMmapTest, mmap_test11)
 	reportTestEntry(OMRPORTLIB, testName);
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_PROTECT) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	if ((mmapCapabilities & OMRPORT_MMAP_CAPABILITY_WRITE) == 0) {
-		outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
+		portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_WRITE not supported on this platform, bypassing test\n");
 		goto exit;
 	}
 
 	/* How big do pages claim to be? */
 	pageSize = omrmmap_get_region_granularity(mapAddr);
-	outputComment(OMRPORTLIB, "Page size is reported as %d\n", pageSize);
+	portTestEnv->log("Page size is reported as %d\n", pageSize);
 	/* Initialize buffer to be written - 128 chars with a string right in the middle */
 	for (i = 0; i < 128 ; i++) {
 		buffer[i] = (char)i;
@@ -1778,7 +1779,7 @@ TEST_F(PortMmapTest, mmap_test11)
 		}
 		i += bufferSize;
 	}
-	outputComment(OMRPORTLIB, "Written out the buffer %d times to fill three pages\n", i / bufferSize);
+	portTestEnv->log("Written out the buffer %d times to fill three pages\n", i / bufferSize);
 
 	rc = omrfile_close(fd);
 	if (-1 == rc) {
@@ -1816,13 +1817,13 @@ TEST_F(PortMmapTest, mmap_test11)
 	}
 	mapAddr = (char *)mmapHandle->pointer;
 
-	outputComment(OMRPORTLIB, "File mapped at location %d\n", mapAddr);
-	outputComment(OMRPORTLIB, "Protecting first page 4k into that address\n");
+	portTestEnv->log("File mapped at location %d\n", mapAddr);
+	portTestEnv->log("Protecting first page 4k into that address\n");
 	/* set the region to read only */
 	rc = omrmmap_protect(mapAddr + pageSize, pageSize, OMRPORT_PAGE_PROTECT_READ);
 	if (rc != 0) {
 		if (rc == OMRPORT_PAGE_PROTECT_NOT_SUPPORTED) {
-			outputComment(OMRPORTLIB, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
+			portTestEnv->log(LEVEL_ERROR, "OMRPORT_MMAP_CAPABILITY_PROTECT not supported on this platform, bypassing test\n");
 		} else {
 			lastErrorMessage = (char *)omrerror_last_error_message();
 			lastErrorNumber = omrerror_last_error_number();
@@ -1842,7 +1843,7 @@ TEST_F(PortMmapTest, mmap_test11)
 
 	/* try to write to region that was set to read only */
 	if (!omrsig_can_protect(signalHandlerFlags)) {
-		outputComment(OMRPORTLIB, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
+		portTestEnv->log(LEVEL_ERROR, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
 		goto exit;
 	} else {
 
@@ -1852,7 +1853,7 @@ TEST_F(PortMmapTest, mmap_test11)
 		writerInfo.shouldCrash = 1;
 		writerInfo.address = mapAddr + 30 + pageSize;
 
-		outputComment(OMRPORTLIB, "Writing to readonly region - we should crash\n");
+		portTestEnv->log("Writing to readonly region - we should crash\n");
 		protectResult = omrsig_protect(protectedWriter, &writerInfo, simpleHandlerFunction, &handlerInfo, signalHandlerFlags, &result);
 
 		if (protectResult == OMRPORT_SIG_EXCEPTION_OCCURRED) {
@@ -1864,7 +1865,7 @@ TEST_F(PortMmapTest, mmap_test11)
 
 	/* try to write to region that is still writable */
 	if (!omrsig_can_protect(signalHandlerFlags)) {
-		outputComment(OMRPORTLIB, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
+		portTestEnv->log(LEVEL_ERROR, "Signal handling framework not available, can't test readonly functionality without crashing, bypassing test");
 		goto exit;
 	} else {
 
@@ -1874,7 +1875,7 @@ TEST_F(PortMmapTest, mmap_test11)
 		writerInfo.address = mapAddr + (2 * pageSize);
 		writerInfo.shouldCrash = 0;
 
-		outputComment(OMRPORTLIB, "Writing to page two region - should be ok\n");
+		portTestEnv->log("Writing to page two region - should be ok\n");
 		protectResult = omrsig_protect(protectedWriter, &writerInfo, simpleHandlerFunction, &handlerInfo, signalHandlerFlags, &result);
 
 		if (protectResult == OMRPORT_SIG_EXCEPTION_OCCURRED) {

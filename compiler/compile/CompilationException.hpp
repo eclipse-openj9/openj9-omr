@@ -35,6 +35,11 @@ struct ILGenFailure : public virtual CompilationException
    virtual const char* what() const throw() { return "IL Gen Failure"; }
    };
 
+struct RecoverableILGenException : public virtual CompilationException
+   {
+   virtual const char* what() const throw() { return "Recoverable IL Gen Exception"; }
+   };
+
 struct ExcessiveComplexity : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Excessive Complexity"; }

@@ -1282,7 +1282,17 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
          if (optimizer)
             {
-            optimizer->optimize();
+            try
+               {
+               optimizer->optimize();
+               }
+            catch (const TR::RecoverableILGenException &e)
+               {
+               if (self()->comp()->isOutermostMethod())
+                  throw;
+               _methodFlags.set(IlGenSuccess, false);
+               }
+
             comp->setOptimizer(previousOptimizer);
             }
          else

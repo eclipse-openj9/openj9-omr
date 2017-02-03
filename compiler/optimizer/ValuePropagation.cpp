@@ -7739,11 +7739,21 @@ void TR::ValuePropagation::doDelayedTransformations()
       TR::TreeTop * firstTT = predictedCatchBlock->getFirstRealTreeTop();
 
       // Find the first real tree in catch block; ignoring the
-      // profiling trees possibly inserted by catch block profiler
-      //
-      while (firstTT &&
-             firstTT->getNode()->isProfilingCode())
-        firstTT = firstTT->getNextRealTreeTop();
+      // profiling trees possibly inserted by catch block profiler or
+      // asyncchecks for OSR
+      TR::TreeTop * asyncCheck = NULL;
+      while (firstTT)
+         {
+         if (firstTT->getNode()->isProfilingCode())
+            firstTT = firstTT->getNextRealTreeTop();
+         else if (firstTT->getNode()->getOpCodeValue() == TR::asynccheck)
+            {
+            asyncCheck = firstTT;
+            firstTT = firstTT->getNextRealTreeTop();
+            }
+         else
+            break;
+         }
 
       if (predictedCatchBlock->specializedDesyncCatchBlock())
          dumpOptDetails(comp(), "%sChanging a throw [%p] to a goto for specializedDesyncCatchBlock\n", OPT_DETAILS, node);
@@ -7769,6 +7779,10 @@ void TR::ValuePropagation::doDelayedTransformations()
       if (debug("traceThrowToGoto"))
          printf("\nthrow converted to goto in %s ", comp()->signature());
       TR::Block * gotoDestination = predictedCatchBlock->split(firstTT, cfg);
+
+      // Duplicate asynccheck to prevent loops without asyncchecks due to the goto
+      if (asyncCheck)
+         gotoDestination->prepend(asyncCheck->duplicateTree());
 
       List<TR::SymbolReference> l1(trMemory()), l2(trMemory()), l3(trMemory());
       TR::ResolvedMethodSymbol * currentSymbol = comp()->getJittedMethodSymbol();

@@ -1103,6 +1103,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceEarlyStackMap",               "L\ttrace early stack map",                        SET_TRACECG_BIT(TR_TraceEarlyStackMap), "P"},
    {"traceEscapeAnalysis",              "L\ttrace escape analysis",                        TR::Options::traceOptimization, escapeAnalysis, 0, "P"},
    {"traceEvaluation",                  "L\tdump output of tree evaluation passes",        SET_TRACECG_BIT(TR_TraceCGEvaluation), "P" },
+   {"traceExceptionAsyncCheckInsertion","L\ttrace async check insertion into exceptions",  TR::Options::traceOptimization, exceptionAsyncCheckInsertion, 0, "P"},  // Java specific option
    {"traceExplicitNewInitialization",   "L\ttrace explicit new initialization",            TR::Options::traceOptimization, explicitNewInitialization, 0, "P"},
    {"traceFieldPrivatization",          "L\ttrace field privatization",                    TR::Options::traceOptimization, fieldPrivatization, 0, "P"},
    {"traceForCodeMining=",              "L{regex}\tadd instruction annotations for code mining",

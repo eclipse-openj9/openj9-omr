@@ -1573,8 +1573,10 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSR(TR_ByteCodeInfo bci,
 
    if (blockToOSRAt && (!OSRCatchBlock || !blockToOSRAt->hasExceptionSuccessor(OSRCatchBlock)))
       {
-      if (comp->getOption(TR_TraceOSR))
+      if (comp->getOption(TR_TraceOSR) && OSRCatchBlock)
          traceMsg(comp, "Missing OSR exception successor block_%d for block_%d - cannot OSR\n", OSRCatchBlock->getNumber(), blockToOSRAt->getNumber());
+      if (comp->getOption(TR_TraceOSR) && !OSRCatchBlock)
+         traceMsg(comp, "Missing OSR exception successor for block_%d - cannot OSR\n", blockToOSRAt->getNumber());
       return true;
       }
 

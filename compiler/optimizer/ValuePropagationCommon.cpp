@@ -4043,7 +4043,7 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
       {
       if (!((((comp()->getMethodHotness() < warm)  && (_curBlock->getFrequency() > 1500)) ||
              ((comp()->getMethodHotness() == warm) && (_curBlock->getFrequency() > 500)) ||
-             ((comp()->getMethodHotness() > warm)  && (_curBlock->isCold())))))
+             ((comp()->getMethodHotness() > warm)  && (!_curBlock->isCold())))))
          {
          if (trace())
             traceMsg(comp(), "\nSkipping block_%d (low frequency)\n", _curBlock->getNumber());

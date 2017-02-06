@@ -410,7 +410,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLoopReplicatorColdSideEntryCheck","I\tdisable cold side-entry check for replicating loops containing hot inner loops", SET_OPTION_BIT(TR_DisableLoopReplicatorColdSideEntryCheck), "P"},
    {"disableLoopStrider",                 "O\tdisable loop strider",                           TR::Options::disableOptimization, loopStrider, 0, "P"},
    {"disableLoopVersioner",               "O\tdisable loop versioner",                         TR::Options::disableOptimization, loopVersioner, 0, "P"},
-   {"disableLPD",                         "O\tdisable load-pair-disjoint on z196 or newer",    SET_OPTION_BIT(TR_DisableLPD), "F"},
    {"disableMarkingOfHotFields",          "O\tdisable marking of Hot Fields",                  SET_OPTION_BIT(TR_DisableMarkingOfHotFields), "F"},
    {"disableMaskVFTPointers",             "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaskVFTPointers), "F"},
    {"disableMaxMinOptimization",          "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaxMinOptimization), "F"},

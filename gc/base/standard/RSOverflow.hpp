@@ -35,7 +35,7 @@ public:
 protected:
 private:
 	MM_GCExtensionsBase *_extensions;			/**< GC Extensions */
-	MM_MarkMap *_markMap;						/**< Mark Map stolen from Global Collector */
+	MM_MarkMap *_markMap;						/**< Pointer to the mark map used by ParallelGlobalGC */
 	bool _searchMode;							/**< mode switch: initialized in Modify mode, after first nextObject call is switched to Search mode */
 	MM_HeapMapIterator _markedObjectIterator;	/**< Iterator to walk marked objects */
 

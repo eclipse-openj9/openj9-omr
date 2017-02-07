@@ -59,7 +59,6 @@ typedef struct InstanceData {
 /**************************************************************************
  * name        - pchar
  * description - Print a charater to InstanceData buffer
- *               Taken from util.c used by fnumber and fstring.
  * parameters  - this   Structure holding the receiving buffer
  *               c      Character to add to buffer
  * returns     - int return code, 0 for success
@@ -106,7 +105,6 @@ pchar(InstanceData *this, int c)
 /**************************************************************************
  * name        - fstring
  * description - Print a string to InstanceData buffer
- *               Taken from util.c used by atoe_vsnprintf.
  * parameters  - this           Structure holding the receiving buffer
  *               str            String to add to buffer
  *               left_justify   Left justify string flag
@@ -168,7 +166,6 @@ typedef enum {
 /**************************************************************************
  * name        - fnumber
  * description - Print an integer to InstanceData buffer
- *               Taken from util.c used by atoe_vsnprintf.
  * parameters  - this           Structure containing receiving buffer
  *               value          The value to format
  *               format_type    Character flag specifying format type

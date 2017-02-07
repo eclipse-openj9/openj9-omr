@@ -31,17 +31,17 @@ class LogFileTest : public ::testing::Test
    LogFileTest();
    ~LogFileTest();
 
-   void forkAndCompile(const char *logFile, const char *logType = "traceFull");
+   void forkAndCompile(std::string logFile, const char *logType = "traceFull");
    void checkLogForKeywords(std::map<const char*, bool> keywords, const char *logFile);
    void runKeywordTests(std::map<const char*, std::map<const char*, bool>> logFileChecks);
-   bool fileIsNotEmpty(const char *logFile);
+   bool fileIsNotEmpty(std::string logFile);
    std::map<const char*, bool> buildKeywordMap(std::initializer_list <const char*> inputs);
 
    private:
-   std::vector<const char *> _logFiles;
+   std::vector<std::string> _logFiles;
 
-   bool fileExists(const char *name);
-   void createLog(const char *logFile, const char *logType);
+   bool fileExists(std::string name);
+   void createLog(std::string logFile, const char *logType);
    void compileTests();
    };
 

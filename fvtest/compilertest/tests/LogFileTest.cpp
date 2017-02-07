@@ -40,7 +40,7 @@ TestCompiler::LogFileTest::~LogFileTest()
    // Remove all generated log files.
    for(auto it = _logFiles.begin(); it != _logFiles.end(); ++it)
       {
-      unlink(*it);
+      unlink(it->c_str());
       }
    }
 
@@ -57,10 +57,10 @@ TestCompiler::LogFileTest::compileTests()
  * @param name The name of the file.
  */
 bool
-TestCompiler::LogFileTest::fileExists(const char *name)
+TestCompiler::LogFileTest::fileExists(std::string name)
    {
    struct stat buf;
-   int result = stat(name, &buf);
+   int result = stat(name.c_str(), &buf);
    return result == 0;
    }
 
@@ -70,7 +70,7 @@ TestCompiler::LogFileTest::fileExists(const char *name)
  * @param logFile The name of the file.
  */
 bool
-TestCompiler::LogFileTest::fileIsNotEmpty(const char* logFile)
+TestCompiler::LogFileTest::fileIsNotEmpty(std::string logFile)
    {
    std::ifstream logFileStream(logFile);
    return logFileStream.peek() != std::ifstream::traits_type::eof();
@@ -107,7 +107,7 @@ TestCompiler::LogFileTest::buildKeywordMap(std::initializer_list <const char*> i
  * @param logType The type of log to be generated..
  */
 void
-TestCompiler::LogFileTest::createLog(const char *logFile, const char *logType)
+TestCompiler::LogFileTest::createLog(std::string logFile, const char *logType)
    {
    std::string args = std::string("-Xjit:");
    args = args + logType + ",log=" + logFile;
@@ -136,7 +136,7 @@ TestCompiler::LogFileTest::runKeywordTests(std::map<const char*, std::map<const 
       const char *logType = it->first;
       std::string logFile = std::string(logType) + std::string(".log");
 
-      forkAndCompile(logFile.c_str(), logType);
+      forkAndCompile(logFile, logType);
       checkLogForKeywords(it->second, logFile.c_str());
       }
    }
@@ -205,7 +205,7 @@ TestCompiler::LogFileTest::checkLogForKeywords(std::map<const char*, bool> keywo
  *        parameter. The default value is "traceFull"
  */
 void
-TestCompiler::LogFileTest::forkAndCompile(const char *logFile, const char *logType)
+TestCompiler::LogFileTest::forkAndCompile(std::string logFile, const char *logType)
    {
    // Keep track of the filename in the vector _logFiles so that it
    // can be deleted in the destructor.
@@ -228,7 +228,7 @@ namespace TestCompiler {
 TEST_F(LogFileTest, CreateTFLogTest)
    {
    const char *logType = "traceFull";
-   const char *logFile = "createTFLog.log";
+   std::string logFile = "createTFLog.log";
    forkAndCompile(logFile, logType);
    }
 
@@ -236,7 +236,7 @@ TEST_F(LogFileTest, CreateTFLogTest)
 TEST_F(LogFileTest, EmptyTFLogTest)
    {
    const char *logType = "traceFull";
-   const char *logFile = "emptyTFLog.log";
+   std::string logFile = "emptyTFLog.log";
    forkAndCompile(logFile, logType);
    ASSERT_TRUE(fileIsNotEmpty(logFile)) << "The traceFull log file created is empty";
    }

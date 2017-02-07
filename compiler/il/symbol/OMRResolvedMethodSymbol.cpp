@@ -1212,6 +1212,10 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
    // inliner modifies the generated tree so we need to regenerate it
    // each time...
    // replaced  "if (!_firstTreeTop || 1)" with "if (!_firstTreeTop || !comp->isPeekingMethod())"
+
+   TR::Optimizer *optimizer = NULL;
+   TR::Optimizer *previousOptimizer = NULL;
+   try {
    if (!_firstTreeTop || !comp->isPeekingMethod())
       {
       _firstTreeTop = 0;
@@ -1254,8 +1258,6 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             comp->getOption(TR_EnableOSR) && comp->supportsInduceOSR() &&
             !comp->isPeekingMethod()  && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR)) ;
 
-         TR::Optimizer *optimizer = NULL;
-         TR::Optimizer *previousOptimizer = NULL;
          optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
          previousOptimizer = comp->getOptimizer();
          comp->setOptimizer(optimizer);
@@ -1282,17 +1284,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
          if (optimizer)
             {
-            try
-               {
-               optimizer->optimize();
-               }
-            catch (const TR::RecoverableILGenException &e)
-               {
-               if (self()->comp()->isOutermostMethod())
-                  throw;
-               _methodFlags.set(IlGenSuccess, false);
-               }
-
+            optimizer->optimize();
             comp->setOptimizer(previousOptimizer);
             }
          else
@@ -1301,6 +1293,15 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
                traceMsg(comp, "Skipping ilgen opts\n");
             }
          }
+      }
+   }
+   catch (const TR::RecoverableILGenException &e)
+      {
+      if (self()->comp()->isOutermostMethod())
+         throw;
+      _methodFlags.set(IlGenSuccess, false);
+      if (optimizer) //if the exception is from ilgen opts we need to restore previous optimizer
+         comp->setOptimizer(previousOptimizer);
       }
 
    if (traceIt && (comp->getOutFile() != NULL) && comp->getOption(TR_TraceBC))

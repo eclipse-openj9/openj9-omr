@@ -30,6 +30,7 @@ ALL_TESTS = \
             conststring \
             controlflowtests \
             dotproduct \
+            fieldaddress \
             issupportedtype \
             iterfib \
             linkedlist \
@@ -66,6 +67,7 @@ all_goal: common_goal
 	./call
 	./conststring
 	./dotproduct
+	./fieldaddress
 	./linkedlist
 	./localarray
 	./operandstacktests
@@ -126,6 +128,13 @@ dotproduct : libjitbuilder.a DotProduct.o
 	g++ -g -fno-rtti -o $@ DotProduct.o -L. -ljitbuilder -ldl
 
 DotProduct.o: src/DotProduct.cpp src/DotProduct.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+fieldaddress : libjitbuilder.a FieldAddress.o
+	g++ -g -fno-rtti -o $@ FieldAddress.o -L. -ljitbuilder -ldl
+
+FieldAddress.o: src/FieldAddress.cpp src/FieldAddress.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

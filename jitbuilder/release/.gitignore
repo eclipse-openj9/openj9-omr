@@ -24,6 +24,7 @@ call
 conststring
 controlflowtests
 dotproduct
+fieldaddress
 iterfib
 issupportedtype
 jitbuilder.tgz

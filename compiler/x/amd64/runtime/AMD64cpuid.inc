@@ -18,7 +18,7 @@
 
 OPTION NOSCOPED
 
-ifndef WIN32
+ifndef WINDOWS
 ; hardcoded CPUID instruction
 cpuid macro
 	db	00Fh
@@ -58,7 +58,7 @@ jitGetCPUID	proc
 	mov	rbp, rsp	; create new frame at current stack top
 	push	rbx		; preserve registers
 
-ifdef WIN64
+ifdef WINDOWS
         push    rdi
         mov     rdi, rcx        ; preserve 1st arg
 endif
@@ -99,7 +99,7 @@ endif
    mov   rax, eq_true
 L2:
 
-ifdef WIN64
+ifdef WINDOWS
         pop     rdi
 endif
 	pop     rbx

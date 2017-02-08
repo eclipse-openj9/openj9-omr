@@ -41,7 +41,7 @@ endm
 
 prepareCompareAndExchangeArguments macro
         ;; TODO: this generates Rex prefixes that are only needed for the 8-byte case
-IFDEF WIN32
+IFDEF WINDOWS
         ;; rcx=address, rdx=old, r8=new
         mov     rax, rdx
         mov     rdx, r8
@@ -92,7 +92,7 @@ compareAndExchange8 ENDP
         Align16
 _patchingFence16 PROC
         mfence
-IFDEF WIN32
+IFDEF WINDOWS
         clflush [rcx]
         clflush [rcx+8]
 ELSE
@@ -106,7 +106,7 @@ _patchingFence16 ENDP
         Align16
 _patchingFence24 PROC
         mfence
-IFDEF WIN32
+IFDEF WINDOWS
         clflush [rcx]
         clflush [rcx+8]
         clflush [rcx+16]

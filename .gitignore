@@ -58,6 +58,7 @@ OMRTraceFormat.dat
 /omralgotest
 /omrgcexample
 /omrgctest
+/omrjitbuildertest
 /omrperfgctest
 /omrporttest
 /omrrastest

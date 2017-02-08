@@ -158,7 +158,7 @@ endif
 # JitBuilder
 ifeq (1,$(OMR_JITBUILDER))
 main_targets += jitbuilder
-test_targets += jitbuilder/release
+test_targets += fvtest/jitbuildertest jitbuilder/release
 endif
 
 DO_TEST_TARGET := yes

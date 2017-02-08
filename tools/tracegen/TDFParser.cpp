@@ -486,7 +486,7 @@ TDFParser::processAssertTemplate(const char *formatTemplate, unsigned int *count
 }
 
 /****
- * Port of processTemplate from original java code.
+ * Process the template file to create the tracepoints
  * Params:
  * formatTemplate  - the printf style format string
  * str - a malloc'd buffer to hold the result

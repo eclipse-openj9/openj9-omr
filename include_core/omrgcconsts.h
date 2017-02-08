@@ -85,7 +85,7 @@
 #define J9_MU_WALK_IGNORE_NULL_ARRAYLET_LEAF 0x100
 #define J9_MU_WALK_PREINDEX_INTERFACE_FIELDS 0x200
 
-/* When changing the heap alignment below you need to check that the new alignement
+/* When changing the heap alignment below you need to check that the new alignment
  * is compatible with the requirements of compaction and concurrent mark.
  */
 #if defined(OMR_ENV_DATA64)
@@ -116,9 +116,7 @@ struct ModronLnrlOptions {
 	uintptr_t spinCount3;
 };
 
-/* For CMVC 137275. For all dying classes we poison the classObject
- * field to  to investigate the origin of a class object reference whose class has been unloaded.
- */
+/* Flag used to poison collected object pointers for debugging */
 #define J9_INVALID_OBJECT ((omrobjectptr_t)UDATA_MAX)
 
 #define OMRPORT_ACCESS_FROM_ENVIRONMENT(env) OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary())
@@ -147,15 +145,13 @@ struct ModronLnrlOptions {
  * Lightweight Non-Reentrant Locks (LWNR) Spinlock Support
  * We can't use spinlocks on platforms that do not support semaphores.
  * Also, spinlocks can't provide realtime locking.
- * Also, yield causes performance problems on AIX (CMVC 136102, 136484).
+ * Do not use the custom spinlocks on AIX as yield calls create performance issues.
  */
 #if defined(OMR_INTERP_HAS_SEMAPHORES) && !defined(AIXPPC)
 #define J9MODRON_USE_CUSTOM_SPINLOCKS
 #endif
 
 #define J9MODRON_USE_CUSTOM_READERWRITERLOCK
-
-/* TODO Imports from j9modron.h */
 
 /* Since only 1 bit is tagged, we only need to shift 1 bit.
  * These two defines are tightly coupled and should be modified together.
@@ -366,15 +362,7 @@ typedef enum {
 #define OMR_GC_CYCLE_TYPE_VLHGC_GLOBAL_GARBAGE_COLLECT 5
 /** @} */
 
-/* TODO Imports from j9consts.h */
-
-/* These are duplicated in builder J9VMConstantValue.st
- * but cannot be removed from there as the JIT needs these in j9consts.h:
- * 		J9_GC_MULTI_SLOT_HOLE
- * 		J9_GC_SINGLE_SLOT_HOLE
- * 	tr.source\frontend\j9\...
- */
-
+/* Object head object / hole bits */
 #ifndef J9_GC_OBJ_HEAP_HOLE
 #define J9_GC_OBJ_HEAP_HOLE 0x1
 #endif
@@ -390,9 +378,8 @@ typedef enum {
 
 #define J9VMGC_SIZECLASSES_LOG_SMALLEST 0x4
 
+/* Default object age for generational collectors */
 #define J9_OBJECT_HEADER_AGE_DEFAULT 0xA
-
-/* TODO End of imports from j9consts.h" */
 
 #define J9_SCV_TENURE_RATIO_LOW 10
 #define J9_SCV_TENURE_RATIO_HIGH 30
@@ -400,11 +387,7 @@ typedef enum {
 #define J9_SCV_REMSET_FRAGMENT_SIZE 32
 #define J9_SCV_REMSET_SIZE 16384
 
-/* TODO Imports from modron.h */
-
 #define J9MODRON_ALLOCATION_MANAGER_HINT_MAX_WALK 20
-
-/* Copied verbatim from gc_base/modron.h, not these were not generated! */
 
 /* Define the low memory heap ceiling (max heap address when -Xgc:forceLowMemHeap is specified) */
 #if defined(OMR_ENV_DATA64)
@@ -424,9 +407,9 @@ typedef enum {
 
 /* Because SLES zLinux/31 never allocates mmap()ed memory below the 1GB line unless you ask it to, we
  * always request that the heap is allocated low in the address range. This leaves the space above
- * 2GB free for other mmap() allocations (e.g. pthread stacks). See CMVC 102861 */
+ * 2GB free for other mmap() allocations (e.g. pthread stacks).*/
 #if defined(S390) && defined(LINUX) && !defined(OMR_ENV_DATA64)
-#define PREFERRED_HEAP_BASE 0x10000000 /* Value chosen to copy Sovereign behaviour - allows heaps up to 750MB to fit below 1GB line */
+#define PREFERRED_HEAP_BASE 0x10000000
 #else
 #define PREFERRED_HEAP_BASE 0x0
 #endif
@@ -447,7 +430,5 @@ typedef enum {
 #define METRONOME_DEFAULT_BEAT_MICRO 3000
 #define METRONOME_DEFAULT_TIME_WINDOW_MICRO 60000
 #endif /* OMR_GC_REALTIME */
-
-/* TODO End of imports from modron.h" */
 
 #endif /* OMRGCCONSTS_H_ */

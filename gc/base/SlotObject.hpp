@@ -40,7 +40,7 @@ protected:
 public:
 
 private:
-	/* Copied from ObjectAccessBarrier.hpp */
+	/* Inlined version of converting a compressed token to an actual pointer */
 	MMINLINE omrobjectptr_t
 	convertPointerFromToken(fomrobject_t token)
 	{
@@ -50,7 +50,7 @@ private:
 		return (omrobjectptr_t)token;
 #endif
 	}
-	/* Copied from ObjectAccessBarrier.hpp */
+	/* Inlined version of converting a pointer to a compressed token */
 	MMINLINE fomrobject_t
 	convertTokenFromPointer(omrobjectptr_t pointer)
 	{

@@ -252,24 +252,6 @@ return_millis:
       addi        SP, SP, 40
          b        retry_millis
 
-###########################################################################
-#                                                                         #
-#   IBM Confidential                                                      #
-#                                                                         #
-#   OCO Source Materials                                                  #
-#                                                                         #
-#   VisualAge Micro Edition                                               #
-#                                                                         #
-#   (C) Copyright IBM Corp. 2002                                          #
-#                                                                         #
-#   The source code for this program is not published or otherwise        #
-#   divested of its trade secrets, irrespective of what has been          #
-#   deposited with the U.S. Copyright Office.                             #
-#                                                                         #
-#  sccsid %I%                                                             #
-#                                                                         #
-###########################################################################
-
 # From src/bos/usr/ccs/lib/libc/POWER/divu64.s, libccnv, bos520
 # long long __divu64( long long, long long )
 #

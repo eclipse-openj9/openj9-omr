@@ -1998,8 +1998,31 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
                            }
                         }
 
-                     //rip out trees
-                     clonedCatch->getEntry()->join(clonedCatch->getExit());
+                     TR::TreeTop *retain = clonedCatch->getEntry();
+                     // As this method is performed soon after ilgen, the exception handler
+                     // may be prepended with an asynccheck and pending pushes
+                     // These should be retained in the copy, so skip them when ripping out trees
+                     if (comp->getHCRMode() == TR::osr)
+                        {
+                        TR::TreeTop *next = retain->getNextTreeTop();
+                        if (next && next->getNode()->getOpCodeValue() == TR::asynccheck)
+                           {
+                           TR_ByteCodeInfo osrPointBCI = next->getNode()->getByteCodeInfo();
+                           retain = next;
+                           next = next->getNextTreeTop();
+                           // Pending pushes should have the same BCI as the OSR point
+                           while (next
+                                 && next->getNode()->getOpCode().isStoreDirect()
+                                 && next->getNode()->getByteCodeInfo().getCallerIndex() == osrPointBCI.getCallerIndex()
+                                 && next->getNode()->getByteCodeInfo().getByteCodeIndex() == osrPointBCI.getByteCodeIndex())
+                              {
+                              retain = next;
+                              next = next->getNextTreeTop();
+                              }
+                           }
+                        }
+
+                     retain->join(clonedCatch->getExit());
                      clonedCatch->getExit()->setNextTreeTop(NULL);
                      endTT->join(clonedCatch->getEntry());
                      ///dumpOptDetails(comp, "attached cloned (%d) to trees\n", clonedCatch->getNumber());

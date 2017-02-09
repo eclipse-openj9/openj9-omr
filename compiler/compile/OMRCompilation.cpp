@@ -1770,6 +1770,7 @@ bool OMR::Compilation::isVirtualGuardNOPingRequired(TR_VirtualGuard *virtualGuar
          }
       else if ((virtualGuard->getKind() == TR_SideEffectGuard) ||
                (virtualGuard->getKind() == TR_DummyGuard) ||
+               (virtualGuard->getKind() == TR_OSRGuard) ||
                (virtualGuard->getKind() == TR_HCRGuard) ||
                (virtualGuard->getKind() == TR_MutableCallSiteTargetGuard) ||
                ((virtualGuard->getKind() == TR_InterfaceGuard) && (virtualGuard->getTestType() == TR_MethodTest)))

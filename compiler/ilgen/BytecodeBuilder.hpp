@@ -48,6 +48,9 @@ public:
     */
    int32_t bcIndex() { return _bcIndex; }
 
+   /* The name for this BytecodeBuilder. This can be very helpful for debug output */
+   char *name() { return _name; }
+
    virtual uint32_t countBlocks();
 
    void AddFallThroughBuilder(TR::BytecodeBuilder *ftb);

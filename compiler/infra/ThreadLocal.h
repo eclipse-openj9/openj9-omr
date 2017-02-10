@@ -21,8 +21,8 @@
 
 #if defined(SUPPORTS_THREAD_LOCAL)
 
-#if defined(WIN32) || defined(LINUX) || defined(OSX) || defined(AIXPPC)
- #if defined(WIN32)
+#if defined(WINDOWS) || defined(LINUX) || defined(OSX) || defined(AIXPPC)
+ #if defined(WINDOWS)
   #include "windows.h"
   #define tlsDeclare(type, variable) extern DWORD variable
   #define tlsDefine(type, variable) DWORD variable = TLS_OUT_OF_INDEXES
@@ -38,7 +38,7 @@
   #define tlsSet(variable, value) variable = value
   #define tlsGet(variable, type) (variable)
  #endif
-#else /* !(defined(WIN32) || defined(LINUX) || defined(OSX) || defined(AIXPPC)) */  /* mainly defined(J9ZOS390) */
+#else /* !(defined(WINDOWS) || defined(LINUX) || defined(OSX) || defined(AIXPPC)) */  /* mainly defined(J9ZOS390) */
  #include <pthread.h>
 
  #define tlsDeclare(type, variable) extern pthread_key_t variable

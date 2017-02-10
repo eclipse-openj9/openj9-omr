@@ -78,7 +78,7 @@ OMR::Monitor::destroy(TR::Monitor *monitor)
 void
 OMR::Monitor::destroy()
    {
-#ifdef WIN32
+#ifdef WINDOWS
    MUTEX_DESTROY(_monitor);
 #else
    int32_t rc = MUTEX_DESTROY(_monitor);
@@ -89,7 +89,7 @@ OMR::Monitor::destroy()
 void
 OMR::Monitor::enter()
    {
-#ifdef WIN32
+#ifdef WINDOWS
    MUTEX_ENTER(_monitor);
 #else
    int32_t rc = MUTEX_ENTER(_monitor);
@@ -100,7 +100,7 @@ OMR::Monitor::enter()
 int32_t
 OMR::Monitor::exit()
    {
-#ifdef WIN32
+#ifdef WINDOWS
    MUTEX_EXIT(_monitor);
    return 0;
 #else

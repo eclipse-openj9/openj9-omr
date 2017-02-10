@@ -961,7 +961,7 @@ bool OMR::X86::CodeGenerator::allowVMThreadRematerialization()
 
 bool OMR::X86::CodeGenerator::supportsFS0VMThreadRematerialization()
    {
-#ifdef WIN32
+#ifdef WINDOWS
    return allowVMThreadRematerialization();
 #else
    return false;

@@ -754,7 +754,7 @@ OMR::Compilation::isProfilingCompilation()
    return _recompilationInfo ? _recompilationInfo->isProfilingCompilation() : false;
    }
 
-#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WIN32)
+#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
 static void stopBeforeCompile()
    {
    static int first = 1;
@@ -831,7 +831,7 @@ int32_t OMR::Compilation::compile()
       self()->getDebug()->setupDebugger((void *) *((long*)&(stopBeforeCompile)));
       stopBeforeCompile();
       }
-#elif defined(LINUX) || defined(J9ZOS390) || (defined(WIN32))
+#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
    if (self()->getOption(TR_DebugBeforeCompile))
       {
 #if defined(LINUXPPC64)
@@ -1082,7 +1082,7 @@ int32_t OMR::Compilation::compile()
       self()->getDebug()->setupDebugger((void *)jitTojitStart, self()->cg()->getCodeEnd(), false);
 #endif
       }
-#elif defined(LINUX) || defined(J9ZOS390) || (defined(WIN32))
+#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
    if (self()->getOption(TR_DebugOnEntry))
       {
       self()->getDebug()->setupDebugger(self()->cg()->getCodeStart(),self()->cg()->getCodeEnd(),false);

@@ -1212,95 +1212,97 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
    // inliner modifies the generated tree so we need to regenerate it
    // each time...
    // replaced  "if (!_firstTreeTop || 1)" with "if (!_firstTreeTop || !comp->isPeekingMethod())"
-   if (!_firstTreeTop || !comp->isPeekingMethod())
+
+   TR::Optimizer *optimizer = NULL;
+   TR::Optimizer *previousOptimizer = NULL;
+   try 
       {
-      _firstTreeTop = 0;
-      _flowGraph = new (comp->trHeapMemory()) TR::CFG(comp, self());
-      _flowGraph->setStartAndEnd(new (comp->trHeapMemory()) TR::Block(comp->trMemory()),
-                                 new (comp->trHeapMemory()) TR::Block(comp->trMemory()));
-
-      if (comp->getOption(TR_EnableOSR) && !comp->isPeekingMethod())
+      if (!_firstTreeTop || !comp->isPeekingMethod())
          {
-         _cannotAttemptOSR = new (comp->trHeapMemory()) TR_BitVector(1, comp->trMemory(), heapAlloc, growable);
-         _shouldNotAttemptOSR = new (comp->trHeapMemory()) TR_BitVector(1, comp->trMemory(), heapAlloc, growable);
-         }
+         _firstTreeTop = 0;
+         _flowGraph = new (comp->trHeapMemory()) TR::CFG(comp, self());
+         _flowGraph->setStartAndEnd(new (comp->trHeapMemory()) TR::Block(comp->trMemory()),
+                                    new (comp->trHeapMemory()) TR::Block(comp->trMemory()));
 
-      if (_tempIndex == -1)
-         self()->setParameterList();
-      _tempIndex = _firstJitTempIndex;
-      //_automaticList.setListHead(0); // what's the point ? sym ref tab can use the sym refs anyway by using methodSymbol's auto sym refs and pending push sym refs list; this only confuses analyses into thinking these autos cannot be used when they actually can be
-
-      TR_IlGenerator *ilGen = customRequest.getIlGenerator(self(), fe, comp, symRefTab);
-
-      auto genIL_rc = ilGen->genIL();
-      _methodFlags.set(IlGenSuccess, genIL_rc);
-      traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
-
-      if (_methodFlags.testAny(IlGenSuccess))
-         {
-         if (!comp->isPeekingMethod())
+         if (comp->getOption(TR_EnableOSR) && !comp->isPeekingMethod())
             {
-            if (self()->catchBlocksHaveRealPredecessors(comp->getFlowGraph(), comp))
-               {
-               comp->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
-               }
+            _cannotAttemptOSR = new (comp->trHeapMemory()) TR_BitVector(1, comp->trMemory(), heapAlloc, growable);
+            _shouldNotAttemptOSR = new (comp->trHeapMemory()) TR_BitVector(1, comp->trMemory(), heapAlloc, growable);
             }
 
-         // If OSR is enabled, need to create an OSR helper call to keep the pending pushes,
-         // parms, and locals alive. Only do this in non HCR mode since under HCR we will be more selective about where to
-         // add OSR points.
-         //
-         bool doOSR =
-            comp->getOption(TR_EnableOSR) && comp->supportsInduceOSR() &&
-            !comp->isPeekingMethod()  && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR)) ;
+         if (_tempIndex == -1)
+            self()->setParameterList();
+         _tempIndex = _firstJitTempIndex;
+         //_automaticList.setListHead(0); // what's the point ? sym ref tab can use the sym refs anyway by using methodSymbol's auto sym refs and pending push sym refs list; this only confuses analyses into thinking these autos cannot be used when they actually can be
 
-         TR::Optimizer *optimizer = NULL;
-         TR::Optimizer *previousOptimizer = NULL;
-         optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
-         previousOptimizer = comp->getOptimizer();
-         comp->setOptimizer(optimizer);
+         TR_IlGenerator *ilGen = customRequest.getIlGenerator(self(), fe, comp, symRefTab);
 
-         self()->detectInternalCycles(comp->getFlowGraph(), comp);
+         auto genIL_rc = ilGen->genIL();
+         _methodFlags.set(IlGenSuccess, genIL_rc);
+         traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
 
-         if (doOSR)
+         if (_methodFlags.testAny(IlGenSuccess))
             {
-            TR_ASSERT(comp->getOSRCompilationData(), "OSR compilation data is NULL\n");
-            if (comp->canAffordOSRControlFlow())
+            if (!comp->isPeekingMethod())
                {
-               self()->genAndAttachOSRCodeBlocks(comp->getCurrentInlinedSiteIndex());
-               if (!self()->getOSRPoints().isEmpty())
+               if (self()->catchBlocksHaveRealPredecessors(comp->getFlowGraph(), comp))
                   {
-                  self()->genOSRHelperCall(comp->getCurrentInlinedSiteIndex(), symRefTab);
-                  if (comp->getOption(TR_TraceOSR))
-                     comp->dumpMethodTrees("Trees after OSR in genIL", self());
+                  comp->failCompilation<TR::CompilationException>("Catch blocks have real predecessors");
                   }
-
-               if (!comp->isOutermostMethod())
-                  self()->cleanupUnreachableOSRBlocks(comp->getCurrentInlinedSiteIndex(), comp);
                }
-            }
 
-         if (optimizer)
-            {
-            try
+            // If OSR is enabled, need to create an OSR helper call to keep the pending pushes,
+            // parms, and locals alive. Only do this in non HCR mode since under HCR we will be more selective about where to
+            // add OSR points.
+            //
+            bool doOSR =
+               comp->getOption(TR_EnableOSR) && comp->supportsInduceOSR() &&
+               !comp->isPeekingMethod()  && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR)) ;
+
+            optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
+            previousOptimizer = comp->getOptimizer();
+            comp->setOptimizer(optimizer);
+
+            self()->detectInternalCycles(comp->getFlowGraph(), comp);
+
+            if (doOSR)
+               {
+               TR_ASSERT(comp->getOSRCompilationData(), "OSR compilation data is NULL\n");
+               if (comp->canAffordOSRControlFlow())
+                  {
+                  self()->genAndAttachOSRCodeBlocks(comp->getCurrentInlinedSiteIndex());
+                  if (!self()->getOSRPoints().isEmpty())
+                     {
+                     self()->genOSRHelperCall(comp->getCurrentInlinedSiteIndex(), symRefTab);
+                     if (comp->getOption(TR_TraceOSR))
+                        comp->dumpMethodTrees("Trees after OSR in genIL", self());
+                     }
+
+                  if (!comp->isOutermostMethod())
+                     self()->cleanupUnreachableOSRBlocks(comp->getCurrentInlinedSiteIndex(), comp);
+                  }
+               }
+
+            if (optimizer)
                {
                optimizer->optimize();
+               comp->setOptimizer(previousOptimizer);
                }
-            catch (const TR::RecoverableILGenException &e)
+            else
                {
-               if (self()->comp()->isOutermostMethod())
-                  throw;
-               _methodFlags.set(IlGenSuccess, false);
+               if (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
+                  traceMsg(comp, "Skipping ilgen opts\n");
                }
-
-            comp->setOptimizer(previousOptimizer);
-            }
-         else
-            {
-            if (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
-               traceMsg(comp, "Skipping ilgen opts\n");
             }
          }
+      }
+   catch (const TR::RecoverableILGenException &e)
+      {
+      if (self()->comp()->isOutermostMethod())
+         throw;
+      _methodFlags.set(IlGenSuccess, false);
+      if (optimizer) //if the exception is from ilgen opts we need to restore previous optimizer
+         comp->setOptimizer(previousOptimizer);
       }
 
    if (traceIt && (comp->getOutFile() != NULL) && comp->getOption(TR_TraceBC))

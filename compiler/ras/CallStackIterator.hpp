@@ -161,7 +161,7 @@ private:
 
 typedef TR_MvsCallStackIterator TR_CallStackIteratorImpl;
 
-#elif defined(WIN32) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
+#elif defined(WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
 
 class TR_WinCallStackIterator : public TR_CallStackIterator
    {
@@ -185,7 +185,7 @@ public:
 
 typedef TR_WinCallStackIterator TR_CallStackIteratorImpl;
 
-#elif !(defined(WIN32) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT))
+#elif !(defined(WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT))
 
 typedef TR_CallStackIterator TR_CallStackIteratorImpl;
 

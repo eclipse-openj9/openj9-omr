@@ -33,7 +33,7 @@
 #include "cs2/listof.h"
 #include "cs2/hashtab.h"
 
-#if defined(_WIN32)
+#if defined(WINDOWS)
 #include <time.h>
 #include "windows_api.h"
 #else
@@ -107,7 +107,7 @@ private:
 };
 
 typedef BSDTimer PlatformTimer;
-#elif defined(_WIN32)
+#elif defined(WINDOWS)
 /**
  * \brief Windows-specific timer class.
  *

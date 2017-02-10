@@ -599,7 +599,7 @@ public:
 
 #if defined(AIXPPC)
    virtual void setupDebugger(void *);
-#elif defined(LINUX) || defined(J9ZOS390) || (defined(WIN32))
+#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
    virtual void setupDebugger(void *, void *, bool);
 #endif
 

@@ -2599,7 +2599,7 @@ OMR::Options::jitPreProcess()
       #elif defined(J9ZOS390)
          _userSpaceVirtualMemoryMB = -1; // Compute userspace dynamically on z/OS
       #endif //#if defined(LINUX)
-   #elif !defined(WIN32)
+   #elif !defined(WINDOWS)
       _userSpaceVirtualMemoryMB = 0; // Disabled for 64 bit or non-windows production
    #endif //#if defined(TR_TARGET_32BIT) && defined(PROD_WITH_ASSUMES)
 

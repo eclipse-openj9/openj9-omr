@@ -16,16 +16,16 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#if defined(WIN32) || defined (WIN64)
+#ifdef WINDOWS
 
 #ifdef BOOLEAN
-/* There is a collision between J9's definition of BOOLEAN and WIN32 headers */
+/* There is a collision between J9's definition of BOOLEAN and Windows headers */
 #define BOOLEAN_COLLISION_DETECTED BOOLEAN
 #undef BOOLEAN
 #endif
 
 #ifdef boolean
-/* There is a collision between J9's definition of boolean and WIN32 headers */
+/* There is a collision between J9's definition of boolean and Windows headers */
 #define boolean_COLLISION_DETECTED boolean
 #undef boolean
 #endif
@@ -44,4 +44,4 @@
 #undef BOOLEAN_COLLISION_DETECTED
 #endif
 
-#endif /* defined(WIN32) || defined (WIN64) */
+#endif

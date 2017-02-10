@@ -27,7 +27,7 @@
 #include "il/DataTypes.hpp"  // for CONSTANT64, TR::getMaxSignedPrecision<TR::Int64>(), etc
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
-#if defined(TR_TARGET_X86) && defined(WIN32)
+#if defined(TR_TARGET_X86) && defined(WINDOWS)
    #define abs64 _abs64
 #else
    #define abs64 labs

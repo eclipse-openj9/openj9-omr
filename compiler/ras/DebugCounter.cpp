@@ -44,7 +44,7 @@
 #include "infra/CriticalSection.hpp"         // for createCounter race conditions
 
 #if defined(_MSC_VER)
-#include <malloc.h> // alloca on Win32
+#include <malloc.h> // alloca on Windows
 #endif
 
 

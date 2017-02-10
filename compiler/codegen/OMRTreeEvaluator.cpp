@@ -147,6 +147,26 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(TR::Node * node, TR:
    return false;
    }
 
+TR_GlobalRegisterNumber 
+OMR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg)
+   {
+    //No need for register pairs in 64-bit mode
+    if (TR::Compiler->target.is64Bit())
+        return -1;
+
+    //if the node itself doesn't have a type (e.g passthrough) we assume it has a child with a type
+    //However we keep track of the initial node as it will contain the register information.
+    TR::Node *rootNode = node;
+
+    while (node->getType() == TR::NoType) {
+        node = node->getFirstChild();
+        TR_ASSERT(node, "The node should always be valid while looking for a Child with a type");
+    }
+    TR_ASSERT(node->getType() != TR::NoType, "Expecting node %p, to have a specific type here", node);
+
+    //Only need a register pair if the node is a 64bit Int
+    return node->getType().isInt64() ? rootNode->getHighGlobalRegisterNumber() : -1;
+   }
 
 // Returns n where value = 2^n.
 //   If value != 2^n, returns -1

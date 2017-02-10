@@ -49,6 +49,8 @@ class OMR_EXTENSIBLE TreeEvaluator
    static bool instanceOfOrCheckCastNeedEqualityTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
    static bool instanceOfOrCheckCastNeedSuperTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
 
+   static TR_GlobalRegisterNumber getHighGlobalRegisterNumberIfAny(TR::Node *node, TR::CodeGenerator *cg); 
+
    static int32_t classDepth(TR::Node * castClassNode, TR::CodeGenerator * cg);
    static int32_t checkNonNegativePowerOfTwo(int32_t value);
    static int32_t checkNonNegativePowerOfTwo(int64_t value);

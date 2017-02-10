@@ -378,7 +378,7 @@ MM_Configuration::initializeRegionSize(MM_EnvironmentBase* env)
 		result = false;
 	} else {
 		/* set the log and the power of two size */
-		uintptr_t powerOfTwoRegionSize = (1 << shift);
+		uintptr_t powerOfTwoRegionSize = ((uintptr_t)1 << shift);
 		extensions->regionSize = powerOfTwoRegionSize;
 		result = verifyRegionSize(env, powerOfTwoRegionSize);
 	}

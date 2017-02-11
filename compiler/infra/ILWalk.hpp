@@ -39,6 +39,7 @@ class TreeTop;
 //
 class AllBlockIterator;
 class ILValidator;
+class PostorderNodeIterator;
 class PostorderNodeOccurrenceIterator;
 class PreorderNodeIterator;
 class PreorderNodeOccurrenceIterator;
@@ -134,9 +135,12 @@ class NodeIterator: protected TreeTopIteratorImpl // abstract
       return (int32_t)_stack.size();
       }
 
+   void logCurrentLocation();
+
    public:
 
    TR::TreeTop *currentTree()        { return Super::currentTree(); }
+   TR::Node *currentNode()           { return _stack.top()._node; }
    bool isAt(TR::TreeTop *tt)        { return Super::isAt(tt); }
    bool isAt(TreeTopIterator &other) { return isAt(other.currentTree()); }
    bool isAt(PreorderNodeIterator &other);
@@ -156,14 +160,36 @@ class PreorderNodeIterator: public NodeIterator
    bool alreadyBeenPushed(TR::Node *node);
    void push(TR::Node *node);
 
-   void logCurrentLocation();
-
    public:
 
    PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
    PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp);
 
-   TR::Node    *currentNode();
+   void         stepForward();
+
+   public: // operators
+
+   void operator ++() { stepForward(); }
+   };
+
+// Returns each node once, in postorder.
+//
+// This is the order in which nodes will be evaluated, except more strict.
+// (Actual evaluation does not specify the order that siblings are visited.)
+//
+class PostorderNodeIterator: public NodeIterator
+   {
+   typedef class NodeIterator Super;
+
+   bool alreadyBeenPushed(TR::Node *node);
+   void push(TR::Node *node);
+   void descend();
+
+   public:
+
+   PostorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp);
+
    void         stepForward();
 
    public: // operators

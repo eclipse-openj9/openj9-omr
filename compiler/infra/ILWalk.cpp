@@ -138,11 +138,6 @@ TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Compilati
    push(start->getNode());
    }
 
-TR::Node *TR::PreorderNodeIterator::currentNode()
-   {
-   return _stack.top()._node;
-   }
-
 bool TR::PreorderNodeIterator::alreadyBeenPushed(TR::Node *node)
    {
    return _checklist.contains(node);
@@ -197,7 +192,7 @@ void TR::PreorderNodeIterator::stepForward()
       }
    }
 
-void TR::PreorderNodeIterator::logCurrentLocation()
+void TR::NodeIterator::logCurrentLocation()
    {
    // TODO: Log even without an _opt.
 
@@ -229,6 +224,78 @@ void TR::PreorderNodeIterator::logCurrentLocation()
          traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
          }
       }
+   }
+
+TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
+   :NodeIterator(start, opt, name)
+   {
+   push(start->getNode());
+   descend();
+   }
+
+TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp)
+   :NodeIterator(start, comp)
+   {
+   push(start->getNode());
+   descend();
+   }
+
+bool TR::PostorderNodeIterator::alreadyBeenPushed(TR::Node *node)
+   {
+   return _checklist.contains(node);
+   }
+
+void TR::PostorderNodeIterator::push(TR::Node *node)
+   {
+   TR_ASSERT(!alreadyBeenPushed(node), "Cannot push node n%dn that was already pushed", node->getGlobalIndex());
+   _stack.push(WalkState(node));
+   _checklist.add(node);
+   }
+
+void TR::PostorderNodeIterator::descend()
+   {
+   // Push frames until we find the innermost, leftmost unvisited descendant.
+   TR::Node *node = _stack.top()._node;
+   for (;;)
+      {
+      int32_t i = _stack.top()._child;
+      while (i < node->getNumChildren() && alreadyBeenPushed(node->getChild(i)))
+         i++;
+
+      _stack.top()._child = i;
+      if (i == node->getNumChildren())
+         break;
+
+      node = node->getChild(i);
+      push(node);
+      }
+
+   logCurrentLocation();
+   }
+
+void TR::PostorderNodeIterator::stepForward()
+   {
+   // We're done with the current node and all its descendants. Move back up
+   // to the parent and attempt to descend into later subtrees.
+   _stack.pop();
+   if (!_stack.isEmpty())
+      {
+      _stack.top()._child++;
+      _stack.top()._isBetweenChildren = true;
+      descend();
+      return;
+      }
+
+   // Step to the next tree, if any
+   do
+      TreeTopIteratorImpl::stepForward();
+   while (currentTree() && alreadyBeenPushed(currentTree()->getNode()));
+
+   if (!currentTree())
+     return;
+
+   push(currentTree()->getNode());
+   descend();
    }
 
 //

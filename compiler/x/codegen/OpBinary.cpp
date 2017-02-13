@@ -618,6 +618,7 @@ const TR_X86OpCode::TR_OpCodeBinaryEntry TR_X86OpCode::_binaryEncodings[IA32NumO
       {0x38, 0x33, 0xc0, 3},    // PMOVZXWD
       {0x38, 0x40, 0xc0, 3},    // PMULLD
       {0xfe, 0xc0, 0x00, 2},    // PADDD
+      {0x38, 0x00, 0xc0, 3},    // PSHUFBRegReg
       {0x0f, 0x70, 0xc0, 3},    // PSHUFDRegRegImm1
       {0x0f, 0x70, 0x00, 3},    // PSHUFDRegMemImm1
       {0x73, 0xd8, 0x00, 2},    // PSRLDQRegImm1

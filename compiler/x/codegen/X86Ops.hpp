@@ -612,6 +612,7 @@ typedef enum {
    PMOVZXWD,        // move unsigned short in lower 8 bytes to int
    PMULLD,          // mul int32 and keep low 32 bits
    PADDD,           // add int32 and keep low 32 bits
+   PSHUFBRegReg,    // Shuffle Packed Byte Register, Register
    PSHUFDRegRegImm1,// Shuffle Packed Doublewords Register, Register by Immediate config
    PSHUFDRegMemImm1,// Shuffle Packed Doublewords Register, Memory by Immediate config
    PSRLDQRegImm1,   // shift 128 xmm register

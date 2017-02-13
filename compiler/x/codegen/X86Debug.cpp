@@ -3315,6 +3315,7 @@ static const char * opCodeToNameMap[IA32NumOpCodes] =
    "PMOVZXWD",
    "PMULLD",
    "PADDD",
+   "PSHUFBRegReg",
    "PSHUFDRegRegImm1",
    "PSHUFDRegMemImm1",
    "PSRLDQRegImm1",
@@ -4202,6 +4203,7 @@ static const char * opCodeToMnemonicMap[IA32NumOpCodes] =
    "pmovzxwd",       // PMOVZXWD
    "pmulld",         // PMULLD
    "paddd",          // PADDD
+   "pshufb",         // PSHUFBRegReg
    "pshufd",         // PSHUFDRegRegImm1
    "pshufd",         // PSHUFDRegMemImm1
    "psrldq",         // PSRLDQRegImm1

@@ -204,7 +204,18 @@ public:
    TR::IlValue *AtomicAdd(TR::IlValue *baseAddress, TR::IlValue * value);
    void Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **fallThroughBuilder);
    void TransactionAbort();
-   
+
+   /**
+    * `StructFieldAddress` and `UnionFieldAddress` are two functions that
+    * provide a workaround for a limitation in JitBuilder. Becuase `TR::IlValue`
+    * cannot represent an object type (only pointers to objects), there is no
+    * way to generate a load for a field that is itself an object. The workaround
+    * is to use the field's address instead. This is not an elegent solution and
+    * should be revisited.
+    */
+   TR::IlValue *StructFieldInstanceAddress(const char* structName, const char* fieldName, TR::IlValue* obj);
+   TR::IlValue *UnionFieldInstanceAddress(const char* unionName, const char* fieldName, TR::IlValue* obj);
+
    // vector memory
    TR::IlValue *VectorLoad(const char *name);
    TR::IlValue *VectorLoadAt(TR::IlType *dt, TR::IlValue *address);

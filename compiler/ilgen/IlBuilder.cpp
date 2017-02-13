@@ -817,6 +817,33 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    return address;
    }
 
+/**
+ * @brief Generate IL to load the address of a struct field.
+ *
+ * The address of the field is calculated by adding the field's offset to the
+ * base address of the struct. The address is also converted (type casted) to
+ * a pointer to the type of the field.
+ */
+TR::IlValue *
+IlBuilder::StructFieldInstanceAddress(const char* structName, const char* fieldName, TR::IlValue* obj) {
+   auto offset = typeDictionary()->OffsetOf(structName, fieldName);
+   auto ptype = typeDictionary()->PointerTo(typeDictionary()->GetFieldType(structName, fieldName));
+   auto addr = Add(obj, ConstInt64(offset));
+   return ConvertTo(ptype, addr);
+}
+
+/**
+ * @brief Generate IL to load the address of a union field.
+ *
+ * The address of the field is simply the base address of the union, since the
+ * offset of all union fields is zero.
+ */
+TR::IlValue *
+IlBuilder::UnionFieldInstanceAddress(const char* unionName, const char* fieldName, TR::IlValue* obj) {
+   auto ptype = typeDictionary()->PointerTo(typeDictionary()->UnionFieldType(unionName, fieldName));
+   return ConvertTo(ptype, obj);
+}
+
 TR::IlValue *
 IlBuilder::NullAddress()
    {

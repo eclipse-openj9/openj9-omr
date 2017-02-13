@@ -1353,14 +1353,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		omrtty_printf("{SCAV: Copied %p[%p] -> %p[%p]}\n", forwardedHeader->getObject(), *((uintptr_t*)(forwardedHeader->getObject())), destinationObjectPtr, *((uintptr_t*)destinationObjectPtr));
 #endif /* OMR_SCAVENGER_TRACE_COPY */
 
-		/* Move the cache allocate pointer to reflect the consumed memory */
-		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
-		copyCache->cacheAlloc = newCacheAlloc;
-		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
-
-		/* object has been copied so if scanning hierarchically set effectiveCopyCache to support aliasing check */
-		env->_effectiveCopyScanCache = copyCache;
-
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
 	 * (since mutator may access the object as soon as forwarding pointer is installed) */
@@ -1369,6 +1361,15 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	if (destinationObjectPtr == originalDestinationObjectPtr) {
 		/* Succeeded in forwarding the object */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+		/* Move the cache allocate pointer to reflect the consumed memory */
+		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
+		copyCache->cacheAlloc = newCacheAlloc;
+		assume0(copyCache->cacheAlloc <= copyCache->cacheTop);
+
+		/* object has been copied so if scanning hierarchically set effectiveCopyCache to support aliasing check */
+		env->_effectiveCopyScanCache = copyCache;
+
 		/* Update the stats */
 		MM_ScavengerStats *scavStats = &env->_scavengerStats;
 		if(copyCache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {

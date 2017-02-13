@@ -3901,6 +3901,10 @@ const uint32_t TR_X86OpCode::_properties[IA32NumOpCodes] =
 
    IA32OpProp_SourceRegisterInModRM,           // PADDD
 
+   IA32OpProp_ModifiesTarget                 | // PSHUFBRegReg
+   IA32OpProp_SourceRegisterInModRM          |
+   IA32OpProp_UsesTarget,
+
    IA32OpProp_ModifiesTarget                 | // PSHUFDRegRegImm1
    IA32OpProp_ByteImmediate                  |
    IA32OpProp_Needs16BitOperandPrefix        |
@@ -7910,6 +7914,10 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
    IA32OpProp2_XMMSource|                      // PADDD
    IA32OpProp2_XMMTarget|
    IA32OpProp2_NeedsSSE42OpcodePrefix,
+
+   IA32OpProp2_XMMSource                     |  // PSHUFBRegReg
+   IA32OpProp2_NeedsSSE42OpcodePrefix        |
+   IA32OpProp2_XMMTarget,
 
    IA32OpProp2_XMMSource                     | // PSHUFDRegRegImm1
    IA32OpProp2_XMMTarget,

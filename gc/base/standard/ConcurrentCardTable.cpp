@@ -484,8 +484,8 @@ MM_ConcurrentCardTable::initialize(MM_EnvironmentBase *envModron, MM_Heap *heap)
 			_tlhMarkBits= (uintptr_t *)(memoryManager->getHeapBase(&_tlhMarkMapMemoryHandle));
 	
 			/* Register hooks for TLH clear and refresh. Needed to maintian TLH mark bits */
-			(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CACHE_CLEARED, tlhCleared, (void *)this);
-			(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CACHE_REFRESHED, tlhRefreshed, (void *)this);
+			(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CACHE_CLEARED, tlhCleared, OMR_GET_CALLSITE(), (void *)this);
+			(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CACHE_REFRESHED, tlhRefreshed, OMR_GET_CALLSITE(), (void *)this);
 		}
 	
 		/* Set default card cleaning masks used by getNextDirtycard */

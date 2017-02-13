@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -37,7 +37,11 @@ extern "C" {
 /* derives the common interface pointer from a module-specific hook interface */
 #define J9_HOOK_INTERFACE(interface) (&(interface).common.hookInterface)
 
+#define J9HOOK_LIB_CONTROL_TRACE_START "trace_start"
+#define J9HOOK_LIB_CONTROL_TRACE_STOP "trace_stop"
 
+intptr_t
+omrhook_lib_control(const char *key, uintptr_t value);
 
 struct J9HookInterface; /* Forward struct declaration */
 typedef void (*J9HookFunction)(struct J9HookInterface **hookInterface, uintptr_t eventNum, void *eventData, void *userData); /* Forward struct declaration */
@@ -46,6 +50,7 @@ typedef struct J9HookInterface {
 	intptr_t (*J9HookDisable)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
 	intptr_t (*J9HookReserve)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
 	intptr_t (*J9HookRegister)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, void *userData, ...);
+	intptr_t (*J9HookRegisterWithCallSite)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, const char *callsite, void *userData, ...);
 	void (*J9HookUnregister)(struct J9HookInterface **hookInterface, uintptr_t eventNum, J9HookFunction function, void *userData);
 	void (*J9HookShutdownInterface)(struct J9HookInterface **hookInterface);
 	intptr_t (*J9HookIsEnabled)(struct J9HookInterface **hookInterface, uintptr_t eventNum);
@@ -65,12 +70,34 @@ typedef struct J9HookInterface {
 #define J9HOOK_AGENTID_DEFAULT  ((uintptr_t)1)
 #define J9HOOK_AGENTID_LAST  ((uintptr_t)-1)
 
+/* time threshold (=100 milliseconds) for triggering the tracepoint  */
+#define OMRHOOK_DEFAULT_THRESHOLD_IN_MILLISECONDS_WARNING_CALLBACK_ELAPSED_TIME	100
+
+/* array of OMREventInfo4Dump is added in individual hookInterface by Hook generation tool to avoid
+   rumtime native memory allocation(malloc), use this macro to access &infos4Dump[event] */
+#define J9HOOK_DUMPINFO(interface, event) (&((OMREventInfo4Dump *)&((uint8_t*)((interface) + 1))[(interface)->eventSize])[event])
+
+typedef struct OMRHookInfo4Dump {
+	const char *callsite;
+	void * func_ptr;		/* use function pointer instead, if callsite == NULL */
+	uint64_t startTime;
+	uint64_t duration;
+}OMRHookInfo4Dump;
+
+typedef struct OMREventInfo4Dump {
+	struct OMRHookInfo4Dump longestHook;
+	struct OMRHookInfo4Dump lastHook;
+}OMREventInfo4Dump;
+
 typedef struct J9CommonHookInterface {
 	struct J9HookInterface *hookInterface;
 	uintptr_t size;
 	omrthread_monitor_t lock;
 	struct J9Pool *pool;
 	uintptr_t nextAgentID;
+	struct OMRPortLibrary *portLib;		/* for accessing PortLibrary  */
+	uint64_t threshold4Trace;			/* the threshold for triggering tracepoint */
+	uintptr_t eventSize;				/* how many events supported by this hook interface */
 } J9CommonHookInterface;
 
 
@@ -82,6 +109,7 @@ typedef struct J9CommonHookInterface {
 typedef struct J9HookRecord {
 	struct J9HookRecord *next;
 	J9HookFunction function;
+	const char *callsite;
 	void *userData;
 	uintptr_t count;
 	uintptr_t id;

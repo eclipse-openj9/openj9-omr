@@ -87,8 +87,8 @@ void
 MM_VerboseHandlerOutput::enableVerbose()
 {
 	/* Initialized */
-	(*_mmOmrHooks)->J9HookRegister(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, (void *)this);
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, OMR_GET_CALLSITE(), (void *)this);
 
 	return ;
 }

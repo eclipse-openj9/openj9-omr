@@ -1661,6 +1661,98 @@ TEST(PortVmemTest, vmem_testReserveMemoryExStrictAddress_use2To32_zOSLargePageBe
 	portTestEnv->changeIndent(-1);
 	reportTestExit(OMRPORTLIB, testName);
 }
+
+
+/**
+ * Test request for executable large pages above the 2G bar with various page sizes.
+ * Exercises reserve_memory_with_moservices(), except for 4k pages.
+ * Because there are no guarantees about the OS version or available memory, this is basically a smoke test.
+ */
+TEST(PortVmemTest, vmem_testReserveLargePagesAboveBar)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	uintptr_t *pageSizes = NULL;
+	uintptr_t *pageFlags = NULL;
+	const char *testName = "vmem_testReserveLargePagesAboveBar";
+	int32_t i = 0;
+
+	portTestEnv->changeIndent(1);
+	reportTestEntry(OMRPORTLIB, testName);
+
+
+	/* Get all the supported page sizes */
+	pageSizes = omrvmem_supported_page_sizes();
+	pageFlags = omrvmem_supported_page_flags();
+
+	/* reserve and commit memory for each page size */
+	for (i = 0; pageSizes[i] != 0 ; i++) {
+		struct J9PortVmemIdentifier vmemID;
+		J9PortVmemParams params;
+		void *memPtr = NULL;
+		int32_t pageableStrict = 0;
+
+		for (pageableStrict = 0; pageableStrict < 4; ++pageableStrict) { /* try with both pageable and non-pageable, strict and non-strict */
+			BOOLEAN pageable = (0 != pageableStrict % 2);
+			BOOLEAN strict = (pageableStrict >= 2);
+			BOOLEAN expectError = false;
+			omrvmem_vmem_params_init(&params);
+
+			/* request memory (at or) below the 2G bar */
+			params.startAddress = (void *) TWO_GB;
+			params.endAddress = (void *) OMRPORT_VMEM_MAX_ADDRESS;
+			params.byteAmount = pageSizes[i];
+			params.mode |= OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE |OMRPORT_VMEM_MEMORY_MODE_EXECUTE;
+			params.pageSize = pageSizes[i];
+			if (pageable) {
+				if  (TWO_GB == params.pageSize) {
+					expectError =true;
+				} else if (!J9_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
+					continue;  /* pageable not supported */
+				}  else {
+					params.pageFlags &= ~OMRPORT_VMEM_PAGE_FLAG_FIXED;
+					params.pageFlags |= OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;
+				}
+			} else { /* fixed */
+				/* allocating 4K fixed pages is technically an error, but not reported in existing code. */
+				if (!J9_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_FIXED)) {
+					continue; /* fixed/non-pageable not supported */
+				}  else {
+					params.pageFlags &= ~OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;
+					params.pageFlags |= OMRPORT_VMEM_PAGE_FLAG_FIXED;
+				}
+			}
+
+			params.options = (strict) ? OMRPORT_VMEM_STRICT_ADDRESS: 0;
+
+			portTestEnv->log("Page Size: 0x%zx %s\n", params.pageSize, (0 == pageable) ? "fixed" : "pageable");
+
+			memPtr = omrvmem_reserve_memory_ex(&vmemID, &params);
+			if (NULL != memPtr) {
+				intptr_t rc = 0;
+				if (expectError) {
+					outputErrorMessage(PORTTEST_ERROR_ARGS, "no error from omrvmem_reserve_memory_ex returned 0x%zx for pageSize=0x%zx pageFlags=0x%zx\n",
+							rc, params.pageSize, params.pageFlags);
+				}
+				rc = omrvmem_decommit_memory(memPtr, params.byteAmount, &vmemID);
+				if (pageable) {
+					if (0 != rc) {
+						outputErrorMessage(PORTTEST_ERROR_ARGS, "omrvmem_decommit_memory failed with code 0x%zx when trying to decommit 0x%zx bytes backed by 0x%zx-byte pages\n",
+								rc, params.byteAmount, pageSizes[i]);
+					}
+				} else {
+						if ((0 == rc) && strict) {
+							outputErrorMessage(PORTTEST_ERROR_ARGS, "omrvmem_decommit_memory no error when trying to decommit fixed pages size=0x%zx flags=0x%zx\n", params.pageSize, params.pageFlags);
+						}
+				}
+				omrvmem_free_memory(memPtr, params.byteAmount, &vmemID);
+			} else {
+				portTestEnv->log(LEVEL_ERROR, "Failed to allocate memory using page size 0x%zx, pageFlags 0x%zx params.options  0x%zx\n", 	pageSizes[i], params.pageFlags, params.options);
+			}
+		}
+	}
+	portTestEnv->changeIndent(-1);
+	reportTestExit(OMRPORTLIB, testName);
+}
 #endif /* defined(OMR_ENV_DATA64) */
 #endif /* defined(J9ZOS390) */
 

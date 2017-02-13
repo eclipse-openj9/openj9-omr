@@ -991,3 +991,13 @@ TraceEntry=Trc_PRT_filestream_fileno_Entry Group=omrfilestream Overhead=1 Level=
 TraceExit=Trc_PRT_filestream_fileno_Exit Group=j9filestrean Overhead=1 Level=5 NoEnv Template="omrfilestream_fileno Returns filedescriptor = %zd"
 TraceException=Trc_PRT_filestream_fileno_invalidArgs Group=omrfilestream Overhead=1 Level=5 NoEnv Template="omrfilestream_fileno Invalid arguments. fileStream = %p"
 TraceException=Trc_PRT_filestream_fileno_failed Group=omrfilestream Overhead=1 Level=5 NoEnv Template="omrfilestream_fileno Failed. fileStream = %p, errorCode = %d"
+
+TraceEvent=Trc_PRT_vmem_omrvmem_free_memory_using_moservices Group=mem Overhead=1 Level=5 NoEnv Template="omrvmem_free_memory using moservices userAddress=%p byteAmount=%zu allocator=%zu"
+TraceEntry=Trc_PRT_vmem_reserve_using_moservices_entry Group=mem Overhead=1 Level=5 NoEnv Template="reserve_memory_with_moservices pageSize=%zu byteAmount=%u"
+TraceException=Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_size Group=mem Overhead=1 Level=3 NoEnv Template="omrvmem_reserve_memory invalid page pageSize=%zu"
+TraceException=Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_flags Group=mem Overhead=1 Level=3 NoEnv Template="omrvmem_reserve_memory invalid page pageSize=%zu pageFlags=0x%x"
+TraceException=Trc_PRT_vmem_reserve_using_moservices_invalid_argument  Group=mem Overhead=1 Level=1 NoEnv Template="reserve_memory_with_moservices passed invalid arguments to __moservices, return code = %d, errno2 = %d"
+TraceException=Trc_PRT_vmem_reserve_using_moservices_failed  Group=mem Overhead=1 Level=1 NoEnv Template="reserve_memory_with_moservices iarv64 failed with return code=%d, reason code=%d" 
+TraceExit=Trc_PRT_vmem_reserve_using_moservices_exit Group=mem Overhead=1 Level=5 NoEnv Template="reserve_memory_with_moservices returns %p byteAmount=%u"
+
+TraceException=Trc_PRT_vmem_omrvmem_decommit_nonpageable_memory Group=mem Overhead=1 Level=1 NoEnv Template="omrvmem_decommit_memory attemp to decommit non-pageable memory at address=%p byteAmount=%u"

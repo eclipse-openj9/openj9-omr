@@ -29,6 +29,7 @@
 #include "omrportasserts.h"
 #include "omrvmem.h"
 #include "omriarv64.h"
+#include "omrsimap.h"
 
 #include <errno.h>
 #include <sys/types.h>
@@ -191,6 +192,8 @@ int omrdiscard_data(void *address, int numFrames);
 #pragma map (getUserExtendedPrivateAreaMemoryType,"GETTTT")
 uintptr_t getUserExtendedPrivateAreaMemoryType();
 
+static BOOLEAN isRmode64Supported();
+static void * reserve_memory_with_moservices(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params, OMRMemCategory *category);
 #endif /* defined(OMR_ENV_DATA64) */
 
 /* Subpool number to be used when allocating memory using STORAGE macro.
@@ -261,9 +264,10 @@ omrvmem_decommit_memory(struct OMRPortLibrary *portLibrary, void *address, uintp
 					result = Pgser_Release((void *)address, byteAmount);
 					break;
 #if defined(OMR_ENV_DATA64)
-				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA:
-				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGEABLE_PAGES_ABOVE_BAR:
-				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR:
+				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA: /* FALLTHROUGH */
+				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGEABLE_PAGES_ABOVE_BAR: /* FALLTHROUGH */
+				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR: /* FALLTHROUGH */
+				case OMRPORT_VMEM_RESERVE_USED_MOSERVICES:
 					result = omrdiscard_data((void *)address, byteAmount >> ZOS_REAL_FRAME_SIZE_SHIFT);
 					break;
 				case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_FIXED_PAGES_ABOVE_BAR:
@@ -319,46 +323,58 @@ omrvmem_free_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t
 		   address, identifier->pageSize, identifier->pageFlags, identifier->allocator);
 #endif /* LP_DEBUG */
 
+	switch (identifier->allocator) {
 	/* Default page Size */
-	if (OMRPORT_VMEM_RESERVE_USED_J9MEM_ALLOCATE_MEMORY == identifier->allocator) {
+	case OMRPORT_VMEM_RESERVE_USED_J9MEM_ALLOCATE_MEMORY:
+	{
 		/* calculating the base address is done in omrvmem_reserve_memory, so the free address here must reflect the allocation address there */
 		void *freeAddress = GET_BASE_PTR_FROM_ALIGNED_PTR(address);
 		Trc_PRT_vmem_omrvmem_free_memory_using_mem_free_memory(address, byteAmount);
 		/* remember, we didn't give the user the baseAddress - we stored it - make sure to free the baseAddress */
 		portLibrary->mem_free_memory(portLibrary, freeAddress);
 		/* No need to call omrmem_categories_decrement_counters - mem_free_memory will have done it */
-	} else if (OMRPORT_VMEM_RESERVE_USED_MALLOC31 == identifier->allocator) {
+	}
+	break;
+	case OMRPORT_VMEM_RESERVE_USED_MALLOC31:
+	{
 		/* malloc31 is 8byte aligned */
 		void *freeAddress = GET_BASE_PTR_FROM_ALIGNED_PTR(address);
 		Trc_PRT_vmem_omrvmem_free_memory_using_mem_free_memory32(address, byteAmount);
 		free(freeAddress);
 		omrmem_categories_decrement_counters(identifier->category, identifier->size);
-	} else if ((OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGES_BELOW_BAR == identifier->allocator)
-				|| (OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_BELOW_BAR == identifier->allocator)
-	) {
+	}
+	break;
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGES_BELOW_BAR:  /* FALLTHROUGH */
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_BELOW_BAR:
 		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_below_bar(address, byteAmount);
 		rc = omrfree_memory_below_bar(address, identifier->size, OMRPORT_VMEM_SUBPOOL);
 		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		break;
 #if defined(OMR_ENV_DATA64)
-	} else if ((OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA == identifier->allocator)
-			|| (OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_FIXED_PAGES_ABOVE_BAR == identifier->allocator)
-			|| (OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGEABLE_PAGES_ABOVE_BAR == identifier->allocator)
-	) {
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_IN_2TO32G_AREA:   /* FALLTHROUGH */
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_FIXED_PAGES_ABOVE_BAR:  /* FALLTHROUGH */
+	case  OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_LARGE_PAGEABLE_PAGES_ABOVE_BAR:  /* FALLTHROUGH */
+	{
 		const char *const ttkn = PPG_ipt_ttoken;
 
 		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, identifier->allocator);
 		rc = omrfree_memory_above_bar(address, ttkn);
 		omrmem_categories_decrement_counters(identifier->category, identifier->size);
-	} else if (OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR == identifier->allocator) {
+	}
+	break;
+	case OMRPORT_VMEM_RESERVE_USED_MOSERVICES:
+		Trc_PRT_vmem_omrvmem_free_memory_using_moservices(address, byteAmount, identifier->allocator);  /* FALLTHROUGH */
+	case OMRPORT_VMEM_RESERVE_USED_J9ALLOCATE_4K_PAGES_ABOVE_BAR:
 		Trc_PRT_vmem_omrvmem_free_memory_using_free_memory_above_bar(address, byteAmount, identifier->allocator);
 		rc = __moservices(__MO_DETACH, 0, NULL, &address);
 		omrmem_categories_decrement_counters(identifier->category, identifier->size);
+		break;
 #endif
-	} else {
+	default:
 		/* Invalid allocator */
 		rc = -1;
-	}
-
+		break;
+	} /* switch {identifier->allocator) */
 	update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 	Trc_PRT_vmem_omrvmem_free_memory_Exit(rc);
 
@@ -759,6 +775,85 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, uintptr_t by
 	return ptr;
 }
 
+#if defined(OMR_ENV_DATA64)
+#if __EDC_TARGET < __EDC_LE4201
+ #define __MOPL_PAGEFRAMESIZE_PAGEABLE1MEG\
+                                  0x20000000
+ #define __MOPL_PAGEFRAMESIZE_2G  0x10000000
+ #define __MOPL_USE2GTO32G        0x08000000
+#endif           /* __EDC_TARGET >= __EDC_LE4201 */
+
+/*
+ * Use this only on V2R2 or greater.
+ */
+static void *
+reserve_memory_with_moservices(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, struct J9PortVmemParams *params, OMRMemCategory *category)
+{
+	void *ptr = NULL;
+	/* Need to make byteAmount 1M aligned as __moservices()/IARV64 macro allocates memory in 1M chunks */
+	uintptr_t allocSize = ROUND_UP_TO_POWEROF2(params->byteAmount, ONE_M);
+	uintptr_t numSegments = allocSize / ONE_M;
+	__mopl_t mymopl;
+	int32_t rc = 0;
+	Trc_PRT_vmem_reserve_using_moservices_entry(params->pageSize, params->byteAmount);
+	memset(&mymopl, 0, sizeof(__mopl_t));
+	mymopl.__mopldumppriority = __MO_DUMP_PRIORITY_HEAP;
+	mymopl.__moplrequestsize = numSegments;
+	switch (params->pageSize) {
+	case FOUR_K: /* 0 == __moplgetstorflags means 4k */
+		if (!J9_ARE_ANY_BITS_SET(params->pageFlags, OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
+			Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_flags(params->pageSize, params->pageFlags);
+			rc =-1;
+		}
+		break;
+	case ONE_M:
+		if (J9_ARE_ANY_BITS_SET(params->pageFlags, OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
+			mymopl.__moplgetstorflags = __MOPL_PAGEFRAMESIZE_PAGEABLE1MEG;
+			/* If pageable 1MB page frames are not available at first reference, pageable 4K page frames will be used. */
+		} else {
+			mymopl.__moplgetstorflags = __MOPL_PAGEFRAMESIZE1MEG;
+		}
+		break;
+	case TWO_G:
+		if (J9_ARE_ANY_BITS_SET(params->pageFlags, OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
+			Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_flags(params->pageSize, params->pageFlags);
+			rc =-1;
+		} else {
+			mymopl.__moplgetstorflags = __MOPL_PAGEFRAMESIZE_2G;
+		}
+		break;
+	default:
+		Trc_PRT_vmem_reserve_memory_using_moservices_invalid_page_size(params->pageSize);
+		rc = -1;
+	}
+	if (0 == rc) { /* valid page size */
+		rc = __moservices(__MO_GETSTOR, sizeof(mymopl), &mymopl, &ptr);
+	}
+	if (0 != rc) {
+		/* As per z/OS C/C++ Run-Time Library Reference, __moservices() returns EINVAL or EMVSERR in case of failure.
+		 * EINVAL indicates invalid argument. More detailed information is returned by __errno2().
+		 * EMVSERR indicates underlying IARV64 call failed.
+		 */
+		ptr = NULL;
+		if (EINVAL == errno) {
+			Trc_PRT_vmem_reserve_using_moservices_invalid_argument(rc, __errno2());
+		} else if (EMVSERR == errno) {
+			Trc_PRT_vmem_reserve_using_moservices_failed(mymopl.__mopl_iarv64_rc, mymopl.__mopl_iarv64_rsn);
+		}
+		update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, OMRPORT_VMEM_RESERVE_USED_MOSERVICES, NULL);
+	} else {
+		omrmem_categories_increment_counters(category, allocSize);
+		/* Update identifier and commit memory if required, else return reserved memory */
+		update_vmemIdentifier(identifier, (void *)ptr, (void *)ptr, allocSize, params->mode, params->pageSize, OMRPORT_VMEM_PAGE_FLAG_PAGEABLE, OMRPORT_VMEM_RESERVE_USED_MOSERVICES, category);
+		if (J9_ARE_ANY_BITS_SET(params->mode, OMRPORT_VMEM_MEMORY_MODE_COMMIT)) {
+			ptr = omrvmem_commit_memory(portLibrary, (void *)ptr, allocSize, identifier);
+		}
+	}
+	Trc_PRT_vmem_reserve_using_moservices_exit(ptr, params->byteAmount);
+	return ptr;
+}
+#endif /* defined(OMR_ENV_DATA64) */
+
 int32_t
 omrvmem_vmem_params_init(struct OMRPortLibrary *portLibrary, struct J9PortVmemParams *params)
 {
@@ -825,7 +920,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	OMRMemCategory *category = omrmem_get_category(portLibrary, callerParams->category);
 
 	LP_DEBUG_PRINTF4("\n omrvmem_reserve_memory_ex: address=0x%zx, byteAmount=0x%zx, pageSize=0x%zx, pageFlags=0x%zx\n", \
-					 params.startAddress, params.byteAmount, params.pageSize, params.pageFlags);
+			params.startAddress, params.byteAmount, params.pageSize, params.pageFlags);
 
 	Trc_PRT_vmem_omrvmem_reserve_memory_Entry_replacement_v1(params.startAddress, params.byteAmount, params.pageSize, params.pageFlags);
 
@@ -864,22 +959,33 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 				Trc_PRT_vmem_omrvmem_reserve_memory_invalid_input();
 			}
 		} else {
+#if defined(OMR_ENV_DATA64)
+			if (((UDATA) params.startAddress >= TWO_G)
+					&& isRmode64Supported()
+					&& !use2To32GArea
+					&& J9_ARE_ALL_BITS_SET(params.mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE)
+			) {
+				baseAddress = reserve_memory_with_moservices(portLibrary, identifier, &params, category);
+			} else {
+				baseAddress = reservePages(portLibrary, identifier, &params, category);
+			}
+#else /* OMR_ENV_DATA64 */
 			baseAddress = reservePages(portLibrary, identifier, &params, category);
+#endif /* OMR_ENV_DATA64 */
 		}
-
-		if ((NULL != baseAddress) && isStrictAndOutOfRange(&params, baseAddress)) {
-			/* if strict flag is set and returned pointer is not within range then fail */
-			omrvmem_free_memory(portLibrary, baseAddress, params.byteAmount, identifier);
-			Trc_PRT_vmem_omrvmem_reserve_memory_ex_UnableToAllocateWithinSpecifiedRange(params.byteAmount, params.startAddress, params.endAddress);
-			baseAddress = NULL;
-			update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
+			if ((NULL != baseAddress) && isStrictAndOutOfRange(&params, baseAddress)) {
+				/* if strict flag is set and returned pointer is not within range then fail */
+				omrvmem_free_memory(portLibrary, baseAddress, params.byteAmount, identifier);
+				Trc_PRT_vmem_omrvmem_reserve_memory_ex_UnableToAllocateWithinSpecifiedRange(params.byteAmount, params.startAddress, params.endAddress);
+				baseAddress = NULL;
+				update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
+			}
 		}
-	}
 
 	Trc_PRT_vmem_omrvmem_reserve_memory_Exit_replacement(baseAddress, params.startAddress);
 
 	LP_DEBUG_PRINTF2("\t omrvmem_reserve_memory_ex returning 0x%zx, allocator = %i, \n", \
-					 baseAddress, identifier->allocator);
+			baseAddress, identifier->allocator);
 	return adjustForRequestedAlignment(callerParams, baseAddress);
 }
 
@@ -924,8 +1030,14 @@ reservePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *id
 		update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 		Trc_PRT_vmem_omrvmem_reserve_memory_unsupported_page_size(params->pageSize);
 		goto _end;
-	} else if (TRUE == useExecutablePages) {
-		if (TRUE == use2To32GArea) {
+	} else if (useExecutablePages
+#if defined(OMR_ENV_DATA64)
+			&& !isRmode64Supported()
+#endif
+			) {
+		if (use2To32GArea ||
+				(useStrictAddress && ((UDATA) params->startAddress + params->byteAmount >= TWO_G))
+				) {
 			/* Fail. Not valid options. Cannot allocate executable page in 2-32G range. */
 			update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 			Trc_PRT_vmem_omrvmem_reserve_memory_parameter_mismatch(params->mode, params->options);
@@ -1456,3 +1568,17 @@ omrvmem_get_process_memory_size(struct OMRPortLibrary *portLibrary, J9VMemMemory
 {
 	return OMRPORT_ERROR_VMEM_NOT_SUPPORTED;
 }
+
+#if defined(OMR_ENV_DATA64)
+static BOOLEAN
+isRmode64Supported()
+{
+	BOOLEAN result = FALSE;
+	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
+	uint8_t cvtoslvl6 = cvtp->cvtoslvl[6];
+	if (J9_ARE_ANY_BITS_SET(cvtoslvl6, 0x10)) {
+		result = TRUE;
+	}
+	return result;
+}
+#endif

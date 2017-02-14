@@ -189,7 +189,7 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
          }
       }
 
-   self()->alignCollectedLocalObject(pointerSize, atlas, stackIndex);
+   self()->alignLocalObjectWithCollectedFields(stackIndex);
 
    // map local references again to set the stack position correct according to
    // the gc map index.
@@ -347,7 +347,7 @@ void OMR::X86::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
 
    stackIndex -= (atlas->getNumberOfSlotsMapped() - atlas->getNumberOfParmSlotsMapped()) << pointerShift;
 
-   self()->alignCollectedLocalObject(pointerSize, atlas, stackIndex);
+   self()->alignLocalObjectWithCollectedFields(stackIndex);
 
    // Map local references again to set the stack position correct according to
    // the GC map index.
@@ -496,7 +496,8 @@ void OMR::X86::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p,
    // and are referenced through a register
    if (p->isLocalObject() && TR::Compiler->target.is64Bit())
       {
-      self()->alignUncollectedLocalObject(p, size, stackIndex);
+      if (p->getGCMapIndex() == -1)
+         self()->alignLocalObjectWithoutCollectedFields(stackIndex);
 
       // In above code, localObjectAlignment is larger than 8
       // if it has been executed, stackIndex is already aligned to 8

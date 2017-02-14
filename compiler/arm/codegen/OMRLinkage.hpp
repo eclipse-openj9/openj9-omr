@@ -34,7 +34,9 @@ namespace OMR { typedef OMR::ARM::Linkage LinkageConnector; }
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "infra/Annotations.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "runtime/RuntimeAssumptions.hpp"
+#endif
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Register; }

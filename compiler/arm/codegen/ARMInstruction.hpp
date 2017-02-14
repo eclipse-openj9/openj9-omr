@@ -24,7 +24,9 @@
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/GCStackMap.hpp"
 #include "codegen/ARMConditionCode.hpp"
 #include "codegen/ARMOperand2.hpp"

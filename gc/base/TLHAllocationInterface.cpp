@@ -147,7 +147,7 @@ MM_TLHAllocationInterface::allocateFromTLH(MM_EnvironmentBase *env, MM_AllocateD
 #if defined(OMR_GC_NON_ZERO_TLH)
 	/* If requested to skip zero init (NON_ZERO_TLH flag set), and we are in dual TLH (default TLH is batch cleared),
 	 * we have to redirect this allocation to the non zero TLH */
-	if (allocDescription->getNonZeroTLHFlag() && env->getExtensions()->batchClearTLH) {
+	if (allocDescription->getNonZeroTLHFlag()) {
 		result = _tlhAllocationSupportNonZero.allocateFromTLH(env, allocDescription, shouldCollectOnFailure);
 	} else
 #endif /* defined(OMR_GC_NON_ZERO_TLH) */

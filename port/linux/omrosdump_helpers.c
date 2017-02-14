@@ -30,6 +30,7 @@
 #if defined(LINUX)
 #include <sys/prctl.h>
 #include <linux/prctl.h>
+#include <sys/resource.h>
 #endif
 #include <elf.h>
 #include <fcntl.h>
@@ -351,7 +352,7 @@ deriveCoreFileName(struct OMRPortLibrary *portLibrary, char *corePatterFormat, B
 	char *inCursor = corePatterFormat;
 	char *outCursor = derivedCoreFileName;
 	BOOLEAN corePatternSpecifiesPercentP = FALSE;
-	BOOLEAN corePatternSpecifiesPercentT = FALSE;
+	int numWildcards = 0;
 	intptr_t charsPrinted;
 	char scratchSpace[PATH_MAX];
 
@@ -367,6 +368,60 @@ deriveCoreFileName(struct OMRPortLibrary *portLibrary, char *corePatterFormat, B
 				/* literal '%' */
 				charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%%");
 				break;
+#if defined(LINUX)
+			case 'c':
+				{
+					struct rlimit limit = {0};
+					int rc = getrlimit(RLIMIT_CORE, &limit);
+					if (-1 == rc) {
+						portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "%s", "Failed to obtain core limit");
+						return -1;
+					}
+					charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%lu", limit.rlim_cur);
+				}
+				break;
+			case 'd':
+				{
+					int dumpableFlag = prctl(PR_GET_DUMPABLE, scratchSpace);
+					if (0 > dumpableFlag) {
+						charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%d", dumpableFlag);
+					} else {
+						portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "%s", "Failed to obtain dumpable flag");
+						return -1;
+					}
+				}
+				break;
+			case 'P':
+				charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%s", "*");
+				++numWildcards;
+				break;
+			case 'E':
+				{
+					char *pathSep = NULL;
+					int readlinkRc = readlink("/proc/self/exe", scratchSpace, PATH_MAX);
+
+					if (-1 == readlinkRc) {
+						portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "readlink() on \"/proc/self/exe\" failed: %s", scratchSpace, strerror(errno));
+						return -1;
+					}
+					scratchSpace[readlinkRc] = '\0';
+
+					pathSep = strchr(scratchSpace, DIR_SEPARATOR);
+					while (NULL != pathSep) {
+						*pathSep = '!';
+						pathSep = strchr(pathSep, DIR_SEPARATOR);
+					}
+					charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%s", scratchSpace);
+				}
+				break;
+			case 'I':
+				charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%s", "*");
+				++numWildcards;
+				break;
+#endif
+			case 'i':
+				/* Forked process will have only 1 thread, thus TID == PID */
+				/* Intentionall fall through */
 			case 'p':
 				corePatternSpecifiesPercentP = TRUE;
 				charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%i", pid);
@@ -422,8 +477,8 @@ deriveCoreFileName(struct OMRPortLibrary *portLibrary, char *corePatterFormat, B
 				}
 				break;
 			case 't':
-				corePatternSpecifiesPercentT = TRUE;
 				charsPrinted = portLibrary->str_printf(portLibrary, outCursor, bytesLeft, "%s", "*");
+				++numWildcards;
 				break;
 			default:
 				/* unknown token, skip */
@@ -439,9 +494,14 @@ deriveCoreFileName(struct OMRPortLibrary *portLibrary, char *corePatterFormat, B
 	}
 	*outCursor = '\0';
 
-	if (corePatternSpecifiesPercentT && !corePatternSpecifiesPercentP) {
+	if ((0 < numWildcards) && !corePatternSpecifiesPercentP) {
 		/* no PID in the filename, indicate unsupported dump pattern and bail out*/
-		portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "%s", "\"%t\" specifier is not supported without \"%p\".");
+		portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "%s", "\"%t\",\"%P\",\"%I\"  specifiers are not supported without \"%p\".");
+		return -1;
+	}	
+	
+	if (1 < numWildcards) {
+		portLibrary->str_printf(portLibrary, derivedCoreFileName, PATH_MAX, "%s", "only one instance of \"%t\",\"%P\", or\"%I\"  is supported.");
 		return -1;
 	}
 

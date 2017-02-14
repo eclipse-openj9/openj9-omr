@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -38,13 +38,13 @@
 #include "PhysicalSubArenaVirtualMemoryFlat.hpp"
 
 MM_Configuration*
-MM_ConfigurationFlat::newInstance(MM_EnvironmentBase* env, MM_ConfigurationLanguageInterface* configurationLanguageInterface)
+MM_ConfigurationFlat::newInstance(MM_EnvironmentBase* env)
 {
 	MM_ConfigurationFlat* configuration;
 
 	configuration = (MM_ConfigurationFlat*)env->getForge()->allocate(sizeof(MM_ConfigurationFlat), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != configuration) {
-		new (configuration) MM_ConfigurationFlat(env, configurationLanguageInterface);
+		new (configuration) MM_ConfigurationFlat(env);
 		if (!configuration->initialize(env)) {
 			configuration->kill(env);
 			configuration = NULL;

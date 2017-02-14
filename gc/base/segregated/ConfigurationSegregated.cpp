@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -24,7 +24,6 @@
 #include "omrcfg.h"
 #include "MemorySpacesAPI.h"
 
-#include "ConfigurationLanguageInterface.hpp"
 #include "ConfigurationSegregated.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -56,13 +55,13 @@
 #define MINIMUM_FREE_CHUNK_SIZE 64
 
 MM_Configuration *
-MM_ConfigurationSegregated::newInstance(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface* cli)
+MM_ConfigurationSegregated::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ConfigurationSegregated *configuration;
 
 	configuration = (MM_ConfigurationSegregated *) env->getForge()->allocate(sizeof(MM_ConfigurationSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != configuration) {
-		new(configuration) MM_ConfigurationSegregated(env, cli);
+		new(configuration) MM_ConfigurationSegregated(env);
 		if(!configuration->initialize(env)) {
 			configuration->kill(env);
 			configuration = NULL;
@@ -74,20 +73,20 @@ MM_ConfigurationSegregated::newInstance(MM_EnvironmentBase *env, MM_Configuratio
 bool
 MM_ConfigurationSegregated::initialize(MM_EnvironmentBase *env)
 {
-	MM_GCExtensionsBase *extensions = env->getExtensions();
 
-	bool success = MM_Configuration::initialize(env);
+	bool success = false;
 
 	/* OMRTODO investigate why these must be equal or it segfaults. */
+	MM_GCExtensionsBase *extensions = env->getExtensions();
 	extensions->splitAvailableListSplitAmount = extensions->gcThreadCount;
 
-	if (success) {
-		success = MM_Configuration::initializeSizeClasses(env);
-		if (success) {
+	if (MM_Configuration::initialize(env)) {
+		env->getOmrVM()->_sizeClasses = _delegate.getSegregatedSizeClasses(env);
+		if (NULL != env->getOmrVM()->_sizeClasses) {
 			extensions->setSegregatedHeap(true);
 			extensions->setStandardGC(true);
-
 			extensions->arrayletsPerRegion = extensions->regionSize / env->getOmrVM()->_arrayletLeafSize;
+			success = true;
 		}
 	}
 	return success;
@@ -177,66 +176,25 @@ MM_ConfigurationSegregated::createEnvironmentPool(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
-	uintptr_t numberElements = _configurationLanguageInterface->getEnvPoolNumElements();
-	uintptr_t poolFlags = _configurationLanguageInterface->getEnvPoolFlags();
-
-	return pool_new(sizeof(MM_EnvironmentBase), numberElements, sizeof(uint64_t), poolFlags, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(OMRPORTLIB));
+	uintptr_t numberOfElements = getConfigurationDelegate()->getInitialNumberOfPooledEnvironments(env);
+	/* number of elements, pool flags = 0, 0 selects default pool configuration (at least 1 element, puddle size rounded to OS page size) */
+	return pool_new(sizeof(MM_EnvironmentBase), numberOfElements, sizeof(uint64_t), 0, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(OMRPORTLIB));
 }
 
 bool
 MM_ConfigurationSegregated::initializeEnvironment(MM_EnvironmentBase *env)
 {
-	if (!MM_Configuration::initializeEnvironment(env)) {
-		return false;
+	if (MM_Configuration::initializeEnvironment(env)) {
+		env->getExtensions()->globalAllocationManager->acquireAllocationContext(env);
+		if (env->getAllocationContext() != NULL) {
+			/* BEN TODO: VMDESIGN 1880: When allocation trackers are commonized, the setting of the allocation
+			 * tracker in the env should be done by the base configuration initializeEnvironment.
+			 */
+			env->_allocationTracker = ((MM_MemoryPoolSegregated *)env->getExtensions()->heap->getDefaultMemorySpace()->getDefaultMemorySubSpace()->getMemoryPool())->createAllocationTracker(env);
+			return (NULL != env->_allocationTracker);
+		}
 	}
-	
-	if (!aquireAllocationContext(env)) {
-		return false;
-	}
-	
-	/* BEN TODO: VMDESIGN 1880: When allocation trackers are commonized, the setting of the allocation
-	 * tracker in the env should be done by the base configuration initializeEnvironment.
-	 */
-	env->_allocationTracker = createAllocationTracker(env);
-	if(NULL == env->_allocationTracker) {
-		return false;
-	}
-	
-	return true;
-}
-
-/**
- * Initialize and return the appropriate object allocation interface for the given Environment.
- * Given the allocation scheme and particular environment, select and return the appropriate object allocation interface.
- * @return new subtype instance of MM_ObjectAllocationInterface, or NULL on failure.
- */ 
-MM_ObjectAllocationInterface *
-MM_ConfigurationSegregated::createObjectAllocationInterface(MM_EnvironmentBase *env)
-{
-	return MM_SegregatedAllocationInterface::newInstance(env);
-}
-
-/**
- * Get an allocationContext for this thread.
- */
-bool 
-MM_ConfigurationSegregated::aquireAllocationContext(MM_EnvironmentBase *env)
-{
-	env->getExtensions()->globalAllocationManager->acquireAllocationContext(env);
-	return (env->getAllocationContext() != NULL);
-}
-
-/**
- * Initialize and return the appropriate allocation tracker for the given Environment. Note
- * that this function is currently called by the ConfigurationRealtime since Realtime GCs are
- * currently the only configurations with allocation trackers. When this changes, this function
- * should be called by the base configuration initializeEnvironment.
- */
-MM_SegregatedAllocationTracker*
-MM_ConfigurationSegregated::createAllocationTracker(MM_EnvironmentBase* env)
-{
-	/* BEN TODO: Fix this ugly assumption that there is only one memory pool...  */
-	return ((MM_MemoryPoolSegregated *)env->getExtensions()->heap->getDefaultMemorySpace()->getDefaultMemorySubSpace()->getMemoryPool())->createAllocationTracker(env);
+	return false;
 }
 
 MM_HeapRegionManager *
@@ -249,39 +207,13 @@ MM_ConfigurationSegregated::createHeapRegionManager(MM_EnvironmentBase *env)
 	return heapRegionManager;
 }
 
-uintptr_t
-MM_ConfigurationSegregated::internalGetDefaultRegionSize(MM_EnvironmentBase *env)
-{
-	return SEGREGATED_REGION_SIZE_BYTES;
-}
-
-uintptr_t
-MM_ConfigurationSegregated::internalGetDefaultArrayletLeafSize(MM_EnvironmentBase *env)
-{
-	return SEGREGATED_ARRAYLET_LEAF_SIZE_BYTES;
-}
-
-uintptr_t
-MM_ConfigurationSegregated::internalGetWriteBarrierType(MM_EnvironmentBase *env)
-{
-	return _configurationLanguageInterface->internalGetWriteBarrierType(env);
-}
-
-uintptr_t
-MM_ConfigurationSegregated::internalGetAllocationType(MM_EnvironmentBase *env)
-{
-	return _configurationLanguageInterface->internalGetAllocationType(env);
-}
-
 /**
  * Create the global collector for a Standard configuration
  */
 MM_GlobalCollector*
 MM_ConfigurationSegregated::createGlobalCollector(MM_EnvironmentBase* env)
 {
-	/* OMRTODO should we be going through the configurationLanguageInterface to create the segregated GC? */
-	//return _configurationLanguageInterface->createGlobalCollector(env);
-	return MM_SegregatedGC::newInstance(env, MM_GCExtensionsBase::getExtensions(env->getOmrVM())->collectorLanguageInterface);
+	return MM_SegregatedGC::newInstance(env, env->getExtensions()->collectorLanguageInterface);
 }
 
 MM_Dispatcher *

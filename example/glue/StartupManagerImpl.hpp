@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,7 +22,6 @@
 #include "StartupManager.hpp"
 
 class MM_CollectorLanguageInterface;
-class MM_ConfigurationLanguageInterface;
 class MM_MarkingScheme;
 class MM_VerboseManagerBase;
 
@@ -54,8 +53,7 @@ protected:
 	virtual char * getOptions(void);
 
 public:
-	virtual MM_ConfigurationLanguageInterface * createConfigurationLanguageInterface(MM_EnvironmentBase *env);
-	virtual MM_Configuration *createConfiguration(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface *cli);
+	virtual MM_Configuration *createConfiguration(MM_EnvironmentBase *env);
 	virtual MM_CollectorLanguageInterface * createCollectorLanguageInterface(MM_EnvironmentBase *env);
 	virtual MM_VerboseManagerBase * createVerboseManager(MM_EnvironmentBase* env);
 

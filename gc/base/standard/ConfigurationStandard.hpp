@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -50,6 +50,9 @@ protected:
 	bool createSweepPoolManagerHybrid(MM_EnvironmentBase* env);
 
 private:
+	static const uintptr_t STANDARD_REGION_SIZE_BYTES = 64 * 1024;
+	static const uintptr_t STANDARD_ARRAYLET_LEAF_SIZE_BYTES = UDATA_MAX;
+
 	/* Methods */
 public:
 	virtual MM_GlobalCollector* createGlobalCollector(MM_EnvironmentBase* env);
@@ -57,8 +60,8 @@ public:
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env);
 
-	MM_ConfigurationStandard(MM_EnvironmentBase* env, MM_ConfigurationLanguageInterface* configurationLanguageInterface)
-		: MM_Configuration(env, configurationLanguageInterface, mm_regionAlignment)
+	MM_ConfigurationStandard(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy)
+		: MM_Configuration(env, gcPolicy, mm_regionAlignment, STANDARD_REGION_SIZE_BYTES, STANDARD_ARRAYLET_LEAF_SIZE_BYTES, getWriteBarrierType(env), gc_modron_allocation_type_tlh)
 	{
 		_typeId = __FUNCTION__;
 	};
@@ -67,46 +70,25 @@ protected:
 	virtual bool initialize(MM_EnvironmentBase* env);
 	virtual MM_EnvironmentBase* allocateNewEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread);
 
-	/**
-	 * Each configuration is responsible for providing a default region size.
-	 * This size will be corrected to ensure that is a power of 2.
-	 *
-	 * @return regionSize[in] - The default region size for this configuration
-	 */
-	virtual uintptr_t internalGetDefaultRegionSize(MM_EnvironmentBase* env);
-	/**
-	 * Once the region size is calculated each configuration needs to verify that
-	 * is is valid.
-	 *
-	 * @param env[in] - the current environment
-	 * @param regionSize[in] - the current regionSize to verify
-	 * @return valid - is the regionSize valid
-	 */
-	virtual bool verifyRegionSize(MM_EnvironmentBase* env, uintptr_t regionSize)
-	{
-		return true;
-	}
-	/**
-	 * Each configuration is responsible for providing a default arrayletLeafSize.
-	 * This size will be corrected to ensure that is a power of 2.
-	 *
-	 * @return regionSize - The default region size for this configuration
-	 */
-	virtual uintptr_t internalGetDefaultArrayletLeafSize(MM_EnvironmentBase* env);
-	/**
-	 * Each configuration is responsible for providing the barrier type it is using
-	 *
-	 * @return barrierType - The barrier type being used for this configuration
-	 */
-	virtual uintptr_t internalGetWriteBarrierType(MM_EnvironmentBase* env);
-	/**
-	 * Each configuration is responsible for providing the allocation type it is using
-	 *
-	 * @return allocationType - The allocation type being used for this configuration
-	 */
-	virtual uintptr_t internalGetAllocationType(MM_EnvironmentBase* env);
-
 private:
+	static MM_GCWriteBarrierType getWriteBarrierType(MM_EnvironmentBase* env)
+	{
+		MM_GCExtensionsBase* extensions = env->getExtensions();
+		MM_GCWriteBarrierType writeBarrierType = gc_modron_wrtbar_illegal;
+		if (extensions->scavengerEnabled) {
+			if (extensions->concurrentMark) {
+				writeBarrierType = gc_modron_wrtbar_cardmark_and_oldcheck;
+			} else {
+				writeBarrierType = gc_modron_wrtbar_oldcheck;
+			}
+		} else if (extensions->concurrentMark) {
+			writeBarrierType = gc_modron_wrtbar_cardmark;
+		} else {
+			writeBarrierType = gc_modron_wrtbar_none;
+		}
+		return writeBarrierType;
+	}
+
 };
 
 #endif /* OMR_GC_MODRON_STANDARD */

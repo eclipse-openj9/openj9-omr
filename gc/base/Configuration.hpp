@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -20,11 +20,12 @@
 #define CONFIGURATION_HPP_
 
 #include "omrcfg.h"
+#include "omrgcconsts.h"
 #include "omrpool.h"
 #include "omrport.h"
 
 #include "BaseVirtual.hpp"
-#include "ConfigurationLanguageInterface.hpp"
+#include "ConfigurationDelegate.hpp"
 #include "InitializationParameters.hpp"
 
 class MM_Dispatcher;
@@ -41,56 +42,24 @@ class MM_ObjectAllocationInterface;
 struct OMR_VM;
 struct OMR_VMThread;
 
-/*
- * list of available GC policies
- */
-enum MM_GCPolicy {
-	gc_policy_undefined = 0,
-	gc_policy_optthruput,
-	gc_policy_optavgpause,
-	gc_policy_gencon,
-	gc_policy_metronome,
-	gc_policy_balanced
-};
-
-enum MM_AlignmentType {
-	mm_heapAlignment = 1,
-	mm_regionAlignment
-};
-
-class MM_ConfigurationOptions : public MM_BaseNonVirtual {
-private:
-public:
-	MM_GCPolicy _gcPolicy; /**< gc policy (default or configured) */
-
-	bool _forceOptionScavenge; /**< true if Scavenge option is forced in command line */
-	bool _forceOptionConcurrentMark; /**< true if Concurrent Mark option is forced in command line */
-	bool _forceOptionConcurrentSweep; /**< true if Concurrent Sweep option is forced in command line */
-	bool _forceOptionLargeObjectArea; /**< true if Large Object Area option is forced in command line */
-
-	MM_ConfigurationOptions()
-		: MM_BaseNonVirtual()
-		, _gcPolicy(gc_policy_undefined)
-		, _forceOptionScavenge(false)
-		, _forceOptionConcurrentMark(false)
-		, _forceOptionConcurrentSweep(false)
-		, _forceOptionLargeObjectArea(false)
-	{
-		_typeId = __FUNCTION__;
-	}
-};
-
 /**
  * Abstract class for defining a configuration.
  * New configurations should derive from this and add themselves to the configMap array.
  */
-class MM_Configuration : public MM_BaseVirtual {
+class MM_Configuration : public MM_BaseVirtual
+{
 /* Data members / types */
 public:
+
 protected:
-	MM_ConfigurationLanguageInterface* _configurationLanguageInterface;
+	MM_ConfigurationDelegate _delegate;
+	const MM_AlignmentType _alignmentType;			/**< the alignment type must be applied to memory settings */
+	const uintptr_t _defaultRegionSize;				/**< default region size, in bytes */
+	const uintptr_t _defaultArrayletLeafSize;		/**< default arraylet leaf size, in bytes */
+	const MM_GCWriteBarrierType _writeBarrierType;	/**< write barrier to install for GC */
+	const MM_GCAllocationType _allocationType;		/**< allocation type */
+
 private:
-	const MM_AlignmentType _alignmentType; /**< the alignment type must be applied to memory settings */
 
 /* Methods */
 public:
@@ -126,10 +95,14 @@ public:
 
 	virtual void kill(MM_EnvironmentBase* env);
 
-	MM_Configuration(MM_EnvironmentBase* env, MM_ConfigurationLanguageInterface* configurationLanguageInterface, MM_AlignmentType alignmentType)
+	MM_Configuration(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, MM_AlignmentType alignmentType, uintptr_t defaultRegionSize, uintptr_t defaultArrayletLeafSize, MM_GCWriteBarrierType writeBarrierType, MM_GCAllocationType allocationType)
 		: MM_BaseVirtual()
-		, _configurationLanguageInterface(configurationLanguageInterface)
+		, _delegate(gcPolicy)
 		, _alignmentType(alignmentType)
+		, _defaultRegionSize(defaultRegionSize)
+		, _defaultArrayletLeafSize(defaultArrayletLeafSize)
+		, _writeBarrierType(writeBarrierType)
+		, _allocationType(allocationType)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -137,16 +110,38 @@ public:
 protected:
 	virtual bool initialize(MM_EnvironmentBase* env);
 	virtual void tearDown(MM_EnvironmentBase* env);
+
+	MM_ConfigurationDelegate *getConfigurationDelegate() { return &_delegate; }
+
 	virtual MM_EnvironmentBase* allocateNewEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread) = 0;
 	virtual bool initializeEnvironment(MM_EnvironmentBase* env);
-	virtual MM_ObjectAllocationInterface* createObjectAllocationInterface(MM_EnvironmentBase* env);
 
+	/**
+	 * Once the region size is calculated each configuration needs to verify that
+	 * is is valid.
+	 *
+	 * @param env[in] - the current environment
+	 * @param regionSize[in] - the current regionSize to verify
+	 * @return valid - is the regionSize valid
+	 */
+	virtual bool verifyRegionSize(MM_EnvironmentBase* env, uintptr_t regionSize) { return true; }
+
+	/**
+	 * Initializes the NUMAManager.  All overriding implementations should call this.
+	 *
+	 * @param env[in] - the current environment
+	 * @return whether NUMAMAnager was initialized or not.  False implies startup failure.
+	 */
+	virtual bool initializeNUMAManager(MM_EnvironmentBase* env);
+
+private:
 	/**
 	 * Sets the number of gc threads
 	 *
 	 * @param env[in] - the current environment
 	 */
 	void initializeGCThreadCount(MM_EnvironmentBase* env);
+
 	/**
 	 * Sets GC parameters that are dependent on the number of gc threads (if not previously initialized):
 	 *
@@ -156,67 +151,13 @@ protected:
 	 *
 	 * @param env[in] - the current environment
 	 */
-	virtual void initializeGCParameters(MM_EnvironmentBase* env);
-	/*
-	 * Initialize OMR_VM->_sizeClasses using J9JavaVM->realtimeSizeClasses
-	 *
-	 * @param env[in] - the current environment
-	 */
-	bool initializeSizeClasses(MM_EnvironmentBase* env);
-	/**
-	 * Each configuration is responsible for providing a default region size.
-	 * This size will be corrected to ensure that is a power of 2.
-	 */
-	virtual uintptr_t internalGetDefaultRegionSize(MM_EnvironmentBase* env) = 0;
-	/**
-	 * Once the region size is calculated each configuration needs to verify that
-	 * is is valid.
-	 *
-	 * @param env[in] - the current environment
-	 * @param regionSize[in] - the current regionSize to verify
-	 * @return valid - is the regionSize valid
-	 */
-	virtual bool verifyRegionSize(MM_EnvironmentBase* env, uintptr_t regionSize) = 0;
-	/**
-	 * Each configuration is responsible for providing a default arrayletLeafSize.
-	 * This size will be corrected to ensure that is a power of 2.
-	 *
-	 * @return regionSize - The default region size for this configuration
-	 */
-	virtual uintptr_t internalGetDefaultArrayletLeafSize(MM_EnvironmentBase* env) = 0;
-	/**
-	 * Each configuration is responsible for providing the barrier type it is using
-	 *
-	 * @return barrierType - The barrier type being used for this configuration
-	 */
-	virtual uintptr_t internalGetWriteBarrierType(MM_EnvironmentBase* env) = 0;
-	/**
-	 * Each configuration is responsible for providing the allocation type it is using
-	 *
-	 * @return allocationType - The allocation type being used for this configuration
-	 */
-	virtual uintptr_t internalGetAllocationType(MM_EnvironmentBase* env) = 0;
+	void initializeGCParameters(MM_EnvironmentBase* env);
 
-	/**
-	 * Initializes the NUMAManager.  All overriders should call this.
-	 *
-	 * OMRTODO move this out of configuration as we should not have to "configure" NUMA.  The only reason this is here is
-	 * because ConfigurationIncrementalGenerational.hpp will disable physical NUMA if it would create too many ACs and ideal AC calculation
-	 * requires configuration to be done (regionSize set up).
-	 *
-	 * @param env[in] - the current environment
-	 * @return whether NUMAMAnager was initialized or not.  False implies startup failure.
-	 */
-	virtual bool initializeNUMAManager(MM_EnvironmentBase* env);
-
-private:
 	uintptr_t getAlignment(MM_GCExtensionsBase* extensions, MM_AlignmentType type);
 	bool initializeRegionSize(MM_EnvironmentBase* env);
 	bool initializeArrayletLeafSize(MM_EnvironmentBase* env);
-	void initializeWriteBarrierType(MM_EnvironmentBase* env);
-	void initializeAllocationType(MM_EnvironmentBase* env);
 	bool initializeRunTimeObjectAlignmentAndCRShift(MM_EnvironmentBase* env, MM_Heap* heap);
-	MMINLINE uintptr_t calculatePowerOfTwoShift(MM_EnvironmentBase* env, uintptr_t value)
+	uintptr_t calculatePowerOfTwoShift(MM_EnvironmentBase* env, uintptr_t value)
 	{
 		/* Make sure that the regionSize is a power of two */
 		uintptr_t shift = (sizeof(uintptr_t) * 8) - 1;

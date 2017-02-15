@@ -104,7 +104,14 @@ private:
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
 #endif	
-	bool _backOutFlag; /**< set to true if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
+
+	typedef enum BackOutState {
+		backOutFlagCleared,		/* Normal state, no backout pending or in progress */
+		backOutFlagRaised,		/* Backout pending */
+		backOutStarted			/* Backout started */
+	} BackOutState;
+
+	BackOutState _backOutFlag; /**< set to true if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
 	uintptr_t _backOutDoneIndex; /**< snapshot of _doneIndex, when backOut was detected */
 
 	void *_heapBase;  /**< Cached base pointer of heap */
@@ -127,7 +134,6 @@ private:
 	/* TODO: put it parent Collector class and share with Balanced? */ 
 	volatile bool _forceConcurrentTermination;
 #endif
-
 
 protected:
 
@@ -159,6 +165,16 @@ private:
 	 *  @param env the current thread.
 	 */
 	void globalCollectionComplete(MM_EnvironmentBase *env);
+
+	/**
+	 * Test backout state and inhibit array splitting once backout starts.
+	 * @param env current thread environment
+	 * @param objectptr the object to scan
+	 * @param objectScannerState points to space for inline allocation of scanner
+	 * @param flags scanner flags
+	 * @return the object scanner
+	 */
+	MMINLINE GC_ObjectScanner *getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectptr, void *objectScannerState, uintptr_t flags);
 
 	MMINLINE uintptr_t calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env);
 	MMINLINE MM_CopyScanCacheStandard *reserveMemoryForAllocateInSemiSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectToEvacuate, uintptr_t objectReserveSizeInBytes);
@@ -322,8 +338,8 @@ private:
 	void abandonSurvivorTLHRemainder(MM_EnvironmentStandard *env);
 	void abandonTenureTLHRemainder(MM_EnvironmentStandard *env);
 
-	void setBackOutFlag(MM_EnvironmentBase *env, bool value);
-	MMINLINE bool backOutFlagRaised() { return _backOutFlag; }
+	void setBackOutFlag(MM_EnvironmentBase *env, BackOutState value);
+	MMINLINE bool isBackOutFlagRaised() { return backOutFlagCleared < _backOutFlag; }
 
 	void reportGCStart(MM_EnvironmentStandard *env);
 	void reportGCEnd(MM_EnvironmentStandard *env);
@@ -689,7 +705,7 @@ public:
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, _rescanThreadsForRememberedObjects(false)
 #endif
-		, _backOutFlag(false)
+		, _backOutFlag(backOutFlagCleared)
 		, _backOutDoneIndex(0)
 		, _heapBase(NULL)
 		, _heapTop(NULL)

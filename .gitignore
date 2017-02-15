@@ -55,24 +55,24 @@ J9TraceFormat.dat
 OMRTestTraceFormat.dat
 OMRTraceFormat.dat
 
-omralgotest
-omrgcexample
-omrgctest
-omrperfgctest
-omrporttest
-omrrastest
-omrsigtest
-omrsubscribertest
-omrthreadextendedtest
-omrthreadtest
-omrtraceoptiontest
-omrutiltest
-omrvmtest
-testjit
-utTrcCounters
+/omralgotest
+/omrgcexample
+/omrgctest
+/omrperfgctest
+/omrporttest
+/omrrastest
+/omrsigtest
+/omrsubscribertest
+/omrthreadextendedtest
+/omrthreadtest
+/omrtraceoptiontest
+/omrutiltest
+/omrvmtest
+/testjit
+/utTrcCounters
 
 # hook generation tool
-hookgen
+/hookgen
 
 # trace
 /tracegen

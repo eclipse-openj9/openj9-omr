@@ -31,7 +31,7 @@ NOBORROW EQU B'0011'
 
          AIF ('&SYSPARM' EQ 'BIT64').JMP1
 maxprec  EDCXPRLG BASEREG=8
-         stck CLOCK31(r4) 
+         stckf CLOCK31(r4)
          lm  r2,r3,CLOCK31(r4)
          sl  r3,LC0+4
          brc NOBORROW,LCarry0
@@ -53,7 +53,7 @@ LCarry1  s   r2,CVTLSO
 
 .JMP1    ANOP
 maxprec  CELQPRLG BASEREG=8
-         stck CLOCK64(r4)
+         stckf CLOCK64(r4)
          lg  r3,CLOCK64(r4)
          sg  r3,LC0
          using PSA,r0

@@ -54,6 +54,11 @@ omrmmap_map_file(struct OMRPortLibrary *portLibrary, intptr_t file, uint64_t off
 		size = buf.st_size;
 	}
 
+	if (0 != portLibrary->file_seek(portLibrary, file, offset, EsSeekSet)) {
+		Trc_PRT_mmap_map_seek_failed(offset);
+		return NULL;
+	}
+
 	/* ensure that allocated memory is 8 byte aligned, just in case it matters */
 	allocPointer = portLibrary->mem_allocate_memory(portLibrary, size + 8, OMR_GET_CALLSITE(), category);
 	Trc_PRT_mmap_map_file_default_allocPointer(allocPointer, size + 8);

@@ -1136,6 +1136,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceKnownObjectGraph",            "L\ttrace the relationships between objects in the known-object table", SET_OPTION_BIT(TR_TraceKnownObjectGraph), "P" },
    {"traceLabelTargetNOPs",             "L\ttrace inserting of NOPs before label targets", SET_OPTION_BIT(TR_TraceLabelTargetNOPs), "F"},
    {"traceLastOpt",                     "L\textra tracing for the opt corresponding to lastOptIndex; usually used with traceFull", SET_OPTION_BIT(TR_TraceLastOpt), "F"},
+   {"traceLiveMonitorMetadata",         "L\ttrace live monitor metadata",                  SET_OPTION_BIT(TR_TraceLiveMonitorMetadata), "F" },
    {"traceLiveness",                     "L\ttrace liveness analysis",                     SET_OPTION_BIT(TR_TraceLiveness), "P" },
    {"traceLiveRangeSplitter",           "L\ttrace live-range splitter for global register allocator",     TR::Options::traceOptimization, liveRangeSplitter, 0, "P"},
    {"traceLocalCSE",                    "L\ttrace local common subexpression elimination", TR::Options::traceOptimization, localCSE, 0, "P"},

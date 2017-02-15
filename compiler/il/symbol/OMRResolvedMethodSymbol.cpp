@@ -1303,6 +1303,9 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
       _methodFlags.set(IlGenSuccess, false);
       if (optimizer) //if the exception is from ilgen opts we need to restore previous optimizer
          comp->setOptimizer(previousOptimizer);
+      else //if the exception is from genIL() need to reset IlGenerator to 0,
+           //otherwise, compilation would get wrong method symbol from a stale IlGenerator
+         comp->setCurrentIlGenerator(0);
       }
 
    if (traceIt && (comp->getOutFile() != NULL) && comp->getOption(TR_TraceBC))

@@ -126,6 +126,40 @@ bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
    return true;
    }
 
+void TR::NodeIterator::logCurrentLocation()
+   {
+   // TODO: Log even without an _opt.
+
+   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+      {
+      if (currentTree())
+         {
+         TR::Node *node = currentNode();
+         traceMsg(_opt->comp(), "NODE  %s  ", _name);
+         if (stackDepth() >= 2)
+            {
+            traceMsg(_opt->comp(), " ");
+            for (int32_t i = 0; i < stackDepth()-2; i++)
+               {
+               if (_stack[i]._isBetweenChildren)
+                  traceMsg(_opt->comp(), " |");
+               else
+                  traceMsg(_opt->comp(), "  ");
+               }
+            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
+            }
+         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         }
+      else
+         {
+         // Usualy this one doesn't print, because when the iterator finishes
+         // naturally, logCurrentLocation is not even called.
+         //
+         traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
+         }
+      }
+   }
+
 TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
    :NodeIterator(start, opt, name)
    {
@@ -189,40 +223,6 @@ void TR::PreorderNodeIterator::stepForward()
       {
       _stack.top()._child++;
       stepForward();
-      }
-   }
-
-void TR::NodeIterator::logCurrentLocation()
-   {
-   // TODO: Log even without an _opt.
-
-   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
-      {
-      if (currentTree())
-         {
-         TR::Node *node = currentNode();
-         traceMsg(_opt->comp(), "NODE  %s  ", _name);
-         if (stackDepth() >= 2)
-            {
-            traceMsg(_opt->comp(), " ");
-            for (int32_t i = 0; i < stackDepth()-2; i++)
-               {
-               if (_stack[i]._isBetweenChildren)
-                  traceMsg(_opt->comp(), " |");
-               else
-                  traceMsg(_opt->comp(), "  ");
-               }
-            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
-            }
-         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
-         }
-      else
-         {
-         // Usualy this one doesn't print, because when the iterator finishes
-         // naturally, logCurrentLocation is not even called.
-         //
-         traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
-         }
       }
    }
 

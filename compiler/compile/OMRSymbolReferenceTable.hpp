@@ -162,6 +162,28 @@ class SymbolReferenceTable
       startPCLinkageInfoSymbol,
       instanceShapeFromROMClassSymbol,
 
+      /** \brief
+       *
+       *  This symbol is used by the code generator to recognize and inline a call which emulates the following
+       *  tree sequence:
+       *
+       *  <code>
+       *  monent
+       *    object
+       *  aloadi / iloadi
+       *    ==>object
+       *  monexit
+       *  monexitfence
+       *    ==>object
+       *  </code>
+       *
+       *  Where <c>object</c> is a valid object reference. The sequence represents a field load within a
+       *  synchronized region. Since a full monent / monexit operation for a single load is expensive, some code
+       *  generators can emit an optimized instruction sequence to load the field atomically while conforming
+       *  to the monent / monexit semantics.
+       */
+      synchronizedFieldLoadSymbol,
+
       // common atomic primitives
       atomicAdd32BitSymbol,
       atomicAdd64BitSymbol,

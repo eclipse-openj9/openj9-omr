@@ -191,20 +191,10 @@ Instruction::move(TR::Instruction *newLocation)
    {
    TR_ASSERT(self() != newLocation, "An instruction cannot be its own predecessor");
 
-   TR::Instruction *prev = self()->getPrev();
-   TR::Instruction *next = self()->getNext();
-
-   if (prev)
-      {
-      prev->setNext(next);
-      }
-
-   if (next)
-      {
-      next->setPrev(prev);
-      }
+   self()->remove();
 
    TR::Instruction *newLocNext = newLocation->getNext();
+
    if (newLocNext)
       {
       newLocNext->setPrev(self());
@@ -212,7 +202,16 @@ Instruction::move(TR::Instruction *newLocation)
 
    self()->setNext(newLocNext);
    self()->setPrev(newLocation);
+
    newLocation->setNext(self());
+
+   TR::Compilation *comp = self()->cg()->comp();
+
+   // Update the append instruction if we are moving this instruction to the current append instruction
+   if (comp->getAppendInstruction() == newLocation)
+      {
+      comp->setAppendInstruction(self());
+      }
 
    // TODO: Updating this instruction's index might be worth while
 
@@ -228,11 +227,18 @@ Instruction::remove()
    if (prev)
       {
       prev->setNext(next);
-
       }
    if (next)
       {
       next->setPrev(prev);
+      }
+
+   TR::Compilation *comp = self()->cg()->comp();
+
+   // Update the append instruction if we are removing the current instruction
+   if (comp->getAppendInstruction() == self())
+      {
+      comp->setAppendInstruction(prev);
       }
    }
 

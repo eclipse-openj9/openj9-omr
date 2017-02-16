@@ -410,7 +410,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLoopReplicatorColdSideEntryCheck","I\tdisable cold side-entry check for replicating loops containing hot inner loops", SET_OPTION_BIT(TR_DisableLoopReplicatorColdSideEntryCheck), "P"},
    {"disableLoopStrider",                 "O\tdisable loop strider",                           TR::Options::disableOptimization, loopStrider, 0, "P"},
    {"disableLoopVersioner",               "O\tdisable loop versioner",                         TR::Options::disableOptimization, loopVersioner, 0, "P"},
-   {"disableLPD",                         "O\tdisable load-pair-disjoint on z196 or newer",    SET_OPTION_BIT(TR_DisableLPD), "F"},
    {"disableMarkingOfHotFields",          "O\tdisable marking of Hot Fields",                  SET_OPTION_BIT(TR_DisableMarkingOfHotFields), "F"},
    {"disableMaskVFTPointers",             "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaskVFTPointers), "F"},
    {"disableMaxMinOptimization",          "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaxMinOptimization), "F"},
@@ -513,6 +512,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableSupportForCpuSpentInCompilation", "M\tdo not provide CPU spent in compilation",    SET_OPTION_BIT(TR_DisableSupportForCpuSpentInCompilation), "F" },
    {"disableSwitchAnalyzer",              "O\tdisable switch analyzer",                        TR::Options::disableOptimization, switchAnalyzer, 0, "P"},
    {"disableSwitchAwayFromProfilingForHotAndVeryhot", "O\tdisable switch away from profiling for hot and veryhot", SET_OPTION_BIT(TR_DisableSwitchAwayFromProfilingForHotAndVeryhot), "F"},
+   {"disableSynchronizedFieldLoad",       "O\tDisable the use of hardware optimized synchronized field load intrinsics",         SET_OPTION_BIT(TR_DisableSynchronizedFieldLoad), "F"},
    {"disableSyncMethodInlining",          "O\tdisable inlining of synchronized methods",       SET_OPTION_BIT(TR_DisableSyncMethodInlining), "F"},
    {"disableTailRecursion",               "O\tdisable tail recursion",                         SET_OPTION_BIT(TR_DisableTailRecursion), "F"},
    {"disableTarokInlineArrayletAllocation", "O\tdisable Tarok inline Arraylet Allocation in genHeapAlloc", SET_OPTION_BIT(TR_DisableTarokInlineArrayletAllocation), "F"},
@@ -2542,12 +2542,6 @@ OMR::Options::jitPreProcess()
       if (((TR::Compiler->target.cpu.isPower() && TR::Compiler->target.isLinux()) && TR::Compiler->target.numberOfProcessors() >= 8) ||
           ((TR::Compiler->target.cpu.isX86() && TR::Compiler->target.isLinux()) && TR::Compiler->target.numberOfProcessors() >= 4))
           self()->setOption(TR_TurnOffSelectiveNoOptServerIfNoStartupHint);
-
-      // Disable LPD until we have a clearer picture of what exactly is causing all the problem in that code path.
-      // The use of the "appendInstruction" parameter is messing up the ordering of the generated instruction
-      // sequence somehow. Once this problem is addresses LPD should be re-enabled.
-      //
-      self()->setOption(TR_DisableLPD);
 
       self()->setOption(TR_DisableHeapAllocOOL);
       if (!(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()))

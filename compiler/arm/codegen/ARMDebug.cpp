@@ -22,7 +22,9 @@ int jitDebugARM;
 
 #include "arm/codegen/ARMInstruction.hpp"
 #include "arm/codegen/ARMDisassem.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "arm/codegen/ARMRecompilationSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GCRegisterMap.hpp"
 #include "codegen/Machine.hpp"
@@ -1103,6 +1105,7 @@ TR_Debug::printa(TR::FILE *pOutFile, TR::Snippet * snippet)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
    {
+#if J9_PROJECT_SPECIFIC
    TR::Node            *callNode     = snippet->getNode();
    TR::SymbolReference *glueRef      = _cg->getSymRef(snippet->getHelper());;
    TR::SymbolReference *methodSymRef = callNode->getSymbolReference();
@@ -1215,11 +1218,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMCallSnippet * snippet)
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
    trfprintf(pOutFile, "dd\t" POINTER_PRINTF_FORMAT "\t\t; lock word for compilation");
+#endif
    }
+
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMUnresolvedCallSnippet * snippet)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::SymbolReference *methodSymRef = snippet->getNode()->getSymbolReference();
    TR::MethodSymbol    *methodSymbol = methodSymRef->getSymbol()->castToMethodSymbol();
 
@@ -1255,11 +1261,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMUnresolvedCallSnippet * snippet)
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
    trfprintf(pOutFile, "dd\t" POINTER_PRINTF_FORMAT "\t\t; cpAddress", getOwningMethod(methodSymRef)->constantPool());
+#endif
    }
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMVirtualUnresolvedSnippet * snippet)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::SymbolReference *callSymRef = snippet->getNode()->getSymbolReference();
 
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
@@ -1279,11 +1287,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMVirtualUnresolvedSnippet * snippet)
 
    printPrefix(pOutFile, NULL, bufferPos, 4);
    trfprintf(pOutFile, "dd\t0x%08x\t\t; cpIndex", callSymRef->getCPIndex());
+#endif
    }
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMInterfaceCallSnippet * snippet)
    {
+#ifdef J9_PROJECT_SPECIFIC
    TR::SymbolReference *callSymRef = snippet->getNode()->getSymbolReference();
    TR::SymbolReference *glueRef    = _cg->getSymRef(TR_ARMinterfaceCallHelper);
 
@@ -1350,12 +1360,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMInterfaceCallSnippet * snippet)
    printPrefix(pOutFile, NULL, bufferPos, 4);
    trfprintf(pOutFile, "dd\t0x%08x\t\t; 2nd lock word", 0);
 #endif
+#endif
    }
 
-#ifdef J9_PROJECT_SPECIFIC
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMHelperCallSnippet * snippet)
    {
+#ifdef J9_PROJECT_SPECIFIC
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
 
@@ -1372,8 +1383,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMHelperCallSnippet * snippet)
       //distance = (distance << 8) >> 8;   // sign extend
       trfprintf(pOutFile, "b \t" POINTER_PRINTF_FORMAT "\t\t; Return to %s", (intptrj_t)(restartLabel->getCodeLocation()), getName(restartLabel));
       }
-   }
 #endif
+   }
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMStackCheckFailureSnippet * snippet)
@@ -1487,6 +1498,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::UnresolvedDataSnippet * snippet)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    {
+#ifdef J9_PROJECT_SPECIFIC
    // *this    swipeable for debugging purposes
    uint8_t             *cursor        = snippet->getSnippetLabel()->getCodeLocation();
 
@@ -1521,11 +1533,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    // startPC
    printPrefix(pOutFile, NULL, cursor, 4);
    trfprintf(pOutFile, "dd \t0x%08x\t\t; startPC ", _cg->getCodeStart());
+#endif
    }
 
 void
 TR_Debug::printARM(TR::FILE *pOutFile, uint8_t* instrStart, uint8_t* instrEnd)
    {
+#ifdef J9_PROJECT_SPECIFIC
    char opcodeBuf[MIN_mbuffer];
    char opBuf[MIN_ibuffer];
 
@@ -1534,6 +1548,7 @@ TR_Debug::printARM(TR::FILE *pOutFile, uint8_t* instrStart, uint8_t* instrEnd)
       disassemble((int32_t*)instrStart, opcodeBuf, opBuf);
       trfprintf(pOutFile, "0x%08x %08x        %-11s%s\n",instrStart,*(uint32_t*)instrStart,opcodeBuf,opBuf);
       }
+#endif
    }
 
 void

@@ -227,9 +227,11 @@ OMR::ARM::MemoryReference::MemoryReference(TR::MemoryReference &mr,
    mr._flag         = 0;
    if (mr.getUnresolvedSnippet() != NULL)
       {
+#ifdef J9_PROJECT_SPECIFIC
       _unresolvedSnippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, 0, &_symbolReference, mr.getUnresolvedSnippet()->resolveForStore(), false);
       cg->addSnippet(_unresolvedSnippet);
       _modBase = cg->allocateRegister();
+#endif
       }
    else
       {
@@ -843,6 +845,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
 
    if (self()->getUnresolvedSnippet())
       {
+#ifdef J9_PROJECT_SPECIFIC
       uint32_t preserve = *wcursor; // original instruction
       TR::RealRegister *mBase = toRealRegister(self()->getModBase());
       self()->getUnresolvedSnippet()->setAddressOfDataReference(cursor);
@@ -944,6 +947,7 @@ uint8_t *OMR::ARM::MemoryReference::generateBinaryEncoding(TR::Instruction *curr
          wcursor++;
          cursor += ARM_INSTRUCTION_LENGTH;
          }
+#endif
       }
    else
       {

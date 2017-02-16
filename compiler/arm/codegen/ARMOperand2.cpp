@@ -21,7 +21,9 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/ARMInstruction.hpp"
 #include "codegen/Linkage.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/TreeEvaluator.hpp"
 #include "infra/Bit.hpp"
 #include "codegen/GenerateInstructions.hpp"

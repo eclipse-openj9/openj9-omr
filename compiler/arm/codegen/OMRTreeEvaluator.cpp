@@ -23,8 +23,8 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/ARMAOTRelocation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#endif
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
@@ -208,6 +208,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
 
    if (value != 0x0)
       {
+#ifdef J9_PROJECT_SPECIFIC
       TR_FixedSequenceKind seqKind = fixedSequence1;//does not matter
       if (typeAddress == -1)
          {
@@ -286,6 +287,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                                  node);
             }
          }
+#endif
       }
    cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_2, cursor);
    cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_1, cursor);

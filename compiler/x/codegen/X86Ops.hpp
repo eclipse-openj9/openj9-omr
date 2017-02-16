@@ -1049,8 +1049,11 @@ inline TR_X86OpCodes SubRegMem  (bool is64Bit, bool isWithBorrow) { return isWit
 
 // Whole-register opcodes
 //
+extern TR_X86OpCodes ADDMemImms();
+extern TR_X86OpCodes ADDMemImm4();
 extern TR_X86OpCodes ADDRegImms();
 extern TR_X86OpCodes ADDRegImm4();
+extern TR_X86OpCodes ADDMemReg();
 extern TR_X86OpCodes ADDRegMem();
 extern TR_X86OpCodes ADDRegReg();
 extern TR_X86OpCodes ADCRegImms();
@@ -1087,6 +1090,7 @@ extern TR_X86OpCodes SARRegImm1();
 extern TR_X86OpCodes SHRRegImm1();
 extern TR_X86OpCodes SMemReg();
 extern TR_X86OpCodes SMemImm4();
+extern TR_X86OpCodes SUBMemImms();
 extern TR_X86OpCodes SUBRegImms();
 extern TR_X86OpCodes SUBRegImm4();
 extern TR_X86OpCodes SUBRegReg();

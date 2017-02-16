@@ -62,6 +62,9 @@ PPCOpCodesTest::compileMemoryOperationTestMethods()
 
    _bStore = (signatureCharB_B_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::bstore, "bStore", _argTypesUnaryByte, TR::Int8, rc));
    _sStore = (signatureCharS_S_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::sstore, "sStore", _argTypesUnaryShort, TR::Int16, rc));
+   _lStore = (signatureCharJ_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lstore, "lStore", _argTypesUnaryLong, TR::Int64, rc));
+   _dStore = (signatureCharD_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dstore, "dStore", _argTypesUnaryDouble, TR::Double, rc));
+   _fStore = (signatureCharF_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::fstore, "fStore", _argTypesUnaryFloat, TR::Float, rc));
 
    _iStorei = (signatureCharLI_I_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::istorei, "iStorei", _argTypesBinaryAddressInt, TR::Int32, rc));
    _lStorei = (signatureCharLJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lstorei, "lStorei", _argTypesBinaryAddressLong, TR::Int64, rc));
@@ -370,9 +373,15 @@ PPCOpCodesTest::invokeMemoryOperationTests()
 
    signatureCharS_S_testMethodType  *sMemCons = 0;
    signatureCharB_B_testMethodType  *bMemCons = 0;
+   signatureCharJ_J_testMethodType  *lMemCons = 0;
+   signatureCharD_D_testMethodType  *dMemCons = 0;
+   signatureCharF_F_testMethodType  *fMemCons = 0;
 
    int16_t shortDataArray[] = {SHORT_NEG, SHORT_POS, SHORT_MAXIMUM, SHORT_MINIMUM, SHORT_ZERO};
    int8_t byteDataArray[] = {BYTE_NEG, BYTE_POS, BYTE_MAXIMUM, BYTE_MINIMUM, BYTE_ZERO};
+   int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
+   float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_MAXIMUM, FLOAT_MINIMUM, FLOAT_ZERO};
+   double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_MAXIMUM, DOUBLE_MINIMUM, DOUBLE_ZERO};
 
    OMR_CT_EXPECT_EQ(_bLoad, BYTE_ZERO, _bLoad(BYTE_ZERO));
    OMR_CT_EXPECT_EQ(_bLoad, BYTE_NEG, _bLoad(BYTE_NEG));
@@ -405,9 +414,33 @@ PPCOpCodesTest::invokeMemoryOperationTests()
       OMR_CT_EXPECT_EQ(sMemCons, shortDataArray[i], sMemCons(SHORT_PLACEHOLDER_1));
       }
 
-   int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
-   float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_MAXIMUM, FLOAT_MINIMUM, FLOAT_ZERO};
-   double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_MAXIMUM, DOUBLE_MINIMUM, DOUBLE_ZERO};
+   testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "lStoreConst%d", i + 1);
+      OMR_CT_EXPECT_EQ(_lStore, longDataArray[i], _lStore(longDataArray[i]));
+      lMemCons = (signatureCharJ_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lstore, resolvedMethodName, _argTypesUnaryLong, TR::Int64, rc, 2, 1, &(longDataArray[i])));
+      OMR_CT_EXPECT_EQ(lMemCons, longDataArray[i], lMemCons(LONG_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "dStoreConst%d", i + 1);
+      OMR_CT_EXPECT_DOUBLE_EQ(_dStore, doubleDataArray[i], _dStore(doubleDataArray[i]));
+      dMemCons = (signatureCharD_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dstore, resolvedMethodName, _argTypesUnaryDouble, TR::Double, rc, 2, 1, &(doubleDataArray[i])));
+      OMR_CT_EXPECT_DOUBLE_EQ(dMemCons, doubleDataArray[i], dMemCons(DOUBLE_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "fStoreConst%d", i + 1);
+      OMR_CT_EXPECT_FLOAT_EQ(_fStore, floatDataArray[i], _fStore(floatDataArray[i]));
+      fMemCons = (signatureCharF_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::fstore, resolvedMethodName, _argTypesUnaryFloat, TR::Float, rc, 2, 1, &(floatDataArray[i])));
+      OMR_CT_EXPECT_FLOAT_EQ(fMemCons, floatDataArray[i], fMemCons(FLOAT_PLACEHOLDER_1));
+      }
+
    int32_t intDataArray[] = {INT_NEG, INT_POS, INT_MAXIMUM, INT_MINIMUM, INT_ZERO};
    int64_t longStoreDataArray[] = {0, 0, 0, 0, 0};
    int32_t intStoreDataArray[] = {0, 0, 0, 0, 0};
@@ -451,12 +484,84 @@ PPCOpCodesTest::invokeMemoryOperationTests()
          EXPECT_EQ(doubleDataArray[i], doubleStoreDataArray[i]);
          }
 
+   //load
+   testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
+   signatureCharL_I_testMethodType  *iLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "iLoadiConst%d", i + 1);
+      uintptrj_t intDataAddress = (uintptrj_t)(&intDataArray[i]);
+      iLoadiCons = (signatureCharL_I_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::iloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int32, rc, 2, 1, &intDataAddress));
+      OMR_CT_EXPECT_EQ(iLoadiCons, intDataArray[i], iLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
+   signatureCharL_S_testMethodType  *sLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "sLoadiConst%d", i + 1);
+      uintptrj_t shortDataAddress = (uintptrj_t)(&shortDataArray[i]);
+      sLoadiCons = (signatureCharL_S_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::sloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int16, rc, 2, 1, &shortDataAddress));
+      OMR_CT_EXPECT_EQ(sLoadiCons, shortDataArray[i], sLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
+   signatureCharL_B_testMethodType  *bLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "bLoadiConst%d", i + 1);
+      uintptrj_t byteDataAddress = (uintptrj_t)(&byteDataArray[i]);
+      bLoadiCons = (signatureCharL_B_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::bloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int8, rc, 2, 1, &byteDataAddress));
+      OMR_CT_EXPECT_EQ(bLoadiCons, byteDataArray[i], bLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
+   signatureCharL_J_testMethodType  *lLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "lLoadiConst%d", i + 1);
+      uintptrj_t longDataAddress = (uintptrj_t)(&longDataArray[i]);
+      lLoadiCons = (signatureCharL_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int64, rc, 2, 1, &longDataAddress));
+      OMR_CT_EXPECT_EQ(lLoadiCons, longDataArray[i], lLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
+   signatureCharL_D_testMethodType  *dLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "dLoadiConst%d", i + 1);
+      uintptrj_t doubleDataAddress = (uintptrj_t)(&doubleDataArray[i]);
+      dLoadiCons = (signatureCharL_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Double, rc, 2, 1, &doubleDataAddress));
+      OMR_CT_EXPECT_EQ(dLoadiCons, doubleDataArray[i], dLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
+   signatureCharL_F_testMethodType  *fLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "fLoadiConst%d", i + 1);
+      uintptrj_t floatDataAddress = (uintptrj_t)(&floatDataArray[i]);
+      fLoadiCons = (signatureCharL_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::floadi, resolvedMethodName, _argTypesUnaryAddress, TR::Float, rc, 2, 1, &floatDataAddress));
+      OMR_CT_EXPECT_EQ(fLoadiCons, floatDataArray[i], fLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
+   testCaseNum = sizeof(addressDataArray) / sizeof(addressDataArray[0]);
+   signatureCharL_L_testMethodType  *aLoadiCons = 0;
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      sprintf(resolvedMethodName, "aLoadiConst%d", i + 1);
+      uintptrj_t addressDataAddress = (uintptrj_t)(&addressDataArray[i]);
+      aLoadiCons = (signatureCharL_L_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::aloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Address, rc, 2, 1, &addressDataAddress));
+      OMR_CT_EXPECT_EQ(aLoadiCons, addressDataArray[i], aLoadiCons(ADDRESS_PLACEHOLDER_1));
+      }
+
       if (_aStorei != NULL)
          {
          _aStorei((uintptrj_t)(&addressStoreDataArray[i]) , addressDataArray[i]);
          EXPECT_EQ(addressDataArray[i], addressStoreDataArray[i]);
          }
       }
+
    }
 
 void
@@ -4450,11 +4555,6 @@ PPCOpCodesTest::compileDisabledMemoryOperationTestMethods()
    {
    int32_t rc = 0;
 
-   //Jazz103 Work Item 110360
-   _lStore = (signatureCharJ_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lstore, "lStore", _argTypesUnaryLong, TR::Int64, rc));
-   _dStore = (signatureCharD_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dstore, "dStore", _argTypesUnaryDouble, TR::Double, rc));
-   _fStore = (signatureCharF_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::fstore, "fStore", _argTypesUnaryFloat, TR::Float, rc));
-
    //Jazz103 111411 : bstorei unexpected results
    _bStorei = (signatureCharLB_B_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::bstorei, "bStorei", _argTypesBinaryAddressByte, TR::Int8, rc));
    }
@@ -4472,111 +4572,13 @@ PPCOpCodesTest::invokeDisabledMemoryOperationTests()
    double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_MAXIMUM, DOUBLE_MINIMUM, DOUBLE_ZERO};
    uintptrj_t addressDataArray[] = {(uintptrj_t)&INT_NEG, (uintptrj_t)&LONG_POS, (uintptrj_t)&BYTE_MAXIMUM, (uintptrj_t)&SHORT_MINIMUM, (uintptrj_t)&FLOAT_ZERO};
 
-   signatureCharJ_J_testMethodType  *lMemCons = 0;
-   signatureCharD_D_testMethodType  *dMemCons = 0;
-   signatureCharF_F_testMethodType  *fMemCons = 0;
 
    uint32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
-   testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "lStoreConst%d", i + 1);
-      OMR_CT_EXPECT_EQ(_lStore, longDataArray[i], _lStore(longDataArray[i]));
-      lMemCons = (signatureCharJ_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lstore, resolvedMethodName, _argTypesUnaryLong, TR::Int64, rc, 2, 1, &(longDataArray[i])));
-      OMR_CT_EXPECT_EQ(lMemCons, longDataArray[i], lMemCons(LONG_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "dStoreConst%d", i + 1);
-      OMR_CT_EXPECT_DOUBLE_EQ(_dStore, doubleDataArray[i], _dStore(doubleDataArray[i]));
-      dMemCons = (signatureCharD_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dstore, resolvedMethodName, _argTypesUnaryDouble, TR::Double, rc, 2, 1, &(doubleDataArray[i])));
-      OMR_CT_EXPECT_DOUBLE_EQ(dMemCons, doubleDataArray[i], dMemCons(DOUBLE_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "fStoreConst%d", i + 1);
-      OMR_CT_EXPECT_FLOAT_EQ(_fStore, floatDataArray[i], _fStore(floatDataArray[i]));
-      fMemCons = (signatureCharF_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::fstore, resolvedMethodName, _argTypesUnaryFloat, TR::Float, rc, 2, 1, &(floatDataArray[i])));
-      OMR_CT_EXPECT_FLOAT_EQ(fMemCons, floatDataArray[i], fMemCons(FLOAT_PLACEHOLDER_1));
-      }
 
    //Jazz103 114122 : indirect load unexpected results
    //indirect load constant
-   testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
-   signatureCharL_I_testMethodType  *iLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "iLoadiConst%d", i + 1);
-      uintptrj_t intDataAddress = (uintptrj_t)(&intDataArray[i]);
-      iLoadiCons = (signatureCharL_I_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::iloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int32, rc, 2, 1, &intDataAddress));
-      OMR_CT_EXPECT_EQ(iLoadiCons, intDataArray[i], iLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
-   signatureCharL_S_testMethodType  *sLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "sLoadiConst%d", i + 1);
-      uintptrj_t shortDataAddress = (uintptrj_t)(&shortDataArray[i]);
-      sLoadiCons = (signatureCharL_S_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::sloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int16, rc, 2, 1, &shortDataAddress));
-      OMR_CT_EXPECT_EQ(sLoadiCons, shortDataArray[i], sLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
-   signatureCharL_B_testMethodType  *bLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "bLoadiConst%d", i + 1);
-      uintptrj_t byteDataAddress = (uintptrj_t)(&byteDataArray[i]);
-      bLoadiCons = (signatureCharL_B_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::bloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int8, rc, 2, 1, &byteDataAddress));
-      OMR_CT_EXPECT_EQ(bLoadiCons, byteDataArray[i], bLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);
-   signatureCharL_J_testMethodType  *lLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "lLoadiConst%d", i + 1);
-      uintptrj_t longDataAddress = (uintptrj_t)(&longDataArray[i]);
-      lLoadiCons = (signatureCharL_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::lloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Int64, rc, 2, 1, &longDataAddress));
-      OMR_CT_EXPECT_EQ(lLoadiCons, longDataArray[i], lLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
-   signatureCharL_D_testMethodType  *dLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "dLoadiConst%d", i + 1);
-      uintptrj_t doubleDataAddress = (uintptrj_t)(&doubleDataArray[i]);
-      dLoadiCons = (signatureCharL_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::dloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Double, rc, 2, 1, &doubleDataAddress));
-      OMR_CT_EXPECT_EQ(dLoadiCons, doubleDataArray[i], dLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
-   signatureCharL_F_testMethodType  *fLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "fLoadiConst%d", i + 1);
-      uintptrj_t floatDataAddress = (uintptrj_t)(&floatDataArray[i]);
-      fLoadiCons = (signatureCharL_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::floadi, resolvedMethodName, _argTypesUnaryAddress, TR::Float, rc, 2, 1, &floatDataAddress));
-      OMR_CT_EXPECT_EQ(fLoadiCons, floatDataArray[i], fLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
-
-   testCaseNum = sizeof(addressDataArray) / sizeof(addressDataArray[0]);
-   signatureCharL_L_testMethodType  *aLoadiCons = 0;
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      sprintf(resolvedMethodName, "aLoadiConst%d", i + 1);
-      uintptrj_t addressDataAddress = (uintptrj_t)(&addressDataArray[i]);
-      aLoadiCons = (signatureCharL_L_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::aloadi, resolvedMethodName, _argTypesUnaryAddress, TR::Address, rc, 2, 1, &addressDataAddress));
-      OMR_CT_EXPECT_EQ(aLoadiCons, addressDataArray[i], aLoadiCons(ADDRESS_PLACEHOLDER_1));
-      }
 
    //Jazz103 111411 : bstorei unexpected results
    int8_t byteStoreDataArray[] = {0, 0, 0, 0, 0};

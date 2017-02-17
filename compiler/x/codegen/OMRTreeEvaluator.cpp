@@ -3781,6 +3781,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
          }
       }
 
+   const uint8_t elementSize = valueNode->getOpCode().isRef()
+      ? TR::Compiler->om.sizeofReferenceField()
+      : valueNode->getSize();
+
    if (isShortConstantArrayWithZero)
       {
       arraySetToZeroForShortConstantArrays(node, addressReg, size, cg);
@@ -3795,14 +3799,14 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
          TR::Register* tempReg = cg->evaluate(valueNode);
          TR_ASSERT(tempReg->getKind() == TR_FPR, "Float and Double must be in an XMM register");
          valueReg = cg->allocateRegister();
-         generateRegRegInstruction(valueNode->getSize() == 8 ? MOVQReg8Reg : MOVDReg4Reg, node, valueReg, tempReg, cg);
+         generateRegRegInstruction(elementSize == 8 ? MOVQReg8Reg : MOVDReg4Reg, node, valueReg, tempReg, cg);
          cg->stopUsingRegister(tempReg);
          }
       else
          {
          valueReg = TR::TreeEvaluator::intOrLongClobberEvaluate(valueNode, TR::TreeEvaluator::getNodeIs64Bit(valueNode, cg), cg);
          }
-      arraySetForShortConstantArrays(node, valueNode->getSize(), addressReg, valueReg, size/valueNode->getSize(), cg);
+      arraySetForShortConstantArrays(node, elementSize, addressReg, valueReg, size / elementSize, cg);
       cg->recursivelyDecReferenceCount(sizeNode);
       cg->decReferenceCount(valueNode);
       cg->stopUsingRegister(valueReg);
@@ -3817,13 +3821,13 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
          {
          generateRegRegInstruction(MOVZXReg8Reg4, node, sizeReg, sizeReg, cg);
          }
-      if (valueNode->getSize() == 8 && TR::Compiler->target.is32Bit())
+      if (elementSize == 8 && TR::Compiler->target.is32Bit())
          {
          arraySet64BitPrimitiveOnIA32(node, addressReg, valueReg, sizeReg, cg);
          }
       else
          {
-         arraySetDefault(node, valueNode->getSize(), addressReg, valueReg, sizeReg, cg);
+         arraySetDefault(node, elementSize, addressReg, valueReg, sizeReg, cg);
          }
       cg->decReferenceCount(sizeNode);
       cg->decReferenceCount(valueNode);

@@ -134,6 +134,7 @@ typedef struct J9TDFOptions {
 	bool writeToCurrentDir;
 
 	Path *rootDirectory;
+	Path *files;
 
 	/* debug options */
 	bool debugOutput;
@@ -147,6 +148,7 @@ typedef struct J9TDFOptions {
 		, generateCFiles(false)
 		, writeToCurrentDir(false)
 		, rootDirectory(NULL)
+		, files(NULL)
 		, debugOutput(false)
 		, treatWarningAsError(false)
 	{

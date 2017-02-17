@@ -29,22 +29,32 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 	RCType rc = RC_OK;
 
 	for (int i = 1; i < argc; i++) {
-		if (StringUtils::startsWithUpperLower(argv[i], "-root")) {
+		if (StringUtils::startsWithUpperLower(argv[i], "-root") || StringUtils::startsWithUpperLower(argv[i], "-file")) {
+			bool parsingRoot = StringUtils::startsWithUpperLower(argv[i], "-root");
 			i++;
 			if (i >= argc) {
-				FileUtils::printError("Root directory not specified\n");
+				if (parsingRoot) {
+					FileUtils::printError("Root directory not specified\n");
+				} else {
+					FileUtils::printError("File not specified\n");
+				}
 				rc = RC_FAILED;
 				goto done;
 			} else {
 				/* Construct linked list of root directories. */
-				char *roots = strdup(argv[i]);
+				char *pathArgs = strdup(argv[i]);
 				char *dirToken = NULL;
-				if (NULL == roots) {
+				if (NULL == pathArgs) {
 					rc = RC_FAILED;
 					goto done;
 				}
-				dirToken = strtok(roots, ",");
-				Path **current = &(options->rootDirectory);
+				dirToken = strtok(pathArgs, ",");
+				Path **current = NULL;
+				if (parsingRoot) {
+					current = &(options->rootDirectory);
+				} else {
+					current = &(options->files);
+				}
 
 				while (NULL != dirToken) {
 					*current = (Path *)Port::omrmem_calloc(1, sizeof(Path));
@@ -58,7 +68,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 
 					dirToken = strtok(NULL, ",");
 				}
-				Port::omrmem_free((void **)&roots);
+				Port::omrmem_free((void **)&pathArgs);
 			}
 		} else if (StringUtils::startsWithUpperLower(argv[i], "-threshold")) {
 			i++;
@@ -104,7 +114,7 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 		}
 	}
 
-	if (NULL == options->rootDirectory) {
+	if (NULL == options->rootDirectory && NULL == options->files) {
 		options->rootDirectory = (Path *)Port::omrmem_calloc(1, sizeof(Path));
 		if (NULL == options->rootDirectory) {
 			rc = RC_FAILED;

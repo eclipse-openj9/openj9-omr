@@ -393,8 +393,8 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
    TR_HeapMemory trHeapMemory();
    TR_StackMemory trStackMemory();
 
-   void alignCollectedLocalObject(uint8_t pointerSize, TR::GCStackAtlas *atlas, uint32_t & stackIndex) {}
-   void alignUncollectedLocalObject(TR::AutomaticSymbol *p, uint32_t size, uint32_t & stackIndex) {}
+   void alignLocalObjectWithCollectedFields(uint32_t & stackIndex) {}
+   void alignLocalObjectWithoutCollectedFields(uint32_t & stackIndex) {}
 
    protected:
 

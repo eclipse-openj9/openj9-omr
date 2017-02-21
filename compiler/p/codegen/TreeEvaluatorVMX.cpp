@@ -51,11 +51,13 @@ TR::Register *OMR::Power::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::C
    TR::Node *addrNode = node->getFirstChild();
    TR::Node *fillNode = node->getSecondChild();
    TR::Node *lenNode = node->getChild(2);
-   uint32_t fillNodeSize = fillNode->getSize();
-   TR::DataType fillNodeType = fillNode->getDataType();
    bool constLength = lenNode->getOpCode().isLoadConst();
    int32_t length = constLength ? lenNode->getInt() : 0;
    bool constFill = fillNode->getOpCode().isLoadConst();
+
+   const uint32_t fillNodeSize = fillNode->getOpCode().isRef()
+      ? TR::Compiler->om.sizeofReferenceField()
+      : fillNode->getSize();
 
    TR::Register *addrReg = cg->gprClobberEvaluate(addrNode);
    TR::Register *fillReg = NULL;

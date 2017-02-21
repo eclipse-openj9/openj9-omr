@@ -12876,7 +12876,8 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
    if (constType == TR::Address)
       {
-      constType = (TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32);
+      bool refs64 = TR::Compiler->target.is64Bit() && !comp->useCompressedPointers();
+      constType = (refs64 ? TR::Int64 : TR::Int32);
       }
 
    if (constExpr->getOpCode().isLoadConst())

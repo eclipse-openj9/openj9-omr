@@ -345,7 +345,7 @@ void
 MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 {
 	/* Make sure the backout state is cleared */
-	setBackOutFlag(env, false);
+	setBackOutFlag(env, backOutFlagCleared);
 
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	_rescanThreadsForRememberedObjects = false;
@@ -794,7 +794,7 @@ bool
 MM_Scavenger::canCalcGCStats(MM_EnvironmentStandard *env)
 {
 	/* If no backout and we actually did a scavenge this time around then it's safe to gather stats */
-	return !backOutFlagRaised() && (0 < _extensions->heap->getPercolateStats()->getScavengesSincePercolate());
+	return !isBackOutFlagRaised() && (0 < _extensions->heap->getPercolateStats()->getScavengesSincePercolate());
 }
 
 /**
@@ -1293,7 +1293,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	if(NULL == copyCache) {
 		/* Failure - the scavenger must back out the work it has done. */
 		/* raise the alert and return (with NULL) */
-		setBackOutFlag(env, true);
+		setBackOutFlag(env, backOutFlagRaised);
 		omrthread_monitor_enter(_scanCacheMonitor);
 		if(_waitingCount) {
 			omrthread_monitor_notify_all(_scanCacheMonitor);
@@ -1412,12 +1412,21 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
  ****************************************
  */
 
+GC_ObjectScanner *
+MM_Scavenger::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectptr, void *objectScannerState, uintptr_t flags)
+{
+	if (backOutStarted == _backOutFlag) {
+		flags |= GC_ObjectScanner::indexableObjectNoSplit;
+	}
+	return _cli->scavenger_getObjectScanner(env, objectptr, (void*) objectScannerState, flags);
+}
+
 uintptr_t
 MM_Scavenger::getArraySplitAmount(MM_EnvironmentStandard *env, uintptr_t sizeInElements)
 {
 	uintptr_t scvArraySplitAmount = 0;
 
-	if (!backOutFlagRaised()) {
+	if (backOutStarted != _backOutFlag) {
 		/* pointer arrays are split into segments to improve parallelism. split amount is proportional to array size.
 		 * the less busy we are, the smaller the split amount, while obeying specified minimum and maximum.
 		 * but for single-threaded backout, do not split arrays.
@@ -1435,33 +1444,35 @@ MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_Object
 {
 	bool result = false;
 
-	Assert_MM_true(objectScanner->isIndexableObject());
-	GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
-	uintptr_t maxIndex = indexableScanner->getIndexableRange();
+	if (backOutStarted != _backOutFlag) {
+		Assert_MM_true(objectScanner->isIndexableObject());
+		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
+		uintptr_t maxIndex = indexableScanner->getIndexableRange();
 
-	uintptr_t scvArraySplitAmount = getArraySplitAmount(env, maxIndex - startIndex);
-	uintptr_t endIndex = startIndex + scvArraySplitAmount;
+		uintptr_t scvArraySplitAmount = getArraySplitAmount(env, maxIndex - startIndex);
+		uintptr_t endIndex = startIndex + scvArraySplitAmount;
 
-	if (endIndex < maxIndex) {
-		/* try to split the remainder into a new copy cache */
-		MM_CopyScanCacheStandard* splitCache = getFreeCache(env);
-		if (NULL != splitCache) {
-			/* set up the split copy cache and clone the object scanner into the cache */
-			omrarrayptr_t arrayPtr = (omrarrayptr_t)objectScanner->getParentObject();
-			void* arrayTop = (void*)((uintptr_t)arrayPtr + _extensions->indexableObjectModel.getSizeInBytesWithHeader(arrayPtr));
-			reinitCache(splitCache, (omrobjectptr_t)arrayPtr, arrayTop);
-			splitCache->cacheAlloc = splitCache->cacheTop;
-			splitCache->_arraySplitIndex = endIndex;
-			splitCache->_arraySplitRememberedSlot = rememberedSetSlot;
-			splitCache->flags &= OMR_SCAVENGER_CACHE_TYPE_HEAP;
-			splitCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY;
-			indexableScanner->splitTo(env, splitCache->getObjectScanner(), scvArraySplitAmount);
-#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
-			env->_scavengerStats._arraySplitCount += 1;
-			env->_scavengerStats._arraySplitAmount += scvArraySplitAmount;
-#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
-			addCacheEntryToScanListAndNotify(env, splitCache);
-			result = true;
+		if (endIndex < maxIndex) {
+			/* try to split the remainder into a new copy cache */
+			MM_CopyScanCacheStandard* splitCache = getFreeCache(env);
+			if (NULL != splitCache) {
+				/* set up the split copy cache and clone the object scanner into the cache */
+				omrarrayptr_t arrayPtr = (omrarrayptr_t)objectScanner->getParentObject();
+				void* arrayTop = (void*)((uintptr_t)arrayPtr + _extensions->indexableObjectModel.getSizeInBytesWithHeader(arrayPtr));
+				reinitCache(splitCache, (omrobjectptr_t)arrayPtr, arrayTop);
+				splitCache->cacheAlloc = splitCache->cacheTop;
+				splitCache->_arraySplitIndex = endIndex;
+				splitCache->_arraySplitRememberedSlot = rememberedSetSlot;
+				splitCache->flags &= OMR_SCAVENGER_CACHE_TYPE_HEAP;
+				splitCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY;
+				indexableScanner->splitTo(env, splitCache->getObjectScanner(), scvArraySplitAmount);
+		#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+				env->_scavengerStats._arraySplitCount += 1;
+				env->_scavengerStats._arraySplitAmount += scvArraySplitAmount;
+		#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+				addCacheEntryToScanListAndNotify(env, splitCache);
+				result = true;
+			}
 		}
 	}
 
@@ -1494,7 +1505,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	/* scanCache will be NULL if called from outside completeScan() */
 	if ((NULL == scanCache) || !scanCache->isSplitArray()) {
 		/* try to get a new scanner instance from the cli */
-		objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, (void *) &objectScannerState, flags);
+		objectScanner = getObjectScanner(env, objectPtr, &objectScannerState, flags);
 		if ((NULL == objectScanner) || objectScanner->isLeafObject()) {
 			/* Object scanner will be NULL if object not scannable by cli (eg, empty pointer array, primitive array) */
 			if (NULL != objectScanner) {
@@ -1582,7 +1593,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	if (!scanCache->_hasPartiallyScannedObject) {
 		if (!scanCache->isSplitArray()) {
 			/* try to get a new scanner instance from the cli */
-			objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, (void *) scanCache->getObjectScanner(), GC_ObjectScanner::scanHeap);
+			objectScanner = getObjectScanner(env, objectPtr, scanCache->getObjectScanner(), GC_ObjectScanner::scanHeap);
 			if ((NULL == objectScanner) || objectScanner->isLeafObject()) {
 				/* Object scanner will be NULL if object not scannable by cli (eg, empty pointer array, primitive array) */
 				if (NULL != objectScanner) {
@@ -1727,7 +1738,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 #if defined(OMR_SCAVENGER_TRACE) || defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 #endif /* OMR_SCAVENGER_TRACE || J9MODRON_TGC_PARALLEL_STATISTICS */
- 	while (!doneFlag && !backOutFlagRaised()) {
+ 	while (!doneFlag && !isBackOutFlagRaised()) {
  		while (_cachedEntryCount > 0) {
  			cache = getNextScanCacheFromList(env);
 
@@ -1761,7 +1772,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 				_extensions->copyScanRatio.reset(env, false);
 				omrthread_monitor_notify_all(_scanCacheMonitor);
 			} else {
-				while((0 == _cachedEntryCount) && (doneIndex == _doneIndex) && !backOutFlagRaised()) {
+				while((0 == _cachedEntryCount) && (doneIndex == _doneIndex) && !isBackOutFlagRaised()) {
 					flushBuffersForGetNextScanCache(env);
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 					uint64_t waitEndTime, waitStartTime;
@@ -1922,7 +1933,7 @@ MM_Scavenger::completeScan(MM_EnvironmentStandard *env)
 	if (_extensions->_forceRandomBackoutsAfterScan) {
 		if (0 == (rand() % _extensions->_forceRandomBackoutsAfterScanPeriod)) {
 			omrtty_printf("Forcing backout at workUnitIndex: %zu lastSyncPointReached: %s\n", env->getWorkUnitIndex(), env->_lastSyncPointReached);
-			setBackOutFlag(env, true);
+			setBackOutFlag(env, backOutFlagRaised);
 			omrthread_monitor_enter(_scanCacheMonitor);
 			if(_waitingCount) {
 				omrthread_monitor_notify_all(_scanCacheMonitor);
@@ -1962,7 +1973,7 @@ MM_Scavenger::completeScan(MM_EnvironmentStandard *env)
 	 * we ensure consistent behavior (return of backOutRaised flag) of all threads within this scan cycle, so that all threads proceed
 	 * consistently to the next step (being just another scan cycle, or backout procedure).
 	 */
-	bool backOutRaisedThisScanCycle = backOutFlagRaised() && (doneIndex == _backOutDoneIndex);
+	bool backOutRaisedThisScanCycle = isBackOutFlagRaised() && (doneIndex == _backOutDoneIndex);
 
 	Assert_MM_true(backOutRaisedThisScanCycle || (0 == env->_scavengerRememberedSet.count));
 
@@ -2010,7 +2021,7 @@ MM_Scavenger::workThreadGarbageCollect(MM_EnvironmentStandard *env)
 				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 				omrtty_printf("{SCAV: Forcing back out(%p)}\n", env->getLanguageVMThread());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
-				setBackOutFlag(env, true);
+				setBackOutFlag(env, backOutFlagRaised);
 				_extensions->fvtest_backoutCounter = 0;
 			} else {
 				_extensions->fvtest_backoutCounter += 1;
@@ -2019,7 +2030,7 @@ MM_Scavenger::workThreadGarbageCollect(MM_EnvironmentStandard *env)
 		}
 	}
 
-	if(backOutFlagRaised()) {
+	if(isBackOutFlagRaised()) {
 		env->_scavengerStats._backout = 1;
 		completeBackOut(env);
 	} else {
@@ -2178,7 +2189,7 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 	Assert_MM_true((NULL != objectPtr) && (!isObjectInNewSpace(objectPtr)));
 
 	GC_ObjectScannerState objectScannerState;
-	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots | GC_ObjectScanner::indexableObjectNoSplit);
+	GC_ObjectScanner *objectScanner = getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots);
 
 	if (NULL != objectScanner) {
 		GC_SlotObject *slotPtr;
@@ -2967,7 +2978,7 @@ MM_Scavenger::getSurvivorCopyCache(MM_EnvironmentStandard *env)
 bool
 MM_Scavenger::scavengeCompletedSuccessfully(MM_EnvironmentStandard *env)
 {
-	return !backOutFlagRaised();
+	return !isBackOutFlagRaised();
 }
 
 /****************************************
@@ -2980,16 +2991,18 @@ MM_Scavenger::scavengeCompletedSuccessfully(MM_EnvironmentStandard *env)
  * Change the value of _backOutFlag and inform consumers.
  */
 void
-MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, bool value)
+MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, BackOutState value)
 {
 	/* Skip triggering of trace point and hook if we trying to set flag to true multiple times */
-	if (!(_backOutFlag && value)) {
+	if (_backOutFlag != value) {
 		_backOutDoneIndex = _doneIndex;
 		_backOutFlag = value;
 		/* Might be an overkill, but ensure that other CPUs see correct _backOutDoneIndex, by the time they see _backOutFlag is set */
 		MM_AtomicOperations::writeBarrier();
-		Trc_MM_ScavengerBackout(env->getLanguageVMThread(), value ? "true" : "false");
-		TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), value);
+		if (backOutStarted > value) {
+			Trc_MM_ScavengerBackout(env->getLanguageVMThread(), backOutFlagCleared < value ? "true" : "false");
+			TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), backOutFlagCleared < value);
+		}
 	}
 }
 
@@ -3040,7 +3053,7 @@ MM_Scavenger::backOutObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t obje
 {
 	GC_SlotObject *slotObject = NULL;
 	GC_ObjectScannerState objectScannerState;
-	GC_ObjectScanner *objectScanner = _cli->scavenger_getObjectScanner(env, objectPtr, (void *) &objectScannerState, GC_ObjectScanner::scanRoots);
+	GC_ObjectScanner *objectScanner = getObjectScanner(env, objectPtr, &objectScannerState, GC_ObjectScanner::scanRoots);
 	if (NULL != objectScanner) {
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3150,6 +3163,8 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 
 	/* Must synchronize to be sure all private caches have been flushed */
 	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
+		setBackOutFlag(env, backOutStarted);
+
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 		omrtty_printf("{SCAV: Complete back out(%p)}\n", env->getLanguageVMThread());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
@@ -4417,7 +4432,7 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncre
 
 			_concurrentState = concurrent_state_scan;
 
-			if (backOutFlagRaised()) {
+			if (isBackOutFlagRaised()) {
 				/* if we aborted during root processing, continue with the cycle while still in STW mode */
 				continue;
 			}
@@ -4436,7 +4451,7 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env, int64_t scavengeIncre
 
 			_concurrentState = concurrent_state_complete;
 
-			if (backOutFlagRaised()) {
+			if (isBackOutFlagRaised()) {
 				continue;
 			}
 
@@ -4490,7 +4505,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 {
 	MM_ScavengerRootScanner rootScanner(env, this);
 
-	if (!backOutFlagRaised()) {
+	if (!isBackOutFlagRaised()) {
 		if (completeScan(env)) {
 			rootScanner.scanClearable(env);
 		}
@@ -4508,7 +4523,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 				omrtty_printf("{SCAV: Forcing back out(%p)}\n", env->getLanguageVMThread());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
-				setBackOutFlag(env, true);
+				setBackOutFlag(env, backOutFlagRaised);
 				_extensions->fvtest_backoutCounter = 0;
 			} else {
 				_extensions->fvtest_backoutCounter += 1;
@@ -4517,7 +4532,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 		}
 	}
 
-	if(backOutFlagRaised()) {
+	if(isBackOutFlagRaised()) {
 		env->_scavengerStats._backout = 1;
 		completeBackOut(env);
 	} else {

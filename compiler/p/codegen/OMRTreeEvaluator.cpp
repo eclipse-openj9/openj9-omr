@@ -1685,8 +1685,7 @@ TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
       case TR::VectorInt64:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxland);
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
-         return NULL;
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxland);
      }
    }
 
@@ -1701,8 +1700,7 @@ TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
       case TR::VectorInt64:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlor);
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
-         return NULL;
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlor);
      }
    }
 
@@ -1717,8 +1715,7 @@ TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeG
       case TR::VectorInt64:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlxor);
       default:
-         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
-         return NULL;
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlxor);
      }
    }
 

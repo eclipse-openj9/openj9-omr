@@ -596,8 +596,10 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                if (succ1Internal ^ succ2Internal)
                   {
                   TR::TreeTop *firstTree = hdrBlock->getFirstRealTreeTop();
+                  static const bool skipTt = feGetEnv("TR_canonicalizerStopAtTreetop") == NULL;
                   while ((firstTree &&
                           (firstTree->getNode()->getOpCodeValue() == TR::asynccheck ||
+                           (skipTt && firstTree->getNode()->getOpCodeValue() == TR::treetop) ||
                            firstTree->getNode()->getOpCode().isCheck())))
                     firstTree = firstTree->getNextTreeTop();
 

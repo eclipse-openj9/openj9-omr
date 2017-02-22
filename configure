@@ -671,6 +671,7 @@ OMR_GC_TLH_PREFETCH_FTA
 OMR_ENV_LITTLE_ENDIAN
 OMR_GC_OBJECT_MAP
 OMR_THR_YIELD_ALG
+OMR_THR_SPIN_CODE_REFACTOR
 OMR_THR_SPIN_WAKE_CONTROL
 OMR_NOTIFY_POLICY_CONTROL
 OMR_THR_CUSTOM_SPIN_OPTIONS
@@ -716,8 +717,8 @@ OMR_GC_COMBINATION_SPEC
 OMR_GC_BATCH_CLEAR_TLH
 OMR_GC_ARRAYLETS
 OMR_GC_ALLOCATION_TAX
-OMR_EXAMPLE
 OMR_RTTI
+OMR_EXAMPLE
 OMR_OMRSIG
 OMR_THREAD
 OMR_PORT
@@ -864,6 +865,7 @@ enable_OMR_THR_THREE_TIER_LOCKING
 enable_OMR_THR_CUSTOM_SPIN_OPTIONS
 enable_OMR_NOTIFY_POLICY_CONTROL
 enable_OMR_THR_SPIN_WAKE_CONTROL
+enable_OMR_THR_SPIN_CODE_REFACTOR
 enable_OMR_THR_YIELD_ALG
 enable_OMR_GC_OBJECT_MAP
 enable_OMR_ENV_LITTLE_ENDIAN
@@ -1547,7 +1549,6 @@ Optional Features:
   --enable-OMR_EXAMPLE    Whether we are building OMR against the example
                           code. (Default: no)
   --enable-OMR_RTTI       Whether we are building OMR with RTTI. (Default: no)
-                                                    
   --disable-OMR_GC_ALLOCATION_TAX
 
   --disable-OMR_GC_ARRAYLETS
@@ -1630,6 +1631,8 @@ Optional Features:
   --enable-OMR_NOTIFY_POLICY_CONTROL
 
   --enable-OMR_THR_SPIN_WAKE_CONTROL
+
+  --enable-OMR_THR_SPIN_CODE_REFACTOR
 
   --enable-OMR_THR_YIELD_ALG
 
@@ -5350,13 +5353,21 @@ fi
 if test "${enable_OMR_RTTI+set}" = set; then :
   enableval=$enable_OMR_RTTI; if test "x${enableval}" = xyes; then :
   OMR_RTTI=1
+
    $as_echo "#define OMR_RTTI 1" >>confdefs.h
+
 else
   OMR_RTTI=0
+
+
 fi
 else
   OMR_RTTI=0
+
+
 fi
+
+
 
 ############### Flags that are always enabled
 # Each flag must have a corresponding entry in omrcfg.h.in
@@ -6304,6 +6315,25 @@ else
 fi
 else
   OMR_THR_SPIN_WAKE_CONTROL=0
+
+
+fi
+
+
+# Check whether --enable-OMR_THR_SPIN_CODE_REFACTOR was given.
+if test "${enable_OMR_THR_SPIN_CODE_REFACTOR+set}" = set; then :
+  enableval=$enable_OMR_THR_SPIN_CODE_REFACTOR; if test "x${enableval}" = xyes; then :
+  OMR_THR_SPIN_CODE_REFACTOR=1
+
+   $as_echo "#define OMR_THR_SPIN_CODE_REFACTOR 1" >>confdefs.h
+
+else
+  OMR_THR_SPIN_CODE_REFACTOR=0
+
+
+fi
+else
+  OMR_THR_SPIN_CODE_REFACTOR=0
 
 
 fi
@@ -8487,5 +8517,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
 

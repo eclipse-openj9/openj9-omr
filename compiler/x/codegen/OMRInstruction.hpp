@@ -69,6 +69,95 @@ class EnlargementResult
 
 class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    {
+   public:
+
+   struct REX
+      {
+      uint8_t B : 1;
+      uint8_t X : 1;
+      uint8_t R : 1;
+      uint8_t W : 1;
+      uint8_t _padding : 4;
+      REX(uint8_t val = 0)
+         {
+         *((uint8_t*)this) = val;
+         }
+      operator uint8_t() const
+         {
+         return 0x40 | value();
+         }
+      uint8_t value() const
+         {
+         return *((uint8_t*)this);
+         }
+      };
+   struct ModRM
+      {
+      uint8_t rm : 3;
+      uint8_t reg : 3;
+      uint8_t mod : 2;
+      ModRM(uint8_t val = 0)
+         {
+         *((uint8_t*)this) = val;
+         }
+      operator uint8_t() const
+         {
+         return *((uint8_t*)this);
+         }
+      inline ModRM* setMod(uint8_t mod = 0x03) // 0b11
+         {
+         this->mod = mod;
+         return this;
+         }
+      inline ModRM* setBase()
+         {
+         return setMod(0x00); // 0b00
+         }
+      inline ModRM* setBaseDisp8()
+         {
+         return setMod(0x01); // 0b01
+         }
+      inline ModRM* setBaseDisp32()
+         {
+         return setMod(0x02); // 0b10
+         }
+      inline ModRM* setIndexOnlyDisp32()
+         {
+         rm = 0x05; // 0b101
+         return setMod(0x00); // 0b00
+         }
+      inline ModRM* setHasSIB()
+         {
+         rm = 0x04; // 0b100
+         return this;
+         }
+      };
+   struct SIB
+      {
+      uint8_t base : 3;
+      uint8_t index : 3;
+      uint8_t scale : 2;
+      operator uint8_t() const
+         {
+         return *((uint8_t*)this);
+         }
+      inline SIB* setScale(uint8_t scale = 0)
+         {
+         this->scale = scale;
+         return this;
+         }
+      inline SIB* setNoIndex()
+         {
+         index = 0x04; // 0b100
+         return this;
+         }
+      inline SIB* setIndexDisp32()
+         {
+         base = 0x05; // 0b101
+         return this;
+         }
+      };
+
    private:
    uint8_t _rexRepeatCount;
 

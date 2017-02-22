@@ -622,8 +622,8 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
          {
          // Addresses in the low 2GB (or high 2GB) can be accessed using a SIB byte
          //
-         self()->setModField(modRM, IA32SIBPresent);
-         *cursor++ = 0x25; // [disp32] encoding
+         self()->ModRM(modRM)->setBase()->setHasSIB();
+         self()->SIB(cursor++)->setScale()->setNoIndex()->setIndexDisp32();
          *(uint32_t*)cursor = (uint32_t)displacement;
          }
       else
@@ -631,7 +631,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
          TR_ASSERT(IS_32BIT_RIP(displacement, rip), "assertion failure");
          TR_ASSERT(!(comp->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject()),
             "HCR runtime assumptions currently can't patch RIP-relative offsets");
-         self()->setModField(modRM, IA32Offset32);
+         self()->ModRM(modRM)->setIndexOnlyDisp32();
          *(uint32_t*)cursor = (uint32_t)(displacement - (intptrj_t)rip);
          }
 

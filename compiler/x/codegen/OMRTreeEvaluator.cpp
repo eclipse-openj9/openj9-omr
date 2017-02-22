@@ -3731,7 +3731,7 @@ static void arraySetDefault(TR::Node* node, uint8_t elementSize, TR::Register* a
          break;
       }
 
-   if (shiftAmount) generateRegImmInstruction(SHRRegImm1(cg), node, sizeReg, shiftAmount, cg);
+   if (shiftAmount) generateRegImmInstruction(SHRRegImm1(), node, sizeReg, shiftAmount, cg);
    generateInstruction(repOpcode, node, stosDependencies, cg);
    cg->stopUsingRegister(EAX);
    }

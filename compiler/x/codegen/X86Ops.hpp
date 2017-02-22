@@ -136,7 +136,7 @@ typedef enum {
    BSF2RegReg,      // Bit scan forward to find the least significant 1 bit
    BSF4RegReg,      //
    BSF8RegReg,
-   BSR4RegReg,		// Bit scan forward to find the least significant 1 bit
+   BSR4RegReg,      // Bit scan forward to find the least significant 1 bit
    BSR8RegReg,
    BSWAP4Reg,       // Byte swap Register 32
    BSWAP8Reg,       // Byte swap Register 64 (AMD64)
@@ -1227,17 +1227,17 @@ class TR_X86OpCode
       uint8_t _length;
       } TR_OpCodeBinaryEntry;
 
-   TR_X86OpCodes                    _opCode;
+   TR_X86OpCodes                     _opCode;
    static const uint32_t             _properties[IA32NumOpCodes];
    static const uint32_t             _properties2[IA32NumOpCodes];
    static const TR_OpCodeBinaryEntry _binaryEncodings[IA32NumOpCodes];
 
    public:
 
-   TR_X86OpCode()                  : _opCode(BADIA32Op) {}
-   TR_X86OpCode(TR_X86OpCodes op) : _opCode(op)       {}
+   TR_X86OpCode()                 : _opCode(BADIA32Op) {}
+   TR_X86OpCode(TR_X86OpCodes op) : _opCode(op)        {}
 
-   TR_X86OpCodes getOpCodeValue()                  {return _opCode;}
+   TR_X86OpCodes getOpCodeValue()                 {return _opCode;}
    TR_X86OpCodes setOpCodeValue(TR_X86OpCodes op) {return (_opCode = op);}
 
    uint32_t modifiesTarget() {return _properties[_opCode] & IA32OpProp_ModifiesTarget;}
@@ -1400,7 +1400,7 @@ class TR_X86OpCode
          {
          len++; // 66
          }
-      if (needsRepPrefix() || needsXreleasePrefix() || needsXacquirePrefix() || needsScalarPrefix())
+      if (needsXreleasePrefix() || needsXacquirePrefix() || needsScalarPrefix())
          {
          len++; // f3/f2
          }
@@ -1425,7 +1425,7 @@ class TR_X86OpCode
          {
          *cur++ = 0x66;
          }
-      if (needsRepPrefix() || needsXreleasePrefix())
+      if (needsXreleasePrefix())
          {
          *cur++ = 0xf3;
          }

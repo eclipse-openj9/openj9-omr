@@ -182,8 +182,10 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
    // *this    swipeable for debugging purposes
    uint8_t *instructionStart = self()->cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
-   // TODO:AMD64: If opcode is RET and previous instruction is a branch or
-   // label, use REP RET encoding.  See hammer opt guide section 6.2.
+   if (self()->getOpCode().needsRepPrefix())
+      {
+      *cursor++ = 0xf3;
+      }
    cursor = self()->getOpCode().binary(cursor, self()->rexBits());
    self()->setBinaryLength(cursor - instructionStart);
    self()->setBinaryEncoding(instructionStart);
@@ -194,7 +196,7 @@ uint8_t *OMR::X86::Instruction::generateBinaryEncoding()
 int32_t OMR::X86::Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
    // *this    swipeable for debugging purposes
-   self()->setEstimatedBinaryLength(self()->getOpCode().length(self()->rexBits()));
+   self()->setEstimatedBinaryLength(self()->getOpCode().length(self()->rexBits()) + (self()->getOpCode().needsRepPrefix() ? 1 : 0));
    return currentEstimate + self()->getEstimatedBinaryLength();
    }
 

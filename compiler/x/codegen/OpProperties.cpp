@@ -7621,16 +7621,16 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
 
    IA32OpProp2_XMMSource                     | // MOVDQURegReg
    IA32OpProp2_XMMTarget                     |
-   IA32OpProp2_NeedsRepPrefix,
+   IA32OpProp2_NeedsXreleasePrefix,
 
    IA32OpProp2_XMMSource                     | // MOVDQURegMem
    IA32OpProp2_SourceIsMemRef                |
    IA32OpProp2_XMMTarget                     |
-   IA32OpProp2_NeedsRepPrefix,
+   IA32OpProp2_NeedsXreleasePrefix,
 
    IA32OpProp2_XMMSource                     | // MOVDQUMemReg
    IA32OpProp2_XMMTarget                     |
-   IA32OpProp2_NeedsRepPrefix,
+   IA32OpProp2_NeedsXreleasePrefix,
 
    0,                                          // MOV1RegReg
    0,                                          // MOV2RegReg
@@ -7974,16 +7974,15 @@ const uint32_t TR_X86OpCode::_properties2[IA32NumOpCodes] =
    IA32OpProp2_RotateOp,                       // RCR1RegImm1
    IA32OpProp2_RotateOp,                       // RCR4RegImm1
 
-   0,                                          // REPMOVSB
-   0,                                          // REPMOVSW
-   0,                                          // REPMOVSD
-
+   IA32OpProp2_NeedsRepPrefix,                 // REPMOVSB
+   IA32OpProp2_NeedsRepPrefix,                 // REPMOVSW
+   IA32OpProp2_NeedsRepPrefix,                 // REPMOVSD
    IA32OpProp2_Needs64BitOperandPrefix |       // REPMOVSQ
    IA32OpProp2_NeedsRepPrefix,
 
-   0,                                          // REPSTOSB
-   0,                                          // REPSTOSW
-   0,                                          // REPSTOSD
+   IA32OpProp2_NeedsRepPrefix,                 // REPSTOSB
+   IA32OpProp2_NeedsRepPrefix,                 // REPSTOSW
+   IA32OpProp2_NeedsRepPrefix,                 // REPSTOSD
    IA32OpProp2_Needs64BitOperandPrefix |       // REPSTOSQ
    IA32OpProp2_NeedsRepPrefix,
    0,                                          // RET

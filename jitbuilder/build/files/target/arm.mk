@@ -46,5 +46,3 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/arm/codegen/OMRRegisterIterator.cpp \
     $(JIT_OMR_DIRTY_DIR)/arm/env/OMRCompilerEnv.cpp
 
-JIT_PRODUCT_SOURCE_FILES+=\
-    $(JIT_OMR_DIRTY_DIR)/arm/env/OMRDebugEnv.cpp

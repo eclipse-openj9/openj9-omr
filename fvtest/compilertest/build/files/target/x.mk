@@ -9,6 +9,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/x/codegen/FPBinaryArithmeticAnalyser.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/FPCompareAnalyser.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/FPTreeEvaluator.cpp \
+    $(JIT_OMR_DIRTY_DIR)/x/codegen/SIMDTreeEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/HelperCallSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/IA32LinkageUtils.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/IntegerMultiplyDecomposer.cpp \

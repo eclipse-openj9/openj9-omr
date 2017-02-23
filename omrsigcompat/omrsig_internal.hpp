@@ -73,6 +73,9 @@ struct OMR_SigData {
 #define SIGUNLOCK(sigMutex) \
 	sigMutex.unlock();
 
+#if !defined(MSVC_RUNTIME_DLL)
+#define MSVC_RUNTIME_DLL "MSVCR100.dll"
+#endif /* !defined(MSVC_RUINTIME_DLL) */
 #else /* defined(WIN32) */
 
 #define LockMask sigset_t *previousMask

@@ -125,6 +125,7 @@ Testing/
 # Misc Build Artifacts
 *.o.depend.mk
 *.o.s
+*.o.spp
 *.pyc
 
 # Visual Studio

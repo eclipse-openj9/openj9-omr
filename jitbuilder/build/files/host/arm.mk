@@ -16,4 +16,6 @@
 ##    Multiple authors (IBM Corp.) - initial implementation and documentation
 ################################################################################
 
-JIT_PRODUCT_SOURCE_FILES+=
+JIT_PRODUCT_BACKEND_SOURCES+= \
+	$(JIT_OMR_DIRTY_DIR)/arm/runtime/FlushICache.armasm \
+	$(JIT_OMR_DIRTY_DIR)/arm/runtime/CodeSync.cpp

@@ -91,7 +91,7 @@ TR_OSRCompilationData::addInstruction(TR::Instruction* instr)
    }
 
 void
-TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo &bcInfo)
+TR_OSRCompilationData::addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcInfo)
    {
    bool trace = comp->getOption(TR_TraceOSR);
    if (trace)

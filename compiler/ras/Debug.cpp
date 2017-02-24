@@ -4031,13 +4031,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          {
          switch (index)
             {
-            case TR_IA32longMultiply:                                 return "__longMultiply";
             case TR_IA32longDivide:                                   return "__longDivide";
             case TR_IA32longRemainder:                                return "__longRemainder";
-            case TR_IA32longShiftLeft:                                return "__longShiftLeft";
-            case TR_IA32longRotateLeft:                               return "__longRotateLeft";
-            case TR_IA32longShiftRightLogical:                        return "__longShiftRightLogical";
-            case TR_IA32longShiftRightArithmetic:                     return "__longShiftRightArithmetic";
             case TR_IA32floatRemainder:                               return "__floatRemainder";
             case TR_IA32floatRemainderSSE:                            return "__SSEfloatRemainderIA32Thunk";
             case TR_IA32doubleRemainder:                              return "__doubleRemainder";

@@ -152,12 +152,10 @@ X86OpCodesTest::compileShiftOrRolTestMethods()
    _sShl = (signatureCharSS_S_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::sshl, "sShl", _argTypesBinaryShort, TR::Int16, rc));
    _suShr = (unsignedSignatureCharSS_S_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::sushr, "suShr", _argTypesBinaryShort, TR::Int16, rc));
 
-#if defined(TR_TARGET_64BIT)
    _lShl = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lshl, "lShl", _argTypesBinaryLong, TR::Int64, rc));
    _lShr = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lshr, "lShr", _argTypesBinaryLong, TR::Int64, rc));
    _luShr = (unsignedSignatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lushr, "luShr", _argTypesBinaryLong, TR::Int64, rc));
    _lRol = (signatureCharJJ_J_testMethodType *) (compileOpCodeMethod(_numberOfBinaryArgs, TR::lrol, "lRol", _argTypesBinaryLong, TR::Int64, rc));
-#endif
    }
 
 void
@@ -1311,7 +1309,6 @@ X86OpCodesTest::invokeShiftOrRolTests()
       OMR_CT_EXPECT_EQ(sShiftOrRolConst, shl(sshlDataArr[i][0], sshlDataArr[i][1]), sShiftOrRolConst(sshlDataArr[i][0], SHORT_PLACEHOLDER_2));
       }
 
-#if defined(TR_TARGET_64BIT)
    const int64_t LONG_MAX_STEP = 63;
    const uint64_t ULONG_MAX_STEP = 63;
    signatureCharJJ_J_testMethodType  * lShiftOrRolConst = 0;
@@ -1436,7 +1433,6 @@ X86OpCodesTest::invokeShiftOrRolTests()
             _numberOfBinaryArgs, TR::lrol, resolvedMethodName, _argTypesBinaryLong, TR::Int64, rc, 2, 2, &lrolDataArr[i][1]));
       OMR_CT_EXPECT_EQ(lShiftOrRolConst, rol(lrolDataArr[i][0], lrolDataArr[i][1]), lShiftOrRolConst(lrolDataArr[i][0], LONG_PLACEHOLDER_2));
       }
-#endif
    }
 
 void

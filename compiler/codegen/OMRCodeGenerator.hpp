@@ -401,11 +401,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool afterRA() { return _afterRA; }
    TR::CodeGenPhase& getCodeGeneratorPhase() {return _codeGenPhase;}
 
-
-   // called to assign/map TOC slots for constant items. If any platform chooses to use TOC mechanism,
-   // its codeGen should override this method. Also, any maintenance/details are up to the specific platform.
-   void mapTOCEntries() {} // no virt, default
-
    void prepareNodeForInstructionSelection(TR::Node*node);
    void remapGCIndicesInInternalPtrFormat();
    void processRelocations();

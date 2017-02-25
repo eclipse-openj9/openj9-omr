@@ -187,7 +187,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateProbeNop(TR::Node *node , TR::Instruction *preced = 0);
 
    bool isSnippetMatched(TR::Snippet *, int32_t, TR::SymbolReference *);
-   void mapTOCEntries();
 
    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value);
 

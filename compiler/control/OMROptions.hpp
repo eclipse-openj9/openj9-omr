@@ -1981,6 +1981,15 @@ public:
    static bool isQuickstartDetected() { return _quickstartDetected; }
    void disableCHOpts(); // disable CHOpts, but also IPA and prex which depend on the chtable
 
+protected:
+   void  jitPreProcess();
+   bool  fePreProcess(void *base);
+   bool  jitPostProcess();
+   bool  fePostProcessAOT(void *base);
+   bool  fePostProcessJIT(void *base);
+   bool  jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig);
+   bool  feLatePostProcess(void *base, TR::OptionSet *optionSet);
+
 private:
    friend class OMR::Compilation;
    friend class ::TR_Debug;
@@ -2031,13 +2040,6 @@ private:
 
           bool  showOptionsInEffect();
           bool  showPID();
-   void  jitPreProcess();
-   bool  fePreProcess(void *base);
-   bool  jitPostProcess();
-   bool  fePostProcessAOT(void *base);
-   bool  fePostProcessJIT(void *base);
-   bool  jitLatePostProcess(TR::OptionSet *optionSet, void *jitConfig);
-   bool  feLatePostProcess(void *base, TR::OptionSet *optionSet);
 
    void setAOTCompile(bool isAOT);
    bool getAOTCompile();

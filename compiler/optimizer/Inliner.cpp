@@ -1782,8 +1782,7 @@ TR_InlinerBase::addGuardForVirtual(
 
    static const char *disableHCRGuards = feGetEnv("TR_DisableHCRGuards");
 
-   // TODO : This is a very hacky way of avoiding HCR guards on sensitive String Compression methods which allows idiom recognition to work. Can we do something better?
-   bool skipHCRGuardForCallee = getPolicy()->skipHCRGuardForCallee(calleeSymbol);
+   const bool skipHCRGuardForCallee = getPolicy()->skipHCRGuardForCallee(calleeSymbol->getResolvedMethod());
 
    bool skipHCRGuardCreation = false;
 
@@ -3777,7 +3776,9 @@ bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerB
    TR_VirtualGuardSelection *guard;
    static const char *disableHCRGuards2 = feGetEnv("TR_DisableHCRGuards");
 
-   if (!disableHCRGuards2 && comp()->getHCRMode() != TR::none && !comp()->compileRelocatableCode() && !inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeSymbol))
+   const bool skipHCRGuardForCallee = inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeMethod);
+
+   if (!disableHCRGuards2 && comp()->getHCRMode() != TR::none && !comp()->compileRelocatableCode() && !skipHCRGuardForCallee)
       {
       tempreceiverClass = _initialCalleeMethod->classOfMethod();
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);

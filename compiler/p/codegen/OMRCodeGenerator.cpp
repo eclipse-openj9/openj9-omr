@@ -517,10 +517,6 @@ OMR::Power::CodeGenerator::itemTracking(
       }
    }
 
-void
-OMR::Power::CodeGenerator::mapTOCEntries()
-   {
-   }
 
 bool
 OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(

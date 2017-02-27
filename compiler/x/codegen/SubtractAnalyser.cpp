@@ -279,7 +279,7 @@ void TR_X86SubtractAnalyser::longSubtractAnalyser(TR::Node *root)
 /*
  * users should call the longSubtractAnalyser or longSubtractAnalyserWithExplicitOperands APIs instead of calling this one directly 
  */
-TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild)
+TR::Register* TR_X86SubtractAnalyser::longSubtractAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild)
    {
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();

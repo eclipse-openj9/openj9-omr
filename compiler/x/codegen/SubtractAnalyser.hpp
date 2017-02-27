@@ -73,7 +73,7 @@ class TR_X86SubtractAnalyser  : public TR_Analyser
 
    void longSubtractAnalyser(TR::Node *root);
    void longSubtractAnalyserWithExplicitOperands(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
-   TR::Register* longSubtractAnalyserImpl(TR::Node *root, TR::Node *firstChild, TR::Node *secondChild);
+   TR::Register* longSubtractAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild);
 
    bool getEvalChild1()  {return (_actionMap[getInputs()] & EvalChild1)  ? true : false;}
    bool getEvalChild2()  {return (_actionMap[getInputs()] & EvalChild2)  ? true : false;}

@@ -319,7 +319,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::canGenAndKil
         bool seenNonBackEdge = false;
         bool seenLoopBackEdge = false;
 
-        TR::list<TR::CFGEdge*> predList(toNode->getPredecessors());
+        TR::CFGEdgeList predList(toNode->getPredecessors());
         predList.insert(predList.end(), toNode->getExceptionPredecessors().begin(), toNode->getExceptionPredecessors().end());
         for (auto pred = predList.begin(); pred != predList.end(); ++pred)
            {
@@ -641,7 +641,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
       typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *analysisInfo = this->getAnalysisInfo(regionStructure);
       if (node != regionStructure->getEntry())
          {
-         TR::list<TR::CFGEdge*> predList(node->getPredecessors());
+         TR::CFGEdgeList predList(node->getPredecessors());
          predList.insert(predList.end(), node->getExceptionPredecessors().begin(), node->getExceptionPredecessors().end());
          bool firstPred = true;
          bool stopAnalyzingThisNode = false;
@@ -757,7 +757,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
 
       *this->_temp = *_currentRegularGenSetInfo;
       *this->_temp2 = *_currentRegularKillSetInfo;
-      TR::list<TR::CFGEdge*> succList(node->getSuccessors());
+      TR::CFGEdgeList succList(node->getSuccessors());
       succList.insert(succList.end(), node->getExceptionSuccessors().begin(), node->getExceptionSuccessors().end());
       int count = 0;
       for (auto succ = succList.begin(); succ != succList.end(); ++succ)
@@ -971,7 +971,7 @@ template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnal
 
 template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnalysisInfo(typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *info, TR::Block *block)
    {
-   TR::list<TR::CFGEdge*> succList(block->getSuccessors());
+   TR::CFGEdgeList succList(block->getSuccessors());
    succList.insert(succList.end() , block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
    for (auto succ = succList.begin(); succ != succList.end(); ++succ)
       {
@@ -1213,7 +1213,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
 
       initializeInSetInfo();
 
-      TR::list<TR::CFGEdge*> predList(node->getPredecessors());
+      TR::CFGEdgeList predList(node->getPredecessors());
       predList.insert(predList.end(), node->getExceptionPredecessors().begin(), node->getExceptionPredecessors().end());
       bool firstPred = true;
       bool stopAnalyzingThisNode = false;
@@ -1291,7 +1291,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
      if (this->supportsGenAndKillSets() &&
          canGenAndKillForStructure(nodeStructure->getStructure()))
         {
-        TR::list<TR::CFGEdge*> succList (node->getSuccessors());
+        TR::CFGEdgeList succList (node->getSuccessors());
         succList.insert(succList.end(), node->getExceptionSuccessors().begin(), node->getExceptionSuccessors().end());
         int count = 0;
         for (auto succ = succList.begin(); succ != succList.end(); ++succ)
@@ -1497,7 +1497,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeBlock
       }
 
    TR::Block *block = blockStructure->getBlock();
-   TR::list<TR::CFGEdge*> succList(block->getSuccessors());
+   TR::CFGEdgeList succList(block->getSuccessors());
    succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
    int count = 0;
    for (auto succ = succList.begin(); succ != succList.end(); ++succ)

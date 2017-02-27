@@ -734,7 +734,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR_StructureSubGraphNode * node, uint32_t in
    }
 
 void
-TR_Debug::printNodesInEdgeListIterator(TR::FILE *pOutFile, TR::list<TR::CFGEdge*> &li, bool fromNode)
+TR_Debug::printNodesInEdgeListIterator(TR::FILE *pOutFile, TR::CFGEdgeList &li, bool fromNode)
    {
    TR::CFGEdge *edge;
    TR::Block   *b;
@@ -980,7 +980,7 @@ TR_Debug::printBlockOrders(TR::FILE *pOutFile, const char * title, TR::ResolvedM
          else
             trfprintf(pOutFile, "\n");
 
-         TR::list<TR::CFGEdge*> & successors = block->getSuccessors();
+         TR::CFGEdgeList & successors = block->getSuccessors();
          for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
             trfprintf(pOutFile, "\t -> block_%-4d\tfrequency %4d\n", (*succEdge)->getTo()->getNumber(), (*succEdge)->getFrequency());
          }

@@ -2435,7 +2435,7 @@ TR::Block *OMR::X86::TreeEvaluator::getOverflowCatchBlock(TR::Node *node, TR::Co
    {
    //make sure the overflowCHK has a catch block first
    TR::Block *overflowCatchBlock = NULL;
-   TR::list<TR::CFGEdge*> excepSucc =cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
+   TR::CFGEdgeList excepSucc =cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
    for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e) 
       {    
       TR::Block *dest = toBlock((*e)->getTo());

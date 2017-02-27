@@ -169,7 +169,7 @@ class multipleJumpSuccessorIterator : public SuccessorIterator
          return (*_iterator)->getTo()->asBlock();
       }
    std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator _iterator;
-   TR::list<TR::CFGEdge*>* _list;
+   TR::CFGEdgeList* _list;
    };
 
 
@@ -2255,7 +2255,7 @@ TR_GlobalRegisterAllocator::registerIsLiveAcrossEdge(
    // It may happen that all predecessors have this candidate in register on exit.
    // If there are more than one predecessor and their frequency is higher than that of this block,
    // it's better to extend live range into successor
-   TR::list<TR::CFGEdge*> &predecessors = successorBlock->getPredecessors();
+   TR::CFGEdgeList &predecessors = successorBlock->getPredecessors();
    if (!predecessors.empty() && !(predecessors.size() == 1) &&
        successorBlock->getEntry()->getNode()->getVisitCount() != comp()->getVisitCount())
       {
@@ -3321,7 +3321,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
 
    for (TR::CFGNode * block = cfg->getFirstNode(); block; block = block->getNext())
       {
-      TR::list<TR::CFGEdge*>& edges = block->getSuccessors();
+      TR::CFGEdgeList& edges = block->getSuccessors();
       TR::Block *currBlock = toBlock(block);
       if ((edges.size() == 2) && currBlock->getExit())
          {

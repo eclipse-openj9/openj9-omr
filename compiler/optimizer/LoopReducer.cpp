@@ -2196,7 +2196,7 @@ TR_LoopReducer::generateArraycmp(TR_RegionStructure * whileLoop, TR_InductionVar
 
    // update the CFG
    _cfg->setStructure(NULL);
-   TR::list<TR::CFGEdge*> iSuccList = incrementBlock->getSuccessors();
+   TR::CFGEdgeList iSuccList = incrementBlock->getSuccessors();
    removeEdge(iSuccList, incrementBlock->getNumber(), branchBlock->getNumber());
 
    return true;
@@ -3391,8 +3391,8 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
 
    if (hasBranch)
       {
-	  TR::list<TR::CFGEdge*> loadSuccList = loadBlock->getSuccessors();
-	  TR::list<TR::CFGEdge*> storeSuccList = storeBlock->getSuccessors();
+	  TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
+	  TR::CFGEdgeList storeSuccList = storeBlock->getSuccessors();
 
       removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
 
@@ -3406,7 +3406,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
          removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
          removeEdge(storeSuccList, storeBlock->getNumber(), loadBlock->getNumber());
 
-         TR::list<TR::CFGEdge*> cmpSuccList = cmpBlock->getSuccessors();
+         TR::CFGEdgeList cmpSuccList = cmpBlock->getSuccessors();
          removeEdge(cmpSuccList, cmpBlock->getNumber(), loadBlock->getNumber());
          }
 
@@ -3416,7 +3416,7 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
       }
    else
       {
-	  TR::list<TR::CFGEdge*> loadSuccList = loadBlock->getSuccessors();
+	  TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
       removeEdge(loadSuccList, loadBlock->getNumber(), nextBlock->getNumber());
       return true;
       }
@@ -3691,8 +3691,8 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
       }
    _cfg->setStructure(NULL);
 
-   TR::list<TR::CFGEdge*> loadSuccList = loadBlock->getSuccessors();
-   TR::list<TR::CFGEdge*> cmpSuccList = cmpBlock->getSuccessors();
+   TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
+   TR::CFGEdgeList cmpSuccList = cmpBlock->getSuccessors();
 
    removeEdge(loadSuccList, loadBlock->getNumber(), cmpBlock->getNumber());
    removeEdge(cmpSuccList, cmpBlock->getNumber(), nextBlock->getNumber());
@@ -4232,7 +4232,7 @@ TR_LoopReducer::constrainedIndVar(TR_InductionVariable * indVar)
    }
 
 void
-TR_LoopReducer::removeSelfEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber)
+TR_LoopReducer::removeSelfEdge(TR::CFGEdgeList succList, int32_t selfNumber)
    {
    for (auto edge = succList.begin(); edge != succList.end();)
       {
@@ -4249,7 +4249,7 @@ TR_LoopReducer::removeSelfEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumb
    }
 
 void
-TR_LoopReducer::removeEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber, int32_t destNumber)
+TR_LoopReducer::removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber)
    {
    for (auto edge = succList.begin(); edge != succList.end();)
       {

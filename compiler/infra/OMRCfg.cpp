@@ -493,7 +493,7 @@ void TR::CFGEdge::setExceptionFromTo(TR::CFGNode *pF, TR::CFGNode *pT)
    pT->addExceptionPredecessor(this);
    }
 
-static int32_t getTotalEdgesFrequency(TR::list<TR::CFGEdge*>& edgesList)
+static int32_t getTotalEdgesFrequency(TR::CFGEdgeList& edgesList)
    {
    int32_t totalFreq = 0;
    for (auto edge = edgesList.begin(); edge != edgesList.end(); ++edge)
@@ -592,7 +592,7 @@ TR::CFGEdge *TR::CFGNode::getEdge(TR::CFGNode *n)
    }
 
 template <typename FUNC>
-TR::CFGEdge * TR::CFGNode::getEdgeMatchingNodeInAList (TR::CFGNode * n, TR::list<TR::CFGEdge*>& list, FUNC blockGetter)
+TR::CFGEdge * TR::CFGNode::getEdgeMatchingNodeInAList (TR::CFGNode * n, TR::CFGEdgeList& list, FUNC blockGetter)
 	{
 	for (auto edge = list.begin(); edge != list.end(); ++edge)
 	  {
@@ -1088,7 +1088,7 @@ void OMR::CFG::removeSelfEdge(List<TR::CFGEdge> succList, int32_t selfNumber)
    return;
    }
 
-void OMR::CFG::removeEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber, int32_t destNumber)
+void OMR::CFG::removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber)
    {
 
    for (auto edge = succList.begin(); edge != succList.end();)
@@ -2395,7 +2395,7 @@ static void
 
 /* This will replace the function above, once the other callees are using STL Lists as Argument 1
 static void
-   summarizeEdgeFrequencies(TR::list<TR::CFGEdge*> list, int32_t *sumEdgeFreq, int32_t *edgeCount)
+   summarizeEdgeFrequencies(TR::CFGEdgeList list, int32_t *sumEdgeFreq, int32_t *edgeCount)
    {
    for (auto e = list.begin(); e != list.end(); ++e)
        {

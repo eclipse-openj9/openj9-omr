@@ -4444,11 +4444,11 @@ checkForCandidateBlockForConditionalLoadAndStores(TR::Node* node, TR::CodeGenera
 
    TR::Block * candidateBlock = NULL;
 
-   TR::list<TR::CFGEdge*> & fallthroughSuccessors = fallthroughBlock->getSuccessors();
-   TR::list<TR::CFGEdge*> & fallthroughExceptionSuccessors = fallthroughBlock->getExceptionSuccessors();
+   TR::CFGEdgeList & fallthroughSuccessors = fallthroughBlock->getSuccessors();
+   TR::CFGEdgeList & fallthroughExceptionSuccessors = fallthroughBlock->getExceptionSuccessors();
 
-   TR::list<TR::CFGEdge*> & targetSuccessors = targetBlock->getSuccessors();
-   TR::list<TR::CFGEdge*> & targetExceptionSuccessors = targetBlock->getExceptionSuccessors();
+   TR::CFGEdgeList & targetSuccessors = targetBlock->getSuccessors();
+   TR::CFGEdgeList & targetExceptionSuccessors = targetBlock->getExceptionSuccessors();
 
    // We only consider one target of fallthrough and no exception raised
    // To catch the following scenario.

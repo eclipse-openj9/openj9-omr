@@ -2028,7 +2028,7 @@ bool TR_LoopEstimator::isRecognizableExitEdge(TR::CFGEdge *edge, TR::ILOpCodes *
       {
       // if the block has a single predecessor, look at the predecessor instead
       //
-      TR::list<TR::CFGEdge*> &predList = subNode->getPredecessors();
+      TR::CFGEdgeList &predList = subNode->getPredecessors();
       if ((predList.size() == 1) && subNode->getExceptionPredecessors().empty())
          return isRecognizableExitEdge(predList.front(),
                                        op, ref, prog, limit);

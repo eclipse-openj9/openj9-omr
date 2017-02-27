@@ -2039,7 +2039,7 @@ static void partialRedundantCompareElimination(TR::Node * node, TR::Block * bloc
 
       if (hasCommonedChild(node->getSecondChild(), isVisited)) return;
 
-      TR::list<TR::CFGEdge*>   &predecessors  = ((TR::CFGNode *)block)->getPredecessors();
+      TR::CFGEdgeList   &predecessors  = ((TR::CFGNode *)block)->getPredecessors();
       TR::CFG             *cfg           = comp->getFlowGraph();
       TR::TreeTop         *fallThroughTT = block->getExit()->getNextTreeTop();
       TR::Block           *fallThroughBB = fallThroughTT->getNode()->getBlock();
@@ -3413,8 +3413,8 @@ static double doubleRecip(double value)
 // Legal check
 // bbStartNode -- start node of nextBlock
 // inEdge      -- incoming edges of nextBlock
-static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextBlock, TR::list<TR::CFGEdge*>  &nextExcpOut,
-                    TR::Node    * bbStartNode, TR::list<TR::CFGEdge*>& inEdge, TR::Simplifier * s, bool &blockIsEmpty)
+static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextBlock, TR::CFGEdgeList  &nextExcpOut,
+                    TR::Node    * bbStartNode, TR::CFGEdgeList& inEdge, TR::Simplifier * s, bool &blockIsEmpty)
    {
    TR::CFGEdge* outEdge = block->getSuccessors().front();
 
@@ -3441,7 +3441,7 @@ static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextB
    if (nextBlock->hasExceptionPredecessors())
       return false;
 
-   TR::list<TR::CFGEdge*> &excpOut     = block->getExceptionSuccessors();
+   TR::CFGEdgeList &excpOut     = block->getExceptionSuccessors();
    if (excpOut.empty())
       {
       if (!nextExcpOut.empty())
@@ -3517,9 +3517,9 @@ static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextB
 // Changes branch destinations for merge blocks.
 //
 static void changeBranchDestinationsForMergeBlocks(TR::Block * block, TR::Block * nextBlock,
-                    TR::Node    * bbStartNode, TR::list<TR::CFGEdge*> &inEdge, std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator &inEdgeIter, TR::Simplifier * s)
+                    TR::Node    * bbStartNode, TR::CFGEdgeList &inEdge, std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator &inEdgeIter, TR::Simplifier * s)
    {
-   TR::list<TR::CFGEdge*> &successors     = block->getSuccessors();
+   TR::CFGEdgeList &successors     = block->getSuccessors();
    TR::CFGEdge* outEdge = successors.front();
 
    //if (inEdge->getNextElement() != NULL)
@@ -14889,9 +14889,9 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    TR_ASSERT(bbStartNode->getOpCodeValue() == TR::BBStart, "Simplification, BBEnd not followed by BBStart");
 
    TR::Block * nextBlock                     = bbStartNode->getBlock();
-   TR::list<TR::CFGEdge*>   &inEdge        = nextBlock->getPredecessors();
+   TR::CFGEdgeList   &inEdge        = nextBlock->getPredecessors();
    std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator inEdgeIter = inEdge.begin();
-   TR::list<TR::CFGEdge*>        &nextExcpOut     = nextBlock->getExceptionSuccessors();
+   TR::CFGEdgeList        &nextExcpOut     = nextBlock->getExceptionSuccessors();
    bool                     moreThanOnePred = (!(nextBlock->getPredecessors().empty()) && (nextBlock->getPredecessors().size() > 1));
 
    // Exclude all the illegal cases first since we don't want to return in the middle of merging
@@ -15971,7 +15971,7 @@ TR::Node *nullchkSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
           // Subsequently, if we iterate over the original list, we will end up
           // with an iterator invalidation problem and hence, use a copy instead.
 
-          TR::list<TR::CFGEdge*> list(block->getSuccessors());
+          TR::CFGEdgeList list(block->getSuccessors());
           for (auto edge = list.begin(); edge != list.end(); ++edge)
              {
              if ((*edge)->getTo() != cfg->getEnd())

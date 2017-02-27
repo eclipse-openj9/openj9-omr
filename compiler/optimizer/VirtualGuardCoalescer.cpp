@@ -434,7 +434,7 @@ TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR
          continue;
          }
 
-      TR::list<TR::CFGEdge*> &succs = cursor->getSuccessors();
+      TR::CFGEdgeList &succs = cursor->getSuccessors();
       if (!(succs.size() == 1))
          {
          TR::Block *newCursor = NULL;
@@ -573,7 +573,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
          {
          TR::Block *dest = NULL;
          TR::Block *otherDest = NULL;
-         TR::list<TR::CFGEdge*> &succs = next->getSuccessors();
+         TR::CFGEdgeList &succs = next->getSuccessors();
          if (succs.size() == 1)
             {
             dest = toBlock(succs.front()->getTo());
@@ -674,7 +674,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
    if (!block->getLastRealTreeTop()->getNode()->isTheVirtualGuardForAGuardedInlinedCall())
       return 0;
 
-   TR::list<TR::CFGEdge*> &succ = block->getSuccessors();
+   TR::CFGEdgeList &succ = block->getSuccessors();
    if (!(succ.size() == 2))
       {
       block->getLastRealTreeTop()->getNode()->setLocalIndex(MALFORMED_GUARD);

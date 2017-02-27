@@ -65,7 +65,7 @@ TR_ExceptionTableEntryIterator::TR_ExceptionTableEntryIterator(TR::Compilation *
 
          // create exception ranges from the list of exception predecessors
          //
-         TR::list<TR::CFGEdge*> & exceptionPredecessors = catchBlock->getExceptionPredecessors();
+         TR::CFGEdgeList & exceptionPredecessors = catchBlock->getExceptionPredecessors();
          while (!exceptionPredecessors.empty())
             {
             TR::CFGEdge * e = exceptionPredecessors.front();

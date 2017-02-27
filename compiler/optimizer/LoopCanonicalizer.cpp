@@ -409,7 +409,7 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
          _nodesInCycle->set(rootNode->getNumber());
 
          bool stopAnalyzingThisNode = false;
-         TR::list<TR::CFGEdge*> predList(rootNode->getPredecessors());
+         TR::CFGEdgeList predList(rootNode->getPredecessors());
          predList.insert(predList.end(), rootNode->getExceptionPredecessors().begin(), rootNode->getExceptionPredecessors().end());
          for (auto pred = predList.begin(); pred != predList.end(); ++pred)
             {
@@ -433,7 +433,7 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
       pendingList->reset(root->getNumber());
       _analysisStack.pop();
 
-      TR::list<TR::CFGEdge*> succList(rootNode->getSuccessors());
+      TR::CFGEdgeList succList(rootNode->getSuccessors());
       succList.insert(succList.end(), rootNode->getExceptionSuccessors().begin(), rootNode->getExceptionSuccessors().end());
       for (auto succ = succList.begin(); succ != succList.end(); ++succ)
          {

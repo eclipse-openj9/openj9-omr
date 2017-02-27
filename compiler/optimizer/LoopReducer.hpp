@@ -352,10 +352,10 @@ public:
 
 private:
    void reduceNaturalLoop(TR_RegionStructure * whileLoop);
-   void removeSelfEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber);
+   void removeSelfEdge(TR::CFGEdgeList succList, int32_t selfNumber);
    int addBlock(TR::Block * newBlock, TR::Block ** blocks, int numBlock, const int maxNumBlock);
    int addRegionBlocks(TR_RegionStructure * region, TR::Block ** blocks, int numBlock, const int maxNumBlock);
-   void removeEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber, int32_t destNumber);
+   void removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber);
    bool constrainedIndVar(TR_InductionVariable * indVar);
 
    TR::ILOpCodes convertIf(TR::ILOpCodes ifCmp);

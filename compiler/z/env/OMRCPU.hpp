@@ -78,6 +78,8 @@ public:
    bool getS390SupportsRI() { return false; }
 
    bool getS390SupportsVectorFacility() { return false; }
+   
+   bool getS390SupportsGuardedStorageFacility() { return false; }
 
    TR_S390MachineType getS390MachineType() const { return _s390MachineType; }
    void setS390MachineType(TR_S390MachineType t) { _s390MachineType = t; }

@@ -412,7 +412,7 @@ public:
 
       ZHWProfiler,
       PPCHWProfiler,
-
+      ZGuardedStorage,
       PPCLMGuardedStorage,
 
       CatchTable,

@@ -264,7 +264,7 @@ const char * objectName[] =
 
    "TR_ZHWProfiler",
    "TR_PPCHWProfiler",
-
+   "TR_ZGuardedStorage",
    "TR_PPCLMGuardedStorage",
 
    "CatchTable",

@@ -5057,8 +5057,15 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       TR::InstOpCode::Mnemonic load = loadInstrs[form][numberOfBytesLog2][isSourceSigned][numberOfExtendBits/32-1];
       if (form == RegReg)
          generateRRInstruction(cg, load, node, targetRegister, srcRegister);
+
+      // TODO (GuardedStorage)
       else //if (form == MemReg)
+         {
+         if (load == TR::InstOpCode::LLGF && cg->isEvalCompressionSequence()
+               && (TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility()))
+            load = TR::InstOpCode::LLGFSG;
          generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         }
       }
    else if (numberOfBits == 31 && !useRegPairs)
       {
@@ -6101,7 +6108,16 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                else if (node->getSymbol()->getSize() == 4 && node->force64BitLoad())
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
-                  generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                  {
+                  // TODO (GuardedStorage)
+                  if (!comp->useCompressedPointers() && (node->getOpCodeValue() == TR::aloadi) &&
+                        tempReg->containsCollectedReference() && TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility())
+                  {
+                     generateRXInstruction(cg, TR::InstOpCode::LGG, node, tempReg, tempMR);
+                  }
+                  else
+                     generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                  }
                }
             }
          }

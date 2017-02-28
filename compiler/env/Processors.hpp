@@ -73,7 +73,9 @@ enum TR_Processor
    TR_s370gp9,
    TR_s370gp10,
    TR_s370gp11,
-   TR_Last390Processor = TR_s370gp11,
+   TR_s370gp12,
+
+   TR_Last390Processor = TR_s370gp12,
 
    // ARM Processors
    TR_FirstARMProcessor,

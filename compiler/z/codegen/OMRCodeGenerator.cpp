@@ -461,14 +461,27 @@ TR_S390ProcessorInfo::checkZ13()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TR_S90ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
+////////////////////////////////////////////////////////////////////////////////
+bool
+TR_S390ProcessorInfo::checkZNext()
+   {
+   return TR::Compiler->target.cpu.getS390SupportsZNext();
+   }
+
+////////////////////////////////////////////////////////////////////////////////
 //  TR_S90ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
 ////////////////////////////////////////////////////////////////////////////////
 TR_Processor
 TR_S390ProcessorInfo::getProcessor()
    {
    TR_Processor result = TR_s370gp7;
-   
-   if (supportsArch(TR_S390ProcessorInfo::TR_z13))
+
+   if (supportsArch(TR_S390ProcessorInfo::TR_zNext))
+      {
+      result = TR_s370gp12;
+      }
+   else if (supportsArch(TR_S390ProcessorInfo::TR_z13))
    	{
       result = TR_s370gp11;
       }
@@ -570,6 +583,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
             traceMsg(comp, "disablez13");
             break;
             }
+         case 6:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
+            traceMsg(comp, "RandomGen: Setting disabling zNext processor architecture.");
+            break;
+            }
          }
       }
 
@@ -588,10 +607,15 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
       }
-      
+
    if (comp->getOption(TR_DisableZ13))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
+      }
+
+   if (comp->getOption(TR_DisableZNext))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
       }
 
    _unlatchedRegisterList =

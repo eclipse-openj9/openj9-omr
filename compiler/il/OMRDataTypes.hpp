@@ -114,6 +114,24 @@ typedef int32_t CASECONST_TYPE;
 // If these sizes are changed then the sizes in the Node::DecimalInfo bit container below may have to be changed
 #define TR_MAX_DECIMAL_PRECISION   63  // NOTE: update J9::DataType::getMaxPackedDecimalPrecision() when changing this constant
 
+#define TR_VECTOR_REGISTER_SIZE 16
+#define TR_MAX_INPUT_PACKED_DECIMAL_PRECISION 31
+
+#define TR_FIRST_VALID_SIGN_CODE 0x0a
+#define TR_ALTERNATE_PLUS_CODE   0x0a       // plus
+#define TR_ALTERNATE_MINUS_CODE  0x0b       // minus
+#define TR_PREFERRED_PLUS_CODE   0x0c       // plus (preferred)
+#define TR_PREFERRED_MINUS_CODE  0x0d       // minus (preferred)
+#define TR_ALTERNATE_PLUS_CODE_2 0x0e       // plus
+#define TR_ZONED_PLUS         0x0f       // plus (zone)
+#define TR_LAST_VALID_SIGN_CODE  0x0f
+
+#define TR_INVALID_SIGN_CODE     0x00 // reserve zero to be the invalid sign marker
+#define TR_IGNORED_SIGN_CODE     (-1)   // a special marker value for when a setSign operation can set any or no sign code value (as it will be ignored by consumer)
+
+#define TR_BCD_SIGN_CHAR_SIZE 1                 // one byte for leading leading +/-/u char
+#define TR_BCD_STRLEN (TR_MAX_DECIMAL_PRECISION+TR_BCD_SIGN_CHAR_SIZE+1) // +1 for sign, +1 for terminating null -- for pretty printed string e.g. "+1234"
+
 #define TR_MAX_OTYPE_SIZE TR::getMaxSigned<TR::Int32>()
 
 enum TR_YesNoMaybe

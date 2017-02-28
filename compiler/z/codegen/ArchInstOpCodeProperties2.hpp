@@ -3135,6 +3135,7 @@
    0,
 
       // VPOPCT
+   S390OpProp2_HasExtendedMnemonic |
    S390OpProp2_UsesM3,
 
       // VERLLV
@@ -3460,6 +3461,174 @@
       // TAILCALL
    0,
 
-   	  // DCB
+      // DCB
    0,
 
+   // VLRLR
+   0,
+
+   // VLRL
+   0,
+
+   // VSTRLR
+   0,
+
+   // VSTRL
+   0,
+
+   // VAP
+   S390OpProp2_UsesM5,
+
+   // VCP
+   S390OpProp2_UsesM3,
+
+   // VCVB
+   S390OpProp2_UsesM3,
+
+   // VCVBG
+   S390OpProp2_UsesM3,
+
+   // VCVD
+   S390OpProp2_UsesM4,
+
+   // VCVDG
+   S390OpProp2_UsesM4,
+
+   // VDP
+   S390OpProp2_UsesM5,
+
+   // VLIP
+   0,
+
+   // VMP
+   S390OpProp2_UsesM5,
+
+   // VMSP
+   S390OpProp2_UsesM5,
+
+   // VPKZ
+   0,
+
+   // VPSOP
+   S390OpProp2_UsesM5,
+
+   // VRP
+   S390OpProp2_UsesM5,
+
+   // VSDP
+   S390OpProp2_UsesM5,
+
+   // VSRP
+   S390OpProp2_UsesM5,
+
+   // VSP
+   S390OpProp2_UsesM5,
+
+   // VTP
+   0,
+
+   // VUPKZ
+   0,
+
+   // VBPERM
+   0,
+
+   // VNX
+   0,
+
+   // VMSL
+   S390OpProp2_UsesM5 |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VNN
+   0,
+
+   // VOC
+   0,
+
+   // VFLL
+   S390OpProp2_UsesM3 |
+   S390OpProp2_UsesM4 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VFLR
+   S390OpProp2_UsesM3 |
+   S390OpProp2_UsesM4 |
+   S390OpProp2_UsesM5 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VFMAX
+   S390OpProp2_UsesM4 |
+   S390OpProp2_UsesM5 |
+   S390OpProp2_UsesM6 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VFMIN
+   S390OpProp2_UsesM4 |
+   S390OpProp2_UsesM5 |
+   S390OpProp2_UsesM6 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VFNMA
+   S390OpProp2_UsesM5 |
+   S390OpProp2_UsesM6 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // VFNMS
+   S390OpProp2_UsesM5 |
+   S390OpProp2_UsesM6 |
+   S390OpProp2_VectorFPOp |
+   S390OpProp2_HasExtendedMnemonic,
+
+   // KMGCM
+   0,
+
+   // PRNO
+   0,
+
+   // LGG
+   0,
+
+   // LLGFSG
+   0,
+
+   // LGSC
+   0,
+
+   // STGSC
+   0,
+
+   // AGH
+   0,
+
+   // BIC
+   0,
+
+   // MG
+   0,
+
+   // MGRK
+   0,
+
+   // MGH
+   0,
+
+   // MSC
+   0,
+
+   // MSRKC
+   0,
+
+   // MSGC
+   0,
+
+   // MSGRKC
+   0,
+
+   // SGH
+   0,

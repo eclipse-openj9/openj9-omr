@@ -1114,5 +1114,57 @@
    LABEL,               // Destination of a jump
    TAILCALL,            // Tail Call
    DCB,                 // Debug Counter Bump
-   S390LastOp = DCB,
+
+
+   VLRLR,               // vector Load Rightmost with Length(Length is in register)
+   VLRL,                // vector Load Rightmost with Length(Length is immediate value)
+   VSTRLR,              // vector Store Rightmost with Length(Length is in register)
+   VSTRL,               // vector Store Rightmost with Length(Length is immediate value)
+   VAP,                 // vector Add Decimal
+   VCP,                 // vector Compare decimal
+   VCVB,                // vector convert to binary
+   VCVBG,               // vector convert to binary
+   VCVD,                // vector convert to decimal
+   VCVDG,               // vector convert to decmial
+   VDP,                 // vector divide decimal
+   VLIP,                // vector load immediate decimal  //Pattent issue, Macro protect
+   VMP,                 // vector multiply decimal
+   VMSP,                // vector multiply and shift decimal  //Pattent issue, Macro protect
+   VPKZ,                // vector pack zoned
+   VPSOP,               // vector perform sign operation decimal  //Pattent issue, Macro protect
+   VRP,                 // vector remainder decimal
+   VSDP,                // vector shift and divide decimal  //Pattent issue, Macro protect
+   VSRP,                // vector shift and round decimal
+   VSP,                 // vector subtract decimal
+   VTP,                 // vector test decimal
+   VUPKZ,               // vector unpack zoned
+   VBPERM,              // vector bit permute
+   VNX,                 // vector not exclusive OR
+   VMSL,                // vector multiply sum logical
+   VNN,                 // vector NAND
+   VOC,                 // vector OR with complement
+   VFLL,                // vector FP load lengthened
+   VFLR,                // vector FP load rounded
+   VFMAX,               // vector FP maximum
+   VFMIN,               // vector FP minimum
+   VFNMA,               // vector FP negative multiply and add
+   VFNMS,               // vector FP negative multiply and subtract
+   KMGCM,               // cipher message with galois counter mode
+   PRNO,                // perform random number operation
+   LGG,                 // load guarded
+   LLGFSG,              // load logical and shift guarded (64 <- 32)
+   LGSC,                // load guarded storage controls
+   STGSC,               // store guarded storage controls
+   AGH,                 // add halfword (64 <- 16)
+   BIC,                 // branch indirect on condition
+   MG,                  // multiply (128 <- 64)
+   MGRK,                // multiply (128 <- 64)
+   MGH,                 // multiply halfword (64 <- 16)
+   MSC,                 // multiply single (32)
+   MSRKC,               // multiply single (32)
+   MSGC,                // multiply single (64)
+   MSGRKC,              // multiply single (64)
+   SGH,                 // subtract halfword (64 <- 16)
+
+   S390LastOp = SGH,
 

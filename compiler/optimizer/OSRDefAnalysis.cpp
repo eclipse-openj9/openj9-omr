@@ -1100,47 +1100,6 @@ bool TR_OSRLiveRangeAnalysis::canAffordAnalysis()
    return true;
    }
 
-void TR_OSRExceptionEdgeRemoval::newperform()
-   {
-   TR::CFG *cfg = comp()->getFlowGraph();
-
-   TR::CFGNode *cfgNode;
-   for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
-      {
-      if (cfgNode->getExceptionSuccessors().empty())
-         continue;
-
-      bool blockCanOSR = false;
-      TR::Block *block = toBlock(cfgNode);
-      TR::TreeTop *treeTop;
-      for (treeTop = block->getEntry(); treeTop != block->getExit(); treeTop = treeTop->getNextTreeTop())
-         {
-         if (comp()->isPotentialOSRPointWithSupport(treeTop))
-            {
-            blockCanOSR = true;
-            break;
-            }
-         }
-
-      if (blockCanOSR)
-         continue;
-
-      for (auto edge = block->getExceptionSuccessors().begin(); edge != block->getExceptionSuccessors().end();)
-         {
-         TR::Block *catchBlock = toBlock((*(edge++))->getTo());
-         if (catchBlock->isOSRCatchBlock())
-            {
-            if (!blockCanOSR &&
-                performTransformation(comp(), "%s: Remove redundant exception edge from block_%d at [%p] to OSR catch block_%d at [%p]\n", OPT_DETAILS, block->getNumber(), block, catchBlock->getNumber(), catchBlock))
-                {
-                cfg->removeEdge(block, catchBlock);
-                TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "exceptionEdgeRemoval/(%s)", comp()->signature()));
-                }
-            }
-         }
-      }
-   }
-
 int32_t TR_OSRExceptionEdgeRemoval::perform()
    {
    if (comp()->getHCRMode() != TR::osr)
@@ -1187,12 +1146,6 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
          traceMsg(comp(), "%s OSR exception edge analysis can be done\n",
             optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
          }
-      }
-
-   if (false)//comp()->getHCRMode() == TR::osr && !getLastRun())
-      {
-      newperform();
-      return 1;
       }
 
    TR::CFG *cfg = comp()->getFlowGraph();

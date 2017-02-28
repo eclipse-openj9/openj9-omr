@@ -477,6 +477,7 @@ public:
    virtual void         print(TR::FILE *, TR::LabelSymbol *);
    virtual void         print(TR::LabelSymbol *, TR_PrettyPrinterString&);
    virtual void         print(TR::FILE *, TR_BitVector *);
+   virtual void         print(TR::FILE *, TR_SingleBitContainer *);
    virtual void         print(TR::FILE *pOutFile, TR::BitVector * bv);
    virtual void         print(TR::FILE *pOutFile, TR::SparseBitVector * sparse);
    virtual void         print(TR::FILE *, TR::SymbolReferenceTable *);

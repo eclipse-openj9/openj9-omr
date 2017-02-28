@@ -211,6 +211,15 @@ void TR_BitVector::print(TR::Compilation *comp, TR::FILE *file)
       }
    }
 
+void TR_SingleBitContainer::print(TR::Compilation *comp, TR::FILE *file)
+   {
+   if (comp->getDebug())
+      {
+      if (file == NULL)
+         file = comp->getOutFile();
+      comp->getDebug()->print(file, this);
+      }
+   }
 
 // Compare this with a bit vector
 //

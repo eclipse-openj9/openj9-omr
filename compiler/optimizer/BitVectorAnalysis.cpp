@@ -1617,3 +1617,5 @@ template<class Container>typename TR_BasicDFSetAnalysis<Container *>::TR_Contain
 
 template class TR_BasicDFSetAnalysis<TR_BitVector *>;
 template class TR_ForwardDFSetAnalysis<TR_BitVector *>;
+template class TR_BasicDFSetAnalysis<TR_SingleBitContainer *>;
+template class TR_ForwardDFSetAnalysis<TR_SingleBitContainer *>;

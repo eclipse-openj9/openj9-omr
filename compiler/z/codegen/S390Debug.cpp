@@ -342,6 +342,10 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsVRIc:
       case TR::Instruction::IsVRId:
       case TR::Instruction::IsVRIe:
+      case TR::Instruction::IsVRIf:
+      case TR::Instruction::IsVRIg:
+      case TR::Instruction::IsVRIh:
+      case TR::Instruction::IsVRIi:
             print(pOutFile, (TR::S390VRIInstruction *) instr);
          break;
       case TR::Instruction::IsVRRa:
@@ -350,13 +354,18 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
       case TR::Instruction::IsVRRd:
       case TR::Instruction::IsVRRe:
       case TR::Instruction::IsVRRf:
+      case TR::Instruction::IsVRRg:
+      case TR::Instruction::IsVRRh:
+      case TR::Instruction::IsVRRi:
             print(pOutFile, (TR::S390VRRInstruction *) instr);
          break;
       case TR::Instruction::IsVRSa:
       case TR::Instruction::IsVRSb:
       case TR::Instruction::IsVRSc:
+      case TR::Instruction::IsVRSd:
       case TR::Instruction::IsVRV:
       case TR::Instruction::IsVRX:
+      case TR::Instruction::IsVSI:
             print(pOutFile, (TR::S390VStorageInstruction *) instr);
          break;
       default:
@@ -3262,14 +3271,14 @@ TR_Debug::updateBranchName(const char * opCodeName, const char * brCondName)
    return "";
    }
 
+/**
+ *
+ * TR_Debug print VRI instruction info
+*/
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390VRIInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-
-   TR_ASSERT(instr->getM3() == 0 || instr->getOpCode().usesM3(), "M3 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-   TR_ASSERT(instr->getM4() == 0 || instr->getOpCode().usesM4(), "M4 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-   TR_ASSERT(instr->getM5() == 0 || instr->getOpCode().usesM5(), "M5 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
 
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getExtendedMnemonicName());
 
@@ -3283,23 +3292,40 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VRIInstruction * instr)
    switch(instr->getKind())
       {
       case TR::Instruction::IsVRIa:
-         trfprintf(pOutFile, ",0x%x", maskHalf(instr->getImmediateField()));
+         trfprintf(pOutFile, ",0x%x", static_cast<TR::S390VRIaInstruction*>(instr)->getImmediateField2());
          break;
       case TR::Instruction::IsVRIb:
          trfprintf(pOutFile, ",0x%x,0x%x",
-               maskHalf(((TR::S390VRIbInstruction*)instr)->getImmediateField2()),
-               maskHalf(((TR::S390VRIbInstruction*)instr)->getImmediateField3()));
+               maskHalf(static_cast<TR::S390VRIbInstruction*>(instr)->getImmediateField2()),
+               maskHalf(static_cast<TR::S390VRIbInstruction*>(instr)->getImmediateField3()));
          break;
       case TR::Instruction::IsVRIc:
-         trfprintf(pOutFile, ",0x%x", maskHalf(instr->getImmediateField()));
+         trfprintf(pOutFile, ",0x%x", (maskHalf(static_cast<TR::S390VRIcInstruction*>(instr)->getImmediateField2())));
          break;
       case TR::Instruction::IsVRId:
          trfprintf(pOutFile, ",0x%x",
-               maskHalf(((TR::S390VRIdInstruction*)instr)->getImmediateField4()));
+               maskHalf(static_cast<TR::S390VRIdInstruction*>(instr)->getImmediateField4()));
          break;
       case TR::Instruction::IsVRIe:
          trfprintf(pOutFile, ",0x%x",
-               maskHalf(((TR::S390VRIeInstruction*)instr)->getImmediateField3()));
+               maskHalf(static_cast<TR::S390VRIeInstruction*>(instr)->getImmediateField3()));
+         break;
+      case TR::Instruction::IsVRIf:
+         trfprintf(pOutFile, ",0x%x",
+               maskHalf(static_cast<TR::S390VRIfInstruction*>(instr)->getImmediateField4()));
+         break;
+      case TR::Instruction::IsVRIg:
+         trfprintf(pOutFile, ",0x%x, 0x%x",
+               maskHalf(static_cast<TR::S390VRIgInstruction*>(instr)->getImmediateField3()),
+               maskHalf(static_cast<TR::S390VRIgInstruction*>(instr)->getImmediateField4()));
+         break;
+      case TR::Instruction::IsVRIh:
+         trfprintf(pOutFile, ",0x%x",
+               maskHalf(static_cast<TR::S390VRIhInstruction*>(instr)->getImmediateField3()));
+         break;
+      case TR::Instruction::IsVRIi:
+         trfprintf(pOutFile, ",0x%x",
+               maskHalf(static_cast<TR::S390VRIiInstruction*>(instr)->getImmediateField3()));
          break;
       default:
          TR_ASSERT(false, "Unknown VRI type");
@@ -3315,25 +3341,28 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VRIInstruction * instr)
    trfflush(pOutFile);
    }
 
+/**
+ *
+ * TR_Debug print VRR instruction info
+*/
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390VRRInstruction * instr)
    {
    // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
 
-   TR_ASSERT(instr->getM3() == 0 || instr->getOpCode().usesM3(), "M3 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-   TR_ASSERT(instr->getM4() == 0 || instr->getOpCode().usesM4(), "M4 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-   TR_ASSERT(instr->getM5() == 0 || instr->getOpCode().usesM5(), "M5 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-   TR_ASSERT(instr->getM6() == 0 || instr->getOpCode().usesM6(), "M6 field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getExtendedMnemonicName());
 
+   // iterate through all Register operands
    for(int i = 1; instr->getRegisterOperand(i); i++)
       {
       if (i != 1)
          trfprintf(pOutFile, ",");
-      // the second and third register in VRRf format is GPR
-      bool isGPR = (instr->getKind() == TR::Instruction::IsVRRf && (i == 2 || i == 3));
+
+      // Register operand is GPR for VRR-f's 2nd and 3rd operand, or VRR-i's 1st operand
+      bool isGPR = (instr->getKind() == TR::Instruction::IsVRRf && (i == 2 || i == 3)) ||
+              (instr->getKind() == TR::Instruction::IsVRRi && (i == 1));
+
       print(pOutFile, instr->getRegisterOperand(i), (isGPR)?TR_WordReg:TR_VectorReg);
       }
 
@@ -3349,36 +3378,53 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VRRInstruction * instr)
    trfflush(pOutFile);
    }
 
+/**
+ *
+ * TR_Debug print VStroage instruction info
+*/
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390VStorageInstruction * instr)
    {
    printPrefix(pOutFile, instr);
 
-   TR_ASSERT(instr->getMaskField() == 0 || instr->getOpCode().usesM3() || instr->getOpCode().usesM4(), "mask field not defined for instruction %s", getOpCodeName(&instr->getOpCode()));
-
    trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getExtendedMnemonicName());
 
-   bool firstRegIsGPR = (instr->getKind() == TR::Instruction::IsVRSc);
-   bool secondRegIsGPR = (instr->getKind() == TR::Instruction::IsVRSb);
+   OMR::Instruction::Kind instKind = instr->getKind();
+   bool firstRegIsGPR = (instKind == TR::Instruction::IsVRSc);
+   bool secondRegIsGPR = (instKind == TR::Instruction::IsVRSb) || (instKind == TR::Instruction::IsVRSd);
 
+   // 1st register operand
    print(pOutFile, instr->getRegisterOperand(1), (firstRegIsGPR)?TR_WordReg:TR_VectorReg);
 
+   // 2nd register operand, if any
    trfprintf(pOutFile, ",");
-   if (instr->getKind() != TR::Instruction::IsVRX &&
-       instr->getKind() != TR::Instruction::IsVRV)
+   if (instKind != TR::Instruction::IsVRX &&
+       instKind != TR::Instruction::IsVRV &&
+       instKind != TR::Instruction::IsVSI)
       {
       print(pOutFile, instr->getRegisterOperand(2),(secondRegIsGPR)?TR_WordReg:TR_VectorReg);
       trfprintf(pOutFile, ",");
       }
+
+   // memory reference
    print(pOutFile, instr->getMemoryReference(), instr);
-   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ? instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ?
+               instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
+
    if (instr->getOpCode().isLoad() && symbol && symbol->isSpillTempAuto())
       {
       trfprintf(pOutFile, "\t\t#/* spilled for %s */", getName(instr->getNode()->getOpCode()));
       }
 
+   // mask, if any
    if (instr->getPrintMaskField())
       trfprintf(pOutFile, ",%d", instr->getMaskField());
+
+   // immediates. VSI only for now. 8-bit long.
+   if(instKind == TR::Instruction::IsVSI)
+      {
+      trfprintf(pOutFile, ",0x%x", maskHalf(static_cast<TR::S390VSIInstruction*>(instr)->getImmediateField3()));
+      }
 
    trfflush(pOutFile);
    }

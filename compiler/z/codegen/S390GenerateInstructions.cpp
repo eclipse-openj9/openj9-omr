@@ -1785,9 +1785,9 @@ generateRRInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::No
 
 /**
  * Note: We leave the mask fields (3,4,5,6) to the consumer of these methods since their use varies significantly between
- *      VRI: a,b,c,d,e
- *      VRR: a,b,c,d,e,f
- *      VRS: a,b,c
+ *      VRI: a,b,c,d,e,f,g,h,i
+ *      VRR: a,b,c,d,e,f,g,h,i
+ *      VRS: a,b,c,d
  * ..and even within each of them.
  *
  * The naming convention for parameters follows zPops.
@@ -1835,6 +1835,92 @@ generateVRIeInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
                         uint16_t constantImm3 /* 12 bits */, uint8_t mask5 /* 4 bits */, uint8_t mask4 /* 4 bits */)
    {
    return new (INSN_HEAP) TR::S390VRIeInstruction(cg, op, n, targetReg, sourceReg2, constantImm3, mask5, mask4);
+   }
+
+TR::Instruction *
+generateVRIfInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      TR::Register           * sourceReg3,
+                      uint8_t                constantImm4,   /* 8 bits  */
+                      uint8_t                 mask5   )         /* 4 bits */
+   {
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRIfInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3, constantImm4, mask5);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VAP ||
+           op == TR::InstOpCode::VSP ||
+           op == TR::InstOpCode::VDP ||
+           op == TR::InstOpCode::VMP ||
+           op == TR::InstOpCode::VMSP ||
+           op == TR::InstOpCode::VSDP ||
+           op == TR::InstOpCode::VRP)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
+   return instr;
+   }
+
+TR::Instruction *
+generateVRIgInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      uint8_t                constantImm3,   /* 8 bits  */
+                      uint8_t                constantImm4,   /* 8 bits  */
+                      uint8_t                 mask5   )     /* 4 bits  */
+   {
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRIgInstruction(cg, op, n, targetReg, sourceReg2, constantImm3, constantImm4, mask5);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VPSOP || op == TR::InstOpCode::VSRP)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
+   return instr;
+   }
+
+TR::Instruction *
+generateVRIhInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      uint16_t               constantImm2,   /* 16 bits  */
+                      uint8_t                constantImm3 )  /* 4 bits  */
+   {
+   return new (INSN_HEAP) TR::S390VRIhInstruction(cg, op, n, targetReg, constantImm2, constantImm3);
+   }
+
+TR::Instruction *
+generateVRIiInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      uint8_t                constantImm3,   /* 8 bits  */
+                      uint8_t                 mask4)         /* 4 bits  */
+   {
+   TR::Instruction* instr =  new (INSN_HEAP) TR::S390VRIiInstruction(cg, op, n, targetReg, sourceReg2, constantImm3, mask4);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VCVD || op == TR::InstOpCode::VCVDG)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
+   return instr;
    }
 
 /****** VRR ******/
@@ -1902,6 +1988,59 @@ generateVRRfInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
    return new (INSN_HEAP) TR::S390VRRfInstruction(cg, op, n, targetReg, sourceReg2, sourceReg3);
    }
 
+
+TR::Instruction *
+generateVRRgInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  )   /* Vector register */
+   {
+   return new (INSN_HEAP) TR::S390VRRgInstruction(cg, op, n, targetReg);
+   }
+
+
+TR::Instruction *
+generateVRRhInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,    /* Vector register */
+                      TR::Register            * sourceReg2 ,    /* Vector register */
+                      uint8_t                   mask3)          /* 4 bits*/
+   {
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRhInstruction(cg, op, n, targetReg, sourceReg2, mask3);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VCP)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
+   return instr;
+   }
+
+TR::Instruction * generateVRRiInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,    /* GPR */
+                      TR::Register            * sourceReg2 ,    /* VRF */
+                      uint8_t                   mask3)          /* 4 bits*/
+   {
+   TR::Instruction* instr = new (INSN_HEAP) TR::S390VRRiInstruction(cg, op, n, targetReg, sourceReg2, mask3);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (op == TR::InstOpCode::VCVB || op == TR::InstOpCode::VCVBG)
+      {
+      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
+      }
+#endif
+
+   return instr;
+   }
+
 /****** VRS ******/
 /* Note subtle differences between register types and optionality of masks between these 3*/
 TR::Instruction *
@@ -1925,6 +2064,18 @@ generateVRScInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
    return new (INSN_HEAP) TR::S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
+TR::Instruction *
+generateVRSdInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic op          ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,   /* VRF */
+                      TR::Register            * sourceReg3 ,   /* GPR R3 */
+                      TR::MemoryReference     * mr        )
+   {
+   return new (INSN_HEAP) TR::S390VRSdInstruction(cg, op, n, targetReg, sourceReg3, mr);
+   }
+
 /****** VRV ******/
 TR::Instruction *
 generateVRVInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register *sourceReg, TR::MemoryReference * mr,
@@ -1944,6 +2095,18 @@ generateVRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
       return new (INSN_HEAP) TR::S390VRXInstruction(cg, op, n, reg, memRef, mask3, preced);
    else
       return new (INSN_HEAP) TR::S390VRXInstruction(cg, op, n, reg, memRef, mask3);
+   }
+
+/****** VSI ******/
+TR::Instruction * generateVSIInstruction(
+                      TR::CodeGenerator      * cg ,
+                      TR::InstOpCode::Mnemonic op ,
+                      TR::Node               * n  ,
+                      TR::Register           * reg,   /* VRF */
+                      TR::MemoryReference    * mr ,
+                      uint8_t                  imm3)  /* 8 bits */
+   {
+   return new (INSN_HEAP) TR::S390VSIInstruction(cg, op, n, reg, mr, imm3);
    }
 
 /************************************************************ Misc Instructions ************************************************************/
@@ -3276,13 +3439,28 @@ canThrowDecimalOverflowException(TR::InstOpCode::Mnemonic op)
    {
    switch(op)
       {
-   case TR::InstOpCode::AP:
-   case TR::InstOpCode::SP:
-   case TR::InstOpCode::SRP:
-   case TR::InstOpCode::ZAP:
-       return true;
-   default:
-       return false;
+      // Decimal Overflow exception instructions
+      case TR::InstOpCode::AP:
+      case TR::InstOpCode::SP:
+      case TR::InstOpCode::SRP:
+      case TR::InstOpCode::ZAP:
+      case TR::InstOpCode::VAP:
+      case TR::InstOpCode::VCVD:
+      case TR::InstOpCode::VCVDG:
+      case TR::InstOpCode::VDP:
+      case TR::InstOpCode::VMP:
+      case TR::InstOpCode::VMSP:
+      case TR::InstOpCode::VPSOP:
+      case TR::InstOpCode::VRP:
+      case TR::InstOpCode::VSDP:
+      case TR::InstOpCode::VSRP:
+      case TR::InstOpCode::VSP:
+      // Fixed point overflow exception instructions
+      case TR::InstOpCode::VCVB:
+      case TR::InstOpCode::VCVBG:
+          return true;
+      default:
+          return false;
       }
    }
 

@@ -165,47 +165,82 @@ OMR::Z::RealRegister::isLowWordRegister()
    }
 
 
-// static method
+/** \details
+ *
+ * Static method that sets the RXB field for vector register operands.
+ *
+ * Only VRF Register can set this RXB field. When a vector register acts as operands, its
+ * register binary encoding's most significant bit is stored in 1 of 4 RXB bits.
+ *
+ * The RXB field is in the lower 4 bits of fifth byte (i.e. bit 36-39 of an instructions)
+ *
+ */
 void
 OMR::Z::RealRegister::setRegisterRXBField(uint32_t *instruction, RegNum reg, int index)
    {
    TR_ASSERT(TR::RealRegister::isVRF(reg), "Only VRF Register has RXB field.");
    TR_ASSERT(index >= 1 && index <= 4, "index out of range.");
+
    uint32_t RXB = boi( (_fullRegBinaryEncodings[reg] & 0x10) >> 4 << (4 - index) << 24 );
-   *(instruction + 1) |= RXB; // RXB field is in the lower 4 bits of fifth byte
+   *(instruction + 1) |= RXB;
    }
 
-// static method
+/** \details
+ *
+ * Static method set base register field.
+ * The 'base register field' corresponds to bit 16-19 of an instruction, which is
+ * where the 3rd field for register operands
+ *
+ * Also sets the 3rd bit of RXB in case the 3rd field refers to a VRF register
+ *
+*/
 void
 OMR::Z::RealRegister::setBaseRegisterField(uint32_t *instruction,RegNum reg)
    {
-   *instruction &= boi(0xFFFF0FFF); // clear out the memory first
+   *instruction &= boi(0xFFFF0FFF); // clear out bit 16-19 of the instruction memory
    *instruction |= boi( (_fullRegBinaryEncodings[reg] & 0x0f) << 12);
    if (TR::RealRegister::isVRF(reg))
       TR::RealRegister::setRegisterRXBField(instruction, reg, 3); // base reg is in the 3rd register field
    }
 
-// static method
+/** \details
+ *
+ * Static Set Index Register Field.
+ * The index register field corresponds to bit 12-15 of an instruction, which is
+ * where the 2nd field for register operands
+ *
+ * Slso sets the 2nd bit of RXB in case bit 12-15 refers to an VRF register
+ *
+*/
 void
 OMR::Z::RealRegister::setIndexRegisterField(uint32_t *instruction,RegNum reg)
    {
-   *instruction &= boi(0xFFF0FFFF); // clear out the memory first
+   *instruction &= boi(0xFFF0FFFF); // clear out bit 12-15 of the instruction memory
    *instruction |= boi( (_fullRegBinaryEncodings[reg] & 0x0f) << 16);
    if (TR::RealRegister::isVRF(reg))
       TR::RealRegister::setRegisterRXBField(instruction, reg, 2); // index reg is in the 2nd register field
    }
 
-// static method
+/** \details
+ *
+ * Static method that sets register field
+ * The register field is bit 8-11 of an instruction, which is where the 1st field for register operands
+ *
+ * Also sets the 1nd bit of RXB in case the 1st field is a VRF register
+*/
 void
 OMR::Z::RealRegister::setRegisterField(uint32_t *instruction,RegNum reg)
    {
-   *instruction &= boi(0xFF0FFFFF); // clear out the memory first
+   *instruction &= boi(0xFF0FFFFF); // clear out bit 8-11 of the instruction memory
    *instruction |= boi( (_fullRegBinaryEncodings[reg] & 0x0f) << 20);
    if (TR::RealRegister::isVRF(reg))
       TR::RealRegister::setRegisterRXBField(instruction, reg, 1); // 1st register field
    }
 
-// static method
+/** \details
+ *
+ * Set register field with nibble
+*/
 void
 OMR::Z::RealRegister::setRegisterField(uint32_t *instruction, int32_t nibbleIndex,RegNum reg)
    {
@@ -217,28 +252,43 @@ OMR::Z::RealRegister::setRegisterField(uint32_t *instruction, int32_t nibbleInde
    *instruction |= boi((_fullRegBinaryEncodings[reg] & 0x0f) << nibbleIndex*4);
    }
 
-// static method
+/** \details
+ *
+ * Static method that sets register1 field
+*/
 void
 OMR::Z::RealRegister::setRegister1Field(uint32_t *instruction,RegNum reg)
    {
    TR::RealRegister::setRegisterField(instruction,reg);
    }
 
-// static method
+
+/** \details
+ *
+ * Static method that sets register2 field (also refered to as the index register)
+*/
 void
 OMR::Z::RealRegister::setRegister2Field(uint32_t *instruction,RegNum reg)
    {
    TR::RealRegister::setIndexRegisterField(instruction,reg);
    }
 
-// static method
+/** \details
+ *
+ * Static method that sets register3 field, which is also refered to as the base register at bit 16-19
+*/
 void
 OMR::Z::RealRegister::setRegister3Field(uint32_t *instruction,RegNum reg)
    {
    TR::RealRegister::setBaseRegisterField(instruction,reg);
    }
 
-// static method
+/** \details
+ *
+ * A static method that sets register4 field
+ * The 4th reg field is in the 1st 4-bit of the 3rd halfword (bit 32-35) of the instruction
+ *
+*/
 void
 OMR::Z::RealRegister::setRegister4Field(uint32_t *instruction,RegNum reg)
    {

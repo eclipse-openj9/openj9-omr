@@ -910,6 +910,47 @@ TR::Instruction * generateVRIeInstruction(
                       uint8_t                 mask4       );  /*  4 bits */
 
 
+TR::Instruction * generateVRIfInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      TR::Register           * sourceReg3,
+                      uint8_t                constantImm4,   /* 8 bits  */
+                      uint8_t                 mask5   );     /* 4 bits */
+
+
+
+TR::Instruction * generateVRIgInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      uint8_t                constantImm3,   /* 8 bits  */
+                      uint8_t                constantImm4,   /* 8 bits  */
+                      uint8_t                 mask5   );     /* 4 bits  */
+
+
+TR::Instruction * generateVRIhInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      uint16_t               constantImm2,   /* 16 bits  */
+                      uint8_t                constantImm3 ); /* 4 bits  */
+
+
+TR::Instruction * generateVRIiInstruction(
+                      TR::CodeGenerator    * cg,
+                      TR::InstOpCode::Mnemonic   op,
+                      TR::Node               * n,
+                      TR::Register           * targetReg,
+                      TR::Register           * sourceReg2,
+                      uint8_t                constantImm3,   /* 8 bits  */
+                      uint8_t                 mask4);        /* 4 bits  */
+
 /****** VRR ******/
 TR::Instruction * generateVRRaInstruction(
                       TR::CodeGenerator     * cg         ,
@@ -990,6 +1031,30 @@ TR::Instruction * generateVRRfInstruction(
                       TR::Register            * sourceReg2 ,   /* GPR */
                       TR::Register            * sourceReg3 );  /* GPR */
 
+TR::Instruction * generateVRRgInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  );  /* Vector register */
+
+
+TR::Instruction * generateVRRhInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,    /* Vector register */
+                      TR::Register            * sourceReg2 ,    /* Vector register */
+                      uint8_t                   mask3);         /* 4 bits*/
+
+
+TR::Instruction * generateVRRiInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic  op         ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,    /* GPR */
+                      TR::Register            * sourceReg2 ,    /* VRF */
+                      uint8_t                   mask3);         /* 4 bits*/
+
 /****** VRS ******/
 TR::Instruction * generateVRSaInstruction(
                       TR::CodeGenerator     * cg         ,
@@ -1018,6 +1083,14 @@ TR::Instruction * generateVRScInstruction(
                       TR::MemoryReference * mr         ,
                       uint8_t                  mask4      );  /* 4 bits */
 
+TR::Instruction * generateVRSdInstruction(
+                      TR::CodeGenerator       * cg         ,
+                      TR::InstOpCode::Mnemonic op          ,
+                      TR::Node                * n          ,
+                      TR::Register            * targetReg  ,   /* VRF */
+                      TR::Register            * sourceReg3 ,   /* GPR R3 */
+                      TR::MemoryReference     * mr        );
+
 /****** VRV ******/
 TR::Instruction * generateVRVInstruction(
                       TR::CodeGenerator     * cg         ,
@@ -1036,6 +1109,16 @@ TR::Instruction * generateVRXInstruction(
                       TR::MemoryReference * mr         ,
                       uint8_t                  mask3  = 0 ,   /* 4 bits */
                       TR::Instruction     * preced = NULL);
+
+
+/****** VSI ******/
+TR::Instruction * generateVSIInstruction(
+                      TR::CodeGenerator      * cg         ,
+                      TR::InstOpCode::Mnemonic op         ,
+                      TR::Node               * n          ,
+                      TR::Register           * reg        ,   /* VRF */
+                      TR::MemoryReference    * mr         ,
+                      uint8_t                  imm3  = 0);   /* 8 bits */
 
 /************************************************************ Misc Instructions ************************************************************/
 TR::Instruction *generateS390ImmSymInstruction(
@@ -1328,6 +1411,7 @@ void generateShiftAndKeepSelected31Bit(
       int aToBit, int aShiftAmount, bool aClearOtherBits, bool aSetConditionCode);
 
 TR::Instruction *generateZeroVector(TR::Node *node, TR::CodeGenerator *cg, TR::Register *vecZeroReg);
+
 #ifdef DEBUG
 #define TRACE_EVAL
 #endif

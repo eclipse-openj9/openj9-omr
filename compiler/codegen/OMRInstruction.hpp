@@ -54,7 +54,11 @@ namespace TR { class Snippet; }
 
 namespace OMR
 {
-
+/**
+ * Instruction class
+ *
+ * OMR_EXTENSIBLE
+*/
 class OMR_EXTENSIBLE Instruction
    {
    protected:
@@ -95,11 +99,11 @@ class OMR_EXTENSIBLE Instruction
    /*
     * Instruction stream links.
     */
-   TR::Instruction *getNext() { return _next; };
-   void setNext(TR::Instruction *n) { _next = n; };
+   TR::Instruction *getNext() { return _next; }
+   void setNext(TR::Instruction *n) { _next = n; }
 
-   TR::Instruction *getPrev() { return _prev; };
-   void setPrev(TR::Instruction *p) { _prev = p; };
+   TR::Instruction *getPrev() { return _prev; }
+   void setPrev(TR::Instruction *p) { _prev = p; }
 
    void remove();
    TR::Instruction *move(TR::Instruction *newLocation);
@@ -108,8 +112,8 @@ class OMR_EXTENSIBLE Instruction
     * Address of binary buffer where this instruction was encoded.  The binary buffer
     * is NULL if this instruction has not been encoded yet.
     */
-   uint8_t *getBinaryEncoding() { return _binaryEncodingBuffer; };
-   void setBinaryEncoding(uint8_t *be) { _binaryEncodingBuffer = be; };
+   uint8_t *getBinaryEncoding() { return _binaryEncodingBuffer; }
+   void setBinaryEncoding(uint8_t *be) { _binaryEncodingBuffer = be; }
 
    uint8_t getBinaryLength() { return _binaryLength; }
    void setBinaryLength(uint8_t length) { _binaryLength = length; }

@@ -195,6 +195,7 @@ public:
    TR::IlValue *CreateLocalStruct(TR::IlType *structType);
    TR::IlValue *Load(const char *name);
    void Store(const char *name, TR::IlValue *value);
+   void StoreOver(TR::IlValue *dest, TR::IlValue *value);
    TR::IlValue *LoadAt(TR::IlType *dt, TR::IlValue *address);
    void StoreAt(TR::IlValue *address, TR::IlValue *value);
    TR::IlValue *LoadIndirect(const char *type, const char *field, TR::IlValue *object);

@@ -612,6 +612,18 @@ IlBuilder::Store(const char *varName, TR::IlValue *value)
    }
 
 /**
+ * @brief Store an IlValue into the same local value as another IlValue
+ * @param dest IlValue that should now hold the same value as "value"
+ * @param value IlValue that should overwrite "dest"
+ */
+void
+IlBuilder::StoreOver(TR::IlValue *dest, TR::IlValue *value)
+   {
+   ILB_REPLAY("%s->StoreOver(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(dest), REPLAY_VALUE(value));
+   Store(dest->getSymbol()->getAutoSymbol()->getName(), value);
+   }
+
+/**
  * @brief Store a vector IlValue into a named local variable
  * @param varName the name of the local variable to be vector stored into. if the name has not been used before, this local variable will
  *                take the same data type as the value being written to it. The width of this data will be determined by the vector

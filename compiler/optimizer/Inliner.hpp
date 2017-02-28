@@ -559,7 +559,21 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
       bool aggressiveSmallAppOpts() { return TR::Options::getCmdLineOptions()->getOption(TR_AggressiveOpts); }
       virtual bool willBeInlinedInCodeGen(TR::RecognizedMethod method);
       virtual bool canInlineMethodWhileInstrumenting(TR_ResolvedMethod *method);
-      virtual bool skipHCRGuardForCallee(TR::ResolvedMethodSymbol *calleeSymbol){return false;}
+
+      /** \brief
+       *     Determines whether to skip generation of HCR guards for a particular callee during inlining.
+       *
+       *  \param callee
+       *     The callee to be inlined.
+       *
+       *  \return
+       *     true if we can skip generating HCR guards for this \p callee; false otherwise.
+       */
+      virtual bool skipHCRGuardForCallee(TR_ResolvedMethod* callee)
+         {
+         return false;
+         }
+
       virtual bool dontPrivatizeArgumentsForRecognizedMethod(TR::RecognizedMethod recognizedMethod);
       virtual bool replaceSoftwareCheckWithHardwareCheck(TR_ResolvedMethod *calleeMethod);
    protected:

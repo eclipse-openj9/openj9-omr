@@ -302,24 +302,14 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * secondChild = node->getSecondChild();
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * targetRegister = NULL;
-
-   TR::Instruction * cursor = NULL;
    TR::LabelSymbol *skipAdd = NULL;
-
-   //if (firstChild->getRegister())
-   //    targetRegister = firstChild->getRegister();
-   // else
-   //    targetRegister = cg->evaluate(firstChild);
 
    TR::Node *curTreeNode = cg->getCurrentEvaluationTreeTop()->getNode();
    bool bumpedRefCount = false;
-   TR::Register *tempRegister;
 
-   bool isCompressionSequence = false;
-   if (TR::Compiler->target.is64Bit() &&
-         comp->useCompressedPointers() &&
-         node->containsCompressionSequence())
-      isCompressionSequence = true;
+   bool isCompressionSequence = TR::Compiler->target.is64Bit() &&
+           comp->useCompressedPointers() &&
+           node->containsCompressionSequence();
 
    if (NEED_CC(node) || (node->getOpCodeValue() == TR::luaddc))
       {
@@ -344,11 +334,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
       firstChild->incReferenceCount();
       }
 
-   bool oldSequence = true;
-   bool olderSequence = true;
-
-   if (isCompressionSequence &&
-         ((oldSequence && !olderSequence) || !firstChild->isNonZero()))
+   if (isCompressionSequence && !firstChild->isNonZero())
       {
       targetRegister = cg->gprClobberEvaluate(firstChild);
       }
@@ -356,52 +342,12 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register *secondRegister = NULL;
    if (isCompressionSequence)
       {
-      if (oldSequence)
-         {
-         if (isCompressionSequence &&
-               (secondChild->getReferenceCount() > 1) /*
-                                                         ((secondChild->getOpCodeValue() != TR::lconst) ||
-                                                         (secondChild->getRegister() != NULL))*/)
-                  secondRegister = cg->evaluate(secondChild);
-         }
-      else
-         secondRegister = cg->evaluate(secondChild);
+      if (isCompressionSequence &&
+            (secondChild->getReferenceCount() > 1))
+               secondRegister = cg->evaluate(secondChild);
       }
 
    bool hasCompressedPointers = TR::TreeEvaluator::genNullTestForCompressedPointers(node, cg, targetRegister, skipAdd);
-
-   TR::Register *firstRegisterCopied = firstChild->getRegister();
-   TR::Register *tempReg1 = NULL;
-
-   if (!oldSequence)
-      {
-      if (isCompressionSequence)
-         {
-         if (skipAdd)
-            {
-            if (targetRegister && (targetRegister == firstChild->getRegister()))
-               {
-               firstRegisterCopied = cg->allocateRegister();
-               tempReg1 = firstRegisterCopied;
-
-               generateRRInstruction(cg, TR::InstOpCode::LGR, node, firstRegisterCopied, firstChild->getRegister());
-               }
-
-            generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetRegister, secondRegister);
-            }
-         else
-            {
-            TR::Register *secondRegisterCopied = secondChild->getRegister();
-            if (!cg->canClobberNodesRegister(secondChild))
-               {
-               secondRegisterCopied = cg->allocateRegister();
-               generateRRInstruction(cg, TR::InstOpCode::LGR, node, secondRegisterCopied, secondChild->getRegister());
-               }
-
-            targetRegister = secondRegisterCopied;
-            }
-         }
-      }
 
    if (hasCompressedPointers &&
          ((secondChild->getOpCodeValue() != TR::lconst) ||
@@ -410,64 +356,32 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
       secondRegister = cg->evaluate(secondChild);
 
       bool addDepForCompressedValue = false;
-      if (oldSequence)
-         {
-         if (olderSequence)
-            {
-            TR::MemoryReference * laddMR = generateS390MemoryReference(cg);
-            laddMR->populateMemoryReference(firstChild, cg);
-            laddMR->populateMemoryReference(secondChild, cg);
-            if (!targetRegister)
-               targetRegister = cg->allocateRegister();
 
-            if (firstChild->getReferenceCount() > 1 &&
-                  firstChild->getRegister() &&
-                  targetRegister != firstChild->getRegister())
-               addDepForCompressedValue = true;
+      TR::MemoryReference * laddMR = generateS390MemoryReference(cg);
+      laddMR->populateMemoryReference(firstChild, cg);
+      laddMR->populateMemoryReference(secondChild, cg);
+      if (!targetRegister)
+         targetRegister = cg->allocateRegister();
 
-            generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, laddMR);
-            }
-         else
-            generateRRInstruction(cg, TR::InstOpCode::AGR, node, targetRegister, secondRegister);
-         }
-      else
-         {
-         if (firstRegisterCopied == NULL)
-            {
-            TR::Node *memRefChild = firstChild;
-            if (memRefChild->getOpCodeValue() == TR::iu2l)
-               memRefChild = memRefChild->getFirstChild();
+      if (firstChild->getReferenceCount() > 1 &&
+            firstChild->getRegister() &&
+            targetRegister != firstChild->getRegister())
+         addDepForCompressedValue = true;
 
-            TR::MemoryReference * tempMR = generateS390MemoryReference(memRefChild, cg);
-            generateRXInstruction(cg, TR::InstOpCode::L, node, targetRegister, tempMR);
-            }
-         else
-            {
-            generateRRInstruction(cg, TR::InstOpCode::LR, node, targetRegister, firstRegisterCopied);
-            }
-         }
+      generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, laddMR);
 
       node->setRegister(targetRegister);
 
       if (skipAdd)
          {
          TR::RegisterDependencyConditions *conditions;
-         if (true || oldSequence)
-            {
-            int32_t numConditions = addDepForCompressedValue ? 3 : 2;
-            conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
-            }
-         else
-            {
-            conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
-            }
+         conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
          conditions->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
-         if (true || oldSequence)
-            {
-            conditions->addPostCondition(secondRegister, TR::RealRegister::AssignAny);
-            if (addDepForCompressedValue)
-               conditions->addPostCondition(firstChild->getRegister(), TR::RealRegister::AssignAny);
-            }
+         conditions->addPostCondition(secondRegister, TR::RealRegister::AssignAny);
+         if (addDepForCompressedValue)
+            conditions->addPostCondition(firstChild->getRegister(), TR::RealRegister::AssignAny);
+
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipAdd, conditions);
          }
 
@@ -479,10 +393,11 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
       int64_t long_value = secondChild->getLongInt();
 
       if (!targetRegister)
+         {
          targetRegister = cg->gprClobberEvaluate(firstChild);
+         }
 
       generateS390ImmOp(cg, TR::InstOpCode::AG, node, targetRegister, targetRegister, long_value);
-
       node->setRegister(targetRegister);
 
       if (hasCompressedPointers && skipAdd)
@@ -508,9 +423,6 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
    if (bumpedRefCount)
       firstChild->decReferenceCount();
-
-   if (tempReg1)
-      cg->stopUsingRegister(tempReg1);
 
    cg->ensure64BitRegister(targetRegister);
    return targetRegister;
@@ -2648,12 +2560,11 @@ genericLongAndAsRotateHelper(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Compilation *comp = cg->comp();
    TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(),
       "Call lsubHelper(...) for 32bit code-gen!");
 
+   TR::Compilation *comp = cg->comp();
    TR::Node * secondChild = node->getSecondChild();
-   TR::Instruction * cursor = NULL;
    TR::Register * targetRegister = NULL;
 
    TR::Node * firstChild = node->getFirstChild();
@@ -2686,7 +2597,6 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
       }
 
    bool bumpedRefCount = false;
-   TR::Register *tempRegister;
    if (isCompressionSequence &&
          curTreeNode->getOpCode().isNullCheck() &&
          (firstChild->getOpCodeValue() == TR::a2l) &&
@@ -3461,8 +3371,8 @@ lmulHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
 
-   TR::Register * targetRegister;
-   TR::Register * sourceRegister;
+   TR::Register * targetRegister = NULL;
+   TR::Register * sourceRegister = NULL;
 
    // Determine if second child is constant.  There are special tricks for these.
    bool secondChildIsConstant = (secondChild->getOpCodeValue() == TR::lconst);

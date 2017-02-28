@@ -426,7 +426,7 @@ TR_OrderedExceptionHandlerIterator::getCurrent()
 
 
 TR::CFGEdge::CFGEdge(TR::CFGNode *pF, TR::CFGNode *pT, TR_AllocationKind allocKind)
-   : _pFrom(pF), _pTo(pT), _visitCount(0), _frequency(0)
+   : _pFrom(pF), _pTo(pT), _visitCount(0), _frequency(0), _id(-1)
    {}
 
 TR::CFGEdge * TR::CFGEdge::createEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR_Memory* trMemory, TR_AllocationKind allocKind)

@@ -38,7 +38,7 @@ class CFGEdge : public TR_Link<CFGEdge>
    TR_ALLOC(TR_Memory::CFGEdge)
 
 
-   CFGEdge() : _pFrom(NULL), _pTo(NULL), _visitCount(0), _frequency(0)
+   CFGEdge() : _pFrom(NULL), _pTo(NULL), _visitCount(0), _frequency(0), _id(-1)
    {}
 
    // Construct a normal edge between two nodes
@@ -71,8 +71,8 @@ class CFGEdge : public TR_Link<CFGEdge>
       {
       return ++_visitCount;
       }
-   int32_t    getId()            {return -1;}
-   int32_t    setId(int32_t id)  {return -1;}
+   int32_t    getId()            {return _id;}
+   int32_t    setId(int32_t id)  {return (_id = id);}
 
    int16_t    getFrequency()          { return _frequency; }
 
@@ -106,6 +106,7 @@ class CFGEdge : public TR_Link<CFGEdge>
 
    int16_t _frequency;
 
+   int32_t _id;
    };
 
 }

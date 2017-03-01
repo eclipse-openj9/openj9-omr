@@ -235,6 +235,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableAOTWarmRunThroughputImprovement", "O\tdisable change iprofiler entry choosing heuristic to improve aot warm run throughput",                      SET_OPTION_BIT(TR_DisableAOTWarmRunThroughputImprovement), "F"},
    {"disableArch11PackedToDFP",           "O\tdisable arch(11) packed to DFP conversion instructions",            SET_OPTION_BIT(TR_DisableArch11PackedToDFP), "F",},
    {"disableArrayCopyOpts",               "O\tdisable array copy optimiations",                SET_OPTION_BIT(TR_DisableArrayCopyOpts), "F"},
+   {"disableArraySetOpts",                "O\tdisable array set optimiations",                 SET_OPTION_BIT(TR_DisableArraySetOpts), "F"},
    {"disableArraySetStoreElimination",     "O\tdisable arrayset store elimination",                SET_OPTION_BIT(TR_DisableArraysetStoreElimination), "F"},
    {"disableArrayStoreCheckOpts",          "O\tdisable array store check optimizations",SET_OPTION_BIT(TR_DisableArrayStoreCheckOpts), "F"},
    {"disableAsyncCheckInsertion",         "O\tdisable insertion of async checks in large loopless methods", TR::Options::disableOptimization, asyncCheckInsertion, 0, "F" },

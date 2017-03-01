@@ -233,9 +233,12 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
     // disabled for now
     //
-    static bool disableArraySet = (feGetEnv("TR_disableArraySet") != NULL);
-    if (TR::Options::getCmdLineOptions()->getOption(TR_AggressiveOpts) && !disableArraySet)
+    if (self()->comp()->getOption(TR_AggressiveOpts) &&
+        !self()->comp()->getOption(TR_DisableArraySetOpts))
+       {
+       self()->setSupportsArraySetToZero();
        self()->setSupportsArraySet();
+       }
     self()->setSupportsArrayCmp();
 
     if (TR::Compiler->target.cpu.getPPCSupportsVSX())

@@ -4849,7 +4849,8 @@ static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures ARCH[] =
 /* 8*/   TR_S390ProcessorInfo::TR_z10,
 /* 9*/   TR_S390ProcessorInfo::TR_z196,
 /*10*/   TR_S390ProcessorInfo::TR_zEC12,
-/*11*/   TR_S390ProcessorInfo::TR_z13
+/*11*/   TR_S390ProcessorInfo::TR_z13,
+/*12*/   TR_S390ProcessorInfo::TR_zNext
    };
 
 static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures reqArchForLoad[4/*Form*/][4/*numberOfBits*/][2/*isSigned*/][2/*numberOfExtendBits*/] =
@@ -16377,7 +16378,9 @@ OMR::Z::TreeEvaluator::ifxcmpoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 ///// SIMD Evaluators Begin //////////
 
-extern TR::Instruction * breakInst; // anchor instruction to assist in debugging
+
+// anchor instruction to assist in debugging
+TR::Instruction * breakInst = NULL;
 
 /*********************************/
 /*   Helpers for vector ops      */

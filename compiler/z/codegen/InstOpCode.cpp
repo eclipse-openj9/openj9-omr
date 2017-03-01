@@ -159,17 +159,26 @@ OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCo
       case VRIc_FORMAT:
       case VRId_FORMAT:
       case VRIe_FORMAT:
+      case VRIf_FORMAT:
+      case VRIg_FORMAT:
+      case VRIh_FORMAT:
+      case VRIi_FORMAT:
       case VRRa_FORMAT:
       case VRRb_FORMAT:
       case VRRc_FORMAT:
       case VRRd_FORMAT:
       case VRRe_FORMAT:
       case VRRf_FORMAT:
+      case VRRg_FORMAT:
+      case VRRh_FORMAT:
+      case VRRi_FORMAT:
       case VRSa_FORMAT:
       case VRSb_FORMAT:
       case VRSc_FORMAT:
+      case VRSd_FORMAT:
       case VRV_FORMAT:
       case VRX_FORMAT:
+      case VSI_FORMAT:
          cursor[5] = binaryEncodings[i_opCode].bytes[1];
          //second byte of opcode begins at bit 47 (sixth byte)
          break;

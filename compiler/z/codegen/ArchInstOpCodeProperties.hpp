@@ -115,7 +115,8 @@
    S390OpProp_SetsSignFlag |
    S390OpProp_SetsOverflowFlag |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsCC,
 
       // AGHIK
    S390OpProp_Is64Bit |
@@ -144,7 +145,8 @@
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
    S390OpProp_LongDispSupported |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsCC,
 
       // AHHHR
    S390OpProp_SetsSignFlag |
@@ -169,7 +171,8 @@
    S390OpProp_SetsSignFlag |
    S390OpProp_SetsOverflowFlag |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsCC,
 
       // AHIK
    S390OpProp_Is32Bit |
@@ -186,7 +189,8 @@
    S390OpProp_IsLoad |
    S390OpProp_LongDispSupported |
    S390OpProp_IsYForm |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsCC,
 
       // AIH
    S390OpProp_SetsSignFlag |
@@ -6489,9 +6493,238 @@
       // TAILCALL
    S390OpProp_IsCall,
 
-	   // DCB
+      // DCB
    S390OpProp_SetsSignFlag |
    S390OpProp_SetsOverflowFlag |
    S390OpProp_IsLoad |
    S390OpProp_IsStore,
+
+   // VLRLR
+   S390OpProp_IsLoad |
+   S390OpProp_SetsOperand1,
+
+   // VLRL
+   S390OpProp_IsLoad |
+   S390OpProp_SetsOperand1,
+
+   // VSTRLR
+   S390OpProp_IsStore,
+
+   // VSTRL
+   S390OpProp_IsStore,
+
+   // VAP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VCP
+   S390OpProp_SetsCC,
+
+   // VCVB
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VCVBG
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VCVD
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VCVDG
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VDP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VLIP
+   S390OpProp_SetsOperand1,
+
+   // VMP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VMSP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VPKZ
+   S390OpProp_SetsOperand1,
+
+   // VPSOP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VRP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VSDP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VSRP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VSP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1,
+
+   // VTP
+   S390OpProp_SetsCC,
+
+   // VUPKZ
+   S390OpProp_IsStore,
+
+   // VBPERM
+   S390OpProp_SetsOperand1,
+
+   // VNX
+   S390OpProp_SetsOperand1,
+
+   // VMSL
+   S390OpProp_SetsOperand1,
+
+   // VNN
+   S390OpProp_SetsOperand1,
+
+   // VOC
+   S390OpProp_SetsOperand1,
+
+   // VFLL
+   S390OpProp_SetsOperand1,
+
+   // VFLR
+   S390OpProp_SetsOperand1,
+
+   // VFMAX
+   S390OpProp_SetsOperand1,
+
+   // VFMIN
+   S390OpProp_SetsOperand1,
+
+   // VFNMA
+   S390OpProp_SetsOperand1,
+
+   // VFNMS
+   S390OpProp_SetsOperand1,
+
+   // KMGCM
+   S390OpProp_SetsCC,
+
+   // PRNO
+   0,
+
+   // LGG
+   S390OpProp_IsLoad |
+   S390OpProp_Is64Bit |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOperand1 |
+
+   // Note:
+   //
+   // Though the instruction itself does not set CC we mark it as such because the condition code following a
+   // guarded load is undefined because we cannot be certain whether or not the guard will be raised. As such
+   // we must stay conservative with the condition code and model the instruction as if it sets the condition
+   // code.
+   S390OpProp_SetsCC,
+
+   // LLGFSG
+   S390OpProp_IsLoad |
+   S390OpProp_Is64Bit |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOperand1 |
+
+   // Note: See note for LGG regarding condition codes and guarded load instructions
+   S390OpProp_SetsCC,
+
+   // LGSC
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported,
+
+   // STGSC
+   S390OpProp_IsStore |
+   S390OpProp_LongDispSupported,
+
+   // AGH
+   S390OpProp_Is64Bit |
+   S390OpProp_SetsSignFlag |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_IsYForm |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsCC,
+
+   // BIC
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_BranchOp |
+   S390OpProp_ReadsCC |
+   S390OpProp_IsYForm,
+
+   // MG
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_UsesRegPairForTarget |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_LongDispSupported |
+   S390OpProp_IsYForm,
+
+   // MGRK
+   S390OpProp_UsesRegPairForTarget |
+   S390OpProp_SetsOperand3,
+
+   // MGH
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_IsYForm,
+
+   // MSC
+   S390OpProp_Is32Bit |
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_SetsCC |
+   S390OpProp_IsYForm,
+
+   // MSRKC
+   S390OpProp_Is32Bit |
+   S390OpProp_SetsOperand3 |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_SetsCC,
+
+   // MSGC
+   S390OpProp_Is64Bit |
+   S390OpProp_UsesTarget |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_SetsCC |
+   S390OpProp_IsYForm,
+
+   // MSGRKC
+   S390OpProp_Is64Bit |
+   S390OpProp_SetsOperand3 |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_SetsCC,
+
+   // SGH
+   S390OpProp_Is64Bit |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_IsLoad |
+   S390OpProp_LongDispSupported |
+   S390OpProp_SetsOverflowFlag |
+   S390OpProp_SetsCC |
+   S390OpProp_IsYForm,
 

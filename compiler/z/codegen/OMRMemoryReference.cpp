@@ -2757,6 +2757,9 @@ OMR::Z::MemoryReference::getRightAlignmentBump(TR::Instruction * instr, TR::Code
       case TR::Instruction::IsRSLb:
          length = toS390RSLbInstruction(instr)->getLen()+1;
          break;
+      case TR::Instruction::IsVSI:
+         length = static_cast<TR::S390VSIInstruction*>(instr)->getImmediateField3()+1; // I3 is operand 2 length code
+         break;
       default:
          break;
       }

@@ -371,7 +371,7 @@ class S390BranchOnCountInstruction : public TR::S390LabeledInstruction
    S390BranchOnCountInstruction(TR::InstOpCode::Mnemonic    op,
                            TR::Node          *n,
                            TR::Register      *targetReg,
-						   TR::RegisterDependencyConditions * cond,
+                           TR::RegisterDependencyConditions * cond,
                            TR::LabelSymbol    *sym,
                            TR::CodeGenerator *cg)
       : S390LabeledInstruction(op, n, sym, cond, cg)
@@ -389,7 +389,7 @@ class S390BranchOnCountInstruction : public TR::S390LabeledInstruction
    S390BranchOnCountInstruction(TR::InstOpCode::Mnemonic    op,
                            TR::Node          *n,
                            TR::Register      *targetReg,
-						   TR::RegisterDependencyConditions * cond,
+                           TR::RegisterDependencyConditions * cond,
                            TR::LabelSymbol    *sym,
                            TR::Instruction   *precedingInstruction,
                            TR::CodeGenerator *cg)
@@ -729,9 +729,9 @@ class S390PseudoInstruction : public TR::Instruction
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    int32_t getLockedRegisterNumber() {
-   	TR_ASSERT(getOpCodeValue()==TR::InstOpCode::LOCK || getOpCodeValue()==TR::InstOpCode::UNLOCK, "assertion failure");
-   	return _register_num;
-   	}
+     TR_ASSERT(getOpCodeValue()==TR::InstOpCode::LOCK || getOpCodeValue()==TR::InstOpCode::UNLOCK, "assertion failure");
+     return _register_num;
+     }
    };
 
 /**
@@ -1092,9 +1092,12 @@ class S390ImmSymInstruction : public TR::S390ImmInstruction
    };
 
 
-////////////////////////////////////////////////////////////////////////////////
-// S390RegInstruction Class Definition
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * S390RegInstruction Class Definition
+ *
+ *
+*/
+
 class S390RegInstruction : public TR::Instruction
    {
    protected:
@@ -4854,18 +4857,18 @@ class S390RXFInstruction : public TR::S390RRInstruction
  * S390VInstruction Class Definition
  *
  * Vector operation Generic class
- * Five subtypes: VRI, VRR, VRS, VRV, VRX
+ * Six subtypes: VRI, VRR, VRS, VRV, VRX, VSI
  */
-class S390VInstruction : public TR::S390RegInstruction
+class S390VInstruction : public S390RegInstruction
    {
    char        *_opCodeBuffer;
 
    protected:
    S390VInstruction(
-                       TR::CodeGenerator      * cg                    = NULL,
-                       TR::InstOpCode::Mnemonic          op                    = TR::InstOpCode::BAD,
-                       TR::Node               * n                     = NULL,
-                       TR::Register           * reg1                  = NULL)
+                       TR::CodeGenerator          * cg,
+                       TR::InstOpCode::Mnemonic   op,
+                       TR::Node                   * n,
+                       TR::Register               * reg1)
    : S390RegInstruction(op, n, reg1, cg)
       {
       _opCodeBuffer = NULL;
@@ -4882,12 +4885,29 @@ class S390VInstruction : public TR::S390RegInstruction
       _opCodeBuffer = NULL;
       }
 
+   S390VInstruction(
+                       TR::CodeGenerator         * cg,
+                       TR::InstOpCode::Mnemonic  op,
+                       TR::Node                  * n)
+   : S390RegInstruction(op, n, cg)
+      {
+       _opCodeBuffer = NULL;
+
+      }
+
    ~S390VInstruction();
 
-   /** Set mask field */
+   /**
+    * Set mask field
+    * <p>
+    * field 0 to 3 corresponding to bit 20 to bit 35, 4 bits for each field
+    * These fields cover all bytes that can potenailly hold instruction masks.
+    * Applicable to all Vector instructions
+    */
    virtual void setMaskField(uint32_t *instruction, uint8_t mask, int nField)
       {
-      TR_ASSERT(nField >= 0 && nField <= 3, "Field index out of range."); // field 0 to 3 corresponding to bit 20 to bit 35, 4 bits for each field
+      TR_ASSERT(nField >= 0 && nField <= 3, "Field index out of range.");
+
       int nibbleIndex = (nField < 3) ? (2 - nField) : (7);
       instruction = (nField < 3) ? instruction : (instruction + 1);
       TR::Instruction::setMaskField(instruction, mask, nibbleIndex);
@@ -4907,46 +4927,63 @@ class S390VInstruction : public TR::S390RegInstruction
  * S390VRIInstruction Class Definition
  *
  * Vector register-and-immediate operation with extended op-code field
- * Five subtypes: VRI-a to VRI-e
+ * Nine subtypes: VRI-a to VRI-i
  */
-class S390VRIInstruction : public TR::S390VInstruction
+class S390VRIInstruction : public S390VInstruction
    {
+   private:
    // masks starting from bit 28 to bit 35, 4 bits each field
-   uint8_t     mask3;
-   uint8_t     mask4;
-   uint8_t     mask5;
-   uint16_t    _constantImm; ///< 8, 12 or 16 bits
+   uint8_t     _mask3;
+   uint8_t     _mask4;
+   uint8_t     _mask5;
+
+   // VRI formats' Immediate can have one/two of the following: I2, I3, I4
+   // each can be 8, 12, or 16 bit long, not necessarily consecutive in each instruction
+   // combined length can be up to 20 bits. Different sub-types use the following
+   // two pieces differently
+   uint16_t    _constantImm16;
+   uint8_t     _constantImm8;
 
    bool        _printM3;
    bool        _printM4;
    bool        _printM5;
-   /* We want these to be called only by helper constructors */
+
+   /*
+    *
+    * We want these to be called only by helper constructors
+    */
    protected:
    S390VRIInstruction(
                        TR::CodeGenerator      * cg               = NULL,
-                       TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                       TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
                        TR::Node               * n                = NULL,
                        TR::Register           * targetReg        = NULL,
-                       uint16_t                constantImm      = 0,    /*  8, 12 or 16 bits */
+                       uint16_t                constantImm16      = 0,
+                       uint8_t                 constantImm8      = 0,
                        uint8_t                 m3               = 0,    /*  4 bits (28 - 31 bit) */
                        uint8_t                 m4               = 0,    /*  4 bits (28 - 31 bit) */
                        uint8_t                 m5               = 0)    /*  4 bits (32 - 35 bit) */
    : S390VInstruction(cg, op, n, targetReg),
-     _constantImm(constantImm)
+     _constantImm16(constantImm16),
+     _constantImm8(constantImm8)
       {
-      mask3 = m3;
-      mask4 = m4;
-      mask5 = m5;
+      _mask3 = m3;
+      _mask4 = m4;
+      _mask5 = m5;
 
       _printM3 = getOpCode().usesM3();
       _printM4 = getOpCode().usesM4();
       _printM5 = getOpCode().usesM5();
       }
+
    public:
-   uint16_t getImmediateField() { return _constantImm; }
-   uint8_t getM3() {return mask3;}
-   uint8_t getM4() {return mask4;}
-   uint8_t getM5() {return mask5;}
+   uint8_t getM3() {return _mask3;}
+   uint8_t getM4() {return _mask4;}
+   uint8_t getM5() {return _mask5;}
+
+   uint16_t getImmediateField16(){ return _constantImm16; }
+   uint8_t  getImmediateField8(){ return _constantImm8; }
+
    virtual char *description() { return "S390VRIInstruction"; }
    virtual Kind getKind() = 0;
 
@@ -4957,74 +4994,83 @@ class S390VRIInstruction : public TR::S390VInstruction
    bool getPrintM3() { return _printM3; }
    bool getPrintM4() { return _printM4; }
    bool getPrintM5() { return _printM5; }
+
+
    protected:
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t* preGenerateBinaryEncoding();
+   virtual uint8_t * generateBinaryEncoding() = 0;
+   uint8_t* postGenerateBinaryEncoding(uint8_t*);
    };
 
+#define CAT8TO16(val1, val2) ((uint16_t)((((uint16_t)val1) << 8) | ((uint16_t)val2)))
+
 /**
- * VRI-a
+ * VRI-a Class
  *    ________________________________________________________
  *   |Op Code | V1 |    |         I2        | M3*|RXB |Op Code|
  *   |________|____|____|___________________|____|____|_______|
  *   0        8    12   16                  32   36   40      47
  */
-class S390VRIaInstruction : public TR::S390VRIInstruction
+class S390VRIaInstruction : public S390VRIInstruction
    {
    public:
    S390VRIaInstruction(
                           TR::CodeGenerator      * cg            = NULL,
-                          TR::InstOpCode::Mnemonic          op            = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
                           TR::Node               * n             = NULL,
                           TR::Register           * targetReg     = NULL,
-                          uint16_t                constantImm2  = 0,  /* 16 bits */
-                          uint8_t                 mask3         = 0)     /*  4 bits */
-      : S390VRIInstruction(cg, op, n, targetReg, constantImm2, mask3, 0, 0)
+                          uint16_t                constantImm2   = 0,  /* 16 bits */
+                          uint8_t                 mask3          = 0)     /*  4 bits */
+      : S390VRIInstruction(cg, op, n, targetReg, constantImm2, 0, mask3, 0, 0)
       {
       }
 
+   uint16_t getImmediateField2() { return getImmediateField16(); }
+
    virtual char *description() { return "S390VRIaInstruction"; }
    virtual Kind getKind() { return IsVRIa; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
 
 
-#define CAT8TO16(val1, val2) ((uint16_t)((((uint16_t)val1) << 8) | ((uint16_t)val2)))
 /**
- * VRI-b
+ * VRI-b Class
  *    ________________________________________________________
  *   |Op Code | V1 |    |   I2    |    I3   | M4*|RXB |Op Code|
  *   |________|____|____|_________|_________|____|____|_______|
  *   0        8    12   16        24   28   32   36   40      47
  */
-class S390VRIbInstruction : public TR::S390VRIInstruction
+class S390VRIbInstruction : public S390VRIInstruction
    {
    public:
    S390VRIbInstruction(
                           TR::CodeGenerator      * cg             = NULL,
-                          TR::InstOpCode::Mnemonic          op             = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op    = TR::InstOpCode::BAD,
                           TR::Node               * n              = NULL,
                           TR::Register           * targetReg      = NULL,
-                          uint8_t                 constantImm2   = 0,    /*  8 bits */
-                          uint8_t                 constantImm3   = 0,    /*  8 bits */
-                          uint8_t                 mask4          = 0)    /*  4 bits */
-      : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(constantImm2, constantImm3), 0, mask4, 0)
+                          uint8_t                 constantImm2    = 0,    /*  8 bits */
+                          uint8_t                 constantImm3    = 0,    /*  8 bits */
+                          uint8_t                 mask4           = 0)    /*  4 bits */
+      : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(constantImm2, constantImm3), 0, 0, mask4, 0)
       {
       }
 
-   uint8_t getImmediateField2() { return getImmediateField() >> 8; }
-   uint8_t getImmediateField3() { return getImmediateField() & 0xff; }
+
+   uint8_t getImmediateField2() { return getImmediateField16() >> 8; }
+   uint8_t getImmediateField3() { return getImmediateField16() & 0xff; }
+
    virtual char *description() { return "S390VRIbInstruction"; }
    virtual Kind getKind() { return IsVRIb; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
 
-/** VRI-c
+/** VRI-c Class
  *    ________________________________________________________
  *   |Op Code | V1 | V3 |         I2        | M4 |RXB |Op Code|
  *   |________|____|____|___________________|____|____|_______|
  *   0        8    12   16                  32   36   40      47
  */
-class S390VRIcInstruction : public TR::S390VRIInstruction
+class S390VRIcInstruction : public S390VRIInstruction
    {
    public:
    S390VRIcInstruction(
@@ -5033,9 +5079,9 @@ class S390VRIcInstruction : public TR::S390VRIInstruction
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg3       = NULL,
-                          uint16_t                constantImm2     = 0,    /* 8 or 16 bits */
-                          uint8_t                 mask4            = 0)    /* 4 bits       */
-   : S390VRIInstruction(cg, op, n, targetReg, constantImm2, 0, mask4, 0)
+                          uint16_t                constantImm2      = 0,    /* 16 bits */
+                          uint8_t                 mask4             = 0)    /* 4 bits       */
+   : S390VRIInstruction(cg, op, n, targetReg, constantImm2, 0, 0, mask4, 0)
       {
       if(getOpCode().setsOperand2())
          useTargetRegister(sourceReg3);
@@ -5043,31 +5089,33 @@ class S390VRIcInstruction : public TR::S390VRIInstruction
          useSourceRegister(sourceReg3);
       }
 
+   uint16_t getImmediateField2() { return getImmediateField16(); }
+
    virtual char *description() { return "S390VRIcInstruction"; }
    virtual Kind getKind() { return IsVRIc; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
- * VRI-d
+ * VRI-d Class
  *    ________________________________________________________
  *   |Op Code | V1 | V2 | V3 |    |    I4   | M5*|RXB |Op Code|
  *   |________|____|____|____|____|_________|____|____|_______|
  *   0        8    12   16   20   24        32   36   40      47
  */
-class S390VRIdInstruction : public TR::S390VRIInstruction
+class S390VRIdInstruction : public S390VRIInstruction
    {
    public:
    S390VRIdInstruction(
                           TR::CodeGenerator      * cg               = NULL,
-                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
                           TR::Register           * sourceReg3       = NULL,
-                          uint8_t                 constantImm4     = 0,    /* 8 bit  */
-                          uint8_t                 mask5            = 0)    /* 4 bits */
-   : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(0, constantImm4), 0, 0, mask5)
+                          uint8_t                 constantImm4      = 0,    /* 8 bit  */
+                          uint8_t                 mask5             = 0)    /* 4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(0, constantImm4), 0, 0, 0, mask5)
       {
       if (getOpCode().setsOperand2())
          useTargetRegister(sourceReg2);
@@ -5080,20 +5128,20 @@ class S390VRIdInstruction : public TR::S390VRIInstruction
          useSourceRegister(sourceReg3);
       }
 
-   uint8_t getImmediateField4() { return getImmediateField() & 0xff; }
+   uint8_t getImmediateField4() { return getImmediateField16() & 0xff; }
    virtual char *description() { return "S390VRIdInstruction"; }
    virtual Kind getKind() { return IsVRId; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
- * VRI-e
+ * VRI-e Class
  *    ________________________________________________________
  *   |Op Code | V1 | V2 |      I3      | M5 | M4 |RXB |Op Code|
  *   |________|____|____|______________|____|____|____|_______|
  *   0        8    12   16             28   32   36   40      47
  */
-class S390VRIeInstruction : public TR::S390VRIInstruction
+class S390VRIeInstruction : public S390VRIInstruction
    {
    public:
    S390VRIeInstruction(
@@ -5102,33 +5150,177 @@ class S390VRIeInstruction : public TR::S390VRIInstruction
                           TR::Node               * n                = NULL,
                           TR::Register           * targetReg        = NULL,
                           TR::Register           * sourceReg2       = NULL,
-                          uint16_t                constantImm3     = 0,    /* 12 bits  */
-                          uint8_t                 mask5            = 0,    /*  4 bits */
-                          uint8_t                 mask4            = 0)    /*  4 bits */
-   : S390VRIInstruction(cg, op, n, targetReg, (constantImm3 << 4), 0, mask4, mask5)
+                          uint16_t                constantImm3      = 0,    /* 12 bits  */
+                          uint8_t                 mask5             = 0,    /*  4 bits */
+                          uint8_t                 mask4             = 0)    /*  4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, (constantImm3 << 4), 0, 0, mask4, mask5)
       {
       // Error Checking
-      TR_ASSERT((constantImm3 & 0xf000) == 0, "Incorrect length in immediate value");
+      TR_ASSERT((constantImm3 & 0xf000) == 0, "Incorrect length in immediate 3 value");
+
       if (getOpCode().setsOperand2())
          useTargetRegister(sourceReg2);
       else
          useSourceRegister(sourceReg2);
       }
 
-   uint16_t getImmediateField3() { return getImmediateField() >> 4; }
+
+   uint16_t getImmediateField3() { return getImmediateField16() >> 4; }
+
    virtual char *description() { return "S390VRIeInstruction"; }
    virtual Kind getKind() { return IsVRIe; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
+
+/**
+ * VRI-f Class
+ *    _________________________________________________________
+ *   |Op Code | V1 | V2 | V3 |  /// | M5 |    I4  |RXB |Op Code|
+ *   |________|____|____|____|______|____|________|____|_______|
+ *   0        8    12   16   20     24   28        36   40      47
+ */
+class S390VRIfInstruction : public S390VRIInstruction
+   {
+   public:
+   S390VRIfInstruction(
+                          TR::CodeGenerator      * cg               = NULL,
+                          TR::InstOpCode::Mnemonic          op               = TR::InstOpCode::BAD,
+                          TR::Node               * n                = NULL,
+                          TR::Register           * targetReg        = NULL,
+                          TR::Register           * sourceReg2       = NULL,
+                          TR::Register           * sourceReg3       = NULL,
+                          uint8_t                constantImm4       = 0,    /*  8 bits */
+                          uint8_t                 mask5             = 0)    /*  4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(0, constantImm4), 0, 0, 0, mask5)
+      {
+      if (getOpCode().setsOperand2())
+         useTargetRegister(sourceReg2);
+      else
+         useSourceRegister(sourceReg2);
+
+      if (getOpCode().setsOperand3())
+         useTargetRegister(sourceReg3);
+      else
+         useSourceRegister(sourceReg3);
+      }
+
+   uint8_t getImmediateField4() { return getImmediateField16() & 0xff; }
+
+   char *description() { return "S390VRIfInstruction"; }
+   Kind getKind() { return IsVRIf; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+/**
+ * VRI-g Class
+ *    _________________________________________________________
+ *   |Op Code | V1 | V2 |   I4    | M5 |    I3    |RXB |Op Code|
+ *   |________|____|____|_________|____|__________|____|_______|
+ *   0        8    12   16        24    28        36   40      47
+ */
+class S390VRIgInstruction : public S390VRIInstruction
+   {
+   public:
+   S390VRIgInstruction(
+                          TR::CodeGenerator      * cg               = NULL,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                          TR::Node               * n                = NULL,
+                          TR::Register           * targetReg        = NULL,
+                          TR::Register           * sourceReg2       = NULL,
+                          uint8_t                constantImm3       = 0,    /*  8 bits */
+                          uint8_t                constantImm4       = 0,    /*  8 bits */
+                          uint8_t                 mask5             = 0)    /*  4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, CAT8TO16(0, constantImm3), constantImm4, 0, 0, mask5)
+      {
+      if (getOpCode().setsOperand2())
+         useTargetRegister(sourceReg2);
+      else
+         useSourceRegister(sourceReg2);
+      }
+
+   uint16_t getImmediateField3() { return getImmediateField16() & 0xff; }
+   uint8_t getImmediateField4() { return getImmediateField8(); }
+
+   char *description() { return "S390VRIgInstruction"; }
+   Kind getKind() { return IsVRIg; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+/**
+ * VRI-h Class
+ *    _________________________________________________________
+ *   |Op Code | V1 |/// |        I2        |  I3  |RXB |Op Code|
+ *   |________|____|____|__________________|______|____|_______|
+ *   0        8    12   16                 32     36   40      47
+ */
+class S390VRIhInstruction : public S390VRIInstruction
+   {
+   public:
+   S390VRIhInstruction(
+                          TR::CodeGenerator      * cg               = NULL,
+                          TR::InstOpCode::Mnemonic     op           = TR::InstOpCode::BAD,
+                          TR::Node               * n                = NULL,
+                          TR::Register           * targetReg        = NULL,
+                          uint16_t                constantImm2      = 0,    /*  16 bits */
+                          uint8_t                 constantImm3      = 0)    /*  4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, constantImm2, constantImm3, 0, 0, 0)
+      {
+       // Error check constantImm3 is no longer than 4bit
+       TR_ASSERT((constantImm3 & 0xf0) == 0, "Incorrect length in immediate 3 value");
+      }
+
+   uint16_t getImmediateField2() { return getImmediateField16(); }
+   uint8_t getImmediateField3() { return getImmediateField8(); }
+
+   char *description() { return "S390VRIhInstruction"; }
+   Kind getKind() { return IsVRIh; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+
+
+/**
+ * VRI-i Class
+ *    _________________________________________________________
+ *   |Op Code | V1 | R2 | /////  | M4 |    I3    |RXB |Op Code|
+ *   |________|____|____|________|____|__________|____|_______|
+ *   0        8    12   16       24    28         36   40      47
+ */
+class S390VRIiInstruction : public S390VRIInstruction
+   {
+   public:
+   S390VRIiInstruction(
+                          TR::CodeGenerator      * cg               = NULL,
+                          TR::InstOpCode::Mnemonic          op      = TR::InstOpCode::BAD,
+                          TR::Node               * n                = NULL,
+                          TR::Register           * targetReg        = NULL,
+                          TR::Register           * sourceReg2       = NULL,
+                          uint8_t                constantImm3       = 0,    /*  8 bits */
+                          uint8_t                 mask4             = 0)    /*  4 bits */
+   : S390VRIInstruction(cg, op, n, targetReg, 0, constantImm3, 0, mask4, 0)
+      {
+       if (getOpCode().setsOperand2())
+          useTargetRegister(sourceReg2);
+       else
+          useSourceRegister(sourceReg2);
+      }
+
+   uint8_t getImmediateField3() { return getImmediateField8(); }
+
+   char *description() { return "S390VRIiInstruction"; }
+   Kind getKind() { return IsVRIi; }
+   uint8_t * generateBinaryEncoding();
+   };
+
 
 /**
  * S390VRRInstruction Class Definition
  *
  * Vector register-and-register operation with extended op-code field
- * Has 6 subtypes: VRR-a to VRR-f
+ * Has 9 subtypes: VRR-a to VRR-i
  *
  */
-class S390VRRInstruction : public TR::S390VInstruction
+class S390VRRInstruction : public S390VInstruction
    {
    // masks at bit 20 to bit 35 (not necessarily in order), 4 bits each field
    uint8_t       mask3;
@@ -5153,6 +5345,7 @@ class S390VRRInstruction : public TR::S390VInstruction
    bool setPrintM4(bool b = false) { return _printM4 = b; }
    bool setPrintM5(bool b = false) { return _printM5 = b; }
    bool setPrintM6(bool b = false) { return _printM6 = b; }
+
    bool getPrintM3() { return _printM3; }
    bool getPrintM4() { return _printM4; }
    bool getPrintM5() { return _printM5; }
@@ -5172,10 +5365,13 @@ class S390VRRInstruction : public TR::S390VInstruction
                          uint8_t                  m6   = 0)     /* Mask6 */
    : S390VInstruction(cg, op, n, targetReg)
       {
-      if (getOpCode().setsOperand2())
-         useTargetRegister(sourceReg2);
-      else
-         useSourceRegister(sourceReg2);
+      if(sourceReg2 != NULL)
+         {
+         if (getOpCode().setsOperand2())
+            useTargetRegister(sourceReg2);
+         else
+            useSourceRegister(sourceReg2);
+         }
       mask3 = m3;
       mask4 = m4;
       mask5 = m5;
@@ -5225,7 +5421,7 @@ class S390VRRInstruction : public TR::S390VInstruction
  *   |________|____|____|_________|____|____|____|____|_______|
  *   0        8    12   16        24   28   32   36   40      47
  */
-class S390VRRaInstruction: public TR::S390VRRInstruction
+class S390VRRaInstruction: public S390VRRInstruction
    {
    public:
    S390VRRaInstruction(
@@ -5255,9 +5451,9 @@ class S390VRRaInstruction: public TR::S390VRRInstruction
       {
       }
 
-   virtual char *description() { return "S390VRRaInstruction"; }
-   virtual Kind getKind() { return IsVRRa; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRRaInstruction"; }
+   Kind getKind() { return IsVRRa; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
@@ -5267,7 +5463,7 @@ class S390VRRaInstruction: public TR::S390VRRInstruction
  *   |________|____|____|____|____|____|____|____|____|_______|
  *   0        8    12   16        24   28   32   36   40      47
  */
-class S390VRRbInstruction: public TR::S390VRRInstruction
+class S390VRRbInstruction: public S390VRRInstruction
    {
    public:
    S390VRRbInstruction(
@@ -5277,8 +5473,8 @@ class S390VRRbInstruction: public TR::S390VRRInstruction
                           TR::Register            * targetReg  = NULL,
                           TR::Register            * sourceReg2 = 0,
                           TR::Register            * sourceReg3 = 0,
-                          uint8_t                  mask5      = 0,     /* 4 bits */
-                          uint8_t                  mask4      = 0)     /* 4 bits */
+                          uint8_t                  mask5       = 0,     /* 4 bits */
+                          uint8_t                  mask4       = 0)     /* 4 bits */
    : S390VRRInstruction(cg, op, n, targetReg, sourceReg2, 0, mask4, mask5, 0)
       {
       if(getOpCode().setsOperand3())
@@ -5287,9 +5483,9 @@ class S390VRRbInstruction: public TR::S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   virtual char *description() { return "S390VRRbInstruction"; }
-   virtual Kind getKind() { return IsVRRb; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRRbInstruction"; }
+   Kind getKind() { return IsVRRb; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
@@ -5299,7 +5495,7 @@ class S390VRRbInstruction: public TR::S390VRRInstruction
  *   |________|____|____|____|____|____|____|____|____|_______|
  *   0        8    12   16        24   28   32   36   40      47
  */
-class S390VRRcInstruction: public TR::S390VRRInstruction
+class S390VRRcInstruction: public S390VRRInstruction
    {
    public:
    S390VRRcInstruction(
@@ -5320,9 +5516,9 @@ class S390VRRcInstruction: public TR::S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   virtual char *description() { return "S390VRRcInstruction"; }
-   virtual Kind getKind() { return IsVRRc; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRRcInstruction"; }
+   Kind getKind() { return IsVRRc; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
@@ -5332,7 +5528,7 @@ class S390VRRcInstruction: public TR::S390VRRInstruction
  *   |________|____|____|____|____|____|____|____|____|_______|
  *   0        8    12   16   20   24   28   32   36   40      47
  */
-class S390VRRdInstruction: public TR::S390VRRInstruction
+class S390VRRdInstruction: public S390VRRInstruction
    {
    public:
    S390VRRdInstruction(
@@ -5358,9 +5554,9 @@ class S390VRRdInstruction: public TR::S390VRRInstruction
          useSourceRegister(sourceReg4);
       }
 
-   virtual char *description() { return "S390VRRdInstruction"; }
-   virtual Kind getKind() { return IsVRRd; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRRdInstruction"; }
+   Kind getKind() { return IsVRRd; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
@@ -5370,7 +5566,7 @@ class S390VRRdInstruction: public TR::S390VRRInstruction
  *   |________|____|____|____|____|____|____|____|____|_______|
  *   0        8    12   16   20        28   32   36   40      47
  */
-class S390VRReInstruction: public TR::S390VRRInstruction
+class S390VRReInstruction: public S390VRRInstruction
    {
    public:
    S390VRReInstruction(
@@ -5396,19 +5592,19 @@ class S390VRReInstruction: public TR::S390VRRInstruction
          useSourceRegister(sourceReg4);
       }
 
-   virtual char *description() { return "S390VRReInstruction"; }
-   virtual Kind getKind() { return IsVRRe; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRReInstruction"; }
+   Kind getKind() { return IsVRRe; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
  * VRR-f
  *    ________________________________________________________
- *   |Op Code | V1 | R2 | R3 |                   |RXB |Op Code|
+ *   |Op Code | V1 | R2 | R3 | ///////////////// |RXB |Op Code|
  *   |________|____|____|____|___________________|____|_______|
  *   0        8    12   16   20                  36   40      47
  */
-class S390VRRfInstruction: public TR::S390VRRInstruction
+class S390VRRfInstruction: public S390VRRInstruction
    {
    public:
    S390VRRfInstruction(
@@ -5426,69 +5622,174 @@ class S390VRRfInstruction: public TR::S390VRRInstruction
          useSourceRegister(sourceReg3);
       }
 
-   virtual char *description() { return "S390VRRfInstruction"; }
-   virtual Kind getKind() { return IsVRRf; }
-   virtual uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRRfInstruction"; }
+   Kind getKind() { return IsVRRf; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+
+/**
+ * VRR-g
+ *    ________________________________________________________
+ *   |Op Code | // | V1 |   ///////////////////  |RXB |Op Code|
+ *   |________|____|____|________________________|____|_______|
+ *   0        8    12   16                       36   40     47
+ */
+class S390VRRgInstruction: public S390VRRInstruction
+   {
+   public:
+   S390VRRgInstruction(
+                          TR::CodeGenerator       * cg         = NULL,
+                          TR::InstOpCode::Mnemonic  op         = TR::InstOpCode::BAD,
+                          TR::Node                * n          = NULL,
+                          TR::Register            * v1Reg  = NULL)
+   : S390VRRInstruction(cg, op, n, v1Reg, NULL, 0, 0, 0, 0)
+      {
+      }
+
+   char *description() { return "S390VRRgInstruction"; }
+   Kind getKind() { return IsVRRg; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+/**
+ * VRR-h
+ *    _________________________________________________________
+ *   |Op Code | // | V1 | V2  | /// | M3*| ////// |RXB |Op Code|
+ *   |________|____|____|_____|_____|____|________|____|_______|
+ *   0        8    12   16   20      24   28       36   40    47
+ */
+class S390VRRhInstruction: public S390VRRInstruction
+   {
+   public:
+   S390VRRhInstruction(
+                          TR::CodeGenerator       * cg         = NULL,
+                          TR::InstOpCode::Mnemonic         op  = TR::InstOpCode::BAD,
+                          TR::Node                * n          = NULL,
+                          TR::Register            * v1Reg      = NULL,
+                          TR::Register            * v2Reg      = NULL,
+                          uint8_t                   mask3      = 0)
+   : S390VRRInstruction(cg, op, n, v1Reg, v2Reg, mask3, 0, 0, 0)
+      {
+      }
+
+   char *description() { return "S390VRRhInstruction"; }
+   Kind getKind() { return IsVRRh; }
+   uint8_t * generateBinaryEncoding();
+   };
+
+/**
+ * VRR-i
+ *    __________________________________________________________
+ *   |Op Code | R1 | V2 | ///////// | M3  | ////// |RXB |Op Code|
+ *   |________|____|____|___________|_____|________|____|_______|
+ *   0        8    12   16           24    28       36   40    47
+ */
+class S390VRRiInstruction: public S390VRRInstruction
+   {
+   public:
+   S390VRRiInstruction(
+                          TR::CodeGenerator       * cg         = NULL,
+                          TR::InstOpCode::Mnemonic   op        = TR::InstOpCode::BAD,
+                          TR::Node                * n          = NULL,
+                          TR::Register            * r1Reg      = NULL, /* GPR */
+                          TR::Register            * v2Reg      = NULL,
+                           uint8_t                   mask3     = 0)
+   : S390VRRInstruction(cg, op, n, r1Reg, v2Reg, mask3, 0, 0, 0)
+      {
+      }
+
+   char *description() { return "S390VRRiInstruction"; }
+   Kind getKind() { return IsVRRi; }
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
  * S390VStorageInstruction Class Definition
  *
  * Vector Storage related operation with extended op-code field
- * Has 3 subtypes: VRS VRX and VRV
+ * Has the following subtypes: VRS(a-d) VRX, VRV, and VSI
  *
  */
-class S390VStorageInstruction: public TR::S390VInstruction
+class S390VStorageInstruction: public S390VInstruction
    {
-   uint16_t _displacement2;
-   uint8_t  maskField;
-   bool     _printMaskField;
+   private:
+   uint16_t _displacement2;     // D2 field, 12bit long
 
    protected:
+
+   uint8_t  _maskField;         // VStorage instructions have at most 1 mask at bit 32-35
+   bool     _printMaskField;
+
    S390VStorageInstruction(
-                         TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
-                         TR::Node                * n            = NULL,
-                         TR::Register            * targetReg    = NULL,   /* VRF or GPR */
-                         TR::Register            * sourceReg    = NULL,   /* VRF or GPR */
-                         TR::MemoryReference * mr           = NULL,
-                         uint8_t                  mask         = 0)      /* 4 bits  */
-   : S390VInstruction(cg, op, n, targetReg), _displacement2(0), maskField(mask)
+                         TR::CodeGenerator        * cg,
+                         TR::InstOpCode::Mnemonic op,
+                         TR::Node                 * n,
+                         TR::Register             * targetReg,   /* VRF or GPR */
+                         TR::Register             * sourceReg,   /* VRF or GPR */
+                         TR::MemoryReference      * mr,
+                         uint8_t                  mask)          /* 4 bits  */
+   : S390VInstruction(cg, op, n, targetReg), _displacement2(0), _maskField(mask)
       {
       if (sourceReg)
+         {
          useSourceRegister(sourceReg);
+         }
       useSourceMemoryReference(mr);
-      setupThrowsImplicitNullPointerException(n,mr);
+      setupThrowsImplicitNullPointerException(n, mr);
+
       if (mr->getUnresolvedSnippet() != NULL)
+         {
          (mr->getUnresolvedSnippet())->setDataReferenceInstruction(this);
+         }
       }
 
    S390VStorageInstruction(
-                         TR::CodeGenerator       * cg,
-                         TR::InstOpCode::Mnemonic           op,
-                         TR::Node                * n,
-                         TR::Register            * targetReg,               /* VRF or GPR */
-                         TR::Register            * sourceReg,               /* VRF or GPR */
-                         TR::MemoryReference * mr,
-                         uint8_t                  mask,                    /* 4 bits  */
+                         TR::CodeGenerator          * cg,
+                         TR::InstOpCode::Mnemonic   op,
+                         TR::Node                   * n,
+                         TR::Register               * targetReg,               /* VRF or GPR */
+                         TR::Register               * sourceReg,               /* VRF or GPR */
+                         TR::MemoryReference        * mr,
+                         uint8_t                    mask,                    /* 4 bits  */
                          TR::Instruction     * precedingInstruction)
-   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _displacement2(0), maskField(mask)
+   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _displacement2(0), _maskField(mask)
       {
       if (sourceReg)
          useSourceRegister(sourceReg);
       useSourceMemoryReference(mr);
       setupThrowsImplicitNullPointerException(n,mr);
+
       if (mr->getUnresolvedSnippet() != NULL)
+         {
          (mr->getUnresolvedSnippet())->setDataReferenceInstruction(this);
+         }
+      }
+
+
+   /**
+    * This S390VStorageInstruction contructor does not take target/source registers nor mask bits.
+    * It is useful for vector storage formats that uses registers and immediates only: VSI.
+   */
+   S390VStorageInstruction(
+                         TR::CodeGenerator        * cg,
+                         TR::InstOpCode::Mnemonic op,
+                         TR::Node                 * n)
+   : S390VInstruction(cg, op, n),
+     _displacement2(0),
+     _maskField(0)
+      {
       }
 
    virtual uint8_t * generateBinaryEncoding();
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+
    public:
-   virtual uint16_t getConstForMRField() {return _displacement2; };
+   virtual uint16_t getConstForMRField() {return _displacement2; }
    virtual TR::MemoryReference* getMemoryReference()  { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL; }
    virtual char *description() { return "S390VStorageInstruction"; }
    virtual Kind getKind() = 0;
-   uint8_t getMaskField() { return maskField; }
+   uint8_t getMaskField() { return _maskField; }
 
    const char *getExtendedMnemonicName();
    bool setPrintMaskField(bool b = false) { return _printMaskField = b; }
@@ -5499,9 +5800,10 @@ class S390VStorageInstruction: public TR::S390VInstruction
  * S390VRSInstruction Class Definition
  *
  * Vector register-and-storage operation with extended op-code field
- * Has 3 subtypes: VRS-a to VRS-c
+ * Has 4 subtypes: VRS-a to VRS-d
+ *
  */
-class S390VRSInstruction : public TR::S390VInstruction
+class S390VRSInstruction : public S390VInstruction
    {
    public:
    TR::Register* getFirstRegister() { return isTargetPair()? S390RegInstruction::getFirstRegister() : getRegisterOperand(1); }
@@ -5540,23 +5842,23 @@ class S390VRSInstruction : public TR::S390VInstruction
  *   |________|____|____|____|_______________|____|____|_______|
  *   0        8    12   16   20              32   36   40      47
  */
-class S390VRSaInstruction : public TR::S390VStorageInstruction
+class S390VRSaInstruction : public S390VStorageInstruction
    {
    public:
    S390VRSaInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic   op          = TR::InstOpCode::BAD,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* VRF */
                          TR::Register            * sourceReg    = NULL,   /* VRF */
-                         TR::MemoryReference * mr           = NULL,
-                         uint8_t                  mask4        = 0)      /*  4 bits */
+                         TR::MemoryReference     * mr           = NULL,
+                         uint8_t                  mask4         = 0)      /*  4 bits */
    : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4)
       {
       setPrintMaskField(getOpCode().usesM4());
       }
    Kind getKind() { return IsVRSa; }
-   virtual uint8_t * generateBinaryEncoding();
+   virtual char *description() { return "S390VRSaInstruction"; }
    };
 
 /**
@@ -5566,24 +5868,24 @@ class S390VRSaInstruction : public TR::S390VStorageInstruction
  *   |________|____|____|____|_______________|____|____|_______|
  *   0        8    12   16   20              32   36   40      47
  */
-class S390VRSbInstruction : public TR::S390VStorageInstruction
+class S390VRSbInstruction : public S390VStorageInstruction
    {
    public:
    S390VRSbInstruction(
                          TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic           op           = TR::InstOpCode::BAD,
+                         TR::InstOpCode::Mnemonic           op  = TR::InstOpCode::BAD,
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* VRF */
                          TR::Register            * sourceReg    = NULL,   /* GPR */
-                         TR::MemoryReference * mr           = NULL,
-                         uint8_t                  mask4        = 0)      /*  4 bits */
+                         TR::MemoryReference * mr               = NULL,
+                         uint8_t                  mask4         = 0)      /*  4 bits */
    : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4)
       {
       setPrintMaskField(getOpCode().usesM4());
       }
 
    Kind getKind() { return IsVRSb; }
-   virtual uint8_t * generateBinaryEncoding();
+   virtual char *description() { return "S390VRSbInstruction"; }
    };
 
 /**
@@ -5593,7 +5895,7 @@ class S390VRSbInstruction : public TR::S390VStorageInstruction
  *   |________|____|____|____|_______________|____|____|_______|
  *   0        8    12   16   20              32   36   40      47
  */
-class S390VRScInstruction : public TR::S390VStorageInstruction
+class S390VRScInstruction : public S390VStorageInstruction
    {
    public:
    S390VRScInstruction(
@@ -5602,15 +5904,65 @@ class S390VRScInstruction : public TR::S390VStorageInstruction
                          TR::Node                * n            = NULL,
                          TR::Register            * targetReg    = NULL,   /* GPR */
                          TR::Register            * sourceReg    = NULL,   /* VRF */
-                         TR::MemoryReference * mr           = NULL,
-                         uint8_t                  mask4        = 0)      /*  4 bits */
+                         TR::MemoryReference * mr               = NULL,
+                         uint8_t                  mask4         = 0)      /*  4 bits */
    : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4)
       {
       setPrintMaskField(getOpCode().usesM4());
       }
    Kind getKind() { return IsVRSc; }
-   virtual uint8_t * generateBinaryEncoding();
+   virtual char *description() { return "S390VRScInstruction"; }
    };
+
+
+
+/**
+ * VRS-d
+ *    _________________________________________________________
+ *   |Op Code |    | R3 | B2 |     D2        | V1 |RXB |Op Code|
+ *   |________|____|____|____|_______________|____|____|_______|
+ *   0        8    12   16   20              32   36   40      47
+ *
+ * Assume VRS-d instructions are either load or store
+ *
+ *  The operand order in the _operands array is:
+ *  --[V1, R3, memRef] for load instructions, and
+ *  --[R3, V1, memRef] for store instructions
+ *
+ */
+class S390VRSdInstruction : public S390VStorageInstruction
+   {
+   public:
+   S390VRSdInstruction(
+                         TR::CodeGenerator       * cg           = NULL,
+                         TR::InstOpCode::Mnemonic     op        = TR::InstOpCode::BAD,
+                         TR::Node                * n            = NULL,
+                         TR::Register            * r3Reg        = NULL,   /* GPR */
+                         TR::Register            * v1Reg        = NULL,   /* VRF */
+                         TR::MemoryReference * mr               = NULL)
+   : S390VStorageInstruction(cg, op, n)
+      {
+      if(getOpCode().isStore())
+         {
+         useTargetRegister(r3Reg);
+         useSourceRegister(v1Reg);
+         // In the current design, memRef is always the source for non-Mem-Mem instructions
+         useSourceMemoryReference(mr);
+         }
+      else
+         {
+         useTargetRegister(v1Reg);
+         useSourceRegister(r3Reg);
+         useSourceMemoryReference(mr);
+         }
+      setPrintMaskField(false);
+      }
+
+   Kind getKind() { return IsVRSd; }
+   uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRSdInstruction"; }
+   };
+
 
 /**
  * S390VRVInstruction Class Definition
@@ -5621,7 +5973,7 @@ class S390VRScInstruction : public TR::S390VStorageInstruction
  *
  * Vector register-and-vector-index-storage operation with ext. op-code field
  */
-class S390VRVInstruction : public TR::S390VStorageInstruction
+class S390VRVInstruction : public S390VStorageInstruction
    {
    public:
    S390VRVInstruction(
@@ -5636,7 +5988,7 @@ class S390VRVInstruction : public TR::S390VStorageInstruction
       setPrintMaskField(getOpCode().usesM3());
       }
    Kind getKind() { return IsVRV; }
-   virtual uint8_t * generateBinaryEncoding();
+   uint8_t * generateBinaryEncoding();
    };
 
 /**
@@ -5648,7 +6000,7 @@ class S390VRVInstruction : public TR::S390VStorageInstruction
  *
  * Vector register-and-index-storage operation with extended op-code field
  */
-class S390VRXInstruction : public TR::S390VStorageInstruction
+class S390VRXInstruction : public S390VStorageInstruction
    {
    public:
    S390VRXInstruction(
@@ -5675,10 +6027,61 @@ class S390VRXInstruction : public TR::S390VStorageInstruction
       {
       setPrintMaskField(getOpCode().usesM3());
       }
-   Kind getKind() { return IsVRX; }
-   virtual uint8_t * generateBinaryEncoding();
 
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   Kind getKind() { return IsVRX; }
+   };
+
+
+/**
+ * S390VSIInstruction Class Definition
+ *    __________________________________________________________
+ *   |Op Code |    I3     | B2 |   D2   | V1  |  RXB | Op Code  |
+ *   |________|___________|____|________|_____|______|__________|
+ *   0        8           16    20      32    36      40       47
+ *
+ * Vector register-and-storage operation with extended op-code field
+ *
+ */
+class S390VSIInstruction : public S390VStorageInstruction
+   {
+   uint8_t    _constantImm3;
+
+   public:
+   S390VSIInstruction(
+                         TR::CodeGenerator       * cg           = NULL,
+                         TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
+                         TR::Node                * n            = NULL,
+                         TR::Register            * v1Reg        = NULL,
+                         TR::MemoryReference     * memRef       = NULL,
+                         uint8_t                  constantImm3 = 0)
+   : S390VStorageInstruction(cg, op, n),
+     _constantImm3(constantImm3)
+      {
+      if(getOpCode().setsOperand1())
+         {
+         useTargetRegister(v1Reg);
+         }
+      else
+         {
+         useSourceRegister(v1Reg);
+         }
+
+      // memrefs are always named source memory reference regardless of what they actually are.
+      useSourceMemoryReference(memRef);
+      setupThrowsImplicitNullPointerException(n, memRef);
+
+      if (memRef->getUnresolvedSnippet() != NULL)
+         {
+         (memRef->getUnresolvedSnippet())->setDataReferenceInstruction(this);
+         }
+
+      setPrintMaskField(false);
+      }
+
+   Kind getKind() { return IsVSI; }
+   uint8_t getImmediateField3() { return _constantImm3; }
+   char *description() { return "S390VSIInstruction"; }
+   uint8_t * generateBinaryEncoding();
    };
 
 ////////////////////////////////////////////////////////////////////////////////

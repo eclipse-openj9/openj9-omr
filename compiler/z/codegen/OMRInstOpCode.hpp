@@ -80,7 +80,20 @@ namespace Z
    0                16   20   24   28  31
 
     ________________ ____ ____ ____ ____
-   |    Op Code     | R3 | M4 | R1 | R2 |
+   |    Op Code     | M3 | M4 | R1 | R2 |
+   |________________|____|____|____|____|
+   0                16   20   24   28  31
+
+   The most up-to-date RRF formats combine a-b and c-e as the following:
+   RRF-a-b format
+    ________________ ____ ____ ____ ____
+   |    Op Code     | R3 | M4*| R1 | R2 |
+   |________________|____|____|____|____|
+   0                16   20   24   28  31
+
+   RRF-c-e format
+    ________________ ____ ____ ____ ____
+   |    Op Code     | M3*| M4*| R1 | R2 |
    |________________|____|____|____|____|
    0                16   20   24   28  31
 
@@ -261,23 +274,35 @@ namespace Z
 #define   SMI_FORMAT    32
 #define   MII_FORMAT    33
 #define   IE_FORMAT     34
+
 #define   VRIa_FORMAT   35 // VRI denotes a vector register-and-immediate operation and an extended op-code field.
 #define   VRIb_FORMAT   36
 #define   VRIc_FORMAT   37
 #define   VRId_FORMAT   38
 #define   VRIe_FORMAT   39
-#define   VRRa_FORMAT   40 // VRR denotes a vector register-and-register operation and an extended op-code field.
-#define   VRRb_FORMAT   41
-#define   VRRc_FORMAT   42
-#define   VRRd_FORMAT   43
-#define   VRRe_FORMAT   44
-#define   VRRf_FORMAT   45
-#define   VRSa_FORMAT   46 // VRS denotes a vector register-and-storage operation and an extended op-code field.
-#define   VRSb_FORMAT   47
-#define   VRSc_FORMAT   48
-#define   VRV_FORMAT    49 // VRV denotes a vector register-and-vector-index-storage operation and an extended op-code field.
-#define   VRX_FORMAT    50 // VRX denotes a vector register-and-index-storage operation and an extended op-code field
+#define   VRIf_FORMAT   40
+#define   VRIg_FORMAT   41
+#define   VRIh_FORMAT   42
+#define   VRIi_FORMAT   43
 
+#define   VRRa_FORMAT   44 // VRR denotes a vector register-and-register operation and an extended op-code field.
+#define   VRRb_FORMAT   45
+#define   VRRc_FORMAT   46
+#define   VRRd_FORMAT   47
+#define   VRRe_FORMAT   48
+#define   VRRf_FORMAT   49
+#define   VRRg_FORMAT   50
+#define   VRRh_FORMAT   51
+#define   VRRi_FORMAT   52
+
+#define   VRSa_FORMAT   53 // VRS denotes a vector register-and-storage operation and an extended op-code field.
+#define   VRSb_FORMAT   54
+#define   VRSc_FORMAT   55
+#define   VRSd_FORMAT   56
+
+#define   VRV_FORMAT    57 // VRV denotes a vector register-and-vector-index-storage operation and an extended op-code field.
+#define   VRX_FORMAT    58 // VRX denotes a vector register-and-index-storage operation and an extended op-code field
+#define   VSI_FORMAT    59
 
 /* Instruction Properties (One hot encoding) */
 #define S390OpProp_UsesTarget             static_cast<uint64_t>(0x0000000000000001ull)

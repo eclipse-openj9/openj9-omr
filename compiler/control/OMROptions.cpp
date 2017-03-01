@@ -567,6 +567,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableZealousCodegenOpts",          "O\tdisable use of zealous codegen optimizations.", SET_OPTION_BIT(TR_DisableZealousCodegenOpts), "F"},
    {"disableZHelix",                      "O\tdisable zEC12 support",                          SET_OPTION_BIT(TR_DisableZHelix), "F"},
    {"disableZImplicitNullChecks",         "O\tdisable implicit null checks on 390",            SET_OPTION_BIT(TR_DisableZImplicitNullChecks), "F"},
+   {"disableZNext",                       "O\tdisable zNext support",                        SET_OPTION_BIT(TR_DisableZNext), "F"},
    {"disableZonedToDFPReduction",         "O\tdisable strength reduction of zoned decimal arithmetic to DFP arithmetic",   SET_OPTION_BIT(TR_DisableZonedToDFPReduction), "F"},
    {"dltMostOnce",                        "O\tprevent DLT compilation of a method at more than one bytecode index.", SET_OPTION_BIT(TR_DLTMostOnce), "F"},
    {"dltOptLevel=cold",                   "O\tforce DLT compilation at cold level",            TR::Options::set32BitValue, offsetof(OMR::Options, _dltOptLevel), cold, "P"},

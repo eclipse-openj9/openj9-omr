@@ -65,6 +65,8 @@ public:
 
    bool getS390SupportsZ13() { return false; }
 
+   bool getS390SupportsZNext() { return false; }
+
    bool getS390SupportsHPRDebug() { return false; }
 
    bool getS390SupportsDFP() { return false; }

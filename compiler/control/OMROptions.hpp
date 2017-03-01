@@ -207,7 +207,7 @@ enum TR_CompilationOptions
    TR_Enable390AccessRegs                 = 0x00020000 + 3,
    TR_SoftFailOnAssume                    = 0x00040000 + 3,
    TR_DisableNewBlockOrdering             = 0x00080000 + 3,
-   //Availabe                             = 0x00100000 + 3,
+   TR_DisableZNext                        = 0x00100000 + 3,
    TR_DisableDynamicLoopTransfer          = 0x00200000 + 3,
    TR_TraceNodeFlags                      = 0x00400000 + 3,
    TR_DisableNewBVA                       = 0x00800000 + 3,

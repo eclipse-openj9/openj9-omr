@@ -90,10 +90,12 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
 
    // static methods for setting register field
    static void setRegisterRXBField(uint32_t *instruction, RegNum reg, int index);
+
    static void setBaseRegisterField(uint32_t *instruction,RegNum reg);
    static void setIndexRegisterField(uint32_t *instruction,RegNum reg);
    static void setRegisterField(uint32_t *instruction,RegNum reg);
    static void setRegisterField(uint32_t *instruction, int32_t nibbleIndex,RegNum reg);
+
    static void setRegister1Field(uint32_t *instruction,RegNum reg);
    static void setRegister2Field(uint32_t *instruction,RegNum reg);
    static void setRegister3Field(uint32_t *instruction,RegNum reg);

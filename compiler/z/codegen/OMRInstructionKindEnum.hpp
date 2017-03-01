@@ -57,22 +57,31 @@ IsReg,             ///< Target is register
    IsRIS,          ///< Is RIS instruction
    IsSMI,          ///< Is SMI instruction eg BPP M1,RI2,D3(B3)
    IsMII,
-   IsVRIa,
+   IsVRIa,         ///< Is VRI (Vector Register-and-Immediate) Operation and extended opCode field
    IsVRIb,
    IsVRIc,
    IsVRId,
    IsVRIe,
-   IsVRRa,
+   IsVRIf,
+   IsVRIg,
+   IsVRIh,
+   IsVRIi,
+   IsVRRa,         ///< Is VRR (Vector Register-and-Register) Operation and extended opCode field
    IsVRRb,
    IsVRRc,
    IsVRRd,
    IsVRRe,
    IsVRRf,
-   IsVRSa,
+   IsVRRg,
+   IsVRRh,
+   IsVRRi,
+   IsVRSa,         ///< Is VRS (Vector Register-and-Storage) Operation and extended opCode field
    IsVRSb,
    IsVRSc,
-   IsVRV,
+   IsVRSd,
+   IsVRV,          ///< Is VRV (Vector Register-and-Vector-Index) Operation and extended opCode field
    IsVRX,          ///< Is VRX (register-and-index-storage) instruction eg VL V1,D2(X2 ,B2)
+   IsVSI,          ///< Is VSI (register-and-storage) Operation and extended opCode field
 IsMem,             ///< Target is memory storage
    IsRSL,          ///< Is RSL instruction eg. TP D1(L1,B1)
    IsRSLb,         ///< Is RSLb instruction eg. CDZT R1,D2(L2,B2),M3

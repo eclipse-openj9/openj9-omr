@@ -33,7 +33,6 @@
 #include "Debug.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
-#include "EnvironmentLanguageInterface.hpp"
 #include "Heap.hpp"
 #include "HeapLinkedFreeHeader.hpp"
 #include "HeapMapIterator.hpp"

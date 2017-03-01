@@ -72,12 +72,12 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::canGenAndKi
    if (naturalLoop && naturalLoop->isNaturalLoop())
       {
       TR_StructureSubGraphNode *entryNode = naturalLoop->getEntry();
-      TR::list<TR::CFGEdge*> predList(entryNode->getPredecessors());
+      TR::CFGEdgeList predList(entryNode->getPredecessors());
       predList.insert(predList.end(), entryNode->getExceptionPredecessors().begin(), entryNode->getExceptionPredecessors().end());
       for (auto pred = predList.begin(); pred != predList.end(); ++pred)
          {
          TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) (*pred)->getFrom();
-         TR::list<TR::CFGEdge*> succList(predNode->getSuccessors());
+         TR::CFGEdgeList succList(predNode->getSuccessors());
          succList.insert(succList.end(), predNode->getExceptionSuccessors().begin(), predNode->getExceptionSuccessors().end());
          bool exitEdgeSeen = false;
          for (auto succ = succList.begin(); succ != succList.end(); ++succ)
@@ -113,7 +113,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::canGenAndKi
         bool seenNonBackEdge = false;
         bool seenLoopBackEdge = false;
 
-        TR::list<TR::CFGEdge*> predList(toNode->getPredecessors());
+        TR::CFGEdgeList predList(toNode->getPredecessors());
         predList.insert(predList.end(), toNode->getExceptionPredecessors().begin(), toNode->getExceptionPredecessors().end());
         for (auto pred = predList.begin(); pred != predList.end(); ++pred)
            {
@@ -259,7 +259,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
       TR::BitVector seenSuccNodes(this->comp()->allocator());
       TR::BitVector seenNodes(this->comp()->allocator());
          {
-         TR::list<TR::CFGEdge*> succList(nodeStructure->getSuccessors());
+         TR::CFGEdgeList succList(nodeStructure->getSuccessors());
          succList.insert(succList.end(), nodeStructure->getExceptionSuccessors().begin(), nodeStructure->getExceptionSuccessors().end());
          bool firstSucc = true;
          bool stopAnalyzingThisNode = false;
@@ -377,7 +377,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          isBlockStructure = true;
 
       typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *regionAnalysisInfo = this->getAnalysisInfo(regionStructure);
-      TR::list<TR::CFGEdge*> succList(nodeStructure->getSuccessors());
+      TR::CFGEdgeList succList(nodeStructure->getSuccessors());
       succList.insert(succList.end(), nodeStructure->getExceptionSuccessors().begin(), nodeStructure->getExceptionSuccessors().end());
       int count = 0;
       for (auto succ = succList.begin(); succ != succList.end(); ++succ)
@@ -681,7 +681,7 @@ template<class Container>void TR_BackwardDFSetAnalysis<Container *>::initializeG
          }
 
 
-      TR::list<TR::CFGEdge*>predList(nodeStructure->getPredecessors());
+      TR::CFGEdgeList predList(nodeStructure->getPredecessors());
       predList.insert(predList.end(), nodeStructure->getExceptionPredecessors().begin(), nodeStructure->getExceptionPredecessors().end());
       for (auto pred = predList.begin(); pred != predList.end(); ++pred)
          {
@@ -1073,7 +1073,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
       TR::BitVector seenNodes(this->comp()->allocator());
       ///////initializeOutSetInfo();
          {
-         TR::list<TR::CFGEdge*> succList(nodeStructure->getSuccessors());
+         TR::CFGEdgeList succList(nodeStructure->getSuccessors());
          succList.insert(succList.end(), nodeStructure->getExceptionSuccessors().begin(), nodeStructure->getExceptionSuccessors().end());
          bool firstSucc = true;
          bool stopAnalyzingThisNode = false;
@@ -1243,7 +1243,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
         typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *nodePair;
         if (1 /* || isBlockStructure */)
            {
-           TR::list<TR::CFGEdge*> succList (nodeStructure->getSuccessors());
+           TR::CFGEdgeList succList (nodeStructure->getSuccessors());
            succList.insert(succList.end(), nodeStructure->getExceptionSuccessors().begin(), nodeStructure->getExceptionSuccessors().end());
            int count = 0;
            for (auto succ = succList.begin(); succ != succList.end(); ++succ)
@@ -1420,7 +1420,7 @@ template<class Container>bool TR_BackwardDFSetAnalysis<Container *>::analyzeNode
             }
         }
 
-      TR::list<TR::CFGEdge*> predList(nodeStructure->getPredecessors());
+      TR::CFGEdgeList predList(nodeStructure->getPredecessors());
       predList.insert(predList.end(),nodeStructure->getExceptionPredecessors().begin(), nodeStructure->getExceptionPredecessors().end());
       for (auto pred = predList.begin(); pred != predList.end(); ++pred)
          {

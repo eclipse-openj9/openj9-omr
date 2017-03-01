@@ -200,7 +200,7 @@ class CFG
    bool removeEdge(TR::CFGNode *from, TR::CFGNode *to);
    bool removeEdge(TR::CFGEdge *e, bool recursiveImpl);
    void removeSelfEdge(List<TR::CFGEdge> succList, int32_t selfNumber);
-   void removeEdge(TR::list<TR::CFGEdge*> succList, int32_t selfNumber, int32_t destNumber);
+   void removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber);
 
    void removeBlock(TR::Block *);
 
@@ -367,7 +367,7 @@ public: //FIXME: These public members should eventually be wrtapped in an interf
 class TR_CFGIterator
    {
 public:
-   TR_CFGIterator(TR::list<TR::CFGEdge*>& l1, TR::list<TR::CFGEdge*>& l2) : combinedList(l1)
+   TR_CFGIterator(TR::CFGEdgeList& l1, TR::CFGEdgeList& l2) : combinedList(l1)
       {
       combinedList.insert(combinedList.end(), l2.begin(), l2.end());
       currentIterator = combinedList.begin();
@@ -399,7 +399,7 @@ public:
       }
 
 private:
-   TR::list<TR::CFGEdge*> combinedList;
+   TR::CFGEdgeList combinedList;
 
    std::list<TR::CFGEdge*,
              TR::typed_allocator<TR::CFGEdge*,

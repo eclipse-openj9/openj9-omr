@@ -2704,7 +2704,7 @@ bool TR_SinkStores::checkLiveMergingPaths(TR_BlockListEntry *blockEntry, int32_t
    // first, if block is a merge point, we need to make sure that the def propagated here along all paths
    int32_t numPredsLONAP=0;
    int32_t numPreds=0;
-   TR::list<TR::CFGEdge*> predList(block->getPredecessors());
+   TR::CFGEdgeList predList(block->getPredecessors());
    predList.insert(predList.end(), block->getExceptionPredecessors().begin(), block->getExceptionPredecessors().end());
    for (auto predEdge = predList.begin(); predEdge != predList.end(); ++predEdge)
       {
@@ -3940,7 +3940,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
    TR_EdgeStorePlacementList  edgePlacementsForThisStore(trMemory());
 
    // now try to push it along sourceBlock's successor edges
-   TR::list<TR::CFGEdge*> succList(sourceBlock->getSuccessors());
+   TR::CFGEdgeList succList(sourceBlock->getSuccessors());
    succList.insert(succList.end(), sourceBlock->getExceptionSuccessors().begin(), sourceBlock->getExceptionSuccessors().end());
    for (auto succEdge = succList.begin(); succEdge != succList.end(); ++succEdge)
       {
@@ -4173,7 +4173,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             int32_t numOfEdgePlacements = 0;
             ListElement<TR_BlockListEntry> *lastAddedEntry = 0;
             placeDefInBlock = false;
-            TR::list<TR::CFGEdge*> succList(block->getSuccessors());
+            TR::CFGEdgeList succList(block->getSuccessors());
             succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
             for (auto succEdge = succList.begin(); succEdge != succList.end(); ++succEdge)
                {

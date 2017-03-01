@@ -1067,7 +1067,7 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
 
    // Add an edge between the nodes if there isn't one already
    //
-   TR::list<TR::CFGEdge*>* list;
+   TR::CFGEdgeList* list;
    if (isExceptionEdge)
       list = &(fromNode->getExceptionSuccessors());
    else

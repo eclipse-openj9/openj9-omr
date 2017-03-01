@@ -2053,7 +2053,7 @@ bool TR_CopyPropagation::isRedefinedBetweenStoreTreeAnd(TR::list< TR::Node *> & 
          vcount_t visitCount = comp()->getVisitCount();
          block->setVisitCount(visitCount);
 
-         TR::list<TR::CFGEdge*> predList(block->getPredecessors());
+         TR::CFGEdgeList predList(block->getPredecessors());
          predList.insert(predList.end(), block->getExceptionPredecessors().begin(), block->getExceptionPredecessors().end());
          for (auto nextEdge = predList.begin(); nextEdge != predList.end(); ++nextEdge)
             {

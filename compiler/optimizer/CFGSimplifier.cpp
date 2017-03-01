@@ -700,7 +700,7 @@ bool TR_CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::No
 
    // Find the fallthrough and taken blocks
    TR::Block *fallthroughBlock = getFallThroughBlock(joinBlock), *takenBlock = NULL;
-   TR::list<TR::CFGEdge*>& joinBlockSuccessors = joinBlock->getSuccessors();
+   TR::CFGEdgeList& joinBlockSuccessors = joinBlock->getSuccessors();
 
    TR_ASSERT(joinBlockSuccessors.size() == 2, "Block containing only an if tree doesn't have exactly two successors\n");
    TR::CFGEdge* oldTakenEdge = NULL;

@@ -6267,10 +6267,10 @@ static bool identicalBranchTrees(TR::Node *node1, TR::Node *node2)
    return true;
    }
 
-static void appendPredecessors(TR::list<TR::CFGEdge*>& dest, TR::Block *block)
+static void appendPredecessors(TR::CFGEdgeList& dest, TR::Block *block)
    {
-   const TR::list<TR::CFGEdge*>& preds = block->getPredecessors();
-   const TR::list<TR::CFGEdge*>& excs = block->getExceptionPredecessors();
+   const TR::CFGEdgeList& preds = block->getPredecessors();
+   const TR::CFGEdgeList& excs = block->getExceptionPredecessors();
    dest.insert(dest.end(), preds.begin(), preds.end());
    dest.insert(dest.end(), excs.begin(), excs.end());
    }
@@ -6296,7 +6296,7 @@ TR_InductionVariableAnalysis::isIVUnchangedInLoop(TR_RegionStructure *loop,
    if (trace())
       traceMsg(comp(), "\tTrying to make sure that candidate IV hasn't been modified elsewhere in the loop\n");
 
-   TR::list<TR::CFGEdge*> workList(
+   TR::CFGEdgeList workList(
       getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
 
    TR::BlockChecklist nodesDone(comp());

@@ -253,7 +253,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
     * Seed an initial list of successors using a dummy loop edge connecting the start to itself.
     */
    TR::CFGEdge dummyEdge;
-   TR::list<TR::CFGEdge*> startList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   TR::CFGEdgeList startList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
    startList.push_front(&dummyEdge);
 
    StackInfo seed(startList, startList.begin(), -1);

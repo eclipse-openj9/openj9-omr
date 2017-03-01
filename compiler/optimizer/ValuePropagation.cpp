@@ -4807,7 +4807,7 @@ void TR::GlobalValuePropagation::processBlock(TR_StructureSubGraphNode *node, bo
    propagateOutputConstraints(node, lastTimeThrough, false, List1, &List2);
    }
 
-TR::CFGEdge *TR::ValuePropagation::findOutEdge(TR::list<TR::CFGEdge*> &edges, TR::CFGNode *target)
+TR::CFGEdge *TR::ValuePropagation::findOutEdge(TR::CFGEdgeList &edges, TR::CFGNode *target)
    {
    // Find the output edge in the list of edges to the given node
    //
@@ -5593,9 +5593,9 @@ TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* 
       cfg->addEdge(TR::CFGEdge::createEdge(forwardArrayCopyBlock,  followOnBlock, trMemory()));
       cfg->copyExceptionSuccessors(ifBlock, forwardArrayCopyBlock);
 
-      TR::list<TR::CFGEdge*> elseSuccList = outerElseBlock->getSuccessors();
+      TR::CFGEdgeList elseSuccList = outerElseBlock->getSuccessors();
       cfg->removeEdge(elseSuccList, outerElseBlock->getNumber(), followOnBlock->getNumber());
-      TR::list<TR::CFGEdge*> condSuccList = arraycopyBlock->getSuccessors();
+      TR::CFGEdgeList condSuccList = arraycopyBlock->getSuccessors();
       cfg->removeEdge(condSuccList, arraycopyBlock->getNumber(), ifBlock->getNumber());
 
       outerArraycopyTree = arraycopyForward;

@@ -530,7 +530,7 @@ class ValuePropagation : public TR::Optimization
    bool canRunTransformToArrayCopy();
    bool transformUnsafeCopyMemoryCall(TR::Node *arraycopyNode);
 
-   static TR::CFGEdge *findOutEdge(TR::list<TR::CFGEdge*> &edges, TR::CFGNode *target);
+   static TR::CFGEdge *findOutEdge(TR::CFGEdgeList &edges, TR::CFGNode *target);
    bool isUnreachablePath(ValueConstraints &valueConstraints);
    bool isUnreachablePath(EdgeConstraints *constraints);
    void setUnreachablePath();

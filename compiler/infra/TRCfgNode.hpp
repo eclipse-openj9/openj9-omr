@@ -34,6 +34,7 @@ namespace TR { class Compilation; }
 
 namespace TR
 {
+typedef TR::list<CFGEdge*> CFGEdgeList;
 
 class CFGNode : public ::TR_Link1<CFGNode>
    {
@@ -53,10 +54,10 @@ class CFGNode : public ::TR_Link1<CFGNode>
    TR_HeapMemory   trHeapMemory() { return trMemory(); }
    TR_StackMemory trStackMemory() { return trMemory(); }
 
-   TR::list<CFGEdge*>& getSuccessors()            {return _successors;}
-   TR::list<CFGEdge*>& getPredecessors()          {return _predecessors;}
-   TR::list<CFGEdge*>& getExceptionSuccessors()   {return _exceptionSuccessors;}
-   TR::list<CFGEdge*> & getExceptionPredecessors() {return _exceptionPredecessors;}
+   TR::CFGEdgeList& getSuccessors()            {return _successors;}
+   TR::CFGEdgeList& getPredecessors()          {return _predecessors;}
+   TR::CFGEdgeList& getExceptionSuccessors()   {return _exceptionSuccessors;}
+   TR::CFGEdgeList & getExceptionPredecessors() {return _exceptionPredecessors;}
 
    //getEdge looks in both getSuccessors() and getExceptionSuccessors()
    //use getSuccessorEdge or getExceptionEdge if a search in a particular list is required
@@ -141,15 +142,15 @@ class CFGNode : public ::TR_Link1<CFGNode>
    private:
    TR_Memory * _m;
    template <typename FUNC>
-   CFGEdge * getEdgeMatchingNodeInAList (CFGNode * n, TR::list<CFGEdge*>& list, FUNC blockGetter);
+   CFGEdge * getEdgeMatchingNodeInAList (CFGNode * n, TR::CFGEdgeList& list, FUNC blockGetter);
    static CFGNode * fromBlockGetter (CFGEdge * e) {return e->getFrom();};
    static CFGNode * toBlockGetter (CFGEdge * e)   {return e->getTo();};
 
 
-   TR::list<CFGEdge*> _successors;
-   TR::list<CFGEdge*> _predecessors;
-   TR::list<CFGEdge*> _exceptionSuccessors;
-   TR::list<CFGEdge*> _exceptionPredecessors;
+   TR::CFGEdgeList _successors;
+   TR::CFGEdgeList _predecessors;
+   TR::CFGEdgeList _exceptionSuccessors;
+   TR::CFGEdgeList _exceptionPredecessors;
 
    int32_t          _nodeNumber;
    vcount_t         _visitCount;

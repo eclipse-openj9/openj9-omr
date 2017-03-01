@@ -1454,7 +1454,7 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
          if (1)
             {
             TR_StructureSubGraphNode *origEntryNode;
-            TR::list<TR::CFGEdge*>& list = _spillNode->getStructure()->asRegion()->getEntry()->getSuccessors();
+            TR::CFGEdgeList& list = _spillNode->getStructure()->asRegion()->getEntry()->getSuccessors();
             for (auto edge = list.begin(); edge != list.end(); ++edge)
                {
                TR_StructureSubGraphNode *to = (*edge)->getTo()->asStructureSubGraphNode();

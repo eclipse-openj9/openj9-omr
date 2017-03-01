@@ -89,7 +89,7 @@ class TR_DominatorsChk
       {
       public:
       std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator curIterator;
-      TR::list<TR::CFGEdge*> * list;
+      TR::CFGEdgeList * list;
       int32_t                  parent;
       };
 

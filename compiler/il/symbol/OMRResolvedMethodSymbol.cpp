@@ -1968,7 +1968,7 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
          if (!node->getExceptionPredecessors().empty())
             {
             //catch block
-            TR::list<TR::CFGEdge*> excepSucc = node->getExceptionSuccessors();
+            TR::CFGEdgeList excepSucc = node->getExceptionSuccessors();
             if (!excepSucc.empty())
                {
                for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e)

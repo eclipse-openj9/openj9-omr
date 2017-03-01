@@ -228,7 +228,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
       if ( prevNode->getOpCode().isJumpWithMultipleTargets() || !prevBlock->hasSuccessor(block))
          continue;
 
-      TR::list<TR::CFGEdge*> & preds = block->getPredecessors();
+      TR::CFGEdgeList & preds = block->getPredecessors();
 
       bool cannotExtendWithCurrentFallThrough = false;
       if (!(preds.size() == 1))
@@ -288,7 +288,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
          TR::Block * newBlock = 0;
          if (!bestExtension)
             {
-            TR::list<TR::CFGEdge*> & prevSuccessors = prevBlock->getSuccessors();
+            TR::CFGEdgeList & prevSuccessors = prevBlock->getSuccessors();
             for (auto e = prevSuccessors.begin(); e != prevSuccessors.end(); ++e)
                 if ((*e)->getTo()->getPredecessors().size() == 1)
                     { newBlock = toBlock((*e)->getTo()); break; }
@@ -6339,7 +6339,7 @@ int32_t TR_BlockSplitter::perform()
             // set frequencies for incoming/outcoming edges to/from the block itr->_from
             if (origFreq > 0)
                {
-               TR::list<TR::CFGEdge*> & predecessors = itr->_from->getPredecessors();
+               TR::CFGEdgeList & predecessors = itr->_from->getPredecessors();
                for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
                   {
                   int32_t freq = (coldFreq*(*predEdge)->getFrequency())/origFreq;
@@ -6358,7 +6358,7 @@ int32_t TR_BlockSplitter::perform()
                   (*predEdge)->setFrequency(freq);
                   }
 
-               TR::list<TR::CFGEdge*> & successors = itr->_from->getSuccessors();
+               TR::CFGEdgeList & successors = itr->_from->getSuccessors();
                for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
                   {
                   int32_t freq = (coldFreq*(*succEdge)->getFrequency())/origFreq;
@@ -8394,7 +8394,7 @@ TR_ColdBlockOutlining::reorderColdBlocks()
      // Also we don't want to move gen asm flow block if one of it's successor is not cold.
 
      // First, check if a predeccessor of this block is genAsmFlow, this block is not it's predeccessor' fall through, continue if yes
-     TR::list<TR::CFGEdge*> & predecessors = ((TR::CFGNode *)currentBlock)->getPredecessors();
+     TR::CFGEdgeList & predecessors = ((TR::CFGNode *)currentBlock)->getPredecessors();
      bool foundAsmGenFlowPredBlock = false;
      for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
        {

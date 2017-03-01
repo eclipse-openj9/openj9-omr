@@ -386,11 +386,11 @@ bool TR_OrderBlocks::analyseForHazards(TR::CFGNode *block)
 
 bool TR_OrderBlocks::isCandidateReallyBetter(TR::CFGEdge *candEdge, TR::Compilation *comp)
    {
-   TR::list<TR::CFGEdge*> & predecessors = candEdge->getTo()->getPredecessors();
+   TR::CFGEdgeList & predecessors = candEdge->getTo()->getPredecessors();
    //traceMsg(comp, "iCRB cand block_%d\n", candEdge->getTo()->getNumber());
    for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
       {
-      TR::list<TR::CFGEdge*> & predSuccessors = (*predEdge)->getFrom()->getSuccessors();
+      TR::CFGEdgeList & predSuccessors = (*predEdge)->getFrom()->getSuccessors();
       float numFactor = 1.5;
       for (auto predSuccEdge = predSuccessors.begin(); predSuccEdge != predSuccessors.end(); ++predSuccEdge)
          {
@@ -426,7 +426,7 @@ static bool isCandidateTheHottestSuccessor(TR::CFGEdge *candEdge, TR::Compilatio
    if (!comp->getFlowGraph()->getStructure()) // we cannot trust below checks if someone invalidated structure earlier in this opt
       return true;
 
-   TR::list<TR::CFGEdge*> & predecessors = candEdge->getTo()->getPredecessors();
+   TR::CFGEdgeList & predecessors = candEdge->getTo()->getPredecessors();
    TR_BlockStructure *candBlock = candEdge->getTo()->asBlock()->getStructureOf();
    if (candBlock && candBlock->getContainingLoop() &&
          candBlock->getContainingLoop()->getNumber() == candBlock->getNumber())
@@ -590,7 +590,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
    if (trace()) traceMsg(comp(), "Block %d: looking for best successor\n", block->getNumber());
 
    // first, build up a list of potential choices: unvisited successors
-   TR::list<TR::CFGEdge*> & successors = block->getSuccessors();
+   TR::CFGEdgeList & successors = block->getSuccessors();
    for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
       {
       TR::Block *succBlock = (*succEdge)->getTo()->asBlock();
@@ -694,7 +694,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
             //outer loop does not exist or contains the inner loop
             if (!outerLoop || innerLoop!=outerLoop && outerLoop->contains(innerLoop))
                {
-               TR::list<TR::CFGEdge*>& successors = block->asBlock()->getSuccessors();
+               TR::CFGEdgeList& successors = block->asBlock()->getSuccessors();
                if (successors.size() !=2 )
                   break;
                //get exit edge frequency
@@ -819,7 +819,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
 
    if (trace()) traceMsg(comp(), "\tBest successor is %d\n", bestSuccessorEdge->getTo()->getNumber());
 
-   TR::list<TR::CFGEdge*> & predecessors = bestSuccessorEdge->getTo()->getPredecessors();
+   TR::CFGEdgeList & predecessors = bestSuccessorEdge->getTo()->getPredecessors();
    for (auto predEdge = predecessors.begin(); predEdge != predecessors.end(); ++predEdge)
       {
       TR::CFGNode *pred = (*predEdge)->getFrom();
@@ -923,7 +923,7 @@ void TR_OrderBlocks::addRemainingSuccessorsToList(TR::CFGNode *block, TR::CFGNod
 
    if (trace()) traceMsg(comp(), "\tadding remaining successors of block_%d to queue\n", block->getNumber());
 
-   TR::list<TR::CFGEdge*> & successors = block->getSuccessors();
+   TR::CFGEdgeList & successors = block->getSuccessors();
    for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
       {
       TR::CFGNode *succBlock = (*succEdge)->getTo();
@@ -944,7 +944,7 @@ void TR_OrderBlocks::addRemainingSuccessorsToList(TR::CFGNode *block, TR::CFGNod
          }
       }
 
-   TR::list<TR::CFGEdge*> & excSuccessors = block->getExceptionSuccessors();
+   TR::CFGEdgeList & excSuccessors = block->getExceptionSuccessors();
    for (auto excSuccEdge = excSuccessors.begin(); excSuccEdge != excSuccessors.end(); ++excSuccEdge)
       {
       TR::CFGNode *succBlock = (*excSuccEdge)->getTo();
@@ -971,7 +971,7 @@ void TR_OrderBlocks::addRemainingSuccessorsToListHWProfile(TR::CFGNode *block, T
 
    if (trace()) traceMsg(comp(), "\tadding remaining successors of block_%d to queue\n", block->getNumber());
 
-   TR::list<TR::CFGEdge*> & successors = block->getSuccessors();
+   TR::CFGEdgeList & successors = block->getSuccessors();
    for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
       {
       TR::CFGNode *succBlock = (*succEdge)->getTo();
@@ -984,7 +984,7 @@ void TR_OrderBlocks::addRemainingSuccessorsToListHWProfile(TR::CFGNode *block, T
          }
       }
 
-   TR::list<TR::CFGEdge*> & excSuccessors = block->getExceptionSuccessors();
+   TR::CFGEdgeList & excSuccessors = block->getExceptionSuccessors();
    for (auto excSuccEdge = excSuccessors.begin(); excSuccEdge != excSuccessors.end(); ++excSuccEdge)
       {
       TR::CFGNode *succBlock = (*excSuccEdge)->getTo();
@@ -1273,7 +1273,7 @@ void TR_OrderBlocks::peepHoleBranchAroundSingleGoto(TR::CFG *cfg, TR::Block *blo
       TR::Block *blockAfterFallThrough = fallThroughBlock->getExit()->getNextTreeTop()->getNode()->getBlock();
 
 
-      TR::list<TR::CFGEdge*> &fallThroughSuccessors = fallThroughBlock->getSuccessors();
+      TR::CFGEdgeList &fallThroughSuccessors = fallThroughBlock->getSuccessors();
 #if defined(ENABLE_SPMD_SIMD)
       static const char *e = feGetEnv("TR_DisableSPMD");
       static int disableSPMD = e ? atoi(e) : false;
@@ -1506,7 +1506,7 @@ bool TR_OrderBlocks::doPeepHoleBlockCorrections(TR::Block *block, char *title)
       if (performTransformation(comp(), "%s block_%d has no predecessors so removing it and its out edges from the flow graph\n", title, block->getNumber()))
          {
          // disconnect any out edges
-         TR::list<TR::CFGEdge*> succList(block->getSuccessors());
+         TR::CFGEdgeList succList(block->getSuccessors());
          succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
          for (auto edge=succList.begin(); edge != succList.end(); ++edge)
             cfg->removeEdge((*edge)->getFrom(), (*edge)->getTo());
@@ -2210,7 +2210,7 @@ void checkOrderingConsistency(TR::Compilation *comp)
 
       if (!block->isExtensionOfPreviousBlock())
          {
-         TR::list<TR::CFGEdge*> & successors = prevBlock->getSuccessors();
+         TR::CFGEdgeList & successors = prevBlock->getSuccessors();
          for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
             {
             TR::CFGNode *succ = (*succEdge)->getTo();
@@ -2263,7 +2263,7 @@ void TR_BlockOrderingOptimization::dumpBlockOrdering(TR::TreeTop *tt, char *titl
          else
             traceMsg(comp(), "\n");
 #if 0
-         TR::list<TR::CFGEdge*> & successors = block->getSuccessors();
+         TR::CFGEdgeList & successors = block->getSuccessors();
          for (auto succEdge = successors.begin(); succEdge != successors.end(); ++succEdge)
             traceMsg(comp(), "\t -> block_%-4d\tfrequency %d\n", (*succEdge)->getTo()->getNumber(), (*succEdge)->getFrequency());
 #endif

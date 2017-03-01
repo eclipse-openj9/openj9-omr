@@ -733,7 +733,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableVirtualPersistentMemory",      "M\tenable persistent memory to be allocated using virtual memory allocators",
                                           SET_OPTION_BIT(TR_EnableVirtualPersistentMemory), "F", NOT_IN_SUBSET},
    {"enableVpicForResolvedVirtualCalls",  "O\tenable PIC for resolved virtual calls",         SET_OPTION_BIT(TR_EnableVPICForResolvedVirtualCalls), "F"},
-   {"enableX86AdvancedMemorySet",         "C\tEnable advanced memory support on x86", SET_OPTION_BIT(TR_EnableX86AdvancedMemorySet), "F", NOT_IN_SUBSET },
    {"enableYieldVMAccess",                "O\tenable yielding of VM access when GC is waiting", SET_OPTION_BIT(TR_EnableYieldVMAccess), "F"},
    {"enableZAccessRegs",                "O\tenable use of access regs as spill area on 390.", SET_OPTION_BIT(TR_Enable390AccessRegs), "F"},
    {"enableZEpilogue",                  "O\tenable 64-bit 390 load-multiple breakdown.", SET_OPTION_BIT(TR_Enable39064Epilogue), "F"},

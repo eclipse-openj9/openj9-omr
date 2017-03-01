@@ -89,12 +89,12 @@ class TR_BitContainer
    };
 
 /**
- * A simple datastructure for use in single-bit dataflow analyses.
+ * A simple data structure for use in single-bit dataflow analyses.
  *
- * The normal BitVecotr and BitContainer classes used with the dataflow engine
+ * The normal BitVector and BitContainer classes used with the dataflow engine
  * can have a significant overhead when only a single bit is being propagated
  * owing to their backing storage. This class encapsulates a simple bool value
- * and implemetns a BitVector-style interface making it compatibile with the
+ * and implements a BitVector-style interface making it compatible with the
  * data flow engine.
  */
 class TR_SingleBitContainer

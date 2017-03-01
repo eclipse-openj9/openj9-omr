@@ -75,3 +75,4 @@ template<class Container>TR_DataFlowAnalysis::Kind TR_UnionDFSetAnalysis<Contain
 
 
 template class TR_UnionDFSetAnalysis<TR_BitVector *>;
+template class TR_UnionDFSetAnalysis<TR_SingleBitContainer *>;

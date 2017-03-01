@@ -80,3 +80,4 @@ template<class Container>TR_DataFlowAnalysis::Kind TR_BackwardUnionDFSetAnalysis
 
 
 template class TR_BackwardUnionDFSetAnalysis<TR_BitVector *>;
+template class TR_BackwardUnionDFSetAnalysis<TR_SingleBitContainer *>;

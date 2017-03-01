@@ -88,6 +88,55 @@ class TR_BitContainer
    friend class TR_BitContainerIterator;
    };
 
+/**
+ * A simple datastructure for use in single-bit dataflow analyses.
+ *
+ * The normal BitVecotr and BitContainer classes used with the dataflow engine
+ * can have a significant overhead when only a single bit is being propagated
+ * owing to their backing storage. This class encapsulates a simple bool value
+ * and implemetns a BitVector-style interface making it compatibile with the
+ * data flow engine.
+ */
+class TR_SingleBitContainer
+   {
+   public:
+   TR_ALLOC(TR_Memory::BitVector)
+   typedef int32_t containerCharacteristic; // used by data flow
+   static const containerCharacteristic nullContainerCharacteristic = -1;
+
+   TR_SingleBitContainer() : _value(false) {}
+   TR_SingleBitContainer(int64_t initBits, TR_Memory * m, TR_AllocationKind allocKind = heapAlloc) : _value(false) { }
+   int32_t get(int32_t n) { TR_ASSERT(n == 0, "SingleBitContainers only contain one bit\n"); return _value; }
+   int32_t get() { return _value; }
+   void set() { _value = true; }
+   void set(int32_t n) { TR_ASSERT(n == 0, "SingleBitContainers only contain one bit\n"); _value = true; }
+   bool isEmpty() { return !_value; }
+
+   bool intersects(TR_SingleBitContainer &other) { return _value && other._value; }
+   bool operator==(TR_SingleBitContainer &other) { return _value == other._value; }
+   bool operator!=(TR_SingleBitContainer &other) { return !operator==(other); }
+   void operator|=(TR_SingleBitContainer &other) { _value = _value || other._value; }
+   void operator&=(TR_SingleBitContainer &other) { _value = _value && other._value; }
+   void operator-=(TR_SingleBitContainer &other) { if (other._value) { _value = false; } }
+   void operator=(TR_SingleBitContainer &other) { _value = other._value; }
+
+   void setAll(int64_t n) { TR_ASSERT(n < 2, "SingleBitContainers only contain one bit\n"); if (n > 0) { _value = true; } }
+   void setAll(int64_t m, int64_t n) { if (m == 0 && n == 1) { _value = true; } }
+
+   void resetAll(int64_t n) { TR_ASSERT(n < 2, "SingleBitContainers only contain one bit\n"); if (n > 0) { _value = false; } }
+   void resetAll(int64_t m, int64_t n) { if (m == 0 && n == 1) { _value = false; } }
+
+   void empty() { _value = false; }
+   bool hasMoreThanOneElement() { return false; }
+   int32_t elementCount() { return 1; }
+   int32_t numUsedChunks() { return 1; }
+   int32_t numNonZeroChunks() { return _value ? 1 : 0; }
+
+   void print(TR::Compilation *comp, TR::FILE *file = NULL);
+
+   private:
+   bool _value;
+   };
 
 enum TR_BitVectorGrowable
    {

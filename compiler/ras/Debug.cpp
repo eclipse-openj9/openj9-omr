@@ -895,6 +895,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR_BitVector * bv)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR_SingleBitContainer *sbc)
+   {
+   if (pOutFile == NULL) return;
+
+   if (sbc->isEmpty())
+      trfprintf(pOutFile,"{}");
+   else
+      trfprintf(pOutFile,"{0}");
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::BitVector * bv)
    {
    // *this    swipeable for debugging purposes

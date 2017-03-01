@@ -1628,3 +1628,4 @@ template<class Container>TR_DataFlowAnalysis::Kind TR_BackwardDFSetAnalysis<Cont
    }
 
 template class TR_BackwardDFSetAnalysis<TR_BitVector *>;
+template class TR_BackwardDFSetAnalysis<TR_SingleBitContainer *>;

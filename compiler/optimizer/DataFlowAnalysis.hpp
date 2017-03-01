@@ -459,6 +459,14 @@ class TR_UnionBitVectorAnalysis : public TR_UnionDFSetAnalysis<TR_BitVector *>
    	TR_UnionDFSetAnalysis<TR_BitVector *>(comp, cfg, optimizer, trace) {}
    };
 
+class TR_UnionSingleBitContainerAnalysis : public TR_UnionDFSetAnalysis<TR_SingleBitContainer *>
+  {
+  public:
+  typedef TR_SingleBitContainer ContainerType;
+  TR_UnionSingleBitContainerAnalysis(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer, bool trace) :
+      TR_UnionDFSetAnalysis<TR_SingleBitContainer *>(comp, cfg, optimizer, trace) {}
+  };
+
 class TR_ReachingDefinitions : public TR_UnionBitVectorAnalysis
    {
    public:
@@ -608,6 +616,14 @@ class TR_BackwardUnionBitVectorAnalysis :
    public:
    TR_BackwardUnionBitVectorAnalysis(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer, bool trace)
       : TR_BackwardUnionDFSetAnalysis<TR_BitVector *>(comp, cfg, optimizer, trace) { }
+   };
+
+class TR_BackwardUnionSingleBitContainerAnalysis :
+   public TR_BackwardUnionDFSetAnalysis<TR_SingleBitContainer *>
+   {
+   public:
+   TR_BackwardUnionSingleBitContainerAnalysis(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer, bool trace)
+      : TR_BackwardUnionDFSetAnalysis<TR_SingleBitContainer *>(comp, cfg, optimizer, trace) { }
    };
 
 // First dataflow analysis in Partial Redundancy Elimination

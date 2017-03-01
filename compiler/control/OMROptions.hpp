@@ -147,7 +147,7 @@ enum TR_CompilationOptions
    TR_DisableAbstractInlining    = 0x00010000 + 1,
    TR_DisableHierarchyInlining   = 0x00020000 + 1,
    TR_DisableDirectMemoryOps     = 0x00040000 + 1,
-   // Available                  = 0x00100000 + 1,
+   TR_DisableArraySetOpts        = 0x00100000 + 1,
    TR_TraceLiveMonitorMetadata   = 0x00200000 + 1,
    TR_DisableAllocationInlining  = 0x00400000 + 1,
    TR_DisableInlineCheckCast     = 0x00800000 + 1,

@@ -680,8 +680,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setSupportsVirtualGuardNOPing();
       }
-   self()->setSupportsArraySet();
-   self()->setSupportsArraySetToZero();
+   if (!comp->getOption(TR_DisableArraySetOpts))
+      {
+      self()->setSupportsArraySet();
+      self()->setSupportsArraySetToZero();
+      }
    self()->setSupportsArrayCmp();
    self()->setSupportsArrayCmpSign();
    if (!comp->compileRelocatableCode())

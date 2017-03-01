@@ -365,8 +365,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setSupportsArrayCmp();
    self()->setSupportsArrayCopy();
 
-   static char *disableArraySet = feGetEnv("TR_disableArraySet");
-   if (!disableArraySet)
+   if (!comp->getOption(TR_DisableArraySetOpts))
       {
       self()->setSupportsArraySetToZero();
       self()->setSupportsArraySet();

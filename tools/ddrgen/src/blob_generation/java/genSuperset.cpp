@@ -168,7 +168,7 @@ JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
 			Type *type = f->_fieldType;
 			string name = type->_name;
 			TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
-			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end())) {
+			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end()) && (NULL != td->_type)) {
 				type = td->_type;
 				name = td->_type->_name;
 				td = dynamic_cast<TypedefUDT *>(type);

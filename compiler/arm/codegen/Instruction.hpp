@@ -16,8 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#ifndef OMR_INSTRUCTION_INCL
-#define OMR_INSTRUCTION_INCL
+#ifndef TR_INSTRUCTION_INCL
+#define TR_INSTRUCTION_INCL
 
 #include "codegen/ARMConditionCode.hpp"
 #include "codegen/OMRInstruction.hpp"
@@ -33,60 +33,42 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
 
    public:
 
-   // TODO: need to fix the InstOpCode initialization
+   Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node = 0)
+      : OMR::InstructionConnector(cg, op, node)
+      {}
+   Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0)
+      : OMR::InstructionConnector(cg, precedingInstruction, op, node)
+      {}
+
    Instruction(TR::Node *node, TR::CodeGenerator *cg)
-      : OMR::InstructionConnector(cg, InstOpCode::BAD, node)
-      {
-      self()->setOpCodeValue(ARMOp_bad);
-      self()->setConditionCode(ARMConditionCodeAL);
-      self()->setDependencyConditions(NULL);
-      }
+      : OMR::InstructionConnector(node, cg)
+      {}
 
    Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
-      : OMR::InstructionConnector(cg, InstOpCode::BAD, node)
-      {
-      self()->setOpCodeValue(op);
-      self()->setConditionCode(ARMConditionCodeAL);
-      self()->setDependencyConditions(NULL);
-      }
+      : OMR::InstructionConnector(op, node, cg)
+      {}
 
    Instruction(TR::Instruction   *precedingInstruction,
                TR_ARMOpCodes     op,
                TR::Node          *node,
                TR::CodeGenerator *cg)
-      : OMR::InstructionConnector(cg, precedingInstruction, InstOpCode::BAD, node)
-      {
-      self()->setOpCodeValue(op);
-      self()->setConditionCode(ARMConditionCodeAL);
-      self()->setDependencyConditions(NULL);
-      }
+      : OMR::InstructionConnector(precedingInstruction, op, node, cg)
+      {}
 
    Instruction(TR_ARMOpCodes                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg)
-      : OMR::InstructionConnector(cg, InstOpCode::BAD, node)
-      {
-      self()->setOpCodeValue(op);
-      self()->setConditionCode(ARMConditionCodeAL);
-      self()->setDependencyConditions(cond);
-      if (cond)
-         cond->incRegisterTotalUseCounts(cg);
-      }
+      : OMR::InstructionConnector(op, node, cond, cg)
+      {}
 
    Instruction(TR::Instruction                     *precedingInstruction,
                TR_ARMOpCodes                       op,
                TR::Node                            *node,
                TR::RegisterDependencyConditions    *cond,
                TR::CodeGenerator                   *cg)
-      : OMR::InstructionConnector(cg, precedingInstruction, InstOpCode::BAD, node)
-      {
-      self()->setOpCodeValue(op);
-      self()->setConditionCode(ARMConditionCodeAL);
-      self()->setDependencyConditions(cond);
-      if (cond)
-         cond->incRegisterTotalUseCounts(cg);
-      }
+      : OMR::InstructionConnector(precedingInstruction, op, node, cond, cg)
+      {}
 
    };
 

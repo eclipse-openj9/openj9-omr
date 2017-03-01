@@ -59,6 +59,26 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
    Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = 0);
 
+   Instruction(TR::Node *node, TR::CodeGenerator *cg);
+
+   Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg);
+
+   Instruction(TR::Instruction   *precedingInstruction,
+               TR_ARMOpCodes     op,
+               TR::Node          *node,
+               TR::CodeGenerator *cg);
+
+   Instruction(TR_ARMOpCodes                       op,
+               TR::Node                            *node,
+               TR::RegisterDependencyConditions    *cond,
+               TR::CodeGenerator                   *cg);
+
+   Instruction(TR::Instruction                     *precedingInstruction,
+               TR_ARMOpCodes                       op,
+               TR::Node                            *node,
+               TR::RegisterDependencyConditions    *cond,
+               TR::CodeGenerator                   *cg);
+
    virtual char *description() { return "ARM"; }
 
    virtual Kind getKind() { return IsNotExtended; }

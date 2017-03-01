@@ -117,7 +117,6 @@ class TR_OSRExceptionEdgeRemoval : public TR::Optimization
       }
 
    virtual int32_t perform();
-   virtual void newperform();
    };
 
 #endif

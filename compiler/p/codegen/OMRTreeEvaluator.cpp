@@ -1682,8 +1682,6 @@ TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeG
       case TR::VectorInt16:
       case TR::VectorInt32:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vand);
-      case TR::VectorInt64:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxland);
       default:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxland);
      }
@@ -1697,8 +1695,6 @@ TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGe
       case TR::VectorInt16:
       case TR::VectorInt32:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vor);
-      case TR::VectorInt64:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlor);
       default:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlor);
      }
@@ -1712,8 +1708,6 @@ TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeG
       case TR::VectorInt16:
       case TR::VectorInt32:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vxor);
-      case TR::VectorInt64:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlxor);
       default:
          return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlxor);
      }

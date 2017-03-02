@@ -2858,7 +2858,12 @@ TR::Node *constrainWrtBar(TR::ValuePropagation *vp, TR::Node *node)
         vp->getCurrentParent() && vp->getCurrentParent()->getOpCodeValue() != TR::ArrayStoreCHK)
       canRemoveWrtBar(vp, node);
 
+   // TODO (GuardedStorage)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+   static bool doOpt = false;
+#else
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
+#endif
 
    TR_WriteBarrierKind gcMode = vp->comp()->getOptions()->getGcMode();
 

@@ -541,6 +541,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
 
+   _evalCompressionSequence = false;
+
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
@@ -6225,6 +6227,18 @@ TR_S390ScratchRegisterManager*
 OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
    return new (self()->trHeapMemory()) TR_S390ScratchRegisterManager(capacity, self());
+   }
+
+// TODO (GuardedStorage)
+void
+OMR::Z::CodeGenerator::setEvalCompressionSequence(bool val)
+   {
+   _evalCompressionSequence= val;
+   }
+bool
+OMR::Z::CodeGenerator::isEvalCompressionSequence()
+   {
+   return _evalCompressionSequence;
    }
 
 void

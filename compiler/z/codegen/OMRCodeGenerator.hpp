@@ -329,6 +329,11 @@ public:
    TR_BranchPreloadCallData _outlineCall;
    TR_BranchPreloadCallData _outlineArrayCall;
 
+   // TODO (GuardedStorage)
+   bool _evalCompressionSequence;
+   void setEvalCompressionSequence(bool val);
+   bool isEvalCompressionSequence();
+
    TR::list<TR_BranchPreloadCallData*> *_callsForPreloadList;
 
    TR::list<TR_BranchPreloadCallData*> * getCallsForPreloadList() { return _callsForPreloadList; }

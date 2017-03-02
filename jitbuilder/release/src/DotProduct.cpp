@@ -50,7 +50,7 @@ static void printDouble(double val)
 static void printPointer(int64_t val)
    {
    #define PRINTPOINTER_LINE LINETOSTR(__LINE__)
-   printf("%lx", val);
+   printf("%llx", val);
    }
 
 DotProduct::DotProduct(TR::TypeDictionary *types)

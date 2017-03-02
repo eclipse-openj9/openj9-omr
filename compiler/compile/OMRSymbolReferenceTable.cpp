@@ -1366,7 +1366,7 @@ OMR::SymbolReferenceTable::findOrCreateCPSymbol(
    TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, TR::DataType dataType, bool resolved, void * dataAddress)
    {
    TR::StaticSymbol *sym;
-   TR_SymRefIterator i(aliasBuilder.cpSymRefs(), self());
+   TR_SymRefIterator i(aliasBuilder.cpConstantSymRefs(), self());
    TR::SymbolReference * symRef = i.getNext();
    for (; symRef; symRef = i.getNext())
       {
@@ -1407,7 +1407,9 @@ OMR::SymbolReferenceTable::findOrCreateCPSymbol(
       symRef->setCanGCandExcept();
       }
 
+   aliasBuilder.cpConstantSymRefs().set(symRef->getReferenceNumber());
    aliasBuilder.cpSymRefs().set(symRef->getReferenceNumber());
+
    return symRef;
    }
 

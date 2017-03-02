@@ -412,6 +412,7 @@ const OptimizationStrategy loopCanonicalizationOpts[] =
    { loopVersionerGroup                   },
    { deadTreesElimination                 }, // remove dead anchors created by check removal (versioning)
    //{ loopStrider                        }, // use canonicalized loop to insert initializations
+   { treeSimplification                   }, // remove unreachable blocks (with nullchecks etc.) left by LoopVersioner
    { fieldPrivatization                   }, // use canonicalized loop to privatize fields
    { treeSimplification                   }, // might fold expressions created by versioning/induction variables
    { loopSpecializerGroup, IfEnabledAndLoops            }, // specialize the versioned loop if possible

@@ -9399,6 +9399,190 @@ inlineSIMDP256Multiply
 
    return NULL;
    }
+/**
+ * Multiplies two 256b integer using 'VECTOR MULTIPLY SUM LOGICAL' instruction
+ */
+TR::Register * inlineVMSL256Multiply(TR::Node * node, TR::CodeGenerator * cg)
+   {
+   TR::Instruction *cursor;
+   cg->decReferenceCount(node->getFirstChild());
+
+   TR::Register * Carr = cg->evaluate(node->getChild(1));
+   TR::Register * Aarr = cg->evaluate(node->getChild(2));
+   TR::Register * Barr = cg->evaluate(node->getChild(3));
+
+   //Allocating Registers
+   TR::Register *A[5];
+   TR::Register *C[9];
+   TR::Register *B         = cg->allocateRegister(TR_VRF);
+   TR::Register *VPERMA    = cg->allocateRegister(TR_VRF);
+   TR::Register *VPERMB    = cg->allocateRegister(TR_VRF);
+   TR::Register *vZero     = cg->allocateRegister(TR_VRF);
+   TR::Register *rSeven    = cg->allocateRegister();
+   TR::Register *rFourteen = cg->allocateRegister();
+   TR::Register *rResidue  = cg->allocateRegister();
+   TR::Register *VR;
+   for (int i = 0 ; i < 5 ; i++)
+      A[i] = cg->allocateRegister(TR_VRF);
+   for (int i = 0 ; i < 9 ; i++)
+      C[i] = cg->allocateRegister(TR_VRF);
+   VR = C[0];
+
+   // Initialization of vZero and VPERM constants
+   int32_t VPERMAValue[4] = {0x0F000102, 0x03040506, 0x0F070809, 0x0A0B0C0D};
+   int32_t VPERMBValue[4] = {0x0F070809, 0x0A0B0C0D, 0x0F000102, 0x03040506};
+   int32_t VPERMAResidueValue[4] = {0x0F0F0F0F, 0x00010203, 0x0F040506, 0x0708090A};
+   TR::MemoryReference* VPERMAMR = generateS390MemoryReference(cg->findOrCreateConstant(node, VPERMAValue, 16), cg, 0, node);
+   TR::MemoryReference* VPERMBMR = generateS390MemoryReference(cg->findOrCreateConstant(node, VPERMBValue, 16), cg, 0, node);
+   TR::MemoryReference* VPERMAResidueMR = generateS390MemoryReference(cg->findOrCreateConstant(node, VPERMAResidueValue, 16), cg, 0, node);
+   generateVRIaInstruction (cg, TR::InstOpCode::VGBM, node, vZero, 0, 0);
+   generateVRXInstruction  (cg, TR::InstOpCode::VL,   node, VPERMA, VPERMAMR);
+   generateVRXInstruction  (cg, TR::InstOpCode::VL,   node, VPERMB, VPERMBMR);
+   generateRIInstruction   (cg, TR::InstOpCode::LHI,  node, rSeven, 6);
+   generateRIInstruction   (cg, TR::InstOpCode::LHI,  node, rFourteen, 13);
+   generateRIInstruction   (cg, TR::InstOpCode::LHI,  node, rResidue, 10);
+   // Load A to vector registers
+   /**
+    * Method parameters:
+    *
+    *  A:
+    *    +------------+----------------------------------------------------------------+
+    *    |Arr. Header |      xxxx      |      xxxx     | A4|  A3  |  A2  |  A1  |  A0  |
+    *    +------------+----------------------------------------------------------------+
+    *                 0               16              32   36    43     50     57
+    *  B:
+    *    +------------+----------------------------------------------------------------+
+    *    |Arr. Header |      xxxx      |      xxxx     | B4|  B3  |  B2  |  B1  |  B0  |
+    *    +------------+----------------------------------------------------------------+
+    *                 0               16              32   36    43     50     57
+    *  C:
+    *    +------------+----------------------------------------------------------------+
+    *    |Arr. Header |   C8   |  C7  |  C6  |  C5  |  C4  |  C3  |  C2  |  C1  |  C0  |
+    *    +------------+----------------------------------------------------------------+
+    *                 0        8     15     22     29      36    43     50     57
+    */
+
+   /*
+    *  A[0] = {A1,A0}
+    *  A[1] = {A2,A1}
+    *  A[2] = {A3,A2}
+    *  A[3] = {A4,A3}
+    *  A[4] = {V0,A4}
+    */
+   int startIndex = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, A[0], rFourteen, generateS390MemoryReference(Aarr, startIndex + 50, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, A[0], A[0], vZero, VPERMA);
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, A[1], rFourteen, generateS390MemoryReference(Aarr, startIndex + 43, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, A[1], A[1], vZero, VPERMA);
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, A[2], rFourteen, generateS390MemoryReference(Aarr, startIndex + 36, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, A[2], A[2], vZero, VPERMA);
+   generateVRXInstruction  (cg, TR::InstOpCode::VL,   node, VPERMA, VPERMAResidueMR);
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, A[3], rResidue, generateS390MemoryReference(Aarr, startIndex + 32, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, A[3], A[3], vZero, VPERMA);
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, A[4], vZero, A[3], 8, 0);
+
+   /*
+    *               |    Ops in Step 1   |      Ops in Step2     | Ops in Step 3
+    *------------------------------------------------------------------------
+    * Step 1 | C0 = | A0 * B0            |                       |
+    *        | C1 = | A1 * B0  +  A0 * B1|                       |
+    *------------------------------------------------------------------------
+    * Step 2 | C2 = | A2 * B0  +  A1 * B1| +  A0 * B2            |
+    *        | C3 = | A3 * B0  +  A2 * B1| +  A1 * B2  +  A0 * B3|
+    *------------------------------------------------------------------------
+    * Step 3 | C4 = | A4 * B0  +  A3 * B1| +  A2 * B2  +  A1 * B3| +  A0 * B4
+    *------------------------------------------------------------------------
+    *        | C5 = |             A4 * B1| +  A3 * B2  +  A2 * B3| +  A1 * B4
+    * Store  | C6 = |                    |    A4 * B2  +  A3 * B3| +  A2 * B4
+    *        | C7 = |                    |                A4 * B3| +  A3 * B4
+    *        | C8 = |                    |                       |    A4 * B4
+    */
+
+   // Step 1
+   // B = {V0,B0}
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, B, rSeven, generateS390MemoryReference(Barr, startIndex + 57, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, B, B, vZero, VPERMB);
+   generateVRRdInstruction (cg, TR::InstOpCode::VMSL, node, VR, A[0], B, vZero, 0, 3);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 57, cg), 6);
+   // B = {B0,B1}
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, B, rFourteen, generateS390MemoryReference(Barr, startIndex + 50, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, B, B, vZero, VPERMB);
+   for (int i = 0 ; i < 5 ; i++)
+      {
+      generateVRRdInstruction(cg, TR::InstOpCode::VMSL, node, C[i+1], A[i], B, vZero, 0, 3);
+      }
+   generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[1], 4);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 50, cg), 6);
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+
+   // Step 2
+   // B = {V0,B2}
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, B, rSeven, generateS390MemoryReference(Barr, startIndex + 43, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, B, B, vZero, VPERMB);
+   generateVRRdInstruction (cg, TR::InstOpCode::VMSL, node, C[2], A[0], B, C[2], 0, 3);
+   generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[2], 4);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 43, cg), 6);
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+   // B = {B2,B3}
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, B, rFourteen, generateS390MemoryReference(Barr, startIndex + 36, cg));
+   generateVRReInstruction (cg, TR::InstOpCode::VPERM,node, B, B, vZero, VPERMB);
+
+   for (int i = 0 ; i < 3 ; i++)
+      {
+      generateVRRdInstruction(cg, TR::InstOpCode::VMSL, node, C[i+3], A[i], B, C[i+3], 0, 3);
+      }
+   generateVRRdInstruction (cg, TR::InstOpCode::VMSL, node, C[6], A[3], B, vZero, 0, 3);
+   generateVRRdInstruction (cg, TR::InstOpCode::VMSL, node, C[7], A[4], B, vZero, 0, 3);
+
+   generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[3], 4);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 36, cg), 6);
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+
+   // Step 3
+   // B = {V0,B4}
+   generateVRSbInstruction (cg, TR::InstOpCode::VLL,  node, B, rResidue, generateS390MemoryReference(Barr, startIndex + 32, cg));
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, B, vZero, B, 4, 0);
+   generateVRRdInstruction (cg, TR::InstOpCode::VMSL, node, C[4], A[0], B, C[4], 0, 3);
+   generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[4], 4);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 29, cg), 6);
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+   // B = {B4,V0}
+   generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, B, B, vZero, 8, 0);
+
+   for (int i = 0 ; i < 3 ; i++)
+      {
+      generateVRRdInstruction(cg, TR::InstOpCode::VMSL, node, C[i+5], A[i], B, C[i+5], 0, 3);
+      }
+   generateVRRdInstruction(cg, TR::InstOpCode::VMSL, node, C[8], A[3], B, vZero, 0, 3);
+   // Store Step
+   for (int i = 5 ; i < 8 ; i++)
+      {
+      generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[i], 4);
+      generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 64 - 7 - i*7, cg), 6);
+      generateVRIdInstruction (cg, TR::InstOpCode::VSLDB,node, VR, vZero, VR, 9, 0);
+      }
+   generateVRRcInstruction (cg, TR::InstOpCode::VA,   node, VR, VR, C[8], 4);
+   generateVSIInstruction  (cg, TR::InstOpCode::VSTRL,node, VR, generateS390MemoryReference(Carr, startIndex + 0, cg), 7);
+   for (int i = 0 ; i < 5 ; i++)
+      cg->stopUsingRegister(A[i]);
+   for (int i = 0 ; i < 9 ; i++)
+      cg->stopUsingRegister(C[i]);
+
+   cg->stopUsingRegister(B);
+   cg->stopUsingRegister(VPERMA);
+   cg->stopUsingRegister(VPERMB);
+   cg->stopUsingRegister(vZero);
+   cg->stopUsingRegister(rSeven);
+   cg->stopUsingRegister(rFourteen);
+   cg->stopUsingRegister(rResidue);
+
+   cg->decReferenceCount(node->getChild(1));
+   cg->decReferenceCount(node->getChild(2));
+   cg->decReferenceCount(node->getChild(3));
+
+   return NULL;
+   }
 
 TR::Register *
 inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
@@ -9407,10 +9591,13 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    static const char * disableECCSIMD = feGetEnv("TR_disableECCSIMD");
    static const char * disableECCMLGR = feGetEnv("TR_disableECCMLGR");
    static const char * disableECCKarat = feGetEnv("TR_disableECCKarat");
+   static const char * EnableVMSL = feGetEnv("TR_enableVMSL");
 
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
+   if (EnableVMSL || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+      return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);
    if (!disableECCSIMD && cg->getSupportsVectorRegisters())

@@ -65,7 +65,7 @@ Key: Value
 ```
 
 When a commit has related issues or commits, explain the relation in the message
-body. you should also leave an `Issue` tag in the footer. For example:
+body. You should also leave an `Issue` tag in the footer. For example:
 
 ```
 This patch eliminates the race condition in issue #1234.

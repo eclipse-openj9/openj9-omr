@@ -667,8 +667,8 @@ class X86ImmInstruction : public TR::Instruction
    int32_t getReloKind()                   {return _reloKind;}
    void setReloKind(int32_t reloKind)  {_reloKind = reloKind;}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
@@ -713,7 +713,7 @@ class X86ImmSnippetInstruction : public TR::X86ImmInstruction
       }
 
    virtual TR::Snippet *getSnippetForGC();
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
    };
@@ -763,8 +763,8 @@ class X86ImmSymInstruction : public TR::X86ImmInstruction
 
    void addMetaDataForCodeAddress(uint8_t *cursor);
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    };
 
 
@@ -931,8 +931,8 @@ class X86RegInstruction : public TR::Instruction
       return target->rexBits(rxbBitmask, getOpCode().hasByteTarget() ? true : false);
       }
 #endif
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual OMR::X86::EnlargementResult  enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
    virtual void     assignRegisters(TR_RegisterKinds kindsToBeAssigned);
@@ -1071,7 +1071,7 @@ class X86RegRegInstruction : public TR::X86RegInstruction
       }
 #endif
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    virtual bool refsRegister(TR::Register *reg);
@@ -1150,8 +1150,8 @@ class X86RegImmInstruction : public TR::X86RegInstruction
    uint32_t getSourceImmediateAsAddress()  {return (uint32_t)_sourceImmediate;}
    int32_t setSourceImmediate(int32_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
@@ -1196,7 +1196,7 @@ class X86RegImmSymInstruction : public TR::X86RegImmInstruction
       }
 
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
@@ -1230,8 +1230,8 @@ class X86RegRegImmInstruction : public TR::X86RegRegInstruction
    uint32_t getSourceImmediateAsAddress()  {return (uint32_t)_sourceImmediate;}
    int32_t setSourceImmediate(int32_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
@@ -1513,8 +1513,9 @@ class X86MemInstruction : public TR::Instruction
       return p;
       }
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual bool     needsLockPrefix();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual OMR::X86::EnlargementResult enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
 
@@ -1662,8 +1663,8 @@ class X86MemImmInstruction : public TR::X86MemInstruction
    uint32_t getSourceImmediateAsAddress()  {return (uint32_t)_sourceImmediate;}
    int32_t setSourceImmediate(int32_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
@@ -1700,7 +1701,7 @@ class X86MemImmSymInstruction : public TR::X86MemImmInstruction
       return (_symbolReference = sr);
       }
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
@@ -1786,7 +1787,7 @@ class X86MemRegInstruction : public TR::X86MemInstruction
    virtual TR::Register *getSourceRegister()                {return _sourceRegister;}
    TR::Register *setSourceRegister(TR::Register *sr) {return (_sourceRegister = sr);}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    virtual bool refsRegister(TR::Register *reg);
@@ -1842,8 +1843,8 @@ class X86MemRegImmInstruction : public TR::X86MemRegInstruction
    uint32_t getSourceImmediateAsAddress()  {return (uint32_t)_sourceImmediate;}
    int32_t setSourceImmediate(int32_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
@@ -2029,9 +2030,10 @@ class X86RegMemInstruction : public TR::X86RegInstruction
       return p;
       }
 
-   virtual uint8_t *   generateBinaryEncoding();
-   virtual int32_t    estimateBinaryLength(int32_t currentEstimate);
-   virtual uint8_t     getBinaryLengthLowerBound();
+   virtual bool     needsLockPrefix();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t  getBinaryLengthLowerBound();
    virtual OMR::X86::EnlargementResult enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement);
 
    virtual void        assignRegisters(TR_RegisterKinds kindsToBeAssigned);
@@ -2084,8 +2086,8 @@ class X86RegMemImmInstruction : public TR::X86RegMemInstruction
    uint32_t getSourceImmediateAsAddress()  {return (uint32_t)_sourceImmediate;}
    int32_t setSourceImmediate(int32_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
@@ -2115,7 +2117,7 @@ class X86FPRegInstruction : public TR::X86RegInstruction
       }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
@@ -2188,8 +2190,8 @@ class AMD64RegImm64Instruction : public TR::X86RegInstruction
    uint64_t getSourceImmediate()            {return _sourceImmediate;}
    uint64_t setSourceImmediate(uint64_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
@@ -2229,7 +2231,7 @@ class AMD64RegImm64SymInstruction : public TR::AMD64RegImm64Instruction
    TR::SymbolReference *getSymbolReference() {return _symbolReference;}
    TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr) {return (_symbolReference = sr);}
 
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
@@ -2309,8 +2311,8 @@ class AMD64Imm64Instruction : public TR::Instruction
    uint64_t getSourceImmediate()            {return _sourceImmediate;}
    uint64_t setSourceImmediate(uint64_t si) {return (_sourceImmediate = si);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual uint8_t  getBinaryLengthLowerBound();
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
@@ -2368,8 +2370,8 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
    TR::SymbolReference *getSymbolReference() {return _symbolReference;}
    TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr) {return (_symbolReference = sr);}
 
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
    };
 
@@ -2466,7 +2468,7 @@ class X86FPRegRegInstruction : public TR::X86RegRegInstruction
       }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned) {}
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
@@ -2503,7 +2505,7 @@ class X86FPST0ST1RegRegInstruction : public TR::X86FPRegRegInstruction
    virtual Kind getKind() { return IsFPST0ST1RegReg; }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    };
 
 
@@ -2529,7 +2531,7 @@ class X86FPST0STiRegRegInstruction : public TR::X86FPRegRegInstruction
 
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    };
 
 
@@ -2554,7 +2556,7 @@ class X86FPSTiST0RegRegInstruction : public TR::X86FPRegRegInstruction
    virtual Kind getKind() { return IsFPSTiST0RegReg; }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    bool _forcePop;
    };
@@ -2604,7 +2606,7 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
       }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    };
 
 
@@ -2631,7 +2633,7 @@ class X86FPCompareRegRegInstruction : public TR::X86FPRegRegInstruction
    bool swapOperands();
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    };
 
 
@@ -2716,7 +2718,7 @@ class X86FPMemRegInstruction : public TR::X86MemRegInstruction
    virtual Kind getKind() { return IsFPMemReg; }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return getMemoryReference()->getNumMRReferencedGPRegisters(); }
@@ -2746,7 +2748,7 @@ class X86FPRegMemInstruction : public TR::X86RegMemInstruction
    virtual Kind getKind() { return IsFPRegMem; }
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
-   virtual uint8_t *generateBinaryEncoding();
+   virtual uint8_t* generateOperand(uint8_t* cursor);
    virtual uint8_t  getBinaryLengthLowerBound();
 
 #ifdef DEBUG

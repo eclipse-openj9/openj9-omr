@@ -198,7 +198,10 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool dependencyRefsRegister(TR::Register *reg);
 
    virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
+   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
+   virtual uint8_t* generateOperand(uint8_t* cursor) { return cursor; }
+   virtual bool     needsRepPrefix();
+   virtual bool     needsLockPrefix();
    virtual EnlargementResult enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement) { return EnlargementResult(0, 0); }
 
    enum TR_UpperHalfRefConditions

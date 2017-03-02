@@ -18,7 +18,7 @@
 
 
 #ifndef TM_INCL
-#define TM_IMPL
+#define TM_INCL
 
 #include "ilgen/MethodBuilder.hpp"
 

@@ -54,16 +54,7 @@ namespace OMR { typedef OMR::X86::MemoryReference MemoryReferenceConnector; }
 #define HIGHEST_STRIDE_SHIFT      3
 
 #define IA32SIBPresent             0x04
-#define IA32Base                   0x00
-#define IA32BaseOffset8            0x40
-#define IA32BaseOffset32           0x80
-#define IA32Offset32               0x05
-#define IA32BaseIndex              (IA32Base         | IA32SIBPresent)
-#define IA32BaseIndexOffset8       (IA32BaseOffset8  | IA32SIBPresent)
-#define IA32BaseIndexOffset32      (IA32BaseOffset32 | IA32SIBPresent)
-#define IA32IndexOffset32          (IA32Base         | IA32SIBPresent)
 #define IA32SIBNoIndex             0x20
-#define IA32SIBIndexOffset32       0x05
 
 #define MemRef_ForceWideDisplacement              0x0001
 #define MemRef_UnresolvedDataSnippet              0x0002
@@ -358,19 +349,18 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       TR::Node *node,
       TR::CodeGenerator *cg);
 
-   void setModField(uint8_t *modRM, uint8_t addressingMode)
+   inline TR::Instruction::ModRM* ModRM(uint8_t* modrm) const
       {
-      *modRM |= addressingMode;
+      return (TR::Instruction::ModRM*)modrm;
       }
-
-   void setSIBPresent(uint8_t *modRM)
+   inline TR::Instruction::SIB* SIB(uint8_t* sib) const
       {
-      *modRM |= IA32SIBPresent;
+      return (TR::Instruction::SIB*)sib;
       }
 
    void setStrideFieldInSIB(uint8_t *SIBByte)
       {
-      *SIBByte |= _stride << 6;  // stride is in top two bits of SIB byte
+      ((TR::Instruction::SIB*)SIBByte)->setScale(_stride);
       }
 
    virtual void blockRegisters()

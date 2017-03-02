@@ -1427,20 +1427,20 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
          if (base->needsDisp())
             {
-            self()->setModField(modRM, IA32BaseOffset8);
+            self()->ModRM(modRM)->setBaseDisp8();
             base->setRMRegisterFieldInModRM(modRM);
             *++cursor = 0x00;
             }
          else if (base->needsSIB())
             {
-            self()->setModField(modRM, IA32BaseIndex);
+            self()->ModRM(modRM)->setBase()->setHasSIB();
             *++cursor = 0x00;
-            self()->setModField(cursor, IA32SIBNoIndex);
+            self()->SIB(cursor)->setNoIndex();
             base->setBaseRegisterFieldInSIB(cursor);
             }
          else
             {
-            self()->setModField(modRM, IA32Base);
+            self()->ModRM(modRM)->setBase();
             base->setRMRegisterFieldInModRM(modRM);
             }
 
@@ -1452,9 +1452,9 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
       case 2:
          {
          index = toRealRegister(self()->getIndexRegister());
-         self()->setModField(modRM, IA32IndexOffset32);
+         self()->ModRM(modRM)->setBase()->setHasSIB();
          *++cursor = 0x00;
-         self()->setModField(cursor, IA32SIBIndexOffset32);
+         self()->SIB(cursor)->setIndexDisp32();
          index->setIndexRegisterFieldInSIB(cursor);
          self()->setStrideFieldInSIB(cursor);
          cursor++;
@@ -1497,12 +1497,12 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
             {
             // Need a sib byte with 8bit displacement field of zero to get ebp as a base register
             //
-            self()->setModField(modRM, IA32BaseIndexOffset8);
+            self()->ModRM(modRM)->setBaseDisp8()->setHasSIB();
             *++cursor = 0x00;
             }
          else
             {
-            self()->setModField(modRM, IA32BaseIndex);
+            self()->ModRM(modRM)->setBase()->setHasSIB();
             }
          ++cursor;
          break;
@@ -1510,7 +1510,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
 
       case 4:
          {
-         self()->setModField(modRM, IA32Offset32);
+         self()->ModRM(modRM)->setIndexOnlyDisp32();
          cursor++;
          symbol = self()->getSymbolReference().getSymbol();
          immediateCursor = cursor;
@@ -1613,8 +1613,8 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
          if (base->needsSIB() || self()->isForceSIBByte())
             {
             *++cursor = 0x00;
-            self()->setSIBPresent(modRM);
-            self()->setModField(cursor, IA32SIBNoIndex);
+            self()->ModRM(modRM)->setBase()->setHasSIB();
+            self()->SIB(cursor)->setNoIndex();
             }
 
          displacement = self()->getDisplacement();
@@ -1627,13 +1627,13 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
              !base->needsDisp() &&
              !self()->isForceWideDisplacement())
             {
-            self()->setModField(modRM, IA32Base);
+            self()->ModRM(modRM)->setBase();
             }
          else if (displacement >= -128 &&
                   displacement <= 127  &&
                   !self()->isForceWideDisplacement())
             {
-            self()->setModField(modRM, IA32BaseOffset8);
+            self()->ModRM(modRM)->setBaseDisp8();
             *cursor = (uint8_t)displacement;
             ++cursor;
             }
@@ -1642,7 +1642,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
             // If there is a symbol or if the displacement will not fit in a byte,
             // then displacement will be 4 bytes.
             //
-            self()->setModField(modRM, IA32BaseOffset32);
+            self()->ModRM(modRM)->setBaseDisp32();
             *(int32_t *)cursor = (int32_t)displacement;
             if (self()->getUnresolvedDataSnippet() != NULL)
                {
@@ -1684,7 +1684,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
              displacement <= 127  &&
              !self()->isForceWideDisplacement())
             {
-            self()->setModField(modRM, IA32BaseIndexOffset8);
+            self()->ModRM(modRM)->setBaseDisp8()->setHasSIB();
             *cursor++ = (uint8_t)displacement;
             }
          else
@@ -1692,7 +1692,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
             // If there is a symbol or if the displacement will not fit in a byte,
             // then displacement will be 4 bytes.
             //
-            self()->setModField(modRM, IA32BaseIndexOffset32);
+            self()->ModRM(modRM)->setBaseDisp32()->setHasSIB();
             *(int32_t *)cursor = (int32_t)displacement;
             if (self()->getUnresolvedDataSnippet() != NULL)
                {

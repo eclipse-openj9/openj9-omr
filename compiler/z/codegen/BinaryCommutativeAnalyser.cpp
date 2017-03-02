@@ -246,6 +246,59 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
              secondRegister, nonClobberingDestination,
              false, comp);
 
+   bool isLoadNodeNested = false;
+
+   // TODO: add MH and MHY here; outside of the zNext if check.
+   if(TR::Compiler->target.cpu.getS390SupportsZNext())
+      {
+      bool isSetReg2Mem1 = false;
+
+      if(root->getOpCodeValue() == TR::lmul)
+         {
+         if(firstChild->getOpCodeValue() == TR::s2l &&
+                 firstChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
+                 firstChild->isSingleRefUnevaluated() &&
+                 firstChild->getFirstChild()->isSingleRefUnevaluated())
+            {
+            /* Use MGH when 64<-64x16 and the multiplier is a short int in storage
+             * AND it's never loaded before. */
+            isLoadNodeNested = true;
+            isSetReg2Mem1 = true;
+            memToRegOpCode = TR::InstOpCode::MGH;
+            }
+         else if(firstChild->getOpCodeValue() == TR::lloadi &&
+                 firstChild->isSingleRefUnevaluated())
+            {
+            /* Use MSGC when 64<-64x64 and the multiplier is a long in storage
+             * AND it's never loaded before */
+            isSetReg2Mem1 = true;
+            memToRegOpCode = TR::InstOpCode::MSGC;
+            }
+         }
+      else if(root->getOpCodeValue() == TR::imul)
+         {
+         if(firstChild->getOpCodeValue() == TR::iloadi &&
+                 firstChild->isSingleRefUnevaluated())
+            {
+             /* Use MSC when 32<-32x32 and the multiplier is an int in storage
+              * AND it's never loaded before */
+             isSetReg2Mem1 = true;
+             memToRegOpCode = TR::InstOpCode::MSC;
+            }
+         }
+
+      if(isSetReg2Mem1)
+         {
+         resetReg1();
+         setMem1();
+         setClob1();
+
+         resetReg2();
+         resetMem2();
+         setClob2();
+         }
+      }
+
    if ((root->getSize()==1 ||
         root->getSize()==2) &&
         root->getOpCode().isBitwiseLogical())
@@ -265,6 +318,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       resetMem2();
      }
 
+   // Selectively evaluate the two children
    if (getEvalChild1())
       {
       firstRegister = cg()->evaluate(firstChild);
@@ -279,13 +333,45 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
 
    if (getOpReg1Reg2())
       {
+      if (targetLabel != NULL)
          {
-         if (targetLabel != NULL)
+         finalInstr = generateS390CompareAndBranchInstruction(cg(), regToRegOpCode,
+                                                              root, firstRegister, secondRegister,
+                                                              getReversedOperands()?rBranchOpCond:fBranchOpCond,
+                                                              targetLabel, false, true);
+         nodeReg = firstRegister;
+         }
+      else
+         {
+         if(TR::Compiler->target.cpu.getS390SupportsZNext())
             {
-            finalInstr = generateS390CompareAndBranchInstruction(cg(), regToRegOpCode, root, firstRegister, secondRegister, getReversedOperands()?rBranchOpCond:fBranchOpCond, targetLabel, false, true);
-            nodeReg = firstRegister;
+            // Check for multiplications on zNext
+            TR::InstOpCode::Mnemonic zNextOpCode = TR::InstOpCode::BAD;
+
+            if(root->getOpCodeValue() == TR::lmul &&
+                    firstRegister != NULL &&
+                    firstRegister->is64BitReg() &&
+                    secondRegister != NULL &&
+                    secondRegister->is64BitReg())
+               {
+               zNextOpCode = TR::InstOpCode::MSGRKC;
+               }
+            else if(root->getOpCodeValue() == TR::imul &&
+                    firstRegister != NULL &&
+                    secondRegister != NULL)
+               {
+               zNextOpCode = TR::InstOpCode::MSRKC;
+               }
+
+            if(zNextOpCode != TR::InstOpCode::BAD)
+               {
+               bool isCanClobberFirstReg = cg()->canClobberNodesRegister(firstChild);
+               nodeReg = isCanClobberFirstReg ? firstRegister : cg()->allocate64bitRegister();
+               generateRRFInstruction(cg(), zNextOpCode, root, nodeReg, firstRegister, secondRegister, 0, 0);
+               }
             }
-         else
+
+         if(nodeReg == NULL)
             {
             // for Compare R1, R2 for int or fp regs, check if valid CCInfo exists;
             // with same compare ops; if reg is switched, swap them..
@@ -293,13 +379,21 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
             TR::InstOpCode opcTmp = TR::InstOpCode(regToRegOpCode);
             if ( opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
                  cg()->isActiveCompareCC(regToRegOpCode, firstRegister, secondRegister) &&
-                 performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 3 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&ccInst->getOpCode()), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
+                 performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 3 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].",
+                                       debugObj->getOpCodeName(&ccInst->getOpCode()),
+                                       debugObj->getName(firstRegister),
+                                       debugObj->getName(secondRegister),
+                                       ccInst))
                {
                nodeReg = firstRegister; // CCInfo already exists; don't generate compare op any more;
                }
             else if (opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
                      cg()->isActiveCompareCC(regToRegOpCode, secondRegister, firstRegister) &&
-                     performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 4 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&ccInst->getOpCode()), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
+                     performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 4 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].",
+                                           debugObj->getOpCodeName(&ccInst->getOpCode()),
+                                           debugObj->getName(firstRegister),
+                                           debugObj->getName(secondRegister),
+                                           ccInst))
                {
                nodeReg = secondRegister;
                notReversedOperands(); // CCInfo already exists; don't generate compare op any more;
@@ -316,7 +410,10 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       {
       if (targetLabel != NULL)
          {
-         finalInstr = generateS390CompareAndBranchInstruction(cg(), regToRegOpCode, root, secondRegister, firstRegister, (!getReversedOperands())?rBranchOpCond:fBranchOpCond, targetLabel, false, true);
+         finalInstr = generateS390CompareAndBranchInstruction(cg(), regToRegOpCode, root,
+                                                              secondRegister, firstRegister,
+                                                              (!getReversedOperands()) ? rBranchOpCond : fBranchOpCond,
+                                                              targetLabel, false, true);
          nodeReg = secondRegister;
          notReversedOperands();
          }
@@ -436,7 +533,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
       tempMR->stopUsingMemRefRegister(cg());
       }
-   else
+   else // OpReg2Mem1
       {
       TR_ASSERT(!getInvalid(), "TR_S390CommutativeBinaryAnalyser::invalid case\n");
 
@@ -459,12 +556,15 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, secondRegister);
          }
 
-      TR::MemoryReference * tempMR = generateS390MemoryReference(firstChild, cg(), true);
+      TR::Node* loadNode = isLoadNodeNested ? firstChild->getFirstChild() : firstChild;
+      TR::MemoryReference * tempMR = generateS390MemoryReference(loadNode, cg(), true);
+
       //floating-point arithmatics don't have RXY format instructions, so no long displacement
       if (firstChild->getOpCode().isFloatingPoint())
          {
          tempMR->enforce4KDisplacementLimit(firstChild, cg(), NULL);
          }
+
       if (adjustDiplacementOnFirstChild)
          {
          tempMR->addToOffset(4);
@@ -476,6 +576,12 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          {
          tempMR->stopUsingMemRefRegister(cg());
          }
+
+      if(isLoadNodeNested)
+         {
+         cg()->decReferenceCount(loadNode);
+         }
+
       notReversedOperands();
       }
 
@@ -1177,13 +1283,23 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
     */
    if (secondChild->getOpCodeValue() == TR::s2i &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
-       secondChild->getRegister() == NULL &&
-       secondChild->getFirstChild()->getRegister() == NULL &&
-       secondChild->getReferenceCount() == 1 &&
-       secondChild->getFirstChild()->getReferenceCount() == 1)
+       secondChild->isSingleRefUnevaluated() &&
+       secondChild->getFirstChild()->isSingleRefUnevaluated())
       {
       setMem2();
       memToRegOpCode = TR::InstOpCode::AH;
+      is16BitMemory2Operand = true;
+      }
+
+   /**  Attempt to use AGH to add halfworf from memory */
+   if (TR::Compiler->target.cpu.getS390SupportsZNext() &&
+       secondChild->getOpCodeValue() == TR::s2l &&
+       secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
+       secondChild->isSingleRefUnevaluated() &&
+       secondChild->getFirstChild()->isSingleRefUnevaluated())
+      {
+      setMem2();
+      memToRegOpCode = TR::InstOpCode::AGH;
       is16BitMemory2Operand = true;
       }
 
@@ -2056,44 +2172,114 @@ const uint8_t TR_S390BinaryCommutativeAnalyser::actionMap[NUM_ACTIONS] =
    {
    // Reg1 Mem1 Clob1 Reg2 Mem2 Clob2
    EvalChild1 |        //  0    0     0    0    0     0
-   EvalChild2 | CopyReg1, EvalChild1 |        //  0    0     0    0    0     1
-   EvalChild2 | OpReg2Reg1, EvalChild1 |        //  0    0     0    0    1     0
-   EvalChild2 | CopyReg1, EvalChild1 |        //  0    0     0    0    1     1
-   EvalChild2 | OpReg2Reg1, EvalChild1 |        //  0    0     0    1    0     0
-   CopyReg2, EvalChild1 |        //  0    0     0    1    0     1
-   OpReg2Reg1, EvalChild1 |        //  0    0     0    1    1     0
-   CopyReg2, EvalChild1 |        //  0    0     0    1    1     1
-   OpReg2Reg1, EvalChild1 |        //  0    0     1    0    0     0
-   EvalChild2 | OpReg1Reg2, EvalChild1 |        //  0    0     1    0    0     1
-   EvalChild2 | OpReg1Reg2, EvalChild1 |        //  0    0     1    0    1     0
-   EvalChild2 | OpReg1Reg2, EvalChild1 |        //  0    0     1    0    1     1
-   OpReg1Mem2, EvalChild1 |        //  0    0     1    1    0     0
-   OpReg1Reg2, EvalChild1 |        //  0    0     1    1    0     1
-   OpReg1Reg2, EvalChild1 |        //  0    0     1    1    1     0
-   OpReg1Reg2, EvalChild1 |        //  0    0     1    1    1     1
-   OpReg1Reg2, EvalChild1 |        //  0    1     0    0    0     0
-   EvalChild2 | CopyReg1, EvalChild1 |        //  0    1     0    0    0     1
-   EvalChild2 | OpReg2Reg1, EvalChild1 |        //  0    1     0    0    1     0
-   EvalChild2 | CopyReg1, EvalChild1 |        //  0    1     0    0    1     1
-   EvalChild2 | OpReg2Reg1, EvalChild1 |        //  0    1     0    1    0     0
-   CopyReg2, EvalChild1 |        //  0    1     0    1    0     1
-   OpReg2Reg1, EvalChild1 |        //  0    1     0    1    1     0
-   CopyReg2, EvalChild1 |        //  0    1     0    1    1     1
-   OpReg2Reg1, EvalChild1 |        //  0    1     1    0    0     0
-   EvalChild2 | OpReg1Reg2, EvalChild2 |        //  0    1     1    0    0     1
-   OpReg2Mem1, EvalChild1 |        //  0    1     1    0    1     0
-   EvalChild2 | OpReg1Reg2, EvalChild1 |        //  0    1     1    0    1     1
-   OpReg1Mem2, EvalChild1 |        //  0    1     1    1    0     0
-   OpReg1Reg2, OpReg2Mem1,        //  0    1     1    1    0     1
+   EvalChild2 | CopyReg1,
+
+   EvalChild1 |        //  0    0     0    0    0     1
+   EvalChild2 | OpReg2Reg1,
+
+   EvalChild1 |        //  0    0     0    0    1     0
+   EvalChild2 | CopyReg1,
+
+   EvalChild1 |        //  0    0     0    0    1     1
+   EvalChild2 | OpReg2Reg1,
+
+   EvalChild1 |        //  0    0     0    1    0     0
+   CopyReg2,
+
+   EvalChild1 |        //  0    0     0    1    0     1
+   OpReg2Reg1,
+
+   EvalChild1 |        //  0    0     0    1    1     0
+   CopyReg2,
+
+   EvalChild1 |        //  0    0     0    1    1     1
+   OpReg2Reg1,
+
+   EvalChild1 |        //  0    0     1    0    0     0
+   EvalChild2 | OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    0    0     1
+   EvalChild2 | OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    0    1     0
+   EvalChild2 | OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    0    1     1
+   OpReg1Mem2,
+
+   EvalChild1 |        //  0    0     1    1    0     0
+   OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    1    0     1
+   OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    1    1     0
+   OpReg1Reg2,
+
+   EvalChild1 |        //  0    0     1    1    1     1
+   OpReg1Reg2,
+
+   EvalChild1 |        //  0    1     0    0    0     0
+   EvalChild2 | CopyReg1,
+
+   EvalChild1 |        //  0    1     0    0    0     1
+   EvalChild2 | OpReg2Reg1,
+
+   EvalChild1 |        //  0    1     0    0    1     0
+   EvalChild2 | CopyReg1,
+
+   EvalChild1 |        //  0    1     0    0    1     1
+   EvalChild2 | OpReg2Reg1,
+
+   EvalChild1 |        //  0    1     0    1    0     0
+   CopyReg2,
+
+   EvalChild1 |        //  0    1     0    1    0     1
+   OpReg2Reg1,
+
+   EvalChild1 |        //  0    1     0    1    1     0
+   CopyReg2,
+
+   EvalChild1 |        //  0    1     0    1    1     1
+   OpReg2Reg1,
+
+   EvalChild1 |        //  0    1     1    0    0     0
+   EvalChild2 | OpReg1Reg2,
+
+   EvalChild2 |        //  0    1     1    0    0     1
+   OpReg2Mem1,
+
+   EvalChild1 |        //  0    1     1    0    1     0
+   EvalChild2 |
+
+   OpReg1Reg2,
+
+   EvalChild1 |        //  0    1     1    0    1     1
+   OpReg1Mem2,
+
+   EvalChild1 |        //  0    1     1    1    0     0
+   OpReg1Reg2,
+
+   OpReg2Mem1,        //  0    1     1    1    0     1
 
    EvalChild1 |        //  0    1     1    1    1     0
-   OpReg1Reg2, OpReg2Mem1,        //  0    1     1    1    1     1
+   OpReg1Reg2,
+
+   OpReg2Mem1,        //  0    1     1    1    1     1
 
    EvalChild2 |        //  1    0     0    0    0     0
-   CopyReg1, EvalChild2 |        //  1    0     0    0    0     1
-   OpReg2Reg1, EvalChild2 |        //  1    0     0    0    1     0
-   CopyReg1, EvalChild2 |        //  1    0     0    0    1     1
-   OpReg2Reg1, CopyReg1,          //  1    0     0    1    0     0
+   CopyReg1,
+
+   EvalChild2 |        //  1    0     0    0    0     1
+   OpReg2Reg1,
+
+   EvalChild2 |        //  1    0     0    0    1     0
+   CopyReg1,
+
+   EvalChild2 |        //  1    0     0    0    1     1
+   OpReg2Reg1,
+
+   CopyReg1,          //  1    0     0    1    0     0
 
    OpReg2Reg1,        //  1    0     0    1    0     1
 
@@ -2102,9 +2288,15 @@ const uint8_t TR_S390BinaryCommutativeAnalyser::actionMap[NUM_ACTIONS] =
    OpReg2Reg1,        //  1    0     0    1    1     1
 
    EvalChild2 |        //  1    0     1    0    0     0
-   OpReg1Reg2, EvalChild2 |        //  1    0     1    0    0     1
-   OpReg1Reg2, EvalChild2 |        //  1    0     1    0    1     0
-   OpReg1Reg2, OpReg1Mem2,        //  1    0     1    0    1     1
+   OpReg1Reg2,
+
+   EvalChild2 |        //  1    0     1    0    0     1
+   OpReg1Reg2,
+
+   EvalChild2 |        //  1    0     1    0    1     0
+   OpReg1Reg2,
+
+   OpReg1Mem2,        //  1    0     1    0    1     1
 
    OpReg1Reg2,        //  1    0     1    1    0     0
 
@@ -2115,10 +2307,18 @@ const uint8_t TR_S390BinaryCommutativeAnalyser::actionMap[NUM_ACTIONS] =
    OpReg1Reg2,        //  1    0     1    1    1     1
 
    EvalChild2 |        //  1    1     0    0    0     0
-   CopyReg1, EvalChild2 |        //  1    1     0    0    0     1
-   OpReg2Reg1, EvalChild2 |        //  1    1     0    0    1     0
-   CopyReg1, EvalChild2 |        //  1    1     0    0    1     1
-   OpReg2Reg1, CopyReg1,          //  1    1     0    1    0     0
+   CopyReg1,
+
+   EvalChild2 |        //  1    1     0    0    0     1
+   OpReg2Reg1,
+
+   EvalChild2 |        //  1    1     0    0    1     0
+   CopyReg1,
+
+   EvalChild2 |        //  1    1     0    0    1     1
+   OpReg2Reg1,
+
+   CopyReg1,          //  1    1     0    1    0     0
 
    OpReg2Reg1,        //  1    1     0    1    0     1
 
@@ -2127,9 +2327,15 @@ const uint8_t TR_S390BinaryCommutativeAnalyser::actionMap[NUM_ACTIONS] =
    OpReg2Reg1,        //  1    1     0    1    1     1
 
    EvalChild2 |        //  1    1     1    0    0     0
-   OpReg1Reg2, EvalChild2 |        //  1    1     1    0    0     1
-   OpReg1Reg2, EvalChild2 |        //  1    1     1    0    1     0
-   OpReg1Reg2, OpReg1Mem2,        //  1    1     1    0    1     1
+   OpReg1Reg2,
+
+   EvalChild2 |        //  1    1     1    0    0     1
+   OpReg1Reg2,
+
+   EvalChild2 |        //  1    1     1    0    1     0
+   OpReg1Reg2,
+
+   OpReg1Mem2,        //  1    1     1    0    1     1
 
    OpReg1Reg2,        //  1    1     1    1    0     0
 

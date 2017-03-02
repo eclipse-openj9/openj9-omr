@@ -126,7 +126,6 @@ bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
    return true;
    }
 
-
 TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
    :NodeIterator(start, opt, name)
    {

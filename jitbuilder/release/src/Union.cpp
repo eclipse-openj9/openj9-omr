@@ -129,6 +129,7 @@ TypePunInt32Int32Builder::buildIL()
    StoreIndirect("TestUnionInt32Int32", "f2", Load("u"), Load("v2"));
    Return(
           LoadIndirect("TestUnionInt32Int32", "f1", Load("u")));
+   return true;
    }
 
 TypePunInt16DoubleBuilder::TypePunInt16DoubleBuilder(TR::TypeDictionary *d)
@@ -151,6 +152,7 @@ TypePunInt16DoubleBuilder::buildIL()
    StoreIndirect("TestUnionInt16Double", "v_double", Load("u"), Load("v2"));
    Return(
           LoadIndirect("TestUnionInt16Double", "v_uint16", Load("u")));
+   return true;
    }
 
 template <typename Function>

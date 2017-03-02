@@ -57,10 +57,21 @@ class OMR_EXTENSIBLE TreeEvaluator
    static int32_t checkPositiveOrNegativePowerOfTwo(int32_t value);
    static int32_t checkPositiveOrNegativePowerOfTwo(int64_t value);
 
+   /**
+    * @brief unImpOpEvaluator A dummy evaluator for IL opcodes that could be
+    * supported by a codegen but that are not implemented
+    */
+   static TR::Register *unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   /**
+    * @brief badILOpEvaluator A dummy evaluator for IL opcodes that are not
+    * supported by a codegen (e.g. because they are specific to another codegen
+    * or are not applicable to a particular project)
+    */
+   static TR::Register *badILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    static TR::Register *compressedRefsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *computeCCEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *badILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    struct TR_ArithmeticOverflowCheckNodes { TR::Node *operationNode, *leftChild, *rightChild; };
    static bool nodeIsIArithmeticOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u);
    static bool nodeIsLArithmeticOverflowCheck(TR::Node *node, TR_ArithmeticOverflowCheckNodes *u);

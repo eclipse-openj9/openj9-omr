@@ -29,7 +29,9 @@
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/StackCheckFailureSnippet.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"

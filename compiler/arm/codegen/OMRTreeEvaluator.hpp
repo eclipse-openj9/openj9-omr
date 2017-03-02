@@ -93,9 +93,11 @@ public:
    static TR::Register *monexitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *monexitfenceEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+#if J9_PROJECT_SPECIFIC
    static TR::Register *instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *checkcastEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *checkcastAndNULLCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+#endif
    static TR::Register *newObjectEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *newArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *anewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -399,14 +401,18 @@ public:
    static TR::Register *commonLoadEvaluator(TR::Node *node, TR_ARMOpCodes memoryToRegisterOp, int32_t memSize, TR::CodeGenerator *cg);
    static TR::Register *commonStoreEvaluator(TR::Node *node, TR_ARMOpCodes memToRegOp, int32_t memSize, TR::CodeGenerator *cg);
    static TR::Register *commonConstEvaluator(TR::Node *node, int32_t value, TR::CodeGenerator *cg);
+#if J9_PROJECT_SPECIFIC
    static void        VMwrtbarEvaluator(TR::Node *node, TR::Register *srcReg, TR::Register *dstReg, TR::Register *flagReg, bool needDeps, TR::CodeGenerator *cg);
    static TR::Register *VMmonentEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMmonexitEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+#endif
    // VM-dependent routines
+#if J9_PROJECT_SPECIFIC
    static TR::Register *VMcheckcastEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMifInstanceOfEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMinstanceOfEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMnewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+#endif
 
 
    static TR::Register *integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg);
@@ -420,8 +426,10 @@ public:
 	static TR::Register *longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *longBitCount(TR::Node *node, TR::CodeGenerator *cg);
 
+#ifdef J9_PROJECT_SPECIFIC
    static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *dstReg, TR::Register *srcReg, TR::Instruction *prev=0);
    static TR::Instruction *generateVFTMaskInstruction(TR::CodeGenerator *cg, TR::Node *node, TR::Register *reg, TR::Instruction *prev=0);
+#endif
 
    static bool stopUsingCopyReg(TR::Node* node, TR::Register*& reg, TR::CodeGenerator* cg);
 

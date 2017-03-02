@@ -76,6 +76,61 @@ OMR::ARM::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemon
    self()->setBlockIndex(cg->getCurrentBlockIndex());
    }
 
+// TODO: need to fix the InstOpCode initialization
+OMR::ARM::Instruction::Instruction(TR::Node *node, TR::CodeGenerator *cg)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   {
+   self()->setOpCodeValue(ARMOp_bad);
+   self()->setConditionCode(ARMConditionCodeAL);
+   self()->setDependencyConditions(NULL);
+   }
+
+OMR::ARM::Instruction::Instruction(TR_ARMOpCodes op, TR::Node *node, TR::CodeGenerator *cg)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   {
+   self()->setOpCodeValue(op);
+   self()->setConditionCode(ARMConditionCodeAL);
+   self()->setDependencyConditions(NULL);
+   }
+
+OMR::ARM::Instruction::Instruction(TR::Instruction   *precedingInstruction,
+            TR_ARMOpCodes     op,
+            TR::Node          *node,
+            TR::CodeGenerator *cg)
+   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD, node)
+   {
+   self()->setOpCodeValue(op);
+   self()->setConditionCode(ARMConditionCodeAL);
+   self()->setDependencyConditions(NULL);
+   }
+
+OMR::ARM::Instruction::Instruction(TR_ARMOpCodes                       op,
+            TR::Node                            *node,
+            TR::RegisterDependencyConditions    *cond,
+            TR::CodeGenerator                   *cg)
+   : OMR::InstructionConnector(cg, TR::InstOpCode::BAD, node)
+   {
+   self()->setOpCodeValue(op);
+   self()->setConditionCode(ARMConditionCodeAL);
+   self()->setDependencyConditions(cond);
+   if (cond)
+      cond->incRegisterTotalUseCounts(cg);
+   }
+
+OMR::ARM::Instruction::Instruction(TR::Instruction                     *precedingInstruction,
+            TR_ARMOpCodes                       op,
+            TR::Node                            *node,
+            TR::RegisterDependencyConditions    *cond,
+            TR::CodeGenerator                   *cg)
+   : OMR::InstructionConnector(cg, precedingInstruction, TR::InstOpCode::BAD, node)
+   {
+   self()->setOpCodeValue(op);
+   self()->setConditionCode(ARMConditionCodeAL);
+   self()->setDependencyConditions(cond);
+   if (cond)
+      cond->incRegisterTotalUseCounts(cg);
+   }
+
 void
 OMR::ARM::Instruction::remove()
    {

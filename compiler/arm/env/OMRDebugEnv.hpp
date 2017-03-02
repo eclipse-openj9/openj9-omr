@@ -43,7 +43,14 @@ class OMR_EXTENSIBLE DebugEnv : public OMR::DebugEnv
    {
 public:
 
-   DebugEnv();
+   DebugEnv()
+      {
+
+      _hexAddressWidthInChars = 8;
+      _hexAddressFieldWidthInChars = 10;
+      _codeByteColumnWidth = 10;
+
+      }
 
    };
 

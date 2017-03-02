@@ -19,8 +19,10 @@
 #include "arm/codegen/ARMInstruction.hpp"
 #include "arm/codegen/ARMOperand2.hpp"
 #include "codegen/AheadOfTimeCompile.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/ARMAOTRelocation.hpp"
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
@@ -132,8 +134,10 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
       TR_ASSERT(secondChild->getOpCode().isLoadConst(),
              "Unexpected second child.\n");
 
+#ifdef J9_PROJECT_SPECIFIC
       if (OMR::ARM::TreeEvaluator::VMifInstanceOfEvaluator(node, cg) == NULL)
          return NULL;
+#endif
 
       cannotInline = true;
       TR::Node::recreate(firstChild, TR::icall);
@@ -238,8 +242,10 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
       TR_ASSERT(secondChild->getOpCode().isLoadConst(),
              "Unexpected second child.\n");
 
+#ifdef J9_PROJECT_SPECIFIC
       if (OMR::ARM::TreeEvaluator::VMifInstanceOfEvaluator(node, cg) == NULL)
          return NULL;
+#endif
 
       cannotInline = true;
       TR::Node::recreate(firstChild, TR::icall);
@@ -1755,7 +1761,9 @@ TR::Register *OMR::ARM::TreeEvaluator::ArrayStoreCHKEvaluator(TR::Node *node, TR
 
    if (!srcNode->isNull())
       {
+#ifdef J9_PROJECT_SPECIFIC
       VMwrtbarEvaluator(node, srcReg, dstReg, NULL, true, cg);
+#endif
       cg->machine()->setLinkRegisterKilled(true);
       }
 

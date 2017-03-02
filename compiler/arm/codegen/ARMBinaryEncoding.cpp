@@ -294,7 +294,9 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
       else if (label != NULL)
          {
          cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative24BitRelocation(cursor, label));
+#ifdef J9_PROJECT_SPECIFIC
          ((TR::ARMCallSnippet *)getCallSnippet())->setCallRA(cursor+4);
+#endif
          }
       else
          {

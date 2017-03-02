@@ -19,9 +19,13 @@
 #include "arm/codegen/OMRLinkage.hpp"
 
 #include "arm/codegen/ARMInstruction.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "arm/codegen/ARMPrivateLinkage.hpp"
+#endif
 #include "arm/codegen/ARMSystemLinkage.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/GCStackAtlas.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"
@@ -538,6 +542,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
    TR::RealRegister::RegNum specialArgReg = TR::RealRegister::NoReg;
    switch (callSymbol->getMandatoryRecognizedMethod())
       {
+#ifdef J9_PROJECT_SPECIFIC
       // Node: special long args are still only passed in one GPR
       case TR::java_lang_invoke_ComputedCalls_dispatchJ9Method:
          specialArgReg = self()->getProperties().getJ9MethodArgumentRegister();
@@ -552,6 +557,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
          numIntArgRegs   = 0;
          numFloatArgRegs = 0;
          break;
+#endif
       }
 
    //TODO move the addDependency(gr11) to the latter part of the method
@@ -1013,7 +1019,6 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
    TR::CodeGenerator *codeGen    = self()->cg();
    TR::SymbolReference *callSymRef = callNode->getSymbolReference();
    TR::MethodSymbol     *callSymbol = callSymRef->getSymbol()->castToMethodSymbol();
-   TR_J9VMBase *fej9 = (TR_J9VMBase *)(self()->comp()->fe());
 
    const TR::ARMLinkageProperties &pp = self()->getProperties();
    TR::RegisterDependencyConditions *dependencies =
@@ -1048,6 +1053,7 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
       }
    else
       {
+#ifdef J9_PROJECT_SPECIFIC
       TR::LabelSymbol *label = generateLabelSymbol(codeGen);
       TR::Snippet     *snippet;
 
@@ -1068,6 +1074,9 @@ TR::Register *OMR::ARM::Linkage::buildARMLinkageDirectDispatch(TR::Node *callNod
                                           dependencies,
                                           new (self()->trHeapMemory()) TR::SymbolReference(codeGen->comp()->getSymRefTab(), label),
                                           snippet);
+#else
+      TR_ASSERT(false, "Attempting to handle Java in non-Java project");
+#endif
       }
    gcPoint->ARMNeedsGCMap(pp.getPreservedRegisterMapForGC());
    codeGen->machine()->setLinkRegisterKilled(true);

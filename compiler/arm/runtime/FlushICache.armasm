@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,14 +16,19 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "env/DebugEnv.hpp"
+AREA CodeSync_c, CODE, READONLY
 
-OMR::ARM::DebugEnv::DebugEnv() :
-      OMR::DebugEnv()
-   {
+	EXPORT	flushICache
 
-   _hexAddressWidthInChars = 8;
-   _hexAddressFieldWidthInChars = 10;
-   _codeByteColumnWidth = 10;
-
-   }
+; in:  r0 = start address to flush
+;      r1 = # of bytes to flush
+;     r14 = return address
+;
+; trash: none
+;
+flushICache
+	stmdb	r13!,{r0-r11,r14}
+	add	r1,r1,r0 ; r0 - start, r1 - end
+	bl	 __clear_cache ; void __clear_cache(char *begin, char *end); in libgcc
+	ldmia	r13!,{r0-r11,r14}
+	bx	r14

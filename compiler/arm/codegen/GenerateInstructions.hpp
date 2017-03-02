@@ -16,6 +16,9 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#ifndef GENERATE_INSTRUCTIONS_INCL
+#define GENERATE_INSTRUCTIONS_INCL
+
 #include "il/TreeTop.hpp"
 #include "codegen/ARMInstruction.hpp"
 
@@ -312,3 +315,5 @@ TR::Instruction *generatePreIncLoadInstruction(TR::CodeGenerator *cg,
 
 TR::Instruction *generateVirtualGuardNOPInstruction(TR::CodeGenerator *cg,  TR::Node *n, TR_VirtualGuardSite *site,
    TR::RegisterDependencyConditions *cond, TR::LabelSymbol *sym, TR::Instruction *preced = NULL);
+
+#endif

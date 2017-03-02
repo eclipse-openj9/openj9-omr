@@ -19,8 +19,10 @@
 #include "codegen/AheadOfTimeCompile.hpp"
 #include "arm/codegen/ARMInstruction.hpp"
 #include "arm/codegen/ARMOperand2.hpp"
+#ifdef J9_PROJECT_SPECIFIC
 #include "codegen/ARMAOTRelocation.hpp"
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"

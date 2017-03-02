@@ -47,14 +47,22 @@
    TR::TreeEvaluator::fstoreEvaluator,      // TR::fstore
    TR::TreeEvaluator::dstoreEvaluator,      // TR::dstore
    TR::TreeEvaluator::istoreEvaluator,      // TR::astore
+#if J9_PROJECT_SPECIFIC
    TR::TreeEvaluator::wrtbarEvaluator,      // TR::wrtbar
+#else
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::wrtbar
+#endif
    TR::TreeEvaluator::bstoreEvaluator,      // TR::bstore
    TR::TreeEvaluator::sstoreEvaluator,      // TR::sstore
    TR::TreeEvaluator::lstoreEvaluator,      // TR::lstorei
    TR::TreeEvaluator::ifstoreEvaluator,     // TR::fstorei
    TR::TreeEvaluator::idstoreEvaluator,     // TR::dstorei
    TR::TreeEvaluator::istoreEvaluator,      // TR::astorei
+#if J9_PROJECT_SPECIFIC
    TR::TreeEvaluator::iwrtbarEvaluator,     // TR::wrtbari
+#else
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::wrtbari
+#endif
    TR::TreeEvaluator::bstoreEvaluator,      // TR::bstorei
    TR::TreeEvaluator::sstoreEvaluator,      // TR::sstorei
    TR::TreeEvaluator::istoreEvaluator,      // TR::istorei
@@ -669,12 +677,18 @@
    TR::TreeEvaluator::cloadEvaluator,       // TR::cloadi
    TR::TreeEvaluator::sstoreEvaluator,      // TR::cstore
    TR::TreeEvaluator::sstoreEvaluator,      // TR::cstorei
+#if J9_PROJECT_SPECIFIC
    TR::TreeEvaluator::monentEvaluator,      // TR::monent
    TR::TreeEvaluator::monexitEvaluator,     // TR::monexit
+#else
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::monent
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::monexit
+#endif
    TR::TreeEvaluator::monexitfenceEvaluator, // TR::monexitfence
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tstart
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tfinish
    TR::TreeEvaluator::badILOpEvaluator,     // TR::tabort
+#if J9_PROJECT_SPECIFIC
    TR::TreeEvaluator::instanceofEvaluator,  // TR::instanceof
    TR::TreeEvaluator::checkcastEvaluator,     // TR::checkcast
    TR::TreeEvaluator::checkcastAndNULLCHKEvaluator,     // TR::checkcastAndNULLCHK
@@ -683,6 +697,16 @@
    TR::TreeEvaluator::anewArrayEvaluator,   // TR::anewarray
    TR::TreeEvaluator::newObjectEvaluator,   // TR::variableNew
    TR::TreeEvaluator::anewArrayEvaluator,    // TR::variableNewArray
+#else
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::instanceof
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::checkcast
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::checkcastAndNULLCHK
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::New
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::newarray
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::anewarray
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::variableNew
+   TR::TreeEvaluator::unImpOpEvaluator,     // TR::variableNewArray
+#endif
    TR::TreeEvaluator::multianewArrayEvaluator,// TR::multianewarray
    TR::TreeEvaluator::badILOpEvaluator,     // TR::arraylength
    TR::TreeEvaluator::badILOpEvaluator,     // TR::contigarraylength

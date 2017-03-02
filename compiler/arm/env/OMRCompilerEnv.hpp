@@ -49,8 +49,6 @@ public:
          OMR::CompilerEnv(raw, persistentAllocatorKit)
       {}
 
-protected:
-
    // Initialize 'target' environment for this compilation
    //
    void initializeTargetEnvironment();

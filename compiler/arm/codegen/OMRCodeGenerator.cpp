@@ -18,11 +18,15 @@
 
 #include <stdint.h>
 #include "arm/codegen/ARMInstruction.hpp"
+#ifdef J9_PROJECT_SPECIFC
 #include "arm/codegen/ARMPrivateLinkage.hpp"
 #include "arm/codegen/ARMRecompilation.hpp"
+#endif
 #include "arm/codegen/ARMSystemLinkage.hpp"
 #include "codegen/AheadOfTimeCompile.hpp"
+#ifdef J9_PROJECT_SPECIFC
 #include "codegen/ARMAOTRelocation.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCStackMap.hpp"
@@ -56,20 +60,10 @@ TR::Linkage *OMR::ARM::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    TR::Linkage *linkage;
    switch (lc)
       {
-//    case TR_InterpretedStatic:
-//       linkage = new (self()->trHeapMemory()) TR::ARMInterpretedStaticLinkage(this);
-//       break;
       case TR_Private:
-         linkage = new (self()->trHeapMemory()) TR::ARMPrivateLinkage(self());
-         break;
+      case TR_Helper:
       case TR_System:
          linkage = new (self()->trHeapMemory()) TR::ARMSystemLinkage(self());
-         break;
-//    case TR_AllRegister:
-//       linkage = new (self()->trHeapMemory()) TR::ARMAllRegisterLinkage(this);
-//       break;
-      case TR_Helper:
-         linkage = new (self()->trHeapMemory()) TR::ARMHelperLinkage(self());
          break;
       default :
          TR_ASSERT(0, "using system linkage for unrecognized convention %d\n", lc);
@@ -150,7 +144,9 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    self()->setSupportsLoweringConstIDiv();
    self()->setSupportsNewInstanceImplOpt();
 
+#ifdef J9_PROJECT_SPECIFIC
    self()->setAheadOfTimeCompile(new (self()->trHeapMemory()) TR::AheadOfTimeCompile(self()));
+#endif
    self()->getLinkage()->initARMRealRegisterLinkage();
    //To enable this, we must change OMR::ARM::Linkage::saveArguments to support GRA registers
    //self()->getLinkage()->setParameterLinkageRegisterIndex(self()->comp()->getJittedMethodSymbol());

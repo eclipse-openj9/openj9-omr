@@ -22,8 +22,8 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/ARMAOTRelocation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#endif
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"

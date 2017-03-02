@@ -23,8 +23,8 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "codegen/ARMAOTRelocation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#endif
 #include "codegen/CallSnippet.hpp"
+#endif
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
@@ -208,6 +208,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
 
    if (value != 0x0)
       {
+#ifdef J9_PROJECT_SPECIFIC
       TR_FixedSequenceKind seqKind = fixedSequence1;//does not matter
       if (typeAddress == -1)
          {
@@ -286,6 +287,7 @@ TR::Instruction *loadAddressConstantFixed(TR::CodeGenerator *cg, TR::Node * node
                                  node);
             }
          }
+#endif
       }
    cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_2, cursor);
    cursor = generateTrg1Src2Instruction(cg, ARMOp_add, node, trgReg, trgReg, op2_1, cursor);
@@ -434,10 +436,12 @@ TR::Register *OMR::ARM::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGe
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
    generateTrg1MemInstruction(cg, ARMOp_ldr, node, tempReg, tempMR);
 
+#ifdef J9_PROJECT_SPECIFIC
    if (node->getSymbolReference() == cg->comp()->getSymRefTab()->findVftSymbolRef())
       {
       generateVFTMaskInstruction(cg, node, tempReg);
       }
+#endif
 
    if (needSync && TR::Compiler->target.cpu.id() != TR_DefaultARMProcessor)
       {
@@ -524,6 +528,7 @@ TR::Register *OMR::ARM::TreeEvaluator::commonLoadEvaluator(TR::Node *node,  TR_A
    return tempReg;
    }
 
+#if J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::wrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference *tempMR              = new (cg->trHeapMemory()) TR::MemoryReference(node, 4, cg);
@@ -616,6 +621,7 @@ TR::Register *OMR::ARM::TreeEvaluator::iwrtbarEvaluator(TR::Node *node, TR::Code
 
    return NULL;
    }
+#endif
 
 // also handles ilstore
 TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -721,6 +727,7 @@ TR::Register *OMR::ARM::TreeEvaluator::commonStoreEvaluator(TR::Node *node, TR_A
    return NULL;
    }
 
+#ifdef J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::monentEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return VMmonentEvaluator(node, cg);
@@ -730,6 +737,7 @@ TR::Register *OMR::ARM::TreeEvaluator::monexitEvaluator(TR::Node *node, TR::Code
    {
    return VMmonexitEvaluator(node, cg);
    }
+#endif
 
 TR::Register *OMR::ARM::TreeEvaluator::monexitfenceEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -1032,6 +1040,7 @@ TR::Register *OMR::ARM::TreeEvaluator::asynccheckEvaluator(TR::Node *node, TR::C
    return NULL;
    }
 
+#if J9_PROJECT_SPECIFIC
 TR::Register *OMR::ARM::TreeEvaluator::instanceofEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return VMinstanceOfEvaluator(node, cg);
@@ -1046,7 +1055,6 @@ TR::Register *OMR::ARM::TreeEvaluator::checkcastAndNULLCHKEvaluator(TR::Node *no
    {
    return OMR::ARM::TreeEvaluator::VMcheckcastEvaluator(node, cg);
    }
-
 
 TR::Register *OMR::ARM::TreeEvaluator::newObjectEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -1085,6 +1093,7 @@ TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::Co
       }
 
    }
+#endif
 
 TR::Register *OMR::ARM::TreeEvaluator::multianewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

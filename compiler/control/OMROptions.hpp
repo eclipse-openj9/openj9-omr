@@ -713,7 +713,7 @@ enum TR_CompilationOptions
    TR_EnableBranchPreload                             = 0x08000000 + 20,
    TR_TerseRegisterPressureTrace                      = 0x20000000 + 20,
    TR_DisableMutableCallSiteGuards                    = 0x40000000 + 20,  // JSR292
-   // Available                                       = 0x80000000 + 20,
+   TR_DisableCallConstUncommoning                     = 0x80000000 + 20,
 
    // Option word 21
    // Available                                       = 0x00000020 + 21,

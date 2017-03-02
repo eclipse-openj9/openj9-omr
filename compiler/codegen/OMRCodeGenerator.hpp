@@ -309,6 +309,8 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_FrontEnd *fe();
    TR_Debug *getDebug();
 
+   void uncommonCallConstNodes();
+
    void preLowerTrees();
    void postLowerTrees() {}
 
@@ -614,10 +616,8 @@ class OMR_EXTENSIBLE CodeGenerator
    bool canBeAffectedByStoreTagStalls() { return false; } // no virt, default
 
    bool isMaterialized(TR::Node *); // no virt, cast
-   bool isMaterialized(int64_t); // no virt, cast
-   bool materializesLargeConstants() { return false;}
-   int32_t getLargestNegConstThatMustBeMaterialized() {return -32769;} // no virt, cast
-   int32_t getSmallestPosConstThatMustBeMaterialized() {return 32768;} // no virt, cast
+   bool shouldValueBeInACommonedNode(int64_t) { return false; } // no virt, cast
+   bool materializesLargeConstants() { return false; }
 
    bool canUseImmedInstruction(int64_t v) {return false;} // no virt
    bool needsNormalizationBeforeShifts() { return false; } // no virt, cast

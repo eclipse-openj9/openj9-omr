@@ -343,6 +343,20 @@ public:
    void insertInstructionPrefetchesForCalls(TR_BranchPreloadCallData * data);
    bool hasWarmCallsBeforeReturn();
 
+   /**
+    * \brief Tells the optimzers and codegen whether a load constant node should be rematerialized.
+    *
+    * \details Large constants should be materialized (constant node should be commoned up)
+    * because loading them as immediate values is expensive.
+    *
+    * A constant is large if it's outside of the range specified by the largest negative
+    * const and smallest positive const. And the ranges are hardware platform dependent.
+    */
+   bool materializesLargeConstants() { return true; }
+   bool shouldValueBeInACommonedNode(int64_t value);
+   int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
+   int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
+
    void setNodeAddressOfCachedStaticTree(TR::Node *n) { _nodeAddressOfCachedStatic=n; }
    TR::Node *getNodeAddressOfCachedStatic() { return _nodeAddressOfCachedStatic; }
 

@@ -26,6 +26,7 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 # These tests may not work on all platforms
 ALL_TESTS = \
+            atomicoperations \
             call \
             conststring \
             controlflowtests \
@@ -45,6 +46,7 @@ ALL_TESTS = \
             switch \
             thunks \
             toiltype \
+            transactionaloperations \
             union \
             worklist
 
@@ -52,6 +54,7 @@ ALL_TESTS = \
 all: $(ALL_TESTS)
 
 # These tests should run properly on all platforms
+# If you add to this list, please also add to ALL_TESTS
 common_goal: $(ALL_TESTS)
 	./controlflowtests
 	./issupportedtype
@@ -63,6 +66,7 @@ common_goal: $(ALL_TESTS)
 	./worklist
 
 # Additional tests that may not work properly on all platforms
+# If you add to this list, please also add to ALL_TESTS
 all_goal: common_goal
 	./call
 	./conststring
@@ -77,8 +81,14 @@ all_goal: common_goal
 	./switch
 	./thunks
 	./toiltype
-	./transactionaloperations
 	./union
+
+# Tests that are still on the experimental side
+# If you add to this list and want them to be built under "make", please
+# also add to ALL_TESTS
+experimental_goal: common_goal
+	./atomicoperations
+	./transactionaloperations
 
 
 # In general, only compile and run tests that are known to work on all platforms
@@ -86,6 +96,9 @@ test: common_goal all
 
 # For platforms where everything can run:
 testall: all_goal all
+
+# Even experimental stuff:
+testexperimental: experimental_goal all
 
 
 # Rules for individual examples

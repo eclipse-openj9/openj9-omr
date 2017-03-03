@@ -592,6 +592,12 @@ IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
    return loadValue;
    }
 
+/**
+ * @brief Store an IlValue into a named local variable
+ * @param varName the name of the local variable to be stored into. If the name has not been used before, this local variable will
+ *                take the same data type as the value being written to it.
+ * @param value IlValue that should be written to the local variable, which should be the same data type
+ */
 void
 IlBuilder::Store(const char *varName, TR::IlValue *value)
    {
@@ -605,10 +611,29 @@ IlBuilder::Store(const char *varName, TR::IlValue *value)
    storeNode(sym, loadValue(value));
    }
 
+/**
+ * @brief Store an IlValue into the same local value as another IlValue
+ * @param dest IlValue that should now hold the same value as "value"
+ * @param value IlValue that should overwrite "dest"
+ */
+void
+IlBuilder::StoreOver(TR::IlValue *dest, TR::IlValue *value)
+   {
+   ILB_REPLAY("%s->StoreOver(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(dest), REPLAY_VALUE(value));
+   Store(dest->getSymbol()->getAutoSymbol()->getName(), value);
+   }
+
+/**
+ * @brief Store a vector IlValue into a named local variable
+ * @param varName the name of the local variable to be vector stored into. if the name has not been used before, this local variable will
+ *                take the same data type as the value being written to it. The width of this data will be determined by the vector
+ *                data type of IlValue.
+ * @param value IlValue with the vector data that should be written to the local variable, and should have the same data type
+ */
 void
 IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->Store(\"%s\", %s);", REPLAY_BUILDER(this), varName, REPLAY_VALUE(value));
+   ILB_REPLAY("%s->VectorStore(\"%s\", %s);", REPLAY_BUILDER(this), varName, REPLAY_VALUE(value));
 
    TR::Node *valueNode = loadValue(value);
    TR::DataType dt = valueNode->getDataType();
@@ -626,6 +651,11 @@ IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    storeNode(sym, valueNode);
    }
 
+/**
+ * @brief Store an IlValue through a pointer
+ * @param address the pointer address through which the value will be written
+ * @param value IlValue that should be written at "address"
+ */
 void
 IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
    {
@@ -637,12 +667,18 @@ IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
    indirectStoreNode(loadValue(address), loadValue(value));
    }
 
+/**
+ * @brief Store a vector IlValue through a pointer
+ * @param address the pointer address through which the vector value will be written. The width of the store will be determined
+ *                by the vector data type of IlValue.
+ * @param value IlValue with the vector data that should be written  at "address"
+ */
 void
 IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    {
    ILB_REPLAY("%s->VectorStoreAt(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(address), REPLAY_VALUE(value));
 
-   TR_ASSERT(address->getSymbol()->getDataType() == TR::Address, "StoreAt needs an address operand");
+   TR_ASSERT(address->getSymbol()->getDataType() == TR::Address, "VectorStoreAt needs an address operand");
 
    TraceIL("IlBuilder[ %p ]::VectorStoreAt address %d gets %d\n", this, address->getCPIndex(), value->getCPIndex());
 

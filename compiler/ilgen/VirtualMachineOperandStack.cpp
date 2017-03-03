@@ -102,8 +102,7 @@ VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack *other, TR
          // but not primitive types (even different types of objects should have same primitive
          // type: Address. Expecting to be disappointed here some day...
          TR_ASSERT(_stack[i]->getSymbol()->getDataType() == other->_stack[i]->getSymbol()->getDataType(), "invalid stack merge: primitive type mismatch at same depth stack elements");
-         b->Store(other->_stack[i]->getSymbol()->getAutoSymbol()->getName(),
-               _stack[i]);
+         b->StoreOver(other->_stack[i], _stack[i]);
          }
       }
    }

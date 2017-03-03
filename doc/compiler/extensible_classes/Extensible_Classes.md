@@ -2,9 +2,12 @@
 
 ## Introduction
 
-Extensible classes are a way of implementing static polymorphism in C++. They allow various projects to override and extend the
-functionality of an existing class, through inheritance, in order to suit their specific needs. This is done by carefully organizing a
-project in such a way that the compiler can find the most extended implementation of a member function, no matter where it is called from.
+Extensible classes are a way of implementing static polymorphism in C++. They
+allow various projects to override and extend the functionality of an existing
+class, through inheritance, in order to suit their specific needs. This is done
+by carefully organizing a project in such a way that the compiler can find the
+most extended implementation of a member function, no matter where it is called
+from.
 
 This document describes the general characteristics of extensible classes as
 well as their implementation. Alternate approaches to this problem are also
@@ -13,19 +16,23 @@ explored and compared to extensible classes.
 ## What is an extensible class?
 
 Suppose we have a group of projects that are similarly structured. They share
-similar features and have a similar implementation.
-It makes sense to abstract away the common functionality and structure so that it may be reused more effectively.
+similar features and have a similar implementation.  It makes sense to abstract
+away the common functionality and structure so that it may be reused more
+effectively.
 
-Extensible classes organize code in a way that allows the structure and implementation of a particular class to be extended.
-Conceptually, when extending a class, we do not create a new type. Instead, we take a previously implemented type and extend its functionality
-to suit our needs. We can access
-an instance of an extended class through a reference to the non-extended version because they are
-actually the same type (though doing so also hides the extended functionality). It is therefore common to refer to an entire
+Extensible classes organize code in a way that allows the structure and
+implementation of a particular class to be extended.  Conceptually, when
+extending a class, we do not create a new type. Instead, we take a previously
+implemented type and extend its functionality to suit our needs. We can access
+an instance of an extended class through a reference to the non-extended
+version because they are actually the same type (though doing so also hides the
+extended functionality). It is therefore common to refer to an entire
 extensible class hierarchy as a single class.
 
-In addition, connectors allow extensible classes to define specialized extensions for use in specific situations. These can be very
-useful, for example, in cases where some special functionality is required to support a specific hardware architecture
-(a common problem in compiler development).
+In addition, connectors allow extensible classes to define specialized
+extensions for use in specific situations. These can be very useful, for
+example, in cases where some special functionality is required to support a
+specific hardware architecture (a common problem in compiler development).
 
 > Traditionally, C++ solves these problems using dynamic polymorphism through
 the use of the `virtual` keyword. However, extensible classes allow for greater
@@ -44,17 +51,19 @@ parts. These are the class extensions, extension specializations, and the
 concrete class.
 
 A class extension is a class that extends the implementation of another class
-extension. Class extensions are abstract: they cannot be
-instantiated; only extended. An extension inherits the functionality of the parent extension and adds its own functionality to it
-(*extends* it). It can also *override* the parent's functionality.
+extension. Class extensions are abstract: they cannot be instantiated; only
+extended. An extension inherits the functionality of the parent extension and
+adds its own functionality to it (*extends* it). It can also *override* the
+parent's functionality.
 
 A special case of a class extension is the base class that does not have a
 parent of its own, but still is extended by other classes. Although it does not
 extend the structure or functionality of any existing class, it is treated the
 same as other class extensions (notably, it is abstract).
 
-Concrete classes are at the bottom of an extensible class hierarchy. They realize the implementation of the class extension they
-inherit from. These are the only classes in an extensible hierarchy that can be instantiated.
+Concrete classes are at the bottom of an extensible class hierarchy. They
+realize the implementation of the class extension they inherit from. These are
+the only classes in an extensible hierarchy that can be instantiated.
 
 Extension specializations are special class extensions that specialize the
 functionality of a particular class extension. They allow us to define different
@@ -86,8 +95,10 @@ only the concrete class may be instantiated.
 
 For convenience, we define a special function in the base class called `self()`.
 It simply performs a `static_cast` of the `this` pointer to a pointer to the
-most derived type (which we forward declared) and returns the result. All calls to member functions from within an
-extensible class must be prefixed with `self()->`. Using the implicit `this` pointer **must be avoided** as it circumvents the down cast
+most derived type (which we forward declared) and returns the result. All calls
+to member functions from within an extensible class must be prefixed with
+`self()->`. Using the implicit `this` pointer **must be avoided** as it
+circumvents the down cast
 and can lead to strange and unpredictable behaviour.
 
 > To enforce this rule, we use a clang-based linter, `OMRChecker`, that uses a
@@ -95,9 +106,11 @@ class annotation to verify that extensible classes are implemented correctly.
 
 ### Naming and Namespaces
 
-As previously mentioned, we must know the name of the concrete class in a hierarchy (most extended/derived type) when we declare the
-base class. Since we consider all extension classes, extension specializations, and the concrete class as essentially the same
-class, we give them all the same name and use namespaces to distinguish them.
+As previously mentioned, we must know the name of the concrete class in a
+hierarchy (most extended/derived type) when we declare the base class. Since we
+consider all extension classes, extension specializations, and the concrete
+class as essentially the same class, we give them all the same name and use
+namespaces to distinguish them.
 
 Each project has its own namespace to hold all of its class extensions. Nested
 namespaces are used for the extension specializations provided by projects.
@@ -182,20 +195,27 @@ first, before looking in the include path.
 
 ### The Include Path
 
-The last important aspect of extensible classes is how the include path (i-path) is set. In order for the compiler to find the most
-extended version of a class, the path to the most specialized/extended classes must be specified first, followed by the more general
-ones, and so on until the path to the base project.
+The last important aspect of extensible classes is how the include path
+(i-path) is set. In order for the compiler to find the most extended version of
+a class, the path to the most specialized/extended classes must be specified
+first, followed by the more general ones, and so on until the path to the base
+project.
 
-Likewise, header files for extensible classes must be included from most extended to most general. The only exception to this is the
-inclusion of the header file for a particular class in the corresponding source file. In this case, the file should be included first.
+Likewise, header files for extensible classes must be included from most
+extended to most general. The only exception to this is the inclusion of the
+header file for a particular class in the corresponding source file. In this
+case, the file should be included first.
 
 ### The Linter and class annotations
 
-When using extensible classes, there are many things to keep track of and many things that can go wrong.
-This is especially true when it comes to the use of `self()`. Forgetting to use it can result in some very strange behaviour.
+When using extensible classes, there are many things to keep track of and many
+things that can go wrong.  This is especially true when it comes to the use of
+`self()`. Forgetting to use it can result in some very strange behaviour.
 
-To help avoid this problem, we use a [clang tool](http://clang.llvm.org/docs/ClangTools.html) (a linter) that detects and reports
-these kinds of errors in the OMR project. When a class is annotated with `__attribute__((annotate("OMR_Extensible"))`, the tool will
+To help avoid this problem, we use a [clang
+tool](http://clang.llvm.org/docs/ClangTools.html) (a linter) that detects and
+reports these kinds of errors in the OMR project. When a class is annotated
+with `__attribute__((annotate("OMR_Extensible"))`, the tool will
 ensure that:
 
 * `self()` is used were needed
@@ -203,10 +223,12 @@ ensure that:
 * concrete classes are in the correct namespace, and
 * the annotation is used in all classes of the hierarchy
 
-For convenience, we also define the macro `OMR_EXTENSIBLE` to make the annotation easier to read (and use) and to maintain
-compatibility with other compilers.
+For convenience, we also define the macro `OMR_EXTENSIBLE` to make the
+annotation easier to read (and use) and to maintain compatibility with other
+compilers.
 
-Currently, however, the tool only searches for errors in the use of extensible classes in the OMR project specifically.
+Currently, however, the tool only searches for errors in the use of extensible
+classes in the OMR project specifically.
 
 ## Extensible enums
 

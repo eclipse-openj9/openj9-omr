@@ -1,8 +1,10 @@
 # Extensible Classes in OMR  {#OMRExtensibleClasses}
 
-This document describes the use of extensible classes in the Eclipse OMR source code. For a more general description of extensible
-classes, see the `Extensible_Classes.md` (\\subpage ExtensibleClasses) document. If you are unfamiliar with extensible classes, it is strongly recommended
-that you read that document first.
+This document describes the use of extensible classes in the Eclipse OMR source
+code. For a more general description of extensible classes, see the
+`Extensible_Classes.md` (\\subpage ExtensibleClasses) document. If you are
+unfamiliar with extensible classes, it is strongly recommended that you read
+that document first.
 
 ## Projects
 
@@ -23,8 +25,8 @@ Each project is given a namespace as follows:
 - `JitBuilder`
 - `Test`
 
-Each project also provides some specializations for the various supported architectures. These are also assigned
-namespaces as follows:
+Each project also provides some specializations for the various supported
+architectures. These are also assigned namespaces as follows:
 
 - `ARM`: for the ARM architecture
 - `Power`: for IBM Power architecture
@@ -38,8 +40,9 @@ holds all concrete classes.
 
 ## Directories
 
-As is facilitated by the use of extensible classes, our directory structure closely reflects the organization of the various
-projects and their specializations. The project directories are:
+As is facilitated by the use of extensible classes, our directory structure
+closely reflects the organization of the various projects and their
+specializations. The project directories are:
 
 - `omr`
 - `jitbuilder`

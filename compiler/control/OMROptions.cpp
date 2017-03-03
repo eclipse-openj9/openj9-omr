@@ -725,7 +725,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSpecializedEpilogues",         "O\tapply restore non-volatiles selectively",         SET_OPTION_BIT(TR_EnableSpecializedEpilogues), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
-   {"enableTieredCodeCache",              "D\tseparate code cache into cold and warm",   SET_OPTION_BIT(TR_EnableTieredCodeCache), "F", NOT_IN_SUBSET},
    {"enableTreePatternMatching",          "O\tEnable opts that use the TR_Pattern framework", RESET_OPTION_BIT(TR_DisableTreePatternMatching), "F"},
    {"enableTrivialStoreSinking",          "O\tenable trivial store sinking", SET_OPTION_BIT(TR_EnableTrivialStoreSinking), "F"},
    {"enableTrueRegisterModel",            "C\tUse true liveness model in local RA instead of Future Use Count", SET_OPTION_BIT(TR_EnableTrueRegisterModel), "F"},

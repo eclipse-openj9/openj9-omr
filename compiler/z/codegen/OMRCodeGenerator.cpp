@@ -6338,22 +6338,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
 
       data.estimate = data.cursorInstruction->estimateBinaryLength(data.estimate);
-
-      // If this is the last warm instruction, remember the estimated size up to
-      // this point and add a buffer to the estimated size so that branches
-      // between warm and cold instructions will be forced to be long branches.
-      // The size is rounded up to a multiple of 8 so that double-alignments in
-      // the cold section will have the same amount of padding for the estimate
-      // and the actual code allocation.
-      //
-      if (data.cursorInstruction->isLastWarmInstruction() && !self()->comp()->getOption(TR_AOT) && self()->comp()->getOption(TR_EnableTieredCodeCache))
-         {
-         // Estimate Warm Snippets.
-         data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate, true);
-         warmEstimate = ((data.estimate)+7) & ~7;
-         data.estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-
       data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
@@ -6495,23 +6479,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             if (!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) &&
                 TR::Options::getCmdLineOptions()->allowRecompilation())
              self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
-            }
-
-         // If this is the last warm instruction, save info about the warm code range
-         // and set up to generate code in the cold code range.
-         //
-         if (data.cursorInstruction->isLastWarmInstruction() && !self()->comp()->getOption(TR_AOT) && self()->allowSplitWarmAndColdBlocks()
-               && self()->comp()->getOption(TR_EnableTieredCodeCache))
-            {
-            self()->emitSnippets(true);
-            self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
-            self()->setColdCodeStart(coldCode);
-            self()->setBinaryBufferCursor(coldCode);
-
-            // Adjust the accumulated length error so that distances within the cold
-            // code are calculated properly using the estimated code locations.
-            //
-            self()->addAccumulatedInstructionLengthError(self()->getWarmCodeEnd()-coldCode+MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
             }
 
          data.cursorInstruction = data.cursorInstruction->getNext();

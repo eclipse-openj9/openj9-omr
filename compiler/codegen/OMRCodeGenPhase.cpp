@@ -171,7 +171,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         }
      }
 
-
    if (comp->getOption(TR_AOT) && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG) || comp->getOption(TR_TraceReloCG)))
      {
      traceMsg(comp, "\n<relocatableDataCG>\n");
@@ -182,22 +181,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         }
      cg->getAheadOfTimeCompile()->dumpRelocationData();
      traceMsg(comp, "</relocatableDataCG>\n");
-     }
-
-   static char *disassemble = feGetEnv("TR_Disassemble");
-   if (disassemble && comp->getDebug())
-     {
-     uint8_t *instrStart;
-     uint8_t *instrEnd;
-     instrStart = comp->cg()->getCodeStart();
-     if (comp->cg()->getColdCodeStart())
-        {
-        instrEnd = comp->cg()->getWarmCodeEnd();
-        comp->getDebug()->print(comp->getOutFile(), instrStart, instrEnd);
-        instrStart = comp->cg()->getColdCodeStart();
-        }
-     instrEnd = comp->cg()->getCodeEnd();
-     comp->getDebug()->print(comp->getOutFile(), instrStart, instrEnd);
      }
 
      if (debug("dumpCodeSizes"))

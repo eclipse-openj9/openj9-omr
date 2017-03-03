@@ -28,7 +28,8 @@ Region::Region(TR::SegmentProvider &segmentProvider, TR::RawAllocator rawAllocat
    _segmentProvider(segmentProvider),
    _rawAllocator(rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
-   _currentSegment(TR::ref(_initialSegment))
+   _currentSegment(TR::ref(_initialSegment)),
+   _lastDestructable(NULL)
    {
    }
 
@@ -36,12 +37,25 @@ Region::Region(const Region &prototype) :
    _segmentProvider(prototype._segmentProvider),
    _rawAllocator(prototype._rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
-   _currentSegment(TR::ref(_initialSegment))
+   _currentSegment(TR::ref(_initialSegment)),
+   _lastDestructable(NULL)
    {
    }
 
 Region::~Region() throw()
    {
+   /*
+    * Destroy all object instances that depend on the region
+    * to manage their lifetimes.
+    */
+   Destructable *lastDestructable = _lastDestructable;
+   while (lastDestructable)
+      {
+      Destructable * const currentDestructable = lastDestructable;
+      lastDestructable = currentDestructable->prev();
+      currentDestructable->~Destructable();
+      }
+
    for (
       TR::reference_wrapper<TR::MemorySegment> latestSegment(_currentSegment);
       latestSegment.get() != _initialSegment;

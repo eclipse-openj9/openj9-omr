@@ -556,6 +556,7 @@ public:
    void * allocateMemory(size_t size, TR_AllocationKind kind, ObjectType ot = UnknownType);
    void freeMemory(void *p, TR_AllocationKind kind, ObjectType ot = UnknownType);
    TR::PersistentInfo * getPersistentInfo() { return _trPersistentMemory->getPersistentInfo(); }
+   TR::Region& currentStackRegion();
 
 private:
 
@@ -563,7 +564,6 @@ private:
    friend class TR::Region;
 
    /* These are intended to be used exclusively by TR::StackMemoryRegion. */
-   TR::Region& currentStackRegion();
    TR::Region& registerStackRegion(TR::Region &stackRegion);
    void unregisterStackRegion(TR::Region &current, TR::Region &previous) throw();
 

@@ -2883,7 +2883,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
           cursor->setThrowsImplicitException();
           cursor->setExceptBranchOp();
           cg->setCanExceptByTrap(true);
-          cursor->setJITExit();
           cursor->setNeedsGCMap(0x0000FFFF);
           if (TR::Compiler->target.isZOS())
              killRegisterIfNotLocked(cg, TR::RealRegister::GPR4, cursor);
@@ -2924,7 +2923,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
             appendTo = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BERC, node, snippetLabel, appendTo);
             TR::Instruction *brInstr = appendTo;
             brInstr->setExceptBranchOp();
-            brInstr->setJITExit();
             }
          else
             {
@@ -2982,7 +2980,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
             appendTo = generateS390CompareAndBranchInstruction(cg, cmpOpCode, node, targetRegister, NULLVALUE, branchOpCond, snippetLabel, false, true, appendTo);
             TR::Instruction * cursor = appendTo;
             cursor->setExceptBranchOp();
-            cursor->setJITExit();
             }
 
          }
@@ -3061,7 +3058,6 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
          {
          faultingInstruction->setNeedsGCMap(0x0000FFFF);
          faultingInstruction->setThrowsImplicitNullPointerException();
-         faultingInstruction->setJITExit();
          cg->setCanExceptByTrap(true);
 
          TR_Debug * debugObj = cg->getDebug();

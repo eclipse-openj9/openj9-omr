@@ -2329,7 +2329,6 @@ void TR::S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
    cursor = generateS390RegInstruction(cg(), TR::InstOpCode::BCR, nextNode,
           getS390RealRegister(REGNUM(TR::RealRegister::GPR14)), cursor);
    ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
-   ((TR::S390RegInstruction *)cursor)->setJITExit();
    }
 
 void TR::S390SystemLinkage::notifyHasalloca()

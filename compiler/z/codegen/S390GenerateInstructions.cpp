@@ -2306,7 +2306,6 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
    if (myself)
       {
       TR::Instruction * instr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, sym, callSymRef, cg);
-      instr->setJITExit();
 
       return instr;
       }
@@ -2357,7 +2356,6 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
          TR::S390RILInstruction *tempInst =
             new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
-         tempInst->setJITExit();
 
          if (isHelper)
             tempInst->setSymbolReference(callSymRef);
@@ -2368,7 +2366,6 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
          {
          genLoadAddressConstant(cg, callNode, imm, RegEP, preced, cond);
          TR::Instruction * instr = new (INSN_HEAP) TR::S390RRInstruction(TR::InstOpCode::BASR, callNode, RegRA, RegEP, cg);
-         instr->setJITExit();
 
          return instr;
          }
@@ -2405,7 +2402,6 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
 
       callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, killRegRA, s,
          postDeps, callSymRef, cg);
-      callInstr->setJITExit();
 
       cg->stopUsingRegister(killRegRA);
       cg->stopUsingRegister(killRegEP);
@@ -2413,7 +2409,6 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
    else
       {
       callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, s, cond, callSymRef, cg);
-      callInstr->setJITExit();
       }
 
    TR_ASSERT( s->isCallSnippet(), "targetSnippet is NOT CallSnippet ");

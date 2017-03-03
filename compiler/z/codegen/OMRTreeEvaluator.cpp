@@ -12001,12 +12001,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          {
          firstInstr->setBreakPoint(true);
          }
-
-      // setJITEntry on first BB's label for zEmulator tracing
-      if (comp->getStartBlock() == node->getBlock() && firstInstr)
-         {
-         firstInstr->setJITEntry();
-         }
       }
 
 

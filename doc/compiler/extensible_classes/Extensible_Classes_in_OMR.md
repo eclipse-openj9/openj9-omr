@@ -35,8 +35,22 @@ architectures. These are also assigned namespaces as follows:
   - `i386`: for 32-bit x86 (x86-32)
 - `Z`: for the IBM z Systems architecture
 
-Additionally, there is a `TR` namespace, used by all projects. This namespace
-holds all concrete classes.
+Since there are many different possible class strings that can be generated
+depending on the build time configuration, we need a name that consumers of
+particlar classes can use to reference the final complete concept.
+
+We use the `TR::` namespace to serve this purpose. Outside of the layered
+construction of an extensible class, all compiler code uses the `TR::`
+namespace (rooted in the code name for the compiler technology which was
+_Testasrossa_). 
+
+In the case of extensible classes, we expose them to consumers by providing a
+terminating subclass in the `TR::` namespace, which we call the _Concrete_ 
+class. 
+
+In the case of classes that aren't extensible, It is perfectly legitimate to
+create a class directly in the `TR::` namespace if it's complete and can and
+should be used as-is. 
 
 ## Directories
 

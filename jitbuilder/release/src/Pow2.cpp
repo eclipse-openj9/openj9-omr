@@ -115,7 +115,7 @@ main(int argc, char *argv[])
    for (int32_t i=0;i < n;i++)
       r = pow2((int64_t) 45);
 
-   printf("pow2(45) is %ld\n", r);
+   printf("pow2(45) is %lld\n", r);
 
    printf ("Step 5: shutdown JIT\n");
    shutdownJit();

@@ -60,6 +60,7 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 
 	char **fileNamesTableConcat = NULL;
 	char *compDir = NULL;
+	Dwarf_Bool hasAttr = false;
 	Dwarf_Error error = NULL;
 	Dwarf_Attribute attr = NULL;
 
@@ -71,15 +72,20 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		goto Failed;
 	}
 
-	/* Get the CU directory. */
-	if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
-		ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
+	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_comp_dir, &hasAttr, &error)) {
+		ERRMSG("Checking for compilation directory attribute: %s\n", dwarf_errmsg(error));
 		goto Failed;
 	}
-
-	if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
-		ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
-		goto Failed;
+	if (hasAttr) {
+		/* Get the CU directory. */
+		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
+			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
+			goto Failed;
+		}
+		if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
+			ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
+			goto Failed;
+		}
 	}
 
 	/* Allocate a new file name table to hold the concatenated absolute paths. */
@@ -190,8 +196,12 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 
 		/* If the decl_file matches an entry in the file table not beginning with "/usr/",
 		 * then we are interested in it. Also filter out decl file "<built-in>".
+		 * Futhermore, don't filter out entries that have an unspecified declaring file.
 		 */
-		if ((NULL == strstr(_fileNamesTable[declFile - 1], "<built-in>"))
+		if (0 == declFile) {
+			/* declFile can be 0 when no declarating file is specified */
+			*dieBlackListed = false;
+		} else if ((NULL == strstr(_fileNamesTable[declFile - 1], "<built-in>"))
 			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/usr/", 5))
 			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/Applications/Xcode.app/", 24))
 		) {

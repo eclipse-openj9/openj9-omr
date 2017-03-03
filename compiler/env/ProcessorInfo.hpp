@@ -45,7 +45,7 @@ enum TR_S390MachineType
    TR_ZEC12MR                 =  2828,  // zHelix MR
    TR_ZEC12_RESERVE           =  2829,  // reserve for zHelix
    TR_Z13                     =  2964,  // z13
-   TR_Z13BC                   =  2965,  // z13 BC
+   TR_Z13s                    =  2965,  // z13s
 
    // TODO : Update the machine ID once we know what it will be
    TR_ZNEXT                   =  9999,  // zNext

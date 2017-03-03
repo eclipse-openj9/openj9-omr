@@ -87,7 +87,9 @@ public:
    TR_BitVector & unsafeArrayElementSymRefs() { return _unsafeArrayElementSymRefs; }
 
    TR_BitVector & gcSafePointSymRefNumbers() { return _gcSafePointSymRefNumbers; }
+   TR_BitVector & cpConstantSymRefs() { return _cpConstantSymRefs; }
    TR_BitVector & cpSymRefs() { return _cpSymRefs; }
+
    TR_BitVector & catchLocalUseSymRefs() { return _catchLocalUseSymRefs; }
 
    TR_BitVector & defaultMethodDefAliases() { return _defaultMethodDefAliases; }
@@ -161,7 +163,9 @@ protected:
    TR_BitVector _unsafeSymRefNumbers;
    TR_BitVector _unsafeArrayElementSymRefs;  // subset of _unsafeSymRefNumbers
    TR_BitVector _gcSafePointSymRefNumbers;
+   TR_BitVector _cpConstantSymRefs;
    TR_BitVector _cpSymRefs;
+
    TR_BitVector _catchLocalUseSymRefs;
    TR_BitVector _defaultMethodDefAliases;
    TR_BitVector _defaultMethodUseAliases;

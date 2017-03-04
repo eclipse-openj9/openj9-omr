@@ -2494,10 +2494,6 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          s390NewInst->setThrowsImplicitException();
       if (s390Inst->isOutOfLineEX())
          s390NewInst->setOutOfLineEX();
-      if (s390Inst->isJITEntry())
-         s390NewInst->setJITEntry();
-      if (s390Inst->isJITExit())
-         s390NewInst->setJITExit();
       if (s390Inst->isStartInternalControlFlow())
          s390NewInst->setStartInternalControlFlow();
       if (s390Inst->isEndInternalControlFlow())
@@ -3331,7 +3327,6 @@ TR_S390Peephole::ICMReduction()
          {
          icm->setNeedsGCMap(0x0000FFFF);
          icm->setThrowsImplicitNullPointerException();
-         icm->setJITExit();
          icm->setGCMap(load->getGCMap());
 
          TR_Debug * debugObj = _cg->getDebug();

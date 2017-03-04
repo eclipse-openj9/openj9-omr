@@ -3464,20 +3464,3 @@ OMR::Z::Instruction::lastOperandIndex(void)
    {
    return self()->numOperands() - 1;
    }
-
-
-void
-OMR::Z::Instruction::setJITEntry()
-   {
-   TR_ASSERT(self()->getOpCodeValue()==TR::InstOpCode::LABEL,
-             "JIT entry point should be a branch instruction\n");
-   _flags.set(JITEntry);
-   }
-
-void
-OMR::Z::Instruction::setJITExit()
-   {
-   TR_ASSERT(self()->getOpCode().isBranchOp() || self()->isExceptBranchOp() || self()->throwsImplicitException(),
-             "JIT exit point should be a branch instruction or Exception branch\n");
-   _flags.set(JITExit);
-   }

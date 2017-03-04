@@ -116,12 +116,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool isExtDisp2()  {return _flags.testAny(ExtDisp2);}
    void setExtDisp2() {_flags.set(ExtDisp2);}
 
-   bool isJITEntry()  {return _flags.testAny(JITEntry);}
-   void setJITEntry();
-
-   bool isJITExit()  {return _flags.testAny(JITExit);}
-   void setJITExit();
-
    bool isExceptBranchOp() { return _flags.testAny(ExceptBranchOp); }
    void setExceptBranchOp() {_flags.set(ExceptBranchOp);}
 
@@ -293,8 +287,8 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
       {
       // Available                        = 0x0001,
       ExtDisp                             = 0x0002, ///< inst has had a late long displacement fixup on the first memRef
-      JITEntry                            = 0x0004,
-      JITExit                             = 0x0008,
+      // Available                        = 0x0004,
+      // Available                        = 0x0008,
       ExceptBranchOp                      = 0x0010,
       ExtDisp2                            = 0x0020, ///< inst has had a late long displacement fixup on the second memRef
       Reserved5                           = 0x0040,

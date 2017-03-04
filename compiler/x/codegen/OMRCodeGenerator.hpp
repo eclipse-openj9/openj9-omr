@@ -581,14 +581,14 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpDataSnippets(TR::FILE *pOutFile, bool isWarm = 0);
 #endif
 
-   TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
-   TR::IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
-   TR::IA32ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
-   TR::IA32ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c, bool isWarm = 0);
-   TR::IA32DataSnippet *create2ByteData(TR::Node *, int16_t c, bool isWarm = 0);
-   TR::IA32DataSnippet *create4ByteData(TR::Node *, int32_t c, bool isWarm = 0);
-   TR::IA32DataSnippet *create8ByteData(TR::Node *, int64_t c, bool isWarm = 0);
-   TR::IA32DataSnippet *create16ByteData(TR::Node *, void *c, bool isWarm = 0);
+   TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
+   TR::IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);
+   TR::IA32ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c);
+   TR::IA32ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c);
+   TR::IA32DataSnippet *create2ByteData(TR::Node *, int16_t c);
+   TR::IA32DataSnippet *create4ByteData(TR::Node *, int32_t c);
+   TR::IA32DataSnippet *create8ByteData(TR::Node *, int64_t c);
+   TR::IA32DataSnippet *create16ByteData(TR::Node *, void *c);
 
    bool supportsCMOV() {return (_targetProcessorInfo.supportsCMOVInstructions());}
 
@@ -655,7 +655,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
 
-   TR::IA32ConstantDataSnippet     *findOrCreateConstant(TR::Node *, void *c, uint8_t size, bool isWarm=0);
+   TR::IA32ConstantDataSnippet     *findOrCreateConstant(TR::Node *, void *c, uint8_t size);
 
    TR::RealRegister             *_frameRegister;
 
@@ -888,4 +888,3 @@ class TR_X86ScratchRegisterManager: public TR_ScratchRegisterManager
    };
 
 #endif
-

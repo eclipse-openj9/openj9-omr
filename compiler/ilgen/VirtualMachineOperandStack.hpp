@@ -106,6 +106,14 @@ class VirtualMachineOperandStack : public VirtualMachineState
     * @param b the builder where the operations will be placed to recreate the virtual machine operand stack
     */
    virtual void Commit(TR::IlBuilder *b);
+   
+   /**
+    * @brief read the virtual machine stack back into the simulated operand stack
+    * @param b the builder where the operations will be placed to recreate the simulated operand stack 
+    * Users can call Drop beforehand with the appropriate positive or negative count to ensure the simulated
+    * stack accounts for new or dropped virtual machine stack elements. 
+    */
+   virtual void Reload(TR::IlBuilder *b);
 
    /**
     * @brief create an identical copy of the current object.

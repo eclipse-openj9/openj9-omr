@@ -87,8 +87,25 @@ VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
       }
    }
 
-void
-VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack *other, TR::IlBuilder *b)
+   void
+   VirtualMachineOperandStack::Reload(TR::IlBuilder* b)
+   {
+       TR::IlType* Element = _elementType;
+       TR::IlType* pElement = _mb->typeDictionary()->PointerTo(Element);
+       // reload the elements back into the simulated operand stack
+       // If the # of stack element has changed, the user should adjust the # of elements 
+       // using Drop beforehand to add/delete stack elements.
+       TR::IlValue* stack = b->Load("OperandStack_base");
+       for (int32_t i = _stackTop; i >= 0; i--) {
+           _stack[i] = b->LoadAt(pElement,
+               b->IndexAt(pElement,
+                   stack,
+                   b->ConstInt32(i - _stackOffset)));
+       }
+   }
+
+   void
+   VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack* other, TR::IlBuilder* b)
    {
    TR_ASSERT(_stackTop == other->_stackTop, "stacks are not same size");
    for (int32_t i=_stackTop;i >= 0;i--)

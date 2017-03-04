@@ -190,7 +190,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value);
 
-   void emitDataSnippets(bool isWarm = 0);
+   void emitDataSnippets();
    bool hasDataSnippets();
 
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node);

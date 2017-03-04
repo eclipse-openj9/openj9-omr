@@ -650,10 +650,9 @@ bool OMR::ARM::CodeGenerator::hasDataSnippets()
    return (_constantData==NULL) ? false : true;
    }
 
-void OMR::ARM::CodeGenerator::emitDataSnippets(bool isWarm)
+void OMR::ARM::CodeGenerator::emitDataSnippets()
    {
-   if (!isWarm || self()->comp()->getOption(TR_EnableHCR))   // PPC constant data should not be warm.
-      self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
+   self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
    }
 
 int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)

@@ -421,7 +421,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *prev, uint8_t alignment, uint8_t alignmentMargin);
 
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
-   void emitDataSnippets(bool isWarm = 0);
+   void emitDataSnippets();
    bool hasDataSnippets() { return _dataSnippetList.empty() ? false : true; }
 
    TR::list<TR::Register*> &getSpilledIntRegisters() {return _spilledIntRegisters;}

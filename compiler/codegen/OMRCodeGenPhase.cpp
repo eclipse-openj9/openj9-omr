@@ -222,14 +222,12 @@ void
 OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    TR::Compilation * comp = cg->comp();
-   uint8_t *crossPoint;
    phase->reportPhase(EmitSnippetsPhase);
 
    TR::LexicalMemProfiler mp("Emit Snippets", comp->phaseMemProfiler());
    LexicalTimer pt("Emit Snippets", comp->phaseTimer());
 
-   crossPoint = cg->emitSnippets();
-   cg->setCrossPoint(crossPoint);
+   cg->emitSnippets();
 
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {

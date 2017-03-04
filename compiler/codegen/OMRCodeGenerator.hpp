@@ -752,8 +752,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint8_t *getBinaryBufferCursor() {return _binaryBufferCursor;}
    uint8_t *setBinaryBufferCursor(uint8_t *b) { return (_binaryBufferCursor = b); }
-   uint8_t *getCrossPoint() {return _crossPoint;}
-   uint8_t *setCrossPoint(uint8_t *b) {return (_crossPoint = b);}
 
    uint8_t *alignBinaryBufferCursor();
 
@@ -1862,7 +1860,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t *_warmCodeEnd;
    uint8_t *_coldCodeStart;
    uint8_t *_binaryBufferCursor;
-   uint8_t *_crossPoint;
    TR::SparseBitVector _extendedToInt64GlobalRegisters;
 
    TR_BitVector *_liveButMaybeUnreferencedLocals;

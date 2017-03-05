@@ -313,14 +313,6 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
       {
       // generate a compare and branch.
       returnInstruction = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, second, branchDestination, bc);
-
-      // Generate a temporary warm trampoline for warm -> cold code cache branches.
-      if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
-         {
-         TR::S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR::S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
-         ((TR::S390RIEInstruction*)returnInstruction)->setWarmToColdTrampolineSnippet(trampolineSnippet);
-         cg->addSnippet(trampolineSnippet);
-         }
       }
    // otherwise we'll generate with the compare opcode pased and an TR::InstOpCode::BRC.
    else
@@ -415,13 +407,6 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
            cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
       cursor = (TR::S390RIEInstruction *)generateRIEInstruction(cg, replacementOpCode, node, first, (int8_t) second, branchDestination, bc, preced);
-      // Generate a temporary warm trampoline for warm -> cold code cache branches.
-      if (cg->getIsInWarmCodeCache() && targetIsFarAndCold)
-         {
-         TR::S390WarmToColdTrampolineSnippet * trampolineSnippet = new (INSN_HEAP) TR::S390WarmToColdTrampolineSnippet(cg, node,  TR::LabelSymbol::create(INSN_HEAP,cg), branchDestination);
-         ((TR::S390RIEInstruction*)cursor)->setWarmToColdTrampolineSnippet(trampolineSnippet);
-         cg->addSnippet(trampolineSnippet);
-         }
       }
    // otherwise we'll generate with the compare opcode pased and an TR::InstOpCode::BRC.
    else
@@ -2164,12 +2149,12 @@ generateS390PseudoInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    }
 
 /**
- * Generate a debug counter bump pseudo instruction 
+ * Generate a debug counter bump pseudo instruction
  *
  * @param cg      Code Generator Pointer
  * @param op      Runtime Instrumentation opcode: TR::InstOpCode::DCB
  * @param n       The associated node
- * @param cs      The snippet that holds the debugCounter's counter address in persistent memory 
+ * @param cs      The snippet that holds the debugCounter's counter address in persistent memory
  * @param preced  A pointer to the preceding instruction. It is required if this is called after register assignment
  */
 TR::Instruction *

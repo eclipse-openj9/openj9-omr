@@ -2821,11 +2821,6 @@ TR::S390RIEInstruction::generateBinaryEncoding()
          doRelocation = true;
          }
 
-      if (getWarmToColdTrampolineSnippet())
-         {
-         trampolineDistance = (cg()->getBinaryBufferStart() + getWarmToColdTrampolineSnippet()->getSnippetLabel()->getEstimatedCodeLocation()) - (instructionStart + cg()->getAccumulatedInstructionLengthError());
-         }
-
       // now we'll encode the branch destination.
       if ((distance / 2) >= MIN_IMMEDIATE_VAL && (distance / 2) <= MAX_IMMEDIATE_VAL)
          {
@@ -2837,11 +2832,6 @@ TR::S390RIEInstruction::generateBinaryEncoding()
             {
             *(int16_t *) (cursor) |= bos(distance / 2);
             }
-         }
-      else if (getWarmToColdTrampolineSnippet() &&  trampolineDistance >= MIN_IMMEDIATE_VAL && trampolineDistance <= MAX_IMMEDIATE_VAL)
-         {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative16BitRelocation(cursor, getWarmToColdTrampolineSnippet()->getSnippetLabel()));
-         ((TR::S390WarmToColdTrampolineSnippet*)getWarmToColdTrampolineSnippet())->setIsUsed(true);
          }
       else
          {

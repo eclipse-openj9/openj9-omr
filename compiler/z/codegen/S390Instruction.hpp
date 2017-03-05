@@ -3404,10 +3404,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
    virtual TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
    uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
 
-   /** warm to Cold Trampoline Snippet */
-   virtual TR::Snippet* getWarmToColdTrampolineSnippet()  {return _warmToColdTrampolineSnippet;}
-   virtual TR::Snippet* setWarmToColdTrampolineSnippet(TR::Snippet* snippet) {return _warmToColdTrampolineSnippet = snippet;}
-
    /** Get branch destination information */
    virtual TR::LabelSymbol * getBranchDestinationLabel() { return _branchDestination; }
    void setBranchDestinationLabel(TR::LabelSymbol *l) { _branchDestination = l; }

@@ -46,47 +46,6 @@ struct OMR_EXTENSIBLE MethodMetaDataPOD
    {
    uintptr_t startPC;
    uintptr_t endPC;
-
-
-#if 0
-#if defined(RAS_EYECATCHERS)
-    struct J9UTF8* className;
-    struct J9UTF8* methodName;
-    struct J9UTF8* methodSignature;
-#endif
-    struct J9ConstantPool* constantPool;
-    struct J9Method* ramMethod;
-    UDATA startPC;
-    UDATA endWarmPC;
-    UDATA startColdPC;
-    UDATA endPC;
-    UDATA totalFrameSize;
-    I_16 slots;
-    I_16 scalarTempSlots;
-    I_16 objectTempSlots;
-    U_16 prologuePushes;
-    I_16 tempOffset;
-    U_16 numExcptionRanges;
-    I_32 size;
-    UDATA flags;
-    UDATA assumptionFlags;
-    UDATA registerSaveDescription;
-    void* relocationData;
-    void* gcStackAtlas;
-    void* inlinedCalls;
-    void* bodyInfo;
-    struct J9JITExceptionTable* nextMethod;
-    UDATA compileMethodCodeStartPC;
-    UDATA compileMethodCodeSize;
-    UDATA compileMethodDataStartPC;
-    UDATA compileMethodDataSize;
-    UDATA compileFirstClassLocation;
-    void* osrInfo;
-    void* runtimeAssumptionList;
-    I_32 hotness;
-    UDATA codeCacheAlloc;
-    void* gpuCode;
-#endif
    };
 
 }

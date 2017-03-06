@@ -677,7 +677,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
          {
          TR::Node *callNode = node->getFirstChild();
          TR::SymbolReference *callSymRef = callNode->getSymbolReference();
-         if (callSymRef->getReferenceNumber() >
+         if (callSymRef->getReferenceNumber() >=
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
             potentialOSRPoint = (disableGuardedCallOSR == NULL);
          }

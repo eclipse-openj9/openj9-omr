@@ -469,14 +469,12 @@ OMR::Z::Instruction::useRegister(TR::Register * reg, bool isDummy)
 bool
 OMR::Z::Instruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    return self()->getDependencyConditions() ? self()->getDependencyConditions()->refsRegister(reg) : false;
    }
 
 bool
 OMR::Z::Instruction::defsAnyRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register **_targetReg = self()->targetRegBase();
 
    if (_targetReg)
@@ -493,7 +491,6 @@ OMR::Z::Instruction::defsAnyRegister(TR::Register * reg)
 bool
 OMR::Z::Instruction::defsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register **_targetReg = self()->targetRegBase();
 
    if (_targetReg)
@@ -531,7 +528,6 @@ OMR::Z::Instruction::isDefRegister(TR::Register * reg)
 
 bool OMR::Z::Instruction::usesOnlyRegister(TR::Register *reg)
   {
-   // *this    swipeable for debugging purposes
    int32_t i;
    TR::Register **_sourceReg = self()->sourceRegBase();
    TR::MemoryReference **_sourceMem = self()->sourceMemBase();
@@ -568,7 +564,6 @@ bool OMR::Z::Instruction::usesOnlyRegister(TR::Register *reg)
 bool
 OMR::Z::Instruction::usesRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    int32_t i;
 
    if(self()->usesOnlyRegister(reg) || self()->defsRegister(reg))
@@ -598,7 +593,6 @@ OMR::Z::Instruction::usesRegister(TR::Register * reg)
 
 bool OMR::Z::Instruction::startOfLiveRange(TR::Register * reg)
   {
-   // *this    swipeable for debugging purposes
    int32_t i;
    TR::Register **_targetReg = self()->targetRegBase();
    bool result;
@@ -657,7 +651,6 @@ bool OMR::Z::Instruction::startOfLiveRange(TR::Register * reg)
 
 bool OMR::Z::Instruction::getRegisters(TR::list<TR::Register *> &regs)
   {
-  // *this    swipeable for debugging purposes
    TR::Compilation *comp = self()->cg()->comp();
   int32_t i,n;
   regs.clear();
@@ -778,7 +771,6 @@ bool OMR::Z::Instruction::getRegisters(TR::list<TR::Register *> &regs)
 
 bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
   {
-  // *this    swipeable for debugging purposes
   int32_t i,n;
   usedRegs.clear();
   TR::Compilation *comp = self()->cg()->comp();
@@ -984,7 +976,6 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
    OMR::Z::Machine *machine=self()->cg()->machine();
    bool afterRA=self()->cg()->afterRA();
 
-  // *this    swipeable for debugging purposes
   int32_t i,n;
 
   defedRegs.clear();
@@ -1102,7 +1093,6 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
 
 bool OMR::Z::Instruction::getKilledRegisters(TR::list<TR::Register *> &killedRegs)
   {
-  // *this    swipeable for debugging purposes
   int32_t i,n;
   TR::Compilation *comp = self()->cg()->comp();
 
@@ -1286,7 +1276,6 @@ OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::Me
 TR::S390ImmInstruction *
 OMR::Z::Instruction::getS390ImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return NULL;
    }
 #endif
@@ -1294,7 +1283,6 @@ OMR::Z::Instruction::getS390ImmInstruction()
 uint8_t *
 OMR::Z::Instruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = self()->cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,self()->getEstimatedBinaryLength());
@@ -1309,7 +1297,6 @@ OMR::Z::Instruction::generateBinaryEncoding()
 int32_t
 OMR::Z::Instruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    self()->setEstimatedBinaryLength(self()->getOpCode().getInstructionLength());
    return currentEstimate + self()->getEstimatedBinaryLength();
    }
@@ -1317,14 +1304,12 @@ OMR::Z::Instruction::estimateBinaryLength(int32_t  currentEstimate)
 bool
 OMR::Z::Instruction::dependencyRefsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    return false;
    }
 
 void
 OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = self()->cg()->comp();
 
    if (self()->getOpCodeValue() != TR::InstOpCode::ASSOCREGS)
@@ -2571,7 +2556,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 void
 OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    //
 
    TR::Register **_sourceReg = self()->sourceRegBase();

@@ -1499,7 +1499,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   // *this    swipeable for debugging purposes
    uint8_t             *cursor        = snippet->getSnippetLabel()->getCodeLocation();
 
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), cursor, "Counting Recompilation Snippet");

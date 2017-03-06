@@ -1112,7 +1112,6 @@ TR_YesNoMaybe OMR::Compilation::isCpuExpensiveCompilation(int64_t threshold)
 
 void OMR::Compilation::performOptimizations()
    {
-   // *this    swipeable for debugging purposes
 
    _optimizer = TR::Optimizer::createOptimizer(self(), self()->getJittedMethodSymbol(), false);
 
@@ -1799,7 +1798,6 @@ void OMR::Compilation::setUsesPreexistence(bool v)
 //
 void OMR::Compilation::dumpMethodTrees(char *title, TR::ResolvedMethodSymbol * methodSymbol)
    {
-   // *this    swipeable for debugging purposes
    if (self()->getOutFile() == NULL)
       return;
 
@@ -1826,7 +1824,6 @@ void OMR::Compilation::dumpMethodTrees(char *title1, const char *title2, TR::Res
 
 void OMR::Compilation::dumpFlowGraph(TR::CFG * cfg)
    {
-   // *this    swipeable for debugging purposes
    if (cfg == 0) cfg = self()->getFlowGraph();
    if (debug("dumpCFG") || self()->getOption(TR_TraceTrees) || self()->getOption(TR_TraceCG) || self()->getOption(TR_TraceUseDefs))
       {
@@ -1900,7 +1897,6 @@ void OMR::Compilation::verifyCFG(TR::ResolvedMethodSymbol *methodSymbol)
 #ifdef DEBUG
 void OMR::Compilation::dumpMethodGraph(int index, TR::ResolvedMethodSymbol *methodSymbol)
    {
-   // *this    swipeable for debugging purposes
    if (self()->getOutFile() == NULL) return;
 
    if (methodSymbol == 0) methodSymbol = _methodSymbol;

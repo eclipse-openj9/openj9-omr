@@ -3708,7 +3708,6 @@ class S390MemInstruction : public TR::Instruction
                          bool use = true)
       : TR::Instruction(op, n, precedingInstruction, cg), _memAccessMode(-1), _constantField(-1), _memref(mf)
       {
-      // *this    swipeable for debugging purposes
       if (use)
          useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -3725,7 +3724,6 @@ class S390MemInstruction : public TR::Instruction
                          bool use = true)
       : TR::Instruction(op, n, cond, precedingInstruction, cg), _memAccessMode(-1), _constantField(-1), _memref(mf)
       {
-      // *this    swipeable for debugging purposes
       if (use)
          useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -3742,7 +3740,6 @@ class S390MemInstruction : public TR::Instruction
                         bool use = true)
       : TR::Instruction(op, n, precedingInstruction, cg), _memAccessMode(memAccessMode), _constantField(-1), _memref(mf)
       {
-      // *this    swipeable for debugging purposes
       if (use)
          useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -3760,7 +3757,6 @@ class S390MemInstruction : public TR::Instruction
                         bool use = true)
       : TR::Instruction(op, n, precedingInstruction, cg), _memAccessMode(memAccessMode), _constantField(constantField), _memref(mf)
       {
-      // *this    swipeable for debugging purposes
       if (use)
          useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);

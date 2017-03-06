@@ -133,7 +133,6 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
      _symbolReference(rootLoadOrStore->getSymbolReference()), _offset(0),
      _conditions(NULL), _length(len), _staticRelocation(NULL)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference *ref = rootLoadOrStore->getSymbolReference();
    TR::Symbol   *symbol = ref->getSymbol();
@@ -214,7 +213,6 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference
      _symbolReference(symRef), _offset(0),
      _conditions(NULL), _length(len), _staticRelocation(NULL)
    {
-   // *this    swipeable for debugging purposes
    TR::Symbol *symbol = symRef->getSymbol();
 
 
@@ -245,7 +243,6 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference
 
 OMR::Power::MemoryReference::MemoryReference(TR::Node *node, TR::MemoryReference& mr, int32_t displacement, uint32_t len, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    _baseRegister      = mr._baseRegister;
    _baseNode          = NULL;
    _indexRegister     = mr._indexRegister;
@@ -298,7 +295,6 @@ int32_t OMR::Power::MemoryReference::getTOCOffset()
 
 void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptrj_t amount, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    // in compressedRefs mode, amount maybe heapBase constant, which in
    // most cases is quite large
    //
@@ -383,7 +379,6 @@ void OMR::Power::MemoryReference::addToOffset(TR::Node * node, intptrj_t amount,
 
 void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGenerator *cg, TR::Instruction *cursor)
    {
-   // *this    swipeable for debugging purposes
    if (self()->useIndexedForm())
       return;  // already X-form
 
@@ -441,7 +436,6 @@ void OMR::Power::MemoryReference::forceIndexedForm(TR::Node * node, TR::CodeGene
 
 void OMR::Power::MemoryReference::adjustForResolution(TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    _modBase = cg->allocateRegister();
    _conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    addDependency(_conditions, _modBase, TR::RealRegister::gr11, TR_GPR, cg);
@@ -449,7 +443,6 @@ void OMR::Power::MemoryReference::adjustForResolution(TR::CodeGenerator *cg)
 
 void OMR::Power::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    if (_baseRegister != NULL)
       {
       if (_baseNode != NULL)
@@ -474,7 +467,6 @@ void OMR::Power::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
 
 void OMR::Power::MemoryReference::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    if (_baseRegister != NULL)
       {
       instr->useRegister(_baseRegister);
@@ -705,7 +697,6 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
 
 void OMR::Power::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR::Node *srcTree, bool srcModifiable, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *tempTargetRegister;
    TR::Compilation *comp = cg->comp();
 
@@ -864,7 +855,6 @@ void OMR::Power::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR:
 
 void OMR::Power::MemoryReference::assignRegisters(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
    TR::RealRegister *assignedBaseRegister;
    TR::RealRegister *assignedIndexRegister;
@@ -992,7 +982,6 @@ void OMR::Power::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 
 void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
    {
-   // *this    swipeable for debugging purposes
    TR::InstOpCode::Mnemonic op = currentInstruction->getOpCodeValue();
    TR::Register  *index = self()->getIndexRegister();
 
@@ -1084,7 +1073,6 @@ void OMR::Power::MemoryReference::mapOpCode(TR::Instruction *currentInstruction)
 
 uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    uint32_t             *wcursor = (uint32_t *)cursor;
    TR::RealRegister   *base, *index;
    TR::Compilation *comp = cg->comp();

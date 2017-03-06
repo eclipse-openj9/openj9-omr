@@ -52,7 +52,6 @@ namespace TR { class SymbolReference; }
 void TR::PPCLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
    TR::Compilation *comp = cg()->comp();
-   // *this    swipeable for debugging purposes
    if( TR::Instruction::getDependencyConditions() )
       {
       TR::Instruction::getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
@@ -122,7 +121,6 @@ void TR::PPCLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
 void TR::PPCDepInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    if( getOpCodeValue() != TR::InstOpCode::assocreg )
       {
       getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
@@ -144,13 +142,11 @@ void TR::PPCDepInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
 bool TR::PPCDepInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->refsRegister(reg);
    }
 
 bool TR::PPCDepInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->defsRegister(reg);
    }
 
@@ -161,7 +157,6 @@ bool TR::PPCDepInstruction::defsRealRegister(TR::Register *reg)
 
 bool TR::PPCDepInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->usesRegister(reg);
    }
 
@@ -169,7 +164,6 @@ bool TR::PPCDepInstruction::usesRegister(TR::Register *reg)
 
 void TR::PPCDepLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
 
    TR::PPCLabelInstruction::assignRegisters(kindToBeAssigned);
@@ -179,13 +173,11 @@ void TR::PPCDepLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssign
 
 bool TR::PPCDepLabelInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->refsRegister(reg);
    }
 
 bool TR::PPCDepLabelInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->defsRegister(reg);
    }
 
@@ -196,7 +188,6 @@ bool TR::PPCDepLabelInstruction::defsRealRegister(TR::Register *reg)
 
 bool TR::PPCDepLabelInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return _conditions->usesRegister(reg);
    }
 
@@ -210,7 +201,6 @@ TR::PPCConditionalBranchInstruction::getPPCConditionalBranchInstruction()
 
 void TR::PPCConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *virtualRegister = getConditionRegister();
    TR::RealRegister       *assignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Machine *machine = cg()->machine();
@@ -272,7 +262,6 @@ bool TR::PPCConditionalBranchInstruction::usesRegister(TR::Register *reg)
 
 void TR::PPCDepConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register     *virtualRegister = getConditionRegister();
 
    virtualRegister->block();
@@ -322,7 +311,6 @@ bool TR::PPCDepConditionalBranchInstruction::usesRegister(TR::Register *reg)
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 TR::PPCImmInstruction *TR::PPCImmInstruction::getPPCImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
    }
 #endif
@@ -335,7 +323,6 @@ TR::PPCImmInstruction *TR::PPCImmInstruction::getPPCImmInstruction()
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 TR::PPCImm2Instruction *TR::PPCImm2Instruction::getPPCImm2Instruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
    }
 #endif
@@ -345,7 +332,6 @@ TR::PPCImm2Instruction *TR::PPCImm2Instruction::getPPCImm2Instruction()
 
 bool TR::PPCSrc1Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSource1Register())
       {
       return true;
@@ -355,7 +341,6 @@ bool TR::PPCSrc1Instruction::refsRegister(TR::Register *reg)
 
 void TR::PPCSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *virtualRegister = getSource1Register();
    TR::RealRegister       *assignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Machine *machine = cg()->machine();
@@ -383,7 +368,6 @@ bool TR::PPCSrc1Instruction::defsRealRegister(TR::Register *reg)
 
 bool TR::PPCSrc1Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSource1Register())
       {
       return true;
@@ -395,7 +379,6 @@ bool TR::PPCSrc1Instruction::usesRegister(TR::Register *reg)
 
 TR::PPCDepImmInstruction *TR::PPCDepImmInstruction::getPPCDepImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
    }
 
@@ -403,7 +386,6 @@ TR::PPCDepImmInstruction *TR::PPCDepImmInstruction::getPPCDepImmInstruction()
 
 bool TR::PPCTrg1Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() || TR::Instruction::refsRegister(reg) )
       {
       return true;
@@ -413,7 +395,6 @@ bool TR::PPCTrg1Instruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Instruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() || TR::Instruction::defsRegister(reg) )
       {
       return true;
@@ -442,7 +423,6 @@ void TR::PPCTrg1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
 void TR::PPCTrg1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned, bool excludeGPR0)
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *virtualRegister = getTargetRegister();
    TR::RealRegister       *assignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Machine *machine = cg()->machine();
@@ -513,7 +493,6 @@ TR::PPCTrg1Src1Instruction::PPCTrg1Src1Instruction(
 
 bool TR::PPCTrg1Src1Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSource1Register() || TR::PPCTrg1Instruction::refsRegister(reg))
       {
       return true;
@@ -533,7 +512,6 @@ bool TR::PPCTrg1Src1Instruction::defsRealRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Src1Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSource1Register() || TR::PPCTrg1Instruction::usesRegister(reg) )
       {
       return true;
@@ -543,7 +521,6 @@ bool TR::PPCTrg1Src1Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCTrg1Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register      *sourceVirtual = getSource1Register();
    TR::Register      *targetVirtual = getTargetRegister();
    TR::Machine *machine = cg()->machine();
@@ -598,7 +575,6 @@ void TR::PPCTrg1Src1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssign
 
 bool TR::PPCSrc2Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSource1Register() || reg == getSource2Register())
       {
       return true;
@@ -608,19 +584,16 @@ bool TR::PPCSrc2Instruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCSrc2Instruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return false;
    }
 
 bool TR::PPCSrc2Instruction::defsRealRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return false;
    }
 
 bool TR::PPCSrc2Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ( reg == getSource1Register()  ||
         reg == getSource2Register())
       {
@@ -631,7 +604,6 @@ bool TR::PPCSrc2Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCSrc2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *virtualRegister1 = getSource2Register();
    TR::Register           *virtualRegister2 = getSource1Register();
    TR::RealRegister       *assignedRegister;
@@ -665,7 +637,6 @@ void TR::PPCSrc2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
 
 bool TR::PPCTrg1Src2Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() || reg == getSource1Register() || reg == getSource2Register())
       {
       return true;
@@ -675,7 +646,6 @@ bool TR::PPCTrg1Src2Instruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Src2Instruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister())
       {
       return true;
@@ -685,7 +655,6 @@ bool TR::PPCTrg1Src2Instruction::defsRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Src2Instruction::defsRealRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister()->getAssignedRegister())
       {
       return true;
@@ -695,7 +664,6 @@ bool TR::PPCTrg1Src2Instruction::defsRealRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Src2Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ( reg == getSource1Register()  ||
         reg == getSource2Register())
       {
@@ -706,7 +674,6 @@ bool TR::PPCTrg1Src2Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCTrg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register        *source2Virtual = getSource2Register();
    TR::Machine *machine = cg()->machine();
    TR::RealRegister    *assignedRegister;
@@ -737,7 +704,6 @@ void TR::PPCTrg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssign
 
 bool TR::PPCTrg1Src3Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() || reg == getSource1Register() || reg == getSource2Register() ||
        reg == getSource3Register())
       {
@@ -748,7 +714,6 @@ bool TR::PPCTrg1Src3Instruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCTrg1Src3Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ( reg == getSource1Register()  ||
         reg == getSource2Register()  ||
         reg == getSource3Register())
@@ -760,7 +725,6 @@ bool TR::PPCTrg1Src3Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCTrg1Src3Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::Register        *source3Virtual = getSource3Register();
    TR::Machine *machine = cg()->machine();
    TR::RealRegister    *assignedRegister;
@@ -818,7 +782,6 @@ TR::PPCMemInstruction::PPCMemInstruction(
    : TR::Instruction(op, n, precedingInstruction, cg),
       _memoryReference(mf)
    {
-   // *this    swipeable for debugging purposes
    if (getOpCode().offsetRequiresWordAlignment())
       {
       mf->setOffsetRequiresWordAlignment(n, cg, getPrev());
@@ -833,19 +796,16 @@ TR::PPCMemInstruction::PPCMemInstruction(
 
 bool TR::PPCMemInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return getMemoryReference()->refsRegister(reg);
    }
 
 bool TR::PPCMemInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return getMemoryReference()->refsRegister(reg);
    }
 
 void TR::PPCMemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    getMemoryReference()->assignRegisters(this, cg());
    }
 
@@ -891,7 +851,6 @@ TR::Register *TR::PPCMemSrc1Instruction::getMemoryDataRegister()
 
 bool TR::PPCMemSrc1Instruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) == true ||
        reg == getSourceRegister())
       {
@@ -902,19 +861,16 @@ bool TR::PPCMemSrc1Instruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCMemSrc1Instruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return false;
    }
 
 bool TR::PPCMemSrc1Instruction::defsRealRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    return false;
    }
 
 bool TR::PPCMemSrc1Instruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) == true ||
        reg == getSourceRegister())
       {
@@ -925,7 +881,6 @@ bool TR::PPCMemSrc1Instruction::usesRegister(TR::Register *reg)
 
 void TR::PPCMemSrc1Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::MemoryReference *mref = getMemoryReference();
    TR::Register           *sourceVirtual = getSourceRegister();
    TR::Register           *mBaseVirtual = mref->getModBase();
@@ -1117,7 +1072,6 @@ TR::Register *TR::PPCTrg1MemInstruction::getMemoryDataRegister()
 
 bool TR::PPCTrg1MemInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() ||
        getMemoryReference()->refsRegister(reg) == true)
       {
@@ -1128,7 +1082,6 @@ bool TR::PPCTrg1MemInstruction::refsRegister(TR::Register *reg)
 
 bool TR::PPCTrg1MemInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) == true)
       {
       return true;
@@ -1138,7 +1091,6 @@ bool TR::PPCTrg1MemInstruction::usesRegister(TR::Register *reg)
 
 void TR::PPCTrg1MemInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    TR::MemoryReference *mref = getMemoryReference();
    TR::Register           *targetVirtual = getTargetRegister();
    TR::Register           *mBaseVirtual = mref->getModBase();

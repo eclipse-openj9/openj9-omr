@@ -163,7 +163,6 @@ OMR::X86::MemoryReference::MemoryReference(
    _flags(0),
    _reloKind(-1)
    {
-   // *this    swipeable for debugging purposes
    TR::SymbolReference *symRef = rootLoadOrStore->getSymbolReference();
    TR::Compilation *comp = cg->comp();
 
@@ -343,7 +342,6 @@ OMR::X86::MemoryReference::MemoryReference(
       TR_ScratchRegisterManager *srm) :
    _symbolReference(cg->comp()->getSymRefTab())
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = cg->comp();
    _baseRegister = mr._baseRegister;
    _baseNode = mr._baseNode;
@@ -414,7 +412,6 @@ OMR::X86::MemoryReference::checkAndDecReferenceCount(
 void
 OMR::X86::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *vmThreadReg = cg->getVMThreadRegister();
 
    if (_baseRegister != NULL)
@@ -467,7 +464,6 @@ OMR::X86::MemoryReference::useRegisters(
       TR::Instruction *instr,
       TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    if (_baseRegister != NULL)
       {
       instr->useRegister(_baseRegister);
@@ -485,7 +481,6 @@ OMR::X86::MemoryReference::getStrideForNode(
       TR::Node *node,
       TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    int32_t stride = 0;
    if (node->getOpCodeValue() == TR::imul || node->getOpCodeValue() == TR::lmul)
       {
@@ -872,7 +867,6 @@ OMR::X86::MemoryReference::assignRegisters(
       TR::Instruction *currentInstruction,
       TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister *assignedBaseRegister = NULL;
    TR::RealRegister *assignedIndexRegister;
    TR::UnresolvedDataSnippet *snippet = self()->getUnresolvedDataSnippet();
@@ -1388,7 +1382,6 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
       TR::Instruction *containingInstruction,
       TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = cg->comp();
 
    uint32_t addressTypes =

@@ -147,7 +147,6 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
    TR::InstOpCode::Mnemonic copyOpCode, bool nonClobberingDestination,
    TR::LabelSymbol *targetLabel, TR::InstOpCode::S390BranchCondition fBranchOpCond, TR::InstOpCode::S390BranchCondition rBranchOpCond)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild;
    TR::Node * secondChild;
    TR::Node * initFirstChild = NULL;
@@ -619,7 +618,6 @@ void
 TR_S390BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node * root, TR::InstOpCode::Mnemonic lowRegToRegOpCode,
    TR::InstOpCode::Mnemonic highRegToRegOpCode, TR::InstOpCode::Mnemonic lowMemToRegOpCode, TR::InstOpCode::Mnemonic highMemToRegOpCode, TR::InstOpCode::Mnemonic copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild;
    TR::Node * secondChild;
    TR::Instruction * cursor = NULL;
@@ -1239,7 +1237,6 @@ TR_S390BinaryCommutativeAnalyser::conversionIsRemoved(TR::Node * root, TR::Node 
 void
 TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOpCode::Mnemonic regToRegOpCode, TR::InstOpCode::Mnemonic memToRegOpCode, TR::InstOpCode::Mnemonic copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild;
    TR::Node * secondChild;
    TR::Instruction * cursor = NULL;
@@ -1467,7 +1464,6 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
 void
 TR_S390BinaryCommutativeAnalyser::longAddAnalyser(TR::Node * root, TR::InstOpCode::Mnemonic copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR_ASSERT(TR::Compiler->target.is32Bit(), " should call integerAddAnalyser() for 64Bit code-gen!");
    TR::Node * firstChild;
    TR::Node * secondChild;

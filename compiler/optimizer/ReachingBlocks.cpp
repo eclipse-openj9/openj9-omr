@@ -48,7 +48,6 @@ TR_ReachingBlocks::TR_ReachingBlocks(TR::Compilation *comp, TR::Optimizer *optim
 
 int32_t TR_ReachingBlocks::perform()
    {
-   // *this    swipeable for debugging purposes
    // Allocate the block info before setting the stack mark - it will be used by
    // the caller
    //
@@ -82,7 +81,6 @@ void TR_ReachingBlocks::analyzeBlockZeroStructure(TR_BlockStructure *blockStruct
 
 void TR_ReachingBlocks::initializeGenAndKillSetInfo()
    {
-   // *this    swipeable for debugging purposes
    // For each block in the CFG build the gen and kill set for this analysis.
    // Go in treetop order, which guarantees that we see the correct (i.e. first)
    // evaluation point for each node.

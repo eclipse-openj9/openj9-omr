@@ -2185,7 +2185,6 @@ bool
 OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR::RealRegister ** lastRegister,
    TR_RegisterKinds rk, TR::Instruction * currInst, uint64_t availRegMask)
    {
-   // *this    swipeable for debugging purposes
    uint32_t interference = 0;
    int32_t first, maskI;
    int32_t last;
@@ -2965,7 +2964,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                                      uint64_t          availRegMask,
                                      bool              needsHighWord)
    {
-   // *this    swipeable for debugging purposes
    uint32_t interference = 0;
    int32_t first, maskI, last;
    uint32_t randomInterference;
@@ -3839,7 +3837,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
 
    if (virtReg->containsCollectedReference())
       _cg->traceRegisterAssignment("%R contains collected", virtReg);
-   // *this    swipeable for debugging purposes
    int32_t numCandidates = 0, interference = 0, first, last, maskI;
    TR::Register * candidates[TR::RealRegister::LastVRF];
    TR::Machine *machine = self()->cg()->machine();
@@ -4677,7 +4674,6 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
                                   TR::Register         *spilledRegister,
                                   TR::RealRegister *targetRegister)
    {
-   // *this    swipeable for debugging purposes
    TR_BackingStore * location = spilledRegister->getBackingStorage();
    TR::Node * currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = spilledRegister->getKind();
@@ -5046,7 +5042,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                                          TR::RealRegister::RegNum  registerNumber,
                                          flags32_t                                  instFlags)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister * targetRegister = _registerFile[registerNumber];
    TR::RealRegister * realReg = virtualRegister->getAssignedRealRegister();
    if(virtualRegister->isArGprPair()) realReg = virtualRegister->getGPRofArGprPair()->getAssignedRealRegister();
@@ -6128,7 +6123,6 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
 void
 OMR::Z::Machine::initialiseRegisterFile()
    {
-   // *this    swipeable for debugging purposes
 
    // Initialize GPRs
    _registerFile[TR::RealRegister::NoReg] = NULL;
@@ -7314,7 +7308,6 @@ OMR::Z::Machine::getHPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
 void
 OMR::Z::Machine::setRegisterWeightsFromAssociations()
    {
-   // *this    swipeable for debugging purposes
    TR::Linkage * linkage = _cg->getS390Linkage();
    int32_t first = TR::RealRegister::FirstGPR;
    TR::Compilation *comp = TR::comp();
@@ -7362,7 +7355,6 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
 void
 OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
    TR::RegisterDependencyConditions * associations;

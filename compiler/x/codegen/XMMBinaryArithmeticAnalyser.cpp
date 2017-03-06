@@ -60,7 +60,6 @@ void TR_X86XMMBinaryArithmeticAnalyser::setInputs(TR::Node     *firstChild,
                                                   TR::Node     *secondChild,
                                                   TR::Register *secondRegister)
    {
-   // *this    swipeable for debugging purposes
    _inputs = 0;
 
    if (firstRegister)
@@ -126,8 +125,6 @@ TR_X86XMMBinaryArithmeticAnalyser::getX86XMMOpPackage(TR::Node *node)
 
 void TR_X86XMMBinaryArithmeticAnalyser::genericXMMAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
-
    TR::Node                *targetChild = root->getFirstChild(),
                           *sourceChild = root->getSecondChild();
    TR::Register            *targetRegister = targetChild->getRegister(),

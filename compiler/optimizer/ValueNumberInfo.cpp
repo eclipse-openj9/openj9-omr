@@ -63,7 +63,6 @@ TR_ValueNumberInfo::TR_ValueNumberInfo(TR::Compilation *comp, TR::Optimizer *opt
      _valueNumbers(comp->allocator()),
      _nextInRing(comp->allocator())
    {
-   // *this    swipeable for debugging purposes
    dumpOptDetails(comp, "PREPARTITION VN   (Building value number info)\n");
 
    // For now, don't allow global value numbering because of
@@ -412,7 +411,6 @@ bool TR_ValueNumberInfo::congruentNodes(TR::Node * node, TR::Node * entryNode)
 
 void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNumber)
    {
-   // *this    swipeable for debugging purposes
    int32_t index = node->getGlobalIndex();
    if (_nodes.ElementAt(index) != NULL)
       {
@@ -635,7 +633,6 @@ void TR_ValueNumberInfo::initializeNode(TR::Node *node, int32_t &negativeValueNu
  */
 int32_t TR_ValueNumberInfo::hash(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
 
    uint32_t h, g;
    int32_t numChildren = node->getNumChildren();
@@ -684,7 +681,6 @@ int32_t TR_ValueNumberInfo::hash(TR::Node *node)
  */
 void TR_ValueNumberInfo::allocateNonShareableValueNumbers()
    {
-   // *this    swipeable for debugging purposes
 
    int32_t maxValue = _nextValue-1;
    for (int32_t i = 0; i < _numberOfNodes; ++i)
@@ -734,7 +730,6 @@ void TR_ValueNumberInfo::allocateParmValueNumbers()
  */
 void TR_ValueNumberInfo::allocateShareableValueNumbers()
    {
-   // *this    swipeable for debugging purposes
 
    _recursionDepth = 0;
 
@@ -782,7 +777,6 @@ bool TR_ValueNumberInfo::canShareValueNumber(TR::Node *node)
 void TR_ValueNumberInfo::allocateValueNumber(TR::Node *node)
    {
 
-   // *this    swipeable for debugging purposes
    int32_t index = node->getGlobalIndex();
    if (_valueNumbers.ElementAt(index) >= 0 ||
        _valueNumbers.ElementAt(index) <= -3)
@@ -1304,7 +1298,6 @@ TR::Node *TR_ValueNumberInfo::getValueNumberForLoad(TR::Node *node)
 
 void TR_ValueNumberInfo::setValueNumber(TR::Node *node, TR::Node *other)
    {
-   // *this    swipeable for debugging purposes
    int32_t index = node->getGlobalIndex();
    int32_t otherIndex = other->getGlobalIndex();
 
@@ -1340,7 +1333,6 @@ void TR_ValueNumberInfo::setValueNumber(TR::Node *node, TR::Node *other)
 
 void TR_ValueNumberInfo::setUniqueValueNumber(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
    int32_t index = node->getGlobalIndex();
 
    // Make sure there's enough room in the arrays.
@@ -1373,7 +1365,6 @@ void TR_ValueNumberInfo::setUniqueValueNumber(TR::Node *node)
 
 void TR_ValueNumberInfo::changeValueNumber(TR::Node *node, int32_t newVN)
    {
-   // *this    swipeable for debugging purposes
    // Change the value number of all nodes in the root node's value number chain
    //
    int32_t index = node->getGlobalIndex();
@@ -1444,7 +1435,6 @@ void TR_ValueNumberInfo::growTo(int32_t index)
 
 void TR_ValueNumberInfo::printValueNumberInfo(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
    traceMsg(comp(), "Node : %p    Index = %d    Value number = %d\n", node, node->getUseDefIndex(), getVN(node));
 
    for (int i = 0; i < node->getNumChildren(); i++)
@@ -1525,7 +1515,6 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
    _optimizer = optimizer;
    _trace = comp->getOption(TR_TraceValueNumbers);
 
-   // *this    swipeable for debugging purposes
    dumpOptDetails(comp, " HASHVN  (Building value number info)\n");
 
    // For now, don't allow global value numbering because of
@@ -1655,7 +1644,6 @@ TR_HashValueNumberInfo::TR_HashValueNumberInfo(TR::Compilation *comp, TR::Optimi
 
 void TR_HashValueNumberInfo::initializeNode(TR::Node * node, int32_t & negativeValueNumber)
 {
-    // *this    swipeable for debugging purposes
       int32_t index = node->getGlobalIndex();
       if (_nodes.ElementAt(index) != NULL)
          {
@@ -1688,7 +1676,6 @@ void TR_HashValueNumberInfo::initializeNode(TR::Node * node, int32_t & negativeV
 
 void TR_HashValueNumberInfo::allocateValueNumber(TR::Node * node)
 {
-      // *this    swipeable for debugging purposes
       int32_t index = node->getGlobalIndex();
       if (_valueNumbers.ElementAt(index) >= 0 ||
           _valueNumbers.ElementAt(index) <= -3)

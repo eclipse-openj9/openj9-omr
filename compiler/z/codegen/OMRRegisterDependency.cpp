@@ -562,7 +562,6 @@ TR::RegisterDependencyConditions  *OMR::Z::RegisterDependencyConditions::clone(T
 bool
 OMR::Z::RegisterDependencyConditions::refsRegister(TR::Register * r)
    {
-   // *this    swipeable for debugging purposes
    for (int32_t i = 0; i < _numPreConditions; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister(_cg) == r &&
@@ -585,7 +584,6 @@ OMR::Z::RegisterDependencyConditions::refsRegister(TR::Register * r)
 bool
 OMR::Z::RegisterDependencyConditions::defsRegister(TR::Register * r)
    {
-   // *this    swipeable for debugging purposes
    for (int32_t i = 0; i < _numPreConditions; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister(_cg) == r &&
@@ -608,7 +606,6 @@ OMR::Z::RegisterDependencyConditions::defsRegister(TR::Register * r)
 bool
 OMR::Z::RegisterDependencyConditions::mayDefineRegister(TR::Register * r)
    {
-   // *this    swipeable for debugging purposes
    for (int32_t j = 0; j < _numPostConditions; j++)
       {
       if (_postConditions->getRegisterDependency(j)->getRegister(_cg) == r &&
@@ -623,7 +620,6 @@ OMR::Z::RegisterDependencyConditions::mayDefineRegister(TR::Register * r)
 bool
 OMR::Z::RegisterDependencyConditions::usesRegister(TR::Register * r)
    {
-   // *this    swipeable for debugging purposes
    for (int32_t i = 0; i < _numPreConditions; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister(_cg) == r &&
@@ -662,7 +658,6 @@ OMR::Z::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instruction * 
          createRegisterAssociationDirective(instr, cg);
          }
 
-      // *this    swipeable for debugging purposes
       if (_preConditions != NULL)
          {
          for (int32_t i = oldPreCursor; i < _addCursorForPre; i++)
@@ -845,7 +840,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                                                 uint32_t          numberOfRegisters,
                                                 TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = cg->comp();
    TR::Machine *machine = cg->machine();
    TR::Register * virtReg;
@@ -1661,7 +1655,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 void
 OMR::Z::RegisterDependencyConditions::createRegisterAssociationDirective(TR::Instruction * instruction, TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
 
    machine->createRegisterAssociationDirective(instruction->getPrev());

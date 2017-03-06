@@ -156,7 +156,6 @@ TR::S390HelperCallSnippet::getLength(int32_t)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390HelperCallSnippet * snippet)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       {
       return;

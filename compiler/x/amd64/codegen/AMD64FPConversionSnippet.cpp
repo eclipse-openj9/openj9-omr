@@ -53,8 +53,6 @@ static const uint8_t popBinary[] =
 
 uint8_t *TR::AMD64FPConversionSnippet::genFPConversion(uint8_t *buffer)
    {
-   // *this    swipeable for debugging purposes
-
    // This didn't end up as clean as I thought.  TODO:AMD64: Separate out the 64-bit code into another class.
 
    TR::ILOpCodes              opCode          = _convertInstruction->getNode()->getOpCodeValue();
@@ -216,7 +214,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::AMD64FPConversionSnippet * snippet)
 
 uint32_t TR::AMD64FPConversionSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    uint32_t length = 11;
    TR::Machine *machine = cg()->machine();
 

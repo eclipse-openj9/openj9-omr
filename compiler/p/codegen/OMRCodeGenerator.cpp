@@ -472,7 +472,6 @@ OMR::Power::CodeGenerator::generateSwitchToInterpreterPrePrologue(
 void
 OMR::Power::CodeGenerator::beginInstructionSelection()
    {
-   // *this    swipeable for debugging purposes
 
    TR::Node *firstNode = self()->comp()->getStartTree()->getNode();
    _returnTypeInfoInstruction = NULL;
@@ -487,7 +486,6 @@ OMR::Power::CodeGenerator::beginInstructionSelection()
 void
 OMR::Power::CodeGenerator::endInstructionSelection()
    {
-   // *this    swipeable for debugging purposes
    if (_returnTypeInfoInstruction != NULL)
       {
       _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
@@ -560,7 +558,6 @@ OMR::Power::CodeGenerator::mulDecompositionCostIsJustified(
 
 void OMR::Power::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction *prevInstruction;
 
    // gprs, fprs, and ccrs are all assigned in backward direction
@@ -1955,7 +1952,6 @@ void OMR::Power::CodeGenerator::deleteInst(TR::Instruction* old)
 TR::Linkage *
 OMR::Power::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
-   // *this    swipeable for debugging purposes
    TR::Linkage *linkage = NULL;
 
    switch (lc)
@@ -2261,7 +2257,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
 // different from evaluate in that it returns a clobberable register
 TR::Register *OMR::Power::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
 
    TR::Register *resultReg = self()->evaluate(node);
    TR_ASSERT( resultReg->getKind() == TR_GPR || resultReg->getKind() == TR_FPR , "gprClobberEvaluate() called for non-GPR or non-FPR.");

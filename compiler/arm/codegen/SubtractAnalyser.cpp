@@ -29,7 +29,6 @@ void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
                                                       TR_ARMOpCodes regToRegOpCode,
                                                       TR_ARMOpCodes memToRegOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    firstChild  = root->getFirstChild();
@@ -86,7 +85,6 @@ void TR_ARMSubtractAnalyser::integerSubtractAnalyser(TR::Node       *root,
 
 void TR_ARMSubtractAnalyser::longSubtractAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    firstChild  = root->getFirstChild();

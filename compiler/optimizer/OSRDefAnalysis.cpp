@@ -447,7 +447,6 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
 void TR_OSRDefInfo::buildOSRDefs(TR::Node *node, void *vanalysisInfo, TR_OSRPoint *osrPoint, TR_OSRPoint *osrPoint2, TR::Node *parent, AuxiliaryData &aux)
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
    if (node->getVisitCount() == visitCount)
       return;

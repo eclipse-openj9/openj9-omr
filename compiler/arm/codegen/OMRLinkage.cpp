@@ -74,7 +74,6 @@ bool OMR::ARM::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
 
 void OMR::ARM::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::Instruction *OMR::ARM::Linkage::saveArguments(TR::Instruction *cursor)

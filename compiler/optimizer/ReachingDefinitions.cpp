@@ -64,7 +64,6 @@ TR_ReachingDefinitions::TR_ReachingDefinitions(TR::Compilation *comp, TR::CFG *c
 int32_t TR_ReachingDefinitions::perform()
    {
    LexicalTimer tlex("reachingDefs_perform", comp()->phaseTimer());
-   // *this    swipeable for debugging purposes
    if (traceRD())
       traceMsg(comp(), "Starting ReachingDefinitions\n");
 
@@ -110,7 +109,6 @@ void TR_ReachingDefinitions::analyzeBlockZeroStructure(TR_BlockStructure *blockS
 
 void TR_ReachingDefinitions::initializeGenAndKillSetInfo()
    {
-   // *this    swipeable for debugging purposes
    // For each block in the CFG build the gen and kill set for this analysis.
    // Go in treetop order, which guarantees that we see the correct (i.e. first)
    // evaluation point for each node.

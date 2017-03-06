@@ -428,7 +428,6 @@ OMR::CodeGenerator::prepareRegistersForAssignment()
 TR_BackingStore *
 OMR::CodeGenerator::allocateVMThreadSpill()
    {
-   // *this    swipeable for debugging purposes
    int32_t slot;
    TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(), self()->IntJ(), self()->comp()->getOption(TR_ForceLargeRAMoves) ? 8 : TR::Compiler->om.sizeofReferenceAddress());
    spillSymbol->setSpillTempAuto();
@@ -754,7 +753,6 @@ TR::Register * OMR::CodeGenerator::allocateRegister(TR_RegisterKinds rk)
 void
 OMR::CodeGenerator::findAndFixCommonedReferences()
    {
-   // *this    swipeable for debugging purposes
    //
    // TODO : Required to re-assess the feasibility of the spill
    // strategy currently adopted at calls (potential GC points) where
@@ -838,7 +836,6 @@ OMR::CodeGenerator::findAndFixCommonedReferences()
 void
 OMR::CodeGenerator::findCommonedReferences(TR::Node *node, TR::TreeTop *treeTop)
    {
-   // *this    swipeable for debugging purposes
    if (node->getVisitCount() == self()->comp()->getVisitCount())
       return;
 
@@ -884,7 +881,6 @@ OMR::CodeGenerator::findCommonedReferences(TR::Node *node, TR::TreeTop *treeTop)
 void
 OMR::CodeGenerator::processReference(TR::Node *reference, TR::Node *parent, TR::TreeTop *treeTop)
    {
-   // *this    swipeable for debugging purposes
 
    // The live reference list appender is used to add and remove elements from the
    // live reference list, so that the list is maintained in the order in which
@@ -943,7 +939,6 @@ OMR::CodeGenerator::processReference(TR::Node *reference, TR::Node *parent, TR::
 void
 OMR::CodeGenerator::spillLiveReferencesToTemps(TR::TreeTop *insertionTree, std::list<TR::SymbolReference*, TR::typed_allocator<TR::SymbolReference*, TR::Allocator> >::iterator firstAvailableSpillTemp)
    {
-   // *this    swipeable for debugging purposes
    if (debug("traceSpill") && !_liveReferenceList.empty())
       diagnostic("Spill at GC safe node [%p]\n",insertionTree->getNextTreeTop()->getNode());
 

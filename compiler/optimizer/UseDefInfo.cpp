@@ -109,7 +109,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    TR_UseDefInfo::AuxiliaryData aux(comp());
 
-   // *this    swipeable for debugging purposes
    int32_t i;
    dumpOptDetails(comp(), "   (Building use/def info)\n");
 
@@ -1244,7 +1243,6 @@ bool TR_UseDefInfo::skipAnalyzingForCompileTime(TR::Node *node, TR::Block *block
 
 bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, bool considerImplicitStores)
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
    if (visitCount == node->getVisitCount())
       return true;
@@ -1420,7 +1418,6 @@ bool TR_UseDefInfo::findUseDefNodes(TR::Block *block, TR::Node *node, TR::Node *
 
 bool TR_UseDefInfo::assignAdjustedNodeIndex(TR::Block *block, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux,bool considerImplicitStores)
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
    if (visitCount == node->getVisitCount())
       return true;
@@ -1568,7 +1565,6 @@ bool TR_UseDefInfo::childIndexIndicatesImplicitStore(TR::Node *node, int32_t chi
 
 void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, TR::SparseBitVector &expandedLIndexes, bool considerImplicitStores)
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
    if (visitCount == node->getVisitCount())
       return;
@@ -1858,7 +1854,6 @@ void TR_UseDefInfo::processReachingDefinition(void* vblockInfo, AuxiliaryData &a
 
 void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
    {
-   // *this    swipeable for debugging purposes
    TR_Method *method = comp()->getMethodSymbol()->getMethod();
    TR::Block *block;
    TR::TreeTop *treeTop;
@@ -2290,7 +2285,6 @@ bool TR_UseDefInfo::isChildUse(TR::Node* node, int32_t childIndex)
 
 void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVector &nodesToBeDereferenced, TR::Node *parent, AuxiliaryData &aux)
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = comp()->getVisitCount();
    if (node->getVisitCount() == visitCount)
       return;
@@ -2860,7 +2854,6 @@ const TR_UseDefInfo::BitVector &TR_UseDefInfo::getUsesFromDef_ref(int32_t defInd
 
 void TR_UseDefInfo::setUseDef(int32_t useIndex, int32_t defIndex)
    {
-   // *this    swipeable for debugging purposes
    int32_t realIndex = useIndex - getFirstUseIndex();
    _useDefInfo[realIndex][defIndex] = true;
 
@@ -2876,7 +2869,6 @@ void TR_UseDefInfo::setUseDef(int32_t useIndex, int32_t defIndex)
 
 void TR_UseDefInfo::resetUseDef(int32_t useIndex, int32_t defIndex)
    {
-   // *this    swipeable for debugging purposes
    int32_t realIndex = useIndex - getFirstUseIndex();
    _useDefInfo[realIndex][defIndex] = false;
 
@@ -2886,7 +2878,6 @@ void TR_UseDefInfo::resetUseDef(int32_t useIndex, int32_t defIndex)
 
 void TR_UseDefInfo::clearUseDef(int32_t useIndex)
    {
-   // *this    swipeable for debugging purposes
    int32_t realIndex = useIndex - getFirstUseIndex();
    _useDefInfo[realIndex].Clear();
 

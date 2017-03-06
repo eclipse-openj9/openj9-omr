@@ -364,7 +364,6 @@ TR::PPCSystemLinkage::getProperties()
 void
 TR::PPCSystemLinkage::initPPCRealRegisterLinkage()
    {
-   // *this    swipeable for debugging purposes
    // Each real register's weight is set to match this linkage convention
    TR::Machine *machine = cg()->machine();
    int icount;
@@ -421,7 +420,6 @@ TR::PPCSystemLinkage::initPPCRealRegisterLinkage()
 uint32_t
 TR::PPCSystemLinkage::getRightToLeft()
    {
-   // *this    swipeable for debugging purposes
    return getProperties().getRightToLeft();
    }
 
@@ -529,7 +527,6 @@ TR::PPCSystemLinkage::mapParameters(
 void
 TR::PPCSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
-   // *this    swipeable for debugging purposes
    ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol *localCursor = automaticIterator.getFirst();
    const TR::PPCLinkageProperties& linkage = getProperties();
@@ -600,7 +597,6 @@ TR::PPCSystemLinkage::mapSingleAutomatic(
       TR::AutomaticSymbol *p,
       uint32_t &stackIndex)
    {
-   // *this    swipeable for debugging purposes
    size_t align = 1;
    size_t size = p->getSize();
 
@@ -633,7 +629,6 @@ TR::PPCSystemLinkage::createPrologue(
       TR::Instruction *cursor,
       List<TR::ParameterSymbol> &parmList)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg()->machine();
    const TR::PPCLinkageProperties &properties = getProperties();
    TR::ResolvedMethodSymbol        *bodySymbol = comp()->getJittedMethodSymbol();
@@ -759,7 +754,6 @@ TR::PPCSystemLinkage::createPrologue(
 void
 TR::PPCSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
-   // *this    swipeable for debugging purposes
    int32_t blockNumber = cursor->getNext()->getBlockIndex();
    TR::Machine *machine = cg()->machine();
    const TR::PPCLinkageProperties &properties = getProperties();
@@ -855,7 +849,6 @@ int32_t TR::PPCSystemLinkage::buildArgs(TR::Node *callNode,
                                        TR::RegisterDependencyConditions *dependencies)
 
    {
-   // *this    swipeable for debugging purposes
    const TR::PPCLinkageProperties &properties = getProperties();
    TR::PPCMemoryArgument *pushToMemory = NULL;
    TR::Register       *tempRegister;
@@ -1683,7 +1676,6 @@ void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSy
 
 void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol> &parmList)
    {
-   // *this    swipeable for debugging purposes
    ListIterator<TR::ParameterSymbol>   paramIterator(&parmList);
    TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
    int32_t                  numIntArgs = 0, numFloatArgs = 0;

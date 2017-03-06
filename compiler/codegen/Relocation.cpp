@@ -57,21 +57,18 @@ TR::RelocationDebugInfo* TR::Relocation::getDebugInfo()
    }
 void TR::LabelRelative8BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative8BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply8BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
 void TR::LabelRelative12BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative12BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply12BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel(), isCheckDisp());
    }
 
 void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative16BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    if(getAddressDifferenceDivisor() == 1)
    codeGen->apply16BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
@@ -81,21 +78,18 @@ void TR::LabelRelative16BitRelocation::apply(TR::CodeGenerator *codeGen)
 
 void TR::LabelRelative24BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative24BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply24BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
 void TR::LabelRelative32BitRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag2(codeGen->comp(), "TR::LabelRelative32BitRelocation::apply cursor=%x label=%x\n", getUpdateLocation(), getLabel());
    codeGen->apply32BitLabelRelativeRelocation((int32_t *)getUpdateLocation(), getLabel());
    }
 
 void TR::LabelAbsoluteRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    intptrj_t *cursor = (intptrj_t *)getUpdateLocation();
    AOTcgDiag2(codeGen->comp(), "TR::LabelAbsoluteRelocation::apply cursor=%x label=%x\n", cursor, getLabel());
    *cursor = (intptrj_t)getLabel()->getCodeLocation();
@@ -132,7 +126,6 @@ void TR::LoadLabelRelative64BitRelocation::apply(TR::CodeGenerator *codeGen)
 
 uint8_t TR::ExternalRelocation::collectModifier()
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
    uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
    uint8_t * updateLocation;
@@ -160,7 +153,6 @@ uint8_t TR::ExternalRelocation::collectModifier()
 
 void TR::ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = codeGen->comp();
    AOTcgDiag0(comp, "TR::ExternalRelocation::addAOTRelocation\n");
    if (comp->getOption(TR_AOT))
@@ -252,7 +244,6 @@ void TR::ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
 
 void TR::ExternalRelocation::apply(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = codeGen->comp();
    AOTcgDiag1(comp, "TR::ExternalRelocation::apply updateLocation=%x \n", getUpdateLocation());
    if (comp->getOption(TR_AOT))
@@ -486,14 +477,12 @@ TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint
 
 void TR::IteratedExternalRelocation::initialiseRelocation(TR::CodeGenerator *codeGen)
    {
-   // *this    swipeable for debugging purposes
    AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::initialiseRelocation\n");
    _relocationDataCursor = codeGen->getAheadOfTimeCompile()->initialiseAOTRelocationHeader(this);
    }
 
 void TR::IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
    AOTcgDiag1(comp, "TR::IteratedExternalRelocation::addRelocationEntry _relocationDataCursor=%x\n", _relocationDataCursor);
    if (!needsWideOffsets())

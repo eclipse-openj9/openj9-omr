@@ -43,7 +43,6 @@
 
 uint8_t *TR::X86FPConversionSnippet::emitSnippetBody()
    {
-   // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(buffer);
    return genRestartJump(genFPConversion(buffer));
@@ -52,8 +51,6 @@ uint8_t *TR::X86FPConversionSnippet::emitSnippetBody()
 
 uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    {
-   // *this    swipeable for debugging purposes
-
    *buffer++ = 0xe8;      // CallImm4
 
    intptrj_t helperAddress = (intptrj_t)getHelperSymRef()->getMethodAddress();
@@ -73,8 +70,6 @@ uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
 
 uint8_t *TR::X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
    {
-   // *this    swipeable for debugging purposes
-
    TR::ILOpCodes              opcode          = _convertInstruction->getNode()->getOpCodeValue();
    TR::RealRegister          *targetRegister  = toRealRegister(_convertInstruction->getTargetRegister());
    TR::RealRegister::RegNum   targetReg       = targetRegister->getRegisterNumber();
@@ -165,8 +160,6 @@ uint8_t *TR::X86FPConvertToIntSnippet::genFPConversion(uint8_t *buffer)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToIntSnippet  * snippet)
    {
-   // *this    swipeable for debugging purposes
-
    if (pOutFile == NULL)
       return;
 
@@ -233,7 +226,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToIntSnippet  * snippet)
 
 uint32_t TR::X86FPConvertToIntSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    uint32_t length = 11;
    TR::Machine * machine = cg()->machine();
 
@@ -284,8 +276,6 @@ const uint8_t TR::X86FPConvertToLongSnippet::_registerActions[16] =
 
 uint8_t *TR::X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
    {
-   // *this    swipeable for debugging purposes
-
    // Mask off the FXCH flag.
    //
    uint8_t action = _registerActions[ _action & 0x7f ];
@@ -356,8 +346,6 @@ uint8_t *TR::X86FPConvertToLongSnippet::genFPConversion(uint8_t *buffer)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToLongSnippet  * snippet)
    {
-   // *this    swipeable for debugging purposes
-
    if (pOutFile == NULL)
       return;
 
@@ -455,8 +443,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPConvertToLongSnippet  * snippet)
 
 void TR::X86FPConvertToLongSnippet::analyseLongConversion()
    {
-   // *this    swipeable for debugging purposes
-
    // The current assumption is that register assignment will occur prior
    // to the snippets being sized and emitted.
    //
@@ -483,7 +469,6 @@ void TR::X86FPConvertToLongSnippet::analyseLongConversion()
 
 uint32_t TR::X86FPConvertToLongSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    uint32_t length = 5;
 
    analyseLongConversion();
@@ -535,7 +520,6 @@ uint32_t TR::X86FPConvertToLongSnippet::getLength(int32_t estimatedSnippetStart)
 
 uint8_t *TR::X86fbits2iSnippet::emitSnippetBody()
    {
-   // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(buffer);
    *buffer++ = 0xf7;
@@ -568,8 +552,6 @@ uint8_t *TR::X86fbits2iSnippet::emitSnippetBody()
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86fbits2iSnippet  * snippet)
    {
-   // *this    swipeable for debugging purposes
-
    if (pOutFile == NULL)
       return;
 
@@ -605,7 +587,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86fbits2iSnippet  * snippet)
 
 uint32_t TR::X86fbits2iSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    uint32_t length = 6;  // 6 for test instruction
 
    int32_t location = getRestartLabel()->getEstimatedCodeLocation();

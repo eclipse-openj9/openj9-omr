@@ -194,7 +194,6 @@ TR::RealRegister *OMR::Power::Machine::findBestFreeRegister(TR::Instruction *cur
                                                         bool considerUnlatched,
                                                         TR::Register      *virtualReg)
    {
-   // *this    swipeable for debugging purposes
    uint32_t         preference = (virtualReg==NULL)?0:virtualReg->getAssociation();
    uint64_t         interference = 0;
    int first, maskI;
@@ -423,7 +422,6 @@ TR::RealRegister *OMR::Power::Machine::freeBestRegister(TR::Instruction     *cur
                                                     bool                excludeGPR0)
 
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *candidates[NUM_PPC_MAXR];
    TR::MemoryReference *tmemref;
    TR_BackingStore       *location;
@@ -866,7 +864,6 @@ TR::RealRegister *OMR::Power::Machine::reverseSpillState(TR::Instruction      *c
                                                      TR::RealRegister  *targetRegister,
                                                      bool                excludeGPR0)
    {
-   // *this    swipeable for debugging purposes
    TR::MemoryReference *tmemref;
    TR::Compilation *comp = self()->cg()->comp();
    TR::RealRegister    *sameReg, *crtemp   = NULL;
@@ -1152,7 +1149,6 @@ void OMR::Power::Machine::coerceRegisterAssignment(TR::Instruction              
                                               TR::Register                             *virtualRegister,
                                               TR::RealRegister::RegNum registerNumber)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister *targetRegister          = _registerFile[registerNumber];
    TR::RealRegister    *realReg                 = virtualRegister->getAssignedRealRegister();
    TR::RealRegister *currentAssignedRegister = (realReg==NULL)?NULL:toRealRegister(realReg);
@@ -1319,7 +1315,6 @@ void OMR::Power::Machine::coerceRegisterAssignment(TR::Instruction              
 
 void OMR::Power::Machine::initialiseRegisterFile()
    {
-   // *this    swipeable for debugging purposes
 
    _registerFile[TR::RealRegister::NoReg] = NULL;
    _registerFile[TR::RealRegister::SpilledReg] = NULL;

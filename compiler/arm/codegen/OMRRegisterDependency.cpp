@@ -220,7 +220,6 @@ OMR::ARM::RegisterDependencyConditions::RegisterDependencyConditions( TR::Node  
 
 bool OMR::ARM::RegisterDependencyConditions::refsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -242,7 +241,6 @@ bool OMR::ARM::RegisterDependencyConditions::refsRegister(TR::Register *r)
 
 bool OMR::ARM::RegisterDependencyConditions::defsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -264,7 +262,6 @@ bool OMR::ARM::RegisterDependencyConditions::defsRegister(TR::Register *r)
 
 bool OMR::ARM::RegisterDependencyConditions::defsRealRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister()->getAssignedRegister() == r &&
@@ -287,7 +284,6 @@ bool OMR::ARM::RegisterDependencyConditions::defsRealRegister(TR::Register *r)
 
 bool OMR::ARM::RegisterDependencyConditions::usesRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -309,7 +305,6 @@ bool OMR::ARM::RegisterDependencyConditions::usesRegister(TR::Register *r)
 
 void OMR::ARM::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
@@ -325,7 +320,6 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
                                                     uint32_t         numberOfRegisters,
                                                     TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = TR::comp();
    TR::Machine *machine = cg->machine();
    TR::Register  *virtReg;

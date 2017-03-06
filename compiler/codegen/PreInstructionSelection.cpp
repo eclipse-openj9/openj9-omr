@@ -118,7 +118,6 @@ OMR::CodeGenerator::eliminateLoadsOfLocalsThatAreNotStored(
 void
 OMR::CodeGenerator::prepareNodeForInstructionSelection(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
    if (node->getVisitCount() == self()->comp()->getVisitCount())
       {
       if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->isTempVariableSizeSymRef())

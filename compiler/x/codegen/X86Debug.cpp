@@ -349,7 +349,6 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
 void
 TR_Debug::dumpDependencies(TR::FILE *pOutFile, TR::Instruction  * instr)
    {
-   // *this    swipeable for debugging purposes
 
    // If we are in instruction selection or register assignment and
    // dependency information is requested, dump it.
@@ -401,7 +400,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::Instruction  * ins
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86PaddingInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -428,7 +426,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86PaddingInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86AlignmentInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -459,7 +456,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86AlignmentInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RestoreVMThreadInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -512,7 +508,6 @@ TR_Debug::printBoundaryAvoidanceInfo(TR::FILE *pOutFile, TR::X86BoundaryAvoidanc
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86BoundaryAvoidanceInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -536,7 +531,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86BoundaryAvoidanceInstruction  * instr
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86PatchableCodeAlignmentInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -560,7 +554,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86PatchableCodeAlignmentInstruction  * 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86LabelInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -608,7 +601,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86LabelInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FenceInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -685,7 +677,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86VirtualGuardNOPInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -720,7 +711,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -755,7 +745,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64SymInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -803,7 +792,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64SymInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::AMD64RegImm64Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -912,7 +900,6 @@ void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPCallCleanupInstruction  *inst
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSnippetInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -931,7 +918,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSnippetInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSymInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -997,7 +983,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSymInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1034,7 +1019,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegInstruction 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1077,7 +1061,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegRegInstructi
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1100,7 +1083,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1130,7 +1112,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1217,7 +1198,6 @@ TR_Debug::printPrefixAndMemoryBarrier(
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86MemInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1255,7 +1235,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemInstruction 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86MemImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1278,7 +1257,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86MemImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1323,7 +1301,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemRegInstructi
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1351,7 +1328,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1407,7 +1383,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemRegRegInstru
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1460,7 +1435,6 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegMemInstructi
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemImmInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1489,7 +1463,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemImmInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
    printPrefix(pOutFile, instr);
@@ -1505,7 +1478,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
 
    if (pOutFile == NULL)
       return;
@@ -1526,7 +1498,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegRegInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPMemRegInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
    printPrefix(pOutFile, instr);
@@ -1547,7 +1518,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPMemRegInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegMemInstruction  * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1574,7 +1544,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FPRegMemInstruction  * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes operandSize)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 

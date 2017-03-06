@@ -66,7 +66,6 @@ void TR_X86FPBinaryArithmeticAnalyser::setInputs(TR::Node     *firstChild,
                                                   TR::Node     *secondChild,
                                                   TR::Register *secondRegister)
    {
-   // *this    swipeable for debugging purposes
 
    if (firstRegister)
       {
@@ -164,7 +163,6 @@ TR_X86FPBinaryArithmeticAnalyser::isIntToFPConversion(TR::Node *child)
 
 void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
 
    TR::Register         *targetRegister     = NULL,
                         *sourceRegister     = NULL,

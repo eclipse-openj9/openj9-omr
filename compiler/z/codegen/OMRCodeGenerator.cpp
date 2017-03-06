@@ -1440,7 +1440,6 @@ OMR::Z::CodeGenerator::insertPad(TR::Node * theNode, TR::Instruction * insertion
 void
 OMR::Z::CodeGenerator::beginInstructionSelection()
    {
-   // *this    swipeable for debugging purposes
    TR::ResolvedMethodSymbol * methodSymbol = self()->comp()->getJittedMethodSymbol();
    TR::Node * startNode = self()->comp()->getStartTree()->getNode();
    TR::Instruction * cursor = NULL;
@@ -1500,7 +1499,6 @@ OMR::Z::CodeGenerator::endInstructionSelection()
 void
 OMR::Z::CodeGenerator::doInstructionSelection()
    {
-   // *this    swipeable for debugging purposes
 
    _outgoingArgLevelDuringTreeEvaluation = self()->getLinkage()->getNumberOfAllocatedOutgoingArgumentAreas();
 
@@ -2680,7 +2678,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
 void
 OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction * prevInstruction, * nextInstruction;
 
 #ifdef DEBUG
@@ -7374,7 +7371,6 @@ OMR::Z::CodeGenerator::allocateClobberableRegister(TR::Register *srcRegister)
 TR::Register *
 OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool ignoreRefCount)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction * cursor = NULL;
 
    TR_Debug * debugObj = self()->getDebug();
@@ -7521,7 +7517,6 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
 TR::Register *
 OMR::Z::CodeGenerator::fprClobberEvaluate(TR::Node * node)
    {
-   // *this    swipeable for debugging purposes
 
    TR::Register *srcRegister = self()->evaluate(node);
    if (!self()->canClobberNodesRegister(node))
@@ -7993,7 +7988,6 @@ TR_S390OutOfLineCodeSection * OMR::Z::CodeGenerator::findS390OutOfLineCodeSectio
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    CS2::HashIndex hi;
    TR_S390ConstantDataSnippetKey key;
    key.c      = c;
@@ -8061,7 +8055,6 @@ OMR::Z::CodeGenerator::createConstantInstruction(TR::CodeGenerator * cg, TR::Nod
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, bool writable)
    {
-   // *this    swipeable for debugging purposes
 
    if (writable)
       {
@@ -8106,7 +8099,6 @@ OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snip
 int32_t
 OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
@@ -8187,7 +8179,6 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
 int32_t
 OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
@@ -8275,7 +8266,6 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
 void
 OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    // If you change logic here, be sure to do similar change in
    // the method : TR::S390ConstantDataSnippet *OMR::Z::CodeGenerator::getFirstConstantData()
 
@@ -8419,7 +8409,6 @@ OMR::Z::CodeGenerator::create64BitLiteralPoolSnippet(TR::DataType dt, int64_t va
 TR::Linkage *
 OMR::Z::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
-   // *this    swipeable for debugging purposes
    TR::Linkage * linkage;
    TR::Compilation *comp = self()->comp();
    switch (lc)
@@ -8648,7 +8637,6 @@ OMR::Z::CodeGenerator::getFirstConstantData()
 int32_t
 OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
    {
-   // *this    swipeable for debugging purposes
    int32_t estimatedOffset = 0;
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
@@ -8671,7 +8659,6 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
 int32_t
 OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
    // Conservatively add maximum padding to get to 8 byte alignment.
    estimatedSnippetStart += 6;
@@ -8689,7 +8676,6 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_
 void
 OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    uint8_t * codeOffset;
    int8_t size = 8;
 
@@ -9757,7 +9743,6 @@ OMR::Z::CodeGenerator::copyRestrictedVirtual(TR::Register * virtReg, TR::Node *n
 void
 OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
 
    if (outFile == NULL)
       {
@@ -9825,7 +9810,6 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
 void
 OMR::Z::CodeGenerator::dumpTargetAddressSnippets(TR::FILE *outFile, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
 
    if (outFile == NULL)
       {

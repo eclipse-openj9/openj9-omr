@@ -137,7 +137,6 @@ TR::Register* TR_X86BinaryCommutativeAnalyser::genericAnalyserImpl(TR::Node     
                                                                    TR_X86OpCodes copyOpCode,
                                                                    bool           nonClobberingDestination)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *targetRegister;
 
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -248,7 +247,6 @@ void TR_X86BinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
                                                            TR_X86OpCodes highRegMemOpCode,
                                                            TR_X86OpCodes copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    if (_cg->whichChildToEvaluate(root) == 0)
@@ -765,7 +763,6 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
                                                                       bool          needsEflags,     
                                                                       TR::Node      *carry)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *targetRegister;
    TR::Compilation* comp = TR::comp();
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -988,7 +985,6 @@ void TR_X86BinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
  */
 TR::Register* TR_X86BinaryCommutativeAnalyser::longAddAnalyserImpl(TR::Node *root, TR::Node *&firstChild, TR::Node *&secondChild)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *twoLow       = NULL;
    TR::Register *twoHigh      = NULL;
    TR::Register *oneLow       = NULL;
@@ -1581,7 +1577,6 @@ void TR_X86BinaryCommutativeAnalyser::longDualMultiplyAnalyser(TR::Node *root)
 
 void TR_X86BinaryCommutativeAnalyser::longMultiplyAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild  = 0;
    TR::Node *secondChild = 0;
    if (_cg->whichChildToEvaluate(root) == 0)

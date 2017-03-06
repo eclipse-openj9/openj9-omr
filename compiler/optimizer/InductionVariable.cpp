@@ -53,6 +53,7 @@
 #include "infra/BitVector.hpp"                   // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                         // for CFG, etc
 #include "infra/Checklist.hpp"                   // for {Node,Block}Checklist
+#include "infra/ILWalk.hpp"                      // for PostorderNodeIterator
 #include "infra/List.hpp"                        // for List, ListIterator, etc
 #include "infra/TRCfgEdge.hpp"                   // for CFGEdge
 #include "infra/TRCfgNode.hpp"                   // for CFGNode
@@ -6614,38 +6615,100 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
    if (valueNode->getOpCode().isLoadVarDirect())
       {
       // If the load is unevaluated before the test tree, it sees the new value.
-      if (valueCouldBeEvaluatedBeforeTest)
+      static const bool forceILWalk = feGetEnv("TR_forceILWalkForLoadsInIVA") != NULL;
+      if (valueCouldBeEvaluatedBeforeTest || forceILWalk)
          {
-         // The load might be evaluated earlier. Now we require that it appear
-         // beneath every store (of the same variable) in this extended block,
-         // so that the load sees the value from the beginning of the extended
-         // block.
-         //
-         // If there are no such stores, this incoming value must already be
-         // the new value. Otherwise, it will hopefully be the old value from
-         // the start of the iteration.
-         //
-         comp()->incVisitCount();
-         for (TR::TreeTop *tt = controllingBranch->getPrevTreeTop();
-              tt &&
-              (tt->getNode()->getOpCodeValue() != TR::BBStart ||
-               tt->getNode()->getBlock()->isExtensionOfPreviousBlock());
-              tt = tt->getPrevTreeTop())
+         // The load might be evaluated earlier. Now we require that it is
+         // either evaluated after each store of the same variable in this
+         // extended block, or before each such store.
+         if (trace())
             {
-            TR::Node *curNode = tt->getNode();
-            if (curNode->getOpCode().isStoreDirect() &&
-                curNode->getSymbolReference() == valueNode->getSymbolReference())
+            traceMsg(comp(),
+               "\twalking EBB to determine when n%un %s #%d is evaluated\n",
+               valueNode->getGlobalIndex(),
+               valueNode->getOpCode().getName(),
+               valueNode->getSymbolReference()->getReferenceNumber());
+            }
+
+         bool loadFirst = false;
+         bool loadLast = false;
+         bool seenStore = false;
+
+         TR::Block * const branchBlock = controllingBranch->getEnclosingBlock();
+         TR::TreeTop * const start = branchBlock->startOfExtendedBlock()->getEntry();
+         TR::TreeTop * const end = controllingBranch->getNextTreeTop();
+         for (TR::PostorderNodeIterator it(start, this); it != end; ++it)
+            {
+            TR::Node * const node = it.currentNode();
+            if (node == valueNode)
                {
+               loadFirst = !seenStore;
+               loadLast = true; // so far
                if (trace())
-                  traceMsg(comp(), "\tFound store %p of symRef %p\n", curNode, valueNode->getSymbolReference()->getSymbol());
-               if (curNode->containsNode(valueNode, comp()->getVisitCount()))  //valueNode is used in the store subtree
-                  usesUnchangedValueInLoopTest = true;
-               else
                   {
-                  if (trace()) traceMsg(comp(), "\tRejected - tested value commoned across a store %p\n", tt->getNode());
-                  return false;
+                  traceMsg(comp(),
+                     "\t\tn%un %s #%d\n",
+                     node->getGlobalIndex(),
+                     node->getOpCode().getName(),
+                     node->getSymbolReference()->getReferenceNumber());
                   }
+               continue;
                }
+
+            // Skip everything other than stores to this IV.
+            if (!node->getOpCode().isStoreDirect())
+               continue;
+
+            TR::SymbolReference * const storeSR = node->getSymbolReference();
+            TR::SymbolReference * const valueSR = valueNode->getSymbolReference();
+            if (storeSR->getReferenceNumber() != valueSR->getReferenceNumber())
+               continue;
+
+            // At this point node is a relevant store.
+            seenStore = true;
+            loadLast = false; // so far
+            if (trace())
+               {
+               traceMsg(comp(),
+                  "\t\tn%un %s #%d\n",
+                  node->getGlobalIndex(),
+                  node->getOpCode().getName(),
+                  node->getSymbolReference()->getReferenceNumber());
+               }
+            }
+
+         // With forceILWalk, we may have !valueCouldBeEvaluatedBeforeTest. If
+         // so, check for loadLast, which is the justification for skipping all
+         // this analysis and leaving usesUnchangedValueInLoopTest=false.
+         TR_ASSERT(valueCouldBeEvaluatedBeforeTest || loadLast,
+            "n%un is evaluated before a store despite refcounts indicating "
+            "that it is unevaluated before test tree\n",
+            valueNode->getGlobalIndex());
+
+         // Determine the results based on loadFirst, loadLast, seenStore.
+         if (!seenStore)
+            {
+            usesUnchangedValueInLoopTest = false;
+            if (trace())
+               traceMsg(comp(), "\tno stores => value is latest at test\n");
+            }
+         else if (loadLast)
+            {
+            usesUnchangedValueInLoopTest = false;
+            if (trace())
+               traceMsg(comp(), "\tload last => value is latest at test\n");
+            }
+         else if (loadFirst)
+            {
+            usesUnchangedValueInLoopTest = true;
+            if (trace())
+               traceMsg(comp(), "\tload first => value is from before test EBB\n");
+            }
+         else
+            {
+            if (trace())
+               traceMsg(comp(), "\tRejected - tested value evaluated between stores\n");
+            return false;
             }
 
          if (usesUnchangedValueInLoopTest)

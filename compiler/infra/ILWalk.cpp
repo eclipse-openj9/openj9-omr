@@ -126,6 +126,40 @@ bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
    return true;
    }
 
+void TR::NodeIterator::logCurrentLocation()
+   {
+   // TODO: Log even without an _opt.
+
+   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+      {
+      if (currentTree())
+         {
+         TR::Node *node = currentNode();
+         traceMsg(_opt->comp(), "NODE  %s  ", _name);
+         if (stackDepth() >= 2)
+            {
+            traceMsg(_opt->comp(), " ");
+            for (int32_t i = 0; i < stackDepth()-2; i++)
+               {
+               if (_stack[i]._isBetweenChildren)
+                  traceMsg(_opt->comp(), " |");
+               else
+                  traceMsg(_opt->comp(), "  ");
+               }
+            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
+            }
+         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         }
+      else
+         {
+         // Usualy this one doesn't print, because when the iterator finishes
+         // naturally, logCurrentLocation is not even called.
+         //
+         traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
+         }
+      }
+   }
+
 TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
    :NodeIterator(start, opt, name)
    {
@@ -136,11 +170,6 @@ TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Compilati
    :NodeIterator(start, comp)
    {
    push(start->getNode());
-   }
-
-TR::Node *TR::PreorderNodeIterator::currentNode()
-   {
-   return _stack.top()._node;
    }
 
 bool TR::PreorderNodeIterator::alreadyBeenPushed(TR::Node *node)
@@ -197,38 +226,76 @@ void TR::PreorderNodeIterator::stepForward()
       }
    }
 
-void TR::PreorderNodeIterator::logCurrentLocation()
+TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
+   :NodeIterator(start, opt, name)
    {
-   // TODO: Log even without an _opt.
+   push(start->getNode());
+   descend();
+   }
 
-   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp)
+   :NodeIterator(start, comp)
+   {
+   push(start->getNode());
+   descend();
+   }
+
+bool TR::PostorderNodeIterator::alreadyBeenPushed(TR::Node *node)
+   {
+   return _checklist.contains(node);
+   }
+
+void TR::PostorderNodeIterator::push(TR::Node *node)
+   {
+   TR_ASSERT(!alreadyBeenPushed(node), "Cannot push node n%dn that was already pushed", node->getGlobalIndex());
+   _stack.push(WalkState(node));
+   _checklist.add(node);
+   }
+
+void TR::PostorderNodeIterator::descend()
+   {
+   // Push frames until we find the innermost, leftmost unvisited descendant.
+   TR::Node *node = _stack.top()._node;
+   for (;;)
       {
-      if (currentTree())
-         {
-         TR::Node *node = currentNode();
-         traceMsg(_opt->comp(), "NODE  %s  ", _name);
-         if (stackDepth() >= 2)
-            {
-            traceMsg(_opt->comp(), " ");
-            for (int32_t i = 0; i < stackDepth()-2; i++)
-               {
-               if (_stack[i]._isBetweenChildren)
-                  traceMsg(_opt->comp(), " |");
-               else
-                  traceMsg(_opt->comp(), "  ");
-               }
-            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
-            }
-         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
-         }
-      else
-         {
-         // Usualy this one doesn't print, because when the iterator finishes
-         // naturally, logCurrentLocation is not even called.
-         //
-         traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
-         }
+      int32_t i = _stack.top()._child;
+      while (i < node->getNumChildren() && alreadyBeenPushed(node->getChild(i)))
+         i++;
+
+      _stack.top()._child = i;
+      if (i == node->getNumChildren())
+         break;
+
+      node = node->getChild(i);
+      push(node);
       }
+
+   logCurrentLocation();
+   }
+
+void TR::PostorderNodeIterator::stepForward()
+   {
+   // We're done with the current node and all its descendants. Move back up
+   // to the parent and attempt to descend into later subtrees.
+   _stack.pop();
+   if (!_stack.isEmpty())
+      {
+      _stack.top()._child++;
+      _stack.top()._isBetweenChildren = true;
+      descend();
+      return;
+      }
+
+   // Step to the next tree, if any
+   do
+      TreeTopIteratorImpl::stepForward();
+   while (currentTree() && alreadyBeenPushed(currentTree()->getNode()));
+
+   if (!currentTree())
+     return;
+
+   push(currentTree()->getNode());
+   descend();
    }
 
 //

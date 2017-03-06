@@ -25,6 +25,7 @@
 #include "infra/Assert.hpp"                         // for TR_ASSERT
 #include "j9nongenerated.h"                         // for J9AVLTree, etc
 #include "runtime/CodeCache.hpp"                    // for CodeCache, etc
+#include "runtime/CodeCacheMemorySegment.hpp"       // for CodeCacheMemorySegment
 #include "runtime/CodeMetaDataManager.hpp"          // for MetaDataHashTable, etc
 #include "runtime/CodeMetaDataManager_inlines.hpp"
 #include "runtime/CodeMetaDataPOD.hpp"              // for MethodMetaDataPOD
@@ -108,7 +109,7 @@ CodeMetaDataManager::insertMetaData(TR::MethodMetaDataPOD *metaData)
 
 
 bool
-CodeMetaDataManager::containsMetaData(TR::MethodMetaDataPOD *metaData)
+CodeMetaDataManager::containsMetaData(const TR::MethodMetaDataPOD *metaData)
    {
    // OMR::CriticalSection searchingMetaData(_monitor);
    return (metaData && metaData == self()->findMetaDataForPC(metaData->startPC));
@@ -116,7 +117,7 @@ CodeMetaDataManager::containsMetaData(TR::MethodMetaDataPOD *metaData)
 
 
 bool
-CodeMetaDataManager::removeMetaData(TR::MethodMetaDataPOD *metaData)
+CodeMetaDataManager::removeMetaData(const TR::MethodMetaDataPOD *metaData)
    {
    TR_ASSERT(metaData, "metaData must not be null");
    //OMR::CriticalSection removingMetaData(_monitor);
@@ -171,7 +172,7 @@ CodeMetaDataManager::insertRange(
 // protected
 bool
 CodeMetaDataManager::removeRange(
-      TR::MethodMetaDataPOD *metaData,
+      const TR::MethodMetaDataPOD *metaData,
       uintptr_t startPC,
       uintptr_t endPC)
    {
@@ -198,7 +199,7 @@ CodeMetaDataManager::updateCache(uintptr_t currentPC)
       _cachedHashTable =
          static_cast<TR::MetaDataHashTable *>(static_cast<void *>(avl_search(_metaDataAVL, currentPC) ) );
 
-      TR_ASSERT(_cachedHashTable, "Either we lost a code cache or we attempted to find a hash table for a non-code cache startPC");
+      TR_ASSERT(_cachedHashTable, "Either we lost a code cache or we attempted to find a hash table for a non-code cache startPC: Searched for %p", currentPC);
       }
    }
 
@@ -472,7 +473,7 @@ CodeMetaDataManager::allocateMethodStoreInHash(TR::MetaDataHashTable *table)
 uintptr_t
 CodeMetaDataManager::removeMetaDataRangeFromHash(
       TR::MetaDataHashTable *table,
-      TR::MethodMetaDataPOD *dataToRemove,
+      const TR::MethodMetaDataPOD *dataToRemove,
       uintptr_t startPC,
       uintptr_t endPC)
    {
@@ -517,7 +518,7 @@ CodeMetaDataManager::removeMetaDataRangeFromHash(
 TR::MethodMetaDataPOD **
 CodeMetaDataManager::removeMetaDataArrayFromHash(
       TR::MethodMetaDataPOD **array,
-      TR::MethodMetaDataPOD *dataToRemove)
+      const TR::MethodMetaDataPOD *dataToRemove)
    {
    TR::MethodMetaDataPOD **index;
    uintptr_t count= 0;

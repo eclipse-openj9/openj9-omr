@@ -71,8 +71,7 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    possiblity occurs that two artifacts may legitimately have range values that
    overlap, checks will need to be added.
 
-   @param compiledMethod The J9JITExceptionTable representing the newly compiled
-   method to insert into the artifacts.
+   @param metaData The MetaDataPOD to insert into the artifacts.
    @return Returns true if successful, and false otherwise.
    */
    bool insertMetaData(TR::MethodMetaDataPOD *metaData);
@@ -92,7 +91,7 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    @return Returns true if the same artifact is found for the artifact's startPC
    and false otherwise.
    */
-   bool containsMetaData(TR::MethodMetaDataPOD *metaData);
+   bool containsMetaData(const TR::MethodMetaDataPOD *metaData);
 
    /**
    @brief Remove a given artifact from the JIT artifacts if it is found therein.
@@ -102,7 +101,7 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    @return Returns true if the artifact is found within, and successfully
    removed from, the JIT artifacts and false otherwise.
    */
-   bool removeMetaData(TR::MethodMetaDataPOD *metaData);
+   bool removeMetaData(const TR::MethodMetaDataPOD *metaData);
 
 
    /**
@@ -163,7 +162,7 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    @return Returns true if the artifact was successfully removed from
    representing the given range, false otherwise.
    */
-   bool removeRange(TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
+   bool removeRange(const TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
 
 
    /**
@@ -198,13 +197,13 @@ class OMR_EXTENSIBLE CodeMetaDataManager
 
    uintptr_t removeMetaDataRangeFromHash(
       TR::MetaDataHashTable *table,
-      TR::MethodMetaDataPOD *dataToRemove,
+      const TR::MethodMetaDataPOD *dataToRemove,
       uintptr_t startPC,
       uintptr_t endPC);
 
    TR::MethodMetaDataPOD **removeMetaDataArrayFromHash(
       TR::MethodMetaDataPOD **array,
-      TR::MethodMetaDataPOD *dataToRemove);
+      const TR::MethodMetaDataPOD *dataToRemove);
 
    TR::MetaDataHashTable *allocateCodeMetaDataHash(
       uintptr_t start,
@@ -212,16 +211,18 @@ class OMR_EXTENSIBLE CodeMetaDataManager
 
    J9AVLTree *allocateMetaDataAVL();
 
-   private:
+   // Singleton: Protected to allow manipulation of singleton pointer 
+   // in test cases. 
+   static TR::CodeMetaDataManager *_codeMetaDataManager;
 
    J9AVLTree *_metaDataAVL;
+
+   private:
 
    mutable uintptr_t _cachedPC;
    mutable TR::MetaDataHashTable *_cachedHashTable;
    mutable TR::MethodMetaDataPOD *_retrievedMetaDataCache;
 
-   // Singleton
-   static TR::CodeMetaDataManager *_codeMetaDataManager;
 
    };
 

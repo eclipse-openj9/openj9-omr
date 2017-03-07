@@ -29,7 +29,6 @@ void TR_ARMBinaryCommutativeAnalyser::genericAnalyser(TR::Node       *root,
                                                        TR_ARMOpCodes copyOpCode,
                                                        bool          nonClobberingDestination)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    if (cg()->whichChildToEvaluate(root) == 0)
@@ -114,7 +113,6 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
                                                            TR_ARMOpCodes highMemToRegOpCode,
                                                            TR_ARMOpCodes copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    if (cg()->whichChildToEvaluate(root) == 0)
@@ -238,7 +236,6 @@ void TR_ARMBinaryCommutativeAnalyser::genericLongAnalyser(TR::Node       *root,
 void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
                                                          TR_ARMOpCodes regToRegOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    if (cg()->whichChildToEvaluate(root) == 0)
@@ -313,7 +310,6 @@ void TR_ARMBinaryCommutativeAnalyser::integerAddAnalyser(TR::Node       *root,
 
 void TR_ARMBinaryCommutativeAnalyser::longAddAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
    TR::Node *firstChild;
    TR::Node *secondChild;
    if (cg()->whichChildToEvaluate(root) == 0)

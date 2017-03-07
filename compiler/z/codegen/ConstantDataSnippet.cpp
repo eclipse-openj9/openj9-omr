@@ -79,7 +79,6 @@ TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR:
 TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR::Node * n, char* c) :
    TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false)
    {
-   // *this   swipeable for debugging purposes
    _length = strlen(c);
    _string = (char *) cg->trMemory()->allocateMemory(_length, heapAlloc);
    memcpy(_string, c, strlen(c));
@@ -269,7 +268,6 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 uint8_t *
 TR::S390ConstantDataSnippet::emitSnippetBody()
    {
-   // *this   swipeable for debugging purposes
    uint8_t * cursor = cg()->getBinaryBufferCursor();
    TR::Compilation *comp = cg()->comp();
 
@@ -308,7 +306,6 @@ TR::S390ConstantDataSnippet::emitSnippetBody()
 uint32_t
 TR::S390ConstantDataSnippet::getLength(int32_t  estimatedSnippetStart)
    {
-   // *this   swipeable for debugging purposes
    return _length;
    }
 
@@ -410,7 +407,6 @@ TR::S390WarmEyeCatcherDataSnippet::emitSnippetBody()
 TR::S390WritableDataSnippet::S390WritableDataSnippet(TR::CodeGenerator * cg, TR::Node * n, void * c, uint16_t size)
    : TR::S390ConstantDataSnippet(cg, n, c, size)
    {
-   // *this   swipeable for debugging purposes
    }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -441,7 +437,6 @@ TR::S390TargetAddressSnippet::S390TargetAddressSnippet(TR::CodeGenerator * cg, T
 uint8_t *
 TR::S390TargetAddressSnippet::emitSnippetBody()
    {
-   // *this   swipeable for debugging purposes
    uint8_t * cursor = cg()->getBinaryBufferCursor();
    AOTcgDiag1(cg()->comp(), "TR::S390TargetAddressSnippet::emitSnippetBody cursor=%x\n", cursor);
    getSnippetLabel()->setCodeLocation(cursor);
@@ -498,7 +493,6 @@ TR::S390TargetAddressSnippet::emitSnippetBody()
 uint32_t
 TR::S390TargetAddressSnippet::getLength(int32_t  estimatedSnippetStart)
    {
-   // *this   swipeable for debugging purposes
    return sizeof(uintptrj_t);
    }
 

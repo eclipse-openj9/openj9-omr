@@ -602,7 +602,6 @@ void
 OMR::X86::CodeGenerator::endInstructionSelection()
    {
    TR::Compilation *comp = self()->comp();
-   // *this    swipeable for debugging purposes
    if (_returnTypeInfoInstruction != NULL)
       {
       TR_ReturnInfo returnInfo = comp->getReturnInfo();
@@ -1522,7 +1521,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
 
 void OMR::X86::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction *instructionCursor;
    TR::Instruction *nextInstruction;
 
@@ -2229,7 +2227,6 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromM
 
 TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::Node * n, void * c, uint8_t size)
    {
-   // *this    swipeable for debugging purposes
 
     TR::IA32DataSnippet * cursor;
 
@@ -2290,7 +2287,6 @@ TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::
 
 int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    bool                                     first;
    int32_t                                  size;
 
@@ -2320,7 +2316,6 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
 
 void OMR::X86::CodeGenerator::emitDataSnippets(bool isWarm)
    {
-   // *this    swipeable for debugging purposes
 
    TR::IA32DataSnippet              * cursor;
    uint8_t                                 * codeOffset;
@@ -3758,7 +3753,6 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
 
    if (outFile == NULL)
       return;

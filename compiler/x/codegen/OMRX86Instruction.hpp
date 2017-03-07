@@ -892,7 +892,6 @@ class X86RegInstruction : public TR::Instruction
 
    void applyTargetRegisterToModRMByte(uint8_t *modRM)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(_targetRegister);
       if (getOpCode().hasTargetRegisterInModRM())
          {
@@ -1037,7 +1036,6 @@ class X86RegRegInstruction : public TR::X86RegInstruction
 
    void applySourceRegisterToModRMByte(uint8_t *modRM)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source = toRealRegister(_sourceRegister);
       if (getOpCode().hasSourceRegisterInModRM())
          {
@@ -2112,7 +2110,6 @@ class X86FPRegInstruction : public TR::X86RegInstruction
 
    void applyTargetRegisterToOpCode(uint8_t *opCode)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(getTargetRegister());
       target->setRegisterFieldInOpcode(opCode);
       }
@@ -2431,7 +2428,6 @@ class X86FPRegRegInstruction : public TR::X86RegRegInstruction
 
    void applyRegistersToOpCode(uint8_t *opCode, TR::Machine * machine)
       {
-      // *this    swipeable for debugging purposes
 
       // At least one of source and target will be in ST0.
       TR::RealRegister *reg = toRealRegister(getTargetRegister());
@@ -2451,7 +2447,6 @@ class X86FPRegRegInstruction : public TR::X86RegRegInstruction
 
    void applySourceRegisterToOpCode(uint8_t *opCode, TR::Machine * machine)
       {
-      // *this    swipeable for debugging purposes
 
       TR::RealRegister *reg = toRealRegister(getSourceRegister());
       if (reg->getRegisterNumber() != TR::RealRegister::st0)
@@ -2462,7 +2457,6 @@ class X86FPRegRegInstruction : public TR::X86RegRegInstruction
 
    void applyTargetRegisterToOpCode(uint8_t *opCode, TR::Machine * machine)
       {
-      // *this    swipeable for debugging purposes
 
       TR::RealRegister *reg = toRealRegister(getTargetRegister());
       if (reg->getRegisterNumber() != TR::RealRegister::st0)
@@ -2588,7 +2582,6 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
 
    void applyDestinationBitToOpCode(uint8_t *opCode, TR::Machine * machine)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *reg = toRealRegister(getTargetRegister());
       if (reg->getRegisterNumber() != TR::RealRegister::st0)
          {
@@ -2598,7 +2591,6 @@ class X86FPArithmeticRegRegInstruction : public TR::X86FPRegRegInstruction
 
    void applyDirectionBitToOpCode(uint8_t *opCode, TR::Machine * machine)
       {
-      // *this    swipeable for debugging purposes
       uint8_t reverse, destination;
 
       TR::RealRegister *reg = toRealRegister(getTargetRegister());

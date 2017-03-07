@@ -2211,7 +2211,6 @@ void OMR::Optimizer::enableAllLocalOpts()
 
 int32_t OMR::Optimizer::doStructuralAnalysis()
    {
-   // *this    swipeable for debugging purposes
 
    // Only perform structural analysis if there may be loops in the method
    //
@@ -2238,7 +2237,6 @@ int32_t OMR::Optimizer::doStructuralAnalysis()
 
 int32_t OMR::Optimizer::changeContinueLoopsToNestedLoops()
    {
-   // *this    swipeable for debugging purposes
    TR_RegionStructure *rootStructure = comp()->getFlowGraph()->getStructure()->asRegion();
    if (rootStructure && rootStructure->changeContinueLoopsToNestedLoops(rootStructure))
       {

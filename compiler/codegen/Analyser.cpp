@@ -37,7 +37,6 @@ void TR_Analyser::setInputs(TR::Node     *firstChild,
                             bool         lockedIntoRegister1,
                             bool         lockedIntoRegister2)
    {
-   // *this    swipeable for debugging purposes
    _inputs = 0;
 
    if (firstRegister)

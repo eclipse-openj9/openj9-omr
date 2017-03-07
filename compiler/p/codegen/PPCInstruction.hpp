@@ -129,7 +129,6 @@ public:
 
    void insertImmediateField(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       if (getOpCode().useAlternateFormatx())
          {
          // populate 4-bit U field at bit 16
@@ -149,7 +148,6 @@ public:
 
    void insertMaskField(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       // populate the 8-bit FLM field
       TR_ASSERT(getOpCodeValue() == TR::InstOpCode::mtfsf ||
              getOpCodeValue() == TR::InstOpCode::mtfsfl ||
@@ -196,7 +194,6 @@ class PPCImm2Instruction : public PPCImmInstruction
 
    void insertImmediateField2(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       // populate 3-bit BF field at bit 6
       TR_ASSERT(getOpCodeValue() == TR::InstOpCode::mtfsfi, "Only configured for mtsfi");
 
@@ -256,7 +253,6 @@ class PPCSrc1Instruction : public PPCImmInstruction
 
    void insertSource1Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(_source1Register);
       if (getOpCode().useAlternateFormatx())
          {
@@ -573,7 +569,6 @@ class PPCConditionalBranchInstruction : public PPCLabelInstruction
 
    void insertConditionRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *condRegister = toRealRegister(_conditionRegister);
       condRegister->setRegisterFieldBI(instruction);
       }
@@ -823,7 +818,6 @@ class PPCTrg1Instruction : public TR::Instruction
 
    void insertTargetRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(_target1Register);
       if (isVSX())
          target->setRegisterFieldXT(instruction);
@@ -888,7 +882,6 @@ class PPCTrg1ImmInstruction : public PPCTrg1Instruction
 
    void insertImmediateField(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       if (!isVMX())
          {
          if (getOpCodeValue() == TR::InstOpCode::addpcis)
@@ -966,14 +959,12 @@ class PPCSrc2Instruction : public TR::Instruction
 
    void insertSource1Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source2 = toRealRegister(_source1Register);
       source2->setRegisterFieldRA(instruction);
       }
 
    void insertSource2Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source2 = toRealRegister(_source2Register);
       source2->setRegisterFieldRB(instruction);
       }
@@ -1024,7 +1015,6 @@ class PPCTrg1Src1Instruction : public PPCTrg1Instruction
 
    void insertSource1Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source1 = toRealRegister(_source1Register);
       if (getOpCode().useAlternateFormat())
          {
@@ -1048,7 +1038,6 @@ class PPCTrg1Src1Instruction : public PPCTrg1Instruction
 
    void insertTargetRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(getTargetRegister());
       if (getOpCode().useAlternateFormatx())
          {
@@ -1159,7 +1148,6 @@ class PPCTrg1Src1ImmInstruction : public PPCTrg1Src1Instruction
 
    void insertImmediateField(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       if (!isVMX() && !isVSX())
          *instruction |= _source1Immediate & 0xffff;
       else
@@ -1322,7 +1310,6 @@ class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
 
    void insertTargetRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(getTargetRegister());
       if (getOpCode().useAlternateFormatx())
          {
@@ -1339,7 +1326,6 @@ class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
 
    void insertSource1Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source1 = toRealRegister(getSource1Register());
       if (getOpCode().useAlternateFormatx())
          {
@@ -1356,7 +1342,6 @@ class PPCTrg1Src2Instruction : public PPCTrg1Src1Instruction
 
    void insertSource2Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source2 = toRealRegister(_source2Register);
       if (getOpCode().useAlternateFormat())
          {
@@ -1473,7 +1458,6 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
 
    void insertTargetRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *target = toRealRegister(getTargetRegister());
       if (getOpCode().useAlternateFormatx())
          {
@@ -1487,7 +1471,6 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
 
    void insertSource1Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source1 = toRealRegister(getSource1Register());
       if (getOpCode().useAlternateFormatx())
          {
@@ -1501,7 +1484,6 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
 
    void insertSource2Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source2 = toRealRegister(getSource2Register());
       if (isFloat())
           source2->setRegisterFieldFRC(instruction);
@@ -1511,7 +1493,6 @@ class PPCTrg1Src3Instruction : public PPCTrg1Src2Instruction
 
    void insertSource3Register(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source3 = toRealRegister(_source3Register);
       if (isFloat())
          source3->setRegisterFieldFRB(instruction);
@@ -1676,7 +1657,6 @@ class PPCMemSrc1Instruction : public PPCMemInstruction
 
    void insertSourceRegister(uint32_t *instruction)
       {
-      // *this    swipeable for debugging purposes
       TR::RealRegister *source = toRealRegister(_sourceRegister);
 
       if (isVSX())

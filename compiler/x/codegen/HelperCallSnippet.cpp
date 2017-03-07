@@ -319,7 +319,6 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
    uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
@@ -330,7 +329,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet)
 void
 TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uint8_t *bufferPos)
    {
-   // *this    swipeable for debugging purposes
    TR_ASSERT(pOutFile != NULL, "assertion failure");
    TR::MethodSymbol *sym = snippet->getDestination()->getSymbol()->castToMethodSymbol();
 
@@ -424,7 +422,6 @@ TR_Debug::printBody(TR::FILE *pOutFile, TR::X86HelperCallSnippet  * snippet, uin
 
 uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    uint32_t length = 35;
 
    if (_callNode)

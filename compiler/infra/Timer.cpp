@@ -35,7 +35,6 @@
 
 void TR_SingleTimer::initialize(const char *title, TR_Memory * trMemory)
    {
-   // *this    swipeable for debugging purposes
    if (title)
       {
       _phaseTitle = (char *)trMemory->allocateHeapMemory( strlen(title)+1 );
@@ -70,7 +69,6 @@ uint32_t TR_SingleTimer::stopTiming(TR::Compilation *comp)
 
 char *TR_SingleTimer::timeTakenString(TR::Compilation *comp)
    {
-   // *this    swipeable for debugging purposes
    static char timeString[32];
    uint32_t    mins,
                uSecs,

@@ -50,7 +50,6 @@ TR::RealRegister *OMR::ARM::Machine::findBestFreeRegister(TR_RegisterKinds rk,
 							bool considerUnlatched,
 							bool isSinglePrecision)
    {
-   // *this    swipeable for debugging purposes
    int first;
    int last;
 
@@ -103,7 +102,6 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
                                                     bool                excludeGPR0,
                         							bool isSinglePrecision)
    {
-   // *this    swipeable for debugging purposes
    TR::Register           *candidates[NUM_ARM_MAXR];
    TR::Compilation *comp = TR::comp();
    TR::MemoryReference *tmemref;
@@ -308,7 +306,6 @@ TR::RealRegister *OMR::ARM::Machine::reverseSpillState(TR::Instruction      *cur
                                                      bool                excludeGPR0,
                                                      bool isSinglePrecision)
    {
-   // *this    swipeable for debugging purposes
    TR::MemoryReference *tmemref;
    TR::RealRegister    *sameReg, *crtemp   = NULL;
    TR_BackingStore       *location = spilledRegister->getBackingStorage();
@@ -473,7 +470,6 @@ void OMR::ARM::Machine::coerceRegisterAssignment(TR::Instruction                
                                               TR::Register                             *virtualRegister,
                                               TR::RealRegister::RegNum registerNumber)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister *targetRegister          = _registerFile[registerNumber];
    TR::RealRegister    *realReg                 = virtualRegister->getAssignedRealRegister();
    TR::RealRegister *currentAssignedRegister = realReg ? realReg : NULL;
@@ -621,7 +617,6 @@ void OMR::ARM::Machine::coerceRegisterAssignment(TR::Instruction                
 
 void OMR::ARM::Machine::initialiseRegisterFile()
    {
-   // *this    swipeable for debugging purposes
    _cg->_unlatchedRegisterList =
    (TR::RealRegister**)self()->cg()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
    _cg->_unlatchedRegisterList[0] = 0; // mark that list is empty
@@ -893,7 +888,6 @@ static void registerExchange(TR::Instruction     *precedingInstruction,
 
 TR::RealRegister *OMR::ARM::Machine::assignSingleRegister(TR::Register *virtualRegister, TR::Instruction *currentInstruction)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister       *assignedRegister = virtualRegister->getAssignedRealRegister();
    TR_RegisterKinds       kindOfRegister = virtualRegister->getKind();
 

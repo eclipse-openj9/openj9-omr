@@ -94,7 +94,6 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
                                        TR::InstOpCode::Mnemonic memToRegOpCode,
                                        TR::InstOpCode::Mnemonic copyOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild;
    TR::Node * secondChild;
    firstChild = root->getFirstChild();
@@ -270,7 +269,6 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
 void
 TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild;
    TR::Node * secondChild;
    TR::Instruction * cursor = NULL;

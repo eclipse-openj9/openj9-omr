@@ -229,7 +229,6 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
                                       TR_RegisterSizes  requestedRegSize,
                                       bool              considerUnlatched)
    {
-   // *this    swipeable for debugging purposes
    int first, last, i;
 
    struct TR_Candidate
@@ -1032,7 +1031,6 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
                                                         TR::RealRegister *targetRegister,
                                                         TR_RegisterSizes    requestedRegSize)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = self()->cg()->comp();
    if (targetRegister == NULL)
       {
@@ -1295,7 +1293,6 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
                                                 TR::RealRegister::RegNum  regNum,
                                                 bool                     coerceToSatisfyRegDeps)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister *targetRegister          = _registerFile[regNum];
    TR::RealRegister    *currentAssignedRegister = virtualRegister->getAssignedRealRegister();
    TR::Instruction     *instr                   = NULL;
@@ -1478,7 +1475,6 @@ void OMR::X86::Machine::swapGPRegisters(TR::Instruction          *currentInstruc
                                     TR::RealRegister::RegNum  regNum1,
                                     TR::RealRegister::RegNum  regNum2)
    {
-   // *this    swipeable for debugging purposes
    TR::RealRegister *realReg1 = self()->getX86RealRegister(regNum1);
    TR::RealRegister *realReg2 = self()->getX86RealRegister(regNum2);
    TR::Instruction *instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, XCHGRegReg(), realReg1, realReg2, self()->cg());
@@ -1530,7 +1526,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentIns
 
 void OMR::X86::Machine::setGPRWeightsFromAssociations()
    {
-   // *this    swipeable for debugging purposes
    const TR::X86LinkageProperties &linkageProperties = self()->cg()->getProperties();
 
    for (int i = TR::RealRegister::FirstGPR;
@@ -1577,7 +1572,6 @@ void OMR::X86::Machine::setGPRWeightsFromAssociations()
 void
 OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
    {
-   // *this    swipeable for debugging purposes
    TR::Compilation *comp = self()->cg()->comp();
    TR::RegisterDependencyConditions  *associations =
       generateRegisterDependencyConditions((uint8_t)0, TR::RealRegister::LastAssignableGPR, self()->cg());
@@ -1630,7 +1624,6 @@ OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 void
 OMR::X86::Machine::initialiseRegisterFile(const struct TR::X86LinkageProperties &properties)
    {
-   // *this    swipeable for debugging purposes
    int reg;
 
    // Special pseudo-registers
@@ -2401,7 +2394,6 @@ void OMR::X86::Machine::resetFPStackRegisters()
 
 void OMR::X86::Machine::initialiseFPStackRegisterFile()
    {
-   // *this    swipeable for debugging purposes
    _fpStack[TR_X86FPStackRegister::fp0] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp0,
                                                                     TR::RealRegister::NoReg, self()->cg());
@@ -2442,7 +2434,6 @@ bool OMR::X86::Machine::isFPRTopOfStack(TR::Register *virtReg)
 //
 void OMR::X86::Machine::fpStackPush(TR::Register *virtReg)
    {
-   // *this    swipeable for debugging purposes
 
    _fpTopOfStack++;
 
@@ -2467,7 +2458,6 @@ void OMR::X86::Machine::fpStackPush(TR::Register *virtReg)
 //
 void OMR::X86::Machine::fpStackCoerce(TR::Register *virtReg, int32_t stackLocation)
    {
-   // *this    swipeable for debugging purposes
    //
    // Check for stack overflow.
    //
@@ -2489,7 +2479,6 @@ void OMR::X86::Machine::fpStackCoerce(TR::Register *virtReg, int32_t stackLocati
 //
 TR::Register *OMR::X86::Machine::fpStackPop()
    {
-   // *this    swipeable for debugging purposes
 
    // Check for stack underflow.
    //
@@ -2526,7 +2515,6 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
                                                 TR::Register    *vreg,
                                                 bool            generateCode)
    {
-   // *this    swipeable for debugging purposes
 
    TR_X86FPStackRegister *fpReg   = toX86FPStackRegister(vreg->getAssignedRegister());
    int32_t                vregNum = (int32_t) fpReg->getFPStackRegisterNumber();
@@ -2568,7 +2556,6 @@ TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstructio
 TR::Instruction  *OMR::X86::Machine::fpStackFXCH(TR::Instruction *prevInstruction,
                                                 int32_t         stackReg)
    {
-   // *this    swipeable for debugging purposes
    TR_X86FPStackRegister *pTop = _fpStack[_fpTopOfStack];
    int32_t vRegNum             = _fpTopOfStack - stackReg;
 
@@ -2614,7 +2601,6 @@ void OMR::X86::Machine::fpCoerceRegistersToTopOfStack(TR::Instruction *prevInstr
                                                    TR::Register    *Y,
                                                    bool            strict)
    {
-   // *this    swipeable for debugging purposes
 
    TR_X86FPStackRegister *xReg       = toX86FPStackRegister(X->getAssignedRegister());
    int32_t                 x         = (int32_t) xReg->getFPStackRegisterNumber();
@@ -2697,7 +2683,6 @@ void OMR::X86::Machine::fpCoerceRegistersToTopOfStack(TR::Instruction *prevInstr
 //
 TR_X86OpCodes OMR::X86::Machine::fpDetermineReverseOpCode(TR_X86OpCodes op)
    {
-   // *this    swipeable for debugging purposes
 
    switch (op)
       {
@@ -2733,7 +2718,6 @@ TR_X86OpCodes OMR::X86::Machine::fpDetermineReverseOpCode(TR_X86OpCodes op)
 //
 TR_X86OpCodes OMR::X86::Machine::fpDeterminePopOpCode(TR_X86OpCodes op)
    {
-   // *this    swipeable for debugging purposes
 
    switch (op)
       {
@@ -2785,7 +2769,6 @@ TR_X86OpCodes OMR::X86::Machine::fpDeterminePopOpCode(TR_X86OpCodes op)
 //
 TR_X86FPStackRegister *OMR::X86::Machine::findFreeFPRegister()
    {
-   // *this    swipeable for debugging purposes
 
    TR_X86FPStackRegister *freeRegister = NULL;
    int32_t                nextFPReg = _fpTopOfStack + 1;
@@ -2805,7 +2788,6 @@ TR_X86FPStackRegister *OMR::X86::Machine::findFreeFPRegister()
 //
 TR::Instruction *OMR::X86::Machine::freeBestFPRegister(TR::Instruction *prevInstruction)
    {
-   // *this    swipeable for debugging purposes
 
    TR::Register *candidates[TR_X86FPStackRegister::NumRegisters];
    int          numCandidates = 0;
@@ -2859,7 +2841,6 @@ TR::Instruction *OMR::X86::Machine::freeBestFPRegister(TR::Instruction *prevInst
 TR::Instruction *OMR::X86::Machine::fpSpillFPR(TR::Instruction *prevInstruction,
                                            TR::Register    *vreg)
    {
-   // *this    swipeable for debugging purposes
 
    TR_X86FPStackRegister *fpReg = toX86FPStackRegister(vreg->getAssignedRegister());
    TR::Instruction        *cursor = prevInstruction;
@@ -2902,7 +2883,6 @@ TR::Instruction *OMR::X86::Machine::fpSpillFPR(TR::Instruction *prevInstruction,
 TR::Instruction *OMR::X86::Machine::reverseFPRSpillState(TR::Instruction *prevInstruction,
                                                      TR::Register    *spilledRegister)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction *cursor = prevInstruction;
 
    if (self()->isFPStackFull())
@@ -2935,7 +2915,6 @@ TR::Instruction *OMR::X86::Machine::reverseFPRSpillState(TR::Instruction *prevIn
 //
 TR::Instruction *OMR::X86::Machine::fpSpillStack(TR::Instruction *prevInstruction)
    {
-   // *this    swipeable for debugging purposes
    TR::Instruction *cursor = prevInstruction;
    int32_t top = _fpTopOfStack;
 
@@ -2980,7 +2959,6 @@ void OMR::X86::Machine::printGPRegisterStatus(TR_FrontEnd *fe, TR::RealRegister 
 //
 void OMR::X86::Machine::printFPRegisterStatus(TR_FrontEnd *fe, TR::FILE *pOutFile)
    {
-   // *this    swipeable for debugging purposes
    char buf[32];
    char *cursor;
    int32_t i,j;

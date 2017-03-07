@@ -128,7 +128,6 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions e
       _firstPrologueInstr(NULL),
       _frameType(standardFrame)
    {
-   // *this    swipeable for debugging purposes
    int32_t i;
    self()->setProperties(0);
    for (i=0; i<TR::RealRegister::NumRegisters;i++)
@@ -2321,7 +2320,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    bool isFastJNI, int64_t killMask, TR::Register* &vftReg, bool PassReceiver)
    {
 
-   // *this    swipeable for debugging purposes
    TR::SystemLinkage * systemLinkage = (TR::SystemLinkage *) self()->cg()->getLinkage(TR_System);
 
    self()->clearCachedStackRegisterForOutgoingArguments(true); // outgoing arguments may be accessed via stack register realized lazily via getStackRegisterForOutgoingArgument()

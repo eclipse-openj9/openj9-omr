@@ -472,7 +472,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
    _offset(0),_displacement(0), _flags(0), _storageReference(storageReference), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
    _incrementedNodesList(cg->comp()->trMemory())
    {
-   // *this    swipeable for debugging purposes
 
    TR::SymbolReference * symRef = rootLoadOrStore->getOpCode().hasSymbolReference() ? rootLoadOrStore->getSymbolReference() : NULL;
    TR::Symbol * symbol = symRef ? symRef->getSymbol() : NULL;
@@ -760,7 +759,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * node, TR::SymbolReference * 
      _incrementedNodesList(cg->comp()->trMemory())
    {
 
-   // *this    swipeable for debugging purposes
    TR::Symbol * symbol = symRef->getSymbol();
    TR::Register * writableLiteralPoolRegister = NULL;
    TR::Compilation *comp = cg->comp();
@@ -1127,7 +1125,6 @@ OMR::Z::MemoryReference::setOriginalSymbolReference(TR::SymbolReference * ref, T
 void
 OMR::Z::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    if (_baseRegister != NULL)
       {
       if (_baseRegister != cg->getLitPoolRealRegister() &&  _baseNode != NULL)
@@ -1178,7 +1175,6 @@ OMR::Z::MemoryReference::stopUsingMemRefRegister(TR::CodeGenerator * cg)
 void
 OMR::Z::MemoryReference::bookKeepingRegisterUses(TR::Instruction * instr, TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    if (_baseRegister != NULL)
       {
       instr->useRegister(_baseRegister);
@@ -1943,7 +1939,6 @@ OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGen
 void
 OMR::Z::MemoryReference::consolidateRegisters(TR::Node * node, TR::CodeGenerator * cg)
    {
-   // *this swipeable for debugging purposes
    TR::Register * tempTargetRegister;
    if ((_baseRegister && (_baseRegister->containsCollectedReference() || _baseRegister->containsInternalPointer())) ||
       (_indexRegister && (_indexRegister->containsCollectedReference() || _indexRegister->containsInternalPointer())))
@@ -2131,7 +2126,6 @@ OMR::Z::MemoryReference::enforceVRXFormatLimits(TR::Node * node, TR::CodeGenerat
 TR::Instruction *
 OMR::Z::MemoryReference::enforce4KDisplacementLimit(TR::Node * node, TR::CodeGenerator * cg, TR::Instruction * preced, bool forcePLXFixup, bool forceFixup)
    {
-   // *this    swipeable for debugging purposes
    if (self()->ignoreNegativeOffset())
       return preced;
 
@@ -2201,7 +2195,6 @@ OMR::Z::MemoryReference::markAndAdjustForLongDisplacementIfNeeded(TR::Node * nod
 TR::Instruction *
 OMR::Z::MemoryReference::enforceDisplacementLimit(TR::Node * node, TR::CodeGenerator * cg, TR::Instruction * preced)
    {
-   // *this swipeable for debugging purposes
    if (self()->ignoreNegativeOffset())
       return preced;
 
@@ -2255,7 +2248,6 @@ OMR::Z::MemoryReference::enforceDisplacementLimit(TR::Node * node, TR::CodeGener
 void
 OMR::Z::MemoryReference::eliminateNegativeDisplacement(TR::Node * node, TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    if (self()->ignoreNegativeOffset())
       return;
 
@@ -2264,7 +2256,6 @@ OMR::Z::MemoryReference::eliminateNegativeDisplacement(TR::Node * node, TR::Code
 
    if (_offset < 0 && !cg->isDispInRange(_offset))
       {
-      // *this    swipeable for debugging purposes
 
       TR::Register * tempTargetRegister;
       if (TR::Compiler->target.is64Bit())
@@ -2308,7 +2299,6 @@ OMR::Z::MemoryReference::separateIndexRegister(TR::Node * node, TR::CodeGenerato
    TR::Compilation *comp = cg->comp();
    if (_indexRegister != NULL)
       {
-      // *this    swipeable for debugging purposes
       if (_baseRegister == NULL)
          {
          // if baseRegister happens to be NULL, we can just set that to be the old index register and be done
@@ -2392,7 +2382,6 @@ OMR::Z::MemoryReference::propagateAlignmentInfo(OMR::Z::MemoryReference *newMemR
 void
 OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, TR::CodeGenerator * cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
    TR::RealRegister * assignedBaseRegister;
    TR::RealRegister * assignedIndexRegister;
@@ -2595,7 +2584,6 @@ OMR::Z::MemoryReference::getSnippet()
 int32_t
 OMR::Z::MemoryReference::estimateBinaryLength(int32_t  currentEstimate, TR::CodeGenerator * cg, TR::Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    uint8_t length = 0;
    TR::Compilation *comp = cg->comp();
 

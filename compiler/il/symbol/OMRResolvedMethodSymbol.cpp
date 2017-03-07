@@ -2079,7 +2079,6 @@ OMR::ResolvedMethodSymbol::catchBlocksHaveRealPredecessors(TR::CFG *cfg, TR::Com
 void
 OMR::ResolvedMethodSymbol::removeUnusedLocals()
    {
-   // *this    swipeable for debugging purposes
    ListElement<TR::AutomaticSymbol> *cursor = _automaticList.getListHead();
    ListElement<TR::AutomaticSymbol> *prev   = NULL;
    TR::AutomaticSymbol *local;

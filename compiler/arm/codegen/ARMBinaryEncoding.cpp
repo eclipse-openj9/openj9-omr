@@ -363,7 +363,6 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 
 int32_t TR::ARMImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   // *this   swipeable for debugging purposes
    int32_t length;
    TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
    TR::Node *node = getNode();

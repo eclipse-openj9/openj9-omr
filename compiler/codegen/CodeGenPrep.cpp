@@ -363,7 +363,6 @@ OMR::CodeGenerator::lowerTreeIfNeeded(
  */
 void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::TreeTop * treeTop, vcount_t visitCount, TR::DataType storeType)
    {
-   // *this    swipeable for debugging purposes
    parent->setVisitCount(visitCount);
 
    TR::ILOpCode &opCode = parent->getOpCode();
@@ -452,7 +451,6 @@ void OMR::CodeGenerator::identifyUnneededByteConvNodes(TR::Node * parent, TR::Tr
 
 void OMR::CodeGenerator::identifyUnneededByteConvNodes()
    {
-   // *this    swipeable for debugging purposes
    vcount_t visitCount = self()->comp()->incVisitCount();
 
    TR::Block * block = NULL;

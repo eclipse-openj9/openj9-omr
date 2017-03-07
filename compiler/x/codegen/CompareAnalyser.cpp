@@ -200,7 +200,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
                                                                  TR_X86OpCodes highBranchOpCode,
                                                                  TR_X86OpCodes highReversedBranchOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -749,7 +748,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
                                                                   TR::LabelSymbol *secondBranchLabel,
                                                                   TR_X86OpCodes  secondBranchOp)
    {
-   // *this    swipeable for debugging purposes
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -967,7 +965,6 @@ TR::Register *TR_X86CompareAnalyser::longEqualityBooleanAnalyser(TR::Node       
                                                                  TR_X86OpCodes setOpCode,
                                                                  TR_X86OpCodes combineOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -1051,7 +1048,6 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *
                                                                 TR_X86OpCodes highSetOpCode,
                                                                 TR_X86OpCodes lowSetOpCode)
    {
-   // *this    swipeable for debugging purposes
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
    TR::Register *firstRegister  = firstChild->getRegister();
@@ -1174,7 +1170,6 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *
 
 TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
    {
-   // *this    swipeable for debugging purposes
    TR::Node     *firstChild     = root->getFirstChild();
    TR::Node     *secondChild    = root->getSecondChild();
    TR::Register *firstRegister  = firstChild->getRegister();

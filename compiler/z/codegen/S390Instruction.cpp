@@ -97,7 +97,6 @@ TR::S390RSInstruction::generateAdditionalSourceRegisters(TR::Register * fReg, TR
 uint8_t *
 TR::S390EInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -115,7 +114,6 @@ TR::S390EInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390IEInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -264,7 +262,6 @@ bool TR::S390LabeledInstruction::isNopCandidate()
 uint8_t *
 TR::S390LabelInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::Compilation *comp = cg()->comp();
 
@@ -535,7 +532,6 @@ TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
 int32_t
 TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    if (getLabelSymbol() != NULL)
       {
       getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
@@ -594,7 +590,6 @@ TR::S390LabelInstruction::estimateBinaryLength(int32_t  currentEstimate)
 void
 TR::S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    //
    TR::Register **_sourceReg = sourceRegBase();
    TR::Register **_targetReg = targetRegBase();
@@ -639,7 +634,6 @@ TR::S390LabelInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindTo
 void
 TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    //
    // If there are any dependency conditions on this instruction, apply them.
    // Any register or memory references must be blocked before the condition
@@ -734,7 +728,6 @@ TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindT
 uint8_t *
 TR::S390BranchInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::LabelSymbol * label = getLabelSymbol();
    TR::Snippet * snippet = getCallSnippet();
@@ -832,7 +825,6 @@ TR::S390BranchInstruction::generateBinaryEncoding()
 int32_t
 TR::S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    int32_t length = 6;
    TR::Compilation *comp = cg()->comp();
 
@@ -868,7 +860,6 @@ TR::S390BranchInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390BranchOnCountInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::LabelSymbol * label = getLabelSymbol();
    TR::Snippet * snippet = getCallSnippet();
@@ -976,7 +967,6 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
 int32_t
 TR::S390BranchOnCountInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
    //code could be expanded into BRAS(4)+DC(4)+L(4)+BCT(4) sequence
    setEstimatedBinaryLength(16);
@@ -986,7 +976,6 @@ TR::S390BranchOnCountInstruction::estimateBinaryLength(int32_t  currentEstimate)
 bool
 TR::S390BranchOnCountInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesAnyRegister(reg, getRegisterOperand(1)))
       {
       return true;
@@ -1020,7 +1009,6 @@ TR::S390BranchOnCountInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::LabelSymbol * label = getLabelSymbol();
    TR::Snippet * snippet = getCallSnippet();
@@ -1146,7 +1134,6 @@ TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
 int32_t
 TR::S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    setEstimatedBinaryLength(getOpCode().getInstructionLength());
    //code could be expanded into BRAS(4)+DC(4)+L(4)+BXLE(4) sequence
    //or  BRAS(4)+DC(8)+LG(6)+BXLG(6) sequence
@@ -1164,7 +1151,6 @@ TR::S390BranchOnIndexInstruction::estimateBinaryLength(int32_t  currentEstimate)
 bool
 TR::S390BranchOnIndexInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesAnyRegister(reg, getRegisterOperand(1), getRegisterOperand(2)))
       {
       return true;
@@ -1183,7 +1169,6 @@ TR::S390BranchOnIndexInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390PseudoInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
@@ -1360,7 +1345,6 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390ImmInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1418,7 +1402,6 @@ TR::S390ImmInstruction::generateBinaryEncoding()
 TR::S390ImmInstruction *
 TR::S390ImmInstruction::getS390ImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
    }
 #endif
@@ -1431,7 +1414,6 @@ TR::S390ImmInstruction::getS390ImmInstruction()
 uint8_t *
 TR::S390Imm2Instruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1468,7 +1450,6 @@ TR::S390Imm2Instruction::generateBinaryEncoding()
 uint8_t *
 TR::S390ImmSnippetInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1488,7 +1469,6 @@ TR::S390ImmSnippetInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390ImmSymInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1510,7 +1490,6 @@ TR::S390ImmSymInstruction::generateBinaryEncoding()
 bool
 TR::S390RegInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg))
       {
       return true;
@@ -1525,7 +1504,6 @@ TR::S390RegInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390RegInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1563,7 +1541,6 @@ TR::S390RegInstruction::assignRegistersNoDependencies(TR_RegisterKinds kindToBeA
 bool
 TR::S390RRInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)))
       {
       return true;
@@ -1578,7 +1555,6 @@ TR::S390RRInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390RRInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1648,7 +1624,6 @@ TR::S390TranslateInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390TranslateInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1678,7 +1653,6 @@ TR::S390TranslateInstruction::generateBinaryEncoding()
 bool
 TR::S390RRFInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)) ||
          (_isSourceReg2Present &&  matchesAnyRegister(reg, getRegisterOperand(3))))
       {
@@ -1694,7 +1668,6 @@ TR::S390RRFInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390RRFInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1836,7 +1809,6 @@ TR::S390RRFInstruction::generateBinaryEncoding()
 bool
 TR::S390RRRInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (matchesTargetRegister(reg) || matchesAnyRegister(reg, getRegisterOperand(2)) ||
        (matchesAnyRegister(reg, getRegisterOperand(3))))
       {
@@ -1852,7 +1824,6 @@ TR::S390RRRInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390RRRInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1902,7 +1873,6 @@ TR::S390RRRInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390RIInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -1949,7 +1919,6 @@ TR::S390RIInstruction::generateBinaryEncoding()
 bool
 TR::S390RILInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getRegisterOperand(1))
       {
       return true;
@@ -2063,7 +2032,6 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
 uint8_t *
 TR::S390RILInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -2594,7 +2562,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
 int32_t
 TR::S390RSInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference() != NULL)
       {
       return getMemoryReference()->estimateBinaryLength(currentEstimate, cg(), this);
@@ -2608,7 +2575,6 @@ TR::S390RSInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RSInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -2681,7 +2647,6 @@ TR::S390RSInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390RRSInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
 
    // acquire the current cursor location so we can start generating our
    // instruction there.
@@ -2777,7 +2742,6 @@ TR::S390RRSInstruction::generateBinaryEncoding()
 int32_t
 TR::S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
    {
-   // *this    swipeable for debugging purposes
    if (getBranchDestinationLabel())
       setEstimatedBinaryLength(12);
    else
@@ -2788,7 +2752,6 @@ TR::S390RIEInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RIEInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
 
 
    // let's determine what form of RIE we are dealing with
@@ -3260,7 +3223,6 @@ TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchA
 uint8_t *
 TR::S390RISInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
 
    // acquire the current cursor location so we can start generating our
    // instruction there.
@@ -3320,7 +3282,6 @@ TR::S390RISInstruction::generateBinaryEncoding()
 bool
 TR::S390MemInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
    TR::Compilation *comp = cg()->comp();
    bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -3353,7 +3314,6 @@ TR::S390MemInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390MemInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -3378,7 +3338,6 @@ TR::S390MemInstruction::generateBinaryEncoding()
 bool
 TR::S390RXInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
    TR::Compilation *comp = cg()->comp();
    bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -3428,7 +3387,6 @@ TR::S390RXInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RXInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::Compilation *comp = cg()->comp();
    uint8_t * cursor = instructionStart;
@@ -3490,7 +3448,6 @@ TR::S390RXEInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RXEInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -3540,7 +3497,6 @@ TR::S390RXYInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RXYInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -3597,7 +3553,6 @@ TR::S390RXFInstruction::estimateBinaryLength(int32_t  currentEstimate)
 bool
 TR::S390RXFInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
    TR::Compilation *comp = cg()->comp();
    bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -3630,7 +3585,6 @@ TR::S390RXFInstruction::refsRegister(TR::Register * reg)
 uint8_t *
 TR::S390RXFInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    int32_t padding = 0, longDispTouchUpPadding = 0;
@@ -3786,7 +3740,6 @@ TR::S390VRIInstruction::getExtendedMnemonicName()
 uint8_t*
 TR::S390VRIInstruction::preGenerateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    memset(static_cast<void*>(instructionStart), 0, getEstimatedBinaryLength());
 
@@ -4218,7 +4171,6 @@ TR::S390VRRInstruction::getExtendedMnemonicName()
 uint8_t *
 TR::S390VRRInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset((void*)cursor, 0, getEstimatedBinaryLength());
@@ -4475,7 +4427,6 @@ TR::S390VRRiInstruction::generateBinaryEncoding()
    TR_ASSERT(r1Reg != NULL, "First Operand should not be NULL!");
    TR_ASSERT(v2Reg != NULL, "2nd Operand should not be NULL!");
 
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset((void*)cursor, 0, getEstimatedBinaryLength());
@@ -4532,7 +4483,6 @@ TR::S390VStorageInstruction::getExtendedMnemonicName()
 uint8_t *
 TR::S390VStorageInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
@@ -4632,7 +4582,6 @@ TR::S390VRSdInstruction::generateBinaryEncoding()
     TR_ASSERT(r3Reg  != NULL, "R3 in VRS-d should not be NULL!");
     TR_ASSERT(memRef != NULL, "Memory Ref in VRS-d should not be NULL!");
 
-    // *this    swipeable for debugging purposes
     uint8_t * instructionStart = cg()->getBinaryBufferCursor();
     uint8_t * cursor = instructionStart;
     memset((void*)cursor, 0, getEstimatedBinaryLength());
@@ -4685,7 +4634,6 @@ TR::S390VRVInstruction::generateBinaryEncoding()
     TR_ASSERT(getRegisterOperand(1) != NULL, "1st Operand should not be NULL!");
     TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
-    // *this    swipeable for debugging purposes
     uint8_t * instructionStart = cg()->getBinaryBufferCursor();
     uint8_t * cursor = instructionStart;
     memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
@@ -4809,7 +4757,6 @@ TR::S390MemMemInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390MemMemInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
@@ -4869,7 +4816,6 @@ TR::S390SS1Instruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SS1Instruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    TR::Compilation *comp = cg()->comp();
@@ -4926,7 +4872,6 @@ TR::S390SS1Instruction::generateBinaryEncoding()
 uint8_t *
 TR::S390SS2Instruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -4994,7 +4939,6 @@ TR::S390SS2Instruction::generateBinaryEncoding()
 uint8_t *
 TR::S390SS4Instruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5052,7 +4996,6 @@ TR::S390SS4Instruction::generateBinaryEncoding()
 bool
 TR::S390SSFInstruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    // 64bit mem refs clobber high word regs
    bool enableHighWordRA = cg()->supportsHighWordFacility() && !cg()->comp()->getOption(TR_DisableHighWordRA) &&
                            reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
@@ -5109,7 +5052,6 @@ TR::S390SSFInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SSFInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5169,7 +5111,6 @@ TR::S390RSLInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RSLInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5227,7 +5168,6 @@ TR::S390RSLbInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390RSLbInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5300,7 +5240,6 @@ TR::S390SIInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SIInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5356,7 +5295,6 @@ TR::S390SIYInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SIYInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5418,7 +5356,6 @@ TR::S390SILInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SILInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5473,7 +5410,6 @@ TR::S390SInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5526,7 +5462,6 @@ TR::S390NOPInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390NOPInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
@@ -5621,7 +5556,6 @@ TR::S390MIIInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390MIIInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
 
    // acquire the current cursor location so we can start generating our
    // instruction there.
@@ -5710,7 +5644,6 @@ TR::S390SMIInstruction::estimateBinaryLength(int32_t  currentEstimate)
 uint8_t *
 TR::S390SMIInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
 
    // acquire the current cursor location so we can start generating our
    // instruction there.
@@ -5779,7 +5712,6 @@ TR::S390SMIInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    {
-   // *this    swipeable for debugging purposes
    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
    TR::LabelSymbol * label = getLabelSymbol();
    uint8_t * cursor = instructionStart;

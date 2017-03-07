@@ -868,7 +868,6 @@ TR_Debug::printSnippetLabel(TR::FILE *pOutFile, TR::LabelSymbol *label, uint8_t 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR_BitVector * bv)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    trfprintf(pOutFile,"{");
@@ -908,7 +907,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR_SingleBitContainer *sbc)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::BitVector * bv)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    trfprintf(pOutFile,"{");
@@ -937,7 +935,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::BitVector * bv)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::SparseBitVector * sparse)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    trfprintf(pOutFile,"{");
@@ -966,7 +963,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::SparseBitVector * sparse)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::SymbolReference * symRef)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    TR_PrettyPrinterString  output(this);
@@ -1722,7 +1718,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::SymbolReferenceTable * symRefTab)
 void
 TR_Debug::printAliasInfo(TR::FILE *pOutFile, TR::SymbolReferenceTable * symRefTab)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    trfprintf(pOutFile, "\nSymbol References with Aliases:\n\n");
@@ -1734,7 +1729,6 @@ TR_Debug::printAliasInfo(TR::FILE *pOutFile, TR::SymbolReferenceTable * symRefTa
 void
 TR_Debug::printAliasInfo(TR::FILE *pOutFile, TR::SymbolReference * symRef)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return;
 
    TR_BitVector * useDefAliases = symRef->getUseDefAliasesBV();
@@ -2512,7 +2506,6 @@ TR_Debug::dumpSingleTreeWithInstrs(TR::TreeTop     *treeTop,
 void
 TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees, bool header)
    {
-   // *this    swipeable for debugging purposes
    const char * methodName = NULL;
    int32_t bfLineNo = -1;
    int32_t efLineNo = -1;

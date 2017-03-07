@@ -54,27 +54,22 @@ namespace TR { class Register; }
 
 void OMR::Power::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void OMR::Power::Linkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void OMR::Power::Linkage::initPPCRealRegisterLinkage()
    {
-   // *this    swipeable for debugging purposes
    }
 
 void OMR::Power::Linkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
    {
-   // *this    swipeable for debugging purposes
    }
 
 bool OMR::Power::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    {
-   // *this    swipeable for debugging purposes
    return(false);
    }
 
@@ -684,7 +679,6 @@ TR::Instruction *OMR::Power::Linkage::flushArguments(TR::Instruction *cursor)
 
 TR::Register *OMR::Power::Linkage::pushIntegerWordArg(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *pushRegister = NULL;
    TR_ASSERT(child->getDataType() != TR::Address, "assumption violated");
    if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
@@ -703,7 +697,6 @@ TR::Register *OMR::Power::Linkage::pushIntegerWordArg(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushAddressArg(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *pushRegister = NULL;
    TR_ASSERT(child->getDataType() == TR::Address, "assumption violated");
    if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
@@ -731,7 +724,6 @@ TR::Register *OMR::Power::Linkage::pushAddressArg(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushThis(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *tempRegister = self()->cg()->evaluate(child);
    self()->cg()->decReferenceCount(child);
    return tempRegister;
@@ -739,7 +731,6 @@ TR::Register *OMR::Power::Linkage::pushThis(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushLongArg(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *pushRegister = NULL;
    if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
       {
@@ -768,7 +759,6 @@ TR::Register *OMR::Power::Linkage::pushLongArg(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushFloatArg(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *pushRegister = self()->cg()->evaluate(child);
    self()->cg()->decReferenceCount(child);
    return(pushRegister);
@@ -776,7 +766,6 @@ TR::Register *OMR::Power::Linkage::pushFloatArg(TR::Node *child)
 
 TR::Register *OMR::Power::Linkage::pushDoubleArg(TR::Node *child)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *pushRegister = self()->cg()->evaluate(child);
    self()->cg()->decReferenceCount(child);
    return(pushRegister);

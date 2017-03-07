@@ -301,7 +301,6 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
 void
 TR_Debug::print(TR::FILE *pOutFile,  TR::CFG * cfg)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -426,7 +425,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR_Structure * structure, uint32_t indentati
 void
 TR_Debug::print(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -525,7 +523,6 @@ TR_Debug::printPreds(TR::FILE *pOutFile, TR::CFGNode *node)
 void
 TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -670,7 +667,6 @@ TR_Debug::printSubGraph(TR::FILE *pOutFile, TR_RegionStructure * regionStructure
 void
 TR_Debug::print(TR::FILE *pOutFile, TR_InductionVariable * inductionVariable, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -691,7 +687,6 @@ static const char *structNames[] = { "Blank", "Block", "Region" };
 void
 TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure * structure, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -709,7 +704,6 @@ TR_Debug::printBaseInfo(TR::FILE *pOutFile, TR_Structure * structure, uint32_t i
 void
 TR_Debug::print(TR::FILE *pOutFile, TR_BlockStructure * blockStructure, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -759,7 +753,6 @@ TR_Debug::printNodesInEdgeListIterator(TR::FILE *pOutFile, TR::CFGEdgeList &li, 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::Block * block, uint32_t indentation)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -1257,7 +1250,6 @@ TR_Debug::printWithFixedPrefix(TR::FILE *pOutFile, TR::Node * node, uint32_t ind
    TR_PrettyPrinterString globalIndexPrefix(this),
                           output(this);
 
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL) return 0;
 
    _comp->setNodeOpCodeLength(0);
@@ -3698,7 +3690,6 @@ TR_Debug::verifyTreesPass1(TR::Node *node)
 void
 TR_Debug::verifyTreesPass2(TR::Node *node, bool isTreeTop)
    {
-   // *this    swipeable for debugging purposes
 
    // Verify the reference count. Pass 1 should have set the localIndex to the
    // reference count.
@@ -3844,7 +3835,6 @@ TR_Debug::verifyBlocks(TR::ResolvedMethodSymbol * methodSymbol)
 void
 TR_Debug::verifyBlocksPass1(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
 
    // If this is the first time through this node, verify the children
    //
@@ -3872,7 +3862,6 @@ TR_Debug::verifyBlocksPass1(TR::Node *node)
 void
 TR_Debug::verifyBlocksPass2(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
 
    // Pass through and make sure that the localIndex == 0 for each child
    //

@@ -495,7 +495,6 @@ OMR::CodeGenerator::lowerTreesPostChildrenVisit(TR::Node * parent, TR::TreeTop *
 void
 OMR::CodeGenerator::setUpForInstructionSelection()
   {
-   // *this    swipeable for debugging purposes
    self()->comp()->incVisitCount();
 
    // prepareNodeForInstructionSelection is called during a separate walk of the treetops because
@@ -2617,7 +2616,6 @@ OMR::CodeGenerator::isMemoryUpdate(TR::Node *node)
 void
 OMR::CodeGenerator::processRelocations()
    {
-   // *this    swipeable for debugging purposes
    //
    auto iterator = _relocationList.begin();
    while(iterator != _relocationList.end())
@@ -2906,7 +2904,6 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
 int32_t
 OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    TR::Snippet *cursor;
 
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
@@ -2936,7 +2933,6 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
 uint8_t *
 OMR::CodeGenerator::emitSnippets(bool isWarm)
    {
-   // *this    swipeable for debugging purposes
    uint8_t *codeOffset;
    uint8_t *retVal;
 
@@ -2979,7 +2975,6 @@ OMR::CodeGenerator::emitSnippets(bool isWarm)
 TR::LabelSymbol *
 OMR::CodeGenerator::lookUpSnippet(int32_t snippetKind, TR::SymbolReference *symRef)
    {
-   // *this    swipeable for debugging purposes
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
       if (self()->isSnippetMatched(*iterator, snippetKind, symRef))
@@ -2991,7 +2986,6 @@ OMR::CodeGenerator::lookUpSnippet(int32_t snippetKind, TR::SymbolReference *symR
 TR::SymbolReference *
 OMR::CodeGenerator::allocateLocalTemp(TR::DataType dt, bool isInternalPointer)
    {
-   // *this    swipeable for debugging purposes
    //
    TR::AutomaticSymbol * temp;
    if (isInternalPointer)

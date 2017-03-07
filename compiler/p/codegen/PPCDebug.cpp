@@ -190,7 +190,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * instr)
             // fall thru
       case OMR::Instruction::IsNotExtended:
          {
-         // *this    swipeable for debugging purposes
          printPrefix(pOutFile, instr);
          trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
          trfflush(_comp->getOutFile());
@@ -210,7 +209,6 @@ TR_Debug::printInstructionComment(TR::FILE *pOutFile, int32_t tabStops, TR::Inst
 void
 TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 
@@ -237,7 +235,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCLabelInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
 
    TR::LabelSymbol *label   = instr->getLabelSymbol();
@@ -301,7 +298,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepLabelInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCConditionalBranchInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getConditionRegister(), TR_WordReg);
@@ -324,7 +320,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepConditionalBranchInstruction * ins
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCAdminInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    int i;
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s ", getOpCodeName(&instr->getOpCode()));
@@ -357,7 +352,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCAdminInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCImmInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t0x%08x", getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
    trfflush(_comp->getOutFile());
@@ -366,7 +360,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCImmInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc1Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg);
@@ -379,7 +372,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc1Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
    if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
@@ -409,7 +401,6 @@ TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    intptrj_t imm = instr->getAddrImmediate();
    uint8_t *cursor = instr->getBinaryEncoding();
    intptrj_t distance = 0;
@@ -460,7 +451,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
@@ -470,7 +460,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -491,7 +480,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1ImmInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -515,7 +503,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1ImmInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1ImmInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
@@ -538,7 +525,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1ImmInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1Imm2Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    uint64_t lmask;
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
@@ -557,7 +543,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1Imm2Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc2Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
@@ -568,7 +553,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCSrc2Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src2Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -590,7 +574,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src2Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src2ImmInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    uint64_t lmask;
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
@@ -608,7 +591,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src2ImmInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src3Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
@@ -621,7 +603,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src3Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCMemSrc1Instruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -639,7 +620,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCMemSrc1Instruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCMemInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getMemoryReference());
@@ -650,7 +630,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCMemInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1MemInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
@@ -687,7 +666,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1MemInstruction * instr)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCControlFlowInstruction * instr)
    {
-   // *this    swipeable for debugging purposes
    int i;
    printPrefix(pOutFile, instr);
 
@@ -772,7 +750,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterDependencyConditions * condition
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, bool d_form)
    {
-   // *this    swipeable for debugging purposes
    trfprintf(pOutFile, "[");
 
    if (mr->getBaseRegister() != NULL)

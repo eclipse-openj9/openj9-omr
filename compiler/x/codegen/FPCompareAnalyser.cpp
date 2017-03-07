@@ -346,7 +346,6 @@ void TR_X86FPCompareAnalyser::setInputs(TR::Node     *firstChild,
                                          bool         disallowMemoryFormInstructions,
                                          bool         disallowOperandSwapping)
    {
-   // *this    swipeable for debugging purposes
 
 
    if (firstRegister)

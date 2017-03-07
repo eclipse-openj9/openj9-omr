@@ -345,7 +345,6 @@ void OMR::Power::RegisterDependencyConditions::unionNoRegPostCondition(TR::Regis
 
 bool OMR::Power::RegisterDependencyConditions::refsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -367,7 +366,6 @@ bool OMR::Power::RegisterDependencyConditions::refsRegister(TR::Register *r)
 
 bool OMR::Power::RegisterDependencyConditions::defsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -389,7 +387,6 @@ bool OMR::Power::RegisterDependencyConditions::defsRegister(TR::Register *r)
 
 bool OMR::Power::RegisterDependencyConditions::defsRealRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister()->getAssignedRegister() == r &&
@@ -414,7 +411,6 @@ bool OMR::Power::RegisterDependencyConditions::defsRealRegister(TR::Register *r)
 
 bool OMR::Power::RegisterDependencyConditions::usesRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _addCursorForPre; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -436,7 +432,6 @@ bool OMR::Power::RegisterDependencyConditions::usesRegister(TR::Register *r)
 
 void OMR::Power::RegisterDependencyConditions::bookKeepingRegisterUses(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register *virtReg;
    TR::RealRegister::RegNum regNum;
    TR::RegisterDependencyConditions *assoc;
@@ -617,7 +612,6 @@ static TR::RegisterDependency*
 findDependencyChainHead(TR::RegisterDependency *dep,
                         TR_PPCRegisterDependencyMap& map)
    {
-   // *this    swipeable for debugging purposes
    TR::RegisterDependency *cursor = map.getDependencyWithAssigned(dep->getRealRegister());
 
 
@@ -643,7 +637,6 @@ static void assignFreeRegisters(TR::Instruction              *currentInstruction
                                 TR_PPCRegisterDependencyMap& map,
                                 TR::CodeGenerator            *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
 
    // Assign a chain of dependencies where the head of the chain depends on a free reg
@@ -665,7 +658,6 @@ static void assignContendedRegisters(TR::Instruction              *currentInstru
                                      bool                         depsBlocked,
                                      TR::CodeGenerator            *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
 
    dep = findDependencyChainHead(dep, map);
@@ -766,7 +758,6 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                                                     uint32_t          numberOfRegisters,
                                                     TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
    TR::Register   *virtReg;
    TR::RealRegister::RegNum dependentRegNum;

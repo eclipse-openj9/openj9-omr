@@ -372,7 +372,6 @@ void OMR::ARM::CodeGenerator::beginInstructionSelection()
 
 void OMR::ARM::CodeGenerator::endInstructionSelection()
    {
-   // *this    swipeable for debugging purposes
    if (_returnTypeInfoInstruction != NULL)
       {
       _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(TR::comp()->getReturnInfo()));
@@ -691,7 +690,6 @@ int32_t OMR::ARM::CodeGenerator::findOrCreateAddressConstant(void *v, TR::DataTy
 // different from evaluate in that it returns a clobberable register
 TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    {
-   // *this    swipeable for debugging purposes
    if (node->getReferenceCount() > 1)
       {
       if (node->getOpCode().isLong())

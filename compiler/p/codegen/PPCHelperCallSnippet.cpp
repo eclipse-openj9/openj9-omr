@@ -44,7 +44,6 @@
 
 uint8_t *TR::PPCHelperCallSnippet::emitSnippetBody()
    {
-   // *this    swipeable for debugging purposes
    uint8_t             *buffer = cg()->getBinaryBufferCursor();
    uint8_t             *gtrmpln, *trmpln;
 
@@ -57,7 +56,6 @@ uint8_t *TR::PPCHelperCallSnippet::emitSnippetBody()
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCHelperCallSnippet * snippet)
    {
-   // *this    swipeable for debugging purposes
    uint8_t *cursor = snippet->getSnippetLabel()->getCodeLocation();
    TR::LabelSymbol *restartLabel = snippet->getRestartLabel();
 
@@ -93,7 +91,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCHelperCallSnippet * snippet)
 
 uint32_t TR::PPCHelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this    swipeable for debugging purposes
    return getHelperCallLength();
    }
 

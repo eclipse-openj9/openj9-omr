@@ -163,7 +163,6 @@ TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes    op,
                                                  bool b)
   : TR::Instruction(node, op, cg), _symbol(sym),_needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
    {
-   // *this    swipeable for debugging purposes
    if (sym && op == LABEL)
       sym->setInstruction(this);
    else if (sym)
@@ -177,7 +176,6 @@ TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction   *precedingInstruc
                                                  bool b)
   : TR::Instruction(op, precedingInstruction, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
    {
-   // *this    swipeable for debugging purposes
    if (sym && op == LABEL)
       sym->setInstruction(this);
    else if (sym)
@@ -192,7 +190,6 @@ TR::X86LabelInstruction::X86LabelInstruction(TR_X86OpCodes                      
                                                  bool b)
   : TR::Instruction(cond, node, op, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
    {
-   // *this    swipeable for debugging purposes
    if (sym && op == LABEL)
       sym->setInstruction(this);
    else if (sym)
@@ -207,7 +204,6 @@ TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction                    
                                                  bool b)
   : TR::Instruction(cond, op, precedingInstruction, cg), _symbol(sym), _needToClearFPStack(b), _outlinedInstructionBranch(NULL), _reloType(TR_NoRelocation), _permitShortening(true)
    {
-   // *this    swipeable for debugging purposes
    if (sym && op == LABEL)
       sym->setInstruction(this);
    else if (sym)
@@ -221,7 +217,6 @@ TR::X86LabelInstruction  *TR::X86LabelInstruction::getIA32LabelInstruction()
 
 TR::Snippet *TR::X86LabelInstruction::getSnippetForGC()
    {
-   // *this    swipeable for debugging purposes
    return getLabelSymbol() ? getLabelSymbol()->getSnippet() : NULL;
    }
 
@@ -508,7 +503,6 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
 TR::X86FenceInstruction::X86FenceInstruction(TR_X86OpCodes op, TR::Node *node, TR::Node * fenceNode, TR::CodeGenerator *cg)
    : TR::Instruction(node, op, cg), _fenceNode(fenceNode)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FenceInstruction::X86FenceInstruction(TR::Instruction   *precedingInstruction,
@@ -517,7 +511,6 @@ TR::X86FenceInstruction::X86FenceInstruction(TR::Instruction   *precedingInstruc
                                                  TR::CodeGenerator *cg)
    : TR::Instruction(op, precedingInstruction, cg), _fenceNode(node)
    {
-   // *this    swipeable for debugging purposes
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -527,7 +520,6 @@ TR::X86FenceInstruction::X86FenceInstruction(TR::Instruction   *precedingInstruc
 TR::X86RestoreVMThreadInstruction::X86RestoreVMThreadInstruction(TR_X86OpCodes op, TR::Node *node, TR::CodeGenerator *cg)
    : TR::Instruction(node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -543,7 +535,6 @@ TR::X86ImmInstruction::X86ImmInstruction(TR_X86OpCodes     op,
      _adjustsFramePointerBy(0),
      _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction   *precedingInstruction,
@@ -555,7 +546,6 @@ TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction   *precedingInstruction
      _adjustsFramePointerBy(0),
      _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmInstruction::X86ImmInstruction(TR_X86OpCodes                       op,
@@ -568,7 +558,6 @@ TR::X86ImmInstruction::X86ImmInstruction(TR_X86OpCodes                       op,
      _adjustsFramePointerBy(0),
      _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction                     *precedingInstruction,
@@ -581,7 +570,6 @@ TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction                     *pr
      _adjustsFramePointerBy(0),
      _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    if (cond && cg->enableRegisterAssociations())
       cond->createRegisterAssociationDirective(this, cg);
    }
@@ -592,7 +580,6 @@ TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction                     *pr
 //
 TR::X86ImmInstruction  *TR::X86ImmInstruction::getIA32ImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
    }
 #endif
@@ -609,7 +596,6 @@ TR::X86ImmSnippetInstruction::X86ImmSnippetInstruction(TR_X86OpCodes            
                                                          TR::CodeGenerator            *cg)
    : TR::X86ImmInstruction(imm, node, op, cg), _unresolvedSnippet(us)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmSnippetInstruction::X86ImmSnippetInstruction(TR::Instruction              *precedingInstruction,
@@ -619,12 +605,10 @@ TR::X86ImmSnippetInstruction::X86ImmSnippetInstruction(TR::Instruction          
                                                          TR::CodeGenerator            *cg)
    : TR::X86ImmInstruction(imm, op, precedingInstruction, cg), _unresolvedSnippet(us)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::Snippet *TR::X86ImmSnippetInstruction::getSnippetForGC()
    {
-   // *this    swipeable for debugging purposes
    return getUnresolvedSnippet();
    }
 
@@ -640,7 +624,6 @@ TR::X86ImmSymInstruction::X86ImmSymInstruction(TR_X86OpCodes       op,
    : TR::X86ImmInstruction(imm, node, op, cg),
          _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmSymInstruction::X86ImmSymInstruction(TR::Instruction     *precedingInstruction,
@@ -651,7 +634,6 @@ TR::X86ImmSymInstruction::X86ImmSymInstruction(TR::Instruction     *precedingIns
    : TR::X86ImmInstruction(imm, op, precedingInstruction, cg),
          _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmSymInstruction::X86ImmSymInstruction(TR_X86OpCodes                       op,
@@ -663,7 +645,6 @@ TR::X86ImmSymInstruction::X86ImmSymInstruction(TR_X86OpCodes                    
    : TR::X86ImmInstruction(cond, imm, node, op, cg),
          _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86ImmSymInstruction::X86ImmSymInstruction(TR::Instruction                     *precedingInstruction,
@@ -675,7 +656,6 @@ TR::X86ImmSymInstruction::X86ImmSymInstruction(TR::Instruction                  
    : TR::X86ImmInstruction(cond, imm, op, precedingInstruction, cg),
          _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -688,7 +668,6 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes op,
                                              TR::CodeGenerator *cg)
    : TR::Instruction(node, op, cg), _targetRegister(reg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(reg);
    getOpCode().trackUpperBitsOnReg(reg, cg);
 
@@ -719,7 +698,6 @@ TR::X86RegInstruction::X86RegInstruction(TR::Instruction *precedingInstruction,
                                              TR::CodeGenerator *cg)
    : TR::Instruction(op, precedingInstruction, cg), _targetRegister(reg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(reg);
    getOpCode().trackUpperBitsOnReg(reg, cg);
    }
@@ -731,7 +709,6 @@ TR::X86RegInstruction::X86RegInstruction(TR_X86OpCodes                       op,
                                              TR::CodeGenerator *cg)
    : TR::Instruction(cond, node, op, cg), _targetRegister(reg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(reg);
    getOpCode().trackUpperBitsOnReg(reg, cg);
 
@@ -763,21 +740,18 @@ TR::X86RegInstruction::X86RegInstruction(TR::Instruction                      *p
                                              TR::CodeGenerator *cg)
    : TR::Instruction(cond, op, precedingInstruction, cg), _targetRegister(reg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(reg);
    getOpCode().trackUpperBitsOnReg(reg, cg);
    }
 
 TR::X86RegInstruction  *TR::X86RegInstruction::getIA32RegInstruction()
    {
-   // *this    swipeable for debugging purposes
    return this;
 }
 
 
 bool TR::X86RegInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister())
       {
       return true;
@@ -792,7 +766,6 @@ bool TR::X86RegInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86RegInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() && getOpCode().modifiesTarget())
       {
       return true;
@@ -807,7 +780,6 @@ bool TR::X86RegInstruction::defsRegister(TR::Register *reg)
 
 bool TR::X86RegInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister())
       {
       return true;
@@ -894,7 +866,6 @@ TR::X86RegRegInstruction::X86RegRegInstruction(TR_X86OpCodes op,
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(treg, node, op, cg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -905,7 +876,6 @@ TR::X86RegRegInstruction::X86RegRegInstruction(TR::Instruction *precedingInstruc
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(treg, op, precedingInstruction, cg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -917,7 +887,6 @@ TR::X86RegRegInstruction::X86RegRegInstruction(TR_X86OpCodes                    
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(cond, treg, node, op, cg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -929,14 +898,12 @@ TR::X86RegRegInstruction::X86RegRegInstruction(TR::Instruction                  
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(cond, treg, op, precedingInstruction, cg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
 
 bool TR::X86RegRegInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() || reg == getSourceRegister())
       {
       return true;
@@ -951,7 +918,6 @@ bool TR::X86RegRegInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86RegRegInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ((reg == getTargetRegister() && getOpCode().modifiesTarget()) ||
        (reg == getSourceRegister() && getOpCode().modifiesSource()))
       {
@@ -967,7 +933,6 @@ bool TR::X86RegRegInstruction::defsRegister(TR::Register *reg)
 
 bool TR::X86RegRegInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ((reg == getTargetRegister() &&
         getOpCode().usesTarget())  ||
        reg == getSourceRegister())
@@ -1196,7 +1161,6 @@ TR::X86RegImmInstruction::X86RegImmInstruction(TR_X86OpCodes     op,
                                                  int32_t           reloKind)
    : TR::X86RegInstruction(treg, node, op, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86RegImmInstruction::X86RegImmInstruction(TR::Instruction   *precedingInstruction,
@@ -1207,7 +1171,6 @@ TR::X86RegImmInstruction::X86RegImmInstruction(TR::Instruction   *precedingInstr
                                                  int32_t           reloKind)
    : TR::X86RegInstruction(treg, op, precedingInstruction, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 
@@ -1220,7 +1183,6 @@ TR::X86RegImmInstruction::X86RegImmInstruction(TR_X86OpCodes                    
                                                  int32_t                             reloKind)
    : TR::X86RegInstruction(cond, treg, node, op, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86RegImmInstruction::X86RegImmInstruction(TR::Instruction                     *precedingInstruction,
@@ -1232,7 +1194,6 @@ TR::X86RegImmInstruction::X86RegImmInstruction(TR::Instruction                  
                                                  int32_t                             reloKind)
    : TR::X86RegInstruction(cond, treg, op, precedingInstruction, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86RegImmInstruction::adjustVFPState(TR_VFPState *state, TR::CodeGenerator *cg)
@@ -1276,7 +1237,6 @@ TR::X86RegImmSymInstruction::X86RegImmSymInstruction(TR_X86OpCodes       op,
                                                        TR::CodeGenerator   *cg)
    : TR::X86RegImmInstruction(imm, reg, node, op, cg), _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    autoSetReloKind();
    }
 
@@ -1288,7 +1248,6 @@ TR::X86RegImmSymInstruction::X86RegImmSymInstruction(TR::Instruction     *preced
                                                        TR::CodeGenerator   *cg)
    : TR::X86RegImmInstruction(imm, reg, op, precedingInstruction, cg), _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    autoSetReloKind();
    }
 
@@ -1327,7 +1286,6 @@ TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR_X86OpCodes     op,
                                                        TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(sreg, treg, node, op, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::Instruction   *precedingInstruction,
@@ -1338,7 +1296,6 @@ TR::X86RegRegImmInstruction::X86RegRegImmInstruction(TR::Instruction   *precedin
                                                        TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 
@@ -1354,7 +1311,6 @@ TR::X86RegRegRegInstruction::X86RegRegRegInstruction(TR_X86OpCodes op,
                                                          TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(slreg, treg, node, op, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -1367,7 +1323,6 @@ TR::X86RegRegRegInstruction::X86RegRegRegInstruction(TR::Instruction *precedingI
    : TR::X86RegRegInstruction(slreg, treg, op, precedingInstruction, cg),
      _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -1380,7 +1335,6 @@ TR::X86RegRegRegInstruction::X86RegRegRegInstruction(TR_X86OpCodes              
                                                          TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(cond, slreg, treg, node, op, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -1393,14 +1347,12 @@ TR::X86RegRegRegInstruction::X86RegRegRegInstruction(TR::Instruction            
                                                          TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(cond, slreg, treg, op, precedingInstruction, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
 
 bool TR::X86RegRegRegInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() ||
        reg == getSourceRegister() ||
        reg == getSourceRightRegister())
@@ -1417,7 +1369,6 @@ bool TR::X86RegRegRegInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86RegRegRegInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() && getOpCode().modifiesTarget())
       {
       return true;
@@ -1432,7 +1383,6 @@ bool TR::X86RegRegRegInstruction::defsRegister(TR::Register *reg)
 
 bool TR::X86RegRegRegInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ((reg == getTargetRegister() &&
         getOpCode().usesTarget())  ||
        reg == getSourceRegister()  ||
@@ -1752,7 +1702,6 @@ TR::X86MemInstruction::X86MemInstruction(TR_X86OpCodes          op,
                                              TR::Register            *sreg)
    : TR::Instruction(node, op, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -1785,7 +1734,6 @@ TR::X86MemInstruction::X86MemInstruction(TR::Instruction         *precedingInstr
                                              TR::Register            *sreg)
    : TR::Instruction(op, precedingInstruction, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -1809,7 +1757,6 @@ TR::X86MemInstruction::X86MemInstruction(TR_X86OpCodes                       op,
                                              TR::Register                         *sreg)
    : TR::Instruction(cond, node, op, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -1830,7 +1777,6 @@ TR::X86MemInstruction::X86MemInstruction(TR_X86OpCodes                       op,
 
 bool TR::X86MemInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg))
       {
       return true;
@@ -1845,7 +1791,6 @@ bool TR::X86MemInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86MemInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getDependencyConditions())
       {
       return getDependencyConditions()->defsRegister(reg);
@@ -1858,7 +1803,6 @@ bool TR::X86MemInstruction::defsRegister(TR::Register *reg)
 
 bool TR::X86MemInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg))
       {
       return true;
@@ -1994,7 +1938,6 @@ TR::X86CallMemInstruction::X86CallMemInstruction(TR_X86OpCodes                  
                                                      TR::CodeGenerator *cg)
    : TR::X86MemInstruction(cond, mr, node, op, cg), _adjustsFramePointerBy(0)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86CallMemInstruction::X86CallMemInstruction(TR::Instruction                      *precedingInstruction,
@@ -2004,7 +1947,6 @@ TR::X86CallMemInstruction::X86CallMemInstruction(TR::Instruction                
                                                      TR::CodeGenerator *cg)
    : TR::X86MemInstruction(cond, mr, op, precedingInstruction, cg), _adjustsFramePointerBy(0)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86CallMemInstruction::X86CallMemInstruction(TR_X86OpCodes                       op,
@@ -2013,7 +1955,6 @@ TR::X86CallMemInstruction::X86CallMemInstruction(TR_X86OpCodes                  
                                                      TR::CodeGenerator *cg)
    : TR::X86MemInstruction(mr, node, op, cg), _adjustsFramePointerBy(0)
    {
-   // *this    swipeable for debugging purposes
    }
 
 
@@ -2061,7 +2002,6 @@ TR::X86MemImmInstruction::X86MemImmInstruction(TR_X86OpCodes          op,
                                                  int32_t               reloKind)
    : TR::X86MemInstruction(mr, node, op, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86MemImmInstruction::X86MemImmInstruction(TR::Instruction        *precedingInstruction,
@@ -2072,7 +2012,6 @@ TR::X86MemImmInstruction::X86MemImmInstruction(TR::Instruction        *preceding
                                                  int32_t               reloKind)
    : TR::X86MemInstruction(mr, op, precedingInstruction, cg), _sourceImmediate(imm), _reloKind(reloKind)
    {
-   // *this    swipeable for debugging purposes
    }
 
 
@@ -2088,7 +2027,6 @@ TR::X86MemImmSymInstruction::X86MemImmSymInstruction(TR_X86OpCodes          op,
                                                        TR::CodeGenerator      *cg)
    : TR::X86MemImmInstruction(imm, mr, node, op, cg), _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86MemImmSymInstruction::X86MemImmSymInstruction(TR::Instruction        *precedingInstruction,
@@ -2099,7 +2037,6 @@ TR::X86MemImmSymInstruction::X86MemImmSymInstruction(TR::Instruction        *pre
                                                        TR::CodeGenerator      *cg)
    : TR::X86MemImmInstruction(imm, mr, op, precedingInstruction, cg), _symbolReference(sr)
    {
-   // *this    swipeable for debugging purposes
    }
 
 
@@ -2116,7 +2053,6 @@ TR::X86MemRegInstruction::X86MemRegInstruction(TR_X86OpCodes          op,
                                                    TR::CodeGenerator *cg)
    : TR::X86MemInstruction(mr, node, op, cg, sreg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -2127,7 +2063,6 @@ TR::X86MemRegInstruction::X86MemRegInstruction(TR::Instruction         *precedin
                                                    TR::CodeGenerator *cg)
    : TR::X86MemInstruction(mr, op, precedingInstruction, cg, sreg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -2139,7 +2074,6 @@ TR::X86MemRegInstruction::X86MemRegInstruction(TR_X86OpCodes                    
                                                    TR::CodeGenerator *cg)
    : TR::X86MemInstruction(cond, mr, node, op, cg, sreg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
@@ -2151,14 +2085,12 @@ TR::X86MemRegInstruction::X86MemRegInstruction(TR::Instruction                  
                                                    TR::CodeGenerator *cg)
    : TR::X86MemInstruction(cond, mr, op, precedingInstruction, cg, sreg), _sourceRegister(sreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(sreg);
    }
 
 
 bool TR::X86MemRegInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) ||
        reg == getSourceRegister())
       {
@@ -2174,7 +2106,6 @@ bool TR::X86MemRegInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86MemRegInstruction::defsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getSourceRegister() && getOpCode().modifiesSource())
       {
       return true;
@@ -2189,7 +2120,6 @@ bool TR::X86MemRegInstruction::defsRegister(TR::Register *reg)
 
 bool TR::X86MemRegInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) ||
        reg == getSourceRegister())
       {
@@ -2367,7 +2297,6 @@ TR::X86MemRegImmInstruction::X86MemRegImmInstruction(TR_X86OpCodes          op,
                                                        TR::CodeGenerator      *cg)
    : TR::X86MemRegInstruction(sreg, mr, node, op, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86MemRegImmInstruction::X86MemRegImmInstruction(TR::Instruction        *precedingInstruction,
@@ -2378,7 +2307,6 @@ TR::X86MemRegImmInstruction::X86MemRegImmInstruction(TR::Instruction        *pre
                                                        TR::CodeGenerator      *cg)
    : TR::X86MemRegInstruction(sreg, mr, op, precedingInstruction, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2393,7 +2321,6 @@ TR::X86MemRegRegInstruction::X86MemRegRegInstruction(TR_X86OpCodes          op,
                                                          TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(slreg, mr, node, op, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -2405,7 +2332,6 @@ TR::X86MemRegRegInstruction::X86MemRegRegInstruction(TR::Instruction         *pr
                                                          TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(slreg, mr, op, precedingInstruction, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -2418,7 +2344,6 @@ TR::X86MemRegRegInstruction::X86MemRegRegInstruction(TR_X86OpCodes              
                                                          TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(cond, slreg, mr, node, op, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
@@ -2431,14 +2356,12 @@ TR::X86MemRegRegInstruction::X86MemRegRegInstruction(TR::Instruction            
                                                          TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(cond, slreg, mr, op, precedingInstruction, cg), _sourceRightRegister(srreg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(srreg);
    }
 
 
 bool TR::X86MemRegRegInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) ||
        reg == getSourceRegister()              ||
        reg == getSourceRightRegister())
@@ -2455,7 +2378,6 @@ bool TR::X86MemRegRegInstruction::refsRegister(TR::Register *reg)
 //check refsRegister
 bool TR::X86MemRegRegInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (getMemoryReference()->refsRegister(reg) ||
        reg == getSourceRegister()              ||
        reg == getSourceRightRegister())
@@ -2597,7 +2519,6 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR_X86OpCodes          op,
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(treg, node, op, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -2622,7 +2543,6 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR::Instruction         *precedin
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(treg, op, precedingInstruction, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -2638,7 +2558,6 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR_X86OpCodes                    
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(cond, treg, node, op, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -2664,7 +2583,6 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR::Instruction                  
                                                    TR::CodeGenerator *cg)
    : TR::X86RegInstruction(cond, treg, op, precedingInstruction, cg), _memoryReference(mr)
    {
-   // *this    swipeable for debugging purposes
    mr->useRegisters(this, cg);
    if (mr->getUnresolvedDataSnippet() != NULL)
       {
@@ -2675,7 +2593,6 @@ TR::X86RegMemInstruction::X86RegMemInstruction(TR::Instruction                  
 
 bool TR::X86RegMemInstruction::refsRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if (reg == getTargetRegister() ||
        getMemoryReference()->refsRegister(reg))
       {
@@ -2691,7 +2608,6 @@ bool TR::X86RegMemInstruction::refsRegister(TR::Register *reg)
 
 bool TR::X86RegMemInstruction::usesRegister(TR::Register *reg)
    {
-   // *this    swipeable for debugging purposes
    if ((reg == getTargetRegister() &&
         getOpCode().usesTarget())  ||
        getMemoryReference()->refsRegister(reg))
@@ -2708,7 +2624,6 @@ bool TR::X86RegMemInstruction::usesRegister(TR::Register *reg)
 
 TR::Snippet *TR::X86RegMemInstruction::getSnippetForGC()
    {
-   // *this    swipeable for debugging purposes
    return getMemoryReference()->getUnresolvedDataSnippet();
    }
 
@@ -2857,7 +2772,6 @@ TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR_X86OpCodes          op,
                                                        TR::CodeGenerator      *cg)
    : TR::X86RegMemInstruction(mr, treg, node, op, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR::Instruction        *precedingInstruction,
@@ -2868,7 +2782,6 @@ TR::X86RegMemImmInstruction::X86RegMemImmInstruction(TR::Instruction        *pre
                                                        TR::CodeGenerator      *cg)
    : TR::X86RegMemInstruction(mr, treg, op, precedingInstruction, cg), _sourceImmediate(imm)
    {
-   // *this    swipeable for debugging purposes
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2881,7 +2794,6 @@ TR::X86FPRegInstruction::X86FPRegInstruction(TR_X86OpCodes op,
                                                  TR::CodeGenerator *cg)
    : TR::X86RegInstruction(reg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPRegInstruction::X86FPRegInstruction(TR::Instruction *precedingInstruction,
@@ -2890,12 +2802,10 @@ TR::X86FPRegInstruction::X86FPRegInstruction(TR::Instruction *precedingInstructi
                                                  TR::CodeGenerator *cg)
    : TR::X86RegInstruction(reg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    if (kindsToBeAssigned & TR_X87_Mask)
       {
       TR::Register            *targetRegister = getTargetRegister();
@@ -2949,7 +2859,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR_X86OpCodes op,
                                                        TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(sreg, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR_X86OpCodes op,
@@ -2960,7 +2869,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR_X86OpCodes op,
                                                        TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction( op, node, treg, sreg, cond, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingInstruction,
@@ -2970,7 +2878,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingIns
                                                        TR::CodeGenerator *cg)
    : TR::X86RegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 // General method for coercing the source and target operands onto the FP stack for
@@ -2978,7 +2885,6 @@ TR::X86FPRegRegInstruction::X86FPRegRegInstruction(TR::Instruction *precedingIns
 //
 uint32_t TR::X86FPRegRegInstruction::assignTargetSourceRegisters()
    {
-   // *this    swipeable for debugging purposes
 
    TR::Register *sourceRegister = getSourceRegister();
    TR::Register *targetRegister = getTargetRegister();
@@ -3048,7 +2954,6 @@ TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR_X86OpCodes  op
                                                                  TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR_X86OpCodes  op,
@@ -3059,7 +2964,6 @@ TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR_X86OpCodes  op
                                                                  TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction( op, node, treg, sreg, cond, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR::Instruction *precedingInstruction,
@@ -3069,12 +2973,10 @@ TR::X86FPST0ST1RegRegInstruction::X86FPST0ST1RegRegInstruction(TR::Instruction *
                                                                  TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPST0ST1RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_X87_Mask)
       {
@@ -3116,7 +3018,6 @@ TR::X86FPSTiST0RegRegInstruction::X86FPSTiST0RegRegInstruction(TR_X86OpCodes  op
    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
    {
    _forcePop = forcePop;
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPSTiST0RegRegInstruction::X86FPSTiST0RegRegInstruction(TR::Instruction *precedingInstruction,
@@ -3127,12 +3028,10 @@ TR::X86FPSTiST0RegRegInstruction::X86FPSTiST0RegRegInstruction(TR::Instruction *
    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
    _forcePop = forcePop;
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPSTiST0RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_X87_Mask)
       {
@@ -3210,7 +3109,6 @@ TR::X86FPST0STiRegRegInstruction::X86FPST0STiRegRegInstruction(TR_X86OpCodes  op
                                                                    TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPST0STiRegRegInstruction::X86FPST0STiRegRegInstruction(TR::Instruction *precedingInstruction,
@@ -3220,12 +3118,10 @@ TR::X86FPST0STiRegRegInstruction::X86FPST0STiRegRegInstruction(TR::Instruction *
                                                                    TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPST0STiRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_X87_Mask)
       {
@@ -3303,7 +3199,6 @@ TR::X86FPArithmeticRegRegInstruction::X86FPArithmeticRegRegInstruction(TR_X86OpC
                                                                            TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPArithmeticRegRegInstruction::X86FPArithmeticRegRegInstruction(TR::Instruction *precedingInstruction,
@@ -3313,12 +3208,10 @@ TR::X86FPArithmeticRegRegInstruction::X86FPArithmeticRegRegInstruction(TR::Instr
                                                                            TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPArithmeticRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_X87_Mask)
       {
@@ -3404,7 +3297,6 @@ TR::X86FPCompareRegRegInstruction::X86FPCompareRegRegInstruction(TR_X86OpCodes  
                                                                      TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPCompareRegRegInstruction::X86FPCompareRegRegInstruction(TR::Instruction *precedingInstruction,
@@ -3414,12 +3306,10 @@ TR::X86FPCompareRegRegInstruction::X86FPCompareRegRegInstruction(TR::Instruction
                                                                      TR::CodeGenerator *cg)
    : TR::X86FPRegRegInstruction(sreg, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPCompareRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_X87_Mask)
       {
@@ -3651,7 +3541,6 @@ TR::X86FPCompareEvalInstruction::X86FPCompareEvalInstruction(TR_X86OpCodes  op,
                                                                  TR::CodeGenerator *cg)
    : TR::Instruction(node, op, cg), _accRegister(accRegister)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPCompareEvalInstruction::X86FPCompareEvalInstruction(TR_X86OpCodes                       op,
@@ -3661,7 +3550,6 @@ TR::X86FPCompareEvalInstruction::X86FPCompareEvalInstruction(TR_X86OpCodes      
                                                                  TR::CodeGenerator *cg)
    : TR::Instruction(cond, node, op, cg), _accRegister(accRegister)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPCompareEvalInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
@@ -3896,7 +3784,6 @@ TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR_X86OpCo
                                                                        TR::CodeGenerator *cg)
    : TR::X86FPST0ST1RegRegInstruction( op, node, treg, sreg, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR_X86OpCodes  op,
@@ -3908,7 +3795,6 @@ TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR_X86OpCo
                                                                        TR::CodeGenerator *cg)
    : TR::X86FPST0ST1RegRegInstruction( op, node, treg, sreg, cond, cg), _accRegister(accReg)
    {
-   // *this    swipeable for debugging purposes
    useRegister(accReg);
    }
 
@@ -3919,12 +3805,10 @@ TR::X86FPRemainderRegRegInstruction::X86FPRemainderRegRegInstruction( TR::Instru
                                                                        TR::CodeGenerator *cg)
    : TR::X86FPST0ST1RegRegInstruction( precedingInstruction, op, treg, sreg, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPRemainderRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
 
    if (kindsToBeAssigned & TR_GPR_Mask) //TODO: Move this code generation in FPTreeEvaluator.cpp rather than doing it here
       {
@@ -3975,7 +3859,6 @@ TR::X86FPMemRegInstruction::X86FPMemRegInstruction(TR_X86OpCodes          op,
                                                        TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(sreg, mr, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPMemRegInstruction::X86FPMemRegInstruction(TR::Instruction         *precedingInstruction,
@@ -3985,12 +3868,10 @@ TR::X86FPMemRegInstruction::X86FPMemRegInstruction(TR::Instruction         *prec
                                                        TR::CodeGenerator *cg)
    : TR::X86MemRegInstruction(sreg, mr, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPMemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    if (kindsToBeAssigned & TR_GPR_Mask)
       {
       getMemoryReference()->assignRegisters(this, cg());
@@ -4064,7 +3945,6 @@ TR::X86FPRegMemInstruction::X86FPRegMemInstruction(TR_X86OpCodes          op,
                                                        TR::CodeGenerator *cg)
    : TR::X86RegMemInstruction(mr, treg, node, op, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 TR::X86FPRegMemInstruction::X86FPRegMemInstruction(TR::Instruction         *precedingInstruction,
@@ -4074,12 +3954,10 @@ TR::X86FPRegMemInstruction::X86FPRegMemInstruction(TR::Instruction         *prec
                                                        TR::CodeGenerator *cg)
    : TR::X86RegMemInstruction(mr, treg, op, precedingInstruction, cg)
    {
-   // *this    swipeable for debugging purposes
    }
 
 void TR::X86FPRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    if (kindsToBeAssigned & TR_GPR_Mask)
       {
       getMemoryReference()->assignRegisters(this, cg());

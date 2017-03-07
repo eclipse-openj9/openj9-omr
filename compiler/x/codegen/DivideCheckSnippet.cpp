@@ -32,7 +32,6 @@
 
 uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
    {
-   // *this    swipeable for debugging purposes
    uint8_t *buffer = cg()->getBinaryBufferCursor();
    getSnippetLabel()->setCodeLocation(buffer);
 
@@ -93,7 +92,6 @@ uint8_t *TR::X86DivideCheckSnippet::emitSnippetBody()
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86DivideCheckSnippet  * snippet) // TODO:FIX THIS!!!
    {
-   // *this    swipeable for debugging purposes
    if (pOutFile == NULL)
       return;
 

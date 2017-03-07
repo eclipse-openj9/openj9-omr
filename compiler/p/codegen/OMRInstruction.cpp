@@ -94,7 +94,6 @@ OMR::Power::Instruction::getMemoryDataRegister()
 bool
 OMR::Power::Instruction::refsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    return OMR::Power::Instruction::getDependencyConditions() ? OMR::Power::Instruction::getDependencyConditions()->refsRegister(reg) : false;
    }
 
@@ -113,28 +112,24 @@ OMR::Power::Instruction::defsRealRegister(TR::Register * reg)
 bool
 OMR::Power::Instruction::usesRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    return OMR::Power::Instruction::getDependencyConditions() ? OMR::Power::Instruction::getDependencyConditions()->usesRegister(reg) : false;
    }
 
 bool
 OMR::Power::Instruction::dependencyRefsRegister(TR::Register * reg)
    {
-   // *this    swipeable for debugging purposes
    return OMR::Power::Instruction::getDependencyConditions() ? OMR::Power::Instruction::getDependencyConditions()->refsRegister(reg) : false;
    }
 
 TR::PPCDepImmInstruction *
 OMR::Power::Instruction::getPPCDepImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return NULL;
    }
 
 TR::PPCConditionalBranchInstruction *
 OMR::Power::Instruction::getPPCConditionalBranchInstruction()
    {
-   // *this    swipeable for debugging purposes
    return NULL;
    }
 
@@ -144,7 +139,6 @@ OMR::Power::Instruction::getPPCConditionalBranchInstruction()
 TR::PPCImmInstruction *
 OMR::Power::Instruction::getPPCImmInstruction()
    {
-   // *this    swipeable for debugging purposes
    return NULL;
    }
 #endif
@@ -153,7 +147,6 @@ OMR::Power::Instruction::getPPCImmInstruction()
 void
 OMR::Power::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
    {
-   // *this    swipeable for debugging purposes
    if( OMR::Power::Instruction::getDependencyConditions() )
       {
       OMR::Power::Instruction::getDependencyConditions()->assignPostConditionRegisters(self(), kindToBeAssigned, self()->cg());

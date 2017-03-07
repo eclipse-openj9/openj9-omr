@@ -52,7 +52,6 @@ TR_S390CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node * root, TR:
    TR::InstOpCode::S390BranchCondition brCmpHighTrueCond, TR::InstOpCode::S390BranchCondition brCmpHighFalseCond, TR::LabelSymbol * trueTarget, TR::LabelSymbol * falseTarget,
    bool &internalControlFlowStarted)
    {
-   // *this    swipeable for debugging purposes
    TR::Node * firstChild = root->getFirstChild();
    TR::Node * secondChild = root->getSecondChild();
    TR::Register * firstRegister = firstChild->getRegister();

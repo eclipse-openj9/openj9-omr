@@ -69,7 +69,6 @@ TR::IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
 uint8_t *TR::IA32DataSnippet::emitSnippetBody()
    {
-   // *this   swipeable for debugging purposes
 
    uint8_t *cursor = cg()->getBinaryBufferCursor();
 
@@ -142,7 +141,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::IA32DataSnippet * snippet)
 
 uint32_t TR::IA32DataSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   // *this   swipeable for debugging purposes
    return _length;
    }
 

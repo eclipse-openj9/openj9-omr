@@ -522,7 +522,6 @@ TR_X86RegisterDependencyIndex OMR::X86::RegisterDependencyConditions::unionRealD
 
 TR::RegisterDependencyConditions  *OMR::X86::RegisterDependencyConditions::clone(TR::CodeGenerator *cg, TR_X86RegisterDependencyIndex additionalRegDeps)
    {
-   // *this    swipeable for debugging purposes
    TR::RegisterDependencyConditions  *other =
       new (cg->trHeapMemory()) TR::RegisterDependencyConditions(_numPreConditions  + additionalRegDeps,
                                               _numPostConditions + additionalRegDeps, cg->trMemory());
@@ -548,7 +547,6 @@ TR::RegisterDependencyConditions  *OMR::X86::RegisterDependencyConditions::clone
 
 bool OMR::X86::RegisterDependencyConditions::refsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
 
    for (int i = 0; i < _numPreConditions; i++)
       {
@@ -574,7 +572,6 @@ bool OMR::X86::RegisterDependencyConditions::refsRegister(TR::Register *r)
 
 bool OMR::X86::RegisterDependencyConditions::defsRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
 
    for (int i = 0; i < _numPreConditions; i++)
       {
@@ -600,7 +597,6 @@ bool OMR::X86::RegisterDependencyConditions::defsRegister(TR::Register *r)
 
 bool OMR::X86::RegisterDependencyConditions::usesRegister(TR::Register *r)
    {
-   // *this    swipeable for debugging purposes
    for (int i = 0; i < _numPreConditions; i++)
       {
       if (_preConditions->getRegisterDependency(i)->getRegister() == r &&
@@ -625,7 +621,6 @@ bool OMR::X86::RegisterDependencyConditions::usesRegister(TR::Register *r)
 
 void OMR::X86::RegisterDependencyConditions::useRegisters(TR::Instruction *instr, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    int32_t i;
 
    for (i = 0; i < _numPreConditions; i++)
@@ -679,7 +674,6 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                                                     TR_X86RegisterDependencyIndex          numberOfRegisters,
                                                     TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Register             *virtReg              = NULL;
    TR::RealRegister         *assignedReg          = NULL;
    TR::RealRegister::RegNum  dependentRegNum      = TR::RealRegister::NoReg;
@@ -1112,7 +1106,6 @@ void TR_X86RegisterDependencyGroup::setDependencyInfo(
 
 void OMR::X86::RegisterDependencyConditions::createRegisterAssociationDirective(TR::Instruction *instruction, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
 
    TR::Machine *machine = cg->machine();
 
@@ -1142,7 +1135,6 @@ void OMR::X86::RegisterDependencyConditions::createRegisterAssociationDirective(
 
 TR::RealRegister *OMR::X86::RegisterDependencyConditions::getRealRegisterFromVirtual(TR::Register *virtReg, TR::CodeGenerator *cg)
    {
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
 
    TR_X86RegisterDependencyGroup *depGroup = getPostConditions();
@@ -1178,7 +1170,6 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
                                                        TR::CodeGenerator *cg)
    {
 
-   // *this    swipeable for debugging purposes
    TR::Machine *machine = cg->machine();
    TR::Instruction *cursor  = prevInstruction;
 
@@ -1397,7 +1388,6 @@ void TR_X86RegisterDependencyGroup::orderGlobalRegsOnFPStack(TR::Instruction    
                                                               TR::CodeGenerator  *cg)
    {
 
-   // *this    swipeable for debugging purposes
    //
    TR::Machine *machine = cg->machine();
    int32_t *stackShape = machine->getFPStackShape();

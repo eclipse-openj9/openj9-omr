@@ -317,7 +317,6 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
 
 void OMR::X86::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
-   // *this    swipeable for debugging purposes
 
    if (self()->cg()->getLocalsIG() && self()->cg()->getSupportsCompactedLocals())
       {

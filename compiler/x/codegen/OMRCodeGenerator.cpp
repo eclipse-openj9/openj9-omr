@@ -242,7 +242,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       {
 
 	 /**
-	  * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel, 
+	  * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel,
 	  * we will return false for any versions before Broadwell.
 	  *
 	  * TODO: Need to figure out from which mode of Broadwell start supporting TM
@@ -2227,7 +2227,7 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromM
 
 
 
-TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::Node * n, void * c, uint8_t size, bool isWarm)
+TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::Node * n, void * c, uint8_t size)
    {
    // *this    swipeable for debugging purposes
 
@@ -2239,8 +2239,7 @@ TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       if ((*iterator)->getKind() == TR::Snippet::IsConstantData &&
-          ((TR::IA32ConstantDataSnippet*)(*iterator))->getConstantSize() == size &&
-          (*iterator)->isWarmSnippet() == isWarm)
+          ((TR::IA32ConstantDataSnippet*)(*iterator))->getConstantSize() == size)
          {
          switch (size)
             {
@@ -2352,48 +2351,48 @@ void OMR::X86::CodeGenerator::emitDataSnippets(bool isWarm)
       }
    }
 
-TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate2ByteConstant(TR::Node * n, int16_t c, bool isWarm)
+TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate2ByteConstant(TR::Node * n, int16_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 2, isWarm);
+   return self()->findOrCreateConstant(n, &c, 2);
    }
 
-TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate4ByteConstant(TR::Node * n, int32_t c, bool isWarm)
+TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate4ByteConstant(TR::Node * n, int32_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 4, isWarm);
+   return self()->findOrCreateConstant(n, &c, 4);
    }
 
-TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate8ByteConstant(TR::Node * n, int64_t c, bool isWarm)
+TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate8ByteConstant(TR::Node * n, int64_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 8, isWarm);
+   return self()->findOrCreateConstant(n, &c, 8);
    }
 
-TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate16ByteConstant(TR::Node * n, void *c, bool isWarm)
+TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate16ByteConstant(TR::Node * n, void *c)
    {
-   return self()->findOrCreateConstant(n, c, 16, isWarm);
+   return self()->findOrCreateConstant(n, c, 16);
    }
 
-TR::IA32DataSnippet *OMR::X86::CodeGenerator::create2ByteData(TR::Node *n, int16_t c, bool isWarm)
+TR::IA32DataSnippet *OMR::X86::CodeGenerator::create2ByteData(TR::Node *n, int16_t c)
    {
    TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 2);
    _dataSnippetList.push_front(cursor);
    return cursor;
    }
 
-TR::IA32DataSnippet *OMR::X86::CodeGenerator::create4ByteData(TR::Node *n, int32_t c, bool isWarm)
+TR::IA32DataSnippet *OMR::X86::CodeGenerator::create4ByteData(TR::Node *n, int32_t c)
    {
    TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 4);
    _dataSnippetList.push_front(cursor);
    return cursor;
    }
 
-TR::IA32DataSnippet *OMR::X86::CodeGenerator::create8ByteData(TR::Node *n, int64_t c, bool isWarm)
+TR::IA32DataSnippet *OMR::X86::CodeGenerator::create8ByteData(TR::Node *n, int64_t c)
    {
    TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 8);
    _dataSnippetList.push_front(cursor);
    return cursor;
    }
 
-TR::IA32DataSnippet *OMR::X86::CodeGenerator::create16ByteData(TR::Node *n, void *c, bool isWarm)
+TR::IA32DataSnippet *OMR::X86::CodeGenerator::create16ByteData(TR::Node *n, void *c)
    {
    TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, c, 16);
    _dataSnippetList.push_front(cursor);

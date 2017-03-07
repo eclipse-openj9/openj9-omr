@@ -77,7 +77,6 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
    TR::CodeCacheConfig &config = manager.codeCacheConfig();
    char name[256];
 
-   static bool customP4 =  feGetEnv("TR_CustomP4Trampoline") ? true : false;
    static TR_Processor proc = TR_DefaultPPCProcessor;
 
    uint8_t *bufferStart = trampPtr, *buffer;
@@ -123,7 +122,7 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
 
          // Now, if highest bit is on we need to clear the sign extend bits on 64bit CPUs
          // ** POWER4 pref fix **
-         if( (helper & 0x80000000) && (!customP4 || proc == TR_PPCgp))
+         if( helper & 0x80000000 )
             {
             // rlwinm r11,r11,sh=0,mb=0,me=31
             *(int32_t *)buffer = 0x556b003e;
@@ -163,19 +162,10 @@ ppcCreateHelperTrampolines(uint8_t *trampPtr, int32_t numHelpers)
 
 void ppcCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *numHelpers, int32_t* CCPreLoadedCodeSize)
    {
-   static bool customP4 =  feGetEnv("TR_CustomP4Trampoline") ? true : false;
-
 #if defined(TR_TARGET_64BIT)
    *trampolineSize = TRAMPOLINE_SIZE;
 #else
-   if (customP4)
-      {
-      *trampolineSize = TRAMPOLINE_SIZE;
-      }
-   else
-      {
-      *trampolineSize = TRAMPOLINE_SIZE + 4;
-      }
+   *trampolineSize = TRAMPOLINE_SIZE + 4;
 #endif
    callBacks[0] = (void *)&ppcCodeCacheConfig;
    callBacks[1] = (void *)&ppcCreateHelperTrampolines;

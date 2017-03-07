@@ -171,7 +171,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         }
      }
 
-
    if (comp->getOption(TR_AOT) && (comp->getOption(TR_TraceRelocatableDataCG) || comp->getOption(TR_TraceRelocatableDataDetailsCG) || comp->getOption(TR_TraceReloCG)))
      {
      traceMsg(comp, "\n<relocatableDataCG>\n");
@@ -182,22 +181,6 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         }
      cg->getAheadOfTimeCompile()->dumpRelocationData();
      traceMsg(comp, "</relocatableDataCG>\n");
-     }
-
-   static char *disassemble = feGetEnv("TR_Disassemble");
-   if (disassemble && comp->getDebug())
-     {
-     uint8_t *instrStart;
-     uint8_t *instrEnd;
-     instrStart = comp->cg()->getCodeStart();
-     if (comp->cg()->getColdCodeStart())
-        {
-        instrEnd = comp->cg()->getWarmCodeEnd();
-        comp->getDebug()->print(comp->getOutFile(), instrStart, instrEnd);
-        instrStart = comp->cg()->getColdCodeStart();
-        }
-     instrEnd = comp->cg()->getCodeEnd();
-     comp->getDebug()->print(comp->getOutFile(), instrStart, instrEnd);
      }
 
      if (debug("dumpCodeSizes"))
@@ -239,14 +222,12 @@ void
 OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    TR::Compilation * comp = cg->comp();
-   uint8_t *crossPoint;
    phase->reportPhase(EmitSnippetsPhase);
 
    TR::LexicalMemProfiler mp("Emit Snippets", comp->phaseMemProfiler());
    LexicalTimer pt("Emit Snippets", comp->phaseTimer());
 
-   crossPoint = cg->emitSnippets();
-   cg->setCrossPoint(crossPoint);
+   cg->emitSnippets();
 
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {

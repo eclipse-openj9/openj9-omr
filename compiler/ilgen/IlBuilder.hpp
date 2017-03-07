@@ -308,6 +308,11 @@ public:
       DoWhileLoop(exitCondition, body, NULL, continueBuilder);
       }
 
+   /* @brief creates an AND nest of short-circuited conditions, for each term pass an IlBuilder containing the condition and the IlValue that computes the condition */
+   void IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ... );
+   /* @brief creates an OR nest of short-circuited conditions, for each term pass an IlBuilder containing the condition and the IlValue that computes the condition */
+   void IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ... );
+
    void IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition);
    void IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition);
    void IfCmpNotEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);

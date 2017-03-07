@@ -623,7 +623,7 @@ CodeMetaDataManager::allocateCodeMetaDataHash(uintptr_t start, uintptr_t end)
 
    if (table->buckets == NULL)
       {
-      jitPersistentFree(table);
+      TR_Memory::jitPersistentFree(table);
       return NULL;
       }
 
@@ -631,8 +631,8 @@ CodeMetaDataManager::allocateCodeMetaDataHash(uintptr_t start, uintptr_t end)
 
    if (self()->allocateMethodStoreInHash(table) == NULL)
       {
-      jitPersistentFree(table->buckets);
-      jitPersistentFree(table);
+      TR_Memory::jitPersistentFree(table->buckets);
+      TR_Memory::jitPersistentFree(table);
       return NULL;
       }
 

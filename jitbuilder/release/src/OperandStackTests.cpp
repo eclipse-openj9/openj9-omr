@@ -311,6 +311,30 @@ verifyResult12(STACKVALUETYPE top)
    OperandStackTestMethod::verifyStack("11", 3, 3, 5, 4, expectedResult12Top);
    }
 
+// used to compare expected values and report fail it not equal
+void
+verifyValuesEqual(STACKVALUETYPE v1, STACKVALUETYPE v2)
+   { 
+   REPORT2(v1 == v2, "verifyValuesEqual v1", v1, "verifyValuesEqual v2", v2); 
+   }
+
+// take the arguments from the stack and modify them
+void
+modifyTop3Elements(int32_t amountToAdd)
+   {
+   if (verbose) cout << "Push();Push();Push() - modify elements passed in real stack and return";
+   STACKVALUETYPE *realSP = *verifySP; 
+   REPORT1(realSP[0]== 3, "modifyTop3Elements realSP[0]", realSP[0]); 
+   REPORT1(realSP[-1]== 2, "modifyTop3Elements realSP[-1]", realSP[-1]); 
+   REPORT1(realSP[-2]== 1, "modifyTop3Elements realSP[-2]", realSP[-2]); 
+   realSP[0] += amountToAdd;
+   realSP[-1] += amountToAdd;
+   realSP[-2] += amountToAdd;  
+   }
+
+
+
+
 bool
 OperandStackTestMethod::verifyUntouched(int32_t maxTouched)
    {
@@ -372,12 +396,15 @@ OperandStackTestMethod::OperandStackTestMethod(TR::TypeDictionary *d)
    DefineFunction("verifyResult10", "0", "0", (void *)&verifyResult10, NoType, 1, _valueType);
    DefineFunction("verifyResult11", "0", "0", (void *)&verifyResult11, NoType, 0);
    DefineFunction("verifyResult12", "0", "0", (void *)&verifyResult12, NoType, 1, _valueType);
+   DefineFunction("verifyValuesEqual", "0", "0", (void *)&verifyValuesEqual, NoType, 2, _valueType, _valueType);
+   DefineFunction("modifyTop3Elements", "0", "0", (void *)&modifyTop3Elements, NoType, 1, _valueType);
    }
 
 // convenience macros
 #define STACK(b)	(((TestState *)(b)->vmState())->_stack)
 #define STACKTOP(b)	(((TestState *)(b)->vmState())->_stackTop)
 #define COMMIT(b)       ((b)->vmState()->Commit(b))
+#define RELOAD(b)       ((b)->vmState()->Reload(b))
 #define PUSH(b,v)	(STACK(b)->Push(b,v))
 #define POP(b)          (STACK(b)->Pop(b))
 #define TOP(b)          (STACK(b)->Top())
@@ -431,6 +458,9 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
 
    COMMIT(b);
    b->Call("verifyResult11", 0);
+ 
+  
+
 
    TR::BytecodeBuilder *thenBB = OrphanBytecodeBuilder(0, (char*)"BCI_then");
    TR::BytecodeBuilder *elseBB = OrphanBytecodeBuilder(1, (char*)"BCI_else");
@@ -452,6 +482,25 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
 
    COMMIT(mergeBB);
    mergeBB->Call("verifyResult12", 1, TOP(mergeBB));
+ 
+   int amountToAdd = 10;
+  // Reload test. Call a routine that modifies stack elements passed to it. 
+   // Test by reloading and test the popped values
+   PUSH(mergeBB, mergeBB->ConstInteger(_valueType, 1));
+   PUSH(mergeBB, mergeBB->ConstInteger(_valueType, 2));
+   PUSH(mergeBB, mergeBB->ConstInteger(_valueType, 3));  
+   COMMIT(mergeBB); 
+   mergeBB->Call("modifyTop3Elements",1, mergeBB->ConstInteger(_valueType, amountToAdd));  
+   RELOAD(mergeBB);
+   TR::IlValue *modifiedStackElement = POP(mergeBB);
+   TR::IlValue *expected =  mergeBB->ConstInteger(_valueType, 3+amountToAdd); 
+   mergeBB->Call("verifyValuesEqual", 2, modifiedStackElement, expected);  
+   modifiedStackElement = POP(mergeBB);
+   expected =  mergeBB->ConstInteger(_valueType, 2+amountToAdd);
+   mergeBB->Call("verifyValuesEqual",2,  modifiedStackElement, expected);  
+   modifiedStackElement = POP(mergeBB);
+   expected =  mergeBB->ConstInteger(_valueType, 1+amountToAdd);
+   mergeBB->Call("verifyValuesEqual",2,  modifiedStackElement, expected);  
 
    mergeBB->Return();
 

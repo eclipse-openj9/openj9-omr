@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016, 2016
+ * (c) Copyright IBM Corp. 2016, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -184,9 +184,13 @@ public:
    TR::IlValue *NotEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *EqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *LessThan(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *UnsignedLessThan(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *LessOrEqualTo(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *UnsignedLessOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *GreaterThan(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *UnsignedGreaterThan(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right);
+   TR::IlValue *UnsignedGreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
    TR::IlValue *UnsignedConvertTo(TR::IlType *t, TR::IlValue *v);
 
@@ -314,12 +318,20 @@ public:
    void IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
    void IfCmpGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right);
+   void IfCmpUnsignedGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right);
 
    void IfThenElse(TR::IlBuilder **thenPath,
                    TR::IlBuilder **elsePath,
@@ -382,14 +394,9 @@ protected:
    TR::IlValue *compareOp(TR_ComparisonTypes ct, bool needUnsigned, TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *convertTo(TR::IlType *t, TR::IlValue *v, bool needUnsigned);
 
+   void ifCmpCondition(TR_ComparisonTypes ct, bool isUnsignedCmp, TR::IlValue *left, TR::IlValue *right, TR::Block *target);
    void ifCmpNotEqualZero(TR::IlValue *condition, TR::Block *target);
-   void ifCmpNotEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
    void ifCmpEqualZero(TR::IlValue *condition, TR::Block *target);
-   void ifCmpEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
-   void ifCmpLessThan(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
-   void ifCmpLessOrEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
-   void ifCmpGreaterThan(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
-   void ifCmpGreaterOrEqual(TR::IlValue *condition, TR::IlValue *zero, TR::Block *target);
 
    void integerizeAddresses(TR::IlValue **leftPtr, TR::IlValue **rightPtr);
 

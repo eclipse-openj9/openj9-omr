@@ -97,7 +97,13 @@ CodeMetaDataManager::allocateMetaDataAVL()
    return metaDataAVLTree;
    }
 
-
+/**
+ * Insert metadata into the MetaDataManager.
+ *
+ * \note It is important that the range for the metadata be > 0.
+ *       Inserting a zero width range will fail, because lookups
+ *       will fail.
+ */
 bool
 CodeMetaDataManager::insertMetaData(TR::MethodMetaDataPOD *metaData)
    {
@@ -291,6 +297,12 @@ CodeMetaDataManager::insertMetaDataRangeInHash(
    TR::MethodMetaDataPOD **temp;
 
    if ((startPC < table->start) || (endPC > table->end))
+      {
+      return 1;
+      }
+
+   // Don't insert zero sized ranges.
+   if (startPC == endPC)
       {
       return 1;
       }

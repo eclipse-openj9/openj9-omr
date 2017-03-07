@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016
+ * (c) Copyright IBM Corp. 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -312,6 +312,22 @@ OMR::BytecodeBuilder::IfCmpLessThan(TR::BytecodeBuilder *dest, TR::IlValue *v1, 
    }
 
 void
+OMR::BytecodeBuilder::IfCmpLessOrEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpLessOrEqual(*dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpLessOrEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpLessOrEqual(dest, v1, v2);
+   }
+
+void
 OMR::BytecodeBuilder::IfCmpGreaterThan(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
    {
    if (*dest == NULL)
@@ -325,4 +341,20 @@ OMR::BytecodeBuilder::IfCmpGreaterThan(TR::BytecodeBuilder *dest, TR::IlValue *v
    TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
    AddSuccessorBuilder(&dest);
    OMR::IlBuilder::IfCmpGreaterThan(dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpGreaterOrEqual(TR::BytecodeBuilder **dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   if (*dest == NULL)
+      *dest = _methodBuilder->OrphanBytecodeBuilder(_bcIndex, _name);
+   IfCmpGreaterOrEqual(*dest, v1, v2);
+   }
+
+void
+OMR::BytecodeBuilder::IfCmpGreaterOrEqual(TR::BytecodeBuilder *dest, TR::IlValue *v1, TR::IlValue *v2)
+   {
+   TR_ASSERT(dest != NULL, "service cannot be called with NULL destination builder");
+   AddSuccessorBuilder(&dest);
+   OMR::IlBuilder::IfCmpGreaterOrEqual(dest, v1, v2);
    }

@@ -1573,12 +1573,11 @@ omrvmem_get_process_memory_size(struct OMRPortLibrary *portLibrary, J9VMemMemory
 static BOOLEAN
 isRmode64Supported()
 {
-	BOOLEAN result = FALSE;
 	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
 	uint8_t cvtoslvl6 = cvtp->cvtoslvl[6];
 	if (J9_ARE_ANY_BITS_SET(cvtoslvl6, 0x10)) {
-		result = TRUE;
+		return TRUE;
 	}
-	return result;
+	return FALSE;
 }
 #endif

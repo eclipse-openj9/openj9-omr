@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -91,59 +91,42 @@ static const OptimizationStrategy cheapTacticalGlobalRegisterAllocatorOpts[] =
 
 static const OptimizationStrategy JBwarmStrategyOpts[] =
    {
-   { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
+   { OMR::treeSimplification                                                       }, // lots to simplify
+   { OMR::localCSE                                                                 }, // common as much as possible
+   { OMR::treeSimplification                                                       }, // simplify again
+   { OMR::localCSE                                                                 }, // and common
+   { OMR::basicBlockOrdering,                                                      }, // straighten goto's
+   { OMR::globalCopyPropagation,                                                   },
+   { OMR::globalDeadStoreElimination,                                              },
+   { OMR::deadTreesElimination                                                     },
    { OMR::treeSimplification                                                       },
+   { OMR::deadTreesElimination                                                     },
    { OMR::lastLoopVersionerGroup,                    OMR::IfLoops                  },
    { OMR::globalDeadStoreElimination,                OMR::IfEnabledAndLoops        },
    { OMR::deadTreesElimination                                                     },
-   { OMR::basicBlockOrdering,                        OMR::IfLoops                  },
    { OMR::treeSimplification                                                       },
    { OMR::blockSplitter                                                            },
    { OMR::treeSimplification                                                       },
+
+   { OMR::globalValuePropagation,                    OMR::IfMoreThanOneBlock       },
+   { OMR::localValuePropagation,                     OMR::IfOneBlock               },
+   { OMR::localCSE                                                                 },
+   { OMR::treeSimplification                                                       },
+   { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
+
    { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
    { OMR::generalLoopUnroller,                       OMR::IfLoops                  },
    { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // extend blocks; move trees around if reqd
    { OMR::treeSimplification                                                       }, // revisit; not really required ?
-   { OMR::treeSimplification,                        OMR::IfEnabled                },
-   { OMR::localDeadStoreElimination                                                }, // after latest copy propagation
-   { OMR::deadTreesElimination                                                     }, // remove dead anchors created by check/store removal
-   { OMR::treeSimplification,                        OMR::IfEnabled                },
    { OMR::localCSE                                                                 },
-   { OMR::treeSimplification,                        OMR::MarkLastRun              },
-#ifdef TR_HOST_S390
-   { OMR::longRegAllocation                                                        },
-#endif
-   { OMR::andSimplification,                         OMR::IfEnabled                },  //clean up after versioner
-   { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end
-   { OMR::generalStoreSinking                                                      },
-   { OMR::basicBlockOrdering,                        OMR::IfEnabled                },
-   { OMR::treesCleansing,                            OMR::IfEnabled                },
-   { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end
-   { OMR::localCSE,                                  OMR::IfEnabled                }, // common up expressions for sunk stores
-   { OMR::treeSimplification,                        OMR::IfEnabledMarkLastRun     }, // cleanup the trees after sunk store and localCSE
-   { OMR::trivialBlockExtension                                                    },
-   { OMR::localDeadStoreElimination,                 OMR::IfEnabled                }, //remove the astore if no literal pool is required
-   { OMR::localCSE,                                  OMR::IfEnabled                },  //common up lit pool refs in the same block
-   { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // cleanup at the end
-   { OMR::treeSimplification,                        OMR::IfEnabledMarkLastRun     }, // Simplify non-normalized address computations introduced by prefetch insertion
-   { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                }, // final cleanup before opcode expansion
+   { OMR::treeSimplification,                        OMR::IfEnabled                },
+   { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
    { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfEnabled                },
    { OMR::globalDeadStoreGroup,                                                    },
    { OMR::rematerialization                                                        },
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // remove dead anchors created by check/store removal
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // remove dead RegStores produced by previous deadTrees pass
-   //{ OMR::compactLocals                                                            },
    { OMR::regDepCopyRemoval                                                        },
-
-#if 0
-   // omrWarm strategy!
-   { OMR::basicBlockExtension                  },
-   { OMR::localCSE                             },
-   { OMR::treeSimplification                   },
-   { OMR::localCSE                             },
-   { OMR::localDeadStoreElimination            },
-   { OMR::globalDeadStoreGroup                 },
-#endif
 
    { OMR::endOpts                                                                  },
    };

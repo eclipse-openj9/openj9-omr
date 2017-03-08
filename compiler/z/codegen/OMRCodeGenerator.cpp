@@ -7953,13 +7953,13 @@ TR_S390OutOfLineCodeSection * OMR::Z::CodeGenerator::findS390OutOfLineCodeSectio
 // OMR::Z::CodeGenerator::Constant Data List Functions
 ////////////////////////////////////////////////////////////////////////////////
 TR::S390ConstantDataSnippet *
-OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size, bool isWarm)
+OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t size)
    {
    CS2::HashIndex hi;
    TR_S390ConstantDataSnippetKey key;
    key.c      = c;
    key.size   = size;
-   key.isWarm = isWarm;
+   key.isWarm = false;
    TR::S390ConstantDataSnippet * data;
 
    // Can only share data snippets for literal pool address when inlined site indices are the same
@@ -7994,11 +7994,9 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
    data = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
-   if (isWarm)
-      data->setWarmSnippet();  // Set as a warm snippet if requested.
    key.c = (void *)data->getRawData();
    key.size = size;
-   key.isWarm = isWarm;
+   key.isWarm = false;
    if (self()->profiledPointersRequireRelocation() && node &&
        (node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant()) ||
         node->getOpCodeValue() == TR::loadaddr && node->getSymbol()->isClassObject() ||
@@ -8064,7 +8062,7 @@ OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snip
  * since the constant is emitted after all the target address snippets
  */
 int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm)
+OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize)
    {
    TR::S390ConstantDataSnippet * cursor;
    bool first;
@@ -8092,7 +8090,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), false, size))
             {
             if (first)
                {
@@ -8107,7 +8105,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       for(hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
           {
            cursor = _constantHash.DataAt(hi);
-           if (HANDLE_CONSTANT_SNIPPET(cursor, isWarm, size))
+           if (HANDLE_CONSTANT_SNIPPET(cursor, false, size))
               {
               if (first)
                   {
@@ -8127,7 +8125,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), false, size))
             {
             if (first)
                {
@@ -8231,7 +8229,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
 
 
 void
-OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
+OMR::Z::CodeGenerator::emitDataSnippets()
    {
    // If you change logic here, be sure to do similar change in
    // the method : TR::S390ConstantDataSnippet *OMR::Z::CodeGenerator::getFirstConstantData()
@@ -8263,7 +8261,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
          if (maxSize < (*iterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
             {
             if (first)
                {
@@ -8285,7 +8283,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
           if (maxSize < cursor->getConstantSize())
              maxSize = size;
 
-          if (HANDLE_CONSTANT_SNIPPET(cursor, isWarm, size))
+          if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
              {
               if (first)
                  {
@@ -8313,7 +8311,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
        if (maxSize < (*writeableiterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
             {
             if (first)
                {
@@ -8335,7 +8333,7 @@ OMR::Z::CodeGenerator::emitDataSnippets(bool isWarm)
    self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-     if ((*snippetDataIterator)->isWarmSnippet() == isWarm)
+     if ((*snippetDataIterator)->isWarmSnippet() == 0)
          {
          if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )
             {
@@ -8495,19 +8493,19 @@ OMR::Z::CodeGenerator::createLiteralPoolSnippet(TR::Node * node)
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate2ByteConstant(TR::Node * node, int16_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 2, isWarm);
+   return self()->findOrCreateConstant(node, &c, 2);
    }
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate4ByteConstant(TR::Node * node, int32_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 4, isWarm);
+   return self()->findOrCreateConstant(node, &c, 4);
    }
 
 TR::S390ConstantDataSnippet *
 OMR::Z::CodeGenerator::findOrCreate8ByteConstant(TR::Node * node, int64_t c, bool isWarm)
    {
-   return self()->findOrCreateConstant(node, &c, 8, isWarm);
+   return self()->findOrCreateConstant(node, &c, 8);
    }
 
 TR::S390ConstantDataSnippet *
@@ -8641,7 +8639,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_
    }
 
 void
-OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
+OMR::Z::CodeGenerator::emitTargetAddressSnippets()
    {
    uint8_t * codeOffset;
    int8_t size = 8;
@@ -8653,7 +8651,7 @@ OMR::Z::CodeGenerator::emitTargetAddressSnippets(bool isWarm)
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == isWarm)
+      if ((*iterator)->isWarmSnippet() == 0)
          {
          codeOffset = (*iterator)->emitSnippetBody();
          if (codeOffset != NULL)

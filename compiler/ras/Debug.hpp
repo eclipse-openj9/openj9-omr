@@ -316,7 +316,6 @@ namespace TR { class S390SInstruction; }
 namespace TR { class S390SIInstruction; }
 namespace TR { class S390SILInstruction; }
 namespace TR { class S390NOPInstruction; }
-namespace TR { class S390WarmToColdTrampolineSnippet; }
 namespace TR { class S390RestoreGPR7Snippet; }
 namespace TR { class S390CallSnippet; }
 namespace TR { class S390ConstantDataSnippet; }
@@ -1071,7 +1070,6 @@ public:
    void print(TR::FILE *, TR::S390HeapAllocSnippet *);
    void print(TR::FILE *, TR::S390InterfaceCallDataSnippet *);
    void print(TR::FILE *, TR::S390JNICallDataSnippet *);
-   void print(TR::FILE *, TR::S390WarmToColdTrampolineSnippet *);
    void print(TR::FILE *, TR::S390RestoreGPR7Snippet *);
 
    // Assembly related snippet display

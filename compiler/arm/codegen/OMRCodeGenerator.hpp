@@ -126,7 +126,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void doRegisterAssignment(TR_RegisterKinds kindsToAssign);
    void doBinaryEncoding();
 
-   void emitDataSnippets(bool isWarm = 0);
+   void emitDataSnippets();
    bool hasDataSnippets();
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
 

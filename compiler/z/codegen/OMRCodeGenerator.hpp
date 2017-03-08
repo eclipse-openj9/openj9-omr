@@ -887,9 +887,9 @@ public:
    /** First Snippet (can be AddressSnippet or ConstantSnippet) */
    TR::Snippet *getFirstSnippet();
    // Constant Data List functions
-   int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize, bool isWarm = 0);
+   int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize);
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
-   void emitDataSnippets(bool isWarm = 0);
+   void emitDataSnippets();
    bool hasDataSnippets() { return (_constantList.empty() && _writableList.empty() && _snippetDataList.empty() && _constantHash.IsEmpty()) ? false : true; }
    TR::list<TR::S390ConstantDataSnippet*> &getConstantInstructionSnippets() { return _constantList; }
    TR::list<TR::S390ConstantDataSnippet*> &getConstantDataStringSnippets() { return _constantList; }
@@ -900,7 +900,7 @@ public:
    TR::S390ConstantDataSnippet * create64BitLiteralPoolSnippet(TR::DataType dt, int64_t value);
    TR::S390ConstantDataSnippet * createLiteralPoolSnippet(TR::Node * node);
    TR::S390ConstantInstructionSnippet *createConstantInstruction(TR::CodeGenerator * cg, TR::Node *node, TR::Instruction * instr);
-   TR::S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size, bool isWarm = 0);
+   TR::S390ConstantDataSnippet *findOrCreateConstant(TR::Node *, void *c, uint16_t size);
    TR::S390ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c, bool isWarm = 0);
    TR::S390ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c, bool isWarm = 0);
    TR::S390ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c, bool isWarm = 0);
@@ -937,7 +937,7 @@ public:
    // Target Address List functions
    int32_t setEstimatedOffsetForTargetAddressSnippets();
    int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
-   void emitTargetAddressSnippets(bool isWarm = 0);
+   void emitTargetAddressSnippets();
    bool hasTargetAddressSnippets() { return _targetList.empty() ? false : true; }
    TR::S390LookupSwitchSnippet  *CreateLookupSwitchSnippet(TR::Node *,  TR::Snippet* s);
    TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Snippet* s);

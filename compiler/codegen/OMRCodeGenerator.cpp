@@ -2931,14 +2931,14 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
    }
 
 uint8_t *
-OMR::CodeGenerator::emitSnippets(bool isWarm)
+OMR::CodeGenerator::emitSnippets()
    {
    uint8_t *codeOffset;
    uint8_t *retVal;
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == isWarm)
+      if ((*iterator)->isWarmSnippet() == 0)
          {
          codeOffset = (*iterator)->emitSnippet();
          if (codeOffset != NULL)
@@ -2959,14 +2959,14 @@ OMR::CodeGenerator::emitSnippets(bool isWarm)
    //
    if (self()->hasTargetAddressSnippets())
       {
-      self()->emitTargetAddressSnippets(isWarm);
+      self()->emitTargetAddressSnippets();
       }
 
    // Emit constant data snippets last.
    //
    if (self()->hasDataSnippets())
       {
-      self()->emitDataSnippets(isWarm);
+      self()->emitDataSnippets();
       }
 
    return retVal;

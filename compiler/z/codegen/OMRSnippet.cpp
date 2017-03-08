@@ -307,9 +307,6 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsInterfaceCallData:
          print(pOutFile, (TR::S390InterfaceCallDataSnippet *) snippet);
          break;
-      case TR::Snippet::IsWarmToColdTrampoline:
-         print(pOutFile, (TR::S390WarmToColdTrampolineSnippet *) snippet);
-         break;
       case TR::Snippet::IsConstantInstruction:
          print(pOutFile, (TR::S390ConstantInstructionSnippet *) snippet);
          break;

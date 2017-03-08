@@ -92,7 +92,6 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
       IsForceRecomp,
       IsMonitorEnter,
       IsMonitorExit,
-      IsWarmToColdTrampoline,
       IsRestoreGPR7,
       numKinds
       };

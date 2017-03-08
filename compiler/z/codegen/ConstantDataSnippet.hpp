@@ -156,23 +156,6 @@ class S390EyeCatcherDataSnippet : public TR::S390ConstantDataSnippet
    };
 
 /**
- * Create constant data snippet with pointer to full eye-catcher.
- * This is used as a small eyecatcher in warm code.
- */
-class S390WarmEyeCatcherDataSnippet : public TR::S390ConstantDataSnippet
-   {
-   uint8_t *  _value;
-   TR::LabelSymbol * _fullEyeCatcherSnippet;
-
-   public:
-
-   S390WarmEyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *);
-
-   uint8_t *emitSnippetBody();
-   Kind getKind() { return IsEyeCatcherData; }
-   };
-
-/**
  * WritableDataSnippet is used to hold patchable data
  */
 class S390WritableDataSnippet : public TR::S390ConstantDataSnippet

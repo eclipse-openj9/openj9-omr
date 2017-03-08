@@ -1115,14 +1115,14 @@ class OMR_EXTENSIBLE CodeGenerator
    // called to emit any constant data snippets.  The platform specific code generators
    // should override these methods if they use constant data snippets.
    //
-   void emitDataSnippets(bool isWarm = 0) {} // no virt
+   void emitDataSnippets() {}
    bool hasDataSnippets() {return false;} // no virt, cast
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0) {return 0;} // no virt, cast
 
    // called to emit any target address snippets.  The platform specific code generators
    // should override these methods if they use target address snippets.
    //
-   void emitTargetAddressSnippets(bool isWarm = 0) {} // no virt
+   void emitTargetAddressSnippets() {}
    bool hasTargetAddressSnippets() {return false;} // no virt, cast
    int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0) {return 0;} // no virt, cast
 
@@ -1958,6 +1958,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool _afterRA;
 
+   // MOVE TO J9 Z CodeGenerator
    // isTemporaryBased storageReferences just have a symRef but some other routines expect a node so use the below to fill in this symRef on this node
    TR::Node *_dummyTempStorageRefNode;
 
@@ -1974,10 +1975,6 @@ class OMR_EXTENSIBLE CodeGenerator
    static int _totalNumRematerializedIndirects;
    static int _totalNumRematerializedAddresses;
    static int _totalNumRematerializedXMMRs;
-
-   void dumpSnippets();
-#else
-   void dumpSnippets() { }
 #endif
 
    bool _disableInternalPointers;
@@ -1995,7 +1992,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_Stack<TR::MemoryReference *> _stackOfMemoryReferencesCreatedDuringEvaluation;
 
-   uint8_t *emitSnippets(bool isWarm = 0);
+   uint8_t *emitSnippets();
 
    void addAllocatedRegisterPair(TR::RegisterPair * temp);
    void addAllocatedRegister(TR::Register * temp);

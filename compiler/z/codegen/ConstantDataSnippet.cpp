@@ -366,44 +366,6 @@ TR::S390EyeCatcherDataSnippet::emitSnippetBody()
    return cursor;
    }
 
-/**
- * Warm Eye Catcher Snippet
- * Format:
- *      JITMETHD  - 8 byte (ASCII/EBCDIC depending on platform).
- *      Ptr to Full Eye Catcher
- */
-TR::S390WarmEyeCatcherDataSnippet::S390WarmEyeCatcherDataSnippet(TR::CodeGenerator *cg, TR::Node *n, TR::LabelSymbol *fullEyeCatcherSnippetLabel)
-   : TR::S390ConstantDataSnippet(cg, n, NULL, 0)
-   {
-   _fullEyeCatcherSnippet = fullEyeCatcherSnippetLabel;
-
-   setWarmSnippet();  // Set as Warm Snippet - this is always warm... If TCC is disabled, only the full eyecatcher will be emitted then.
-
-   int32_t totalLength = (8 + sizeof(intptrj_t));
-   setLength(totalLength);
-   }
-
-uint8_t *
-TR::S390WarmEyeCatcherDataSnippet::emitSnippetBody()
-   {
-   uint8_t * cursor = cg()->getBinaryBufferCursor();
-   getSnippetLabel()->setCodeLocation(cursor);
-
-   // EyeCatcher - JITMETHD
-   const int32_t eyeCatcherSize = 8;
-   char eyeCatcher[eyeCatcherSize]={ 'J','I','T','M','E','T','H','D'};
-   memcpy(cursor, eyeCatcher, eyeCatcherSize);
-   cursor += eyeCatcherSize;
-
-   // Pointer to Full EyeCatcher Snippet Label
-   TR_ASSERT(_fullEyeCatcherSnippet != NULL, "Warm EyeCatcher does not have a corresponding full EyeCatcher.");
-   cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _fullEyeCatcherSnippet));
-   cursor += sizeof(intptrj_t);
-   return cursor;
-   }
-
-
-
 TR::S390WritableDataSnippet::S390WritableDataSnippet(TR::CodeGenerator * cg, TR::Node * n, void * c, uint16_t size)
    : TR::S390ConstantDataSnippet(cg, n, c, size)
    {

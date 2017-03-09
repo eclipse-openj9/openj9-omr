@@ -26,7 +26,7 @@ maxprec:
     basr %r1,0
 .LT0:
     
-    stck 48(%r15)
+    stckf 48(%r15)
     lm  %r2,%r3,48(%r15)
     sl  %r3,.LC0-.LT0+4(%r1)
     brc 3,.LCarry

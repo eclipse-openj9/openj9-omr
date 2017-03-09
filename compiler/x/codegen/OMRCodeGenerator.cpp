@@ -119,6 +119,7 @@ void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
    //
    _featureFlags.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags(comp));
    _featureFlags2.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags2(comp));
+   _featureFlags8.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags8(comp));
 
    // Determine the processor vendor.
    //
@@ -233,10 +234,10 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
 
-   if (TR::Compiler->target.cpu.getX86SupportsTM(comp) && !comp->getOption(TR_DisableTM))
+   if (_targetProcessorInfo.supportsTM() && !comp->getOption(TR_DisableTM))
       {
 
-	 /**
+	  /**
 	  * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel,
 	  * we will return false for any versions before Broadwell.
 	  *

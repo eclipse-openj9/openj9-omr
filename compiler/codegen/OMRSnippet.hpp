@@ -87,9 +87,6 @@ class OMR_EXTENSIBLE Snippet
    TR::Block *getBlock() { return _block; }
    void setBlock(TR::Block *block) { _block = block; }
 
-   bool isWarmSnippet() { return _flags.testAll(TO_MASK32(WarmSnippet)); }
-   void setWarmSnippet() { _flags.set(TO_MASK32(WarmSnippet)); }
-
    bool needsExceptionTableEntry() { return _flags.testAll(TO_MASK32(NeedsExceptionTableEntry)); }
    void setNeedsExceptionTableEntry() { _flags.set(TO_MASK32(NeedsExceptionTableEntry)); }
    void resetNeedsExceptionTableEntry() { _flags.reset(TO_MASK32(NeedsExceptionTableEntry)); }
@@ -101,7 +98,6 @@ class OMR_EXTENSIBLE Snippet
    enum
       {
       NeedsExceptionTableEntry = 0,
-      WarmSnippet,
 
       NextSnippetFlag,
       MaxSnippetFlag = (sizeof(uint32_t)*8)-1

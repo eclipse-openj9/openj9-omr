@@ -8081,8 +8081,8 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
    // Constant snippet size (S) is a power of 2
    //     - handle when: S = pos(2,exp)
    //     - snippets alignment by size, no max
-   #define HANDLE_CONSTANT_SNIPPET(cursor, isWarmFlag, pow2Size) \
-                      ((cursor->isWarmSnippet() == isWarmFlag) && (cursor->getConstantSize() == pow2Size))
+   #define HANDLE_CONSTANT_SNIPPET(cursor, pow2Size) \
+                      (cursor->getConstantSize() == pow2Size)
 
    for (exp = self()->constantDataSnippetExponent(); exp > 0; exp--)
       {
@@ -8090,7 +8090,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), false, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), size))
             {
             if (first)
                {
@@ -8105,7 +8105,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       for(hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
           {
            cursor = _constantHash.DataAt(hi);
-           if (HANDLE_CONSTANT_SNIPPET(cursor, false, size))
+           if (HANDLE_CONSTANT_SNIPPET(cursor, size))
               {
               if (first)
                   {
@@ -8125,7 +8125,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
       first = true;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), false, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), size))
             {
             if (first)
                {
@@ -8167,7 +8167,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       first = true;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), size))
             {
             if (first)
                {
@@ -8182,7 +8182,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       for(hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
          {
            cursor = _constantHash.DataAt(hi);
-           if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
+           if (HANDLE_CONSTANT_SNIPPET(cursor, size))
               {
                if (first)
                    {
@@ -8201,7 +8201,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       first = true;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), size))
             {
             if (first)
                {
@@ -8217,11 +8217,8 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
    estimatedSnippetStart = ((estimatedSnippetStart + 7) / 8 * 8);
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-      if ((*snippetDataIterator)->isWarmSnippet() == 0)
-         {
-         (*snippetDataIterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
-         estimatedSnippetStart += (*snippetDataIterator)->getLength(estimatedSnippetStart);
-         }
+      (*snippetDataIterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
+      estimatedSnippetStart += (*snippetDataIterator)->getLength(estimatedSnippetStart);
       }
    return estimatedSnippetStart;
    }
@@ -8261,7 +8258,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
          if (maxSize < (*iterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), size))
             {
             if (first)
                {
@@ -8283,7 +8280,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
           if (maxSize < cursor->getConstantSize())
              maxSize = size;
 
-          if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
+          if (HANDLE_CONSTANT_SNIPPET(cursor, size))
              {
               if (first)
                  {
@@ -8311,7 +8308,7 @@ OMR::Z::CodeGenerator::emitDataSnippets()
        if (maxSize < (*writeableiterator)->getConstantSize())
             maxSize = size;
 
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), size))
             {
             if (first)
                {
@@ -8333,19 +8330,16 @@ OMR::Z::CodeGenerator::emitDataSnippets()
    self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + 7) / 8) * 8));
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-     if ((*snippetDataIterator)->isWarmSnippet() == 0)
+      if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )
          {
-         if ((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData )
+         eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
+         }
+      else
+         {
+         codeOffset = (*snippetDataIterator)->emitSnippetBody();
+         if (codeOffset != NULL)
             {
-            eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
-            }
-         else
-            {
-            codeOffset = (*snippetDataIterator)->emitSnippetBody();
-            if (codeOffset != NULL)
-               {
-               self()->setBinaryBufferCursor(codeOffset);
-               }
+            self()->setBinaryBufferCursor(codeOffset);
             }
          }
       }
@@ -8540,7 +8534,7 @@ OMR::Z::CodeGenerator::getFirstConstantData()
    // Logic in this method should always be kept in sync with
    // logic in void OMR::Z::CodeGenerator::emitDataSnippets()
    // Constants are emited in order of decreasing size,
-   // hense the first emited constant may not be iterator.getFirst(),
+   // hence the first emitted constant may not be iterator.getFirst(),
    // but the first constant with biggest size
    //
    TR::S390ConstantDataSnippet * cursor;
@@ -8552,7 +8546,7 @@ OMR::Z::CodeGenerator::getFirstConstantData()
       int32_t size = 1 << exp;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-       if (HANDLE_CONSTANT_SNIPPET((*iterator), false, size)) // false matches case where !(*iterator)->isWarmSnippet()
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), size))
             {
             return *iterator;
             }
@@ -8561,7 +8555,7 @@ OMR::Z::CodeGenerator::getFirstConstantData()
       for (hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
           {
           cursor = _constantHash.DataAt(hi);
-          if (HANDLE_CONSTANT_SNIPPET(cursor, false, size)) // false matches case where !cursor->isWarmSnippet()
+          if (HANDLE_CONSTANT_SNIPPET(cursor, size))
               {
               return cursor;
               }
@@ -8573,7 +8567,7 @@ OMR::Z::CodeGenerator::getFirstConstantData()
       int32_t size = 1 << exp;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), false, size)) // false matches case where !(*writeableiterator)->isWarmSnippet()
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), size))
             {
             return *writeableiterator;
             }
@@ -8606,12 +8600,8 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      // For warm snippets, we assume it has its own addressibility.
-     if (!(*iterator)->isWarmSnippet())
-         {
-         (*iterator)->setCodeBaseOffset(estimatedOffset);
-         estimatedOffset += (*iterator)->getLength(0);
-         }
+      (*iterator)->setCodeBaseOffset(estimatedOffset);
+      estimatedOffset += (*iterator)->getLength(0);
       }
 
    return estimatedOffset;
@@ -8629,11 +8619,8 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_
    estimatedSnippetStart += 6;
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == 0)
-         {
-         (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
-         estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
-         }
+      (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
+      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
       }
    return estimatedSnippetStart;
    }
@@ -8651,13 +8638,10 @@ OMR::Z::CodeGenerator::emitTargetAddressSnippets()
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == 0)
+      codeOffset = (*iterator)->emitSnippetBody();
+      if (codeOffset != NULL)
          {
-         codeOffset = (*iterator)->emitSnippetBody();
-         if (codeOffset != NULL)
-            {
-            self()->setBinaryBufferCursor(codeOffset);
-            }
+         self()->setBinaryBufferCursor(codeOffset);
          }
       }
    }
@@ -9724,7 +9708,7 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       size = 1 << exp;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), size))
             {
             self()->getDebug()->print(outFile, *iterator);
             }
@@ -9733,7 +9717,7 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       for (hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
           {
             cursor = _constantHash.DataAt(hi);
-            if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
+            if (HANDLE_CONSTANT_SNIPPET(cursor, size))
                 {
                 self()->getDebug()->print(outFile,cursor);
                 }
@@ -9744,7 +9728,7 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       size = 1 << exp;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), size))
             {
             self()->getDebug()->print(outFile, *writeableiterator);
             }
@@ -9754,13 +9738,10 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    // Emit Other Misc Data Snippets.
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-      if ((*snippetDataIterator)->isWarmSnippet() == 0)
-         {
-         if((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData)
-            eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
-         else
-            self()->getDebug()->print(outFile,*snippetDataIterator);
-         }
+      if((*snippetDataIterator)->getKind() == TR::Snippet::IsEyeCatcherData)
+         eyeCatcher = (TR::S390EyeCatcherDataSnippet *)(*snippetDataIterator);
+      else
+         self()->getDebug()->print(outFile,*snippetDataIterator);
       }
 
    if (eyeCatcher != NULL) //WCODE
@@ -9785,8 +9766,7 @@ OMR::Z::CodeGenerator::dumpTargetAddressSnippets(TR::FILE *outFile)
 
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == 0)
-         self()->getDebug()->print(outFile, *iterator);
+      self()->getDebug()->print(outFile, *iterator);
       }
    }
 

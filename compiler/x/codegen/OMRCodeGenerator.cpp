@@ -2266,7 +2266,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             if (first)
                {
@@ -2299,7 +2299,7 @@ void OMR::X86::CodeGenerator::emitDataSnippets()
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             if (first)
                {
@@ -3733,7 +3733,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       size = 1 << exp;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             self()->getDebug()->print(outFile, *iterator);
             }

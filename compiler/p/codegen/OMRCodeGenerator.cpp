@@ -100,12 +100,7 @@
 #include <sys/debug.h>
 #endif
 
-// Amount to be added to the estimated code size to ensure that there are long
-// branches between warm and cold code sections (must be multiple of 8 bytes).
-//
-#define MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE (32768+8)
-
-static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg, int32_t *, int32_t);
+static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg);
 extern TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetReg, bool needsZeroExtension = true);
 
 
@@ -122,8 +117,7 @@ OMR::Power::CodeGenerator::CodeGenerator() :
      _assignmentDirection(Backward),
      _transientLongRegisters(self()->trMemory()),
      conversionBuffer(NULL),
-     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator())),
-     _globalLabelsEncountered(getTypedAllocator<TR::LabelSymbol*>(self()->comp()->allocator()))
+     _outOfLineCodeSectionList(getTypedAllocator<TR_PPCOutOfLineCodeSection*>(self()->comp()->allocator()))
    {
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -2000,7 +1994,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
    {
    TR_PPCBinaryEncodingData data;
    data.estimate = 0;
-   data.warmEstimate = 0;
 
    self()->generateBinaryEncodingPrologue(&data);
 
@@ -2055,37 +2048,12 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    if (data.estimate > 32768)
       {
-      int32_t incWarmSize = 0;
-      data.estimate = identifyFarConditionalBranches(data.estimate, self(), &incWarmSize, data.warmEstimate);
-      data.warmEstimate += incWarmSize;
+      data.estimate = identifyFarConditionalBranches(data.estimate, self());
       }
 
-   if (!self()->getGlobalLabelsEncountered().empty())
-      {
-      if (data.warmEstimate == 0)
-         {
-         data.warmEstimate = ((data.estimate)+7) & ~7;
-         data.estimate = data.warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-      }
-   if (data.warmEstimate)
-      {
-      self()->setEstimatedWarmLength(data.warmEstimate);
-      self()->setEstimatedColdLength((data.estimate-data.warmEstimate-MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE));
-      if (self()->getGlobalLabelsEncountered().empty())
-         {
-         uintptr_t i = 0;
-         i = self()->getGlobalLabelsEncountered().size();
-         self()->setEstimatedColdLength(self()->getEstimatedColdLength() + (i * sizeof(uint32_t) * 6)); // 2 instructions + traceback table
-         // Note comment below...right now, I don't fill this in.  I just
-         // handle it in the .s file generation
-         }
-      }
-   else
-      {
-      self()->setEstimatedWarmLength(data.estimate);
-      self()->setEstimatedColdLength(0);
-      }
+   self()->setEstimatedWarmLength(data.estimate);
+   self()->setEstimatedColdLength(0);
+
    data.cursorInstruction = self()->comp()->getFirstInstruction();
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
@@ -2170,22 +2138,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
          }
       }
 
-   if (!self()->getGlobalLabelsEncountered().empty())
-      {
-      //ListIterator<TR::LabelSymbol> glblLbls(&self()->getGlobalLabelsEncountered());
-      // At this point, we need to iterate through all of the global labels
-      // found in this compilation.  For each one we need to:
-      //        create a label to represent a function which is the
-      //        function that the C++ runtime will jump to
-      //
-      //        generate a branch to the actual label
-      //        generate a bcr   BO_ALWAYS,CR0_LT
-      //        generate a traceback table for this little function
-      //
-      // right now, I'm not really doing that.  Instead I'll handle it
-      // in the .s file generation.
-      }
-
    // We late-processing TOC entries here: obviously cannot deal with snippet labels.
    // If needed, we should move this step to common code around relocation processing.
    if (TR::Compiler->target.is64Bit())
@@ -2264,7 +2216,7 @@ TR::Register *OMR::Power::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    }
 
 
-static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg, int32_t *incWarmSize, int32_t warmSize)
+static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg)
    {
    TR_Array<TR::PPCConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
    TR::Instruction *cursorInstruction = cg->comp()->getFirstInstruction();
@@ -2308,8 +2260,6 @@ static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerato
          if ((targetLocation-myLocation + (j-i-1)*4) >= 32768)
             {
             candidateBranches[i]->setFarRelocation(true);
-            if (myLocation < warmSize)
-               *incWarmSize += 4;
             }
          else
             {
@@ -2323,8 +2273,6 @@ static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerato
          if ((myLocation-targetLocation + (i-j-1)*4) > 32768)
             {
             candidateBranches[i]->setFarRelocation(true);
-            if (myLocation < warmSize)
-               *incWarmSize += 4;
             }
          else
             {

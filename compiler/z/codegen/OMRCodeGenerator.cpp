@@ -133,11 +133,6 @@ namespace TR { class SimpleRegex; }
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
-// Amount to be added to the estimated code size to ensure that there are long
-// branches between warm and cold code sections (must be multiple of 8).
-//  We are temporarily accounting for ZOS XPLink NOP to Call Descriptor distance too.
-#define MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE 262144
-
 bool compareNodes(TR::Node * node1, TR::Node * node2, TR::CodeGenerator *cg);
 bool isMatchingStoreRestore(TR::Instruction *cursorLoad, TR::Instruction *cursorStore, TR::CodeGenerator *cg);
 void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg);
@@ -6240,7 +6235,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.loadArgSize = 0;
    self()->fe()->generateBinaryEncodingPrologue(&data, self());
 
-   int32_t warmEstimate = 0;
    TR::Recompilation * recomp = self()->comp()->getRecompilationInfo();
    bool isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
@@ -6345,23 +6339,15 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
       }
 
-   if (warmEstimate)
+   if (self()->allowSplitWarmAndColdBlocks())
       {
-      self()->setEstimatedWarmLength(warmEstimate);
-      self()->setEstimatedColdLength(data.estimate-warmEstimate-MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
+      self()->setEstimatedWarmLength(data.estimate);
+      self()->setEstimatedColdLength(0);
       }
    else
       {
-      if (self()->allowSplitWarmAndColdBlocks())
-         {
-         self()->setEstimatedWarmLength(data.estimate);
-         self()->setEstimatedColdLength(0);
-         }
-      else
-         {
-         self()->setEstimatedWarmLength(0);
-         self()->setEstimatedColdLength(data.estimate);
-         }
+      self()->setEstimatedWarmLength(0);
+      self()->setEstimatedColdLength(data.estimate);
       }
 
    data.cursorInstruction = self()->comp()->getFirstInstruction();

@@ -724,8 +724,8 @@ public:
     */
    int32_t getMinimumNumberOfNodesBetweenMonitorsForTLE() { return 45; }
 
-   void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0);
-   void dumpTargetAddressSnippets(TR::FILE *outFile, bool isWarm = 0);
+   void dumpDataSnippets(TR::FILE *outFile);
+   void dumpTargetAddressSnippets(TR::FILE *outFile);
 
    bool specializedEpilogues() { return _cgFlags.testAny(S390CG_specializedEpilogues); }
    void setSpecializedEpilogues(bool b) { _cgFlags.set(S390CG_specializedEpilogues, b); }

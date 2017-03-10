@@ -240,8 +240,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
       comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
 
       traceMsg(comp,"<snippets>");
-      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList(), true);  // print Warm Snippets
-      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList(), false); // print the rest
+      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList());
       traceMsg(comp,"</snippets>\n");
 
       auto iterator = cg->getSnippetList().begin();

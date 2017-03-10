@@ -630,11 +630,8 @@ int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    }
 
 #if DEBUG
-void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
+void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
-   if (isWarm) // PPC currently should not have any warm constant data snippets
-      return;
-
    if (outFile == NULL)
       return;
    _constantData->print(outFile);

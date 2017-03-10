@@ -978,8 +978,8 @@ class OMR_EXTENSIBLE CodeGenerator
    static void incNumRematerializedXMMRs()     {_totalNumRematerializedXMMRs++;}
 #endif
 
-   void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0) {} // no virt
-   void dumpTargetAddressSnippets(TR::FILE *outFile, bool isWarm = 0) {} // no virt
+   void dumpDataSnippets(TR::FILE *outFile) {}
+   void dumpTargetAddressSnippets(TR::FILE *outFile) {}
 
    // --------------------------------------------------------------------------
    // Register assignment tracing

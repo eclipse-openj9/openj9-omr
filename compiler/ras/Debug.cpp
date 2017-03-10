@@ -2897,16 +2897,16 @@ TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList, bool i
       return;
 
    if (_comp->cg()->hasTargetAddressSnippets())
-      _comp->cg()->dumpTargetAddressSnippets(pOutFile, isWarm);
+      _comp->cg()->dumpTargetAddressSnippets(pOutFile);
 
    for (auto snippets = snippetList.begin(); snippets != snippetList.end(); ++snippets)
       {
-      if ((*snippets)->isWarmSnippet() == isWarm)
+      if ((*snippets)->isWarmSnippet() == 0)
          print(pOutFile, *snippets);
       }
 
    if (_comp->cg()->hasDataSnippets())
-      _comp->cg()->dumpDataSnippets(pOutFile, isWarm);
+      _comp->cg()->dumpDataSnippets(pOutFile);
    }
 
 
@@ -2917,17 +2917,17 @@ TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList, bool isWarm
       return;
 
    if (_comp->cg()->hasTargetAddressSnippets())
-      _comp->cg()->dumpTargetAddressSnippets(pOutFile, isWarm);
+      _comp->cg()->dumpTargetAddressSnippets(pOutFile);
 
    ListIterator<TR::Snippet> snippets(&snippetList);
    for (TR::Snippet * snippet = snippets.getFirst(); snippet; snippet = snippets.getNext())
       {
-      if (snippet->isWarmSnippet() == isWarm)
+      if (snippet->isWarmSnippet() == 0)
          print(pOutFile, snippet);
       }
 
    if (_comp->cg()->hasDataSnippets())
-      _comp->cg()->dumpDataSnippets(pOutFile, isWarm);
+      _comp->cg()->dumpDataSnippets(pOutFile);
 
    trfprintf(pOutFile, "\n");
    }

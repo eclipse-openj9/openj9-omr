@@ -3161,11 +3161,8 @@ void j2Prof_trampolineReport(uint8_t *startP, uint8_t *endP, int32_t num_trampol
 #endif
 
 #if DEBUG
-void OMR::Power::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
+void OMR::Power::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
-   if (isWarm) // PPC currently should not have any warm constant data snippets
-      return;
-
    if (outFile == NULL)
       return;
    _constantData->print(outFile);

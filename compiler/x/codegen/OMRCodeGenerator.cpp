@@ -3719,7 +3719,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 #if DEBUG
 
-void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
+void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
 
    if (outFile == NULL)
@@ -3733,7 +3733,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
       size = 1 << exp;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == isWarm)
+         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
             {
             self()->getDebug()->print(outFile, *iterator);
             }

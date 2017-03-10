@@ -128,7 +128,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    void emitDataSnippets();
    bool hasDataSnippets();
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
 
 #ifdef DEBUG
    void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0);

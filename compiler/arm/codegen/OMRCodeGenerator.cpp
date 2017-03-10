@@ -624,12 +624,9 @@ void OMR::ARM::CodeGenerator::emitDataSnippets()
    self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
    }
 
-int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
-   if (isWarm && !self()->comp()->getOption(TR_EnableHCR)) // PPC currently should not have any constant data snippets as warm.
-      return estimatedSnippetStart;
-   else
-      return estimatedSnippetStart+_constantData->getLength();
+   return estimatedSnippetStart+_constantData->getLength();
    }
 
 #if DEBUG

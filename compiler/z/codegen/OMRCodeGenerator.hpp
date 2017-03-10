@@ -888,7 +888,7 @@ public:
    TR::Snippet *getFirstSnippet();
    // Constant Data List functions
    int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize);
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
    void emitDataSnippets();
    bool hasDataSnippets() { return (_constantList.empty() && _writableList.empty() && _snippetDataList.empty() && _constantHash.IsEmpty()) ? false : true; }
    TR::list<TR::S390ConstantDataSnippet*> &getConstantInstructionSnippets() { return _constantList; }
@@ -936,7 +936,7 @@ public:
 
    // Target Address List functions
    int32_t setEstimatedOffsetForTargetAddressSnippets();
-   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart);
    void emitTargetAddressSnippets();
    bool hasTargetAddressSnippets() { return _targetList.empty() ? false : true; }
    TR::S390LookupSwitchSnippet  *CreateLookupSwitchSnippet(TR::Node *,  TR::Snippet* s);

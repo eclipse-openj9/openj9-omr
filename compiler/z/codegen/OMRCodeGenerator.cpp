@@ -8142,7 +8142,7 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetA
    }
 
 int32_t
-OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
    TR::S390ConstantDataSnippet * cursor;
    bool first;
@@ -8167,7 +8167,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       first = true;
       for (auto iterator = _constantList.begin(); iterator != _constantList.end(); ++iterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*iterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*iterator), 0, size))
             {
             if (first)
                {
@@ -8182,7 +8182,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       for(hi = _constantHashCur.SetToFirst(); _constantHashCur.Valid(); hi = _constantHashCur.SetToNext())
          {
            cursor = _constantHash.DataAt(hi);
-           if (HANDLE_CONSTANT_SNIPPET(cursor, isWarm, size))
+           if (HANDLE_CONSTANT_SNIPPET(cursor, 0, size))
               {
                if (first)
                    {
@@ -8201,7 +8201,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
       first = true;
       for (auto writeableiterator = _writableList.begin(); writeableiterator != _writableList.end(); ++writeableiterator)
          {
-         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), isWarm, size))
+         if (HANDLE_CONSTANT_SNIPPET((*writeableiterator), 0, size))
             {
             if (first)
                {
@@ -8217,7 +8217,7 @@ OMR::Z::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimat
    estimatedSnippetStart = ((estimatedSnippetStart + 7) / 8 * 8);
    for (auto snippetDataIterator = _snippetDataList.begin(); snippetDataIterator != _snippetDataList.end(); ++snippetDataIterator)
       {
-      if ((*snippetDataIterator)->isWarmSnippet() == isWarm)
+      if ((*snippetDataIterator)->isWarmSnippet() == 0)
          {
          (*snippetDataIterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
          estimatedSnippetStart += (*snippetDataIterator)->getLength(estimatedSnippetStart);
@@ -8622,14 +8622,14 @@ OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
 // OMR::Z::CodeGenerator::TargetAddressSnippet Functions
 ////////////////////////////////////////////////////////////////////////////////
 int32_t
-OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart)
    {
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
    // Conservatively add maximum padding to get to 8 byte alignment.
    estimatedSnippetStart += 6;
    for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == isWarm)
+      if ((*iterator)->isWarmSnippet() == 0)
          {
          (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
          estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);

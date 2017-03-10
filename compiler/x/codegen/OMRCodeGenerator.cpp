@@ -2253,7 +2253,7 @@ TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::
    return (TR::IA32ConstantDataSnippet*)cursor;
    }
 
-int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
    bool                                     first;
    int32_t                                  size;
@@ -2266,7 +2266,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == isWarm)
+         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
             {
             if (first)
                {

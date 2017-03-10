@@ -420,7 +420,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // Note: This leaves the code aligned in the specified manner.
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *prev, uint8_t alignment, uint8_t alignmentMargin);
 
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
    void emitDataSnippets();
    bool hasDataSnippets() { return _dataSnippetList.empty() ? false : true; }
 

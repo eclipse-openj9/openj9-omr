@@ -650,17 +650,6 @@ OMR::CodeGenerator::doInstructionSelection()
             }
 #endif
          }
-      else if (opCode == TR::BBEnd)
-         {
-         TR::Block *b = self()->getCurrentEvaluationBlock();
-         if (b->isLastWarmBlock())
-            {
-            // Mark the split point between warm and cold instructions, so they
-            // can be allocated in different code sections.
-            //
-            prevInstr->setLastWarmInstruction(true);
-            }
-         }
 
       self()->setLiveLocals(liveLocals);
 

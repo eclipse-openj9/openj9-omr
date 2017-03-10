@@ -1941,10 +1941,6 @@ void OMR::Power::CodeGenerator::deleteInst(TR::Instruction* old)
    {
    TR::Instruction* prv = old->getPrev();
    TR::Instruction* nxt = old->getNext();
-   if (old->isLastWarmInstruction())
-      {
-      prv->setLastWarmInstruction(true);
-      }
    prv->setNext(nxt);
    nxt->setPrev(prv);
    }
@@ -2053,22 +2049,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
             }
          }
       data.estimate          = data.cursorInstruction->estimateBinaryLength(data.estimate);
-
-      // If this is the last warm instruction, remember the estimated size up to
-      // this point and add a buffer to the estimated size so that branches
-      // between warm and cold instructions will be forced to be long branches.
-      // The size is rounded up to a multiple of 8 so that double-alignments in
-      // the cold section will have the same amount of padding for the estimate
-      // and the actual code allocation.
-      //
-      if (data.cursorInstruction->isLastWarmInstruction())
-         {
-         // Get estimate for warm snippets
-         data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate, true);
-         data.warmEstimate = ((data.estimate)+7) & ~7;
-         data.estimate = data.warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-
       data.cursorInstruction = data.cursorInstruction->getNext();
       }
 
@@ -2165,21 +2145,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
          {
          self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart() - self()->getJitMethodEntryPaddingSize());
          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
-         }
-
-      // If this is the last warm instruction, save info about the warm code range
-      // and set up to generate code in the cold code range.
-      //
-      if (data.cursorInstruction->isLastWarmInstruction())
-         {
-         self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
-         self()->setColdCodeStart(coldCode);
-         self()->setBinaryBufferCursor(coldCode);
-
-         // Adjust the accumulated length error so that distances within the cold
-         // code are calculated properly using the estimated code locations.
-         //
-         self()->addAccumulatedInstructionLengthError(self()->getWarmCodeEnd()-coldCode+MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
          }
 
       data.cursorInstruction = data.cursorInstruction->getNext();

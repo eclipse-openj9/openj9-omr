@@ -1872,22 +1872,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       if (self()->comp()->getOption(TR_TraceVFPSubstitution))
          self()->getDebug()->dumpInstructionWithVFPState(estimateCursor, &prevState);
 
-      // If this is the last warm instruction, remember the estimated size up to
-      // this point and add a buffer to the estimated size so that branches
-      // between warm and cold instructions will be forced to be long branches.
-      // The size is rounded up to a multiple of 8 so that double-alignments in
-      // the cold section will have the same amount of padding for the estimate
-      // and the actual code allocation.
-      //
-      if (estimateCursor->isLastWarmInstruction())
-         {
-         // Estimate Warm Snippets.
-         estimate = self()->setEstimatedLocationsForSnippetLabels(estimate, true);
-
-         warmEstimate = (estimate+7) & ~7;
-         estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-
       if (estimateCursor == _vfpResetInstruction)
          self()->generateDebugCounter(estimateCursor, "cg.prologues:#instructionBytes", estimate - estimatedPrologueStartOffset, TR::DebugCounter::Expensive);
 
@@ -2006,22 +1990,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
          }
 
       self()->addToAtlas(cursorInstruction);
-
-      // If this is the last warm instruction, save info about the warm code range
-      // and set up to generate code in the cold code range.
-      //
-      if (cursorInstruction->isLastWarmInstruction())
-         {
-         self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
-         self()->setColdCodeStart(coldCode);
-         self()->setBinaryBufferCursor(coldCode);
-
-         // Adjust the accumulated length error so that distances within the cold
-         // code are calculated properly using the estimated code locations.
-         //
-         self()->addAccumulatedInstructionLengthError(self()->getWarmCodeEnd()-coldCode+MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
-         }
-
       cursorInstruction = cursorInstruction->getNext();
       }
 

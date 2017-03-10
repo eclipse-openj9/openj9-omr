@@ -171,6 +171,11 @@ OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
    _containingStructure = NULL;
    }
 
+TR::Optimization *OMR::Simplifier::create(TR::OptimizationManager *manager)
+   {
+   return new (manager->allocator()) TR::Simplifier(manager);
+   }
+
 void
 OMR::Simplifier::prePerformOnBlocks()
    {

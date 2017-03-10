@@ -847,7 +847,6 @@ public:
         {
            void * c;
            uint32_t size;
-           bool isWarm;
            TR::Node *node;
         };
 
@@ -859,8 +858,6 @@ public:
               }
           static bool Equal(const TR_S390ConstantDataSnippetKey & key1,const TR_S390ConstantDataSnippetKey & key2)
               {
-              if (key1.isWarm != key2.isWarm)
-                  return false;
               if(key1.size != key2.size)
                   return false;
               if (key1.node != key2.node)

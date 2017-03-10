@@ -7959,7 +7959,6 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    TR_S390ConstantDataSnippetKey key;
    key.c      = c;
    key.size   = size;
-   key.isWarm = false;
    TR::S390ConstantDataSnippet * data;
 
    // Can only share data snippets for literal pool address when inlined site indices are the same
@@ -7996,7 +7995,6 @@ OMR::Z::CodeGenerator::findOrCreateConstant(TR::Node * node, void * c, uint16_t 
    data = new (self()->trHeapMemory()) TR::S390ConstantDataSnippet(self(), node, c, size);
    key.c = (void *)data->getRawData();
    key.size = size;
-   key.isWarm = false;
    if (self()->profiledPointersRequireRelocation() && node &&
        (node->getOpCodeValue() == TR::aconst && (node->isClassPointerConstant() || node->isMethodPointerConstant()) ||
         node->getOpCodeValue() == TR::loadaddr && node->getSymbol()->isClassObject() ||
@@ -8035,7 +8033,6 @@ OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, 
       TR_S390ConstantDataSnippetKey key;
       key.c = (void *)cursor->getRawData();
       key.size = size;
-      key.isWarm = false;
       _constantHash.Add(key,cursor);
       return cursor;
       }

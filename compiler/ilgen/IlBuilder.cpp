@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -1480,6 +1480,110 @@ IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
    return returnValue;
    }
 
+/*
+ * @brief IfAnd service for constructing short circuit AND conditional nests (like the && operator)
+ * @param allTrueBuilder builder containing operations to execute if all conditional tests evaluate to true
+ * @param anyFalseBuilder builder containing operations to execute if any conditional test is false
+ * @param numTerms the number of conditional terms
+ * @param ... for each term, provide a TR::IlBuilder object and a TR::IlValue object that evaluates a condition (builder is where all the operations to evaluate the condition go, the value is the final result of the condition)
+ *
+ * Example:
+ * TR::IlBuilder *cond1Builder = OrphanBuilder();
+ * TR::IlValue *cond1 = cond1Builder->GreaterOrEqual(
+ *                      cond1Builder->   Load("x"),
+ *                      cond1Builder->   Load("lower"));
+ * TR::IlBuilder *cond2Builder = OrphanBuilder();
+ * TR::IlValue *cond2 = cond2Builder->LessThan(
+ *                      cond2Builder->   Load("x"),
+ *                      cond2Builder->   Load("upper"));
+ * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
+ * IfAnd(&inRange, &outOfRange, 2, cond1Builder, cond1, cond2Builder, cond2);
+ */
+void
+IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ...)
+   {
+   TR::IlBuilder *mergePoint = OrphanBuilder();
+   *allTrueBuilder = createBuilderIfNeeded(*allTrueBuilder);
+   *anyFalseBuilder = createBuilderIfNeeded(*anyFalseBuilder);
+
+   va_list terms;
+   va_start(terms, numTerms);
+   for (int32_t t=0;t < numTerms;t++)
+      {
+      TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
+      TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+      AppendBuilder(condBuilder);
+      condBuilder->IfCmpEqualZero(anyFalseBuilder, condValue);
+      // otherwise fall through to test next term
+      }
+   va_end(terms);
+
+   // if control gets here, all the provided terms were true
+   AppendBuilder(*allTrueBuilder);
+   Goto(mergePoint);
+
+   // also need to handle the false case
+   AppendBuilder(*anyFalseBuilder);
+   Goto(mergePoint);
+
+   AppendBuilder(mergePoint);
+   }
+
+/*
+ * @brief IfOr service for constructing short circuit OR conditional nests (like the || operator)
+ * @param anyTrueBuilder builder containing operations to execute if any conditional test evaluates to true
+ * @param allFalseBuilder builder containing operations to execute if all conditional tests are false
+ * @param numTerms the number of conditional terms
+ * @param ... for each term, provide a TR::IlBuilder object and a TR::IlValue object that evaluates a condition (builder is where all the operations to evaluate the condition go, the value is the final result of the condition)
+ *
+ * Example:
+ * TR::IlBuilder *cond1Builder = OrphanBuilder();
+ * TR::IlValue *cond1 = cond1Builder->LessThan(
+ *                      cond1Builder->   Load("x"),
+ *                      cond1Builder->   Load("lower"));
+ * TR::IlBuilder *cond2Builder = OrphanBuilder();
+ * TR::IlValue *cond2 = cond2Builder->GreaterOrEqual(
+ *                      cond2Builder->   Load("x"),
+ *                      cond2Builder->   Load("upper"));
+ * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
+ * IfOr(&outOfRange, &inRange, 2, cond1Builder, cond1, cond2Builder, cond2);
+ */
+void
+IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ...)
+   {
+   TR::IlBuilder *mergePoint = OrphanBuilder();
+   *anyTrueBuilder = createBuilderIfNeeded(*anyTrueBuilder);
+   *allFalseBuilder = createBuilderIfNeeded(*allFalseBuilder);
+
+   va_list terms;
+   va_start(terms, numTerms);
+   for (int32_t t=0;t < numTerms-1;t++)
+      {
+      TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
+      TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+      AppendBuilder(condBuilder);
+      condBuilder->IfCmpNotEqualZero(anyTrueBuilder, condValue);
+      // otherwise fall through to test next term
+      }
+
+   // reverse condition on last term so that it can fall through to anyTrueBuilder
+   TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
+   TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+   AppendBuilder(condBuilder);
+   condBuilder->IfCmpEqualZero(allFalseBuilder, condValue);
+   va_end(terms);
+
+   // any true term will end up here
+   AppendBuilder(*anyTrueBuilder);
+   Goto(mergePoint);
+
+   // if control gets here, all the provided terms were false
+   AppendBuilder(*allFalseBuilder);
+   Goto(mergePoint);
+
+   AppendBuilder(mergePoint);
+   }
+
 TR::IlValue *
 IlBuilder::EqualTo(TR::IlValue *left, TR::IlValue *right)
    {
@@ -1493,13 +1597,12 @@ void
 IlBuilder::integerizeAddresses(TR::IlValue **leftPtr, TR::IlValue **rightPtr)
    {
    TR::IlValue *left = *leftPtr;
-   TR::IlValue *right = *rightPtr;
    if (left->getSymbol()->getDataType() == TR::Address)
-      {
-      TR_ASSERT(right->getSymbol()->getDataType() == TR::Address, "expecting both operands to be addresses");
       *leftPtr = ConvertTo(Word, left);
+
+   TR::IlValue *right = *rightPtr;
+   if (right->getSymbol()->getDataType() == TR::Address)
       *rightPtr = ConvertTo(Word, right);
-      }
    }
 
 TR::IlValue *
@@ -1509,6 +1612,16 @@ IlBuilder::LessThan(TR::IlValue *left, TR::IlValue *right)
    TR::IlValue *returnValue=compareOp(TR_cmpLT, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is LessThan %d < %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->LessThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return returnValue;
+   }
+
+TR::IlValue *
+IlBuilder::UnsignedLessThan(TR::IlValue *left, TR::IlValue *right)
+   {
+   integerizeAddresses(&left, &right);
+   TR::IlValue *returnValue=compareOp(TR_cmpLT, true, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedLessThan %d < %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   ILB_REPLAY("%s = %s->UnsignedLessThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1523,6 +1636,16 @@ IlBuilder::LessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    }
 
 TR::IlValue *
+IlBuilder::UnsignedLessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
+   {
+   integerizeAddresses(&left, &right);
+   TR::IlValue *returnValue=compareOp(TR_cmpLE, true, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedLessOrEqualTo %d <= %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   ILB_REPLAY("%s = %s->UnsignedLessOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return returnValue;
+   }
+
+TR::IlValue *
 IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
    {
    integerizeAddresses(&left, &right);
@@ -1533,12 +1656,32 @@ IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
    }
 
 TR::IlValue *
+IlBuilder::UnsignedGreaterThan(TR::IlValue *left, TR::IlValue *right)
+   {
+   integerizeAddresses(&left, &right);
+   TR::IlValue *returnValue=compareOp(TR_cmpGT, true, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedGreaterThan %d > %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   ILB_REPLAY("%s = %s->UnsignedGreaterThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return returnValue;
+   }
+
+TR::IlValue *
 IlBuilder::GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    {
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is GreaterOrEqualTo %d >= %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
    ILB_REPLAY("%s = %s->GreaterOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   return returnValue;
+   }
+
+TR::IlValue *
+IlBuilder::UnsignedGreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
+   {
+   integerizeAddresses(&left, &right);
+   TR::IlValue *returnValue=compareOp(TR_cmpGE, true, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is UnsignedGreaterOrEqualTo %d >= %d?\n", this, returnValue->getCPIndex(), left->getCPIndex(), right->getCPIndex());
+   ILB_REPLAY("%s = %s->UnsignedGreaterOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1886,7 +2029,7 @@ IlBuilder::IfCmpNotEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *
    TR_ASSERT(target != NULL, "This IfCmpNotEqual requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpNotEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpNotEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpNotEqual(left, right, target->getEntry());
+   ifCmpCondition(TR_cmpNE, false, left, right, target->getEntry());
    }
 
 void
@@ -1918,7 +2061,7 @@ IlBuilder::IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *rig
    TR_ASSERT(target != NULL, "This IfCmpEqual requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpEqual %d == %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpEqual(left, right, target->getEntry());
+   ifCmpCondition(TR_cmpEQ, false, left, right, target->getEntry());
    }
 
 void
@@ -1929,19 +2072,35 @@ IlBuilder::IfCmpLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue 
    }
 
 void
-IlBuilder::IfCmpLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
-   {
-   *target = createBuilderIfNeeded(*target);
-   IfCmpLessOrEqual(*target, left, right);
-   }
-
-void
 IlBuilder::IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpLessThan requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpLessThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpLessThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpLessThan(left, right, target->getEntry());
+   ifCmpCondition(TR_cmpLT, false, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::IfCmpUnsignedLessThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
+   {
+   *target = createBuilderIfNeeded(*target);
+   IfCmpUnsignedLessThan(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpUnsignedLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpUnsignedLessThan requires a non-NULL builder object");
+   ILB_REPLAY("%s->IfCmpUnsignedLessThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessThan %d < %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpCondition(TR_cmpLT, true, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::IfCmpLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
+   {
+   *target = createBuilderIfNeeded(*target);
+   IfCmpLessOrEqual(*target, left, right);
    }
 
 void
@@ -1950,7 +2109,23 @@ IlBuilder::IfCmpLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValu
    TR_ASSERT(target != NULL, "This IfCmpLessOrEqual requires a non-NULL builder object");
    ILB_REPLAY("%s->IfCmpLessOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpLessOrEqual(left, right, target->getEntry());
+   ifCmpCondition(TR_cmpLE, false, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::IfCmpUnsignedLessOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
+   {
+   *target = createBuilderIfNeeded(*target);
+   IfCmpUnsignedLessOrEqual(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpUnsignedLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   TR_ASSERT(target != NULL, "This IfCmpUnsignedLessOrEqual requires a non-NULL builder object");
+   ILB_REPLAY("%s->IfCmpUnsignedLessOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpCondition(TR_cmpLE, true, left, right, target->getEntry());
    }
 
 void
@@ -1961,6 +2136,29 @@ IlBuilder::IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlVal
    }
 
 void
+IlBuilder::IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   ILB_REPLAY("%s->IfCmpGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::IfCmpGreaterThan %d > %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpCondition(TR_cmpGT, false, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::IfCmpUnsignedGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
+   {
+   *target = createBuilderIfNeeded(*target);
+   IfCmpUnsignedGreaterThan(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpUnsignedGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   ILB_REPLAY("%s->IfCmpUnsignedGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::IfCmpUnsignedGreaterThan %d > %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpCondition(TR_cmpGT, true, left, right, target->getEntry());
+   }
+
+void
 IlBuilder::IfCmpGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
    {
    *target = createBuilderIfNeeded(*target);
@@ -1968,107 +2166,53 @@ IlBuilder::IfCmpGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::Il
    }
 
 void
-IlBuilder::IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
-   {
-   ILB_REPLAY("%s->IfCmpGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
-   TraceIL("IlBuilder[ %p ]::IfCmpGreaterThan %d > %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpGreaterThan(left, right, target->getEntry());
-   }
-
-void
 IlBuilder::IfCmpGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    ILB_REPLAY("%s->IfCmpGreaterOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpGreaterOrEqual %d >= %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
-   ifCmpGreaterOrEqual(left, right, target->getEntry());
+   ifCmpCondition(TR_cmpGE, false, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::IfCmpUnsignedGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::IlValue *right)
+   {
+   *target = createBuilderIfNeeded(*target);
+   IfCmpUnsignedGreaterOrEqual(*target, left, right);
+   }
+
+void
+IlBuilder::IfCmpUnsignedGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
+   {
+   ILB_REPLAY("%s->IfCmpUnsignedGreaterOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
+   TraceIL("IlBuilder[ %p ]::IfCmpUnsignedGreaterOrEqual %d >= %d? -> [ %p ] B%d\n", this, left->getCPIndex(), right->getCPIndex(), target, target->getEntry()->getNumber());
+   ifCmpCondition(TR_cmpGE, true, left, right, target->getEntry());
+   }
+
+void
+IlBuilder::ifCmpCondition(TR_ComparisonTypes ct, bool isUnsignedCmp, TR::IlValue *left, TR::IlValue *right, TR::Block *target)
+   {
+   integerizeAddresses(&left, &right);
+   appendBlock();
+   TR::Node *leftNode = loadValue(left);
+   TR::Node *rightNode = loadValue(right);
+   TR::ILOpCode cmpOpCode(TR::ILOpCode::compareOpCode(leftNode->getDataType(), ct, isUnsignedCmp));
+   ifjump(cmpOpCode.convertCmpToIfCmp(),
+          leftNode,
+          rightNode,
+          target);
+   appendBlock();
    }
 
 void
 IlBuilder::ifCmpNotEqualZero(TR::IlValue *condition, TR::Block *target)
    {
-   ifCmpNotEqual(condition, zeroForValue(condition), target);
-   }
-
-void
-IlBuilder::ifCmpNotEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareNotEquals(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
+   ifCmpCondition(TR_cmpNE, false, condition, zeroForValue(condition), target);
    }
 
 void
 IlBuilder::ifCmpEqualZero(TR::IlValue *condition, TR::Block *target)
    {
-   ifCmpEqual(condition, zeroForValue(condition), target);
-   }
-
-void
-IlBuilder::ifCmpEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareEquals(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
-   }
-
-void
-IlBuilder::ifCmpLessThan(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   integerizeAddresses(&left, &right);
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareLessThan(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
-   }
-
-void
-IlBuilder::ifCmpLessOrEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   integerizeAddresses(&left, &right);
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareLessOrEquals(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
-   }
-
-void
-IlBuilder::ifCmpGreaterThan(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   integerizeAddresses(&left, &right);
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareGreaterThan(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
-   }
-
-void
-IlBuilder::ifCmpGreaterOrEqual(TR::IlValue *left, TR::IlValue *right, TR::Block *target)
-   {
-   integerizeAddresses(&left, &right);
-   appendBlock();
-   TR::Node *leftNode = loadValue(left);
-   ifjump(comp()->il.opCodeForIfCompareGreaterOrEquals(leftNode->getDataType()),
-          leftNode,
-          loadValue(right),
-          target);
-   appendBlock();
+   ifCmpCondition(TR_cmpEQ, false, condition, zeroForValue(condition), target);
    }
 
 void
@@ -2117,10 +2261,9 @@ IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::Il
       TraceIL(" else B%d", elseEntry->getNumber());
    TraceIL(" merge B%d\n", mergeBlock->getNumber());
 
-   TR::IlValue *zero = zeroForValue(condition);
    if (thenPath == NULL) // case #3
       {
-      ifCmpNotEqual(condition, zero, mergeBlock);
+      ifCmpNotEqualZero(condition, mergeBlock);
       if ((*elsePath)->_partOfSequence)
          gotoBlock(elseEntry);
       else
@@ -2128,7 +2271,7 @@ IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::Il
       }
    else if (elsePath == NULL) // case #2
       {
-      ifCmpEqual(condition, zero, mergeBlock);
+      ifCmpEqualZero(condition, mergeBlock);
       if ((*thenPath)->_partOfSequence)
          gotoBlock(thenEntry);
       else
@@ -2136,7 +2279,7 @@ IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::Il
       }
    else // case #1
       {
-      ifCmpNotEqual(condition, zero, thenEntry);
+      ifCmpNotEqualZero(condition, thenEntry);
       if ((*elsePath)->_partOfSequence)
          {
          gotoBlock(elseEntry);

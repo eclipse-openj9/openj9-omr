@@ -1,6 +1,6 @@
 ################################################################################
 #
-# (c) Copyright IBM Corp. 2000, 2016
+# (c) Copyright IBM Corp. 2000, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -28,6 +28,7 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 ALL_TESTS = \
             atomicoperations \
             call \
+            conditionals \
             conststring \
             controlflowtests \
             dotproduct \
@@ -56,6 +57,7 @@ all: $(ALL_TESTS)
 # These tests should run properly on all platforms
 # If you add to this list, please also add to ALL_TESTS
 common_goal: $(ALL_TESTS)
+	./conditionals
 	./controlflowtests
 	./issupportedtype
 	./iterfib
@@ -120,6 +122,13 @@ call : libjitbuilder.a Call.o
 	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
 
 Call.o: src/Call.cpp src/Call.hpp
+	g++ -o $@ $(CXXFLAGS) $<
+
+
+conditionals : libjitbuilder.a Conditionals.o	
+	g++ -g -fno-rtti -o $@ Conditionals.o -L. -ljitbuilder -ldl
+
+Conditionals.o: src/Conditionals.cpp src/Conditionals.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

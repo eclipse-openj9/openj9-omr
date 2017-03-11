@@ -72,10 +72,7 @@ class Simplifier : public TR::Optimization
    public:
 
    Simplifier(TR::OptimizationManager *manager);
-   static TR::Optimization *create(TR::OptimizationManager *manager)
-      {
-      return new (manager->allocator()) Simplifier(manager);
-      }
+   static TR::Optimization *create(TR::OptimizationManager *manager);
 
    // Simplify the whole method.
    //

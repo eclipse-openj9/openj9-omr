@@ -146,7 +146,6 @@ namespace TR { class IA32DataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
 namespace TR { class X86FPConvertToIntSnippet; }
 namespace TR { class X86FPConvertToLongSnippet; }
-namespace TR { class X86fbits2iSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86HelperCallSnippet; }
 namespace TR { class X86ScratchArgHelperCallSnippet; }
@@ -842,7 +841,6 @@ public:
    void print(TR::FILE *, TR::X86DivideCheckSnippet *);
    void print(TR::FILE *, TR::X86FPConvertToIntSnippet *);
    void print(TR::FILE *, TR::X86FPConvertToLongSnippet *);
-   void print(TR::FILE *, TR::X86fbits2iSnippet *);
    void print(TR::FILE *, TR::X86GuardedDevirtualSnippet *);
    void print(TR::FILE *, TR::X86HelperCallSnippet *);
    void printBody(TR::FILE *, TR::X86HelperCallSnippet *, uint8_t *bufferPos);

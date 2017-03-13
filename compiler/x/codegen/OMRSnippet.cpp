@@ -45,7 +45,6 @@ namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86ScratchArgHelperCallSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class X86UnresolvedVirtualCallSnippet; }
-namespace TR { class X86fbits2iSnippet; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
@@ -150,9 +149,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::IsFPConvertAMD64:
          return "FP Convert To Int/Long Snippet";
          break;
-      case TR::Snippet::Isfbits2i:
-         return "fbits2i Snippet";
-         break;
       case TR::Snippet::IsPassJNINull:
          return "Pass JNI Null Snippet";
          break;
@@ -251,9 +247,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          print(pOutFile, (TR::AMD64FPConversionSnippet *)snippet);
          break;
 #endif
-      case TR::Snippet::Isfbits2i:
-         print(pOutFile, (TR::X86fbits2iSnippet  *)snippet);
-         break;
       case TR::Snippet::IsUnresolvedDataIA32:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
          break;

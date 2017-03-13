@@ -1676,41 +1676,57 @@ TR::Register *OMR::Power::TreeEvaluator::vimaxEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
    switch (node->getDataType())
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vand);
+         opCode = TR::InstOpCode::vand;
+         break;
       default:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxland);
+         opCode = TR::InstOpCode::xxland;
+         break;
      }
+
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
    switch (node->getDataType())
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vor);
+         opCode = TR::InstOpCode::vor;
+         break;
       default:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlor);
+         opCode = TR::InstOpCode::xxlor;
+         break;
      }
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
    switch (node->getDataType())
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vxor);
+         opCode = TR::InstOpCode::vxor;
+         break;
       default:
-         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xxlxor);
+         opCode = TR::InstOpCode::xxlxor;
+         break;
      }
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -29,7 +29,6 @@
 #include "AllocationStats.hpp"
 #include "ArrayObjectModel.hpp"
 #include "BaseVirtual.hpp"
-#include "Configuration.hpp"
 #include "ExcessiveGCStats.hpp"
 #include "Forge.hpp"
 #include "GlobalGCStats.hpp"
@@ -52,6 +51,7 @@ class MM_Collector;
 class MM_CollectorLanguageInterface;
 class MM_CompactGroupPersistentStats;
 class MM_CompressedCardTable;
+class MM_Configuration;
 class MM_Dispatcher;
 class MM_EnvironmentBase;
 class MM_FrequentObjectsStats;
@@ -142,6 +142,29 @@ public:
 		: _wasSpecified(false)
 		, _valueSpecified(false)
 	{
+	}
+};
+
+class MM_ConfigurationOptions : public MM_BaseNonVirtual
+{
+private:
+public:
+	MM_GCPolicy _gcPolicy; /**< gc policy (default or configured) */
+
+	bool _forceOptionScavenge; /**< true if Scavenge option is forced in command line */
+	bool _forceOptionConcurrentMark; /**< true if Concurrent Mark option is forced in command line */
+	bool _forceOptionConcurrentSweep; /**< true if Concurrent Sweep option is forced in command line */
+	bool _forceOptionLargeObjectArea; /**< true if Large Object Area option is forced in command line */
+
+	MM_ConfigurationOptions()
+		: MM_BaseNonVirtual()
+		, _gcPolicy(gc_policy_undefined)
+		, _forceOptionScavenge(false)
+		, _forceOptionConcurrentMark(false)
+		, _forceOptionConcurrentSweep(false)
+		, _forceOptionLargeObjectArea(false)
+	{
+		_typeId = __FUNCTION__;
 	}
 };
 
@@ -441,8 +464,8 @@ public:
 
 	bool payAllocationTax;
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	bool concurrentMark;
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	bool concurrentKickoffEnabled;
 	double concurrentSlackFragmentationAdjustmentWeight; /**< weight(from 0.0 to 5.0) used for calculating free tenure space (how much percentage of the fragmentation need to remove from freeBytes) */
 	bool debugConcurrentMark;
@@ -1125,8 +1148,8 @@ public:
 		, nocompactOnSystemGC(0)
 		, compactToSatisfyAllocate(false)
 #endif /* OMR_GC_MODRON_COMPACTION */
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 		, concurrentMark(false)
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 		, concurrentKickoffEnabled(true)
 		, concurrentSlackFragmentationAdjustmentWeight(0.0)
 		, debugConcurrentMark(false)

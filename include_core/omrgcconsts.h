@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -33,6 +33,45 @@
 #define OMR_GC_POLICY_OPTAVGPAUSE 0x2
 #define OMR_GC_POLICY_OPTTHRUPUT 0x1
 
+/*
+ * list of available GC policies
+ */
+typedef enum MM_GCPolicy {
+	gc_policy_undefined = OMR_GC_POLICY_ILLEGAL,
+	gc_policy_optthruput = OMR_GC_POLICY_OPTTHRUPUT,
+	gc_policy_optavgpause = OMR_GC_POLICY_OPTAVGPAUSE,
+	gc_policy_gencon = OMR_GC_POLICY_GENCON,
+	gc_policy_balanced = OMR_GC_POLICY_BALANCED,
+	gc_policy_metronome = OMR_GC_POLICY_METRONOME
+} MM_GCPolicy;
+
+#define OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL 0x0
+#define OMR_GC_WRITE_BARRIER_TYPE_NONE 0x1
+#define OMR_GC_WRITE_BARRIER_TYPE_ALWAYS 0x2
+#define OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK 0x3
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK 0x4
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_INCREMENTAL 0x5
+#define OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_AND_OLDCHECK 0x6
+#define OMR_GC_WRITE_BARRIER_TYPE_REALTIME 0x7
+#define OMR_GC_WRITE_BARRIER_TYPE_COUNT 0x8
+
+typedef enum MM_GCWriteBarrierType {
+	gc_modron_wrtbar_illegal = OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL,
+	gc_modron_wrtbar_none = OMR_GC_WRITE_BARRIER_TYPE_NONE,
+	gc_modron_wrtbar_always = OMR_GC_WRITE_BARRIER_TYPE_ALWAYS,
+	gc_modron_wrtbar_oldcheck = OMR_GC_WRITE_BARRIER_TYPE_OLDCHECK,
+	gc_modron_wrtbar_cardmark = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK,
+	gc_modron_wrtbar_cardmark_incremental = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_INCREMENTAL,
+	gc_modron_wrtbar_cardmark_and_oldcheck = OMR_GC_WRITE_BARRIER_TYPE_CARDMARK_AND_OLDCHECK,
+	gc_modron_wrtbar_realtime = OMR_GC_WRITE_BARRIER_TYPE_REALTIME,
+	gc_modron_wrtbar_count = OMR_GC_WRITE_BARRIER_TYPE_COUNT
+} MM_GCWriteBarrierType;
+
+typedef enum MM_AlignmentType {
+	mm_heapAlignment = 1,
+	mm_regionAlignment
+} MM_AlignmentType;
+
 #define OMR_GC_CYCLE_TYPE_DEFAULT     0
 #define OMR_GC_CYCLE_TYPE_GLOBAL      1
 #define OMR_GC_CYCLE_TYPE_SCAVENGE    2
@@ -54,6 +93,13 @@
 #define OMR_GC_ALLOCATION_TYPE_TLH 0x1
 #define OMR_GC_ALLOCATION_TYPE_SEGREGATED 0x2
 #define OMR_GC_ALLOCATION_TYPE_COUNT 0x3
+
+typedef enum MM_GCAllocationType {
+	gc_modron_allocation_type_illegal = OMR_GC_ALLOCATION_TYPE_ILLEGAL,
+	gc_modron_allocation_type_tlh = OMR_GC_ALLOCATION_TYPE_TLH,
+	gc_modron_allocation_type_segregated = OMR_GC_ALLOCATION_TYPE_SEGREGATED,
+	gc_modron_allocation_type_count = OMR_GC_ALLOCATION_TYPE_COUNT,
+} MM_GCAllocationType;
 
 /* Object-model related constants moved from builder (J9VMConstantValue.st / j9generated.h)
  * These replace the following constants from builder (J9VMConstantValue.st / j9consts.h):

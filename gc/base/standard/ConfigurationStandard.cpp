@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -25,7 +25,12 @@
 
 #include "ConfigurationStandard.hpp"
 
-#include "EnvironmentBase.hpp"
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#include "ConcurrentGC.hpp"
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+#if defined(OMR_GC_CONCURRENT_SWEEP)
+#include "ConcurrentSweepGC.hpp"
+#endif /* OMR_GC_CONCURRENT_SWEEP */
 #include "EnvironmentStandard.hpp"
 #include "GlobalCollector.hpp"
 #include "GCExtensionsBase.hpp"
@@ -92,7 +97,18 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
 MM_GlobalCollector*
 MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
 {
-	return _configurationLanguageInterface->createGlobalCollector(env);
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	if (extensions->concurrentMark) {
+		return MM_ConcurrentGC::newInstance(env, extensions->collectorLanguageInterface);
+	}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+#if defined(OMR_GC_CONCURRENT_SWEEP)
+	if (extensions->concurrentSweep) {
+		return MM_ConcurrentSweepGC::newInstance((MM_EnvironmentStandard *)env, extensions->collectorLanguageInterface);
+	}
+#endif /* OMR_GC_CONCURRENT_SWEEP */
+	return MM_ParallelGlobalGC::newInstance(env, extensions->collectorLanguageInterface);
 }
 
 /**
@@ -228,10 +244,9 @@ MM_ConfigurationStandard::createEnvironmentPool(MM_EnvironmentBase* env)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
-	uintptr_t numberElements = _configurationLanguageInterface->getEnvPoolNumElements();
-	uintptr_t poolFlags = _configurationLanguageInterface->getEnvPoolFlags();
-
-	return pool_new(sizeof(MM_EnvironmentStandard), numberElements, sizeof(uint64_t), poolFlags, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(OMRPORTLIB));
+	uintptr_t numberOfElements = getConfigurationDelegate()->getInitialNumberOfPooledEnvironments(env);
+	/* number of elements, pool flags = 0, 0 selects default pool configuration (at least 1 element, puddle size rounded to OS page size) */
+	return pool_new(sizeof(MM_EnvironmentStandard), numberOfElements, sizeof(uint64_t), 0, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(OMRPORTLIB));
 }
 
 /**
@@ -298,28 +313,4 @@ MM_ConfigurationStandard::createHeapRegionManager(MM_EnvironmentBase* env)
 	MM_HeapRegionManager* heapRegionManager = MM_HeapRegionManagerStandard::newInstance(env, extensions->regionSize, sizeof(MM_HeapRegionDescriptorStandard), MM_HeapRegionDescriptorStandard::initializer, MM_HeapRegionDescriptorStandard::destructor);
 
 	return heapRegionManager;
-}
-
-uintptr_t
-MM_ConfigurationStandard::internalGetDefaultRegionSize(MM_EnvironmentBase* env)
-{
-	return STANDARD_REGION_SIZE_BYTES;
-}
-
-uintptr_t
-MM_ConfigurationStandard::internalGetDefaultArrayletLeafSize(MM_EnvironmentBase* env)
-{
-	return STANDARD_ARRAYLET_LEAF_SIZE_BYTES;
-}
-
-uintptr_t
-MM_ConfigurationStandard::internalGetWriteBarrierType(MM_EnvironmentBase* env)
-{
-	return _configurationLanguageInterface->internalGetWriteBarrierType(env);
-}
-
-uintptr_t
-MM_ConfigurationStandard::internalGetAllocationType(MM_EnvironmentBase* env)
-{
-	return _configurationLanguageInterface->internalGetAllocationType(env);
 }

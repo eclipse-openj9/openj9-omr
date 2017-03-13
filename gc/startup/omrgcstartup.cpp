@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -26,7 +26,6 @@
 #include "Collector.hpp"
 #include "CollectorLanguageInterface.hpp"
 #include "ConfigurationFlat.hpp"
-#include "ConfigurationLanguageInterface.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "EnvironmentLanguageInterface.hpp"
@@ -76,7 +75,6 @@ static omr_error_t
 heapCreationHelper(OMR_VM *omrVM, MM_StartupManager *startupManager, bool createCollector)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
-	MM_ConfigurationLanguageInterface *configurationLanguageInterface = NULL;
 	MM_MemorySpace *memorySpace = NULL;
 	MM_InitializationParameters parameters;
 	omr_error_t rc = OMR_ERROR_NONE;
@@ -99,14 +97,7 @@ heapCreationHelper(OMR_VM *omrVM, MM_StartupManager *startupManager, bool create
 		goto done;
 	}
 
-	configurationLanguageInterface = startupManager->createConfigurationLanguageInterface(&envBase);
-	if (NULL == configurationLanguageInterface) {
-		omrtty_printf("Failed to create configuration language interface.\n");
-		rc = OMR_ERROR_INTERNAL;
-		goto done;
-	}
-
-	extensions->configuration = startupManager->createConfiguration(&envBase, configurationLanguageInterface);
+	extensions->configuration = startupManager->createConfiguration(&envBase);
 	if (NULL == extensions->configuration) {
 		omrtty_printf("Failed to create configuration.\n");
 		rc = OMR_ERROR_INTERNAL;

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2015
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -28,7 +28,6 @@
 
 class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
-class MM_ConfigurationLanguageInterface;
 class MM_CollectorLanguageInterface;
 class MM_Configuration;
 class MM_VerboseManagerBase;
@@ -70,8 +69,7 @@ protected:
 	bool parseGcOptions(MM_GCExtensionsBase *extensions);
 
 public:
-	virtual MM_ConfigurationLanguageInterface * createConfigurationLanguageInterface(MM_EnvironmentBase *env) = 0;
-	virtual MM_Configuration * createConfiguration(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface *cli);
+	virtual MM_Configuration * createConfiguration(MM_EnvironmentBase *env);
 	virtual MM_CollectorLanguageInterface * createCollectorLanguageInterface(MM_EnvironmentBase *env) = 0;
 	virtual MM_VerboseManagerBase * createVerboseManager(MM_EnvironmentBase* env) { return NULL; }
 

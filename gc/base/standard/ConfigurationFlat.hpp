@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -35,12 +35,12 @@ public:
 protected:
 private:
 public:
-	static MM_Configuration* newInstance(MM_EnvironmentBase* env, MM_ConfigurationLanguageInterface* configurationLanguageInterface);
+	static MM_Configuration* newInstance(MM_EnvironmentBase* env);
 
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters);
 
-	MM_ConfigurationFlat(MM_EnvironmentBase* env, MM_ConfigurationLanguageInterface* configurationLanguageInterface)
-		: MM_ConfigurationStandard(env, configurationLanguageInterface)
+	MM_ConfigurationFlat(MM_EnvironmentBase* env)
+		: MM_ConfigurationStandard(env, env->getExtensions()->configurationOptions._gcPolicy)
 	{
 		_typeId = __FUNCTION__;
 	};

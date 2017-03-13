@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -44,13 +44,13 @@
 #include "Scavenger.hpp"
 
 MM_Configuration *
-MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface* configurationLanguageInterface)
+MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ConfigurationGenerational *configuration;
 	
 	configuration = (MM_ConfigurationGenerational *) env->getForge()->allocate(sizeof(MM_ConfigurationGenerational), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != configuration) {
-		new(configuration) MM_ConfigurationGenerational(env, configurationLanguageInterface);
+		new(configuration) MM_ConfigurationGenerational(env);
 		if(!configuration->initialize(env)) {
 			configuration->kill(env);
 			configuration = NULL;
@@ -201,16 +201,6 @@ MM_ConfigurationGenerational::createHeapWithManager(MM_EnvironmentBase *env, UDA
 		heap = MM_ConfigurationStandard::createHeapWithManager(env, heapBytesRequested, regionManager);
 	}
 	return heap;
-}
-
-bool 
-MM_ConfigurationGenerational::initializeEnvironment(MM_EnvironmentBase *env)
-{
-	if (!MM_ConfigurationStandard::initializeEnvironment(env)) {
-		return false;
-	}
-	
-	return true;
 }
 
 void 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -43,21 +43,20 @@ private:
 
 /* Methods */
 public:
-	static MM_Configuration *newInstance(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface* configurationLanguageInterface);
+	static MM_Configuration *newInstance(MM_EnvironmentBase *env);
 
 	virtual MM_MemorySpace *createDefaultMemorySpace(MM_EnvironmentBase *env, MM_Heap *heap, MM_InitializationParameters *parameters);
 	virtual MM_Heap *createHeapWithManager(MM_EnvironmentBase *env, UDATA heapBytesRequested, MM_HeapRegionManager *regionManager);
 
 	virtual void defaultMemorySpaceAllocated(MM_GCExtensionsBase *extensions, void* defaultMemorySpace);
 	
-	MM_ConfigurationGenerational(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface* configurationLanguageInterface) :
-		MM_ConfigurationStandard(env, configurationLanguageInterface)
+	MM_ConfigurationGenerational(MM_EnvironmentBase *env)
+		: MM_ConfigurationStandard(env, gc_policy_gencon)
 	{
 		_typeId = __FUNCTION__;
 	};
 	
 protected:
-	virtual bool initializeEnvironment(MM_EnvironmentBase *env);
 	MM_MemorySubSpaceSemiSpace *createSemiSpace(MM_EnvironmentBase *envBase, MM_Heap *heap, MM_Scavenger *scavenger, MM_InitializationParameters *parameters, UDATA numaNode = UDATA_MAX);
 private:
 };

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2015
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -322,10 +322,10 @@ MM_StartupManager::getVerboseFileName(void)
 }
 
 MM_Configuration *
-MM_StartupManager::createConfiguration(MM_EnvironmentBase *env, MM_ConfigurationLanguageInterface *cli)
+MM_StartupManager::createConfiguration(MM_EnvironmentBase *env)
 {
 	/* When multiple configurations are supported, this call can return different
 	 * concrete implementations based on arguments previously parsed by handleOption().
 	 */
-	return MM_ConfigurationFlat::newInstance(env, cli);
+	return MM_ConfigurationFlat::newInstance(env);
 }

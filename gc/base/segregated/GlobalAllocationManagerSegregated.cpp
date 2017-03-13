@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -135,8 +135,11 @@ MM_GlobalAllocationManagerSegregated::acquireAllocationContext(MM_EnvironmentBas
 		uintptr_t allocationContextIndex = _nextAllocationContext++;
 		allocationContextIndex %= _managedAllocationContextCount;
 		MM_AllocationContextSegregated *ac = (MM_AllocationContextSegregated *)_managedAllocationContexts[allocationContextIndex];
-		ac->enter(env);
-		env->setAllocationContext(ac);
+		if (NULL != ac) {
+			ac->enter(env);
+			env->setAllocationContext(ac);
+			return true;
+		}
 	}
 	return false;
 }

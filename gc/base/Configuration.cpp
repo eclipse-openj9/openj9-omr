@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,10 +22,10 @@
  */
 
 #include "omrcfg.h"
+#include "sizeclasses.h"
 
 #include "Configuration.hpp"
 
-#include "ConfigurationLanguageInterface.hpp"
 #include "Debug.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -38,6 +38,8 @@
 #include "MemoryManager.hpp"
 #include "ParallelDispatcher.hpp"
 #include "ReferenceChainWalkerMarkMap.hpp"
+#include "SegregatedAllocationInterface.hpp"
+#include "TLHAllocationInterface.hpp"
 
 void
 MM_Configuration::kill(MM_EnvironmentBase* env)
@@ -49,31 +51,24 @@ MM_Configuration::kill(MM_EnvironmentBase* env)
 bool
 MM_Configuration::initialize(MM_EnvironmentBase* env)
 {
-	bool result = initializeRegionSize(env);
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-	if (result) {
-		result = initializeArrayletLeafSize(env);
-		if (result) {
+	bool result = false;
+
+	if (initializeRegionSize(env) && initializeArrayletLeafSize(env)) {
+		if (_delegate.initialize(env, _writeBarrierType, _allocationType)) {
+			MM_GCExtensionsBase* extensions = env->getExtensions();
 			/* excessivegc is enabled by default */
 			if (!extensions->excessiveGCEnabled._wasSpecified) {
 				extensions->excessiveGCEnabled._valueSpecified = true;
 			}
-			initializeWriteBarrierType(env);
-			initializeAllocationType(env);
-			result = initializeNUMAManager(env);
-			if (result) {
+			if (initializeNUMAManager(env)) {
 				initializeGCThreadCount(env);
 				initializeGCParameters(env);
+				extensions->_lightweightNonReentrantLockPool = pool_new(sizeof(J9ThreadMonitorTracing), 0, 0, 0, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(env->getPortLibrary()));
+				result = (NULL != extensions->_lightweightNonReentrantLockPool);
 			}
 		}
 	}
 
-	if (result) {
-		extensions->_lightweightNonReentrantLockPool = pool_new(sizeof(J9ThreadMonitorTracing), 0, 0, 0, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_MM, POOL_FOR_PORT(env->getPortLibrary()));
-		if (NULL == extensions->_lightweightNonReentrantLockPool) {
-			result = false;
-		}
-	}
 	return result;
 }
 
@@ -127,27 +122,13 @@ MM_Configuration::tearDown(MM_EnvironmentBase* env)
 		extensions->_lightweightNonReentrantLockPool = NULL;
 	}
 
-	if (NULL != _configurationLanguageInterface) {
-		_configurationLanguageInterface->kill(env);
-		_configurationLanguageInterface = NULL;
-	}
-
 	/*
 	 * Clear out the NUMA Manager, too, since we were the first ones to tell it to cache data
 	 * Do it last, because some collectors allocate/free resources based on number of NUMA nodes.
 	*/
 	extensions->_numaManager.shutdownNUMASupport(env);
-}
 
-/**
- * Initialize and return the appropriate object allocation interface for the given Environment.
- * Given the allocation scheme and particular environment, select and return the appropriate object allocation interface.
- * @return new subtype instance of MM_ObjectAllocationInterface, or NULL on failure.
- */
-MM_ObjectAllocationInterface*
-MM_Configuration::createObjectAllocationInterface(MM_EnvironmentBase* env)
-{
-	return _configurationLanguageInterface->createObjectAllocationInterface(env);
+	_delegate.tearDown(env);
 }
 
 /**
@@ -162,19 +143,19 @@ MM_EnvironmentBase*
 MM_Configuration::createEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread)
 {
 	MM_EnvironmentBase* env = allocateNewEnvironment(extensions, omrVMThread);
-	if (NULL == env) {
-		return NULL;
+	if (NULL != env) {
+		if (!initializeEnvironment(env)) {
+			env->kill();
+			env = NULL;
+		}
 	}
-	if (!initializeEnvironment(env)) {
-		env->kill();
-		return NULL;
-	}
+
 	return env;
 }
 
 /**
  * Initialize the Environment with the appropriate values.
- * @Note if this function is overridden the overridding function
+ * @Note if this function is overridden the overriding function
  * has to call super::initializeEnvironment before it does any other work.
  * 
  * @param env The environment to initialize
@@ -182,21 +163,27 @@ MM_Configuration::createEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThrea
 bool
 MM_Configuration::initializeEnvironment(MM_EnvironmentBase* env)
 {
-	env->_envLanguageInterface = _configurationLanguageInterface->createEnvironmentLanguageInterface(env);
-	if (NULL == env->_envLanguageInterface) {
-		return false;
+	bool result = false;
+
+	switch (_allocationType) {
+	case gc_modron_allocation_type_tlh:
+		env->_objectAllocationInterface = MM_TLHAllocationInterface::newInstance(env);
+		break;
+	case gc_modron_allocation_type_segregated:
+		env->_objectAllocationInterface = MM_SegregatedAllocationInterface::newInstance(env);
+		break;
+	default:
+		Assert_MM_unreachable();
+		break;
 	}
 
-	env->_objectAllocationInterface = createObjectAllocationInterface(env);
-	if (NULL == env->_objectAllocationInterface) {
-		return false;
+	if (NULL != env->_objectAllocationInterface) {
+		if (_delegate.environmentInitialized(env)) {
+			result = true;
+		}
 	}
 
-	if (!_configurationLanguageInterface->initializeEnvironment(env)) {
-		return false;
-	}
-
-	return true;
+	return result;
 }
 
 void
@@ -232,6 +219,12 @@ MM_Configuration::createHeap(MM_EnvironmentBase* env, uintptr_t heapBytesRequest
 		}
 
 		if (!initializeRunTimeObjectAlignmentAndCRShift(env, heap)) {
+			heap->kill(env);
+			heap = NULL;
+		}
+
+		extensions->heap = heap;
+		if (!_delegate.heapInitialized(env)) {
 			heap->kill(env);
 			heap = NULL;
 		}
@@ -370,7 +363,7 @@ MM_Configuration::initializeRegionSize(MM_EnvironmentBase* env)
 	MM_GCExtensionsBase* extensions = env->getExtensions();
 	uintptr_t regionSize = extensions->regionSize;
 	if (0 == regionSize) {
-		regionSize = internalGetDefaultRegionSize(env);
+		regionSize = _defaultRegionSize;
 	}
 
 	uintptr_t shift = calculatePowerOfTwoShift(env, regionSize);
@@ -390,46 +383,21 @@ bool
 MM_Configuration::initializeArrayletLeafSize(MM_EnvironmentBase* env)
 {
 	bool result = true;
-	uintptr_t shift = 0;
-	uintptr_t arrayletLeafSize = internalGetDefaultArrayletLeafSize(env);
-	if (UDATA_MAX != arrayletLeafSize) {
-		shift = calculatePowerOfTwoShift(env, arrayletLeafSize);
-		if (0 == shift) {
-			result = false;
+	OMR_VM* omrVM = env->getOmrVM();
+	if (UDATA_MAX != _defaultArrayletLeafSize) {
+		uintptr_t arrayletLeafSize = (0 != _defaultArrayletLeafSize) ? _defaultArrayletLeafSize : env->getExtensions()->regionSize;
+		uintptr_t shift = calculatePowerOfTwoShift(env, arrayletLeafSize);
+		if (0 != shift) {
+			omrVM->_arrayletLeafSize = (uintptr_t)1 << shift;
+			omrVM->_arrayletLeafLogSize = shift;
 		} else {
-			arrayletLeafSize = (uintptr_t)1 << shift;
+			result = false;
 		}
+	} else {
+		omrVM->_arrayletLeafSize = _defaultArrayletLeafSize;
+		omrVM->_arrayletLeafLogSize = 0;
 	}
-
-	if (result) {
-		OMR_VM* omrVM = env->getOmrVM();
-		omrVM->_arrayletLeafSize = arrayletLeafSize;
-		omrVM->_arrayletLeafLogSize = shift;
-
-		_configurationLanguageInterface->initializeArrayletLeafSize(env);
-	}
-
 	return result;
-}
-
-bool
-MM_Configuration::initializeSizeClasses(MM_EnvironmentBase* env)
-{
-	/* Note: if memory is allocated here (not at present) a teardown method must be implemented to free it */
-	bool result = _configurationLanguageInterface->initializeSizeClasses(env);
-	return result;
-}
-
-void
-MM_Configuration::initializeWriteBarrierType(MM_EnvironmentBase* env)
-{
-	_configurationLanguageInterface->initializeWriteBarrierType(env, internalGetWriteBarrierType(env));
-}
-
-void
-MM_Configuration::initializeAllocationType(MM_EnvironmentBase* env)
-{
-	_configurationLanguageInterface->initializeAllocationType(env, internalGetAllocationType(env));
 }
 
 void
@@ -442,8 +410,8 @@ MM_Configuration::initializeGCThreadCount(MM_EnvironmentBase* env)
 		extensions->gcThreadCount = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_TARGET);
 
 		/* but not higher than maximum default */
-		if (_configurationLanguageInterface->getMaxGCThreadCount() < extensions->gcThreadCount) {
-			extensions->gcThreadCount = _configurationLanguageInterface->getMaxGCThreadCount();
+		if (_delegate.getMaxGCThreadCount(env) < extensions->gcThreadCount) {
+			extensions->gcThreadCount = _delegate.getMaxGCThreadCount(env);
 		}
 	}
 }
@@ -494,9 +462,7 @@ MM_Configuration::initializeGCParameters(MM_EnvironmentBase* env)
 bool
 MM_Configuration::initializeNUMAManager(MM_EnvironmentBase* env)
 {
-	MM_GCExtensionsBase* extensions = env->getExtensions();
-	bool result = extensions->_numaManager.recacheNUMASupport(env);
-	return result;
+	return env->getExtensions()->_numaManager.recacheNUMASupport(env);
 }
 
 MM_Dispatcher *

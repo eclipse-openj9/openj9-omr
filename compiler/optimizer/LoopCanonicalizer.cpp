@@ -47,6 +47,7 @@
 #include "infra/Assert.hpp"                      // for TR_ASSERT
 #include "infra/BitVector.hpp"                   // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                         // for CFG, etc
+#include "infra/ILWalk.hpp"                      // for PostorderNodeIterator
 #include "infra/List.hpp"                        // for ListIterator, etc
 #include "infra/TRCfgEdge.hpp"                   // for CFGEdge
 #include "infra/TRCfgNode.hpp"                   // for CFGNode
@@ -837,6 +838,8 @@ bool TR_LoopTransformer::findMatchingIVInRegion(TR::TreeTop* loopTestTree, TR_Re
  */
 void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop)
    {
+   rewritePostToPreIncrementTestInRegion(whileLoop);
+
    if (!performTransformation(comp(), "%sCanonicalizing natural loop %d\n", OPT_DETAILS, whileLoop->getNumber()))
       return;
 
@@ -1609,6 +1612,8 @@ bool TR_LoopCanonicalizer::modifyBranchesForSplitEdges(
 
 void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLoop)
    {
+   rewritePostToPreIncrementTestInRegion(doWhileLoop);
+
    TR::TreeTop *endTree = comp()->getMethodSymbol()->getLastTreeTop();
    TR_RegionStructure *parentStructure = doWhileLoop->getParent()->asRegion();
 
@@ -2755,8 +2760,238 @@ void TR_LoopCanonicalizer::placeInitializationTreeInLoopPreHeader(TR::Block *b, 
    newStoreTree->join(placeHolderTree);
    }
 
+/**
+ * Find tests against post-increments and rewrite them to use pre-increments.
+ *
+ * If a conditional test looks at the previous value of a variable, it can
+ * sometimes be rewritten to look at the new value instead. Particularly for
+ * loop tests against induction variables, the optimizer is better attuned to
+ * tests against the new value, because those are commonly generated for
+ * typical for-loops (after canonicalization).
+ *
+ * Four combinations of increment/decrement and comparison operator are
+ * rewritten, listed below, where @c i0 is the previous value of @c i.
+ *
+   @verbatim
+   original     original       equivalent     equivalent
+     test       condition      condition         test
 
+   i++ <  n      i0 <  n      i0 + 1 <= n      ++i <= n
+   i-- <= n      i0 <= n      i0 - 1 <  n      --i <  n
+   i-- >  n      i0 >  n      i0 - 1 >= n      --i >= n
+   i++ >= n      i0 >= n      i0 + 1 >  n      ++i >  n
+   @endverbatim
+ *
+ * For example, the following increment and test
+ *
+   @verbatim
+          treetop
+      n1n   iload i
+          istore i
+      n2n   isub (cannotOverflow)
+              iload i
+              iconst -1
+          ificmplt --> [...]
+      n1n   ==>iload i
+            iload n
+   @endverbatim
+ *
+ * will be rewritten to
+ *
+   @verbatim
+          treetop
+      n1n   iload i
+          istore i
+      n2n   isub (cannotOverflow)
+              iload i
+              iconst -1
+          ificmple --> [...]
+      n2n   ==>isub
+            iload n
+   @endverbatim
+ *
+ * In order to find such tests, each block in @p region is considered, except
+ * blocks that are within nested cyclic regions.
+ *
+ * @param region The region in which to rewrite tests.
+ */
+void TR_LoopCanonicalizer::rewritePostToPreIncrementTestInRegion(TR_RegionStructure *region)
+   {
+   TR_RegionStructure::Cursor it(*region);
+   for (TR_StructureSubGraphNode *sub = it.getCurrent(); sub != NULL; sub = it.getNext())
+      {
+      TR_Structure * const s = sub->getStructure();
+      if (s->asBlock() != NULL)
+         rewritePostToPreIncrementTestInBlock(s->asBlock()->getBlock());
+      else if (s->asRegion()->isAcyclic()) // don't descend into nested loops
+         rewritePostToPreIncrementTestInRegion(s->asRegion());
+      }
+   }
 
+static bool isLoadVarDirectOf(TR::Node * const node, int32_t symrefNum)
+   {
+   return node->getOpCode().isLoadVarDirect()
+      && node->getSymbolReference()->getReferenceNumber() == symrefNum;
+   }
+
+// Per-block implementation of rewritePostToPreIncrementTestInRegion (above).
+void TR_LoopCanonicalizer::rewritePostToPreIncrementTestInBlock(
+   TR::Block * const block)
+   {
+   TR::TreeTop * const testTree = block->getLastRealTreeTop();
+   TR::Node * const test = testTree->getNode();
+   if (!test->getOpCode().isIf())
+      return;
+
+   if (!test->getOpCode().isCompareForOrder())
+      return;
+
+   if (!test->getChild(0)->getOpCode().isInteger())
+      return;
+
+   if (test->getOpCode().isUnsignedCompare())
+      return; // Below we rely on the (signed) cannotOverflow flag.
+
+   TR::Node * const store = testTree->getPrevTreeTop()->getNode();
+   if (!store->getOpCode().isStoreDirect())
+      return;
+
+   TR::SymbolReference * const symref = store->getSymbolReference();
+   if (!symref->getSymbol()->isAutoOrParm())
+      return;
+
+   // Require one of the children of the conditional to be a load of symref
+   const int32_t symrefNum = symref->getReferenceNumber();
+   int i = 0;
+   while (i < 2 && !isLoadVarDirectOf(test->getChild(i), symrefNum))
+      i++;
+
+   if (i == 2)
+      return;
+
+   const TR::ILOpCode origOp = test->getOpCode();
+   const TR::ILOpCode ifOp = i == 0 ? origOp : origOp.getOpCodeForSwapChildren();
+   TR::Node * const left = test->getChild(i);
+   TR::Node * const right = test->getChild(1 - i);
+
+   if (left->getReferenceCount() == 1)
+      return;
+
+   TR::Node * const updated = store->getChild(0);
+   if (!updated->getOpCode().isAdd() && !updated->getOpCode().isSub())
+      return;
+
+   if (!updated->cannotOverflow())
+      return;
+
+   TR::Node * const updateBase = updated->getChild(0);
+   if (!isLoadVarDirectOf(updateBase, symrefNum))
+      return;
+
+   TR::Node * const addendNode = updated->getChild(1);
+   if (!addendNode->getOpCode().isLoadConst())
+      return;
+
+   // We have exactly one of isCompareTrueIfLess and isCompareTrueIfGreater
+   // because isCompareForOrder was true for test, so include just one.
+   const int ifOpIdx =
+      int(ifOp.isCompareTrueIfGreater()) << 1 |
+      int(ifOp.isCompareTrueIfEqual());
+
+   //                              ifOp :    <, <=,  >, >=
+   static const int8_t usableAddends[4] = { +1, -1, -1, +1 };
+   const int64_t arithSign = updated->getOpCode().isAdd() ? 1 : -1;
+   const int64_t addend = arithSign * addendNode->getConstValue();
+   if (addend != usableAddends[ifOpIdx])
+      return;
+
+   // Transformation is possible if left has the same value as updateBase. Of
+   // course they can only have different values if they are different nodes.
+   if (left != updateBase)
+      {
+      if (trace())
+         {
+         traceMsg(comp(),
+            "Post- to pre-increment transformation looking for store of #%d "
+            "between n%un and n%un.\n\tEvaluation order:",
+            symrefNum,
+            left->getGlobalIndex(),
+            updateBase->getGlobalIndex());
+         }
+
+      // They have the same value iff symref is not stored between them. This
+      // determination relies on the fact that (left != updateBase), since
+      // otherwise there would only be one point of evaluation.
+      bool between = false;
+      TR::TreeTop * const start = block->startOfExtendedBlock()->getEntry();
+      for (TR::PostorderNodeIterator it(start, this); true; ++it)
+         {
+         if (it == testTree)
+            {
+            // Reaching testTree shouldn't be possible, because there is a
+            // store between updateBase and testTree.
+            TR_ASSERT(false, "post- to pre-increment analysis reached test tree\n");
+            return; // In production, just bail out
+            }
+
+         TR::Node * const eval = it.currentNode();
+         if (eval == left || eval == updateBase)
+            {
+            if (trace())
+               traceMsg(comp(), " n%un", eval->getGlobalIndex());
+
+            if (between)
+               break; // Same value - go on to transform.
+            else
+               between = true;
+            }
+
+         if (between
+             && eval->getOpCode().isStoreDirect()
+             && eval->getSymbolReference()->getReferenceNumber() == symrefNum)
+            {
+            // Can't transform
+            if (trace())
+               {
+               traceMsg(comp(),
+                  " n%un\n\tBailing due to store between loads\n",
+                  eval->getGlobalIndex());
+               }
+            return;
+            }
+         }
+      }
+
+   if (trace())
+      traceMsg(comp(), "\n");
+
+   // adjustedIfOp will be the same as ifOp, with inverted isCompareTrueIfEqual.
+   // This works because ifOp is an inequality.
+   const TR::ILOpCode ifNotOp = ifOp.getOpCodeForReverseBranch();
+   const TR::ILOpCode adjustedIfOp = ifNotOp.getOpCodeForSwapChildren();
+
+   if (!performTransformation(comp(),
+         "%sChanging n%un (equivalently %s old-#%d n%un) to (%s n%un n%un)\n",
+         optDetailString(),
+         test->getGlobalIndex(),
+         ifOp.getName(),
+         symrefNum,
+         right->getGlobalIndex(),
+         adjustedIfOp.getName(),
+         updated->getGlobalIndex(),
+         right->getGlobalIndex()))
+      return;
+
+   // Success! Set both children because they may have been swapped for the
+   // purpose of analysis above. Also, left does not need to be anchored
+   // because it must have been evaluated strictly before testTree. (Otherwise,
+   // store would be evaluated between updateBase and left.)
+   TR::Node::recreate(test, adjustedIfOp.getOpCodeValue());
+   test->setAndIncChild(0, updated);
+   test->setAndIncChild(1, right);
+   left->recursivelyDecReferenceCount();
+   right->recursivelyDecReferenceCount();
+   }
 
 bool TR_LoopTransformer::replaceAllInductionVariableComputations(TR::Block *loopInvariantBlock, TR_Structure *structure, TR::SymbolReference **newSymbolReference, TR::SymbolReference *inductionVarSymRef)
    {

@@ -16,9 +16,9 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#if defined(AIXPPC)
+#if defined(AIXPPC) || defined(J9ZOS390)
 #define __IBMCPP_TR1__ 1
-#endif /* defined(AIXPPC) */
+#endif /* defined(AIXPPC) || defined(J9ZOS390) */
 
 #include <stdio.h>
 

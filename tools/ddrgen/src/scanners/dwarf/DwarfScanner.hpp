@@ -19,14 +19,14 @@
 #ifndef DWARFSCANNER_HPP
 #define DWARFSCANNER_HPP
 
-#if defined(AIXPPC)
+#if defined(AIXPPC) || defined(J9ZOS390)
 #define __IBMCPP_TR1__ 1
 #include <unordered_map>
 using std::tr1::unordered_map;
 #undef __IBMCPP_TR1__
-#else /* defined(AIXPPC) */
+#else /* defined(AIXPPC) || defined(J9ZOS390) */
 #include <unordered_map>
-#endif /* !defined(AIXPPC) */
+#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 #include <map>
 
 #if defined(OSX)
@@ -43,18 +43,18 @@ using std::tr1::unordered_map;
 #include "Symbol_IR.hpp"
 #include "TypedefUDT.hpp"
 
-#if defined(AIXPPC)
+#if defined(AIXPPC) || defined(J9ZOS390)
 using std::tr1::hash;
-#else /* defined(AIXPPC) */
+#else /* defined(AIXPPC) || defined(J9ZOS390) */
 using std::hash;
-#endif /* !defined(AIXPPC) */
+#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 using std::map;
 using std::string;
-#if defined(AIXPPC)
+#if defined(AIXPPC) || defined(J9ZOS390)
 using std::tr1::unordered_map;
-#else /* defined(AIXPPC) */
+#else /* defined(AIXPPC) || defined(J9ZOS390) */
 using std::unordered_map;
-#endif /* !defined(AIXPPC) */
+#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 
 struct TypeKey {
 	char *fileName;

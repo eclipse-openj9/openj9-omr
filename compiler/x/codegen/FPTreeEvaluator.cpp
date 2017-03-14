@@ -1810,25 +1810,7 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
       {
       static char *disableFastNormalizeNaNs = feGetEnv("TR_disableFastNormalizeNaNs");
       TR::LabelSymbol *lab0 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      if (debug("newfbits2i"))
-         {
-         printf("found fbits2i in method %s\n", comp->signature());
-         TR::LabelSymbol *snippetLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol *restartLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         lab0->setStartInternalControlFlow();
-         generateRegImmInstruction(ROR4RegImm1, node, target, 23, cg); // move exponent to the low order byte
-         generateLabelInstruction(LABEL, node, lab0, cg);
-         generateRegImmInstruction(CMP1RegImm1, node, target, 0xff, cg);
-         generateLabelInstruction(JE4, node, snippetLabel, cg);
-         TR::X86RegImmInstruction  *instr = generateRegImmInstruction(ROL4RegImm1, node, target, 23, cg); // restore bits to proper order
-         TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, cg);
-         deps->addPostCondition(target, TR::RealRegister::NoReg, cg);
-         TR::X86fbits2iSnippet  *snippet = new (cg->trHeapMemory()) TR::X86fbits2iSnippet(restartLabel, snippetLabel, instr, cg);
-         cg->addSnippet(snippet);
-         generateLabelInstruction(LABEL, node, restartLabel, deps, cg);
-         restartLabel->setEndInternalControlFlow();
-         }
-      else if (disableFastNormalizeNaNs)
+      if (disableFastNormalizeNaNs)
          {
          TR::LabelSymbol *lab1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          TR::LabelSymbol *lab2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);

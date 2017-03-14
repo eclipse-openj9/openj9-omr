@@ -138,31 +138,6 @@ class X86FPConvertToLongSnippet  : public TR::X86FPConversionSnippet
    };
 
 
-class X86fbits2iSnippet : public TR::X86RestartSnippet
-   {
-   TR::X86RegImmInstruction  *_instruction;
-
-   public:
-
-   X86fbits2iSnippet(TR::LabelSymbol            *restartlab,
-                     TR::LabelSymbol            *snippetlab,
-                     TR::X86RegImmInstruction  *instr,
-                     TR::CodeGenerator *codeGen)
-      : TR::X86RestartSnippet(codeGen, instr->getNode(), restartlab, snippetlab, false),
-        _instruction(instr) {}
-
-   TR::X86RegImmInstruction  *getInstruction() {return _instruction;}
-
-   TR::RealRegister *getRegister()
-      {
-      return toRealRegister(_instruction->getTargetRegister());
-      }
-
-   virtual uint8_t *emitSnippetBody();
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-   virtual Kind getKind() {return Isfbits2i;}
-   };
-
 class AMD64FPConversionSnippet : public TR::X86FPConversionSnippet
    {
 public:

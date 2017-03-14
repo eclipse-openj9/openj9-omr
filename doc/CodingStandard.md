@@ -1441,3 +1441,21 @@ uint32_t size = getSize();
 uint32_t averageSize = size / count;
 ```
 
+## Specify Namespace in Function Definition
+
+When writing the definition of a C++ function separate from the declaration,
+use the fully qualified name to allow easier search.
+
+Bad
+```
+namespace OMR { 
+
+Foo::Func(int*) ... 
+
+} 
+```
+
+Good 
+```
+OMR::Foo::Func(int*) 
+```

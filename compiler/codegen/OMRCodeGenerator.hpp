@@ -978,8 +978,8 @@ class OMR_EXTENSIBLE CodeGenerator
    static void incNumRematerializedXMMRs()     {_totalNumRematerializedXMMRs++;}
 #endif
 
-   void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0) {} // no virt
-   void dumpTargetAddressSnippets(TR::FILE *outFile, bool isWarm = 0) {} // no virt
+   void dumpDataSnippets(TR::FILE *outFile) {}
+   void dumpTargetAddressSnippets(TR::FILE *outFile) {}
 
    // --------------------------------------------------------------------------
    // Register assignment tracing
@@ -1103,7 +1103,7 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Snippets
    //
-   int32_t setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart);
    TR::list<TR::Snippet*>& getSnippetList() {return _snippetList;}
    void addSnippet(TR::Snippet *s);
 
@@ -1117,14 +1117,14 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    void emitDataSnippets() {}
    bool hasDataSnippets() {return false;} // no virt, cast
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0) {return 0;} // no virt, cast
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart) {return 0;}
 
    // called to emit any target address snippets.  The platform specific code generators
    // should override these methods if they use target address snippets.
    //
    void emitTargetAddressSnippets() {}
    bool hasTargetAddressSnippets() {return false;} // no virt, cast
-   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0) {return 0;} // no virt, cast
+   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart) {return 0;}
 
    // --------------------------------------------------------------------------
    // Register pressure

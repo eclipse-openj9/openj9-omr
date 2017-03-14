@@ -1872,22 +1872,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       if (self()->comp()->getOption(TR_TraceVFPSubstitution))
          self()->getDebug()->dumpInstructionWithVFPState(estimateCursor, &prevState);
 
-      // If this is the last warm instruction, remember the estimated size up to
-      // this point and add a buffer to the estimated size so that branches
-      // between warm and cold instructions will be forced to be long branches.
-      // The size is rounded up to a multiple of 8 so that double-alignments in
-      // the cold section will have the same amount of padding for the estimate
-      // and the actual code allocation.
-      //
-      if (estimateCursor->isLastWarmInstruction())
-         {
-         // Estimate Warm Snippets.
-         estimate = self()->setEstimatedLocationsForSnippetLabels(estimate, true);
-
-         warmEstimate = (estimate+7) & ~7;
-         estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-
       if (estimateCursor == _vfpResetInstruction)
          self()->generateDebugCounter(estimateCursor, "cg.prologues:#instructionBytes", estimate - estimatedPrologueStartOffset, TR::DebugCounter::Expensive);
 
@@ -2006,22 +1990,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
          }
 
       self()->addToAtlas(cursorInstruction);
-
-      // If this is the last warm instruction, save info about the warm code range
-      // and set up to generate code in the cold code range.
-      //
-      if (cursorInstruction->isLastWarmInstruction())
-         {
-         self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
-         self()->setColdCodeStart(coldCode);
-         self()->setBinaryBufferCursor(coldCode);
-
-         // Adjust the accumulated length error so that distances within the cold
-         // code are calculated properly using the estimated code locations.
-         //
-         self()->addAccumulatedInstructionLengthError(self()->getWarmCodeEnd()-coldCode+MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
-         }
-
       cursorInstruction = cursorInstruction->getNext();
       }
 
@@ -2285,7 +2253,7 @@ TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::
    return (TR::IA32ConstantDataSnippet*)cursor;
    }
 
-int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
    bool                                     first;
    int32_t                                  size;
@@ -2298,7 +2266,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == isWarm)
+         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
             {
             if (first)
                {
@@ -3751,7 +3719,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 #if DEBUG
 
-void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
+void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
 
    if (outFile == NULL)
@@ -3765,7 +3733,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
       size = 1 << exp;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == isWarm)
+         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
             {
             self()->getDebug()->print(outFile, *iterator);
             }

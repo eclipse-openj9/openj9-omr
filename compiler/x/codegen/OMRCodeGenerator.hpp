@@ -420,7 +420,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    // Note: This leaves the code aligned in the specified manner.
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *prev, uint8_t alignment, uint8_t alignmentMargin);
 
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
    void emitDataSnippets();
    bool hasDataSnippets() { return _dataSnippetList.empty() ? false : true; }
 
@@ -578,7 +578,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
 #endif
 #ifdef DEBUG
-   void dumpDataSnippets(TR::FILE *pOutFile, bool isWarm = 0);
+   void dumpDataSnippets(TR::FILE *pOutFile);
 #endif
 
    TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);

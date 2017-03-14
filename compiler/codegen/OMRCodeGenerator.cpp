@@ -650,17 +650,6 @@ OMR::CodeGenerator::doInstructionSelection()
             }
 #endif
          }
-      else if (opCode == TR::BBEnd)
-         {
-         TR::Block *b = self()->getCurrentEvaluationBlock();
-         if (b->isLastWarmBlock())
-            {
-            // Mark the split point between warm and cold instructions, so they
-            // can be allocated in different code sections.
-            //
-            prevInstr->setLastWarmInstruction(true);
-            }
-         }
 
       self()->setLiveLocals(liveLocals);
 
@@ -2902,7 +2891,7 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
 
 
 int32_t
-OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnippetStart)
    {
    TR::Snippet *cursor;
 
@@ -2910,12 +2899,12 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
 
    if (self()->hasTargetAddressSnippets())
       {
-      estimatedSnippetStart = self()->setEstimatedLocationsForTargetAddressSnippetLabels(estimatedSnippetStart, isWarm);
+      estimatedSnippetStart = self()->setEstimatedLocationsForTargetAddressSnippetLabels(estimatedSnippetStart);
       }
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == isWarm)
+      if ((*iterator)->isWarmSnippet() == 0)
          {
     	  (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
          estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
@@ -2924,7 +2913,7 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
 
    if (self()->hasDataSnippets())
       {
-      estimatedSnippetStart = self()->setEstimatedLocationsForDataSnippetLabels(estimatedSnippetStart, isWarm);
+      estimatedSnippetStart = self()->setEstimatedLocationsForDataSnippetLabels(estimatedSnippetStart);
       }
 
    return estimatedSnippetStart;

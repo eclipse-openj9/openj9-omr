@@ -524,22 +524,6 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
             }
          }
       estimate          = cursorInstruction->estimateBinaryLength(estimate);
-
-      // If this is the last warm instruction, remember the estimated size up to
-      // this point and add a buffer to the estimated size so that branches
-      // between warm and cold instructions will be forced to be long branches.
-      // The size is rounded up to a multiple of 8 so that double-alignments in
-      // the cold section will have the same amount of padding for the estimate
-      // and the actual code allocation.
-      //
-      if (cursorInstruction->isLastWarmInstruction())
-         {
-         // Estimate Warm Snippets
-         estimate = self()->setEstimatedLocationsForSnippetLabels(estimate, true);
-         warmEstimate = ((estimate)+7) & ~7;
-         estimate = warmEstimate + MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE;
-         }
-
       cursorInstruction = cursorInstruction->getNext();
       }
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
@@ -584,21 +568,6 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
          TR_ASSERT(0, "bin length estimated too small");
          }
 #endif
-
-      // If this is the last warm instruction, save info about the warm code range
-      // and set up to generate code in the cold code range.
-      //
-      if (cursorInstruction->isLastWarmInstruction())
-         {
-         self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
-         self()->setColdCodeStart(coldCode);
-         self()->setBinaryBufferCursor(coldCode);
-
-         // Adjust the accumulated length error so that distances within the cold
-         // code are calculated properly using the estimated code locations.
-         //
-         self()->addAccumulatedInstructionLengthError(self()->getWarmCodeEnd()-coldCode+MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
-         }
 
       cursorInstruction = cursorInstruction->getNext();
       if (isPrivateLinkage && cursorInstruction == j2jEntryInstruction)
@@ -655,20 +624,14 @@ void OMR::ARM::CodeGenerator::emitDataSnippets()
    self()->setBinaryBufferCursor(_constantData->emitSnippetBody());
    }
 
-int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm)
+int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
-   if (isWarm && !self()->comp()->getOption(TR_EnableHCR)) // PPC currently should not have any constant data snippets as warm.
-      return estimatedSnippetStart;
-   else
-      return estimatedSnippetStart+_constantData->getLength();
+   return estimatedSnippetStart+_constantData->getLength();
    }
 
 #if DEBUG
-void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile, bool isWarm)
+void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
-   if (isWarm) // PPC currently should not have any warm constant data snippets
-      return;
-
    if (outFile == NULL)
       return;
    _constantData->print(outFile);

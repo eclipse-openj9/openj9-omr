@@ -195,10 +195,10 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node);
 
-   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart, bool isWarm = 0);
+   int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
 
 #ifdef DEBUG
-   void dumpDataSnippets(TR::FILE *outFile, bool isWarm = 0);
+   void dumpDataSnippets(TR::FILE *outFile);
 #endif
 
    int32_t findOrCreateFloatConstant(void *v, TR::DataType t,

@@ -73,16 +73,25 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 	/* Delete the built-in type DIEs */
 	if (NULL != _builtInTypeDie) {
 		deleteDie(_builtInTypeDie);
+		_builtInTypeDie = NULL;
 	}
 
 	/* Delete the undefined type reference DIE */
 	if (NULL != _undefinedRef) {
 		deleteDie(_undefinedRef);
+		_undefinedRef = NULL;
 	}
 
+	_lastDie = NULL;
 	Dwarf_CU_Context::_fileList.clear();
+	createdDies.clear();
+	namesToChange.clear();
+	nestedClassesToPopulate.clear();
+	refsToPopulate.clear();
+	bitFieldsToCheck.clear();
 	Dwarf_CU_Context::_currentCU = NULL;
 	Dwarf_CU_Context::_firstCU = NULL;
+	Dwarf_Die_s::refMap.clear();
 	return DW_DLV_OK;
 }
 
@@ -101,6 +110,7 @@ dwarf_init(int fd,
 	char filepath[100] = {'\0'};
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_CU_Context::_currentCU = NULL;
+	refNumber = 1;
 	size_t len = 0;
 
 	/* Populate the built-in types */
@@ -120,6 +130,7 @@ dwarf_init(int fd,
 		}
 	}
 
+	DEBUGPRINTF("Parsing through file.");
 	/* Parse through the file */
 	while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret)) {
 		ret = parseDwarfInfo(buffer, error);
@@ -131,7 +142,9 @@ dwarf_init(int fd,
 	}
 
 	/* Create all the references */
+	DEBUGPRINTF("Populating attribute references.");
 	populateAttributeReferences();
+	DEBUGPRINTF("Populating nested classes");
 	populateNestedClasses();
 
 	/* Must set _currentCU to null for dwarf_next_cu_header to work */
@@ -1467,7 +1480,10 @@ parseTypeDef(const string data,
 			/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
 			declFile->_udata = Dwarf_CU_Context::_fileList.size();
 		} else {
-			declFile->_udata = 0;
+			/* If there is no declaring file, delete declFile and declLine */
+			name->_nextAttr = NULL;
+			delete(declFile);
+			delete(declLine);
 		}
 
 		currentDie->_attribute = type;

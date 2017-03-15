@@ -706,12 +706,14 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
          // call node to ensure we see the correct state of the doNotProfile flag
          node = node->getFirstChild();
 
-         // In OSR HCR mode, the OSR point for a call occurs on its first evaluation.
-         // Therefore, it is necessary to check if the call is anchored under a prior treetop.
+         // The OSR point applies where the node is anchored, rather than where it may
+         // be commoned. Therefore, it is necessary to check if the node is anchored under
+         // a prior treetop.
          if (node->getReferenceCount() > 1)
             {
             TR::TreeTop *cursor = tt->getPrevTreeTop();
-            while (cursor && cursor->getNode()->getOpCodeValue() != TR::BBStart)
+            TR::TreeTop *extendedBlockStart = tt->getNode()->getBlock()->startOfExtendedBlock()->getEntry();
+            while (cursor && cursor != extendedBlockStart)
                {
                if ((cursor->getNode()->getOpCode().isCheck() || cursor->getNode()->getOpCodeValue() == TR::treetop)
                    && cursor->getNode()->getFirstChild() == node)

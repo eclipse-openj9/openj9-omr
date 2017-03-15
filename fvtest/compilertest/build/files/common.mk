@@ -195,7 +195,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/tests/IndirectLoadIlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/IndirectStoreIlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/FooBarTest.cpp \
-    $(JIT_PRODUCT_DIR)/tests/MetaDataTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/FooIlInjector.cpp \
     $(JIT_PRODUCT_DIR)/tests/LimitFileTest.cpp \
     $(JIT_PRODUCT_DIR)/tests/LogFileTest.cpp \
@@ -215,7 +214,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_OMR_DIRTY_DIR)/env/JitConfig.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompilationController.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/FEInliner.cpp \
-    $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeMetaDataManager.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Runtime.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Trampoline.cpp \
     $(JIT_OMR_DIRTY_DIR)/control/CompileMethod.cpp \

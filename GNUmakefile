@@ -153,6 +153,7 @@ test_targets += fvtest/vmtest
 # Test Compiler
 ifeq (1,$(OMR_TEST_COMPILER))
 main_targets += fvtest/compilertest
+fvtest/compilertest:: util/avl
 endif
 
 # JitBuilder

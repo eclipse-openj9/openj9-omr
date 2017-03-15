@@ -46,6 +46,18 @@ namespace TR { struct MethodMetaDataPOD; }
 
 namespace OMR
 {
+/**
+ * Manages metadata about code produced by the compiler.
+ *
+ * This class is built around a singleton, that can be initialized and verified
+ * by calling initializeCodeMetaDataManager.
+ *
+ * The class assumes that each code cache is registered with the
+ * CodeMetaDataManager usign addCodeCache.
+ *
+ * The CodeMetaDataManager only manages pointers; It takes no ownership of the
+ * POD pointers provided to it.
+ */
 class OMR_EXTENSIBLE CodeMetaDataManager
    {
 
@@ -60,122 +72,127 @@ class OMR_EXTENSIBLE CodeMetaDataManager
    bool initializeCodeMetaDataManager();
 
    /**
-   @brief For a given method's MethodMetaDataPOD, finds the appropriate
-   hashtable in the AVL tree and inserts the exception table.
+    * @brief For a given method's MethodMetaDataPOD, finds the appropriate
+    * hashtable in the AVL tree and inserts the data pointer.
 
-   Note, insertArtifact does not check to verify that an artifact's given range
-   is not already occupied by an existing artifact.  This is because artifact
-   ranges represent the virtual memory actually occupied by compiled code.
-   Thus, if two artifact ranges overlap, then two pieces of compiled code
-   co-exist on top of each other, which is inherently incorrect.  If the
-   possiblity occurs that two artifacts may legitimately have range values that
-   overlap, checks will need to be added.
+    * Note, insertMetaData does not check to verify that an metadata's given range
+    * is not already occupied by an existing metadata.  This is because metadata  
+    * ranges represent the virtual memory actually occupied by compiled code.
+    * Thus, if two metadata ranges overlap, then two pieces of compiled code
+    * co-exist on top of each other, which is inherently incorrect.  If the
+    * possiblity occurs that two metadata may legitimately have range values that
+    * overlap, checks will need to be added.
 
-   @param compiledMethod The J9JITExceptionTable representing the newly compiled
-   method to insert into the artifacts.
-   @return Returns true if successful, and false otherwise.
+    * @param metaData The MetaDataPOD to insert into the metadata.
+    * @return Returns true if successful, and false otherwise.
    */
    bool insertMetaData(TR::MethodMetaDataPOD *metaData);
 
    /**
-   @brief Determines if the JIT artifacts contain a reference to a particular
-   MethodMetaDataPOD.
+    * @brief Determines if the metadata manager contain a reference to a particular
+    * MethodMetaDataPOD.
 
-   Note: Just because the JIT artifacts return an artifact for a particular
-   startPC does not mean that it is the same artifact being searched for.
-   The method could have been recompiled, and then subsequently unloaded and
-   another method compiled to the same location before the recompilation-based
-   reclamation could occur.  This will result in the JIT artifacts containing a
-   different MethodMetaDataPOD for a given startPC.
+    * Note: Just because the metadata manager return an metadata for a particular
+    * startPC does not mean that it is the same metadata being searched for.
+    * The method could have been recompiled, and then subsequently unloaded and
+    * another method compiled to the same location before the recompilation-based
+    * reclamation could occur.  This will result in the metadata manager containing a
+    * different MethodMetaDataPOD for a given startPC.
 
-   @param artifact The artifact for which to search for.
-   @return Returns true if the same artifact is found for the artifact's startPC
-   and false otherwise.
+    * @param  metadata The metadata for which to search for.
+    * @return Returns true if the same metadata is found for the metadata 's startPC
+    *         and false otherwise.
    */
-   bool containsMetaData(TR::MethodMetaDataPOD *metaData);
+   bool containsMetaData(const TR::MethodMetaDataPOD *metaData);
 
    /**
-   @brief Remove a given artifact from the JIT artifacts if it is found therein.
-
-   @param compiledMethod The MethodMetaDataPOD representing the method to
-   remove from the JIT artifacts.
-   @return Returns true if the artifact is found within, and successfully
-   removed from, the JIT artifacts and false otherwise.
+    * @brief Remove a given metadata from the metadata manager if it is found therein.
+    *
+    * @param  compiledMethod The MethodMetaDataPOD representing the method to
+    *         remove from the JIT metadata .
+    * @return Returns true if the metadata is found within, and successfully
+    *         removed from, the JIT metadata and false otherwise.
    */
-   bool removeMetaData(TR::MethodMetaDataPOD *metaData);
+   bool removeMetaData(const TR::MethodMetaDataPOD *metaData);
 
 
    /**
-   @brief Attempts to find a registered artifact for a given artifact's startPC.
-
-   Note: findArtifactForPC does not locally acquire the JIT artifact monitor.
-   Users must first manually acquire the monitor or go through another function
-   that does.
-
-   @param pc The PC for which we require the JIT artifact.
-   @return If an artifact for a given startPC is successfully found, returns
-   that artifact, returns NULL otherwise.
-   */
+    * @brief Attempts to find a registered metadata for a given metadata's startPC.
+    * 
+    * Note: findMetaDataForPC does not locally acquire the JIT metadata monitor.
+    * Users must first manually acquire the monitor or go through another function
+    * that does.
+    *
+    * @param pc The PC for which we require the JIT metadata .
+    * @return If an metadata for a given startPC is successfully found, returns
+    * that metadata , returns NULL otherwise.
+    */
    const TR::MethodMetaDataPOD *findMetaDataForPC(uintptr_t pc);
 
 
+   /**
+    * @brief Register code cache with metadata manager. 
+    *
+    * Whenever a new codecache is allocated, register it with this metadata
+    * manager so that subsequent insertion and query is aware of the contents.
+    */
    TR::MetaDataHashTable *addCodeCache(TR::CodeCache *codeCache);
 
 
    protected:
 
    /**
-   @brief Initializes the translation metadata manager's members.
-
-   The non-cache members are pointers to types instantiated externally.  The
-   constructor simply copies the pointers into the objects private members.
-   */
+    * @brief Initializes the translation metadata manager's members.
+    *
+    * The non-cache members are pointers to types instantiated externally.  The
+    * constructor simply copies the pointers into the objects private members.
+    */
    CodeMetaDataManager();
 
 
    /**
-   @brief Inserts an artifact into the JIT artifacts causing it to represent a
-   given memory range.
-
-   Note this method expects to be called via another method in the artifact
-   manager and thus does not acquire the artifact manager's monitor.
-
-   @param artifact The MethodMetaDataPOD which will represent the given memory
-   range.
-   @param startPC The beginning of the memory range to represent.
-   @param endPC The end of the memory range to represent.
-   @return Returns true if the artifact was successfully inserted as
-   representing the given range, false otherwise.
-   */
+    * @brief Inserts an metadata into the metadata manager causing it to represent a
+    * given memory range.
+    *
+    * Note this method expects to be called via another method in the metadata  
+    * manager and thus does not acquire the metadata manager's monitor.
+    *
+    * @param metadata The MethodMetaDataPOD which will represent the given memory
+    * range.
+    * @param startPC The beginning of the memory range to represent.
+    * @param endPC The end of the memory range to represent.
+    * @return Returns true if the metadata was successfully inserted as
+    * representing the given range, false otherwise.
+    */
    bool insertRange(TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
 
    /**
-   @brief Removes an artifact from the JIT artifacts causing it to no longer
-   represent a given memory range.
-
-   Note this method expects to be called via another method in the artifact
-   manager and thus does not acquire the artifact manager's monitor.
-
-   @param artifact The MethodMetaDataPOD to remove from representing the given
-   memory range.
-   @param startPC The beginning of the memory range the artifact represents.
-   @param endPC The end of the memory range the artifact represents.
-   @return Returns true if the artifact was successfully removed from
-   representing the given range, false otherwise.
-   */
-   bool removeRange(TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
+    * @brief Removes an metadata from the metadata manager  causing it to no longer
+    * represent a given memory range.
+    *
+    * Note this method expects to be called via another method in the metadata  
+    * manager and thus does not acquire the metadata manager's monitor.
+    *
+    * @param metadata The MethodMetaDataPOD to remove from representing the given
+    * memory range.
+    * @param startPC The beginning of the memory range the metadata represents.
+    * @param endPC The end of the memory range the metadata represents.
+    * @return Returns true if the metadata was successfully removed from
+    * representing the given range, false otherwise.
+    */
+   bool removeRange(const TR::MethodMetaDataPOD *metaData, uintptr_t startPC, uintptr_t endPC);
 
 
    /**
-   @brief Determines if the current artifactManager query is using the same
-   artifact as the previous query, and if not, searches for and retrieves the
-   new artifact's code cache's hash table.
-
-   Note this method expects to be called via another method in the artifact
-   manager and thus does not acquire the artifact manager's monitor.
-
-   @param artifact The artifact we are currently inquiring about.
-   */
+    * @brief Determines if the current metadataManager query is using the same
+    * metadata as the previous query, and if not, searches for and retrieves the
+    * new metadata's code cache's hash table.
+    *
+    * Note this method expects to be called via another method in the metadata  
+    * manager and thus does not acquire the metadata manager's monitor.
+    *
+    * @param currentPC The PC we are currently inquiring about.
+    */
    void updateCache(uintptr_t currentPC);
 
    TR::MethodMetaDataPOD *findMetaDataInHash(
@@ -198,13 +215,13 @@ class OMR_EXTENSIBLE CodeMetaDataManager
 
    uintptr_t removeMetaDataRangeFromHash(
       TR::MetaDataHashTable *table,
-      TR::MethodMetaDataPOD *dataToRemove,
+      const TR::MethodMetaDataPOD *dataToRemove,
       uintptr_t startPC,
       uintptr_t endPC);
 
    TR::MethodMetaDataPOD **removeMetaDataArrayFromHash(
       TR::MethodMetaDataPOD **array,
-      TR::MethodMetaDataPOD *dataToRemove);
+      const TR::MethodMetaDataPOD *dataToRemove);
 
    TR::MetaDataHashTable *allocateCodeMetaDataHash(
       uintptr_t start,
@@ -212,16 +229,18 @@ class OMR_EXTENSIBLE CodeMetaDataManager
 
    J9AVLTree *allocateMetaDataAVL();
 
-   private:
+   // Singleton: Protected to allow manipulation of singleton pointer 
+   // in test cases. 
+   static TR::CodeMetaDataManager *_codeMetaDataManager;
 
    J9AVLTree *_metaDataAVL;
+
+   private:
 
    mutable uintptr_t _cachedPC;
    mutable TR::MetaDataHashTable *_cachedHashTable;
    mutable TR::MethodMetaDataPOD *_retrievedMetaDataCache;
 
-   // Singleton
-   static TR::CodeMetaDataManager *_codeMetaDataManager;
 
    };
 

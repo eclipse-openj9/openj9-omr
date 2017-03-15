@@ -99,7 +99,7 @@ only.
 
 ### Basic configuration and compile
 To build standalone Eclipse OMR, run the following commands from the top of the
-source tree. The top of the Eclipe OMR source tree is the directory that contains
+source tree. The top of the Eclipse OMR source tree is the directory that contains
 run_configure.mk.
 
     # Generate autotools makefiles with SPEC-specific presets

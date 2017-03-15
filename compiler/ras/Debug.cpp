@@ -1815,7 +1815,7 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
       TR::AutomaticSymbol *sym = symRef->getSymbol()->getVariableSizeSymbol();
       sprintf(name, "<%s rc=%d>",getVSSName(sym),sym->getReferenceCount());
       }
-   else if (slot < 0)
+   else if (symRef->getSymbol()->isPendingPush())
       {
       sprintf(name, "<pending push temp %d>", -slot - 1);
       }

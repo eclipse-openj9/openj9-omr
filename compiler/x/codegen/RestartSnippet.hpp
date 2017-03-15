@@ -27,6 +27,7 @@
 #include "il/symbol/LabelSymbol.hpp"  // for LabelSymbol
 #include "infra/Assert.hpp"           // for TR_ASSERT
 #include "x/codegen/X86Ops.hpp"       // for TR_X86OpCode, ::JMP4, etc
+#include "x/codegen/X86Ops_inlines.hpp"
 
 namespace TR { class Node; }
 

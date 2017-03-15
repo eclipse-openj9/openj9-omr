@@ -27,6 +27,7 @@
 #include "ras/Debug.hpp"                 // for TR_Debug
 #include "codegen/X86Instruction.hpp"  // for TR::X86RegRegInstruction
 #include "x/codegen/X86Ops.hpp"          // for ::JNE4, ::CMP4RegImms, etc
+#include "x/codegen/X86Ops_inlines.hpp"
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
 

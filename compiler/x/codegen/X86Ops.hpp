@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -18,7 +18,7 @@
 
 #ifndef X86OPS_INCL
 #define X86OPS_INCL
-
+#include <stdio.h>
 #include <stdint.h>          // for uint32_t, uint8_t
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
@@ -886,6 +886,9 @@ typedef enum {
    ANDNPDRegReg,    // And not Packed Double-FP Register, Register
    PSLLQRegImm1,    // Shift left XMM register by number of bits
    PSRLQRegImm1,    // Shift right XMM register by number of bits
+
+   // OpCodes beyond this point are dummy ops
+   // Dummy ops are not Intel X86 instructions; they are for OMR internal usage only.
    FENCE,           // Address of binary is to be written to specified data address
                     // SymbolReference controls code motion across fence
    VGFENCE,         // Special Fence used for patching virtual guards
@@ -1220,7 +1223,121 @@ typedef enum
 
 class TR_X86OpCode
    {
+   enum TR_OpCodeVEX_L : uint8_t
+      {
+      VEX_L128 = 0x0,
+      VEX_L256 = 0x1,
+      VEX_L512 = 0x2,
+      VEX_L___ = 0x3, // Instruction does not support VEX encoding
+      };
+   enum TR_OpCodeVEX_v : uint8_t
+      {
+      VEX_vNONE = 0x0,
+      VEX_vReg_ = 0x1,
+      };
+   enum TR_InstructionREX_W : uint8_t
+      {
+      REX__ = 0x0,
+      REX_W = 0x1,
+      };
+   enum TR_OpCodePrefix : uint8_t
+      {
+      PREFIX___ = 0x0,
+      PREFIX_66 = 0x1,
+      PREFIX_F3 = 0x2,
+      PREFIX_F2 = 0x3,
+      };
+   enum TR_OpCodeEscape : uint8_t
+      {
+      ESCAPE_____ = 0x0,
+      ESCAPE_0F__ = 0x1,
+      ESCAPE_0F38 = 0x2,
+      ESCAPE_0F3A = 0x3,
+      };
+   enum TR_OpCodeModRM : uint8_t
+      {
+      ModRM_NONE = 0x0,
+      ModRM_RM__ = 0x1,
+      ModRM_MR__ = 0x2,
+      ModRM_EXT_ = 0x3,
+      };
+   enum TR_OpCodeImmediate : uint8_t
+      {
+      Immediate_0 = 0x0,
+      Immediate_1 = 0x1,
+      Immediate_2 = 0x2,
+      Immediate_4 = 0x3,
+      Immediate_8 = 0x4,
+      Immediate_S = 0x7,
+      };
+   struct OpCode_t
+      {
+      uint8_t vex_l : 2;
+      uint8_t vex_v : 1;
+      uint8_t prefixes : 2;
+      uint8_t rex_w : 1;
+      uint8_t escape : 2;
+      uint8_t opcode;
+      uint8_t modrm_opcode : 3;
+      uint8_t modrm_form : 2;
+      uint8_t immediate_size : 3;
+      // check if the instruction is X87
+      inline bool isX87() const
+         {
+         return (prefixes == PREFIX___) && (opcode >= 0xd8) && (opcode <= 0xdf);
+         }
+      // check if the instuction is part of Group 7 OpCode Extension
+      inline bool isGroup07() const
+         {
+         return (escape == ESCAPE_0F__) && (opcode == 0x01);
+         }
+      // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
+      template <class TBuffer> typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
+      };
+   template <typename TCursor>
+   class BufferBase
+      {
+      public:
+      typedef TCursor cursor_t;
+      inline operator cursor_t() const
+         {
+         return cursor;
+         }
+      protected:
+      inline BufferBase(cursor_t cursor) : cursor(cursor) {}
+      cursor_t cursor;
+      };
+   // helper class to calculate length
+   class Estimator : public BufferBase<uint8_t>
+      {
+      public:
+      inline Estimator(cursor_t size) : BufferBase<cursor_t>(size) {}
+      template <typename T> void inline append(T binaries)
+         {
+         cursor += sizeof(T);
+         }
+      };
+   // helper class to write binaries
+   class Writer : public BufferBase<uint8_t*>
+      {
+      public:
+      inline Writer(cursor_t cursor) : BufferBase<cursor_t>(cursor) {}
+      template <typename T> void inline append(T binaries)
+         {
+         *((T*)cursor) = binaries;
+         cursor+= sizeof(T);
+         }
+      };
+   // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
+   template <class TBuffer> inline static typename TBuffer::cursor_t encode(TR_X86OpCodes op, typename TBuffer::cursor_t cursor, uint8_t rex)
+      {
+      // OpCodes beyond FENCE are not X86 instructions and hence they do not have binary encodings.
+      return op < FENCE ? _binaries[op].encode<TBuffer>(cursor, rex) : cursor;
+      }
+   // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
+   static void CheckAndFinishGroup07(TR_X86OpCodes op, uint8_t* cursor);
 
+   // deprecated structure, to be deleted
    typedef struct
       {
       uint8_t _bytes[3];
@@ -1230,7 +1347,10 @@ class TR_X86OpCode
    TR_X86OpCodes                     _opCode;
    static const uint32_t             _properties[IA32NumOpCodes];
    static const uint32_t             _properties2[IA32NumOpCodes];
-   static const TR_OpCodeBinaryEntry _binaryEncodings[IA32NumOpCodes];
+   static const OpCode_t             _binaries[IA32NumOpCodes];
+   static const TR_OpCodeBinaryEntry _binaryEncodings[IA32NumOpCodes]; // deprecated field, to be deleted
+   static bool                       _UseDeprecatedBinaryEncoding;
+   static bool                       _VerifyWithDeprecatedBinaryEncoding;
 
    public:
 
@@ -1393,7 +1513,7 @@ class TR_X86OpCode
 
    uint8_t getOpCodeLength() {return _binaryEncodings[_opCode]._length;}
 
-   uint8_t length(uint8_t rex = 0)
+   uint8_t deprecated_length(uint8_t rex) // deprecated function / previous implementation, to be deleted
       {
       uint8_t len = 0;
       if (needsSSE42OpcodePrefix() || needs16BitOperandPrefix())
@@ -1418,7 +1538,7 @@ class TR_X86OpCode
          }
       return len + getOpCodeLength();
       }
-   uint8_t* binary(uint8_t* cur, uint8_t rex = 0)
+   uint8_t* deprecated_binary(uint8_t* cur, uint8_t rex) // deprecated function / previous implementation, to be deleted
       {
       uint8_t* start = cur;
       if (needsSSE42OpcodePrefix() || needs16BitOperandPrefix())
@@ -1450,10 +1570,62 @@ class TR_X86OpCode
          *cur++ = 0x0f;
          }
       cur = copyBinaryToBuffer(cur);
-      TR_ASSERT(cur-start == length(rex), "Actual binary length should be the same as calculated one");
+      TR_ASSERT(cur-start == deprecated_length(rex), "Actual binary length should be the same as calculated one");
       return cur;
       }
+   uint8_t length(uint8_t rex = 0)
+      {
+      if (_UseDeprecatedBinaryEncoding)
+         return deprecated_length(rex);
+      uint8_t len = encode<Estimator>(_opCode, 0, rex);
+      if (_VerifyWithDeprecatedBinaryEncoding)
+         {
+         auto deprecated = deprecated_length(rex);
+         TR_ASSERT(deprecated == len, "Incorrect [%d]: %d vs %d", _opCode, deprecated, len);
+         }
+      return len;
+      }
+   void dump(char* info, uint8_t* beg, uint8_t* end)
+      {
+      printf("[%d] %s: ", _opCode, info);
+      for (auto p = beg; p < end; p++)
+         {
+         printf(" %02x", 0xff & *p);
+         }
+      printf("\n");
+      }
+   uint8_t* binary(uint8_t* cursor, uint8_t rex = 0)
+      {
+      if (_UseDeprecatedBinaryEncoding)
+         return deprecated_binary(cursor, rex);
+      uint8_t* ret = encode<Writer>(_opCode, cursor, rex);
+      CheckAndFinishGroup07(_opCode, ret);
 
+      if (_VerifyWithDeprecatedBinaryEncoding)
+         {
+         TR_ASSERT(ret-cursor == length(rex), "Actual binary length should be the same as calculated one");
+         uint8_t buffer[15];
+         auto deprecated = deprecated_binary(buffer, rex);
+         auto len = length(rex);
+         if (len > 0)
+            {
+            bool correct = true;
+            for (int i = 0; i < len-1; i++)
+               {
+               correct = correct && (cursor[i] == buffer[i]);
+               }
+            correct = correct && ((cursor[len-1] & 0x3f) == (buffer[len - 1] & 0x3f));
+            if (!correct)
+               {
+               printf("REX = %02x\n", 0xff & (unsigned int)rex);
+               dump("NEW", cursor, ret);
+               dump("OLD", buffer, deprecated);
+               TR_ASSERT(false, "");
+               }
+            }
+         }
+      return ret;
+      }
    void convertLongBranchToShort()
       { // input must be a long branch in range JA4 - JMP4
       if (((int)_opCode >= (int)JA4) && ((int)_opCode <= (int)JMP4))

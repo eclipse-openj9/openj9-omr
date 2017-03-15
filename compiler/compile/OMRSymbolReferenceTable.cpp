@@ -1766,7 +1766,9 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
 #ifdef J9_PROJECT_SPECIFIC
    TR_ASSERT(!type.isBCD() || size,"binary coded decimal types must provide a size\n");
 #endif
-   return findOrCreateAutoSymbol(owningMethodSymbol, -(slot + 1), type, true, false, false, false, size);
+   TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, -(slot + 1), type, true, false, false, false, size);
+   tempSymRef->getSymbol()->setIsPendingPush();
+   return tempSymRef;
    }
 
 TR::SymbolReference *

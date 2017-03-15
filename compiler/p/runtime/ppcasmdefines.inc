@@ -496,7 +496,7 @@
         .int 0x7c000166 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
         .endm
         .macro mtvsrwz  vrt, ra
-        .int 0x7c0001e6 | \ra < 16 | (\vrt & 31) < 21 | (\vrt & 32) > 5
+        .int 0x7c0001e6 | \ra << 16 | (\vrt & 31) << 21 | (\vrt & 32) >> 5
         .endm
 #endif
 

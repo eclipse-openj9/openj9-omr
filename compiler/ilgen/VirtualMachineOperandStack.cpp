@@ -75,6 +75,12 @@ VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
    TR::IlType *pElement = _mb->typeDictionary()->PointerTo(Element);
 
    TR::IlValue *stack = b->Load("OperandStack_base");
+
+   // Adjust the vm _stackTopRegister by number of elements that have been pushed onto the stack.
+   // _stackTop is -1 at 0 pushes, 0 for 1 push, so # of elements to adjust by is _stackTop+1
+   _stackTopRegister->Store(b, stack);
+   _stackTopRegister->Adjust(b, (_stackTop+1)*_pushAmount);
+
    for (int32_t i = _stackTop;i >= 0;i--)
       {
       // TBD: how to handle hitting the end of stack?
@@ -139,8 +145,7 @@ void
 VirtualMachineOperandStack::Push(TR::IlBuilder *b, TR::IlValue *value)
    {
    checkSize();
-   _stack[++_stackTop] = value;
-   _stackTopRegister->Adjust(b, +_pushAmount);
+   _stack[++_stackTop] = value; 
    }
 
 TR::IlValue *
@@ -153,8 +158,7 @@ VirtualMachineOperandStack::Top()
 TR::IlValue *
 VirtualMachineOperandStack::Pop(TR::IlBuilder *b)
    {
-   TR_ASSERT(_stackTop >= 0, "stack underflow");
-   _stackTopRegister->Adjust(b, -_pushAmount);
+   TR_ASSERT(_stackTop >= 0, "stack underflow"); 
    return _stack[_stackTop--];
    }
 
@@ -169,8 +173,7 @@ void
 VirtualMachineOperandStack::Drop(TR::IlBuilder *b, int32_t depth)
    {
    TR_ASSERT(_stackTop >= depth-1, "stack underflow");
-   _stackTop-=depth;
-   _stackTopRegister->Adjust(b, -depth * _pushAmount);
+   _stackTop-=depth; 
    }
 
 void

@@ -1988,6 +1988,21 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
+   if (self()->getOption(TR_EnableNextGenHCR) && !self()->getOption(TR_DisableOSR))
+      {
+      self()->setOption(TR_EnableOSR); // OSR and HCR must be enabled for NextGenHCR
+      self()->setOption(TR_EnableHCR);
+
+      // TM results in difficult situations when determining where the transition should occur,
+      // so it is currently disabled. The implications of disabling TM should be investigated further.
+      self()->setOption(TR_DisableTM);
+      // RedundantGotoElimination creates complications for NextGenHCR, potentially due to
+      // the manipulation of asyncchecks. The implications of disabling it should be investigated further.
+      self()->setDisabled(redundantGotoElimination, true);
+      // Asynchecks cannot be removed in NextGenHCR as they may be used for transitions
+      self()->setDisabled(redundantAsyncCheckRemoval, true);
+      }
+
    if (self()->getOption(TR_EnableOSROnGuardFailure) && !self()->getOption(TR_DisableOSR))
       self()->setOption(TR_EnableOSR);
 

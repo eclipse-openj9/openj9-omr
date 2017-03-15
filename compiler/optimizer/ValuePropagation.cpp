@@ -550,7 +550,21 @@ TR::VPConstraint *TR::ValuePropagation::addConstraintToList(TR::Node *node, int3
       if (valueNumber < _firstUnresolvedSymbolValueNumber)
          {
          TR_ASSERT(!replaceExisting, "should be merging real value numbers");
+         bool propFailed = false;
          if (!propagateConstraint(node, valueNumber, cur->relationships.getFirst(), rel, valueConstraints))
+            propFailed = true;
+
+         // Propagate according to any global relative constraints as well,
+         // but keeping the resulting constraints local in valueConstraints.
+         GlobalConstraint *globalConstraint = findGlobalConstraint(valueNumber);
+         if (!propFailed && globalConstraint != NULL)
+            {
+            auto firstReln = globalConstraint->constraints.getFirst();
+            if (!propagateConstraint(node, valueNumber, firstReln, rel, valueConstraints))
+               propFailed = true;
+            }
+
+         if (propFailed)
             {
             // propagation failed
             if (removeConstraints())

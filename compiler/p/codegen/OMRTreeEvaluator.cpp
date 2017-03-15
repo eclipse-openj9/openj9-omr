@@ -1676,17 +1676,57 @@ TR::Register *OMR::Power::TreeEvaluator::vimaxEvaluator(TR::Node *node, TR::Code
 
 TR::Register *OMR::Power::TreeEvaluator::vandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vand);
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
+   switch (node->getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+      case TR::VectorInt32:
+         opCode = TR::InstOpCode::vand;
+         break;
+      default:
+         opCode = TR::InstOpCode::xxland;
+         break;
+     }
+
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vor);
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
+   switch (node->getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+      case TR::VectorInt32:
+         opCode = TR::InstOpCode::vor;
+         break;
+      default:
+         opCode = TR::InstOpCode::xxlor;
+         break;
+     }
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vxor);
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::bad;
+
+   switch (node->getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+      case TR::VectorInt32:
+         opCode = TR::InstOpCode::vxor;
+         break;
+      default:
+         opCode = TR::InstOpCode::xxlxor;
+         break;
+     }
+   return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vnotEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -1802,6 +1842,245 @@ TR::Register *OMR::Power::TreeEvaluator::vigetelemEvaluator(TR::Node *node, TR::
    }
 
 TR::Register *OMR::Power::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   static bool disableDirectMove = feGetEnv("TR_disableDirectMove") ? true : false;
+   if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
+      {
+      return TR::TreeEvaluator::getvelemDirectMoveHelper(node, cg);
+      }
+   else
+      {
+      return TR::TreeEvaluator::getvelemMemoryMoveHelper(node, cg); //transfers data through memory instead of via direct move instructions.
+      }
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+
+   TR::Register *resReg = 0;
+   TR::Register *highResReg = 0;
+   TR::Register *lowResReg = 0;
+   TR::Register *srcVectorReg = cg->evaluate(firstChild);
+   TR::Register *intermediateResReg = cg->allocateRegister(TR_VSX_VECTOR);
+   TR::Register *tempVectorReg = cg->allocateRegister(TR_VSX_VECTOR);
+
+   int32_t elementCount = -1;
+   switch (firstChild->getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+         TR_ASSERT(false, "unsupported vector type %s in getvelemEvaluator.\n", firstChild->getDataType().toString());
+         break;
+      case TR::VectorInt32:
+         elementCount = 4;
+         resReg = cg->allocateRegister();
+         break;
+      case TR::VectorInt64:
+         elementCount = 2;
+         if (TR::Compiler->target.is32Bit())
+            {
+            highResReg = cg->allocateRegister();
+            lowResReg = cg->allocateRegister();
+            resReg = cg->allocateRegisterPair(lowResReg, highResReg);
+            }
+         else
+            {
+            resReg = cg->allocateRegister();
+            }
+         break;
+      case TR::VectorFloat:
+         elementCount = 4;
+         resReg = cg->allocateSinglePrecisionRegister();
+         break;
+      case TR::VectorDouble:
+         elementCount = 2;
+         resReg = cg->allocateRegister(TR_FPR);
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", firstChild->getDataType().toString());
+      }
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int32_t elem = secondChild->getInt();
+
+      TR_ASSERT(elem >= 0 && elem < elementCount, "Element can only be 0 to %u\n", elementCount - 1);
+
+      if (elementCount == 4)
+         {
+         /*
+          * If an Int32 is being read out, it needs to be in element 1.
+          * If a float is being read out, it needs to be in element 0.
+          * A splat is used to put the data in the right slot by copying it to every slot.
+          * The splat is skipped if the data is already in the right slot.
+          * If the splat is skipped, the input data will be in srcVectorReg instead of intermediateResReg.
+          */
+         bool skipSplat = (firstChild->getDataType() == TR::VectorInt32 && 1 == elem) || (firstChild->getDataType() == TR::VectorFloat && 0 == elem);
+
+         if (!skipSplat)
+            {
+            generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, elem);
+            }
+
+         if (firstChild->getDataType() == TR::VectorInt32)
+            {
+            generateMvFprGprInstructions(cg, node, fpr2gprLow, false, resReg, skipSplat ? srcVectorReg : intermediateResReg);
+            }
+         else //firstChild->getDataType() == TR::VectorFloat
+            {
+            generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdp, node, resReg, skipSplat ? srcVectorReg : intermediateResReg);
+            }
+         }
+      else //elementCount == 2
+         {
+         /*
+          * Element to read out needs to be in element 0
+          * If reading element 1, xxsldwi is used to move the data to element 0
+          */
+         bool readElemOne = (1 == elem);
+         if (readElemOne)
+            {
+            generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, intermediateResReg, srcVectorReg, srcVectorReg, 0x2);
+            }
+
+         if (TR::Compiler->target.is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+            {
+            generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highResReg, lowResReg, readElemOne ? intermediateResReg : srcVectorReg, tempVectorReg);
+            }
+         else if (firstChild->getDataType() == TR::VectorInt64)
+            {
+            generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, readElemOne ? intermediateResReg : srcVectorReg);
+            }
+         else //firstChild->getDataType() == TR::VectorDouble
+            {
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, readElemOne ? intermediateResReg : srcVectorReg, readElemOne ? intermediateResReg : srcVectorReg);
+            }
+         }
+      }
+   else
+      {
+      TR::Register    *indexReg = cg->evaluate(secondChild);
+      TR::Register    *condReg = cg->allocateRegister(TR_CCR);
+      TR::LabelSymbol *jumpLabel0 = generateLabelSymbol(cg);
+      TR::LabelSymbol *jumpLabel1 = generateLabelSymbol(cg);
+      TR::LabelSymbol *jumpLabel23 = generateLabelSymbol(cg);
+      TR::LabelSymbol *jumpLabel3 = generateLabelSymbol(cg);
+      TR::LabelSymbol *jumpLabelDone = generateLabelSymbol(cg);
+
+      TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg->trMemory());
+      deps->addPostCondition(srcVectorReg, TR::RealRegister::NoReg);
+      deps->addPostCondition(intermediateResReg, TR::RealRegister::NoReg);
+      deps->addPostCondition(indexReg, TR::RealRegister::NoReg);
+      deps->addPostCondition(condReg, TR::RealRegister::NoReg);
+
+      if (firstChild->getDataType() == TR::VectorInt32)
+         {
+         /*
+          * Conditional statements are used to determine if the indexReg has the value 0, 1, 2 or 3. Other values are invalid.
+          * The element indicated by indexReg needs to be move to element 1 in intermediateResReg.
+          * In most cases, this is done by splatting the indicated value into every element of intermediateResReg.
+          * If the indicated value is already in element 1 of srcVectorReg, the vector is just copied to intermediateResReg.
+          * Finally, a direct move instruction is used to move the data we want from element 1 of the vector into a GPR.
+          */
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, indexReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bgt, node, jumpLabel23, condReg);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, jumpLabel0, condReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, intermediateResReg, srcVectorReg, srcVectorReg);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel0);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x0);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel23);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, indexReg, 3);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel3, condReg);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x2);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel3);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x3);
+
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
+         generateMvFprGprInstructions(cg, node, fpr2gprLow, false, resReg, intermediateResReg);
+         }
+      else if (firstChild->getDataType() == TR::VectorFloat)
+         {
+         /*
+          * Conditional statements are used to determine if the indexReg has the value 0, 1, 2 or 3. Other values are invalid.
+          * The element indicated by indexReg needs to be move to element 0 in intermediateResReg.
+          * In most cases, this is done by splatting the indicated value into every element of intermediateResReg.
+          * If the indicated value is already in element 0 of srcVectorReg, the vector is just copied to intermediateResReg.
+          * Finally, a direct move instruction is used to move the data we want from element 0 of the vector into an FPR.
+          */
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, indexReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::bgt, node, jumpLabel23, condReg);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel1, condReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, intermediateResReg, srcVectorReg, srcVectorReg);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel1);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x1);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel23);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, indexReg, 3);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel3, condReg);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x2);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel3);
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::xxspltw, node, intermediateResReg, srcVectorReg, 0x3);
+
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdp, node, resReg, intermediateResReg);
+         }
+      else //(firstChild->getDataType() == TR::VectorInt64) || (firstChild->getDataType() == TR::VectorDouble)
+         {
+         /*
+          * Conditional statements are used to determine if the indexReg has the value 0 or 1. Other values are invalid.
+          * The element indicated by indexReg needs to be move to element 0 in intermediateResReg.
+          * If indexReg is 0, the vector is just copied to intermediateResReg.
+          * If indexReg is 1, the vector is rotated so element 1 is moved to slot 0.
+          * Finally, a direct move instruction is used to move the data we want from element 0 to the resReg.
+          * 64 bit int on a 32 bit system is a special case where the result is returned in a pair register.
+          */
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::cmpi4, node, condReg, indexReg, 1);
+         generateConditionalBranchInstruction(cg, TR::InstOpCode::beq, node, jumpLabel1, condReg);
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, intermediateResReg, srcVectorReg, srcVectorReg);
+         generateLabelInstruction(cg, TR::InstOpCode::b, node, jumpLabelDone);
+         generateLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabel1);
+         generateTrg1Src2ImmInstruction(cg, TR::InstOpCode::xxsldwi, node, intermediateResReg, srcVectorReg, srcVectorReg, 0x2);
+         generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
+
+         if (TR::Compiler->target.is32Bit() && firstChild->getDataType() == TR::VectorInt64)
+            {
+            generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highResReg, lowResReg, intermediateResReg, tempVectorReg);
+            }
+         else if (firstChild->getDataType() == TR::VectorInt64)
+            {
+            generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, intermediateResReg);
+            }
+         else //firstChild->getDataType() == TR::VectorDouble
+            {
+            generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, intermediateResReg, intermediateResReg);
+            }
+         }
+      cg->stopUsingRegister(condReg);
+      }
+
+      cg->decReferenceCount(firstChild);
+      cg->decReferenceCount(secondChild);
+
+      cg->stopUsingRegister(intermediateResReg);
+      cg->stopUsingRegister(tempVectorReg);
+      node->setRegister(resReg);
+      return resReg;
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::getvelemMemoryMoveHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *resReg = cg->allocateRegister();
    TR::Register *fResReg = 0;
@@ -2224,7 +2503,7 @@ TR::Register *OMR::Power::TreeEvaluator::vnegInt32Helper(TR::Node *node, TR::Cod
 
    resReg = cg->allocateRegister(TR_VRF);
    generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlxor, node, resReg, srcReg, srcReg);
-   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsubsws, node, resReg, resReg, srcReg);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::vsubuwm, node, resReg, resReg, srcReg);
    node->setRegister(resReg);
 
    cg->decReferenceCount(firstChild);

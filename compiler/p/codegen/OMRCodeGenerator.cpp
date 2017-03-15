@@ -3491,28 +3491,34 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
       case TR::vsub:
       case TR::vmul:
       case TR::vdiv:
-      case TR::vrem:
       case TR::vneg:
          if (dt == TR::Int32 || dt == TR::Float || dt == TR::Double)
             return true;
-         break;
+         else
+            return false;
+      case TR::vrem:
+         return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
-         return true;
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vxor:
       case TR::vor:
       case TR::vand:
-         return true;
-      case TR::vsplats:
-         if (dt == TR::Int64)
+         if (dt == TR::Int32 || dt == TR::Int64)
+            return true;
+         else
             return false;
-         return true;
+      case TR::vsplats:
       case TR::getvelem:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
-         break;
+         else
+            return false;
       default:
          return false;
       }

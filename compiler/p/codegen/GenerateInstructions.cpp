@@ -60,6 +60,8 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
    TR::MemoryReference *tempMRStore1, *tempMRStore2, *tempMRLoad1, *tempMRLoad2;
    static bool disableDirectMove = feGetEnv("TR_disableDirectMove") ? true : false;
    bool checkp8DirectMove = TR::Compiler->target.cpu.id() >= TR_PPCp8 && !disableDirectMove && TR::Compiler->target.cpu.getPPCSupportsVSX();
+   bool isLittleEndian = TR::Compiler->target.cpu.isLittleEndian();
+
    // it's fine if reg3 and reg2 are assigned in modes they are not used
    // what we want to avoid is them being NULL when we need to use them
    // i.e. in direct move gpr2fprHost32 or fpr2gprHost32
@@ -112,27 +114,35 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
       {
       TR_BackingStore * location;
       location = cg->allocateSpill(8, false, NULL);
-      if ((mode == gprSp2fpr) || (mode == fpr2gprSp) || (mode == gprLow2fpr) || (mode == gpr2fprHost32))
+      if ((mode == gprSp2fpr) || (mode == fpr2gprSp) || (mode == gprLow2fpr))
          {
          tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
          tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
-
-         if (mode == gpr2fprHost32)
+         }
+      else if (mode == gpr2fprHost32)
+         {
+         if (isLittleEndian)
             {
-            tempMRStore2 =  new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
-            tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore2, 4, 4, cg);
             }
+         else
+            {
+            tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 4, cg);
+            tempMRStore2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+            }
+         tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
          }
       else
          {
          tempMRStore1 = new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg);
 
          if (mode == fpr2gprHost32)
-            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 4, cg);
+            tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 4 : 0, 4, cg);
          if ((mode == fpr2gprHost64) || (mode == gpr2fprHost64))
             tempMRLoad1 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 0, 8, cg);
          else
-            tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, 4, 4, cg);
+            tempMRLoad2 = new (cg->trHeapMemory()) TR::MemoryReference(node, *tempMRStore1, isLittleEndian ? 0 : 4, 4, cg);
          }
 
       if ((mode == fpr2gprHost64) || (mode == fpr2gprLow))
@@ -169,10 +179,8 @@ TR::Instruction *generateMvFprGprInstructions(TR::CodeGenerator *cg, TR::Node *n
          }
       else if (mode == fpr2gprLow)
          cursor = generateTrg1MemInstruction(cg, TR::InstOpCode::lwz, node, reg0, tempMRLoad2, cursor);
-      else if (mode == gpr2fprHost64)
+      else if ((mode == gpr2fprHost64) || (mode == gpr2fprHost32))
          cursor = generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, reg0, tempMRLoad1, cursor);
-      else if (mode == gpr2fprHost32)
-         cursor = generateTrg1MemInstruction(cg, TR::InstOpCode::lfd, node, reg0, new (cg->trHeapMemory()) TR::MemoryReference(node, location->getSymbolReference(), 8, cg), cursor);
       else if (mode == gprSp2fpr)
          cursor = generateTrg1MemInstruction(cg, TR::InstOpCode::lfs, node, reg0, tempMRLoad1, cursor);
       else if (mode == fpr2gprSp)

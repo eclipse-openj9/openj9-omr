@@ -1324,6 +1324,8 @@ public:
          case TR::srem:
          case TR::irem:
          case TR::lrem:
+         case TR::frem:
+         case TR::drem:
             return TR::vrem;
          case TR::bneg:
          case TR::sneg:
@@ -1332,13 +1334,25 @@ public:
          case TR::fneg:
          case TR::dneg:
             return TR::vneg;
+         case TR::bor:
+         case TR::sor:
          case TR::ior:
+         case TR::lor:
             return TR::vor;
+         case TR::band:
+         case TR::sand:
          case TR::iand:
+         case TR::land:
             return TR::vand;
+         case TR::bxor:
+         case TR::sxor:
          case TR::ixor:
+         case TR::lxor:
             return TR::vxor;
+         case TR::bushr:
+         case TR::sushr:
          case TR::iushr:
+         case TR::lushr:
             return TR::vushr;
          default:
             return TR::BadILOp;

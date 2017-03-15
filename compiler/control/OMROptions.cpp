@@ -1988,6 +1988,15 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
+   if (self()->getOption(TR_EnableNextGenHCR) && !self()->getOption(TR_DisableOSR))
+      {
+      self()->setOption(TR_EnableOSR);
+      self()->setOption(TR_EnableHCR);
+      self()->setOption(TR_DisableTM);
+      self()->setDisabled(redundantGotoElimination, true);
+      self()->setDisabled(redundantAsyncCheckRemoval, true);
+      }
+
    if (self()->getOption(TR_EnableOSROnGuardFailure) && !self()->getOption(TR_DisableOSR))
       self()->setOption(TR_EnableOSR);
 

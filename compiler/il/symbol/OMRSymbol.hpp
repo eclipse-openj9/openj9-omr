@@ -435,6 +435,9 @@ public:
    void setImmutableField() { _flags2.set(ImmutableField); }
    bool isImmutableField()  { return _flags2.testAny(ImmutableField); }
 
+   void setIsPendingPush() { _flags2.set(PendingPush); }
+   bool isPendingPush()    { return _flags2.testAny(PendingPush); }
+
    /**
     * Enum values for _flags field.
     */
@@ -560,6 +563,7 @@ public:
       UnsafeShadow              = 0x00000100,
       NamedShadow               = 0x00000200,
       ImmutableField            = 0x00000400,
+      PendingPush               = 0x00000800,
       };
 
 protected:

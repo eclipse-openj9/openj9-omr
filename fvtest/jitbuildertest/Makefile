@@ -25,7 +25,8 @@ ARTIFACT_TYPE := cxx_executable
 OBJECTS := \
 	main \
 	selftest \
-	UnionTest
+	UnionTest \
+	FieldAddressTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

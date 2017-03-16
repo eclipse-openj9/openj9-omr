@@ -3978,9 +3978,6 @@ OMR::Options::setCounts()
       }
    else // no counts string specified
       {
-      if (self()->getOption(TR_noquickstart) && !self()->getOption(TR_MimicInterpreterFrameShape))
-         _optLevel = hot; // Fixed opt level
-
       // No need for sampling thread if only one level of compilation and
       // interpreted methods are not to be sampled. Also, methods with loops
       // will need a smaller initial count since we won't know if they are hot.
@@ -4037,9 +4034,7 @@ OMR::Options::setCounts()
 
       if (_initialBCount == -1)
          {
-         if (self()->getOption(TR_noquickstart))
-            _initialBCount = 0;
-         else if (_samplingFrequency == 0 || self()->getOption(TR_DisableInterpreterSampling))
+         if (_samplingFrequency == 0 || self()->getOption(TR_DisableInterpreterSampling))
             _initialBCount = std::min(1, _initialCount); // If no help from sampling, then loopy methods need a smaller count
          else
             {
@@ -5224,7 +5219,6 @@ void OMR::Options::setDefaultsForDeterministicMode()
    {
    if (TR::Options::getDeterministicMode() != -1 // if deterministic mode was set
        && OMR::Options::_aggressivenessLevel == -1 // quistart/Xtune:virtualized etc were note set
-       && !self()->getOption(TR_noquickstart)
        && !self()->getOption(TR_AggressiveOpts))
       {
       // Set options common to all deterministic modes

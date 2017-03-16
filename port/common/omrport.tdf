@@ -1001,3 +1001,5 @@ TraceException=Trc_PRT_vmem_reserve_using_moservices_failed  Group=mem Overhead=
 TraceExit=Trc_PRT_vmem_reserve_using_moservices_exit Group=mem Overhead=1 Level=5 NoEnv Template="reserve_memory_with_moservices returns %p byteAmount=%u"
 
 TraceException=Trc_PRT_vmem_omrvmem_decommit_nonpageable_memory Group=mem Overhead=1 Level=1 NoEnv Template="omrvmem_decommit_memory attemp to decommit non-pageable memory at address=%p byteAmount=%u"
+
+TraceExit=Trc_PRT_mmap_map_seek_failed Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Failed to seek to offset = %lld"

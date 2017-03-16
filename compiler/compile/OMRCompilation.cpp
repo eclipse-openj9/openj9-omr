@@ -698,16 +698,41 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
 
    if (potentialOSRPoint && !self()->getOption(TR_FullSpeedDebug))
       {
-      // When in OSR HCR mode we need to make sure we check the BCI of the original
-      // call node to ensure we see the correct state of the doNotProfile flag
+
       if (self()->getHCRMode() == TR::osr &&
           (node->getOpCode().isCheck() || node->getOpCodeValue() == TR::treetop))
+         {
+         // When in OSR HCR mode we need to make sure we check the BCI of the original
+         // call node to ensure we see the correct state of the doNotProfile flag
          node = node->getFirstChild();
-      
-      TR_ByteCodeInfo &bci = node->getByteCodeInfo();
-      TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
-         self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
-      potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self(), false);
+
+         // The OSR point applies where the node is anchored, rather than where it may
+         // be commoned. Therefore, it is necessary to check if the node is anchored under
+         // a prior treetop.
+         if (node->getReferenceCount() > 1)
+            {
+            TR::TreeTop *cursor = tt->getPrevTreeTop();
+            TR::TreeTop *extendedBlockStart = tt->getNode()->getBlock()->startOfExtendedBlock()->getEntry();
+            while (cursor && cursor != extendedBlockStart)
+               {
+               if ((cursor->getNode()->getOpCode().isCheck() || cursor->getNode()->getOpCodeValue() == TR::treetop)
+                   && cursor->getNode()->getFirstChild() == node)
+                  {
+                  potentialOSRPoint = false;
+                  break;
+                  }
+               cursor = cursor->getPrevTreeTop();
+               }
+            }
+         }
+
+      if (potentialOSRPoint)
+         {
+         TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+         TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
+            self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
+         potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self(), false);
+         }
       }
 
    return potentialOSRPoint;

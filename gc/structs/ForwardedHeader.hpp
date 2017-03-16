@@ -68,7 +68,7 @@ private:
 	omrobjectptr_t _objectPtr;					/**< the object on which to act */
 	MutableHeaderFields _preserved; 			/**< a backup copy of the header fields which may be modified by this class */
 	const uintptr_t _forwardingSlotOffset;		/**< fomrobject_t offset from _objectPtr to fomrobject_t slot that will hold the forwarding pointer */
-	static const uintptr_t _forwardedTag = 2;	/**< bit mask used to mark forwarding slot value as forwarding pointer */
+	static const uintptr_t _forwardedTag = 4;	/**< bit mask used to mark forwarding slot value as forwarding pointer */
 
 /*
  * Function members

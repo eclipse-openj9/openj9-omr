@@ -22,7 +22,9 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 MODULE_NAME := omrjitbuildertest
 ARTIFACT_TYPE := cxx_executable
 
-OBJECTS := main
+OBJECTS := \
+	main \
+	selftest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

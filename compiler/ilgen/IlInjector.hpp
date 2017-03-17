@@ -72,9 +72,9 @@ public:
                            TR::SymbolReferenceTable     * symRefTab);
 
    bool                           genIL();
-   int32_t                        currentByteCodeIndex();
    TR::Block                    * getCurrentBlock();
-   virtual TR::ResolvedMethodSymbol     * methodSymbol()          const { return _methodSymbol; }
+   virtual TR::ResolvedMethodSymbol * methodSymbol() const { return _methodSymbol; }
+   virtual int32_t currentByteCodeIndex()                  { return -1; }
 
    // Many tests should just need to define their own version of this function
    virtual bool                   injectIL() = 0;

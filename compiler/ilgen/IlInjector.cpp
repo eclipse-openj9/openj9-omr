@@ -114,12 +114,6 @@ OMR::IlInjector::cfg()
    return _methodSymbol->getFlowGraph();
    }
 
-int32_t
-OMR::IlInjector::currentByteCodeIndex()
-   {
-   return -1;
-   }
-
 TR::Block *
 OMR::IlInjector::getCurrentBlock()
    {

@@ -554,14 +554,18 @@ TR::VPConstraint *TR::ValuePropagation::addConstraintToList(TR::Node *node, int3
          if (!propagateConstraint(node, valueNumber, cur->relationships.getFirst(), rel, valueConstraints))
             propFailed = true;
 
-         // Propagate according to any global relative constraints as well,
-         // but keeping the resulting constraints local in valueConstraints.
-         GlobalConstraint *globalConstraint = findGlobalConstraint(valueNumber);
-         if (!propFailed && globalConstraint != NULL)
+         static const bool relPropGlobal = feGetEnv("TR_enableVPRelPropGlobal") != NULL;
+         if (relPropGlobal)
             {
-            auto firstReln = globalConstraint->constraints.getFirst();
-            if (!propagateConstraint(node, valueNumber, firstReln, rel, valueConstraints))
-               propFailed = true;
+            // Propagate according to any global relative constraints as well,
+            // but keeping the resulting constraints local in valueConstraints.
+            GlobalConstraint *globalConstraint = findGlobalConstraint(valueNumber);
+            if (!propFailed && globalConstraint != NULL)
+               {
+               auto firstReln = globalConstraint->constraints.getFirst();
+               if (!propagateConstraint(node, valueNumber, firstReln, rel, valueConstraints))
+                  propFailed = true;
+               }
             }
 
          if (propFailed)

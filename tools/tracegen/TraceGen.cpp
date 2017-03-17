@@ -58,12 +58,13 @@ help(int argc, char *argv[])
 			|| 0 == strcmp(argv[i], "/h")
 			|| 0 == strcmp(argv[i], "/help")
 		) {
-			printf("%s [-threshold num] [-w2cd] [-generateCfiles] [-treatWarningAsError] [-root rootDir] [-force]\n", argv[0]);
+			printf("%s [-threshold num] [-w2cd] [-generateCfiles] [-treatWarningAsError] [-root rootDir] [-file file.tdf] [-force]\n", argv[0]);
 			printf("\t-threshold Ignore trace level below this threshold (default 1)\n");
 			printf("\t-w2cd Write generated .C and .H files to current directory (default: generate in the same directory as the TDF file)\n");
 			printf("\t-generateCfiles Generate C files (default false)\n");
 			printf("\t-treatWarningAsError Abort parsing at the first TDF error encountered (default false)\n");
 			printf("\t-root Comma-separated directories to start scanning for TDF files (default .)\n");
+			printf("\t-file Comma-separated list of TDF files to process\n");
 			printf("\t-force Do not check TDF file timestamp, always generate output files. (default false)\n");
 			return RC_OK;
 		}
@@ -87,6 +88,7 @@ startTraceGen(int argc, char *argv[])
 {
 	RCType rc = RC_OK;
 	Path *dir = NULL;
+	Path *file = NULL;
 
 	if (RC_OK == help(argc, argv)) {
 		return RC_OK;
@@ -114,6 +116,15 @@ startTraceGen(int argc, char *argv[])
 			goto failed;
 		}
 		dir = dir->next;
+	}
+
+	file = options.files;
+	while (NULL != file) {
+		if (RC_OK != tracegen.generate(&options, file->path)){
+			FileUtils::printError("Failed to generate trace files\n");
+			goto failed;
+		}
+		file = file->next;
 	}
 	tracegen.tearDown();
 	argParser.freeOptions(&options);

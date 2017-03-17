@@ -129,6 +129,13 @@ class VirtualMachineOperandStack : public VirtualMachineState
    virtual void MergeInto(VirtualMachineOperandStack *other, TR::IlBuilder *b);
 
    /**
+    * @brief update the values used to read and write the virtual machine stack
+    * @param b the builder where the values will be placed
+    * @param stack the new stack base address.  It is assumed that the address is already adjusted to _stackOffset
+    */
+   virtual void UpdateStack(TR::IlBuilder *b, TR::IlValue *stack);
+
+   /**
     * @brief Push an expression onto the simulated operand stack
     * @param b builder object to use for any operations used to implement the push (e.g. update the top of stack)
     * @param value expression to push onto the simulated operand stack

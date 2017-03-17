@@ -95,6 +95,8 @@ static int32_t numPassingTests = 0;
 static STACKVALUETYPE **verifySP = NULL;
 static STACKVALUETYPE expectedResult12Top = -1;
 static char * result12Operator;
+static Thread thread;
+static bool useThreadSP = false;
 
 static void
 setupResult12Equals()
@@ -157,8 +159,7 @@ main(int argc, char *argv[])
    typedef void (OperandStackTestUsingStructMethodFunction)(Thread *thread);
    OperandStackTestUsingStructMethodFunction *threadTest = (OperandStackTestUsingStructMethodFunction *) entry4;
 
-   Thread thread;
-   thread.sp = threadMethod.getSP();
+   useThreadSP = true;
    verifySP = &thread.sp;
    setupResult12NotEquals();
    threadTest(&thread);
@@ -179,6 +180,46 @@ main(int argc, char *argv[])
 STACKVALUETYPE *OperandStackTestMethod::_realStack = NULL;
 STACKVALUETYPE *OperandStackTestMethod::_realStackTop = _realStack - 1;
 int32_t OperandStackTestMethod::_realStackSize = -1;
+
+void
+OperandStackTestMethod::createStack()
+   {
+   int32_t stackSizeInBytes = _realStackSize * sizeof(STACKVALUETYPE);
+   _realStack = (STACKVALUETYPE *) malloc(stackSizeInBytes);
+   _realStackTop = _realStack - 1;
+   thread.sp = _realStackTop;
+   memset(_realStack, 0, stackSizeInBytes);
+   }
+
+STACKVALUETYPE *
+OperandStackTestMethod::moveStack()
+   {
+   int32_t stackSizeInBytes = _realStackSize * sizeof(STACKVALUETYPE);
+   STACKVALUETYPE *newStack = (STACKVALUETYPE *) malloc(stackSizeInBytes);
+   int32_t delta = 0;
+   if (useThreadSP)
+      delta = thread.sp - _realStack;
+   else
+      delta = _realStackTop - _realStack;
+   memcpy(newStack, _realStack, stackSizeInBytes);
+   memset(_realStack, 0xFF, stackSizeInBytes);
+   free(_realStack);
+   _realStack = newStack;
+   _realStackTop = _realStack + delta;
+   thread.sp = _realStackTop;
+
+   return _realStack - 1;
+   }
+
+void
+OperandStackTestMethod::freeStack()
+   {
+   memset(_realStack, 0xFF, _realStackSize * sizeof(STACKVALUETYPE));
+   free(_realStack);
+   _realStack = NULL;
+   _realStackTop = NULL;
+   thread.sp = NULL;
+   }
 
 static void Fail()
    {
@@ -377,12 +418,12 @@ OperandStackTestMethod::OperandStackTestMethod(TR::TypeDictionary *d)
    DefineReturnType(NoType);
 
    _realStackSize = 32;
-   _realStack = (STACKVALUETYPE *) malloc (_realStackSize * sizeof(STACKVALUETYPE));
-   _realStackTop = _realStack - 1;
-   memset(_realStack, 0, _realStackSize*sizeof(STACKVALUETYPE));
-
    _valueType = STACKVALUEILTYPE;
+   TR::IlType *pValueType = d->PointerTo(_valueType);
 
+   DefineFunction("createStack", "0", "0", (void *)&OperandStackTestMethod::createStack, NoType, 0);
+   DefineFunction("moveStack", "0", "0", (void *)&OperandStackTestMethod::moveStack, pValueType, 0);
+   DefineFunction("freeStack", "0", "0", (void *)&OperandStackTestMethod::freeStack, NoType, 0);
    DefineFunction("verifyResult0", "0", "0", (void *)&verifyResult0, NoType, 0);
    DefineFunction("verifyResult1", "0", "0", (void *)&verifyResult1, NoType, 0);
    DefineFunction("verifyResult2", "0", "0", (void *)&verifyResult2, NoType, 1, _valueType);
@@ -401,16 +442,17 @@ OperandStackTestMethod::OperandStackTestMethod(TR::TypeDictionary *d)
    }
 
 // convenience macros
-#define STACK(b)	(((TestState *)(b)->vmState())->_stack)
-#define STACKTOP(b)	(((TestState *)(b)->vmState())->_stackTop)
-#define COMMIT(b)       ((b)->vmState()->Commit(b))
-#define RELOAD(b)       ((b)->vmState()->Reload(b))
-#define PUSH(b,v)	(STACK(b)->Push(b,v))
-#define POP(b)          (STACK(b)->Pop(b))
-#define TOP(b)          (STACK(b)->Top())
-#define DUP(b)          (STACK(b)->Dup(b))
-#define DROP(b,d)       (STACK(b)->Drop(b,d))
-#define PICK(b,d)       (STACK(b)->Pick(d))
+#define STACK(b)           (((TestState *)(b)->vmState())->_stack)
+#define STACKTOP(b)        (((TestState *)(b)->vmState())->_stackTop)
+#define COMMIT(b)          ((b)->vmState()->Commit(b))
+#define RELOAD(b)          ((b)->vmState()->Reload(b))
+#define UPDATESTACK(b,s)   (STACK(b)->UpdateStack(b, s))
+#define PUSH(b,v)          (STACK(b)->Push(b,v))
+#define POP(b)             (STACK(b)->Pop(b))
+#define TOP(b)             (STACK(b)->Top())
+#define DUP(b)             (STACK(b)->Dup(b))
+#define DROP(b,d)          (STACK(b)->Drop(b,d))
+#define PICK(b,d)          (STACK(b)->Pick(d))
 
 bool
 OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
@@ -426,6 +468,8 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
    b->Call("verifyResult2", 1, TOP(b));
 
    COMMIT(b);
+   TR::IlValue *newStack = b->Call("moveStack", 0);
+   UPDATESTACK(b, newStack);
    b->Call("verifyResult3", 1, TOP(b));
 
    TR::IlValue *val1 = POP(b);
@@ -437,6 +481,8 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
    TR::IlValue *sum = b->Add(val1, val2);
    PUSH(b, sum);
    COMMIT(b);
+   newStack = b->Call("moveStack", 0);
+   UPDATESTACK(b, newStack);
    b->Call("verifyResult6", 1, TOP(b));
 
    DROP(b, 2);
@@ -457,10 +503,9 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
    b->Call("verifyResult10", 1, PICK(b, 2));
 
    COMMIT(b);
+   newStack = b->Call("moveStack", 0);
+   UPDATESTACK(b, newStack);
    b->Call("verifyResult11", 0);
- 
-  
-
 
    TR::BytecodeBuilder *thenBB = OrphanBytecodeBuilder(0, (char*)"BCI_then");
    TR::BytecodeBuilder *elseBB = OrphanBytecodeBuilder(1, (char*)"BCI_else");
@@ -481,6 +526,8 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
    elseBB->AddFallThroughBuilder(mergeBB);
 
    COMMIT(mergeBB);
+   newStack = b->Call("moveStack", 0);
+   UPDATESTACK(b, newStack);
    mergeBB->Call("verifyResult12", 1, TOP(mergeBB));
  
    int amountToAdd = 10;
@@ -511,6 +558,9 @@ bool
 OperandStackTestMethod::buildIL()
    {
    TR::IlType *pElementType = _types->PointerTo(Word);
+
+   Call("createStack", 0);
+
    TR::IlValue *realStackTopAddress = ConstAddress(&_realStackTop);
    OMR::VirtualMachineRegister *stackTop = new OMR::VirtualMachineRegister(this, "SP", pElementType, sizeof(STACKVALUETYPE), realStackTopAddress);
    OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 1, _valueType, stackTop);
@@ -521,7 +571,11 @@ OperandStackTestMethod::buildIL()
    TR::BytecodeBuilder *bb = OrphanBytecodeBuilder(0, (char *) "entry");
    AppendBuilder(bb);
 
-   return testStack(bb, true);
+   testStack(bb, true);
+
+   Call("freeStack", 0);
+
+   return true;
    }
 
 
@@ -540,6 +594,8 @@ OperandStackTestUsingStructMethod::OperandStackTestUsingStructMethod(TR::TypeDic
 bool
 OperandStackTestUsingStructMethod::buildIL()
    {
+   Call("createStack", 0);
+
    OMR::VirtualMachineRegisterInStruct *stackTop = new OMR::VirtualMachineRegisterInStruct(this, "Thread", "thread", "sp", "SP");
    OMR::VirtualMachineOperandStack *stack = new OMR::VirtualMachineOperandStack(this, 1, _valueType, stackTop);
 
@@ -549,5 +605,9 @@ OperandStackTestUsingStructMethod::buildIL()
    TR::BytecodeBuilder *bb = OrphanBytecodeBuilder(0, (char *) "entry");
    AppendBuilder(bb);
 
-   return testStack(bb, false);
+   testStack(bb, false);
+
+   Call("freeStack", 0);
+
+   return true;
    }

@@ -321,7 +321,7 @@ omrsig_signalOS_internal(int signum, const struct sigaction *act, struct sigacti
 	}
 #else /* defined(POSIX_SIGNAL) */
 	if (NULL == signalOS) {
-		signalOS = (SIGNAL)GetProcAddress(GetModuleHandle(TEXT("MSVCR100.dll")), "signal");
+		signalOS = (SIGNAL)GetProcAddress(GetModuleHandle(TEXT(MSVC_RUNTIME_DLL)), "signal");
 	}
 	if (NULL == signalOS) {
 		rc = -1;

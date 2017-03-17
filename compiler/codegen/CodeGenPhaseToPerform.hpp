@@ -26,6 +26,7 @@
     ReserveCodeCachePhase,
     LowerTreesPhase,
     SetupForInstructionSelectionPhase,
+    RemoveUnusedLocalsPhase,
     InstructionSelectionPhase,
     CreateStackAtlasPhase,
     RegisterAssigningPhase,

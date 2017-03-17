@@ -54,27 +54,14 @@ DEFINE_TYPES(UnionTypes)
    CloseUnion("TestUnionInt16Double");
    }
 
-DECL_TEST_BUILDER(TypePunInt32Int32Builder);
-DECL_TEST_BUILDER(TypePunInt16DoubleBuilder);
-
 typedef uint32_t (*TypePunInt32Int32Function)(TestUnionInt32Int32*, uint32_t, uint32_t);
 typedef uint16_t (*TypePunInt16DoubleFunction)(TestUnionInt16Double*, uint16_t, double);
 
-TypePunInt32Int32Builder::TypePunInt32Int32Builder(TR::TypeDictionary *d)
-   : MethodBuilder(d)
-   {
-   DefineLine(LINETOSTR(__LINE__));
-   DefineFile(__FILE__);
-
-   DefineName("typePunInt32Int32Builder");
-   DefineParameter("u", d->PointerTo(d->LookupUnion("TestUnionInt32Int32")));
-   DefineParameter("v1", Int32);
-   DefineParameter("v2", Int32);
-   DefineReturnType(Int32);
-   }
-
-bool
-TypePunInt32Int32Builder::buildIL()
+DEFINE_BUILDER( TypePunInt32Int32Builder,
+                Int32,
+                PARAM("u", PointerTo(LookupUnion("TestUnionInt32Int32"))),
+                PARAM("v1", Int32),
+                PARAM("v2", Int32) )
    {
    StoreIndirect("TestUnionInt32Int32", "f1", Load("u"), Load("v1"));
    StoreIndirect("TestUnionInt32Int32", "f2", Load("u"), Load("v2"));
@@ -83,21 +70,11 @@ TypePunInt32Int32Builder::buildIL()
    return  true;
    }
 
-TypePunInt16DoubleBuilder::TypePunInt16DoubleBuilder(TR::TypeDictionary *d)
-   : MethodBuilder(d)
-   {
-   DefineLine(LINETOSTR(__LINE__));
-   DefineFile(__FILE__);
-
-   DefineName("typePunInt16Double");
-   DefineParameter("u", d->PointerTo(d->LookupUnion("TestUnionInt16Double")));
-   DefineParameter("v1", Int16);
-   DefineParameter("v2", Double);
-   DefineReturnType(Int16);
-   }
-
-bool
-TypePunInt16DoubleBuilder::buildIL()
+DEFINE_BUILDER( TypePunInt16DoubleBuilder,
+                Int16,
+                PARAM("u", PointerTo(LookupUnion("TestUnionInt16Double"))),
+                PARAM("v1", Int16),
+                PARAM("v2", Double) )
    {
    StoreIndirect("TestUnionInt16Double", "v_uint16", Load("u"), Load("v1"));
    StoreIndirect("TestUnionInt16Double", "v_double", Load("u"), Load("v2"));

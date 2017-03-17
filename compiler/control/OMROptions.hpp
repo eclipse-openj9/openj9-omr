@@ -188,7 +188,7 @@ enum TR_CompilationOptions
    TR_DisableOnDemandLiteralPoolRegister  = 0x08000000 + 2,
    TR_DisableInternalPointers             = 0x10000000 + 2,
    TR_EnableNodeGC                        = 0x20000000 + 2,
-   TR_noquickstart                        = 0x40000000 + 2,
+   // Available                           = 0x40000000 + 2,
    TR_ForceAOT                            = 0x80000000 + 2,
 
    // Option word 3

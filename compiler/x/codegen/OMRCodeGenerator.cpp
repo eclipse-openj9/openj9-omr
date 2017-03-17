@@ -96,11 +96,6 @@
 namespace OMR { class RegisterUsage; }
 namespace TR { class RegisterDependencyConditions; }
 
-// Amount to be added to the estimated code size to ensure that there are long
-// branches between warm and cold code sections (must be multiple of 8 bytes).
-//
-#define MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE 512
-
 extern "C" bool jitTestOSForSSESupport(void);
 
 // Hack markers
@@ -1713,7 +1708,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
    TR::Instruction * estimateCursor = self()->comp()->getFirstInstruction();
    int32_t estimate = 0;
-   int32_t warmEstimate = 0;
 
    // Estimate the binary length up to PROCENTRY
    //
@@ -1889,17 +1883,9 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // block, then the write could potentially destroy data that resides in the
    // adjacent block. For this reason it is better to overestimate
    // the allocated size by 4.
-   #define OVER_ESTIMATATION 4
-   if (warmEstimate)
-      {
-      self()->setEstimatedWarmLength(warmEstimate + OVER_ESTIMATATION);
-      self()->setEstimatedColdLength(estimate-warmEstimate-MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE+OVER_ESTIMATATION);
-      }
-   else
-      {
-      self()->setEstimatedWarmLength(estimate+OVER_ESTIMATATION);
-      self()->setEstimatedColdLength(0);
-      }
+   #define OVER_ESTIMATION 4
+   self()->setEstimatedWarmLength(estimate+OVER_ESTIMATION);
+   self()->setEstimatedColdLength(0);
 
    if (self()->comp()->getOption(TR_TraceCG))
       {
@@ -2266,7 +2252,7 @@ int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             if (first)
                {
@@ -2299,7 +2285,7 @@ void OMR::X86::CodeGenerator::emitDataSnippets()
       first = true;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             if (first)
                {
@@ -3733,7 +3719,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       size = 1 << exp;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
          {
-         if ((*iterator)->getDataSize() == size && (*iterator)->isWarmSnippet() == 0)
+         if ((*iterator)->getDataSize() == size)
             {
             self()->getDebug()->print(outFile, *iterator);
             }

@@ -1152,37 +1152,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
       }
    else if (snippet->getKind() == TR::Snippet::IsEyeCatcherData)
       {
-      if (snippet->isWarmSnippet())
-         {
-         // Warm Code Eyecatchers is a smaller version of the eyecatcher.
-         printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "[WARM] EyeCatcher Data Snippet");
-         printPrefix(pOutFile, NULL, bufferPos, 8);
-         trfprintf(pOutFile, "Warm Eye Catcher = JITMETHD\n");
-         intptrj_t * s = (intptrj_t *) (bufferPos + 8);
-         printPrefix(pOutFile, NULL, bufferPos + 8, sizeof(intptrj_t));
-         trfprintf(pOutFile, "Full Eye Catcher Addr = %p\n",*s);
-         }
-      else
-         {
-         // Cold Eyecatcher is used for padding of endPC so that Return Address for exception snippets will never equal the endPC.
-         printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "EyeCatcher Data Snippet");
-         printPrefix(pOutFile, NULL, bufferPos, 4);
-         trfprintf(pOutFile, "Eye Catcher = JITM\n");
-         /*** Old Eyecatcher code.
-         printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "EyeCatcher Data Snippet");
-         printPrefix(pOutFile, NULL, bufferPos, 8);
-         trfprintf(pOutFile, "Eye Catcher = ._.J.I.T\n");
-         intptrj_t * s = (intptrj_t *) (bufferPos + 8);
-         printPrefix(pOutFile, NULL, bufferPos + 8, 8);
-         trfprintf(pOutFile, "TimeStamp = %p\n",*s);
-         s = (intptrj_t *) (bufferPos + 16);
-         printPrefix(pOutFile, NULL, bufferPos + 16, sizeof(intptrj_t));
-         trfprintf(pOutFile, "ramMethod = 0x%p\n", *s);
-         printPrefix(pOutFile, NULL, bufferPos + 16 + sizeof(intptrj_t), sizeof(intptrj_t));
-         s = (intptrj_t *) (bufferPos + 16 + sizeof(intptrj_t));
-         trfprintf(pOutFile, "Signature   = %s\n", s);
-         ***/
-         }
+      // Cold Eyecatcher is used for padding of endPC so that Return Address for exception snippets will never equal the endPC.
+      printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "EyeCatcher Data Snippet");
+      printPrefix(pOutFile, NULL, bufferPos, 4);
+      trfprintf(pOutFile, "Eye Catcher = JITM\n");
       return;
       }
    else if (snippet->getKind() == TR::Snippet::IsConstantInstruction)

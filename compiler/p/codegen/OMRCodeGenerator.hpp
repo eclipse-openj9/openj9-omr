@@ -131,7 +131,6 @@ void ppcCodeSync(uint8_t * start, uint32_t size);
 struct TR_PPCBinaryEncodingData : public TR_BinaryEncodingData
    {
    int32_t estimate;
-   int32_t warmEstimate;
    TR::Instruction *cursorInstruction;
    TR::Instruction *jitTojitStart;
    TR::Instruction *preProcInstruction;
@@ -531,8 +530,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       TR::Register *tempReg,
       TR::Instruction **q);
 
-   TR::list<TR::LabelSymbol*>&   getGlobalLabelsEncountered()  { return _globalLabelsEncountered; }
-
    private:
 
    enum // flags
@@ -587,8 +584,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool                             _specializedEpilogues;
    TR_ReachingBlocks                *_reachingBlocks;
    TR_BitVector                     **_blocksThatModifyRegister;
-
-   TR::list<TR::LabelSymbol*>               _globalLabelsEncountered;
 
    };
 

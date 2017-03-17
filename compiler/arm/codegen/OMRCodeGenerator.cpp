@@ -47,10 +47,6 @@
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 
-// Amount to be added to the estimated code size to ensure that there are long
-// branches between warm and cold code sections (must be multiple of 8 bytes).
-//
-#define MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE (32768+8)
 TR_Processor OMR::ARM::CodeGenerator::_processor=TR_NullProcessor;
 
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg);
@@ -453,7 +449,6 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
    {
    TR::Compilation *comp = TR::comp();
    int32_t estimate = 0;
-   int32_t warmEstimate = 0;
    TR::Recompilation *recomp = comp->getRecompilationInfo();
    TR::Instruction *tempInstruction;
    TR::Instruction *cursorInstruction = comp->getFirstInstruction();
@@ -531,16 +526,10 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
       {
       estimate = identifyFarConditionalBranches(estimate, self());
       }
-   if (warmEstimate)
-      {
-      self()->setEstimatedWarmLength(warmEstimate);
-      self()->setEstimatedColdLength(estimate-warmEstimate-MIN_DISTANCE_BETWEEN_WARM_AND_COLD_CODE);
-      }
-   else
-      {
-      self()->setEstimatedWarmLength(estimate);
-      self()->setEstimatedColdLength(0);
-      }
+
+   self()->setEstimatedWarmLength(estimate);
+   self()->setEstimatedColdLength(0);
+
    cursorInstruction = comp->getFirstInstruction();
    uint8_t *coldCode = NULL;
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);

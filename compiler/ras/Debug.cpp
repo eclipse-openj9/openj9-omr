@@ -2901,8 +2901,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList, bool i
 
    for (auto snippets = snippetList.begin(); snippets != snippetList.end(); ++snippets)
       {
-      if ((*snippets)->isWarmSnippet() == 0)
-         print(pOutFile, *snippets);
+      print(pOutFile, *snippets);
       }
 
    if (_comp->cg()->hasDataSnippets())
@@ -2922,8 +2921,7 @@ TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList, bool isWarm
    ListIterator<TR::Snippet> snippets(&snippetList);
    for (TR::Snippet * snippet = snippets.getFirst(); snippet; snippet = snippets.getNext())
       {
-      if (snippet->isWarmSnippet() == 0)
-         print(pOutFile, snippet);
+      print(pOutFile, snippet);
       }
 
    if (_comp->cg()->hasDataSnippets())

@@ -2904,11 +2904,8 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == 0)
-         {
-    	  (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
-         estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
-         }
+      (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
+      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
       }
 
    if (self()->hasDataSnippets())
@@ -2927,18 +2924,15 @@ OMR::CodeGenerator::emitSnippets()
 
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
-      if ((*iterator)->isWarmSnippet() == 0)
+      codeOffset = (*iterator)->emitSnippet();
+      if (codeOffset != NULL)
          {
-         codeOffset = (*iterator)->emitSnippet();
-         if (codeOffset != NULL)
-            {
-            TR_ASSERT((*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()) + self()->getBinaryBufferCursor() >= codeOffset,
-                    "%s length estimate must be conservatively large (snippet @ " POINTER_PRINTF_FORMAT ", estimate=%d, actual=%d)",
-                    self()->getDebug()->getName(*iterator), *iterator,
-                    (*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()),
-                    codeOffset - self()->getBinaryBufferCursor());
-            self()->setBinaryBufferCursor(codeOffset);
-            }
+         TR_ASSERT((*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()) + self()->getBinaryBufferCursor() >= codeOffset,
+                 "%s length estimate must be conservatively large (snippet @ " POINTER_PRINTF_FORMAT ", estimate=%d, actual=%d)",
+                 self()->getDebug()->getName(*iterator), *iterator,
+                 (*iterator)->getLength(self()->getBinaryBufferCursor()-self()->getBinaryBufferStart()),
+                 codeOffset - self()->getBinaryBufferCursor());
+         self()->setBinaryBufferCursor(codeOffset);
          }
       }
 

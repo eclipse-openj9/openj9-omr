@@ -246,6 +246,9 @@ class TR_LoopCanonicalizer : public TR_LoopTransformer
    bool checkComplexInductionVariableUse(TR_Structure *structure);
    bool checkComplexInductionVariableUseNode(TR::Node *node, bool inAddr);
 
+   void rewritePostToPreIncrementTestInRegion(TR_RegionStructure *region);
+   void rewritePostToPreIncrementTestInBlock(TR::Block *block);
+
    TR::SymbolReference *_symRefBeingReplaced;
    TR::SymbolReference *_primaryInductionVariable;
    TR::Node *_primaryInductionVarStoreInBlock;

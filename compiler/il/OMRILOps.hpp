@@ -83,7 +83,7 @@ public:
 
    /// Get the opcode to be used if the children of this opcode are swapped.
    /// e.g. ificmplt --> ificmpgt
-   TR::ILOpCodes getOpCodeForSwapChildren()
+   TR::ILOpCodes getOpCodeForSwapChildren() const
       { return _opCodeProperties[_opCode].swapChildrenOpCode; }
 
    /// Get the opcode to be used if the sense of this (compare) opcode is reversed.

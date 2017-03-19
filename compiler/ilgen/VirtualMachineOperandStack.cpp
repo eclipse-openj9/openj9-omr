@@ -93,25 +93,26 @@ VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
       }
    }
 
-   void
-   VirtualMachineOperandStack::Reload(TR::IlBuilder* b)
+void
+VirtualMachineOperandStack::Reload(TR::IlBuilder* b)
    {
-       TR::IlType* Element = _elementType;
-       TR::IlType* pElement = _mb->typeDictionary()->PointerTo(Element);
-       // reload the elements back into the simulated operand stack
-       // If the # of stack element has changed, the user should adjust the # of elements 
-       // using Drop beforehand to add/delete stack elements.
-       TR::IlValue* stack = b->Load("OperandStack_base");
-       for (int32_t i = _stackTop; i >= 0; i--) {
-           _stack[i] = b->LoadAt(pElement,
-               b->IndexAt(pElement,
-                   stack,
-                   b->ConstInt32(i - _stackOffset)));
+   TR::IlType* Element = _elementType;
+   TR::IlType* pElement = _mb->typeDictionary()->PointerTo(Element);
+   // reload the elements back into the simulated operand stack
+   // If the # of stack element has changed, the user should adjust the # of elements
+   // using Drop beforehand to add/delete stack elements.
+   TR::IlValue* stack = b->Load("OperandStack_base");
+   for (int32_t i = _stackTop; i >= 0; i--)
+      {
+      _stack[i] = b->LoadAt(pElement,
+                  b->   IndexAt(pElement,
+                           stack,
+                  b->      ConstInt32(i - _stackOffset)));
        }
    }
 
-   void
-   VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack* other, TR::IlBuilder* b)
+void
+VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack* other, TR::IlBuilder* b)
    {
    TR_ASSERT(_stackTop == other->_stackTop, "stacks are not same size");
    for (int32_t i=_stackTop;i >= 0;i--)
@@ -128,6 +129,14 @@ VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
          b->StoreOver(other->_stack[i], _stack[i]);
          }
       }
+   }
+
+// Update the OperandStack_base and _stackTopRegister after the Virtual Machine moves the stack.
+// This call will normally be followed by a call to Reload if any of the stack values changed in the move
+void
+VirtualMachineOperandStack::UpdateStack(TR::IlBuilder *b, TR::IlValue *stack)
+   {
+   b->Store("OperandStack_base", stack);
    }
 
 // Allocate a new operand stack and copy everything in this state

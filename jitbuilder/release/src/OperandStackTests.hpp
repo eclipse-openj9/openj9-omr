@@ -26,7 +26,7 @@
 #define	STACKVALUETYPE		int32_t
 
 //#define STACKVALUEILTYPE	Int64
-//#define	STACKVALUETYPE		int64_t
+//#define STACKVALUETYPE	int64_t
 
 namespace TR { class BytecodeBuilder; }
 
@@ -40,7 +40,6 @@ class OperandStackTestMethod : public TR::MethodBuilder
    static bool verifyUntouched(int32_t maxTouched);
 
    STACKVALUETYPE **getSPPtr() { return &_realStackTop; }
-   STACKVALUETYPE *getSP()     { return _realStackTop; }
 
    protected:
    bool testStack(TR::BytecodeBuilder *b, bool useEqual);
@@ -50,6 +49,10 @@ class OperandStackTestMethod : public TR::MethodBuilder
    static STACKVALUETYPE           * _realStack;
    static STACKVALUETYPE           * _realStackTop;
    static int32_t                    _realStackSize;
+
+   static void createStack();
+   static STACKVALUETYPE *moveStack();
+   static void freeStack();
    };
 
 class OperandStackTestUsingStructMethod : public OperandStackTestMethod

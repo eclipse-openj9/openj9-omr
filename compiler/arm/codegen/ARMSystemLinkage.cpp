@@ -167,33 +167,49 @@ TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
 
 void TR::ARMSystemLinkage::initARMRealRegisterLinkage()
    {
-#if 0
-   // Each real register's weight is set to match this linkage convention
-   TR_ARMMachine *machine = cg()->getARMMachine();
-   int icount;
+   TR::Machine *machine = cg()->machine();
 
-   icount = TR::RealRegister::gr1;
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setState(TR::RealRegister::Locked);
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setAssignedRegister(machine->getARMRealRegister((TR::RealRegister::RegNum)icount));
+   // make r15 (PC) unavailable for RA
+   TR::RealRegister *reg = machine->getARMRealRegister(TR::RealRegister::gr15);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   icount = TR::RealRegister::gr2;
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setState(TR::RealRegister::Locked);
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setAssignedRegister(machine->getARMRealRegister((TR::RealRegister::RegNum)icount));
+   // make r14 (LR) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr14);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::gr3; icount<=TR::RealRegister::gr12; icount++)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(icount);
+   // make r13 (SP) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr13);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::LastGPR; icount>=TR::RealRegister::gr13; icount--)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000-icount);
+   // make r12 (IP) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr12);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::FirstFPR;        icount<=TR::RealRegister::fp3; icount++)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(icount);
+   // make r9 unavailable for RA (just in case, because it's meaning is platform defined)
+   reg = machine->getARMRealRegister(TR::RealRegister::gr9);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::LastFPR; icount>=TR::RealRegister::fp4; icount--)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000-icount);
-#else
-   TR_ASSERT(0, "unimplemented");
-#endif
+   /*
+    * Note: we can assign the same weight to all registers because loads/stores
+    * can be done on multiple registers simultaneously.
+    */
+
+   // assign "maximum" weight to registers r0-r8
+   for (int32_t r = TR::RealRegister::gr0; r <= TR::RealRegister::gr8; ++r)
+      {
+      machine->getARMRealRegister(static_cast<TR::RealRegister::RegNum>(r))->setWeight(0xf000);
+      }
+
+   // assign "maximum" weight to registers r10-r12
+   for (int32_t r = TR::RealRegister::gr10; r <= TR::RealRegister::gr12; ++r)
+      {
+      machine->getARMRealRegister(static_cast<TR::RealRegister::RegNum>(r))->setWeight(0xf000);
+      }
    }
 
 uint32_t TR::ARMSystemLinkage::getRightToLeft()

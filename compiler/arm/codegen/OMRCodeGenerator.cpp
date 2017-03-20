@@ -619,7 +619,7 @@ int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    return estimatedSnippetStart+_constantData->getLength();
    }
 
-#if DEBUG
+#ifdef DEBUG
 void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
    if (outFile == NULL)

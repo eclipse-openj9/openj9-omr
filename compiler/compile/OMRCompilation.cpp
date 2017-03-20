@@ -33,6 +33,7 @@
 #include "codegen/Instruction.hpp"             // for Instruction
 #include "codegen/RecognizedMethods.hpp"       // for RecognizedMethod, etc
 #include "compile/Compilation.hpp"             // for self(), etc
+#include "compile/Compilation_inlines.hpp"
 #include "compile/CompilationTypes.hpp"        // for TR_Hotness
 #include "compile/Method.hpp"                  // for TR_Method, etc
 #include "compile/OSRData.hpp"                 // for TR_OSRCompilationData, etc
@@ -565,12 +566,6 @@ const char *
 OMR::Compilation::getHotnessName()
    {
    return TR::Compilation::getHotnessName(self()->getMethodHotness());
-   }
-
-TR::Compilation *
-OMR::Compilation::self()
-   {
-   return static_cast<TR::Compilation *>(this);
    }
 
 

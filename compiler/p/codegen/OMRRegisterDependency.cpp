@@ -768,6 +768,7 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    int num_gprs = 0;
    int num_fprs = 0;
    int num_vrfs = 0;
+   bool have_spilled_ccrs = false;
 
    // Use to do lookups using real register numbers
    TR_PPCRegisterDependencyMap map(_dependencies, numberOfRegisters);
@@ -844,17 +845,30 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
       {
       map.addDependency(_dependencies[i], i);
 
-      virtReg = _dependencies[i].getRegister();
       dependentRegNum = _dependencies[i].getRealRegister();
 
       if (dependentRegNum != TR::RealRegister::SpilledReg)
          {
-         if (virtReg->getKind() == TR_GPR)
-            num_gprs++;
-         else if (virtReg->getKind() == TR_FPR)
-            num_fprs++;
-         else if (virtReg->getKind() == TR_VRF)
-            num_vrfs++;
+         virtReg = _dependencies[i].getRegister();
+         switch (virtReg->getKind())
+            {
+            case TR_GPR:
+               ++num_gprs;
+               break;
+            case TR_FPR:
+               ++num_fprs;
+               break;
+            case TR_VRF:
+               ++num_vrfs;
+               break;
+            case TR_CCR:
+               if (virtReg->getAssignedRegister() == NULL &&
+                   virtReg->getBackingStorage() == NULL)
+                  have_spilled_ccrs = true;
+               break;
+            default:
+               break;
+            }
          }
       }
 
@@ -933,6 +947,33 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                {
                virtReg->block();
                }
+            }
+         }
+      }
+
+   // If spilled CCRs are present in the dependencies and we are not blocking GPRs
+   // (because we may not have any spare ones) we will assign the CCRs first.
+   // This is because in order to assign a spilled virtual to a physical CCR
+   // we need to reverse spill it to a GPR first and then assign it to the
+   // CCR, so we do that first to avoid having all the GPRs become assigned and blocked.
+   // Note: It is safe to assign CCRs before GPRs in any circumstance, but the extra
+   // checks are cheap and let us avoid an extra loop through the dependencies for
+   // what should be a relatively infrequent situation anyway.
+   if (have_spilled_ccrs && !block_gprs)
+      {
+      for (i = 0; i < numberOfRegisters; i++)
+         {
+         virtReg = _dependencies[i].getRegister();
+         if (virtReg->getKind() != TR_CCR)
+            continue;
+         dependentRegNum = _dependencies[i].getRealRegister();
+         dependentRealReg = machine->getPPCRealRegister(dependentRegNum);
+
+         if (dependentRegNum != TR::RealRegister::NoReg &&
+             dependentRegNum != TR::RealRegister::SpilledReg &&
+             dependentRealReg->getState() == TR::RealRegister::Free)
+            {
+            assignFreeRegisters(currentInstruction, &_dependencies[i], map, cg);
             }
          }
       }

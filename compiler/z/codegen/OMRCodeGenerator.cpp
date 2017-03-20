@@ -30,6 +30,7 @@
 #include "codegen/BackingStore.hpp"                 // for TR_BackingStore
 #include "codegen/CodeGenPhase.hpp"                 // for CodeGenPhase, etc
 #include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
 #include "codegen/GCStackAtlas.hpp"                 // for GCStackAtlas

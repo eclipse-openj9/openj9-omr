@@ -28,6 +28,7 @@
 #include "codegen/ARMAOTRelocation.hpp"
 #endif
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/GenerateInstructions.hpp"

@@ -299,7 +299,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_ALLOC(TR_Memory::CodeGenerator)
 
-   TR::CodeGenerator *self();
+   inline TR::CodeGenerator *self();
 
    TR_StackMemory trStackMemory();
    TR_Memory *trMemory() { return _trMemory; }

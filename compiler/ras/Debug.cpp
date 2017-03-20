@@ -3615,8 +3615,9 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
          char guardKindName[38];
          sprintf(guardKindName, "%s %s", getVirtualGuardKindName((*info)->getKind()), (*info)->mergedWithHCRGuard()?"+ HCRGuard ":"");
 
-         if ((*info)->getKind() == TR_OSRGuard)
-            trfprintf(pOutFile, "[%4d] %-38s OSRGuard\n", i, guardKindName);
+         if (!(*info)->getSymbolReference())
+            trfprintf(pOutFile, "[%4d] %-38s %s%s\n",
+                  i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", guardKindName);
          else
             trfprintf(pOutFile, "[%4d] %-38s %scalleeSymbol=" POINTER_PRINTF_FORMAT "\n",
                   i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", (*info)->getSymbolReference()->getSymbol());

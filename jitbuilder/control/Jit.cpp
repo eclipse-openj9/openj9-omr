@@ -178,7 +178,7 @@ extern "C"
 bool
 initializeJit()
    {
-   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit");
+   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods");
    }
 
 extern "C"

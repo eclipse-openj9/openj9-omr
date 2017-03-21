@@ -48,6 +48,19 @@ OMR::BytecodeBuilder::BytecodeBuilder(TR::MethodBuilder *methodBuilder,
    initSequence();
    }
 
+/**
+ * Call this function at the top of your bytecode iteration loop so that all services called
+ * while this bytecode builder is being translated will mark their IL nodes as having this
+ * BytecodeBuilder's _bcIndex (very handy when looking at compiler logs).
+ * Note: *all* generated nodes will be marked with this builder's _bcIndex until another
+ *       BytecodeBuilder's SetCurrentIlGenerator() is called.
+ */
+void
+OMR::BytecodeBuilder::SetCurrentIlGenerator()
+   {
+   comp()->setCurrentIlGenerator((TR_IlGenerator *)this);
+   }
+
 void
 TR::BytecodeBuilder::initialize(TR::IlGeneratorMethodDetails * details,
                                 TR::ResolvedMethodSymbol     * methodSymbol,

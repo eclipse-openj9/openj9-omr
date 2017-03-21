@@ -12902,17 +12902,6 @@ TR::Register *getLitPoolBaseReg(TR::Node *node, TR::CodeGenerator * cg)
    return litPoolBaseReg;
    }
 
-static TR::Register* largearraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   // largearrayset(char *target, char padChar, int len)
-   // if padChar or len aren't constants, then call arraysetEvaluator instead
-   TR::Node *targetNode = node->getChild(0);
-   TR::Node *paddingNode = node->getChild(1);
-   TR::Node *lengthNode = node->getChild(2);
-
-   return NULL;
-   }
-
 TR::Register *
 OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {

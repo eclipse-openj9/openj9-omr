@@ -29,12 +29,11 @@ DEFINE_TYPES(NoTypes) {}
  * `JustReturn` generates a function that simply returns.
  */
 
-DECL_TEST_BUILDER(JustReturn);
+DECLARE_BUILDER(JustReturn);
 
 typedef void (*JustReturnFunctionType)(void);
 
-JustReturn::JustReturn(TR::TypeDictionary *d)
-   : TR::MethodBuilder(d)
+DEFINE_BUILDER_CTOR(JustReturn)
    {
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
@@ -43,8 +42,7 @@ JustReturn::JustReturn(TR::TypeDictionary *d)
    DefineReturnType(NoType);
    }
 
-bool
-JustReturn::buildIL()
+DEFINE_BUILDIL(JustReturn)
    {
    Return();
 
@@ -55,12 +53,11 @@ JustReturn::buildIL()
  * `BadBuilder` simply fails to generate any IL. This should lead to a failed compilation.
  */
 
-DECL_TEST_BUILDER(BadBuilder);
+DECLARE_BUILDER(BadBuilder);
 
 typedef void (*BadBuilderFunctionType)(void);
 
-BadBuilder::BadBuilder(TR::TypeDictionary *d)
-   : TR::MethodBuilder(d)
+DEFINE_BUILDER_CTOR(BadBuilder)
    {
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
@@ -69,8 +66,7 @@ BadBuilder::BadBuilder(TR::TypeDictionary *d)
    DefineReturnType(NoType);
    }
 
-bool
-BadBuilder::buildIL()
+DEFINE_BUILDIL(BadBuilder)
    {
    return false;
    }

@@ -33,24 +33,9 @@ union Union
 typedef uint8_t* (GetStructFieldAddressFunction)(Struct*);
 typedef uint8_t* (GetUnionFieldAddressFunction)(Union*);
 
-DECL_TEST_BUILDER(GetStructFieldAddressBuilder);
-DECL_TEST_BUILDER(GetUnionFieldAddressBuilder);
-
-GetStructFieldAddressBuilder::GetStructFieldAddressBuilder(TR::TypeDictionary *d)
-   : MethodBuilder(d)
-   {
-   DefineLine(LINETOSTR(__LINE__));
-   DefineFile(__FILE__);
-
-   auto pStructType = d->PointerTo(d->LookupStruct("Struct"));
-
-   DefineName("getStructFieldAddress");
-   DefineParameter("s", pStructType);
-   DefineReturnType(d->PointerTo(d->GetFieldType("Struct", "f2")));
-   }
-
-bool
-GetStructFieldAddressBuilder::buildIL()
+DEFINE_BUILDER( GetStructFieldAddressBuilder,
+                PointerTo(GetFieldType("Struct", "f2")),
+                PARAM("s", PointerTo(LookupStruct("Struct"))) )
    {
    Return(
           StructFieldInstanceAddress("Struct", "f2",
@@ -59,21 +44,9 @@ GetStructFieldAddressBuilder::buildIL()
    return true;
    }
 
-GetUnionFieldAddressBuilder::GetUnionFieldAddressBuilder(TR::TypeDictionary *d)
-   : MethodBuilder(d)
-   {
-   DefineLine(LINETOSTR(__LINE__));
-   DefineFile(__FILE__);
-
-   auto pUnionType = d->PointerTo(d->LookupUnion("Union"));
-
-   DefineName("getUnionFieldAddress");
-   DefineParameter("u", pUnionType);
-   DefineReturnType(d->toIlType<uint8_t *>());
-   }
-
-bool
-GetUnionFieldAddressBuilder::buildIL()
+DEFINE_BUILDER( GetUnionFieldAddressBuilder,
+                toIlType<uint8_t *>(),
+                PARAM("u", PointerTo(LookupUnion("Union"))) )
    {
    Return(
           UnionFieldInstanceAddress("Union", "f2",

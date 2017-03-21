@@ -1109,7 +1109,12 @@ public:
 		, scavengerScanCacheMinimumSize(DEFAULT_SCAN_CACHE_MINIMUM_SIZE)
 		, tiltedScavenge(true)
 		, debugTiltedScavenge(false)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/* until we get dynamic tilting, make default tilting at mild 70% */
+		, survivorSpaceMinimumSizeRatio(0.30)
+#else
 		, survivorSpaceMinimumSizeRatio(0.10)
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		, survivorSpaceMaximumSizeRatio(0.50)
 		, tiltedScavengeMaximumIncrease(0.10)
 		, scavengerCollectorExpandRatio(0.1)

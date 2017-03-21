@@ -839,6 +839,9 @@ MM_ConcurrentGC::determineInitWork(MM_EnvironmentStandard *env)
 		GC_HeapRegionIterator regionIterator(regionManager);
 
 		while(NULL != (region = regionIterator.nextRegion())) {
+			if (0 == region->getSize()) {
+				continue;
+			}
 			/* Get reference to owning subspace */
 			MM_MemorySubSpace *subspace = region->getSubSpace();
 

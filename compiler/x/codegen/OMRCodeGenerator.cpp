@@ -3103,9 +3103,10 @@ uint8_t OMR::X86::CodeGenerator::nodeResultGPRCount(TR::Node *node, TR_RegisterP
    TR_ASSERT(!self()->comp()->getOption(TR_DisableRegisterPressureSimulation), "assertion failure");
 
    // 32-bit integer constants practically never need a register on x86
+   //  (includes 64-bit integer constants with high word zero needed to maintain IL correctness)
    //
    if (  node->getOpCode().isLoadConst()
-      && node->getSize() <= 4
+      && (node->getSize() <= 4 || (node->getType().isInt64() && node->isHighWordZero()))
       && (node->getType().isAddress() || node->getType().isIntegral())
       && !(  self()->simulatedNodeState(node, state)._keepLiveUntil != NULL // Check if parent will become a RegStore that keeps this node live
          && state->_currentTreeTop->getNode()->getOpCode().isStoreDirect()

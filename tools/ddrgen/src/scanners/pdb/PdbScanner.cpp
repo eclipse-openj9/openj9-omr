@@ -101,7 +101,7 @@ PdbScanner::getBlacklist()
 	 */
 	DDR_RC rc = DDR_RC_OK;
 	string line = "";
-	ifstream blackListInput("src/scanners/pdb/blackList.txt", ios::in);
+	ifstream blackListInput("tools/ddrgen/src/scanners/pdb/blackList.txt", ios::in);
 
 	if (blackListInput.is_open()) {
 		while (getline(blackListInput, line)) {

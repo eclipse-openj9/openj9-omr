@@ -15,6 +15,11 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
+#if defined(J9ZOS390)
+/* We need to define these for the limit macros to get defined in z/OS */
+#define _ISOC99_SOURCE
+#define __STDC_LIMIT_MACROS
+#endif /* defined(J9ZOS390) */
 
 #include "genBinaryBlob.hpp"
 

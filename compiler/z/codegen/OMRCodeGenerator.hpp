@@ -417,6 +417,15 @@ public:
 
    bool supportsMergingOfHCRGuards();
 
+   /** \brief
+    *     Determines whether this code generator supports concurrent scavange of objects during garbage collection.
+    *
+    *  \return
+    *     true if the code generator will emit read barriers for loads of object references from the heap in support
+    *     of concurrent scavange; false otherwise.
+    */
+   bool supportsConcurrentScavange();
+
    bool supportsDirectJNICallsForAOT() { return true;}
 
    bool shouldYankCompressedRefs() { return true; }

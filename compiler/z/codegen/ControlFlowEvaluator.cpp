@@ -2962,13 +2962,13 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
                
                // For concurrent scavange the source is loaded and shifted by the guarded load, thus we need to use CG
                // here for a non-zero compressedrefs shift value
-               if (TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility())
+               if (cg->supportsConcurrentScavange())
                   {
                   cmpOpCode = TR::InstOpCode::getCmpOpCode();
                   }
                else
                   {
-                  cmpOpCode = (n->getOpCode().getSize() > 4)? TR::InstOpCode::CG: TR::InstOpCode::C;
+                  cmpOpCode = (n->getOpCode().getSize() > 4) ? TR::InstOpCode::CG: TR::InstOpCode::C;
                   }
                }
             else

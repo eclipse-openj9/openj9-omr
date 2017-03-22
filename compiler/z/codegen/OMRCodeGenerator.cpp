@@ -857,6 +857,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->getS390Linkage()->initS390RealRegisterLinkage();
    self()->setAccessStaticsIndirectly(true);
+
+   if (self()->supportsConcurrentScavange())
+      {
+      // TODO (GuardedStorage): Is there a way to relax this condition? Currently we have to disable array copy opts to
+      // avoid missing guarded loads on memory to memory copies of reference objects. However this restriction seems too
+      // strict as we are disabling primitive array copies as well.
+      comp->setOption(TR_DisableArrayCopyOpts);
+      }
    }
 
 TR_GlobalRegisterNumber
@@ -6076,6 +6084,16 @@ OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&
           !self()->comp()->compileRelocatableCode();
+   }
+
+bool
+OMR::Z::CodeGenerator::supportsConcurrentScavange()
+   {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+   return TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility();
+#else
+   return false;
+#endif
    }
 
 // Helpers for profiled interface slots

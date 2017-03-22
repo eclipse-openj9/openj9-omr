@@ -485,19 +485,21 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR_ASSERT(hasCompPtrs, "no compression sequence found under l2a node [%p]\n", node);
    */
 
-   // TODO (GuardedStorage)
-   TR::Register *source;
-   if (comp->useCompressedPointers() && (TR::Compiler->om.compressedReferenceShift() == 0 || firstChild->containsCompressionSequence()) && !node->isl2aForCompressedArrayletLeafLoad())
+   TR::Register* source = NULL;
+
+   // TODO (GuardedStorage): Why is isl2aForCompressedArrayletLeafLoad check necessary?
+   if (cg->supportsConcurrentScavange() && comp->useCompressedPointers() && firstChild->containsCompressionSequence() && !node->isl2aForCompressedArrayletLeafLoad())
+      {
       cg->setEvalCompressionSequence(true);
 
-   if ((TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility()) && comp->useCompressedPointers() && (firstChild->containsCompressionSequence()) && !node->isl2aForCompressedArrayletLeafLoad())
-      {
       source = cg->evaluate(firstChild->getFirstChild());
+
+      cg->setEvalCompressionSequence(false);
       }
    else
+      {
       source = cg->evaluate(firstChild);
-
-   cg->setEvalCompressionSequence(false);
+      }
 
    // first child is either iu2l (when shift==0) or
    // the first child is a compression sequence. in the

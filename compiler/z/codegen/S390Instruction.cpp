@@ -3034,18 +3034,18 @@ TR::S390RIEInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390RIEInstruction::splitIntoCompareAndLongBranch(void)
    {
-
    //Generate equivalent Compare instruction
    TR::InstOpCode::Mnemonic cmpOp;
-   bool isRR=false;
-   bool isRRE=false;
-   bool isRI=false;
-   bool isRIL=false;
+   bool isRR = false;
+   bool isRRE = false;
+   bool isRI = false;
+   bool isRIL = false;
    switch (getOpCodeValue())
       {
       case TR::InstOpCode::CGFRJ  :
        cmpOp = TR::InstOpCode::CGFR;
        isRRE = true;
+       break;
       case TR::InstOpCode::CGRJ   :
        cmpOp = TR::InstOpCode::CGR;
        isRRE = true;
@@ -3129,18 +3129,18 @@ TR::S390RIEInstruction::splitIntoCompareAndLongBranch(void)
 void
 TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchAfterThis)
    {
-
    //Generate equivalent Compare instruction
    TR::InstOpCode::Mnemonic cmpOp;
-   bool isRR=false;
-   bool isRRE=false;
-   bool isRI=false;
-   bool isRIL=false;
+   bool isRR = false;
+   bool isRRE = false;
+   bool isRI = false;
+   bool isRIL = false;
    switch (getOpCodeValue())
       {
       case TR::InstOpCode::CGFRJ  :
        cmpOp = TR::InstOpCode::CGFR;
        isRRE = true;
+       break;
       case TR::InstOpCode::CGRJ   :
        cmpOp = TR::InstOpCode::CGR;
        isRRE = true;

@@ -18,7 +18,7 @@
 
 #ifndef X86OPS_INCL
 #define X86OPS_INCL
-#include <stdio.h>
+
 #include <stdint.h>          // for uint32_t, uint8_t
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
@@ -1337,20 +1337,10 @@ class TR_X86OpCode
    // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
    static void CheckAndFinishGroup07(TR_X86OpCodes op, uint8_t* cursor);
 
-   // deprecated structure, to be deleted
-   typedef struct
-      {
-      uint8_t _bytes[3];
-      uint8_t _length;
-      } TR_OpCodeBinaryEntry;
-
    TR_X86OpCodes                     _opCode;
    static const uint32_t             _properties[IA32NumOpCodes];
    static const uint32_t             _properties2[IA32NumOpCodes];
    static const OpCode_t             _binaries[IA32NumOpCodes];
-   static const TR_OpCodeBinaryEntry _binaryEncodings[IA32NumOpCodes]; // deprecated field, to be deleted
-   static bool                       _UseDeprecatedBinaryEncoding;
-   static bool                       _VerifyWithDeprecatedBinaryEncoding;
 
    public:
 
@@ -1507,125 +1497,41 @@ class TR_X86OpCode
 
    uint32_t isFusableCompare(){ return _properties2[_opCode] & IA32OpProp2_FusableCompare; }
 
-   bool     isSetRegInstruction() {return !( (( *(uint32_t *)&_binaryEncodings[_opCode] ) & 0x00fff0ff) ^ 0x00c0900f );}
-
-   uint8_t *copyBinaryToBuffer(uint8_t *cursor) {return copyBinaryToBuffer(_opCode, cursor);}
-
-   uint8_t getOpCodeLength() {return _binaryEncodings[_opCode]._length;}
-
-   uint8_t deprecated_length(uint8_t rex) // deprecated function / previous implementation, to be deleted
+   bool isSetRegInstruction() const
       {
-      uint8_t len = 0;
-      if (needsSSE42OpcodePrefix() || needs16BitOperandPrefix())
+      switch(_opCode)
          {
-         len++; // 66
+         case SETA1Reg:
+         case SETAE1Reg:
+         case SETB1Reg:
+         case SETBE1Reg:
+         case SETE1Reg:
+         case SETNE1Reg:
+         case SETG1Reg:
+         case SETGE1Reg:
+         case SETL1Reg:
+         case SETLE1Reg:
+         case SETS1Reg:
+         case SETNS1Reg:
+         case SETPO1Reg:
+         case SETPE1Reg:
+            return true;
+         default:
+            return false;
          }
-      if (needsXreleasePrefix() || needsXacquirePrefix() || needsScalarPrefix())
-         {
-         len++; // f3/f2
-         }
-      if (needs64BitOperandPrefix())
-         {
-         rex |= 0x48;
-         }
-      if (rex)
-         {
-         len++;
-         }
-      if (needsSSE42OpcodePrefix())
-         {
-         len++; // 0f
-         }
-      return len + getOpCodeLength();
       }
-   uint8_t* deprecated_binary(uint8_t* cur, uint8_t rex) // deprecated function / previous implementation, to be deleted
-      {
-      uint8_t* start = cur;
-      if (needsSSE42OpcodePrefix() || needs16BitOperandPrefix())
-         {
-         *cur++ = 0x66;
-         }
-      if (needsXreleasePrefix())
-         {
-         *cur++ = 0xf3;
-         }
-      else if (needsXacquirePrefix())
-         {
-         *cur++ = 0xf2;
-         }
-      else if (needsScalarPrefix())
-         {
-         *cur++ = singleFPOp() ? 0xf3 : 0xf2;
-         }
-      if (needs64BitOperandPrefix())
-         {
-         rex |= 0x48;
-         }
-      if (rex)
-         {
-         *cur++ = rex;
-         }
-      if (needsSSE42OpcodePrefix())
-         {
-         *cur++ = 0x0f;
-         }
-      cur = copyBinaryToBuffer(cur);
-      TR_ASSERT(cur-start == deprecated_length(rex), "Actual binary length should be the same as calculated one");
-      return cur;
-      }
+
    uint8_t length(uint8_t rex = 0)
       {
-      if (_UseDeprecatedBinaryEncoding)
-         return deprecated_length(rex);
-      uint8_t len = encode<Estimator>(_opCode, 0, rex);
-      if (_VerifyWithDeprecatedBinaryEncoding)
-         {
-         auto deprecated = deprecated_length(rex);
-         TR_ASSERT(deprecated == len, "Incorrect [%d]: %d vs %d", _opCode, deprecated, len);
-         }
-      return len;
-      }
-   void dump(char* info, uint8_t* beg, uint8_t* end)
-      {
-      printf("[%d] %s: ", _opCode, info);
-      for (auto p = beg; p < end; p++)
-         {
-         printf(" %02x", 0xff & *p);
-         }
-      printf("\n");
+      return encode<Estimator>(_opCode, 0, rex);
       }
    uint8_t* binary(uint8_t* cursor, uint8_t rex = 0)
       {
-      if (_UseDeprecatedBinaryEncoding)
-         return deprecated_binary(cursor, rex);
       uint8_t* ret = encode<Writer>(_opCode, cursor, rex);
       CheckAndFinishGroup07(_opCode, ret);
-
-      if (_VerifyWithDeprecatedBinaryEncoding)
-         {
-         TR_ASSERT(ret-cursor == length(rex), "Actual binary length should be the same as calculated one");
-         uint8_t buffer[15];
-         auto deprecated = deprecated_binary(buffer, rex);
-         auto len = length(rex);
-         if (len > 0)
-            {
-            bool correct = true;
-            for (int i = 0; i < len-1; i++)
-               {
-               correct = correct && (cursor[i] == buffer[i]);
-               }
-            correct = correct && ((cursor[len-1] & 0x3f) == (buffer[len - 1] & 0x3f));
-            if (!correct)
-               {
-               printf("REX = %02x\n", 0xff & (unsigned int)rex);
-               dump("NEW", cursor, ret);
-               dump("OLD", buffer, deprecated);
-               TR_ASSERT(false, "");
-               }
-            }
-         }
       return ret;
       }
+
    void convertLongBranchToShort()
       { // input must be a long branch in range JA4 - JMP4
       if (((int)_opCode >= (int)JA4) && ((int)_opCode <= (int)JMP4))
@@ -1797,14 +1703,6 @@ class TR_X86OpCode
    static uint32_t sourceRegIsImplicit(TR_X86OpCodes op)  {return _properties2[op] & IA32OpProp2_SourceRegIsImplicit;}
 
    static uint32_t isFusableCompare(TR_X86OpCodes op){ return _properties2[op] & IA32OpProp2_FusableCompare; }
-
-   static uint8_t *copyBinaryToBuffer(TR_X86OpCodes op, uint8_t *cursor)
-      {
-      *(uint32_t *)cursor = (*(uint32_t *)&_binaryEncodings[op]) & 0xffffff;
-      return cursor + _binaryEncodings[op]._length;
-      }
-
-   static uint8_t getOpCodeLength(TR_X86OpCodes op) {return _binaryEncodings[op]._length;}
 
    static uint8_t getModifiedEFlags(TR_X86OpCodes op)
       {

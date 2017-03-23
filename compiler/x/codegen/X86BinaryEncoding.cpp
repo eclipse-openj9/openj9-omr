@@ -57,6 +57,7 @@
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                    // for TR_X86OpCode, etc
+#include "x/codegen/X86Ops_inlines.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"

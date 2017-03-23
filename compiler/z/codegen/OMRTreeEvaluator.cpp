@@ -5061,7 +5061,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          }
       else //if (form == MemReg)
          {
-         if (cg->supportsConcurrentScavange())
+         if (cg->isConcurrentScavengeEnabled())
             {
             // TODO (GuardedStorage): If we are in the evaluation of a compressedrefs sequence and are about to generate
             // compressed load we override the instruction opcode to generate a guarded load and shift instead. We should
@@ -6120,7 +6120,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   auto mnemonic = TR::InstOpCode::getLoadOpCode();
 
                   // TODO (GuardedStorage): Do we need the useCompressedPointers check here? All aloads should have been lowered by now.
-                  if (cg->supportsConcurrentScavange() && !comp->useCompressedPointers())
+                  if (cg->isConcurrentScavengeEnabled() && !comp->useCompressedPointers())
                      {
                      if (node->getOpCodeValue() == TR::aloadi && tempReg->containsCollectedReference())
                         {

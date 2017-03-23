@@ -2960,9 +2960,9 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
                targetRegister = n->getRegister();
                cg->evaluate(reference);
                
-               // For concurrent scavange the source is loaded and shifted by the guarded load, thus we need to use CG
+               // For concurrent scavenge the source is loaded and shifted by the guarded load, thus we need to use CG
                // here for a non-zero compressedrefs shift value
-               if (cg->supportsConcurrentScavange())
+               if (cg->isConcurrentScavengeEnabled())
                   {
                   cmpOpCode = TR::InstOpCode::getCmpOpCode();
                   }

@@ -2860,7 +2860,7 @@ TR::Node *constrainWrtBar(TR::ValuePropagation *vp, TR::Node *node)
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
 
-   if (vp->cg()->supportsConcurrentScavange())
+   if (vp->cg()->isConcurrentScavengeEnabled())
       {
       // TODO (GuardedStorage): Why do we need this restriction?
       doOpt = false;

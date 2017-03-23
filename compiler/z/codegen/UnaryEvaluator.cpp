@@ -488,7 +488,7 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register* source = NULL;
 
    // TODO (GuardedStorage): Why is isl2aForCompressedArrayletLeafLoad check necessary?
-   if (cg->supportsConcurrentScavange() && comp->useCompressedPointers() && firstChild->containsCompressionSequence() && !node->isl2aForCompressedArrayletLeafLoad())
+   if (cg->isConcurrentScavengeEnabled() && comp->useCompressedPointers() && firstChild->containsCompressionSequence() && !node->isl2aForCompressedArrayletLeafLoad())
       {
       cg->setEvalCompressionSequence(true);
 

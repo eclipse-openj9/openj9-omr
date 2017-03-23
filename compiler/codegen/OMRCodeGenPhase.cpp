@@ -420,11 +420,11 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    {
    TR::Compilation *comp = cg->comp();
 
-   if (cg->supportsConcurrentScavange())
+   if (cg->isConcurrentScavengeEnabled())
       {
       // TODO (GuardedStorage): We need to come up with a better solution than anchoring tree tops of compressedrefs
       // sequences to enforce certain evaluation order. Perhaps not lowering compressedrefs in the first place when
-      // concurrent scavange is supported is the correct solution here.
+      // concurrent scavenge is supported is the correct solution here.
       traceMsg(comp, "GuardedStorage: in performSetupForInstructionSelectionPhase\n");
 
       auto mapAllocator = getTypedAllocator<std::pair<TR::TreeTop*, TR::TreeTop*> >(comp->allocator());

@@ -495,13 +495,13 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportsMergingOfHCRGuards() {return false;} // no virt, default
 
    /** \brief
-    *     Determines whether this code generator supports concurrent scavange of objects during garbage collection.
+    *     Determines whether concurrent scavenge of objects during garbage collection is enabled.
     *
     *  \return
     *     true if the code generator will emit read barriers for loads of object references from the heap in support
-    *     of concurrent scavange; false otherwise.
+    *     of concurrent scavenge; false otherwise.
     */
-   bool supportsConcurrentScavange()
+   bool isConcurrentScavengeEnabled()
    {
       return false;
    }

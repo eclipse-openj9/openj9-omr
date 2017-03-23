@@ -858,7 +858,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->getS390Linkage()->initS390RealRegisterLinkage();
    self()->setAccessStaticsIndirectly(true);
 
-   if (self()->supportsConcurrentScavange())
+   if (self()->isConcurrentScavengeEnabled())
       {
       // TODO (GuardedStorage): Is there a way to relax this condition? Currently we have to disable array copy opts to
       // avoid missing guarded loads on memory to memory copies of reference objects. However this restriction seems too
@@ -6087,7 +6087,7 @@ OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
    }
 
 bool
-OMR::Z::CodeGenerator::supportsConcurrentScavange()
+OMR::Z::CodeGenerator::isConcurrentScavengeEnabled()
    {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
    return TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility();

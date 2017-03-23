@@ -5066,7 +5066,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
             // TODO (GuardedStorage): If we are in the evaluation of a compressedrefs sequence and are about to generate
             // compressed load we override the instruction opcode to generate a guarded load and shift instead. We should
             // figure out a better way to handle this.
-            if (cg->isEvalCompressionSequence() && load == TR::InstOpCode::LLGF)
+            if (cg->isEvaluatingCompressionSequence() && load == TR::InstOpCode::LLGF)
                {
                load = TR::InstOpCode::LLGFSG;
                }

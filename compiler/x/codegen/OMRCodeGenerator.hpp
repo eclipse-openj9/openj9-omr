@@ -230,6 +230,7 @@ struct TR_X86ProcessorInfo
    bool supportsAESNI()                    {return _featureFlags2.testAny(TR_AESNI);}
    bool supportsPOPCNT()                   {return _featureFlags2.testAny(TR_POPCNT);}
    bool supportsSelfSnoop()                {return _featureFlags.testAny(TR_SelfSnoop);}
+   bool supportsTM()                       {return _featureFlags8.testAny(TR_RTM);}
    bool supportsHyperThreading()           {return _featureFlags.testAny(TR_HyperThreading);}
    bool hasThermalMonitor()                {return _featureFlags.testAny(TR_ThermalMonitor);}
 
@@ -888,3 +889,4 @@ class TR_X86ScratchRegisterManager: public TR_ScratchRegisterManager
    };
 
 #endif
+

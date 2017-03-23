@@ -20,13 +20,13 @@
 #include <sys/errno.h>
 #include "config.hpp"
 #include "DwarfFunctions.hpp"
+#include <set>
 
 typedef enum declFormat {
 	NO_FORMAT, /* Default initial value */
 	OLD_FORMAT, /* C format */
 	NEW_FORMAT /* C++ format */
 } declFormat;
-typedef unordered_map<string, unordered_map<int, pair<Dwarf_Off, Dwarf_Die> > > file_map;
 typedef unordered_map<int, pair<Dwarf_Off, Dwarf_Die> > die_map;
 
 /* PTR_SIZE varies for 32bit, 64bit */

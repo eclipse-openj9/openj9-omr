@@ -16,13 +16,15 @@
  *******************************************************************************/
 
 #include "AixDwarfParser.hpp"
+
 /* Statics to create: */
-static file_map createdDies;
-static unordered_map<string, vector<Dwarf_Die> > namesToChange;
-/* This vector contains the file, typeID of the nested class, and parent class for populating nested classes */
-static vector<tuple<string, int, Dwarf_Die> > nestedClassesToPopulate;
-/* This vector contains the filename, typeID of the type reference, and type attribute to populate */
-static vector<tuple<string, int, Dwarf_Attribute> > refsToPopulate;
+static die_map createdDies;
+static die_map builtInDies;
+static std::set<string> filesAdded;
+/* This vector contains the typeID of the nested class, and parent class for populating nested classes */
+static vector<pair<int, Dwarf_Die> > nestedClassesToPopulate;
+/* This vector contains the typeID of the type reference, and type attribute to populate */
+static vector<pair<int, Dwarf_Attribute> > refsToPopulate;
 /* This vector contains the Dwarf DIE with the bitfield attribute, which may have to be removed if it is unneeded */
 static vector<Dwarf_Die> bitFieldsToCheck;
 static Dwarf_Die _lastDie = NULL;
@@ -38,14 +40,13 @@ Dwarf_CU_Context * Dwarf_CU_Context::_firstCU;
 Dwarf_CU_Context * Dwarf_CU_Context::_currentCU;
 
 static void checkBitFields(Dwarf_Error *error);
-static void changeDuplicateNames(Dwarf_Error *error);
 static void deleteDie(Dwarf_Die die);
 static int parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
 static int parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
 static int parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
-static int parseDwarfDie(const string data, Dwarf_Error *error);
-static int parseDwarfInfo(const char *line, Dwarf_Error *error);
-static Dwarf_Half parseDeclarationLine(string data, int *typeID, declFormat *format, string *declarationData, string *name, bool *compilerGenerated);
+static int parseStabstringDeclarationIntoDwarfDie(const string data, Dwarf_Error *error);
+static int parseSymbolTable(const char *line, Dwarf_Error *error);
+static Dwarf_Half parseDeclarationLine(string data, int *typeID, declFormat *format, string *declarationData, string *name);
 static int parseEnum(const string data, string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
 static int parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
 static int parseNewFormat(const string data, const string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
@@ -84,11 +85,6 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 
 	_lastDie = NULL;
 	Dwarf_CU_Context::_fileList.clear();
-	createdDies.clear();
-	namesToChange.clear();
-	nestedClassesToPopulate.clear();
-	refsToPopulate.clear();
-	bitFieldsToCheck.clear();
 	Dwarf_CU_Context::_currentCU = NULL;
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_Die_s::refMap.clear();
@@ -115,6 +111,7 @@ dwarf_init(int fd,
 
 	/* Populate the built-in types */
 	ret = populateBuiltInTypeDies(error);
+	populateAttributeReferences();
 
 	/* Get the path of the file descriptor */
 	sprintf(filepath, "/proc/%d/fd/%d", getpid(), fd);
@@ -133,7 +130,7 @@ dwarf_init(int fd,
 	DEBUGPRINTF("Parsing through file.");
 	/* Parse through the file */
 	while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret)) {
-		ret = parseDwarfInfo(buffer, error);
+		ret = parseSymbolTable(buffer, error);
 	}
 	free(buffer);
 
@@ -141,14 +138,48 @@ dwarf_init(int fd,
 		pclose(fp);
 	}
 
-	/* Create all the references */
-	DEBUGPRINTF("Populating attribute references.");
-	populateAttributeReferences();
-	DEBUGPRINTF("Populating nested classes");
-	populateNestedClasses();
-
 	/* Must set _currentCU to null for dwarf_next_cu_header to work */
 	Dwarf_CU_Context::_currentCU = NULL;
+
+	/* If the symbol table that we parsed contained no new files, create an empty generic CU and CU die to make sure DwarfScanner doesn't fail */
+	if (NULL == Dwarf_CU_Context::_firstCU) {
+		Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
+		Dwarf_Die newDie = new Dwarf_Die_s();
+		Dwarf_Attribute name = new Dwarf_Attribute_s();
+
+		if ((NULL == newCU) || (NULL == newDie) || (NULL == name)) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_MAF);
+		} else {
+			newCU->_CUheaderLength = 0;
+			newCU->_versionStamp = 0;
+			newCU->_abbrevOffset = 0;
+			newCU->_addressSize = 0;
+			newCU->_nextCUheaderOffset = 0;
+			newCU->_nextCU = NULL;
+			newCU->_die = newDie;
+
+			newDie->_tag = DW_TAG_compile_unit;
+			newDie->_parent = NULL;
+			newDie->_sibling = NULL;
+			newDie->_previous = NULL;
+			newDie->_child = NULL;
+			newDie->_context = newCU;
+			newDie->_attribute = name;
+							
+			name->_type = DW_AT_name;
+			name->_nextAttr = NULL;
+			name->_form = DW_FORM_string;
+			name->_sdata = 0;
+			name->_udata = 0;
+			name->_stringdata = strdup("");
+			name->_refdata = 0;
+			name->_ref = NULL;
+
+
+			Dwarf_CU_Context::_firstCU = newCU;
+		}
+	}
 
 	/* Create a DIE for undefined references */
 	_undefinedRef = new Dwarf_Die_s;
@@ -164,8 +195,12 @@ dwarf_init(int fd,
 	/* Remove bit size attributes for members that don't need bit fields */
 	checkBitFields(error);
 
-	/* Rename dies with duplicate names */
-	changeDuplicateNames(error);
+	/* Clear the unordered_maps that were required during parsing */
+	refsToPopulate.clear();
+	createdDies.clear();
+	nestedClassesToPopulate.clear();
+	builtInDies.clear();
+	bitFieldsToCheck.clear();
 
 	return ret;
 }
@@ -231,31 +266,6 @@ checkBitFields(Dwarf_Error *error) {
 				}
 				delete(tmpAttribute->_nextAttr);
 				tmpAttribute->_nextAttr = NULL;
-			}
-		}
-	}
-}
-
-static void changeDuplicateNames(Dwarf_Error *error) {
-	for (unordered_map<string, vector<Dwarf_Die> >::iterator itt = namesToChange.begin(); itt != namesToChange.end(); itt++) {
-		int numberOfDuplicates = 0;
-		for (int i = 0; i < itt->second.size(); i++) {
-			bool needsRename = false;
-			for (int j = i+1; j < itt->second.size(); j++) {
-				if (itt->second.at(i)->_parent == itt->second.at(j)->_parent) {
-					needsRename = true;
-				} else if ((DW_TAG_compile_unit == itt->second.at(i)->_parent->_tag) && (DW_TAG_compile_unit == itt->second.at(j)->_parent->_tag)) {
-					needsRename = true;
-				}
-			}
-			if (needsRename) {
-				Dwarf_Attribute name;
-				int tmpInt = dwarf_attr(itt->second.at(i), DW_AT_name, &name, error);
-				if (DW_DLV_OK == tmpInt) {
-					numberOfDuplicates = numberOfDuplicates + 1;
-					string newName = itt->first + "__dup__" + toString(numberOfDuplicates);
-					name->_stringdata = strdup(newName.c_str());
-				}
 			}
 		}
 	}
@@ -374,11 +384,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 				type->_ref = NULL;
 
 				/* Add it to the list of attributes to populate */
-				if (0 < ID) {
-					refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)Dwarf_CU_Context::_fileList.back(), (int)ID, (Dwarf_Attribute)type));
-				} else {
-					refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)"", (int)ID, (Dwarf_Attribute)type));
-				}
+				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 				currentDie->_attribute = type;
 				newDie->_tag = DW_TAG_subrange_type;
 				newDie->_parent = currentDie;
@@ -396,7 +402,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 				subrangeType->_ref = NULL;
 
 				/* Add subrangeType to the list of refs to populate in a second pass */
-				refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)"", (int)-37, (Dwarf_Attribute)subrangeType));
+				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)-37, (Dwarf_Attribute)subrangeType));
 
 				subrangeUpperBound->_type = DW_AT_upper_bound;
 				subrangeUpperBound->_nextAttr = NULL;
@@ -523,11 +529,8 @@ parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *err
 		type->_ref = NULL;
 
 		/* Add the attribute to the list of refs to be populated */
-		if (0 < ID) {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)Dwarf_CU_Context::_fileList.back(), (int)ID, (Dwarf_Attribute)type));
-		} else {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)"", (int)ID, (Dwarf_Attribute)type));
-		}
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
+
 		currentDie->_attribute = type;
 	}
 	return ret;
@@ -548,8 +551,7 @@ parseDeclarationLine(const string data,
 	int *typeID,
 	declFormat *format,
 	string *declarationData,
-	string *name,
-	bool *compilerGenerated)
+	string *name)
 {
 	Dwarf_Half ret = DW_TAG_unknown;
 
@@ -617,12 +619,6 @@ parseDeclarationLine(const string data,
 							ret = DW_TAG_unknown;
 							break;
 						}
-						if (indexOfFirstNonInteger + 2 <= sizeAndType.length()) {
-							if ('V' == sizeAndType[indexOfFirstNonInteger+1]) {
-								/* The declaration is compiler generated */
-								*compilerGenerated = true;
-							}
-						}
 					} else {
 						ret = DW_TAG_unknown;
 					}
@@ -653,7 +649,7 @@ parseDeclarationLine(const string data,
  * param[in] line: declaration for an entity. It should be the portion of a declaration line after "^\\[.*\\].*m.*debug.*decl\\s+"
  */
 static int
-parseDwarfDie(const string line, Dwarf_Error *error)
+parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
 	int typeID = 0;
@@ -662,50 +658,22 @@ parseDwarfDie(const string line, Dwarf_Error *error)
 	string type;
 	string name;
 	string members;
-	bool compilerGenerated = false;
 
 	/* get the type of the data of the line being parsed */
-	Dwarf_Half tag = parseDeclarationLine(line, &typeID, &format, &declarationData, &name, &compilerGenerated);
+	Dwarf_Half tag = parseDeclarationLine(line, &typeID, &format, &declarationData, &name);
 
 	/* Parse the line further based on the type of declaration */
 	if (DW_TAG_unknown != tag) {
 		Dwarf_Die newDie = NULL;
 
 		/* Search for the die in createdDies before creating a new one */
-		file_map::iterator existingFileEntry = createdDies.find(Dwarf_CU_Context::_fileList.back());
-		if (createdDies.end() != existingFileEntry) {
-			die_map::iterator existingDieEntry = existingFileEntry->second.find(typeID);
-			if (existingFileEntry->second.end() != existingDieEntry) {
-				newDie = existingDieEntry->second.second;
-
-				/* For compiler generated DIEs, set them to the first one created and delete the current one */
-				if (compilerGenerated) {
-					unordered_map<string, vector<Dwarf_Die> >::iterator nameToFind = namesToChange.find(name);
-					if (namesToChange.end() != nameToFind) {
-						if (1 < nameToFind->second.size()) {
-							/* Remove the DIE from names to change */
-							nameToFind->second.pop_back();
-							
-							/* Change all references of the die to the first built-in die of its type */
-							if (NULL != existingDieEntry->second.second->_previous) {
-								existingDieEntry->second.second->_previous->_sibling = existingDieEntry->second.second->_sibling;
-							}
-							if (NULL != existingDieEntry->second.second->_sibling) {
-								existingDieEntry->second.second->_sibling->_previous = existingDieEntry->second.second->_previous;
-							}
-							delete(existingDieEntry->second.second);
-							existingDieEntry->second.second = nameToFind->second.at(0);
-							
-							/* Don't have to do any parsing */
-							tag = DW_TAG_unknown;
-						}
-					}
-				}
-			}
+		die_map::iterator existingDieEntry = createdDies.find(typeID);
+		if (createdDies.end() != existingDieEntry) {
+			newDie = existingDieEntry->second.second;
 		}
 
 		/* Create a new die, if it wasn't previously created */
-		if ((NULL == newDie) && (!compilerGenerated)) {
+		if (NULL == newDie) {
 			newDie = new Dwarf_Die_s();
 			if (NULL == newDie) {
 				ret = DW_DLV_ERROR;
@@ -720,7 +688,7 @@ parseDwarfDie(const string line, Dwarf_Error *error)
 				newDie->_attribute = NULL;
 
 				/* Insert the DIE into an unordered_map corresponding to current file being parsed, and insert that unordered_map into createdDies */
-				createdDies[Dwarf_CU_Context::_fileList.back()][typeID] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+				createdDies[typeID] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
 				refNumber = refNumber + 1;
 
@@ -735,18 +703,6 @@ parseDwarfDie(const string line, Dwarf_Error *error)
 					newDie->_previous = _lastDie;
 				}
 				_lastDie = newDie;
-
-				/* Check if the die name already exists or not, and if so, append a number to it to make the names unique */
-				/* This is required, as AIX stabstring output does not contain information about namespaces, so identically named entities cannot be differentiated */
-				if ((DW_TAG_typedef != tag) && (!name.empty())) {
-					/* Don't pick up duplicate typedefs or empty names */
-					unordered_map<string, vector<Dwarf_Die> >::iterator nameToFind = namesToChange.find(name);
-					if (namesToChange.end() != nameToFind) {
-						nameToFind->second.push_back(newDie);
-					} else {
-						namesToChange.insert(make_pair<string, vector<Dwarf_Die> >((string)name, vector<Dwarf_Die>(1, newDie)));
-					}
-				}
 			}
 		}
 		if (NULL == newDie) {
@@ -807,7 +763,7 @@ parseDwarfDie(const string line, Dwarf_Error *error)
  * param[in] line: A line read from AIX symbol table
  */
 static int
-parseDwarfInfo(const char *line, Dwarf_Error *error)
+parseSymbolTable(const char *line, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
 	string data = line;
@@ -830,41 +786,15 @@ parseDwarfInfo(const char *line, Dwarf_Error *error)
 				if (string::npos != indexOfFile) {
 					/* Check that there are only whitespaces between the words */
 					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
-						/* Create one compilation unit context per file */
-						Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
-
-						/* Create a DIE for the CU */
-						Dwarf_Die newDie = new Dwarf_Die_s();
-
-						if ((NULL == newCU) || (NULL == newDie)) {
-							ret = DW_DLV_ERROR;
-							setError(error, DW_DLE_MAF);
-						} else {
-							newCU->_CUheaderLength = 0;
-							newCU->_versionStamp = 0;
-							newCU->_abbrevOffset = 0;
-							newCU->_addressSize = 0;
-							newCU->_nextCUheaderOffset = 0;
-							newCU->_nextCU = NULL;
-							newCU->_die = newDie;
-
-							newDie->_tag = DW_TAG_compile_unit;
-							newDie->_parent = NULL;
-							newDie->_sibling = NULL;
-							newDie->_previous = NULL;
-							newDie->_child = NULL;
-							newDie->_context = newCU;
-							newDie->_attribute = NULL;
-
-							if (NULL == Dwarf_CU_Context::_firstCU) {
-								Dwarf_CU_Context::_firstCU = newCU;
-								Dwarf_CU_Context::_currentCU = Dwarf_CU_Context::_firstCU;
-							} else {
-								Dwarf_CU_Context::_currentCU->_nextCU = newCU;
-								Dwarf_CU_Context::_currentCU = newCU;
-							}
-							_startNewFile = 1;
-						}
+						/* Populate the attribute references and nested classes from the previous file that we parsed */
+						populateAttributeReferences();
+						populateNestedClasses();
+						
+						/* Clear the unordered_maps we maintained from the last file */
+						createdDies.clear();
+						nestedClassesToPopulate.clear();
+						refsToPopulate.clear();
+						_startNewFile = 1;
 					}
 				}
 			}
@@ -874,37 +804,67 @@ parseDwarfInfo(const char *line, Dwarf_Error *error)
 			size_t fileNameIndex = data.find(FILE_NAME) + FILE_NAME.size();
 			size_t index = data.substr(fileNameIndex).find_first_not_of(' ');
 
-			/* Add the file to the list of files */
-			Dwarf_CU_Context::_fileList.push_back(strip(data.substr(index+fileNameIndex), '\n'));
+			fileName = strip(data.substr(index+fileNameIndex), '\n');
 
-			Dwarf_Attribute name = new Dwarf_Attribute_s();
-			Dwarf_Attribute compilationDirectory = new Dwarf_Attribute_s();
-			if ((NULL == name) || (NULL == compilationDirectory)) {
-				ret = DW_DLV_ERROR;
-				setError(error, DW_DLE_MAF);
+			/* Check the file has not been parsed through before */
+			if (filesAdded.end() == filesAdded.find(fileName)) {
+				/* Add the file to the list of files */
+				Dwarf_CU_Context::_fileList.push_back(fileName);
+
+				filesAdded.insert(fileName);
+
+				/* Create one compilation unit context per file */
+				Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
+
+				/* Create a DIE for the CU */
+				Dwarf_Die newDie = new Dwarf_Die_s();
+
+				/* Create name attribute for the DIE */
+				Dwarf_Attribute name = new Dwarf_Attribute_s();
+
+				if ((NULL == newCU) || (NULL == newDie) || (NULL == name)) {
+					ret = DW_DLV_ERROR;
+					setError(error, DW_DLE_MAF);
+				} else {
+					newCU->_CUheaderLength = 0;
+					newCU->_versionStamp = 0;
+					newCU->_abbrevOffset = 0;
+					newCU->_addressSize = 0;
+					newCU->_nextCUheaderOffset = 0;
+					newCU->_nextCU = NULL;
+					newCU->_die = newDie;
+
+					newDie->_tag = DW_TAG_compile_unit;
+					newDie->_parent = NULL;
+					newDie->_sibling = NULL;
+					newDie->_previous = NULL;
+					newDie->_child = NULL;
+					newDie->_context = newCU;
+					newDie->_attribute = name;
+						
+					name->_type = DW_AT_name;
+					name->_nextAttr = NULL;
+					name->_form = DW_FORM_string;
+					name->_sdata = 0;
+					name->_udata = 0;
+					name->_stringdata = strdup(Dwarf_CU_Context::_fileList.back().c_str());
+					name->_refdata = 0;
+					name->_ref = NULL;
+
+
+					if (NULL == Dwarf_CU_Context::_firstCU) {
+						Dwarf_CU_Context::_firstCU = newCU;
+						Dwarf_CU_Context::_currentCU = newCU;
+					} else {
+						Dwarf_CU_Context::_currentCU->_nextCU = newCU;
+						Dwarf_CU_Context::_currentCU = newCU;
+					}
+					_startNewFile = 2;
+				}
 			} else {
-				name->_type = DW_AT_name;
-				name->_nextAttr = compilationDirectory;
-				name->_form = DW_FORM_string;
-				name->_sdata = 0;
-				name->_udata = 0;
-				name->_stringdata = strdup(Dwarf_CU_Context::_fileList.back().c_str());
-				name->_refdata = 0;
-				name->_ref = NULL;
-
-				compilationDirectory->_type = DW_AT_comp_dir;
-				compilationDirectory->_nextAttr = NULL;
-				compilationDirectory->_form = DW_FORM_string;
-				compilationDirectory->_sdata = 0;
-				compilationDirectory->_udata = 0;
-				/* For now, the compilation directory will be nothing, as AIX gives relative paths which will (hopefully) be unique */
-				compilationDirectory->_stringdata = strdup("");
-
-				compilationDirectory->_refdata = 0;
-				compilationDirectory->_ref = NULL;
-
-				Dwarf_CU_Context::_currentCU->_die->_attribute = name;
-				_startNewFile = 2;
+				/* The file was already parsed through previously, perhaps in another .so file */
+				/* Skip parsing this file */
+				_startNewFile = 0;
 			}
 		}
 	} else if (2 == _startNewFile) {
@@ -922,7 +882,7 @@ parseDwarfInfo(const char *line, Dwarf_Error *error)
 						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
 						size_t index = dataAfterDecl.find_first_not_of(' ');
 						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
-						ret = parseDwarfDie(validData, error);
+						ret = parseStabstringDeclarationIntoDwarfDie(validData, error);
 						_startNewFile = 3;
 					}
 				}
@@ -935,41 +895,7 @@ parseDwarfInfo(const char *line, Dwarf_Error *error)
 					if (string::npos != indexOfFile) {
 						/* Check that there are only whitespaces between the words */
 						if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
-							/* Create one compilation unit context per file */
-							Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
-
-							/* Create a DIE for the CU */
-							Dwarf_Die newDie = new Dwarf_Die_s();
-
-							if ((NULL == newCU) || (NULL == newDie)) {
-								ret = DW_DLV_ERROR;
-								setError(error, DW_DLE_MAF);
-							} else {
-								newCU->_CUheaderLength = 0;
-								newCU->_versionStamp = 0;
-								newCU->_abbrevOffset = 0;
-								newCU->_addressSize = 0;
-								newCU->_nextCUheaderOffset = 0;
-								newCU->_nextCU = NULL;
-								newCU->_die = newDie;
-
-								newDie->_tag = DW_TAG_compile_unit;
-								newDie->_parent = NULL;
-								newDie->_sibling = NULL;
-								newDie->_previous = NULL;
-								newDie->_child = NULL;
-								newDie->_context = newCU;
-								newDie->_attribute = NULL;
-
-								if (NULL == Dwarf_CU_Context::_firstCU) {
-									Dwarf_CU_Context::_firstCU = newCU;
-									Dwarf_CU_Context::_currentCU = Dwarf_CU_Context::_firstCU;
-								} else {
-									Dwarf_CU_Context::_currentCU->_nextCU = newCU;
-									Dwarf_CU_Context::_currentCU = newCU;
-								}
-								_startNewFile = 1;
-							}
+							_startNewFile = 1;
 						}
 					}
 				}
@@ -991,7 +917,7 @@ parseDwarfInfo(const char *line, Dwarf_Error *error)
 						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
 						size_t index = dataAfterDecl.find_first_not_of(' ');
 						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
-						ret = parseDwarfDie(validData, error);
+						ret = parseStabstringDeclarationIntoDwarfDie(validData, error);
 					} else {
 						_startNewFile = 0;
 						_lastDie = NULL;
@@ -1165,11 +1091,7 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 		type->_ref = NULL;
 
 		/* push the type into a vector to populate in a second pass */
-		if (0 < ID) {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)Dwarf_CU_Context::_fileList.back(), (int)ID, (Dwarf_Attribute)type));
-		} else {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)"", (int)ID, (Dwarf_Attribute)type));
-		}
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 		declFile->_type = DW_AT_decl_file;
 		declFile->_form = DW_FORM_udata;
 		declFile->_nextAttr = declLine;
@@ -1375,7 +1297,7 @@ parseNewFormat(const string data,
 									/* Get the ID of the nested class, which will be in tmp[1] */
 									str_vect tmp = split(members[i], 'N');
 									int ID = toInt(tmp[1]);
-									nestedClassesToPopulate.push_back(make_tuple<string, int, Dwarf_Die>((string)Dwarf_CU_Context::_fileList.back(), (int)ID, (Dwarf_Die)currentDie));
+									nestedClassesToPopulate.push_back(make_pair<int, Dwarf_Die>((int)ID, (Dwarf_Die)currentDie));
 
 									/* To prevent a memory leak, delete the new die */
 									deleteDie(newDie);
@@ -1445,11 +1367,7 @@ parseTypeDef(const string data,
 		type->_ref = NULL;
 
 		/* Add type to the list of refs to populate on a second pass */
-		if (0 < ID) {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)Dwarf_CU_Context::_fileList.back(), (int)ID, (Dwarf_Attribute)type));
-		} else {
-			refsToPopulate.push_back(make_tuple<string, int, Dwarf_Attribute>((string)"", (int)ID, (Dwarf_Attribute)type));
-		}
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 		name->_type = DW_AT_name;
 		name->_form = DW_FORM_string;
 		name->_nextAttr = declLine;
@@ -1499,20 +1417,23 @@ populateAttributeReferences()
 {
 	/* Iterate through the vector containing all attributes to be populated*/
 	for (unsigned int i = 0; i < refsToPopulate.size(); i++) {
-		Dwarf_Attribute tmp = get<2>(refsToPopulate[i]);
-		file_map::iterator existingFileEntry;
+		Dwarf_Attribute tmp = refsToPopulate[i].second;
 
-		/* If the reference is to a built-in type, we don't have to search through all the unordered_maps in createdDies, just the first */
-		if (0 > get<1>(refsToPopulate[i])) {
-			existingFileEntry = createdDies.find("");
+		/* If the reference is to a built-in type, search the unordered_map containing built-in types */
+		if (0 > refsToPopulate[i].first) {
+			/* Search for the reference in the die map */
+			die_map::iterator existingDieEntry = builtInDies.find(refsToPopulate[i].first);
+			if (builtInDies.end() != existingDieEntry) {
+				tmp->_ref = existingDieEntry->second.second;
+
+				/* Set _refdata to the correct value and insert the reference into refMap*/
+				tmp->_refdata = existingDieEntry->second.first;
+				Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)existingDieEntry->second.first, (Dwarf_Die)existingDieEntry->second.second));
+			}
 		} else {
-			/* Search for the reference in createdDies */
-			existingFileEntry = createdDies.find(get<0>(refsToPopulate[i]));
-		}
-		if (createdDies.end() != existingFileEntry) {
-			die_map tmper = existingFileEntry->second;
-			die_map::iterator existingDieEntry = tmper.find(get<1>(refsToPopulate[i]));
-			if (tmper.end() != existingDieEntry) {
+			/* Search for the reference in the die map */
+			die_map::iterator existingDieEntry = createdDies.find(refsToPopulate[i].first);
+			if (createdDies.end() != existingDieEntry) {
 				tmp->_ref = existingDieEntry->second.second;
 
 				/* Set _refdata to the correct value and insert the reference into refMap*/
@@ -1584,7 +1505,7 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 					previousDie = newDie;
 
 					/* Insert the newly created DIE into the unordered map for use later on */
-					createdDies[""][i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
 					/* Increment the refNumber */
 					refNumber = refNumber + 1;
@@ -1653,7 +1574,7 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 					previousDie = newDie;
 
 					/* Insert the typedef into the unordered map for use later on */
-					createdDies[""][i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
 					/* Increment the refNumber */
 					refNumber = refNumber + 1;
@@ -1675,12 +1596,11 @@ populateNestedClasses()
 {
 	/* Iterate through all the nested classes found */
 	for (unsigned int i = 0; i < nestedClassesToPopulate.size(); i++) {
-		Dwarf_Die parent = get<2>(nestedClassesToPopulate[i]);
+		Dwarf_Die parent = nestedClassesToPopulate[i].second;
 		Dwarf_Die nestedClass = NULL;
-		file_map::iterator existingFileEntry = createdDies.find(get<0>(nestedClassesToPopulate[i]));
-		if ((createdDies.end() != existingFileEntry) && (NULL != parent)) {
-			die_map::iterator existingDieEntry = existingFileEntry->second.find(get<1>(nestedClassesToPopulate[i]));
-			if (existingFileEntry->second.end() != existingDieEntry) {
+		if (NULL != parent) {
+			die_map::iterator existingDieEntry = createdDies.find(nestedClassesToPopulate[i].first);
+			if (createdDies.end() != existingDieEntry) {
 				nestedClass = existingDieEntry->second.second;
 				if (NULL != nestedClass) {
 					/* Get the last child of the die */

@@ -76,19 +76,18 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		ERRMSG("Checking for compilation directory attribute: %s\n", dwarf_errmsg(error));
 		goto Failed;
 	}
-	if (hasAttr) {
-		/* Get the CU directory. */
-		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
-			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
-			goto Failed;
-		}
-		if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
+
+	if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
+		if (NULL == attr) {
+			/* The DIE didn't have a compilationDirectory attribute (AIX) 
+			 * so we can skip over getting the absolute paths from the relative paths
+			 */
+			goto Done;
+		} else {
 			ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
 			goto Failed;
 		}
 	}
-/* The compilation directory isn't provided in AIX, so we don't need to find the absolute paths from the relative paths */
-#if !defined(AIXPPC)
 	/* Allocate a new file name table to hold the concatenated absolute paths. */
 	fileNamesTableConcat = (char **)malloc(sizeof(char *) * _fileNameCount);
 	if (NULL == fileNamesTableConcat) {
@@ -133,8 +132,8 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 	}
 	_fileNamesTable = fileNamesTableConcat;
-#endif /* !defined(AIXPPC) */
 
+Done:
 	return DDR_RC_OK;
 
 Failed:

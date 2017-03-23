@@ -1527,6 +1527,9 @@ IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder
    Goto(mergePoint);
 
    AppendBuilder(mergePoint);
+
+   // return state for "this" can get confused by the Goto's in this service
+   setComesBack();
    }
 
 /*
@@ -1582,6 +1585,9 @@ IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder,
    Goto(mergePoint);
 
    AppendBuilder(mergePoint);
+
+   // return state for "this" can get confused by the Goto's in this service
+   setComesBack();
    }
 
 TR::IlValue *

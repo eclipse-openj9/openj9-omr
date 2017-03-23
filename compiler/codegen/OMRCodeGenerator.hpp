@@ -1533,6 +1533,8 @@ class OMR_EXTENSIBLE CodeGenerator
 
    virtual bool getSupportsTLE();
 
+   virtual bool getSupportsIbyteswap();
+
    bool getSupportsAutoSIMD() { return _flags4.testAny(SupportsAutoSIMD);}
    void setSupportsAutoSIMD() { _flags4.set(SupportsAutoSIMD);}
 

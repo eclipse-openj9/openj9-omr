@@ -938,6 +938,8 @@ const ValuePropagationPtr constraintHandlers[] =
 	constrainLongNumberOfTrailingZeros,
 	constrainLongBitCount,
 
+   constrainChildren,           // TR::ibyteswap
+
    constrainChildren,        // TR::Prefetch
 
 #ifdef J9_PROJECT_SPECIFIC

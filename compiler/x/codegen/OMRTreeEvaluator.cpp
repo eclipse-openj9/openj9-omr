@@ -5240,3 +5240,16 @@ OMR::X86::TreeEvaluator::VMifArrayCmpEvaluator(TR::Node*, TR::CodeGenerator*)
    {
    return 0;
    }
+
+TR::Register *
+OMR::X86::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");
+   TR::Node *child = node->getFirstChild();
+   bool nodeIs64Bit = TR::TreeEvaluator::getNodeIs64Bit(child, cg);
+   TR::Register *target = TR::TreeEvaluator::intOrLongClobberEvaluate(child, nodeIs64Bit, cg);
+   generateRegInstruction(BSWAPReg(nodeIs64Bit), node, target, cg);
+   node->setRegister(target);
+   cg->decReferenceCount(child);
+   return target;
+   }

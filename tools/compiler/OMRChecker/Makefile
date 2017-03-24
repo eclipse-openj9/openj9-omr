@@ -42,7 +42,10 @@ CXX       	?= g++
 PYTHON      ?= python2
 
 LDFLAGS   	:= -shared `$(LLVM_CONFIG) --ldflags`
-CXXFLAGS  	:= `$(LLVM_CONFIG) --cxxflags` -std=c++0x
+
+# Clang headers are producing strict aliasing warnings swamping
+# all other output. 
+CXXFLAGS  	:= `$(LLVM_CONFIG) --cxxflags` -Wno-strict-aliasing
 
 #
 # Build rules

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -96,7 +96,8 @@
 #include "optimizer/Inliner.hpp" // for OMR_InlinerPolicy
 #include "ras/Debug.hpp"
 #include "optimizer/InductionVariable.hpp"
-#include "optimizer/ValuePropagation.hpp"
+#include "optimizer/GlobalValuePropagation.hpp"
+#include "optimizer/LocalValuePropagation.hpp"
 #include "optimizer/RegDepCopyRemoval.hpp"
 #include "optimizer/SinkStores.hpp"
 #include "optimizer/PartialRedundancy.hpp"

@@ -1956,10 +1956,10 @@ OMR::Compilation::shutdown(TR_FrontEnd * fe)
    bool printCummStats = ((fe!=0) && TR::Options::getCmdLineOptions() && TR::Options::getCmdLineOptions()->getOption(TR_CummTiming));
    if (printCummStats)
       {
-      fprintf(stderr, "Compilation Time   = %s\n", compTime.timeTakenString(TR::comp()));
-      fprintf(stderr, "Gen IL Time        = %s\n", genILTime.timeTakenString(TR::comp()));
-      fprintf(stderr, "Optimization Time  = %s\n", optTime.timeTakenString(TR::comp()));
-      fprintf(stderr, "Code Gen Time      = %s\n", codegenTime.timeTakenString(TR::comp()));
+      fprintf(stderr, "Compilation Time   = %9.6f\n", compTime.secondsTaken());
+      fprintf(stderr, "Gen IL Time        = %9.6f\n", genILTime.secondsTaken());
+      fprintf(stderr, "Optimization Time  = %9.6f\n", optTime.secondsTaken());
+      fprintf(stderr, "Code Gen Time      = %9.6f\n", codegenTime.secondsTaken());
       }
 
 #ifdef DEBUG

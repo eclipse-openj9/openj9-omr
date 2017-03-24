@@ -1708,7 +1708,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          if (doTiming)
             {
             myTimer.stopTiming(comp());
-            statStructuralAnalysisTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+            statStructuralAnalysisTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
             }
 #endif
          }
@@ -1773,7 +1773,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             if (doTiming)
                {
                myTimer.stopTiming(comp());
-               statUseDefsTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+               statUseDefsTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
                }
 #endif
 
@@ -1820,7 +1820,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             if (doTiming)
                {
                myTimer.stopTiming(comp());
-               statUseDefsTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+               statUseDefsTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
                }
 #endif
 
@@ -1865,7 +1865,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             if (doTiming)
                {
                myTimer.stopTiming(comp());
-               statGlobalValNumTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+               statGlobalValNumTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
                }
 #endif
 
@@ -1898,7 +1898,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             if (doTiming)
                {
                myTimer.stopTiming(comp());
-               statGlobalValNumTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+               statGlobalValNumTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
                }
 #endif
             if (valueNumberInfo->infoIsValid())
@@ -2081,7 +2081,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       if (doTiming)
          {
            myTimer.stopTiming(comp());
-           statOptTiming[optNum].update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+           statOptTiming[optNum].update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
          }
 #endif
 

@@ -320,10 +320,10 @@ void OMR::ValuePropagation::initialize()
             if (comp()->getOutFile() != NULL)
                {
                trfprintf(comp()->getOutFile(), "Time taken for %s = ", myTimer.title());
-               trfprintf(comp()->getOutFile(), "%s seconds\n", myTimer.timeTakenString(comp()));
+               trfprintf(comp()->getOutFile(), "%9.6f seconds\n", myTimer.secondsTaken());
                }
 #ifdef OPT_TIMING
-            statStructuralAnalysisTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution(comp()));
+            statStructuralAnalysisTiming.update((double)myTimer.timeTaken()*1000.0/TR::Compiler->vm.getHighResClockResolution());
 #endif
             }
          }

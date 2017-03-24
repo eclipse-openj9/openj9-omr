@@ -1066,7 +1066,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"test390StackBufferSize=", "L\tInsert buffer in stack to force testing of large stack sizes",
         TR::Options::set32BitNumeric,offsetof(OMR::Options,_test390StackBuffer), 0, "F%d"},
    {"timing", "M\ttime individual phases and optimizations", SET_OPTION_BIT(TR_Timing), "F" },
-   {"timingCummulative", "M\ttime cummulative phases (ILgen,Optimizer,codegen)", SET_OPTION_BIT(TR_CummTiming), "F" },
+   {"timingCumulative", "M\ttime cumulative phases (ILgen,Optimizer,codegen)", SET_OPTION_BIT(TR_CummTiming), "F" },
 #if defined(TR_HOST_X86) || defined(TR_HOST_POWER)
    {"tlhPrefetch",  "D\tenable software prefetch on allocation ",   SET_OPTION_BIT(TR_TLHPrefetch),  "F" },
 #endif // defined(TR_HOST_X86) || defined(TR_HOST_POWER)

@@ -5237,6 +5237,11 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
          }
       }
 
+   vp->constrainRecognizedMethod(node);
+
+   // Return if the node is not a regular call (xcall/xcalli) anymore
+   if (!node->getOpCode().isCall() || node->getSymbol()->castToMethodSymbol()->isHelper())
+      return node;
 
    if ( symbol )
       {
@@ -5682,6 +5687,10 @@ TR::Node *setCloneClassInNode(OMR::ValuePropagation *vp, TR::Node *node, TR::VPC
 TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
    {
    constrainCall(vp, node);
+
+   // Return if the node is not a regular call (xcall/xcalli) anymore
+   if (!node->getOpCode().isCall() || node->getSymbol()->castToMethodSymbol()->isHelper())
+      return node;
 
    // This node can be constrained by the return type of the method.
    //

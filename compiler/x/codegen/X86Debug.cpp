@@ -2341,8 +2341,6 @@ void TR_Debug::printX86OOLSequences(TR::FILE *pOutFile)
 
 
 
-// } RTSJ Support ends
-
 //
 // AMD64 Snippets
 //

@@ -241,12 +241,8 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    TR::TreeTop *getExceptingTree();
 
-   // { RTSJ Support begins
-
    bool hasExceptionPredecessors();
    bool hasExceptionSuccessors();
-
-   // } RTSJ Support ends
 
    /**
     * Field functions

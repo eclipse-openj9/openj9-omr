@@ -41,11 +41,11 @@ CLANG       ?= clang++
 CXX       	?= g++
 PYTHON      ?= python2
 
-LDFLAGS   	:= -shared `$(LLVM_CONFIG) --ldflags`
+LDFLAGS   	:= -shared `$(LLVM_CONFIG) --ldflags` 
 
 # Clang headers are producing strict aliasing warnings swamping
 # all other output. 
-CXXFLAGS  	:= `$(LLVM_CONFIG) --cxxflags` -Wno-strict-aliasing
+CXXFLAGS  	:= `$(LLVM_CONFIG) --cxxflags` -std=c++0x -Wno-strict-aliasing 
 
 #
 # Build rules
@@ -53,7 +53,7 @@ CXXFLAGS  	:= `$(LLVM_CONFIG) --cxxflags` -Wno-strict-aliasing
 $(OMRCHECKER_OBJECT): $(CHECKER_O)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-$(CHECKER_O): $(CHECKER_CPP) $(CHECKER_HPP)
+$(CHECKER_O): $(CHECKER_CPP) $(CHECKER_HPP) 
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 #

@@ -4860,8 +4860,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
     in the calleee that wasn' there when we gen'd IL for it
    */
 
-   // RTSJ support: code to compute previousBBStartInCaller moved up
-
    for (tt = callNodeTreeTop->getNextTreeTop(); tt; tt = tt->getNextTreeTop())
       if (tt->getNode()->getOpCodeValue() == TR::BBEnd)
          {

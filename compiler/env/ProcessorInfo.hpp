@@ -75,10 +75,6 @@ struct TR_X86CPUIDBuffer
    uint32_t _featureFlags8;
    };
 
-/* RTSJ duplicate from struct TR_X86ProcessorInfo/X86CodeGenerator.hpp */
-/* requires code reorganization to make these features available       */
-/* when the JIT DLL is not loaded at runtime for AOT                   */
-
 enum TR_X86ProcessorVendors
    {
    TR_AuthenticAMD                  = 0x01,
@@ -146,6 +142,5 @@ enum TR_TransactionalMemory
    TR_HLE                     = 0x00000010,
    TR_RTM                     = 0x00000800
    };
-/* RTSJ end duplicate */
 
 #endif

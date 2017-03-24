@@ -245,9 +245,10 @@ private:
 class ExtensibleClassCheckingVisitor : public RecursiveASTVisitor<ExtensibleClassCheckingVisitor> {
 public:
    explicit ExtensibleClassCheckingVisitor(ASTContext *Context, ExtensibleClassDiscoveryVisitor &extensible) :
+      currentPass(1),
+      passNumber(),
       Extensible(extensible),
-      Context(Context),
-      currentPass(1)
+      Context(Context)
    { }
 
    /**

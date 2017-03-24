@@ -380,9 +380,9 @@ public:
 
    void printRelations() {
       llvm::errs() << "Most Derived Type Map: \n";
-      for (std::map<CXXRecordDecl*, CXXRecordDecl*>::iterator I = MostDerivedType.begin(), E= MostDerivedType.end(); I != E; ++I) {
+      for (std::map<const CXXRecordDecl*, const CXXRecordDecl*>::iterator I = MostDerivedType.begin(), E= MostDerivedType.end(); I != E; ++I) {
          llvm::errs() << "\t\t" << I->first->getQualifiedNameAsString() << " -> " << I->second->getQualifiedNameAsString();
-         CXXRecordDecl * concrete = getAssociatedConcreteType(I->first);
+         auto* concrete = getAssociatedConcreteType(I->first);
          llvm::errs() << " => " << (concrete ? concrete->getQualifiedNameAsString() : "<no concrete found>" );
          llvm::errs() << "\n";
       }
@@ -392,8 +392,8 @@ public:
    /**
     * Returns the most derived type for a decl.
     */
-   CXXRecordDecl *mostDerivedType(CXXRecordDecl *decl) {
-      std::map<CXXRecordDecl*, CXXRecordDecl*>::iterator itr = MostDerivedType.find(decl->getCanonicalDecl());
+   const CXXRecordDecl *mostDerivedType(const CXXRecordDecl *decl) {
+      std::map<const CXXRecordDecl*, const CXXRecordDecl*>::iterator itr = MostDerivedType.find(decl->getCanonicalDecl());
       if (itr != MostDerivedType.end()) { return itr->second; }
       return NULL;
    }
@@ -493,7 +493,7 @@ public:
     *
     * This query only really makes sense for an extensible class.
     */
-   CXXRecordDecl* getAssociatedConcreteType(CXXRecordDecl* decl) {
+   const CXXRecordDecl* getAssociatedConcreteType(const CXXRecordDecl* decl) {
 
       // a concrete type is always part of its own extensible class string.
       if (isOMRConcreteType(decl))
@@ -502,7 +502,7 @@ public:
       // Only extensible decls have a meaningful concrete class string.
       if (isExtensible(decl)) {
          int loopCount = 0;
-         CXXRecordDecl* concrete = mostDerivedType(decl);
+         auto* concrete = mostDerivedType(decl);
          trace("==isExtensible: " << decl->getQualifiedNameAsString() << " concrete: " << (concrete ? concrete->getQualifiedNameAsString() : "no concrete found"));
          while (concrete) {
             if (loopCount++ > 50) {
@@ -540,7 +540,7 @@ private:
     *
     * \FIXME: This could be tighter integrated with getAssociatedConcreteType, reducing complexity.
     */
-   bool inSameClassString(CXXRecordDecl * queryType, CXXRecordDecl * derivedType, int level = 0) {
+   bool inSameClassString(const CXXRecordDecl * queryType, const CXXRecordDecl * derivedType, int level = 0) {
       std::string query_name   = queryType->getQualifiedNameAsString();
       std::string derived_name = derivedType->getQualifiedNameAsString();
 
@@ -557,8 +557,8 @@ private:
       // If any base is in the same class string as the query type, then
       // we are as well. This is a reachability problem.
       trace(prefix << query_name << "\t[ - ]  C = " << derivedType->getQualifiedNameAsString() );
-      for (CXXRecordDecl::base_class_iterator BI = derivedType->bases_begin(), BE = derivedType->bases_end(); BI != BE; ++BI) {
-         CXXRecordDecl* base_class = BI->getType()->getAsCXXRecordDecl();
+      for (auto BI = derivedType->bases_begin(), BE = derivedType->bases_end(); BI != BE; ++BI) {
+         auto* base_class = BI->getType()->getAsCXXRecordDecl();
          if (base_class) {
             if ( isOMRConcreteType(base_class) ) { // Concrete parent terminates search.
                trace(prefix << "not searching " << base_class->getQualifiedNameAsString() << ", is concrete");
@@ -589,7 +589,7 @@ private:
     * Build the most derived type map.
     */
    void BuildMostDerivedTypeMap(CXXRecordDecl* decl) {
-      std::queue<CXXRecordDecl *> toProcess;
+      std::queue<const CXXRecordDecl *> toProcess;
 
       // Only handle complete definitions.
       if (!decl->isCompleteDefinition()) {
@@ -618,7 +618,7 @@ private:
       }
 
       while (!toProcess.empty()) {
-         CXXRecordDecl *toUpdate = toProcess.front();
+         auto* toUpdate = toProcess.front();
          toProcess.pop();
 
          if (toUpdate != toUpdate->getCanonicalDecl()) trace("Missed cannonicalization")
@@ -627,8 +627,8 @@ private:
              && MostDerivedType[toUpdate] != decl) {                 // ... and it wasn't this decl
 
             // Ensure we update everyone who used to think this was most derived
-            CXXRecordDecl *oldDerivedType = MostDerivedType[toUpdate];
-            for (std::map<CXXRecordDecl*, CXXRecordDecl*>::iterator I = MostDerivedType.begin(), E = MostDerivedType.end(); I != E; ++I) {
+            auto* oldDerivedType = MostDerivedType[toUpdate];
+            for (auto I = MostDerivedType.begin(), E = MostDerivedType.end(); I != E; ++I) {
                trace("second == old: " << (I->second == oldDerivedType) );
                trace("First " << I->first->getQualifiedNameAsString()   << " Concrete: " << isOMRConcreteType(I->first));
                trace("Second " << I->second->getQualifiedNameAsString() << " Concrete: " << isOMRConcreteType(I->second));
@@ -658,7 +658,7 @@ private:
    /**
     * The most derived type map.
     */
-   std::map<CXXRecordDecl*, CXXRecordDecl*> MostDerivedType;
+   std::map<const CXXRecordDecl*, const CXXRecordDecl*> MostDerivedType;
 
    /**
     * This visitor has determined the map of extensible classes
@@ -732,7 +732,7 @@ public:
          trace("targetClass of static cast" << (targetClass ? targetClass->getQualifiedNameAsString() : "NULL" ) );
          CXXThisExpr *thisExpr = getThisExpr(cast->getSubExpr());
          if (thisExpr) {
-            CXXRecordDecl *thisConcrete = ClassChecker->getAssociatedConcreteType(thisExpr->getType()->getAs<PointerType>()->getPointeeType()->getAsCXXRecordDecl());
+            auto *thisConcrete = ClassChecker->getAssociatedConcreteType(thisExpr->getType()->getAs<PointerType>()->getPointeeType()->getAsCXXRecordDecl());
             if (thisConcrete) {
                trace("Associated concrete class: " << thisConcrete->getQualifiedNameAsString() );
                if (targetClass == NULL || targetClass != thisConcrete) {

@@ -95,6 +95,8 @@ public:
       TR::IlType(name),
       _type(type)
       { }
+   virtual ~PrimitiveType()
+      { }
 
    virtual TR::DataType getPrimitiveType()
       {
@@ -156,6 +158,8 @@ public:
       _lastField(0),
       _size(0),
       _closed(false)
+      { }
+   virtual ~StructType()
       { }
 
    TR::DataType getPrimitiveType()                 { return TR::Address; }
@@ -297,6 +301,8 @@ public:
       _closed(false),
       _symRefBV(4, trMemory),
       _trMemory(trMemory)
+      { }
+   virtual ~UnionType()
       { }
 
    TR::DataType getPrimitiveType()                 { return TR::Address; }

@@ -121,6 +121,14 @@ class MethodBuilder : public TR::IlBuilder
                        TR::IlType     ** parmTypes);
 
    /**
+    * @brief will be called if a Call is issued to a function that has not yet been defined, provides a
+    *        mechanism for MethodBuilder subclasses to provide method lookup on demand rather than all up
+    *        front via the constructor.
+    * @returns true if the function was found and DefineFunction has been called for it, otherwise false
+    */
+   virtual bool RequestFunction(const char *name) { return false; }
+
+   /**
     * @brief append the first bytecode builder object to this method
     * @param builder the bytecode builder object to add, usually for bytecode index 0
     * A side effect of this call is that the builder is added to the worklist so that

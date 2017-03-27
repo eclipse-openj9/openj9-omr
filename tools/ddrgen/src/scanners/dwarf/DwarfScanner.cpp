@@ -604,12 +604,13 @@ DwarfScanner::getTypeSize(Dwarf_Die die, size_t *typeSize)
  * the first time it is discovered. The associated Type object is returned.
  */
 DDR_RC
-DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, bool isSubUDT, Type **type)
+DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, NamespaceUDT *outerUDT, Type **type)
 {
 	DDR_RC rc = DDR_RC_ERROR;
 	Type *newType = NULL;
 	int typeNum = -1;
 	bool dieBlackListed = true;
+	bool isSubUDT = (NULL != outerUDT);
 
 	if (!ignoreFilter) {
 		rc = blackListedDie(die, &dieBlackListed);
@@ -624,7 +625,7 @@ DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, bool isS
 		}
 	}
 
-	rc = getType(die, tag, &newType, isSubUDT, &typeNum);
+	rc = getType(die, tag, &newType, outerUDT, &typeNum);
 
 	if(DDR_RC_OK == rc) {
 		if (2 == typeNum) {
@@ -705,7 +706,7 @@ AddTypeDone:
  * declaration and later as a stub, as only a stub, or only as a full declaration.
  */
 DDR_RC
-DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool isSubUDT, int *typeNum)
+DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, NamespaceUDT *outerUDT, int *typeNum)
 {
 	/* Set typeNum to -1 for error.
 	 * Set typeNum to 0 for full types which have not been found before--add to types list and add children.
@@ -730,7 +731,7 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 		 * Use these as a map key to check for duplicates.
 		 */
 		if (DDR_RC_OK == createTypeKey(die, dieName, &key, &lineNumber, &fileName)) {
-			if (dieName.empty() && !isSubUDT && (DW_TAG_enumeration_type == tag)) {
+			if (dieName.empty() && (NULL == outerUDT) && (DW_TAG_enumeration_type == tag)) {
 				/* Anonymous enums with no outer type are added to a constants structure named by file name. */
 				size_t lastSlash = fileName.find_last_of("/");
 				size_t lastDot = fileName.find_last_of(".");
@@ -738,7 +739,17 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, bool 
 				dieName[0] = toupper(dieName[0]);
 			}
 			/* If the Type is not in the map yet, add it. */
-			if (_typeMap.find(key) == _typeMap.end()) {
+			bool isInTypeMap = (_typeMap.find(key) != _typeMap.end());
+			if (isInTypeMap) {
+				Type *existingType = _typeMap[key];
+				UDT *udt = dynamic_cast<UDT *>(existingType);
+				if (NULL != udt) {
+					/* Type name, file name, line number is not a unique identifier for a type when macros change the name of the outer class */
+					/* Will not work when macros change if it is an inner class or not */
+					isInTypeMap = ((udt->_outerUDT == outerUDT) || (NULL == outerUDT));
+				}
+			}
+			if (!isInTypeMap) {
 				/* If the Type is not in the stub map either, or as a stub which has already
 				 * been promoted to the map for types with declarations, create a new Type for this Die. */
 				if ((_typeStubMap.find(stubKey) == _typeStubMap.end())
@@ -898,7 +909,7 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 		}
 	}
 	if ((DDR_RC_OK == rc) && (NULL != typeDie)) {
-		rc = addType(typeDie, tag, true, false, &typedefType);
+		rc = addType(typeDie, tag, true, NULL, &typedefType);
 		dwarf_dealloc(_debug, typeDie, DW_DLA_DIE);
 	}
 	if (DDR_RC_OK == rc) {
@@ -1002,7 +1013,7 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 			) {
 				/* The child is an inner type. */
 				UDT *innerUDT = NULL;
-				if (DDR_RC_OK != addType(childDie, childTag, true, (NULL != newClass), (Type **)&innerUDT)) {
+				if (DDR_RC_OK != addType(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
 				} else if ((NULL != newClass) && (NULL != innerUDT)) {
@@ -1150,7 +1161,7 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *const newClass, string fie
 			goto AddUDTFieldDone;
 		}
 		Type *fieldType = NULL;
-		if ((DDR_RC_OK != addType(baseDie, tag, true, false, &fieldType)) || (NULL == fieldType)) {
+		if ((DDR_RC_OK != addType(baseDie, tag, true, NULL, &fieldType)) || (NULL == fieldType)) {
 			goto AddUDTFieldDone;
 		}
 		newField->_fieldType = fieldType;
@@ -1183,7 +1194,7 @@ DwarfScanner::getSuperUDT(Dwarf_Die die, ClassUDT *const udt)
 	if (DDR_RC_OK == getTypeTag(die, &superTypeDie, &tag)) {
 		ClassUDT *superUDT = NULL;
 		/* Get the super udt. */
-		if ((DDR_RC_OK == addType(superTypeDie, tag, true, false, (Type **)&superUDT)) && (NULL != superUDT)) {
+		if ((DDR_RC_OK == addType(superTypeDie, tag, true, NULL, (Type **)&superUDT)) && (NULL != superUDT)) {
 			rc = DDR_RC_OK;
 			udt->_superClass = superUDT;
 		}
@@ -1260,7 +1271,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 				|| (tag == DW_TAG_namespace)
 				|| (tag == DW_TAG_typedef)
 			) {
-				if (DDR_RC_OK != addType(childDie, tag, false, false, NULL)) {
+				if (DDR_RC_OK != addType(childDie, tag, false, NULL, NULL)) {
 					ERRMSG("Failed to add type.\n");
 					rc = DDR_RC_ERROR;
 					break;
@@ -1331,6 +1342,7 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *const ir, const c
 	if (DDR_RC_OK == rc) {
 		DEBUGPRINTF("Initialized libDwarf: Continuing...");
 
+		DEBUGPRINTF("%s", filepath);
 		/* Get info from dbg - Dwarf Info structure.*/
 		rc = traverse_cu_in_debug_section(ir);
 	}

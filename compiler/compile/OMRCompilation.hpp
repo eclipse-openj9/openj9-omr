@@ -298,7 +298,7 @@ public:
 
    ~Compilation() throw();
 
-   TR::Compilation *self();
+   inline TR::Compilation *self();
 
    TR::Region &region() { return _region; }
 

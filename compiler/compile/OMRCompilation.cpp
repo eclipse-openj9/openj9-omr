@@ -712,8 +712,7 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
          if (node->getReferenceCount() > 1)
             {
             TR::TreeTop *cursor = tt->getPrevTreeTop();
-            TR::TreeTop *extendedBlockStart = tt->getNode()->getBlock()->startOfExtendedBlock()->getEntry();
-            while (cursor && cursor != extendedBlockStart)
+            while (cursor)
                {
                if ((cursor->getNode()->getOpCode().isCheck() || cursor->getNode()->getOpCodeValue() == TR::treetop)
                    && cursor->getNode()->getFirstChild() == node)
@@ -721,6 +720,9 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
                   potentialOSRPoint = false;
                   break;
                   }
+               if (cursor->getNode()->getOpCodeValue() == TR::BBStart &&
+                   !cursor->getNode()->getBlock()->isExtensionOfPreviousBlock())
+                  break;
                cursor = cursor->getPrevTreeTop();
                }
             }

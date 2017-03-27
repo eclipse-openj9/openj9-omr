@@ -226,7 +226,7 @@ enum TR_CompilationOptions
    TR_DisableDynamicSamplingWindow        = 0x00000020 + 4,
    TR_DisableAsyncCheckVersioning         = 0x00000040 + 4,
    TR_DisableInterpreterProfiling         = 0x00000080 + 4,
-   // Available                           = 0x00000100 + 4,
+   TR_ConcurrentLPQ                       = 0x00000100 + 4,
    TR_EnableVPICForResolvedVirtualCalls   = 0x00000200 + 4,
    TR_DisableRegisterPressureSimulation   = 0x00000400 + 4,
    TR_DisableBlockVersioner               = 0x00000800 + 4,
@@ -239,7 +239,7 @@ enum TR_CompilationOptions
    TR_DisableInliningOfNatives            = 0x00040000 + 4,
    TR_AssignEveryGlobalRegister           = 0x00080000 + 4,
    TR_DisableZ196                         = 0x00100000 + 4,
-   // Available                           = 0x00200000 + 4,
+   TR_EarlyLPQ                            = 0x00200000 + 4,
    TR_DisableUpgradingColdCompilations    = 0x00400000 + 4, // for cold methods due to classLoadPhase for instance
    TR_VerboseInterpreterProfiling         = 0x00800000 + 4,
    TR_TraceRegisterPressureDetails        = 0x01000000 + 4,
@@ -257,7 +257,7 @@ enum TR_CompilationOptions
    TR_DisableLookahead                    = 0x00000040 + 5,
    TR_TraceBFGeneration                   = 0x00000080 + 5,
    TR_DisableDFP                          = 0x00000100 + 5,
-   // Available                           = 0x00000200 + 5,
+   TR_SuspendEarly                        = 0x00000200 + 5,
    TR_EnableEarlyCompilationDuringIdleCpu = 0x00000400 + 5,
    TR_DisableCallGraphInlining            = 0x00000800 + 5, // interpreter profiling
    TR_enableProfiledDevirtualization      = 0x00001000 + 5,

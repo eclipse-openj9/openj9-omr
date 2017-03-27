@@ -1,5 +1,4 @@
-/*******************************************************************************
- *
+/*
  * (c) Copyright IBM Corp. 2015, 2016
  *
  *  This program and the accompanying materials are made available
@@ -15,187 +14,303 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-#include "AixSymbolTableParser.hpp"
 
+#include "AixSymbolTableParser.cpp"
 
-AixSymbolTableParser::AixSymbolTableParser()
-	: _fileCounter(0), _startNewFile(0), _fileID(0)
+/* Statics to create: */
+static die_map createdDies;
+static die_map builtInDies;
+static std::set<string> filesAdded;
+/* This vector contains the typeID of the nested class, and parent class for populating nested classes */
+static vector<pair<int, Dwarf_Die> > nestedClassesToPopulate;
+/* This vector contains the typeID of the type reference, and type attribute to populate */
+static vector<pair<int, Dwarf_Attribute> > refsToPopulate;
+/* This vector contains the Dwarf DIE with the bitfield attribute, which may have to be removed if it is unneeded */
+static vector<Dwarf_Die> bitFieldsToCheck;
+static Dwarf_Die _lastDie = NULL;
+static Dwarf_Die _builtInTypeDie = NULL;
+static Dwarf_Die _undefinedRef = NULL;
+/* _startNewFile is a state counter */
+static int _startNewFile = 0;
+/* Start numbering refs for refMap at one (zero will be for when no ref is found) */
+static Dwarf_Off refNumber = 1;
+/* This is used to initialize declLine to a unique value for each unique DIE, every time it is required */
+static Dwarf_Off declarationLine = 1;
+Dwarf_CU_Context * Dwarf_CU_Context::_firstCU;
+Dwarf_CU_Context * Dwarf_CU_Context::_currentCU;
+
+static void checkBitFields(Dwarf_Error *error);
+static void deleteDie(Dwarf_Die die);
+static int parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseStabstringDeclarationIntoDwarfDie(const string data, Dwarf_Error *error);
+static int parseSymbolTable(const char *line, Dwarf_Error *error);
+static Dwarf_Half parseDeclarationLine(string data, int *typeID, declFormat *format, string *declarationData, string *name);
+static int parseEnum(const string data, string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseNewFormat(const string data, const string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseOldFormat(const string data, const string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
+static int parseTypeDef(const string data, const string dieName, Dwarf_Die currentDie, Dwarf_Error *error);
+static void populateAttributeReferences();
+static int populateBuiltInTypeDies(Dwarf_Error *error);
+static void populateNestedClasses();
+static int setDieAttributes(const string dieName, const unsigned int dieSize, Dwarf_Die currentDie, Dwarf_Error *error);
+
+int
+dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 {
+	/* Free all Dies and Attributes created in dwarf_init(). */
+	Dwarf_CU_Context::_currentCU = Dwarf_CU_Context::_firstCU;
+	while (NULL != Dwarf_CU_Context::_currentCU) {
+		Dwarf_CU_Context *nextCU = Dwarf_CU_Context::_currentCU->_nextCU;
+		if (NULL != Dwarf_CU_Context::_currentCU->_die) {
+			deleteDie(Dwarf_CU_Context::_currentCU->_die);
+		}
+		delete(Dwarf_CU_Context::_currentCU);
+		Dwarf_CU_Context::_currentCU = nextCU;
+	}
+
+	/* Delete the built-in type DIEs */
+	if (NULL != _builtInTypeDie) {
+		deleteDie(_builtInTypeDie);
+		_builtInTypeDie = NULL;
+	}
+
+	/* Delete the undefined type reference DIE */
+	if (NULL != _undefinedRef) {
+		deleteDie(_undefinedRef);
+		_undefinedRef = NULL;
+	}
+
+	_lastDie = NULL;
+	Dwarf_CU_Context::_fileList.clear();
+	Dwarf_CU_Context::_currentCU = NULL;
+	Dwarf_CU_Context::_firstCU = NULL;
+	Dwarf_Die_s::refMap.clear();
+	return DW_DLV_OK;
 }
 
-/**
- * Parses any inheritance (base classes) that have been used.
- *
- * @param[in]  data		   : EX: u0:11,u8:13
- * @param[out] classOptions: options vector to write out the class options
- *
- * @return: Options vector will always have, the ID of the inherited class
- *				followed by it's offset and accessibility
- *			EX: "inheritance","11"
- *				"offset","0"
- *				"accessibility","public"
- *				"inheritance","13"
- *				"offset","8"
- *				"accessibility","public"
- */
-DDR_RC
-AixSymbolTableParser::additionalClassOptions(const string data, const double fileID, options_vect *classOptions)
+int
+dwarf_init(int fd,
+	Dwarf_Unsigned access,
+	Dwarf_Handler errhand,
+	Dwarf_Ptr errarg,
+	Dwarf_Debug *dbg,
+	Dwarf_Error *error)
 {
-	DDR_RC ret = DDR_RC_ERROR;
+	/* Initialize some values */
+	int ret = DW_DLV_OK;
+	FILE *fp = NULL;
+	char *buffer = NULL;
+	char filepath[100] = {'\0'};
+	Dwarf_CU_Context::_firstCU = NULL;
+	Dwarf_CU_Context::_currentCU = NULL;
+	refNumber = 1;
+	size_t len = 0;
 
-	regex options_expression("("+OPT_BASE_SPEC+")+");
-	regex option_attrs(BASE_CLASS_OFFSET+":"+CLASS_TYPEID);
+	/* Populate the built-in types */
+	ret = populateBuiltInTypeDies(error);
+	populateAttributeReferences();
 
-	smatch m;
+	/* Get the path of the file descriptor */
+	sprintf(filepath, "/proc/%d/fd/%d", getpid(), fd);
 
-	string options_string = "";
-	str_vect options;
+	/* Call dump to get the symbol table */
+	if (DW_DLV_OK == ret) {
+		stringstream ss;
+		ss << "dump -tvXany " << filepath << " 2>&1";
+		fp = popen(ss.str().c_str(), "r");
+		if (NULL == fp) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_IOF);
+		}
+	}
 
-	string tmp = "";
-	str_vect tmpVect;
+	DEBUGPRINTF("Parsing through file.");
+	/* Parse through the file */
+	while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret)) {
+		ret = parseSymbolTable(buffer, error);
+	}
+	free(buffer);
 
-	string tmpName = "";
-	string tmpAttrValue = "";
+	if (NULL != fp) {
+		pclose(fp);
+	}
 
-	/* STEPS:
-	 * 1. Split data on ","
-	 * 2. Split each vector from step 1 on ":"
-	 *	  NOTE: Due to the second regex match, [0] will only
-	 *			 contain the offset index.
-	 *		[0] split vector from step 2 :
-	 *			- will contain the offset
-	 *		[1] split vector from step 2 :
-	 *			- will contain the inherited class ID
-	 */
-	if (!data.empty() && (regex_search(data, m, options_expression))) {
-		options_string = m[0]; /* get the options */
-		options = split(options_string, ','); /* If there are multiple Options */
+	/* Must set _currentCU to null for dwarf_next_cu_header to work */
+	Dwarf_CU_Context::_currentCU = NULL;
 
-		for (str_vect::iterator it = options.begin(); it != options.end(); ++it) {
-			if (regex_search(*it, m, option_attrs)) {
-				tmp = m[0]; /* get index:classID */
-				tmpVect = split(tmp, ':');
+	/* If the symbol table that we parsed contained no new files, create an empty generic CU and CU die to make sure DwarfScanner doesn't fail */
+	if (NULL == Dwarf_CU_Context::_firstCU) {
+		Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
+		Dwarf_Die newDie = new Dwarf_Die_s();
+		Dwarf_Attribute name = new Dwarf_Attribute_s();
 
-				classOptions->push_back(*(makeOptionInfoPair("inheritance", NUMERIC, "", fileID + extractTypeID(tmpVect[1], 0))));
-				classOptions->push_back(*(makeOptionInfoPair("offset", NUMERIC, "", extractTypeID(tmpVect[0]))));
+		if ((NULL == newCU) || (NULL == newDie) || (NULL == name)) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_MAF);
+		} else {
+			newCU->_CUheaderLength = 0;
+			newCU->_versionStamp = 0;
+			newCU->_abbrevOffset = 0;
+			newCU->_addressSize = 0;
+			newCU->_nextCUheaderOffset = 0;
+			newCU->_nextCU = NULL;
+			newCU->_die = newDie;
 
-				tmp = m.prefix(); /* get the virtual and or access spec */
-				for (int index = 0; index < tmp.length(); index++) {
-					switch (tmp[index]) {
-					case 'v' :
-						tmpName = "virtuality";
-						tmpAttrValue = "virtual";
-						break;
-					case 'i' :
-						tmpName = "accessibility";
-						tmpAttrValue = ACCESS_TYPES[0];
-						break;
-					case 'o' :
-						tmpName = "accessibility";
-						tmpAttrValue = ACCESS_TYPES[1];
-						break;
-					case 'u' :
-						tmpName = "accessibility";
-						tmpAttrValue = ACCESS_TYPES[2];
-						break;
+			newDie->_tag = DW_TAG_compile_unit;
+			newDie->_parent = NULL;
+			newDie->_sibling = NULL;
+			newDie->_previous = NULL;
+			newDie->_child = NULL;
+			newDie->_context = newCU;
+			newDie->_attribute = name;
+							
+			name->_type = DW_AT_name;
+			name->_nextAttr = NULL;
+			name->_form = DW_FORM_string;
+			name->_sdata = 0;
+			name->_udata = 0;
+			name->_stringdata = strdup("");
+			name->_refdata = 0;
+			name->_ref = NULL;
+
+
+			Dwarf_CU_Context::_firstCU = newCU;
+		}
+	}
+
+	/* Create a DIE for undefined references */
+	_undefinedRef = new Dwarf_Die_s;
+	_undefinedRef->_tag = DW_TAG_unknown;
+	_undefinedRef->_parent = NULL;
+	_undefinedRef->_sibling = NULL;
+	_undefinedRef->_previous = NULL;
+	_undefinedRef->_child = NULL;
+	_undefinedRef->_context = NULL;
+	_undefinedRef->_attribute = NULL;
+	Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)0, (Dwarf_Die)_undefinedRef));
+
+	/* Remove bit size attributes for members that don't need bit fields */
+	checkBitFields(error);
+
+	/* Clear the unordered_maps that were required during parsing */
+	refsToPopulate.clear();
+	createdDies.clear();
+	nestedClassesToPopulate.clear();
+	builtInDies.clear();
+	bitFieldsToCheck.clear();
+
+	return ret;
+}
+
+static void
+checkBitFields(Dwarf_Error *error) {
+	for (int i = 0; i < bitFieldsToCheck.size(); i++) {
+		/* Since this is a field, the type attribute is guaranteed to be the attribute after the first of the die passed in */
+		Dwarf_Attribute type = NULL;
+		Dwarf_Attribute bitSize = NULL;
+		Dwarf_Attribute tmpAttribute = bitFieldsToCheck[i]->_attribute;
+		while (NULL != tmpAttribute) {
+			if (DW_AT_bit_size == tmpAttribute->_type) {
+				bitSize = tmpAttribute;
+			} else if (DW_AT_type == tmpAttribute->_type) {
+				type = tmpAttribute;
+			}
+			tmpAttribute = tmpAttribute->_nextAttr;
+		}
+		Dwarf_Die tmp = type->_ref;
+		if ((NULL != type) && (NULL != bitSize)) {
+			bool needsBitField = false;
+			bool baseTypeHasBeenFound = false;
+			while (!baseTypeHasBeenFound) {
+				switch (tmp->_tag) {
+				case DW_TAG_base_type:
+					if (bitSize->_udata != tmp->_attribute->_nextAttr->_udata * 8) {
+						needsBitField = true;
 					}
-					classOptions->push_back(*(makeOptionInfoPair(tmpName, ATTR_VALUE, tmpAttrValue, 0)));
+					baseTypeHasBeenFound = true;
+					break;
+				case DW_TAG_const_type:
+				case DW_TAG_typedef:
+				case DW_TAG_volatile_type:
+					/* Check the type that this is referring to */
+
+					if (DW_DLV_OK == dwarf_attr(tmp, DW_AT_type, &tmpAttribute, error)) {
+						tmp = tmpAttribute->_ref;
+					} else {
+						baseTypeHasBeenFound = true;
+					}
+					break;
+				case DW_TAG_pointer_type:
+					/* Compare the bit size with the pointer size for the current architecture */
+					if (PTR_SIZE * 8 != bitSize->_udata) {
+						needsBitField = true;
+					}
+					baseTypeHasBeenFound = true;
+					break;
+				default:
+					baseTypeHasBeenFound = true;
+					break;
 				}
 			}
+			if (!needsBitField) {
+				/* Remove the bit size attribute */
+				tmpAttribute = bitFieldsToCheck[i]->_attribute;
+				while (DW_AT_bit_size != tmpAttribute->_nextAttr->_type) {
+					tmpAttribute = tmpAttribute->_nextAttr;
+				}
+				if (NULL != tmpAttribute->_nextAttr->_stringdata) {
+					free(tmpAttribute->_nextAttr->_stringdata);
+				}
+				delete(tmpAttribute->_nextAttr);
+				tmpAttribute->_nextAttr = NULL;
+			}
 		}
-		ret = DDR_RC_OK;
 	}
-	return ret;
 }
 
-/**
- * Maps the access spec to their corresponding full names
- *
- * @param[in] data : should be of format (i|o|u)(.*)
- * @param[in] index: index to check for the type of access spec, default value is 0
- *
- * @return correspoinding full name value to the access spec as string
- */
-string
-AixSymbolTableParser::extractAccessSpec(const string data, const int index)
+static void
+deleteDie(Dwarf_Die die)
 {
-	string ret = "";
-
-	if (!data.empty()) {
-		switch (data[index]) {
-		case 'i':
-			ret = ACCESS_TYPES[0]; /* private */
-			break;
-		case 'o':
-			ret = ACCESS_TYPES[1]; /* protected */
-			break;
-		case 'u':
-			ret = ACCESS_TYPES[2]; /* public */
-			break;
+	/* Free the Die's attributes. */
+	Dwarf_Attribute attr = die->_attribute;
+	while (NULL != attr) {
+		Dwarf_Attribute next = attr->_nextAttr;
+		if (NULL != attr->_stringdata) {
+			free(attr->_stringdata);
 		}
+		delete(attr);
+		attr = next;
 	}
 
-	return ret;
-}
-
-/**
- * Checks if the class declration of type union, struct or class
- *
- * @param[in] data: EX: Y32s < Would return structure
- *					EX: Y32u < Would return union
- *					EX: Y32c < Would return class
- *
- * @return string indicating if the data passed in defines a strucutre, union or a class
- */
-string
-AixSymbolTableParser::extractClassType(const string data)
-{
-	string ret = DECLARATION_TYPES[0];
-
-	if (!data.empty()) {
-		regex classStructure("Y"+NUM_BYTES+"s(.*)");
-		regex classUnion("Y"+NUM_BYTES+"u(.*)");
-		smatch m;
-
-		ret = DECLARATION_TYPES[5];
-		if (regex_search(data, m, classStructure)) {
-			ret = DECLARATION_TYPES[8];
-		} else if (regex_search(data, m, classUnion)) {
-			ret = DECLARATION_TYPES[9];
-		}
+	/* Free the Die's siblings and children. */
+	if (NULL != die->_sibling) {
+		deleteDie(die->_sibling);
 	}
-
-	return ret;
+	if (NULL != die->_child) {
+		deleteDie(die->_child);
+	}
+	delete(die);
 }
+
 
 /**
  * Parses the string to file ID. Extracts the integer betwen the square brackets.
  *
  * @param[in] data: string from which to extract ID from. The expected format is "[####]"
  *
- * @return file ID as double
+ * @return file ID as int
  */
-double
-AixSymbolTableParser::extractFileID(const string data)
+int
+extractFileID(const string data)
 {
 	stringstream ss;
-	double ret = 0;
-	ss << data.substr(1, data.length() - 1);
+	int ret = 0;
+	ss << data.substr(1, data.find_first_of(']') - 1);
 	ss >> ret;
 	return ret;
-}
-
-/**
- * Extracts the typeID from the name string that's passed in
- *
- * @param[in] data: string that needs to be parsed for typeID EX: (T|t) INTEGER
- *
- * @return typeID as double
- */
-double
-AixSymbolTableParser::extractTypeDefID(const string data, const int index)
-{
-	return extractTypeID(data, index);
 }
 
 /**
@@ -203,1162 +318,440 @@ AixSymbolTableParser::extractTypeDefID(const string data, const int index)
  *
  * @param data: string that needs to be parsed for typeID EX: (T|t) INTEGER
  *
- * @return typeID as double
+ * @return typeID as int
  */
-double
-AixSymbolTableParser::extractTypeID(const string data, const int index)
+int
+extractTypeID(const string data, const int index)
 {
 	stringstream ss;
-	double ret = 0;
+	int ret = 0;
 	ss << data.substr(index);
 	ss >> ret;
 	return ret;
 }
 
 /**
- * Looks for entry with the insertionKey
- *
- * @param[in] insertionKey: insertion key of the item to be looked up
- *
- * @return iterator pointing to the entry or parsedData.end() if entry is not found
- */
-data_map::iterator
-AixSymbolTableParser::findEntry(const double insertionKey)
-{
-	return parsedData.find(insertionKey);
-}
-
-/**
- * Generates typeID for a child based on it's parent ID and child offset
- *
- * @param[in] parentID   : ID of the parent
- * @param[in] childOffset: index number of the child, EX: if this is the first child it will be 1
- *
- * @return typeID for the child as double of format parentID.childOffset
- */
-double
-AixSymbolTableParser::generateChildTypeID(const double parentID, const double childOffset)
-{
-	return parentID + shiftDecimal(childOffset);
-}
-
-/**
- * Generates insertion key by offseting the typID by that of the parent
- *
- * @param[in] parentID: ID of the parent
- * @param[in] typeID  : ID of the item we need to compute a insertion key for
- *
- * @return insertion key as double
- */
-double
-AixSymbolTableParser::generateInsertionKey(const double parentID, const double typeID)
-{
-	return (parentID != 0 && typeID != 0) ? (parentID + typeID) : 0;
-}
-
-/**
- * Maps the integer typeID to the corresponding string description for integer typeID passed in the argument
- *
- * @param[in] typeID: ID for which string description is required. SHOULD BE NEGATIVE
- *
- * @return string description from built_type_descriptors array
- */
-string
-AixSymbolTableParser::getBuiltInTypeDesc(const int typeID)
- {
-	string ret = "";
-
-	if (29 > -typeID) {
-		if (20 >= -typeID) {
-			ret = built_type_descriptors[-typeID - 1];
-		} else {
-			ret = built_type_descriptors[-typeID - 1 - 4];
-		}
-	}
-
-	return ret;
- }
-
-/**
- * Maps the typeID to it's size
- *
- * @param[in] ID: typeID to retrieve size for. SHOULD BE NEGATIVE
- *
- * @return corresponding size to the typeID, as int
- */
-int
-AixSymbolTableParser::getBuiltInTypeSize(const int typeID)
-{
-	int ret = 0;
-
-	if (29 > -typeID) {
-		if (20 >= -typeID) {
-			ret = built_type_descriptors_size[-typeID - 1];
-		} else {
-			ret = built_type_descriptors_size[-typeID - 1 - 4];
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Writes key of the next file in the map to fileID
- *
- * @param[out] fileID: key of the next file in the map
- *
- * @return DDR_RC_OK if not at the end of the _fileList, DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::getNextFile(double *fileID)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-
-	if (_fileCounter < _fileList.size()) {
-		*fileID = _fileList[_fileCounter];
-		_fileCounter += 1;
-		ret = DDR_RC_OK;
-	}
-
-	return ret;
-}
-
-/**
- * Concatenates the declaration file ID and name. The reason this function was
- * created is in case someone wanted to change the format of declaration file
- * it will be easier to just modify this function instead of modifying every
- * assignment to declFile
- *
- * @param[in] insertionKey: insertion key of the file
- *
- * @return returns insertion key of the file
- */
-double
-AixSymbolTableParser::getDeclFile(const double insertionKey)
-{
-	/* OLD FORMAT
-	 * toString(insertionKey) + "--" + getEntryName(insertionKey)
-	 */
-	return insertionKey;
-}
-
-/**
- * Gets the name of the entry with the insertion key passed as argument
- *
- * @param[in] insertionKey: insertion key for the entry in question
- *
- * @returns name of the entry as string
- */
-string
-AixSymbolTableParser::getEntryName(const double insertionKey)
-{
-	return (findEntry(insertionKey))->second.name;
-}
-
-/**
- * Uses regex expressions to match the declaration type of the data string.
- *
- * @param[in] data: the string to be parsed.
- *
- * @return Type of declaration and writes out the name, type and member information to match_results
- * 			The declaration type can be of type def, constant, structure, union, class, enum or label
- */
-string
-AixSymbolTableParser::getInfoType(const string data, info_type_results *matchResults)
-{
-	string ret = DECLARATION_TYPES[0];
-	if (!data.empty()) {
-
-		/*								TYPE_DEF
-		 * - INTEGER
-		 * - c TYPE_ID; ...................................................... < Complex type TYPE_ID
-		 * - d TYPE_ID ....................................................... < File of type TYPE_ID
-		 * - e EnumSpec; ..................................................... < Enumerated type (default size, 32 bits)
-		 * - g TYPE_ID; #NUM_BITS ............................................ < Floating-point type of size NumBits
-		 * - D TYPE_ID; #NUM_BITS ............................................ < Decimal floating-point type of size NumBits
-		 * - k TYPE_ID ....................................................... < C++ constatnt type
-		 * - m OPT_VBASE_SPEC OPT_MULTI_BASE_SPEC TYPE_ID : TYPE_ID : TYPE_ID; < C++ pointer to member type; first INTEGER is member type; second INTEGER class type
-		 * - w TYPE_ID ....................................................... < Wide character
-		 * - M TYPE_ID; # BOUND .............................................. < Multiple instnace type of TYPE_ID with lengh indicated by BOUND (maybe needed)
-		 * - * TYPE_ID ....................................................... < Pointer of type TYPE_ID
-		 * - & TYPE_ID ....................................................... < C++ reference type
-		 * - V TYPE_ID ....................................................... < C++ volatile type
-		 * - Z ............................................................... < C++ ellipses parameter type (ignore)
-		 *								Array Descriptions
-		 * - a TYPE_ID; # TYPE_ID ............................................ < Array; First TypeID is index type
-		 * - 	(INTEGER | c | d | e | g | D | k | m | w | M | \* | \& | V | Z | f | a )
-		 *								Misc
-		 * - f ............................................................... < function return type
-		 */
-		regex typeDefExpression ("(^):t"+INTEGER+"="+"(c|d|e|g|D|k|m|w|M|\\*|\\&|V|Z|f|a)?(.*)");
-
-		/* Constant
-		 *	NAME : CLASS
-		 *			c = CONSTANTS
-		 *				- b ORD_VALUE
-		 *				- c ORD_VALUE
-		 *				- i INTEGER
-		 *				- r REAL
-		 *				- s STRING
-		 *				- C REAL, REAL
-		 *				- S TYPE_ID, NUM_ELEMENTS, NUM_BITS, BIT_PATTERN
-		 */
-		regex constantExpression ("(^)"+NAME+":c="+"(b|c|i|r|s|C|S)?;(.*)");
-
-		regex structureExpression ("=s"+NUM_BYTES);
-
-		regex unionExpression ("=u"+NUM_BYTES);
-		regex classExpression ("=Y"+NUM_BYTES+"(?:"+CLASS_KEY+")+(.*)(\\()");
-		regex enumExpression ("=e"+INTEGER);
-		regex labelExpression ("(^)"+NAME+":t(-)?[0-9]+="+INTEGER+"($)");
-
-		smatch m;
-
-		/* Useful information:
-		 * - TYPE_DEF:
-		 *		- EX: :t INTEGER = (TYPE_DEF) INTEGER
-		 *			Name   : :t INTEGER
-		 *			Type   : (TYPE_DEF) INTEGER
-		 *			Members: none
-		 * - TYPE_CONSTANT
-		 *			Name   : NAME : c
-		 *			Type   : CONSTANT (attributes)
-		 *			Members: none
-		 * - TYPE_STRUCTURE
-		 *			Name   : NAME : t INTEGER
-		 *			Type   : s NUM_BYTES
-		 *			Members: NAME : TYPE_ID, BIT_OFFSET, NUM_BITS;NAME : TYPE_ID, BIT_OFFSET, NUM_BITS;
-		 * - TYPE_UNION
-		 *			Name   : NAME : t INTEGER
-		 *			Type   : u NUM_BYTES
-		 *			Members: NAME : TYPE_ID, BIT_OFFSET, NUM_BITS
-		 * - TYPE_CLASS
-		 *			Name   : NAME : T INTEGER
-		 *			Type   : Y NUM_BYTES CLASS_KEY (.*)
-		 *			Members: members
-		 * - TYPE_ENUM
-		 *			Name   : NAME : t INTEGER
-		 *			Type   : e INTEGER
-		 *			Members: members
-		 * - TYPE_LABEL
-		 *			Name   : NAME : t INTEGER
-		 *			Type   : (TYPE_DEF) INTEGER
-		 *			Members: none
-		 */
-
-		if (regex_search(data, m, typeDefExpression)) {
-
-			ret = DECLARATION_TYPES[1]; /* type Def */
-
-			str_vect tmp = split(data,'=');
-			matchResults->name = tmp[0];
-			matchResults->type = tmp[1];
-
-		} else if (regex_search(data, m, constantExpression)) {
-
-			ret = DECLARATION_TYPES[2]; /* constant */
-
-			str_vect tmp = split(data,'=');
-			matchResults->name = tmp[0];
-			matchResults->type = tmp[1];
-
-		} else if (regex_search(data, m, structureExpression)) {
-
-			ret = DECLARATION_TYPES[3]; /* structure */
-
-			matchResults->name = m.prefix();
-			matchResults->type = m[0];
-			matchResults->members = m.suffix();
-
-			matchResults->type = stripLeading(matchResults->type, '=');
-			matchResults->members = striptrailing(matchResults->members, ';');
-
-		} else if (regex_search(data, m, unionExpression)) {
-
-			ret = DECLARATION_TYPES[4]; /* union */
-
-			matchResults->name = m.prefix();
-			matchResults->type = m[0];
-			matchResults->members = m.suffix();
-
-			matchResults->type = stripLeading(matchResults->type, '=');
-			matchResults->members = striptrailing(matchResults->members, ';');
-
-		} else if (regex_search(data, m, classExpression)) {
-
-			ret = DECLARATION_TYPES[5]; /* class */
-
-			matchResults->name = m.prefix();
-			matchResults->type = m[0];
-			matchResults->members = m.suffix();
-
-			matchResults->type = stripLeading(matchResults->type, '=');
-			matchResults->type = striptrailing(matchResults->type, '(');
-			matchResults->members = striptrailing(matchResults->members, ';');
-
-		} else if (regex_search(data, m, enumExpression)) {
-
-			ret = DECLARATION_TYPES[6]; /* enum */
-
-			matchResults->name = m.prefix();
-			matchResults->type = m[0];
-			matchResults->members = m.suffix();
-
-			matchResults->type = stripLeading(matchResults->type, '=');
-			matchResults->members = stripLeading(matchResults->members, ':');
-			matchResults->members = striptrailing(matchResults->members, ';');
-
-		} else if (regex_search(data, m, labelExpression)) {
-
-			ret = DECLARATION_TYPES[7]; /* label */
-
-			str_vect tmp = split(data,'=');
-
-			matchResults->name = tmp[0];
-			matchResults->type = tmp[1];
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Uses the first index of the argument data to check if it is static,
- * virtual table pointer, virtual base pointer, or virtual base self pointer.
- *
- * @param[in] data: data member attribute string. Input is string, with MemberAttr
- * 					spec at the start, index 0.
- *
- * @return string representation of the attribute option
- */
-string
-AixSymbolTableParser::getMemberAttrsType(const string data)
-{
-	string ret = MEMBER_ATTRS[0];
-
-	if (!data.empty()) {
-		switch (data[0]){
-		case 's':
-			ret = MEMBER_ATTRS[1]; /* isStatic */
-			break;
-		case 'p':
-			ret = MEMBER_ATTRS[2]; /* isVtblPtr */
-			break;
-		case 'b':
-			ret = MEMBER_ATTRS[3]; /* vbase_pointer */
-			break;
-		case 'r':
-			ret = MEMBER_ATTRS[4]; /* vbase_self-pointer */
-			break;
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Checks if the declaration is for a built in type EX: int, uint ...
- *
- * @param[in]  data: string that need to be checked if it is built in or not
- * @param[out] ID  : pointer to the output variable
- *
- * @return boolean indicating if the declaration is for built in types
- * 			and the typeID of the declaration as int
- */
-bool
-AixSymbolTableParser::isBuiltIn(const string data, double *ID)
-{
-	bool ret = FALSE;
-
-	regex expression ("(-)[0-9]+"); /* MUST HAVE THE NEGATIVE SIGN */
-	smatch m;
-
-	if (regex_search(data, m, expression)) {
-		string raw_typeID(m[0]);
-		*ID = extractTypeDefID(raw_typeID, (string (m[0])).find_first_of('-')); /* Retains the "-" */
-		ret = TRUE;
-	} else {
-		*ID = 0;
-		ret = FALSE;
-	}
-
-	return ret;
-}
-
-/**
- * Checks if the ID is that of a built in type
- *
- * @param[in] ID: id as integer EX: -3 < would return true
- *
- * @return TRUE if the arguemt is of type builtin (less than 0) and FALSE otherwise
- */
-bool
-AixSymbolTableParser::isBuiltIn(const int ID)
-{
-	return 0 > ID;
-}
-
-/**
  * Checks the first index of the field declaration string for compiler generated tag, GenSpec.
- *	Possible valid formats, that could potentially return TRUE are:
+ *	Possible valid formats, that could potentially return true are:
  *		GenSpec AccessSpec AnonSpec DataMember
  *		GenSpec VirtualSpec AccessSpec OptVirtualFuncIndex MemberFunction
  *
- * @param[in] data: EX: cup5__vfp:__vfp:23,0,32;uN222;uN223;vu1[di:__dt__Q3_3std7_LFS_ON10ctype_baseFv:2;; << This would return TRUE
+ * @param[in] data: EX: cup5__vfp:__vfp:23,0,32;uN222;uN223;vu1[di:__dt__Q3_3std7_LFS_ON10ctype_baseFv:2;; << This would return true
  *
  * @return boolean value indicating if the declaration is compiler generated or not
  */
 bool
-AixSymbolTableParser::isCompilerGenerated(const string data)
+isCompilerGenerated(const string data)
 {
-	return data.empty() ? FALSE : ('c' == data[0]);
+	return data.empty() ? false : ('c' == data[0]);
 }
-
 /**
- * Checks if the class is being passed by value i.e. if there is a "OptPBV"
- * option in the declaration string. This option will be there for C++ class type,
- * Y NumBytes ClassKey OptPBV OptBaseSpecList.
- *
- * @param[in] data: Should be of format Y[\d]+(c|s|u)(V) EX: Y4cV( << This will return TRUE
- *
- * @return boolean value indicating whether the class is passed by value or not
+ * Parses data passed in as an array declaration
+ * param[in] data: the data to be parsed, should be in the format ar(INDEX_ID);(LOWER_BOUND);(UPPER_BOUND);(ARRAY_TYPE)
+ * param[out] currentDie: the DIE to populate with the parsed data.
  */
-bool
-AixSymbolTableParser::isPassedByValue(const string data)
+static int
+parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 {
-	bool ret = FALSE;
+	int ret = DW_DLV_OK;
+	if (2 <= data.length()) {
+		if ("ar" == data.substr(0, 2)) {
+			str_vect arrayInfo = split(data, ';');
+			/*
+			 * arrayInfo will be in the form: ar(INDEX_ID);(LOWER_BOUND);(UPPER_BOUND);(ARRAY_TYPE)
+			 * arrayInfo[0] : ar + subrange type
+			 * arrayInfo[1] : lower bound
+			 * arrayInfo[2] : upper bound
+			 * arrayInfo[3] : array type
+			 */
+			/* Populate array */
+			Dwarf_Attribute type = new Dwarf_Attribute_s();
 
-	if (!data.empty()) {
-		int found = data.find("V");
-		ret = string::npos != found;
-	}
+			/* Create a DIE to hold info about the subrange type */
+			Dwarf_Die newDie = new Dwarf_Die_s();
+			Dwarf_Attribute subrangeType = new Dwarf_Attribute_s();
+			Dwarf_Attribute subrangeUpperBound = new Dwarf_Attribute_s();
+			if ((NULL == type) || (NULL == newDie) || (NULL == subrangeType) || (NULL == subrangeUpperBound)) {
+				ret = DW_DLV_ERROR;
+				setError(error, DW_DLE_MAF);
+			} else {
+				type->_type = DW_AT_type;
+				type->_form = DW_FORM_ref1;
+				type->_nextAttr = NULL;
+				int ID = toInt(arrayInfo[3]);
+				type->_udata = 0;
+				type->_refdata = 0;
+				type->_ref = NULL;
 
-	return ret;
-}
+				/* Add it to the list of attributes to populate */
+				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
+				currentDie->_attribute = type;
+				newDie->_tag = DW_TAG_subrange_type;
+				newDie->_parent = currentDie;
+				newDie->_sibling = NULL;
+				newDie->_previous = NULL;
+				newDie->_child = NULL;
+				newDie->_context = Dwarf_CU_Context::_currentCU;
 
-/**
- * Inserts the object passed in the second argument to the global parsedData map.
- *
- * @param[in] insetionKey: insertion key for the object
- * @param[in] object	 : object to be inserted
- *
- * @return: DDR_RC_OK on success and DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::insertEntry(const double insetionKey, const Info object)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-	pair<data_map_itt, bool> result;
-	/* Insert function returns an iterator to the entry that was inserted and
-	 * a boolean value indicating if the insertion was successful or not
-	 */
-	result = parsedData.insert(make_pair<double,Info>((double)insetionKey, (Info)object));
+				/* subrangeType is of the type sizetype, which is a built-in type (-37)*/
+				subrangeType->_type = DW_AT_type;
+				subrangeType->_nextAttr = subrangeUpperBound;
+				subrangeType->_form = DW_FORM_ref1;
+				subrangeType->_udata = 0;
+				subrangeType->_refdata = 0;
+				subrangeType->_ref = NULL;
 
-	if (result.second) {
-		ret = DDR_RC_OK;
-	}
+				/* Add subrangeType to the list of refs to populate in a second pass */
+				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)-37, (Dwarf_Attribute)subrangeType));
 
-	return ret;
-}
-
-/**
- * Creates a info object for the file and inserts it in the map
- *
- * @param[in] fileName: name of the file that needs to be inserted in the map
- * @param[in] fileID  : Id of the file that needs to be inserted in the map
- *
- * @return DDR_RC_OK if the insert was successful and DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::insertFileEntry(const string fileName, const double fileID)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-
-	if ((0 < fileID)
-		&& (!fileName.empty())
-		) {
-		Info *tmp = new Info();
-
-		tmp->name = fileName;
-		tmp->typeID.ID = fileID;
-		tmp->typeID.tag = "file";
-		tmp->size.sizeType = SIZE_TYPES[4]; /* num_elements */
-
-		ret = insertEntry(fileID, *tmp);
-	}
-
-	return ret;
-}
-
-/**
- * This is mainly for error checks. It tags any unwanted declaration as "Rejected"
- * and inserts them in the map. It tags them as "_!!REJECTED!!" if the declaration
- * was already in the map and "_REJECTED" otherwise.
- *
- * @param[in] insertionKey: insertion ID of the object that needs to be marked rejected
- * @param[in] object	  : rejected object that needs to inserted in the map
- *
- * @return DDR_RC_OK on success and DDR_RC_ERROR on error
- */
-DDR_RC
-AixSymbolTableParser::insertRejectedEntry(const double insertionKey, Info *object)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-
-	data_map::iterator existing_entry = findEntry(insertionKey);
-
-	if (parsedData.end() != existing_entry) { /* Key already exists in the map */
-		object->name += "_!!REJECTED!!";
-		updateEntry(existing_entry, *object, TRUE);
+				subrangeUpperBound->_type = DW_AT_upper_bound;
+				subrangeUpperBound->_nextAttr = NULL;
+				subrangeUpperBound->_form = DW_FORM_udata;
+				subrangeUpperBound->_udata = toInt(arrayInfo[2]);
+				subrangeUpperBound->_sdata = 0;
+				subrangeUpperBound->_refdata = 0;
+				subrangeUpperBound->_ref = NULL;
+				newDie->_attribute = subrangeType;
+				currentDie->_child = newDie;
+			}
+		} else {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_IA);
+		}
 	} else {
-		object->name += "_REJECTED";
-		insertEntry(insertionKey, *object);
-		ret = DDR_RC_OK;
-	}
-
-	return ret;
-}
-
-/**
- * Checks if the type for which ID is passed is signed or not.
- * Returns 1 = Signed, 0 = Unsigned, 2 = Unspecified.
- *
- * @param[in] ID: ID to be matched agains the built in types EX: -1
- *
- * @return integer value indicating if the passed ID is signed or not.
- */
-int
-AixSymbolTableParser::isSigned(const int ID)
-{
-	int ret = 2;
-	switch (ID) {
-	case -1:
-	case -3:
-	case -4:
-	case -6:
-	case -15:
-	case -27:
-	case -28:
-	case -29:
-	case -31:
-	case -34:
-		ret = 1; break; /* Signed */
-	case -5:
-	case -7:
-	case -8:
-	case -9:
-	case -10:
-	case -17:
-	case -20:
-	case -32:
-	case -33:
-		ret = 0; break; /* Unsigned */
-	case -12:
-	case -13:
-	case -14:
-	case -16:
-	case -18:
-	case -25:
-	case -26:
-	case -30:
-		ret = 2; break; /* Documentation doesn't specify */
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_IA);
 	}
 	return ret;
 }
-
 /**
- * Checks if the declaration string passed in is that of a valid data member.
- * If it is valid, it writes out the parsed info to dataMember.
- *
- * @param[in]  data	   : string should of format, "GenSpec AccessSpec AnonSpec DataMember"
- * @param[out] data_member: Object to store the parsed info in
- *
- * @return TRUE if it is a valid data member and FALSE otherwise
+ * Parses the data passed in and populates a DIE as a base type
+ * param[in] data: the data to be parsed, it should consist of the following characters only: "1234567890-"
+ * param[out] currentDie: the DIE to populate with the parsed data.
  */
-bool
-AixSymbolTableParser::isValidDataMember(const string data, Info *dataMember)
+static int
+parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 {
-	bool ret = FALSE;
+	int ret = DW_DLV_OK;
+	int index = toInt(data) * -1;
 
-	/* GenSpec AccessSpec AnonSpec DataMember
-	 *	c?		(i|u|o){1}	a?		( (s?) | (p INTEGER{1} NAME)? | (b|r)? ) : Field;
-	 *	c? << SHOULDN'T BE PICKING UP ANYTHING WITH THIS ON
-	 *			(i|u|o){1}
-	 *						a?
-	 *								(s?)
-	 *								|(p INTEGER{1} NAME)?
-	 *								|(b|r)?
-	 *														: NAME
-	 *																: [\d]+ , [\d]+ , [\d];
-	 */
-	regex expression ("^"+ACCESS_SPEC+"{1}a?((s?)|(p"+INTEGER+NAME+")?|(b|r)?):"+NAME+":"+INTEGER+","+BIT_OFFSET+","+NUM_BITS+"$");
-	smatch m;
-
-	/* Steps:
-	 *	1. Get GenSpec, AccessSpec and AnonSpec
-	 *		- data.substr(0,indexOfFirstColon)
-	 *	2. If the data member is not compiler generated use isValidField to
-	 *	   parse the data member name, typeID, bit offset and size
-	 */
-	if (regex_search(data, m, expression)) {
-		int indexOfFirstColon = data.find_first_of(':');
-		string attributes = data.substr(0, indexOfFirstColon);
-		int index = 0; /* used to the next character index to check in the string */
-
-		if ('c' != attributes[index]) { /* Proceed if the data member is not generated by compiler */
-			options_vect memberOptions;
-			memberOptions.push_back(*(makeOptionInfoPair("accessibility", ATTR_VALUE, extractAccessSpec(attributes),0)));
-			index+=1; /* next we'll look at index 1 to check for anon spec */
-			if ('a' == attributes[index]) {
-				memberOptions.push_back(*(makeOptionInfoPair("anon_spec", ATTR_VALUE, "anonymous",0)));
-				index+=1; /* if anon spec found the member attrs will start from index 2 */
-			}
-
-			string member_attr_type(getMemberAttrsType(attributes.substr(index)));
-			if (MEMBER_ATTRS[0] != member_attr_type) {
-				memberOptions.push_back(*(makeOptionInfoPair ("member_attr", ATTR_VALUE, member_attr_type,0)));
-				if ("isVtblPtr" == member_attr_type) { /* get pointer integer and name */
-					parseVtblPointerInfo(member_attr_type, &memberOptions);
-				}
-			}
-			dataMember->options = memberOptions;
-			ret = isValidField(data.substr(indexOfFirstColon + 1), dataMember);
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Checks if the data string passed in is of valid field format. If it is
- * parses out all the needed info and populates appropriate fields with it in field
- *
- * @param[in]  data	: should be of format "NAME : TYPE_ID, BIT_OFFSET, NUM_BITS"
- * @param[in]  parentID: type id of the parent
- * @param[in]  fieldID : id of the field (in most cases counter representing the number of fields before it plus 1)
- * @param[out] field   : object to write in the parsed info regarding the field
- *
- * @return TRUE if it is a valid field and FALSE otherwise
- */
-bool
-AixSymbolTableParser::isValidField(const string data, Info *field)
-{
-	regex expression (NAME+":"+INTEGER+","+BIT_OFFSET+","+NUM_BITS);
-	smatch m;
-	bool ret = FALSE;
-
-	/* Steps:
-	 *	1. Split data on ":"
-	 *		- Split vector [0]
-	 *			- Name of the field
-	 *		- Split vector [1]
-	 *			- Split on ","
-	 *				- Split vector [0]
-	 *					- field type
-	 *				- Split vector [1]
-	 *					- bit offset
-	 *				- Split vector [2]
-	 *					- size of the field
-	 */
-	if (regex_search(data, m, expression)) {
-
-		str_vect field_info = split(data, ':'); /* Sample: numElements:-1,0,32 */
-		field->name = field_info[0];
-		str_vect field_attrs = split(field_info[1], ',');
-
-		field->typeID.tag = "field";
-		field->typeID.isChild = 1;
-
-		if (!isBuiltIn(field_attrs[0], &(field->typeDef.typeID))) {
-			/* getTypeID by default extracts ID starting from index 1, however,
-			 * in this case since there's no prefix we want to start from index 0
-			 */
-			field->typeDef.typeID =  extractTypeID(field_attrs[0], 0);
+	/* Populate the die according to the base type specified */
+	if (!BUILT_IN_TYPES[index].empty()) {
+	Dwarf_Attribute name = new Dwarf_Attribute_s();
+	Dwarf_Attribute size = new Dwarf_Attribute_s();
+		if ((NULL == name) || (NULL == size)) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_MAF);
 		} else {
-			field->typeDef.isBuiltIn = TRUE;
-			field->typeDef.isSigned = isSigned(field->typeDef.typeID);
+			name->_type = DW_AT_name;
+			name->_nextAttr = size;
+			name->_form = DW_FORM_string;
+			name->_sdata = 0;
+			name->_udata = 0;
+			name->_stringdata = strdup(BUILT_IN_TYPES[index].c_str());
+			name->_refdata = 0;
+			name->_ref = NULL;
+
+			size->_type = DW_AT_byte_size;
+			size->_nextAttr = NULL;
+			size->_form = DW_FORM_udata;
+
+			/* Divide size in bits by 8bits/byte to get size in bytes */
+			size->_sdata = 0;
+			size->_udata = BUILT_IN_TYPE_SIZES[index] / 8;
+			size->_refdata = 0;
+			size->_ref = NULL;
+
+			currentDie->_attribute = name;
 		}
-
-		field->size.sizeValue = toSize(field_attrs[2]);
-		field->size.sizeType = SIZE_TYPES[1];
-
-		options_vect field_options;
-		field_options.push_back(*(makeOptionInfoPair("bit_offset", NUMERIC, "", toDouble(field_attrs[1]))));
-
-		/* In order to prevent overwriting any existing data, we use end range insertion.
-		 * This will ensure that new data is always inserted at the end of the vector.
-		 */
-		field->options.insert(field->options.end(), field_options.begin(), field_options.end());
-		field->rawData = data;
-
-		ret = TRUE;
+	} else {
+		/* It is a redundant built-in type, so we create a typedef instead */
+		string builtInType = "0";
+		switch (index) {
+		case 6:
+		case 27:
+			builtInType = "-2";
+			break;
+		case 9:
+			builtInType = "-8";
+			break;
+		case 15:
+		case 29:
+			builtInType = "-1";
+			break;
+		case 17:
+			builtInType = "-12";
+			break;
+		case 18:
+			builtInType = "-13";
+			break;
+		case 20:
+			builtInType = "-5";
+			break;
+		case 28:
+			builtInType = "-3";
+			break;
+		case 30:
+			builtInType = "-7";
+			break;
+		case 33:
+			builtInType = "-32";
+			break;
+		case 34:
+			builtInType = "-31";
+			break;
+		}
+		ret = parseTypeDef(builtInType, BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[index], currentDie, error);
 	}
-
 	return ret;
 }
-
-/**
- * Checks if the data string passed in is of valid friend class format. If it is
- * parses out all the needed info and populates appropriate fields with it in friendClass
- *
- * @param[in]  data	   : should be of format "AnonSpec FriendClass"
- * @param[out] friendClass: object to write in the parsed info regarding the friend class
- *
- * @return TRUE if it is a valid friend class and FALSE otherwise
- */
-bool
-AixSymbolTableParser::isValidFriendClass(const string data, Info *friendClass)
-{
-	bool ret = FALSE;
-
-	/* AnonSpec FriendClass#
-	 * a?	   \\( TYPE_ID;
-	 *
-	 *	a?
-	 * 		\\(
-	 *			TYPE_ID;
-	 */
-	regex expression("a?\\("+NON_NEG_INTEGER);
-	smatch m;
-
-	/*Steps:
-	 *	1. Split on "("
-	 *		- Split vector [0]
-	 * 			- Anon Spec
-	 *		- Split vector [1]
-	 *			- ID of the member
-	 */
-	if (regex_search(data, m, expression)) {
-		str_vect tmp = split(data, '(');
-
-		if ('a' == (tmp[0])[0]) {
-			friendClass->options.push_back(*(makeOptionInfoPair("anon_spec", ATTR_VALUE, "anonymous",0)));
-		}
-
-		friendClass->typeID.tag = "friend_class_field";
-		friendClass->typeID.isChild = 1;
-		friendClass->typeDef.typeID =  extractTypeID(tmp[1],0);
-
-		ret = TRUE;
-	}
-
-	return ret;
-}
-
-/**
- * Checks if the data string passed in is of valid nested class format.
- * If it is, writes out the parsed info to nestedClass.
- *
- * @param[in]  data	   : should be of format, "AccessSpec AnonSpec NestedClass"
- * @param[out] nestedClass: object to write in the parsed info regarding the nested class
- *
- * @return TRUE if it is a valid nested class and FALSE otherwise
- */
-bool
-AixSymbolTableParser::isValidNestedClass(const string data, Info *nestedClass)
-{
-	bool ret = FALSE;
-
-	/* AccessSpec AnonSpec NestedClass#
-	 * (i|u|o){1}   a?	   NTYPE_ID  ;
-	 *
-	 * (i|u|o){1}
-	 * 				a?
-	 * 						N
-	 * 							TYPE_ID
-	 */
-	regex expression (ACCESS_SPEC+"{1}"+ANON_SPEC+"?N"+INTEGER+"$");
-	/*Steps:
-	 *	1. Check index 0 for access spec, call extractAccessSpec()
-	 *	2. Check index 1 for anon spec
-	 *	3. Get typeID, call getTypeID
-	 *		- if there is a anonSpec we'll need to extract string starting from index 2
-	 *		- else extract string
-	 */
-	smatch m;
-	int next_index = 1;
-
-	if (regex_search(data, m, expression)) {
-		nestedClass->options.push_back(*(makeOptionInfoPair("accessibility", ATTR_VALUE, extractAccessSpec(data),0)));
-
-		if ('a' == data[next_index]) {
-			nestedClass->options.push_back(*(makeOptionInfoPair("anon_spec", ATTR_VALUE, "anonymous",0)));
-			next_index++;
-		}
-
-		nestedClass->typeDef.typeID = extractTypeID(data.substr(next_index));
-		nestedClass->typeID.tag = "nested_class_field";
-		nestedClass->typeID.isChild = 1;
-
-		ret = TRUE;
-	}
-
-	return ret;
-}
-
-/**
- * Creates an object of type option_info using the arguments and
- * returns it.
- *
- * @param[in] nameValue	 : name of the option you want to add
- * @param[in] typeValue	 : type of the value the option will have, ID or attribute
- * @param[in] attributeValue: option value of type string
- * @param[in] idValue	   : option value of type int
- *
- * @return makeOptionInfoPair populated with data from the arguments
- */
-option_info*
-AixSymbolTableParser::makeOptionInfoPair (const string nameValue, const option_info_type typeValue,
-								 const string attributeValue, const int idValue)
-{
-	option_info *option = new option_info();
-
-	option->name = nameValue;
-	option->type = typeValue;
-
-	switch (typeValue) {
-	case NUMERIC:
-		option->ID = idValue;
-		break;
-	case ATTR_VALUE:
-		option->attrValue = attributeValue;
-		break;
-	default:
-		option->attrValue = "NOTHING";
-		break;
-	}
-
-	return option;
-}
-
-
-/**
- * Parses the intput data as array declaration. If the string is of valid
- * array declaration then writes the parsed information to arrayEntry. Only
- * picking up "a" at the moment.
- *
- * @param[in]  data	  : string containting array declaration
- * @param[out] arrayEntry: object to store the parsed info in
- *
- * @return DDR_RC_OK if data was a valid array declaration and DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::parseArray(const string data, Info *arrayEntry)
-{
-	/*						   Array Descriptions
-	 * - a TYPE_ID; # TYPE_ID ........ < Array; First TypeID is index type or of type ar INTEGER; INTEGER; INTEGER; INTEGER
-	 * - A TYPE_ID ................... < Open Array
-	 * - D INTEGER, TYPE_ID .......... < N-dimensional dynamic array of TypeID
-	 * - E INTEGER, TYPE_ID .......... < N-dimensional dynamic subarray of TypeID
-	 * - O INTEGER, TYPE_ID .......... < New open array
-	 * - P INTEGER; # TYPE_ID ........ < Packed array
-	 * -	 (a | A | D | E | O | P)
-	 */
-	DDR_RC ret = DDR_RC_OK;
-
-	regex expression ("a(r"+INTEGER+"(.*)|"+INTEGER+");"+INTEGER);
-	smatch m;
-
-	if (regex_search(data, m, expression)) {
-		arrayEntry->typeDef.type = AIX_TYPE_array;
-		arrayEntry->typeDef.typeID = extractTypeDefID(data, data.find_last_of(';') + 1); /* type of array will always be at the end, after the last ":" */
-		if (isBuiltIn(arrayEntry->typeDef.typeID)) {
-			arrayEntry->typeDef.isBuiltIn = TRUE;
-			arrayEntry->typeDef.isSigned = isSigned(arrayEntry->typeDef.typeID);
-		}
-
-		str_vect arrayInfo = split(data, ';');
-		/* arrayInfo (subrange):
-		 * - [0]: r[\d]+ subrange type EX: int, char ...
-		 * - [1]: [\d]+  lower bound
-		 * - [2]: [\d]+  upper bound
-		 */
-		if ('r' == data[1]) { /* index of subrage */
-			/* To get the subrange type we extract it starting from index 2
-			 * of the first index in arrayInfo vector because array
-			 * declaration with subrange will be of
-			 * arIndexID;lowerBound;UpperBound;ArrayType
-			 */
-			arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("subrange_type", NUMERIC, "", extractTypeDefID(arrayInfo[0],2))));
-
-			/* There are two types of bounds that we are concerned with, INTEGER and INDETERMINABLE */
-			ret = DDR_RC_OK; /* Set return to ok, it will be changed to ERROR if subrange format is not valid */
-			string boundType;
-			boundType = parseBound(arrayInfo[1]); /* Get bound type for lower bound */
-			if ("indeterminable" == boundType) {
-				arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("lower_bound", ATTR_VALUE, boundType, 0)));
-			} else if ("integer" == boundType) {
-				arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("lower_bound", NUMERIC, "", toInt(arrayInfo[1]))));
-			} else {
-				ret = DDR_RC_ERROR;
-			}
-
-			boundType = parseBound(arrayInfo[2]); /* Get bound type for upper bound */
-			if ("indeterminable" == boundType) {
-				arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("upper_bound", ATTR_VALUE, boundType, 0)));
-			} else if ("integer" == boundType) {
-				arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("upper_bound", NUMERIC, "", toInt(arrayInfo[2]))));
-			} else {
-				ret = DDR_RC_ERROR;
-			}
-		} else {
-			/* Array declaration is of type "aTYPEID;TYPEID"
-			 * in order to get the array index typeID we need
-			 * the first type ID. That will at index 0 in arrayInfo
-			 */
-			arrayEntry->typeDef.options.push_back(*(makeOptionInfoPair("index_type", NUMERIC, "", extractTypeDefID(arrayInfo[0]))));
-			ret = DDR_RC_OK;
-		}
-	}
-
-	return ret;
-}
-
-/**
- * Returns type of bound
- *
- * @param[in] data: bound declaration string
- *
- * @return bound type based on the data string
- */
-string
-AixSymbolTableParser::parseBound(const string data)
-{
-	string ret = "INVALID";
-
-	if ("J" == data) {
-		ret = "indeterminable";
-	} else if ('0' <= data[0] && '9' >= data[0]) {
-		ret = "integer";
-	}
-
-	return ret;
-}
-
-/**
- * Takes in string will information about the members and parses them into individual enteries
- *
- * @param[in] data		 : string to be parsed for class members
- * @param[in] classID	  : insertion key of the class
- * @param[in] fileID	   : ID (would be the insertion key) of the file the declaation is from
- * @param[out] classMembers: vector of type double, used to return insertion keys of the members
- *
- * @return vector of type double with insertion keys of the class members
- */
-DDR_RC
-AixSymbolTableParser::parseClassMembers(const string data, const double classID, const double fileID, double_vect *classMembers)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-
-	if (!data.empty() && 0 < classID && 0 < fileID) {
-
-		/* Steps
-		 * 1. Split vector on ";". This will seperate each member
-		 * 2. Check each seperated member agains valid data member
-		 *	, nested class and friend class syntax
-		 * 3. If it matches each of them, then get the typeID. Store
-		 *	the raw data and the declaration file
-		 */
-		str_vect preParsedMembers = split(data, ';');
-
-		double insertion_key;
-		int memberInsertionCounter = 1;
-
-		for (str_vect::iterator itt = preParsedMembers.begin(); itt != preParsedMembers.end(); ++itt) {
-			if (!(*itt).empty() && *itt != "\n") {
-
-				/* Checks:
-				 * 1. Is valid datamember
-				 * 2. Is valid nested class
-				 * 3. Is valid friend class
-				 */
-
-				Info *entry = new Info();
-
-				if (isValidDataMember(*itt, entry)) {
-
-					entry->typeID.ID = generateChildTypeID(classID, memberInsertionCounter);
-
-					entry->rawData = *itt;
-					entry->declFile = getDeclFile(fileID);
-
-					insertion_key = generateInsertionKey(fileID, entry->typeID.ID);
-					ret = insertEntry(insertion_key, *entry);
-
-				} else if (isValidNestedClass(*itt, entry)) {
-
-					entry->typeID.ID = generateChildTypeID(classID, memberInsertionCounter);
-
-					entry->rawData = *itt;
-					entry->declFile = getDeclFile(fileID);
-
-					insertion_key = generateInsertionKey(fileID, entry->typeID.ID);
-					ret = insertEntry(insertion_key, *entry);
-
-				} else if (isValidFriendClass(*itt, entry)) {
-
-					entry->typeID.ID = generateChildTypeID(classID, memberInsertionCounter);
-
-					entry->rawData = *itt;
-					entry->declFile = getDeclFile(fileID);
-
-					insertion_key = generateInsertionKey(fileID, entry->typeID.ID);
-					ret = insertEntry(insertion_key, *entry);
-				}
-
-				/* Insert the insertion key for the member into the member vector
-				 * if it was successfully inserted in the map
-				 * There's a check for insertion_key because insertion key varaiable
-				 * will be updated to a valid valie, fileID + SOMETHING, if the member
-				 * is one of the above 3 types and that's the only instance
-				 */
-				if (DDR_RC_OK == ret && fileID < insertion_key) {
-					classMembers->push_back(insertion_key);
-					memberInsertionCounter++;
-					/* Set the insertion_key to 0 to indicate that
-					 * the entry has been inserted
-					 */
-					insertion_key = 0;
-				}
-			}
-		}
-	}
-
-	return ret;
-}
-
 /*
- * Takes in string will information about the constant declarations and parses it
- *
- * @param[in]  data		  : string containing the declaration EX: b32
- * @param[out] constantEntry: the info object to which to write info to
- *
- * @return DDR_RC_OK if the data string was of correct format and DDR_RC_ERROR otherwise
+ * Parses the data passed in and populates a DIE as a constant/pointer/volatile/subroutine type (all of those types have the same structure)
+ * param[in] data: the data to be parsed, it should be of the form (*|k|V)(TYPE)
+ * param[out] currentDie: the DIE to populate with the parsed data.
  */
-DDR_RC
-AixSymbolTableParser::parseConstants(const string data, Info *constantEntry)
+static int
+parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 {
-	/* c = Constants ; < Generic declaration format
-	 *						  Constants
-	 * - b ORD_VALUE ..................................................... < Boolean constant
-	 * - c ORD_VALUE ..................................................... < Character constant
-	 * - i INTEGER ....................................................... < Integer constant
-	 * - r Real .......................................................... < Decimal or binary floating point constant
-	 * - s String ........................................................ < String constant
-	 * - C REAL, REAL .................................................... < Complex constant
-	 * - S TYPE_ID, NUM_ELEMENTS, NUM_BITS, BIT_PATTEREN ................. < Set constant
-	 */
+	int ret = DW_DLV_OK;
+	/* Give the DIE a type attribute */
+	Dwarf_Attribute type = new Dwarf_Attribute_s();
+	if (NULL == type) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_MAF);
+	} else {
+		type->_type = DW_AT_type;
+		type->_form = DW_FORM_ref1;
+		type->_nextAttr = NULL;
+		int ID = toInt(data.substr(1));
+		type->_udata = 0;
+		type->_refdata = 0;
+		type->_ref = NULL;
 
-	/* Steps:
-	 * 1. Store the type of constant in typeDef type
-	 * 2. Push other information related to the declaration to options
-	 *
-	 * NOTES: This function updates,
-	 *			- typeDef.type
-	 *			- typeDef.ID
-	 *			- typeDef.options
-	 *			- options
-	 */
-	DDR_RC ret = DDR_RC_ERROR;
-	str_vect constant_entry_info;
+		/* Add the attribute to the list of refs to be populated */
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 
-	switch (data[0]) {
-	case 'b':
-		constantEntry->typeDef.type = AIX_TYPE_boolean;
-		constantEntry->options.push_back(*(makeOptionInfoPair("ord_value", NUMERIC, "", toDouble(data.substr(1)))));
-		ret = DDR_RC_OK;
-		break;
-	case 'c':
-		constantEntry->typeDef.type = AIX_TYPE_character;
-		constantEntry->options.push_back(*(makeOptionInfoPair( "ord_value", NUMERIC, "", toDouble(data.substr(1)))));
-		ret = DDR_RC_OK;
-		break;
-	case 'i':
-		constantEntry->typeDef.type = AIX_TYPE_integer;
-		constantEntry->options.push_back(*(makeOptionInfoPair( "integer", NUMERIC, "", toDouble(data.substr(1)))));
-		ret = DDR_RC_OK;
-		break;
-	case 'r':
-		constantEntry->typeDef.type = AIX_TYPE_decimal;
-		constantEntry->options.push_back(*(makeOptionInfoPair("real", ATTR_VALUE, data.substr(1),0)));
-		ret = DDR_RC_OK;
-		break;
-	case 's':
-		constantEntry->typeDef.type = AIX_TYPE_string;
-		constantEntry->options.push_back(*(makeOptionInfoPair("string", ATTR_VALUE, data.substr(1),0)));
-		ret = DDR_RC_OK;
-		break;
-	case 'C':
-		constantEntry->typeDef.type = AIX_TYPE_complex;
-		constant_entry_info = split(data, ',');
-		constantEntry->options.push_back(*(makeOptionInfoPair("real", ATTR_VALUE, (constant_entry_info[0]).substr(1),0)));
-		constantEntry->options.push_back(*(makeOptionInfoPair("real", ATTR_VALUE, constant_entry_info[1],0)));
-		ret = DDR_RC_OK;
-		break;
-	case 'S':
-		constantEntry->typeDef.type = AIX_TYPE_set;
-		constant_entry_info = split(data, ',');
-		constantEntry->typeDef.typeID = extractTypeDefID(constant_entry_info[0]);
-		constantEntry->typeDef.options.push_back(*(makeOptionInfoPair("num_elements", NUMERIC, "", toInt(constant_entry_info[1]))));
-		constantEntry->typeDef.options.push_back(*(makeOptionInfoPair("num_bits", NUMERIC, "", toInt(constant_entry_info[2]))));
-		constantEntry->typeDef.options.push_back(*(makeOptionInfoPair("bit_pattern", NUMERIC, "", toInt(constant_entry_info[3]))));
-		ret = DDR_RC_OK;
-		break;
+		currentDie->_attribute = type;
 	}
-
 	return ret;
 }
 
 /**
- * Parses out members from the string, inserts them into the data map and
- * returns their insertion key
+ * Parses a line of data and returns the declaration type of the data string.
  *
- * @param[in]  data	 : the members to be parsed EX: test:-1,0,32;
- * @param[in]  parentID : typeID of the parent
- * @param[in]  fileID   : insertion key of the declaration file
- * @param[out] memberIDs: to retrun insertion keys of valid fields, if any
- *
- * @return DDR_RC_OK if the data string was of correct format and DDR_RC_ERROR otherwise
+ * @param[in]  data: the string to be parsed. data should be the portion of the declaration line after "debug     0    decl" and whitespace.
+ * @param[out] tag: the type of the declaration of the data string
+ * @param[out] typeID: the ID of the entity being declared
+ * @param[out] format: the format of the declaration being parsed (used for structures, unions and classes)
+ * @param[out] declarationData: members/type of the entity being declared
+ * @param[out] name: the name of the entity being declared
  */
-DDR_RC
-AixSymbolTableParser::parseFields(const string data, const double parentID, const double file_insertion_key, double_vect *memberIDs)
+static Dwarf_Half
+parseDeclarationLine(const string data,
+	int *typeID,
+	declFormat *format,
+	string *declarationData,
+	string *name)
 {
-	DDR_RC ret = DDR_RC_ERROR;
+	Dwarf_Half ret = DW_TAG_unknown;
 
-	if (!data.empty()) {
+	/* split the declaration into the name and the information about the declaration */
+	size_t indexOfFirstColon = data.find_first_of(':');
+	if (string::npos != indexOfFirstColon) {
+		*declarationData = stripLeading(data.substr(indexOfFirstColon), ':');
+		*name = data.substr(0, indexOfFirstColon);
 
-		regex expression (NAME+":"+INTEGER+","+BIT_OFFSET+","+NUM_BITS);
-		smatch m;
+		if ((0 == (*name).size()) && ('t' == (*declarationData).at(0))) {
+			/* Nameless typedef declaration */
+			str_vect tmp = split(*declarationData, '=');
+			*typeID = extractTypeID(tmp[0]);
+			string type = tmp[1];
 
-		/*Steps:
-		 * 1. Split on ";"
-		 * 2. Split vector [1]
-		 * 		- get the name
-		 * 3. Split vector [2]
-		 * 		- Split on ","
-		 *			- Split vector [0]
-		 *				- ID of the member
-		 *			- Split vector [1]
-		 *				- options attribute
-		 *			- Split vector [2]
-		 *				- size of the member
-		 */
+			/* Parse the data string to get the type of the expression */
+			switch (type[0]) {
+			case '-': /* Built-in type */
+				ret = DW_TAG_base_type;
+				break;
+			case 'k': /* Constant */
+				ret = DW_TAG_const_type;
+				break;
+			case '*': /* Pointer */
+				ret = DW_TAG_pointer_type;
+				break;
+			case 'V': /* Volatile */
+				ret = DW_TAG_volatile_type;
+				break;
+			case 'a': /* Array */
+				ret = DW_TAG_array_type;
+				break;
+			case 'f': /* Subprogram */
+				ret =  DW_TAG_subroutine_type;
+				break;
+			default:
+				ret = DW_TAG_unknown;
+				break;
+			}
+		} else if ('T' == (*declarationData).at(0)) {
+			size_t indexOfFirstEqualsSign = (*declarationData).find('=');
+			if (string::npos != indexOfFirstEqualsSign) {
+				*typeID = extractTypeID((*declarationData).substr(0, indexOfFirstEqualsSign));
+				string members = stripLeading((*declarationData).substr(indexOfFirstEqualsSign), '=');
+				if (string::npos != (*declarationData).find('(')) {
+					/* C++ type class/struct/union declaration */
+					size_t indexOfFirstParenthesis = members.find('(');
+					string sizeAndType = stripLeading(members.substr(0, indexOfFirstParenthesis), 'Y');
+					size_t indexOfFirstNonInteger = sizeAndType.find_first_not_of("1234567890");
+					members = stripLeading(members.substr(indexOfFirstParenthesis), '(');
+					*format = NEW_FORMAT;
+					/* Check if the declaration is for a class, structure or union */
+					if (0 == isCompilerGenerated(members)) {
+						switch(sizeAndType[indexOfFirstNonInteger]) {
+						case 'c':
+							ret = DW_TAG_class_type;
+							break;
+						case 's':
+							ret = DW_TAG_structure_type;
+							break;
+						case 'u':
+							ret = DW_TAG_union_type;
+							break;
+						default:
+							ret = DW_TAG_unknown;
+							break;
+						}
+					} else {
+						ret = DW_TAG_unknown;
+					}
+				} else if ('e' == members[0]) {
+					ret = DW_TAG_enumeration_type;
+				} else {
+					/* C type struct/union declaration */
+					*format = OLD_FORMAT;
+					if ('s' == members[0]) {
+						ret = DW_TAG_structure_type;
+					} else if ('u' == members[0]) {
+						ret = DW_TAG_union_type;
+					}
+				}
+			}
+		} else if ('t' == (*declarationData).at(0)) {
+			/* Typedef declaration */
+			ret = DW_TAG_typedef;
+			str_vect tmp = split(*declarationData, '=');
+			*typeID = extractTypeID(tmp[0]);
+		}
+	}
+	return ret;
+}
 
-		str_vect tmp = split(data, ';');
-		double insertion_key = 0;
+/**
+ * Takes in a declaration for an entity and creates a Dwarf DIE for it
+ * param[in] line: declaration for an entity. It should be the portion of a declaration line after "^\\[.*\\].*m.*debug.*decl\\s+"
+ */
+static int
+parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	int typeID = 0;
+	declFormat format = NO_FORMAT;
+	string declarationData;
+	string type;
+	string name;
+	string members;
 
-		for (int index = 1; index <= tmp.size(); index++) {
+	/* get the type of the data of the line being parsed */
+	Dwarf_Half tag = parseDeclarationLine(line, &typeID, &format, &declarationData, &name);
 
-			Info *field = new Info();
-			if (isValidField(tmp[index - 1], field)) {
+	/* Parse the line further based on the type of declaration */
+	if (DW_TAG_unknown != tag) {
+		Dwarf_Die newDie = NULL;
 
-				field->typeID.ID = generateChildTypeID(parentID, index);
-				insertion_key = generateInsertionKey(file_insertion_key, field->typeID.ID);
-				if (DDR_RC_OK == insertEntry(insertion_key, *field)) {
-					memberIDs->push_back(insertion_key); /* Field is valid, insert it's insertion key */
-					ret = DDR_RC_OK;
+		/* Search for the die in createdDies before creating a new one */
+		die_map::iterator existingDieEntry = createdDies.find(typeID);
+		if (createdDies.end() != existingDieEntry) {
+			newDie = existingDieEntry->second.second;
+		}
+
+		/* Create a new die, if it wasn't previously created */
+		if (NULL == newDie) {
+			newDie = new Dwarf_Die_s();
+			if (NULL == newDie) {
+				ret = DW_DLV_ERROR;
+				setError(error, DW_DLE_MAF);
+			} else {
+				newDie->_tag = tag;
+				newDie->_parent = Dwarf_CU_Context::_currentCU->_die;
+				newDie->_sibling = NULL;
+				newDie->_previous = NULL;
+				newDie->_child = NULL;
+				newDie->_context = Dwarf_CU_Context::_currentCU;
+				newDie->_attribute = NULL;
+
+				/* Insert the DIE into an unordered_map corresponding to current file being parsed, and insert that unordered_map into createdDies */
+				createdDies[typeID] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+
+				refNumber = refNumber + 1;
+
+				/* If the current CU die doesn't have a child, make the first new newDie the child */
+				if (NULL == Dwarf_CU_Context::_currentCU->_die->_child) {
+					Dwarf_CU_Context::_currentCU->_die->_child = newDie;
 				}
 
+				/* Set the last created die's sibling to be this die*/
+				if (NULL != _lastDie) {
+					_lastDie->_sibling = newDie;
+					newDie->_previous = _lastDie;
+				}
+				_lastDie = newDie;
+			}
+		}
+		if (NULL == newDie) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_MAF);
+		} else if (DW_TAG_unknown != tag) {
+			/* Do some preliminary parsing of the declarationData */
+			str_vect tmp = split(declarationData, '=');
+			type = tmp[1];
+			size_t indexOfFirstEqualsSign = declarationData.find('=');
+			if (string::npos != indexOfFirstEqualsSign) {
+				members = stripLeading(declarationData.substr(indexOfFirstEqualsSign), '=');
+			}
+
+			/* Populate the dies */
+			switch (tag) {
+			case DW_TAG_array_type:
+				ret = parseArray(type, newDie, error);
+				break;
+			case DW_TAG_base_type:
+				ret = parseBaseType(type, newDie, error);
+				break;
+			case DW_TAG_class_type:
+				ret = parseNewFormat(members, name, newDie, error);
+				break;
+			case DW_TAG_const_type:
+			case DW_TAG_pointer_type:
+			case DW_TAG_volatile_type:
+			case DW_TAG_subroutine_type:
+				ret = parseNamelessReference(type, newDie, error);
+				break;
+			case DW_TAG_enumeration_type:
+				ret = parseEnum(members, name, newDie, error);
+				break;
+			case DW_TAG_typedef:
+				/* Note: AIX label is the same as DWARF typedef */
+				ret = parseTypeDef(type, name, newDie, error);
+				break;
+			case DW_TAG_structure_type:
+			case DW_TAG_union_type:
+				if (OLD_FORMAT == format) {
+					ret = parseOldFormat(members, name, newDie, error);
+				} else if (NEW_FORMAT == format) {
+					ret = parseNewFormat(members, name, newDie, error);
+				}
+				break;
+			default:
+				/* No-op */
+				break;
 			}
 		}
 	}
@@ -1366,514 +759,967 @@ AixSymbolTableParser::parseFields(const string data, const double parentID, cons
 }
 
 /**
- * parseVtblPointerInfo
- *
- * @param[in]  data	   : EX: p32sample
- * @param[out] pointerInfo: options vector to return the parsed information
- *
- * @return DDR_RC_OK if the data string was of correct format and DDR_RC_ERROR otherwise
+ * Takes in and parses the AIX symbol table line-by-line, creating Dwarf DIEs and CU Contexts.
+ * param[in] line: A line read from AIX symbol table
  */
-DDR_RC
-AixSymbolTableParser::parseVtblPointerInfo(const string data, options_vect *pointerInfo)
+static int
+parseSymbolTable(const char *line, Dwarf_Error *error)
 {
-	DDR_RC ret = DDR_RC_ERROR;
+	int ret = DW_DLV_OK;
+	string data = line;
+	string validData = "";
+	string fileName = "";
 
-	if (!data.empty()) {
-		regex expression ("p"+INTEGER);
-		smatch m;
-
-		string tmp;
-
-		if (regex_search(data, m, expression)) {
-			/* - if the data string is of the correct format
-			 * the integer value will be followed by the name.
-			 * regex_search will places the integer in m[0]
-			 * we will need to strip out the first index, letter p
-			 * before we can extract the integer part.
-			 * - Name will be in m.suffix()
-			 */
-			tmp = m[0];
-			pointerInfo->push_back(*(makeOptionInfoPair("VtblPtr_INTEGER", NUMERIC,"",toDouble(tmp.substr(1)))));
-			pointerInfo->push_back(*(makeOptionInfoPair("VtblPtr_NAME", ATTR_VALUE,  m.suffix(), 0)));
-			ret = DDR_RC_OK;
-		}
-	}
-	return ret;
-}
-
-/**
- * Parses the enumerator Data and returns insertion ID for each valid enumerator
- *
- * @param[in]  enumeratorData: enumerator data to be parsed (EX: E1:2,E2:3,E3:4)
- * @param[in]  enumID		: typeID of the enum (NOT THE INSETION KEY)
- * @param[in]  fileID		: typeID of the file the enum was declared in (also the insertion key)
- * @param[out] enumeratorIDs : used to return insertion keys of valid enumerators
- *
- * @return DDR_RC_OK if the data string was of correct format and DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::parseEnumData(const string enumeratorData, const double enumID, const double fileID, double_vect *enumeratorIDs)
-{
-
-	DDR_RC ret = DDR_RC_ERROR;
-	if (!enumeratorData.empty() && 0 < enumID && 0 < fileID) {
-
-		str_vect enum_list = split(enumeratorData, ',');
-		str_vect tmp;
-
-		double enumeratorInsertionKey = 0;
-		/* We use indexCounter because the symbol table doesn't provide an
-		 * index to order the enumerators in.
-		 * Since, the enumerator insertion key will be of format enumID.indexCounter
-		 * we can't start from 0 because that will overlap with the enumID
-		 */
-		double indexCounter = 1;
-
-		/* Steps
-		 * 1. Split the enumeratorData string on ",". This will sepeate each enumerator.
-		 * 2. Iteratoring over each vector index, split the string on ":".
-		 *	  This will seperate the enumerator name and value.
-		 * 3. - Get the name from first(0th) index of the second split vector, tmp.
-		 *	- Use the indexCounter and enumID to generate child type ID.
-		 *	  - Set the typeID isChild tag to true and typeID tag to ENUMERATOR
-		 *	  - Push the enumerator value in the options vector
-		 *	  - Get the declaration file using the fileID
-		 *	  - Store the raw data for the enumerator
-		 */
-		for (str_vect::iterator iter = enum_list.begin(); iter != enum_list.end(); ++iter) {
-			if ((";") != *iter) {
-				tmp = split (*iter, ':');
-				if (!tmp.empty() && tmp[0] != "\n") {
-					Info *enum_list_item = new Info();
-					enum_list_item->name = tmp[0];
-					enum_list_item->typeID.ID = generateChildTypeID (enumID, indexCounter);
-					enum_list_item->typeID.tag = "ENUMERATOR";
-					enum_list_item->typeID.isChild = 1;
-					enum_list_item->options.push_back(*(makeOptionInfoPair("enumerator_value", NUMERIC, "", toDouble(tmp[1]))));
-					enum_list_item->declFile = getDeclFile(fileID);
-					enum_list_item->rawData = *iter;
-
-					enumeratorInsertionKey = generateInsertionKey(fileID, enum_list_item->typeID.ID);
-
-					ret = insertEntry(enumeratorInsertionKey, *enum_list_item);
-					if (DDR_RC_OK == ret) {
-						enumeratorIDs->push_back(enumeratorInsertionKey);
-						indexCounter++; /* used as ID for the enumerator */
+	/* state machine processes each stage of the input
+	 * 0: has not reached the start of a new file yet
+	 * 1: reached the start of a new file, parse to get info about the file, populate Dwarf_CU_Context::_currentCU
+ 	 * 2: inside of a file, parse to get information to populate dies, check if end of file reached
+ 	 */
+	if (0 == _startNewFile) {
+		size_t indexOfDebug = data.find(START_OF_FILE[0]);
+		if (string::npos != indexOfDebug) {
+			string dataAfterDebug = data.substr(indexOfDebug + START_OF_FILE[0].length());
+			size_t indexOfNumber  = dataAfterDebug.find(START_OF_FILE[1]);
+			if (string::npos != indexOfNumber) {
+				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + START_OF_FILE[1].length());
+				size_t indexOfFile = dataAfterNumber.find(START_OF_FILE[2]);
+				if (string::npos != indexOfFile) {
+					/* Check that there are only whitespaces between the words */
+					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
+						/* Populate the attribute references and nested classes from the previous file that we parsed */
+						populateAttributeReferences();
+						populateNestedClasses();
+						
+						/* Clear the unordered_maps we maintained from the last file */
+						createdDies.clear();
+						nestedClassesToPopulate.clear();
+						refsToPopulate.clear();
+						_startNewFile = 1;
 					}
 				}
 			}
 		}
-	}
-
-	return ret;
-}
-
-/**
- * Takes in raw data from the file and determins all the needed parts of it
- *
- * @param[in]  rawData : string containing the data to be parsed
- * @param[in]  fileID  : insertion key of the file the rawData is from
- * @param[out] memberID: returns a member ID of the parsed object
- *
- * @return DDR_RC_OK
- *		   - along with non zero member ID if the data string was of correct format
- *		   - along with zero for member ID if it has already been aded to the parsedData map
- *		   DDR_RC_ERROR
- *		   - along with non zero member ID if the data was of invalid format
- *			 and an entry for it already exists in the parsedData map
- *		   - along with zero for member ID if the data was of invalid format
- *			 and it hasn't been added to the parsedData map
- */
-DDR_RC
-AixSymbolTableParser::parseInfo(const string rawData,const double fileID, double *memberID)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-	if (!rawData.empty() && 0 < fileID) {
-		Info *declData = new Info();
-
-		info_type_results *matchResults = new info_type_results();
-		string info_type_result = getInfoType(rawData, matchResults);
-
-		str_vect tmp = split(matchResults->name, ':'); /* has the name and the typeID */
-
-		/* Steps
-		 * 1. Get the type of Info. This will also parse the
-		 *	rawData into 3 main sections, name, type and members.
-		 * 2. Split matchResults->name on ":". This will get us
-		 *	  the name and typeID of the Info.
-		 *		- Since this a not a member of any other declaratio,
-		 *		  we'll set the isChild to false
-		 * 3. Store the file it was declared in and it's rawData string
-		 * 4. Parse further based on type of declaration
-		 */
-		declData->name = tmp[0];
-		declData->typeID.ID = extractTypeID(tmp[1]);
-		declData->typeID.isChild = 0;
-		declData->size.sizeType = SIZE_TYPES[2];
-		declData->declFile = getDeclFile(fileID);
-		declData->rawData = rawData;
-
-		double insertionKey = generateInsertionKey(fileID, declData->typeID.ID);
-
-		if (DECLARATION_TYPES[1] == info_type_result) { /* type def declaration */
-
-			declData->typeID.tag = info_type_result;
-			ret = parseTypeDef(matchResults->type, declData);
-
-		} else if (DECLARATION_TYPES[2] == info_type_result) { /* constant declaration */
-
-			declData->typeID.tag = info_type_result;
-			ret = parseConstants(matchResults->type, declData);
-
-		} else if (DECLARATION_TYPES[3] == info_type_result) { /* structure declaration */
-
-			declData->typeID.tag = info_type_result;
-			declData->size.sizeValue = toSize((matchResults->type).substr(1));
-			/* We are only concerned with the ret value of parseFields if there are any members.
-			 * This is a safe gaurd for the case when there are no members to be parsed as parseFields
-			 * would return DDR_RC_ERROR in that case but we may still want to insert the entry.
-			 */
-			if (!matchResults->members.empty()) {
-				ret = parseFields(matchResults->members, declData->typeID.ID, fileID, &declData->members);
-			} else {
-				ret = DDR_RC_OK;
-			}
-
-		} else if (DECLARATION_TYPES[4] == info_type_result) { /* union declaration */
-
-			declData->typeID.tag = info_type_result;
-			declData->size.sizeValue = toSize((matchResults->type).substr(1));
-			/* We are only concerned with the ret value of parseFields if there are any members.
-			 * This is a safe gaurd for the case when there are no members to be parsed as parseFields
-			 * would return DDR_RC_ERROR in that case but we may still want to insert the entry.
-			 */
-			if (!matchResults->members.empty()) {
-				ret = parseFields(matchResults->members, declData->typeID.ID, fileID, &declData->members);
-			} else {
-				ret = DDR_RC_OK;
-			}
-
-		} else if (DECLARATION_TYPES[5] == info_type_result) { /* class declaration */
-			int index = 1; /* Use this to keep track of the next string index to check */
-			/* 1 (starting index) starts at SIZE
-			 * iterates until we are at the classKey
-			 * MOTIV: after the class key if there is OptPBV then we don't need to pick it up
-			 */
-			while (index != (matchResults->type).length()
-					&& !isalpha((matchResults->type)[index])) {
-				++index;
-			}
-
-			/* We don't want to pick up any class with compiler generated fields */
-			if (0 == isCompilerGenerated(matchResults->members)) {
-
-				ret = DDR_RC_OK;
-
-				declData->typeID.tag = extractClassType(matchResults->type);
-				declData->size.sizeValue = toSize((matchResults->type).substr(1, index - 1));
-
-				if (!(matchResults->members).empty()) {
-					ret = parseClassMembers(matchResults->members, declData->typeID.ID, fileID, &(declData->members));
-				}
-
-				additionalClassOptions((matchResults->type).substr(index + 1), fileID, &(declData->options));
-			}
-
-		} else if (DECLARATION_TYPES[6] == info_type_result) { /* enum declaration */
-			declData->typeID.tag = info_type_result;
-			ret = parseEnumData(matchResults->members, declData->typeID.ID, fileID, &(declData->members)); /* gets the keys of the members */
-			declData->size.sizeValue = (declData->members).size(); /* get the number of enumerators */
-			declData->size.sizeType = SIZE_TYPES[4]; /* num_elements */
-
-			/* for anonymous enum
-			 * if there is a label entry for the enum type
-			 * then update the enum type to anonymousEnum
-			 */
-
-		} else if (DECLARATION_TYPES[7] == info_type_result) { /* label declaration */
-			declData->typeID.tag = info_type_result;
-			ret = DDR_RC_OK;
-
-		} else if (DECLARATION_TYPES[0] == info_type_result) { /* invalid declaration */
-			declData->typeID.tag = info_type_result;
-		}
-
-		if (DDR_RC_OK == ret) {
-			/* WILL EITHER RETURN DDR_RC_OK or DDR_RC_ERROR OR POSITIVE INSERTION KEY VALUE */
-
-			data_map::iterator existing_entry = findEntry(insertionKey);
-
-			if (parsedData.end() != existing_entry) {
-				if (existing_entry->second.declFile == declData->declFile) {
-					DEBUGPRINTF("ERROR>>>>There was a overlap in insertion keys ('%f')", insertionKey);
-				}
-				ret = updateEntry(existing_entry, *declData); /* Will either be value of DDR_RC_OK or DDR_RC_ERROR */
-				(*memberID) = 0;
-
-			} else {
-				ret = insertEntry(insertionKey, *declData);
-				if (DDR_RC_OK == ret) {
-					(*memberID) = insertionKey; /* Entery doesn't exist in the map, therefore, insert it and return the insertion key for it */
-				}
-			}
-		} else { /* THIS HAS BEEN SET TO FALSE TO AVOID INSERTING REJECTED ENTRIES INTO THE MAP. SET IT TO TRUE WHEN DEBUGGING */
-			/* If a entry didn't match any of the above criteria
-			 * then it will be inserted as _REJECTED, provided there isn't
-			 * a entry with the same name and ID in the map.
-			 * If the entry is already in the map, it will be updated to
-			 * reflect REJECTED status and it's insertKey will be removed from
-			 * file_members vector
-			 */
-			ret = insertRejectedEntry(insertionKey, declData);
-			if (DDR_RC_ERROR == ret && insertionKey > fileID) {
-				(*memberID) = insertionKey;
-			} else {
-				ret = DDR_RC_ERROR; /* This is to indicate that the rawData was neither of types we are looking for */
-				(*memberID) = 0;
-			}
-		}
-	}
-
-	return ret;
-
-}
-
-/**
- * parseTypeDef
- *
- * @param data: string of type TYPE_DEF
- *
- * @return : DDR_RC_OK if data was a valid typeDef DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::parseTypeDef(const string data, Info *typeDefEntry)
-{
-	/* Built in types
-	 * -1  int, .............. 32 bit signed integeral type
-	 * -5  char, ............. 8 bit < AIX specific
-	 * -3  short. ............ 16 bit signed integral type
-	 * -4  long, ............. 32 bit signed intergraal type
-	 * -5  unsigned char, .... 8 bit unsigned integral type
-	 * -6  signed char, ...... 8 bit signed integral type
-	 * -7  unsigned short, ... 16 bit unsigned integral type
-	 * -8  unsigned int, ..... 32 bit unsigned integral type
-	 * -9  unsigned, ......... 32 bit unsigned integral type
-	 * -10 unsigned long, .... 32 bit unsigned integral type
-	 * -11 void, ............. type indicating the lack of value
-	 * -12 float, ............ IEEE single precision
-	 * -13 double, ........... IEEE double precision
-	 * -14 long double, ...... IEEE double precision
-	 * -15 integer, .......... 32 bit signed integral type
-	 * -16 boolean, .......... 32 bit type < 0 false and 1 true, others unspecified meaning
-	 * -17 short real, ....... IEEE single precision
-	 * -18 real, ............. IEEE double precision
-	 * -19 stringptr
-	 * -20 character, ........ 8 bit unsigned character type
-	 *	 -21 logical*1, ........ 8 bit type < FORTRAN
-	 *	 -22 logical*2, ........ 16 bit type < FORTRAN
-	 *	 -23 logical*4, ........ 32 bit type for boolean variables < FORTRAN
-	 *	 -24 logical, .......... 32 bit type < FORTRAN
-	 * -25 complex, .......... consisting of two IEEE single-precision floating point values
-	 * -26 complex, .......... consisting of two IEEE double-precision floating point values
-	 * -27 integer*1, ........ 8 bit signed integral type
-	 * -28 integer*2, ........ 16 bit signed integral type
-	 * -29 integer*4, ........ 32 bit signed integral type
-	 * -30 wchar, ............ wide character 16 bit wide
-	 * -31 logn long, ........ 64 bit unsigned intergral type
-	 * -32 unsigned long long, 64 bit unsigned integral type
-	 * -33 logical*8, ........ 64 bit unsigned integral type
-	 * -34 integer*8, ........ 64 bit singned integral type
-	 */
-
-	str_vect tmp;
-	DDR_RC ret = DDR_RC_ERROR;
-	int typeID_index = 1;
-	switch (data[0]) {
-		case '-':
-			if (!isBuiltIn(data, &(typeDefEntry->typeDef.typeID))) {
-				ret = DDR_RC_ERROR;
-			}
-			ret = DDR_RC_OK;
-			break;
-		case 'c':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			tmp = split(data, ';');
-			typeDefEntry->size.sizeValue = toSize(tmp[1]);
-			typeDefEntry->size.sizeType = SIZE_TYPES[1];
-			typeDefEntry->typeDef.type = AIX_TYPE_complex;
-			ret = DDR_RC_OK;
-			break;
-		case 'd':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_file;
-			ret = DDR_RC_OK;
-			break;
-		case 'g':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			tmp = split(data, ';');
-			typeDefEntry->size.sizeValue = toSize(tmp[1]);
-			typeDefEntry->size.sizeType = SIZE_TYPES[1];
-			typeDefEntry->typeDef.type = AIX_TYPE_floating_point;
-			ret = DDR_RC_OK;
-			break;
-		case 'D':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			tmp = split(data, ';');
-			typeDefEntry->size.sizeValue = toSize(tmp[1]);
-			typeDefEntry->size.sizeType = SIZE_TYPES[1];
-			typeDefEntry->typeDef.type = AIX_TYPE_decimal_floating_point;
-			ret = DDR_RC_OK;
-			break;
-		case 'k':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_constant;
-			ret = DDR_RC_OK;
-			break;
-		case 'm':
-			/* OPT_VBASE_SPEC
- 			 * OPT_MULTI_BASE_SPEC
- 			 * TYPE_ID < Member type
- 			 * TYPE_ID < Class type < if there is no m, will there be no class type ID
- 			 * TYPE_ID
-			 */
-			tmp = split(data, ':');
-			typeDefEntry->typeDef.typeID = extractTypeDefID(tmp[2]);
-			if ('v' == (tmp[0])[typeID_index]) {
-				typeDefEntry->options.push_back(*(makeOptionInfoPair("has_virtual_base", ATTR_VALUE, "v",0)));
-				typeID_index++;
-			}
-			if ('m' == (tmp[0])[typeID_index]) {
-				typeDefEntry->options.push_back(*(makeOptionInfoPair("is_multi_based", ATTR_VALUE, "m",0)));
-				typeID_index++;
-			}
-			typeDefEntry->options.push_back(*(makeOptionInfoPair( "member_type", NUMERIC, "", extractTypeID(tmp[0], typeID_index))));
-			typeDefEntry->options.push_back(*(makeOptionInfoPair("class_type", NUMERIC, "", toDouble(tmp[1]))));
-			typeDefEntry->typeDef.type = AIX_TYPE_ptr_to_member_type;
-			ret = DDR_RC_OK;
-			break;
-		case 'n':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			tmp = split(data, ';');
-			typeDefEntry->size.sizeValue = toSize(tmp[1]);
-			typeDefEntry->size.sizeType = SIZE_TYPES[2];
-			typeDefEntry->typeDef.type = AIX_TYPE_string;
-			ret = DDR_RC_OK;
-			break;
-		case 'w':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_wide_character;
-			ret = DDR_RC_OK;
-			break;
-		case 'M':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			tmp = split(data, ';');
-			typeDefEntry->size.sizeValue = toSize(tmp[1]);
-			typeDefEntry->size.sizeType = SIZE_TYPES[3];
-			typeDefEntry->typeDef.type = AIX_TYPE_multiple_instance;
-			ret = DDR_RC_OK;
-			break;
-		case '*':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_pointer;
-			ret = DDR_RC_OK;
-			break;
-		case '&':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_reference;
-			ret = DDR_RC_OK;
-			break;
-		case 'V':
-			typeDefEntry->typeDef.typeID = extractTypeDefID(data);
-			typeDefEntry->typeDef.type = AIX_TYPE_volatile;
-			ret = DDR_RC_OK;
-			break;
-		case 'Z':
-			typeDefEntry->typeDef.type = AIX_TYPE_ellipses;
-			ret = DDR_RC_OK;
-			break;
-		case 'a':
-			parseArray(data, typeDefEntry);
-			ret = DDR_RC_OK;
-			break;
-	}
-
-	if ((0 != typeDefEntry->typeDef.typeID)
-		&& (isBuiltIn(typeDefEntry->typeDef.typeID))) {
-
-		typeDefEntry->typeDef.isBuiltIn = 1;
-		typeDefEntry->typeDef.isSigned = isSigned(typeDefEntry->typeDef.typeID);
-		ret = DDR_RC_OK;
-	}
-
-	return ret;
-
-}
-
-/**
- * Gets the raw data and parses it. What you would in a 
- * loop to parse the output from dump comamnd.
- *
- * @param[in] data: raw data from the symbol table
- */
-void
-AixSymbolTableParser::parseDumpOutput(const string data)
-{
-	regex fileSection (".*\\s*m.*debug\\s*3*\\s*FILE\\s*");
-	regex fileInfoRow ("\\s(a0)\\s*");
-	regex sectionStart ("^\\[.*\\].*m.*debug.*decl\\s+");
-	regex checkSymbol (".*\\s(m)*\\s*.text\\s*(1)\\s*(unamex)\\s*(\\*\\*No Symbol\\*\\*)");
-
-	smatch m_s;
-	string validData = "";
-	string fileName = "";
-	double member_id = 0;
-
-	if (0 == _startNewFile && regex_search(data, m_s, fileSection)) {
-		_startNewFile = 1;
 	} else if (1 == _startNewFile) {
+		if (string::npos != data.find(FILE_NAME)) {
+			size_t fileNameIndex = data.find(FILE_NAME) + FILE_NAME.size();
+			size_t index = data.substr(fileNameIndex).find_first_not_of(' ');
 
-		if (regex_search(data, m_s, fileInfoRow)) { /* Get file name */
-			fileName = m_s.suffix();
-			_fileID = extractFileID(m_s.prefix());
+			fileName = strip(data.substr(index+fileNameIndex), '\n');
 
-			fileName = strip(fileName, '\n');
-			insertFileEntry(fileName, _fileID);
+			/* Check the file has not been parsed through before */
+			if (filesAdded.end() == filesAdded.find(fileName)) {
+				/* Add the file to the list of files */
+				Dwarf_CU_Context::_fileList.push_back(fileName);
 
-			_fileEntry = findEntry(_fileID);
-			_startNewFile = 2;
-			DEBUGPRINTF("\n\nFile Name: %s",fileName.c_str());
+				filesAdded.insert(fileName);
+
+				/* Create one compilation unit context per file */
+				Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
+
+				/* Create a DIE for the CU */
+				Dwarf_Die newDie = new Dwarf_Die_s();
+
+				/* Create name attribute for the DIE */
+				Dwarf_Attribute name = new Dwarf_Attribute_s();
+
+				if ((NULL == newCU) || (NULL == newDie) || (NULL == name)) {
+					ret = DW_DLV_ERROR;
+					setError(error, DW_DLE_MAF);
+				} else {
+					newCU->_CUheaderLength = 0;
+					newCU->_versionStamp = 0;
+					newCU->_abbrevOffset = 0;
+					newCU->_addressSize = 0;
+					newCU->_nextCUheaderOffset = 0;
+					newCU->_nextCU = NULL;
+					newCU->_die = newDie;
+
+					newDie->_tag = DW_TAG_compile_unit;
+					newDie->_parent = NULL;
+					newDie->_sibling = NULL;
+					newDie->_previous = NULL;
+					newDie->_child = NULL;
+					newDie->_context = newCU;
+					newDie->_attribute = name;
+						
+					name->_type = DW_AT_name;
+					name->_nextAttr = NULL;
+					name->_form = DW_FORM_string;
+					name->_sdata = 0;
+					name->_udata = 0;
+					name->_stringdata = strdup(Dwarf_CU_Context::_fileList.back().c_str());
+					name->_refdata = 0;
+					name->_ref = NULL;
+
+
+					if (NULL == Dwarf_CU_Context::_firstCU) {
+						Dwarf_CU_Context::_firstCU = newCU;
+						Dwarf_CU_Context::_currentCU = newCU;
+					} else {
+						Dwarf_CU_Context::_currentCU->_nextCU = newCU;
+						Dwarf_CU_Context::_currentCU = newCU;
+					}
+					_startNewFile = 2;
+				}
+			} else {
+				/* The file was already parsed through previously, perhaps in another .so file */
+				/* Skip parsing this file */
+				_startNewFile = 0;
+			}
 		}
 	} else if (2 == _startNewFile) {
-		/* Get the file structure info */
+		size_t indexOfDebug = data.find(DECL_FILE[0]);
+		if (string::npos != indexOfDebug) {
+			string dataAfterDebug = data.substr(indexOfDebug + DECL_FILE[0].length());
+			size_t indexOfNumber = dataAfterDebug.find(DECL_FILE[1]);
+			if (string::npos != indexOfNumber) {
+				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + DECL_FILE[1].length());
+				size_t indexOfDecl = dataAfterNumber.find(DECL_FILE[2]);
+				if (string::npos != indexOfDecl) {
+					/* Check that there are only whitespaces between the words */
+					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfDecl == dataAfterNumber.find_first_not_of(' '))) {
+						/* Parse the data line to populate a die */
+						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
+						size_t index = dataAfterDecl.find_first_not_of(' ');
+						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
+						ret = parseStabstringDeclarationIntoDwarfDie(validData, error);
+						_startNewFile = 3;
+					}
+				}
+			} else {
+				/* Check if it is the declaration for the start of another file, as the previous file may have contained no symbols */
+				indexOfNumber = dataAfterDebug.find(START_OF_FILE[1]);
+				if (string::npos != indexOfNumber) {
+					string dataAfterNumber = dataAfterDebug.substr(indexOfNumber+START_OF_FILE[1].length());
+					size_t indexOfFile = dataAfterNumber.find(START_OF_FILE[2]);
+					if (string::npos != indexOfFile) {
+						/* Check that there are only whitespaces between the words */
+						if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
+							_startNewFile = 1;
+						}
+					}
+				}
+			}
+		}
+	} else if (3 == _startNewFile) {
+		/* Stops parsing whenever the end of the decl section is reached, since all the declarations in a file are guaranteed to be in a continuous block */
+		size_t indexOfDebug = data.find(DECL_FILE[0]);
+		if (string::npos != indexOfDebug) {
+			string dataAfterDebug = data.substr(indexOfDebug + DECL_FILE[0].length());
+			size_t indexOfNumber = dataAfterDebug.find(DECL_FILE[1]);
+			if (string::npos != indexOfNumber) {
+				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + DECL_FILE[1].length());
+				size_t indexOfDecl = dataAfterNumber.find(DECL_FILE[2]);
+				if (string::npos != indexOfDecl) {
+					/* Check that there are only whitespaces between the words */
+					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfDecl == dataAfterNumber.find_first_not_of(' '))) {
+						/* Parse the data line to populate a die */
+						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
+						size_t index = dataAfterDecl.find_first_not_of(' ');
+						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
+						ret = parseStabstringDeclarationIntoDwarfDie(validData, error);
+					} else {
+						_startNewFile = 0;
+						_lastDie = NULL;
+					}
+				} else {
+					_startNewFile = 0;
+					_lastDie = NULL;
+				}
+			} else {
+				_startNewFile = 0;
+				_lastDie = NULL;
+			}
+		} else {
+			_startNewFile = 0;
+			_lastDie = NULL;
+		}
+	}
+	return ret;
+}
 
-		if (regex_search (data, m_s, sectionStart)) {
-			validData.assign (m_s.suffix());
+/**
+ * Parses data passed in as an enumerator and populates a DIE
+ * param[in] data: the data to be parsed, should be in the format T(TYPE_ID)=e(INTEGER):(NAME):(INTEGER),(NAME):(INTEGER),(...),;
+ * param[in] dieName: the name of the enumerator
+ * param[out] currentDie: the DIE to populate with the parsed data.
+ */
+static int
+parseEnum(const string data,
+	string dieName,
+	Dwarf_Die currentDie,
+	Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	/* Parse the declaration line for the required fields */
+	string members = stripLeading(data, 'e');
+	size_t indexOfFirstNonInteger = members.find_first_not_of("123456790-");
+	if (string::npos != indexOfFirstNonInteger) {
+		members = stripLeading(members.substr(indexOfFirstNonInteger), ':');
+		members = stripTrailing(members, ';');
 
-			DDR_RC result = parseInfo(strip(validData, '\n'), _fileID, &member_id);
+		/* Check if the enum was generated a name by AIX, and if so, delete the generated name */
+		if ((0 == strcmp("__", dieName.substr(0, 2).c_str())) && (string::npos == dieName.substr(2).find_first_not_of("1234567890"))) {
+			/* generated names are of the form __(INTEGER) */
+			dieName.assign("");
+		}
+		ret = setDieAttributes(dieName, 4, currentDie, error);
 
-			if (DDR_RC_OK == result && _fileID < member_id) { /* Valid member, store it's insertion key */
-				_fileEntry->second.members.push_back(member_id);
-				_fileEntry->second.size.sizeValue += 1;
-			} else if (DDR_RC_ERROR == result && _fileID < member_id) { /* Invalid member, must remove it's insertion key */
+		if (DW_DLV_OK == ret) {
+			/* Create new dies for each of the enumerators */
+			str_vect enumerators = split(members, ',');
 
-				double_vect::iterator itt = find(_fileEntry->second.members.begin(), _fileEntry->second.members.end(), member_id);
-				if (_fileEntry->second.members.end() != itt) {
-					_fileEntry->second.members.erase(itt);
-					_fileEntry->second.size.sizeValue -= 1;
+			Dwarf_Die newDie = new Dwarf_Die_s();
+			if (NULL == newDie) {
+				ret = DW_DLV_ERROR;
+				setError(error, DW_DLE_MAF);
+			} else {
+				newDie->_tag = DW_TAG_enumerator;
+				newDie->_parent = currentDie;
+				newDie->_sibling = NULL;
+				newDie->_previous = NULL;
+				newDie->_sibling = NULL;
+				newDie->_child = NULL;
+				newDie->_context = Dwarf_CU_Context::_currentCU;
+				newDie->_attribute = NULL;
+
+				currentDie->_child = newDie;
+				for (unsigned int i = 1; i < enumerators.size(); i++) {
+					if (DW_DLV_OK == ret) {
+						Dwarf_Die tempDie = new Dwarf_Die_s();
+						if (NULL == tempDie) {
+							ret = DW_DLV_ERROR;
+							setError(error, DW_DLE_MAF);
+						} else {
+							tempDie->_tag = DW_TAG_enumerator;
+							tempDie->_parent = currentDie;
+							tempDie->_previous = newDie;
+							tempDie->_child = NULL;
+							tempDie->_context = Dwarf_CU_Context::_currentCU;
+							tempDie->_attribute = NULL;
+
+							newDie->_sibling = tempDie;
+							newDie = tempDie;
+						}
+					}
+				}
+				if (DW_DLV_OK == ret) {
+					/* Create name and value attributes and assign them to each die */
+					str_vect tmp;
+					newDie = currentDie->_child;
+					for (str_vect::iterator it = enumerators.begin(); it != enumerators.end(); ++it) {
+						tmp = split(*it, ':');
+
+						Dwarf_Attribute enumeratorName = new Dwarf_Attribute_s();
+						Dwarf_Attribute enumeratorValue = new Dwarf_Attribute_s();
+
+						if ((NULL == enumeratorName) || (NULL == enumeratorValue)) {
+							ret = DW_DLV_ERROR;
+							setError(error, DW_DLE_MAF);
+						} else {
+							enumeratorName->_type = DW_AT_name;
+							enumeratorName->_nextAttr = enumeratorValue;
+							enumeratorName->_form = DW_FORM_string;
+							enumeratorName->_sdata = 0;
+							enumeratorName->_udata = 0;
+							enumeratorName->_stringdata = strdup(tmp.front().c_str());
+							enumeratorName->_refdata = 0;
+							enumeratorName->_ref = NULL;
+
+							enumeratorValue->_type = DW_AT_const_value;
+							enumeratorValue->_nextAttr = NULL;
+							enumeratorValue->_form = DW_FORM_sdata;
+							enumeratorValue->_sdata = strtoll(tmp.back().c_str(), NULL, 16);
+							enumeratorValue->_udata = 0;
+							enumeratorValue->_refdata = 0;
+							enumeratorValue->_ref = NULL;
+
+							newDie->_attribute = enumeratorName;
+
+							newDie = newDie->_sibling;
+						}
+					}
+				}
+			}
+		}
+	}	else {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_IA);
+	}
+	return ret;
+}
+
+/**
+ * Parses the data passed in as the fields for a member of a DIE declaration
+ * param[in] data: the data to be parsed, should be in the format (NAME):(TYPE),(BIT_OFFSET),(NUM_BITS)
+ * param[out] currentDie: the DIE to populate with the parsed data.
+ */
+static int
+parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	/* field[0] will be the name, field[1] will be field attributes */
+	str_vect field = split(data, ':');
+	str_vect fieldAttributes = split(field[1], ',');
+
+	/* Create attributes */
+	Dwarf_Attribute name = new Dwarf_Attribute_s();
+	Dwarf_Attribute type = new Dwarf_Attribute_s();
+	Dwarf_Attribute declFile = new Dwarf_Attribute_s();
+	Dwarf_Attribute declLine = new Dwarf_Attribute_s();
+
+	if ((NULL == name) || (NULL == type) || (NULL == declFile) || (NULL == declLine)) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_MAF);
+	} else {
+		name->_type = DW_AT_name;
+		name->_nextAttr = type;
+		name->_form = DW_FORM_string;
+		name->_sdata = 0;
+		name->_udata = 0;
+		name->_stringdata = strdup(field[0].c_str());
+		name->_refdata = 0;
+		name->_ref = NULL;
+
+		type->_type = DW_AT_type;
+		type->_nextAttr = declFile;
+		type->_form = DW_FORM_ref1;
+
+		int ID = extractTypeID(fieldAttributes[0],0);
+		type->_udata = 0;
+		type->_refdata = 0;
+		type->_ref = NULL;
+
+		/* push the type into a vector to populate in a second pass */
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
+		declFile->_type = DW_AT_decl_file;
+		declFile->_form = DW_FORM_udata;
+		declFile->_nextAttr = declLine;
+		declFile->_sdata = 0;
+		/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+		declFile->_udata = Dwarf_CU_Context::_fileList.size();
+		declFile->_refdata = 0;
+		declFile->_ref = NULL;
+
+		declLine->_type = DW_AT_decl_line;
+		declLine->_form = DW_FORM_udata;
+		declLine->_nextAttr = NULL;
+		declLine->_sdata = 0;
+		/* DwarfScanner uses declLine+declFile to determine Type uniqueness */
+		declLine->_udata = declarationLine;
+		declLine->_refdata = 0;
+		declLine->_ref = NULL;
+		
+		/* Do a preliminary check if the field requires a bitSize or not */
+		bool bitSizeNeeded = true;
+		if (0 > ID) {
+			if (toInt(fieldAttributes[2]) == BUILT_IN_TYPE_SIZES[ID * -1]) {
+				/* If the type is built-in and sizes match, then bitSize is not needed */
+				bitSizeNeeded = false;
+			}
+		}
+		if (bitSizeNeeded) {
+			Dwarf_Attribute bitSize = new Dwarf_Attribute_s();
+			declLine->_nextAttr = bitSize;
+
+			/* Set the bit size */
+			bitSize->_type = DW_AT_bit_size;
+			bitSize->_form = DW_FORM_udata;
+			bitSize->_nextAttr = NULL;
+			bitSize->_sdata = 0;
+			bitSize->_udata = toInt(fieldAttributes[2]);
+			bitSize->_refdata = 0;
+			bitSize->_ref = NULL;
+
+			bitFieldsToCheck.push_back(currentDie);
+		}
+		currentDie->_attribute = name;
+		declarationLine = declarationLine + 1;
+	}
+	return ret;
+}
+
+/**
+ * Parses the data passed in as a C-style structure/union
+ * param[in] data: data to be parsed, in the format T(TYPE_ID)=(s|u)(INTEGER)(NAME):(TYPE),(BIT_OFFSET),(NUM_BITS);(NAME):(TYPE),(BIT_OFFSET),(NUM_BITS);(...);;
+ * param[in] dieName: the name of the structure/union
+ * param[out] currentDie: the DIE to populate with the parsed data.
+ */
+static int
+parseOldFormat(const string data,
+	const string dieName,
+	Dwarf_Die currentDie,
+	Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	/* Get rid of the first index of data, as it specifies only if declaration is for struct or union */
+	string unparsedMembers = data.substr(1);
+	size_t indexOfFirstNonInteger = unparsedMembers.find_first_not_of("1234567890");
+	if (string::npos != indexOfFirstNonInteger) {
+		int size = toInt(unparsedMembers.substr(0, indexOfFirstNonInteger));
+		unparsedMembers = unparsedMembers.substr(indexOfFirstNonInteger);
+
+		/* Set DIE attributes */
+		ret = setDieAttributes(dieName, size, currentDie, error);
+
+		if (DW_DLV_OK == ret) {
+			/* Get all the members of the structure */
+			str_vect members = split(unparsedMembers, ';');
+
+			/* Get the last child of the die */
+			Dwarf_Die lastChild = currentDie->_child;
+			if (NULL != lastChild) {
+				while (NULL != lastChild->_sibling) {
+					lastChild = lastChild->_sibling;
 				}
 			}
 
-		} else if (regex_search (data, m_s, checkSymbol)) {
+			for (unsigned int i = 0; i < members.size(); i++) {
+				if (DW_DLV_OK == ret) {
+					Dwarf_Die newDie = new Dwarf_Die_s();
+					if (NULL == newDie) {
+						ret = DW_DLV_ERROR;
+						setError(error, DW_DLE_MAF);
+					} else {
+						newDie->_tag = DW_TAG_member;
+						newDie->_parent = currentDie;
+						newDie->_sibling = NULL;
+						newDie->_previous = NULL;
+						newDie->_child = NULL;
+						newDie->_context = Dwarf_CU_Context::_currentCU;
+						newDie->_attribute = NULL;
 
-			_startNewFile = 0;
+						ret = parseFields(members[i], newDie, error);
 
-			if (0 < _fileEntry->second.size.sizeValue) {
-				_fileList.push_back(_fileID);
-				string output  = beautifyInfo(_fileEntry->second,_fileEntry->first);
-				DEBUGPRINTF("\n%s",output.c_str());
+						if (DW_DLV_OK == ret) {
+							/* Set the member as a child of the parent die */
+							if (NULL == lastChild) {
+								currentDie->_child = newDie;
+							} else {
+								lastChild->_sibling = newDie;
+								newDie->_previous = lastChild;
+							}
+							lastChild = newDie;
+						} else {
+							/* Delete the die to make sure there's no memory leak */
+							deleteDie(newDie);
+						}
+					}
+				}
+			}
+		}
+	}	else {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_IA);
+	}
+	return ret;
+}
+
+/**
+ * Parses data passed in as a C++ style class/union/struct
+ * param[in] data: the data to be parsed, in the format T(TYPE_ID)=Y(TYPE)(c|u|s)((MEMBERS);;
+ * param[in] dieName: the name of the class/structure/union
+ * param[out] currentDie: the DIE to populate with the parsed data.
+ */
+static int
+parseNewFormat(const string data,
+	const string dieName,
+	Dwarf_Die currentDie,
+	Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	size_t indexOfFirstParenthesis = data.find('(');
+	if (string::npos != indexOfFirstParenthesis) {
+		string sizeAndType = stripLeading(data.substr(0, indexOfFirstParenthesis), 'Y');
+		size_t indexOfFirstNonInteger = sizeAndType.find_first_not_of("1234567890");
+		if (string::npos != indexOfFirstNonInteger) {
+			string unparsedMembers = stripLeading(data.substr(indexOfFirstParenthesis), '(');
+			unsigned int size = toInt(sizeAndType.substr(0, indexOfFirstNonInteger));
+
+			/* Set DIE attributes */
+			ret = setDieAttributes(dieName, size, currentDie, error);
+
+			if (DW_DLV_OK == ret) {
+				/* Parse the members */
+				str_vect members = split(unparsedMembers, ';');
+
+				Dwarf_Die lastChild = currentDie->_child;
+				if (NULL != lastChild) {
+					while (NULL !=lastChild->_sibling) {
+						lastChild = lastChild->_sibling;
+					}
+				}
+				for (unsigned int i = 0; i < members.size(); i++) {
+					if (DW_DLV_OK == ret) {
+						Dwarf_Die newDie = new Dwarf_Die_s();
+						if (NULL == newDie) {
+							ret = DW_DLV_ERROR;
+							setError(error, DW_DLE_MAF);
+						} else {
+							newDie->_tag = DW_TAG_member;
+							newDie->_parent = currentDie;
+							newDie->_sibling = NULL;
+							newDie->_previous = NULL;
+							newDie->_child = NULL;
+							newDie->_context = Dwarf_CU_Context::_currentCU;
+							newDie->_attribute = NULL;
+							if (2 <= members[i].size()) {
+								/* Note: currently doesn't account for ACCESS_SPEC GEN_SPEC, but it's only dropping compiler generated fields so maybe it's ok */
+								if (':' == members[i].at(1)) {
+									/* Check to see if valid data member */
+									if (!isCompilerGenerated(members[i])) {
+										size_t indexOfFirstColon  = members[i].find_first_of(':');
+										if (string::npos != indexOfFirstColon) {
+											ret = parseFields(members[i].substr(indexOfFirstColon+1), newDie, error);
+											if (DW_DLV_OK == ret) {
+												/* Set the member as a child of the parent die */
+												if (NULL == lastChild) {
+													currentDie->_child = newDie;
+												} else {
+													lastChild->_sibling = newDie;
+													newDie->_previous = lastChild;
+												}
+												lastChild = newDie;
+											} else {
+												/* To prevent a memory leak, delete the new die */
+												deleteDie(newDie);
+											}
+										} else {
+											/* It's not a valid data member */
+											deleteDie(newDie);
+										}
+									} else {
+										/* If it's compiler generated, don't add the member */
+										deleteDie(newDie);
+									}
+								} else if ('N' == members[i].at(1)) {
+									/* Check to see if valid nested class */
+									/* Get the ID of the nested class, which will be in tmp[1] */
+									str_vect tmp = split(members[i], 'N');
+									int ID = toInt(tmp[1]);
+									nestedClassesToPopulate.push_back(make_pair<int, Dwarf_Die>((int)ID, (Dwarf_Die)currentDie));
+
+									/* To prevent a memory leak, delete the new die */
+									deleteDie(newDie);
+								} else {
+									/* delete the new die, to prevent a memory leak */
+									deleteDie(newDie);
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_IA);
+		}
+	} else {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_IA);
+	}
+	return ret;
+}
+/**
+ * Parses data passed in as a typedef.
+ * param[in] data: The data to parse, should be in the format (TYPE)
+ * param[in] dieName: The name of the typedef
+ * param[out] currentDie: the DIE to populate with the parsed data.
+ */
+static int
+parseTypeDef(const string data,
+	const string dieName,
+	Dwarf_Die currentDie,
+	Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	int ID = 0;
+
+	/* Set attributes for name, type, declaring file */
+	Dwarf_Attribute type = new Dwarf_Attribute_s();
+	Dwarf_Attribute name  = new Dwarf_Attribute_s();
+	Dwarf_Attribute declFile = new Dwarf_Attribute_s();
+	Dwarf_Attribute declLine = new Dwarf_Attribute_s();
+
+	if ((NULL == type) || (NULL == name) || (NULL == declFile) || (NULL == declLine)) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_MAF);
+	} else {
+		type->_type = DW_AT_type;
+		type->_form = DW_FORM_ref1;
+		type->_nextAttr = name;
+
+		/* AIX classifies int64_t and uint64_t as intptr_t (IDATA) and uintptr_t (UDATA) respectively */
+		if ((0 == strcmp("int64_t", dieName.c_str())) || (0 == strcmp("uint64_t", dieName.c_str()))) {
+			if (-36 == toInt(data)) {
+				ID = -32;
+			} else if (-35 == toInt(data)) {
+				ID = -31;
+			} else {
+				ID = toInt(data);
+			}
+		} else {
+			ID = toInt(data);
+		}
+		type->_udata = 0;
+		type->_sdata = 0;
+		type->_refdata = 0;
+		type->_ref = NULL;
+
+		/* Add type to the list of refs to populate on a second pass */
+		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
+		name->_type = DW_AT_name;
+		name->_form = DW_FORM_string;
+		name->_nextAttr = declLine;
+		name->_sdata = 0;
+		name->_udata = 0;
+		name->_stringdata = strdup(dieName.c_str());
+		name->_refdata = 0;
+		name->_ref = NULL;
+
+		declLine->_type = DW_AT_decl_line;
+		declLine->_nextAttr = declFile;
+		declLine->_form = DW_FORM_udata;
+		declLine->_sdata = 0;
+		/* DwarfScanner uses declLine+declFile to determine Type uniqueness */
+		declLine->_udata = declarationLine;
+		declLine->_refdata = 0;
+		declLine->_ref = NULL;
+
+		declarationLine = declarationLine + 1;
+
+		declFile->_type = DW_AT_decl_file;
+		declFile->_form = DW_FORM_udata;
+		declFile->_nextAttr = NULL;
+		declFile->_sdata = 0;
+		declFile->_refdata = 0;
+		declFile->_ref = NULL;
+		if (!Dwarf_CU_Context::_fileList.empty()) {
+			/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+			declFile->_udata = Dwarf_CU_Context::_fileList.size();
+		} else {
+			/* If there is no declaring file, delete declFile and declLine */
+			name->_nextAttr = NULL;
+			delete(declFile);
+			delete(declLine);
+		}
+
+		currentDie->_attribute = type;
+	}
+	return ret;
+}
+
+/**
+ * Looks up and populates the reference attributes which were added while populating Dwarf DIEs
+ */
+static void
+populateAttributeReferences()
+{
+	/* Iterate through the vector containing all attributes to be populated*/
+	for (unsigned int i = 0; i < refsToPopulate.size(); i++) {
+		Dwarf_Attribute tmp = refsToPopulate[i].second;
+
+		/* If the reference is to a built-in type, search the unordered_map containing built-in types */
+		if (0 > refsToPopulate[i].first) {
+			/* Search for the reference in the die map */
+			die_map::iterator existingDieEntry = builtInDies.find(refsToPopulate[i].first);
+			if (builtInDies.end() != existingDieEntry) {
+				tmp->_ref = existingDieEntry->second.second;
+
+				/* Set _refdata to the correct value and insert the reference into refMap*/
+				tmp->_refdata = existingDieEntry->second.first;
+				Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)existingDieEntry->second.first, (Dwarf_Die)existingDieEntry->second.second));
+			}
+		} else {
+			/* Search for the reference in the die map */
+			die_map::iterator existingDieEntry = createdDies.find(refsToPopulate[i].first);
+			if (createdDies.end() != existingDieEntry) {
+				tmp->_ref = existingDieEntry->second.second;
+
+				/* Set _refdata to the correct value and insert the reference into refMap*/
+				tmp->_refdata = existingDieEntry->second.first;
+				Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)existingDieEntry->second.first, (Dwarf_Die)existingDieEntry->second.second));
 			}
 		}
 	}
+}
+
+/**
+ * Creates DIEs for built-in types
+ */
+static int
+populateBuiltInTypeDies(Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	Dwarf_Die previousDie = NULL;
+
+	/* Populate the base types */
+	for (unsigned int i = 1; i <= NUM_BUILT_IN_TYPES; i++) {
+		if ((DW_DLV_OK == ret) && (!BUILT_IN_TYPES[i].empty())) {
+			Dwarf_Die newDie = new Dwarf_Die_s();
+			if (NULL == newDie) {
+				ret = DW_DLV_ERROR;
+				setError(error, DW_DLE_MAF);
+			} else {
+				newDie->_tag = DW_TAG_base_type;
+				newDie->_parent = NULL;
+				newDie->_sibling = NULL;
+				newDie->_previous = NULL;
+				newDie->_child = NULL;
+				newDie->_context = NULL;
+
+				Dwarf_Attribute name = new Dwarf_Attribute_s();
+				Dwarf_Attribute size = new Dwarf_Attribute_s();
+
+				if ((NULL == name)||(NULL == size)) {
+					ret = DW_DLV_ERROR;
+					setError(error, DW_DLE_MAF);
+				} else {
+					name->_type = DW_AT_name;
+					name->_form = DW_FORM_string;
+					name->_nextAttr = size;
+					name->_sdata = 0;
+					name->_udata = 0;
+					name->_stringdata = strdup(BUILT_IN_TYPES[i].c_str());
+					name->_refdata = 0;
+					name->_ref = NULL;
+
+					size->_type = DW_AT_byte_size;
+					size->_form = DW_FORM_udata;
+					size->_nextAttr = NULL;
+					size->_sdata = 0;
+
+					/* Divide size in bits by 8bits/byte to get size in bytes */
+					size->_udata = BUILT_IN_TYPE_SIZES[i] / 8;
+					size->_refdata = 0;
+					size->_ref = NULL;
+
+					newDie->_attribute = name;
+					if (NULL == _builtInTypeDie) {
+						_builtInTypeDie = newDie;
+					}
+					if (NULL !=  previousDie) {
+						previousDie->_sibling = newDie;
+						newDie->_previous = previousDie;
+					}
+					previousDie = newDie;
+
+					/* Insert the newly created DIE into the unordered map for use later on */
+					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+
+					/* Increment the refNumber */
+					refNumber = refNumber + 1;
+				}
+			}
+		}
+	}
+	/* For redundant types, create typedefs that refer to the base types created above */
+	for (unsigned int i = 0; i <= NUM_BUILT_IN_TYPES; i++) {
+		if ((DW_DLV_OK == ret) && (!BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[i].empty())) {
+			Dwarf_Die newDie = new Dwarf_Die_s();
+			if (NULL == newDie) {
+				ret = DW_DLV_ERROR;
+				setError(error, DW_DLE_MAF);
+			} else {
+				newDie->_tag = DW_TAG_typedef;
+				newDie->_parent = NULL;
+				newDie->_sibling = NULL;
+				newDie->_previous = NULL;
+				newDie->_child = NULL;
+				newDie->_context = NULL;
+
+				string data = "0";
+				switch (i) {
+				case 6:
+				case 27:
+					data = "-2";
+					break;
+				case 9:
+					data = "-8";
+					break;
+				case 15:
+				case 29:
+					data = "-1";
+					break;
+				case 17:
+					data = "-12";
+					break;
+				case 18:
+					data = "-13";
+					break;
+				case 20:
+					data = "-5";
+					break;
+				case 28:
+					data = "-3";
+					break;
+				case 30:
+					data = "-7";
+					break;
+				case 33:
+					data = "-32";
+					break;
+				case 34:
+					data = "-31";
+					break;
+				}
+				ret = parseTypeDef(data, BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[i], newDie, error);
+
+				if (DW_DLV_OK == ret) {
+					/* Add to the linked list of DIEs */
+					if (NULL !=  previousDie) {
+						previousDie->_sibling = newDie;
+						newDie->_previous = previousDie;
+					}
+					previousDie = newDie;
+
+					/* Insert the typedef into the unordered map for use later on */
+					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
+
+					/* Increment the refNumber */
+					refNumber = refNumber + 1;
+				} else {
+					/* Delete to prevent a memory leak */
+					delete (newDie);
+				}
+			}
+		}
+	}
+	return ret;
+}
+
+/**
+ * Finds nested classes, and moves them to their appropriate locations as children of the DIEs that they are a member of
+ */
+static void
+populateNestedClasses()
+{
+	/* Iterate through all the nested classes found */
+	for (unsigned int i = 0; i < nestedClassesToPopulate.size(); i++) {
+		Dwarf_Die parent = nestedClassesToPopulate[i].second;
+		Dwarf_Die nestedClass = NULL;
+		if (NULL != parent) {
+			die_map::iterator existingDieEntry = createdDies.find(nestedClassesToPopulate[i].first);
+			if (createdDies.end() != existingDieEntry) {
+				nestedClass = existingDieEntry->second.second;
+				if (NULL != nestedClass) {
+					/* Get the last child of the die */
+					Dwarf_Die lastChild = parent->_child;
+					if (NULL != lastChild) {
+						while (NULL != lastChild->_sibling) {
+							lastChild = lastChild->_sibling;
+						}
+					}
+
+					/* In case the current parent of nestedClass has nestedClass as the child, set it to be the sibling of nestedClass */
+					if (nestedClass == nestedClass->_parent->_child) {
+						nestedClass->_parent->_child = nestedClass->_sibling;
+					}
+
+					/* Modify the linked list of DIEs to remove the nested class */
+					if (NULL != nestedClass->_previous) {
+						nestedClass->_previous->_sibling = nestedClass->_sibling;
+					}
+					if (NULL != nestedClass->_sibling) {
+						nestedClass->_sibling->_previous = nestedClass->_previous;
+					}
+					nestedClass->_sibling = NULL;
+					nestedClass->_previous = NULL;
+
+					/* Set the nested class DIE to be a child of the parent */
+					if (NULL == lastChild) {
+						parent->_child = nestedClass;
+					} else {
+						lastChild->_sibling = nestedClass;
+						nestedClass->_previous = lastChild;
+					}
+					nestedClass->_parent = parent;
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Sets the name, size and declaring file attributes for a DIE that is passed in
+ * param[in] dieName: The name of the entity
+ * param[in] dieSize: The size of the entity (in bytes)
+ * param[out] currentDie: the DIE to populate with the attributes.
+ */
+static int
+setDieAttributes(const string dieName,
+	const unsigned int dieSize,
+	Dwarf_Die currentDie,
+	Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	/* If the die already had attributes, update them */
+	if (NULL != currentDie->_attribute) {
+		Dwarf_Attribute tmp = currentDie->_attribute;
+		while (NULL != tmp) {
+			switch (tmp->_type) {
+			case DW_AT_byte_size:
+				tmp->_udata = dieSize;
+				break;
+			case DW_AT_decl_file:
+				/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+				tmp->_udata = Dwarf_CU_Context::_fileList.size();
+				break;
+			}
+			tmp = tmp->_nextAttr;
+		}
+	} else {
+		/* Create attributes for name, size, declaring file. */
+		Dwarf_Attribute name  = new Dwarf_Attribute_s();
+		Dwarf_Attribute size = new Dwarf_Attribute_s();
+		Dwarf_Attribute declFile = new Dwarf_Attribute_s();
+		Dwarf_Attribute declLine = new Dwarf_Attribute_s();
+
+		if ((NULL == name) || (NULL == size) || (NULL == declFile) || (NULL == declLine)) {
+			ret = DW_DLV_ERROR;
+			setError(error, DW_DLE_MAF);
+		} else {
+			name->_type = DW_AT_name;
+			name->_nextAttr = size;
+			name->_form = DW_FORM_string;
+			name->_sdata = 0;
+			name->_udata = 0;
+			name->_stringdata = strdup(dieName.c_str());
+			name->_refdata = 0;
+			name->_ref = NULL;
+
+			size->_type = DW_AT_byte_size;
+			size->_nextAttr = declFile;
+			size->_form = DW_FORM_udata;
+			size->_sdata = 0;
+			size->_udata = dieSize;
+			size->_refdata = 0;
+			size->_ref = NULL;
+
+			declFile->_type = DW_AT_decl_file;
+			declFile->_nextAttr = declLine;
+			declFile->_form = DW_FORM_udata;
+			declFile->_sdata = 0;
+			/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+			declFile->_udata = Dwarf_CU_Context::_fileList.size();
+			declFile->_refdata = 0;
+			declFile->_ref = NULL;
+
+			declLine->_type = DW_AT_decl_line;
+			declLine->_nextAttr = NULL;
+			declLine->_form = DW_FORM_udata;
+			declLine->_sdata = 0;
+			/* DwarfScanner uses declLine+declFile to determine Type uniqueness */
+			declLine->_udata = declarationLine;
+			declLine->_refdata = 0;
+			declLine->_ref = NULL;
+			currentDie->_attribute = name;
+
+			/* Increment the number of the declaration line */
+			declarationLine = declarationLine + 1;
+		}
+	}
+	return ret;
 }
 
 /**
@@ -1885,14 +1731,15 @@ AixSymbolTableParser::parseDumpOutput(const string data)
  * @param[out] elements  : string vector to write out the strings after doing the split to
  */
 void
-AixSymbolTableParser::split(const string data, char delimeters, str_vect *elements)
+split(const string data, char delimeters, str_vect *elements)
 {
 	stringstream ss;
 	ss.str(data);
 	string item;
-
 	while (getline(ss, item, delimeters)) {
-		elements->push_back(item);
+		if (!item.empty()) {
+			elements->push_back(item);
+		}
 	}
 }
 
@@ -1906,12 +1753,10 @@ AixSymbolTableParser::split(const string data, char delimeters, str_vect *elemen
  * @return string vector containing the strings after resulting from the split operation
  */
 str_vect
-AixSymbolTableParser::split(const string data, char delimeters)
+split(const string data, char delimeters)
 {
 	str_vect elements;
-
 	split(data, delimeters, &elements);
-
 	return elements;
 }
 
@@ -1924,14 +1769,13 @@ AixSymbolTableParser::split(const string data, char delimeters)
  * @return string after trimming char from front and back of the string
  */
 string
-AixSymbolTableParser::strip(const string str, const char chr)
+strip(const string str, const char chr)
 {
 	string ret = str;
 	if (!ret.empty()) {
 		ret = stripLeading(ret, chr);
-		ret = striptrailing(ret, chr);
+		ret = stripTrailing(ret, chr);
 	}
-
 	return ret;
 }
 
@@ -1944,11 +1788,11 @@ AixSymbolTableParser::strip(const string str, const char chr)
  * @return string after trimming char from the start of the string
  */
 string
-AixSymbolTableParser::stripLeading(const string str, const char chr)
+stripLeading(const string str, const char chr)
 {
 	string ret = str;
-	if (!ret.empty()){
-		if (chr == str[0]){
+	if (!ret.empty()) {
+		if (chr == str[0]) {
 			ret.erase(0, 1);
 		}
 	}
@@ -1964,14 +1808,12 @@ AixSymbolTableParser::stripLeading(const string str, const char chr)
  * @return string after trimming char from the end of the string
  */
 string
-AixSymbolTableParser::striptrailing(const string str, const char chr)
+stripTrailing(const string str, const char chr)
 {
 	string ret = str;
-	if (!ret.empty()){
-
+	if (!ret.empty()) {
 		int strLength = str.length();
-
-		if (chr == ret[strLength - 1]){
+		if (chr == ret[strLength - 1]) {
 			ret.erase(strLength - 1, 1);
 		}
 	}
@@ -1986,11 +1828,11 @@ AixSymbolTableParser::striptrailing(const string str, const char chr)
  * @return double with decimal point shifted left by length of the argument plus 1
  */
 double
-AixSymbolTableParser::shiftDecimal(const double value)
+shiftDecimal(const double value)
 {
 	double ret = value;
 	if (ret >= 1) {
-		ret = shiftDecimal (value/100);
+		ret = shiftDecimal(value/100);
 	}
 	return ret;
 }
@@ -2003,7 +1845,7 @@ AixSymbolTableParser::shiftDecimal(const double value)
  * @return double equivalent of the string value
  */
 double
-AixSymbolTableParser::toDouble(const string value)
+toDouble(const string value)
 {
 	stringstream ss;
 	double ret = 0;
@@ -2020,7 +1862,7 @@ AixSymbolTableParser::toDouble(const string value)
  * @return int equivalent of the string value
  */
 int
-AixSymbolTableParser::toInt(const string value)
+toInt(const string value)
 {
 	return (int)toDouble(value);
 }
@@ -2033,7 +1875,7 @@ AixSymbolTableParser::toInt(const string value)
  * @return size_t
  */
 size_t
-AixSymbolTableParser::toSize(const string size)
+toSize(const string size)
 {
 	stringstream ss;
 	size_t ret = 0;
@@ -2050,320 +1892,9 @@ AixSymbolTableParser::toSize(const string size)
  * @return argument value as string
  */
 string
-AixSymbolTableParser::toString(const double value)
+toString(const int value)
 {
 	stringstream ss;
 	ss << value;
 	return ss.str();
-}
-
-/**
- * Maps the value from the argument to it's corresponding string description
- *
- * @param[in] value: value that needs to be mapped to string
- *
- * @return argument value as string
- */
-string 
-AixSymbolTableParser::getStringDescription(const unsigned short value)
-{
-	return AIX_TYPES[value];
-}
-
-/**
- * Updates the entry already in the map with the new updated values.
- * Only updates - size
- * 				- members
- * 				- options
- * 				- typeDef
- * 				- rawData
- *
- * @param[in] update: Contains the info that needs to be updated
- * @param[in] entry : Old entry from the data map
- *
- * @return DDR_RC_OK on successful update and DDR_RC_ERROR otherwise
- */
-DDR_RC
-AixSymbolTableParser::updateEntry(data_map::iterator entry, Info update, bool overRideChecks)
-{
-	DDR_RC ret = DDR_RC_ERROR;
-
-	if (!overRideChecks) {
-		if (((0 == entry->second.name.compare(update.name))
-				&& (entry->second.typeID.ID == update.typeID.ID)
-				&& (entry->second.declFile == update.declFile)
-				)
-			) {
-
-			entry->second.size = update.size;
-
-			if (!update.members.empty()) {
-				entry->second.members = update.members;
-			}
-
-			if (!update.options.empty()) {
-				entry->second.options = update.options;
-			}
-
-			entry->second.typeDef = update.typeDef;
-			entry->second.rawData = update.rawData;
-
-			ret = DDR_RC_OK;
-		}
-	} else {
-		entry->second  = update;
-		ret = DDR_RC_OK;
-	}
-
-	return ret;
-}
-
-/**
- * Parses the information in the vector to a format easily readable by the human eye
- *
- * @param[in] data	: the vector of type double that needs to be beautified
- * @param[in] location: an identifier to seperate each call to this function from the others
- * @param[in] level   : indicator of the indentation need, default value is 1
- *
- * @return the vector passed as argument in a human friendly format as a string
- */
-string
-AixSymbolTableParser::beautifyVector(const vector<double> data, const string location,const int level)
-{
-	string padding = getPadding(level);
-	string output = "";
-	string delimeter = " ---- ";
-	string outputDelimeter = "------------\n";
-
-	output += padding + outputDelimeter ;
-	output += padding + "Location: " + location + "\n";
-	for (int i = 0; i < data.size(); i++) {
-		output += padding + toString(data[i]) + delimeter;
-	}
-	output += "\n" + padding + outputDelimeter;
-
-	return output;
-}
-
-string
-AixSymbolTableParser::beautifyVector(const str_vect data, const string location,const int level)
-{
-	string padding = getPadding(level);
-	string output = "";
-	string delimeter = " ---- ";
-	string outputDelimeter = "------------\n";
-
-	output += padding + outputDelimeter ;
-	output += padding + "Location: " + location + "\n";
-	for (int i = 0; i < data.size(); i++) {
-		output += padding + data[i].c_str() + delimeter;
-	}
-	output += "\n" + padding + outputDelimeter;
-
-	return output;
-}
-
-/**
- * Returns padding(spaces) based on the level value.
- * Level 1 is zero padding. After that every level is padded by 4 spaces.
- *
- * @param[in] level: integer indicating the level for which padding is required
- *
- * @return string with level appropriate spaces
- */
-string
-AixSymbolTableParser::getPadding(const int level)
-{
-	string levelUp = "	";
-	string retPadding = "";
-	for(int index = 2; index <= level; index++) {
-		retPadding += levelUp;
-	}
-
-	return retPadding;
-}
-
-/**
- * Parses the information in the info struct to a format easily readable by the human eye
- *
- * @param[in] data			 : info struct that needs to be beautified
- * @param[in] key			  : insertion key of the info struct
- * @param[in] overrideChildTag : boolean value indicating if the info struct is a child or not
- * @param[in] level			: indentation level, default value is 1
- *
- * @return the info struct passed as argument in a human friendly format as a string
- */
-string
-AixSymbolTableParser::beautifyInfo(const Info data, const double key, const bool overrideChildTag, const int level)
-{
-	string padding = "";
-	padding = getPadding(level);
-	int subLevel = level + 1;
-	string subLevelPadding = getPadding(subLevel);
-	int subSubLevel = subLevel + 1;
-	string subSubLevelPadding = getPadding(subLevel + 1);
-
-	string output = "";
-	string outputDelimeter = "------------\n";
-
-	/* Prints the child record only if there is an override */
-	if ((overrideChildTag) || (0 == data.typeID.isChild)) {
-
-		output += padding + outputDelimeter;
-		output += padding + "Key  : " + toString(key) + "\n";
-		output += padding + "Info : \n";
-		output += subLevelPadding + "name	  : " + data.name + "\n";
-		output += subLevelPadding + "typeID	  : " + toString(data.typeID.ID) + "--" + data.typeID.tag + "\n";
-		output += subLevelPadding + "size	  : " + toString(data.size.sizeValue) + "--" + data.size.sizeType + "\n";
-
-		output += subLevelPadding + "members   : \n";
-		/* List the members */
-		if ((!data.typeID.isChild)
-			&& (!data.members.empty())
-			) {
-			/* && (data.typeID.tag != "file") ) {
-			 * Add this if you want to call printMapContents this will prevent
-			 * it from printing all the members of every info. Which will be pointless
-			 * because we'll be printing all the contents of the map anyways
-			 */
-
-			output += beautifyVector(data.members, "",subLevel);
-			for (vector<double>::const_iterator it = data.members.begin(); it != data.members.end(); ++it) {
-				data_map::iterator result;
-				result = parsedData.find (*it);
-				output += beautifyInfo(result->second, result->first, TRUE, subLevel);
-			}
-
-		} else {
-			output += subLevelPadding + "/*EMPTY*/" + "\n";
-		}
-
-		output += subLevelPadding + "options   : \n";
-		if (!data.options.empty()) {
-			output += beautifyOptionsVector(data.options, "", subLevel);
-		} else {
-			output += subLevelPadding + "/*EMPTY*/" + "\n";
-		}
-
-		output += subLevelPadding + "typeDef  : \n";
-		output += subSubLevelPadding + "type	  : " + getStringDescription(data.typeDef.type) + "\n";
-		output += subSubLevelPadding + "isBuiltIn : " + toString(data.typeDef.isBuiltIn) + "\n";
-		output += subSubLevelPadding + "isSigned  : " + toString(data.typeDef.isSigned) + "\n";
-		output += subSubLevelPadding + "typeID	  : " + toString(data.typeDef.typeID) + "\n";
-
-		output += subSubLevelPadding + "options   : \n";
-		if (!data.typeDef.options.empty()) {
-			output += beautifyOptionsVector(data.typeDef.options, "Options:", subSubLevel);
-		} else {
-			output += subSubLevelPadding + "/*EMPTY*/" + "\n";
-		}
-
-		output += subLevelPadding + "declFile : " + toString(data.declFile) + "\n";
-		output += subLevelPadding + "rawData  : " + data.rawData + "\n";
-		output += padding + outputDelimeter;
-	}
-	return output;
-}
-
-/**
- * Prints the contents of the map in a human friendly format
- */
-void
-AixSymbolTableParser::printMapContents()
-{
-	DEBUGPRINTF("map_dump");
-
-	data_map::iterator it;
-	string output = "";
-
-	for (it = parsedData.begin(); it != parsedData.end(); ++it) {
-		output = beautifyInfo (it->second, it->first);
-		DEBUGPRINTF("%s",output.c_str());
-	}
-}
-
-/**
- * Parses the information in the regex_search to a format easily readable by the human eye
- *
- * @param[in] m	   : smatch variable that needs to be beautified
- * @param[in] location: an identifier to seperate each call to this function from the others
- *
- * @return the smatch passed as argument in a human friendly format as a string
- */
-string
-AixSymbolTableParser::beautifyMatchResults(const smatch m, const string location)
-{
-	string output = "";
-	string outputDelimeter = "------------\n";
-
-	output += outputDelimeter;
-	output += "Location: " + location;
-	output += "--------\n";
-	string prefix = m.prefix();
-	string middle = m[0];
-	string suffix = m.suffix();
-	output += "Prefix  : " + prefix + "\n";
-	output += "[0]	 : " + middle + "\n";
-	output += "Suffix  : " + suffix + "\n" ;
-	output += outputDelimeter;
-
-	return output;
-}
-
-/**
- * Parses the information in the options vector to a format easily readable by the human eye
- *
- * @param[in] data	: option vector that needs to be beautified
- * @param[in] location: an identifier to seperate each call to this function from the others
- * @param[in] level   : indentation level, default level is 1
- *
- * @return the options_vect passed as argument in a human friendly format as a string
- */
-string
-AixSymbolTableParser::beautifyOptionsVector(const options_vect data, const string location, const int level)
-{
-	string padding = getPadding(level);
-	string output = "";
-	string delimeter = " ---- ";
-	string outputDelimeter = "------------\n";
-
-	output += padding + outputDelimeter;
-	output += padding + "Location: " + location + "\n";
-	for (int i = 0; i < data.size(); i++) {
-		output += padding + data[i].name + " = ";
-		if (NUMERIC == data[i].type) {
-			output += toString(data[i].ID);
-		} else if (ATTR_VALUE == data[i].type) {
-			output += data[i].attrValue;
-		}
-		output += delimeter + "\n";
-	}
-	output += padding + outputDelimeter;
-
-	return output;
-}
-
-/**
- * Parses the information in the output from getInfoType to a format easily readable by the human eye
- *
- * @param[in] results : output of getInfoType
- * @param[in] location: an identifier to seperate each call to this function from the otherse
- *
- * @return the info_type_results passed as argument in a human friendly format as a string
- */
-string
-AixSymbolTableParser::beautifyInfoTypeResults(const info_type_results results, const string location)
-{
-	string output = "";
-	string outputDelimeter = "------------\n";
-
-	output += outputDelimeter;
-	output += "Location: " + location + "\n";
-	output += "match_results:\n";
-	output += "	name   : " + results.name + "\n";
-	output += "	type   : " + results.type + "\n";
-	output += "	members: " + results.members + "\n";
-	output += outputDelimeter;
-
-	return output;
 }

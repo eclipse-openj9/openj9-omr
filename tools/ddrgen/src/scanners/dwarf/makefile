@@ -30,7 +30,7 @@ ifeq (osx,$(OMR_HOST_OS))
 endif
 
 ifeq (aix,$(OMR_HOST_OS))
-  OBJECTS += AixDwarfParser$(OBJEXT)
+  OBJECTS += AixSymbolTableParser$(OBJEXT)
 endif
 
 MODULE_INCLUDES += \

@@ -142,6 +142,8 @@ public:
    // create a new local value (temporary variable)
    TR::IlValue *NewValue(TR::IlType *dt);
 
+   TR::IlValue *Copy(TR::IlValue *value);
+
    // constants
    TR::IlValue *NullAddress();
    TR::IlValue *ConstInt8(int8_t value);

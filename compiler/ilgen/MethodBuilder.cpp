@@ -380,7 +380,8 @@ MethodBuilder::lookupFunction(const char *name)
    TR_HashId functionsID;
    if (! _functions->locate(name, functionsID))
       {
-      if (strncmp(_methodName, name, strlen(_methodName)) == 0)
+      size_t len = strlen(name);
+      if (len == strlen(_methodName) && strncmp(_methodName, name, len) == 0)
          return static_cast<TR::ResolvedMethod *>(_methodSymbol->getResolvedMethod());
       return NULL;
       }

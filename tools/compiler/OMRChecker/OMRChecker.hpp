@@ -727,10 +727,10 @@ public:
 
       if (receiver->isImplicitCXXThis()) {
          trace("Reciever is implicit this");
-         // Don't diagnose implicit this recievers that are calling self.
+         // Don't diagnose implicit this receivers that are calling self.
          if (isSelfCall(call)) { 
             trace("callee is self()");
-            // Need still to verify that the self() call is to the right reciever! Otherwise 
+            // Need still to verify that the self() call is to the right receiver! Otherwise 
             // we can pass upcasts in the case where we have an extensible class hierarchy
             // deriving from an extensible class hierarchy. 
             if (isCorrectSelf(call)) {
@@ -822,7 +822,7 @@ public:
     *
     */
    bool isCorrectSelf(CXXMemberCallExpr *call) { 
-      // This is the callled method decl -- Should be self of one form or another, verified by isSelfCall. 
+      // This is the called method decl -- Should be self of one form or another, verified by isSelfCall. 
       CXXMethodDecl* calleeDecl = call->getMethodDecl();
       if (!calleeDecl) {
          trace("Didn't find callee decl. Assuming not correct self call");
@@ -889,15 +889,15 @@ public:
    bool isExtensibleMemberCall(CXXMemberCallExpr* call) {
       // > Retrieves the implicit object argument for the member call.
       // > For example, in "x.f(5)", this returns the sub-expression "x".
-      Expr*             reciever = call->getImplicitObjectArgument()->IgnoreParenImpCasts();
+      Expr*             receiver = call->getImplicitObjectArgument()->IgnoreParenImpCasts();
 
       if (getenv("OMR_CHECK_TRACE")) {
          llvm::errs() << "BestDynamicClassType => ";
-         reciever->getBestDynamicClassType()->printQualifiedName(llvm::errs());
+         receiver->getBestDynamicClassType()->printQualifiedName(llvm::errs());
          llvm::errs() << "\n";
       }
 
-      return isExtensible(reciever->getBestDynamicClassType());
+      return isExtensible(receiver->getBestDynamicClassType());
    }
 
    /**

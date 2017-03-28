@@ -284,11 +284,11 @@ extern "C" bool jitTestOSForSSESupport(void) { return false; } // TODO there are
 void TR_PatchNOPedGuardSite::compensate(TR_FrontEnd *fe, bool isSMP, uint8_t *location, uint8_t *destination) { notImplemented("TR_PatchNOPedGuardSite::compensate"); }
 void TR_PersistentClassInfo::removeASubClass(TR_PersistentClassInfo *) { notImplemented("TR_PersistentClassInfo::removeASubClass"); }
 bool isOrderedPair(uint8_t recordType) { notImplemented("isOrderedPair"); return false; }
-void TR_RuntimeAssumption::addToRAT(TR_PersistentMemory * persistentMemory, TR_RuntimeAssumptionKind kind, TR_FrontEnd *fe, TR_RuntimeAssumption** sentinel) { notImplemented("addToRAT"); }
-void TR_RuntimeAssumption::dumpInfo(char *subclassName) { notImplemented("dumpInfo"); }
+void OMR::RuntimeAssumption::addToRAT(TR_PersistentMemory * persistentMemory, TR_RuntimeAssumptionKind kind, TR_FrontEnd *fe, OMR::RuntimeAssumption** sentinel) { notImplemented("addToRAT"); }
+void OMR::RuntimeAssumption::dumpInfo(char *subclassName) { notImplemented("dumpInfo"); }
 void TR_PatchJNICallSite::compensate(TR_FrontEnd*, bool, void *) { notImplemented("TR_PatchJNICallSite::compensate"); }
 void TR_PreXRecompile::compensate(TR_FrontEnd*, bool, void *) { notImplemented("TR_PreXRecompile::compensate"); }
-TR_PatchNOPedGuardSiteOnClassPreInitialize *TR_PatchNOPedGuardSiteOnClassPreInitialize::make(TR_FrontEnd *fe, TR_PersistentMemory *, char*, unsigned int, unsigned char*, unsigned char*, TR_RuntimeAssumption**) { notImplemented("TR_PatchNOPedGuardSiteOnClassPreInitialize::allocate"); return 0; }
+TR_PatchNOPedGuardSiteOnClassPreInitialize *TR_PatchNOPedGuardSiteOnClassPreInitialize::make(TR_FrontEnd *fe, TR_PersistentMemory *, char*, unsigned int, unsigned char*, unsigned char*, OMR::RuntimeAssumption**) { notImplemented("TR_PatchNOPedGuardSiteOnClassPreInitialize::allocate"); return 0; }
 #endif
 
 

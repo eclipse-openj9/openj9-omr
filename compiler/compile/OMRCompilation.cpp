@@ -353,7 +353,7 @@ OMR::Compilation::Compilation(
    // Access to this list must be performed with assumptionTableMutex in hand
    //
    if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableFastAssumptionReclamation))
-      _metadataAssumptionList = new (m->trPersistentMemory()) TR_SentinelRuntimeAssumption();
+      _metadataAssumptionList = new (m->trPersistentMemory()) TR::SentinelRuntimeAssumption();
 #endif
 
    //Random fields must be set before allocating codegen

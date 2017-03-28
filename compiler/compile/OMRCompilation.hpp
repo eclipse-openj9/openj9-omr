@@ -589,6 +589,7 @@ public:
       TR_InlinedCallSite _site;
       TR::ResolvedMethodSymbol *_resolvedMethod;
       TR::SymbolReference *_callSymRef;
+      int32_t *_osrCallSiteRematTable;
       bool _directCall;
 
       public:
@@ -598,7 +599,7 @@ public:
                              TR::ResolvedMethodSymbol *resolvedMethod,
                              TR::SymbolReference *callSymRef,
                              bool directCall):
-         _resolvedMethod(resolvedMethod), _callSymRef(callSymRef), _directCall(directCall)
+         _resolvedMethod(resolvedMethod), _callSymRef(callSymRef), _directCall(directCall), _osrCallSiteRematTable(0)
          {
          _site._methodInfo = methodInfo;
          _site._byteCodeInfo = bcInfo;
@@ -608,6 +609,8 @@ public:
       TR_ResolvedMethod *resolvedMethod() { return _resolvedMethod->getResolvedMethod(); }
       TR::ResolvedMethodSymbol *resolvedMethodSymbol() { return _resolvedMethod; }
       TR::SymbolReference *callSymRef(){ return _callSymRef; }
+      int32_t *osrCallSiteRematTable() { return _osrCallSiteRematTable; }
+      void setOSRCallSiteRematTable(int32_t *array) { _osrCallSiteRematTable = array; }
       bool directCall() { return _directCall; }
       };
 
@@ -617,6 +620,9 @@ public:
    TR_ResolvedMethod  *getInlinedResolvedMethod(uint32_t index);
    TR::ResolvedMethodSymbol  *getInlinedResolvedMethodSymbol(uint32_t index);
    TR::SymbolReference *getInlinedCallerSymRef(uint32_t index);
+   uint32_t getOSRCallSiteRematSize(uint32_t callSiteIndex);
+   void getOSRCallSiteRemat(uint32_t callSiteIndex, uint32_t slot, TR::SymbolReference *&ppSymRef, TR::SymbolReference *&loadSymRef);
+   void setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReference *ppSymRef, TR::SymbolReference *loadSymRef);
    bool isInlinedDirectCall(uint32_t index);
 
    TR_InlinedCallSite *getCurrentInlinedCallSite();

@@ -771,6 +771,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
       self()->genOSRHelperCall(inlinedSiteIndex, self()->comp()->getSymRefTab());
       }
 
+   self()->insertRematableStoresFromCallSites(self()->comp(), inlinedSiteIndex, induceOSRCallTree);
    self()->insertStoresForDeadStackSlotsBeforeInducingOSR(self()->comp(), inlinedSiteIndex, insertionPoint->getNode()->getByteCodeInfo(), induceOSRCallTree, callSymbolForDeadSlots);
    traceMsg(self()->comp(), "last real tree n%dn\n", enclosingBlock->getLastRealTreeTop()->getNode()->getGlobalIndex());
    return induceOSRCallTree;
@@ -1668,8 +1669,31 @@ OMR::ResolvedMethodSymbol::cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex,
       }
    }
 
+void
+OMR::ResolvedMethodSymbol::insertRematableStoresFromCallSites(TR::Compilation *comp, int32_t siteIndex, TR::TreeTop *induceOSRTree)
+   {
+   TR::TreeTop *prev = induceOSRTree->getPrevTreeTop();
+   TR::TreeTop *next = induceOSRTree;
+   TR::SymbolReference *ppSymRef, *loadSymRef;
 
-
+   while (siteIndex > -1)
+      {
+      for (uint32_t i = 0; i < comp->getOSRCallSiteRematSize(siteIndex); ++i)
+         {
+         comp->getOSRCallSiteRemat(siteIndex, i, ppSymRef, loadSymRef);
+         if (!ppSymRef || !loadSymRef)
+            continue;
+         TR::Node *load = TR::Node::createLoad(loadSymRef);
+         TR::Node *store = TR::Node::createStore(ppSymRef, load);
+         TR::TreeTop *storeTree = TR::TreeTop::create(comp, store);
+         prev->join(storeTree);
+         storeTree->join(next);
+         prev = storeTree;
+         }
+      
+      siteIndex = comp->getInlinedCallSite(siteIndex)._byteCodeInfo.getCallerIndex();
+      }
+   }
 
 void
 OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots)

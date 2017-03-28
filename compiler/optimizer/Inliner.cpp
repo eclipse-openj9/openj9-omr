@@ -2382,6 +2382,71 @@ TR_ParameterToArgumentMapper::lookForModifiedParameters(TR::Node * node)
       }
    }
 
+/*
+ * The OSRCallSiteRematTables for this inlined method and those inlined within it
+ * may contain symbol references for parms that have been mapped to args. Therefore,
+ * its necessary to update the tables based on the mapper.
+ *
+ * This will only be applied in voluntary OSR when induction is still possible.
+ */
+void
+TR_ParameterToArgumentMapper::mapOSRCallSiteRematTable(uint32_t siteIndex)
+   {
+   static const char *disableOSRCallSiteRemat = feGetEnv("TR_DisableOSRCallSiteRemat");
+   if (!comp()->getOption(TR_EnableOSR) || comp()->getOSRMode() != TR::voluntaryOSR ||
+       comp()->osrInfrastructureRemoved() || disableOSRCallSiteRemat)
+      return;
+
+   TR::SymbolReference *ppSymRef, *loadSymRef;
+   for (uint32_t i = 0; i < comp()->getOSRCallSiteRematSize(siteIndex); ++i)
+      {
+      comp()->getOSRCallSiteRemat(siteIndex, i, ppSymRef, loadSymRef);
+
+      // Only apply mapper to parms contained within remat table
+      if (!ppSymRef || !loadSymRef)
+         continue;
+      TR::Symbol *symbol = loadSymRef->getSymbol();
+      if (!symbol->isParm())
+         continue;
+
+      // Map the parms to new symrefs
+      TR::ParameterSymbol *parm = symbol->getParmSymbol();
+      TR_ParameterMapping * parmMap = _mappings.getFirst();
+      for (; parmMap; parmMap = parmMap->getNext())
+         if (symbol == parmMap->_parmSymbol)
+            {
+            if (parmMap->_isConst)
+               {
+               // Should be able to do const, current side table does not allow it
+               comp()->setOSRCallSiteRemat(siteIndex, ppSymRef, NULL);
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "osrCallSiteRemat/mapParm/const/(%s)",  comp()->signature()));
+               }
+            else if (loadSymRef->getOffset() > 0)
+               {
+               comp()->setOSRCallSiteRemat(siteIndex, ppSymRef, NULL);
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "osrCallSiteRemat/mapParm/addr/(%s)",  comp()->signature()));
+               }
+            else
+               {
+               comp()->setOSRCallSiteRemat(siteIndex, ppSymRef, parmMap->_replacementSymRef);
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "osrCallSiteRemat/mapParm/success/(%s)",  comp()->signature()));
+               }
+            break;
+            }
+
+      if (!parmMap)
+         TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "osrCallSiteRemat/mapParm/missing/(%s)",  comp()->signature()));
+      }
+
+   // Update the remat tables for calls within the current
+   for (int32_t childIndex = 0; childIndex < comp()->getNumInlinedCallSites(); ++childIndex)
+      {
+      TR_InlinedCallSite &ics = comp()->getInlinedCallSite(childIndex);
+      if (siteIndex == ics._byteCodeInfo.getCallerIndex())
+         mapOSRCallSiteRematTable(childIndex);
+      }
+   }
+
 TR::Node *
 TR_ParameterToArgumentMapper::map(TR::Node * node, TR::ParameterSymbol * parm, bool seenBBStart)
    {
@@ -2576,6 +2641,8 @@ TR_TransformInlinedFunction::transform()
       {
       transformNode(_currentTreeTop->getNode(), 0, 0);
       }
+
+   _parameterMapper.mapOSRCallSiteRematTable(comp()->getCurrentInlinedSiteIndex());
 
    if (_resultTempSymRef)
       {

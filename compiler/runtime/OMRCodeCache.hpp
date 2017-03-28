@@ -108,10 +108,6 @@ public:
    static TR::CodeCache *allocate(TR::CodeCacheManager *manager, size_t segmentSize, int32_t reservingCompThreadID);
    void destroy(TR::CodeCacheManager *manager);
 
-   void setupSegment(TR::CodeCacheMemorySegment *codeCacheSegment,
-                     size_t codeCacheSizeAllocated,
-                     CodeCacheHashEntrySlab *hashEntrySlab);
-
    uint8_t *allocateCodeMemory(size_t warmCodeSize,
                                size_t coldCodeSize,
                                uint8_t **coldCode,

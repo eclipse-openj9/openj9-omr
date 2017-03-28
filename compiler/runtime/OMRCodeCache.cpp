@@ -1683,25 +1683,6 @@ OMR::CodeCache::checkForErrors()
    }
 
 
-void
-OMR::CodeCache::setupSegment(TR::CodeCacheMemorySegment *codeCacheSegment,
-                           size_t codeCacheSizeAllocated,
-                           CodeCacheHashEntrySlab *hashEntrySlab)
-   {
-   // heapSize can be calculated as (codeCache->helperTop - codeCacheSegment->heapBase), which is equal to segmentSize
-   // If codeCachePadKB is set, this will make the system believe that we allocated segmentSize bytes,
-   // instead of _jitConfig->codeCachePadKB * 1024 bytes
-   // If codeCachePadKB is not set, heapSize is segmentSize anyway
-   _segment = codeCacheSegment;
-
-   // helperTop is heapTop, usually
-   // When codeCachePadKB > segmentSize, the helperTop is not at the very end of the segemnt
-   _helperTop = _segment->segmentBase() + codeCacheSizeAllocated;
-
-   _hashEntrySlab = hashEntrySlab;
-   }
-
-
 OMR::CodeCacheHashEntry *
 OMR::CodeCache::findUnresolvedMethod(void *constPool, int32_t constPoolIndex)
    {

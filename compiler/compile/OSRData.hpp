@@ -44,6 +44,54 @@ namespace TR
       osr,
       traditional
       };
+
+/*
+ * An OSR transition can occur before or after the OSR point's
+ * side-effect, depending on the current mode.
+ *
+ * In preExecutionOSR, the transition occurs before the side-effects
+ * of executing the OSR point's bytecode, resulting in it being
+ * evaluated in the interpreter.
+ *
+ * In postExecutionOSR, the transition occurs after the side-effects
+ * of executing the OSR point's bytecode, resulting in the interpreter
+ * resuming execution at following bytecode.
+ */
+   enum OSRTransitionTarget
+      {
+      preExecutionOSR,
+      postExecutionOSR
+      };
+
+/*
+ * OSR can operate in two modes, voluntary and involuntary.
+ *
+ * In involuntary OSR, the JITed code does not control when an OSR transition occurs. It can be
+ * initiated externally at any potential OSR point.
+ *
+ * In voluntary OSR, the JITed code does control when an OSR transition occurs, allowing it to
+ * limit the OSR points with transitions.
+ */
+   enum OSRMode
+      {
+      voluntaryOSR,
+      involuntaryOSR
+      };
+
+/*
+ * There are two types of OSR points, induction and analysis.
+ *
+ * An induction point is a normal OSR point, which undergoes the
+ * OSR analysis and may have a transition for it, based on the mode.
+ *
+ * An analysis point is used only for the OSR analysis will not have
+ * a transition point for it.
+ */
+   enum OSRPointType
+      {
+      inductionOSR,
+      analysisOSR 
+      };
    }
 
 /**

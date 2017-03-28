@@ -817,8 +817,11 @@ public:
     */
    bool isPotentialOSRPoint(TR::Node *node);
    bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
+
+   TR::OSRMode getOSRMode();
+   TR::OSRTransitionTarget getOSRTransitionTarget();
    int32_t getOSRInductionOffset(TR::Node *node);
-   bool requiresLeadingOSRPoint(TR::Node *node);
+   bool requiresAnalysisOSRPoint(TR::Node *node);
 
    // for OSR
    TR_OSRCompilationData* getOSRCompilationData() {return _osrCompilationData;}

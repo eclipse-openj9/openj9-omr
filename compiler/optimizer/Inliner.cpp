@@ -5009,11 +5009,11 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             _disableTailRecursion = true;
          }
       }
-   else if (comp()->getOption(TR_FullSpeedDebug) && tif->crossedBasicBlock())
+   else if (comp()->getOSRMode() == TR::involuntaryOSR && tif->crossedBasicBlock())
       {
       /**
-       * In FSD mode, we need to split block even for cases without virtual guard. This is 
-       * because in FSD a block with OSR point must have an exception edge to the osrCatchBlock
+       * In involuntary OSR mode, we need to split block even for cases without virtual guard. This is 
+       * because in involuntary OSR a block with OSR point must have an exception edge to the osrCatchBlock
        * of correct callerIndex. Split the block here so that the OSR points from callee
        * and from caller are separated.
        */

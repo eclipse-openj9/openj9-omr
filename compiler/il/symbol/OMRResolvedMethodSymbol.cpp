@@ -889,7 +889,17 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          TR::Block * OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(ttnode);
          TR_OSRPoint *osrPoint = NULL;
 
-         if (self()->comp()->requiresLeadingOSRPoint(ttnode))
+         // Generate an OSR point for the induction point, ignoring whether it is after or not
+         TR_ByteCodeInfo offsetBCI = ttnode->getByteCodeInfo();
+         offsetBCI.setByteCodeIndex(offsetBCI.getByteCodeIndex() + self()->comp()->getOSRInductionOffset(ttnode));
+         osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(offsetBCI, osrMethodData, self()->comp()->trMemory());
+         osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
+         if (self()->comp()->getOption(TR_TraceOSR))
+            traceMsg(self()->comp(), "offset osr point added for [%p] at offset bci %d:%d\n",
+               ttnode, offsetBCI.getCallerIndex(), offsetBCI.getByteCodeIndex());
+
+         // Generate an OSR point for the analysis point, if needed
+         if (self()->comp()->requiresAnalysisOSRPoint(ttnode))
             {
             osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(ttnode->getByteCodeInfo(), osrMethodData, self()->comp()->trMemory());
             osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
@@ -898,23 +908,6 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
                   ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
                   ttnode->getByteCodeInfo().getByteCodeIndex());
             }
-
-         int32_t osrOffset = self()->comp()->getOSRInductionOffset(ttnode);
-         if (osrOffset > 0)
-            {
-            TR_ByteCodeInfo offsetBCI = ttnode->getByteCodeInfo();
-            offsetBCI.setByteCodeIndex(offsetBCI.getByteCodeIndex() + osrOffset);
-            osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(offsetBCI, osrMethodData, self()->comp()->trMemory());
-            osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
-            if (self()->comp()->getOption(TR_TraceOSR))
-               traceMsg(self()->comp(), "offset osr point added for [%p] at offset bci %d:%d\n",
-                  ttnode, offsetBCI.getCallerIndex(), offsetBCI.getByteCodeIndex());
-            }
-
-         if (self()->comp()->getOption(TR_TraceOSR))
-            TR_ASSERT(osrPoint != NULL, "neither leading nor trailing osr point could be added for [%p] at or offset from %d:%d\n",
-               ttnode, ttnode->getByteCodeInfo().getCallerIndex(),
-               ttnode->getByteCodeInfo().getByteCodeIndex());
 
          // Add an exception edge from the current block to the OSR catch block if there isn't already one
          auto edge = block->getExceptionSuccessors().begin();
@@ -1268,19 +1261,16 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             if (doOSR)
                {
                TR_ASSERT(comp->getOSRCompilationData(), "OSR compilation data is NULL\n");
-               if (comp->canAffordOSRControlFlow())
+               self()->genAndAttachOSRCodeBlocks(comp->getCurrentInlinedSiteIndex());
+               if (!self()->getOSRPoints().isEmpty())
                   {
-                  self()->genAndAttachOSRCodeBlocks(comp->getCurrentInlinedSiteIndex());
-                  if (!self()->getOSRPoints().isEmpty())
-                     {
-                     self()->genOSRHelperCall(comp->getCurrentInlinedSiteIndex(), symRefTab);
-                     if (comp->getOption(TR_TraceOSR))
-                        comp->dumpMethodTrees("Trees after OSR in genIL", self());
-                     }
-
-                  if (!comp->isOutermostMethod())
-                     self()->cleanupUnreachableOSRBlocks(comp->getCurrentInlinedSiteIndex(), comp);
+                  self()->genOSRHelperCall(comp->getCurrentInlinedSiteIndex(), symRefTab);
+                  if (comp->getOption(TR_TraceOSR))
+                     comp->dumpMethodTrees("Trees after OSR in genIL", self());
                   }
+
+               if (!comp->isOutermostMethod())
+                  self()->cleanupUnreachableOSRBlocks(comp->getCurrentInlinedSiteIndex(), comp);
                }
 
             if (optimizer)
@@ -1761,7 +1751,6 @@ OMR::ResolvedMethodSymbol::findOSRPoint(TR_ByteCodeInfo &bcInfo)
    }
 
 
-
 void
 OMR::ResolvedMethodSymbol::addAutomatic(TR::AutomaticSymbol *p)
    {
@@ -2002,7 +1991,7 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
                      // As this method is performed soon after ilgen, the exception handler
                      // may be prepended with an asynccheck and pending pushes
                      // These should be retained in the copy, so skip them when ripping out trees
-                     if (comp->getHCRMode() == TR::osr)
+                     if (comp->getOSRTransitionTarget() == TR::postExecutionOSR)
                         {
                         TR::TreeTop *next = retain->getNextTreeTop();
                         if (next && next->getNode()->getOpCodeValue() == TR::asynccheck)

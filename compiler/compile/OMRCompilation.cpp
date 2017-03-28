@@ -586,6 +586,15 @@ bool OMR::Compilation::canAffordOSRControlFlow()
       return false;
       }
 
+   if (self()->osrInfrastructureRemoved())
+      {
+      if (self()->getOption(TR_TraceOSR))
+         {
+         traceMsg(self(), "canAffordOSRControlFlow returning false due to removal of OSR infrastructure\n");
+         }
+      return false;
+      }
+
    return _canAffordOSRControlFlow;
    }
 
@@ -597,6 +606,13 @@ void OMR::Compilation::setSeenClassPreventingInducedOSR()
 
 bool OMR::Compilation::supportsInduceOSR()
    {
+   if (_osrInfrastructureRemoved)
+      {
+      if (self()->getOption(TR_TraceOSR))
+         traceMsg(self(), "OSR induction cannot be performed after OSR infrastructure has been removed\n");
+      return false;
+      }
+
    if (!self()->canAffordOSRControlFlow())
       {
       if (self()->getOption(TR_TraceOSR))
@@ -622,13 +638,6 @@ bool OMR::Compilation::supportsInduceOSR()
       {
       if (self()->getOption(TR_TraceOSR))
          traceMsg(self(), "Cannot guarantee OSR transfer of control to the interpreter will work for calls preventing induced OSR (e.g. Quad) because of differences in JIT vs interpreter representations\n");
-      return false;
-      }
-
-   if (_osrInfrastructureRemoved)
-      {
-      if (self()->getOption(TR_TraceOSR))
-         traceMsg(self(), "OSR induction cannot be performed after OSR infrastructure has been removed\n");
       return false;
       }
 
@@ -659,7 +668,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    static char *disableMonentOSR = feGetEnv("TR_disableMonentOSR");
 
    bool potentialOSRPoint = false;
-   if (self()->getHCRMode() == TR::osr)
+   if (self()->getOSRTransitionTarget() == TR::postExecutionOSR)
       {
       if (_osrInfrastructureRemoved)
          potentialOSRPoint = false;
@@ -691,10 +700,10 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
 
    bool potentialOSRPoint = self()->isPotentialOSRPoint(node);
 
-   if (potentialOSRPoint && !self()->getOption(TR_FullSpeedDebug))
+   if (potentialOSRPoint && self()->getOSRMode() == TR::voluntaryOSR)
       {
 
-      if (self()->getHCRMode() == TR::osr &&
+      if (self()->getOSRTransitionTarget() == TR::postExecutionOSR &&
           (node->getOpCode().isCheck() || node->getOpCodeValue() == TR::treetop))
          {
          // When in OSR HCR mode we need to make sure we check the BCI of the original
@@ -735,38 +744,85 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
    return potentialOSRPoint;
    }
 
+/*
+ * OSR can operate in two modes, voluntary and involuntary.
+ *
+ * In involuntary OSR, the JITed code does not control when an OSR transition occurs. It can be
+ * initiated externally at any potential OSR point.
+ *
+ * In voluntary OSR, the JITed code does control when an OSR transition occurs, allowing it to
+ * limit the OSR points with transitions.
+ */
+TR::OSRMode
+OMR::Compilation::getOSRMode()
+   {
+   if (self()->getOption(TR_FullSpeedDebug))
+      return TR::involuntaryOSR;
+   return TR::voluntaryOSR;
+   }
+
+/*
+ * The OSR transition destination may be before or after the OSR point.
+ * When located before, the transition will target the bytecode index of
+ * the OSR point, whilst those located after may have an offset bytecode
+ * index.
+ */
+TR::OSRTransitionTarget
+OMR::Compilation::getOSRTransitionTarget()
+   {
+   if (self()->getHCRMode() == TR::osr)
+      return TR::postExecutionOSR;
+   return TR::preExecutionOSR;
+   }
+
+/*
+ * Provides the bytecode offset between the OSR point and the destination
+ * of the transition. Only used when doing postExecutionOSR to indicate
+ * the appropriate bytecode index after the OSR point.
+ */
 int32_t
 OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    {
-   if (self()->getHCRMode() == TR::osr)
+   // If no induction after the OSR point, offset must be 0
+   if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
+      return 0;
+
+   switch (node->getOpCodeValue())
       {
-      switch (node->getOpCodeValue())
-         {
-         case TR::monent: return 1;
-         case TR::asynccheck: return 0;
-         default: return 3;
-         }
+      case TR::monent: return 1;
+      case TR::asynccheck: return 0;
+      default: return 3;
       }
-   return 0;
    }
 
+/*
+ * An OSR analysis point is used only for OSRDefAnalysis
+ * and will not become a transition point. It is required
+ * for certain OSR points when doing postExecutionOSR.
+ * For example, liveness data must be know before an inlined
+ * call, to reconstruct the caller's frame, but the transition
+ * can only occur after the call.
+ *
+ * An analysis point does not have an induction offset.
+ */
 bool
-OMR::Compilation::requiresLeadingOSRPoint(TR::Node *node)
+OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
    {
-   // Without an induction offset, a leading OSR point is required
-   // This point results in analysis of liveness before the side effect has occured
-   if (self()->getOSRInductionOffset(node) == 0)
-      {
-      return true;
-      }
+   // If no induction after the OSR point, cannot use analysis point
+   if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
+      return false;
 
    switch (node->getOpCodeValue())
       {
       // Monents only require a trailing OSR point as they will perform OSR when executing the
       // monitor and there is no change in liveness due to the monent
-      case TR::monent: return false;
-      // Calls require leading and trailing OSR points as liveness may change across them
-      default: return true;
+      case TR::monent:
+      // Asyncchecks will not modify liveness
+      case TR::asynccheck:
+         return false;
+      // Calls require an analysis and transition point as liveness may change across them
+      default:
+         return true;
       }
    }
 

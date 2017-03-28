@@ -2048,7 +2048,8 @@ bool TR_InlinerBase::heuristicForUsingOSR(TR::Node *callNode, TR::ResolvedMethod
       int32_t osrCallerNumLiveStackSlots = 0;
       totalOSRCallersStackSlots = totalOSRCallersStackSlots + osrCallerNumStackSlots;
 
-      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
+      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex,
+         comp()->getOSRTransitionTarget() == TR::postExecutionOSR ? TR::analysisOSR : TR::inductionOSR);
       if (deadSymRefs)
          {
          osrCallerNumLiveStackSlots = osrMethodData->getNumSymRefs() - deadSymRefs->elementCount();

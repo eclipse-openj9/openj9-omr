@@ -119,6 +119,11 @@ public:
    uint32_t getNumOSRPoints() { return _osrPoints.size(); }
    bool sharesStackSlot(TR::SymbolReference *symRef);
 
+   TR_ByteCodeInfo& getOSRByteCodeInfo(TR::Node *node);
+   bool isOSRRelatedNode(TR::Node *node);
+   bool isOSRRelatedNode(TR::Node *node, TR_ByteCodeInfo &bci);
+   TR::TreeTop *getOSRTransitionTreeTop(TR::TreeTop *tt);
+
    uint32_t getNumParameterSlots() const     {return _resolvedMethod->numberOfParameterSlots(); }
 
    uint32_t getNumPPSlots() const            { return _resolvedMethod->numberOfPendingPushes(); }

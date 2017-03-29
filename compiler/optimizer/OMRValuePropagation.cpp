@@ -5727,7 +5727,7 @@ int32_t TR::ArraycopyTransformation::perform()
    // ValuePropagation arraycopy creation.
    // it is intended for platforms that want to generate inline code for both forward
    // and backward arraycopy but don't want to do control flow in the platform code
-   bool mustSpecializeForDirection = comp()->cg()->getSupportsPostProcessArrayCopy() && comp()->cg()->getSupportsPrimitiveArrayCopy();
+   bool mustSpecializeForDirection = comp()->cg()->getSupportsPostProcessArrayCopy();
 
    TR::CFG *cfg = comp()->getFlowGraph();
    TR::TreeTop* lastTreeTop  = cfg->findLastTreeTop();

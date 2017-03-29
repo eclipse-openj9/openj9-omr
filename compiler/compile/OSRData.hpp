@@ -119,7 +119,7 @@ class TR_OSRCompilationData
                            int32_t symRefOrder, int32_t symSize, bool takesTwoSlots);
    void ensureSlotSharingInfoAt(const TR_ByteCodeInfo& T);
    void addInstruction(TR::Instruction* instr);
-   void addInstruction(int32_t instructionPC, TR_ByteCodeInfo &bcInfo);
+   void addInstruction(int32_t instructionPC, TR_ByteCodeInfo bcInfo);
 
    void checkOSRLimits();
 

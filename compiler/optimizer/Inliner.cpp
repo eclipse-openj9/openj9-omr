@@ -4964,7 +4964,6 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             callerCFG->copyExceptionSuccessors(blockContainingTheCall, n, succAndPredAreNotOSRBlocks);
          else
             debugTrace(tracer(),"\ndon't add exception edges from callee OSR block(block_%d) to caller catch blocks\n",n->getNumber());
-         callerCFG->copyExceptionSuccessors(blockContainingTheCall, n, succAndPredAreNotOSRBlocks);
          }
       }
 

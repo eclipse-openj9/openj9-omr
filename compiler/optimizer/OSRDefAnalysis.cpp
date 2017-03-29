@@ -149,7 +149,7 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
                for (TR::SymbolReference* symRef = listIt.getFirst(); symRef; symRef = listIt.getNext(), symRefOrder++)
                   if (symRef == defSymRef)
                      break;
-               TR_ASSERT(symRefOrder < list->getSize(), "symref not found\n");
+               TR_ASSERT(symRefOrder < list->getSize(), "symref #%d on node n%dn not found\n", defSymRef->getReferenceNumber(), defNode->getGlobalIndex());
                comp()->getOSRCompilationData()->addSlotSharingInfo(point->getByteCodeInfo(),
                      slot, symRefNum, symRefOrder, defSymRef->getSymbol()->getSize(), takesTwoSlots);
                if (trace())

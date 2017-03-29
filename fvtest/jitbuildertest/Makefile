@@ -27,7 +27,8 @@ OBJECTS := \
 	selftest \
 	UnionTest \
 	FieldAddressTest \
-	AnonymousTest
+	AnonymousTest \
+	ControlFlowTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

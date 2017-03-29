@@ -661,9 +661,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
    if (!noGraFIX)
       {
-      // VETO flag for register usage
-      self()->setLitPoolRegisterIsFree(true);
-
       if ( !comp->getOption(TR_DisableLongDispStackSlot) )
          {
          self()->setExtCodeBaseRegisterIsFree(true);
@@ -920,9 +917,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
       if (noGraFIX)
          {
-         // VETO flag for register usage
-         self()->setLitPoolRegisterIsFree(true);
-
          if ( !self()->comp()->getOption(TR_DisableLongDispStackSlot) )
             {
             self()->setExtCodeBaseRegisterIsFree(true);
@@ -1956,10 +1950,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
    // If lit on demand is working, we always free up
    // If no lit-on-demand, try to avoid locking up litpool reg anyways
    //
-   if ((self()->isLiteralPoolOnDemandOn() ||
-       (!self()->comp()->hasNativeCall() && (self()->getFirstSnippet() == NULL)))
-       &&
-       self()->getLitPoolRegisterIsFree())
+   if (self()->isLiteralPoolOnDemandOn() || (!self()->comp()->hasNativeCall() && self()->getFirstSnippet() == NULL))
       {
       litPoolRegIsFree = true;
       }

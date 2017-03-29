@@ -601,11 +601,6 @@ public:
    int32_t getPreprologueOffset()               { return _preprologueOffset; }
    int32_t setPreprologueOffset(int32_t offset) { return _preprologueOffset = offset; }
 
-   // Flags to VETO all other policies wrt locked regs
-   //
-   bool getLitPoolRegisterIsFree()         {return _cgFlags.testAny(S390CG_litPoolRegisterIsFree);}
-   void setLitPoolRegisterIsFree(bool val) {_cgFlags.set(S390CG_litPoolRegisterIsFree, val);}
-
    bool supportsBranchPreload()          {return _cgFlags.testAny(S390CG_enableBranchPreload);}
    void setEnableBranchPreload()          {_cgFlags.set(S390CG_enableBranchPreload);}
    void setDisableBranchPreload()          {_cgFlags.reset(S390CG_enableBranchPreload);}
@@ -1213,7 +1208,7 @@ protected:
    /** Miscellaneous S390CG boolean flags. */
    typedef enum
       {
-      S390CG_litPoolRegisterIsFree       = 0x00000001,
+      // Available                       = 0x00000001,
       S390CG_extCodeBaseRegisterIsFree   = 0x00000002,
       S390CG_doingInstructionSelection   = 0x00000004,
       S390CG_addStorageReferenceHints    = 0x00000008,

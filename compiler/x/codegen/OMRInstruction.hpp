@@ -227,7 +227,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
       inline uint8_t RM(uint8_t B = 0) const
          {
          TR_ASSERT(mod == 0x3, "ModRM is not in register mode");
-         return (B << 3) | (0x7 & reg);
+         return (B << 3) | (0x7 & rm);
          }
       inline ModRM* setMod(uint8_t mod = 0x03) // 0b11
          {
@@ -299,8 +299,90 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
          return 0x0f & *((uint8_t*)this);
          }
       };
+   template<size_t VEX_SIZE>
+   struct VEX
+      {
+      VEX() {TR_ASSERT(false, "INVALID VEX PREFIX");}
+      };
    };
 
+   template<>
+   struct Instruction::VEX<3>
+      {
+      // Byte 0: C4
+      uint8_t escape;
+      // Byte 1
+      uint8_t m : 5;
+      uint8_t B : 1;
+      uint8_t X : 1;
+      uint8_t R : 1;
+      // Byte 2
+      uint8_t p : 2;
+      uint8_t L : 1;
+      uint8_t v : 4;
+      uint8_t W : 1;
+      // Byte 3: opcode
+      uint8_t opcode;
+      // Byte 4: ModRM
+      ModRM   modrm;
+
+      inline VEX() {}
+      inline VEX(const REX& rex, uint8_t ModRMOpCode) : modrm(ModRMOpCode)
+         {
+         escape = '\xC4';
+         R = ~rex.R;
+         X = ~rex.X;
+         B = ~rex.B;
+         W = rex.W;
+         v = 0xf; //0b1111
+         }
+      inline bool CanBeShortened() const
+         {
+         return X && B && !W && (m == 1);
+         }
+      inline uint8_t Reg() const
+         {
+         return modrm.Reg(~R);
+         }
+      inline uint8_t RM() const
+         {
+         return modrm.RM(~B);
+         }
+      };
+   template<>
+   struct Instruction::VEX<2>
+      {
+      // Byte 0: C5
+      uint8_t escape;
+      // Byte 1
+      uint8_t p : 2;
+      uint8_t L : 1;
+      uint8_t v : 4;
+      uint8_t R : 1;
+      // Byte 2: opcode
+      uint8_t opcode;
+      // Byte 3: ModRM
+      ModRM   modrm;
+
+      inline VEX() {}
+      inline VEX(const VEX<3>& other) : modrm(other.modrm)
+         {
+         escape = '\xC5';
+         p = other.p;
+         L = other.L;
+         v = other.v;
+         R = other.R;
+         opcode = other.opcode;
+         }
+      inline uint8_t Reg() const
+         {
+         return modrm.Reg(~R);
+         }
+      inline uint8_t RM() const
+         {
+         return modrm.RM();
+         }
+      };
 }
 
 }

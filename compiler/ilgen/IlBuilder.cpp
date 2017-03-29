@@ -144,9 +144,11 @@ IlBuilder::injectIL()
       return false;
 
    rc = connectTrees();
-   comp()->dumpMethodTrees("after connectTrees");
+   if (TraceEnabled)
+      comp()->dumpMethodTrees("after connectTrees");
    cfg()->removeUnreachableBlocks();
-   comp()->dumpMethodTrees("after removing unreachable blocks");
+   if (TraceEnabled)
+      comp()->dumpMethodTrees("after removing unreachable blocks");
    return rc;
    }
 

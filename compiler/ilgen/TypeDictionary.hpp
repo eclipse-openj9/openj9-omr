@@ -57,6 +57,8 @@ public:
    IlType() :
       _name(0)
       { }
+   virtual ~IlType()
+      { }
 
    const char *getName() { return _name; }
    virtual char *getSignatureName();

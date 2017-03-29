@@ -12721,7 +12721,7 @@ TR::Node *ificmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    bitwiseToLogical(node, block, s);
 
-   if (firstChild->getOpCode().isBooleanCompare() && !firstChild->getOpCode().isLongCompare() &&
+   if (firstChild->getOpCode().isBooleanCompare() &&
        (secondChild->getOpCode().isLoadConst()) &&
        ((secondChild->getInt() == 0) || (secondChild->getInt() == 1)) &&
        (firstChild->getOpCode().convertCmpToIfCmp() != TR::BadILOp) &&
@@ -12818,7 +12818,7 @@ TR::Node *ificmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
         ( firstChild->getOpCodeValue() == TR::iushr ||
           firstChild->getFirstChild()->isNonNegative()
-        ) && //Either a logical shift or a positive first child to guaruntee zero-extend
+        ) && //Either a logical shift or a positive first child to guarantee zero-extend
 
         secondChild->getOpCode().isLoadConst() &&
         secondChild->getInt() == 0 //Second child is a const 0

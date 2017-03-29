@@ -5056,14 +5056,22 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       // However, have to deal with old architectures, strange data types and register pairs
       TR::InstOpCode::Mnemonic load = loadInstrs[form][numberOfBytesLog2][isSourceSigned][numberOfExtendBits/32-1];
       if (form == RegReg)
+         {
          generateRRInstruction(cg, load, node, targetRegister, srcRegister);
-
-      // TODO (GuardedStorage)
+         }
       else //if (form == MemReg)
          {
-         if (load == TR::InstOpCode::LLGF && cg->isEvalCompressionSequence()
-               && (TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility()))
-            load = TR::InstOpCode::LLGFSG;
+         if (cg->isConcurrentScavengeEnabled())
+            {
+            // TODO (GuardedStorage): If we are in the evaluation of a compressedrefs sequence and are about to generate
+            // compressed load we override the instruction opcode to generate a guarded load and shift instead. We should
+            // figure out a better way to handle this.
+            if (cg->isEvaluatingCompressionSequence() && load == TR::InstOpCode::LLGF)
+               {
+               load = TR::InstOpCode::LLGFSG;
+               }
+            }
+
          generateRXInstruction(cg, load, node, targetRegister, tempMR);
          }
       }
@@ -6109,14 +6117,18 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
                   {
-                  // TODO (GuardedStorage)
-                  if (!comp->useCompressedPointers() && (node->getOpCodeValue() == TR::aloadi) &&
-                        tempReg->containsCollectedReference() && TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility())
-                  {
-                     generateRXInstruction(cg, TR::InstOpCode::LGG, node, tempReg, tempMR);
-                  }
-                  else
-                     generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                  auto mnemonic = TR::InstOpCode::getLoadOpCode();
+
+                  // TODO (GuardedStorage): Do we need the useCompressedPointers check here? All aloads should have been lowered by now.
+                  if (cg->isConcurrentScavengeEnabled() && !comp->useCompressedPointers())
+                     {
+                     if (node->getOpCodeValue() == TR::aloadi && tempReg->containsCollectedReference())
+                        {
+                        mnemonic = TR::InstOpCode::LGG;
+                        }
+                     }
+
+                  generateRXInstruction(cg, mnemonic, node, tempReg, tempMR);
                   }
                }
             }

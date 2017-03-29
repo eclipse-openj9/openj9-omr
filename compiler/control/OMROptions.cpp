@@ -1835,11 +1835,6 @@ OMR::Options::Options(
       optimizationPlan->setOptLevelDowngraded(false);
       }
 
-   // TODO (GuardedStorage)
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-   self()->setOption (TR_DisableArrayCopyOpts, true);
-#endif
-
    if (self()->getOption(TR_FullSpeedDebug))
       {
       if (self()->getOption(TR_MimicInterpreterFrameShape))

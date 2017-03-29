@@ -2072,6 +2072,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
             break; // OK to attempt compile-time load
          }
 
+      const static char *needInitializedCheck = feGetEnv("TR_needInitializedCheck");
       TR::VPConstraint *base = vp->getConstraint(node->getFirstChild(), isGlobal);
       if (base && node->getOpCode().hasSymbolReference() &&
           (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
@@ -2162,7 +2163,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
           && base->getClassType()
           && base->getClassType()->asFixedClass()
           && base->getClass()
-          && TR::Compiler->cls.isClassInitialized(vp->comp(), base->getClass()))
+          && (!needInitializedCheck || TR::Compiler->cls.isClassInitialized(vp->comp(), base->getClass())))
          {
          if (symRef == vp->comp()->getSymRefTab()->findJavaLangClassFromClassSymbolRef())
             {

@@ -2532,6 +2532,25 @@ static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
   return insertInstr;
   }
 
+/**
+ * \brief
+ * Determines if a value should be in a commoned constant node or not.
+ *
+ * \details
+ *
+ * A node with a large constant can be materialized and left as commoned nodes.
+ * Smaller constants can be uncommoned so that they re-materialize every time when needed as a call
+ * parameter. This query is platform specific as constant loading can be expensive on some platforms
+ * but cheap on others, depending on their magnitude.
+ */
+bool OMR::Z::CodeGenerator::shouldValueBeInACommonedNode(int64_t value)
+   {
+   int64_t smallestPos = self()->getSmallestPosConstThatMustBeMaterialized();
+   int64_t largestNeg = self()->getLargestNegConstThatMustBeMaterialized();
+
+   return ((value >= smallestPos) || (value <= largestNeg));
+   }
+
 bool OMR::Z::CodeGenerator::supportsNamedVirtualRegisters() { return false; } // TODO : Identitiy needs folding
 
 // This method it mostly for safely moving register spills outside of loops

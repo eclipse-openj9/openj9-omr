@@ -94,6 +94,7 @@
 #include "infra/Link.hpp"                           // for TR_LinkHead, etc
 #include "infra/List.hpp"                           // for ListIterator, etc
 #include "infra/Stack.hpp"                          // for TR_Stack
+#include "infra/Checklist.hpp"                      // for TR::NodeCheckList
 #include "infra/TRCfgEdge.hpp"                      // for CFGEdge
 #include "infra/TRCfgNode.hpp"                      // for CFGNode
 #include "optimizer/Optimizations.hpp"
@@ -563,6 +564,91 @@ OMR::CodeGenerator::setUpForInstructionSelection()
       }
 
   }
+
+/**
+ * \brief The uncommon-call-constant-node pass is an extra pre-codegen pass
+ * before instruction selection. It aims to avoid the situation where
+ * a constant integer is made alive across calls and, thereby, lower the preserved register
+ * pressure caused due to this.
+ *
+ * \details
+ *
+ * \verbatim
+ * Take z/Architecture as an example, we could run into the following situation where constant
+ * integer 16 is loaded to a preserved register GPR6, which is then loaded to GPR2 as call
+ * parameter. The GPR6 will be preserved by the callee and can incur extra register shuffling.
+ *
+ * LHI     GPR6,0x10           # immediate value in preserved register
+ * LGR     GPR2,GPR6           # load parameter from preserved register again
+ * LG      GPR14,#609 -216(GPR7)
+ * LGHI    GPR0,0xff28
+ * BASR    GPR14,GPR14         # call virtual function, which will unnecessarily preserve GPR6.
+ * LGR     GPR2,GPR6           # load parameter from preserved register again for the next use
+ * ...
+ *
+ * \endverbatim
+ *
+ * Loading integer constants as immediate values [i.e. LHI GPR2, 0x10] is preferred.
+ * The ranges for immediate value loading on different platforms are governed by the following
+ * platform-specific query:
+ *
+ * \verbatim
+ *   bool materializesLargeConstants()
+ *   bool shouldValueBeInACommonedNode(int64_t value)
+ * \endverbatim
+ *
+*/
+void
+OMR::CodeGenerator::uncommonCallConstNodes()
+   {
+   TR::Compilation* comp = self()->comp();
+   if(comp->getOption(TR_TraceCG))
+      {
+      traceMsg(comp, "Performing uncommon call constant nodes\n");
+      }
+
+   TR::NodeChecklist checklist(comp);
+
+   for (TR::TreeTop* tt = self()->comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
+      {
+       TR::Node* node = tt->getNode();
+       if(node->getNumChildren() >= 1 &&
+               node->getFirstChild()->getOpCode().isFunctionCall())
+          {
+          TR::Node* callNode = node->getFirstChild();
+          if(checklist.contains(callNode))
+             {
+             if(comp->getOption(TR_TraceCG))
+                {
+                traceMsg(comp, "Skipping previously visited call node %d\n", callNode->getGlobalIndex());
+                }
+             continue;
+             }
+
+          checklist.add(callNode);
+
+          for(uint32_t i = 0; i < callNode->getNumChildren(); ++i)
+             {
+             TR::Node* paramNode = callNode->getChild(i);
+             if(paramNode->getReferenceCount() > 1 &&
+                     paramNode->getOpCode().isLoadConst() &&
+                     !self()->isMaterialized(paramNode))
+                {
+                if(self()->comp()->getOption(TR_TraceCG))
+                   {
+                   traceMsg(comp, "Uncommon const node %X [n%dn]\n",
+                            paramNode, paramNode->getGlobalIndex());
+                   }
+
+                TR::Node* newConstNode = TR::Node::create(paramNode->getOpCodeValue(), 0);
+                newConstNode->setConstValue(paramNode->getConstValue());
+                callNode->setAndIncChild(i, newConstNode);
+                paramNode->decReferenceCount();
+                }
+             }
+          }
+      }
+   }
 
 void
 OMR::CodeGenerator::doInstructionSelection()
@@ -3499,27 +3585,8 @@ OMR::CodeGenerator::isMaterialized(TR::Node * node)
    else
       return false;
 
-   return self()->isMaterialized(value);
+   return self()->shouldValueBeInACommonedNode(value);
    }
-
-
-// determine if value fits in the immediate field (if any) of instructions that machine provides
-bool
-OMR::CodeGenerator::isMaterialized(int64_t value)
-   {
-   if(self()->materializesLargeConstants()) //check the int case
-      {
-      int64_t smallestPos = self()->getSmallestPosConstThatMustBeMaterialized();
-      int64_t largestNeg = self()->getLargestNegConstThatMustBeMaterialized();
-
-      if ((value >= smallestPos) ||
-          (value <= largestNeg))
-         return true;
-      }
-   return false;
-   }
-
-
 
 bool
 OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node)

@@ -298,6 +298,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool supportsAtomicAdd()                {return true;}
    bool hasTMEvaluator()                       {return true;}
 
+   int64_t getLargestNegConstThatMustBeMaterialized() { TR_ASSERT(0, "Not Implemented on x86"); return 0; }
+   int64_t getSmallestPosConstThatMustBeMaterialized() { TR_ASSERT(0, "Not Implemented on x86"); return 0; }
+
    void performNonLinearRegisterAssignmentAtBranch(TR::X86LabelInstruction *branchInstruction, TR_RegisterKinds kindsToBeAssigned);
    void prepareForNonLinearRegisterAssignmentAtMerge(TR::X86LabelInstruction *mergeInstruction);
 

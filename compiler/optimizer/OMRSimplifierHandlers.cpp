@@ -504,7 +504,7 @@ static void reassociateBigConstants(TR::Node *node, TR::Simplifier *s)
             int64_t diff = node->getSecondChild()->get64bitIntegralValue() -
                            base_node->getSecondChild()->get64bitIntegralValue();
 
-            if (!s->comp()->cg()->isMaterialized(diff) &&
+            if (!s->comp()->cg()->shouldValueBeInACommonedNode(diff) &&
                 performTransformation(s->comp(), "%sReusing big constant from node 0x%p in node 0x%p\n", s->optDetailString(), base_node, node))
                {
                node->getFirstChild()->recursivelyDecReferenceCount();

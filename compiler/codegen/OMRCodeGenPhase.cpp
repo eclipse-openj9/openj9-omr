@@ -505,6 +505,30 @@ OMR::CodeGenPhase::performLowerTreesPhase(TR::CodeGenerator * cg, TR::CodeGenPha
    }
 
 
+void
+OMR::CodeGenPhase::performUncommonCallConstNodesPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
+   {
+   TR::Compilation* comp = cg->comp();
+
+   if(comp->getOption(TR_DisableCallConstUncommoning))
+      {
+      traceMsg(comp, "Skipping Uncommon Call Constant Node phase\n");
+      return;
+      }
+
+   phase->reportPhase(UncommonCallConstNodesPhase);
+
+   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
+      comp->dumpMethodTrees("Pre Uncommon Call Constant Node Trees");
+
+   TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
+   LexicalTimer pt(phase->getName(), comp->phaseTimer());
+
+   cg->uncommonCallConstNodes();
+
+   if (comp->getOption(TR_TraceCG) || comp->getOption(TR_TraceTrees))
+      comp->dumpMethodTrees("Post Uncommon Call Constant Node Trees");
+  }
 
 void
 OMR::CodeGenPhase::performReserveCodeCachePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
@@ -576,6 +600,8 @@ OMR::CodeGenPhase::getName(PhaseValue phase)
    {
    switch (phase)
       {
+      case UncommonCallConstNodesPhase:
+         return "UncommonCallConstNodesPhase";
       case ReserveCodeCachePhase:
          return "ReserveCodeCache";
       case LowerTreesPhase:

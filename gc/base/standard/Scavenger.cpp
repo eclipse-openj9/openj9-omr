@@ -1173,18 +1173,15 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 MMINLINE bool
 MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, GC_SlotObject *slotObject)
 {
-	omrobjectptr_t slot = slotObject->readReferenceFromSlot();
+	omrobjectptr_t oldSlot = slotObject->readReferenceFromSlot();
+	omrobjectptr_t slot = oldSlot;
 	bool result = copyAndForward(env, &slot);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	// todo: could do non-atomically during STW phases
-	// bool swapResult =
-	slotObject->atomicWriteReferenceToSlot(slot);
-	// it's valid for this atomic write to fail. it means another thread raced us with either fixing the slot (with same value, though),
-	// or there was a mutator write to that slot that we must not overwrite.
-	//Assert_MM_true(swapResult);
-#else
+	slotObject->atomicWriteReferenceToSlot(oldSlot, slot);
+#else /* OMR_GC_CONCURRENT_SCAVENGER */
 	slotObject->writeReferenceToSlot(slot);
-#endif
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	if (NULL != env->_effectiveCopyScanCache) {
 		env->_scavengerStats.countCopyDistance((uintptr_t)slotObject->readAddressFromSlot(), (uintptr_t)slotObject->readReferenceFromSlot());

@@ -11309,7 +11309,14 @@ bool OMR::Z::CodeGenerator::isDispInRange(int64_t disp)
 bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
 
-   if (dt == TR::Float) return false;
+   /*
+    * Prior to zNext, vector operations that operated on floating point numbers only supported
+    * Doubles. On zNext and onward, Float type floating point numbers are supported as well.
+    */
+   if (dt == TR::Float && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+      {
+      return false;
+      }
 
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
@@ -11319,7 +11326,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vmul:
       case TR::vdiv:
       case TR::vneg:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;
@@ -11332,7 +11339,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;
@@ -11346,7 +11353,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
       case TR::vsplats:
       case TR::getvelem:
       case TR::vsetelem:
-         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Double)
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;

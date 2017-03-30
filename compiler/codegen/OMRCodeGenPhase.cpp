@@ -423,9 +423,8 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
 
    if (cg->isConcurrentScavengeEnabled())
       {
-      // TODO (GuardedStorage): We need to come up with a better solution than anchoring tree tops of compressedrefs
-      // sequences to enforce certain evaluation order. Perhaps not lowering compressedrefs in the first place when
-      // concurrent scavenge is supported is the correct solution here.
+      // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
+      // to enforce certain evaluation order
       traceMsg(comp, "GuardedStorage: in performSetupForInstructionSelectionPhase\n");
 
       auto mapAllocator = getTypedAllocator<std::pair<TR::TreeTop*, TR::TreeTop*> >(comp->allocator());
@@ -439,7 +438,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
 
          traceMsg(comp, "GuardedStorage: Examining node = %p\n", node);
 
-         if ((comp->useCompressedPointers() && node->getOpCodeValue() == TR::l2a) || (!comp->useCompressedPointers() && node->getOpCodeValue() == TR::aloadi))
+         if (node->getOpCodeValue() == TR::aloadi)
             {
             TR::TreeTop* anchorTreeTop = TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node));
             TR::TreeTop* appendTreeTop = iter.currentTree();
@@ -449,7 +448,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
                appendTreeTop = currentTreeTopToappendTreeTop[appendTreeTop];
                }
 
-            // Anchor the l2a before the current treetop
+            // Anchor the aloadi before the current treetop
             appendTreeTop->insertBefore(anchorTreeTop);
             currentTreeTopToappendTreeTop[iter.currentTree()] = anchorTreeTop;
 

@@ -3756,7 +3756,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::Cod
    bool isShortConstantArrayWithZero = false;
 
    static bool isConstArraysetEnabled = (NULL == feGetEnv("TR_DisableConstArrayset"));
-   if (isConstArraysetEnabled && cg->getX86ProcessorInfo().supportsSSE4_1() && TR::Compiler->target.is64Bit())
+   if (isConstArraysetEnabled && cg->getX86ProcessorInfo().supportsSSSE3() && TR::Compiler->target.is64Bit())
       {
       if (valueNode->getOpCode().isLoadConst() && !valueNode->getOpCode().isFloat() && !valueNode->getOpCode().isDouble())
          {

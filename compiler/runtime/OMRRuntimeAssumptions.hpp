@@ -40,6 +40,14 @@ class TR_UnloadedClassPicSite;
 namespace OMR
 {
 
+enum RuntimeAssumptionCategory
+   {
+   LocationRedirection = 0,
+   ValueModification,
+   SentinelCategory,
+   LastRuntimeAssumptionCategory = SentinelCategory
+   };
+
 class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
    {
    friend class ::TR_DebugExt;
@@ -67,9 +75,11 @@ class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
    virtual TR_UnloadedClassPicSite  *asUCPSite() { return 0; }
    virtual TR_RedefinedClassPicSite *asRCPSite() { return 0; }
    virtual TR_PatchJNICallSite      *asPJNICSite() { return 0; }
-           void dumpInfo(char *subclassName);
+   void dumpInfo(char *subclassName);
    virtual void dumpInfo() = 0;
    virtual TR_RuntimeAssumptionKind getAssumptionKind() = 0;
+   virtual RuntimeAssumptionCategory getAssumptionCategory() = 0;
+
 
    bool isAssumingMethod(void *metaData, bool reclaimPrePrologueAssumptions = false);
    bool isAssumingRange(uintptrj_t rangeStartPC, uintptrj_t rangeEndPC, uintptrj_t rangeColdStartPC, uintptrj_t rangeColdEndPC, uintptrj_t rangeStartMD, uintptrj_t rangeEndMD);
@@ -91,6 +101,32 @@ class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
    uintptrj_t _key; // key for searching in the hashtable
    };
 
+/**
+ * An abstract class representing a category of runtime assumptions that will 
+ * patch code at a particular location to unconditionally jump to a destination.
+ */
+class LocationRedirectRuntimeAssumption : public RuntimeAssumption
+   {
+   protected:
+   LocationRedirectRuntimeAssumption(TR_PersistentMemory *pm, uintptrj_t key)
+      : RuntimeAssumption(pm, key) {}
+
+   virtual RuntimeAssumptionCategory getAssumptionCategory() { return LocationRedirection; }
+   };
+
+/**
+ * An abstract class representing a category of runtime assumptions that will 
+ * patch code at a particular location to change its value to another value.
+ */
+class ValueModifyRuntimeAssumption : public RuntimeAssumption
+   {
+   protected:
+   ValueModifyRuntimeAssumption(TR_PersistentMemory *pm, uintptrj_t key)
+      : RuntimeAssumption(pm, key) {}
+
+   virtual RuntimeAssumptionCategory getAssumptionCategory() { return ValueModification; }
+   };
+
 }
 
 namespace TR
@@ -104,6 +140,7 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
       _nextAssumptionForSameJittedBody = this; // pointing to itself means that the list is empty
       }
    virtual TR_RuntimeAssumptionKind getAssumptionKind() { return RuntimeAssumptionSentinel; }
+   virtual OMR::RuntimeAssumptionCategory getAssumptionCategory() { return OMR::SentinelCategory; }
    virtual void     compensate(TR_FrontEnd *vm, bool isSMP, void *data) {}
    virtual bool     equals(RuntimeAssumption &other) { return false; }
 

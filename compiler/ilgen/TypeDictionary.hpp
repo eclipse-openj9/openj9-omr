@@ -409,6 +409,11 @@ public:
       return PointerTo(toIlType<typename std::remove_pointer<T>::type>());
    }
 
+   /*
+    * @brief advise that compilation is complete so compilation-specific objects like symbol references can be cleared from caches
+    */
+   void NotifyCompilationDone();
+
 protected:
    TR::SegmentProvider *_segmentProvider;
    TR::Region *_memoryRegion;

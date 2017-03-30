@@ -135,6 +135,7 @@ X86OpCodesTest::compileUnaryTestMethods()
    _su2l = (unsignedSignatureCharS_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::su2l, "su2l", _argTypesUnaryShort, TR::Int64, rc));
    _su2f = (unsignedSignatureCharS_F_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::su2f, "su2f", _argTypesUnaryShort, TR::Float, rc));
    _su2d = (unsignedSignatureCharS_D_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::su2d, "su2d", _argTypesUnaryShort, TR::Double, rc));
+   _iByteswap = (signatureCharI_I_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::ibyteswap, "iByteswap", _argTypesUnaryInt, TR::Int32, rc));
 }
 
 void
@@ -1730,6 +1731,7 @@ X86OpCodesTest::invokeUnaryTests()
    uint32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
+   signatureCharI_I_testMethodType * iUnaryCons = 0;
    signatureCharS_S_testMethodType * sUnaryCons = 0;
    signatureCharB_B_testMethodType * bUnaryCons = 0;
    signatureCharJ_J_testMethodType  *lUnaryCons = 0;
@@ -2129,6 +2131,17 @@ X86OpCodesTest::invokeUnaryTests()
       iu2lConst = (unsignedSignatureCharI_J_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::iu2l,
             resolvedMethodName, _argTypesUnaryInt, TR::Int64, rc, 2, 1, &uintDataArray[i]));
       OMR_CT_EXPECT_EQ(iu2lConst, convert(uintDataArray[i], LONG_POS), iu2lConst(INT_PLACEHOLDER_1));
+      }
+
+   //ibyteswap
+   testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_iByteswap, byteswap(intDataArray[i]), _iByteswap(intDataArray[i]));
+      sprintf(resolvedMethodName, "iByteswapConst%d", i + 1);
+      iUnaryCons = (signatureCharI_I_testMethodType *) (compileOpCodeMethod(_numberOfUnaryArgs, TR::ibyteswap,
+            resolvedMethodName, _argTypesUnaryInt, TR::Int32, rc, 2, 1, &intDataArray[i]));
+      OMR_CT_EXPECT_EQ(iUnaryCons, byteswap(intDataArray[i]), iUnaryCons(INT_PLACEHOLDER_1));
       }
    }
 

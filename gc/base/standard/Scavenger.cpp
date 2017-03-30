@@ -1593,6 +1593,15 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 		/* Set the remembered set slot to the object pointer in case it was still marked for removal. */
 		*rememberedSetSlot = objectPtr;
 	}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isParentInNewSpace && !shouldRemember) {
+		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
+		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
+		TRIGGER_J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+	}
+#endif
+
 	return shouldRemember;
 }
 
@@ -1704,6 +1713,14 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 		}
 		scanCache->_shouldBeRemembered = false;
 	}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (!isParentInNewSpace && !scanCache->_shouldBeRemembered) {
+		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
+		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
+		TRIGGER_J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+	}
+#endif
 }
 
 /****************************************
@@ -2360,8 +2377,14 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 					} else {
 						/* Tenured object remembered flags can be cleared */
 						_extensions->objectModel.clearRemembered(objectPtr);
-						/* Inform interested parties that an object has been removed from the remembered set */
-						TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+						/* Inform interested parties (Concurrent Marker) that an object has been removed from the remembered set.
+						 * In non-concurrent Scavenger this is the only way to create an old-to-old reference, that has parent object being marked.
+						 * In Concurrent Scavenger, it can be created even with parent object that was not in RS to start with. So this is handled
+						 * in a more generic spot when object is scavenged and is unnecessary to do it here.
+						 */
+						TRIGGER_J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 					}
 				}
 			}
@@ -2420,9 +2443,14 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 						/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
 						_extensions->objectModel.clearRemembered(objectPtr);
 						remSetSlotIterator.removeSlot();
-
-						/* Inform interested parties that an object has been removed from the remembered set */
-						TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
+						/* Inform interested parties (Concurrent Marker) that an object has been removed from the remembered set.
+						 * In non-concurrent Scavenger this is the only way to create an old-to-old reference, that has parent object being marked.
+						 * In Concurrent Scavenger, it can be created even with parent object that was not in RS to start with. So this is handled
+						 * in a more generic spot when object is scavenged and is unnecessary to do it here.
+						 */
+						 TRIGGER_J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 					} else {
 						/* We are not removing it after all, since the object has Nursery references => reset the deferred flag.
@@ -3329,8 +3357,9 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 						_extensions->objectModel.clearRemembered(objectPtr);
 						remSetSlotIterator.removeSlot();
 
-						/* Inform interested parties that an object has been removed from the remembered set */
-						TRIGGER_J9HOOK_MM_PRIVATE_OBJECT_REMOVED_FROM_REMEMBERED_SET(_extensions->privateHookInterface, env->getOmrVMThread(), objectPtr);
+						/* No need to inform anybody about creation of old-to-old reference (see regular pruning pass).
+						 * For CS, this is already handled during scanning of old objects 
+						 */
 					} else {
 						/* We are not removing it after all, since the object has Nursery references => reset the deferred flag. */
 						*slotPtr = objectPtr;

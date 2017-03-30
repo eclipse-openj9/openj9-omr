@@ -1435,8 +1435,8 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsPrimitiveArrayCopy() {return _flags2.testAny(SupportsPrimitiveArrayCopy);}
    void setSupportsPrimitiveArrayCopy() {_flags2.set(SupportsPrimitiveArrayCopy);}
 
-   bool getSupportsReferenceArrayCopy() {return _flags2.testAny(SupportsReferenceArrayCopy);}
-   void setSupportsReferenceArrayCopy() {_flags2.set(SupportsReferenceArrayCopy);}
+   bool getSupportsReferenceArrayCopy() {return _flags1.testAny(SupportsReferenceArrayCopy);}
+   void setSupportsReferenceArrayCopy() {_flags1.set(SupportsReferenceArrayCopy);}
 
    bool getSupportsEfficientNarrowIntComputation() {return _flags2.testAny(SupportsEfficientNarrowIntComputation);}
    void setSupportsEfficientNarrowIntComputation() {_flags2.set(SupportsEfficientNarrowIntComputation);}

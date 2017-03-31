@@ -24,6 +24,24 @@
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/Method.hpp"
+#include "env/jittypes.h"
+#include "gtest/gtest.h"
+#include "il/DataTypes.hpp"
+#include "ilgen/BinaryOpIlInjector.hpp"
+#include "ilgen/ChildlessUnaryOpIlInjector.hpp"
+#include "ilgen/CmpBranchOpIlInjector.hpp"
+#include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
+#include "ilgen/StoreOpIlInjector.hpp"
+#include "ilgen/TernaryOpIlInjector.hpp"
+#include "ilgen/TypeDictionary.hpp"
+#include "ilgen/UnaryOpIlInjector.hpp"
+#include "tests/CallIlInjector.hpp"
+#include "tests/IndirectLoadIlInjector.hpp"
+#include "tests/IndirectStoreIlInjector.hpp"
+
 
 namespace TR { class ResolvedMethod; }
 
@@ -173,15 +191,150 @@ class OpCodesTest : public TestDriver
    //Unsupported OpCodes are tested in this function
    virtual void UnsupportedOpCodesTests();
 
-   uint8_t *
-   compileOpCodeMethod(int32_t opCodeArgsNum,
+   template <typename functiontype> 
+   int32_t  
+   compileOpCodeMethod(functiontype& resultpointer,
+         int32_t opCodeArgsNum,
          TR::ILOpCodes opCode,
          char * resolvedMethodName,
          TR::DataType * argTypes,
          TR::DataType returnType,
          int32_t & returnCode,
          uint16_t numArgs = 0,
-         ...);
+         ...)
+   {
+   TR_ASSERT((numArgs % 2) == 0, "Must be called with zero or an even args, numChildArgs = %d", numArgs);
+   if ((numArgs % 2) != 0)
+      {
+      fprintf(stderr, "Error: numArgs must be called with zero or an even args, numArgs is %d", numArgs);
+      exit(-1);
+      }
+
+   OpIlInjector * opCodeInjector = 0;
+   TR::ILOpCode op(opCode);
+
+   TR::TypeDictionary types;
+
+   CmpBranchOpIlInjector cmpBranchIlnjector(&types, this, opCode);
+   BinaryOpIlInjector opCodeBinaryInjector(&types, this, opCode);
+   UnaryOpIlInjector opCodeUnaryInjector(&types, this, opCode);
+   TernaryOpIlInjector ternaryOpIlInjector(&types, this, opCode);
+   ChildlessUnaryOpIlInjector childlessUnaryOpIlInjector(&types, this, opCode);
+   StoreOpIlInjector storeOpIlInjector(&types, this, opCode);
+   IndirectLoadIlInjector indirectLoadIlInjector(&types, this, opCode);
+   IndirectStoreIlInjector indirectStoreIlInjector(&types, this, opCode);
+
+   if (op.isBooleanCompare() && op.isBranch())
+      {
+      opCodeInjector = &cmpBranchIlnjector;
+      }
+   else if (op.isTernary())
+      {
+      opCodeInjector = &ternaryOpIlInjector;
+      }
+   else if (op.isStoreIndirect())
+      {
+      opCodeInjector = &indirectStoreIlInjector;
+      }
+   else if (op.isLoadIndirect())
+      {
+      opCodeInjector = &indirectLoadIlInjector;
+      }
+   else if (((op.isLoadVar() || op.isLoadConst()) && !op.isIndirect()) || op.isReturn() )
+      {
+      opCodeInjector = &childlessUnaryOpIlInjector;
+      }
+   else if (op.isStore() && !op.isStoreIndirect())
+      {
+      opCodeInjector = &storeOpIlInjector;
+      }
+
+   else
+      {
+      if (2 == opCodeArgsNum)
+         {
+         opCodeInjector = &opCodeBinaryInjector;
+         }
+      else
+         {
+         opCodeInjector = &opCodeUnaryInjector;
+         }
+      }
+
+   TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
+   for (uint32_t a=0;a < opCodeArgsNum;a++)
+      argIlTypes[a] = types.PrimitiveType(argTypes[a]);
+
+   if (numArgs != 0)
+      {
+      va_list args;
+      va_start(args, numArgs);
+      for (int32_t i = 0; i < numArgs; i = i + 2)
+         {
+
+         uint32_t pos = va_arg(args, uint32_t);
+         void * value = va_arg(args, void *);
+
+         switch (argTypes[pos - 1])
+             {
+             case TR::Int8:
+                {
+                int8_t *int8Value = (int8_t *) value;
+                opCodeInjector->bconstParm(pos, *int8Value);
+                break;
+                }
+             case TR::Int16:
+                {
+                int16_t * int16Value = (int16_t *) value;
+                opCodeInjector->sconstParm(pos, *int16Value);
+                break;
+                }
+             case TR::Int32:
+                {
+                int32_t * int32Value = (int32_t *) value;
+                opCodeInjector->iconstParm(pos, *int32Value);
+                break;
+                }
+             case TR::Int64:
+                {
+                int64_t * int64Value = (int64_t *) value;
+                opCodeInjector->lconstParm(pos, *int64Value);
+                break;
+                }
+             case TR::Float:
+                {
+                float * floatValue = (float *) value;
+                opCodeInjector->fconstParm(pos, *floatValue);
+                break;
+                }
+             case TR::Double:
+                {
+                double * doubleValue = (double *) value;
+                opCodeInjector->dconstParm(pos, *doubleValue);
+                break;
+                }
+             case TR::Address:
+                {
+                uintptrj_t * addressValue = (uintptrj_t *) value;
+                opCodeInjector->aconstParm(pos, *addressValue);
+                break;
+                }
+             default:
+                TR_ASSERT(0, "Wrong dataType or not supported dataType");
+             }
+          }
+      va_end(args);
+      }
+   TR::ResolvedMethod opCodeCompilee(__FILE__, LINETOSTR(__LINE__), resolvedMethodName, opCodeArgsNum, argIlTypes, types.PrimitiveType(returnType), 0, opCodeInjector);
+   TR::IlGeneratorMethodDetails opCodeDetails(&opCodeCompilee);
+   uint8_t *startPC= compileMethod(opCodeDetails, warm, returnCode);
+   EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || 
+               COMPILATION_IL_GEN_FAILURE == returnCode || 
+               COMPILATION_REQUESTED == returnCode) 
+      << "compileOpCodeMethod: Compiling method " << resolvedMethodName << " failed unexpectedly";
+   resultpointer = reinterpret_cast<functiontype>(startPC);
+   return returnCode;
+   }
 
    uint8_t *
    compileDirectCallOpCodeMethod(int32_t opCodeArgsNum,

@@ -743,12 +743,9 @@ public:
                diagEngine.Report(call->getExprLoc(), diagID);
             }
          } else { 
-            // Ignore member function calls that specifically call a base class member function
-            MemberExpr * memberFunc;
-            // hasQualifier checks for a nested name specifier, e.g. the 'IBM::Foo::' part of 'IBM::Foo::baz()'
-            if ((memberFunc = dyn_cast<MemberExpr>(call->getCallee())) && memberFunc->hasQualifier()) {
-               return true;
-            }
+            if (isAllowedSelflessCall(call))
+               return true; 
+
             DiagnosticsEngine &diagEngine = Context->getDiagnostics();
             unsigned diagID = diagEngine.getCustomDiagID(DiagnosticsEngine::Error, "Implicit this receivers are prohibited in extensible classes");
             DiagnosticBuilder builder = diagEngine.Report(receiver->getExprLoc(), diagID);
@@ -812,6 +809,22 @@ public:
 
    const CXXMethodDecl* getCallerDecl(const clang::Stmt* expr) {
       return lastSeenMethodDecl; 
+   }
+
+   /**
+    * Return true iff the call is in a fashion that self() may be safely
+    * elided. Examples would be explicit base class calls, or calls inside 
+    * the most derived class
+    */
+   bool isAllowedSelflessCall(CXXMemberCallExpr* call) { 
+      // Ignore member function calls that specifically call a base class member function
+      MemberExpr * memberFunc;
+      // hasQualifier checks for a nested name specifier, e.g. the 'IBM::Foo::' part of 'IBM::Foo::baz()'
+      if ((memberFunc = dyn_cast<MemberExpr>(call->getCallee())) && memberFunc->hasQualifier()) {
+         return true;
+      }
+
+      return false;
    }
 
    /**

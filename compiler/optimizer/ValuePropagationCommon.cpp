@@ -1175,7 +1175,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          transformTheCall = primitiveTransform;
          }
 
-      if (primitiveArray1 || primitiveArray2)
+      if (referenceArray1 || referenceArray2)
          {
          transformTheCall = referenceTransform;
          }

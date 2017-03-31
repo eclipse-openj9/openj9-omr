@@ -1185,34 +1185,6 @@ enum TR_ProcessOptionsFlags
    TR_JITProcessErrorUnknown = 0x00000080
    };
 
-/**
- * Enum describing how the HW profiler frequencies are calculated.
- *
- * When we have wider C++11 support, this should be changed to a declaration
- * closer to the below:
- *
- * \verbatim
- * enum class TR_HWProfileFreqCalcMethod : uint32_t
- * \endverbatim
- *
- * The enum type is defined to a 32 bit value because of the option parsing
- * code.
- *
- * For now, because of z/OS V1.13 XL C/C++, we cannot do sensible things here
- * so resort to the mildly insensible.
- */
-namespace TR
-   {
-   namespace HWProfileFreqCalcMethod
-      {
-      enum
-         {
-         first_method,
-         avg_method,
-         max_method
-         };
-      }
-   }
 
 #define TR_FILTER_EXCLUDE_NAME_ONLY         1
 #define TR_FILTER_EXCLUDE_NAME_AND_SIG      2
@@ -1505,10 +1477,6 @@ public:
    void            setLogFile(TR::FILE * f)  {_logFile = f;}
    char *          getLogFileName()      {return _logFileName;}
 
-   char *          getListingFileName()  {return _listingFileName;}
-
-   char *          getPDFFileName()      {return _pdfFileName;}
-
    char *          getBlockShufflingSequence(){ return _blockShufflingSequence; }
 
    int32_t         getRandomSeed(){ return _randomSeed; }
@@ -1630,10 +1598,6 @@ public:
    int32_t   getDLTOptLevel()                  {return _dltOptLevel;}
    int32_t   getProfilingCount()               {return _profilingCount;}
    int32_t   getProfilingFrequency()           {return _profilingFrequency;}
-   int32_t   getHWProfileSuperColdOnlySteps()  {return _HWProfileSuperColdOnlySteps;}
-   int32_t   getHWProfileHotnessCalc()         {return _HWProfileHotnessCalc;}
-   int32_t   getHWProfileFreqCalc()            {return _HWProfileFreqCalcMethod;}
-   int32_t   getHWProfileFreqCalcInlineHeuristic() {return _HWProfileFreqCalcInlineHeuristic;}
    int32_t   insertDebuggingCounters()         {return _insertDebuggingCounters;}
    int32_t   getLastSearchCount()              {return _lastSearchCount;}
 
@@ -1863,7 +1827,6 @@ public:
    static int64_t INLINE_calleeToBigSum;
    static int64_t INLINE_calleeToDeepSum;
    static int64_t INLINE_calleeHasTooManyNodesSum;
-   static int32_t INLINE_HWProfileHotCallsThreshold;
 
    static int32_t _inlinerVeryLargeCompiledMethodAdjustFactor;
 
@@ -2233,11 +2196,6 @@ private:
    char                       *_suffixLogsFormat;
    TR::FILE *                      _logFile;
 
-   // Listing file option
-   char                       *_listingFileName;
-
-   // Profiling options
-   char                       *_pdfFileName;
 
    char                       *_optFileName;
    int32_t                    *_customStrategy;     // Actually array of TR_OptimizerImpl::Optimizations numbers read from optFileName
@@ -2360,11 +2318,6 @@ private:
    int32_t                     _dltOptLevel;
    int32_t                     _profilingCount;
    int32_t                     _profilingFrequency;
-   int32_t                     _HWProfileSuperColdOnlySteps;   //Used by PDF
-   int32_t                     _HWProfileFreqCalcMethod;
-   int32_t                     _HWProfileFreqCalcInlineHeuristic;
-   int32_t                     _HWProfileHotnessCalc;
-
    int32_t                     _counterBucketGranularity;
    int32_t                     _minCounterFidelity;
    int64_t                     _debugCounterWarmupSeconds;

@@ -873,8 +873,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptSubIndex), 0, "F%d"},
    {"lastOptTransformationIndex=", "O<nnn>\tindex of the last optimization transformation to perform",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptTransformationIndex), 0, "F%d"},
-   {"listing=",               "L<filename>\twrite listing to filename",
-        TR::Options::setString,  offsetof(OMR::Options,_listingFileName), 0, "P%s"},
    {"lnl=", "C<nnn>\t(labelTargetAddress&0xff) > _labelTargetNOPLimit are padded out with NOPs until the next 256 byte boundary",
       TR::Options::set32BitNumeric, offsetof(OMR::Options,_labelTargetNOPLimit), TR_LABEL_TARGET_NOP_LIMIT , "F%d"},
    {"lockReserveClass=",  "O{regex}\tenable reserving locks for specified classes", TR::Options::setRegex, offsetof(OMR::Options, _lockReserveClass), 0, "P"},
@@ -1617,7 +1615,6 @@ int32_t       OMR::Options::INLINE_ranOutOfBudget                = 0;
 int64_t       OMR::Options::INLINE_calleeToBigSum                = 0;
 int64_t       OMR::Options::INLINE_calleeToDeepSum               = 0;
 int64_t       OMR::Options::INLINE_calleeHasTooManyNodesSum      = 0;
-int32_t       OMR::Options::INLINE_HWProfileHotCallsThreshold    = 45;
 
 int32_t       OMR::Options::_inlinerVeryLargeCompiledMethodAdjustFactor = 20;
 
@@ -2477,7 +2474,6 @@ OMR::Options::jitPreProcess()
    _profilingCount = DEFAULT_PROFILING_COUNT;
    _profilingFrequency = DEFAULT_PROFILING_FREQUENCY;
 #endif
-   _HWProfileSuperColdOnlySteps = 0;
 
 #if defined(TR_HOST_POWER)
    _bigCalleeThreshold = 300;
@@ -2711,9 +2707,6 @@ OMR::Options::jitPreProcess()
       _stackPCDumpNumberOfFrames=5;
       _maxSpreadCountLoopless = TR_MAX_SPREAD_COUNT_LOOPLESS;
       _maxSpreadCountLoopy = TR_MAX_SPREAD_COUNT_LOOPY;
-      _HWProfileFreqCalcMethod = TR::HWProfileFreqCalcMethod::avg_method;
-      _HWProfileFreqCalcInlineHeuristic = 80;
-      _HWProfileHotnessCalc = TR::HWProfileFreqCalcMethod::max_method;
 
       // This call needs to stay at the end of jitPreProcess() because
       // it changes the default values for some options

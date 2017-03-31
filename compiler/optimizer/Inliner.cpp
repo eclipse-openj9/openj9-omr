@@ -1956,7 +1956,7 @@ TR_InlinerBase::addGuardForVirtual(
    // compilation and those later processes will handle them using OSR so we don't want to complicate
    // that with additional OSR at this point
    if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
-       && callerSymbol->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp(), false))
+       && callNode->getSymbolReference()->getOwningMethodSymbol(comp())->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp(), false))
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 
@@ -4502,45 +4502,6 @@ void TR_InlinerBase::inlineFromGraph(TR_CallStack *prevCallStack, TR_CallTarget 
       }
 
    callStack.commit();
-   }
-
-static void computeNumLivePendingSlotsAndNestingDepth(TR::Optimizer* optimizer, TR_CallTarget* calltarget, TR_CallStack* callStack, int32_t& numLivePendingPushSlots, int32_t& nestingDepth)
-   {
-   if (optimizer->comp()->getOption(TR_EnableOSR))
-       {
-       TR::Block *containingBlock = calltarget->_myCallSite->_callNodeTreeTop->getEnclosingBlock();
-       int32_t weight = 1;
-       if (!containingBlock->isCold() && containingBlock->getStructureOf())
-          containingBlock->getStructureOf()->calculateFrequencyOfExecution(&weight);
-       nestingDepth = weight/10;
-
-       TR_OSRMethodData *osrMethodData = optimizer->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(optimizer->comp()->getCurrentInlinedSiteIndex(), callStack->_methodSymbol);
-       TR_Array<List<TR::SymbolReference> > *pendingPushSymRefs = callStack->_methodSymbol->getPendingPushSymRefs();
-       int32_t numPendingSlots = 0;
-
-       if (pendingPushSymRefs)
-          numPendingSlots = pendingPushSymRefs->size();
-
-       TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(calltarget->_myCallSite->_callNode->getByteCodeIndex());
-
-       for (int32_t i=0;i<numPendingSlots;i++)
-         {
-         List<TR::SymbolReference> symRefsAtThisSlot = (*pendingPushSymRefs)[i];
-
-         if (symRefsAtThisSlot.isEmpty()) continue;
-
-         ListIterator<TR::SymbolReference> symRefsIt(&symRefsAtThisSlot);
-         TR::SymbolReference *nextSymRef;
-         for (nextSymRef = symRefsIt.getCurrent(); nextSymRef; nextSymRef=symRefsIt.getNext())
-            {
-            if (!deadSymRefs || !deadSymRefs->get(nextSymRef->getReferenceNumber()))
-               numLivePendingPushSlots++;
-            }
-         }
-
-       optimizer->comp()->incNumLivePendingPushSlots(numLivePendingPushSlots);
-       optimizer->comp()->incNumLoopNestingLevels(nestingDepth);
-       }
    }
 
 static void updateCallersFlags(TR::ResolvedMethodSymbol* callerSymbol, TR::ResolvedMethodSymbol* calleeSymbol, TR::Optimizer * optimizer)

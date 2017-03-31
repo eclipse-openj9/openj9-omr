@@ -102,12 +102,18 @@ void TR::PPCLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       TR_PPCOutOfLineCodeSection *oi = cg()->findOutLinedInstructionsFromLabel(getLabelSymbol());
       TR_ASSERT(oi, "Could not find PPCOutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
 
-      cg()->unlockFreeSpillList();
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
 
       if (cg()->getDebug())
          cg()->traceRegisterAssignment("OOL: Finished register assignment in OOL section\n");
+
+      // Unlock the free spill list.
+      //
+      // TODO: live registers that are not spilled at this point should have their backing
+      // storage returned to the free spill list.
+      //
+      cg()->unlockFreeSpillList();
       }
    }
 
@@ -214,13 +220,17 @@ void TR::PPCConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindT
       //
       TR_PPCOutOfLineCodeSection *oi = cg()->findOutLinedInstructionsFromLabel(getLabelSymbol());
       TR_ASSERT(oi, "Could not find PPCOutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
-
-      cg()->unlockFreeSpillList();
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
-
       if (cg()->getDebug())
             cg()->traceRegisterAssignment("OOL: Finished register assignment in OOL section\n");
+
+      // Unlock the free spill list.
+      //
+      // TODO: live registers that are not spilled at this point should have their backing
+      // storage returned to the free spill list.
+      //
+      cg()->unlockFreeSpillList();
       }
    }
 

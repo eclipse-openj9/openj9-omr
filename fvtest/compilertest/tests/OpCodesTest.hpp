@@ -203,7 +203,6 @@ class OpCodesTest : public TestDriver
          uint16_t numArgs = 0,
          ...)
    {
-   TR_ASSERT((numArgs % 2) == 0, "Must be called with zero or an even args, numChildArgs = %d", numArgs);
    if ((numArgs % 2) != 0)
       {
       fprintf(stderr, "Error: numArgs must be called with zero or an even args, numArgs is %d", numArgs);

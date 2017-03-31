@@ -901,6 +901,26 @@ int32_t OMR::ARM::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
    return TR::RealRegister::LastFPR - TR::RealRegister::FirstFPR  + 1;
    }
 
+
+/**
+ * \brief
+ * Determine if value fits in the immediate field (if any) of instructions that machine provides.
+ *
+ * \details
+ *
+ * A node with a large constant can be materialized and left as commoned nodes.
+ * Smaller constants can be uncommoned so that they re-materialize every time when needed as a call
+ * parameter. This query is platform specific as constant loading can be expensive on some platforms
+ * but cheap on others, depending on their magnitude.
+ */
+bool OMR::ARM::CodeGenerator::shouldValueBeInACommonedNode(int64_t value)
+   {
+   int64_t smallestPos = self()->getSmallestPosConstThatMustBeMaterialized();
+   int64_t largestNeg = self()->getLargestNegConstThatMustBeMaterialized();
+
+   return ((value >= smallestPos) || (value <= largestNeg));
+   }
+
 bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
    return self()->machine()->getARMRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;

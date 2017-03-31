@@ -537,67 +537,6 @@ OpCodesTest::compileTestMethods()
    {
    }
 
-uint8_t *
-OpCodesTest::compileDirectCallOpCodeMethod(int32_t opCodeArgsNum,
-      TR::ILOpCodes opCodeCompilee,
-      TR::ILOpCodes opCode,
-      char * compileeResolvedMethodName,
-      char * testResolvedMethodName,
-      TR::DataType * argTypes,
-      TR::DataType returnType,
-      int32_t & returnCode)
-   {
-   TR::TypeDictionary types;
-   ChildlessUnaryOpIlInjector functionIlInjector(&types, this, opCodeCompilee);
-
-   TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
-   for (int32_t i=0;i < opCodeArgsNum;i++)
-      argIlTypes[i] = types.PrimitiveType(argTypes[i]);
-
-   TR::ResolvedMethod functionCompilee(__FILE__, LINETOSTR(__LINE__), compileeResolvedMethodName, opCodeArgsNum, argIlTypes, types.PrimitiveType(returnType), 0, &functionIlInjector);
-   TR::IlGeneratorMethodDetails functionDetails(&functionCompilee);
-   switch (returnType)
-      {
-      case TR::Int32:
-         _int32Compilee = &functionCompilee;
-         _int32CompiledMethod = (signatureCharI_I_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
-         functionCompilee.setEntryPoint((void *)_int32CompiledMethod);
-         break;
-      case TR::Int64:
-         _int64Compilee = &functionCompilee;
-         _int64CompiledMethod = (signatureCharJ_J_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
-         functionCompilee.setEntryPoint((void *)_int64CompiledMethod);
-         break;
-      case TR::Double:
-         _doubleCompilee = &functionCompilee;
-         _doubleCompiledMethod = (signatureCharD_D_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
-         functionCompilee.setEntryPoint((void *)_doubleCompiledMethod);
-         break;
-      case TR::Float:
-         _floatCompilee = &functionCompilee;
-         _floatCompiledMethod = (signatureCharF_F_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
-         functionCompilee.setEntryPoint((void *)_floatCompiledMethod);
-         break;
-      case TR::Address:
-         _addressCompilee = &functionCompilee;
-         _addressCompiledMethod = (signatureCharL_L_testMethodType *) (compileMethod(functionDetails, warm, returnCode));
-         functionCompilee.setEntryPoint((void *)_addressCompiledMethod);
-         break;
-      default:
-         TR_ASSERT(0, "compilee dataType should be int32, int64, double, float or address");
-      }
-   EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode) 
-      << "Compiling callee method " << compileeResolvedMethodName << " failed unexpectedly";
-
-   CallIlInjector callIlInjector(&types, this, opCode);
-   TR::ResolvedMethod callCompilee(__FILE__, LINETOSTR(__LINE__), testResolvedMethodName, opCodeArgsNum, argIlTypes, types.PrimitiveType(returnType), 0, &callIlInjector);
-   TR::IlGeneratorMethodDetails callDetails(&callCompilee);
-   uint8_t *startPC = compileMethod(callDetails, warm, returnCode);
-   EXPECT_TRUE(COMPILATION_SUCCEEDED == returnCode || COMPILATION_REQUESTED == returnCode) 
-      << "Compiling test method " << testResolvedMethodName << " failed unexpectedly";
-   return startPC;
-   }
-
 void
 OpCodesTest::addUnsupportedOpCodeTest(int32_t opCodeArgsNum,
       TR::ILOpCodes opCode,

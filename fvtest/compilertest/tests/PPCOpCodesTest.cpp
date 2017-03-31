@@ -5186,11 +5186,11 @@ PPCOpCodesTest::compileDisabledDirectCallTestMethods()
    int32_t rc = 0;
 
    //Jazz103 Work item 115240
-   _acall = (signatureCharL_L_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address, rc));
-   _iCall = (signatureCharI_I_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc));
-   _lCall = (signatureCharJ_J_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc));
-   _dCall = (signatureCharD_D_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc));
-   _fCall = (signatureCharF_F_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc));
+   compileDirectCallOpCodeMethod(_acall, _numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address,    rc);
+   compileDirectCallOpCodeMethod(_iCall, _numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt,     TR::Int32,      rc);
+   compileDirectCallOpCodeMethod(_lCall, _numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong,    TR::Int64,      rc);
+   compileDirectCallOpCodeMethod(_dCall, _numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble,  TR::Double,     rc);
+   compileDirectCallOpCodeMethod(_fCall, _numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat,   TR::Float,      rc);
    }
 
 void

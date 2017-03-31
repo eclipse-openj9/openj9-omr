@@ -192,10 +192,10 @@ S390OpCodesTest::compileDirectCallTestMethods()
 
    int32_t rc = 0;
 #if !defined(TR_TARGET_64BIT)
-   _iCall = (signatureCharI_I_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc));
-   _lCall = (signatureCharJ_J_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc));
-   _dCall = (signatureCharD_D_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc));
-   _fCall = (signatureCharF_F_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc));
+   compileDirectCallOpCodeMethod(_iCall, _numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc);
+   compileDirectCallOpCodeMethod(_lCall, _numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc);
+   compileDirectCallOpCodeMethod(_dCall, _numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc);
+   compileDirectCallOpCodeMethod(_fCall, _numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc);
 #endif
    }
 
@@ -208,7 +208,7 @@ S390OpCodesTest::compileAddressTestMethods()
    compileOpCodeMethod(_a2s, _numberOfUnaryArgs, TR::a2s, "a2s", _argTypesUnaryAddress, TR::Int16, rc);
    compileOpCodeMethod(_a2l, _numberOfUnaryArgs, TR::a2l, "a2l", _argTypesUnaryAddress, TR::Int64, rc);
 #if !defined(TR_TARGET_64BIT)
-   _acall = (signatureCharL_L_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address, rc));
+   compileDirectCallOpCodeMethod(_acall, _numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address, rc);
    compileOpCodeMethod(_i2a, _numberOfUnaryArgs, TR::i2a, "i2a", _argTypesUnaryInt, TR::Address, rc);
    compileOpCodeMethod(_iu2a, _numberOfUnaryArgs, TR::iu2a, "iu2a", _argTypesUnaryInt, TR::Address, rc);
 #endif
@@ -3777,12 +3777,12 @@ S390OpCodesTest::compileDisabledDirectCallTestMethods()
    //Jazz103 Work Item 103419
    int32_t rc = 0;
 #if defined(TR_TARGET_64BIT)
-   _iCall = (signatureCharI_I_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc));
-   _lCall = (signatureCharJ_J_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc));
-   _fCall = (signatureCharF_F_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc));
-   _acall = (signatureCharL_L_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address, rc));
+   compileDirectCallOpCodeMethod(_iCall, _numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc);
+   compileDirectCallOpCodeMethod(_lCall, _numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc);
+   compileDirectCallOpCodeMethod(_fCall, _numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc);
+   compileDirectCallOpCodeMethod(_acall, _numberOfUnaryArgs, TR::areturn, TR::acall, "aCompiledMethod", "acall", _argTypesUnaryAddress, TR::Address, rc);
 #endif
-   _dCall = (signatureCharD_D_testMethodType *) (compileDirectCallOpCodeMethod(_numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc));
+   compileDirectCallOpCodeMethod(_dCall, _numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc);
    }
 
 void

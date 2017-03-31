@@ -383,7 +383,8 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
       TR_OSRPoint *osrPoint = NULL;
       bool isPotentialOSRPoint = comp()->isPotentialOSRPointWithSupport(treeTop);
-      if (isPotentialOSRPoint && comp()->requiresLeadingOSRPoint(node))
+      if (isPotentialOSRPoint && (comp()->getOSRTransitionTarget() == TR::preExecutionOSR
+          || comp()->requiresAnalysisOSRPoint(node)))
          {
          osrPoint = _methodSymbol->findOSRPoint(node->getByteCodeInfo());
          TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", node);
@@ -395,20 +396,12 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
       buildOSRDefs(node, analysisInfo, osrPoint, nextOsrPoint, NULL, aux);
 
-      if (isPotentialOSRPoint)
+      if (isPotentialOSRPoint && comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
          {
-         int32_t offset = comp()->getOSRInductionOffset(node);
-         if (offset > 0)
-            {
-            TR_ByteCodeInfo bcInfo = node->getByteCodeInfo();
-            bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + offset);
-            nextOsrPoint = _methodSymbol->findOSRPoint(bcInfo);
-            TR_ASSERT(nextOsrPoint != NULL, "Cannot find an offset OSR point for node %p", node);
-            }
-         else
-            {
-            nextOsrPoint = NULL;
-            }
+         TR_ByteCodeInfo bci = treeTop->getNode()->getByteCodeInfo();
+         bci.setByteCodeIndex(bci.getByteCodeIndex() + comp()->getOSRInductionOffset(node));
+         nextOsrPoint = _methodSymbol->findOSRPoint(bci);
+         TR_ASSERT(nextOsrPoint != NULL, "Cannot find an offset OSR point for node %p", node);
          }
       else
          {
@@ -848,23 +841,20 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          TR_OSRPoint *offsetOSRPoint = NULL;
          if (comp()->isPotentialOSRPointWithSupport(tt))
             {
-            if (comp()->requiresLeadingOSRPoint(tt->getNode()))
+            if (comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+               {
+               TR_ByteCodeInfo bcInfo = tt->getNode()->getByteCodeInfo();
+               bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + comp()->getOSRInductionOffset(tt->getNode()));
+               offsetOSRPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
+               TR_ASSERT(osrPoint != NULL, "Cannot find an offset OSR point for node %p", tt->getNode());
+               }
+
+            if (comp()->getOSRTransitionTarget() == TR::preExecutionOSR || comp()->requiresAnalysisOSRPoint(tt->getNode()))
                {
                osrPoint = comp()->getMethodSymbol()->findOSRPoint(tt->getNode()->getByteCodeInfo());
                TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", tt->getNode());
                }
-
-            int32_t offset = comp()->getOSRInductionOffset(tt->getNode());
-            if (offset > 0)
-               {
-               TR_ByteCodeInfo bcInfo = tt->getNode()->getByteCodeInfo();
-               bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + offset);
-               offsetOSRPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
-               TR_ASSERT(offsetOSRPoint != NULL, "Cannot find an offset OSR point for node %p", tt->getNode());
-               }
             }
-         else
-            osrPoint = NULL;
 
          if (offsetOSRPoint)
              buildOSRLiveRangeInfo(tt->getNode(), _liveVars, offsetOSRPoint, liveLocalIndexToSymRefNumberMap, maxSymRefNumber, numBits, osrMethodData);
@@ -1089,9 +1079,8 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
 
 bool TR_OSRLiveRangeAnalysis::canAffordAnalysis()
    {
-   if (comp()->getOption(TR_FullSpeedDebug)) // save some compile time
+   if (comp()->getOSRMode() == TR::involuntaryOSR) // save some compile time
       return false;
-
 
    if (!comp()->canAffordOSRControlFlow())
       return false;
@@ -1101,9 +1090,6 @@ bool TR_OSRLiveRangeAnalysis::canAffordAnalysis()
 
 int32_t TR_OSRExceptionEdgeRemoval::perform()
    {
-   if (comp()->getHCRMode() != TR::osr)
-      comp()->setCanAffordOSRControlFlow(false);
-
    if (comp()->getOption(TR_EnableOSR))
       {
       //if (comp()->getOption(TR_DisableOSRExceptionEdgeRemoval)) // add to Options later
@@ -1121,10 +1107,10 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
       return 0;
       }
 
-   if (comp()->getOption(TR_FullSpeedDebug))
+   if (comp()->getOSRMode() == TR::involuntaryOSR)
       {
       if (comp()->getOption(TR_TraceOSR))
-         traceMsg(comp(), "FSD enabled -- returning from OSR exception edge removal analysis since we implement FSD with exception edges.\n");
+         traceMsg(comp(), "Involuntary OSR enabled -- returning from OSR exception edge removal analysis since we implement involuntary OSR with exception edges.\n");
       return 0;
       }
 

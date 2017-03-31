@@ -214,18 +214,18 @@ class OpCodesTest : public TestDriver
 
    TR::TypeDictionary types;
 
-   CmpBranchOpIlInjector cmpBranchIlnjector(&types, this, opCode);
-   BinaryOpIlInjector opCodeBinaryInjector(&types, this, opCode);
-   UnaryOpIlInjector opCodeUnaryInjector(&types, this, opCode);
-   TernaryOpIlInjector ternaryOpIlInjector(&types, this, opCode);
-   ChildlessUnaryOpIlInjector childlessUnaryOpIlInjector(&types, this, opCode);
-   StoreOpIlInjector storeOpIlInjector(&types, this, opCode);
-   IndirectLoadIlInjector indirectLoadIlInjector(&types, this, opCode);
-   IndirectStoreIlInjector indirectStoreIlInjector(&types, this, opCode);
+   CmpBranchOpIlInjector        cmpBranchIlInjector(&types, this, opCode);
+   BinaryOpIlInjector           opCodeBinaryIlInjector(&types, this, opCode);
+   UnaryOpIlInjector            opCodeUnaryInjector(&types, this, opCode);
+   TernaryOpIlInjector          ternaryOpIlInjector(&types, this, opCode);
+   ChildlessUnaryOpIlInjector   childlessUnaryOpIlInjector(&types, this, opCode);
+   StoreOpIlInjector            storeOpIlInjector(&types, this, opCode);
+   IndirectLoadIlInjector       indirectLoadIlInjector(&types, this, opCode);
+   IndirectStoreIlInjector      indirectStoreIlInjector(&types, this, opCode);
 
    if (op.isBooleanCompare() && op.isBranch())
       {
-      opCodeInjector = &cmpBranchIlnjector;
+      opCodeInjector = &cmpBranchIlInjector;
       }
    else if (op.isTernary())
       {
@@ -247,18 +247,23 @@ class OpCodesTest : public TestDriver
       {
       opCodeInjector = &storeOpIlInjector;
       }
-
    else
       {
-      if (2 == opCodeArgsNum)
+      switch (opCodeArgsNum) 
          {
-         opCodeInjector = &opCodeBinaryInjector;
-         }
-      else
-         {
-         opCodeInjector = &opCodeUnaryInjector;
+         case 1:
+            opCodeInjector = &opCodeUnaryInjector;
+            break;
+         case 2:
+            opCodeInjector = &opCodeBinaryIlInjector;
+            break;
+         default:
+            fprintf(stderr, "didn't select an injector based on argument number %d", opCodeArgsNum);
+            exit(-1);
          }
       }
+
+   TR_ASSERT(opCodeInjector, "Didn't select an injector!"); 
 
    TR::IlType **argIlTypes = new TR::IlType*[opCodeArgsNum];
    for (uint32_t a=0;a < opCodeArgsNum;a++)

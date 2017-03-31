@@ -457,7 +457,7 @@ class ValuePropagation : public TR::Optimization
    void launchNode(TR::Node *node, TR::Node *parent, int32_t whichChild);
 
    bool checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount);
-   void doDelayedTransformations();
+   virtual void doDelayedTransformations();
 
    void replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount);
 
@@ -606,6 +606,7 @@ class ValuePropagation : public TR::Optimization
    void transformUnknownTypeArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
+   virtual void constrainRecognizedMethod(TR::Node *node);
 
    struct ObjCloneInfo {
       TR_ALLOC(TR_Memory::ValuePropagation)

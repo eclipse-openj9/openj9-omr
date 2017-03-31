@@ -7167,6 +7167,16 @@ void OMR::ValuePropagation::transformStringCtors(VPTreeTopPair *treeTopPair)
   treeTopPair->_treetop1->unlink(true);
 }
 
+/** \brief
+ *     Extension point for language specific optimizations on recognized methods
+ *
+ * \parm node
+ *     The call node to be constrained
+ */
+void OMR::ValuePropagation::constrainRecognizedMethod(TR::Node *node)
+   {
+   }
+
 void OMR::ValuePropagation::replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount)
    {
    if (curNode->getVisitCount() == visitCount)

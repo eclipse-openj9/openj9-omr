@@ -228,8 +228,6 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    // Determine whether or not x87 or SSE should be used for floating point.
    //
-   static char * forceSSE2 = feGetEnv("TR_forceSSE2");
-   static char * forceX87 = feGetEnv("TR_forceX87");
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
    if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.getX86OSSupportsSSE2(comp))
@@ -238,13 +236,12 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    if (_targetProcessorInfo.supportsTM() && !comp->getOption(TR_DisableTM))
       {
-
-	  /**
-	  * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel,
-	  * we will return false for any versions before Broadwell.
-	  *
-	  * TODO: Need to figure out from which mode of Broadwell start supporting TM
-	  */
+      /**
+        * Due to many verions of Haswell and a small number of Broadwell have defects for TM and then disabled by Intel,
+        * we will return false for any versions before Broadwell.
+        *
+        * TODO: Need to figure out from which mode of Broadwell start supporting TM
+        */
       if (!_targetProcessorInfo.isIntelHaswell())
          {
          if (TR::Compiler->target.is64Bit())
@@ -252,14 +249,13 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
             self()->setSupportsTM(); // disable tm on 32bits for now
             }
          }
-	  }
+      }
 
-   if (!forceX87 &&
-       (TR::Compiler->target.is64Bit() ||
+   if (TR::Compiler->target.is64Bit()
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-        supportsSSE2 ||
+       || supportsSSE2
 #endif
-        forceSSE2))
+      )
       {
       self()->setUseSSEForSinglePrecision();
       self()->setUseSSEForDoublePrecision();

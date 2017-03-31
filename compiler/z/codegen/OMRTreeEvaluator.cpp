@@ -6117,18 +6117,18 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
                   {
-                  auto mnemonic = TR::InstOpCode::getLoadOpCode();
-
                   // TODO (GuardedStorage): Do we need the useCompressedPointers check here? All aloads should have been lowered by now.
-                  if (cg->isConcurrentScavengeEnabled() && !comp->useCompressedPointers())
+                  if (cg->isConcurrentScavengeEnabled() &&
+                      !comp->useCompressedPointers() &&
+                      node->getOpCodeValue() == TR::aloadi &&
+                      tempReg->containsCollectedReference())
                      {
-                     if (node->getOpCodeValue() == TR::aloadi && tempReg->containsCollectedReference())
-                        {
-                        mnemonic = TR::InstOpCode::LGG;
-                        }
+                     generateRXYInstruction(cg, TR::InstOpCode::LGG, node, tempReg, tempMR);
                      }
-
-                  generateRXInstruction(cg, mnemonic, node, tempReg, tempMR);
+                  else
+                     {
+                     generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                     }
                   }
                }
             }

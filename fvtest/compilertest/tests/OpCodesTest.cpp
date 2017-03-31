@@ -158,6 +158,7 @@ TR::DataType OpCodesTest::_argTypesBinaryAddressFloat[_numberOfBinaryArgs] = {TR
 TR::DataType OpCodesTest::_argTypesBinaryAddressDouble[_numberOfBinaryArgs] = {TR::Address, TR::Double};
 TR::DataType OpCodesTest::_argTypesBinaryAddressAddress[_numberOfBinaryArgs] = {TR::Address, TR::Address};
 
+signatureCharI_I_testMethodType  * OpCodesTest::_iByteswap = 0;
 //Neg
 signatureCharB_B_testMethodType  * OpCodesTest::_bNeg = 0;
 signatureCharS_S_testMethodType  * OpCodesTest::_sNeg = 0;

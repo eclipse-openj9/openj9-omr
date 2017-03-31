@@ -293,6 +293,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool getSupportsEncodeUtf16LittleWithSurrogateTest();
    bool getSupportsEncodeUtf16BigWithSurrogateTest();
 
+   virtual bool getSupportsIbyteswap();
+
    bool supportsMergingOfHCRGuards();
 
    bool supportsAtomicAdd()                {return true;}

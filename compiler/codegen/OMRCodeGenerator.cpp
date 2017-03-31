@@ -1038,6 +1038,21 @@ OMR::CodeGenerator::getSupportsTLE()
    return self()->getSupportsTM();
    }
 
+/** \brief
+ *     A query about whether ibyteswap is supported
+ *
+ *  \return
+ *     True if ibyteswap is supported in codegen
+ *
+ *  \note
+ *     Override the query on the platform where ibyteswap is implemented
+ */
+bool
+OMR::CodeGenerator::getSupportsIbyteswap()
+   {
+   return false;
+   }
+
 bool
 OMR::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
    {

@@ -290,6 +290,7 @@ class OpCodesTest : public TestDriver
    static const uintptrj_t ADDRESS_PLACEHOLDER_3;
 
    protected:
+   static signatureCharI_I_testMethodType *_iByteswap;
    //Neg
    static signatureCharB_B_testMethodType *_bNeg;
    static signatureCharS_S_testMethodType *_sNeg;
@@ -692,6 +693,13 @@ class OpCodesTest : public TestDriver
    static TR::DataType _argTypesBinaryAddressAddress[_numberOfBinaryArgs];
 
    // straight C(++) implementations of testMethodType for initial test validation purposes
+   uint16_t byteswap(uint16_t a) { return (((a & 0xff) << 8) | ((a & 0xff00) >> 8));}
+   uint32_t byteswap(uint32_t a) { return (uint32_t)byteswap(uint16_t(a & 0xffff)) << 16 | (uint32_t)byteswap(uint16_t((a >> 16) & 0xffff)); }
+   uint64_t byteswap(uint64_t a) { return (uint64_t)byteswap(uint32_t(a & 0xffffffff)) << 32 | (uint64_t)byteswap(uint32_t((a >> 32) & 0xffffffff)); }
+   int16_t byteswap(int16_t a) { return byteswap((uint16_t)a); }
+   int32_t byteswap(int32_t a) { return byteswap((uint32_t)a); }
+   int64_t byteswap(int64_t a) { return byteswap((uint64_t)a); }
+
    template <typename T> static T neg(T a) { return -a;}
    template <typename T> static T abs(T a) { return a >= (T) 0 ? a : -a;}
 

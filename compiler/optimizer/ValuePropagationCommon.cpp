@@ -1157,13 +1157,14 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
         !(dstObject && dstObject->isNullObject()) &&
         srcOffHigh >= 0 && dstOffHigh >= 0 && copyLenHigh >= 0)
       {
-      transformTheCall = true;
+      transformTheCall = primitiveTransform && referenceTransform;
 
       if (srcObject && srcObject->getClassType())
          {
          primitiveArray1 = srcObject->getClassType()->isPrimitiveArray(comp());
          referenceArray1 = srcObject->getClassType()->isReferenceArray(comp());
          }
+
       if (dstObject && dstObject->getClassType())
          {
          primitiveArray2 = dstObject->getClassType()->isPrimitiveArray(comp());

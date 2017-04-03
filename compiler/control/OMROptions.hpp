@@ -956,7 +956,7 @@ enum TR_CompilationOptions
    TR_IncreaseCountsForMethodsCompiledOutsideStartup  = 0x00200000 + 29,
    TR_EnableMethodTrampolineReservation               = 0x00400000 + 29,
    TR_UseGlueIfMethodTrampolinesAreNotNeeded          = 0x00800000 + 29,
-   // Avaialble                                       = 0x01000000 + 29,
+   TR_EnableFpreductionAnnotation                     = 0x01000000 + 29,
    // Avialable                                       = 0x02000000 + 29,
    TR_DisableCrackedEditOptimization                  = 0x04000000 + 29,
    TR_InhibitRIBufferProcessingDuringDeepSteady       = 0x08000000 + 29,

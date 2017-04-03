@@ -86,6 +86,16 @@ typedef enum MM_AlignmentType {
 	mm_regionAlignment
 } MM_AlignmentType;
 
+/**
+ * Codes used to indicate why an object is being scanned.
+ */
+typedef enum MM_MarkingSchemeScanReason {
+	SCAN_REASON_PACKET = 1, /**< Indicates the object being scanned came from a work packet */
+	SCAN_REASON_DIRTY_CARD = 2, /**< Indicates the object being scanned was found in a dirty card */
+	SCAN_REASON_REMEMBERED_SET_SCAN = 3, /**< Indicates the object being scanned was in a remembered set */
+	SCAN_REASON_OVERFLOWED_OBJECT = 4, /**< Indicates the object being scanned was in an overflowed region */
+} MM_MarkingSchemeScanReason;
+
 #define OMR_GC_CYCLE_TYPE_DEFAULT     0
 #define OMR_GC_CYCLE_TYPE_GLOBAL      1
 #define OMR_GC_CYCLE_TYPE_SCAVENGE    2

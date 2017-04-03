@@ -43,6 +43,7 @@
 #include "omrExampleVM.hpp"
 #include "omrvm.h"
 #include "OMRVMInterface.hpp"
+#include "ParallelGlobalGC.hpp"
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
 #include "SublistFragment.hpp"
@@ -132,86 +133,6 @@ MM_CollectorLanguageInterfaceImpl::detachVMThread(OMR_VM *omrVM, OMR_VMThread *o
 		OMR_Glue_UnbindCurrentThread(omrVMThread);
 	}
 }
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterSetupForGC(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanRoots(MM_EnvironmentBase *env)
-{
-	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
-	J9HashTableState state;
-	RootEntry *rEntry = NULL;
-	rEntry = (RootEntry *)hashTableStartDo(omrVM->rootTable, &state);
-	while (rEntry != NULL) {
-		_markingScheme->markObject(env, rEntry->rootPtr);
-		rEntry = (RootEntry *)hashTableNextDo(&state);
-	}
-	OMR_VMThread *walkThread;
-	GC_OMRVMThreadListIterator threadListIterator(env->getOmrVM());
-	while((walkThread = threadListIterator.nextOMRVMThread()) != NULL) {
-		if (NULL != walkThread->_savedObject1) {
-			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject1);
-		}
-		if (NULL != walkThread->_savedObject2) {
-			_markingScheme->markObject(env, (omrobjectptr_t)walkThread->_savedObject2);
-		}
-	}
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_completeMarking(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_markLiveObjectsComplete(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterSetupForWalk(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env)
-{
-	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
-	J9HashTableState state;
-	ObjectEntry *rEntry = NULL;
-	rEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
-	while (rEntry != NULL) {
-		if (!_markingScheme->isMarked(rEntry->objPtr)) {
-			hashTableDoRemove(&state);
-		}
-		rEntry = (ObjectEntry *)hashTableNextDo(&state);
-	}
-}
-
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason)
-{
-	GC_ObjectIterator objectIterator(_omrVM, objectPtr);
-	GC_SlotObject *slotObject = NULL;
-	while (NULL != (slotObject = objectIterator.nextSlot())) {
-		omrobjectptr_t slot = slotObject->readReferenceFromSlot();
-		if (_markingScheme->isHeapObject(slot)) {
-			_markingScheme->markObject(env, slot);
-		}
-	}
-	return env->getExtensions()->objectModel.getSizeInBytesWithHeader(objectPtr);
-}
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo)
-{
-	return markingScheme_scanObject(env, objectPtr, reason);
-}
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
 void
 MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread)
@@ -442,13 +363,15 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_getNextTracingMode(uintptr_t exe
 uintptr_t
 MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStandard *env, uintptr_t concurrentStatus, bool *collectedRoots, bool *paidTax)
 {
+	MM_ParallelGlobalGC *globalCollector = (MM_ParallelGlobalGC *)_extensions->getGlobalCollector();
+	MM_MarkingScheme *markingScheme = globalCollector->getMarkingScheme();
 	uintptr_t bytesScanned = 0;
 	*collectedRoots = true;
 	*paidTax = true;
 
 	switch (concurrentStatus) {
 	case CONCURRENT_ROOT_TRACING1:
-		markingScheme_scanRoots(env);
+		markingScheme->markLiveObjectsRoots(env);
 		break;
 	default:
 		Assert_MM_unreachable();

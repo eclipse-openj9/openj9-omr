@@ -41,6 +41,7 @@
 #undef OMR_GC_DEBUG_ASSERTS
 #undef OMR_GC_HEAP_CARD_TABLE
 #undef OMR_GC_LARGE_OBJECT_AREA
+#undef OMR_GC_LEAF_BITS
 #undef OMR_GC_MINIMUM_OBJECT_SIZE
 #undef OMR_GC_MODRON_COMPACTION
 #undef OMR_GC_MODRON_CONCURRENT_MARK
@@ -50,6 +51,7 @@
 #undef OMR_GC_NON_ZERO_TLH
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
+
 
 /**
  * Tells if a platform has support for Semaphores.

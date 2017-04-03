@@ -36,9 +36,6 @@
 #include "ObjectModel.hpp"
 #include "WorkStack.hpp"
 
-#define SCAN_MAX (uintptr_t)(-1)
-#define BITS_PER_BYTE 8
-
 class MM_CollectorLanguageInterface;
 
 /**

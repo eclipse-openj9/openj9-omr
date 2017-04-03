@@ -1035,11 +1035,11 @@ MM_ParallelGlobalGC::collectorStartup(MM_GCExtensionsBase* extensions)
 void
 MM_ParallelGlobalGC::collectorShutdown(MM_GCExtensionsBase *extensions)
 {
-#if defined(J9VM_GC_MODRON_SCAVENGER)
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->scavengerEnabled && (NULL != extensions->scavenger)) {
 		extensions->scavenger->collectorShutdown(extensions);
 	}
-#endif /* defined(J9VM_GC_MODRON_SCAVENGER) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 }
 
 /**

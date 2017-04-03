@@ -652,6 +652,13 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
    // The opcode size of the compare node doesn't tell us whether we need a
    // 64-bit compare.  We need to check a child.
    bool is64Bit = TR::TreeEvaluator::getNodeIs64Bit(secondChild, cg);
+   if (cg->profiledPointersRequireRelocation() &&
+      secondChild->getOpCodeValue() == TR::aconst &&
+      (secondChild->isMethodPointerConstant() || secondChild->isClassPointerConstant()))
+      {
+      TR_ASSERT(!(node->isNopableInlineGuard()),"Should not evaluate class or method pointer constants underneath NOPable guards as they are runtime assumptions handled by virtualGuardHelper");
+      cg->evaluate(secondChild);
+      }
 
    intptrj_t constValue;
    if (secondChild->getOpCode().isLoadConst() &&

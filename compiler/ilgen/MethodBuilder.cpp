@@ -80,13 +80,13 @@ namespace OMR
 
 MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
    : TR::IlBuilder(asMethodBuilder(), types),
-   _methodName(""),
+   _methodName("NoName"),
    _returnType(NoType),
    _numParameters(0),
    _cachedParameterTypes(0),
    _cachedSignature(0),
-   _definingFile(0),
-   _definingLine(0),
+   _definingFile(""),
+   _definingLine(""),
    _symbols(0),
    _newSymbolsAreTemps(false),
    _useBytecodeBuilders(false),

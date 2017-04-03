@@ -1885,6 +1885,27 @@ TR_InlinerBase::addGuardForVirtual(
    callNode->setIsTheVirtualCallNodeForAGuardedInlinedCall();
    TR::DebugCounter::prependDebugCounter(comp(), "inliner.callSites/succeeded:guardedCallee", block4->getLastRealTreeTop());
 
+   // if this is postExecution OSR, the call will be followed by a pending push store of its result.
+   // this is necessary to ensure the stack has the correct contents when it transitions, therefore, it
+   // is necessary to add the store here as well
+   //
+   if (comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+      {
+      TR::TreeTop *cursor = callNodeTreeTop->getNextTreeTop();
+      TR_ByteCodeInfo bci = callNode->getByteCodeInfo();
+      while (cursor && comp()->getMethodSymbol()->isOSRRelatedNode(cursor->getNode(), bci))
+         {
+         if (cursor->getNode()->getOpCode().isStoreDirect() && cursor->getNode()->getFirstChild() == callNode)
+            {
+            debugTrace(tracer(),"  virtual call node pps: Pending push store of call [%p] found: [%p]", callNode, cursor->getNode());
+            block4->append(TR::TreeTop::create(comp(), TR::Node::createStore(cursor->getNode()->getSymbolReference(), callNode)));
+            break;
+            }
+         debugTrace(tracer(),"  virtual call node pps: Skipping node [%p] whilst searching for store of call [%p]", cursor->getNode(), callNode);
+         cursor = cursor->getNextTreeTop();
+         }
+      }
+
    //  store result in a temp (if there's a return value)
    //
    TR_ASSERT(!tif.simpleCallReferenceTreeTop() || !resultTempSymRef, "both simpleCallReferenceTreeTop and resultTempSymRef are set");

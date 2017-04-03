@@ -647,7 +647,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
          self()->setSupportsHighWordFacility(true);
       }
 
-   self()->setOnDemandLiteralPoolRun(false);
+   self()->setOnDemandLiteralPoolRun(true);
    self()->setGlobalStaticBaseRegisterOn(false);
 
    self()->setGlobalPrivateStaticBaseRegisterOn(false);

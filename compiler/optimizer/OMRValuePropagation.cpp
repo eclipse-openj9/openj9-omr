@@ -7177,27 +7177,6 @@ void OMR::ValuePropagation::constrainRecognizedMethod(TR::Node *node)
    {
    }
 
-void OMR::ValuePropagation::replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount)
-   {
-   if (curNode->getVisitCount() == visitCount)
-      return;
-
-   curNode->setVisitCount(visitCount);
-
-   for (uint16_t i = 0; i < curNode->getNumChildren(); i++)
-      {
-      TR::Node *childNode = curNode->getChild(i);
-      if (childNode == loadNode)
-         {
-         curNode->setAndIncChild(i, packedNode);
-         loadNode->recursivelyDecReferenceCount();
-         if (trace())
-            traceMsg(comp(), "Replacing child %d of node [" POINTER_PRINTF_FORMAT "] from load node [" POINTER_PRINTF_FORMAT "] to packed node [" POINTER_PRINTF_FORMAT "]\n", i, curNode, loadNode, packedNode);
-         }
-      else
-         replacePackedArrayLoad(loadNode, packedNode, childNode, visitCount);
-      }
-   }
 
 
 bool OMR::ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)

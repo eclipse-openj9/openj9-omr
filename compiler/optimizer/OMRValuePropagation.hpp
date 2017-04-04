@@ -459,8 +459,6 @@ class ValuePropagation : public TR::Optimization
    bool checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount);
    virtual void doDelayedTransformations();
 
-   void replacePackedArrayLoad(TR::Node *loadNode, TR::Node *packedNode, TR::Node *curNode, vcount_t visitCount);
-
    struct TR_TreeTopNodePair
       {
       TR_ALLOC(TR_Memory::ValuePropagation)
@@ -568,26 +566,6 @@ class ValuePropagation : public TR::Optimization
       TR::SymbolReference *_copyLenRef;
 
       TR::SymbolReference *_arraycopySymRef;
-      };
-
-   struct TR_PackedArrayLoad
-      {
-      TR_ALLOC(TR_Memory::ValuePropagation)
-
-      TR_PackedArrayLoad(
-         TR::TreeTop *loadTT,
-         TR::Node    *loadNode,
-         TR::Node    *clazzPointer,
-         TR::Node    *packedDS) :
-            _loadTT(loadTT),
-            _loadNode(loadNode),
-            _clazzPointer(clazzPointer),
-            _packedDS(packedDS) {}
-
-      TR::TreeTop *_loadTT;
-      TR::Node *_loadNode;
-      TR::Node *_clazzPointer;
-      TR::Node *_packedDS;
       };
 
    TR::TreeTop *createPrimitiveOrReferenceCompareNode(TR::Node *);

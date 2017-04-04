@@ -131,7 +131,8 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
      _pythonConstsSymRef(NULL),
      _pythonNumLocalVars(0),
      _pythonLocalVarSymRefs(NULL),
-     _properties(0)
+     _properties(0),
+     _bytecodeProfilingOffsets(comp->allocator())
    {
    _flags.setValue(KindMask, IsResolvedMethod);
 
@@ -2295,6 +2296,107 @@ OMR::ResolvedMethodSymbol::setNoTemps(bool b)
    {
    TR_ASSERT(self()->isJittedMethod(), "Should have been created as a jitted method.");
    _methodFlags.set(NoTempsSet, b);
+   }
+
+/**
+ * \brief Returns the bytecode that represents the start of the ilgen created basic block
+ *
+ * This function takes a bytecode index and looks up to find the stashed bytecode
+ * index which corresponds to the start of the basic block in which bytecodeIndex
+ * was generated at ilgen time. This is useful when trying to reassociate profiling
+ * information when blocks have been split due to inlining
+ *
+ *  @param bytecodeIndex The bytecode of the instruction whose basic block start is to be found
+ *  @return The bytecode index of the start of the containing ilgen basic block, -1 if unknown
+ */
+int32_t OMR::ResolvedMethodSymbol::getProfilingByteCodeIndex(int32_t bytecodeIndex)
+   {
+   for (auto itr = _bytecodeProfilingOffsets.begin(), end = _bytecodeProfilingOffsets.end(); itr != end; ++itr)
+      {
+      if (itr->first >= bytecodeIndex)
+         return itr->second.first;
+      }
+   return -1;
+   }
+
+/**
+ * \brief Save the profiling frequency of a given bytecode index
+ *
+ * This function stashes a profiling frequency against a given bytecode index for later retrieval
+ * (usually as part of profiling re-association.
+ *
+ * @param bytecodeIndex The bytecode index of the start of the block whose frequency we wish to save
+ * @param frequency The normalized block frequency to save for later use
+ */
+void OMR::ResolvedMethodSymbol::setProfilerFrequency(int32_t bytecodeIndex, int32_t frequency)
+   {
+   for (auto itr = _bytecodeProfilingOffsets.begin(), end = _bytecodeProfilingOffsets.end(); itr != end; ++itr)
+      {
+      if (itr->first >= bytecodeIndex)
+         itr->second.second = frequency;
+      }
+   }
+
+/**
+ * \brief Return the saved profiling frequency for the given bytecode index
+ *
+ * This function returns a profiling frequency that was saved against a given byte code index for
+ * later retrieval.
+ *
+ * @param bytecodeIndex The bytecode index of the start of the block whose frequency we wish to retrieve
+ * @return The normalized saved frequency, -1 if unknown
+ */
+int32_t OMR::ResolvedMethodSymbol::getProfilerFrequency(int32_t bytecodeIndex)
+   {
+   for (auto itr = _bytecodeProfilingOffsets.begin(), end = _bytecodeProfilingOffsets.end(); itr != end; ++itr)
+      {
+      if (itr->first >= bytecodeIndex)
+         return itr->second.second;
+      }
+   return -1;
+   }
+
+static bool compareProfilingOffsetInfo(const std::pair<int32_t, int32_t> &first, const std::pair<int32_t, int32_t> &second)
+   {
+   return first.first < second.first;
+   }
+
+/**
+ * \brief Save the bytecode range of a basic block during ilgen
+ *
+ * @param startBCI The bytecode index of the start of the basic block
+ * @param endBCI The bytecode index of the end of the basic block
+ */
+void OMR::ResolvedMethodSymbol::addProfilingOffsetInfo(int32_t startBCI, int32_t endBCI)
+   {
+   for (auto itr = _bytecodeProfilingOffsets.begin(), end = _bytecodeProfilingOffsets.end(); itr != end; ++itr)
+       {
+       if (itr->first >= endBCI)
+          {
+          _bytecodeProfilingOffsets.insert(itr, std::make_pair(endBCI, std::make_pair(startBCI, -1)));
+          return;
+          }
+       }
+   _bytecodeProfilingOffsets.push_back(std::make_pair(endBCI, std::make_pair(startBCI, -1)));
+   }
+
+/**
+ * \brief Print the saved basic block bytecode ranges and associated block frequencies
+ *
+ * @param comp The compilation object
+ */
+void OMR::ResolvedMethodSymbol::dumpProfilingOffsetInfo(TR::Compilation *comp)
+   {
+   for (auto itr = _bytecodeProfilingOffsets.begin(), end = _bytecodeProfilingOffsets.end(); itr != end; ++itr)
+       traceMsg(comp, "  %d:%d\n", itr->first, itr->second.first);
+   }
+
+/**
+ * \brief Clear the saved basic block and profiling information
+ */
+void OMR::ResolvedMethodSymbol::clearProfilingOffsetInfo()
+   {
+   _bytecodeProfilingOffsets.clear();
    }
 
 //Explicit instantiations

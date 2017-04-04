@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* (c) Copyright IBM Corp. 2016, 2016
+* (c) Copyright IBM Corp. 2017, 2017
 *
 *  This program and the accompanying materials are made available
 *  under the terms of the Eclipse Public License v1.0 and
@@ -16,12 +16,15 @@
 *    Multiple authors (IBM Corp.) - initial implementation and documentation
 *******************************************************************************/
 
-/*
- * Description: Calls an extensible class member function using the
- *    implicit `this` pointer, which is not allowed.
-*/
+
+/**
+ * Description: Calls an extensible class member function using
+ *    the `self()` function for down casting.
+ */
 
 #define OMR_EXTENSIBLE __attribute__((annotate("OMR_Extensible")))
+
+namespace TR  { class ExtClass; }         // forward declaration required to declared `self()`
 
 namespace OMR
 {
@@ -29,24 +32,27 @@ namespace OMR
 class OMR_EXTENSIBLE ExtClass
    {
    public:
+   TR::ExtClass * self();   // declaration of down cast function
    void functionCalled();   // function to be called
-   void callingFunction();  // function that will make call
-                            //    with implicit `this 
    };
 
 } // namespace OMR
 
 namespace TR
-{ 
-   
-class OMR_EXTENSIBLE ExtClass : public OMR::ExtClass
-   {
+{
+   class OMR_EXTENSIBLE ExtClass : public OMR::ExtClass {
+      public:
+      ExtClass(int x) { 
+         functionCalled(); // Inside of TR::ExtClass, needn't call self, as this is already of the correct type. 
+      }
 
-
+      void frobnicate() { 
+         functionCalled();  // Inside of TR::ExtClass, needn't call self. 
+      }
    };
-
 }
+
+TR::ExtClass * OMR::ExtClass::self() { return static_cast<TR::ExtClass *>(this); }
 
 void OMR::ExtClass::functionCalled() {}
 
-void OMR::ExtClass::callingFunction() { functionCalled(); }

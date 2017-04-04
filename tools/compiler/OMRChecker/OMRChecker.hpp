@@ -733,7 +733,7 @@ public:
             // Need still to verify that the self() call is to the right receiver! Otherwise 
             // we can pass upcasts in the case where we have an extensible class hierarchy
             // deriving from an extensible class hierarchy. 
-            if (isCorrectSelf(call)) {
+            if (callerAndCalleeHaveSameMDT(call)) {
                trace("callee is correct self()");
                return true;
             } else { 
@@ -743,12 +743,9 @@ public:
                diagEngine.Report(call->getExprLoc(), diagID);
             }
          } else { 
-            // Ignore member function calls that specifically call a base class member function
-            MemberExpr * memberFunc;
-            // hasQualifier checks for a nested name specifier, e.g. the 'IBM::Foo::' part of 'IBM::Foo::baz()'
-            if ((memberFunc = dyn_cast<MemberExpr>(call->getCallee())) && memberFunc->hasQualifier()) {
-               return true;
-            }
+            if (isAllowedSelflessCall(call))
+               return true; 
+
             DiagnosticsEngine &diagEngine = Context->getDiagnostics();
             unsigned diagID = diagEngine.getCustomDiagID(DiagnosticsEngine::Error, "Implicit this receivers are prohibited in extensible classes");
             DiagnosticBuilder builder = diagEngine.Report(receiver->getExprLoc(), diagID);
@@ -815,14 +812,53 @@ public:
    }
 
    /**
-    * Return true iff the call is to self, **and** the self call is 
-    * within the correct extensible class string. 
-    *
-    * The correct call depends on what member function we are inside of.
-    *
+    * Return true iff the call is in a fashion that self() may be safely
+    * elided. Examples would be explicit base class calls, or calls inside 
+    * the most derived class
     */
-   bool isCorrectSelf(CXXMemberCallExpr *call) { 
-      // This is the called method decl -- Should be self of one form or another, verified by isSelfCall. 
+   bool isAllowedSelflessCall(CXXMemberCallExpr* call) { 
+      /*
+       * Ignore member function calls that specifically call a base class member function
+       */
+      MemberExpr * memberFunc;
+      // hasQualifier checks for a nested name specifier, e.g. the 'IBM::Foo::' part of 'IBM::Foo::baz()'
+      if ((memberFunc = dyn_cast<MemberExpr>(call->getCallee())) && memberFunc->hasQualifier()) {
+         trace("isAllowedSelflessCall: True because it's a qualified base class member function"); 
+         return true;
+      }
+      
+
+      /*
+       * If the call has resolved to the most derived type, then we 
+       * can allow it. This can only happen inside the most derived 
+       * type.
+       */
+      const CXXMethodDecl* calleeDecl        = call->getMethodDecl();
+      const CXXRecordDecl* calleeClassDecl   = calleeDecl->getParent(); 
+      const CXXRecordDecl* calleeMostDerived = ClassChecker->mostDerivedType(calleeClassDecl); 
+      const CXXMethodDecl* callerMethod = getCallerDecl(call); 
+      const CXXRecordDecl* callerDecl = callerMethod->getParent(); 
+
+      if (calleeMostDerived->getCanonicalDecl() == callerDecl->getCanonicalDecl())  {
+         trace("isAllowedSelflessCall: True because caller is most derived type"); 
+         return true;
+      } else { 
+         trace("isAllowedSelflessCall: false"); 
+         if (getenv("OMR_CHECK_TRACE")) {
+            llvm::errs() << "isAllowedSelflessCall: calleeDecl            => " << calleeDecl->getQualifiedNameAsString()  << "\n";
+            llvm::errs() << "isAllowedSelflessCall: calleeClassDecl       => " << calleeClassDecl->getQualifiedNameAsString()   << "\n";
+            llvm::errs() << "isAllowedSelflessCall: calleeMostDerived     => " << calleeMostDerived->getQualifiedNameAsString()   << "\n";
+            llvm::errs() << "isAllowedSelflessCall: callerDecl            => " << (callerDecl ? callerDecl->getQualifiedNameAsString() : "NULL")   << "\n";
+         }
+      }
+
+      return false;
+   }
+
+   bool computeCallInformation(const CXXMemberCallExpr* call,
+                               const CXXRecordDecl* &calleeMostDerived,
+                               const CXXRecordDecl* &callerMostDerived) {
+      // This is the called method decl 
       CXXMethodDecl* calleeDecl = call->getMethodDecl();
       if (!calleeDecl) {
          trace("Didn't find callee decl. Assuming not correct self call");
@@ -837,7 +873,7 @@ public:
       }
 
       // Most derived type of the callee. 
-      const CXXRecordDecl* calleeMostDerived = ClassChecker->mostDerivedType(calleeClassDecl); 
+      calleeMostDerived = ClassChecker->mostDerivedType(calleeClassDecl); 
       if (!calleeMostDerived) {
          trace("Didn't find a most derived type for the callee class. Assuming not correct self call");
          return false;
@@ -859,25 +895,30 @@ public:
       }
 
       // Most dervied type of the caller 
-      const CXXRecordDecl* callerMostDerived = ClassChecker->mostDerivedType(callerDecl);
+      callerMostDerived = ClassChecker->mostDerivedType(callerDecl);
      
       if (getenv("OMR_CHECK_TRACE")) {
-         llvm::errs() << "isCorrectSelf: BestDynamicClassType => ";
-         call->getBestDynamicClassType()->printQualifiedName(llvm::errs());
+         llvm::errs() << "computeCallInformation: calleeDecl            => " << calleeDecl->getQualifiedNameAsString()  << "\n";
+         llvm::errs() << "computeCallInformation: calleeClassDecl       => " << calleeClassDecl->getQualifiedNameAsString()   << "\n";
+         llvm::errs() << "computeCallInformation: calleeMostDerived     => " << calleeMostDerived->getQualifiedNameAsString()   << "\n";
          llvm::errs() << "\n";
-
-         llvm::errs() << "isCorrectSelf: calleeDecl            => " << calleeDecl->getQualifiedNameAsString()  << "\n";
-         llvm::errs() << "isCorrectSelf: calleeClassDecl       => " << calleeClassDecl->getQualifiedNameAsString()   << "\n";
-         llvm::errs() << "isCorrectSelf: calleeMostDerived     => " << calleeMostDerived->getQualifiedNameAsString()   << "\n";
-         llvm::errs() << "\n";
-         llvm::errs() << "isCorrectSelf: callerDecl      => " << (callerDecl ? callerDecl->getQualifiedNameAsString() : "NULL")   << "\n";
-         llvm::errs() << "isCorrectSelf: callerMostDerived => " << (callerMostDerived ? callerMostDerived->getQualifiedNameAsString() : "NULL")   << "\n";
+         llvm::errs() << "computeCallInformation: callerDecl            => " << (callerDecl ? callerDecl->getQualifiedNameAsString() : "NULL")   << "\n";
+         llvm::errs() << "computeCallInformation: callerMostDerived     => " << (callerMostDerived ? callerMostDerived->getQualifiedNameAsString() : "NULL")   << "\n";
       }
-   
-      if (calleeMostDerived == callerMostDerived && calleeMostDerived != NULL) 
-         return true; 
-      else
-         return false;
+      return true;  
+   } 
+
+   /**
+    * Return true iff the caller and callee have the same 
+    * most derived type. 
+    */
+   bool callerAndCalleeHaveSameMDT(CXXMemberCallExpr *call) { 
+      const CXXRecordDecl* calleeMostDerived, *callerMostDerived;
+      if (computeCallInformation(call, calleeMostDerived,  callerMostDerived)) {
+         if (calleeMostDerived == callerMostDerived) 
+            return true; 
+      }
+      return false;
    }
 
    /**
@@ -892,8 +933,12 @@ public:
       Expr*             receiver = call->getImplicitObjectArgument()->IgnoreParenImpCasts();
 
       if (getenv("OMR_CHECK_TRACE")) {
+         auto bestDynamic = receiver->getBestDynamicClassType(); 
          llvm::errs() << "BestDynamicClassType => ";
-         receiver->getBestDynamicClassType()->printQualifiedName(llvm::errs());
+         if (bestDynamic) 
+            receiver->getBestDynamicClassType()->printQualifiedName(llvm::errs());
+         else 
+            llvm::errs() << "NULL";
          llvm::errs() << "\n";
       }
 

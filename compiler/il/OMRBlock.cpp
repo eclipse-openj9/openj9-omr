@@ -1383,8 +1383,8 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
    else
       {
       TR::TreeTop *lastTree = from->getLastRealTreeTop();
-      TR::ILOpCodes opCode = lastTree->getNode()->getOpCodeValue();
-      TR_ASSERT(opCode == TR::athrow || lastTree->getNode()->getOpCode().isReturn(), "edge to EXIT should end in throw or return");
+      TR::ILOpCode &opCode = lastTree->getNode()->getOpCodeValue() == TR::treetop || lastTree->getNode()->getOpCode().isCheck() ? lastTree->getNode()->getFirstChild()->getOpCode() : lastTree->getNode()->getOpCode();
+      TR_ASSERT(opCode.getOpCodeValue() == TR::athrow || opCode.isReturn(), "edge to EXIT should end in throw or return");
 
       newBlock = self()->split(lastTree, cfg, true);
       }

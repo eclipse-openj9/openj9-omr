@@ -90,8 +90,8 @@ OMR::ARM::CodeGenerator::CodeGenerator()
    _linkageProperties = &self()->getLinkage()->getProperties();
    _linkageProperties->setEndianness(TR::Compiler->target.cpu.isBigEndian());
 
-
-   self()->setSupportsDirectJNICalls();
+   if (!self()->comp()->getOption(TR_FullSpeedDebug))
+      self()->setSupportsDirectJNICalls();
    self()->setSupportsVirtualGuardNOPing();
 
    if(TR::Compiler->target.isLinux())

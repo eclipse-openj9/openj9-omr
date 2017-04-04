@@ -2229,6 +2229,87 @@ OMR::Compilation::isInlinedDirectCall(uint32_t index)
    return _inlinedCallSites[index].directCall();
    }
 
+/*
+ * Get the number of pending push slots for a caller, as this will be the size of
+ * the OSRCallSiteRemat table. In the event that the table has not been initialized,
+ * it will return 0.
+ */
+uint32_t
+OMR::Compilation::getOSRCallSiteRematSize(uint32_t callSiteIndex)
+   {
+   if (!_inlinedCallSites[callSiteIndex].osrCallSiteRematTable())
+      return 0;
+
+   int32_t callerIndex = self()->getInlinedCallSite(callSiteIndex)._byteCodeInfo.getCallerIndex();
+   return callerIndex < 0 ? self()->getMethodSymbol()->getNumPPSlots() :
+      self()->getInlinedResolvedMethodSymbol(callerIndex)->getNumPPSlots();
+   }
+
+/*
+ * Get the pending push symbol reference and the corresponding load, to later remat the pending push 
+ * within OSR code blocks inside the callee. To get a mapping, the call site index for the callee and
+ * the caller's pending push slot should be provided.
+ */
+void
+OMR::Compilation::getOSRCallSiteRemat(uint32_t callSiteIndex, uint32_t slot, TR::SymbolReference *&ppSymRef, TR::SymbolReference *&loadSymRef)
+   {
+   int32_t *table = _inlinedCallSites[callSiteIndex].osrCallSiteRematTable();
+   if (!table)
+      {
+      ppSymRef = NULL;
+      loadSymRef = NULL;
+      return;
+      }
+
+#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
+   // Ensure the requested slot is valid, based on the total number of PP slots
+   uint32_t callerNumPPSlots = self()->getOSRCallSiteRematSize(callSiteIndex);
+   TR_ASSERT(slot < callerNumPPSlots, "can only perform call site remat for the caller's pending pushes");
+#endif
+
+   TR::SymbolReferenceTable *symRefTab = self()->getSymRefTab();
+   ppSymRef = table[slot * 2] == 0 ? NULL : symRefTab->getSymRef(table[slot * 2]);
+   loadSymRef = table[slot * 2 + 1] == 0 ? NULL : symRefTab->getSymRef(table[slot * 2 + 1]);
+   }
+
+/*
+ * Set the pending push symbol reference and the corresponding load, to later remat the
+ * pending push within OSR code blocks inside the callee. To correctly add the entry, the callee's
+ * call site index and the caller's pending push with its matching load should be provided.
+ *
+ * It is necessary to provide the pending push symbol reference, rather than just its slot, as the slots
+ * may be shared. The information necessary to find the symref from the slot is stored, as the call site
+ * should be an OSR point, however the pending push symref is expected to be already known, so it is
+ * cheaper to use directly.
+ */
+void
+OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReference *ppSymRef, TR::SymbolReference *loadSymRef)
+   {
+   int32_t *table = _inlinedCallSites[callSiteIndex].osrCallSiteRematTable();
+   int32_t slot = -ppSymRef->getCPIndex() - 1;
+
+   // If no table exists, allocate it based on the number of PP slots
+   if (!table)
+      {
+      int32_t callerIndex = self()->getInlinedCallSite(callSiteIndex)._byteCodeInfo.getCallerIndex();
+      uint32_t callerNumPPSlots = callerIndex < 0 ? self()->getMethodSymbol()->getNumPPSlots() :
+         self()->getInlinedResolvedMethodSymbol(callerIndex)->getNumPPSlots();
+      table = (int32_t*) self()->trMemory()->allocateHeapMemory(callerNumPPSlots * 2 * sizeof(int32_t));
+      memset(table, 0, callerNumPPSlots * 2 * sizeof(int32_t));
+      _inlinedCallSites[callSiteIndex].setOSRCallSiteRematTable(table);
+      }
+
+#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
+   // Check the pending push is valid
+   uint32_t callerNumPPSlots = self()->getOSRCallSiteRematSize(callSiteIndex);
+   TR_ASSERT(ppSymRef->getSymbol()->isPendingPush(), "can only perform call site remat on pending pushes");
+   TR_ASSERT(slot >= 0 && slot < callerNumPPSlots, "can only perform call site remat for the caller's pending pushes");
+#endif
+
+   table[slot * 2] = ppSymRef->getReferenceNumber();
+   table[slot * 2 + 1] = loadSymRef ? loadSymRef->getReferenceNumber() : 0;
+   }
+
 TR_InlinedCallSite *
 OMR::Compilation::getCurrentInlinedCallSite()
    {

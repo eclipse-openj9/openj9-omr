@@ -49,9 +49,10 @@ protected:
 	bool createSweepPoolManagerSplitAddressOrderedList(MM_EnvironmentBase* env);
 	bool createSweepPoolManagerHybrid(MM_EnvironmentBase* env);
 
-private:
 	static const uintptr_t STANDARD_REGION_SIZE_BYTES = 64 * 1024;
 	static const uintptr_t STANDARD_ARRAYLET_LEAF_SIZE_BYTES = UDATA_MAX;
+
+private:
 
 	/* Methods */
 public:
@@ -60,8 +61,8 @@ public:
 	virtual MM_HeapRegionManager* createHeapRegionManager(MM_EnvironmentBase* env);
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env);
 
-	MM_ConfigurationStandard(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy)
-		: MM_Configuration(env, gcPolicy, mm_regionAlignment, STANDARD_REGION_SIZE_BYTES, STANDARD_ARRAYLET_LEAF_SIZE_BYTES, getWriteBarrierType(env), gc_modron_allocation_type_tlh)
+	MM_ConfigurationStandard(MM_EnvironmentBase* env, MM_GCPolicy gcPolicy, uintptr_t regionSize)
+		: MM_Configuration(env, gcPolicy, mm_regionAlignment, regionSize, STANDARD_ARRAYLET_LEAF_SIZE_BYTES, getWriteBarrierType(env), gc_modron_allocation_type_tlh)
 	{
 		_typeId = __FUNCTION__;
 	};

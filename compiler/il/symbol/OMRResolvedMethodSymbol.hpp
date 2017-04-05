@@ -40,6 +40,7 @@ namespace OMR { typedef OMR::ResolvedMethodSymbol ResolvedMethodSymbolConnector;
 #include "infra/Assert.hpp"            // for TR_ASSERT
 #include "infra/Flags.hpp"             // for flags32_t
 #include "infra/List.hpp"              // for List, etc
+#include "infra/TRlist.hpp"            // for TR::list
 
 class TR_BitVector;
 class TR_ExtraLinkageInfo;
@@ -291,6 +292,13 @@ public:
 
    TR::SymbolReference *getPythonConstsSymbolRef() { return _pythonConstsSymRef; }
 
+   int32_t getProfilingByteCodeIndex(int32_t bytecodeIndex);
+   void addProfilingOffsetInfo(int32_t startBCI, int32_t endBCI);
+   void setProfilerFrequency(int32_t bytecodeIndex, int32_t frequency);
+   int32_t getProfilerFrequency(int32_t bytecodeIndex);
+   void clearProfilingOffsetInfo();
+   void dumpProfilingOffsetInfo(TR::Compilation *comp);
+
 protected:
    enum Properties
       {
@@ -347,6 +355,8 @@ private:
    TR_BitVector                              *_cannotAttemptOSR;
    TR_BitVector                              *_shouldNotAttemptOSR;
    uint8_t                                   _unimplementedOpcode;
+
+   TR::list< std::pair<int32_t, std::pair<int32_t, int32_t> > > _bytecodeProfilingOffsets;
 
    //used if estimateCodeSize is called
    enum

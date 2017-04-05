@@ -16506,10 +16506,6 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFPSO:
-         if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-            {
-            TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-            }
          breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0 /* invert sign */, 0, getVectorElementSizeMask(node));
          break;
       default:
@@ -16562,10 +16558,6 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
       case TR::InstOpCode::VFS:
       case TR::InstOpCode::VFM:
       case TR::InstOpCode::VFD:
-         if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-            {
-            TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-            }
          mask4 = getVectorElementSizeMask(node);
          breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, 0, mask4);
          break;
@@ -18453,12 +18445,6 @@ OMR::Z::TreeEvaluator::vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-      return NULL;
-      }
-
    TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
    switch (node->getDataType())
       {
@@ -18539,11 +18525,6 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
       {
       case TR::InstOpCode::VFMA:
       case TR::InstOpCode::VFMS:
-         if (addNode->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-            {
-            TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(addNode));
-            return false;
-            }
          generateVRReInstruction(cg, op, addNode, addReg, mulLeftReg, mulRightReg, addReg, getVectorElementSizeMask(addNode), 0);
          break;
       case TR::InstOpCode::MAER:
@@ -18585,12 +18566,6 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
 TR::Register *
 OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-      return NULL;
-      }
-
    if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
       (canUseNodeForFusedMultiply(node->getFirstChild()) || canUseNodeForFusedMultiply(node->getSecondChild())) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMA))
@@ -18626,12 +18601,6 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-      return NULL;
-      }
-
    if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
       canUseNodeForFusedMultiply(node->getFirstChild()) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMS))
@@ -18667,12 +18636,6 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-      return NULL;
-      }
-
    switch(node->getDataType())
       {
       case TR::VectorInt8:
@@ -18819,12 +18782,6 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
 TR::Register *
 OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorFloat && !cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
-      {
-      TR_ASSERT(false, "Vector Float operation only supported on zNext onward for node : %s", cg->getDebug()->getName(node));
-      return NULL;
-      }
-
    switch(node->getDataType())
       {
       case TR::VectorInt8:
@@ -19128,7 +19085,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
-   TR_ASSERT(!firstChild->getOpCode().isFloat() || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext), "Splat float to vector only handled on zNext onward\n");
    TR::Register *returnReg = cg->allocateRegister(TR_VRF);
    uint8_t ESMask = getVectorElementSizeMask(firstChild->getSize());
    bool inRegister = !firstChild->isSingleRefUnevaluated() ||

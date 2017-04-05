@@ -445,12 +445,122 @@ TR::ARMLinkageProperties& TR::ARMSystemLinkage::getProperties()
 
 void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
-   TR_ASSERT(0, "unimplemented");
+   TR::CodeGenerator *codeGen = cg();
+   const TR::ARMLinkageProperties& properties = getProperties();
+   TR::Machine *machine = codeGen->machine();
+   TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
+   TR::Node *firstNode = comp()->getStartTree()->getNode();
+   TR::RealRegister *stackPtr = machine->getARMRealRegister(properties.getStackPointerRegister());
+
+   // Entry breakpoint
+   //
+   if (comp()->getOption(TR_EntryBreakPoints))
+      {
+      cursor = new (trHeapMemory()) TR::Instruction(cursor, ARMOp_bad, firstNode, cg());
+      }
+
+   // allocate stack space
+   auto frameSize = codeGen->getFrameSizeInBytes();
+   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_sub, firstNode, stackPtr, stackPtr, frameSize, 0, cursor);
+
+   // spill argument registers
+   auto nextIntArgReg = 0;
+   auto nextFltArgReg = 0;
+   ListIterator<TR::ParameterSymbol> parameterIterator(&bodySymbol->getParameterList());
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter!=NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter=parameterIterator.getNext())
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset(), codeGen);
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               nextIntArgReg++;
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Int64:
+            nextIntArgReg += nextIntArgReg & 0x1; // round to next even number
+            if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset() + 4, codeGen);
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg + 1)), cursor);
+               nextIntArgReg += 2;
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Float:
+            comp()->failCompilation<UnsupportedParameterType>("Compiling methods with a single precision floating point parameter is not supported");
+            break;
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_fstd, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fp0 + nextFltArgReg)), cursor);
+               nextFltArgReg += 1;
+               }
+            else
+               {
+               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on ARM.");
+         }
+      }
+
+   // save all preserved registers
+   for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)r), cursor);
+      }
+
+   // save link register (r14)
+   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister(TR::RealRegister::gr14), cursor);
    }
 
 void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
-   TR_ASSERT(0, "unimplemented");
+   TR::CodeGenerator *codeGen = cg();
+   const TR::ARMLinkageProperties& properties = getProperties();
+   TR::Machine *machine = codeGen->machine();
+   TR::Node *lastNode = cursor->getNode();
+   TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
+   TR::RealRegister *stackPtr = machine->getARMRealRegister(properties.getStackPointerRegister());
+
+   // restore link register (r14)
+   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getARMRealRegister(TR::RealRegister::gr14), cursor);
+
+   // restore all preserved registers
+   for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)r), cursor);
+      }
+
+   // remove space for preserved registers
+   auto frameSize = codeGen->getFrameSizeInBytes();
+   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_add, lastNode, stackPtr, stackPtr, frameSize, 0, cursor);
+
+   // return using `mov r15, r14`
+   TR::RealRegister *gr14 = machine->getARMRealRegister(TR::RealRegister::gr14);
+   TR::RealRegister *gr15 = machine->getARMRealRegister(TR::RealRegister::gr15);
+   cursor = generateTrg1Src1Instruction(codeGen, ARMOp_mov, lastNode, gr15, gr14, cursor);
    }
 
 TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,

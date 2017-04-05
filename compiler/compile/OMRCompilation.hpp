@@ -83,7 +83,7 @@ class TR_PrexArgInfo;
 class TR_RandomGenerator;
 class TR_RegisterCandidates;
 class TR_ResolvedMethod;
-class TR_RuntimeAssumption;
+namespace OMR { class RuntimeAssumption; }
 class TR_VirtualGuard;
 class TR_VirtualGuardSite;
 namespace TR { class AOTClassInfo; }
@@ -943,8 +943,8 @@ public:
 
 #ifdef J9_PROJECT_SPECIFIC
    // Access to this list must be performed with assumptionTableMutex in hand
-   TR_RuntimeAssumption** getMetadataAssumptionList() { return &_metadataAssumptionList; }
-   void setMetadataAssumptionList(TR_RuntimeAssumption *a) { _metadataAssumptionList = a; }
+   OMR::RuntimeAssumption** getMetadataAssumptionList() { return &_metadataAssumptionList; }
+   void setMetadataAssumptionList(OMR::RuntimeAssumption *a) { _metadataAssumptionList = a; }
 #endif
 
    // To TransformUtil
@@ -1127,7 +1127,7 @@ private:
 protected:
 #ifdef J9_PROJECT_SPECIFIC
    TR_CHTable *                      _transientCHTable;   // per compilation CHTable
-   TR_RuntimeAssumption *            _metadataAssumptionList; // A special TR_RuntimeAssumption to play the role of a sentinel for a linked list
+   OMR::RuntimeAssumption *            _metadataAssumptionList; // A special OMR::RuntimeAssumption to play the role of a sentinel for a linked list
 #endif
 
 private:

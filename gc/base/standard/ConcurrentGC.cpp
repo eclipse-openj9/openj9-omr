@@ -53,7 +53,6 @@
 #include "Debug.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentStandard.hpp"
-#include "EnvironmentLanguageInterface.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "HeapMapIterator.hpp"

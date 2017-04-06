@@ -4876,7 +4876,7 @@ MM_Scavenger::triggerConcurrentScavengerTransition(MM_EnvironmentBase *env, MM_A
 	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
 		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
 		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
-			threadEnvironment->_envLanguageInterface->forceOutOfLineVMAccess();
+			threadEnvironment->forceOutOfLineVMAccess();
 		}
 	}
 

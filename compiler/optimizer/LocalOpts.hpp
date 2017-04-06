@@ -147,7 +147,7 @@ public:
    int32_t process(TR::TreeTop *, TR::TreeTop *);
 
 private:
-   void placeAsyncCheck(TR::Block *);
+   void placeAsyncCheckBefore(TR::TreeTop *);
    void renumberInAncestors(TR_Structure *str, int32_t newNumber);
    void renumberExitEdges(TR_RegionStructure *region, int32_t oldN, int32_t newN);
    };

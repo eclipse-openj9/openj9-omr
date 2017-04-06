@@ -16506,7 +16506,7 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
       case TR::InstOpCode::VFPSO:
-         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0 /* invert sign */, 0, 3 /* any other value is illegal */);
+         breakInst = generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0 /* invert sign */, 0, getVectorElementSizeMask(node));
          break;
       default:
          TR_ASSERT(false, "Unary Vector IL evaluation unimplemented for node : %s\n", cg->getDebug()->getName(node));
@@ -16549,12 +16549,18 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
          mask4 = getVectorElementSizeMask(node);
          breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, 0, mask4);
          break;
-      // These require mask4 = 0x3, other values illegal
-      // These only operate on long BFP elements,
+      /*
+       * Before zNext, these required mask4 = 0x3 and other values were illegal
+       * This was because they only operated on long BFP elements.
+       * From zNext onward, mask4 is variable and sets the element size to operate on
+       */
       case TR::InstOpCode::VFA:
       case TR::InstOpCode::VFS:
       case TR::InstOpCode::VFM:
       case TR::InstOpCode::VFD:
+         mask4 = getVectorElementSizeMask(node);
+         breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, 0, mask4);
+         break;
       case TR::InstOpCode::VFCE:
       case TR::InstOpCode::VFCH:
       case TR::InstOpCode::VFCHE:
@@ -18439,15 +18445,25 @@ OMR::Z::TreeEvaluator::vdecEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   switch(node->getDataType())
+   TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+   switch (node->getDataType())
       {
       case TR::VectorInt8:
       case TR::VectorInt16:
       case TR::VectorInt32:
-      case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VLC);
-      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VFPSO);
-      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+      case TR::VectorInt64:
+         opCode = TR::InstOpCode::VLC;
+         break;
+      case TR::VectorFloat:
+      case TR::VectorDouble:
+         opCode = TR::InstOpCode::VFPSO;
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+         return NULL;
       }
+
+   return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, opCode);
    }
 
 TR::Register *
@@ -18509,7 +18525,7 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
       {
       case TR::InstOpCode::VFMA:
       case TR::InstOpCode::VFMS:
-         generateVRReInstruction(cg, op, addNode, addReg, mulLeftReg, mulRightReg, addReg, 3, 0);
+         generateVRReInstruction(cg, op, addNode, addReg, mulLeftReg, mulRightReg, addReg, getVectorElementSizeMask(addNode), 0);
          break;
       case TR::InstOpCode::MAER:
       case TR::InstOpCode::MAEBR:
@@ -18550,7 +18566,7 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
 TR::Register *
 OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorDouble &&
+   if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
       (canUseNodeForFusedMultiply(node->getFirstChild()) || canUseNodeForFusedMultiply(node->getSecondChild())) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMA))
       {
@@ -18561,22 +18577,31 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      switch(node->getDataType())
+      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+      switch (node->getDataType())
          {
          case TR::VectorInt8:
          case TR::VectorInt16:
          case TR::VectorInt32:
-         case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VA);
-         case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFA);
-         default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         case TR::VectorInt64:
+            opCode = TR::InstOpCode::VA;
+            break;
+         case TR::VectorFloat:
+         case TR::VectorDouble:
+            opCode = TR::InstOpCode::VFA;
+            break;
+         default:
+            TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            return NULL;
          }
+      return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
       }
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->getDataType() == TR::VectorDouble &&
+   if ((node->getDataType() == TR::VectorDouble || node->getDataType() == TR::VectorFloat) &&
       canUseNodeForFusedMultiply(node->getFirstChild()) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMS))
       {
@@ -18587,15 +18612,24 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
    else
       {
-      switch(node->getDataType())
+      TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::BAD;
+      switch (node->getDataType())
          {
          case TR::VectorInt8:
          case TR::VectorInt16:
          case TR::VectorInt32:
-         case TR::VectorInt64: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VS);
-         case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFS);
-         default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
+         case TR::VectorInt64:
+            opCode = TR::InstOpCode::VS;
+            break;
+         case TR::VectorFloat:
+         case TR::VectorDouble:
+            opCode = TR::InstOpCode::VFS;
+            break;
+         default:
+            TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString());
+            return NULL;
          }
+      return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, opCode);
       }
    }
 
@@ -18653,7 +18687,9 @@ OMR::Z::TreeEvaluator::vmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cg->decReferenceCount(node->getChild(1));
          return returnReg;
          }
-      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
+      case TR::VectorFloat:
+      case TR::VectorDouble:
+         return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFM);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
    }
@@ -18752,6 +18788,7 @@ OMR::Z::TreeEvaluator::vdivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       case TR::VectorInt16:
       case TR::VectorInt32:
       case TR::VectorInt64: return TR::TreeEvaluator::vDivOrRemHelper(node, cg, true);
+      case TR::VectorFloat:
       case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::VFD);
       default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
       }
@@ -19048,7 +19085,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
-   TR_ASSERT(!firstChild->getOpCode().isFloat(), "Float splat to vector float not handled!\n");
    TR::Register *returnReg = cg->allocateRegister(TR_VRF);
    uint8_t ESMask = getVectorElementSizeMask(firstChild->getSize());
    bool inRegister = !firstChild->isSingleRefUnevaluated() ||
@@ -19073,11 +19109,16 @@ OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             firstChild->getOpCode().isLoadConst() &&
             firstChild->getReferenceCount() < 2)  // Just load from mem and skip evaluation if low refcount
       {
-	  TR::MemoryReference* mr = NULL;
+      TR::MemoryReference* mr = NULL;
       if (firstChild->getOpCode().isDouble())
          {
-         double v = firstChild->getDouble();
-         mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &v, 8), cg, 0, node);
+         double value = firstChild->getDouble();
+         mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 8), cg, 0, node);
+         }
+      else if (firstChild->getOpCode().isFloat())
+         {
+         float value = firstChild->getFloat();
+         mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 4), cg, 0, node);
          }
       else
          {
@@ -19085,26 +19126,26 @@ OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             {
             case 1:
                {
-               uint8_t v = firstChild->getIntegerNodeValue<uint8_t>();
-               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &v, 1), cg, 0, node);
+               uint8_t value = firstChild->getIntegerNodeValue<uint8_t>();
+               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 1), cg, 0, node);
                break;
                }
             case 2:
                {
-               uint16_t v = firstChild->getIntegerNodeValue<uint16_t>();
-               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &v, 2), cg, 0, node);
+               uint16_t value = firstChild->getIntegerNodeValue<uint16_t>();
+               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 2), cg, 0, node);
                break;
                }
             case 4:
                {
-               uint32_t v = firstChild->getIntegerNodeValue<uint32_t>();
-               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &v, 4), cg, 0, node);
+               uint32_t value = firstChild->getIntegerNodeValue<uint32_t>();
+               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 4), cg, 0, node);
                break;
                }
             case 8:
                {
-               uint64_t v = firstChild->getIntegerNodeValue<uint64_t>();
-               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &v, 8), cg, 0, node);
+               uint64_t value = firstChild->getIntegerNodeValue<uint64_t>();
+               mr = generateS390MemoryReference(cg->findOrCreateConstant(node, &value, 8), cg, 0, node);
                break;
                }
             default: TR_ASSERT(false, "unhandled integral splat child size\n"); break;
@@ -19113,7 +19154,7 @@ OMR::Z::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       generateVRXInstruction(cg, TR::InstOpCode::VLREP, node, returnReg, mr, ESMask);
       cg->recursivelyDecReferenceCount(firstChild);
       }
-   else if (firstChild->getOpCode().isDouble())
+   else if (firstChild->getOpCode().isDouble() || firstChild->getOpCode().isFloat())
       {
       // Use the same VRF as the one FPR overlaps, to avoid general 'else' path of moving to GPR
       auto firstReg = cg->evaluate(firstChild);
@@ -19227,10 +19268,14 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::DataType dt = vectorChild->getDataType();
    bool isUnsigned = (!node->getType().isInt64() && node->isUnsigned());
-   if (dt == TR::VectorDouble)
+   if (dt == TR::VectorDouble || dt == TR::VectorFloat)
       {
       TR::Register *tempReg = returnReg;
       returnReg = cg->allocateRegister(TR_FPR);
+      if (dt == TR::VectorFloat)
+         {
+         generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempReg, 32); //floats are stored in the high half of the floating point register
+         }
       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, returnReg, tempReg);
       cg->stopUsingRegister(tempReg);
       }
@@ -19318,8 +19363,16 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
                }
             else if (size == 4)
                {
-               uint32_t value = valueNode->getIntegerNodeValue<uint32_t>();
-               offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+               if (valueNode->getOpCode().isFloat())
+                  {
+                  float value = valueNode->getFloat();
+                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  }
+               else
+                  {
+                  uint32_t value = valueNode->getIntegerNodeValue<uint32_t>();
+                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  }
                }
             else if (size == 8)
                {
@@ -19373,11 +19426,15 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cg->stopUsingRegister(elementReg);
          }
 
-      if (valueNode->getDataType() == TR::Double)
+      if (valueNode->getDataType() == TR::Double || valueNode->getDataType() == TR::Float)
          {
          TR::Register *fpReg = valueReg;
          valueReg = cg->allocate64bitRegister();
          generateRRInstruction(cg, TR::InstOpCode::LGDR, node, valueReg, fpReg);
+         if (valueNode->getDataType() == TR::Float)
+            {
+            generateRSInstruction(cg, TR::InstOpCode::SRLG, node, valueReg, 32); //floats are stored in the high half of the floating point register whild VLVG reads for the low half of the register
+            }
          cg->stopUsingRegister(fpReg);
          }
 

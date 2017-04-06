@@ -3096,10 +3096,12 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
       }
 
    bool isAOTGuard = false;
+	// If second node is aconst and it asks for relocation record for AOT, we should provide it even if not guarded.
    if (cg->profiledPointersRequireRelocation() &&
-       node->isProfiledGuard() && secondChild->getOpCodeValue() == TR::aconst &&
+       secondChild->getOpCodeValue() == TR::aconst &&
        (secondChild->isMethodPointerConstant() || secondChild->isClassPointerConstant()))
       {
+      TR_ASSERT(!(node->isNopableInlineGuard()),"Should not evaluate class or method pointer constants underneath NOPable guards as they are runtime assumptions handled by virtualGuardHelper");
       // make sure aconst has been evaluated so relocation record already been created for it
       if (secondChild->getRegister() != NULL)
          isAOTGuard = true;
@@ -4598,11 +4600,13 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
       TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps,
          "The third child of a compare is assumed to be a TR::GlRegDeps, but wasn't");
       }
-
+	// When we need relocation records to be generated and second child is conatant class pointer or method pointer,
+	// We need both child to be evaluated
    if (cg->profiledPointersRequireRelocation() &&
-       node->isProfiledGuard() && secondChild->getOpCodeValue() == TR::aconst &&
+       secondChild->getOpCodeValue() == TR::aconst &&
        (secondChild->isMethodPointerConstant() || secondChild->isClassPointerConstant()))
       {
+      TR_ASSERT(!(node->isNopableInlineGuard()),"Should not evaluate class or method pointer constants underneath NOPable guards as they are runtime assumptions handled by virtualGuardHelper");
       // make sure aconst is evaluated explicitly so relocation record can be created for it
       if (secondChild->getRegister() == NULL)
          {

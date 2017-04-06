@@ -1320,12 +1320,11 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[bnum];
          }
 
-      if ((!dontAssignInColdBlocks(comp) || !block->isCold()) &&
-          (blockWeight >= maxFrequency*freqRatio))
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio))
          ++origNumberOfBlocks;
 
-
-      if (!dontAssignInColdBlocks(comp) || !block->isCold())
+      if (!ignoreBlock)
          origLoadsAndStores += (*_loadsAndStores)[bnum];
 
       if (trace && !performTransformation(comp, "%s Candidate %d live on entry at block_%d\n", OPT_DETAILS, getSymbolReference()->getReferenceNumber(), bnum))
@@ -1354,14 +1353,13 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[block->getNumber()];
          }
 
-      if ((!dontAssignInColdBlocks(comp) || !block->isCold()) &&
-          (blockWeight >= maxFrequency*freqRatio ||
-           useProfilingFrequencies))
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio || useProfilingFrequencies))
          {
          ++numberOfBlocks;
          }
 
-      if (!dontAssignInColdBlocks(comp) || !block->isCold())
+      if (!ignoreBlock)
          loadsAndStores += (*_loadsAndStores)[blockNumber];
 
 

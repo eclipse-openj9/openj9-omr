@@ -745,6 +745,7 @@ public:
    TR_OptimizationPlan * getOptimizationPlan() {return _optimizationPlan;}
 
    bool isProfilingCompilation();
+   bool isJProfilingCompilation();
 
    TR::Recompilation *getRecompilationInfo() { return _recompilationInfo; }
    void setRecompilationInfo(TR::Recompilation * i) { _recompilationInfo = i;    }

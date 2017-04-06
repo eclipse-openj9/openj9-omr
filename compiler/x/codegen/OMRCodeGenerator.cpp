@@ -1943,7 +1943,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
 #ifdef J9_PROJECT_SPECIFIC
    if ((!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) && TR::Options::getCmdLineOptions()->allowRecompilation()) ||
-       (self()->comp()->getOptions()->getEnableGPU(TR_EnableGPU) && self()->comp()->hasIntStreamForEach()))
+       (self()->comp()->getOptions()->getEnableGPU(TR_EnableGPU) && self()->comp()->hasIntStreamForEach()) ||
+       self()->comp()->isJProfilingCompilation())
 #else
    if (!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) &&
        TR::Options::getCmdLineOptions()->allowRecompilation())

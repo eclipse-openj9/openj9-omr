@@ -2617,7 +2617,8 @@ TR_TransformInlinedFunction::transform()
    // If the first block has exception predecessors or multiply predecessors then we can't merge
    // the first block with the caller's block
    //
-   if ((firstBlock->getPredecessors().size() > 1) ||
+   if (comp()->isJProfilingCompilation() ||
+       (firstBlock->getPredecessors().size() > 1) ||
        firstBlock->hasExceptionSuccessors() ||
        comp()->fe()->isMethodEnterTracingEnabled(calleeResolvedMethod->getPersistentIdentifier()) ||
        TR::Compiler->vm.canMethodEnterEventBeHooked(comp()))

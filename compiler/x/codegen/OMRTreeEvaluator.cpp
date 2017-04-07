@@ -2585,8 +2585,7 @@ TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::
    }
 
 extern "C" void *fwdHalfWordCopyTable;
-
-TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+static TR::Register * deprecated_arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Instruction *instr;
    TR::LabelSymbol *snippetLabel;
@@ -3213,6 +3212,252 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    if (xmmScratchReg1)
       cg->getLiveRegisters(TR_FPR)->registerIsDead(xmmScratchReg1);
 
+   return NULL;
+   }
+
+static void generateRepMovsInstruction(TR_X86OpCodes repmovs, TR::Node *node, TR::Register* sizeRegister, TR::RegisterDependencyConditions* dependencies, TR::CodeGenerator *cg)
+   {
+   switch (repmovs)
+      {
+      case REPMOVSQ:
+         generateRegImmInstruction(SHRRegImm1(), node, sizeRegister, 3, cg);
+         break;
+      case REPMOVSD:
+         generateRegImmInstruction(SHRRegImm1(), node, sizeRegister, 2, cg);
+         break;
+      case REPMOVSW:
+         generateRegInstruction(SHRReg1(), node, sizeRegister, cg);
+         break;
+      case REPMOVSB:
+         break;
+      default:
+         TR_ASSERT(false, "Invalid REP MOVS opcode [%d]", repmovs);
+         break;
+      }
+   generateInstruction(repmovs, node, dependencies, cg);
+   }
+
+static void arrayCopy64BitPrimitiveOnIA32(TR::Node* node, TR::Register* dstReg, TR::Register* srcReg, TR::Register* sizeReg, TR::CodeGenerator* cg)
+   {
+   TR::Register* scratch = cg->allocateRegister();
+   TR::Register* XMM = cg->allocateRegister(TR_FPR);
+
+   TR::RegisterDependencyConditions* dependencies = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)5, cg);
+   dependencies->addPostCondition(scratch, TR::RealRegister::ByteReg, cg);
+   dependencies->addPostCondition(XMM, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(srcReg, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(dstReg, TR::RealRegister::NoReg, cg);
+   dependencies->addPostCondition(sizeReg, TR::RealRegister::ecx, cg);
+
+   TR::LabelSymbol* startLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol* endLabel = generateLabelSymbol(cg);
+   startLabel->setStartInternalControlFlow();
+   endLabel->setEndInternalControlFlow();
+
+   TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
+
+   generateLabelInstruction(LABEL, node, startLabel, cg);
+
+   // Example:
+   // ; obtain distance from source to destination
+   //   SUB   EDI,ESI
+   //
+   // ; decide direction
+   //   CMP   EDI,ECX
+   //   LEA   EDI,[EDI+ESI]
+   //   LEA   EAX,[ESI+ECX-8]
+   //   CMOVB ESI,EAX
+   //   SETAE AL
+   //   MOVZX EAX,AL
+   //   LEA   EAX,[2*EAX-1]
+   //
+   // ; copy
+   //   SHR  ECX,3
+   //   JRCXZ endLabel
+   // loopLabel:
+   //   MOVQ XMM0,[ESI]
+   //   MOVQ [EDI+ESI],XMM0
+   //   LEA  ESI,[ESI+8*EAX]
+   //   LOOP loopLabel
+   // endLabel:
+   //   # LOOP END
+   generateRegRegInstruction(SUBRegReg(), node, dstReg, srcReg, cg);
+   if (node->isForwardArrayCopy())
+      {
+      generateRegImmInstruction(MOVRegImm4(), node, scratch, 1, cg);
+      }
+   else // decide direction during runtime
+      {
+      generateRegRegInstruction(CMPRegReg(), node, dstReg, sizeReg, cg);
+      generateRegMemInstruction(LEARegMem(), node, scratch, generateX86MemoryReference(srcReg, sizeReg, 0, -8, cg), cg);
+      generateRegRegInstruction(CMOVBRegReg(), node, srcReg, scratch, cg);
+      generateRegInstruction(SETAE1Reg, node, scratch, cg);
+      generateRegRegInstruction(MOVZXReg4Reg1, node, scratch, scratch, cg);
+      generateRegMemInstruction(LEARegMem(), node, scratch, generateX86MemoryReference(NULL, scratch, 1, -1, cg), cg);
+      }
+
+   generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 3, cg);
+   generateLabelInstruction(JRCXZ1, node, endLabel, cg);
+   generateLabelInstruction(LABEL, node, loopLabel, cg);
+   generateRegMemInstruction(MOVQRegMem, node, XMM, generateX86MemoryReference(srcReg, 0, cg), cg);
+   generateMemRegInstruction(MOVQMemReg, node, generateX86MemoryReference(dstReg, srcReg, 0, cg), XMM, cg);
+   generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, scratch, 3, cg), cg);
+   generateLabelInstruction(LOOP1, node, loopLabel, cg);
+
+   generateLabelInstruction(LABEL, node, endLabel, dependencies, cg);
+   cg->stopUsingRegister(XMM);
+   cg->stopUsingRegister(scratch);
+   }
+
+static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* dstReg, TR::Register* srcReg, TR::Register* sizeReg, TR::CodeGenerator* cg)
+   {
+   TR::RegisterDependencyConditions* dependencies = generateRegisterDependencyConditions((uint8_t)3, (uint8_t)3, cg);
+   dependencies->addPreCondition(srcReg, TR::RealRegister::esi, cg);
+   dependencies->addPreCondition(dstReg, TR::RealRegister::edi, cg);
+   dependencies->addPreCondition(sizeReg, TR::RealRegister::ecx, cg);
+   dependencies->addPostCondition(srcReg, TR::RealRegister::esi, cg);
+   dependencies->addPostCondition(dstReg, TR::RealRegister::edi, cg);
+   dependencies->addPostCondition(sizeReg, TR::RealRegister::ecx, cg);
+
+   TR_X86OpCodes repmovs;
+   switch (elementSize)
+      {
+      case 8:
+         repmovs = REPMOVSQ;
+         break;
+      case 4:
+         repmovs = REPMOVSD;
+         break;
+      case 2:
+         repmovs = REPMOVSW;
+         break;
+      default:
+         repmovs = REPMOVSB;
+         break;
+      }
+   if (node->isForwardArrayCopy())
+      {
+      generateRepMovsInstruction(repmovs, node, sizeReg, dependencies, cg);
+      }
+   else // decide direction during runtime
+      {
+      TR::LabelSymbol* mainBegLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol* mainEndLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol* backwardLabel = generateLabelSymbol(cg);
+      mainBegLabel->setStartInternalControlFlow();
+      mainEndLabel->setEndInternalControlFlow();
+
+      generateLabelInstruction(LABEL, node, mainBegLabel, cg);
+
+      generateRegRegInstruction(SUBRegReg(), node, dstReg, srcReg, cg);  // dst = dst - src
+      generateRegRegInstruction(CMPRegReg(), node, dstReg, sizeReg, cg); // cmp dst, size
+      generateRegMemInstruction(LEARegMem(), node, dstReg, generateX86MemoryReference(dstReg, srcReg, 0, cg), cg); // dst = dst + src
+      generateLabelInstruction(JB4, node, backwardLabel, cg);   // jb, skip backward copy setup
+      generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
+
+      TR_OutlinedInstructions* backwardPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(backwardLabel, cg);
+      cg->getOutlinedInstructionsList().push_front(backwardPath);
+      backwardPath->swapInstructionListsWithCompilation();
+      generateLabelInstruction(LABEL, node, backwardLabel, cg);
+      generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, sizeReg, 0, -(intptr_t)elementSize, cg), cg);
+      generateRegMemInstruction(LEARegMem(), node, dstReg, generateX86MemoryReference(dstReg, sizeReg, 0, -(intptr_t)elementSize, cg), cg);
+      generateInstruction(STD, node, cg);
+      generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
+      generateInstruction(CLD, node, cg);
+      generateLabelInstruction(JMP4, node, mainEndLabel, cg);
+      backwardPath->swapInstructionListsWithCompilation();
+
+      generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
+      }
+   }
+
+TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   static bool useDeprecatedArraycopy = feGetEnv("TR_UseDeprecatedArraycopy");
+   if (useDeprecatedArraycopy)
+      {
+      return deprecated_arraycopyEvaluator(node, cg);
+      }
+   if (node->isReferenceArrayCopy() && !node->isNoArrayStoreCheckArrayCopy())
+      {
+      return TR::TreeEvaluator::VMarrayStoreCheckArrayCopyEvaluator(node, cg);
+      }
+   // There are two cases.
+   // In the first case we know that a simple memmove or memcpy operation can
+   // be done. For this case there are 3 children:
+   //    1) The byte source pointer
+   //    2) The byte destination pointer
+   //    3) The byte count
+   //
+   // In the second case we must generate run-time tests to see if a simple
+   // byte copy can be done or if an element-by-element copy is needed.
+   // For this case there are 5 children:
+   //    1) The original source object reference
+   //    2) The original destination object reference
+   //    3) The byte source pointer
+   //    4) The byte destination pointer
+   //    5) The byte count
+   //
+
+   // ALL nodes need be evaluated to comply argument evaluation order;
+   // since size node is the last node, its evaluation can be delayed for further optimization
+   TR::Node* sizeNode = node->getLastChild();
+   for (int32_t i = 0; i < node->getNumChildren()-1; i++)
+      {
+      cg->evaluate(node->getChild(i));
+      }
+
+   TR::Register* srcReg = cg->allocateRegister();
+   TR::Register* dstReg = cg->allocateRegister();
+   generateRegRegInstruction(MOVRegReg(), node, srcReg, node->getChild(node->getNumChildren() - 3)->getRegister(), cg);
+   generateRegRegInstruction(MOVRegReg(), node, dstReg, node->getChild(node->getNumChildren() - 2)->getRegister(), cg);
+
+   TR::DataType dt = node->getArrayCopyElementType();
+   uint32_t elementSize = 1;
+   static bool forceByteArrayElementCopy = feGetEnv("TR_ForceByteArrayElementCopy");
+   if (!forceByteArrayElementCopy)
+      {
+      if (node->isReferenceArrayCopy() || dt == TR::Address)
+         elementSize = TR::Compiler->om.sizeofReferenceField();
+      else
+         elementSize = TR::Symbol::convertTypeToSize(dt);
+      }
+
+   bool isShortConstantArray = false;
+   if (isShortConstantArray)
+      {
+      }
+   else
+      {
+      TR::Register* sizeReg = TR::TreeEvaluator::intOrLongClobberEvaluate(sizeNode, TR::TreeEvaluator::getNodeIs64Bit(sizeNode, cg), cg);
+      if (TR::Compiler->target.is64Bit() && !TR::TreeEvaluator::getNodeIs64Bit(sizeNode, cg))
+         {
+         generateRegRegInstruction(MOVZXReg8Reg4, node, sizeReg, sizeReg, cg);
+         }
+      if (elementSize == 8 && TR::Compiler->target.is32Bit())
+         {
+         arrayCopy64BitPrimitiveOnIA32(node, dstReg, srcReg, sizeReg, cg);
+         }
+      else
+         {
+         arrayCopyDefault(node, elementSize, dstReg, srcReg, sizeReg, cg);
+         }
+      cg->stopUsingRegister(sizeReg);
+      cg->decReferenceCount(sizeNode);
+      }
+
+   cg->stopUsingRegister(dstReg);
+   cg->stopUsingRegister(srcReg);
+#ifdef J9_PROJECT_SPECIFIC
+   if (node->isReferenceArrayCopy())
+      {
+      TR::TreeEvaluator::generateWrtbarForArrayCopy(node, cg);
+      }
+#endif
+   for (int32_t i = 0; i < node->getNumChildren()-1; i++)
+      {
+      cg->decReferenceCount(node->getChild(i));
+      }
    return NULL;
    }
 

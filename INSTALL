@@ -20,7 +20,6 @@ The following packages are required to build OMR:
 
 - autoconf
 - curl
-- numa-dev (which provides numa.h)
 
 
 Building DDR support for OMR

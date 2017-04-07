@@ -374,7 +374,7 @@ void OMR::X86::Instruction::clobberRegsForRematerialisation()
 #if defined(TR_TARGET_64BIT)
 uint8_t OMR::X86::Instruction::operandSizeRexBits() // Rex bits indicating 32/64-bit operand sizes
    {
-   if (self()->getOpCode().needs64BitOperandPrefix())
+   if (self()->getOpCode().info().rex_w)
       return TR::RealRegister::REX | TR::RealRegister::REX_W;
    else
       return 0;

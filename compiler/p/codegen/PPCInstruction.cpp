@@ -102,12 +102,21 @@ void TR::PPCLabelInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       TR_PPCOutOfLineCodeSection *oi = cg()->findOutLinedInstructionsFromLabel(getLabelSymbol());
       TR_ASSERT(oi, "Could not find PPCOutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
 
-      cg()->unlockFreeSpillList();
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
 
       if (cg()->getDebug())
          cg()->traceRegisterAssignment("OOL: Finished register assignment in OOL section\n");
+
+      // Unlock the free spill list.
+      //
+      cg()->unlockFreeSpillList();
+
+      // Disassociate backing storage that was previously reserved for a spilled virtual if
+      // virtual is no longer spilled. This occurs because the the free spill list was
+      // locked.
+      //
+      machine->disassociateUnspilledBackingStorage();
       }
    }
 
@@ -214,13 +223,20 @@ void TR::PPCConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindT
       //
       TR_PPCOutOfLineCodeSection *oi = cg()->findOutLinedInstructionsFromLabel(getLabelSymbol());
       TR_ASSERT(oi, "Could not find PPCOutOfLineCodeSection stream from label.  instr=%p, label=%p\n", this, getLabelSymbol());
-
-      cg()->unlockFreeSpillList();
       if (!oi->hasBeenRegisterAssigned())
          oi->assignRegisters(kindToBeAssigned);
-
       if (cg()->getDebug())
             cg()->traceRegisterAssignment("OOL: Finished register assignment in OOL section\n");
+
+      // Unlock the free spill list.
+      //
+      cg()->unlockFreeSpillList();
+
+      // Disassociate backing storage that was previously reserved for a spilled virtual if
+      // virtual is no longer spilled. This occurs because the the free spill list was
+      // locked.
+      //
+      machine->disassociateUnspilledBackingStorage();
       }
    }
 

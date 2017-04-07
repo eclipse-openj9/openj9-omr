@@ -819,25 +819,6 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
             if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
                cg->getSpilledRegisterList()->push_front(virtReg);
             }
-         // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
-         else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
-            {
-            TR::PPCLabelInstruction *labelInstr = (TR::PPCLabelInstruction *)currentInstruction;
-            TR_BackingStore         *location = virtReg->getBackingStorage();
-            TR_RegisterKinds         rk = virtReg->getKind();
-            int32_t                  dataSize;
-            if (labelInstr->getLabelSymbol()->isStartOfColdInstructionStream() && location)
-               {
-               traceMsg(comp,"\nOOL: Releasing backing storage (%p)\n", location);
-               if (rk == TR_GPR)
-                  dataSize = TR::Compiler->om.sizeofReferenceAddress();
-               else
-                  dataSize = 8;
-               location->setMaxSpillDepth(0);
-               cg->freeSpill(location,dataSize,0);
-               virtReg->setBackingStorage(NULL);
-               }
-            }
          }
       }
 

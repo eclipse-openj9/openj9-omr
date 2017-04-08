@@ -980,7 +980,7 @@ enum TR_CompilationOptions
    TR_RestrictStaticFieldFolding                      = 0x00004000 + 30,
    // Available                                       = 0x00008000 + 30,
    // Available                                       = 0x00010000 + 30,
-   // Available                                       = 0x00020000 + 30,
+   TR_EnableJProfiling                                = 0x00020000 + 30,
    TR_DisableForcedEXInlining                         = 0x00040000 + 30,
    TR_EnableOnsiteCacheForSuperClassTest              = 0x00080000 + 30,
    TR_DisableVMCSProfiling                            = 0x00100000 + 30,

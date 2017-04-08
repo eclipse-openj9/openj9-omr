@@ -832,6 +832,12 @@ OMR::Compilation::isProfilingCompilation()
    return _recompilationInfo ? _recompilationInfo->isProfilingCompilation() : false;
    }
 
+bool
+OMR::Compilation::isJProfilingCompilation()
+   {
+   return false;
+   }
+
 #if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
 static void stopBeforeCompile()
    {

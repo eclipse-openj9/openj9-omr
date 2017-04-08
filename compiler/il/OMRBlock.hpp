@@ -366,6 +366,8 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    int32_t getNormalizedFrequency(TR::CFG *);
    int32_t getGlobalNormalizedFrequency(TR::CFG *);
 
+   bool isOSRInduceBlock(TR::Compilation *);
+
    /**
     * Field functions end
     */

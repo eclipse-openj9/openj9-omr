@@ -22,10 +22,15 @@ MODULE_NAME := scanner
 ARTIFACT_TYPE := archive
 
 OBJECTS = \
-  DwarfScanner$(OBJEXT)
+  DwarfScanner$(OBJEXT) \
+  DwarfFunctions$(OBJEXT)
 
 ifeq (osx,$(OMR_HOST_OS))
   OBJECTS += DwarfParser$(OBJEXT)
+endif
+
+ifeq (aix,$(OMR_HOST_OS))
+  OBJECTS += AixSymbolTableParser$(OBJEXT)
 endif
 
 MODULE_INCLUDES += \

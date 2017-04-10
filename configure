@@ -6980,7 +6980,7 @@ fi
 
 
 
-if test "$cross_compiling" != "yes"; then :
+if test "$cross_compiling" != "yes" && test "$OMR_HOST_OS" != osx && test "$OMR_HOST_OS" != aix; then :
   # Look for libdwarf.h
 	ac_fn_c_check_header_mongrel "$LINENO" "libdwarf.h" "ac_cv_header_libdwarf_h" "$ac_includes_default"
 if test "x$ac_cv_header_libdwarf_h" = xyes; then :

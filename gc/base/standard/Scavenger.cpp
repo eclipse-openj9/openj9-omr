@@ -1433,9 +1433,6 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 GC_ObjectScanner *
 MM_Scavenger::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectptr, void *objectScannerState, uintptr_t flags)
 {
-	if (backOutStarted == _backOutFlag) {
-		flags |= GC_ObjectScanner::indexableObjectNoSplit;
-	}
 	return _cli->scavenger_getObjectScanner(env, objectptr, (void*) objectScannerState, flags);
 }
 
@@ -2224,13 +2221,9 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 
 	GC_ObjectScannerState objectScannerState;
 
-	uintptr_t scannerFlags = GC_ObjectScanner::scanRoots;
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Pruning scan (whether in backout or not) must not split. */
-	scannerFlags |= GC_ObjectScanner::indexableObjectNoSplit;
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	uintptr_t scannerFlags = GC_ObjectScanner::scanRoots | GC_ObjectScanner::indexableObjectNoSplit;
 	GC_ObjectScanner *objectScanner = getObjectScanner(env, objectPtr, &objectScannerState, scannerFlags);
-
 	if (NULL != objectScanner) {
 		GC_SlotObject *slotPtr;
 		while (NULL != (slotPtr = objectScanner->getNextSlot())) {
@@ -2429,8 +2422,7 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 					/* Yes..so first remove tag bit from object address */
 					objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator.
-					 */
+					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
 					if (!shouldRememberObject(env, objectPtr)) {
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined(OMR_SCAVENGER_TRACE_REMEMBERED_SET)
@@ -3347,8 +3339,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 					objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
 					Assert_MM_false(MM_ForwardedHeader(objectPtr).isForwardedPointer());
 
-					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator.
-					 */
+					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
 					if (!shouldRememberObject(env, objectPtr)) {
 						/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
 						_extensions->objectModel.clearRemembered(objectPtr);

@@ -98,9 +98,7 @@ public:
 		}
 	}
 	
-#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	void rescanThreadSlots(MM_EnvironmentStandard *env) { }
-#endif
 
 	void scanClearable(MM_EnvironmentBase *env)
 	{

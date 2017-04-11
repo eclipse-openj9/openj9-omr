@@ -313,8 +313,15 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
                }
             else
                {
+#ifndef J9_PROJECT_SPECIFIC
+               *(int32_t *)cursor = 0xe28fe004;  // add LR, PC, #4
+               cursor += 4;
+               *(int32_t *)cursor = 0xe51ff004;  // ldr PC, [PC, #-4]
+               cursor += 4;
+               *(int32_t *)cursor = imm;
+#else
                TR::Node *node = getNode();
-               if (sym->isJNI() && node && node->isPreparedForDirectJNI() && getConditionCode() == ARMConditionCodeAL)
+               if (sym->isNative() || sym->isJNI() && node && node->isPreparedForDirectJNI() && getConditionCode() == ARMConditionCodeAL)
                   {
                   // A trampoline is not created.
                   // Generate a long jump.
@@ -334,7 +341,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
                          "CodeCache is more than 32MB.\n");
                   *(int32_t *)cursor |= encodeBranchDistance((uintptr_t)cursor, (uintptr_t) trmpln);
                   }
-
+#endif
                // no need to add 4 to cursor, it is done below in the
                // common path
                cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
@@ -367,10 +374,7 @@ int32_t TR::ARMImmSymInstruction::estimateBinaryLength(int32_t currentEstimate)
    TR::ResolvedMethodSymbol *sym = getSymbolReference()->getSymbol()->getResolvedMethodSymbol();
    TR::Node *node = getNode();
 
-   if (sym && sym->isJNI() && node && node->isPreparedForDirectJNI() && getConditionCode() == ARMConditionCodeAL)
-      length = 3 * ARM_INSTRUCTION_LENGTH;
-   else
-      length = ARM_INSTRUCTION_LENGTH;
+   length = 3 * ARM_INSTRUCTION_LENGTH;
 
    setEstimatedBinaryLength(length);
    return(currentEstimate + length);

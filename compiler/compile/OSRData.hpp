@@ -298,7 +298,8 @@ class TR_OSRMethodData
    void setNumSymRefs(int32_t numBits) {_numSymRefs = numBits; }
    int32_t getNumSymRefs() { return _numSymRefs; }
 
-   void addLiveRangeInfo(int32_t byteCodeIndex, TR_BitVector *liveRangeInfo);
+   void addLiveRangeInfo(int32_t byteCodeIndex, TR::OSRPointType osrPoint, TR_BitVector *liveRangeInfo);
+   TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRPointType osrPoint);
    TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex);
 
    bool linkedToCaller() { return _linkedToCaller; }
@@ -309,7 +310,8 @@ class TR_OSRMethodData
    private:
    void createOSRBlocks(TR::Node* n);
 
-   typedef CS2::HashTable<int32_t, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
+   typedef CS2::CompoundHashKey<int32_t, TR::OSRPointType> TR_BCLiveRangeInfoHashKey;
+   typedef CS2::HashTable<TR_BCLiveRangeInfoHashKey, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_OSRSlotSharingInfo*, TR::Allocator> TR_BCInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_Array<int32_t>, TR::Allocator> TR_Slot2ScratchBufferOffset;
 

@@ -1421,8 +1421,6 @@ OMR::ResolvedMethodSymbol::getNumberOfBackEdges()
    return numBackEdges;
    }
 
-
-
 void
 OMR::ResolvedMethodSymbol::resetLiveLocalIndices()
    {
@@ -1696,6 +1694,76 @@ OMR::ResolvedMethodSymbol::insertRematableStoresFromCallSites(TR::Compilation *c
       }
    }
 
+/*
+ * Returns the bytecode info for an OSR point, taking into account the
+ * possibility that the treetop for a call has different BCI to the OSR
+ * point.
+ */
+TR_ByteCodeInfo&
+OMR::ResolvedMethodSymbol::getOSRByteCodeInfo(TR::Node *node)
+   {
+   TR_ByteCodeInfo &nodeBCI = node->getByteCodeInfo();
+   if (node->getNumChildren() > 0 && (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck()))
+      nodeBCI = node->getFirstChild()->getByteCodeInfo();
+   return nodeBCI;
+   }
+
+/*
+ * Checks the provided node is pending push store or load expected to be
+ * around an OSR point.
+ *
+ * Pending push stores are used to ensure the stack can be reconstructed 
+ * after the transition, whilst anchored loads are also related as they
+ * may be used to avoid the side effects of the prior mentioned stores.
+ * As these anchored loads can be placed before the stores, they may
+ * sit between the OSR point and the transition.
+ */
+bool
+OMR::ResolvedMethodSymbol::isOSRRelatedNode(TR::Node *node)
+   {
+   return (node->getOpCode().isStoreDirect()
+         && node->getOpCode().hasSymbolReference()
+         && node->getSymbolReference()->getSymbol()->isPendingPush())
+      || (node->getOpCodeValue() == TR::treetop
+         && node->getFirstChild()->getOpCode().isLoadVarDirect()
+         && node->getFirstChild()->getOpCode().hasSymbolReference()
+         && node->getFirstChild()->getSymbolReference()->getSymbol()->isPendingPush());
+   }
+
+/*
+ * Checks that the provided node is related to the OSR point's BCI.
+ * This applies to pending push stores and loads sharing the BCI.
+ */
+bool
+OMR::ResolvedMethodSymbol::isOSRRelatedNode(TR::Node *node, TR_ByteCodeInfo &osrBCI)
+   {
+   TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+   bool byteCodeIndex = osrBCI.getCallerIndex() == bci.getCallerIndex()
+      && osrBCI.getByteCodeIndex() == bci.getByteCodeIndex();
+   return byteCodeIndex && self()->isOSRRelatedNode(node);
+   }
+
+/*
+ * This function will return the transition treetop for the provided OSR point,
+ * depending on the transition target and surrounding treetops.
+ */
+TR::TreeTop *
+OMR::ResolvedMethodSymbol::getOSRTransitionTreeTop(TR::TreeTop *tt)
+   {
+   if (self()->comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+      {
+      TR_ByteCodeInfo bci = self()->getOSRByteCodeInfo(tt->getNode());
+      TR::TreeTop *cursor = tt->getNextTreeTop();
+      while (cursor && self()->isOSRRelatedNode(cursor->getNode(), bci))
+         {
+         tt = cursor;
+         cursor = cursor->getNextTreeTop();
+         }
+      }
+
+   return tt;
+   }
+
 void
 OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots)
    {
@@ -1719,12 +1787,14 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
    TR::TreeTop *prev = induceOSRTree->getPrevTreeTop();
    TR::TreeTop *next = induceOSRTree;
 
+   TR::OSRPointType pointType = TR::inductionOSR;
+
    while (osrMethodData)
       {
       if (comp->getOption(TR_TraceOSR))
          traceMsg(comp, "Inserting stores for dead stack slots in method at caller index %d and bytecode index %d for induceOSR call %p\n", callSite, byteCodeIndex, induceOSRTree->getNode());
 
-      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
+      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex, pointType);
       if (deadSymRefs)
          {
          TR_BitVectorIterator bvi(*deadSymRefs);
@@ -1753,6 +1823,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
          callSite = callSiteInfo._byteCodeInfo.getCallerIndex();
          osrMethodData = comp->getOSRCompilationData()->findCallerOSRMethodData(osrMethodData);
          byteCodeIndex = callSiteInfo._byteCodeInfo.getByteCodeIndex();
+         pointType = comp->getOSRTransitionTarget() == TR::postExecutionOSR ? TR::analysisOSR : TR::inductionOSR;
          }
       else
          osrMethodData = NULL;
@@ -2020,20 +2091,7 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
                         {
                         TR::TreeTop *next = retain->getNextTreeTop();
                         if (next && next->getNode()->getOpCodeValue() == TR::asynccheck)
-                           {
-                           TR_ByteCodeInfo osrPointBCI = next->getNode()->getByteCodeInfo();
-                           retain = next;
-                           next = next->getNextTreeTop();
-                           // Pending pushes should have the same BCI as the OSR point
-                           while (next
-                                 && next->getNode()->getOpCode().isStoreDirect()
-                                 && next->getNode()->getByteCodeInfo().getCallerIndex() == osrPointBCI.getCallerIndex()
-                                 && next->getNode()->getByteCodeInfo().getByteCodeIndex() == osrPointBCI.getByteCodeIndex())
-                              {
-                              retain = next;
-                              next = next->getNextTreeTop();
-                              }
-                           }
+                           retain = self()->getOSRTransitionTreeTop(next);
                         }
 
                      retain->join(clonedCatch->getExit());

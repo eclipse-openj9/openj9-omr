@@ -238,20 +238,18 @@ static DebugValue *head = 0;
 TR::OptionTable OMR::Options::_feOptions[] =
    {
    {"code=",              "C<nnn>\tsize of a single code cache, in KB",
-    TR::Options::set32BitNumeric, offsetof(OMR::FrontEnd::JitConfig, options.codeCacheKB), 0, " %d (KB)"},
+    TR::Options::set32BitNumericInJitConfig, offsetof(OMR::FrontEnd::JitConfig, options.codeCacheKB), 0, " %d (KB)"},
    {"exclude=",   "D{regexp}\tdo not compile methods matching regexp", TR::Options::limitOption, 1, 0, "P%s"},
    {"limit=",     "D{regexp}\tonly compile methods matching regexp", TR::Options::limitOption, 0, 0, "P%s"},
    {"limitfile=", "D<filename>\tfilter methods as defined in filename.  "
                   "Use limitfile=(filename,firstLine,lastLine) to limit lines considered from firstLine to lastLine", TR::Options::limitfileOption, 0, 0, "P%s"},
-   {"maxInlinedCalls=",    "O<nnn>\tmaximum number of calls to be inlined",
-        TR::Options::set32BitSignedNumeric, offsetof(TR::Options,_maxInlinedCalls), 0, "F%d"},
    {"verbose",    "L\twrite compiled method names to vlog file or stdout in limitfile format",
     TR::Options::setVerboseBits, offsetof(TR::JitConfig, options.verboseFlags), (1<<TR_VerboseCompileStart)|(1<<TR_VerboseCompileEnd), "F=1"},
    {"verbose=",   "L{regex}\tlist of verbose output to write to vlog or stdout",
     TR::Options::setVerboseBits, offsetof(TR::JitConfig, options.verboseFlags), 0, "F"},
    {"version",     "M\tprint out JIT version", TR::Options::versionOption, 0, 0, "F"},
    {"vlog=",      "L<filename>\twrite verbose output to filename",
-    TR::Options::setString, offsetof(TR::JitConfig, options.vLogFileName), 0, "P%s"},
+    TR::Options::setStringInJitConfig, offsetof(TR::JitConfig, options.vLogFileName), 0, "P%s"},
    {0}
    };
 

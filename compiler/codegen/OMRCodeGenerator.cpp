@@ -659,7 +659,7 @@ OMR::CodeGenerator::doInstructionSelection()
 
    // Set default value for pre-prologue size
    //
-   self()->setPrePrologueSize(4);
+   self()->setPrePrologueSize(0);
 
    if (comp->getOption(TR_TraceCG))
       {

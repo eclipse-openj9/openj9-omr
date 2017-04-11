@@ -4242,6 +4242,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCAESDecryptVMX:                                 return "PPCAESDecryptVMX";
          case TR_PPCAESEncrypt:                                    return "PPCAESEncrypt";
          case TR_PPCAESDecrypt:                                    return "PPCAESDecrypt";
+         case TR_PPCAESCBCDecrypt:                                 return "PPCAESCBCDecrypt";
+         case TR_PPCAESCBCEncrypt:                                 return "PPCAESCBCEncrypt";
          case TR_PPCAESKeyExpansion:                               return "PPCAESKeyExpansion";
          case TR_PPCVectorLogDouble:                               return "__logd2";
          }

@@ -1994,9 +1994,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       // TM results in difficult situations when determining where the transition should occur,
       // so it is currently disabled. The implications of disabling TM should be investigated further.
       self()->setOption(TR_DisableTM);
-      // RedundantGotoElimination creates complications for NextGenHCR, potentially due to
-      // the manipulation of asyncchecks. The implications of disabling it should be investigated further.
-      self()->setDisabled(redundantGotoElimination, true);
       // Asynchecks cannot be removed in NextGenHCR as they may be used for transitions
       self()->setDisabled(redundantAsyncCheckRemoval, true);
       }

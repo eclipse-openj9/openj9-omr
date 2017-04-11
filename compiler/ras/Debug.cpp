@@ -3612,14 +3612,16 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
       uint32_t i = 0;
       for (auto info = vguards.begin(); info != vguards.end(); ++info, ++i)
          {
-         char guardKindName[38];
-         sprintf(guardKindName, "%s %s", getVirtualGuardKindName((*info)->getKind()), (*info)->mergedWithHCRGuard()?"+ HCRGuard ":"");
+         char guardKindName[49];
+         sprintf(guardKindName, "%s %s%s", getVirtualGuardKindName((*info)->getKind()),
+            (*info)->mergedWithHCRGuard()?"+ HCRGuard ":"",
+            (*info)->mergedWithOSRGuard()?"+ OSRGuard ":"");
 
          if (!(*info)->getSymbolReference())
-            trfprintf(pOutFile, "[%4d] %-38s %s%s\n",
+            trfprintf(pOutFile, "[%4d] %-49s %s%s\n",
                   i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", guardKindName);
          else
-            trfprintf(pOutFile, "[%4d] %-38s %scalleeSymbol=" POINTER_PRINTF_FORMAT "\n",
+            trfprintf(pOutFile, "[%4d] %-49s %scalleeSymbol=" POINTER_PRINTF_FORMAT "\n",
                   i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", (*info)->getSymbolReference()->getSymbol());
          ListIterator<TR_VirtualGuardSite> siteIt(&(*info)->getNOPSites());
          for (TR_VirtualGuardSite *site = siteIt.getFirst(); site; site = siteIt.getNext())

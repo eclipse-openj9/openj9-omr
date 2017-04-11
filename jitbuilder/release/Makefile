@@ -18,6 +18,7 @@
 
 # Sample makefile using g++ may need additional compile options to work in any particular environment
 
+CXX?=g++
 CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
@@ -104,194 +105,194 @@ testexperimental: experimental_goal all
 # Rules for individual examples
 
 atomicoperations : libjitbuilder.a AtomicOperations.o
-	g++ -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
 
 AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 badtoiltype : libjitbuilder.a BadToIlType.o
-	g++ -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl
 
 BadToIlType.o: src/ToIlType.cpp
-	g++ -o $@ -DEXPECTED_FAIL $(CXXFLAGS) $<
+	$(CXX) -o $@ -DEXPECTED_FAIL $(CXXFLAGS) $<
 
 
 call : libjitbuilder.a Call.o
-	g++ -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
 
 Call.o: src/Call.cpp src/Call.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 conditionals : libjitbuilder.a Conditionals.o	
-	g++ -g -fno-rtti -o $@ Conditionals.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Conditionals.o -L. -ljitbuilder -ldl
 
 Conditionals.o: src/Conditionals.cpp src/Conditionals.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 conststring : libjitbuilder.a ConstString.o	
-	g++ -g -fno-rtti -o $@ ConstString.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ ConstString.o -L. -ljitbuilder -ldl
 
 ConstString.o: src/ConstString.cpp src/ConstString.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 dotproduct : libjitbuilder.a DotProduct.o
-	g++ -g -fno-rtti -o $@ DotProduct.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ DotProduct.o -L. -ljitbuilder -ldl
 
 DotProduct.o: src/DotProduct.cpp src/DotProduct.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 fieldaddress : libjitbuilder.a FieldAddress.o
-	g++ -g -fno-rtti -o $@ FieldAddress.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ FieldAddress.o -L. -ljitbuilder -ldl
 
 FieldAddress.o: src/FieldAddress.cpp src/FieldAddress.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 issupportedtype : libjitbuilder.a IsSupportedType.o
-	g++ -g -fno-rtti -o $@ IsSupportedType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ IsSupportedType.o -L. -ljitbuilder -ldl
 
 IsSupportedType.o: src/IsSupportedType.cpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 iterfib : libjitbuilder.a IterativeFib.o
-	g++ -g -fno-rtti -o $@ IterativeFib.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ IterativeFib.o -L. -ljitbuilder -ldl
 
 IterativeFib.o: src/IterativeFib.cpp src/IterativeFib.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 linkedlist : libjitbuilder.a LinkedList.o
-	g++ -g -fno-rtti -o $@ LinkedList.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ LinkedList.o -L. -ljitbuilder -ldl
 
 LinkedList.o: src/LinkedList.cpp src/LinkedList.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 localarray : libjitbuilder.a LocalArray.o
-	g++ -g -fno-rtti -o $@ LocalArray.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ LocalArray.o -L. -ljitbuilder -ldl
 
 LocalArray.o: src/LocalArray.cpp src/LocalArray.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 mandelbrot : libjitbuilder.a Mandelbrot.o
-	g++ -g -fno-rtti -o $@ Mandelbrot.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Mandelbrot.o -L. -ljitbuilder -ldl
 
 Mandelbrot.o: src/Mandelbrot.cpp src/Mandelbrot.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 matmult : libjitbuilder.a MatMult.o
-	g++ -g -fno-rtti -o $@ MatMult.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ MatMult.o -L. -ljitbuilder -ldl
 
 MatMult.o: src/MatMult.cpp src/MatMult.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 nestedloop : libjitbuilder.a NestedLoop.o
-	g++ -g -fno-rtti -o $@ NestedLoop.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ NestedLoop.o -L. -ljitbuilder -ldl
 
 NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 operandstacktests : libjitbuilder.a OperandStackTests.o
-	g++ -g -fno-rtti -o $@ OperandStackTests.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ OperandStackTests.o -L. -ljitbuilder -ldl
 
 OperandStackTests.o: src/OperandStackTests.cpp src/OperandStackTests.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 pointer : libjitbuilder.a Pointer.o
-	g++ -g -fno-rtti -o $@ Pointer.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Pointer.o -L. -ljitbuilder -ldl
 
 Pointer.o: src/Pointer.cpp src/Pointer.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 pow2 : libjitbuilder.a Pow2.o
-	g++ -g -fno-rtti -o $@ Pow2.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Pow2.o -L. -ljitbuilder -ldl
 
 Pow2.o: src/Pow2.cpp src/Pow2.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 recfib : libjitbuilder.a RecursiveFib.o
-	g++ -g -fno-rtti -o $@ RecursiveFib.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ RecursiveFib.o -L. -ljitbuilder -ldl
 
 RecursiveFib.o: src/RecursiveFib.cpp src/RecursiveFib.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 replay: libjitbuilder.a ReplayMethod.o ReplayMethodConstructor.o ReplayMethodBuildIL.o
-	g++ -g -fno-rtti -o $@ ReplayMethod.o ReplayMethodConstructor.o ReplayMethodBuilderIL.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ ReplayMethod.o ReplayMethodConstructor.o ReplayMethodBuilderIL.o -L. -ljitbuilder -ldl
 
 ReplayMethod.o: ReplayMethod.cpp ReplayMethod.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 ReplayMethodConstructor.o: ReplayMethodConstructor.cpp ReplayMethod.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 ReplayMethodBuildIL.o: ReplayMethodBuildIL.cpp ReplayMethod.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 simple : libjitbuilder.a Simple.o
-	g++ -g -fno-rtti -o $@ Simple.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Simple.o -L. -ljitbuilder -ldl
 
 Simple.o: src/Simple.cpp src/Simple.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 structarray : libjitbuilder.a StructArray.o
-	g++ -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
 
 StructArray.o: src/StructArray.cpp src/StructArray.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 switch : libjitbuilder.a Switch.o
-	g++ -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
 
 Switch.o: src/Switch.cpp src/Switch.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 toiltype : libjitbuilder.a ToIlType.o
-	g++ -g -fno-rtti -o $@ ToIlType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ ToIlType.o -L. -ljitbuilder -ldl
 
 ToIlType.o: src/ToIlType.cpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 transactionaloperations : libjitbuilder.a TransactionalOperations.o
-	g++ -g -fno-rtti -o $@ TransactionalOperations.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ TransactionalOperations.o -L. -ljitbuilder -ldl
 
 TransactionalOperations.o: src/TransactionalOperations.cpp src/TransactionalOperations.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 union : libjitbuilder.a Union.o
-	g++ -g -fno-rtti -o $@ Union.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Union.o -L. -ljitbuilder -ldl
 
 Union.o: src/Union.cpp src/Union.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 worklist : libjitbuilder.a Worklist.o
-	g++ -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl
 
 Worklist.o: src/Worklist.cpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 thunks : libjitbuilder.a Thunk.o
-	g++ -g -fno-rtti -o $@ Thunk.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Thunk.o -L. -ljitbuilder -ldl
 
 Thunk.o: src/Thunk.cpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 clean:

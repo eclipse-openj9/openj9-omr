@@ -618,6 +618,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_header_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 OMR_UNDEFINED_JIT_VERSION_STRING
@@ -2524,6 +2525,7 @@ $as_echo "$as_me: creating cache $cache_file" >&6;}
   >$cache_file
 fi
 
+as_fn_append ac_header_list " numa.h"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -6701,6 +6703,25 @@ fi
 
 
 
+
+
+
+  for ac_header in $ac_header_list
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+
 # Check whether --enable-OMR_PORT_NUMA_SUPPORT was given.
 if test "${enable_OMR_PORT_NUMA_SUPPORT+set}" = set; then :
   enableval=$enable_OMR_PORT_NUMA_SUPPORT; if test "x${enableval}" = xyes; then :
@@ -6716,24 +6737,6 @@ else
   if test "x${enable_auto_build_flag}" = xyes; then :
   if test "3" -gt 2; then :
 
-					for ac_header in numa.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "numa.h" "ac_cv_header_numa_h" "$ac_includes_default"
-if test "x$ac_cv_header_numa_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_NUMA_H 1
-_ACEOF
- OMR_PORT_NUMA_SUPPORT=1
-
-   $as_echo "#define OMR_PORT_NUMA_SUPPORT 1" >>confdefs.h
-
-else
-  OMR_PORT_NUMA_SUPPORT=0
-
-
-fi
-
-done
 
 
 					:
@@ -6752,6 +6755,10 @@ fi
 fi
 
 
+
+if test "$OMR_CROSS_CONFIGURE" != yes && test "$OMR_PORT_NUMA_SUPPORT" = 1 && test "$OMR_HOST_OS" = linux; then :
+
+fi
 
 # Check whether --enable-OMR_OPT_CUDA was given.
 if test "${enable_OMR_OPT_CUDA+set}" = set; then :

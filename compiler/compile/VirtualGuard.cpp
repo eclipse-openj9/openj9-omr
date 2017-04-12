@@ -58,7 +58,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
      _sites(comp->trMemory()),
 #endif
      _mutableCallSiteObject(0),_mutableCallSiteEpoch(0),
-     _evalChildren(true), _mergedWithHCRGuard(false),
+     _evalChildren(true), _mergedWithHCRGuard(false), _mergedWithOSRGuard(false),
      _guardNode(guardNode), _currentInlinedSiteIndex(currentSiteIndex)
    {
    if (callNode)
@@ -88,7 +88,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
 TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKind kind,
              TR::Compilation * comp, TR::Node* callNode, TR::Node*guardNode, int32_t currentSiteIndex)
    : _test(test), _kind(kind), _guardedMethod((callNode->getOpCode().hasSymbolReference()) ? callNode->getSymbolReference() : NULL),
-     _thisClass(0), _callNode(callNode), _cannotBeRemoved(false), _mergedWithHCRGuard(false),
+     _thisClass(0), _callNode(callNode), _cannotBeRemoved(false), _mergedWithHCRGuard(false), _mergedWithOSRGuard(false),
      _calleeIndex(callNode->getByteCodeInfo().getCallerIndex()),
      _byteCodeIndex(callNode->getByteCodeInfo().getByteCodeIndex()),
      _innerAssumptions(comp->trMemory()),

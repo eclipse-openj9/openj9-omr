@@ -213,11 +213,6 @@ OMR::Compilation::getNOPTranslateTable()
    }
 
 
-
-
-/* See comment below about operator new */
-bool firstCompileStarted = false;
-
 OMR::Compilation::Compilation(
       int32_t id,
       OMR_VMThread *omrVMThread,
@@ -230,7 +225,7 @@ OMR::Compilation::Compilation(
       TR_OptimizationPlan *optimizationPlan) :
    _trMemory(m),
    _knownObjectTable(NULL),
-   _fe((firstCompileStarted = true, fe)),
+   _fe(fe),
    _ilGenRequest(ilGenRequest),
    _options(&options),
    _omrVMThread(omrVMThread),
@@ -2594,39 +2589,6 @@ char * debug(const char *option)
       }
 
    return 0;
-   }
-#endif
-
-
-#if !defined(JITTEST) // TLP for the delete in checkStore
-// There should be no allocations that use the global operator new, since
-// all allocations should go through the JitMemory allocation routines.
-// To catch cases that we miss, we define global operator new here.
-// (This isn't safe on static platforms, since we don't want to affect user
-// natives which might legitimately use new and delete.  Also, xlC
-// won't link staticly with the -noe flag when we override these.)
-//
-void *operator new(size_t size)
-   {
-   #if defined(DEBUG)
-   #if LINUX
-   // glibc allocates something at dl_init; check if a method is being compiled to avoid
-   // getting assumes at _dl_init
-   if (firstCompileStarted)
-   #endif
-      {
-      printf( "\n*** ERROR *** Invalid use of global operator new\n");
-      TR_ASSERT(0,"Invalid use of global operator new");
-      }
-   #endif
-   return malloc(size);
-   }
-
-// Since we are using GC, heap deletions must be a no-op
-//
-void operator delete(void *)
-   {
-   TR_ASSERT(0, "Invalid use of global operator delete");
    }
 #endif
 

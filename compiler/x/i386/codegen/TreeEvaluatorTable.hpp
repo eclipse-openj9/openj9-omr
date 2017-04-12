@@ -423,7 +423,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vnot
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vselect
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vperm
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsplats
+   TR::TreeEvaluator::SIMDsplatsEvaluator,                 // TR::vsplats
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdmergel
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdmergeh
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdsetelem
@@ -460,9 +460,9 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdec
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vneg
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcom
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vadd
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vadd
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsub
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vmul
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vmul
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdiv
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vrem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vand
@@ -481,10 +481,10 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vucmple
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcmpge
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vucmpge
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vload
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vloadi
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vstore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vstorei
+   TR::TreeEvaluator::SIMDloadEvaluator,                   // TR::vload
+   TR::TreeEvaluator::SIMDloadEvaluator,                   // TR::vloadi
+   TR::TreeEvaluator::SIMDstoreEvaluator,                  // TR::vstore
+   TR::TreeEvaluator::SIMDstoreEvaluator,                  // TR::vstorei
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vrand
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vreturn
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcall

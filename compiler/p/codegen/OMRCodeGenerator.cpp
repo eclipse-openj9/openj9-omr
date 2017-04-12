@@ -224,7 +224,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
     self()->setSupportsConstantOffsetInAddressing();
     self()->setSupportsVirtualGuardNOPing();
-    self()->setSupportsArrayCopy();
+    self()->setSupportsPrimitiveArrayCopy();
+    self()->setSupportsReferenceArrayCopy();
 
     // disabled for now
     //

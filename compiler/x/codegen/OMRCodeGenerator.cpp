@@ -357,7 +357,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
 
    self()->setSupportsArrayCmp();
-   self()->setSupportsArrayCopy();
+   self()->setSupportsPrimitiveArrayCopy();
+   self()->setSupportsReferenceArrayCopy();
 
    if (!comp->getOption(TR_DisableArraySetOpts))
       {

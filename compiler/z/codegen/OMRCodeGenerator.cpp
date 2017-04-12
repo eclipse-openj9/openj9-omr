@@ -686,8 +686,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Support divided by power of 2 logic in ldivSimplifier
    self()->setSupportsLoweringConstLDivPower2();
 
-   self()->setSupportsPrimitiveArrayCopy();
-
    //enable LM/STM for volatile longs in 32 bit
    self()->setSupportsInlinedAtomicLongVolatiles();
 
@@ -809,7 +807,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_AR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
-   self()->setSupportsArrayCopy();
+   self()->setSupportsPrimitiveArrayCopy();
+   self()->setSupportsReferenceArrayCopy();
 
    self()->setSupportsPartialInlineOfMethodHooks();
 

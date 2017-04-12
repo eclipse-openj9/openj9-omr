@@ -1432,11 +1432,11 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsDivCheck() {return _flags1.testAny(SupportsDivCheck);}
    void setSupportsDivCheck() {_flags1.set(SupportsDivCheck);}
 
-   bool getSupportsArrayCopy() {return _flags1.testAny(SupportsArrayCopy);}
-   void setSupportsArrayCopy() {_flags1.set(SupportsArrayCopy);}
-
    bool getSupportsPrimitiveArrayCopy() {return _flags2.testAny(SupportsPrimitiveArrayCopy);}
    void setSupportsPrimitiveArrayCopy() {_flags2.set(SupportsPrimitiveArrayCopy);}
+
+   bool getSupportsReferenceArrayCopy() {return _flags1.testAny(SupportsReferenceArrayCopy);}
+   void setSupportsReferenceArrayCopy() {_flags1.set(SupportsReferenceArrayCopy);}
 
    bool getSupportsEfficientNarrowIntComputation() {return _flags2.testAny(SupportsEfficientNarrowIntComputation);}
    void setSupportsEfficientNarrowIntComputation() {_flags2.set(SupportsEfficientNarrowIntComputation);}
@@ -1708,7 +1708,7 @@ class OMR_EXTENSIBLE CodeGenerator
       HasResumableTrapHandler                            = 0x00000040,
       //                                                 = 0x00000080,   // Available
       SupportsPartialInlineOfMethodHooks                 = 0x00000100,
-      SupportsArrayCopy                                  = 0x00000200,
+      SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,
       SupportsInliningOfTypeCoersionMethods              = 0x00000800,
       VMThreadRequired                                   = 0x00001000,

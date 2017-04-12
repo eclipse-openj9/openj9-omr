@@ -1071,8 +1071,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    bool needWriteBarrier = true;
 
    bool primitiveTransform = cg()->getSupportsPrimitiveArrayCopy();
-   bool fullTransform = cg()->getSupportsArrayCopy();
-   bool transformReferenceArray = false;
+   bool referenceTransform = cg()->getSupportsReferenceArrayCopy();
 
    bool isSrcPossiblyNull = true; // pessimistic
    bool isDstPossiblyNull = true;
@@ -1149,7 +1148,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    // If it is OK to convert this call to a possible call to the (fast)
    // arraycopy helper, do it.
    //
-   if ((primitiveTransform || fullTransform) &&
+   if ((primitiveTransform || referenceTransform) &&
        !comp()->getOption(TR_DisableArrayCopyOpts) &&
        !node->isDontTransformArrayCopyCall() &&
         comp()->fej9()->callTheJitsArrayCopyHelper() &&
@@ -1158,16 +1157,28 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
         !(dstObject && dstObject->isNullObject()) &&
         srcOffHigh >= 0 && dstOffHigh >= 0 && copyLenHigh >= 0)
       {
-      transformTheCall = true;
+      transformTheCall = primitiveTransform && referenceTransform;
+
       if (srcObject && srcObject->getClassType())
          {
          primitiveArray1 = srcObject->getClassType()->isPrimitiveArray(comp());
          referenceArray1 = srcObject->getClassType()->isReferenceArray(comp());
          }
+
       if (dstObject && dstObject->getClassType())
          {
          primitiveArray2 = dstObject->getClassType()->isPrimitiveArray(comp());
          referenceArray2 = dstObject->getClassType()->isReferenceArray(comp());
+         }
+
+      if (primitiveArray1 || primitiveArray2)
+         {
+         transformTheCall = primitiveTransform;
+         }
+
+      if (referenceArray1 || referenceArray2)
+         {
+         transformTheCall = referenceTransform;
          }
 
       if (comp()->generateArraylets() &&
@@ -1204,14 +1215,16 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                   needArrayCheck = false;
                   }
                else
-                  // Different types - arraycopy will fail
-                  //
+                  {
+                  // Array types are different types so the arraycopy will fail
                   transformTheCall = false;
+                  }
                }
             else if (referenceArray2)
-               // Different types - arraycopy will fail
-               //
+               {
+               // Array types are different types so the arraycopy will fail
                transformTheCall = false;
+               }
             }
          else if (referenceArray1)
             {
@@ -1248,32 +1261,16 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                   }
 
                needArrayCheck = false;
-               transformTheCall = fullTransform;
-               transformReferenceArray = primitiveTransform;
-               static char *enableTransformReferenceArray = feGetEnv("TR_enableTRA");
-               if (enableTransformReferenceArray)
-                  {
-                  transformReferenceArray = true; // for reference array transformation
-                  }
                }
             else if (primitiveArray2)
                {
-               // Different types - arraycopy will fail
-               //
+               // Array types are different types so the arraycopy will fail
                transformTheCall = false;
                }
             else if (comp()->getOptions()->alwaysCallWriteBarrier())
                {
                transformTheCall = false;
                }
-            else
-               {
-               transformTheCall = fullTransform;
-               }
-            }
-         else
-            {
-            transformTheCall = fullTransform;
             }
          }
 
@@ -1282,6 +1279,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          type = primitiveArray1 ?
             srcObject->getClassType()->getPrimitiveArrayDataType() :
             dstObject->getClassType()->getPrimitiveArrayDataType();
+
          elementSize = TR::Symbol::convertTypeToSize(type);
          }
 
@@ -1352,25 +1350,8 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
                else if (!isRecognizedMultiLeafArrayCopy)
                   needSameLeafCheckForDst = true;
                }
-
-            //if (transformTheCall &&
-            //  !needSameLeafCheckForSrc && !needSameLeafCheckForDst)
-            // printf("******transformation in compile %p\n",node);fflush(stdout);
-
             }
          }
-      }
-
-   if (transformReferenceArray && !comp()->generateArraylets() )
-      {
-      // If only primitive arraycopy is supported for this target, and the call is known to
-      // go to a reference arraycopy (both src and dst are known to be ref arrays)
-      // then transform the arraycopy into a call to
-      // java/lang/System.arraycopy(Object[], Object[], int, Object[], int, int)
-      // which is a private method in the java.lang.System class we ship
-      //
-      TR_ResolvedMethod * newMethod =
-         findResolvedClassMethod(comp(), "Ljava/lang/System;", "arraycopy", "([Ljava/lang/Object;I[Ljava/lang/Object;II)V");
       }
 #else
    bool isStringCompressedArrayCopy = false;
@@ -3638,20 +3619,23 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Op
          case 4: arraycopy->setArrayCopyElementType(TR::Int32); break;
          case 8: arraycopy->setArrayCopyElementType(TR::Int64); break;
          }
-      if (!comp()->cg()->getSupportsPrimitiveArrayCopy())
+
+      switch (elementSize)
          {
-         switch (elementSize)
-            {
-            case 2: arraycopy->setHalfWordElementArrayCopy(true); break;
-            case 4: case 8: arraycopy->setWordElementArrayCopy(true); break;
-            }
+         case 2:
+            arraycopy->setHalfWordElementArrayCopy(true);
+            break;
+
+         case 4:
+         case 8:
+            arraycopy->setWordElementArrayCopy(true);
+            break;
          }
       }
    else
       {
       arraycopy->setArrayCopyElementType(TR::Address);
-      if (!comp()->cg()->getSupportsPrimitiveArrayCopy())
-         arraycopy->setWordElementArrayCopy(true);
+      arraycopy->setWordElementArrayCopy(true);
       }
 
    callTree->insertBefore(TR::TreeTop::create(comp(), TR::Node::create(callNode, TR::treetop, 1, newArray)));

@@ -2087,7 +2087,7 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
                      // As this method is performed soon after ilgen, the exception handler
                      // may be prepended with an asynccheck and pending pushes
                      // These should be retained in the copy, so skip them when ripping out trees
-                     if (comp->getOSRTransitionTarget() == TR::postExecutionOSR)
+                     if (comp->getOSRTransitionTarget() == TR::postExecutionOSR || comp->getOSRMode() == TR::involuntaryOSR)
                         {
                         TR::TreeTop *next = retain->getNextTreeTop();
                         if (next && next->getNode()->getOpCodeValue() == TR::asynccheck)

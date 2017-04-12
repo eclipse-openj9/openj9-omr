@@ -457,14 +457,14 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
             {
             checkNode = tt->getNode();
             if (cg->getSupportsVirtualGuardNOPing() &&
-               (checkNode->isNopableInlineGuard() || checkNode->isHCRGuard()) &&
+               (checkNode->isNopableInlineGuard() || checkNode->isHCRGuard() || checkNode->isOSRGuard()) &&
                (checkNode->getOpCodeValue() == TR::ificmpne || checkNode->getOpCodeValue() == TR::iflcmpne ||
                 checkNode->getOpCodeValue() == TR::ifacmpne) &&
                 checkNode->getFirstChild() == node)
                {
                // Try get the virtual guard
                TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(checkNode);
-               if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard()) &&
+               if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard() || node->isOSRGuard()) &&
                    comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
                    virtualGuard->canBeRemoved())
                   {

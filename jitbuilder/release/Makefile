@@ -30,7 +30,6 @@ ALL_TESTS = \
             call \
             conditionals \
             conststring \
-            controlflowtests \
             dotproduct \
             fieldaddress \
             issupportedtype \
@@ -58,7 +57,6 @@ all: $(ALL_TESTS)
 # If you add to this list, please also add to ALL_TESTS
 common_goal: $(ALL_TESTS)
 	./conditionals
-	./controlflowtests
 	./issupportedtype
 	./iterfib
 	./nestedloop
@@ -136,13 +134,6 @@ conststring : libjitbuilder.a ConstString.o
 	g++ -g -fno-rtti -o $@ ConstString.o -L. -ljitbuilder -ldl
 
 ConstString.o: src/ConstString.cpp src/ConstString.hpp
-	g++ -o $@ $(CXXFLAGS) $<
-
-
-controlflowtests : libjitbuilder.a ControlFlowTests.o
-	g++ -g -fno-rtti -o $@ ControlFlowTests.o -L. -ljitbuilder -ldl
-
-ControlFlowTests.o: src/ControlFlowTests.cpp src/ControlFlowTests.hpp
 	g++ -o $@ $(CXXFLAGS) $<
 
 

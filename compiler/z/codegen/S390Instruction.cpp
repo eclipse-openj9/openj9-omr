@@ -5785,7 +5785,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    // in) if the patching occurs during GC pause times.  The patching of up to 6-bytes is potentially
    // not atomic.
 
-   bool performEmptyPatch = getNode()->isHCRGuard() || getNode()->isProfiledGuard();
+   bool performEmptyPatch = getNode()->isHCRGuard() || getNode()->isProfiledGuard() || getNode()->isOSRGuard();
 
    // HCR guards that are merged with profiled guards never need to generate NOPs for patching because
    // the profiled guard will generate the NOP branch to the same location the HCR guard needs to branch

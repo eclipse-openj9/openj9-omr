@@ -74,20 +74,25 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 
 	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_comp_dir, &hasAttr, &error)) {
 		ERRMSG("Checking for compilation directory attribute: %s\n", dwarf_errmsg(error));
-		goto Failed;
+		/* The DIE didn't have a compilationDirectory attribute so we can skip
+		 * over getting the absolute paths from the relative paths.  AIX does
+		 * not provide this attribute.
+		 */
+		goto Done;
 	}
 
-	if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
-		if (NULL == attr) {
-			/* The DIE didn't have a compilationDirectory attribute (AIX) 
-			 * so we can skip over getting the absolute paths from the relative paths
-			 */
-			goto Done;
-		} else {
+	if (hasAttr) {
+		/* Get the CU directory. */
+		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
+			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
+			goto Failed;
+		}
+		if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
 			ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
 			goto Failed;
 		}
 	}
+
 	/* Allocate a new file name table to hold the concatenated absolute paths. */
 	fileNamesTableConcat = (char **)malloc(sizeof(char *) * _fileNameCount);
 	if (NULL == fileNamesTableConcat) {

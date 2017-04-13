@@ -1702,10 +1702,9 @@ OMR::ResolvedMethodSymbol::insertRematableStoresFromCallSites(TR::Compilation *c
 TR_ByteCodeInfo&
 OMR::ResolvedMethodSymbol::getOSRByteCodeInfo(TR::Node *node)
    {
-   TR_ByteCodeInfo &nodeBCI = node->getByteCodeInfo();
    if (node->getNumChildren() > 0 && (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck()))
-      nodeBCI = node->getFirstChild()->getByteCodeInfo();
-   return nodeBCI;
+      return node->getFirstChild()->getByteCodeInfo();
+   return node->getByteCodeInfo();
    }
 
 /*

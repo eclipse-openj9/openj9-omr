@@ -56,6 +56,8 @@ using std::tr1::unordered_map;
 using std::unordered_map;
 #endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 
+using std::make_pair;
+
 struct TypeKey {
 	char *fileName;
 	string typeName;

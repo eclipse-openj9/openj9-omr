@@ -4131,6 +4131,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64overlapArrayAnd:                             return "overlapArrayAnd";
             case TR_AMD64arrayCmp:                                    return "arraycmp";
             case TR_AMD64overlapArrayCopy:                            return "overlapArrayCopy";
+            case TR_AMD64doAESENCDecrypt:                             return "doAESDecrypt";
+            case TR_AMD64doAESENCEncrypt:                             return "doAESEncrypt";
             }
          }
       }

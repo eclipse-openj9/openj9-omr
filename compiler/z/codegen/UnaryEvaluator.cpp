@@ -520,8 +520,10 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    node->setRegister(source);
 
 
-   //printf("Node %p is first child\n", firstChild); fflush(stdout);
-   //traceMsg(comp, "Node %p is first child\n", firstChild);
+   if (shouldGenerateGuardedLoadsForCompressedLoad && firstChild->containsCompressionSequence())
+      {
+      cg->decReferenceCount(firstChild->getFirstChild());
+      }
    cg->decReferenceCount(firstChild);
 
    return source;

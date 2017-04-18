@@ -52,6 +52,7 @@ inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
 #define BSFRegReg      SizeParameterizedOpCode<BSF8RegReg      , BSF4RegReg      >
 #define BSWAPReg       SizeParameterizedOpCode<BSWAP8Reg       , BSWAP4Reg       >
 #define BSRRegReg      SizeParameterizedOpCode<BSR8RegReg      , BSR4RegReg      >
+#define CMOVBRegReg    SizeParameterizedOpCode<CMOVB8RegReg    , CMOVB4RegReg    >
 #define CMOVERegMem    SizeParameterizedOpCode<CMOVE8RegMem    , CMOVE4RegMem    >
 #define CMOVERegReg    SizeParameterizedOpCode<CMOVE8RegReg    , CMOVE4RegReg    >
 #define CMOVNERegMem   SizeParameterizedOpCode<CMOVNE8RegMem   , CMOVNE4RegMem   >
@@ -139,6 +140,7 @@ inline TR_X86OpCodes SizeParameterizedOpCode(bool is64Bit =
 #define SARRegCL       SizeParameterizedOpCode<SAR8RegCL       , SAR4RegCL       >
 #define SHRMemImm1     SizeParameterizedOpCode<SHR8MemImm1     , SHR4MemImm1     >
 #define SHRMemCL       SizeParameterizedOpCode<SHR8MemCL       , SHR4MemCL       >
+#define SHRReg1        SizeParameterizedOpCode<SHR8Reg1        , SHR4Reg1        >
 #define SHRRegImm1     SizeParameterizedOpCode<SHR8RegImm1     , SHR4RegImm1     >
 #define SHRRegCL       SizeParameterizedOpCode<SHR8RegCL       , SHR4RegCL       >
 #define TESTMemImm4    SizeParameterizedOpCode<TEST8MemImm4    , TEST4MemImm4    >

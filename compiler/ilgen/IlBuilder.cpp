@@ -574,6 +574,7 @@ IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
    TR_ASSERT(dt->isPointer(), "indirectLoadNode must apply to pointer type");
    TR::IlType * baseType = dt->baseType();
    TR::DataType primType = baseType->getPrimitiveType();
+   TR_ASSERT(primType != TR::NoType, "Dereferencing an untyped pointer.");
    TR::DataType symRefType = primType;
    if (isVectorLoad)
       symRefType = symRefType.scalarToVector();
@@ -813,7 +814,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    {
    TR::IlType *elemType = dt->baseType();
    TR_ASSERT(elemType != NULL, "IndexAt should be called with pointer type");
-
+   TR_ASSERT(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
    TR::Node *baseNode = TR::Node::createLoad(base);
    TR::Node *indexNode = TR::Node::createLoad(index);
    TR::Node *elemSizeNode;

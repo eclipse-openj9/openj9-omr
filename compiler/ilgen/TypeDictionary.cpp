@@ -490,7 +490,7 @@ TypeDictionary::TypeDictionary() :
    VectorDouble = _primitiveType[TR::VectorDouble]          = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorDouble", TR::VectorDouble);
 
    // pointer to primitive types
-                   _pointerToPrimitiveType[TR::NoType]       = NULL;
+   pNoType       = _pointerToPrimitiveType[TR::NoType]       = new (PERSISTENT_NEW) PointerType(NoType);
    pInt8         = _pointerToPrimitiveType[TR::Int8]         = new (PERSISTENT_NEW) PointerType(Int8);
    pInt16        = _pointerToPrimitiveType[TR::Int16]        = new (PERSISTENT_NEW) PointerType(Int16);
    pInt32        = _pointerToPrimitiveType[TR::Int32]        = new (PERSISTENT_NEW) PointerType(Int32);

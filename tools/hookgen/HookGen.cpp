@@ -132,6 +132,8 @@ HookGen::completePrivateHeader(const char *structName)
 		fprintf(_privateFile, "typedef struct %s {\n", structName);
 		fprintf(_privateFile, "\tstruct J9CommonHookInterface common;\n");
 		fprintf(_privateFile, "\tU_8 flags[%d];\n", _eventNum);
+		/* the structure for saving hook dump information */
+		fprintf(_privateFile, "\tstruct OMREventInfo4Dump infos4Dump[%d];\n", _eventNum);
 		fprintf(_privateFile, "\tJ9HookRecord* hooks[%d];\n", _eventNum);
 		fprintf(_privateFile, "} %s;\n", structName);
 		fprintf(_privateFile, "\n");
@@ -164,7 +166,7 @@ HookGen::writeEventToPublicHeader(const char *name, const char *description, con
 		"%s\n"
 		"%s\n\n"
 		"Example usage:\n"
-		"\t(*hookable)->J9HookRegister(hookable, %s, eventOccurred, NULL);"
+		"\t(*hookable)->J9HookRegisterWithCallSite(hookable, %s, eventOccurred, OMR_GET_CALLSITE(), NULL);"
 		"\n\n"
 		"\tstatic void\n"
 		"\teventOccurred(J9HookInterface** hookInterface, UDATA eventNum, void* voidData, void* userData)\n"

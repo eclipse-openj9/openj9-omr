@@ -208,10 +208,10 @@ testRegister(OMRPortLibrary *portLib, uintptr_t *passCount, uintptr_t *failCount
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLib);
 
-	if (((*hookInterface)->J9HookRegister(hookInterface, event, hookNormalEvent, NULL) == 0) == (expectedResult == 0)) {
+	if (((*hookInterface)->J9HookRegisterWithCallSite(hookInterface, event, hookNormalEvent, OMR_GET_CALLSITE(), NULL) == 0) == (expectedResult == 0)) {
 		(*passCount)++;
 	} else {
-		omrtty_printf("J9HookRegister for 0x%zx %s. It should have %s.\n", event, (expectedResult ? "succeeded" : "failed"), (expectedResult ? "failed" : "succeeded"));
+		omrtty_printf("J9HookRegisterWithCallSite for 0x%zx %s. It should have %s.\n", event, (expectedResult ? "succeeded" : "failed"), (expectedResult ? "failed" : "succeeded"));
 		(*failCount)++;
 	}
 }
@@ -221,10 +221,10 @@ testRegisterWithAgent(OMRPortLibrary *portLib, uintptr_t *passCount, uintptr_t *
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLib);
 
-	if (((*hookInterface)->J9HookRegister(hookInterface, event | J9HOOK_TAG_AGENT_ID, hookOrderedEvent, (void *)userData, agentID) == 0) == (expectedResult == 0)) {
+	if (((*hookInterface)->J9HookRegisterWithCallSite(hookInterface, event | J9HOOK_TAG_AGENT_ID, hookOrderedEvent, OMR_GET_CALLSITE(), (void *)userData, agentID) == 0) == (expectedResult == 0)) {
 		(*passCount)++;
 	} else {
-		omrtty_printf("J9HookRegister for 0x%zx %s. It should have %s.\n", event, (expectedResult ? "succeeded" : "failed"), (expectedResult ? "failed" : "succeeded"));
+		omrtty_printf("J9HookRegisterWithCallSite for 0x%zx %s. It should have %s.\n", event, (expectedResult ? "succeeded" : "failed"), (expectedResult ? "failed" : "succeeded"));
 		(*failCount)++;
 	}
 }

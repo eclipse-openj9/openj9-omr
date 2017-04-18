@@ -203,8 +203,8 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	J9HookInterface** mmOmrHooks = J9_HOOK_INTERFACE(_extensions->omrHookInterface);
 
 	/* Register hook for global GC end. */
-	(*mmOmrHooks)->J9HookRegister(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_START, hookGlobalCollectionStart, (void *)this);
-	(*mmOmrHooks)->J9HookRegister(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, hookGlobalCollectionComplete, (void *)this);
+	(*mmOmrHooks)->J9HookRegisterWithCallSite(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_START, hookGlobalCollectionStart, OMR_GET_CALLSITE(), (void *)this);
+	(*mmOmrHooks)->J9HookRegisterWithCallSite(mmOmrHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, hookGlobalCollectionComplete, OMR_GET_CALLSITE(), (void *)this);
 
 	/* initialize the global scavenger gcCount */
 	_extensions->scavengerStats._gcCount = 0;

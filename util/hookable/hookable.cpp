@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -24,11 +24,14 @@
 #include "omrmemcategories.h"
 #include "omrutil.h"
 #include "AtomicSupport.hpp"
+#include "ut_j9hook.h"
+#include "omrtrace.h"
 
 extern "C" {
 
 static void J9HookUnregister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, void *userData);
 static intptr_t J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, void *userData, ...);
+static intptr_t J9HookRegisterWithCallSite(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, const char *callsite, void *userData, ...);
 static void J9HookShutdownInterface(struct J9HookInterface **hookInterface);
 static intptr_t J9HookDisable(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum);
 static intptr_t J9HookIsEnabled(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum);
@@ -42,6 +45,7 @@ static J9CONST_TABLE J9HookInterface hookFunctionTable = {
 	J9HookDisable,
 	J9HookReserve,
 	J9HookRegister,
+	J9HookRegisterWithCallSite,
 	J9HookUnregister,
 	J9HookShutdownInterface,
 	J9HookIsEnabled,
@@ -78,6 +82,30 @@ static J9CONST_TABLE J9HookInterface hookFunctionTable = {
 #define HOOK_INVALID_ID(id) ((id) | 1)
 #define HOOK_VALID_ID(id) ( (((id) | 1) + 1) )
 
+
+intptr_t
+omrhook_lib_control(const char *key, uintptr_t value)
+{
+	intptr_t rc = -1;
+
+	if (0 != value) {
+#if defined(OMR_RAS_TDF_TRACE)
+		/* return value of 0 is success */
+		if (0 == strcmp(J9HOOK_LIB_CONTROL_TRACE_START, key)) {
+			UtInterface *utIntf = (UtInterface *)value;
+			UT_MODULE_LOADED(utIntf);
+			rc = 0;
+		} else if (0 == strcmp(J9HOOK_LIB_CONTROL_TRACE_STOP, key)) {
+			UtInterface *utIntf = (UtInterface *)value;
+			UT_MODULE_UNLOADED(utIntf);
+			rc = 0;
+		}
+#else
+		rc = 0;
+#endif /* OMR_RAS_TDF_TRACE */
+	}
+	return rc;
+}
 /*
  * Prepares the specified hook interface for first use.
  *
@@ -108,10 +136,13 @@ J9HookInitializeInterface(struct J9HookInterface **hookInterface, OMRPortLibrary
 	}
 
 	commonInterface->nextAgentID = J9HOOK_AGENTID_DEFAULT + 1;
+	commonInterface->portLib = portLib;
+	commonInterface->threshold4Trace = OMRHOOK_DEFAULT_THRESHOLD_IN_MILLISECONDS_WARNING_CALLBACK_ELAPSED_TIME;
+
+	commonInterface->eventSize = (interfaceSize - sizeof(J9CommonHookInterface)) / (sizeof(U_8) + sizeof(OMREventInfo4Dump) + sizeof(J9HookRecord*));
 
 	return 0;
 }
-
 
 /*
  * Shuts down the specified hook interface.
@@ -182,7 +213,40 @@ J9HookDispatch(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 			/* now read the id again to make sure that nothing has changed */
 			VM_AtomicSupport::readBarrier();
 			if (record->id == id) {
+				uint64_t timeDelta = 0;
+				OMRPORT_ACCESS_FROM_OMRPORT(commonInterface->portLib);
+				uint64_t startTime = omrtime_current_time_millis();
 				function(hookInterface, eventNum, eventData, userData);
+				timeDelta = omrtime_current_time_millis() - startTime;
+
+				OMREventInfo4Dump *eventDump = J9HOOK_DUMPINFO(commonInterface, eventNum);
+
+				/* record hook info for dump if elapse time is longer than 1 millisecond */
+				if ((NULL != eventDump) && (0 != timeDelta)) {
+					eventDump->lastHook.callsite = record->callsite;
+					eventDump->lastHook.func_ptr = (void *)record->function;
+					eventDump->lastHook.startTime = startTime;
+					eventDump->lastHook.duration = timeDelta;
+					if (eventDump->longestHook.duration < eventDump->lastHook.duration) {
+						eventDump->longestHook.callsite = eventDump->lastHook.callsite;
+						eventDump->longestHook.startTime = eventDump->lastHook.startTime;
+						eventDump->longestHook.func_ptr = eventDump->lastHook.func_ptr;
+						eventDump->longestHook.duration = eventDump->lastHook.duration;
+					}
+				}
+
+				if (commonInterface->threshold4Trace <= timeDelta) {
+					const char *callsite = "UNKNOWN";
+					char buffer[32];
+					if (NULL != record->callsite) {
+						callsite = record->callsite;
+					} else {
+						/* if the callsite info can not be retrieved, use callback function pointer instead  */
+						omrstr_printf(buffer, sizeof(buffer), "0x%p", record->function);
+						callsite = buffer;
+					}
+					Trc_Hook_Dispatch_Exceed_Threshold_Event(callsite, timeDelta);
+				}
 			} else {
 				/* this record has been updated while we were reading it. Skip it. */
 			}
@@ -264,45 +328,13 @@ J9HookReserve(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum)
 	return rc;
 }
 
-
-
-/*
- * Register a listener for the specified event.
- *
- * If a listener with the same function and userData is already registered, no action is taken,
- * and 0 is returned (indicating success). Registrations are NOT counted. Even if a listener
- * is registered twice, it will be removed the first time it is unregistered.
- *
- * If the J9HOOK_TAG_AGENT_ID is set in taggedEventNum, the first var-args argument must be
- * a uintptr_t agent ID. If the bit is not set, the listener will be added to the J9HOOK_AGENTID_DEFAULT
- * agent. The use of an agent ID allows more control over the order in which events are reported.
- * Listeners with lower agent IDs will always receive events before listeners with higher agent IDs.
- * The special J9HOOK_AGENT_FIRST and J9HOOK_AGENT_LAST IDs may be used to register
- * listeners which will be among the first or last to receive an event.
- *
- * This function should not be called directly. It should be called through the hook interface
- *
- * Returns 0 on success,
- * J9HOOK_ERR_DISABLED if the event has been disabled
- * J9HOOK_ERR_NOMEM if insufficient resources exist to register the listener
- * J9HOOK_ERR_INVALID_AGENT_ID if the optional agent ID is invalid
- */
 static intptr_t
-J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, void *userData, ...)
+J9HookRegisterWithCallSitePrivate(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, const char *callsite, void *userData, uintptr_t agentID)
 {
 	J9CommonHookInterface *commonInterface = (J9CommonHookInterface *)hookInterface;
 	J9HookRegistrationEvent eventStruct;
 	intptr_t rc = 0;
 	uintptr_t eventNum = taggedEventNum & J9HOOK_EVENT_NUM_MASK;
-	uintptr_t agentID = J9HOOK_AGENTID_DEFAULT;
-
-	if (taggedEventNum & J9HOOK_TAG_AGENT_ID) {
-		va_list args;
-
-		va_start(args, userData);
-		agentID = va_arg(args, uintptr_t);
-		va_end(args);
-	}
 
 	omrthread_monitor_enter(commonInterface->lock);
 
@@ -342,6 +374,7 @@ J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 					(emptyRecord->next->agentID >= agentID)))
 		) {
 			emptyRecord->function = function;
+			emptyRecord->callsite = callsite;
 			emptyRecord->userData = userData;
 			emptyRecord->count = 1;
 			emptyRecord->agentID = agentID;
@@ -362,6 +395,7 @@ J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 					record->next = insertionPoint->next;
 				}
 				record->function = function;
+				record->callsite = callsite;
 				record->userData = userData;
 				record->count = 1;
 				record->id = HOOK_INITIAL_ID;
@@ -391,6 +425,57 @@ J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 	(*hookInterface)->J9HookDispatch(hookInterface, J9HOOK_REGISTRATION_EVENT, &eventStruct);
 
 	return rc;
+}
+
+/*
+ * Register a listener for the specified event.
+ *
+ * If a listener with the same function and userData is already registered, no action is taken,
+ * and 0 is returned (indicating success). Registrations are NOT counted. Even if a listener
+ * is registered twice, it will be removed the first time it is unregistered.
+ *
+ * If the J9HOOK_TAG_AGENT_ID is set in taggedEventNum, the first var-args argument must be
+ * a uintptr_t agent ID. If the bit is not set, the listener will be added to the J9HOOK_AGENTID_DEFAULT
+ * agent. The use of an agent ID allows more control over the order in which events are reported.
+ * Listeners with lower agent IDs will always receive events before listeners with higher agent IDs.
+ * The special J9HOOK_AGENT_FIRST and J9HOOK_AGENT_LAST IDs may be used to register
+ * listeners which will be among the first or last to receive an event.
+ *
+ * This function should not be called directly. It should be called through the hook interface
+ *
+ * Returns 0 on success,
+ * J9HOOK_ERR_DISABLED if the event has been disabled
+ * J9HOOK_ERR_NOMEM if insufficient resources exist to register the listener
+ * J9HOOK_ERR_INVALID_AGENT_ID if the optional agent ID is invalid
+ */
+static intptr_t
+J9HookRegister(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, void *userData, ...)
+{
+	uintptr_t agentID = J9HOOK_AGENTID_DEFAULT;
+
+	if (taggedEventNum & J9HOOK_TAG_AGENT_ID) {
+		va_list args;
+
+		va_start(args, userData);
+		agentID = va_arg(args, uintptr_t);
+		va_end(args);
+	}
+	return J9HookRegisterWithCallSitePrivate(hookInterface, taggedEventNum, function, NULL, userData, agentID);
+}
+
+static intptr_t
+J9HookRegisterWithCallSite(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum, J9HookFunction function, const char *callsite, void *userData, ...)
+{
+	uintptr_t agentID = J9HOOK_AGENTID_DEFAULT;
+
+	if (taggedEventNum & J9HOOK_TAG_AGENT_ID) {
+		va_list args;
+
+		va_start(args, userData);
+		agentID = va_arg(args, uintptr_t);
+		va_end(args);
+	}
+	return J9HookRegisterWithCallSitePrivate(hookInterface, taggedEventNum, function, callsite, userData, agentID);
 }
 
 

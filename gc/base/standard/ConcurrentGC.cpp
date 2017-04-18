@@ -706,11 +706,11 @@ MM_ConcurrentGC::initialize(MM_EnvironmentBase *env)
 #endif /* OMR_GC_LARGE_OBJECT_AREA) */
 
 	/* Register on any hook we are interested in */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CARD_CLEANING_PASS_2_START, hookCardCleanPass2Start, (void *)this);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CARD_CLEANING_PASS_2_START, hookCardCleanPass2Start, OMR_GET_CALLSITE(), (void *)this);
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* attach to the hooks for creation old-to-old references by external GC (Scavenger) */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED, hookOldToOldReferenceCreated, this);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED, hookOldToOldReferenceCreated, OMR_GET_CALLSITE(), this);
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	return true;

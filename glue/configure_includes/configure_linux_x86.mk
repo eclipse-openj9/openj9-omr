@@ -98,7 +98,8 @@ ifeq (linux_x86-64, $(SPEC))
     --enable-OMR_THR_FORK_SUPPORT \
     --enable-OMR_THR_THREE_TIER_LOCKING \
     --enable-OMR_THR_YIELD_ALG \
-    --enable-OMR_GC_ARRAYLETS
+    --enable-OMR_GC_ARRAYLETS \
+    --enable-DDR
 endif
 
 ifeq (linux_x86_codecov, $(SPEC))

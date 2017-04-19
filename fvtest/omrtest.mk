@@ -40,7 +40,11 @@ all: test
 
 omr_algotest:
 	./omralgotest -avltest:fvtest/algotest/avltest.lst
-	
+
+omr_ddrtest:
+	tools/ddrgen/src/macros/getMacros.sh "tools/ddrgen/test"
+	./ddrgen ./ddrgentest --macrolist test/macroList
+
 omr_gctest:
 	./omrgctest -configListFile=fvtest/gctest/configuration/fvConfigListFile.txt
 
@@ -109,5 +113,8 @@ endif
 ifeq (1,$(OMR_OMRSIG))
 test: omr_sigtest
 endif
+ifeq (1,$(ENABLE_DDR))
+test: omr_ddrgentest
+endif
 
-.PHONY: all test omr_algotest omr_gctest omr_jitbuilderexamples omr_jitbuildertest omr_jittest omr_porttest omr_rastest omr_subscriberforktest omr_sigtest omr_threadextendedtest omr_threadtest omr_utiltest omr_vmtest 
+.PHONY: all test omr_algotest omr_ddrgentest omr_gctest omr_jitbuilderexamples omr_jitbuildertest omr_jittest omr_porttest omr_rastest omr_subscriberforktest omr_sigtest omr_threadextendedtest omr_threadtest omr_utiltest omr_vmtest

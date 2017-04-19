@@ -1070,25 +1070,8 @@ bool OMR::CFG::removeEdge(TR::CFGNode *from, TR::CFGNode *to)
    return false;
    }
 
-
-void OMR::CFG::removeSelfEdge(List<TR::CFGEdge> succList, int32_t selfNumber)
-   {
-   ListIterator<TR::CFGEdge> succIt(&succList);
-   TR::CFGEdge * edge;
-
-   for (edge = succIt.getCurrent(); edge != NULL; edge = succIt.getNext())
-      {
-      TR::Block * dest = toBlock(edge->getTo());
-      TR::Block * src  = toBlock(edge->getFrom());
-      if (src->getNumber() == selfNumber && dest->getNumber() == selfNumber)
-         {
-         removeEdge(edge);
-         }
-      }
-   return;
-   }
-
-void OMR::CFG::removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber)
+void
+OMR::CFG::removeEdge(TR::CFGEdgeList &succList, int32_t selfNumber, int32_t destNumber)
    {
 
    for (auto edge = succList.begin(); edge != succList.end();)

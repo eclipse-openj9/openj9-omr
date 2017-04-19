@@ -304,10 +304,9 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::canGenAndKil
       {
       TR_StructureSubGraphNode *entryNode = naturalLoop->getEntry();
 
-     TR::BitVector seenExitNodes(this->comp()->allocator());
-     ListIterator<TR::CFGEdge> ei(&naturalLoop->getExitEdges());
-     TR::CFGEdge *edge;
-     for (edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
+      TR::BitVector seenExitNodes(this->comp()->allocator());
+      ListIterator<TR::CFGEdge> ei(&naturalLoop->getExitEdges());
+      for (TR::CFGEdge *edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
         {
         TR::CFGNode *toNode = edge->getTo();
 
@@ -319,11 +318,10 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::canGenAndKil
         bool seenNonBackEdge = false;
         bool seenLoopBackEdge = false;
 
-        TR::CFGEdgeList predList(toNode->getPredecessors());
-        predList.insert(predList.end(), toNode->getExceptionPredecessors().begin(), toNode->getExceptionPredecessors().end());
-        for (auto pred = predList.begin(); pred != predList.end(); ++pred)
+        TR_PredecessorIterator predecessors(toNode);
+        for (auto pred = predecessors.getFirst(); pred; pred = predecessors.getNext())
            {
-           TR::CFGNode *fromNode = (*pred)->getFrom();
+           TR::CFGNode *fromNode = pred->getFrom();
            if (fromNode->hasSuccessor(entryNode) ||
                fromNode->hasExceptionSuccessor(entryNode))
               {
@@ -641,15 +639,14 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
       typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *analysisInfo = this->getAnalysisInfo(regionStructure);
       if (node != regionStructure->getEntry())
          {
-         TR::CFGEdgeList predList(node->getPredecessors());
-         predList.insert(predList.end(), node->getExceptionPredecessors().begin(), node->getExceptionPredecessors().end());
+         TR_PredecessorIterator predecessors(node);
          bool firstPred = true;
          bool stopAnalyzingThisNode = false;
          int count = 0;
-         for (auto pred = predList.begin(); pred != predList.end(); ++pred)
+         for (auto pred = predecessors.getFirst(); pred; pred = predecessors.getNext())
             {
             bool normalPred = (++count <= node->getPredecessors().size());
-            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) (*pred)->getFrom();
+            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) pred->getFrom();
             TR_Structure *predStructure = predNode->getStructure();
             if (pendingList.ValueAt(predStructure->getNumber()) && (!alreadyVisitedNode))
                {
@@ -757,13 +754,12 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
 
       *this->_temp = *_currentRegularGenSetInfo;
       *this->_temp2 = *_currentRegularKillSetInfo;
-      TR::CFGEdgeList succList(node->getSuccessors());
-      succList.insert(succList.end(), node->getExceptionSuccessors().begin(), node->getExceptionSuccessors().end());
+      TR_SuccessorIterator successors(node);
       int count = 0;
-      for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+      for (auto succ = successors.getFirst(); succ; succ = successors.getNext())
          {
          bool normalSucc = (++count <= node->getSuccessors().size());
-         TR::CFGNode *succNode = (*succ)->getTo();
+         TR::CFGNode *succNode = succ->getTo();
 
          *_currentRegularGenSetInfo = *this->_temp;
          *_currentRegularKillSetInfo = *this->_temp2;
@@ -786,7 +782,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
             *_currentRegularKillSetInfo |= *killBitVector;
 
 
-         if (regionStructure->isExitEdge(*succ) || (succNode == regionStructure->getEntry()))
+         if (regionStructure->isExitEdge(succ) || (succNode == regionStructure->getEntry()))
             {
             TR_LinkHead<typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair>
                *_genSetInfo = normalSucc ? analysisInfo->_regularGenSetInfo : analysisInfo->_exceptionGenSetInfo,
@@ -866,7 +862,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
             inverseCompose(pair->_container, _currentRegularKillSetInfo);
             }
 
-         if ((!regionStructure->isExitEdge(*succ)) &&
+         if ((!regionStructure->isExitEdge(succ)) &&
              (pendingList.ValueAt(succNode->getNumber())))
             {
             this->_nodesInCycle->Clear();
@@ -971,11 +967,10 @@ template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnal
 
 template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnalysisInfo(typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *info, TR::Block *block)
    {
-   TR::CFGEdgeList succList(block->getSuccessors());
-   succList.insert(succList.end() , block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
-   for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+   TR_SuccessorIterator successors(block);
+   for (auto succ = successors.getFirst(); succ; succ = successors.getNext())
       {
-      TR::CFGNode* succBlock = (*succ)->getTo();
+      TR::CFGNode* succBlock = succ->getTo();
       Container *b = initializeInfo(NULL);
       typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair = new (this->trStackMemory()) typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair(b, succBlock->getNumber());
       info->_outSetInfo->add(pair);
@@ -1213,13 +1208,12 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
 
       initializeInSetInfo();
 
-      TR::CFGEdgeList predList(node->getPredecessors());
-      predList.insert(predList.end(), node->getExceptionPredecessors().begin(), node->getExceptionPredecessors().end());
+      TR_PredecessorIterator predecessors(node);
       bool firstPred = true;
       bool stopAnalyzingThisNode = false;
-      for (auto pred = predList.begin(); pred != predList.end(); ++pred)
+      for (auto pred = predecessors.getFirst(); pred; pred = predecessors.getNext())
          {
-         TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) (*pred)->getFrom();
+         TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) pred->getFrom();
          TR_Structure *predStructure = predNode->getStructure();
          if (pendingList.ValueAt(predStructure->getNumber()) && (!alreadyVisitedNode))
             {
@@ -1291,17 +1285,16 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
      if (this->supportsGenAndKillSets() &&
          canGenAndKillForStructure(nodeStructure->getStructure()))
         {
-        TR::CFGEdgeList succList (node->getSuccessors());
-        succList.insert(succList.end(), node->getExceptionSuccessors().begin(), node->getExceptionSuccessors().end());
+        TR_SuccessorIterator successors(node);
         int count = 0;
-        for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+        for (auto succ = successors.getFirst(); succ; succ = successors.getNext())
             {
             bool normalSucc = (++count <= node->getSuccessors().size());
             Container* _info = normalSucc ? this->_regularInfo : this->_exceptionInfo;
             TR_LinkHead<typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair>
                *_killSetInfo = normalSucc ? analysisInfo->_regularKillSetInfo : analysisInfo->_exceptionKillSetInfo,
                *_genSetInfo =  normalSucc ? analysisInfo->_regularGenSetInfo : analysisInfo->_exceptionGenSetInfo;
-            TR::CFGNode *succNode = (*succ)->getTo();
+            TR::CFGNode *succNode = succ->getTo();
             this->copyFromInto(_currentInSetInfo, _info);
 
             int32_t nodeNumber = nodeStructure->getStructure()->asRegion() ? succNode->getNumber() : node->getNumber();
@@ -1497,13 +1490,12 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeBlock
       }
 
    TR::Block *block = blockStructure->getBlock();
-   TR::CFGEdgeList succList(block->getSuccessors());
-   succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
+   TR_SuccessorIterator successors(block);
    int count = 0;
-   for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+   for (auto succ = successors.getFirst(); succ; succ = successors.getNext())
       {
       bool normalSucc = (++count <= block->getSuccessors().size());
-      Container* outSetInfo = analysisInfo->getContainer(analysisInfo->_outSetInfo, (*succ)->getTo()->getNumber());
+      Container* outSetInfo = analysisInfo->getContainer(analysisInfo->_outSetInfo, succ->getTo()->getNumber());
       Container* _info = normalSucc ? this->_regularInfo : this->_exceptionInfo;
 
       if (checkForChange && !changed && !(*_info == *outSetInfo))

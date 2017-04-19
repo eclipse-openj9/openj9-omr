@@ -410,11 +410,10 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
          _nodesInCycle->set(rootNode->getNumber());
 
          bool stopAnalyzingThisNode = false;
-         TR::CFGEdgeList predList(rootNode->getPredecessors());
-         predList.insert(predList.end(), rootNode->getExceptionPredecessors().begin(), rootNode->getExceptionPredecessors().end());
-         for (auto pred = predList.begin(); pred != predList.end(); ++pred)
+         TR_PredecessorIterator precedingEdges(rootNode);
+         for (auto precedingEdge = precedingEdges.getFirst(); precedingEdge; precedingEdge = precedingEdges.getNext())
             {
-            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) (*pred)->getFrom();
+            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) precedingEdge->getFrom();
             TR_Structure *predStructure = predNode->getStructure();
             if (pendingList->get(predStructure->getNumber()))
                {
@@ -434,18 +433,17 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
       pendingList->reset(root->getNumber());
       _analysisStack.pop();
 
-      TR::CFGEdgeList succList(rootNode->getSuccessors());
-      succList.insert(succList.end(), rootNode->getExceptionSuccessors().begin(), rootNode->getExceptionSuccessors().end());
-      for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+      TR_SuccessorIterator succeedingEdges(rootNode);
+      for (auto succeedingEdge = succeedingEdges.getFirst(); succeedingEdge; succeedingEdge = succeedingEdges.getNext())
          {
-         TR_StructureSubGraphNode *succNode = (TR_StructureSubGraphNode *) (*succ)->getTo();
+         TR_StructureSubGraphNode *succNode = (TR_StructureSubGraphNode *) succeedingEdge->getTo();
          TR_Structure *succStructure = succNode->getStructure();
          bool isExitEdge = false;
          ListIterator<TR::CFGEdge> ei(&region->getExitEdges());
          TR::CFGEdge *edge;
          for (edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
             {
-            if (edge == *succ)
+            if (edge == succeedingEdge)
                {
                isExitEdge = true;
                break;

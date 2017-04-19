@@ -57,7 +57,7 @@ class CFGNode : public ::TR_Link1<CFGNode>
    TR::CFGEdgeList& getSuccessors()            {return _successors;}
    TR::CFGEdgeList& getPredecessors()          {return _predecessors;}
    TR::CFGEdgeList& getExceptionSuccessors()   {return _exceptionSuccessors;}
-   TR::CFGEdgeList & getExceptionPredecessors() {return _exceptionPredecessors;}
+   TR::CFGEdgeList& getExceptionPredecessors() {return _exceptionPredecessors;}
 
    //getEdge looks in both getSuccessors() and getExceptionSuccessors()
    //use getSuccessorEdge or getExceptionEdge if a search in a particular list is required

@@ -199,8 +199,7 @@ class CFG
    bool removeEdge(TR::CFGEdge *e);
    bool removeEdge(TR::CFGNode *from, TR::CFGNode *to);
    bool removeEdge(TR::CFGEdge *e, bool recursiveImpl);
-   void removeSelfEdge(List<TR::CFGEdge> succList, int32_t selfNumber);
-   void removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber);
+   void removeEdge(TR::CFGEdgeList &succList, int32_t selfNumber, int32_t destNumber);
 
    void removeBlock(TR::Block *);
 
@@ -400,11 +399,7 @@ public:
 
 private:
    TR::CFGEdgeList combinedList;
-
-   std::list<TR::CFGEdge*,
-             TR::typed_allocator<TR::CFGEdge*,
-             TR::Allocator>
-            >::iterator currentIterator;
+   TR::CFGEdgeList::iterator currentIterator;
    };
 
 class TR_SuccessorIterator : public TR_CFGIterator

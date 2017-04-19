@@ -1506,10 +1506,9 @@ bool TR_OrderBlocks::doPeepHoleBlockCorrections(TR::Block *block, char *title)
       if (performTransformation(comp(), "%s block_%d has no predecessors so removing it and its out edges from the flow graph\n", title, block->getNumber()))
          {
          // disconnect any out edges
-         TR::CFGEdgeList succList(block->getSuccessors());
-         succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
-         for (auto edge=succList.begin(); edge != succList.end(); ++edge)
-            cfg->removeEdge((*edge)->getFrom(), (*edge)->getTo());
+         TR_SuccessorIterator outEdges(block);
+         for (auto succeedingEdge = outEdges.getFirst(); succeedingEdge; succeedingEdge = outEdges.getNext())
+            cfg->removeEdge(succeedingEdge->getFrom(), succeedingEdge->getTo());
 
          removeEmptyBlock(cfg, block, title);
          return false;

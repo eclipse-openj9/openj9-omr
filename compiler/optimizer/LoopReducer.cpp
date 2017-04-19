@@ -2197,8 +2197,7 @@ TR_LoopReducer::generateArraycmp(TR_RegionStructure * whileLoop, TR_InductionVar
 
    // update the CFG
    _cfg->setStructure(NULL);
-   TR::CFGEdgeList iSuccList = incrementBlock->getSuccessors();
-   removeEdge(iSuccList, incrementBlock->getNumber(), branchBlock->getNumber());
+   _cfg->removeEdge(incrementBlock->getSuccessors(), incrementBlock->getNumber(), branchBlock->getNumber());
 
    return true;
    }
@@ -3390,35 +3389,34 @@ TR_LoopReducer::generateArraytranslate(TR_RegionStructure * whileLoop, TR_Induct
          }
       }
 
+   TR::CFGEdgeList &loadSuccList = loadBlock->getSuccessors();
+   TR::CFGEdgeList &storeSuccList = storeBlock->getSuccessors();
+   TR::CFGEdgeList &cmpSuccList = cmpBlock->getSuccessors();
    if (hasBranch)
       {
-	  TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
-	  TR::CFGEdgeList storeSuccList = storeBlock->getSuccessors();
 
-      removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
+      _cfg->removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
 
       if (hasBreak)
          {
-         removeEdge(loadSuccList, loadBlock->getNumber(), breakExitBlock->getNumber());
+         _cfg->removeEdge(loadSuccList, loadBlock->getNumber(), breakExitBlock->getNumber());
          }
       else
          {
-         removeEdge(loadSuccList, loadBlock->getNumber(), otherStoreBlock->getNumber());
-         removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
-         removeEdge(storeSuccList, storeBlock->getNumber(), loadBlock->getNumber());
+         _cfg->removeEdge(loadSuccList, loadBlock->getNumber(), otherStoreBlock->getNumber());
+         _cfg->removeEdge(loadSuccList, loadBlock->getNumber(), storeBlock->getNumber());
+         _cfg->removeEdge(storeSuccList, storeBlock->getNumber(), loadBlock->getNumber());
 
-         TR::CFGEdgeList cmpSuccList = cmpBlock->getSuccessors();
-         removeEdge(cmpSuccList, cmpBlock->getNumber(), loadBlock->getNumber());
+         _cfg->removeEdge(cmpSuccList, cmpBlock->getNumber(), loadBlock->getNumber());
          }
 
-      removeEdge(storeSuccList, storeBlock->getNumber(), loadBlock->getNumber());
+      _cfg->removeEdge(storeSuccList, storeBlock->getNumber(), loadBlock->getNumber());
 
       return false; // do not remove self edge
       }
    else
       {
-	  TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
-      removeEdge(loadSuccList, loadBlock->getNumber(), nextBlock->getNumber());
+      _cfg->removeEdge(loadSuccList, loadBlock->getNumber(), nextBlock->getNumber());
       return true;
       }
    }
@@ -3692,11 +3690,8 @@ TR_LoopReducer::generateArraytranslateAndTest(TR_RegionStructure * whileLoop, TR
       }
    _cfg->setStructure(NULL);
 
-   TR::CFGEdgeList loadSuccList = loadBlock->getSuccessors();
-   TR::CFGEdgeList cmpSuccList = cmpBlock->getSuccessors();
-
-   removeEdge(loadSuccList, loadBlock->getNumber(), cmpBlock->getNumber());
-   removeEdge(cmpSuccList, cmpBlock->getNumber(), nextBlock->getNumber());
+   _cfg->removeEdge(loadBlock->getSuccessors(), loadBlock->getNumber(), cmpBlock->getNumber());
+   _cfg->removeEdge(cmpBlock->getSuccessors(), cmpBlock->getNumber(), nextBlock->getNumber());
    return true;
    }
 
@@ -4233,37 +4228,9 @@ TR_LoopReducer::constrainedIndVar(TR_InductionVariable * indVar)
    }
 
 void
-TR_LoopReducer::removeSelfEdge(TR::CFGEdgeList succList, int32_t selfNumber)
+TR_LoopReducer::removeSelfEdge(TR::CFGEdgeList &succList, int32_t selfNumber)
    {
-   for (auto edge = succList.begin(); edge != succList.end();)
-      {
-      TR::Block * dest = toBlock((*edge)->getTo());
-      TR::Block * src = toBlock((*edge)->getFrom());
-      if (src->getNumber() == selfNumber && dest->getNumber() == selfNumber)
-         {
-         _cfg->removeEdge(*(edge++));
-         }
-      else
-    	 ++edge;
-      }
-   return;
-   }
-
-void
-TR_LoopReducer::removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber)
-   {
-   for (auto edge = succList.begin(); edge != succList.end();)
-      {
-      TR::Block * dest = toBlock((*edge)->getTo());
-      TR::Block * src = toBlock((*edge)->getFrom());
-      if (src->getNumber() == selfNumber && dest->getNumber() == destNumber)
-         {
-         _cfg->removeEdge(*(edge++));
-         }
-      else
-         ++edge;
-      }
-   return;
+   _cfg->removeEdge(succList, selfNumber, selfNumber);
    }
 
 int

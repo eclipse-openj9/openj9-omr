@@ -2704,11 +2704,10 @@ bool TR_SinkStores::checkLiveMergingPaths(TR_BlockListEntry *blockEntry, int32_t
    // first, if block is a merge point, we need to make sure that the def propagated here along all paths
    int32_t numPredsLONAP=0;
    int32_t numPreds=0;
-   TR::CFGEdgeList predList(block->getPredecessors());
-   predList.insert(predList.end(), block->getExceptionPredecessors().begin(), block->getExceptionPredecessors().end());
-   for (auto predEdge = predList.begin(); predEdge != predList.end(); ++predEdge)
+   TR_PredecessorIterator inEdges(block);
+   for (auto predEdge = inEdges.getFirst(); predEdge; predEdge = inEdges.getNext())
       {
-      int32_t predBlockNumber = (*predEdge)->getFrom()->getNumber();
+      int32_t predBlockNumber = predEdge->getFrom()->getNumber();
       numPreds++;
       if (_liveOnNotAllPaths->_outSetInfo[predBlockNumber]->get(symIdx))
          {
@@ -3940,11 +3939,10 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
    TR_EdgeStorePlacementList  edgePlacementsForThisStore(trMemory());
 
    // now try to push it along sourceBlock's successor edges
-   TR::CFGEdgeList succList(sourceBlock->getSuccessors());
-   succList.insert(succList.end(), sourceBlock->getExceptionSuccessors().begin(), sourceBlock->getExceptionSuccessors().end());
-   for (auto succEdge = succList.begin(); succEdge != succList.end(); ++succEdge)
+   TR_SuccessorIterator outEdges(sourceBlock);
+   for (auto succEdge = outEdges.getFirst(); succEdge; succEdge = outEdges.getNext())
       {
-      TR::CFGNode *succBlock = (*succEdge)->getTo();
+      TR::CFGNode *succBlock = succEdge->getTo();
       bool isSuccBlockInEBB = (succBlock->asBlock()->startOfExtendedBlock() == sourceBlock->startOfExtendedBlock());
       _usedSymbolsToMove = isSuccBlockInEBB ? usedSymbols : allUsedSymbols;
 
@@ -3982,7 +3980,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             {
             if (trace())
                traceMsg(comp(), "              added %d to worklist\n", succBlock->getNumber());
-            worklist.addInTraversalOrder(succBlock->asBlock(), true, *succEdge);
+            worklist.addInTraversalOrder(succBlock->asBlock(), true, succEdge);
             }
          else
             {
@@ -4000,7 +3998,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
 
             TR_BitVector *symsReferenced = new (trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
             (*symsReferenced) |= (*_usedSymbolsToMove);
-            TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(*succEdge, symsReferenced);
+            TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
             TR_EdgeStorePlacement *newEdgePlacement = new (trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, trMemory());
             edgePlacementsForThisStore.add(newEdgePlacement);
             }
@@ -4173,11 +4171,10 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
             int32_t numOfEdgePlacements = 0;
             ListElement<TR_BlockListEntry> *lastAddedEntry = 0;
             placeDefInBlock = false;
-            TR::CFGEdgeList succList(block->getSuccessors());
-            succList.insert(succList.end(), block->getExceptionSuccessors().begin(), block->getExceptionSuccessors().end());
-            for (auto succEdge = succList.begin(); succEdge != succList.end(); ++succEdge)
+            TR_SuccessorIterator outEdges(block);
+            for (auto succEdge = outEdges.getFirst(); succEdge; succEdge = outEdges.getNext())
                {
-               TR::CFGNode *succBlock = (*succEdge)->getTo();
+               TR::CFGNode *succBlock = succEdge->getTo();
                int32_t succBlockNumber = succBlock->getNumber();
                bool isSuccBlockInEBB = isCurrentBlockInEBB &&
                                        (succBlock->asBlock()->startOfExtendedBlock() == sourceBlock->startOfExtendedBlock());
@@ -4210,7 +4207,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                      {
                      if (trace())
                         traceMsg(comp(), "              added %d to worklist\n", succBlock->getNumber());
-                     lastAddedEntry = worklist.addInTraversalOrder(succBlock->asBlock(), true, *succEdge);
+                     lastAddedEntry = worklist.addInTraversalOrder(succBlock->asBlock(), true, succEdge);
                      }
                   /* at this point, the store should be placed somewhere ... */
                   //else if (block->getStructureOf()->isLoopInvariantBlock())
@@ -4240,7 +4237,7 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                         }
                      TR_BitVector *symsReferenced = new (trStackMemory()) TR_BitVector(*_killedSymbolsToMove);
                      (*symsReferenced) |= (*_usedSymbolsToMove);
-                     TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(*succEdge, symsReferenced);
+                     TR_EdgeInformation *edgeInfo = new (trStackMemory()) TR_EdgeInformation(succEdge, symsReferenced);
                      TR_EdgeStorePlacement *newEdgePlacement = new (trStackMemory()) TR_EdgeStorePlacement(storeInfo, edgeInfo, trMemory());
                      edgePlacementsForThisStore.add(newEdgePlacement);
                      numOfEdgePlacements++;
@@ -4268,8 +4265,8 @@ bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,
                if (lastAddedEntry)
                   {
                   //worklist.remove(lastAddedEntry->getData());
-                  for (auto tempSuccEdge = succList.begin(); tempSuccEdge != succList.end(); ++tempSuccEdge)
-                     worklist.removeBlockFromList((*tempSuccEdge)->getTo()->asBlock(), *tempSuccEdge);
+                  for (auto tempSuccEdge = outEdges.getFirst(); tempSuccEdge; tempSuccEdge = outEdges.getNext())
+                     worklist.removeBlockFromList(tempSuccEdge->getTo()->asBlock(), tempSuccEdge);
                   }
                }
             }

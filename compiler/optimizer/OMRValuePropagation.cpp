@@ -5611,10 +5611,8 @@ TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* 
       cfg->addEdge(TR::CFGEdge::createEdge(forwardArrayCopyBlock,  followOnBlock, trMemory()));
       cfg->copyExceptionSuccessors(ifBlock, forwardArrayCopyBlock);
 
-      TR::CFGEdgeList elseSuccList = outerElseBlock->getSuccessors();
-      cfg->removeEdge(elseSuccList, outerElseBlock->getNumber(), followOnBlock->getNumber());
-      TR::CFGEdgeList condSuccList = arraycopyBlock->getSuccessors();
-      cfg->removeEdge(condSuccList, arraycopyBlock->getNumber(), ifBlock->getNumber());
+      cfg->removeEdge(outerElseBlock->getSuccessors(), outerElseBlock->getNumber(), followOnBlock->getNumber());
+      cfg->removeEdge(arraycopyBlock->getSuccessors(), arraycopyBlock->getNumber(), ifBlock->getNumber());
 
       outerArraycopyTree = arraycopyForward;
       }

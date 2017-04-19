@@ -46,8 +46,6 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += j9sysinfo_get_number_CPUs
   OBJECTS += j9jobname
   OBJECTS += j9userid
-  OBJECTS += j9csrsi
-  OBJECTS += j9csrsi_wrp
   OBJECTS += j9zfs
   OBJECTS += j9lpdat
 

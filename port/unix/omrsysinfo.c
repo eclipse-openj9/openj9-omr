@@ -65,7 +65,6 @@
 #if defined(J9ZOS390)
 #include "omrsimap.h"
 #include "omrsysinfo_helpers.h"
-#include "omrcsrsi.h"
 #endif /* defined(J9ZOS390) */
 
 #if defined(LINUXPPC)

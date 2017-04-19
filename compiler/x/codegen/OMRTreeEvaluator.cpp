@@ -4267,6 +4267,7 @@ TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node*
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    static bool useJapaneseCompression = (feGetEnv("TR_JapaneseComp") != NULL);
+   static bool disableECCP256AESCBC = (feGetEnv("TR_disableECCP256AESCBC") != NULL);
 
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference* SymRef = node->getSymbolReference();
@@ -4428,6 +4429,18 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
    else if (symbol->getRecognizedMethod() == TR::java_lang_String_andOR)
       {
       return TR::TreeEvaluator::andORStringEvaluator(node, cg);
+      }
+   else if ((symbol->getRecognizedMethod() == TR::com_ibm_crypto_provider_AEScryptInHardware_cbcEncrypt)
+         && cg->enableAESInHardwareTransformations() && !disableECCP256AESCBC
+         && !TR::Compiler->om.canGenerateArraylets() && TR::Compiler->target.is64Bit())
+      {
+      return TR::TreeEvaluator::VMP256AESCBCEncryptionEvaluator(node,cg);
+      }
+   else if ((symbol->getRecognizedMethod() == TR::com_ibm_crypto_provider_AEScryptInHardware_cbcDecrypt)
+         && cg->enableAESInHardwareTransformations() && !disableECCP256AESCBC
+         && !TR::Compiler->om.canGenerateArraylets() && TR::Compiler->target.is64Bit())
+      {
+       return TR::TreeEvaluator::VMP256AESCBCDecryptionEvaluator(node, cg);
       }
    else
 #endif

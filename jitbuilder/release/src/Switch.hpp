@@ -34,6 +34,8 @@ class SwitchMethod : public TR::MethodBuilder
    public:
    SwitchMethod(TR::TypeDictionary *);
    virtual bool buildIL();
+
+   virtual bool RequestFunction(const char *name);
    };
 
 #endif // !defined(SWITCH_INCL)

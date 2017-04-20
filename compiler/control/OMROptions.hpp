@@ -557,7 +557,7 @@ enum TR_CompilationOptions
    TR_PoisonDeadSlots                                 = 0x00001000 + 15,
    TR_DisableOSRSharedSlots                           = 0x00002000 + 15,
    TR_DisableIncrementalCCR                           = 0x00004000 + 15, //SRT
-   // Available                                       = 0x00008000 + 15,
+   TR_DisableOSRCallSiteRemat                         = 0x00008000 + 15,
    TR_UseLowerMethodCounts                            = 0x00010000 + 15,
    // Available                                       = 0x00040000 + 15,
    TR_DoNotUsePersistentIprofiler                     = 0x00080000 + 15,

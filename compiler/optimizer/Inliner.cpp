@@ -2414,9 +2414,8 @@ TR_ParameterToArgumentMapper::lookForModifiedParameters(TR::Node * node)
 void
 TR_ParameterToArgumentMapper::mapOSRCallSiteRematTable(uint32_t siteIndex)
    {
-   static const char *disableOSRCallSiteRemat = feGetEnv("TR_DisableOSRCallSiteRemat");
    if (!comp()->getOption(TR_EnableOSR) || comp()->getOSRMode() != TR::voluntaryOSR ||
-       comp()->osrInfrastructureRemoved() || disableOSRCallSiteRemat)
+       comp()->osrInfrastructureRemoved() || comp()->getOption(TR_DisableOSRCallSiteRemat))
       return;
 
    TR::SymbolReference *ppSymRef, *loadSymRef;

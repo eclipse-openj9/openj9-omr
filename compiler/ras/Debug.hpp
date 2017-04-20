@@ -154,7 +154,6 @@ namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class AMD64Imm64Instruction;    }
 namespace TR { class AMD64Imm64SymInstruction; }
 namespace TR { class AMD64RegImm64Instruction; }
-namespace TR { class AMD64FPConversionSnippet; }
 
 struct TR_VFPState;
 namespace TR { class X86VFPSaveInstruction;        }
@@ -851,7 +850,6 @@ public:
 
 #ifdef TR_TARGET_64BIT
    uint8_t *printArgumentFlush(TR::FILE *, TR::Node *, bool, uint8_t *);
-   void print(TR::FILE *, TR::AMD64FPConversionSnippet *);
 #endif
 #endif
 #ifdef TR_TARGET_POWER

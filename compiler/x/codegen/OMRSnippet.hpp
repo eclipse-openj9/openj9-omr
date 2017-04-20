@@ -81,7 +81,6 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
          IsFPConversion,
             IsFPConvertToInt,
             IsFPConvertToLong,
-            IsFPConvertAMD64,
          IsPassJNINull,
          IsJNIPause,
       IsUnresolvedDataIA32,

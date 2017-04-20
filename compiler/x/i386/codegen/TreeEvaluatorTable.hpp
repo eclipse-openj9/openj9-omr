@@ -169,7 +169,7 @@
    TR::TreeEvaluator::f2dEvaluator,                     // TR::f2d
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::f2b
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::f2s
-   TR::TreeEvaluator::d2iEvaluator,                     // TR::d2i
+   TR::TreeEvaluator::f2iEvaluator,                     // TR::d2i <- (Uses f2i intentionally)
    TR::TreeEvaluator::d2lEvaluator,                     // TR::d2l
    TR::TreeEvaluator::d2fEvaluator,                     // TR::d2f
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::d2b
@@ -544,7 +544,7 @@
    TR::TreeEvaluator::f2lEvaluator,                     // TR::f2lu
    TR::TreeEvaluator::f2bEvaluator,                     // TR::f2bu
    TR::TreeEvaluator::f2cEvaluator,                     // TR::f2c
-   TR::TreeEvaluator::d2iEvaluator,                     // TR::d2iu
+   TR::TreeEvaluator::f2iEvaluator,                     // TR::d2iu <- (Uses f2i intentionally)
    TR::TreeEvaluator::d2lEvaluator,                     // TR::d2lu
    TR::TreeEvaluator::d2bEvaluator,                     // TR::d2bu
    TR::TreeEvaluator::d2cEvaluator,                     // TR::d2c

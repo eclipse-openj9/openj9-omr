@@ -394,7 +394,7 @@ TR::Register *OMR::X86::TreeEvaluator::lookupEvaluator(TR::Node *node, TR::CodeG
                   depsRegisterIndex = (TR::RealRegister::RegNum) cg->getGlobalRegister(globalRegNum);
                   selectorRegInGlRegDeps = true;
                   }
-               else if (globalReg->getKind() == TR_GPR || globalReg->getKind() == TR_FPR)
+               else if (globalReg->getKind() == TR_GPR || globalReg->getKind() == TR_FPR || globalReg->getKind() == TR_VRF)
                   {
                   TR::RegisterPair *globalRegPair = globalReg->getRegisterPair();
                   TR::RealRegister::RegNum registerIndex = (TR::RealRegister::RegNum) cg->getGlobalRegister(globalRegNum);

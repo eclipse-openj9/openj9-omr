@@ -32,7 +32,7 @@ OMR::X86::RegisterIterator::RegisterIterator(TR::Machine *machine, TR_RegisterKi
       _firstRegIndex = TR::RealRegister::eax;
       _lastRegIndex = TR::RealRegister::LastAssignableGPR;
       }
-   else if (kind == TR_FPR)
+   else if (kind == TR_FPR || kind == TR_VRF)
       {
       _firstRegIndex = TR::RealRegister::xmm0;
       _lastRegIndex = TR::RealRegister::LastXMMR;

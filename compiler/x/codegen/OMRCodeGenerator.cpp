@@ -297,6 +297,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
    self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
    self()->setLastGlobalFPR(self()->machine()->getLastGlobalFPRRegisterNumber());
+   self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
+   self()->setLastGlobalVRF(self()->getLastGlobalFPR());
 
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -350,6 +352,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   self()->addSupportedLiveRegisterKind(TR_VRF);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsArrayCmp();
    self()->setSupportsPrimitiveArrayCopy();

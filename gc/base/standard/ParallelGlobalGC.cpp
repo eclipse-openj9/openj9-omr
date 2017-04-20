@@ -371,6 +371,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Aborted CS need global GC with Nursery compaction */
 	if (J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE == gcCode.getCode()) {
+		Assert_MM_true(_extensions->concurrentScavenger);
 		compactReason = COMPACT_ABORTED_SCAVENGE;
 		goto compactionReqd;
 	}	

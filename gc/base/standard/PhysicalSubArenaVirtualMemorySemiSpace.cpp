@@ -1007,6 +1007,7 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::tilt(MM_EnvironmentBase *env, uintptr
 	if (updateMemoryPools) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		if (expandBase > expandTop) {
+			Assert_MM_true(extensions->concurrentScavenger);
 			subSpaceAllocate->removeExistingMemory(env, this, ((uintptr_t)expandBase) - ((uintptr_t)expandTop), expandTop, expandBase);
 			subSpaceSurvivor->addExistingMemory(env, this, ((uintptr_t)expandBase) - ((uintptr_t)expandTop), expandTop, expandBase, true);
 		} else

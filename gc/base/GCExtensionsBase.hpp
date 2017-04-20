@@ -398,7 +398,7 @@ public:
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool concurrentScavenger;
-#endif	
+#endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
 	uintptr_t scvArraySplitMaximumAmount; /**< maximum number of elements to split array scanning work in the scavenger */
@@ -763,6 +763,16 @@ public:
 	MMINLINE void setObjectMap(MM_ObjectMap *objectMap) { _objectMap = objectMap; }
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 
+	MMINLINE bool
+	isConcurrentScavengerEnabled()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavenger;
+#else
+		return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+	
 	MMINLINE bool
 	isScavengerEnabled()
 	{
@@ -1134,7 +1144,7 @@ public:
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		, concurrentScavenger(true)
+		, concurrentScavenger(false)
 #endif		
 		, scavengerFailedTenureThreshold(0)
 		, scvArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
@@ -1143,12 +1153,7 @@ public:
 		, scavengerScanCacheMinimumSize(DEFAULT_SCAN_CACHE_MINIMUM_SIZE)
 		, tiltedScavenge(true)
 		, debugTiltedScavenge(false)
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* until we get dynamic tilting, make default tilting at mild 70% */
-		, survivorSpaceMinimumSizeRatio(0.30)
-#else
 		, survivorSpaceMinimumSizeRatio(0.10)
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		, survivorSpaceMaximumSizeRatio(0.50)
 		, tiltedScavengeMaximumIncrease(0.10)
 		, scavengerCollectorExpandRatio(0.1)

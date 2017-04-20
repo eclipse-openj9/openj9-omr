@@ -93,7 +93,6 @@ public:
 		}
 	}
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
 	 * Atomically replace heap reference. It is accepted to fail - some other thread
 	 * might have raced us and put a more up to date value.
@@ -116,7 +115,6 @@ public:
 		
 		return swapResult;
 	}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	/**
 	 *	Update of slot address.

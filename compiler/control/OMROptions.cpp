@@ -450,6 +450,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOptTransformations=",         "O{regex}\tlist of optimizer transformations to disable",
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledOptTransformations), 0, "P"},
    {"disableOSR",                         "O\tdisable support for on-stack replacement", SET_OPTION_BIT(TR_DisableOSR), "F"},
+   {"disableOSRCallSiteRemat",              "O\tdisable use of the call stack remat table in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRCallSiteRemat), "F"},
    {"disableOSRExceptionEdgeRemoval",     "O\tdon't trim away unused on-stack replacement points", TR::Options::disableOptimization, osrExceptionEdgeRemoval, 0, "P"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},

@@ -1675,6 +1675,9 @@ OMR::ResolvedMethodSymbol::insertRematableStoresFromCallSites(TR::Compilation *c
    TR::TreeTop *next = induceOSRTree;
    TR::SymbolReference *ppSymRef, *loadSymRef;
 
+   if (comp->getOption(TR_DisableOSRCallSiteRemat))
+      return;
+
    while (siteIndex > -1)
       {
       for (uint32_t i = 0; i < comp->getOSRCallSiteRematSize(siteIndex); ++i)

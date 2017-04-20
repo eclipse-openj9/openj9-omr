@@ -1301,32 +1301,36 @@ parseNewFormat(const string data,
 							newDie->_context = Dwarf_CU_Context::_currentCU;
 							newDie->_attribute = NULL;
 							if (2 <= members[i].size()) {
-								/* Note: currently doesn't account for ACCESS_SPEC GEN_SPEC, but it's only dropping compiler generated fields so maybe it's ok */
-								if (':' == members[i].at(1)) {
+								if (string::npos != members[i].find_first_of('[')) {
+									/* The member is a member function. We will delete the DIE. There is no point in creating
+									 * attributes or even keeping this member, as it will get skipped over in the DwarfScanner.
+									 */
+									deleteDie(newDie);
+								} else if (string::npos != members[i].find_first_of(']')) {
+									/* The member is a friend function. We will delete the DIE. There is no point in creating
+									 * attributes or even keeping this member, as it will get skipped over in the DwarfScanner.
+									 */
+									deleteDie(newDie);
+								} else if (string::npos != members[i].find_first_of(':')) {
 									/* Check to see if valid data member */
-									if (!isCompilerGenerated(members[i])) {
-										size_t indexOfFirstColon  = members[i].find_first_of(':');
-										if (string::npos != indexOfFirstColon) {
-											ret = parseFields(members[i].substr(indexOfFirstColon+1), newDie, error);
-											if (DW_DLV_OK == ret) {
-												/* Set the member as a child of the parent die */
-												if (NULL == lastChild) {
-													currentDie->_child = newDie;
-												} else {
-													lastChild->_sibling = newDie;
-													newDie->_previous = lastChild;
-												}
-												lastChild = newDie;
+									size_t indexOfFirstColon  = members[i].find_first_of(':');
+									if (string::npos != indexOfFirstColon) {
+										ret = parseFields(members[i].substr(indexOfFirstColon+1), newDie, error);
+										if (DW_DLV_OK == ret) {
+											/* Set the member as a child of the parent die */
+											if (NULL == lastChild) {
+												currentDie->_child = newDie;
 											} else {
-												/* To prevent a memory leak, delete the new die */
-												deleteDie(newDie);
+												lastChild->_sibling = newDie;
+												newDie->_previous = lastChild;
 											}
+											lastChild = newDie;
 										} else {
-											/* It's not a valid data member */
+											/* To prevent a memory leak, delete the new die */
 											deleteDie(newDie);
 										}
 									} else {
-										/* If it's compiler generated, don't add the member */
+										/* It's not a valid data member */
 										deleteDie(newDie);
 									}
 								} else if ('N' == members[i].at(1)) {

@@ -136,6 +136,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_overflowCheck:
             case TR_nullCheck:
             case TR_methodTypeCheck:
+            case TR_incompatibleReceiver:
             case TR_aThrow:
             case TR_aNewArray:
             case TR_monitorExit:
@@ -286,6 +287,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_divCheck:
             case TR_typeCheckArrayStore:
             case TR_arrayStoreException:
+            case TR_incompatibleReceiver:
             case TR_reportMethodEnter:
             case TR_reportStaticMethodEnter:
             case TR_reportMethodExit:

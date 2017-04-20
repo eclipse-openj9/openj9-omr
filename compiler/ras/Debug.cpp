@@ -3911,6 +3911,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_multiANewArray:            return "jitAMultiANewArray";
          case TR_aThrow:                    return "jitThrowException";
          case TR_methodTypeCheck:           return "jitThrowWrongMethodTypeException";
+         case TR_incompatibleReceiver:      return "jitThrowIncompatibleReceiver";
          case TR_nullCheck:                 return "jitThrowNullPointerException";
          case TR_arrayBoundsCheck:          return "jitThrowArrayIndexOutOfBounds";
          case TR_divCheck:                  return "jitThrowArithmeticException";

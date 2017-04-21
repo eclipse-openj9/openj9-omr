@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -131,6 +131,8 @@ private:
 
 	void calculateApproximateFree(MM_EnvironmentBase* env, MM_MemoryPool *memoryPool, MM_ConcurrentSweepPoolState *sweepState);
 
+	void updateSweepStates(MM_EnvironmentBase* env, uintptr_t resizeType);
+
 protected:
 	virtual bool initialize(MM_EnvironmentBase *env);
 	virtual void tearDown(MM_EnvironmentBase *env);
@@ -160,6 +162,8 @@ public:
 
 	virtual bool replenishPoolForAllocate(MM_EnvironmentBase *env, MM_MemoryPool *memoryPool, UDATA size);
 	void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace,  MM_AllocateDescription *allocDescriptionn);
+
+	virtual void postCollect(MM_EnvironmentBase* env, uintptr_t resizeType);
 
 	MM_ConcurrentSweepScheme(MM_EnvironmentBase *env, MM_GlobalCollector *collector)
 		: MM_ParallelSweepScheme(env)

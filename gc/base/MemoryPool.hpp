@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -330,6 +330,12 @@ public:
 	MMINLINE void incrementDarkMatterSamples(uintptr_t samples) { _darkMatterSamples += samples; }
 
 	MMINLINE virtual uintptr_t getDarkMatterSamples() { return _darkMatterSamples; }
+
+	/**
+	 * @return HeapResizeType, can be HEAP_NO_RESIZE(default), HEAP_LOA_CONTRACT
+	 */
+	virtual uintptr_t postCollect(MM_EnvironmentBase* env) {return HEAP_NO_RESIZE;}
+
 	/**
 	 * Create a MemoryPool object.
 	 */

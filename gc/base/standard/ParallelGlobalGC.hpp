@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -178,6 +178,10 @@ private:
 	 */
 	void cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 
+	/**
+	 * redistribute free memory in tenure after global collection (move free memory from LOA to SOA)
+	 */
+	void tenureMemoryPoolPostCollect(MM_EnvironmentBase *env);
 protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);

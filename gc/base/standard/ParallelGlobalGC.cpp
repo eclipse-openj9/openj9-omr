@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -793,9 +793,25 @@ MM_ParallelGlobalGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpa
 }
 
 void
+MM_ParallelGlobalGC::tenureMemoryPoolPostCollect(MM_EnvironmentBase *env)
+{
+	MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
+	MM_MemorySubSpace *tenureMemorySubspace = defaultMemorySpace->getTenureMemorySubSpace();
+	MM_MemoryPool *memoryPool = tenureMemorySubspace->getMemoryPool();
+	uintptr_t resizeType = memoryPool->postCollect(env);
+
+	if (HEAP_NO_RESIZE != resizeType) {
+		/* update sweepStates after heap resize (for concurrentSweep only) */
+		_sweepScheme->postCollect(env, resizeType);
+	}
+}
+
+void
 MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace)
 {
 	MM_GlobalCollector::internalPostCollect(env, subSpace);
+
+	tenureMemoryPoolPostCollect(env);
 
 	reportGCCycleFinalIncrementEnding(env);
 	reportGlobalGCIncrementEnd(env);

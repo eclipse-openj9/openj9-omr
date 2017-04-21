@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -62,10 +62,7 @@ reportGlobalGCIncrementStart(J9HookInterface** hook, uintptr_t eventNum, void* e
 void
 reportGlobalGCComplete(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
 {
-	MM_GlobalGCEndEvent* event = (MM_GlobalGCEndEvent*)eventData;
-	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-
-	((MM_MemoryPoolLargeObjects*)userData)->postCollect(env);
+	/* Empty, move heapResize from here to postCollect (heapResize should be finished before GlobalGCComplete hook) */
 }
 
 /**
@@ -209,9 +206,10 @@ MM_MemoryPoolLargeObjects::preCollect(MM_EnvironmentBase* env, bool systemGC, bo
 /**
  * Perform any post-collection work on pool.
  */
-void
+uintptr_t
 MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
 {
+	uintptr_t ret = HEAP_NO_RESIZE;
 	bool debug = _extensions->debugLOAResize;
 
 	_soaBytesAfterLastGC = _memoryPoolSmallObjects->getApproximateFreeMemorySize();
@@ -259,7 +257,7 @@ MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
 
 		/* If minimum required now zero then there is no storage available for transfer */
 		if (0 == minimumLOAContractRequired) {
-			return;
+			return ret;
 		}
 
 		/* LOA base may land in a middle of a live object, but it should be fine */
@@ -308,6 +306,7 @@ MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
 
 		_extensions->heap->getResizeStats()->setLastLoaResizeReason(LOA_CONTRACT_MIN_SOA);
 		_memorySubSpace->reportHeapResizeAttempt(env, spaceDelta , HEAP_LOA_CONTRACT);
+		ret = HEAP_LOA_CONTRACT;
 
 		/* Verify all pools in valid state after we are done */
 		assume0(_memoryPoolSmallObjects->isMemoryPoolValid(env, true));
@@ -315,6 +314,7 @@ MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
 		assume0(_memoryPoolSmallObjects->isValidListOrdering());
 		assume0(_memoryPoolLargeObjects->isValidListOrdering());
 	}
+	return ret;
 }
 
 

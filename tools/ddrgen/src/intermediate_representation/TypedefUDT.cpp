@@ -77,3 +77,10 @@ TypedefUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFields
 {
 	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
 }
+
+DDR_RC
+TypedefUDT::checkDuplicate(Symbol_IR *ir)
+{
+	/* No-op: since TypedefUDTs aren't printed, there's no need to check if they're duplicates either */
+	return DDR_RC_OK;
+}

@@ -77,17 +77,25 @@ DwarfScanner::getBlacklist(Dwarf_Die die)
 		goto Failed;
 	}
 
-	if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
-		if (NULL == attr) {
-			/* The DIE didn't have a compilationDirectory attribute (AIX) 
-			 * so we can skip over getting the absolute paths from the relative paths
-			 */
-			goto Done;
-		} else {
+	if (hasAttr) {
+		/* Get the CU directory. */
+		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
+			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
+			goto Failed;
+		}
+
+		if (DW_DLV_ERROR == dwarf_formstring(attr, &compDir, &error)) {
 			ERRMSG("Getting compilation directory string: %s\n", dwarf_errmsg(error));
 			goto Failed;
 		}
+	} else {
+		/* The DIE didn't have a compilationDirectory attribute so we can skip
+		 * over getting the absolute paths from the relative paths.  AIX does
+		 * not provide this attribute.
+		 */
+		goto Done;
 	}
+
 	/* Allocate a new file name table to hold the concatenated absolute paths. */
 	fileNamesTableConcat = (char **)malloc(sizeof(char *) * _fileNameCount);
 	if (NULL == fileNamesTableConcat) {
@@ -356,6 +364,7 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 	bool done = false;
 	bool foundTypedef = false;
 	modifiers->_modifierFlags = Modifiers::NO_MOD;
+
 	/* Get the bit field from the member Die before getting the type. */
 	if (DDR_RC_OK == getBitField(typeDie, bitField)) {
 		/* Get all the field tags. */
@@ -651,7 +660,7 @@ DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Namespac
 					}
 				}
 			}
-		} else if ((0 == typeNum) || (1 == typeNum) || (3 == typeNum)) {
+		} else if ((0 == typeNum) || (1 == typeNum) || (3 == typeNum)|| (4 == typeNum)) {
 			/* Entry is for a type that has not already been found. */
 			if ((DW_TAG_class_type == tag)
 					|| (DW_TAG_structure_type == tag)
@@ -664,18 +673,21 @@ DwarfScanner::addType(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Namespac
 				 * for types defined within namespaces, do not add it to the main list of types.
 				 */
 				isSubUDT = (isSubUDT) || (string::npos != newType->getFullName().find("::"));
-				if (3 == typeNum) {
-					rc = DDR_RC_OK;
-				} else {
-					rc = newType->scanChildInfo(this, die);
-					DEBUGPRINTF("Done scanning child info");
-				}
+				rc = newType->scanChildInfo(this, die);
+				DEBUGPRINTF("Done scanning child info");
 			} else {
 				rc = DDR_RC_OK;
 			}
 
 			if (!isSubUDT && (0 == typeNum || 3 == typeNum)) {
 				_ir->_types.push_back(newType);
+			} else if (isSubUDT && (4 == typeNum)) {
+				/* When the type is a stub that was found as a stub before, it might be found as a subUDT now,
+				 * so we check if it is, and remove it from the main types list if it is. */
+				UDT *udt = dynamic_cast<UDT *>(newType);
+				if ((NULL != udt) && (NULL == udt->_outerUDT)) {
+					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
+				}
 			}
 		} else {
 			ERRMSG("getType failed\n");
@@ -714,7 +726,8 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, Names
 	 * Set typeNum to 0 for full types which have not been found before--add to types list and add children.
 	 * Set typeNum to 1 for full types which have been found before as a stub--do not add to types list but add children.
 	 * Set typeNum to 2 for full types which already exist--do not add to types list or add children.
-	 * Set typeNum to 3 for stub types which have not been found before--add to types list but do not add children.
+	 * Set typeNum to 3 for stub types which have not been found before--add to types list and add children.
+	 * Set typeNum to 4 for stub types which have been found before -- do not add to types list but add children.
 	 */
 	DDR_RC rc = DDR_RC_OK;
 	*typeNum = -1;
@@ -739,17 +752,6 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, Names
 				size_t lastDot = fileName.find_last_of(".");
 				dieName = fileName.substr(lastSlash + 1, lastDot - lastSlash - 1) + "Constants";
 				dieName[0] = toupper(dieName[0]);
-
-				/* Check for duplicates and rename if needed */
-				unordered_map<string, int>::iterator nameToFind = _anonymousEnumNames.find(dieName);
-				if (_anonymousEnumNames.end() != nameToFind) {
-					nameToFind->second = nameToFind->second + 1;
-					std::stringstream ss;
-					ss << nameToFind->second;
-					dieName = dieName + ss.str();
-				} else {
-					_anonymousEnumNames.insert(make_pair<string, int>((string)dieName, (int)0));
-				}
 			}
 			/* If the Type is not in the map yet, add it. */
 			bool isInTypeMap = (_typeMap.find(key) != _typeMap.end());
@@ -759,7 +761,7 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, Names
 				if (NULL != udt) {
 					/* Type name, file name, line number is not a unique identifier for a type when macros change the name of the outer class */
 					/* Will not work when macros change if it is an inner class or not */
-					isInTypeMap = ((udt->_outerUDT == outerUDT) || (NULL == outerUDT));
+					isInTypeMap = ((udt->_outerUDT == outerUDT) || (NULL == outerUDT) || (NULL == udt->_outerUDT));
 				}
 			}
 			if (!isInTypeMap) {
@@ -826,7 +828,7 @@ DwarfScanner::getType(Dwarf_Die die, Dwarf_Half tag, Type **const newType, Names
 			} else {
 				/* The Type already exists as a stub and the declaration has not yet been found. */
 				*newType = _typeStubMap[stubKey];
-				*typeNum = 2;
+				*typeNum = 4;
 			}
 		}
 	}
@@ -866,7 +868,7 @@ DwarfScanner::createType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsigned
 		*newType = new ClassUDT(typeSize, true, lineNumber);
 		break;
 	case DW_TAG_structure_type:
-		DEBUGPRINTF("DW_TAG_struct_type: '%s'", dieName.c_str());
+		DEBUGPRINTF("DW_TAG_structure_type: '%s'", dieName.c_str());
 		rc = getTypeSize(die, &typeSize);
 		if (DDR_RC_OK != rc) {
 			break;
@@ -1027,9 +1029,13 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 				if (DDR_RC_OK != addType(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
-				} else if ((NULL != newClass) && (NULL != innerUDT)) {
-					innerUDT->_outerUDT = newClass;
-					newClass->_subUDTs.push_back(innerUDT);
+				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL  == innerUDT->_outerUDT)) {
+					/* We only add it to list of subUDTs if innerUDT's _outerUDT is NULL, because there should only be one outer UDT per inner UDT */
+					/* Check that the subUDT wasn't already added when the type was found as a stub type */
+					if (newClass->_subUDTs.end() == std::find(newClass->_subUDTs.begin(), newClass->_subUDTs.end(), innerUDT)) {
+						innerUDT->_outerUDT = newClass;
+						newClass->_subUDTs.push_back(innerUDT);
+					}
 				}
 			} else if (DW_TAG_inheritance == childTag) {
 				/* The child is a super type. */
@@ -1055,28 +1061,37 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 		 * the enum members to the class instead. */
 		ClassType *ct = dynamic_cast<ClassType *>(newClass);
 		if ((NULL != ct) && (0 != newClass->_lineNumber)) {
-			if (NULL != ct) {
-				for (vector<UDT *>::iterator it = ct->_subUDTs.begin(); it != ct->_subUDTs.end();) {
-					EnumUDT *enumUDT = dynamic_cast<EnumUDT *>(*it);
-					if ((NULL != enumUDT) && (*it)->isAnonymousType()) {
-						bool usedAsField = false;
-						for (vector<Field *>::iterator fit = ct->_fieldMembers.begin(); fit != ct->_fieldMembers.end(); fit += 1) {
-							if ((*fit)->_fieldType == (*it)) {
-								usedAsField = true;
-								break;
+			for (vector<UDT *>::iterator it = ct->_subUDTs.begin(); it != ct->_subUDTs.end(); ++it) {
+				EnumUDT *enumUDT = dynamic_cast<EnumUDT *>(*it);
+				if ((NULL != enumUDT) && (*it)->isAnonymousType()) {
+					bool usedAsField = false;
+					for (vector<Field *>::iterator fit = ct->_fieldMembers.begin(); fit != ct->_fieldMembers.end(); fit += 1) {
+						if ((*fit)->_fieldType == (*it)) {
+							usedAsField = true;
+							break;
+						}
+					}
+					if (!usedAsField) {
+						EnumUDT *eu = dynamic_cast<EnumUDT *>(*it);
+						/* Only add enumerators which have not already been added, because duplicate full types 
+						 * might otherwise lead to duplicate enumerators, one for each time the type is found with
+						 * the anonymous EnumUDT as a subUDT. There is no need to delete the empty anonymous enum,
+						 * as it will not be printed in genSuperset (since genSuperset does not print empty enums)
+						 * and since the anonymous enum is still a subUDT, no memory leak occurs.
+						 */
+						for (vector<EnumMember *>::iterator enumMember = eu->_enumMembers.begin(); enumMember != eu->_enumMembers.end(); ++enumMember) {
+							bool hasAlreadyBeenAdded = false;
+							for (vector<EnumMember *>::iterator enumMemberInClassType = ct->_enumMembers.begin(); enumMemberInClassType != ct->_enumMembers.end(); ++ enumMemberInClassType) {
+								if (((*enumMemberInClassType)->_name == (*enumMember)->_name) && ((*enumMemberInClassType)->_value == (*enumMember)->_value)) {
+									hasAlreadyBeenAdded = true;
+									break;
+								}
+							}
+							if (!hasAlreadyBeenAdded) {
+								ct->_enumMembers.push_back(*enumMember);
 							}
 						}
-						if (!usedAsField) {
-							EnumUDT *eu = dynamic_cast<EnumUDT *>(*it);
-							ct->_enumMembers.insert(ct->_enumMembers.end(), eu->_enumMembers.begin(), eu->_enumMembers.end());
-							eu->_enumMembers.clear();
-							delete(*it);
-							it = ct->_subUDTs.erase(it);
-						} else {
-							it += 1;
-						}
-					} else {
-						it += 1;
+						eu->_enumMembers.clear();
 					}
 				}
 			}

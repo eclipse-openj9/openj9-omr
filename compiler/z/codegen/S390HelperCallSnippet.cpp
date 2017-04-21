@@ -116,6 +116,20 @@ TR::S390HelperCallSnippet::emitSnippetBody()
          gcMap().getStackMap()->maskRegisters(~(0x1 << (rEP)));
          }
       }
+#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+   if (cg()->comp()->getOption(TR_EnableTrampolines) && NEEDS_TRAMPOLINE(destAddr, cursor, cg()))
+      {
+      // Destination is beyond our reachable jump distance, we'll find the
+      // trampoline.
+      destAddr = cg()->fe()->indexedTrampolineLookup(helperSymRef->getReferenceNumber(), (void *)cursor);
+      this->setUsedTrampoline(true);
+      
+      // We clobber rEP if we take a trampoline.  Update our register map if necessary.
+      if (gcMap().getStackMap() != NULL)
+         {
+         gcMap().getStackMap()->maskRegisters(~(0x1 << (rEP)));
+         }
+      }
 #endif
 
    TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(destAddr, cursor), "Helper Call is not reachable.");

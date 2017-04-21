@@ -139,6 +139,14 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
          destAddr = cg->fe()->indexedTrampolineLookup(glueRef->getReferenceNumber(), (void *)cursor);
          self()->setUsedTrampoline(true);
          }
+#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+      if (cg->comp()->getOption(TR_EnableTrampolines) && NEEDS_TRAMPOLINE(destAddr, cursor, cg))
+         {
+         // Destination is beyond our reachable jump distance, we'll find the
+         // trampoline.
+         destAddr = cg->fe()->indexedTrampolineLookup(glueRef->getReferenceNumber(), (void *)cursor);
+         self()->setUsedTrampoline(true);
+         }
    #endif
 
       TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(destAddr, cursor),  "Helper Call is not reachable.");

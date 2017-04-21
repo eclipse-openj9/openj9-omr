@@ -2010,7 +2010,12 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
 
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
+   
+#if defined(TR_TARGET_64BIT) && defined(STRESS_TRAMPOLINES)
+   if (1)
+#else
    if (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst))
+#endif
       {
       intptrj_t targetAddr;
 
@@ -2408,6 +2413,12 @@ TR::S390RILInstruction::generateBinaryEncoding()
 #if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
          // get the correct target addr for helpers
          i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+         if (comp->getOption(TR_EnableTrampolines))
+            {
+            // get the correct target addr for helpers
+            i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+            }
 #endif
 
          (*(int32_t *) (cursor + 2)) = boi(i2);
@@ -2457,6 +2468,25 @@ TR::S390RILInstruction::generateBinaryEncoding()
             #endif
             }
          }
+#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+      if (comp->getOption(TR_EnableTrampolines) && comp->getCodeCacheSwitched())
+         {
+         TR::SymbolReference *calleeSymRef = NULL;
+
+         calleeSymRef = getSymbolReference();
+
+         if (calleeSymRef != NULL)
+            {
+            if (calleeSymRef->getReferenceNumber() >= TR_S390numRuntimeHelpers)
+               cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
+            }
+         else
+            {
+               #ifdef DEBUG
+               printf("Missing possible re-reservation for trampolines.\n");
+               #endif
+            }
+         }
 #endif
 
       i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
@@ -2504,6 +2534,11 @@ TR::S390RILInstruction::generateBinaryEncoding()
                }
 #if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
             i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+            if (comp->getOption(TR_EnableTrampolines))
+               {
+               i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+               }
 #endif
             (*(int32_t *) (cursor + 2)) = boi(i2);
             if (getSymbolReference() && getSymbolReference()->getSymbol()->castToMethodSymbol()->isHelper())

@@ -125,13 +125,13 @@ OMR::CodeCacheManager::initialize(
    config._needsMethodTrampolines =
       !(config.trampolineCodeSize() == 0
         || config.maxNumberOfCodeCaches() == 1
-#if !defined(STRESS_TRAMPOLINES) && !defined(TR_HOST_POWER)
+#if !defined(STRESS_TRAMPOLINES) && !defined(TR_HOST_POWER) && !defined(TR_TARGET_64BIT)  
         || (!TR::Options::getCmdLineOptions()->getOption(TR_EnableMethodTrampolineReservation) &&
             _codeCacheRepositorySegment &&
             config.codeCacheTotalKB() <= REACHEABLE_RANGE_KB)
 #endif
         );
-
+   
    _lowCodeCacheSpaceThresholdReached = false;
 
    _initialized = true;

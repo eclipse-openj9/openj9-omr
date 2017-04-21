@@ -607,6 +607,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dumpIprofilerMethodNamesAndCounts",  "O\tDebug Printing of Method Names and Persisted Counts.", SET_OPTION_BIT(TR_DumpPersistedIProfilerMethodNamesAndCounts), "F"},
    {"dynamicThreadPriority",              "M\tenable dynamic changing of compilation thread priority", SET_OPTION_BIT(TR_DynamicThreadPriority), "F", NOT_IN_SUBSET},
    {"earlyLPQ",                           "M\tAllow compilations from low priority queue to happen early, during startup", SET_OPTION_BIT(TR_EarlyLPQ), "F", NOT_IN_SUBSET },
+   {"enableAboveTwoGBBar",                "O\tenable allocation of executable memory above the 2gb bar (zOS64)", SET_OPTION_BIT(TR_EnableAboveTwoGBBar), "F"},
    {"enableAggressiveLiveness",           "I\tenable globalLiveVariablesForGC below warm", SET_OPTION_BIT(TR_EnableAggressiveLiveness), "F"},
    {"enableAllocationOfScratchBTL",       "M\tAllow the allocation scratch memory below the line (zOS 31-bit)", RESET_OPTION_BIT(TR_DontAllocateScratchBTL), "F", NOT_IN_SUBSET },
    {"enableAllocationSinking",            "O\tdelay object allocations until immediately before the corresponding constructor calls", TR::Options::enableOptimization, allocationSinking, 0, "P"},
@@ -732,6 +733,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSpecializedEpilogues",         "O\tapply restore non-volatiles selectively",         SET_OPTION_BIT(TR_EnableSpecializedEpilogues), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
+   {"enableTrampolines",                  "O\tenable trampolines to always be used (zLinux64 and zOS64)", SET_OPTION_BIT(TR_EnableTrampolines), "F"},
    {"enableTreePatternMatching",          "O\tEnable opts that use the TR_Pattern framework", RESET_OPTION_BIT(TR_DisableTreePatternMatching), "F"},
    {"enableTrivialStoreSinking",          "O\tenable trivial store sinking", SET_OPTION_BIT(TR_EnableTrivialStoreSinking), "F"},
    {"enableTrueRegisterModel",            "C\tUse true liveness model in local RA instead of Future Use Count", SET_OPTION_BIT(TR_EnableTrueRegisterModel), "F"},
@@ -2690,7 +2692,19 @@ OMR::Options::jitPreProcess()
 
 
 #if defined(TR_HOST_64BIT) && !defined(J9ZOS390)
-       self()->setOption(TR_EnableCodeCacheConsolidation);
+      self()->setOption(TR_EnableCodeCacheConsolidation);
+#elif defined(TR_HOST_64BIT) && defined(J9ZOS390)
+      
+      // If we enabled the 2GB bar then addresses will now be from 0x80000000 to 0x7fffffffffffffff
+      // The way zOS allocates memory is by looking for 2MB free chunks and uses that for its 
+      // code caches. When we enable the 2GB bar then the addresses will be from 0x80000000
+      // to 0x7fffffffffffffff. This means two code caches could be very far apart from one another
+      // which is something we want to avoid as it may cause performance issues. The solution will 
+      // be to enable the code cache consolidation which will allocate 256MB at startup just for 
+      // code caches. This way the code caches will be together and improve performance. 
+      // Note: If all 256MB are used up then the program will abort compiles.
+      if (self()->getOption(TR_EnableAboveTwoGBBar)) 
+         self()->setOption(TR_EnableCodeCacheConsolidation);
 #endif
 
 

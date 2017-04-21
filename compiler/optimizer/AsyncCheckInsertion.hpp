@@ -40,8 +40,8 @@ class TR_AsyncCheckInsertion : public TR::Optimization
       }
 
 
-   static int32_t insertReturnAsyncChecks(TR::Compilation *comp);
-   static void insertAsyncCheck(TR::Block *block, TR::Compilation *comp);
+   static int32_t insertReturnAsyncChecks(TR::Optimization *opt, const char *counterPrefix);
+   static void insertAsyncCheck(TR::Block *block, TR::Compilation *comp, const char *counterPrefix);
 
    virtual bool    shouldPerform();
    virtual int32_t perform();

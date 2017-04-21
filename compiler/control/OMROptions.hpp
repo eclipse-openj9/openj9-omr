@@ -1761,6 +1761,11 @@ public:
 
    int32_t getProfilingCompNodecountThreshold()  { return _profilingCompNodecountThreshold; }
 
+   int32_t getLoopyAsyncCheckInsertionMaxEntryFreq()
+      {
+      return _loopyAsyncCheckInsertionMaxEntryFreq;
+      }
+
 public:
 
    static void shutdown(TR_FrontEnd * fe);
@@ -2423,6 +2428,8 @@ private:
    int32_t                     _inlinerVeryLargeCompiledMethodFaninThreshold; // for inlining
    int32_t                     _largeCompiledMethodExemptionFreqCutoff;
    int32_t                     _maxSzForVPInliningWarm;
+
+   int32_t                     _loopyAsyncCheckInsertionMaxEntryFreq;
 
    }; // TR::Options
 

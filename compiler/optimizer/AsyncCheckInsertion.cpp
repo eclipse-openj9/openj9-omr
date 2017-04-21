@@ -25,6 +25,7 @@
 #include "compile/Compilation.hpp"             // for Compilation
 #include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
 #include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable
+#include "control/Recompilation.hpp"           // for TR_Recompilation
 #include "env/StackMemoryRegion.hpp"
 #include "env/jittypes.h"                      // for TR_ByteCodeInfo, etc
 #include "il/Block.hpp"                        // for Block, toBlock
@@ -49,7 +50,7 @@
 
 // Add an async check into a block - MUST be at block entry
 //
-void TR_AsyncCheckInsertion::insertAsyncCheck(TR::Block *block, TR::Compilation *comp)
+void TR_AsyncCheckInsertion::insertAsyncCheck(TR::Block *block, TR::Compilation *comp, const char *counterPrefix)
    {
    TR::TreeTop *lastTree = block->getLastRealTreeTop();
    TR::TreeTop *asyncTree =
@@ -70,19 +71,36 @@ void TR_AsyncCheckInsertion::insertAsyncCheck(TR::Block *block, TR::Compilation 
       block->getEntry()->join(asyncTree);
       asyncTree->join(nextTree);
       }
+
+   const char * const name = TR::DebugCounter::debugCounterName(comp,
+      "asynccheck.insert/%s/(%s)/%s/block_%d",
+      counterPrefix,
+      comp->signature(),
+      comp->getHotnessName(),
+      block->getNumber());
+   TR::DebugCounter::prependDebugCounter(comp, name, asyncTree->getNextTreeTop());
    }
 
-int32_t TR_AsyncCheckInsertion::insertReturnAsyncChecks(TR::Compilation *comp)
+int32_t TR_AsyncCheckInsertion::insertReturnAsyncChecks(TR::Optimization *opt, const char *counterPrefix)
    {
+   TR::Compilation * const comp = opt->comp();
+   if (opt->trace())
+      traceMsg(comp, "Inserting return asyncchecks (%s)\n", counterPrefix);
+
    int numAsyncChecksInserted = 0;
    for (TR::TreeTop *treeTop = comp->getStartTree();
         treeTop;
         /* nothing */ )
       {
       TR::Block *block = treeTop->getNode()->getBlock();
-      if (block->getLastRealTreeTop()->getNode()->getOpCode().isReturn())
+      if (block->getLastRealTreeTop()->getNode()->getOpCode().isReturn()
+          && performTransformation(comp,
+               "%sInserting return asynccheck (%s) in block_%d\n",
+               opt->optDetailString(),
+               counterPrefix,
+               block->getNumber()))
          {
-         insertAsyncCheck(block, comp);
+         insertAsyncCheck(block, comp, counterPrefix);
          numAsyncChecksInserted++;
          }
 
@@ -102,10 +120,21 @@ bool TR_AsyncCheckInsertion::shouldPerform()
    if (comp()->isProfilingCompilation() || comp()->generateArraylets())
       return false;
 
-   if (comp()->getOption(TR_EnableOSR))  // cannot move async checks around arbitrarily if OSR is possible
+   // It is not safe to add an asynccheck under involuntary OSR
+   // as a transition may have to occur at the added point and the
+   // required infrastructure may not exist
+   //
+   if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::involuntaryOSR)
       return false;
 
-   return true;
+   // This only helps when the method may be recompiled later due to sampling.
+   //
+   return comp()->getMethodHotness() != scorching
+      && comp()->getRecompilationInfo() != NULL
+#ifdef J9_PROJECT_SPECIFIC
+      && comp()->getRecompilationInfo()->useSampling()
+#endif
+      && comp()->getRecompilationInfo()->shouldBeCompiledAgain();
    }
 
 int32_t TR_AsyncCheckInsertion::perform()
@@ -115,17 +144,34 @@ int32_t TR_AsyncCheckInsertion::perform()
    // If this is a large acyclic method - add a yield point at each return from this method
    // so that sampling will realize that we are actually in this method.
    //
-   if (!comp()->mayHaveLoops())
-      {
-      static const char *p;
-      static uint32_t numNodesInLargeMethod     = (p = feGetEnv("TR_LargeMethodNodes"))     ? atoi(p) : NUMBER_OF_NODES_IN_LARGE_METHOD;
+   static const char *p;
+   static uint32_t numNodesInLargeMethod = (p = feGetEnv("TR_LargeMethodNodes")) ? atoi(p) : NUMBER_OF_NODES_IN_LARGE_METHOD;
+   const bool largeAcyclicMethod =
+      !comp()->mayHaveLoops() && comp()->getNodeCount() > numNodesInLargeMethod;
 
-      int32_t numAsyncChecksInserted = 0;
-      if ((uint32_t) comp()->getNodeCount() > numNodesInLargeMethod)
-         numAsyncChecksInserted = insertReturnAsyncChecks(comp());
+   // If this method has loops whose asyncchecks were versioned out, it may
+   // still spend a significant amount of time in each invocation without
+   // yielding. In this case, insert yield points before returns whenever there
+   // is a sufficiently frequent block somewhere in the method.
+   //
+   bool loopyMethodWithVersionedAsyncChecks = false;
+   if (!largeAcyclicMethod && comp()->getLoopWasVersionedWrtAsyncChecks())
+      {
+      // The max (normalized) block frequency is fixed, but very frequent
+      // blocks push down the frequency of method entry.
+      int32_t entry = comp()->getStartTree()->getNode()->getBlock()->getFrequency();
+      int32_t limit = comp()->getOptions()->getLoopyAsyncCheckInsertionMaxEntryFreq();
+      loopyMethodWithVersionedAsyncChecks = 0 <= entry && entry <= limit;
+      }
+
+   if (largeAcyclicMethod || loopyMethodWithVersionedAsyncChecks)
+      {
+      const char * counterPrefix = largeAcyclicMethod ? "acyclic" : "loopy";
+      int32_t numAsyncChecksInserted = insertReturnAsyncChecks(this, counterPrefix);
       if (trace())
          traceMsg(comp(), "Inserted %d async checks\n", numAsyncChecksInserted);
       return 1;
       }
+
    return 0;
    }

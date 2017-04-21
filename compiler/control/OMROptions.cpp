@@ -2478,6 +2478,8 @@ OMR::Options::jitPreProcess()
 
 #if defined(TR_HOST_POWER)
    _bigCalleeThreshold = 300;
+#elif defined(TR_HOST_S390)
+   _bigCalleeThreshold = 600;
 #else
    _bigCalleeThreshold = 400;
 #endif

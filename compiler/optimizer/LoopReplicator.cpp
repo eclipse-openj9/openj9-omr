@@ -2030,14 +2030,14 @@ void TR_LoopReplicator::fixUpLoopEntry(LoopInfo *lInfo, TR::Block *loopHeader)
          }
       }
 
-   TR::Node *firstNode = loopHeader->getEntry()->getNextTreeTop()->getNode();
+   TR::Node *bbstartNode = loopHeader->getEntry()->getNode();
 
    // rip out the trees from the original loop header
    loopHeader->getEntry()->join(loopHeader->getExit());
 
    // add the async tree into the loopheader
    //
-   TR::TreeTop *asyncTT = TR::TreeTop::create(comp(), TR::Node::createWithSymRef(firstNode, TR::asynccheck, 0, comp()->getSymRefTab()->findOrCreateAsyncCheckSymbolRef(comp()->getMethodSymbol())));
+   TR::TreeTop *asyncTT = TR::TreeTop::create(comp(), TR::Node::createWithSymRef(bbstartNode, TR::asynccheck, 0, comp()->getSymRefTab()->findOrCreateAsyncCheckSymbolRef(comp()->getMethodSymbol())));
    loopHeader->getEntry()->join(asyncTT);
    asyncTT->join(loopHeader->getExit());
    }

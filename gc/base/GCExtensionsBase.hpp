@@ -397,7 +397,8 @@ public:
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool concurrentScavenger;
+	bool concurrentScavenger; /**< CS enabled/disabled flag */
+	bool concurrentScavengerRequested; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
 #endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
@@ -1145,6 +1146,7 @@ public:
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, concurrentScavenger(false)
+		, concurrentScavengerRequested(false)
 #endif		
 		, scavengerFailedTenureThreshold(0)
 		, scvArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)

@@ -995,29 +995,29 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
-#if 8000 <= CUDA_VERSION
+#if CUDA_VERSION <= 8000
 	OMRCUDA_LIBRARY_ENTRY(8, 0),
-#endif /* 8000 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 8000 */
 
-#if 7050 <= CUDA_VERSION
+#if CUDA_VERSION <= 7050
 	OMRCUDA_LIBRARY_ENTRY(7, 5),
-#endif /* 7050 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 7050 */
 
-#if 7000 <= CUDA_VERSION
+#if CUDA_VERSION <= 7000
 	OMRCUDA_LIBRARY_ENTRY(7, 0),
-#endif /* 7000 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 7000 */
 
-#if 6050 <= CUDA_VERSION
+#if CUDA_VERSION <= 6050
 	OMRCUDA_LIBRARY_ENTRY(6, 5),
-#endif /* 6050 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 6050 */
 
-#if 6000 <= CUDA_VERSION
+#if CUDA_VERSION <= 6000
 	OMRCUDA_LIBRARY_ENTRY(6, 0),
-#endif /* 6000 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 6000 */
 
-#if 5050 <= CUDA_VERSION
+#if CUDA_VERSION <= 5050
 	OMRCUDA_LIBRARY_ENTRY(5, 5)
-#endif /* 5050 <= CUDA_VERSION */
+#endif /* CUDA_VERSION <= 5050 */
 
 #undef OMRCUDA_LIBRARY_ENTRY
 #undef OMRCUDA_LIBRARY_NAME

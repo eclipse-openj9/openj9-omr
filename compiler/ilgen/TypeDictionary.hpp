@@ -440,6 +440,7 @@ protected:
    TR::IlType       * VectorDouble;
 
    TR::IlType       * _pointerToPrimitiveType[TR::NumOMRTypes];
+   TR::IlType       * pNoType;
    TR::IlType       * pInt8;
    TR::IlType       * pInt16;
    TR::IlType       * pInt32;

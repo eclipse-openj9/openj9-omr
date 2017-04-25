@@ -193,9 +193,6 @@ public:
                                                bool needSync);
    void reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method);
 
-   void onClassRedefinition(TR_OpaqueMethodBlock *oldMethod, TR_OpaqueMethodBlock *newMethod);
-   void onFSDDecompile();
-
    void performSizeAdjustments(size_t &warmCodeSize,
                                size_t &coldCodeSize,
                                bool needsToBeContiguous,

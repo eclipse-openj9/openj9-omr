@@ -157,7 +157,6 @@ public:
    bool                       addUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    bool                       addResolvedMethod(TR_OpaqueMethodBlock *method);
 
-   static void                query(TR::CodeCache *codeCache);
    void                       printOccupancyStats();
    void                       printFreeBlocks();
    void                       checkForErrors();
@@ -165,24 +164,15 @@ public:
    void                       dumpCodeCache();
 
    int32_t                    reserveResolvedTrampoline(TR_OpaqueMethodBlock *method, bool inBinaryEncoding);
-   int32_t                    reserveUnresolvedTrampoline(void *cp, int32_t cpIndex);
    void                       createTrampoline(CodeCacheTrampolineCode *trampoline,
                                                void *targetStartPC,
                                                TR_OpaqueMethodBlock *method);
    bool                       allocateTempTrampolineSyncBlock();
 
-   void                       adjustTrampolineReservation(TR_OpaqueMethodBlock *method,
-                                                          void *cp,
-                                                          int32_t cpIndex);
-   void                       resolveHashEntry(CodeCacheHashEntry *entry, TR_OpaqueMethodBlock *method);
-
    void                       patchCallPoint(TR_OpaqueMethodBlock *method,
                                              void *callSite,
                                              void *newStartPC,
                                              void *extraArg);
-
-   void                       onClassRedefinition(TR_OpaqueMethodBlock *oldMethod, TR_OpaqueMethodBlock *newMethod);
-   void                       onFSDDecompile();
 
    CodeCacheHashEntry *       findUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    CodeCacheHashEntry *       findResolvedMethod(TR_OpaqueMethodBlock *method);

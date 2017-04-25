@@ -888,23 +888,6 @@ OMR::CodeCache::freeHashEntry(CodeCacheHashEntry *entry)
    _hashEntryFreeList = entry;
    }
 
-// Add an unresolved method to the trampoline hash table
-//
-bool
-OMR::CodeCache::addUnresolvedMethod(void *constPool, int32_t constPoolIndex)
-   {
-   CodeCacheHashEntry *entry = self()->allocateHashEntry();
-
-   if (!entry)
-      return false;
-
-   entry->_key = _unresolvedMethodHT->hashUnresolvedMethod(constPool, constPoolIndex);
-   entry->_info._unresolved._constPool = constPool;
-   entry->_info._unresolved._constPoolIndex = constPoolIndex;
-   _unresolvedMethodHT->add(entry);
-   return true;
-   }
-
 
 // Add a resolved method to the trampoline hash table
 //
@@ -1478,13 +1461,6 @@ OMR::CodeCache::checkForErrors()
          *((int32_t*)1) = 0xffffffff; // cause a crash
          }
       }
-   }
-
-
-OMR::CodeCacheHashEntry *
-OMR::CodeCache::findUnresolvedMethod(void *constPool, int32_t constPoolIndex)
-   {
-   return _unresolvedMethodHT->findUnresolvedMethod(constPool, constPoolIndex);
    }
 
 

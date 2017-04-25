@@ -154,7 +154,6 @@ public:
    size_t                     getSizeOfLargestFreeColdBlock() const { return _sizeOfLargestFreeColdBlock; }
 
    uint32_t                   tempTrampolinesMax()                  { return _tempTrampolinesMax; }
-   bool                       addUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    bool                       addResolvedMethod(TR_OpaqueMethodBlock *method);
 
    void                       printOccupancyStats();
@@ -174,7 +173,6 @@ public:
                                              void *newStartPC,
                                              void *extraArg);
 
-   CodeCacheHashEntry *       findUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    CodeCacheHashEntry *       findResolvedMethod(TR_OpaqueMethodBlock *method);
 
    void                       findOrAddResolvedMethod(TR_OpaqueMethodBlock *method);

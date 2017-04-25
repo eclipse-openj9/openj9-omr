@@ -430,7 +430,92 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
                                    bool mightUseRegPair);
 
    static TR::Register *passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   /** \brief
+    *     Evaluates a primitive or reference arraycopy node. A primitive arraycopy has 3 children and a reference
+    *     arraycopy has 5 children.
+    *
+    *     The z Systems code generator requires that <c>isForwardArrayCopy()</c> really means that a forward array copy
+    *     is safe and that if it is not set it really means that a backward array copy is safe. The optimizer should
+    *     have generated the correct tests around the arraycopy to enforce this assumption.
+    *
+    *     Furthermore note that the z Systems code generator does not need to check for a particular frequency on the
+    *     length, again because the optimizer will have generated a test for a particular length, if one is quite
+    *     common, and there will be two versions of the arraycopy call; one with a constant length and one with a
+    *     variable length.
+    *
+    *  \param node
+    *     The arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \param byteSrcNode
+    *     The source address of the array copy.
+    *
+    *  \param byteDstNode
+    *     The destination address of the array copy.
+    *
+    *  \param byteLenNode
+    *     The number of bytes to copy.
+    *
+    *  \return
+    *     <c>NULL</c>
+    */
    static TR::Register *arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   /** \brief
+    *     Evaluates a primitive arraycopy node by generating an MVC memory-memory copy for a forward arraycopy and a
+    *     loop based on the stride length for a backward arraycopy.
+
+    *  \param node
+    *     The primitive arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \param byteSrcNode
+    *     The source address of the array copy.
+    *
+    *  \param byteDstNode
+    *     The destination address of the array copy.
+    *
+    *  \param byteLenNode
+    *     The number of bytes to copy.
+    */
+   static void primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode);
+
+   /** \brief
+    *     Evaluates a reference arraycopy node by generating an MVC memory-memory copy for a forward arraycopy and a
+    *     loop based on the reference size for a backward arraycopy. For runtimes which support it, this function will
+    *     also generate write barrier checks on \p byteSrcObjNode and \p byteDstObjNode.
+    *
+    *  \param node
+    *     The reference arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \param byteSrcNode
+    *     The source address of the array copy.
+    *
+    *  \param byteDstNode
+    *     The destination address of the array copy.
+    *
+    *  \param byteLenNode
+    *     The number of bytes to copy.
+    *
+    *  \param byteSrcObjNode
+    *     The runtime object which represents the source array.
+    *
+    *  \param byteDstObjNode
+    *     The runtime object which represents the destination array.
+    *
+    *  \note
+    *     The reference size must be explicitly specified on the \p node via the <c>getArrayCopyElementType</c> API.
+    */
+   static void referenceArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode, TR::Node* byteSrcObjNode, TR::Node* byteDstObjNode);
+
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *o2xEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *x2oEvaluator(TR::Node *node, TR::CodeGenerator *cg);

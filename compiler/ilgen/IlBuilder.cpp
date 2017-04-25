@@ -863,7 +863,16 @@ TR::IlValue *
 IlBuilder::StructFieldInstanceAddress(const char* structName, const char* fieldName, TR::IlValue* obj) {
    auto offset = typeDictionary()->OffsetOf(structName, fieldName);
    auto ptype = typeDictionary()->PointerTo(typeDictionary()->GetFieldType(structName, fieldName));
-   auto addr = Add(obj, ConstInt64(offset));
+   TR::IlValue* offsetValue = NULL;
+   if (TR::Compiler->target.is64Bit())
+      {
+      offsetValue = ConstInt64(offset);
+      }
+   else
+      {
+      offsetValue = ConstInt32(offset);
+      }
+   auto addr = Add(obj, offsetValue);
    return ConvertTo(ptype, addr);
 }
 

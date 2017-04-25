@@ -6095,16 +6095,6 @@ OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
           !self()->comp()->compileRelocatableCode();
    }
 
-bool
-OMR::Z::CodeGenerator::isConcurrentScavengeEnabled()
-   {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-   return TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility();
-#else
-   return false;
-#endif
-   }
-
 // Helpers for profiled interface slots
 void
 OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)

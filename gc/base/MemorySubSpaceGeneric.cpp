@@ -782,3 +782,11 @@ MM_MemorySubSpaceGeneric::removeTenureRange(MM_EnvironmentBase* env, uintptr_t s
 
 	extensions->setTenureAddressRange(extensions->heapBaseForBarrierRange0, extensions->heapSizeForBarrierRange0);
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemorySubSpaceGeneric::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	return _memoryPool->releaseFreeMemoryPages(env);
+}
+#endif

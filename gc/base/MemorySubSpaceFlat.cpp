@@ -440,3 +440,11 @@ MM_MemorySubSpaceFlat::collectorExpand(MM_EnvironmentBase* env, MM_Collector* re
 	Trc_MM_MemorySubSpaceFlat_collectorExpand_Exit3(env->getLanguageVMThread(), expansionAmount);
 	return expansionAmount;
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemorySubSpaceFlat::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	return _memorySubSpace->releaseFreeMemoryPages(env);
+}
+#endif

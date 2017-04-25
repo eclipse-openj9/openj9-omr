@@ -308,4 +308,12 @@ MM_MemorySubSpaceGenerational::counterBalanceContract(
 	return _memorySubSpaceNew->counterBalanceContractWithExpand(env, this, contractSubSpace, contractSize, contractAlignment, expandSize);
 }
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemorySubSpaceGenerational::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	return _memorySubSpaceOld->releaseFreeMemoryPages(env);
+}
+#endif
+
 #endif /* OMR_GC_MODRON_SCAVENGER */

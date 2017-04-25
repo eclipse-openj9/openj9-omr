@@ -502,6 +502,8 @@ AS_IF([[test "$cross_compiling" != "yes"] && [test "$OMR_HOST_OS" != osx] && [te
 		[OMR_LIBDWARF_STATIC_LIBS="dwarf elf"])]
 )
 
+OMRCFG_DEFINE_FLAG_OFF([OMR_GC_IDLE_HEAP_MANAGER])
+
 ###
 ### Variable Substitution
 ###

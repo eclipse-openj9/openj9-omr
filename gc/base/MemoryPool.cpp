@@ -508,3 +508,13 @@ MM_MemoryPool::kill(MM_EnvironmentBase *env)
 	tearDown(env);
 	env->getForge()->free(this);
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemoryPool::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+        /* Should have been implemented */
+        Assert_MM_unreachable();
+	return 0;
+}
+#endif

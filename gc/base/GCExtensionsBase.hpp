@@ -706,6 +706,13 @@ public:
 
 	uintptr_t darkMatterSampleRate;/**< the weight of darkMatterSample for standard gc, default:32, if the weight = 0, disable darkMatterSampling */
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	uintptr_t idleMinimumFree;   /** < percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
+	uintptr_t lastGCFreeBytes;  /** < records the free memory size from last Global GC cycle */
+	uintptr_t gcOnIdleRatio; /**< the percentage of allocation since the last GC allocation determines the invocation of global GC, default global GC is invoked if allocation is > 20% */
+	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
+#endif
+
 	/* Function Members */
 private:
 
@@ -1473,6 +1480,12 @@ public:
 		, referenceChainWalkerMarkMap(NULL)
 		, trackMutatorThreadCategory(false)
 		, darkMatterSampleRate(32)
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+		, idleMinimumFree(0)
+		, lastGCFreeBytes(0)
+		, gcOnIdleRatio(20)
+		, compactOnIdle(false)
+#endif
 	{
 		_typeId = __FUNCTION__;
 	}

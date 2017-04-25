@@ -227,6 +227,9 @@ public:
 	virtual void printCurrentFreeList(MM_EnvironmentBase* env, const char* area)=0;
 
 	virtual void recalculateMemoryPoolStatistics(MM_EnvironmentBase* env)=0;
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	uintptr_t releaseFreeEntryMemoryPages(MM_EnvironmentBase* env, MM_HeapLinkedFreeHeader* freeEntry);
+#endif
 	/**
 	 * Create a MemoryPoolAddressOrderedList object.
 	 */

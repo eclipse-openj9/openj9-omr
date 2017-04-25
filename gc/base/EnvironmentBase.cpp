@@ -403,7 +403,8 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector)
 			 * proceed and wait for it to complete */
 			Assert_MM_true(NULL != extensions->gcExclusiveAccessThreadId);
 
-			_delegate.releaseVMAccess(true);
+			uintptr_t accessMask;
+			_delegate.releaseCriticalHeapAccess(&accessMask);
 
 			/* there is a chance the GC will already have executed at this
 			 * point or other threads will re-win and re-execute.  loop until
@@ -418,7 +419,7 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector)
 
 			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
 
-			_delegate.acquireVMAccess(true);
+			_delegate.reacquireCriticalHeapAccess(accessMask);
 		}
 	}
 

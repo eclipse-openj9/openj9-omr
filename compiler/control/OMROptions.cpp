@@ -1571,7 +1571,7 @@ int32_t       OMR::Options::_sampleInterval = 30;
 int32_t       OMR::Options::_sampleThreshold = 3000;
 int32_t       OMR::Options::_startupMethodDontDowngradeThreshold = -1;
 
-int32_t       OMR::Options::_tocSizeInKB = 64;
+int32_t       OMR::Options::_tocSizeInKB = 256;
 
 int32_t       OMR::Options::_aggressiveRecompilationChances = 4;
 

@@ -2011,11 +2011,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
    
-#if defined(TR_TARGET_64BIT) && defined(STRESS_TRAMPOLINES)
-   if (1)
-#else
-   if (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst))
-#endif
+   if (cg()->comp()->getOption(TR_StressTrampolines) || (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst)))
       {
       intptrj_t targetAddr;
 
@@ -2410,11 +2406,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
          {
          i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
 
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-         // get the correct target addr for helpers
-         i2 = adjustCallOffsetWithTrampoline(i2, cursor);
-#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
-         if (comp->getOption(TR_EnableTrampolines))
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+        if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
             {
             // get the correct target addr for helpers
             i2 = adjustCallOffsetWithTrampoline(i2, cursor);
@@ -2449,42 +2444,28 @@ TR::S390RILInstruction::generateBinaryEncoding()
          (*(uint16_t *) cursor) = bos(0x1800);
          cursor += 2;
          }
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-      if (comp->getCodeCacheSwitched())
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+      if (comp->getOption(TR_EnableZOSTrampolines)) 
+#endif
          {
-         TR::SymbolReference *calleeSymRef = NULL;
-
-         calleeSymRef = getSymbolReference();
-
-         if (calleeSymRef != NULL)
+         if (comp->getCodeCacheSwitched())
             {
-            if (calleeSymRef->getReferenceNumber()>=TR_S390numRuntimeHelpers)
-               cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-            }
-         else
-            {
-            #ifdef DEBUG
-            printf("Missing possible re-reservation for trampolines.\n");
-            #endif
-            }
-         }
-#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
-      if (comp->getOption(TR_EnableTrampolines) && comp->getCodeCacheSwitched())
-         {
-         TR::SymbolReference *calleeSymRef = NULL;
+            TR::SymbolReference *calleeSymRef = NULL;
 
-         calleeSymRef = getSymbolReference();
+            calleeSymRef = getSymbolReference();
 
-         if (calleeSymRef != NULL)
-            {
-            if (calleeSymRef->getReferenceNumber() >= TR_S390numRuntimeHelpers)
-               cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-            }
-         else
-            {
-               #ifdef DEBUG
+            if (calleeSymRef != NULL)
+               {
+               if (calleeSymRef->getReferenceNumber()>=TR_S390numRuntimeHelpers)
+                  cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
+               }
+            else
+               {
+#ifdef DEBUG
                printf("Missing possible re-reservation for trampolines.\n");
-               #endif
+#endif
+               }
             }
          }
 #endif
@@ -2532,10 +2513,10 @@ TR::S390RILInstruction::generateBinaryEncoding()
                {
                i2 = (int32_t)(((uintptrj_t)(callSymbol->getMethodAddress()) - (uintptrj_t)cursor) / 2);
                }
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-            i2 = adjustCallOffsetWithTrampoline(i2, cursor);
-#elif defined(TR_TARGET_64BIT) && defined(J9ZOS390)
-            if (comp->getOption(TR_EnableTrampolines))
+#if defined(TR_TARGET_64BIT) 
+#if defined(J9ZOS390)
+            if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
                {
                i2 = adjustCallOffsetWithTrampoline(i2, cursor);
                }

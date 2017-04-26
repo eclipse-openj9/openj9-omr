@@ -34,6 +34,7 @@ addons:
       - llvm-3.4
       - gcc-multilib
       - g++-multilib
+      - ninja-build
 env:
   matrix:
     - BUILD_WITH_CMAKE=yes

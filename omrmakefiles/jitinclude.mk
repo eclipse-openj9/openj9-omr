@@ -16,4 +16,4 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-OMR_INCLUDES_FOR_JIT = $(OMR_DIR)/include_core $(OMR_DIR)/thread
+OMR_INCLUDES_FOR_JIT = $(OMR_DIR)/include_core $(OMR_DIR)/thread $(OMR_DIR)/gc/include

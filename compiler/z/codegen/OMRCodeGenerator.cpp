@@ -808,15 +808,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsPrimitiveArrayCopy();
-
-   // TODO (GuardedStorage): Currently we cannot support reference array copy if concurrent scavenge is enabled. The
-   // reason behind this restriction is that during a concurrent scavenge cycle the references read from the source
-   // array need to have issued read barriers and the code generators may not be aware or even support this in the
-   // high-performance memory copy instructions that may be generated.
-   if (!self()->isConcurrentScavengeEnabled())
-      {
-      self()->setSupportsReferenceArrayCopy();
-      }
+   self()->setSupportsReferenceArrayCopy();
 
    self()->setSupportsPartialInlineOfMethodHooks();
 

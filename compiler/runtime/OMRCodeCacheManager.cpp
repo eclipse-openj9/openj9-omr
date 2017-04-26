@@ -607,46 +607,6 @@ OMR::CodeCacheManager::replaceTrampoline(TR_OpaqueMethodBlock *method,
    return codeCache->replaceTrampoline(method, oldTrampoline, oldTargetPC, newTargetPC, needSync);
    }
 
-// Deal with class redefinition
-//
-void
-OMR::CodeCacheManager::onClassRedefinition(TR_OpaqueMethodBlock *oldMethod,
-                                         TR_OpaqueMethodBlock *newMethod)
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-   // Don't allow hashEntry to linger somewhere else
-   self()->synchronizeTrampolines();
-
-      {
-      CacheListCriticalSection scanCacheList(self());
-      for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-         {
-         codeCache->onClassRedefinition(oldMethod, newMethod);
-         }
-      }
-   }
-
-// Deal with FSD decompilation trigger
-//
-void
-OMR::CodeCacheManager::onFSDDecompile()
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-      {
-      CacheListCriticalSection scanCacheList(self());
-      for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-         {
-         codeCache->onFSDDecompile();
-         }
-      }
-   }
-
 
 void
 OMR::CodeCacheManager::addFaintCacheBlock(FaintCacheBlock * & faintBlockList,

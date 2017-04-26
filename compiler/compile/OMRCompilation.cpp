@@ -453,6 +453,9 @@ OMR::Compilation::Compilation(
 
    if (_options->getOption(TR_EnableOSR))
       {
+      // Current implementation of partial inlining will break OSR
+      self()->setOption(TR_DisablePartialInlining);
+
       //TODO: investigate the memory footprint of this allocation
       _osrCompilationData = new (self()->trHeapMemory()) TR_OSRCompilationData(self());
 

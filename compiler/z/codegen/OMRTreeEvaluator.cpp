@@ -13576,8 +13576,7 @@ OMR::Z::TreeEvaluator::referenceArraycopyEvaluator(TR::Node* node, TR::CodeGener
       }
    else
       {
-      // TODO: There are cases under which the following assert will trigger. These need to be fixed and this assert needs to be re-enabled.
-      // TR_ASSERT(node->getArrayCopyElementType() == TR::Address, "Reference arraycopy element type should be a TR::Address but was '%s'", node->getArrayCopyElementType().toString());
+      TR_ASSERT_FATAL(node->getArrayCopyElementType() == TR::Address, "Reference arraycopy element type should be TR::Address but was '%s'", node->getArrayCopyElementType().toString());
 
       primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
 

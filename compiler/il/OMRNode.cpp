@@ -4597,39 +4597,35 @@ OMR::Node::freeExtensionIfExists()
       }
    }
 
-
-
 TR::DataType
 OMR::Node::getArrayCopyElementType()
    {
-   TR::Compilation * comp = TR::comp();
-   TR_ASSERT(self()->getOpCodeValue() == TR::arraycopy  || self()->getOpCodeValue() == TR::arrayset, "assertion failure");
+   TR_ASSERT(self()->getOpCodeValue() == TR::arraycopy || self()->getOpCodeValue() == TR::arrayset, "getArrayCopyElementType called on an invalid node");
 
-   if (_numChildren==3 || _numChildren==4 || _numChildren==6)
+   if (_numChildren == 3)
       {
-       return (TR::DataTypes)_unionBase._extension.getExtensionPtr()->getElem<uint32_t>(_numChildren);
+      return static_cast<TR::DataTypes>(_unionBase._extension.getExtensionPtr()->getElem<uint32_t>(_numChildren));
       }
+   else
+      {
+      TR_ASSERT(_numChildren == 5, "getArrayCopyElementType called on an arraycopy node with an invalid number of children");
 
-   TR_ASSERT(comp, "Query only valid during compilation\n");
-   if (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers())
-      return TR::Int64;
-   return TR::Int32;
+      return TR::Address;
+      }
    }
 
 void
 OMR::Node::setArrayCopyElementType(TR::DataType type)
    {
-   TR_ASSERT(self()->getOpCodeValue() == TR::arraycopy || self()->getOpCodeValue() == TR::arrayset, "assertion failure");
+   TR_ASSERT(self()->getOpCodeValue() == TR::arraycopy || self()->getOpCodeValue() == TR::arrayset, "setArrayCopyElementType called on an invalid node");
 
-   if (_numChildren==3 || _numChildren==4 || _numChildren==6)
+   if (_numChildren == 3)
       {
-      uint16_t numExtensionElems = _unionBase._extension.getNumElems();
-      TR_ASSERT(numExtensionElems > _numChildren, "need an extra slot to set arrayCopyElementType\n");
+      TR_ASSERT(_unionBase._extension.getNumElems() > _numChildren, "Need an extra extension element slot in setArrayCopyElementType");
+
       _unionBase._extension.getExtensionPtr()->setElem<uint32_t>(_numChildren, type);
       }
    }
-
-
 
 TR_OpaqueClassBlock *
 OMR::Node::getArrayStoreClassInNode()

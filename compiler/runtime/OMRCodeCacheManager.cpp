@@ -608,17 +608,6 @@ OMR::CodeCacheManager::replaceTrampoline(TR_OpaqueMethodBlock *method,
    }
 
 
-void
-OMR::CodeCacheManager::addFaintCacheBlock(FaintCacheBlock * & faintBlockList,
-                                        FaintCacheBlock *block,
-                                        uint8_t bytesToSaveAtStart)
-   {
-   block->_next = faintBlockList;
-   block->_bytesToSaveAtStart = bytesToSaveAtStart;
-   block->_isStillLive = false;
-   faintBlockList = block;
-   }
-
 // Is there space and are we allowed to allocate a new code cache?
 //
 bool
@@ -657,15 +646,6 @@ OMR::CodeCacheManager::addFreeBlock(void *metaData, uint8_t *startPC)
    {
    TR::CodeCache *owningCodeCache = self()->findCodeCacheFromPC(startPC);
    owningCodeCache->addFreeBlock(metaData);
-   }
-
-// May add the faint cache block to freeBlockList.
-// Caller should expect that block may sometimes not be added.
-void
-OMR::CodeCacheManager::freeFaintCacheBlock(FaintCacheBlock *block, uint8_t *startPC)
-   {
-   TR::CodeCache *owningCodeCache = self()->findCodeCacheFromPC(startPC);
-   owningCodeCache->addFreeBlock(block);
    }
 
 

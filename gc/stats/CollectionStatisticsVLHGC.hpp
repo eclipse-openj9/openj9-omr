@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2017
+ * (c) Copyright IBM Corp. 1991, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -42,7 +42,6 @@ public:
 
 	uintptr_t _edenFreeHeapSize; /**< Eden free heap size in bytes */
 	uintptr_t _edenHeapSize;	/**< Eden heap size in bytes */
-	uintptr_t _scheduledEdenHeapSize;	/**< Scheduled Eden heap size in bytes */
 
 	uintptr_t _arrayletReferenceObjects; /**< Count of non-contiguous reference arraylets */
 	uintptr_t _arrayletReferenceLeaves;	/**< Count (total) of reference arraylet leaves */
@@ -96,7 +95,6 @@ public:
 		,_incrementCount(0)
 		,_edenFreeHeapSize(0)
 		,_edenHeapSize(0)
-		,_scheduledEdenHeapSize(0)
 		,_arrayletReferenceObjects(0)
 		,_arrayletReferenceLeaves(0)
 		,_largestReferenceArraylet(0)

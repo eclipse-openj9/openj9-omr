@@ -167,7 +167,7 @@ sleepingMain(void *arg)
 
 	EXPECT_EQ(rc, J9THREAD_PRIORITY_INTERRUPTED);
 
-	return rc;
+	return 0;
 }
 
 typedef struct wait_testdata_t {

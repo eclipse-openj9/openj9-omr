@@ -32,6 +32,7 @@
 #include "HeapMapIterator.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "HeapRegionIterator.hpp"
+#include "MarkingScheme.hpp"
 #include "MemorySpace.hpp"
 #include "MemorySubSpace.hpp"
 #include "WorkStack.hpp"
@@ -993,7 +994,7 @@ MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentStandard *env, Card *card,
 			rememberedObjectsFound = true;
 		}
 		assume0(sizeToDo > sizeDone);
-		sizeDone += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_DIRTY_CARD, (sizeToDo - sizeDone));
+		sizeDone += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_DIRTY_CARD, (sizeToDo - sizeDone));
 	}
 
 
@@ -1094,7 +1095,7 @@ MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentStandard *env, uintptr_t *
 		objects = 0;
 		while (NULL != (objectPtr = markedObjectIterator.nextObject())) {
 			objects +=1;
-			traceCount += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_DIRTY_CARD, SCAN_MAX);
+			traceCount += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_DIRTY_CARD);
 		}
 
 		/* Have we pushed enough new refs ?*/

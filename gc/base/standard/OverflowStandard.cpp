@@ -149,7 +149,7 @@ MM_OverflowStandard::handleOverflow(MM_EnvironmentBase *env)
 					markMap->clearBit((omrobjectptr_t)((uintptr_t)object + markMap->getObjectGrain()));
 
 					/* scan overflowed object */
-					markingScheme->scanObject(env, object, MM_CollectorLanguageInterface::SCAN_REASON_OVERFLOWED_OBJECT);
+					markingScheme->scanObject(env, object, SCAN_REASON_OVERFLOWED_OBJECT);
 				}
 			}
 		}

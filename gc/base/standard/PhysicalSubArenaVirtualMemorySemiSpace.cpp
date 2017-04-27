@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+#include "CollectorLanguageInterface.hpp"
 #include "ContractslotScanner.hpp"
 #include "Debug.hpp"
 #include "EnvironmentBase.hpp"

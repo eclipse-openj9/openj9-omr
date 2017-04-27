@@ -69,16 +69,6 @@ public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;
 
-	/**
-	 * Codes used to indicate why an object is being scanned
-	 */
-	enum MarkingSchemeScanReason {
-		SCAN_REASON_PACKET = 1, /**< Indicates the object being scanned came from a work packet */
-		SCAN_REASON_DIRTY_CARD = 2, /**< Indicates the object being scanned was found in a dirty card */
-		SCAN_REASON_REMEMBERED_SET_SCAN = 3,
-		SCAN_REASON_OVERFLOWED_OBJECT = 4, /**< Indicates the object being scanned was in an overflowed region */
-	};
-
 	virtual void doFrequentObjectAllocationSampling(MM_EnvironmentBase* env) = 0;
 	virtual bool checkForExcessiveGC(MM_EnvironmentBase *env, MM_Collector *collector) = 0;
 	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env) = 0;
@@ -108,17 +98,6 @@ public:
 	virtual void parallelGlobalGC_collectorInitialized(MM_EnvironmentBase *env) = 0;
 	virtual void parallelGlobalGC_reportObjectEvents(MM_EnvironmentBase *env) = 0;
 	
-	virtual void markingScheme_masterSetupForGC(MM_EnvironmentBase *env) = 0;
-	virtual void markingScheme_scanRoots(MM_EnvironmentBase *env) = 0;
-	virtual void markingScheme_completeMarking(MM_EnvironmentBase *env) = 0;
-	virtual void markingScheme_markLiveObjectsComplete(MM_EnvironmentBase *env) = 0;
-	virtual void markingScheme_masterSetupForWalk(MM_EnvironmentBase *env) = 0;
-	virtual void markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env) = 0;
-	virtual uintptr_t markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason) = 0;
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	virtual uintptr_t markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo) = 0;
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
 	/**
 	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated.  You are however
 	 * guaranteed by the start of the next gc, you will be notified for all objects allocated since the last gc.

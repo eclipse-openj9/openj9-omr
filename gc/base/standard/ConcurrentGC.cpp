@@ -2785,7 +2785,7 @@ MM_ConcurrentGC::localMark(MM_EnvironmentStandard *env, uintptr_t sizeToTrace)
 			 */
 		} else {
 			/* Else trace the object */
-			sizeTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, (sizeToTrace - sizeTraced));
+			sizeTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET, (sizeToTrace - sizeTraced));
 		}
 
 		/* Have we done enough tracing ? */
@@ -3409,7 +3409,7 @@ MM_ConcurrentGC::completeTracing(MM_EnvironmentStandard *env)
 	env->_workStack.reset(env, _markingScheme->getWorkPackets());
 
 	while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
-		bytesTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+		bytesTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 	}
 	env->_workStack.clearPushCount();
 
@@ -3484,7 +3484,7 @@ MM_ConcurrentGC::finalCleanCards(MM_EnvironmentStandard *env)
 					}
 
 					if (!dirty) {
-						totalTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+						totalTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 					} else {
 						_extensions->collectorLanguageInterface->concurrentGC_processItem(env, objectPtr);
 					}
@@ -3551,7 +3551,7 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentStandard *env)
 							 * to both nursery and tenure objects while scanning remembered objects.
 							 */
 
-							bytesTraced += _markingScheme->scanObjectWithSize(env,objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_REMEMBERED_SET_SCAN, SCAN_MAX);
+							bytesTraced += _markingScheme->scanObject(env,objectPtr, SCAN_REASON_REMEMBERED_SET_SCAN);
 
 							/* Have we pushed enough new references? */
 							if(env->_workStack.getPushCount() >= maxPushes) {
@@ -3563,7 +3563,7 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentStandard *env)
 								 * expensive than it really is.
 								 */
 								while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
-									bytesTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+									bytesTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 								}
 								env->_workStack.clearPushCount();
 							}

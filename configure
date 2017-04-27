@@ -692,6 +692,7 @@ OMR_GC_STACCATO
 OMR_GC_SEGREGATED_HEAP
 OMR_GC_REALTIME
 OMR_GC_OBJECT_ALLOCATION_NOTIFY
+OMR_GC_LEAF_BITS
 OMR_GC_HYBRID_ARRAYLETS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
@@ -845,6 +846,7 @@ enable_OMR_GC_MODRON_SCAVENGER
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
 enable_OMR_GC_HYBRID_ARRAYLETS
+enable_OMR_GC_LEAF_BITS
 enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
 enable_OMR_GC_SEGREGATED_HEAP
@@ -1596,6 +1598,8 @@ Optional Features:
   --enable-OMR_GC_CONCURRENT_SWEEP
 
   --enable-OMR_GC_HYBRID_ARRAYLETS
+
+  --enable-OMR_GC_LEAF_BITS
 
   --enable-OMR_GC_OBJECT_ALLOCATION_NOTIFY
 
@@ -5882,6 +5886,25 @@ else
 fi
 else
   OMR_GC_HYBRID_ARRAYLETS=0
+
+
+fi
+
+
+# Check whether --enable-OMR_GC_LEAF_BITS was given.
+if test "${enable_OMR_GC_LEAF_BITS+set}" = set; then :
+  enableval=$enable_OMR_GC_LEAF_BITS; if test "x${enableval}" = xyes; then :
+  OMR_GC_LEAF_BITS=1
+
+   $as_echo "#define OMR_GC_LEAF_BITS 1" >>confdefs.h
+
+else
+  OMR_GC_LEAF_BITS=0
+
+
+fi
+else
+  OMR_GC_LEAF_BITS=0
 
 
 fi

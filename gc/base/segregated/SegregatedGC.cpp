@@ -17,6 +17,7 @@
  *******************************************************************************/
 
 #include "CollectionStatisticsStandard.hpp"
+#include "CollectorLanguageInterface.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
 #include "GlobalAllocationManagerSegregated.hpp"

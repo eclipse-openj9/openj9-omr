@@ -127,17 +127,6 @@ public:
 	virtual void concurrentGC_scanThread(MM_EnvironmentBase *env) {}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
-	virtual void markingScheme_masterSetupForGC(MM_EnvironmentBase *env);
-	virtual void markingScheme_scanRoots(MM_EnvironmentBase *env);
-	virtual void markingScheme_completeMarking(MM_EnvironmentBase *env);
-	virtual void markingScheme_markLiveObjectsComplete(MM_EnvironmentBase *env);
-	virtual void markingScheme_masterSetupForWalk(MM_EnvironmentBase *env);
-	virtual void markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env);
-	virtual uintptr_t markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason);
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	virtual uintptr_t markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo);
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
 	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {return true;}
 	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {}
 

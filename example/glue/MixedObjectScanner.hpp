@@ -19,9 +19,9 @@
 #ifndef MIXEDOBJECTSCANNER_HPP_
 #define MIXEDOBJECTSCANNER_HPP_
 
+#include "ObjectScanner.hpp"
 #include "GCExtensionsBase.hpp"
 #include "ObjectModel.hpp"
-#include "ObjectScanner.hpp"
 
 class GC_MixedObjectScanner : public GC_ObjectScanner
 {
@@ -43,7 +43,7 @@ protected:
 	 * @param[in] objectPtr the object to be processed
 	 * @param[in] flags Scanning context flags
 	 */
-	GC_MixedObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, uintptr_t flags)
+	MMINLINE GC_MixedObjectScanner(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, uintptr_t flags)
 		: GC_ObjectScanner(env, objectPtr, (fomrobject_t *)objectPtr + 1, 0, flags, 0)
 		, _endPtr((fomrobject_t *)((uint8_t*)objectPtr + MM_GCExtensionsBase::getExtensions(env->getOmrVM())->objectModel.getConsumedSizeInBytesWithHeader(objectPtr)))
 		, _mapPtr(_scanPtr)
@@ -55,8 +55,8 @@ protected:
 	 * Subclasses must call this method to set up the instance description bits and description pointer.
 	 * @param[in] env The scanning thread environment
 	 */
-	void
-	initialize(MM_EnvironmentStandard *env)
+	MMINLINE void
+	initialize(MM_EnvironmentBase *env)
 	{
 		GC_ObjectScanner::initialize(env);
 
@@ -65,10 +65,12 @@ protected:
 		/* Initialize the slot map assuming all slots are reference slots or NULL */
 		if (slotCount < _bitsPerScanMap) {
 			_scanMap = (((uintptr_t)1) << slotCount) - 1;
-			_flags = setNoMoreSlots(_flags, true);
+			setNoMoreSlots();
 		} else {
 			_scanMap = ~((uintptr_t)0);
-			_flags = setNoMoreSlots(_flags, slotCount == _bitsPerScanMap);
+			if (slotCount == _bitsPerScanMap) {
+				setNoMoreSlots();
+			}
 		}
 	}
 
@@ -82,7 +84,7 @@ public:
 	 * @return Pointer to GC_MixedObjectScanner instance in allocSpace
 	 */
 	MMINLINE static GC_MixedObjectScanner *
-	newInstance(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
+	newInstance(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
 	{
 		GC_MixedObjectScanner *objectScanner = NULL;
 		if (NULL != allocSpace) {
@@ -92,6 +94,8 @@ public:
 		}
 		return objectScanner;
 	}
+
+	MMINLINE uintptr_t getBytesRemaining() { return sizeof(fomrobject_t) * (_endPtr - _scanPtr); }
 
 	/**
 	 * @see GC_ObjectScanner::getNextSlotMap()
@@ -113,6 +117,18 @@ public:
 		_mapPtr += _bitsPerScanMap;
 		return _mapPtr;
 	}
+
+#if defined(OMR_GC_LEAF_BITS)
+	/**
+	 * @see GC_ObjectScanner::getNextSlotMap(uintptr_t&, uintptr_t&, bool&)
+	 */
+	virtual fomrobject_t *
+	getNextSlotMap(uintptr_t &slotMap, uintptr_t &leafMap, bool &hasNextSlotMap)
+	{
+		leafMap = 0;
+		return getNextSlotMap(slotMap, hasNextSlotMap);
+	}
+#endif /* OMR_GC_LEAF_BITS */
 };
 
 #endif /* MIXEDOBJECTSCANNER_HPP_ */

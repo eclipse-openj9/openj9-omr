@@ -28,6 +28,7 @@
 
 #include "ConcurrentCardTable.hpp"
 #include "Collector.hpp"
+#include "CollectorLanguageInterface.hpp"
 #include "ConcurrentGCStats.hpp"
 #include "CycleState.hpp"
 #include "EnvironmentStandard.hpp"
@@ -124,6 +125,7 @@ class MM_ConcurrentSweepScheme;
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
 class MM_AllocateDescription;
+class MM_ConcurrentSafepointCallback;
 class MM_MemorySubSpace;
 class MM_MemorySubSpaceConcurrent;
 class MM_MemorySubSpaceGenerational;

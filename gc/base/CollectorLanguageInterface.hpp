@@ -69,45 +69,16 @@ public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;
 
-	virtual void doFrequentObjectAllocationSampling(MM_EnvironmentBase* env) = 0;
-	virtual bool checkForExcessiveGC(MM_EnvironmentBase *env, MM_Collector *collector) = 0;
 	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env) = 0;
 	virtual OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason) = 0;
 	virtual void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrThread, uintptr_t reason) = 0;
 
-	virtual bool globalCollector_isTimeForGlobalGCKickoff() = 0;
-	virtual void globalCollector_internalPostCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace) = 0;
-
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_beforeGC(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_afterGC(MM_EnvironmentBase *env, bool compactThisCycle) = 0;
-	virtual void parallelGlobalGC_postPrepareHeapForWalk(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_postMarkProcessing(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_setupBeforeGC(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_setMarkingScheme(MM_EnvironmentBase *env, void *markingScheme) = 0;
-	virtual bool parallelGlobalGC_createAccessBarrier(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_destroyAccessBarrier(MM_EnvironmentBase *env) = 0;
-	virtual bool parallelGlobalGC_heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress) = 0;
-	virtual bool parallelGlobalGC_heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress) = 0;
-	virtual bool parallelGlobalGC_createHeapWalker(MM_EnvironmentBase *env, MM_GlobalCollector *collector, MM_MarkMap *markMap) = 0;
-	virtual void parallelGlobalGC_destroyHeapWalker(MM_EnvironmentBase *env) = 0;
-	virtual MM_HeapWalker *parallelGlobalGC_getHeapWalker() = 0;
-#if defined(OMR_GC_MODRON_COMPACTION)
-	virtual CompactPreventedReason parallelGlobalGC_checkIfCompactionShouldBePrevented(MM_EnvironmentBase *env) = 0;
-#endif /* OMR_GC_MODRON_COMPACTION */
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_gcComplete(MM_EnvironmentBase *env, bool didCompact) = 0;
-	virtual void parallelGlobalGC_collectorInitialized(MM_EnvironmentBase *env) = 0;
-	virtual void parallelGlobalGC_reportObjectEvents(MM_EnvironmentBase *env) = 0;
-	
 	/**
 	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated.  You are however
 	 * guaranteed by the start of the next gc, you will be notified for all objects allocated since the last gc.
 	 * hooktool is actually functionality better for this but is probably too heavy-weight for what we want for performant code.
 	 */
 	virtual bool objectAllocationNotify(MM_EnvironmentBase * env, omrobjectptr_t omrObject) { return true;} ;
-
-	virtual omrobjectptr_t heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object) = 0;
-	
-	virtual void parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread) = 0;
 
 	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) = 0;
 	

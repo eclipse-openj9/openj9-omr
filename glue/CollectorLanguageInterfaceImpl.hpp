@@ -137,11 +137,7 @@ public:
 	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {return true;}
 	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {}
 
-	virtual void parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread);
-
 	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
-	
-	virtual omrobjectptr_t heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object);
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	virtual CompactPreventedReason parallelGlobalGC_checkIfCompactionShouldBePrevented(MM_EnvironmentBase *env) {return COMPACT_PREVENTED_NONE;}

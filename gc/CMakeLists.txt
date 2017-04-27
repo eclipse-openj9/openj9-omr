@@ -64,9 +64,10 @@ add_library(omrgc
 	base/HeapVirtualMemory.cpp
 	base/LightweightNonReentrantLock.cpp
 	base/LightweightNonReentrantReaderWriterLock.cpp
-	base/MarkMap.cpp
 	base/MarkedObjectPopulator.cpp
 	base/MarkingScheme.cpp
+	base/MarkMap.cpp
+	base/MarkMapSegmentChunkIterator.cpp
 	base/MasterGCThread.cpp
 	base/Math.cpp
 	base/MemoryManager.cpp
@@ -100,6 +101,8 @@ add_library(omrgc
 	base/Packet.cpp
 	base/PacketList.cpp
 	base/ParallelDispatcher.cpp
+	base/ParallelHeapWalker.cpp
+	base/ParallelObjectHeapIterator.cpp
 	base/ParallelMarkTask.cpp
 	base/ParallelSweepChunk.cpp
 	base/ParallelTask.cpp
@@ -183,6 +186,7 @@ add_library(omrgc
 	base/standard/OverflowStandard.cpp
 	base/standard/ParallelCompactTask.cpp
 	base/standard/ParallelGlobalGC.cpp
+	base/standard/ParallelGlobalGCTask.cpp
 	base/standard/ParallelScavengeTask.cpp
 	base/standard/ParallelSweepScheme.cpp
 	base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp

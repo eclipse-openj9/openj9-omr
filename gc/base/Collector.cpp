@@ -18,11 +18,12 @@
 
 #include "AllocateDescription.hpp"
 #include "Collector.hpp"
-#include "CollectorLanguageInterface.hpp"
 #include "GCExtensionsBase.hpp"
+#include "FrequentObjectsStats.hpp"
 #include "Heap.hpp"
 #include "MemorySubSpace.hpp"
 #include "ModronAssertions.h"
+#include "ObjectAllocationInterface.hpp"
 #include "OMRVMThreadListIterator.hpp"
 
 class MM_MemorySubSpace;
@@ -200,7 +201,29 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 	/* Record the master GC thread CPU time at the start to diff later */
 	_masterThreadCpuTimeStart = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);
 
-	_cli->doFrequentObjectAllocationSampling(env);
+	/* Set up frequent object stats */
+	if (extensions->doFrequentObjectAllocationSampling) {
+		if (NULL == extensions->frequentObjectsStats) {
+			extensions->frequentObjectsStats = MM_FrequentObjectsStats::newInstance(env);
+		}
+		if (NULL != extensions->frequentObjectsStats) {
+			OMR_VMThread* omrVMThread;
+			MM_EnvironmentBase* omrVMThreadEnv;
+			MM_FrequentObjectsStats* aggregateFrequentObjectsStats = extensions->frequentObjectsStats;
+
+			GC_OMRVMThreadListIterator threadListIterator(env->getOmrVM());
+			while ((omrVMThread = threadListIterator.nextOMRVMThread()) != NULL) {
+				omrVMThreadEnv = MM_EnvironmentBase::getEnvironment(omrVMThread);
+				MM_FrequentObjectsStats* frequentObjectsStats = omrVMThreadEnv->_objectAllocationInterface->getFrequentObjectsStats();
+				if (NULL != frequentObjectsStats) {
+					aggregateFrequentObjectsStats->merge(frequentObjectsStats);
+					frequentObjectsStats->clear();
+				}
+			}
+			aggregateFrequentObjectsStats->traceStats(env);
+			aggregateFrequentObjectsStats->clear();
+		}
+	}
 
 	_bytesRequested = (allocDescription ? allocDescription->getBytesRequested() : 0);
 
@@ -237,6 +260,155 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 }
 
 /**
+ * Check if we are in a state of excessive GC, and if so, take appropriate action.
+ * @note This code assumes that the stats have been properly recorded for the
+ * preceding
+ * @see MM_Collector::recordExcessiveStatsForGCStart()
+ * @see MM_Collector::recordExcessiveStatsForGCEnd()
+ * @return TRUE if excessive GC was detected, FALSE otherwise
+ */
+bool
+MM_Collector::checkForExcessiveGC(MM_EnvironmentBase* env, MM_Collector *collector)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+	MM_ExcessiveGCStats* stats = &extensions->excessiveGCStats;
+
+	Assert_MM_true(extensions->excessiveGCEnabled._valueSpecified);
+
+	/* Get gc count now collect has happened */
+	UDATA gcCount = 0;
+	if (extensions->isStandardGC()) {
+		gcCount += extensions->globalGCStats.gcCount;
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		gcCount += extensions->scavengerStats._gcCount;
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
+	} else if (extensions->isVLHGC()) {
+#if defined(OMR_GC_VLHGC)
+		gcCount += extensions->globalVLHGCStats.gcCount;
+#endif /* defined(OMR_GC_VLHGC) */
+	}
+
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+	TRIGGER_J9HOOK_MM_PRIVATE_EXCESSIVEGC_CHECK_GC_ACTIVITY(extensions->privateHookInterface,
+			env->getOmrVMThread(),
+			omrtime_hires_clock(),
+			J9HOOK_MM_PRIVATE_EXCESSIVEGC_CHECK_GC_ACTIVITY,
+			gcCount,
+			stats->totalGCTime,
+			omrtime_hires_delta(stats->lastEndGlobalGCTimeStamp, stats->endGCTimeStamp, OMRPORT_TIME_DELTA_IN_MICROSECONDS) - stats->totalGCTime,
+			stats->newGCToUserTimeRatio,
+			stats->avgGCToUserTimeRatio,
+			(float)extensions->excessiveGCratio);
+
+	/* we slide in this FVTest check here so that we can aggressively force excessive GCs to occur */
+	if (extensions->fvtest_forceExcessiveAllocFailureAfter > 0) {
+		UDATA failAfter = extensions->fvtest_forceExcessiveAllocFailureAfter;
+		/* we only trigger on 1 since 0 means disabled and >1 means not yet */
+		extensions->fvtest_forceExcessiveAllocFailureAfter -= 1;
+		if (1 == failAfter) {
+			extensions->excessiveGCLevel = excessive_gc_fatal;
+
+			TRIGGER_J9HOOK_MM_OMR_EXCESSIVEGC_RAISED(extensions->omrHookInterface,
+					 env->getOmrVMThread(),
+					 omrtime_hires_clock(),
+					 J9HOOK_MM_OMR_EXCESSIVEGC_RAISED,
+					 gcCount,
+					 0.0,
+					 extensions->excessiveGCFreeSizeRatio * 100,
+					 extensions->excessiveGCLevel);
+			return true;
+		}
+	}
+
+	/* don't change anything if the pending excessive GC hasn't been consumed yet */
+	if (extensions->excessiveGCLevel == excessive_gc_fatal) {
+		return true;
+	}
+
+	/* We only want to check for excessiveGC when a global gc has occured, and
+	 * the GC actually completed - e.g ignore aborted nursery collections
+	 */
+	if (!collector->gcCompleted() || !extensions->didGlobalGC) {
+		return false;
+	}
+
+	/* Is heap fully expanded ? */
+	if (extensions->heap->getMemorySize() != extensions->heap->getMaximumMemorySize()) {
+		/* No..so don't raise excessive gc just yet */
+		return false;
+	}
+
+	/* we may need to ignore the fact that we are over the threshold, in transition cases, after
+	 * OutOfMemoryException, to give some time for Java program to stabilize
+	 */
+	if (stats->avgGCToUserTimeRatio > extensions->excessiveGCratio) {
+		/* Ignore the time ratio check unless the amount of heap freed is below a particular ratio.
+		 * This ends up including expanded memory as free, but that's probably ok
+		 */
+		float reclaimedPercent;
+		UDATA heapFreeDelta;
+
+		/* Determine the change in free memory from the GC - a negative value is counted as zero */
+		heapFreeDelta = (stats->freeMemorySizeBefore >= stats->freeMemorySizeAfter) ? 0 : stats->freeMemorySizeAfter - stats->freeMemorySizeBefore;
+
+		/* Calculate ratio of free space reclaimed this GC */
+		reclaimedPercent = ((float)heapFreeDelta / (float)extensions->heap->getActiveMemorySize()) * 100;
+
+		TRIGGER_J9HOOK_MM_PRIVATE_EXCESSIVEGC_CHECK_FREE_SPACE(extensions->privateHookInterface,
+				env->getOmrVMThread(),
+				omrtime_hires_clock(),
+				J9HOOK_MM_PRIVATE_EXCESSIVEGC_CHECK_FREE_SPACE,
+				gcCount,
+				stats->newGCToUserTimeRatio,
+				stats->avgGCToUserTimeRatio,
+				(float)extensions->excessiveGCratio,
+				heapFreeDelta,
+				reclaimedPercent,
+				extensions->heap->getActiveMemorySize(),
+				extensions->heap->getMemorySize(),
+				extensions->heap->getMaximumMemorySize());
+
+		/* Have reclaimed enough free space this GC ? */
+		if (reclaimedPercent <= extensions->excessiveGCFreeSizeRatio * 100) {
+			bool detectedFatalExcessiveGC;
+
+			/* Raise excessive GC level, if at fatal lower level to allow another gc to occur */
+			switch (extensions->excessiveGCLevel) {
+			case excessive_gc_normal:
+				extensions->excessiveGCLevel = excessive_gc_aggressive;
+				detectedFatalExcessiveGC = false;
+				break;
+			case excessive_gc_aggressive:
+				extensions->excessiveGCLevel = excessive_gc_fatal;
+				detectedFatalExcessiveGC = true;
+				break;
+			case excessive_gc_fatal_consumed:
+			default:
+				extensions->excessiveGCLevel = excessive_gc_aggressive;
+				detectedFatalExcessiveGC = false;
+				break;
+			}
+
+			Trc_MM_ExcessiveGCRaised(env->getLanguageVMThread());
+
+			TRIGGER_J9HOOK_MM_OMR_EXCESSIVEGC_RAISED(extensions->omrHookInterface,
+					env->getOmrVMThread(),
+					omrtime_hires_clock(),
+					J9HOOK_MM_OMR_EXCESSIVEGC_RAISED,
+					gcCount,
+					reclaimedPercent,
+					extensions->excessiveGCFreeSizeRatio * 100,
+					extensions->excessiveGCLevel);
+
+			return detectedFatalExcessiveGC;
+		}
+	}
+
+	extensions->excessiveGCLevel = excessive_gc_normal;
+	return false;
+}
+
+/**
  * Post collection broadcast event, indicating that the collection has been completed.
  * @param subSpace the memory subspace where the collection occurred
  */
@@ -266,7 +438,7 @@ MM_Collector::postCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace)
 			recordExcessiveStatsForGCEnd(env);
 
 			if (extensions->excessiveGCEnabled._valueSpecified) {
-				excessiveGCDetected = _cli->checkForExcessiveGC(env, this);
+				excessiveGCDetected = checkForExcessiveGC(env, this);
 			}
 		}
 

@@ -111,6 +111,17 @@ public:
 	GC_Environment *getGCEnvironment() { return &_gcEnv; }
 
 	/**
+	 * Set or clear the transient master GC status on this thread. This thread obtains master status
+	 * when isMasterThread is true and relinquishes it when isMasterThread is false.
+	 *
+	 * This is informational. OMR does not require any specific action to be implemented.
+	 *
+	 * @param isMasterThread true if thread is acquiring master status, false if losing it
+	 */
+	void setGCMasterThread(bool isMasterThread) { }
+
+
+	/**
 	 * Set up GC_Environment for marking
 	 */
 	void markingStarted() { }

@@ -82,7 +82,7 @@ MM_SegregatedGC::initialize(MM_EnvironmentBase *env)
 		return false;
 	}
 
-	_cli->parallelGlobalGC_setMarkingScheme(env, _markingScheme);
+	_delegate.initialize(env, this, _markingScheme);
 
 	_sweepScheme = MM_SweepSchemeSegregated::newInstance(env, _markingScheme->getMarkMap());
 	if (NULL == _sweepScheme) {

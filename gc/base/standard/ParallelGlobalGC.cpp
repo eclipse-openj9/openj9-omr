@@ -36,6 +36,9 @@
 #include "EnvironmentBase.hpp"
 #include "GlobalAllocationManager.hpp"
 #include "Heap.hpp"
+#include "HeapMapIterator.hpp"
+#include "HeapRegionDescriptorStandard.hpp"
+#include "HeapRegionIteratorStandard.hpp"
 #include "MarkingScheme.hpp"
 #include "MemorySpace.hpp"
 #include "MemorySubSpace.hpp"
@@ -46,11 +49,12 @@
 #include "ObjectMap.hpp"
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 #include "OMRVMInterface.hpp"
-#include "ParallelGlobalGC.hpp"
-#include "ParallelMarkTask.hpp"
 #if defined(OMR_GC_MODRON_COMPACTION)
 #include "ParallelCompactTask.hpp"
 #endif /* OMR_GC_MODRON_COMPACTION */
+#include "ParallelGlobalGC.hpp"
+#include "ParallelHeapWalker.hpp"
+#include "ParallelMarkTask.hpp"
 #include "ParallelSweepScheme.hpp"
 #include "ParallelTask.hpp"
 #if defined(OMR_GC_MODRON_SCAVENGER)
@@ -75,6 +79,91 @@ static void globalGCHookCCEnd(J9HookInterface** hook, uintptr_t eventNum, void* 
 static void globalGCHookSysStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 static void globalGCHookSysEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 
+
+/**
+ * Function to fix single dead object on the heap
+ *
+ * NOTE that this function is expected to represent the SUPERSET of dead object fixup needs in that it will
+ * fix all objects which are known to be dead.  Any optimizations to this function must be careful not to
+ * violate that meaning (see CMVC 122959 for an example of such a mistake).
+ */
+static void
+fixObject(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, omrobjectptr_t object, void *userData)
+{
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
+	MM_ParallelGlobalGC *collector = (MM_ParallelGlobalGC *)extensions->getGlobalCollector();
+	/* Check the mark state of each object. If it isn't marked, build a dead object */
+	if( !collector->getMarkingScheme()->isMarked(object) ) {
+		MM_MemorySubSpace *memorySubSpace = region->getSubSpace();
+		uintptr_t deadObjectByteSize = extensions->objectModel.getConsumedSizeInBytesWithHeader(object);
+		memorySubSpace->abandonHeapChunk(object, ((U_8*)object) + deadObjectByteSize);
+		/* the userdata is a counter of dead objects fixed up so increment it here as a uintptr_t */
+		*((uintptr_t *)userData) += 1;
+	}
+}
+
+#if defined(OMR_GC_MODRON_SCAVENGER)
+/**
+ * Fix the heap if the remembered set for the scavenger is in an overflow state.
+ */
+static void
+hookGlobalGcSweepEndRsoSafetyFixHeap(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
+{
+	MM_SweepEndEvent* event = (MM_SweepEndEvent*)eventData;
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+
+	extensions->scavengerRsoScanUnsafe = !extensions->isRememberedSetInOverflowState();
+	if (!extensions->scavengerRsoScanUnsafe) {
+		MM_ParallelGlobalGC *pggc = (MM_ParallelGlobalGC *)userData;
+		pggc->fixHeapForWalk(env, MEMORY_TYPE_OLD_RAM, FIXUP_DEBUG_TOOLING, fixObject);
+	}
+}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+static void
+hookGlobalGcSweepEndAbortedCSFixHeap(J9HookInterface** hook, UDATA eventNum, void* eventData, void* userData)
+{
+	MM_SweepEndEvent* event = (MM_SweepEndEvent*)eventData;
+	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(event->currentThread);
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	uintptr_t holeCount = 0;
+
+	Trc_MM_FixHeapForWalk_Entry(env->getLanguageVMThread(), MEMORY_TYPE_NEW);
+
+	if (extensions->isScavengerBackOutFlagRaised()) {
+		GC_HeapRegionIteratorStandard regionIterator(extensions->getHeap()->getHeapRegionManager());
+		MM_HeapRegionDescriptorStandard *region = NULL;
+
+		/* create holes between two marked objects */
+		while(NULL != (region = regionIterator.nextRegion())) {
+			if (MEMORY_TYPE_NEW == (region->getTypeFlags() & MEMORY_TYPE_NEW)) {
+				void *lowAddress = region->getLowAddress();
+				void *highAddress = region->getHighAddress();
+				MM_HeapMapIterator markedObjectIterator(extensions, ((MM_ParallelGlobalGC *)extensions->getGlobalCollector())->getMarkingScheme()->getMarkMap(), (UDATA *)lowAddress, (UDATA *)highAddress);
+				void * prevEndObjectPtr = lowAddress;
+				omrobjectptr_t objectPtr = NULL;
+				while (NULL != (objectPtr = markedObjectIterator.nextObject())) {
+					UDATA objectSize = extensions->objectModel.getConsumedSizeInBytesWithHeader(objectPtr);
+					if (prevEndObjectPtr != objectPtr) {
+						region->getSubSpace()->abandonHeapChunk(prevEndObjectPtr, objectPtr);
+						holeCount += 1;
+					}
+					prevEndObjectPtr = (void *)((U_8*)objectPtr + objectSize);
+				}
+				if (prevEndObjectPtr != highAddress) {
+					region->getSubSpace()->abandonHeapChunk(prevEndObjectPtr, highAddress);
+					holeCount += 1;
+				}
+			}
+		}
+	}
+	Trc_MM_FixHeapForWalk_Exit(env->getLanguageVMThread(), holeCount);
+
+}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+#endif /* OMR_GC_MODRON_SCAVENGER */
+
 /**
  * Initialization
  */
@@ -87,9 +176,9 @@ MM_ParallelGlobalGC::newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageIn
 	if (globalGC) {
 		new(globalGC) MM_ParallelGlobalGC(env, cli);
 		if (!globalGC->initialize(env)) { 
-        	globalGC->kill(env);        
-        	globalGC = NULL;            
-		}                                       
+			globalGC->kill(env);
+			globalGC = NULL;
+		}
 	}
 	return globalGC;
 }
@@ -110,17 +199,15 @@ MM_ParallelGlobalGC::initialize(MM_EnvironmentBase *env)
 {
 	J9HookInterface** mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
 
-	if (!_cli->parallelGlobalGC_createAccessBarrier(env)) {
+	_markingScheme = MM_MarkingScheme::newInstance(env);
+	if (NULL == _markingScheme) {
 		goto error_no_memory;
 	}
- 	
-	if(NULL == (_markingScheme = MM_MarkingScheme::newInstance(env))) {
-		goto error_no_memory;
-	}
-	_cli->parallelGlobalGC_setMarkingScheme(env, _markingScheme);
+
+	_delegate.initialize(env, this, _markingScheme);
 
 	_sweepScheme = createSweepScheme(env, this);
-	if(NULL == _sweepScheme) {
+	if (NULL == _sweepScheme) {
 		goto error_no_memory;
 	}
 
@@ -138,7 +225,8 @@ MM_ParallelGlobalGC::initialize(MM_EnvironmentBase *env)
 	}
 #endif /* defined(OMR_GC_MODRON_COMPACTION) */
 
-	if (!_cli->parallelGlobalGC_createHeapWalker(env, this, _markingScheme->getMarkMap())) {
+	_heapWalker = MM_ParallelHeapWalker::newInstance(this, _markingScheme->getMarkMap(), env);
+	if (NULL == _heapWalker) {
 		goto error_no_memory;
 	}
 
@@ -156,7 +244,20 @@ MM_ParallelGlobalGC::initialize(MM_EnvironmentBase *env)
 	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_START, globalGCHookSysStart, OMR_GET_CALLSITE(), NULL);
 	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_END, globalGCHookSysEnd, OMR_GET_CALLSITE(), NULL);
 
-	_cli->parallelGlobalGC_collectorInitialized(env);
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if (_extensions->scavengerEnabled) {
+		/* Hook the global collector to guarantee heap walk safety in the event of an RSO */
+		/* NOTE: This will be a one time hook across all instances as the function and user data will be identical - i.e.,
+		 * we will only get one Hook registered no matter how many scavengers are created/initialized
+		 */
+		(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SWEEP_END, hookGlobalGcSweepEndRsoSafetyFixHeap, OMR_GET_CALLSITE(), this);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled()) {
+			(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SWEEP_END, hookGlobalGcSweepEndAbortedCSFixHeap, OMR_GET_CALLSITE(), this);
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	}
+#endif /* OMR_GC_MODRON_SCAVENGER */
 
 	return true;
 	
@@ -170,9 +271,7 @@ error_no_memory:
 void
 MM_ParallelGlobalGC::tearDown(MM_EnvironmentBase *env)
 {
-	_cli->parallelGlobalGC_destroyAccessBarrier(env);
-	
-	_cli->parallelGlobalGC_destroyHeapWalker(env);
+	_delegate.tearDown(env);
 
 	if(NULL != _markingScheme) {
 		_markingScheme->kill(env);
@@ -190,6 +289,11 @@ MM_ParallelGlobalGC::tearDown(MM_EnvironmentBase *env)
 		_compactScheme = NULL;
 	}
 #endif /* OMR_GC_MODRON_COMPACTION */
+
+	if (NULL != _heapWalker) {
+		_heapWalker->kill(env);
+		_heapWalker = NULL;
+	}
 }
 
 uintptr_t
@@ -202,15 +306,6 @@ MM_ParallelGlobalGC::getVMStateID()
  * Thread work routines
  ****************************************
  */
-void
-MM_ParallelGlobalGC::setupBeforeGC(MM_EnvironmentBase *env)
-{
-	/* Clear the gc stats structure */
-	_extensions->globalGCStats.clear();
-
-	_cli->parallelGlobalGC_setupBeforeGC(env);
-}
-
 void
 MM_ParallelGlobalGC::cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
 {
@@ -248,13 +343,16 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	/* Reset memory pools of associated memory spaces */
 	_extensions->heap->resetSpacesForGarbageCollect(env);
 	
-	setupBeforeGC(env);
-
-	_cli->parallelGlobalGC_masterThreadGarbageCollect_beforeGC(env);
+	/* Clear the gc stats structure */
+	_extensions->globalGCStats.clear();
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	_compactThisCycle = false;
 #endif /* OMR_GC_MODRON_COMPACTION */
+
+	_fixHeapForWalkCompleted = false;
+
+	_delegate.masterThreadGarbageCollectStarted(env);
 
 	/* ----- end of setupForCollect ------*/
 	
@@ -263,9 +361,7 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	/* Mark */	
 	markAll(env, initMarkMap);
 
-	masterThreadReportObjectEvents(env);
-
-	_cli->parallelGlobalGC_postMarkProcessing(env);
+	_delegate.postMarkProcessing(env);
 	
 	sweep(env, allocDescription, rebuildMarkBits);
 
@@ -301,14 +397,39 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 	}
 #endif /* defined(OMR_GC_MODRON_COMPACTION) */	
 
-	bool didCompact = false;
+	bool compactedThisCycle = false;
 #if defined(OMR_GC_MODRON_COMPACTION)
-	didCompact = _compactThisCycle;
+	compactedThisCycle = _compactThisCycle;
 #endif /* OMR_GC_MODRON_COMPACTION */
-	_cli->parallelGlobalGC_masterThreadGarbageCollect_gcComplete(env, didCompact);
+
+	/* If the J9VM_DEBUG_ATTRIBUTE_ALLOW_USER_HEAP_WALK flag is set then fix the heap so that it can be walked
+	 * by debugging tools
+	 */
+	if (_delegate.isAllowUserHeapWalk() || env->_cycleState->_gcCode.isRASDumpGC()) {
+		if (!_fixHeapForWalkCompleted) {
+#if defined(J9VM_GC_MODRON_COMPACTION)
+			if (compactedThisCycle) {
+				OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+				U_64 startTime = omrtime_hires_clock();
+				getCompactScheme(env)->fixHeapForWalk(env);
+				_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+				_extensions->globalGCStats.fixHeapForWalkReason = FIXUP_DEBUG_TOOLING;
+			} else
+#endif /* J9VM_GC_MODRON_COMPACTION */
+			{
+				fixHeapForWalk(env, MEMORY_TYPE_RAM, FIXUP_DEBUG_TOOLING, fixObject);
+			}
+			/* since this is the superset of all walk operations, we can safely set the flag that states other walks
+			 * can be omitted for this cycle as redundant (CMVC 122959)
+			 */
+			_fixHeapForWalkCompleted = true;
+		}
+	}
+
+	_delegate.masterThreadGarbageCollectFinished(env, compactedThisCycle);
 
 #if defined(OMR_GC_MODRON_COMPACTION)
-	if (didCompact) {
+	if (compactedThisCycle) {
 		/* Free space will have changed as a result of compaction so recalculate
 		 * any expand or contract target.
 		 * Concurrent Scavenger requires this be done after fixup heap for walk pass.
@@ -329,8 +450,6 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 
 	reportGlobalGCCollectComplete(env);
 	
-	_cli->parallelGlobalGC_masterThreadGarbageCollect_afterGC(env, didCompact);
-
 	cleanupAfterGC(env, allocDescription);
 
 	if (_extensions->trackMutatorThreadCategory) {
@@ -503,7 +622,7 @@ nocompact:
 	return false;
 	
 compactionReqd:
-	compactPreventedReason = _extensions->collectorLanguageInterface->parallelGlobalGC_checkIfCompactionShouldBePrevented(env);
+	compactPreventedReason = _delegate.checkIfCompactionShouldBePrevented(env);
 	if (COMPACT_PREVENTED_NONE != compactPreventedReason) {
 		goto nocompact;
 	}
@@ -577,7 +696,7 @@ MM_ParallelGlobalGC::compactRequiredBeforeHeapContraction(MM_EnvironmentBase *en
 	}
 
 compactionReqd:
-	_extensions->globalGCStats.compactStats._compactPreventedReason = _extensions->collectorLanguageInterface->parallelGlobalGC_checkIfCompactionShouldBePrevented(env);
+	_extensions->globalGCStats.compactStats._compactPreventedReason = _delegate.checkIfCompactionShouldBePrevented(env);
 	if (COMPACT_PREVENTED_NONE != _extensions->globalGCStats.compactStats._compactPreventedReason) {
 		return false;
 	}
@@ -695,12 +814,6 @@ MM_ParallelGlobalGC::markAll(MM_EnvironmentBase *env, bool initMarkMap)
 	_markingScheme->masterCleanupAfterGC(env);
 	markStats->_endTime = omrtime_hires_clock();
 	reportMarkEnd(env);
-}
-
-void
-MM_ParallelGlobalGC::masterThreadReportObjectEvents(MM_EnvironmentBase *env)
-{
-	_cli->parallelGlobalGC_reportObjectEvents(env);
 }
 
 void
@@ -955,7 +1068,38 @@ MM_ParallelGlobalGC::prepareHeapForWalk(MM_EnvironmentBase *env)
 	MM_ParallelMarkTask markTask(env, _dispatcher, _markingScheme, true, NULL);
 	_dispatcher->run(env, &markTask);
 
-	_cli->parallelGlobalGC_postPrepareHeapForWalk(env);
+	_delegate.prepareHeapForWalk(env);
+}
+
+/**
+ * Fixing the heap to be walkable involves finding all objects NOT marked and converting them to dark matter.
+ * For the most part, a heap is usually walkable (objects that are dead can be walked, but their fields are
+ * suspect).  However, after a class unload, there is no way to skip over a dead object, as the class pointer, which
+ * contains sizing information, is now a dangling pointer.
+ *
+ * Note that this represents a superset of walk requirements and will call fixObject, the most generic of the fixup
+ * routines.  Other fixup operations or optimizations to the fixup process should not assume that they can modify
+ * or replace this function since there are callers which assume that this will fix up all dead objects and that
+ * contract must be preserved as well as the rule that this be a superset of all fixup operations (see CMVC 122959).
+ */
+uintptr_t
+MM_ParallelGlobalGC::fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, uintptr_t walkReason, MM_HeapWalkerObjectFunc walkFunction)
+{
+	uintptr_t fixedObjectCount = 0;
+
+	Trc_MM_FixHeapForWalk_Entry(env->getLanguageVMThread(), walkFlags);
+
+	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+	U_64 startTime = omrtime_hires_clock();
+
+	_heapWalker->allObjectsDo(env, walkFunction, &fixedObjectCount, walkFlags, true, false);
+
+	_extensions->globalGCStats.fixHeapForWalkTime = omrtime_hires_delta(startTime, omrtime_hires_clock(), OMRPORT_TIME_DELTA_IN_MICROSECONDS);
+	_extensions->globalGCStats.fixHeapForWalkReason = walkReason;
+
+	Trc_MM_FixHeapForWalk_Exit(env->getLanguageVMThread(), fixedObjectCount);
+
+	return fixedObjectCount;
 }
 
 /* (non-doxygen)
@@ -981,14 +1125,12 @@ MM_ParallelGlobalGC::heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *su
 	}
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 
-	result = _cli->parallelGlobalGC_heapAddRange(env, subspace, size, lowAddress, highAddress);
+	result = _delegate.heapAddRange(env, subspace, size, lowAddress, highAddress);
 	if (0 == result) {
 		goto parallelGlobalGC_failed_heapAddRange;
 	}
 
-	if (0 != result) {
-		goto end;
-	}
+	return true;
 
 parallelGlobalGC_failed_heapAddRange:
 #if defined(OMR_GC_OBJECT_MAP)
@@ -1000,8 +1142,7 @@ sweepScheme_failed_heapAddRange:
 	_markingScheme->heapRemoveRange(env, subspace, size, lowAddress, highAddress, NULL, NULL);
 markingScheme_failed_heapAddRange:
 
-end:
-	return result;
+	return false;
 }
 
 /* (non-doxygen)
@@ -1013,7 +1154,7 @@ MM_ParallelGlobalGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	bool result = _markingScheme->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 	result = result && _sweepScheme->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 
-	result = result && _cli->parallelGlobalGC_heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
+	result = result && _delegate.heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 
 	return result;
 }

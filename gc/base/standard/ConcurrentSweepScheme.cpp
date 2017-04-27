@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2017
+ * (c) Copyright IBM Corp. 1991, 2015
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -649,6 +649,7 @@ MM_ConcurrentSweepScheme::calculateApproximateFree(
 	}
 	
 	memoryPool->setApproximateFreeMemorySize(approximateFree);
+	
 }	
 
 /**
@@ -1527,116 +1528,6 @@ omrtty_printf("]");
 
 	return minimumSizeFound;
 }
-
-/**
- * Due to heap resize at the end of global gc(after sweepForMinimumSize),
- * some concurrent sweepStates (SweepChunk, heapSizeToConnect, heapSizeConnected, ApproximateFree...) need to be updated
- * without this updating, the free memory, which is shifted from LOA to SOA, would be lost until the next global gc and memory pool reportings
- * in verbose gc and mxbean are wrong.
- */
-void
-MM_ConcurrentSweepScheme::updateSweepStates(MM_EnvironmentBase* env, uintptr_t resizeType)
-{
-	/* currently we only try to contract LOA at the end of global GC, in order to simplify code, we only handle HEAP_LOA_CONTRACT case here and
-	 * also we assume LOA memorypool is after SOA memorypool, in future,
-	 * if we do other types heap resize or change memory space layout, then we need to update the below code to handle the new cases.
-	 */
-	if (HEAP_LOA_CONTRACT == resizeType) {
-		MM_MemorySpace *defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
-		MM_MemorySubSpace *tenureMemorySubspace = defaultMemorySpace->getTenureMemorySubSpace();
-		MM_MemoryPool *memoryPool = tenureMemorySubspace->getMemoryPool();
-		MM_MemoryPool *memoryPoolLOA = memoryPool->getMemoryPool(_extensions->largeObjectMinimumSize);
-		MM_MemoryPool *memoryPoolSOA = memoryPool->getMemoryPool(_extensions->largeObjectMinimumSize-1);
-		MM_ConcurrentSweepPoolState *stateLOA = (MM_ConcurrentSweepPoolState *)getPoolState(memoryPoolLOA);
-		MM_ConcurrentSweepPoolState *stateSOA = (MM_ConcurrentSweepPoolState *)getPoolState(memoryPoolSOA);
-		uintptr_t spaceDelta = 0;
-		MM_ParallelSweepChunk *chunk = NULL;
-		MM_ParallelSweepChunk *moveChunks = NULL;
-		MM_ParallelSweepChunk *previousChunk = NULL;
-		void *poolHighAddr = NULL;
-		MM_MemoryPool *pool = NULL;
-
-		if (memoryPoolLOA->getActualFreeMemorySize() == memoryPoolLOA->getApproximateFreeMemorySize()) {
-			/* all of SweepChunks in LOA has been swept */
-			return;
-		}
-
-		/* update _heapSizeConnected and _heapSizeToConnect for swept chunks(which are shifted from LOA to SOA) in LOA (unlikely happens) */
-		chunk = stateLOA->_currentSweepChunk;
-		if (NULL != chunk) {
-			chunk = chunk->_previous;
-			while (NULL != chunk) {
-				if ((pool = memoryPool->getMemoryPool(env, chunk->chunkBase, chunk->chunkTop, poolHighAddr)) != chunk->memoryPool) {
-					Assert_MM_true(modron_concurrentsweep_state_unprocessed != chunk->_concurrentSweepState);
-					chunk->memoryPool = pool;
-					stateLOA->_heapSizeToConnect -= chunk->size();
-					stateLOA->_heapSizeConnected -= chunk->size();;
-					stateSOA->_heapSizeToConnect += chunk->size();
-					stateSOA->_heapSizeConnected += chunk->size();;
-				} else {
-					break;
-				}
-			}
-		}
-
-		/* upate _heapSizeToConnect for chunks which are shifted from LOA to SOA(have not been swept) */
-		/* remove sweepChunk from LOA */
-		chunk = stateLOA->_currentSweepChunk;
-		while (NULL != chunk) {
-			if ((pool = memoryPool->getMemoryPool(env, chunk->chunkBase, chunk->chunkTop, poolHighAddr)) != chunk->memoryPool) {
-				Assert_MM_true(modron_concurrentsweep_state_unprocessed == chunk->_concurrentSweepState);
-				chunk->memoryPool = pool;
-				stateLOA->_heapSizeToConnect -= chunk->size();
-				spaceDelta += chunk->size();
-				if (NULL == moveChunks) {
-					moveChunks = chunk;
-				} else {
-					previousChunk->_nextChunk = chunk;
-				}
-				stateLOA->_currentSweepChunk = chunk->_nextChunk;
-				if (stateLOA->_connectCurrentChunk == chunk) {
-					stateLOA->_connectCurrentChunk = chunk->_nextChunk;
-				}
-				previousChunk = chunk;
-				chunk = chunk->_nextChunk;
-			} else {
-				break;
-			}
-		}
-		if (NULL == chunk) {
-			stateLOA->_currentInitChunk = NULL;
-			stateLOA->_currentSweepChunkReverse = NULL;
-		}
-		/* append sweepChunk to SOA */
-		if (NULL != moveChunks) {
-			if (NULL != stateSOA->_currentInitChunk) {
-				stateSOA->_currentInitChunk->_nextChunk = moveChunks;
-			}
-			if (NULL != previousChunk) {
-				stateSOA->_currentInitChunk = previousChunk;
-				stateSOA->_currentSweepChunkReverse = previousChunk;
-			}
-			if (NULL == stateSOA->_currentSweepChunk) {
-				stateSOA->_currentSweepChunk = moveChunks;
-			}
-			if (NULL == stateSOA->_connectCurrentChunk) {
-				stateSOA->_connectCurrentChunk = moveChunks;
-			}
-			stateSOA->_heapSizeToConnect += spaceDelta;
-		}
-
-		/* reset approximate free for LOA and SOA */
-		calculateApproximateFree(env, memoryPoolSOA, stateSOA);
-		calculateApproximateFree(env, memoryPoolLOA, stateLOA);
-	}
-}
-
-void
-MM_ConcurrentSweepScheme::postCollect(MM_EnvironmentBase* env, uintptr_t resizeType)
-{
-	updateSweepStates(env, resizeType);
-}
-
 
 /**
  * Complete the sweeping phase for all memory pools concurrently.

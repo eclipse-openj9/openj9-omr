@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-(c) Copyright IBM Corp. 2010, 2017
+(c) Copyright IBM Corp. 2010, 2016
 
  This program and the accompanying materials are made available
  under the terms of the Eclipse Public License v1.0 and
@@ -167,7 +167,6 @@ xmlns:vgc="http://www.ibm.com/j9/verbosegc">
 			<element ref="vgc:numa" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:pending-finalizers" maxOccurs="1" minOccurs="0" />
 			<element ref="vgc:remembered-set" maxOccurs="1" minOccurs="0" />
-			<element ref="vgc:warning" maxOccurs="1" minOccurs="0" />
 		</sequence>
 		<attribute name="id" type="integer" use="required" />
 		<attributeGroup ref="vgc:mem"/>

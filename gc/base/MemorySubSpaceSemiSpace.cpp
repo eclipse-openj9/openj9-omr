@@ -494,14 +494,12 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		/* Make Survivor space from the last free entry in the unified Nursery */
 		uintptr_t heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->heapAlignment, getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()->getSize());
 
-		/* for now, assumed fixed size of 64 sections in Nursery */
-		const uintptr_t maxSectionCount = 64;
-		uintptr_t sectionSize = (getCurrentSize()) / maxSectionCount;
+		/* Region size is aligned to Concurrent Scavenger Page Section size already */
+		heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->regionSize, heapAlignedLastFreeEntrySize);
 
-		heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(sectionSize, heapAlignedLastFreeEntrySize);
 		if(debug) {
 			omrtty_printf("tilt restore_tilt_after_percolate heapAlignedLastFreeEntry %llx section (%llx) aligned size %llx\n",
-					getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry(), sectionSize, heapAlignedLastFreeEntrySize);
+					getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry(), _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
 		}
 
 		/* allocate/survivor base/top still hold the values from before we did 100% tilt */
@@ -945,16 +943,7 @@ MM_MemorySubSpaceSemiSpace::performResize(MM_EnvironmentBase *env, MM_AllocateDe
 	
 	if (_desiredSurvivorSpaceRatio > 0.0) {
 		uintptr_t desiredSurvivorSpaceSize = (uintptr_t)(getCurrentSize() * _desiredSurvivorSpaceRatio);
-
-		if (_extensions->isConcurrentScavengerEnabled()) {
-			/* for now, assumed fixed size of 64 sections in Nursery */
-			const uintptr_t maxSectionCount = 64;
-			uintptr_t sectionSize = (getCurrentSize()) / maxSectionCount;
-			desiredSurvivorSpaceSize = MM_Math::roundToCeiling(sectionSize, desiredSurvivorSpaceSize);
-		} else {
-			desiredSurvivorSpaceSize = MM_Math::roundToCeiling(regionSize, desiredSurvivorSpaceSize);
-		}
-
+		desiredSurvivorSpaceSize = MM_Math::roundToCeiling(regionSize, desiredSurvivorSpaceSize);
 		tilt(env, desiredSurvivorSpaceSize);
 		_desiredSurvivorSpaceRatio = 0.0;
 	}

@@ -47,9 +47,6 @@
 #include "SweepPoolManagerSplitAddressOrderedList.hpp"
 #include "SweepPoolManagerHybrid.hpp"
 
-#define STANDARD_REGION_SIZE_BYTES 64 * 1024
-#define STANDARD_ARRAYLET_LEAF_SIZE_BYTES UDATA_MAX
-
 /**
  * Tear down Standard Configuration
  */

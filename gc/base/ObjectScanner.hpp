@@ -263,8 +263,6 @@ public:
 	MMINLINE GC_SlotObject *
 	getNextSlot(bool &isLeafSlot)
 	{
-		fomrobject_t *startPtr = _scanPtr;
-
 		while (NULL != _scanPtr) {
 			/* while there is at least one bit-mapped slot, advance scan ptr to a non-NULL slot or end of map */
 			while ((0 != _scanMap) && ((0 == (1 & _scanMap)) || (0 == *_scanPtr))) {

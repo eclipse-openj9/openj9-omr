@@ -84,12 +84,12 @@ template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCo
    return buffer;
    }
 
-inline void TR_X86OpCode::CheckAndFinishGroup07(TR_X86OpCodes op, uint8_t* cursor)
+inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor)
    {
-   if(_binaries[op].isGroup07())
+   if(info().isGroup07())
       {
       auto pModRM = (TR::Instruction::ModRM*)(cursor-1);
-      switch(op)
+      switch(_opCode)
          {
          case XEND:
             pModRM->rm = 0x05; // 0b101

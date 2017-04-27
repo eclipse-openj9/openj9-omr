@@ -234,7 +234,6 @@ inline TR_X86OpCodes SubRegMem  (bool is64Bit, bool isWithBorrow) { return isWit
 #define IA32OpProp1_PseudoOp                  0x00001000
 #define IA32OpProp1_NeedsRepPrefix            0x00002000
 #define IA32OpProp1_NeedsLockPrefix           0x00004000
-#define IA32OpProp1_CannotBeAssembled         0x00008000
 #define IA32OpProp1_CallOp                    0x00010000
 #define IA32OpProp1_SourceIsMemRef            0x00020000
 #define IA32OpProp1_SourceRegIsImplicit       0x00040000
@@ -370,7 +369,7 @@ class TR_X86OpCode
          {
          return (prefixes == PREFIX___) && (opcode >= 0xd8) && (opcode <= 0xdf);
          }
-      // check if the instuction is part of Group 7 OpCode Extension
+      // check if the instruction is part of Group 7 OpCode Extension
       inline bool isGroup07() const
          {
          return (escape == ESCAPE_0F__) && (opcode == 0x01);
@@ -413,13 +412,12 @@ class TR_X86OpCode
          }
       };
    // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
-   template <class TBuffer> inline static typename TBuffer::cursor_t encode(TR_X86OpCodes op, typename TBuffer::cursor_t cursor, uint8_t rex)
+   template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rex)
       {
-      // OpCodes beyond FENCE are not X86 instructions and hence they do not have binary encodings.
-      return op < FENCE ? _binaries[op].encode<TBuffer>(cursor, rex) : cursor;
+      return isPseudoOp() ? cursor : info().encode<TBuffer>(cursor, rex);
       }
    // Instructions from Group 7 OpCode Extensions need special handling as they requires specific low 3 bits of ModR/M byte
-   static void CheckAndFinishGroup07(TR_X86OpCodes op, uint8_t* cursor);
+   inline void CheckAndFinishGroup07(uint8_t* cursor);
 
    TR_X86OpCodes                     _opCode;
    static const OpCode_t             _binaries[];
@@ -499,9 +497,6 @@ class TR_X86OpCode
    uint32_t hasXMMTarget() {return _properties1[_opCode] & IA32OpProp1_XMMTarget;}
 
    uint32_t isPseudoOp() {return _properties1[_opCode] & IA32OpProp1_PseudoOp;}
-
-   // Temporarily disable broken logic so that the proper instructions appear in JIT logs
-   uint32_t cannotBeAssembled() {return false;} // {return _properties1[_opCode] & IA32OpProp1_CannotBeAssembled;}
 
    uint32_t needsRepPrefix() {return _properties1[_opCode] & IA32OpProp1_NeedsRepPrefix;}
 
@@ -590,12 +585,12 @@ class TR_X86OpCode
 
    uint8_t length(uint8_t rex = 0)
       {
-      return encode<Estimator>(_opCode, 0, rex);
+      return encode<Estimator>(0, rex);
       }
    uint8_t* binary(uint8_t* cursor, uint8_t rex = 0)
       {
-      uint8_t* ret = encode<Writer>(_opCode, cursor, rex);
-      CheckAndFinishGroup07(_opCode, ret);
+      uint8_t* ret = encode<Writer>(cursor, rex);
+      CheckAndFinishGroup07(ret);
       return ret;
       }
 

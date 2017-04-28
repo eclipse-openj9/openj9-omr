@@ -3969,3 +3969,8 @@ bool OMR::Power::CodeGenerator::is64BitProcessor()
    {
    return TR::Compiler->target.cpu.getPPCis64bit();
    }
+
+bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
+   {
+   return true;
+   }

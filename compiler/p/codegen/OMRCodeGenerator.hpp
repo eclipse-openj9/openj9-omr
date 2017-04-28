@@ -172,6 +172,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool is64BitProcessor();
 
+   bool getSupportsIbyteswap();
+
    void generateBinaryEncodingPrologue(TR_PPCBinaryEncodingData *data);
 
    void beginInstructionSelection();

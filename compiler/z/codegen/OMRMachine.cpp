@@ -1822,8 +1822,13 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          freeRegisterHigh->block();
          }
+
       freeRegisterLow = self()->reverseSpillState(currInst, lastReg);
-      freeRegisterLow->block();
+
+      if (freeRegisterHigh)
+         {
+         freeRegisterHigh->unblock();
+         }
       }
 
    // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
@@ -1837,8 +1842,13 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          freeRegisterLow->block();
          }
+
       freeRegisterHigh = self()->reverseSpillState(currInst, firstReg);
-      freeRegisterHigh->block();
+
+      if (freeRegisterLow)
+         {
+         freeRegisterLow->unblock();
+         }
       }
 
    // Propose coloured registers

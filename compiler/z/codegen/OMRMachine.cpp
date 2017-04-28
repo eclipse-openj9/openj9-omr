@@ -4744,18 +4744,25 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       // in this case, assign a new register and return
       if (!freeHighWordReg)
          {
-      if (!location)
-         {
-         if (debugObj)
-            self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n",
-                                          debugObj->getName(spilledRegister));
-         if (enableHighWordRA && spilledRegister->is64BitReg())
+         if (location == NULL)
             {
-            targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
-            targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
+            if (debugObj)
+               {
+               self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n", debugObj->getName(spilledRegister));
+               }
+
+            targetRegister->setState(TR::RealRegister::Assigned);
+            targetRegister->setAssignedRegister(spilledRegister);
+            spilledRegister->setAssignedRegister(targetRegister);
+
+            if (enableHighWordRA && spilledRegister->is64BitReg())
+               {
+               targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
+               targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
+               }
+
+            return targetRegister;
             }
-         return targetRegister;
-         }
          }
       }
 

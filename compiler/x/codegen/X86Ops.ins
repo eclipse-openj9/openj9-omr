@@ -24,7 +24,7 @@
 INSTRUCTION(BADIA32Op, int3,
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0xcc, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(0)),
 INSTRUCTION(ADC1AccImm1, adc,
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x14, 0, ModRM_NONE, Immediate_1),
             PROPERTY0(IA32OpProp_ModifiesTarget | IA32OpProp_TargetRegisterIgnored | IA32OpProp_ByteTarget | IA32OpProp_ByteImmediate | IA32OpProp_ModifiesOverflowFlag | IA32OpProp_ModifiesSignFlag | IA32OpProp_ModifiesZeroFlag | IA32OpProp_ModifiesParityFlag | IA32OpProp_ModifiesCarryFlag | IA32OpProp_TestsCarryFlag | IA32OpProp_UsesTarget),
@@ -3528,77 +3528,76 @@ INSTRUCTION(PSRLQRegImm1, psrlq,
             PROPERTY0(IA32OpProp_ModifiesTarget | IA32OpProp_ByteImmediate | IA32OpProp_DoubleFP | IA32OpProp_TargetRegisterInModRM | IA32OpProp_UsesTarget),
             PROPERTY1(IA32OpProp1_XMMSource | IA32OpProp1_XMMTarget)),
 
-// OpCodes beyond this point are dummy ops
-// Dummy ops are not Intel X86 instructions; they are for OMR internal usage only.
+// OpCodes beyond this point are pseudo instructions; they are for OMR internal usage only.
 INSTRUCTION(FENCE, Fence, // Address of binary is to be written to specified data address, SymbolReference controls code motion across fence
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(VGFENCE, VGFence, // Special Fence used for patching virtual guards
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(PROCENTRY, ProcEntry, // Entry to the method
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(DQImm64, dq, // Define 8 bytes
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_8),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_LongImmediate)),
+            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_LongImmediate)),
 INSTRUCTION(DDImm4, dd, // Define 4 bytes
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_4),
             PROPERTY0(IA32OpProp_IntImmediate),
-            PROPERTY1(0)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(DWImm2, dw, // Define 2 bytes
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_2),
             PROPERTY0(IA32OpProp_ShortImmediate),
-            PROPERTY1(0)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(DBImm1, db, // Define 1 byte
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_1),
             PROPERTY0(IA32OpProp_ByteImmediate),
-            PROPERTY1(0)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(WRTBAR, wrtbar, // Write barrier directive/macro for GCs that need them
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(IA32OpProp_UsesTarget | IA32OpProp_ModifiesTarget | IA32OpProp_IntSource | IA32OpProp_IntTarget | IA32OpProp_ByteTarget),
-            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(ASSOCREGS, assocRegs, // Directive to change register associations
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(FPREGSPILL, fpRegSpill, // Directive to force the FP stack to be spilled
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(VirtualGuardNOP, vgnop, // A virtual guard encoded as a NOP instruction
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(IA32OpProp_BranchOp | IA32OpProp_TestsZeroFlag),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(LABEL, Label, // Destination of a jump
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(0)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(FCMPEVAL, fcmpEval, // Instruction selection of FP comparisons at register assignment time
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(RestoreVMThread, RestoreVMThread, // restore VM thread register from fs:[0]
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(PPS_OPCount, PPS_OPCount, // Phase profiling site (object access counting)
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(IA32OpProp_UsesTarget | IA32OpProp_ModifiesOverflowFlag | IA32OpProp_ModifiesSignFlag | IA32OpProp_ModifiesZeroFlag | IA32OpProp_ModifiesParityFlag | IA32OpProp_ModifiesCarryFlag),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(PPS_OPField, PPS_OPField, // Phase profiling site (object field counting)
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(IA32OpProp_ModifiesOverflowFlag | IA32OpProp_ModifiesSignFlag | IA32OpProp_ModifiesZeroFlag | IA32OpProp_ModifiesParityFlag | IA32OpProp_ModifiesCarryFlag),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(AdjustFramePtr, AdjustFramePtr, // Adjust frame pointer
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),
 INSTRUCTION(ReturnMarker, ReturnMarker, // Return Marker for linkages that do not end with a RET instruction
             BINARY(VEX_L___, VEX_vNONE, PREFIX___, REX__, ESCAPE_____, 0x00, 0, ModRM_NONE, Immediate_0),
             PROPERTY0(0),
-            PROPERTY1(IA32OpProp1_PseudoOp | IA32OpProp1_CannotBeAssembled)),
+            PROPERTY1(IA32OpProp1_PseudoOp)),

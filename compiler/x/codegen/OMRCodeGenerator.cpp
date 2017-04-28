@@ -487,7 +487,7 @@ OMR::X86::CodeGenerator::CodeGenerator() :
    _deferredSplits(getTypedAllocator<TR::X86LabelInstruction*>(TR::comp()->allocator())),
    _flags(0)
    {
-	_clobIterator = _clobberingInstructions.begin();
+   _clobIterator = _clobberingInstructions.begin();
    }
 
 TR::Linkage *
@@ -690,7 +690,6 @@ int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
 // this method is placed here as a dummy until platform specific code is removed from LocalOpt
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableVRs()
    {
-   //TR_ASSERT(false,"getMaximumNumbersOfAssignableVRs should never be called.");
    return INT_MAX;
    }
 
@@ -731,8 +730,8 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
       // we have assigned registers for this instruction.
       auto  iterator = self()->getLiveDiscardableRegisters().begin();
       while (iterator != self()->getLiveDiscardableRegisters().end())
-      	 {
-    	 TR::Register *registerCursor = *iterator;
+         {
+         TR::Register *registerCursor = *iterator;
          if (registerCursor->getRematerializationInfo()->isRematerializableFromMemory())
             {
             TR::SymbolReference * rmSymRef = registerCursor->getRematerializationInfo()->getSymbolReference();
@@ -786,13 +785,13 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                      }
                   }
                else
-            	   ++iterator;
+                  ++iterator;
                }
             else
-            	++iterator;
+               ++iterator;
             }
          else
-        	 ++iterator;
+            ++iterator;
          }
 
       // If a register-dependent discardable register depends on any of the deactivated
@@ -826,7 +825,7 @@ void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::Clobb
 
       for (auto iterator = self()->getLiveDiscardableRegisters().begin(); iterator != self()->getLiveDiscardableRegisters().end();)
          {
-    	 TR::Register * candidate = *iterator;
+         TR::Register * candidate = *iterator;
          TR_RematerializationInfo * info = candidate->getRematerializationInfo();
 
          if (info->isIndirect() && info->getBaseRegister() == baseReg)
@@ -844,7 +843,7 @@ void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::Clobb
                }
             }
          else
-        	 ++iterator;
+             ++iterator;
          }
       }
    }
@@ -1382,7 +1381,7 @@ void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstru
    while (clobInstructionCursor &&
     (clobInstructionCursor->getInstruction() == instructionCursor) && self()->enableRematerialisation())
       {
-	  auto regIterator = clobInstructionCursor->getClobberedRegisters().begin();
+      auto regIterator = clobInstructionCursor->getClobberedRegisters().begin();
       while (regIterator != clobInstructionCursor->getClobberedRegisters().end())
          {
          (*regIterator)->setIsDiscardable();
@@ -1408,13 +1407,14 @@ void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstru
          regIterator++;
          }
       if(_clobIterator == --(_clobberingInstructions.end()))
-    	  clobInstructionCursor = 0;
+         clobInstructionCursor = 0;
       else if(_clobIterator == _clobberingInstructions.end())
-    	  clobInstructionCursor = 0;
-      else {
-    	  ++_clobIterator;
-    	  clobInstructionCursor = *_clobIterator;
-      }
+         clobInstructionCursor = 0;
+      else
+         {
+         ++_clobIterator;
+         clobInstructionCursor = *_clobIterator;
+         }
       }
    }
 
@@ -1501,11 +1501,9 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       self()->tracePostRAInstruction(instructionCursor);
       TR::ClobberingInstruction * clobInst;
       if(_clobIterator == self()->getClobberingInstructions().end())
-    	  clobInst = 0;
+         clobInst = 0;
       else
-      {
-    	  clobInst = *_clobIterator;
-      }
+         clobInst = *_clobIterator;
       self()->processClobberingInstructions(clobInst, instructionCursor);
 
       // Skip over any instructions that may have been inserted prior to the
@@ -2398,9 +2396,6 @@ bool OMR::X86::CodeGenerator::processInstruction(TR::Instruction *instr, TR_BitV
                                              bool traceIt)
    {
    TR::Instruction *x86Instr = instr;
-
-   if (x86Instr->getOpCode().cannotBeAssembled())
-      return false;
 
    if (x86Instr->getOpCode().isCallOp())
       {
@@ -3706,7 +3701,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
             break;
             }
          default:
-         	break;
+            break;
          }
       }
    }

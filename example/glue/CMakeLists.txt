@@ -22,6 +22,7 @@ add_library(omrglue STATIC
 	EnvironmentDelegate.cpp
 	FrequentObjectsStats.cpp
 	LanguageVMGlue.c
+	MarkingDelegate.cpp
 	ObjectIterator.cpp
 	ObjectModelDelegate.cpp
 	omrExampleVM.cpp

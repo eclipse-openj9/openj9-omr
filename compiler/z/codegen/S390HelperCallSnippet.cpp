@@ -102,18 +102,21 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    //     necessary.
    intptrj_t destAddr = (intptrj_t)(helperSymRef->getSymbol()->castToMethodSymbol()->getMethodAddress());
 
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-   if (NEEDS_TRAMPOLINE(destAddr, cursor, cg()))
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+   if (cg()->comp()->getOption(TR_EnableZOSTrampolines))
+#endif
       {
-      // Destination is beyond our reachable jump distance, we'll find the
-      // trampoline.
-      destAddr = cg()->fe()->indexedTrampolineLookup(helperSymRef->getReferenceNumber(), (void *)cursor);
-      this->setUsedTrampoline(true);
-
-      // We clobber rEP if we take a trampoline.  Update our register map if necessary.
-      if (gcMap().getStackMap() != NULL)
+      if (NEEDS_TRAMPOLINE(destAddr, cursor, cg()))
          {
-         gcMap().getStackMap()->maskRegisters(~(0x1 << (rEP)));
+         destAddr = cg()->fe()->indexedTrampolineLookup(helperSymRef->getReferenceNumber(), (void *)cursor);
+         this->setUsedTrampoline(true);
+
+         // We clobber rEP if we take a trampoline. Update our register map if necessary.
+         if (gcMap().getStackMap() != NULL)
+            {
+            gcMap().getStackMap()->maskRegisters(~(0x1 << (rEP)));
+            }
          }
       }
 #endif

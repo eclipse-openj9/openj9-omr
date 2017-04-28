@@ -715,6 +715,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableRegisterPressureSimulation",   "O\twalk the trees to estimate register pressure during global register allocation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
+   {"enableRMODE64",                "O\tenable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},   
    {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
    {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
@@ -746,6 +747,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableZAccessRegs",                "O\tenable use of access regs as spill area on 390.", SET_OPTION_BIT(TR_Enable390AccessRegs), "F"},
    {"enableZEpilogue",                  "O\tenable 64-bit 390 load-multiple breakdown.", SET_OPTION_BIT(TR_Enable39064Epilogue), "F"},
    {"enableZFreeVMThreadReg",           "O\tenable use of vm thread reg as assignable reg on 390.", SET_OPTION_BIT(TR_Enable390FreeVMThreadReg), "F"},
+   {"enablezOSTrampolines",                  "O\tenable generation of trampolines for method dispatch on zOS64", SET_OPTION_BIT(TR_EnableZOSTrampolines), "F"},
    {"enumerateAddresses=", "D\tselect kinds of addresses to be replaced by unique identifiers in trace file", TR::Options::setAddressEnumerationBits, offsetof(OMR::Options, _addressToEnumerate), 0, "F"},
    {"estimateRegisterPressure",           "O\tdeprecated; equivalent to enableRegisterPressureSimulation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"experimentalClassLoadPhase",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F"},
@@ -1058,6 +1060,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"stopThrottlingTime=", "M<nnn>\tTime when compilation throttling should stop (ms since JVM start)",
                              TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_stopThrottlingTime, 0, "F%d", NOT_IN_SUBSET },
    {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptrj_t>(-1) , "F%d"},
+   {"stressTrampolines", "O\tenables trampolines to always be used for method and helper calls", SET_OPTION_BIT(TR_StressTrampolines), "F"},
    {"strictFPCompares",   "C\tassume strictFP semantics for floating point compares only", SET_OPTION_BIT(TR_StrictFPCompares), "F" },
    {"subtractLoopyMethodCounts",   "C\tSubtract loopy method counts instead of dividing", SET_OPTION_BIT(TR_SubtractLoopyMethodCounts), "F", NOT_IN_SUBSET},
    {"subtractMethodCountsWhenIprofilerIsOff",   "C\tSubtract method counts instead of dividing when Iprofiler is off", SET_OPTION_BIT(TR_SubtractMethodCountsWhenIprofilerIsOff), "F", NOT_IN_SUBSET},
@@ -2689,10 +2692,21 @@ OMR::Options::jitPreProcess()
          self()->setOption(TR_IncreaseCountsForNonBootstrapMethods);
 
 
-#if defined(TR_HOST_64BIT) && !defined(J9ZOS390)
-       self()->setOption(TR_EnableCodeCacheConsolidation);
+#if defined(TR_HOST_64BIT) 
+#if defined(J9ZOS390)
+      // The way zOS allocates memory is by looking for 2MB free chunks and uses that for its 
+      // code caches. When we enable RMODE(64) then the addresses will be from 0x80000000
+      // to 0x7fffffffffffffff. This means two code caches could be very far apart from one another
+      // which is something we want to avoid as it may cause performance issues. The solution will 
+      // be to enable the code cache consolidation which will allocate 256MB at startup just for 
+      // code caches. This way the code caches will be together and improve performance. 
+      // Note: If all 256MB are used up then the program will abort compiles.
+      if (self()->getOption(TR_EnableRMODE64)) 
 #endif
-
+         {
+         self()->setOption(TR_EnableCodeCacheConsolidation);
+         }
+#endif
 
       _newAotrtDebugLevel = 0;
       _disableDLTBytecodeIndex = -1;

@@ -2255,11 +2255,16 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
    bool isHelper = callSymRef->getSymbol()->castToMethodSymbol()->isHelper();
 
-   // Direct Call on zlinux64 can require a trampoline.  As the trampoline will kill EPReg
+   // Direct Call on zlinux64 and zOS64 can require a trampoline. As the trampoline will kill EPReg
    // we should always see EPReg defined in the post-deps of such calls.
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-   TR_ASSERT(RegEP != NULL,
-      "generateDirectCall: zLinx64 requires EPReg be defined on directCalls to correclty handle trampolines.\n");
+#if defined(TR_TARGET_64BIT) 
+#if defined(J9ZOS390)
+   if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
+      {
+      TR_ASSERT(RegEP != NULL,
+         "generateDirectCall: zLinux64 and zOS require EPReg be defined on directCalls to correctly handle trampolines.\n");
+      }
 #endif
 
    // If the EP is not specified, we assume re-use of the RA.
@@ -2296,57 +2301,50 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
       }
    else // address known
       {
-#if !defined(J9ZOS390) && defined(TR_TARGET_64BIT)
-      // With MultiCodeCache, we ALWAYS can jump to at least a trampoline.
-
-      if (!isHelper && cg->supportsBranchPreloadForCalls())
-         {
-         static int minFR = (feGetEnv("TR_minFR")!=NULL) ? atoi(feGetEnv("TR_minFR")) : 0;
-         static int maxFR = (feGetEnv("TR_maxFR")!=NULL) ? atoi(feGetEnv("TR_maxFR")) : 0;
-
-         int32_t frequency = comp->getCurrentBlock()->getFrequency();
-         if (frequency > 6 && frequency >= minFR && (maxFR == 0 || frequency > maxFR))
-            {
-            TR::LabelSymbol * callLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::Instruction * instr = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, callNode, callLabel);
-            cg->createBranchPreloadCallData(callLabel, callSymRef, instr);
-            }
-
-         }
-
-      TR::S390RILInstruction *tempInst =
-            (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
-
-      AOTcgDiag1(comp, "\ntempInst=%p\n", tempInst);
-      return tempInst;
-#else
-      if (cg->canUseRelativeLongInstructions(imm) || isHelper)
+#if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
+      if (cg->canUseRelativeLongInstructions(imm) || isHelper || comp->getOption(TR_EnableZOSTrampolines))
+#endif
          {
          if (!isHelper && cg->supportsBranchPreloadForCalls())
             {
-            static int minFR = (feGetEnv("TR_minFR")!=NULL) ? atoi(feGetEnv("TR_minFR")) : 0;
-            static int maxFR = (feGetEnv("TR_maxFR")!=NULL) ? atoi(feGetEnv("TR_maxFR")) : 0;
-
+            static int minFR = (feGetEnv("TR_minFR") != NULL) ? atoi(feGetEnv("TR_minFR")) : 0;
+            static int maxFR = (feGetEnv("TR_maxFR") != NULL) ? atoi(feGetEnv("TR_maxFR")) : 0;
+             
             int32_t frequency = comp->getCurrentBlock()->getFrequency();
             if (frequency > 6 && frequency >= minFR && (maxFR == 0 || frequency > maxFR))
                {
-
-               TR::LabelSymbol * callLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+               TR::LabelSymbol * callLabel = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
                TR::Instruction * instr = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, callNode, callLabel);
                cg->createBranchPreloadCallData(callLabel, callSymRef, instr);
-
                }
-
             }
 
-         TR::S390RILInstruction *tempInst =
-            new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
+         TR::S390RILInstruction *tempInst;
+#if defined(TR_TARGET_64BIT)
+#if defined (J9ZOS390)
+         if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
+            {
+            tempInst = (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
+            }
+#endif
+#if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
+#if (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
+         if (!comp->getOption(TR_EnableZOSTrampolines))
+#endif
 
-         if (isHelper)
-            tempInst->setSymbolReference(callSymRef);
+            {
+            tempInst = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
+
+
+            if (isHelper)
+               tempInst->setSymbolReference(callSymRef);
+            }
+#endif
          AOTcgDiag1(comp, "\ntempInst=%x\n", tempInst);
          return tempInst;
          }
+#if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
       else
          {
          genLoadAddressConstant(cg, callNode, imm, RegEP, preced, cond);
@@ -2355,7 +2353,8 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
          return instr;
          }
 #endif
-      }
+
+      }  
    }
 
 /**

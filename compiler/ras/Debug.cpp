@@ -4046,21 +4046,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
 
             case TR_IA32jitThrowCurrentException:                     return "_jitThrowCurrentException";
             case TR_IA32jitCollapseJNIReferenceFrame:                 return "_jitCollapseJNIReferenceFrame";
-            case TR_IA32arrayCopy:                                    return "__arrayCopy";
-            case TR_IA32wordArrayCopy:                                return "__wordAarrayCopy";
-            case TR_IA32halfWordArrayCopy:                            return "__halfWordArrayCopy";
-            case TR_IA32forwardArrayCopy:                             return "__forwardArrayCopy";
-            case TR_IA32forwardWordArrayCopy:                         return "__forwardWordArrayCopy";
-            case TR_IA32forwardHalfWordArrayCopy:                     return "__forwardHalfWordArrayCopy";
-
-            case TR_IA32shortArrayCopy:                               return "__shortArrayCopy";
-            case TR_IA32forwardSSEArrayCopy:                          return "__forwardSSEArrayCopy";
-            case TR_IA32forwardSSEArrayCopyNoAlignCheck:              return "__forwardSSEArrayCopyNoAlignCheck";
-            case TR_IA32forwardArrayCopy2:                            return "__forwardArrayCopy2";
-            case TR_IA32SSEforwardArrayCopy:                          return "_SSEforwardArrayCopy";
-            case TR_IA32SSEforwardHalfWordArrayCopy:                  return "_SSEforwardHalfWordArrayCopy";
-            case TR_IA32SSEforwardArrayCopyAMDOpteron:                return "_SSEforwardArrayCopyAMDOpteron";
-            case TR_IA32SSEforwardArrayCopyAggressive:                return "_SSEforwardArrayCopyAggressive";
 
             case TR_IA32compressString:                               return "_compressString";
             case TR_IA32compressStringNoCheck:                        return "_compressStringNoCheck";
@@ -4074,11 +4059,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32countingPatchCallSite:                        return "__countingPatchCallSite";
             case TR_IA32induceRecompilation:                          return "__induceRecompilation";
 
-            case TR_IA32arrayXor:                                     return "arrayxor";
-            case TR_IA32arrayOr:                                      return "arrayor";
-            case TR_IA32arrayAnd:                                     return "arrayand";
-            case TR_IA32arrayCmp:                                     return "arraycmp";
-            case TR_IA32overlapArrayCopy:                             return "overlapArrayCopy";
             case TR_IA32getTimeOfDay:                                 return "gettimeofday";
             }
          }
@@ -4096,38 +4076,18 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64icallVMprJavaSendVirtualD:                   return "_icallVMprJavaSendVirtualD";
             case TR_AMD64jitThrowCurrentException:                    return "_jitThrowCurrentException";
             case TR_AMD64jitCollapseJNIReferenceFrame:                return "_jitCollapseJNIReferenceFrame";
-            case TR_AMD64arrayCopy:                                   return "__arrayCopy";
-            case TR_AMD64BCarrayCopy:                                 return "__BC_arrayCopy";
-            case TR_AMD64byteArrayCopy:                               return "__byteArrayCopy";
-            case TR_AMD64wordArrayCopy:                               return "__wordArrayCopy";
-            case TR_AMD64halfWordArrayCopy:                           return "__halfWordArrayCopy";
-            case TR_AMD64forwardArrayCopy:                            return "__forwardArrayCopy";
-            case TR_AMD64forwardWordArrayCopy:                        return "__forwardWordArrayCopy";
-            case TR_AMD64forwardHalfWordArrayCopy:                    return "__forwardHalfWordArrayCopy";
-            case TR_AMD64forwardArrayCopyAMDOpteron:                  return "_forwardArrayCopyAMDOpteron";
 
-            case TR_AMD64compressString:                               return "_compressString";
-            case TR_AMD64compressStringNoCheck:                        return "_compressStringNoCheck";
-            case TR_AMD64compressStringJ:                              return "_compressStringJ";
-            case TR_AMD64compressStringNoCheckJ:                       return "_compressStringNoCheckJ";
-            case TR_AMD64andORString:                                  return "_andORString";
+            case TR_AMD64compressString:                              return "_compressString";
+            case TR_AMD64compressStringNoCheck:                       return "_compressStringNoCheck";
+            case TR_AMD64compressStringJ:                             return "_compressStringJ";
+            case TR_AMD64compressStringNoCheckJ:                      return "_compressStringNoCheckJ";
+            case TR_AMD64andORString:                                 return "_andORString";
 
             case TR_AMD64samplingRecompileMethod:                     return "__samplingRecompileMethod";
             case TR_AMD64countingRecompileMethod:                     return "__countingRecompileMethod";
             case TR_AMD64samplingPatchCallSite:                       return "__samplingPatchCallSite";
             case TR_AMD64countingPatchCallSite:                       return "__countingPatchCallSite";
             case TR_AMD64induceRecompilation:                         return "__induceRecompilation";
-            case TR_AMD64arrayXor:                                    return "arrayxor";
-            case TR_AMD64arrayOr:                                     return "arrayor";
-            case TR_AMD64arrayAnd:                                    return "arrayand";
-            case TR_AMD64noOverlapArrayXor:                           return "noOverlapArrayXor";
-            case TR_AMD64noOverlapArrayOr:                            return "noOverlapArrayOr";
-            case TR_AMD64noOverlapArrayAnd:                           return "noOverlapArrayAnd";
-            case TR_AMD64overlapArrayXor:                             return "overlapArrayXor";
-            case TR_AMD64overlapArrayOr:                              return "overlapArrayOr";
-            case TR_AMD64overlapArrayAnd:                             return "overlapArrayAnd";
-            case TR_AMD64arrayCmp:                                    return "arraycmp";
-            case TR_AMD64overlapArrayCopy:                            return "overlapArrayCopy";
             case TR_AMD64doAESENCDecrypt:                             return "doAESDecrypt";
             case TR_AMD64doAESENCEncrypt:                             return "doAESEncrypt";
             }

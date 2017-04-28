@@ -332,7 +332,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *coerceFPRToXMMR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
    static TR::Register *coerceXMMRToFPR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
    static void coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *constLengthArrayCopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    enum
       {

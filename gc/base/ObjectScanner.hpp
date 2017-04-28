@@ -291,7 +291,6 @@ public:
 				_scanPtr = NULL;
 				setNoMoreSlots();
 			}
-			startPtr = _scanPtr;
 		}
 
 		isLeafSlot = true;

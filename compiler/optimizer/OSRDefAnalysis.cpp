@@ -55,6 +55,7 @@
 #include "optimizer/Optimizer.hpp"                    // for Optimizer
 #include "optimizer/DataFlowAnalysis.hpp"             // for TR_Liveness, etc
 #include "optimizer/StructuralAnalysis.hpp"
+#include "optimizer/TransformUtil.hpp"
 #include "optimizer/UseDefInfo.hpp"
 #include "runtime/Runtime.hpp"
 
@@ -847,17 +848,18 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
                }
             }
 
-         TR_ByteCodeInfo bci = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
+         TR_ByteCodeInfo &bci = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
 
          // Check if this treetop is an OSR pending push store or load. If so, it will shift the
          // cursor to before the PPs. The cursor will either point at the first PP or the treetop
          // before it, depending on whether it could be the OSR point for these PP.
          TR::TreeTop *offsetOSRTreeTop = NULL;
-         if (comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode()))
+         if (comp()->getOSRTransitionTarget() == TR::postExecutionOSR &&
+             comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode()))
             {
             offsetOSRTreeTop = tt;   
             tt = collectPendingPush(bci, tt, _liveVars);
-            TR_ByteCodeInfo osrBCI = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
+            TR_ByteCodeInfo &osrBCI = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
 
             // If it is the start of this block or has a different bytecode index, it cannot be
             // the OSR point
@@ -910,6 +912,11 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    return 0;
    }
 
+// 
+// To reduce the impact of pending push temps in postExecutionOSR, the live pending push symrefs can be stored or
+// referenced in anchored loads, between the OSR point and the transition. In the event that the anchored loads
+// are not commoned, they will be removed.
+//
 TR::TreeTop *TR_OSRLiveRangeAnalysis::collectPendingPush(TR_ByteCodeInfo bci, TR::TreeTop *tt, TR_BitVector *liveVars)
    {
    while (comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode(), bci))
@@ -921,9 +928,29 @@ TR::TreeTop *TR_OSRLiveRangeAnalysis::collectPendingPush(TR_ByteCodeInfo bci, TR
          int32_t localIndex = local->getLiveLocalIndex();
          _liveVars->set(localIndex);
          if (comp()->getOption(TR_TraceOSR))
-            traceMsg(comp(), "+++ local index %d OSR PPS LIVE\n", localIndex);
+            traceMsg(comp(), "+++ local index %d OSR PENDING PUSH STORE LIVE\n", localIndex);
          }
-      traceMsg(comp(), "Looking at [%p]\n", node);
+      else if (node->getOpCodeValue() == TR::treetop
+          && node->getFirstChild()->getOpCode().isLoad()
+          && node->getFirstChild()->getOpCode().hasSymbolReference())
+         {
+         TR::AutomaticSymbol *local = node->getFirstChild()->getSymbolReference()->getSymbol()->getAutoSymbol();
+         int32_t localIndex = local->getLiveLocalIndex();
+         _liveVars->set(localIndex);
+         if (comp()->getOption(TR_TraceOSR))
+            traceMsg(comp(), "+++ local index %d OSR PENDING PUSH LOAD LIVE\n", localIndex);
+
+         if (node->getFirstChild()->getReferenceCount() == 1)
+            {
+            if (comp()->getOption(TR_TraceOSR))
+               traceMsg(comp(), "----> removing node %p\n", node);
+            TR::TransformUtil::removeTree(comp(), tt);
+            }
+         }
+      else
+         {
+         TR_ASSERT(0, "Unexpected OSR related node %p found, should be either pending push store or anchored load", node);
+         }
       tt = tt->getPrevTreeTop();
       }
 

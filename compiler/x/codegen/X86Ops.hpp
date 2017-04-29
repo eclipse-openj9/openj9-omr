@@ -359,15 +359,20 @@ class TR_X86OpCode
                break;
             }
          }
-      // check if the instruction has mandatory prefix(es)
-      inline bool hasMandatoryPrefix() const
+      // check if the instruction can be encoded as AVX
+      inline bool supportsAVX() const
          {
-         return prefixes == PREFIX___;
+         return vex_l != VEX_L___;
          }
       // check if the instruction is X87
       inline bool isX87() const
          {
          return (prefixes == PREFIX___) && (opcode >= 0xd8) && (opcode <= 0xdf);
+         }
+      // check if the instruction has mandatory prefix(es)
+      inline bool hasMandatoryPrefix() const
+         {
+         return prefixes == PREFIX___;
          }
       // check if the instruction is part of Group 7 OpCode Extension
       inline bool isGroup07() const
@@ -375,7 +380,11 @@ class TR_X86OpCode
          return (escape == ESCAPE_0F__) && (opcode == 0x01);
          }
       // TBuffer should only be one of the two: Estimator when calculating length, and Writer when generating binaries.
-      template <class TBuffer> typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
+      template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
+      // finalize instruction prefix information, currently only in-use for AVX instructions for VEX.vvvv field
+      inline void finalize(uint8_t* cursor) const;
+      private:
+      inline static bool allowsAVX();
       };
    template <typename TCursor>
    class BufferBase
@@ -593,7 +602,11 @@ class TR_X86OpCode
       CheckAndFinishGroup07(ret);
       return ret;
       }
-
+   void finalize(uint8_t* cursor)
+      {
+      if (!isPseudoOp())
+         info().finalize(cursor);
+      }
    void convertLongBranchToShort()
       { // input must be a long branch in range JA4 - JMP4
       if (((int)_opCode >= (int)JA4) && ((int)_opCode <= (int)JMP4))

@@ -87,12 +87,13 @@ enum TR_OpCodeImmediate : uint8_t
 5. Write opcode
 6. Set and write ModR/M field if necessary
 
-# FUTURE WORK
-
 ## Generate AVX Instruction
 1. Obtain REX prefix from operand and set REX.W according to rex_w field.
-2. If REX.X == 0 AND REX.B == 0 AND REX.W == 0 AND escape == ESCAPE____, use 2-byte prefix; otherwise use 3-byte prefix
-3. Setup VEX structure and write it.
+2. Setup 3-byte VEX structure.
+2.1 Convert the 3-byte VEX to 2-byte VEX if possible
+3. Write the VEX prefix
+
+# FUTURE WORK
 
 ## Generate AVX-512 Instruction
 1. Obtain REX prefix from operand and set REX.W according to rex_w field.

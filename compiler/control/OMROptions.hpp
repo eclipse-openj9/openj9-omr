@@ -559,7 +559,7 @@ enum TR_CompilationOptions
    TR_DisableIncrementalCCR                           = 0x00004000 + 15, //SRT
    TR_DisableOSRCallSiteRemat                         = 0x00008000 + 15,
    TR_UseLowerMethodCounts                            = 0x00010000 + 15,
-   // Available                                       = 0x00040000 + 15,
+   TR_DisableOSRLocalRemat                            = 0x00040000 + 15,
    TR_DoNotUsePersistentIprofiler                     = 0x00080000 + 15,
    TR_DoNotUseFastStackwalk                           = 0x00100000 + 15,
    // Available                                       = 0x00200000 + 15,

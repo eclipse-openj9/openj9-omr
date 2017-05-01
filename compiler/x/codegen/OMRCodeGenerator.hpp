@@ -191,7 +191,9 @@ struct TR_X86ProcessorInfo
    bool isIntelIvyBridge()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelIvyBridge; }
    bool isIntelHaswell()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelHaswell; }
    bool isIntelBroadwell()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelBroadwell; }
-   bool isIntelOldMachine() ;
+   bool isIntelSkylake()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSkylake; }
+
+   bool isIntelOldMachine()   { return (isIntelPentium() || isIntelP6() || isIntelPentium4() || isIntelCore2() || isIntelTulsa() || isIntelNehalem()); }
 
    bool isAMDK6()             { return (_processorDescription & 0x000000fe) == TR_ProcessorAMDK5; } // accept either K5 or K6
    bool isAMDAthlonDuron()    { return (_processorDescription & 0x000000ff) == TR_ProcessorAMDAthlonDuron; }

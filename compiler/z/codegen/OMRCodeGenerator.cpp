@@ -6088,7 +6088,7 @@ OMR::Z::CodeGenerator::StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStack
    }
 
 bool
-OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
+OMR::Z::CodeGenerator::supportsMergingGuards()
    {
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&

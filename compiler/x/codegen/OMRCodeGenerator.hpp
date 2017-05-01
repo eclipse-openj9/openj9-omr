@@ -295,7 +295,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual bool getSupportsIbyteswap();
 
-   bool supportsMergingOfHCRGuards();
+   bool supportsMergingGuards();
 
    bool supportsAtomicAdd()                {return true;}
    bool hasTMEvaluator()                       {return true;}
@@ -658,7 +658,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    public:
 
-   bool allowHCRGuardMerging() { return false; }
+   bool allowGuardMerging() { return false; }
 
    bool enableBetterSpillPlacements()
       {

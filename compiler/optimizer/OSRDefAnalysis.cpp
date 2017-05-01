@@ -411,7 +411,6 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
          // If we require a induction point after the OSR point, store the OSR point
          // to be processed on the next call to buildOSRDefs
-         node = treeTop->getNode();
          bci.setByteCodeIndex(bci.getByteCodeIndex() + comp()->getOSRInductionOffset(node));
          nextOsrPoint = _methodSymbol->findOSRPoint(bci);
          TR_ASSERT(nextOsrPoint != NULL, "Cannot find an offset OSR point for node %p", node);

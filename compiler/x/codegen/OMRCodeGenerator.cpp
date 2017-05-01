@@ -1027,11 +1027,11 @@ OMR::X86::CodeGenerator::getSupportsIbyteswap()
    }
 
 bool
-OMR::X86::CodeGenerator::supportsMergingOfHCRGuards()
+OMR::X86::CodeGenerator::supportsMergingGuards()
    {
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&
-          self()->allowHCRGuardMerging();
+          self()->allowGuardMerging();
    }
 
 TR::RealRegister *

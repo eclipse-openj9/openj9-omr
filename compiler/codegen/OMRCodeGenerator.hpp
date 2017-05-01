@@ -494,7 +494,7 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    bool supports32bitAiadd() {return true;}  // no virt, default
    bool supportsMarshallingUnmarshallingIntrinsics() {return true;} // no virt, default
-   bool supportsMergingOfHCRGuards() {return false;} // no virt, default
+   bool supportsMergingGuards() {return false;} // no virt, default
 
    /** \brief
     *     Determines whether concurrent scavenge of objects during garbage collection is enabled.

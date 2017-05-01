@@ -1796,7 +1796,7 @@ TR_InlinerBase::addGuardForVirtual(
       // will undergo special processing later in the compilation
       if (virtualGuard &&
           comp()->getHCRMode() != TR::osr &&
-          comp()->cg()->supportsMergingOfHCRGuards())
+          comp()->cg()->supportsMergingGuards())
          {
          TR::Node *guardNode = virtualGuard->getNode();
          if (guardNode)

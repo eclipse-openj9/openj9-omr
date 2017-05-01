@@ -431,7 +431,7 @@ public:
    void RemoveMemRefFromStack(TR::MemoryReference * mr);
    void StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStackBeforeEvaluation);
 
-   bool supportsMergingOfHCRGuards();
+   bool supportsMergingGuards();
 
    bool supportsDirectJNICallsForAOT() { return true;}
 

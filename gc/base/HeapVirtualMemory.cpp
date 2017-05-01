@@ -77,13 +77,6 @@ MM_HeapVirtualMemory::initialize(MM_EnvironmentBase* env, uintptr_t size)
 	bool created = false;
 	bool forcedOverflowProtection = false;
 
-#if defined(J9ZOS390) || defined(S390)
-	/* 390 JIT codegen requires a uintptr_t-worth of padding at end of heap -- see CMVC 95853 */
-	if (padding < sizeof(uintptr_t)) {
-		padding = sizeof(uintptr_t);
-	}
-#endif /* defined(J9ZOS390) || defined(S390) */
-
 	/* Under -Xaggressive ensure a full page of padding -- see JAZZ103 45254 */
 	if (extensions->padToPageSize) {
 #if (defined(AIXPPC) && !defined(PPC64))
@@ -101,14 +94,9 @@ MM_HeapVirtualMemory::initialize(MM_EnvironmentBase* env, uintptr_t size)
 		} else
 #endif /* (defined(AIXPPC) && !defined(PPC64)) */
 		{
-#if defined(OMR_GC_COMPRESSED_POINTERS) && !(defined(J9ZOS390) || defined(S390))
-			/*
-			 * For all compressed references platforms (except 390)
-			 * ignore extra full page padding if page size is too large (hard coded here for 1G or larger)
-			 */
+			/* Ignore extra full page padding if page size is too large (hard coded here for 1G or larger) */
 #define ONE_GB ((uintptr_t)1 * 1024 * 1024 * 1024)
 			if (extensions->requestedPageSize < ONE_GB)
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) && !(defined(J9ZOS390) || defined(S390)) */
 			{
 				if (padding < extensions->requestedPageSize) {
 					padding = extensions->requestedPageSize;

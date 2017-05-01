@@ -688,6 +688,8 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
       }
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
+   else if (self()->getOSRMode() == TR::involuntaryOSR && node->canGCandExcept())
+      potentialOSRPoint = true;
 
    return potentialOSRPoint;
    }

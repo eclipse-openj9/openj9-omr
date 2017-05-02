@@ -13510,6 +13510,56 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
    byteSrcReg = cg->gprClobberEvaluate(byteSrcNode);
    byteDstReg = cg->gprClobberEvaluate(byteDstNode);
 
+   bool alreadyEvaluatedByteLenNode = false;
+
+#ifdef J9_PROJECT_SPECIFIC
+   TR::LabelSymbol* mergeLabel;
+   bool mustGenerateOOLGuardedLoadPath = cg->isConcurrentScavengeEnabled() &&
+                                         node->getArrayCopyElementType() == TR::Address;
+
+   if (mustGenerateOOLGuardedLoadPath)
+      {
+      // The OOL path needs the byte length for the guarded load, compress, and store loop.
+      // However, the main line fast path also needs the byte length. As such, the byteLenNode
+      // must be evaluated outside of the OOL ICF region.
+      byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+      alreadyEvaluatedByteLenNode = true;
+
+      mergeLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol* slowPathLabel = generateLabelSymbol(cg);
+
+      TR_ASSERT_FATAL(J9_PRIVATE_FLAGS_CONCURRENT_SCAVENGER_ACTIVE == 0x20000,
+                 "GSCS: The OOL sequence branch is dependant on the flag being 0x20000");
+      TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(),
+                 "GSCS: Guarded Load OOL Path only defined in 64 bit mode");
+      TR::Register *vmReg = cg->getMethodMetaDataRealRegister();
+      int32_t offsetOfConcurrentScavengerActiveByte = offsetof(J9VMThread, privateFlags) + 5;
+      TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg, offsetOfConcurrentScavengerActiveByte, cg);
+      generateSIInstruction(cg, TR::InstOpCode::TM, node, privFlagMR, 0x00000002);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC3, node, slowPathLabel);
+
+      // Generate OOL Slow Path
+      TR_S390OutOfLineCodeSection* outOfLineCodeSection = new (cg->trHeapMemory()) TR_S390OutOfLineCodeSection(slowPathLabel, mergeLabel, cg);
+      cg->getS390OutOfLineCodeSectionList().push_front(outOfLineCodeSection);
+      outOfLineCodeSection->swapInstructionListsWithCompilation();
+
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, slowPathLabel);
+
+      TR::Register* strideRegister = cg->allocateRegister();
+
+      MemCpyVarLenTypedMacroOp vtOpSlow(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, true, node->isForwardArrayCopy());
+      vtOpSlow.generate(byteDstReg, byteSrcReg, strideRegister);
+      vtOpSlow.cleanUpReg();
+
+      cg->stopUsingRegister(strideRegister);
+
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel);
+
+      // Switch back from OOL Slow Path
+      outOfLineCodeSection->swapInstructionListsWithCompilation();
+      }
+#endif
+
    if (node->isForwardArrayCopy())
       {
       if (byteLenNode->getOpCode().isLoadConst())
@@ -13520,11 +13570,15 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
          }
       else
          {
-         bool evaluatedLengthMinusOne = false;
+         bool alreadyEvaluatedLengthMinusOne = false;
 
-         byteLenReg = cg->evaluateLengthMinusOneForMemoryOps(byteLenNode, true, evaluatedLengthMinusOne);
+         // Don't evaluate length minus one if byteLenNode was already evaluated
+         if (!alreadyEvaluatedByteLenNode)
+            {
+            byteLenReg = cg->evaluateLengthMinusOneForMemoryOps(byteLenNode, true, alreadyEvaluatedLengthMinusOne);
+            }
 
-         MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, evaluatedLengthMinusOne);
+         MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, alreadyEvaluatedLengthMinusOne);
 
          op.setUseEXForRemainder(true);
          op.generate(byteDstReg, byteSrcReg);
@@ -13532,17 +13586,28 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       }
    else
       {
-      byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+      // Don't clobber evaluate byteLenNode again if it was already evaluated
+      if (!alreadyEvaluatedByteLenNode)
+         {
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+         }
 
       TR::Register* strideRegister = cg->allocateRegister();
 
-      MemCpyVarLenTypedMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, node->isForwardArrayCopy());
+      MemCpyVarLenTypedMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, false, node->isForwardArrayCopy());
 
       vtOp.generate(byteDstReg, byteSrcReg, strideRegister);
       vtOp.cleanUpReg();
 
       cg->stopUsingRegister(strideRegister);
       }
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (mustGenerateOOLGuardedLoadPath)
+      {
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, mergeLabel);
+      }
+#endif
 
    cg->decReferenceCount(byteDstNode);
    cg->decReferenceCount(byteSrcNode);

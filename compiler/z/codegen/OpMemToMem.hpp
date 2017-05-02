@@ -525,13 +525,6 @@ class MemToMemTypedMacroOp
          _startReg = dstReg;
          _strideReg = strideReg;
          _applyDepLocally = applyDepLocally;
-         if (_destType == TR::Address)
-            {
-            if (TR::Compiler->target.is64Bit() && !_cg->comp()->useCompressedPointers())
-                _destType = TR::Int64;
-            else
-                _destType = TR::Int32;
-            }
 
          _endReg   = _cg->allocateRegister();
          _bxhReg   = _cg->allocateConsecutiveRegisterPair(_startReg, _strideReg);
@@ -640,8 +633,9 @@ class MemInitVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
 class MemCpyVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
    {
    public:
-      MemCpyVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool isForward = false)
-         : MemToMemTypedVarLenMacroOp(rootNode, dstNode, srcNode, cg, destType, lenReg, lenNode, isForward)
+      MemCpyVarLenTypedMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::DataType destType, TR::Register* lenReg, TR::Node * lenNode, bool needsGuardedLoad, bool isForward = false)
+         : _needsGuardedLoad(needsGuardedLoad),
+           MemToMemTypedVarLenMacroOp(rootNode, dstNode, srcNode, cg, destType, lenReg, lenNode, isForward)
          {
          allocWorkReg();
          }
@@ -658,6 +652,7 @@ class MemCpyVarLenTypedMacroOp : public MemToMemTypedVarLenMacroOp
    private:
       void allocWorkReg();
       TR::Register* _workReg;
+      bool          _needsGuardedLoad;
    };
 
 class MemCpyAtomicMacroOp: public MemToMemTypedVarLenMacroOp

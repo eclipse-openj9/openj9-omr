@@ -2029,22 +2029,44 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
             cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
             }
          else // needs Reg. Pair on 32bit
-         {
+            {
             cursor = generateRSInstruction(_cg, TR::InstOpCode::LM, _srcNode, _workReg, srcMR);
             cursor = generateRSInstruction(_cg, TR::InstOpCode::STM, _dstNode, _workReg, dstMR);
             }
          break;
-      default:
-         if ((TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit()) && !comp->useCompressedPointers())
+      case TR::Address:
+         if (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers())
             {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
+            if (_needsGuardedLoad)
+               {
+               cursor = generateRXYInstruction(_cg, TR::InstOpCode::LGG, _srcNode, _workReg, srcMR);
+               }
+            else
+               {
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
+               }
             cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
             }
-            else
+         else
             {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::L, _srcNode, _workReg, srcMR);
+            if (_needsGuardedLoad)
+               {
+               int32_t shiftAmount = TR::Compiler->om.compressedReferenceShift();
+               cursor = generateRXYInstruction(_cg, TR::InstOpCode::LLGFSG, _srcNode, _workReg, srcMR);
+               if (shiftAmount != 0)
+                  {
+                  cursor = generateRSInstruction(_cg, TR::InstOpCode::SRLG, _srcNode, _workReg, _workReg, shiftAmount);
+                  }
+               }
+            else
+               {
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::L, _srcNode, _workReg, srcMR);
+               }
             cursor = generateRXInstruction(_cg, TR::InstOpCode::ST, _dstNode, _workReg, dstMR);
             }
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "_destType of invalid type\n");
          break;
       }
    dstMR->stopUsingMemRefRegister(_cg);

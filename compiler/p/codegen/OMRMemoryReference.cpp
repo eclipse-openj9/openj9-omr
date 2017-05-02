@@ -1360,11 +1360,11 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             {
             TR::RealRegister   *stackPtr = cg->getStackPointerRegister();
             TR::RealRegister *rX = cg->machine()->getPPCRealRegister(choose_rX(currentInstruction, base));
-            *wcursor = 0x9000fffc;
+            *wcursor = (TR::Compiler->target.is64Bit())?0xf800fff8:0x9000fffc;
             rX->setRegisterFieldRS(wcursor);
             stackPtr->setRegisterFieldRA(wcursor);
             cursor += PPC_INSTRUCTION_LENGTH;
-            wcursor++;                                 // stw [sp,-4], rX
+            wcursor++;                                 // stw [sp,-4], rX | std [sp, -8], rX
 
             *wcursor = 0x3c000000 | upper;
             rX->setRegisterFieldRT(wcursor);
@@ -1378,10 +1378,10 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             wcursor++;                                  // ld Rt, [rX, lower]
                                                         // st Rs, [rX, lower]
 
-            *wcursor = 0x8000fffc;
+            *wcursor = (TR::Compiler->target.is64Bit())?0xe800fff8:0x8000fffc;
             rX->setRegisterFieldRT(wcursor);
             stackPtr->setRegisterFieldRA(wcursor);
-                                                       // lwz rX, [sp, -4]
+                                                       // lwz rX, [sp, -4] | ld rX, [sp, -8]
             }
          }
       else

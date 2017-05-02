@@ -4576,7 +4576,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    bool  supportsVSX = (processor >= TR_PPCp8) && !disableVSXArrayCopy && TR::Compiler->target.cpu.getPPCSupportsVSX();
 
    static bool disableLEArrayCopyHelper  = (feGetEnv("TR_disableLEArrayCopyHelper") != NULL);
-   static bool disableVSXArrayCopyInlining = (feGetEnv("TR_disableVSXArrayCopyInlining") != NULL);
+   static bool disableVSXArrayCopyInlining = (feGetEnv("TR_enableVSXArrayCopyInlining") == NULL); // Disabling due to a performance regression
 
    bool  supportsLEArrayCopy = !disableLEArrayCopyHelper && TR::Compiler->target.cpu.isLittleEndian() && TR::Compiler->target.cpu.hasFPU();
 

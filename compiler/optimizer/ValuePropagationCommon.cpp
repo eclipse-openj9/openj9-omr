@@ -1274,20 +1274,6 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
             }
          }
 
-      if (isStringCompressedArrayCopy)
-         {
-         type = TR::Int8;
-
-         elementSize = TR::Symbol::convertTypeToSize(type);
-         }
-
-      if (isStringDecompressedArrayCopy)
-         {
-         type = TR::Int16;
-
-         elementSize = TR::Symbol::convertTypeToSize(type);
-         }
-
       if (primitiveArray1 || primitiveArray2)
          {
          type = primitiveArray1 ?
@@ -1302,6 +1288,20 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          type = TR::Address;
 
          elementSize = TR::Compiler->om.sizeofReferenceField();
+         }
+
+      if (isStringCompressedArrayCopy)
+         {
+         type = TR::Int8;
+
+         elementSize = TR::Symbol::convertTypeToSize(type);
+         }
+
+      if (isStringDecompressedArrayCopy)
+         {
+         type = TR::Int16;
+
+         elementSize = TR::Symbol::convertTypeToSize(type);
          }
 
       if (comp()->getOptions()->realTimeGC() &&

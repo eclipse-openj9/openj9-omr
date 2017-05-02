@@ -1363,6 +1363,13 @@ OMR::Options::set32BitNumeric(char *option, void *base, TR::OptionTable *entry)
 
 
 char *
+OMR::Options::set32BitNumericInJitConfig(char *option, void *base, TR::OptionTable *entry)
+   {
+   return TR::Options::set32BitNumeric(option, _feBase, entry);
+   }
+
+
+char *
 OMR::Options::set64BitSignedNumeric(char *option, void *base, TR::OptionTable *entry)
    {
    int64_t sign = 1;
@@ -1462,12 +1469,17 @@ OMR::Options::setString(char *option, void *base, TR::OptionTable *entry)
    return dummy_string;
    }
 
+char *
+OMR::Options::setStringInJitConfig(char *option, void *base, TR::OptionTable *entry)
+   {
+   return TR::Options::setString(option, _feBase, entry);
+   }
 
 char *
 OMR::Options::setStringForPrivateBase(char *option, void *base, TR::OptionTable *entry)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   base = TR_J9VMBase::getPrivateConfig(base);
+   base = TR_J9VMBase::getPrivateConfig(_feBase);
    return TR::Options::setString(option, base, entry);
 #else
    return 0;
@@ -4759,7 +4771,7 @@ char *
 OMR::Options::setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::OptionTable *entry)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR_JitPrivateConfig *privateConfig = *(TR_JitPrivateConfig**)((char*)base+entry->parm1);
+   TR_JitPrivateConfig *privateConfig = *(TR_JitPrivateConfig**)((char*)_feBase+entry->parm1);
    TR_ASSERT(sizeof(VerboseOptionFlagArray) <= sizeof(privateConfig->verboseFlags), "TR_JitPrivateConfig::verboseFlags field is too small");
    TR::OptionTable privatizedEntry = *entry;
    privatizedEntry.parm1 = offsetof(TR_JitPrivateConfig, verboseFlags);
@@ -4773,7 +4785,7 @@ OMR::Options::setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::Opt
 char *
 OMR::Options::setVerboseBits(char *option, void *base, TR::OptionTable *entry)
    {
-   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)base+entry->parm1);
+   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)_feBase+entry->parm1);
    if (entry->parm2 != 0) // This is used for -Xjit:verbose without any options
       {
       // Since no verbose options are specified, add the default options,

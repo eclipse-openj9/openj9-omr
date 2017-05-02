@@ -2063,6 +2063,20 @@ private:
    //
    static char *set32BitNumeric(char *option, void *base, TR::OptionTable *entry);
 
+  /** 
+   * \brief Option processing function for 32 bit numeric fields stored in JitConfig
+   *
+   * Scans the option for a numeric value and set the 32-bit word at offset 
+   * entry->param1 from the start of JitConfig to that value.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Not used
+   * \param [in] entry   OptionTable entry specifying the offset of the JITConfig word
+   *                     32-bit that needs to be set
+   * \return A pointer to the option parameter
+   */
+   static char *set32BitNumericInJitConfig(char *option, void *base, TR::OptionTable *entry);
+
    // Scan the option for a hexadecimal value and set 32bit word at offset "offset"
    // from the base to that value.
    //
@@ -2109,10 +2123,35 @@ private:
    //
    static char *setStaticString(char *option, void *base, TR::OptionTable *entry);
 
-   // Scan the option for a string value and set pointer at offset "offset"
-   // from the base to a copy of the string
-   //
+   /**
+   * \brief Option processing function for strings
+   *
+   * Scans the option parameter for a string value and sets a pointer at
+   * offset entry->param1 from the start of 'base' to a copy of that string.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Base address of the structure that gets modified.
+   *                     Typically an Options object.
+   * \param [in] entry   OptionTable entry specifying the offset of the
+   *                     string field that needs to be set
+   * \return A pointer to the option parameter
+   */
    static char *setString(char *option, void *base, TR::OptionTable *entry);
+
+   /**
+   * \brief Option processing function for string fields stored in JitConfig
+   *
+   * Scans the option parameter for a string value and sets a pointer at offset
+   * entry->param1 from the start of JitConfig to a copy of that string.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Not used
+   * \param [in] entry   OptionTable entry specifying the offset of the JITConfig
+   *                     field (a char pointer) that needs to be set
+   * \return A pointer to the option parameter
+   */
+   static char *setStringInJitConfig(char *option, void *base, TR::OptionTable *entry);
+
 
    // Add "debugString" to the JIT debug strings
    //

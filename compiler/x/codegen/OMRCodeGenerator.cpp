@@ -106,14 +106,6 @@ extern "C" bool jitTestOSForSSESupport(void);
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
-bool TR_X86ProcessorInfo::isIntelOldMachine()
-   {
-   if(isIntelPentium() || isIntelP6() ||  isIntelPentium4() || isIntelCore2() ||  isIntelTulsa() || isIntelNehalem())
-      return true;
-
-   return false;
-   }
-
 void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
    {
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
@@ -154,6 +146,8 @@ void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
             uint32_t extended_model = getCPUModel(_processorSignature) + (getCPUExtendedModel(_processorSignature) << 4);
             switch (extended_model)
                {
+               case 0x55:
+                  _processorDescription |= TR_ProcessorIntelSkylake; break;
                case 0x4f:
                   _processorDescription |= TR_ProcessorIntelBroadwell; break;
                case 0x3f:

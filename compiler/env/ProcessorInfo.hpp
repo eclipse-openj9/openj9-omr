@@ -213,6 +213,7 @@ enum TR_ProcessorDescription
    TR_ProcessorIntelIvyBridge   = 0x0000000e,
    TR_ProcessorIntelHaswell     = 0x0000000f,
    TR_ProcessorIntelBroadwell   = 0x00000010,
+   TR_ProcessorIntelSkylake     = 0x00000011,
    };
 
 #endif

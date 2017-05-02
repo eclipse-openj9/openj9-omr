@@ -1822,8 +1822,13 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          freeRegisterHigh->block();
          }
+
       freeRegisterLow = self()->reverseSpillState(currInst, lastReg);
-      freeRegisterLow->block();
+
+      if (freeRegisterHigh)
+         {
+         freeRegisterHigh->unblock();
+         }
       }
 
    // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
@@ -1837,8 +1842,13 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          freeRegisterLow->block();
          }
+
       freeRegisterHigh = self()->reverseSpillState(currInst, firstReg);
-      freeRegisterHigh->block();
+
+      if (freeRegisterLow)
+         {
+         freeRegisterLow->unblock();
+         }
       }
 
    // Propose coloured registers
@@ -4734,18 +4744,25 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       // in this case, assign a new register and return
       if (!freeHighWordReg)
          {
-      if (!location)
-         {
-         if (debugObj)
-            self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n",
-                                          debugObj->getName(spilledRegister));
-         if (enableHighWordRA && spilledRegister->is64BitReg())
+         if (location == NULL)
             {
-            targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
-            targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
+            if (debugObj)
+               {
+               self()->cg()->traceRegisterAssignment("OOL: Not generating reverse spill for (%s)\n", debugObj->getName(spilledRegister));
+               }
+
+            targetRegister->setState(TR::RealRegister::Assigned);
+            targetRegister->setAssignedRegister(spilledRegister);
+            spilledRegister->setAssignedRegister(targetRegister);
+
+            if (enableHighWordRA && spilledRegister->is64BitReg())
+               {
+               targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
+               targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
+               }
+
+            return targetRegister;
             }
-         return targetRegister;
-         }
          }
       }
 

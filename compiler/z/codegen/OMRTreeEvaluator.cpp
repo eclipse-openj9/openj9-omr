@@ -9503,12 +9503,12 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    static const char * disableECCSIMD = feGetEnv("TR_disableECCSIMD");
    static const char * disableECCMLGR = feGetEnv("TR_disableECCMLGR");
    static const char * disableECCKarat = feGetEnv("TR_disableECCKarat");
-   static const char * EnableVMSL = feGetEnv("TR_enableVMSL");
+   static const char * disableVMSL = feGetEnv("TR_disableVMSL");
 
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
-   if (EnableVMSL || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
       return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);

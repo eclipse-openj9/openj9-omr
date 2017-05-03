@@ -22,9 +22,9 @@
 
 #include <stdio.h>
 
-#include "genBlob.hpp"
-#include "genBinaryBlob.hpp"
-#include "genSuperset.hpp"
+#include "ddr/blobgen/genBlob.hpp"
+#include "ddr/blobgen/java/genBinaryBlob.hpp"
+#include "ddr/blobgen/java/genSuperset.hpp"
 
 DDR_RC
 genBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *const ir, const char *supersetFile, const char *blobFile)

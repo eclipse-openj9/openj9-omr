@@ -16,17 +16,17 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "genSuperset.hpp"
+#include "ddr/blobgen/java/genSuperset.hpp"
 
 #include <assert.h>
 #include <stdio.h>
 
-#include "config.hpp"
-#include "ClassUDT.hpp"
-#include "EnumMember.hpp"
-#include "EnumUDT.hpp"
-#include "TypedefUDT.hpp"
-#include "UnionUDT.hpp"
+#include "ddr/config.hpp"
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
+#include "ddr/ir/UnionUDT.hpp"
 
 JavaSupersetGenerator::JavaSupersetGenerator() : _file(0), _portLibrary(NULL)
 {

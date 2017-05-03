@@ -26,10 +26,20 @@
 #include "GCExtensionsBase.hpp"
 
 void
-MM_EnvironmentDelegate::acquireVMAccess(bool exclusiveAccessForGCObtainedAfterBeatenByOtherThread)
+MM_EnvironmentDelegate::acquireVMAccess()
 {
 	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
 	omrthread_rwmutex_enter_read(exampleVM->_vmAccessMutex);
+}
+
+/**
+ * Release shared VM acccess.
+ */
+void
+MM_EnvironmentDelegate::releaseVMAccess()
+{
+	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
+	omrthread_rwmutex_exit_read(exampleVM->_vmAccessMutex);
 }
 
 /**
@@ -54,16 +64,6 @@ MM_EnvironmentDelegate::isExclusiveAccessRequestWaiting()
 }
 
 /**
- * Release shared VM acccess.
- */
-void
-MM_EnvironmentDelegate::releaseVMAccess(bool exclusiveAccessForGCBeatenByOtherThread)
-{
-	OMR_VM_Example *exampleVM = (OMR_VM_Example *)_env->getOmrVM()->_language_vm;
-	omrthread_rwmutex_exit_read(exampleVM->_vmAccessMutex);
-}
-
-/**
  * Acquire exclusive VM access. This method should only be called by the OMR runtime to
  * perform stop-the-world operations such as garbage collection. Calling thread will be
  * blocked until all other threads holding shared VM access have release VM access.
@@ -83,35 +83,6 @@ MM_EnvironmentDelegate::acquireExclusiveVMAccess()
 		omrthread_monitor_enter(omrVM->_vmThreadListMutex);
 	}
 	_env->getOmrVMThread()->exclusiveCount += 1;
-}
-
-/**
- * Attempt to acquire exclusive VM access. This method may fail and return false
- * if another thread is requesting or has obtained exclusive VM access.
- *
- * @return true if exclusive VM access has been obtained for the calling thread
- */
-bool
-MM_EnvironmentDelegate::tryAcquireExclusiveVMAccess()
-{
-	if (0 == _env->getOmrVMThread()->exclusiveCount) {
-		OMR_VM *omrVM = _env->getOmrVM();
-		OMR_VM_Example *exampleVM = (OMR_VM_Example *)omrVM->_language_vm;
-
-		/* tell the rest of the world that a thread is going for exclusive VM< access */
-		uintptr_t vmExclusiveAccessCount = MM_AtomicOperations::add(&exampleVM->_vmExclusiveAccessCount, 1);
-
-		/* try to acquire exclusive VM access by locking the VM thread list mutex */
-		if ((1 != vmExclusiveAccessCount) || (0 != omrthread_rwmutex_try_enter_write(exampleVM->_vmAccessMutex))) {
-			/* failed to acquire exclusive VM access */
-			Assert_MM_true(0 < exampleVM->_vmExclusiveAccessCount);
-			MM_AtomicOperations::subtract(&exampleVM->_vmExclusiveAccessCount, 1);
-			return false;
-		}
-		omrthread_monitor_enter(omrVM->_vmThreadListMutex);
-	}
-	_env->getOmrVMThread()->exclusiveCount += 1;
-	return true;
 }
 
 /**

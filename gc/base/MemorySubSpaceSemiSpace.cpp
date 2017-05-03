@@ -77,7 +77,7 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	void *addr = NULL;
 
 	allocateDescription->saveObjects(env);
-	if (!env->tryAcquireExclusiveVMAccessForGC(_collector)) {
+	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
 		allocateDescription->restoreObjects(env);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpaceAllocate);
 		if(NULL != addr) {

@@ -659,7 +659,7 @@ bool OMR::Compilation::isShortRunningMethod(int32_t callerIndex)
    return false;
    }
 
-bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
+bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode)
    {
    static char *disableAsyncCheckOSR = feGetEnv("TR_disableAsyncCheckOSR");
    static char *disableGuardedCallOSR = feGetEnv("TR_disableGuardedCallOSR");
@@ -668,6 +668,9 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    bool potentialOSRPoint = false;
    if (self()->getOSRTransitionTarget() == TR::postExecutionOSR)
       {
+      if (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck())
+         node = node->getFirstChild(); 
+
       if (_osrInfrastructureRemoved)
          potentialOSRPoint = false;
       else if (node->getOpCodeValue() == TR::asynccheck)
@@ -675,10 +678,9 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
          if (disableAsyncCheckOSR == NULL)
             potentialOSRPoint = !self()->isShortRunningMethod(node->getByteCodeInfo().getCallerIndex());
          }
-      else if ((node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck()) && node->getFirstChild()->getOpCode().isCall())
+      else if (node->getOpCode().isCall())
          {
-         TR::Node *callNode = node->getFirstChild();
-         TR::SymbolReference *callSymRef = callNode->getSymbolReference();
+         TR::SymbolReference *callSymRef = node->getSymbolReference();
          if (callSymRef->getReferenceNumber() >=
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
             potentialOSRPoint = (disableGuardedCallOSR == NULL);
@@ -691,35 +693,31 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
    else if (self()->getOSRMode() == TR::involuntaryOSR && node->canGCandExcept())
       potentialOSRPoint = true;
 
+   if (osrPointNode && potentialOSRPoint)
+      (*osrPointNode) = node;
+
    return potentialOSRPoint;
    }
 
 bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
    {
-   TR::Node *node = tt->getNode();
-
-   bool potentialOSRPoint = self()->isPotentialOSRPoint(node);
+   TR::Node *osrNode;
+   bool potentialOSRPoint = self()->isPotentialOSRPoint(tt->getNode(), &osrNode);
 
    if (potentialOSRPoint && self()->getOSRMode() == TR::voluntaryOSR)
       {
-
-      if (self()->getOSRTransitionTarget() == TR::postExecutionOSR &&
-          (node->getOpCode().isCheck() || node->getOpCodeValue() == TR::treetop))
+      if (self()->getOSRTransitionTarget() == TR::postExecutionOSR && tt->getNode() != osrNode)
          {
-         // When in OSR HCR mode we need to make sure we check the BCI of the original
-         // call node to ensure we see the correct state of the doNotProfile flag
-         node = node->getFirstChild();
-
          // The OSR point applies where the node is anchored, rather than where it may
          // be commoned. Therefore, it is necessary to check if the node is anchored under
          // a prior treetop.
-         if (node->getReferenceCount() > 1)
+         if (osrNode->getReferenceCount() > 1)
             {
             TR::TreeTop *cursor = tt->getPrevTreeTop();
             while (cursor)
                {
                if ((cursor->getNode()->getOpCode().isCheck() || cursor->getNode()->getOpCodeValue() == TR::treetop)
-                   && cursor->getNode()->getFirstChild() == node)
+                   && cursor->getNode()->getFirstChild() == osrNode)
                   {
                   potentialOSRPoint = false;
                   break;
@@ -734,7 +732,7 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
 
       if (potentialOSRPoint)
          {
-         TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+         TR_ByteCodeInfo &bci = osrNode->getByteCodeInfo();
          TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
             self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
          potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self(), false);
@@ -786,12 +784,23 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    // If no induction after the OSR point, offset must be 0
    if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
       return 0;
+   
+   TR::Node *osrNode;
+   if (!self()->isPotentialOSRPoint(node, &osrNode))
+      {
+      TR_ASSERT(0, "getOSRInductionOffset should only be called on OSR points");
+      }
 
-   switch (node->getOpCodeValue())
+   if (osrNode->getOpCode().isCall())
+      return 3;
+
+   switch (osrNode->getOpCodeValue())
       {
       case TR::monent: return 1;
       case TR::asynccheck: return 0;
-      default: return 3;
+      default:
+         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+         return 0;
       }
    }
 
@@ -812,6 +821,16 @@ OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
    if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
       return false;
 
+   TR::Node *osrNode;
+   if (!self()->isPotentialOSRPoint(node, &osrNode))
+      {
+      TR_ASSERT(0, "requiresAnalysisOSRPoint should only be called on OSR points\n");
+      }
+
+   // Calls require an analysis and transition point as liveness may change across them
+   if (osrNode->getOpCode().isCall())
+      return true;
+
    switch (node->getOpCodeValue())
       {
       // Monents only require a trailing OSR point as they will perform OSR when executing the
@@ -820,9 +839,9 @@ OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
       // Asyncchecks will not modify liveness
       case TR::asynccheck:
          return false;
-      // Calls require an analysis and transition point as liveness may change across them
       default:
-         return true;
+         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+         return false;
       }
    }
 

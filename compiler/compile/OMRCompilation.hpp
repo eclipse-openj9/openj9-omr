@@ -820,9 +820,12 @@ public:
     * Normal usage requires you to pass in a TreeTop and the transition node will
     * be distilled from that. Supplying a node directly is a very special operation
     * and is primarily intended for ILGen before blocks are created - you risk
-    * incorrect answers if you fail to supply the TreeTop
+    * incorrect answers if you fail to supply the TreeTop.
+    *
+    * osrPointNode can be used to identify the node that is believed to be the
+    * potential OSR point. Multiple OSR points are not expected within a tree.
     */
-   bool isPotentialOSRPoint(TR::Node *node);
+   bool isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode=NULL);
    bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
 
    TR::OSRMode getOSRMode();

@@ -1989,6 +1989,7 @@ private:
       void maskWord(int wordIndex, uint64_t mask){ _words[wordIndex] |= mask; }
       void replaceWord(int wordIndex, uint64_t newValue){ _words[wordIndex] = newValue; }
       };
+   typedef OptionFlagArray<TR_VerboseFlags, TR_NumVerboseOptions> VerboseOptionFlagArray;
 
    static bool validateOptionsTables(void *feBase, TR_FrontEnd *fe);
 
@@ -2026,6 +2027,8 @@ private:
    //
    static char *setVerboseBits(char *option, void *base, TR::OptionTable *entry);
    static char *setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::OptionTable *entry);
+   // Helper method used by the two methods above
+   static char *setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags);
 
    // Set samplingjprofiling bits
    //
@@ -2312,7 +2315,6 @@ private:
    static TR_YesNoMaybe        _startupTimeMatters; // set very late in setCounts()
    // If countsAreProvidedByUser, then this flag is undefined
 
-   typedef OptionFlagArray<TR_VerboseFlags, TR_NumVerboseOptions> VerboseOptionFlagArray;
    static VerboseOptionFlagArray  _verboseOptionFlags;
    static char                   *_verboseOptionNames[TR_NumVerboseOptions];
    static bool                 _quickstartDetected; // set when Quickstart was specified on the command line

@@ -84,9 +84,9 @@ ut_*.h
 ut_*.inc
 
 # ddr
-blob_reader
-ddrgen
-ddrgentest
+/blob_reader
+/ddrgen
+/ddrgentest
 
 install_manifest.txt
 Testing/

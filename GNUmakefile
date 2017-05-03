@@ -133,12 +133,6 @@ main_targets += omrtrace
 # OMR Startup
 main_targets += omr omr/startup
 
-# DDR tools
-ifeq (yes,$(ENABLE_DDR))
-postbuild_targets += tools/ddrgen
-targets += tools/ddrgen
-endif
-
 # RAS Tests
 test_targets += fvtest/rastest
 
@@ -181,6 +175,9 @@ targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(
 targets_clean := $(addsuffix _clean,$(targets))
 targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/%, $(targets)))
 
+ifeq (yes,$(ENABLE_DDR))
+  main_targets += ddr
+endif
 
 ###
 ### Rules
@@ -224,7 +221,7 @@ tools/tracemerge:: util/a2e
 tools/hookgen:: util/a2e
 endif
 
-tools/ddrgen:: staticlib
+ddr:: staticlib
 
 $(HOOK_DEFINITION_SENTINEL): $(exe_output_dir)/hookgen$(EXEEXT)
 %.sentinel: %.hdf

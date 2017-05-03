@@ -16,27 +16,20 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef UDT_HPP
-#define UDT_HPP
+#ifndef ENUMMEMBER_HPP
+#define ENUMMEMBER_HPP
 
-#include <vector>
+#include "ddr/ir/Members.hpp"
 
-#include "Members.hpp"
-#include "Macro.hpp"
-#include "Type.hpp"
-
-class UDT : public Type
+class EnumMember: public Members
 {
 public:
-	UDT *_outerUDT;
-	unsigned int _lineNumber;
+	int _value;
 
-	UDT(SymbolType symbolType, size_t size, unsigned int lineNumber = 0);
-	virtual ~UDT();
+	EnumMember();
 
-	virtual bool equal(Type const& type, set<Type const*> *checked) const;
-	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
-	virtual string getFullName();
+	virtual ~EnumMember();
+
 };
 
-#endif /* UDT_HPP */
+#endif /* ENUMMEMBER_HPP */

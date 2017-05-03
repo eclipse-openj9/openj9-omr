@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,31 +16,22 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef SYMBOL_IR_HPP
-#define SYMBOL_IR_HPP
+#ifndef UNIONUDT_HPP
+#define UNIONUDT_HPP
 
-#include <vector>
+#include "ddr/ir/ClassType.hpp"
 
-#include "omrport.h"
-
-#include "config.hpp"
-#include "Type.hpp"
-
-using std::vector;
-
-class Symbol_IR {
+class UnionUDT: public ClassType
+{
 public:
-	std::vector<Type *> _types;
+	UnionUDT(size_t size, unsigned int lineNumber = 0);
 
-	~Symbol_IR();
+	virtual ~UnionUDT();
 
-	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
-	DDR_RC computeOffsets();
-	DDR_RC removeDuplicates();
-
-private:
-	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
-	DDR_RC computeFieldOffsets(Type *type);
+	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
+	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
+	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
+	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* SYMBOL_IR_HPP */
+#endif /* UNIONUDT_HPP */

@@ -19,7 +19,7 @@
 #define __IBMCPP_TR1__ 1 /* Need this for AIX */
 #endif /* defined(AIXPPC) */
 
-#include "config.hpp"
+#include "ddr/config.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <stdio.h>

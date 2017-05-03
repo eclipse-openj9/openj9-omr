@@ -18,8 +18,8 @@
 
 #include <sys/types.h>
 #include <sys/errno.h>
-#include "config.hpp"
-#include "DwarfFunctions.hpp"
+#include "ddr/config.hpp"
+#include "ddr/scanner/dwarf/DwarfFunctions.hpp"
 #include <set>
 
 typedef enum declFormat {

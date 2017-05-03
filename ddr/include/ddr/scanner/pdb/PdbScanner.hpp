@@ -32,10 +32,10 @@
 #undef UDATA	/* this is safe because our UDATA is a typedef, not a macro */
 #endif
 
-#include "ClassUDT.hpp"
-#include "EnumUDT.hpp"
-#include "../Scanner.hpp"
-#include "Symbol_IR.hpp"
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/scanner/Scanner.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
 
 using std::hash;
 using std::ifstream;

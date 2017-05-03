@@ -16,55 +16,30 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef TYPE_HPP
-#define TYPE_HPP
+#ifndef TYPEDEFUDT_HPP
+#define TYPEDEFUDT_HPP
 
-#include <set>
 #include <string>
 
-#include "config.hpp"
-#include "genBlob.hpp"
-#include "Scanner.hpp"
+#include "Modifiers.hpp"
+#include "ddr/ir/UDT.hpp"
 
-using std::set;
-using std::string;
-
-enum SymbolType {
-	CLASS,
-	STRUCT,
-	ENUM,
-	UNION,
-	BASE,
-	TYPEDEF,
-	NAMESPACE
-};
-
-class Type
+class TypedefUDT : public UDT
 {
-protected:
-	SymbolType _symbolType;
-
 public:
-	std::string _name;
-	size_t _sizeOf; /* Size of type in bytes */
+	Type *_type;
+	Modifiers _modifiers;
 
-	Type(SymbolType symbolType, size_t size);
-	virtual ~Type();
+	TypedefUDT(unsigned int lineNumber = 0);
+	~TypedefUDT();
 
-	SymbolType getSymbolType();
-	virtual bool isAnonymousType();
-	friend bool operator==(Type const& lhs, Type const& rhs);
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 
-	virtual string getFullName();
-	virtual string getSymbolTypeName();
-
-	/* Visitor pattern functions to allow the scanner/generator to dispatch functionality based on type. */
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* TYPE_HPP */
+#endif /* TYPEDEFUDT_HPP */

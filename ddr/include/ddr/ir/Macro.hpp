@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016
+ * (c) Copyright IBM Corp. 2015, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,22 +16,32 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef UNIONUDT_HPP
-#define UNIONUDT_HPP
+#ifndef MACRO_HPP
+#define MACRO_HPP
 
-#include "ClassType.hpp"
+#include <string>
 
-class UnionUDT: public ClassType
+#include "ddr/config.hpp"
+
+class Macro
 {
+private:
+	std::string _value;
+
 public:
-	UnionUDT(size_t size, unsigned int lineNumber = 0);
+	std::string _name;
 
-	virtual ~UnionUDT();
+	Macro(std::string name, std::string value) : _value(value), _name(name)
+	{
+	}
 
-	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
-	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
-	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
-	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
+	std::string
+	getValue() const
+	{
+		return _value;
+	}
+
+	DDR_RC getNumeric(long long *ret);
 };
 
-#endif /* UNIONUDT_HPP */
+#endif /* MACRO_HPP */

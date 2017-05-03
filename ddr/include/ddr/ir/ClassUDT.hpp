@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016
+ * (c) Copyright IBM Corp. 2015, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,28 +16,29 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef CLASSTYPE_HPP
-#define CLASSTYPE_HPP
+#ifndef CLASSUDT_HPP
+#define CLASSUDT_HPP
 
-#include "EnumMember.hpp"
-#include "Field.hpp"
-#include "NamespaceUDT.hpp"
-#include "UDT.hpp"
+#include "ddr/ir/ClassType.hpp"
 
-using std::vector;
-
-class ClassType : public NamespaceUDT
+/* This type represents both class and struct types */
+class ClassUDT: public ClassType
 {
 public:
-	vector<Field *> _fieldMembers;
-	vector<EnumMember *> _enumMembers; /* used for anonymous enums*/
+	ClassUDT *_superClass;
+	bool _isClass;
 
-	ClassType(SymbolType symbolType, size_t size, unsigned int lineNumber = 0);
-	virtual ~ClassType();
+	ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
+	virtual ~ClassUDT();
 
-	virtual bool isAnonymousType();
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
+	virtual string getSymbolTypeName();
+
+	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
+	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
+	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
+	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* CLASSTYPE_HPP */
+#endif /* CLASSUDT_HPP */

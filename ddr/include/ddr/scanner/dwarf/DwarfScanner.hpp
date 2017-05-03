@@ -19,6 +19,8 @@
 #ifndef DWARFSCANNER_HPP
 #define DWARFSCANNER_HPP
 
+#include "ddr/config.hpp"
+
 #if defined(AIXPPC) || defined(J9ZOS390)
 #define __IBMCPP_TR1__ 1
 #include <unordered_map>
@@ -30,18 +32,18 @@ using std::tr1::unordered_map;
 #include <map>
 
 #if defined(OSX) || defined(AIXPPC)
-#include "DwarfFunctions.hpp"
+#include "ddr/scanner/dwarf/DwarfFunctions.hpp"
 #else /* defined(OSX) || defined(AIXPPC) */
 #include <dwarf.h>
 #include <libdwarf.h>
 #endif /* defined(OSX) */
 
-#include "ClassUDT.hpp"
-#include "config.hpp"
-#include "EnumUDT.hpp"
-#include "../Scanner.hpp"
-#include "Symbol_IR.hpp"
-#include "TypedefUDT.hpp"
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/config.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/scanner/Scanner.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
 
 #if defined(AIXPPC) || defined(J9ZOS390)
 using std::tr1::hash;

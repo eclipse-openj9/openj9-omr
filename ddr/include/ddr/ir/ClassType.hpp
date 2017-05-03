@@ -16,30 +16,28 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef TYPEDEFUDT_HPP
-#define TYPEDEFUDT_HPP
+#ifndef CLASSTYPE_HPP
+#define CLASSTYPE_HPP
 
-#include <string>
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/Field.hpp"
+#include "ddr/ir/NamespaceUDT.hpp"
+#include "ddr/ir/UDT.hpp"
 
-#include "Modifiers.hpp"
-#include "UDT.hpp"
+using std::vector;
 
-class TypedefUDT : public UDT
+class ClassType : public NamespaceUDT
 {
 public:
-	Type *_type;
-	Modifiers _modifiers;
+	vector<Field *> _fieldMembers;
+	vector<EnumMember *> _enumMembers; /* used for anonymous enums*/
 
-	TypedefUDT(unsigned int lineNumber = 0);
-	~TypedefUDT();
+	ClassType(SymbolType symbolType, size_t size, unsigned int lineNumber = 0);
+	virtual ~ClassType();
 
+	virtual bool isAnonymousType();
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
-
-	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
-	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
-	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
-	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* TYPEDEFUDT_HPP */
+#endif /* CLASSTYPE_HPP */

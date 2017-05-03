@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,31 +16,55 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef ENUMUDT_HPP
-#define ENUMUDT_HPP
+#ifndef TYPE_HPP
+#define TYPE_HPP
 
-#include "EnumMember.hpp"
-#include "UDT.hpp"
+#include <set>
+#include <string>
 
-using std::vector;
+#include "ddr/config.hpp"
+#include "ddr/blobgen/genBlob.hpp"
+#include "ddr/scanner/Scanner.hpp"
 
-class EnumUDT: public UDT
+using std::set;
+using std::string;
+
+enum SymbolType {
+	CLASS,
+	STRUCT,
+	ENUM,
+	UNION,
+	BASE,
+	TYPEDEF,
+	NAMESPACE
+};
+
+class Type
 {
+protected:
+	SymbolType _symbolType;
+
 public:
-	vector<EnumMember *> _enumMembers;
+	std::string _name;
+	size_t _sizeOf; /* Size of type in bytes */
 
-	EnumUDT(unsigned int lineNumber = 0);
-	virtual ~EnumUDT();
+	Type(SymbolType symbolType, size_t size);
+	virtual ~Type();
 
-	bool isAnonymousType();
+	SymbolType getSymbolType();
+	virtual bool isAnonymousType();
+	friend bool operator==(Type const& lhs, Type const& rhs);
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
+
+	virtual string getFullName();
 	virtual string getSymbolTypeName();
 
+	/* Visitor pattern functions to allow the scanner/generator to dispatch functionality based on type. */
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* ENUMUDT_HPP */
+#endif /* TYPE_HPP */

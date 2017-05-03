@@ -16,20 +16,30 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef ENUMMEMBER_HPP
-#define ENUMMEMBER_HPP
+#ifndef FIELD_HPP
+#define FIELD_HPP
 
-#include "Members.hpp"
+#include <string>
 
-class EnumMember: public Members
+#include "ddr/config.hpp"
+#include "ddr/ir/Members.hpp"
+#include "ddr/ir/Modifiers.hpp"
+#include "ddr/ir/Type.hpp"
+
+class Field : public Members
 {
 public:
-	int _value;
+	Type *_fieldType;
+	size_t _sizeOf;
+	size_t _offset;
+	Modifiers _modifiers;
+	size_t _bitField;
+	bool _isStatic;
 
-	EnumMember();
+	Field();
 
-	virtual ~EnumMember();
-
+	std::string getTypeName();
+	DDR_RC getBaseSymbolType(SymbolType *symbolType);
 };
 
-#endif /* ENUMMEMBER_HPP */
+#endif /* FIELD_HPP */

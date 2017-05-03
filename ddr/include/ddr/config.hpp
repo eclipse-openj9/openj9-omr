@@ -16,30 +16,38 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef FIELD_HPP
-#define FIELD_HPP
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
 
-#include <string>
+#include "omrcfg.h"
 
-#include "config.hpp"
-#include "Members.hpp"
-#include "Modifiers.hpp"
-#include "Type.hpp"
+#include <stdio.h>
 
-class Field : public Members
-{
-public:
-	Type *_fieldType;
-	size_t _sizeOf;
-	size_t _offset;
-	Modifiers _modifiers;
-	size_t _bitField;
-	bool _isStatic;
+#define ERRMSG(...) { \
+	fprintf(stderr, "Error: %s:%d %s - ", __FILE__, __LINE__, __FUNCTION__);\
+	fprintf(stderr, __VA_ARGS__);\
+	fprintf(stderr, "\n");\
+}
 
-	Field();
+#if 0
+/* Enable debug printf output */
+#define DEBUGPRINTF_ON
+#endif
 
-	std::string getTypeName();
-	DDR_RC getBaseSymbolType(SymbolType *symbolType);
+#if defined(DEBUGPRINTF_ON)
+#define DEBUGPRINTF(...) { \
+	printf("DEBUG: %s[%d]: %s: ", __FILE__, __LINE__, __FUNCTION__);\
+	printf(__VA_ARGS__);\
+	printf("\n");\
+	fflush(stdout);\
+}
+#else
+#define DEBUGPRINTF(...)
+#endif /* defined(DEBUG) */
+
+enum DDR_RC {
+	DDR_RC_OK,
+	DDR_RC_ERROR
 };
 
-#endif /* FIELD_HPP */
+#endif /* CONFIG_HPP */

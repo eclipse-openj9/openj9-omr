@@ -16,21 +16,23 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef CLASSUDT_HPP
-#define CLASSUDT_HPP
+#ifndef ENUMUDT_HPP
+#define ENUMUDT_HPP
 
-#include "ClassType.hpp"
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/UDT.hpp"
 
-/* This type represents both class and struct types */
-class ClassUDT: public ClassType
+using std::vector;
+
+class EnumUDT: public UDT
 {
 public:
-	ClassUDT *_superClass;
-	bool _isClass;
+	vector<EnumMember *> _enumMembers;
 
-	ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
-	virtual ~ClassUDT();
+	EnumUDT(unsigned int lineNumber = 0);
+	virtual ~EnumUDT();
 
+	bool isAnonymousType();
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 	virtual string getSymbolTypeName();
@@ -41,4 +43,4 @@ public:
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 };
 
-#endif /* CLASSUDT_HPP */
+#endif /* ENUMUDT_HPP */

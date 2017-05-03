@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016
+ * (c) Copyright IBM Corp. 2015, 2016
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -16,30 +16,27 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef MACROTOOL_HPP
-#define MACROTOOL_HPP
+#ifndef UDT_HPP
+#define UDT_HPP
 
-#include <string>
+#include <vector>
 
-#include "config.hpp"
-#include "MacroInfo.hpp"
-#include "Symbol_IR.hpp"
+#include "ddr/ir/Members.hpp"
+#include "ddr/ir/Macro.hpp"
+#include "ddr/ir/Type.hpp"
 
-using std::string;
-using std::vector;
-
-class MacroTool
+class UDT : public Type
 {
-private:
-	vector<MacroInfo> macroList;
-
-	string getTypeName(string s);
-	pair<string, string> getMacroInfo(string s);
-	string getFileName(string s);
-
 public:
-	DDR_RC getMacros(string fname);
-	DDR_RC addMacrosToIR(Symbol_IR *ir);
+	UDT *_outerUDT;
+	unsigned int _lineNumber;
+
+	UDT(SymbolType symbolType, size_t size, unsigned int lineNumber = 0);
+	virtual ~UDT();
+
+	virtual bool equal(Type const& type, set<Type const*> *checked) const;
+	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
+	virtual string getFullName();
 };
 
-#endif /* MACROTOOL_HPP */
+#endif /* UDT_HPP */

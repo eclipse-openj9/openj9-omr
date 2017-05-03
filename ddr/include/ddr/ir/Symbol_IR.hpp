@@ -16,32 +16,31 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#ifndef MACRO_HPP
-#define MACRO_HPP
+#ifndef SYMBOL_IR_HPP
+#define SYMBOL_IR_HPP
 
-#include <string>
+#include <vector>
 
-#include "config.hpp"
+#include "omrport.h"
 
-class Macro
-{
-private:
-	std::string _value;
+#include "ddr/config.hpp"
+#include "ddr/ir/Type.hpp"
 
+using std::vector;
+
+class Symbol_IR {
 public:
-	std::string _name;
+	std::vector<Type *> _types;
 
-	Macro(std::string name, std::string value) : _value(value), _name(name)
-	{
-	}
+	~Symbol_IR();
 
-	std::string
-	getValue() const
-	{
-		return _value;
-	}
+	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
+	DDR_RC computeOffsets();
+	DDR_RC removeDuplicates();
 
-	DDR_RC getNumeric(long long *ret);
+private:
+	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
+	DDR_RC computeFieldOffsets(Type *type);
 };
 
-#endif /* MACRO_HPP */
+#endif /* SYMBOL_IR_HPP */

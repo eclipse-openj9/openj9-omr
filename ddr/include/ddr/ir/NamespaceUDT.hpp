@@ -21,8 +21,8 @@
 
 #include <string>
 
-#include "Macro.hpp"
-#include "UDT.hpp"
+#include "ddr/ir/Macro.hpp"
+#include "ddr/ir/UDT.hpp"
 
 class NamespaceUDT : public UDT
 {

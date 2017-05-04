@@ -251,10 +251,10 @@
    TR::TreeEvaluator::compareDoubleAndSetEvaluator,     // TR::dcmpleu
    TR::TreeEvaluator::integerCmpeqEvaluator,            // TR::acmpeq
    TR::TreeEvaluator::integerCmpneEvaluator,            // TR::acmpne
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::acmplt
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::acmpge
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::acmpgt
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::acmple
+   TR::TreeEvaluator::unsignedIntegerCmpltEvaluator,    // TR::acmplt
+   TR::TreeEvaluator::unsignedIntegerCmpgeEvaluator,    // TR::acmpge
+   TR::TreeEvaluator::unsignedIntegerCmpgtEvaluator,    // TR::acmpgt
+   TR::TreeEvaluator::unsignedIntegerCmpleEvaluator,    // TR::acmple
    TR::TreeEvaluator::bcmpeqEvaluator,                  // TR::bcmpeq
    TR::TreeEvaluator::bcmpeqEvaluator,                  // TR::bcmpne
    TR::TreeEvaluator::bcmpltEvaluator,                  // TR::bcmplt
@@ -334,10 +334,10 @@
    TR::TreeEvaluator::compareDoubleAndBranchEvaluator,  // TR::ifdcmpleu
    TR::TreeEvaluator::integerIfCmpeqEvaluator,          // TR::ifacmpeq
    TR::TreeEvaluator::integerIfCmpneEvaluator,          // TR::ifacmpne
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::ifacmplt
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::ifacmpge
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::ifacmpgt
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::ifacmple
+   TR::TreeEvaluator::unsignedIntegerIfCmpltEvaluator,  // TR::ifacmplt
+   TR::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator,  // TR::ifacmpge
+   TR::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator,  // TR::ifacmpgt
+   TR::TreeEvaluator::unsignedIntegerIfCmpleEvaluator,  // TR::ifacmple
    TR::TreeEvaluator::ifbcmpeqEvaluator,                // TR::ifbcmpeq
    TR::TreeEvaluator::ifbcmpeqEvaluator,                // TR::ifbcmpne
    TR::TreeEvaluator::ifbcmpltEvaluator,                // TR::ifbcmplt

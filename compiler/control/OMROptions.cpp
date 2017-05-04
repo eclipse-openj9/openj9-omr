@@ -4774,9 +4774,8 @@ OMR::Options::setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::Opt
 #ifdef J9_PROJECT_SPECIFIC
    TR_JitPrivateConfig *privateConfig = *(TR_JitPrivateConfig**)((char*)_feBase+entry->parm1);
    TR_ASSERT(sizeof(VerboseOptionFlagArray) <= sizeof(privateConfig->verboseFlags), "TR_JitPrivateConfig::verboseFlags field is too small");
-   TR::OptionTable privatizedEntry = *entry;
-   privatizedEntry.parm1 = offsetof(TR_JitPrivateConfig, verboseFlags);
-   return TR::Options::setVerboseBits(option, privateConfig, &privatizedEntry);
+   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)privateConfig + offsetof(TR_JitPrivateConfig, verboseFlags));
+   return TR::Options::setVerboseBitsHelper(option, verboseOptionFlags, entry->parm2);
 #else
    return NULL;
 #endif
@@ -4787,11 +4786,17 @@ char *
 OMR::Options::setVerboseBits(char *option, void *base, TR::OptionTable *entry)
    {
    VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)_feBase+entry->parm1);
-   if (entry->parm2 != 0) // This is used for -Xjit:verbose without any options
+   return TR::Options::setVerboseBitsHelper(option, verboseOptionFlags, entry->parm2);
+   }
+
+
+char *
+OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags)
+   {
+   if (defaultVerboseFlags != 0) // This is used for -Xjit:verbose without any options
       {
-      // Since no verbose options are specified, add the default options,
-      // specified in parm2 of the options table
-      verboseOptionFlags->maskWord(0, entry->parm2);
+      // Since no verbose options are specified, add the default options
+      verboseOptionFlags->maskWord(0, defaultVerboseFlags);
       }
    else // This is used for -Xjit:verbose={}  construct
       {

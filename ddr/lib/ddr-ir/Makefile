@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2016
+# (c) Copyright IBM Corp. 2015, 2016
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -15,11 +15,10 @@
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
-
 top_srcdir = ../../..
 include $(top_srcdir)/omrmakefiles/configure.mk
 
-MODULE_NAME := macros
+MODULE_NAME := ddr-ir
 ARTIFACT_TYPE := archive
 
 MODULE_INCLUDES += \
@@ -35,7 +34,19 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
 endif
 
 OBJECTS = \
-  MacroInfo$(OBJEXT) \
-  MacroTool$(OBJEXT)
+  ClassUDT$(OBJEXT) \
+  ClassType$(OBJEXT) \
+  Field$(OBJEXT) \
+  Macro$(OBJEXT) \
+  Members$(OBJEXT) \
+  Modifiers$(OBJEXT) \
+  NamespaceUDT$(OBJEXT) \
+  EnumMember$(OBJEXT) \
+  Symbol_IR$(OBJEXT) \
+  EnumUDT$(OBJEXT) \
+  Type$(OBJEXT) \
+  TypedefUDT$(OBJEXT) \
+  UDT$(OBJEXT) \
+  UnionUDT$(OBJEXT)
 
 include $(top_srcdir)/omrmakefiles/rules.mk

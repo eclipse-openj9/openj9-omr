@@ -22,10 +22,10 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 .DEFAULT_GOAL := all
 
 targets = \
-  blobgen \
-  ir \
-  macros \
-  scanner
+  ddr-blobgen \
+  ddr-ir \
+  ddr-macros \
+  ddr-scanner
 
 all: $(targets)
 

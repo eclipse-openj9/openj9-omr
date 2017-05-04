@@ -15,13 +15,14 @@
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
+
 top_srcdir = ../../..
 include $(top_srcdir)/omrmakefiles/configure.mk
 
-MODULE_NAME := ir
+MODULE_NAME := ddr-scanner
 ARTIFACT_TYPE := archive
 
-MODULE_INCLUDES += \
+MODULE_INCLUDES = \
   $(top_srcdir)/ddr/include \
   $(top_srcdir)/include_core
 
@@ -33,20 +34,24 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
 
-OBJECTS = \
-  ClassUDT$(OBJEXT) \
-  ClassType$(OBJEXT) \
-  Field$(OBJEXT) \
-  Macro$(OBJEXT) \
-  Members$(OBJEXT) \
-  Modifiers$(OBJEXT) \
-  NamespaceUDT$(OBJEXT) \
-  EnumMember$(OBJEXT) \
-  Symbol_IR$(OBJEXT) \
-  EnumUDT$(OBJEXT) \
-  Type$(OBJEXT) \
-  TypedefUDT$(OBJEXT) \
-  UDT$(OBJEXT) \
-  UnionUDT$(OBJEXT)
+ifneq (,$(findstring pdb,$(DEBUG_FORMAT)))
+  OBJECTS += pdb/PdbScanner.$(OBJEXT)
+  MODULE_STATIC_LIBS += diaguids.lib
+endif
+
+ifneq (,$(findstring dwo,$(DEBUG_FORMAT)))
+  MODULE_INCLUDES += $(OMR_LIBDWARF_IPATH)
+  OBJECTS = \
+    dwarf/DwarfScanner$(OBJEXT) \
+    dwarf/DwarfFunctions$(OBJEXT)
+endif
+
+ifeq (osx,$(OMR_HOST_OS))
+  OBJECTS += dwarf/DwarfParser$(OBJEXT)
+endif
+
+ifeq (aix,$(OMR_HOST_OS))
+  OBJECTS += dwarf/AixSymbolTableParser$(OBJEXT)
+endif
 
 include $(top_srcdir)/omrmakefiles/rules.mk

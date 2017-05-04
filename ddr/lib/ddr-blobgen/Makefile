@@ -16,13 +16,13 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-top_srcdir = ../../..
+top_srcdir=../../..
 include $(top_srcdir)/omrmakefiles/configure.mk
 
-MODULE_NAME := scanner
+MODULE_NAME := ddr-blobgen
 ARTIFACT_TYPE := archive
 
-MODULE_INCLUDES = \
+MODULE_INCLUDES := \
   $(top_srcdir)/ddr/include \
   $(top_srcdir)/include_core
 
@@ -34,24 +34,9 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
 
-ifneq (,$(findstring pdb,$(DEBUG_FORMAT)))
-  OBJECTS += pdb/PdbScanner.$(OBJEXT)
-  MODULE_STATIC_LIBS += diaguids.lib
-endif
-
-ifneq (,$(findstring dwo,$(DEBUG_FORMAT)))
-  MODULE_INCLUDES += $(OMR_LIBDWARF_IPATH)
-  OBJECTS = \
-    dwarf/DwarfScanner$(OBJEXT) \
-    dwarf/DwarfFunctions$(OBJEXT)
-endif
-
-ifeq (osx,$(OMR_HOST_OS))
-  OBJECTS += dwarf/DwarfParser$(OBJEXT)
-endif
-
-ifeq (aix,$(OMR_HOST_OS))
-  OBJECTS += dwarf/AixSymbolTableParser$(OBJEXT)
-endif
+OBJECTS := \
+  java/genBinaryBlob$(OBJEXT) \
+  java/genBlobJava$(OBJEXT) \
+  java/genSuperset$(OBJEXT)
 
 include $(top_srcdir)/omrmakefiles/rules.mk

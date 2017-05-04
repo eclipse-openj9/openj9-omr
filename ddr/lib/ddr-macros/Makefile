@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2015, 2016
+# (c) Copyright IBM Corp. 2016
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -16,13 +16,13 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-top_srcdir=../../..
+top_srcdir = ../../..
 include $(top_srcdir)/omrmakefiles/configure.mk
 
-MODULE_NAME := blobgen
+MODULE_NAME := ddr-macros
 ARTIFACT_TYPE := archive
 
-MODULE_INCLUDES := \
+MODULE_INCLUDES += \
   $(top_srcdir)/ddr/include \
   $(top_srcdir)/include_core
 
@@ -34,9 +34,8 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
 
-OBJECTS := \
-  java/genBinaryBlob$(OBJEXT) \
-  java/genBlobJava$(OBJEXT) \
-  java/genSuperset$(OBJEXT)
+OBJECTS = \
+  MacroInfo$(OBJEXT) \
+  MacroTool$(OBJEXT)
 
 include $(top_srcdir)/omrmakefiles/rules.mk

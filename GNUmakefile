@@ -156,8 +156,8 @@ test_targets += fvtest/jitbuildertest jitbuilder/release
 endif
 
 ifeq (yes,$(ENABLE_DDR))
-  targets += ddr
-  ddr: staticlib
+  postbuild_targets += ddr
+  ddr:: staticlib
 endif
 
 DO_TEST_TARGET := yes
@@ -176,7 +176,7 @@ postbuild_targets += tests
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets)
+targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
 targets_clean := $(addsuffix _clean,$(targets))
 
 ###

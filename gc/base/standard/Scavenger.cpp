@@ -4874,7 +4874,7 @@ MM_Scavenger::triggerConcurrentScavengerTransition(MM_EnvironmentBase *env, MM_A
 }
 
 void
-MM_Scavenger::completeConcurrentScavenger(MM_EnvironmentBase *env)
+MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env)
 {
 	/* this is supposed to be called by an external cycle (for example ConcurrentGC, STW phase)
 	 * that is just to be started, but cannot before Scavenger is complete */

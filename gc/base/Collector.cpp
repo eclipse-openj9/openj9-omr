@@ -195,7 +195,7 @@ MM_Collector::preCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace, M
 	/* There might be a colliding concurrent cycle in progress, that must be completed before we start this one.
 	 * Specific Collector subclass will have exact knowledge if that is the case.
 	 */
-	completeConcurrentCycle(env);
+	completeExternalConcurrentCycle(env);
 
 	/* Record the master GC thread CPU time at the start to diff later */
 	_masterThreadCpuTimeStart = omrthread_get_self_cpu_time(env->getOmrVMThread()->_os_thread);

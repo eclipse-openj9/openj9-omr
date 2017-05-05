@@ -946,7 +946,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00001000 + 29,
    TR_UseHigherCountsForNonSCCMethods                 = 0x00002000 + 29,
    TR_UseHigherMethodCountsAfterStartup               = 0x00004000 + 29,
-   TR_EnableNextGenHCR                                = 0x00008000 + 29,
+   TR_DisableNextGenHCR                               = 0x00008000 + 29,
    TR_DisableMetadataReclamation                      = 0x00010000 + 29,
    TR_DisableInlineIsInstance                         = 0x00020000 + 29,
    TR_DisableSIMDStringHashCode                       = 0x00040000 + 29,

@@ -1275,7 +1275,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             //
             bool doOSR = comp->getOption(TR_EnableOSR)
                && !comp->isPeekingMethod()
-               && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR))
+               && !(comp->getOption(TR_DisableNextGenHCR) && comp->getOption(TR_EnableHCR))
                && comp->supportsInduceOSR()
                && !self()->cannotAttemptOSRDuring(comp->getCurrentInlinedSiteIndex(), comp);
 

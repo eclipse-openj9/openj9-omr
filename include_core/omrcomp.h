@@ -496,12 +496,6 @@ typedef struct U_128 {
 #define J9_CDATA
 #endif
 
-/* Macros for tagging functions which read/write the vm thread */
-
-#define READSVMTHREAD
-#define WRITESVMTHREAD
-#define REQUIRESSTACKFRAME
-
 /* macro for tagging functions which never return */
 #ifdef __GNUC__
 /* on GCC, we can actually pass this information on to the compiler */

@@ -1295,6 +1295,13 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          type = TR::Int8;
 
          elementSize = TR::Symbol::convertTypeToSize(type);
+
+         // VP may not know anything about the types of the objects we are copying, hence primitiveArray1 and
+         // and primitiveArray2 would both return false. However because we are dealing with a recognized method we
+         // know that the types must be primitive. As such we we can safely set the following two variables without
+         // repercussions.
+         primitiveArray1 = true;
+         primitiveArray2 = true;
          }
 
       if (isStringDecompressedArrayCopy)
@@ -1302,6 +1309,13 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
          type = TR::Int16;
 
          elementSize = TR::Symbol::convertTypeToSize(type);
+
+         // VP may not know anything about the types of the objects we are copying, hence primitiveArray1 and
+         // and primitiveArray2 would both return false. However because we are dealing with a recognized method we
+         // know that the types must be primitive. As such we we can safely set the following two variables without
+         // repercussions.
+         primitiveArray1 = true;
+         primitiveArray2 = true;
          }
 
       if (comp()->getOptions()->realTimeGC() &&

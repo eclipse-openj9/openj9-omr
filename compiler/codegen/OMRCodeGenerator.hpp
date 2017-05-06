@@ -1184,11 +1184,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void addToUnlatchedRegisterList(TR::RealRegister *reg);
    void freeUnlatchedRegisters();
 
-   //This indicates if TR_VRF virtual registers may need to be assigned even if the system only has TR_FPR real registers
-   //This is set to true when there is a full overlap between TR_FPR and TR_VRF registers and all of the TR_FPR/TR_VRF
-   //registers are marked as TR_FPR
-   bool isFPRUsedAsVRF() { return false; }
-
    // --------------------------------------------------------------------------
    // Listing
    //

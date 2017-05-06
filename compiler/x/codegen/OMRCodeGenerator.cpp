@@ -253,6 +253,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       {
       self()->setUseSSEForSinglePrecision();
       self()->setUseSSEForDoublePrecision();
+      self()->setSupportsAutoSIMD();
       }
 
    // Choose the best XMM double precision load instruction for the target architecture.
@@ -970,27 +971,34 @@ bool
 OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
    /*
-    * This is a place holder function. It currently always returns false because none of the SIMD evaluators for OpCodes used
-    * in AutoSIMD have been implemented.
-    * This should be filled in (and this comment updated) as support for SIMD evaluators is implemented.
+    * Only a few of the vector evaluators for opcodes used in AutoSIMD have been implemented.
+    * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
       case TR::vadd:
-      case TR::vsub:
       case TR::vmul:
-      case TR::vdiv:
-      case TR::vrem:
-      case TR::vneg:
+         if (dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
+      case TR::vsplats:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vsub:
+      case TR::vdiv:
+      case TR::vrem:
+      case TR::vneg:
       case TR::vxor:
       case TR::vor:
       case TR::vand:
-      case TR::vsplats:
       case TR::getvelem:
       default:
          return false;

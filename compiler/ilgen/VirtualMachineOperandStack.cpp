@@ -118,14 +118,14 @@ VirtualMachineOperandStack::MergeInto(OMR::VirtualMachineOperandStack* other, TR
    for (int32_t i=_stackTop;i >= 0;i--)
       {
       // only need to do something if the two entries aren't already the same
-      if (other->_stack[i]->getCPIndex() != _stack[i]->getCPIndex())
+      if (other->_stack[i]->getID() != _stack[i]->getID())
          {
          // what if types don't match? could use ConvertTo, but seems...arbitrary
          // nobody *should* design bytecode set where corresponding elements of stacks from
          // two incoming control flow edges can have different primitive types. objects, sure
          // but not primitive types (even different types of objects should have same primitive
          // type: Address. Expecting to be disappointed here some day...
-         TR_ASSERT(_stack[i]->getSymbol()->getDataType() == other->_stack[i]->getSymbol()->getDataType(), "invalid stack merge: primitive type mismatch at same depth stack elements");
+         TR_ASSERT(_stack[i]->getDataType() == other->_stack[i]->getDataType(), "invalid stack merge: primitive type mismatch at same depth stack elements");
          b->StoreOver(other->_stack[i], _stack[i]);
          }
       }

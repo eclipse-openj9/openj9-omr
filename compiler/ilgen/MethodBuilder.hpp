@@ -35,6 +35,7 @@ class TR_HashTabString;
 class TR_BitVector;
 namespace TR { class BytecodeBuilder; }
 namespace TR { class ResolvedMethod; }
+namespace TR { class SymbolReference; }
 namespace OMR { class VirtualMachineState; }
 
 namespace OMR
@@ -51,6 +52,8 @@ class MethodBuilder : public TR::IlBuilder
    virtual void setupForBuildIL();
 
    virtual bool injectIL();
+
+   int32_t getNextValueID()                                  { return _nextValueID++; }
 
    bool usesBytecodeBuilders()                               { return _useBytecodeBuilders; }
    void setUseBytecodeBuilders()                             { _useBytecodeBuilders = true; }
@@ -84,8 +87,8 @@ class MethodBuilder : public TR::IlBuilder
       return getSignature(_numParameters, paramTypeArray);
       }
 
-   TR::IlValue *lookupSymbol(const char *name);
-   void defineSymbol(const char *name, TR::IlValue *v);
+   TR::SymbolReference *lookupSymbol(const char *name);
+   void defineSymbol(const char *name, TR::SymbolReference *v);
    bool symbolDefined(const char *name);
    bool isSymbolAnArray(const char * name);
 
@@ -180,6 +183,8 @@ class MethodBuilder : public TR::IlBuilder
    // This map should only be accessed inside a compilation via lookupSymbol
    TR_HashTabString          * _symbols;
    bool                        _newSymbolsAreTemps;
+
+   int32_t                     _nextValueID;
 
    bool                        _useBytecodeBuilders;
    uint32_t                    _numBlocksBeforeWorklist;

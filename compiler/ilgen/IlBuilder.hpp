@@ -31,6 +31,8 @@
 #include "ilgen/IlInjector.hpp"
 #include "il/ILHelpers.hpp"
 
+#include "ilgen/IlValue.hpp" // must go after IlInjector.hpp or TR_ALLOC isn't cleaned up
+
 namespace OMR { class MethodBuilder; }
 
 namespace TR { class Block; }
@@ -40,7 +42,6 @@ namespace TR { class ResolvedMethodSymbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class SymbolReferenceTable; }
 
-namespace TR { typedef TR::SymbolReference IlValue; }
 namespace TR { class IlType; }
 namespace TR { class TypeDictionary; }
 
@@ -358,31 +359,88 @@ public:
                ...);
 
 protected:
+
+   /**
+    * @brief MethodBuilder parent for this IlBuilder object
+    */
    TR::MethodBuilder           * _methodBuilder;
+
+   /**
+    * @brief sequence of TR::Blocks and other TR::IlBuilder objects that should execute when control reaches this IlBuilder
+    */
    List<SequenceEntry>         * _sequence;
+
+   /**
+    * @brief used to track the end of the current sequence
+    */
    ListAppender<SequenceEntry> * _sequenceAppender;
+
+   /**
+    * @brief each IlBuilder object is like a mini-CFG, with its own unique entry block
+    */
    TR::Block                   * _entryBlock;
+
+   /**
+    * @brief each IlBuilder object is like a mini-CFG, with its own unique exit block
+    */
    TR::Block                   * _exitBlock;
+
+   /**
+    * @brief counter for how many TR::Blocks are needed to represent everything inside this IlBuilder object
+    */
    int32_t                       _count;
+
+   /**
+    * @brief has this IlBuilder object been made part of some other builder's sequence
+    */
    bool                          _partOfSequence;
+
+   /**
+    * @brief has connectTrees been run on this IlBuilder object yet
+    */
    bool                          _connectedTrees;
+
+   /**
+    * @brief returns true if there is a control edge to this IlBuilder's exit block
+    */
    bool                          _comesBack;
+
+   /**
+    * @brief returns true if this IlBuilder object is a handler for an exception edge
+    */
    bool                          _isHandler;
 
+   /**
+    * @brief part of experimental "replay" support; returns true if replay is enabled
+    */
    bool                          _haveReplayName;
+
+   /**
+    * @brief part of experimental "replay" support; the fstream where replay commands will be directed to
+    */
    std::fstream                * _rpILCpp;
+
+   /**
+    * @brief part of experimental "replay" support; the name of the replay file name
+    */
    char                          _replayName[21];
+
+   /**
+    * @brief part of experimental "replay" support: character array used to assemble each line of output
+    */
    char                          _rpLine[256];
+
 
    virtual bool buildIL() { return true; }
 
-   TR::IlValue *lookupSymbol(const char *name);
-   void defineSymbol(const char *name, TR::IlValue *v);
-   TR::IlValue *newValue(TR::DataType dt);
+   TR::SymbolReference *lookupSymbol(const char *name);
+   void defineSymbol(const char *name, TR::SymbolReference *v);
+   TR::IlValue *newValue(TR::IlType *dt, TR::Node *n=NULL);
+   TR::IlValue *newValue(TR::DataType dt, TR::Node *n=NULL);
    void defineValue(const char *name, TR::IlType *dt);
 
    TR::Node *loadValue(TR::IlValue *v);
-   void storeNode(TR::IlValue *dest, TR::Node *v);
+   void storeNode(TR::SymbolReference *symRef, TR::Node *v);
    void indirectStoreNode(TR::Node *addr, TR::Node *v);
    TR::IlValue *indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad=false);
 

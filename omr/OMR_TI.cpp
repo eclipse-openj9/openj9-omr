@@ -27,7 +27,7 @@
 #include "OMR_MethodDictionary.hpp"
 #include "OMR_VM.hpp"
 
-#define MINIMUM_CPU_LOAD_INTERVAL J9CONST_I64(10000000)
+#define MINIMUM_CPU_LOAD_INTERVAL J9CONST_I64(1000000)
 #define MAXIMUM_NEGATIVE_ELAPSED_TIME_COUNT 3
 #define UTSINTERFACE_FROM_OMRVMTHREAD(vmThread) ((vmThread)->_vm->_trcEngine? &(vmThread)->_vm->_trcEngine->omrTraceIntfS : NULL)
 

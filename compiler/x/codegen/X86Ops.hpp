@@ -443,101 +443,56 @@ class TR_X86OpCode
    TR_X86OpCodes setOpCodeValue(TR_X86OpCodes op) {return (_opCode = op);}
 
    uint32_t modifiesTarget() {return _properties[_opCode] & IA32OpProp_ModifiesTarget;}
-
    uint32_t modifiesSource() {return _properties[_opCode] & IA32OpProp_ModifiesSource;}
-
    uint32_t usesTarget() {return _properties[_opCode] & IA32OpProp_UsesTarget;}
-
    uint32_t singleFPOp() {return _properties[_opCode] & IA32OpProp_SingleFP;}
-
    uint32_t doubleFPOp() {return _properties[_opCode] & IA32OpProp_DoubleFP;}
-
    uint32_t gprOp() {return (_properties[_opCode] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
-
    uint32_t fprOp() {return (_properties[_opCode] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
-
    uint32_t hasByteImmediate() {return _properties[_opCode] & IA32OpProp_ByteImmediate;}
-
    uint32_t hasShortImmediate() {return _properties[_opCode] & IA32OpProp_ShortImmediate;}
-
    uint32_t hasIntImmediate() {return _properties[_opCode] & IA32OpProp_IntImmediate;}
-
    uint32_t hasLongImmediate() {return _properties1[_opCode] & IA32OpProp1_LongImmediate;}
-
    uint32_t hasSignExtendImmediate() {return _properties[_opCode] & IA32OpProp_SignExtendImmediate;}
-
    uint32_t testsZeroFlag() {return _properties[_opCode] & IA32OpProp_TestsZeroFlag;}
    uint32_t modifiesZeroFlag() {return _properties[_opCode] & IA32OpProp_ModifiesZeroFlag;}
-
    uint32_t testsSignFlag() {return _properties[_opCode] & IA32OpProp_TestsSignFlag;}
    uint32_t modifiesSignFlag() {return _properties[_opCode] & IA32OpProp_ModifiesSignFlag;}
-
    uint32_t testsCarryFlag() {return _properties[_opCode] & IA32OpProp_TestsCarryFlag;}
    uint32_t modifiesCarryFlag() {return _properties[_opCode] & IA32OpProp_ModifiesCarryFlag;}
-
    uint32_t testsOverflowFlag() {return _properties[_opCode] & IA32OpProp_TestsOverflowFlag;}
    uint32_t modifiesOverflowFlag() {return _properties[_opCode] & IA32OpProp_ModifiesOverflowFlag;}
-
    uint32_t testsParityFlag() {return _properties[_opCode] & IA32OpProp_TestsParityFlag;}
    uint32_t modifiesParityFlag() {return _properties[_opCode] & IA32OpProp_ModifiesParityFlag;}
-
    uint32_t hasByteSource() {return _properties[_opCode] & IA32OpProp_ByteSource;}
-
    uint32_t hasByteTarget() {return _properties[_opCode] & IA32OpProp_ByteTarget;}
-
    uint32_t hasShortSource() {return _properties[_opCode] & IA32OpProp_ShortSource;}
-
    uint32_t hasShortTarget() {return _properties[_opCode] & IA32OpProp_ShortTarget;}
-
    uint32_t hasIntSource() {return _properties[_opCode] & IA32OpProp_IntSource;}
-
    uint32_t hasIntTarget() {return _properties[_opCode] & IA32OpProp_IntTarget;}
-
    uint32_t hasLongSource() {return _properties1[_opCode] & IA32OpProp1_LongSource;}
-
    uint32_t hasLongTarget() {return _properties1[_opCode] & IA32OpProp1_LongTarget;}
-
    uint32_t hasDoubleWordSource() {return _properties1[_opCode] & IA32OpProp1_DoubleWordSource;}
-
    uint32_t hasDoubleWordTarget() {return _properties1[_opCode] & IA32OpProp1_DoubleWordTarget;}
-
    uint32_t hasXMMSource() {return _properties1[_opCode] & IA32OpProp1_XMMSource;}
-
    uint32_t hasXMMTarget() {return _properties1[_opCode] & IA32OpProp1_XMMTarget;}
-
    uint32_t isPseudoOp() {return _properties1[_opCode] & IA32OpProp1_PseudoOp;}
-
    uint32_t needsRepPrefix() {return _properties1[_opCode] & IA32OpProp1_NeedsRepPrefix;}
-
    uint32_t needsLockPrefix() {return _properties1[_opCode] & IA32OpProp1_NeedsLockPrefix;}
-
    uint32_t needsXacquirePrefix() {return _properties1[_opCode] & IA32OpProp1_NeedsXacquirePrefix;}
-
    uint32_t needsXreleasePrefix() {return _properties1[_opCode] & IA32OpProp1_NeedsXreleasePrefix;}
-
    uint32_t clearsUpperBits() {return hasIntTarget() && modifiesTarget();}
-
    uint32_t setsUpperBits() {return hasLongTarget() && modifiesTarget();}
-
    uint32_t hasTargetRegisterInOpcode() {return _properties[_opCode] & IA32OpProp_TargetRegisterInOpcode;}
-
    uint32_t hasTargetRegisterInModRM() {return _properties[_opCode] & IA32OpProp_TargetRegisterInModRM;}
-
    uint32_t hasTargetRegisterIgnored() {return _properties[_opCode] & IA32OpProp_TargetRegisterIgnored;}
-
    uint32_t hasSourceRegisterInModRM() {return _properties[_opCode] & IA32OpProp_SourceRegisterInModRM;}
-
    uint32_t hasSourceRegisterIgnored() {return _properties[_opCode] & IA32OpProp_SourceRegisterIgnored;}
-
    uint32_t isBranchOp() {return _properties[_opCode] & IA32OpProp_BranchOp;}
    uint32_t hasRelativeBranchDisplacement() { return isBranchOp() || isCallImmOp(); }
-
    uint32_t isShortBranchOp() {return isBranchOp() && hasByteImmediate();}
-
    uint32_t testsSomeFlag() {return _properties[_opCode] & IA32OpProp_TestsSomeFlag;}
-
    uint32_t modifiesSomeArithmeticFlags() {return _properties[_opCode] & IA32OpProp_SetsSomeArithmeticFlag;}
-
    uint32_t setsCCForCompare() {return _properties1[_opCode] & IA32OpProp1_SetsCCForCompare;}
    uint32_t setsCCForTest()    {return _properties1[_opCode] & IA32OpProp1_SetsCCForTest;}
    uint32_t isShiftOp()        {return _properties1[_opCode] & IA32OpProp1_ShiftOp;}
@@ -546,26 +501,16 @@ class TR_X86OpCode
    uint32_t isPopOp()          {return _properties1[_opCode] & IA32OpProp1_PopOp;}
    uint32_t isCallOp()         {return isCallOp(_opCode); }
    uint32_t isCallImmOp()      {return isCallImmOp(_opCode); }
-
    uint32_t supportsLockPrefix() {return _properties1[_opCode] & IA32OpProp1_SupportsLockPrefix;}
-
    bool     isConditionalBranchOp() {return isBranchOp() && testsSomeFlag();}
-
    uint32_t hasPopInstruction() {return _properties[_opCode] & IA32OpProp_HasPopInstruction;}
-
    uint32_t isPopInstruction() {return _properties[_opCode] & IA32OpProp_IsPopInstruction;}
-
    uint32_t sourceOpTarget() {return _properties[_opCode] & IA32OpProp_SourceOpTarget;}
-
    uint32_t hasDirectionBit() {return _properties[_opCode] & IA32OpProp_HasDirectionBit;}
-
    uint32_t isIA32Only() {return _properties1[_opCode] & IA32OpProp1_IsIA32Only;}
-
    uint32_t sourceIsMemRef() {return _properties1[_opCode] & IA32OpProp1_SourceIsMemRef;}
-
    uint32_t targetRegIsImplicit() { return _properties1[_opCode] & IA32OpProp1_TargetRegIsImplicit;}
    uint32_t sourceRegIsImplicit() { return _properties1[_opCode] & IA32OpProp1_SourceRegIsImplicit;}
-
    uint32_t isFusableCompare(){ return _properties1[_opCode] & IA32OpProp1_FusableCompare; }
 
    bool isSetRegInstruction() const
@@ -620,54 +565,41 @@ class TR_X86OpCode
    void trackUpperBitsOnReg(TR::Register *reg, TR::CodeGenerator *cg);
 
    static uint32_t singleFPOp(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_SingleFP;}
-
    static uint32_t doubleFPOp(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_DoubleFP;}
-
    static uint32_t gprOp(TR_X86OpCodes op) {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP)) == 0;}
-
    static uint32_t fprOp(TR_X86OpCodes op) {return (_properties[op] & (IA32OpProp_DoubleFP | IA32OpProp_SingleFP));}
-
    static uint32_t testsZeroFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_TestsZeroFlag;}
    static uint32_t modifiesZeroFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesZeroFlag;}
-
    static uint32_t testsSignFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_TestsSignFlag;}
    static uint32_t modifiesSignFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesSignFlag;}
-
    static uint32_t testsCarryFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_TestsCarryFlag;}
    static uint32_t modifiesCarryFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesCarryFlag;}
-
    static uint32_t testsOverflowFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_TestsOverflowFlag;}
    static uint32_t modifiesOverflowFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesOverflowFlag;}
-
    static uint32_t testsParityFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_TestsParityFlag;}
    static uint32_t modifiesParityFlag(TR_X86OpCodes op) {return _properties[op] & IA32OpProp_ModifiesParityFlag;}
-
    static uint32_t isCallOp(TR_X86OpCodes op)         {return _properties1[op] & IA32OpProp1_CallOp;}
    static uint32_t isCallImmOp(TR_X86OpCodes op)      {return op == CALLImm4 || op == CALLREXImm4; }
 
    static uint8_t getModifiedEFlags(TR_X86OpCodes op)
       {
       uint8_t flags = 0;
-
       if (modifiesOverflowFlag(op)) flags |= IA32EFlags_OF;
       if (modifiesSignFlag(op))     flags |= IA32EFlags_SF;
       if (modifiesZeroFlag(op))     flags |= IA32EFlags_ZF;
       if (modifiesParityFlag(op))   flags |= IA32EFlags_PF;
       if (modifiesCarryFlag(op))    flags |= IA32EFlags_CF;
-
       return flags;
       }
 
    static uint8_t getTestedEFlags(TR_X86OpCodes op)
       {
       uint8_t flags = 0;
-
       if (testsOverflowFlag(op)) flags |= IA32EFlags_OF;
       if (testsSignFlag(op))     flags |= IA32EFlags_SF;
       if (testsZeroFlag(op))     flags |= IA32EFlags_ZF;
       if (testsParityFlag(op))   flags |= IA32EFlags_PF;
       if (testsCarryFlag(op))    flags |= IA32EFlags_CF;
-
       return flags;
       }
 

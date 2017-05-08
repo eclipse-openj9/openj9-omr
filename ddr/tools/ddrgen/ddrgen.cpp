@@ -51,7 +51,7 @@ main(int argc, char *argv[])
 	DDR_RC rc = DDR_RC_OK;
 
 	/* Get options. */
-	const char *macroFile = "src/macros/test/macroList";
+	const char *macroFile = NULL;
 	const char *supersetFile = "superset.out";
 	const char *blobFile = "blob.dat";
 	const char *overrideFile = NULL;

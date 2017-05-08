@@ -72,45 +72,50 @@ MacroTool::getFileName(string s)
  * type name. This vector is returned as an output parameter.
  * @return DDR_RC_OK on failure, DDR_RC_ERROR if an error is encountered.
  */
-DDR_RC
+	DDR_RC
 MacroTool::getMacros(string fname)
 {
 	DDR_RC rc = DDR_RC_OK;
 
-	if (fname.size() > 0) {
-		string line;
-		ifstream infile(fname.c_str());
-		set<string> includeFileSet;
+	if (fname.size() == 0) {
+		ERRMSG("invalid macrolist filename");
+		return DDR_RC_ERROR;
+	}
 
-		/* Parse the input file for macros with values. */
-		while (getline(infile, line)) {
-			if (0 == line.find("@DDRFILE_BEGIN")) {
-				string fileName = getFileName(line);
-				if (includeFileSet.end() != includeFileSet.find(fileName)) {
-					/* This include file was already processed.
-					 * Scan until the file end delimiter is found.
-					 */
-					while (getline(infile, line)) {
-						if (0 == line.find("@DDRFILE_END")) {
-							break;
-						}
+	string line;
+	ifstream infile(fname.c_str());
+
+	if (!infile) {
+		ERRMSG("invalid macrolist filename");
+		return DDR_RC_ERROR;
+	}
+
+	set<string> includeFileSet;
+	/* Parse the input file for macros with values. */
+	while (getline(infile, line)) {
+		if (0 == line.find("@DDRFILE_BEGIN")) {
+			string fileName = getFileName(line);
+			if (includeFileSet.end() != includeFileSet.find(fileName)) {
+				/* This include file was already processed.
+				 * Scan until the file end delimiter is found.
+				 */
+				while (getline(infile, line)) {
+					if (0 == line.find("@DDRFILE_END")) {
+						break;
 					}
-				} else {
-					includeFileSet.insert(fileName);
 				}
-			} else if (string::npos != line.find("@TYPE_")) {
-				MacroInfo m(getTypeName(line));
-				macroList.push_back(m);
-			} else if (string::npos != line.find("@MACRO_")) {
-				pair<string, string> macro = getMacroInfo(line);
-				if (!macro.second.empty()) {
-					macroList.back().addMacro(macro);
-				}
+			} else {
+				includeFileSet.insert(fileName);
+			}
+		} else if (string::npos != line.find("@TYPE_")) {
+			MacroInfo m(getTypeName(line));
+			macroList.push_back(m);
+		} else if (string::npos != line.find("@MACRO_")) {
+			pair<string, string> macro = getMacroInfo(line);
+			if (!macro.second.empty()) {
+				macroList.back().addMacro(macro);
 			}
 		}
-	} else {
-		rc = DDR_RC_ERROR;
-		ERRMSG("invalid fname");
 	}
 
 	return rc;

@@ -23,7 +23,7 @@ How to run new ddrgen on the test samples:
    ```
 2. Run ddrgen with the files to scan and macro list as parameters
    ```sh
-   ./ddrgen ./ddrgentest --macrolist ./ddr/test/macrolist
+   ./ddrgen ./ddrgentest --macrolist ./macroList
    ```
 3. Print the generated blob
    ```sh
@@ -31,8 +31,8 @@ How to run new ddrgen on the test samples:
    ```
 4. Compare the output to the expected output. For linux x86 (Note that ubuntu has slightly different results):
    ```sh
-   diff superset.out ddr/test/expected_output/xa64
-   diff ddr/test/expected_output/xa64/blob.dat.strings
+   diff superset.out ddr/test/expected_output/xa64/superset.out
+   diff blob.dat.strings ddr/test/expected_output/xa64/blob.dat.strings
    ```
 
 ## Using DDR for OMR

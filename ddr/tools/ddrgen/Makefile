@@ -23,10 +23,10 @@ MODULE_NAME := ddrgen
 ARTIFACT_TYPE := cxx_executable
 
 DDRGEN_STATIC_LIBS = \
-  scanner \
-  ir \
-  genblob \
-  macrotool
+  ddr-scanner \
+  ddr-ir \
+  ddr-blobgen \
+  ddr-macros
 
 DEPENDENCIES = $(call buildStaticLibFilename,$(DDRGEN_STATIC_LIBS))
 

@@ -588,8 +588,10 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
             //
             if (entryNode->getSuccessors().size() == 2)
                {
-               TR::CFGEdge* succ1 = entryNode->getSuccessors().front();
-               TR::CFGEdge* succ2 = entryNode->getSuccessors().back(); //Get the 2nd successor
+               auto it = entryNode->getSuccessors().begin();
+               TR::CFGEdge* succ1 = *it;
+               ++it;
+               TR::CFGEdge* succ2 = *it;
                bool succ1Internal = region->contains(toStructureSubGraphNode(succ1->getTo())->getStructure(), region->getParent());
                bool succ2Internal = region->contains(toStructureSubGraphNode(succ2->getTo())->getStructure(), region->getParent());
                if (succ1Internal ^ succ2Internal)
@@ -624,8 +626,10 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                                  {
                                  if (exitBlock->getSuccessors().size() == 2)
                                     {
-                                    TR::CFGEdge* exitSucc1 = exitBlock->getSuccessors().front();
-                                    TR::CFGEdge* exitSucc2 = exitBlock->getSuccessors().back(); // Get the 2nd Successor
+                                    auto it = exitBlock->getSuccessors().begin();
+                                    TR::CFGEdge* exitSucc1 = *it;
+                                    ++it;
+                                    TR::CFGEdge* exitSucc2 = *it;
                                     bool successor1Internal = region->contains(toBlock(exitSucc1->getTo())->getStructureOf(), region->getParent());
                                     bool successor2Internal = region->contains(toBlock(exitSucc2->getTo())->getStructureOf(), region->getParent());
                                     if (successor1Internal ^ successor2Internal)

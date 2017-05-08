@@ -536,10 +536,10 @@ TR::CFGNode::CFGNode(TR_Memory * m)
      _forwardTraversalIndex(-1),
      _backwardTraversalIndex(-1),
      _m(m),
-     _successors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _predecessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _exceptionSuccessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _exceptionPredecessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator()))
+     _successors(m->heapMemoryRegion()),
+     _predecessors(m->heapMemoryRegion()),
+     _exceptionSuccessors(m->heapMemoryRegion()),
+     _exceptionPredecessors(m->heapMemoryRegion())
    {
    }
 TR::CFGNode::CFGNode(int32_t n, TR_Memory * m)
@@ -549,10 +549,10 @@ TR::CFGNode::CFGNode(int32_t n, TR_Memory * m)
      _forwardTraversalIndex(-1),
      _backwardTraversalIndex(-1),
      _m(m),
-     _successors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _predecessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _exceptionSuccessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator())),
-     _exceptionPredecessors(getTypedAllocator<TR::CFGEdge*>(TR::comp()->allocator()))
+     _successors(m->heapMemoryRegion()),
+     _predecessors(m->heapMemoryRegion()),
+     _exceptionSuccessors(m->heapMemoryRegion()),
+     _exceptionPredecessors(m->heapMemoryRegion())
    {
    }
 

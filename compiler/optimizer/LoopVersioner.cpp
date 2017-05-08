@@ -4456,11 +4456,12 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // so that they now branch to the first block containing the
    // (first) versioning test.
    //
-   for (auto nextPred = invariantBlock->getPredecessors().begin(); nextPred != invariantBlock->getPredecessors().end();)
+   while (!invariantBlock->getPredecessors().empty())
       {
-	  (*nextPred)->setTo(chooserBlock);
-	  TR::Block *nextPredBlock = toBlock((*nextPred)->getFrom());
-      nextPred = invariantBlock->getPredecessors().erase(nextPred);
+      TR::CFGEdge * const nextPred = invariantBlock->getPredecessors().front();
+      invariantBlock->getPredecessors().pop_front();
+      nextPred->setTo(chooserBlock);
+      TR::Block * const nextPredBlock = toBlock(nextPred->getFrom());
       if (nextPredBlock != _cfg->getStart())
          {
          TR::TreeTop *lastTreeInPred = nextPredBlock->getLastRealTreeTop();

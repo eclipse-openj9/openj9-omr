@@ -27,14 +27,15 @@
 #include "infra/Link.hpp"       // for TR_Link1
 #include "infra/List.hpp"       // for List
 #include "infra/TRCfgEdge.hpp"  // for CFGEdge
-#include "infra/TRlist.hpp"
+#include "infra/forward_list.hpp"
 class TR_StructureSubGraphNode;
 namespace TR { class Block; }
 namespace TR { class Compilation; }
 
 namespace TR
 {
-typedef TR::list<CFGEdge*> CFGEdgeList;
+typedef TR::typed_allocator< CFGEdge*, TR::Region& > CFGEdgeListAllocator;
+typedef TR::forward_list< CFGEdge*, CFGEdgeListAllocator > CFGEdgeList;
 
 class CFGNode : public ::TR_Link1<CFGNode>
    {

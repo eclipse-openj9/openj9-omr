@@ -254,6 +254,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       self()->setUseSSEForSinglePrecision();
       self()->setUseSSEForDoublePrecision();
       self()->setSupportsAutoSIMD();
+      self()->setSupportsJavaFloatSemantics();
       }
 
    // Choose the best XMM double precision load instruction for the target architecture.

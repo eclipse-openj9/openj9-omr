@@ -128,17 +128,13 @@ public:
 	 * This implementation is not pre-emptive. Threads that have obtained shared VM access must
 	 * check frequently whether any other thread is requesting exclusive VM access and release
 	 * shared VM access as quickly as possible in that event.
-	 *
-	 * The exclusiveAccessForGCObtainedAfterBeatenByOtherThread parameter may be required if a
-	 * concurrent GC strategy is employed. It must be set (true) when this method is called after
-	 * the stop-the-world GC completes and releases exclusive VM access if the calling thread
-	 * previously called releaseVMAccess(exclusiveAccessForGCBeatenByOtherThread = true).
-	 * Any resources temporarily released in that call can be recovered here before proceeding
-	 * with exclusive VM access.
-	 *
-	 * @param exclusiveAccessForGCObtainedAfterBeatenByOtherThread (optional, default = false)
 	 */
-	void acquireVMAccess(bool exclusiveAccessForGCObtainedAfterBeatenByOtherThread = false);
+	void acquireVMAccess();
+	
+	/**
+	 * Release shared VM acccess.
+	 */
+	void releaseVMAccess();
 
 	/**
 	 * Check whether another thread is requesting exclusive VM access. This method must be
@@ -151,34 +147,11 @@ public:
 	bool isExclusiveAccessRequestWaiting();
 
 	/**
-	 * Release shared VM acccess.
-	 *
-	 * The exclusiveAccessForGCBeatenByOtherThread parameter may be required if a concurrent
-	 * GC strategy is employed. It must be set (true) when this method is called by the concurrent
-	 * GC if it is unable to immediately obtain exclusive VM access (because a stop-the-world GC
-	 * is in progress). If the concurrent GC holds resources that must be temporarily relinquished
-	 * while waiting for exclusive VM access, this is the place to release them. They can be recovered
-	 * by calling acquireVMAccess(exclusiveAccessForGCObtainedAfterBeatenByOtherThread = true)
-	 * when the stop-the-world GC completes and releases exclusive VM access.
-	 *
-	 * @param exclusiveAccessForGCBeatenByOtherThread (optional, default = false)
-	 */
-	void releaseVMAccess(bool exclusiveAccessForGCBeatenByOtherThread = false);
-
-	/**
 	 * Acquire exclusive VM access. This method should only be called by the OMR runtime to
 	 * perform stop-the-world operations such as garbage collection. Calling thread will be
 	 * blocked until all other threads holding shared VM access have release VM access.
 	 */
 	void acquireExclusiveVMAccess();
-
-	/**
-	 * Attempt to acquire exclusive VM access. This method may fail and return false
-	 * if another thread is requesting or has obtained exclusive VM access.
-	 *
-	 * @return true if exclusive VM access has been obtained for the calling thread
-	 */
-	bool tryAcquireExclusiveVMAccess();
 
 	/**
 	 * Release exclusive VM acccess. If no other thread is waiting for exclusive VM access

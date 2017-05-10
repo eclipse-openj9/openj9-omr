@@ -103,6 +103,7 @@ private:
 	uintptr_t _exclusiveAccessHaltedThreads; /**< number of threads halted by last exclusive access request */
 	bool _exclusiveAccessBeatenByOtherThread; /**< true if last exclusive access request had to wait for another GC thread */
 	uintptr_t _exclusiveCount; /**< count of number of times this thread has acquired but not yet released exclusive access */
+	OMR_VMThread* _cachedGCExclusiveAccessThreadId; /** only to be used when a thread requests a GC operation while already holding exclusive VM access */
 
 protected:
 	bool _allocationFailureReported;	/**< verbose: used to report af-start/af-end once per allocation failure even more then one GC cycle need to resolve AF */
@@ -376,59 +377,6 @@ public:
 	void releaseVMAccess();
 
 	/**
-	 * Try and acquire exclusive access if no other thread is already requesting it.
-	 * Make an attempt at acquiring exclusive access if the current thread does not already have it.  The
-	 * attempt will abort if another thread is already going for exclusive, which means this
-	 * call can return without exclusive access being held.  As well, this call will block for any other
-	 * requesting thread, and so should be treated as a safe point.
-	 * @note call can release VM access.
-	 * @return true if exclusive access was acquired, false otherwise.
-	 */
-	bool tryAcquireExclusiveVMAccess();
-
-	/**
-	 * Checks to see if the thread has exclusive access
-	 * @return true if the thread has exclusive access, false if not.
-	 */
-	bool
-	inquireExclusiveVMAccessForGC()
-	{
-		return (_exclusiveCount > 0);
-	}
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	/**
-	 * Try and acquire exclusive access if no other thread is already requesting it.
-	 * Make an attempt at acquiring exclusive access if the current thread does not already have it.  The
-	 * attempt will abort if another thread is already going for exclusive, which means this
-	 * call can return without exclusive access being held, it will also abort if another another thread
-	 * may have beat us to it and prepared the threads or even collected. As well, this call will block for
-	 * any other requesting thread, and so should be treated as a safe point.
-	 * @note call can release VM access.
-	 * @return true if exclusive access was acquired, false otherwise.
-	 */
-	bool tryAcquireExclusiveForConcurrentKickoff(MM_ConcurrentGCStats *stats);
-
-	/**
-	 * Release exclusive access.
-	 * The calling thread will release one level (recursion) of its exclusive access request, and alert other threads that it has completed its
-	 * intended GC request if this is the last level.
-	 */
-	void releaseExclusiveForConcurrentKickoff();
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
-
-	/**
-	 * Attempt to acquire exclusive access to request a gc.
-	 * If the thread is beaten to acquiring exclusive access by another thread then the caller will not acquire exclusive access.
-	 * @param collector gc intended to be used for collection.
-	 * @return boolean indicating whether the thread now holds exclusive access (ie: it won the race).
-	 *
-	 * @note this call should be considered a safe-point as the thread may release VM access to allow the winning thread to acquire exclusivity.
-	 * @note this call supports recursion.
-	 */
-	bool tryAcquireExclusiveVMAccessForGC(MM_Collector *collector);
-
-	/**
 	 * Acquire exclusive access to request a gc.
 	 * The calling thread will acquire exclusive access for Gc regardless if other threads beat it to exclusive for the same purposes.
 	 * @param collector gc intended to be used for collection.
@@ -437,7 +385,7 @@ public:
 	 * @note this call should be considered a safe-point as the thread may release VM access to allow the other threads to acquire exclusivity.
 	 * @note this call supports recursion.
 	 */
-	bool acquireExclusiveVMAccessForGC(MM_Collector *collector);
+	bool acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst = false, bool flushCaches = true);
 
 	/**
 	 * Release exclusive access.
@@ -660,6 +608,7 @@ public:
 		,_exclusiveAccessHaltedThreads(0)
 		,_exclusiveAccessBeatenByOtherThread(false)
 		,_exclusiveCount(0)
+		,_cachedGCExclusiveAccessThreadId(NULL)
 		,_allocationFailureReported(false)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_regionWorkList(NULL)
@@ -707,6 +656,7 @@ public:
 		,_exclusiveAccessHaltedThreads(0)
 		,_exclusiveAccessBeatenByOtherThread(false)
 		,_exclusiveCount(0)
+		,_cachedGCExclusiveAccessThreadId(NULL)
 		,_allocationFailureReported(false)
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_regionWorkList(NULL)

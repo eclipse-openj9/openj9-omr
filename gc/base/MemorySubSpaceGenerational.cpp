@@ -81,7 +81,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 	}
 
 	allocateDescription->saveObjects(env);
-	if (!env->tryAcquireExclusiveVMAccessForGC(_collector)) {
+	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
 		allocateDescription->restoreObjects(env);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 		if(NULL != addr) {

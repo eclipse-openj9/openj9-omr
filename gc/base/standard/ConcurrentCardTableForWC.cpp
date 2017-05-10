@@ -204,28 +204,18 @@ MM_ConcurrentCardTableForWC::getExclusiveCardTableAccess(MM_EnvironmentStandard 
 
 	/* Get the current global gc count */
 	uintptr_t gcCount = _extensions->globalGCStats.gcCount;
+	bool phaseChangeCompleted = false;
 
-	bool acquired = false;
+	env->acquireExclusiveVMAccess();
+	if ((gcCount != _extensions->globalGCStats.gcCount) || (currentPhase != _cardCleanPhase)) {
+		/* Nothing to do so get out  */
+		phaseChangeCompleted = true;
+	}
 
-    while(!acquired) {
-
-        /* Get exclusive VM access so we can prepare the card table. */
-        acquired = env->tryAcquireExclusiveVMAccess();
-
-        /* We may or may not have exclusive access but another thread may have beat us to it and moved things along
-         * anyway,or we may have collected and be in a different concurrent cycle. If we are not in the same concurrent 
-         * collection cycle or the _cardCleanPhase is not as it was when we requested exclusive access then nothing to do
-         * anymore. Otherwise if we got beat to exclusive access request it again and re-check, if we got it prepare the
-         * card table.
-         */  
-        if ((gcCount != _extensions->globalGCStats.gcCount) || (currentPhase != _cardCleanPhase)) {
-            /* Nothing to do so get out  */
-            if (acquired) {
-                env->releaseExclusiveVMAccess(); 
-            }
-            return false;
-        }
-    }
+	if (phaseChangeCompleted) {
+		env->releaseExclusiveVMAccess();
+		return false;
+	}
 
     MM_AtomicOperations::lockCompareExchangeU32((volatile uint32_t*)&_cardCleanPhase,
                                             (uint32_t) currentPhase,

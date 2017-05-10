@@ -139,7 +139,7 @@ inline void TR_X86OpCode::OpCode_t::finalize(uint8_t* cursor) const
       }
    }
 
-inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor)
+inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor) const
    {
    if(info().isGroup07())
       {
@@ -156,4 +156,19 @@ inline void TR_X86OpCode::CheckAndFinishGroup07(uint8_t* cursor)
       }
    }
 
+inline uint8_t TR_X86OpCode::length(uint8_t rex) const
+   {
+   return encode<Estimator>(0, rex);
+   }
+inline uint8_t* TR_X86OpCode::binary(uint8_t* cursor, uint8_t rex) const
+   {
+   uint8_t* ret = encode<Writer>(cursor, rex);
+   CheckAndFinishGroup07(ret);
+   return ret;
+   }
+inline void TR_X86OpCode::finalize(uint8_t* cursor) const
+   {
+   if (!isPseudoOp())
+      info().finalize(cursor);
+   }
 #endif

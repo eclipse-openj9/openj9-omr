@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -56,19 +56,6 @@ reportGlobalGCIncrementStart(J9HookInterface** hook, uintptr_t eventNum, void* e
 }
 
 /**
- * Called when a global collect has completed
- *
- */
-void
-reportGlobalGCComplete(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
-{
-	MM_GlobalGCEndEvent* event = (MM_GlobalGCEndEvent*)eventData;
-	MM_EnvironmentBase* env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-
-	((MM_MemoryPoolLargeObjects*)userData)->postCollect(env);
-}
-
-/**
  * Initialization
  */
 MM_MemoryPoolLargeObjects*
@@ -105,7 +92,6 @@ MM_MemoryPoolLargeObjects::initialize(MM_EnvironmentBase* env)
 	_extensions->heapExpansionMinimumSize = OMR_MAX(_extensions->heapExpansionMinimumSize, _extensions->largeObjectMinimumSize);
 
 
-	J9HookInterface** mmHooks = J9_HOOK_INTERFACE(_extensions->omrHookInterface);
 	J9HookInterface** mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
 	/* Register hook for global GC start - needed to trigger update of LOA
 	 * ratio at start of a collect.
@@ -113,9 +99,6 @@ MM_MemoryPoolLargeObjects::initialize(MM_EnvironmentBase* env)
 	 * THIS MUST HAPPEN AFTER VERBOSE GC PRINTS LOA SIZE. IT MUST NOT HAPPEN ON SCAVENGES.
 	 */
 	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_GLOBAL_GC_INCREMENT_START, reportGlobalGCIncrementStart, OMR_GET_CALLSITE(), (void*)this);
-
-	/* ..and register hook for global GC end to check if a SOA/LOA rebalance is required. */
-	(*mmHooks)->J9HookRegisterWithCallSite(mmHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, reportGlobalGCComplete, OMR_GET_CALLSITE(), (void*)this);
 
 	uintptr_t minimumFreeEntrySize = OMR_MAX(_memoryPoolLargeObjects->getMinimumFreeEntrySize(), _memoryPoolSmallObjects->getMinimumFreeEntrySize());
 	_largeObjectAllocateStats = MM_LargeObjectAllocateStats::newInstance(env, (uint16_t)_extensions->largeObjectAllocationProfilingTopK, _extensions->largeObjectAllocationProfilingThreshold, _extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)_extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,
@@ -135,12 +118,10 @@ MM_MemoryPoolLargeObjects::initialize(MM_EnvironmentBase* env)
 void
 MM_MemoryPoolLargeObjects::tearDown(MM_EnvironmentBase* env)
 {
-	J9HookInterface** mmHooks = J9_HOOK_INTERFACE(_extensions->omrHookInterface);
 	J9HookInterface** mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
 
 	/* Unregister the global GC hooks for this instance */
 	(*mmPrivateHooks)->J9HookUnregister(mmPrivateHooks, J9HOOK_MM_PRIVATE_GLOBAL_GC_INCREMENT_START, reportGlobalGCIncrementStart, (void*)this);
-	(*mmHooks)->J9HookUnregister(mmHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, reportGlobalGCComplete, (void*)this);
 
 	if (NULL != _memoryPoolSmallObjects) {
 		_memoryPoolSmallObjects->kill(env);
@@ -207,10 +188,10 @@ MM_MemoryPoolLargeObjects::preCollect(MM_EnvironmentBase* env, bool systemGC, bo
 }
 
 /**
- * Perform any post-collection work on pool.
+ * Perform resize LOA, currently it only tried to contract LOA.
  */
 void
-MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
+MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 {
 	bool debug = _extensions->debugLOAResize;
 
@@ -316,7 +297,6 @@ MM_MemoryPoolLargeObjects::postCollect(MM_EnvironmentBase* env)
 		assume0(_memoryPoolLargeObjects->isValidListOrdering());
 	}
 }
-
 
 /**
  * Decide if we need collector to perform a complete rebuild of freelist

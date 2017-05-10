@@ -20,6 +20,7 @@
 #define SYMBOL_IR_HPP
 
 #include <vector>
+#include <set>
 
 #include "omrport.h"
 
@@ -27,10 +28,18 @@
 #include "ddr/ir/Type.hpp"
 
 using std::vector;
+using std::set;
 
 class Symbol_IR {
 public:
-	std::vector<Type *> _types;
+	vector<Type *> _types;
+	/* Keep a set of names of structures already printed, to avoid printing duplicates in the superset. 
+	 * Currently, only use this approach for AIX, where removeDuplicates() runs too slowly. Using this
+	 * method on other platforms has not been tested yet. There may still be issues related to differences
+	 * in the DWARF/intermediate representation structures between platforms which may be revealed by this
+	 * approach.
+	 */
+	set<string> _fullTypeNames;
 
 	~Symbol_IR();
 
@@ -38,6 +47,7 @@ public:
 	DDR_RC computeOffsets();
 	DDR_RC removeDuplicates();
 
+	string getUDTname(Type *type);
 private:
 	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
 	DDR_RC computeFieldOffsets(Type *type);

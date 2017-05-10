@@ -48,7 +48,9 @@ bool
 MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	extensions->scavenger->mutatorSetupForGC(this);
+	if (extensions->concurrentScavenger) {
+		extensions->scavenger->mutatorSetupForGC(this);
+	}
 #endif
 
 	/* initialize base class */
@@ -59,7 +61,9 @@ void
 MM_EnvironmentStandard::tearDown(MM_GCExtensionsBase *extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	extensions->scavenger->mutatorFinalReleaseCopyCaches(this, this);
+	if (extensions->concurrentScavenger) {
+		extensions->scavenger->mutatorFinalReleaseCopyCaches(this, this);
+	}
 #endif
 	/* tearDown base class */
 	MM_EnvironmentBase::tearDown(extensions);

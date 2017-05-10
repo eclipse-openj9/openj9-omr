@@ -320,13 +320,22 @@ X86OpCodesTest::compileAddressTestMethods()
 #if defined(TR_TARGET_64BIT)
    compileOpCodeMethod(_l2a, _numberOfUnaryArgs, TR::l2a, "l2a", _argTypesUnaryLong, TR::Address, rc);
    compileOpCodeMethod(_a2l, _numberOfUnaryArgs, TR::a2l, "a2l", _argTypesUnaryAddress, TR::Int64, rc);
+   compileOpCodeMethod(_aternary, _numberOfTernaryArgs, TR::aternary, "aternary", _argTypesTernaryAddress, TR::Address, rc);
+#endif
 
    compileOpCodeMethod(_acmpeq, _numberOfBinaryArgs, TR::acmpeq, "acmpeq", _argTypesBinaryAddress, TR::Int32, rc);
    compileOpCodeMethod(_acmpne, _numberOfBinaryArgs, TR::acmpne, "acmpne", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_acmplt, _numberOfBinaryArgs, TR::acmplt, "acmplt", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_acmpge, _numberOfBinaryArgs, TR::acmpge, "acmpge", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_acmple, _numberOfBinaryArgs, TR::acmple, "acmple", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_acmpgt, _numberOfBinaryArgs, TR::acmpgt, "acmpgt", _argTypesBinaryAddress, TR::Int32, rc);
    compileOpCodeMethod(_ifacmpeq, _numberOfBinaryArgs, TR::ifacmpeq, "ifacmpeq", _argTypesBinaryAddress, TR::Int32, rc);
    compileOpCodeMethod(_ifacmpne, _numberOfBinaryArgs, TR::ifacmpne, "ifacmpne", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_aternary, _numberOfTernaryArgs, TR::aternary, "aternary", _argTypesTernaryAddress, TR::Address, rc);
-#endif
+   compileOpCodeMethod(_ifacmplt, _numberOfBinaryArgs, TR::ifacmplt, "ifacmplt", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_ifacmpge, _numberOfBinaryArgs, TR::ifacmpge, "ifacmpge", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_ifacmple, _numberOfBinaryArgs, TR::ifacmple, "ifacmple", _argTypesBinaryAddress, TR::Int32, rc);
+   compileOpCodeMethod(_ifacmpgt, _numberOfBinaryArgs, TR::ifacmpgt, "ifacmpgt", _argTypesBinaryAddress, TR::Int32, rc);
+
 #if defined(TR_TARGET_32BIT)
    compileOpCodeMethod(_a2b, _numberOfUnaryArgs, TR::a2b, "a2b", _argTypesUnaryAddress, TR::Int8, rc);
    compileOpCodeMethod(_a2s, _numberOfUnaryArgs, TR::a2s, "a2s", _argTypesUnaryAddress, TR::Int16, rc);
@@ -4423,6 +4432,30 @@ X86OpCodesTest::invokeAddressTests()
       (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
       (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
       };
+   uintptrj_t acmpltDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      };
+   uintptrj_t acmpgeDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      };
+   uintptrj_t acmpleDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
+      };
+   uintptrj_t acmpgtDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      };
    uintptrj_t ifacmpeqDataArr[][2] =
       {
       (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
@@ -4436,6 +4469,30 @@ X86OpCodesTest::invokeAddressTests()
       (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
       (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
       (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
+      };
+   uintptrj_t ifacmpltDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      };
+   uintptrj_t ifacmpgeDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
+      };
+   uintptrj_t ifacmpleDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
+      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
+      };
+   uintptrj_t ifacmpgtDataArr[][2] =
+      {
+      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
+      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
       (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
       };
 
@@ -4504,7 +4561,7 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_i2a, convert(intDataArr[i], ADDRESS_PLACEHOLDER_1), _i2a(intDataArr[i]));
 
       sprintf(resolvedMethodName, "i2aConst%d", i + 1);
-      compileOpCodeMethod(i2aConst, 
+      compileOpCodeMethod(i2aConst,
             _numberOfUnaryArgs, TR::i2a, resolvedMethodName, _argTypesUnaryInt, TR::Address, rc, 2, 1, &intDataArr[i]);
       OMR_CT_EXPECT_EQ(i2aConst, convert(intDataArr[i], ADDRESS_PLACEHOLDER_1), i2aConst(INT_PLACEHOLDER_1));
       }
@@ -4515,7 +4572,7 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_iu2a, convert(uintDataArr[i], ADDRESS_PLACEHOLDER_1), _iu2a(uintDataArr[i]));
 
       sprintf(resolvedMethodName, "iu2aConst%d", i + 1);
-      compileOpCodeMethod(iu2aConst, 
+      compileOpCodeMethod(iu2aConst,
             _numberOfUnaryArgs, TR::iu2a, resolvedMethodName, _argTypesUnaryInt, TR::Address, rc, 2, 1, &uintDataArr[i]);
       OMR_CT_EXPECT_EQ(iu2aConst, convert(uintDataArr[i], ADDRESS_PLACEHOLDER_1), iu2aConst(INT_PLACEHOLDER_1));
       }
@@ -4526,7 +4583,7 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_a2s, convert(aUnaryDataArr[i], SHORT_POS), _a2s(aUnaryDataArr[i]));
 
       sprintf(resolvedMethodName, "a2sConst%d", i + 1);
-      compileOpCodeMethod(a2sConst, 
+      compileOpCodeMethod(a2sConst,
             _numberOfUnaryArgs, TR::a2s, resolvedMethodName, _argTypesUnaryAddress, TR::Int16, rc, 2, 1, &aUnaryDataArr[i]);
       OMR_CT_EXPECT_EQ(a2sConst, convert(aUnaryDataArr[i], SHORT_POS), a2sConst(ADDRESS_PLACEHOLDER_1));
       }
@@ -4537,7 +4594,7 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_a2b, convert(aUnaryDataArr[i], BYTE_POS), _a2b(aUnaryDataArr[i]));
 
       sprintf(resolvedMethodName, "a2bConst%d", i + 1);
-      compileOpCodeMethod(a2bConst, 
+      compileOpCodeMethod(a2bConst,
             _numberOfUnaryArgs, TR::a2b, resolvedMethodName, _argTypesUnaryAddress, TR::Int8, rc, 2, 1, &aUnaryDataArr[i]);
       OMR_CT_EXPECT_EQ(a2bConst, convert(aUnaryDataArr[i], BYTE_POS), a2bConst(ADDRESS_PLACEHOLDER_1));
       }
@@ -4551,7 +4608,7 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_l2a, convert(longDataArr[i], ADDRESS_PLACEHOLDER_1), _l2a(longDataArr[i]));
 
       sprintf(resolvedMethodName, "l2aConst%d", i + 1);
-      compileOpCodeMethod(l2aConst, 
+      compileOpCodeMethod(l2aConst,
             _numberOfUnaryArgs, TR::l2a, resolvedMethodName, _argTypesUnaryLong, TR::Address, rc, 2, 1, &longDataArr[i]);
       OMR_CT_EXPECT_EQ(l2aConst, convert(longDataArr[i], ADDRESS_PLACEHOLDER_1), l2aConst(LONG_PLACEHOLDER_1));
       }
@@ -4563,97 +4620,9 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_a2l, convert(aUnaryDataArr[i], LONG_POS), _a2l(aUnaryDataArr[i]));
 
       sprintf(resolvedMethodName, "a2lConst%d", i + 1);
-      compileOpCodeMethod(a2lConst, 
+      compileOpCodeMethod(a2lConst,
             _numberOfUnaryArgs, TR::a2l, resolvedMethodName, _argTypesUnaryAddress, TR::Int64, rc, 2, 1, &aUnaryDataArr[i]);
       OMR_CT_EXPECT_EQ(a2lConst, convert(aUnaryDataArr[i], LONG_POS), a2lConst(ADDRESS_PLACEHOLDER_1));
-      }
-
-   //acmpeq
-   testCaseNum = sizeof(acmpeqDataArr) / sizeof(acmpeqDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_acmpeq, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), _acmpeq(acmpeqDataArr[i][0], acmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpeqConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpeqDataArr[i][0]), 2, &(acmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "aCmpeqConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpeqConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(acmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   //acmpne
-   testCaseNum = sizeof(acmpneDataArr) / sizeof(acmpneDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_acmpne, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), _acmpne(acmpneDataArr[i][0], acmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpneDataArr[i][0]), 2, &(acmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "aCmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(acmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   //ifacmpeq
-   testCaseNum = sizeof(ifacmpeqDataArr) / sizeof(ifacmpeqDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpeq, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), _ifacmpeq(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpeqDataArr[i][0]), 2, &(ifacmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ifacmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   //ifacmpne
-   testCaseNum = sizeof(ifacmpneDataArr) / sizeof(ifacmpneDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpne, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), _ifacmpne(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpneDataArr[i][0]), 2, &(ifacmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ifacmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
       }
 
    //aternary
@@ -4665,41 +4634,295 @@ X86OpCodesTest::invokeAddressTests()
       OMR_CT_EXPECT_EQ(_aternary, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), _aternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]));
 
       sprintf(resolvedMethodName, "aTernaryConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 6, 1, &aternaryChild1Arr[i], 2, &aternaryArr[i][0], 3, &aternaryArr[i][1]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aTernaryConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 1, &aternaryChild1Arr[i], 2, &aternaryArr[i][0]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2, aternaryArr[i][1]));
 
       sprintf(resolvedMethodName, "aTernaryConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 1, &aternaryChild1Arr[i], 3, &aternaryArr[i][1]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(ADDRESS_PLACEHOLDER_1, aternaryArr[i][0], ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aTernaryConst4_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 4, 2, &aternaryArr[i][0], 3, &aternaryArr[i][1]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], ADDRESS_PLACEHOLDER_2, ADDRESS_PLACEHOLDER_3));
 
       sprintf(resolvedMethodName, "aTernaryConst5_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 1, &aternaryChild1Arr[i]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(ADDRESS_PLACEHOLDER_1, aternaryArr[i][0], aternaryArr[i][1]));
 
       sprintf(resolvedMethodName, "aTernaryConst6_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 2, &aternaryArr[i][0]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], ADDRESS_PLACEHOLDER_1, aternaryArr[i][1]));
 
       sprintf(resolvedMethodName, "aTernaryConst7_TestCase%d", i + 1);
-      compileOpCodeMethod(aTernaryConst, 
+      compileOpCodeMethod(aTernaryConst,
             _numberOfTernaryArgs, TR::aternary, resolvedMethodName, _argTypesTernaryAddress, TR::Address, rc, 2, 3, &aternaryArr[i][1]);
       OMR_CT_EXPECT_EQ(aTernaryConst, ternary(aternaryChild1Arr[i], aternaryArr[i][0], aternaryArr[i][1]), aTernaryConst(aternaryChild1Arr[i], aternaryArr[i][0], ADDRESS_PLACEHOLDER_1));
       }
 #endif //defined(TR_TARGET_64BIT)
+
+   //address compare
+   testCaseNum = sizeof(acmpeqDataArr) / sizeof(acmpeqDataArr[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      OMR_CT_EXPECT_EQ(_acmpeq, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), _acmpeq(acmpeqDataArr[i][0], acmpeqDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "aCmpeqConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpeqDataArr[i][0]), 2, &(acmpeqDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "aCmpeqConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpeqDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpeqDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "aCmpeqConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpeqDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(acmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(acmpneDataArr) / sizeof(acmpneDataArr[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      OMR_CT_EXPECT_EQ(_acmpne, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), _acmpne(acmpneDataArr[i][0], acmpneDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "aCmpneConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpneDataArr[i][0]), 2, &(acmpneDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "aCmpneConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpneDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpneDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "aCmpneConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpneDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(acmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(acmpgtDataArr) / sizeof(acmpgtDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_acmpgt, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), _acmpgt(acmpgtDataArr[i][0], acmpgtDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpgtConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpgtDataArr[i][0]), 2, &(acmpgtDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "acmpgtConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpgtDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpgtDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpgtConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpgtDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(acmpgtDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(acmpltDataArr) / sizeof(acmpltDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_acmplt, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), _acmplt(acmpltDataArr[i][0], acmpltDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpltConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpltDataArr[i][0]), 2, &(acmpltDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "acmpltConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpltDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpltDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpltConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpltDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(acmpltDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(acmpgeDataArr) / sizeof(acmpgeDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_acmpge, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), _acmpge(acmpgeDataArr[i][0], acmpgeDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpgeConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpgeDataArr[i][0]), 2, &(acmpgeDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "acmpgeConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpgeDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpgeDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpgeConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpgeDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(acmpgeDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(acmpleDataArr) / sizeof(acmpleDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_acmple, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), _acmple(acmpleDataArr[i][0], acmpleDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpleConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpleDataArr[i][0]), 2, &(acmpleDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "acmpleConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpleDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpleDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "acmpleConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpleDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(acmpleDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   //address ifcompare
+   testCaseNum = sizeof(ifacmpeqDataArr) / sizeof(ifacmpeqDataArr[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmpeq, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), _ifacmpeq(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpeqConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpeqDataArr[i][0]), 2, &(ifacmpeqDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpeqConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpeqDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpeqDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpeqConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpeqDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ifacmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(ifacmpneDataArr) / sizeof(ifacmpneDataArr[0]);
+   for (int32_t i = 0 ; i < testCaseNum ; i++)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmpne, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), _ifacmpne(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpneConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpneDataArr[i][0]), 2, &(ifacmpneDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpneConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpneDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpneDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpneConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpneDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ifacmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(ifacmpgtDataArr) / sizeof(ifacmpgtDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmpgt, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), _ifacmpgt(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpgtConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpgtDataArr[i][0]), 2, &(ifacmpgtDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpgtConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpgtDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpgtDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpgtConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpgtDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ifacmpgtDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(ifacmpltDataArr) / sizeof(ifacmpltDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmplt, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), _ifacmplt(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpltConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpltDataArr[i][0]), 2, &(ifacmpltDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpltConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpltDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpltDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpltConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpltDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ifacmpltDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(ifacmpgeDataArr) / sizeof(ifacmpgeDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmpge, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), _ifacmpge(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpgeConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpgeDataArr[i][0]), 2, &(ifacmpgeDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpgeConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpgeDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpgeDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpgeConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpgeDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ifacmpgeDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
+
+   testCaseNum = sizeof(ifacmpleDataArr) / sizeof(ifacmpleDataArr[0]);
+   for(uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_ifacmple, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), _ifacmple(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpleConst1_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpleDataArr[i][0]), 2, &(ifacmpleDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
+
+      sprintf(resolvedMethodName, "ifacmpleConst2_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpleDataArr[i][0]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpleDataArr[i][1]));
+
+      sprintf(resolvedMethodName, "ifacmpleConst3_TestCase%d", i + 1);
+      compileOpCodeMethod(aCompareConst,
+            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpleDataArr[i][1]));
+      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ifacmpleDataArr[i][0], ADDRESS_PLACEHOLDER_2));
+      }
    }
 
 void
@@ -4821,15 +5044,6 @@ X86OpCodesTest::UnsupportedOpCodesTests()
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::a2s, "a2s", _argTypesUnaryAddress, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::i2a, "i2a", _argTypesUnaryInt, TR::Address);
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::iu2a, "iu2a", _argTypesUnaryInt, TR::Address);
-
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::acmplt, "acmplt", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::acmpge, "acmpge", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::acmple, "acmple", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::acmpgt, "acmpgt", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::ifacmplt, "ifacmplt", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::ifacmpge, "ifacmpge", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::ifacmple, "ifacmple", _argTypesBinaryAddress, TR::Int32);
-   addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::ifacmpgt, "ifacmpgt", _argTypesBinaryAddress, TR::Int32);
 #endif
 
 }
@@ -4933,373 +5147,6 @@ X86OpCodesTest::invokeDisabledIntegerArithmeticTests()
       OMR_CT_EXPECT_EQ(luBinaryCons, div(ulongDivArr[i][0], ulongDivArr[i][1]), luBinaryCons(ulongDivArr[i][0], LONG_PLACEHOLDER_2));
       }
 
-#endif
-   }
-
-
-void
-X86OpCodesTest::compileDisabledCompareOpCodesTest()
-   {
-   int32_t rc = 0;
-   //Jazz103 Work Item 109672
-#if defined(TR_TARGET_32BIT)
-   compileOpCodeMethod(_acmpeq, _numberOfBinaryArgs, TR::acmpeq, "acmpeq", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_acmpne, _numberOfBinaryArgs, TR::acmpne, "acmpne", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_acmplt, _numberOfBinaryArgs, TR::acmplt, "acmplt", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_acmpge, _numberOfBinaryArgs, TR::acmpge, "acmpge", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_acmple, _numberOfBinaryArgs, TR::acmple, "acmple", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_acmpgt, _numberOfBinaryArgs, TR::acmpgt, "acmpgt", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmpeq, _numberOfBinaryArgs, TR::ifacmpeq, "ifacmpeq", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmpne, _numberOfBinaryArgs, TR::ifacmpne, "ifacmpne", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmplt, _numberOfBinaryArgs, TR::ifacmplt, "ifacmplt", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmpge, _numberOfBinaryArgs, TR::ifacmpge, "ifacmpge", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmple, _numberOfBinaryArgs, TR::ifacmple, "ifacmple", _argTypesBinaryAddress, TR::Int32, rc);
-   compileOpCodeMethod(_ifacmpgt, _numberOfBinaryArgs, TR::ifacmpgt, "ifacmpgt", _argTypesBinaryAddress, TR::Int32, rc);
-#endif
-   }
-
-void
-X86OpCodesTest::invokeDisabledCompareOpCodesTest()
-   {
-   int32_t rc = 0;
-
-   uintptrj_t acmpeqDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t acmpneDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
-      };
-   uintptrj_t acmpltDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t acmpgeDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t acmpleDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
-      };
-   uintptrj_t acmpgtDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
-      };
-   uintptrj_t ifacmpeqDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t ifacmpneDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
-      };
-   uintptrj_t ifacmpltDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t ifacmpgeDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MINIMUM
-      };
-   uintptrj_t ifacmpleDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_POS,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_MAXIMUM
-      };
-   uintptrj_t ifacmpgtDataArr[][2] =
-      {
-      (uintptrj_t) &INT_MAXIMUM,  (uintptrj_t) &INT_MINIMUM,
-      (uintptrj_t) &INT_MINIMUM,  (uintptrj_t) &INT_MAXIMUM,
-      (uintptrj_t) &INT_POS,   (uintptrj_t) &INT_POS
-      };
-
-   uint32_t testCaseNum = 0;
-   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   signatureCharLL_I_testMethodType *aCompareConst = 0;
-
-#if defined(TR_TARGET_32BIT)
-   //address compare
-   testCaseNum = sizeof(acmpeqDataArr) / sizeof(acmpeqDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_acmpeq, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), _acmpeq(acmpeqDataArr[i][0], acmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpeqConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpeqDataArr[i][0]), 2, &(acmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "aCmpeqConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpeqConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(acmpeqDataArr[i][0], acmpeqDataArr[i][1]), aCompareConst(acmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(acmpneDataArr) / sizeof(acmpneDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_acmpne, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), _acmpne(acmpneDataArr[i][0], acmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpneDataArr[i][0]), 2, &(acmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "aCmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "aCmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(acmpneDataArr[i][0], acmpneDataArr[i][1]), aCompareConst(acmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(acmpgtDataArr) / sizeof(acmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_acmpgt, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), _acmpgt(acmpgtDataArr[i][0], acmpgtDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpgtConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpgtDataArr[i][0]), 2, &(acmpgtDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "acmpgtConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpgtDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpgtDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpgtConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpgtDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(acmpgtDataArr[i][0], acmpgtDataArr[i][1]), aCompareConst(acmpgtDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(acmpltDataArr) / sizeof(acmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_acmplt, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), _acmplt(acmpltDataArr[i][0], acmpltDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpltConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpltDataArr[i][0]), 2, &(acmpltDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "acmpltConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpltDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpltDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpltConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpltDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(acmpltDataArr[i][0], acmpltDataArr[i][1]), aCompareConst(acmpltDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(acmpgeDataArr) / sizeof(acmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_acmpge, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), _acmpge(acmpgeDataArr[i][0], acmpgeDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpgeConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpgeDataArr[i][0]), 2, &(acmpgeDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "acmpgeConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpgeDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpgeDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpgeConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpgeDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(acmpgeDataArr[i][0], acmpgeDataArr[i][1]), aCompareConst(acmpgeDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(acmpleDataArr) / sizeof(acmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_acmple, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), _acmple(acmpleDataArr[i][0], acmpleDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpleConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(acmpleDataArr[i][0]), 2, &(acmpleDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "acmpleConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(acmpleDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, acmpleDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "acmpleConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::acmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(acmpleDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(acmpleDataArr[i][0], acmpleDataArr[i][1]), aCompareConst(acmpleDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   //address ifcompare
-   testCaseNum = sizeof(ifacmpeqDataArr) / sizeof(ifacmpeqDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpeq, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), _ifacmpeq(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpeqDataArr[i][0]), 2, &(ifacmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpeqDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpeqDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpeqConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpeq, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpeqDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareEQ(ifacmpeqDataArr[i][0], ifacmpeqDataArr[i][1]), aCompareConst(ifacmpeqDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(ifacmpneDataArr) / sizeof(ifacmpneDataArr[0]);
-   for (int32_t i = 0 ; i < testCaseNum ; i++)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpne, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), _ifacmpne(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpneConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpneDataArr[i][0]), 2, &(ifacmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpneConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpneDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpneDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpneConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpne, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpneDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareNE(ifacmpneDataArr[i][0], ifacmpneDataArr[i][1]), aCompareConst(ifacmpneDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(ifacmpgtDataArr) / sizeof(ifacmpgtDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpgt, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), _ifacmpgt(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpgtConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpgtDataArr[i][0]), 2, &(ifacmpgtDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpgtConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpgtDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpgtDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpgtConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpgt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpgtDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGT(ifacmpgtDataArr[i][0], ifacmpgtDataArr[i][1]), aCompareConst(ifacmpgtDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(ifacmpltDataArr) / sizeof(ifacmpltDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmplt, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), _ifacmplt(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpltConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpltDataArr[i][0]), 2, &(ifacmpltDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpltConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpltDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpltDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpltConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmplt, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpltDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLT(ifacmpltDataArr[i][0], ifacmpltDataArr[i][1]), aCompareConst(ifacmpltDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(ifacmpgeDataArr) / sizeof(ifacmpgeDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmpge, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), _ifacmpge(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpgeConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpgeDataArr[i][0]), 2, &(ifacmpgeDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpgeConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpgeDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpgeDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpgeConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmpge, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpgeDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareGE(ifacmpgeDataArr[i][0], ifacmpgeDataArr[i][1]), aCompareConst(ifacmpgeDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
-
-   testCaseNum = sizeof(ifacmpleDataArr) / sizeof(ifacmpleDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_ifacmple, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), _ifacmple(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpleConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 4, 1, &(ifacmpleDataArr[i][0]), 2, &(ifacmpleDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ADDRESS_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "ifacmpleConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 1, &(ifacmpleDataArr[i][0]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ADDRESS_PLACEHOLDER_1, ifacmpleDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "ifacmpleConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(aCompareConst, 
-            _numberOfBinaryArgs, TR::ifacmple, resolvedMethodName, _argTypesBinaryAddress, TR::Int32, rc, 2, 2, &(ifacmpleDataArr[i][1]));
-      OMR_CT_EXPECT_EQ(aCompareConst, compareLE(ifacmpleDataArr[i][0], ifacmpleDataArr[i][1]), aCompareConst(ifacmpleDataArr[i][0], ADDRESS_PLACEHOLDER_2));
-      }
 #endif
    }
 
@@ -5469,14 +5316,6 @@ TEST(JITX86OpCodesTest, DISABLED_X86UnaryTest)
 //To temporarily enable specific "DISABLED" test,
 //append "--gtest_filter=*[partial words of the test name]* --gtest_also_run_disabled_tests"
 //in the command line. The '*' symbol is used as regular expression.
-TEST(JITX86OpCodesTest, DISABLED_X86CompareOpCodesTests)
-   {
-   //Jazz103 Work Item 109672
-   ::TestCompiler::X86OpCodesTest disabledX86OpcodesTest;
-   disabledX86OpcodesTest.compileDisabledCompareOpCodesTest();
-   disabledX86OpcodesTest.invokeDisabledCompareOpCodesTest();
-   }
-
 TEST(JITX86OpCodesTest, DISABLED_X86ConvertOpCodesTests)
    {
    //Jazz103 Work Item 109672

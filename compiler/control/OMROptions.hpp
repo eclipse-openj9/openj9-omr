@@ -108,8 +108,7 @@ enum TR_CompilationOptions
    TR_RegisterMaps               = 0x00001000,
    TR_CreatePCMaps               = 0x00002000,
    TR_OptimizeForSpace           = 0x00004000,
-   TR_FullSpeedDebug             = 0x00008000,
-   TR_MimicInterpreterFrameShape = 0x00008000, // ** NOTE ** Alias for TR_FullSpeedDebug until we're prepared to separate these two concepts
+   TR_MimicInterpreterFrameShape = 0x00008000,
 
    TR_TraceBC                    = 0x00010000,
    TR_TraceInfo                  = 0x00020000,
@@ -267,7 +266,7 @@ enum TR_CompilationOptions
    TR_EnableNewAllocationProfiling        = 0x00010000 + 5, // enable tracing of fields load and store
    TR_IgnoreIEEERestrictions              = 0x00020000 + 5, // enable more aggressive, nonIEEE compliant xforms
    TR_ProcessHugeMethods                  = 0x00040000 + 5, // allow processing of huge methods
-   // Available                           = 0x00080000 + 5,
+   TR_FullSpeedDebug                      = 0x00080000 + 5,
    TR_DynamicThreadPriority               = 0x00100000 + 5,
    TR_UseIdleTime                         = 0x00200000 + 5,
    TR_UseOptLevelAdjustment               = 0x00400000 + 5,
@@ -558,9 +557,9 @@ enum TR_CompilationOptions
    TR_PoisonDeadSlots                                 = 0x00001000 + 15,
    TR_DisableOSRSharedSlots                           = 0x00002000 + 15,
    TR_DisableIncrementalCCR                           = 0x00004000 + 15, //SRT
-   // Available                                       = 0x00008000 + 15,
+   TR_DisableOSRCallSiteRemat                         = 0x00008000 + 15,
    TR_UseLowerMethodCounts                            = 0x00010000 + 15,
-   // Available                                       = 0x00040000 + 15,
+   TR_DisableOSRLocalRemat                            = 0x00040000 + 15,
    TR_DoNotUsePersistentIprofiler                     = 0x00080000 + 15,
    TR_DoNotUseFastStackwalk                           = 0x00100000 + 15,
    // Available                                       = 0x00200000 + 15,
@@ -899,11 +898,11 @@ enum TR_CompilationOptions
    TR_DisableSIMDStringCaseConv                       = 0x00040000 + 27,
    TR_DisableSIMDUTF16BEEncoder                       = 0x00080000 + 27,
    TR_DisableSIMDArrayCopy                            = 0x00100000 + 27,
-   // Available                                       = 0x00200000 + 27,
-   // Available                                       = 0x00400000 + 27,
+   TR_EnableZOSTrampolines                            = 0x00200000 + 27,
+   TR_EnableRMODE64                                   = 0x00400000 + 27,
    TR_EnableLocalVPSkipLowFreqBlock                   = 0x00800000 + 27,
    TR_DisableLastITableCache                          = 0x01000000 + 27,
-   // Available                                       = 0x02000000 + 27,
+   TR_StressTrampolines                               = 0x02000000 + 27,
    TR_DisableSIMDUTF16LEEncoder                       = 0x04000000 + 27,
    // Available                                       = 0x08000000 + 27,
    // Available                                       = 0x10000000 + 27,
@@ -1990,6 +1989,7 @@ private:
       void maskWord(int wordIndex, uint64_t mask){ _words[wordIndex] |= mask; }
       void replaceWord(int wordIndex, uint64_t newValue){ _words[wordIndex] = newValue; }
       };
+   typedef OptionFlagArray<TR_VerboseFlags, TR_NumVerboseOptions> VerboseOptionFlagArray;
 
    static bool validateOptionsTables(void *feBase, TR_FrontEnd *fe);
 
@@ -2027,6 +2027,8 @@ private:
    //
    static char *setVerboseBits(char *option, void *base, TR::OptionTable *entry);
    static char *setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::OptionTable *entry);
+   // Helper method used by the two methods above
+   static char *setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags);
 
    // Set samplingjprofiling bits
    //
@@ -2063,6 +2065,20 @@ private:
    // from the base to that value.
    //
    static char *set32BitNumeric(char *option, void *base, TR::OptionTable *entry);
+
+  /** 
+   * \brief Option processing function for 32 bit numeric fields stored in JitConfig
+   *
+   * Scans the option for a numeric value and set the 32-bit word at offset 
+   * entry->param1 from the start of JitConfig to that value.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Not used
+   * \param [in] entry   OptionTable entry specifying the offset of the JITConfig word
+   *                     32-bit that needs to be set
+   * \return A pointer to the option parameter
+   */
+   static char *set32BitNumericInJitConfig(char *option, void *base, TR::OptionTable *entry);
 
    // Scan the option for a hexadecimal value and set 32bit word at offset "offset"
    // from the base to that value.
@@ -2110,10 +2126,35 @@ private:
    //
    static char *setStaticString(char *option, void *base, TR::OptionTable *entry);
 
-   // Scan the option for a string value and set pointer at offset "offset"
-   // from the base to a copy of the string
-   //
+   /**
+   * \brief Option processing function for strings
+   *
+   * Scans the option parameter for a string value and sets a pointer at
+   * offset entry->param1 from the start of 'base' to a copy of that string.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Base address of the structure that gets modified.
+   *                     Typically an Options object.
+   * \param [in] entry   OptionTable entry specifying the offset of the
+   *                     string field that needs to be set
+   * \return A pointer to the option parameter
+   */
    static char *setString(char *option, void *base, TR::OptionTable *entry);
+
+   /**
+   * \brief Option processing function for string fields stored in JitConfig
+   *
+   * Scans the option parameter for a string value and sets a pointer at offset
+   * entry->param1 from the start of JitConfig to a copy of that string.
+   *
+   * \param [in] option  String representing the value of the option
+   * \param [in] base    Not used
+   * \param [in] entry   OptionTable entry specifying the offset of the JITConfig
+   *                     field (a char pointer) that needs to be set
+   * \return A pointer to the option parameter
+   */
+   static char *setStringInJitConfig(char *option, void *base, TR::OptionTable *entry);
+
 
    // Add "debugString" to the JIT debug strings
    //
@@ -2274,7 +2315,6 @@ private:
    static TR_YesNoMaybe        _startupTimeMatters; // set very late in setCounts()
    // If countsAreProvidedByUser, then this flag is undefined
 
-   typedef OptionFlagArray<TR_VerboseFlags, TR_NumVerboseOptions> VerboseOptionFlagArray;
    static VerboseOptionFlagArray  _verboseOptionFlags;
    static char                   *_verboseOptionNames[TR_NumVerboseOptions];
    static bool                 _quickstartDetected; // set when Quickstart was specified on the command line

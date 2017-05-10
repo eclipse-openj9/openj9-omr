@@ -706,11 +706,11 @@ MM_ConcurrentGC::initialize(MM_EnvironmentBase *env)
 #endif /* OMR_GC_LARGE_OBJECT_AREA) */
 
 	/* Register on any hook we are interested in */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CARD_CLEANING_PASS_2_START, hookCardCleanPass2Start, (void *)this);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CARD_CLEANING_PASS_2_START, hookCardCleanPass2Start, OMR_GET_CALLSITE(), (void *)this);
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* attach to the hooks for creation old-to-old references by external GC (Scavenger) */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED, hookOldToOldReferenceCreated, this);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED, hookOldToOldReferenceCreated, OMR_GET_CALLSITE(), this);
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	return true;
@@ -2223,12 +2223,14 @@ MM_ConcurrentGC::concurrentMark(MM_EnvironmentStandard *env, MM_MemorySubSpace *
 void
 MM_ConcurrentGC::signalThreadsToDirtyCards(MM_EnvironmentStandard *env)
 {
+	uintptr_t gcCount = _extensions->globalGCStats.gcCount;
+
 	/* Things may have moved on since async callback requested */
-	if (CONCURRENT_INIT_COMPLETE == _stats->getExecutionMode()) {
+	while (CONCURRENT_INIT_COMPLETE == _stats->getExecutionMode()) {
 		/* We may or may not have exclusive access but another thread may have beat us to it and
 		 * prepared the threads or even collected.
 		 */
-		if (env->tryAcquireExclusiveForConcurrentKickoff(_stats)) {
+		if (env->acquireExclusiveVMAccessForGC(this, true, false)) {
 			MM_CycleState *previousCycleState = env->_cycleState;
 			_concurrentCycleState = MM_CycleState();
 			_concurrentCycleState._type = _cycleType;
@@ -2241,7 +2243,11 @@ MM_ConcurrentGC::signalThreadsToDirtyCards(MM_EnvironmentStandard *env)
 			/* Cancel any outstanding call backs on other threads as this thread has done the necessary work */
 			_callback->cancelCallback(env);
 
-			env->releaseExclusiveForConcurrentKickoff();
+			env->releaseExclusiveVMAccessForGC();
+		}
+
+		if (gcCount != _extensions->globalGCStats.gcCount) {
+			break;
 		}
 	}
 }
@@ -2719,7 +2725,7 @@ MM_ConcurrentGC::concurrentFinalCollection(MM_EnvironmentStandard *env, MM_Memor
 	/* Switch to FINAL_COLLECTION; if we fail another thread beat us to it so just return */
 	if	(_stats->switchExecutionMode(CONCURRENT_EXHAUSTED, CONCURRENT_FINAL_COLLECTION)) {
 
-		if(env->tryAcquireExclusiveVMAccessForGC(this)) {
+		if(env->acquireExclusiveVMAccessForGC(this, true, true)) {
 			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 			/* We got exclusive control first so do collection */
 			reportConcurrentCollectionStart(env);
@@ -2785,7 +2791,7 @@ MM_ConcurrentGC::localMark(MM_EnvironmentStandard *env, uintptr_t sizeToTrace)
 			 */
 		} else {
 			/* Else trace the object */
-			sizeTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, (sizeToTrace - sizeTraced));
+			sizeTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET, (sizeToTrace - sizeTraced));
 		}
 
 		/* Have we done enough tracing ? */
@@ -2905,7 +2911,7 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 
 	/* Ensure caller acquired exclusive VM access before calling */
-	Assert_MM_true(env->inquireExclusiveVMAccessForGC());
+	Assert_MM_mustHaveExclusiveVMAccess(env->getOmrVMThread());
 
 	/* Set flag to show global collector is active; some operations need to know if they
 	 * are called during a global collect or not, eg heapAddRange
@@ -3409,7 +3415,7 @@ MM_ConcurrentGC::completeTracing(MM_EnvironmentStandard *env)
 	env->_workStack.reset(env, _markingScheme->getWorkPackets());
 
 	while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
-		bytesTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+		bytesTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 	}
 	env->_workStack.clearPushCount();
 
@@ -3484,7 +3490,7 @@ MM_ConcurrentGC::finalCleanCards(MM_EnvironmentStandard *env)
 					}
 
 					if (!dirty) {
-						totalTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+						totalTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 					} else {
 						_extensions->collectorLanguageInterface->concurrentGC_processItem(env, objectPtr);
 					}
@@ -3551,7 +3557,7 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentStandard *env)
 							 * to both nursery and tenure objects while scanning remembered objects.
 							 */
 
-							bytesTraced += _markingScheme->scanObjectWithSize(env,objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_REMEMBERED_SET_SCAN, SCAN_MAX);
+							bytesTraced += _markingScheme->scanObject(env,objectPtr, SCAN_REASON_REMEMBERED_SET_SCAN);
 
 							/* Have we pushed enough new references? */
 							if(env->_workStack.getPushCount() >= maxPushes) {
@@ -3563,7 +3569,7 @@ MM_ConcurrentGC::scanRememberedSet(MM_EnvironmentStandard *env)
 								 * expensive than it really is.
 								 */
 								while(NULL != (objectPtr = (omrobjectptr_t)env->_workStack.popNoWait(env))) {
-									bytesTraced += _markingScheme->scanObjectWithSize(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET, SCAN_MAX);
+									bytesTraced += _markingScheme->scanObject(env, objectPtr, SCAN_REASON_PACKET);
 								}
 								env->_workStack.clearPushCount();
 							}

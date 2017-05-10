@@ -93,6 +93,7 @@
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"                            // for TR_DebugBase
 #include "ras/DebugCounter.hpp"                     // for TR::DebugCounter, etc
 #include "runtime/Runtime.hpp"                      // for ::TR_DataAddress, etc
@@ -5065,17 +5066,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          }
       else //if (form == MemReg)
          {
-         if (cg->isConcurrentScavengeEnabled())
-            {
-            // TODO (GuardedStorage): If we are in the evaluation of a compressedrefs sequence and are about to generate
-            // compressed load we override the instruction opcode to generate a guarded load and shift instead. We should
-            // figure out a better way to handle this.
-            if (cg->isEvaluatingCompressionSequence() && load == TR::InstOpCode::LLGF)
-               {
-               load = TR::InstOpCode::LLGFSG;
-               }
-            }
-
          generateRXInstruction(cg, load, node, targetRegister, tempMR);
          }
       }
@@ -6121,17 +6111,35 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
                   {
-                  // TODO (GuardedStorage): Do we need the useCompressedPointers check here? All aloads should have been lowered by now.
+                  auto loadMnemonic = TR::InstOpCode::BAD;
+
                   if (cg->isConcurrentScavengeEnabled() &&
-                      !comp->useCompressedPointers() &&
                       node->getOpCodeValue() == TR::aloadi &&
                       tempReg->containsCollectedReference())
                      {
-                     generateRXYInstruction(cg, TR::InstOpCode::LGG, node, tempReg, tempMR);
+                     if (comp->useCompressedPointers() &&
+                         TR::TransformUtil::fieldShouldBeCompressed(node, comp))
+                        {
+                        loadMnemonic = TR::InstOpCode::LLGFSG;
+                        }
+                     else
+                        {
+                        loadMnemonic = TR::InstOpCode::LGG;
+                        }
                      }
                   else
                      {
-                     generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                     loadMnemonic = TR::InstOpCode::getLoadOpCode();
+                     }
+
+                  if (loadMnemonic == TR::InstOpCode::LLGFSG ||
+                      loadMnemonic == TR::InstOpCode::LGG)
+                     {
+                     generateRXYInstruction(cg, loadMnemonic, node, tempReg, tempMR);
+                     }
+                  else
+                     {
+                     generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
                      }
                   }
                }
@@ -9503,12 +9511,12 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    static const char * disableECCSIMD = feGetEnv("TR_disableECCSIMD");
    static const char * disableECCMLGR = feGetEnv("TR_disableECCMLGR");
    static const char * disableECCKarat = feGetEnv("TR_disableECCKarat");
-   static const char * EnableVMSL = feGetEnv("TR_enableVMSL");
+   static const char * disableVMSL = feGetEnv("TR_disableVMSL");
 
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
-   if (EnableVMSL || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
       return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);
@@ -13461,454 +13469,197 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
    return NULL;
    }
 
-
-/**
- * arraycopyEvaluator - call to System.arraycopy that may be partially inlined
- */
-TR::Register *
-OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node * node, TR::CodeGenerator * cg)
+TR::Register*
+OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
-   PRINT_ME("arraycopy", node, cg);
-
-   TR::Instruction * instr;
-   TR::LabelSymbol * snippetLabel;
-   TR::Snippet * snippet;
-
-   // Only a simple memmove or memcpy type of arraycopy is done as a node operation
-   // for 390 (this is different than other platforms which support other forms of
-   // arraycopy).
-   // For this case there are 3 children:
-   //    1) The byte source pointer
-   //    2) The byte destination pointer
-   //    3) The byte count
-   //
-   // Also, note that 390 codegen -requires- that isForwardArrayCopy() really means
-   // that a forward array copy is safe and that if it is -not- set it really means
-   // that a backward array copy is safe - the common code should have generated the
-   // correct tests around the arraycopy.
-   //
-   // Also, note that 390 codegen does not need to check for a particular frequency
-   // on the length - again - the common code will have generated a test for a
-   // particular length, if one is quite common, and there will be 2 versions of the
-   // arraycopy call - one with a constant length and one with a variable length.
-   //
-   TR::Node * byteSrcObjNode;
-   TR::Node * byteDstObjNode;
-   TR::Node * byteSrcNode;
-   TR::Node * byteDstNode;
-   TR::Node * byteLenNode;
-
-   TR::Register * byteSrcObjReg = NULL;
-   TR::Register * byteDstObjReg = NULL;
-   TR::Register * byteSrcReg = NULL;
-   TR::Register * byteDstReg = NULL;
-   TR::Register * byteDstOrigReg = NULL;
-   TR::Register * byteLenReg = NULL;
-   TR::Register * copyByteLenReg = NULL;
-   TR::Register * copyByteSrcReg = NULL;
-   TR::Register * copyByteDstReg = NULL;
-
-   bool evaluateChildren;
-   bool lenMinusOne=false;
-
-   TR::Compilation *comp = cg->comp();
-
-   bool isSimpleCopy = (node->getNumChildren() == 3);
-
-   if (!comp->getOption(TR_DisableSSOpts) && isSimpleCopy)
-      evaluateChildren=false;
-   else
-      evaluateChildren=true;
-
-   if (false && isSimpleCopy && TR::isJ9() && !comp->getOption(TR_DisableSIMDArrayCopy))
+   if (node->getNumChildren() == 3)
       {
-      return forwardArraycopyEvaluator(node, cg);
-      }
+      TR::Node* byteSrcNode = node->getChild(0);
+      TR::Node* byteDstNode = node->getChild(1);
+      TR::Node* byteLenNode = node->getChild(2);
 
-   if (isSimpleCopy)
-      {
-      byteSrcNode = node->getChild(0);
-      byteDstNode = node->getChild(1);
-      byteLenNode = node->getChild(2);
-
-      // arraycopy of zero bytes or neg bytes
-      if (byteLenNode->getOpCode().isLoadConst() &&
-          getIntegralValue(byteLenNode) <= 0)
-         {
-         if (byteSrcNode->getRegister() == NULL)
-            cg->evaluate(byteSrcNode);
-         cg->decReferenceCount(byteSrcNode);
-
-         if (byteDstNode->getRegister() == NULL)
-            cg->evaluate(byteDstNode);
-         cg->decReferenceCount(byteDstNode);
-
-         cg->decReferenceCount(byteLenNode);
-         return NULL;
-         }
+      primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
       }
    else
       {
-      byteSrcObjNode = node->getChild(0);
-      byteDstObjNode = node->getChild(1);
-      byteSrcNode    = node->getChild(2);
-      byteDstNode    = node->getChild(3);
-      byteLenNode    = node->getChild(4);
+      TR::Node* byteSrcObjNode = node->getChild(0);
+      TR::Node* byteDstObjNode = node->getChild(1);
+
+      TR::Node* byteSrcNode = node->getChild(2);
+      TR::Node* byteDstNode = node->getChild(3);
+      TR::Node* byteLenNode = node->getChild(4);
+
+      referenceArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode, byteSrcObjNode, byteDstObjNode);
       }
 
-   // The fast-path code that follows currently only supports memcpy() of primitive
-   // array types.
-   // Reference arraycopy could be handled, or it could be done as a 'java' private
-   // method out of java.lang.System class.
+   return NULL;
+   }
 
-   int64_t constantByteLength;
-   if (byteLenNode->getOpCode().isLoadConst())
+void
+OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode)
+   {
+   TR::Register* byteSrcReg = NULL;
+   TR::Register* byteDstReg = NULL;
+   TR::Register* byteLenReg = NULL;
+
+   // Check for array copy of zero bytes or negative number of bytes
+   if (byteLenNode->getOpCode().isLoadConst() && byteLenNode->getConst<int64_t>() <= 0)
       {
-      constantByteLength = byteLenNode->getIntegerNodeValue<int64_t>();
-      evaluateChildren=true;
-      }
-   else
-      {
-      byteLenReg=cg->evaluateLengthMinusOneForMemoryOps(byteLenNode, true, lenMinusOne);
-      evaluateChildren=true;
-      }
+      cg->evaluate(byteSrcNode);
+      cg->evaluate(byteDstNode);
 
-   // Evaluate the derived arguments.
-   //
-   // Since the derived argument registers are going to be killed over the call,
-   // move them into preserved registers if they still have more uses.
-   //
-
-   if (evaluateChildren)
-      {
-      byteSrcReg = cg->evaluate(byteSrcNode);
-
-      if (!cg->canClobberNodesRegister(byteSrcNode))
-         {
-
-         copyByteSrcReg = cg->allocateClobberableRegister(byteSrcReg);
-         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, copyByteSrcReg->getGPRofArGprPair(), byteSrcReg);
-
-         // Kill the copy rather than the original to allow better rematerialisation
-         // when the original register comes from a load.
-         //
-         byteSrcReg = copyByteSrcReg;
-         }
-
-      byteDstReg = cg->evaluate(byteDstNode);
-
-      if (!cg->canClobberNodesRegister(byteDstNode))
-         {
-         copyByteDstReg = cg->allocateClobberableRegister(byteDstReg);
-         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, copyByteDstReg->getGPRofArGprPair(), byteDstReg);
-
-         // Kill the copy rather than the original to allow better rematerialisation
-         // when the original register comes from a load.
-         //
-         byteDstReg = copyByteDstReg;
-         }
-      }
-
-   /**********************************************************/
-   /* Reference array copy and need store check, call helper */
-   /**********************************************************/
-   if (!isSimpleCopy && !node->isNoArrayStoreCheckArrayCopy())
-      {
-      byteSrcObjReg = cg->evaluate(byteSrcObjNode);
-      TR::Register * copybyteSrcObjReg = NULL;
-      if (!cg->canClobberNodesRegister(byteDstNode))
-         {
-         if (byteSrcObjReg->containsInternalPointer())
-            {
-            copybyteSrcObjReg = cg->allocateRegister();
-            copybyteSrcObjReg->setPinningArrayPointer(byteSrcObjReg->getPinningArrayPointer());
-            copybyteSrcObjReg->setContainsInternalPointer();
-            }
-         else
-            {
-            copybyteSrcObjReg = cg->allocateCollectedReferenceRegister();
-            }
-
-         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, copybyteSrcObjReg, byteSrcObjReg);
-
-         // Kill the copy rather than the original to allow better rematerialisation
-         // when the original register comes from a load.
-         //
-         byteSrcObjReg = copybyteSrcObjReg;
-         }
-
-      TR::Register * copybyteDstObjReg = NULL;
-      byteDstObjReg = cg->evaluate(byteDstObjNode);
-      if (!cg->canClobberNodesRegister(byteSrcObjNode))
-         {
-         if (byteDstObjReg->containsInternalPointer())
-            {
-            copybyteDstObjReg = cg->allocateRegister();
-            copybyteDstObjReg->setPinningArrayPointer(byteDstObjReg->getPinningArrayPointer());
-            copybyteDstObjReg->setContainsInternalPointer();
-            }
-         else
-            {
-            copybyteDstObjReg = cg->allocateCollectedReferenceRegister();
-            }
-
-         generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, copybyteDstObjReg, byteDstObjReg);
-
-         // Kill the copy rather than the original to allow better rematerialisation
-         // when the original register comes from a load.
-         //
-         byteDstObjReg = copybyteDstObjReg;
-         }
-
-      if (byteLenReg == NULL)
-         {
-         TR::Register *tempLenReg = cg->allocateRegister();
-         genLoadAddressConstant(cg, byteLenNode, constantByteLength, tempLenReg);
-#ifdef J9_PROJECT_SPECIFIC
-	 TR::TreeEvaluator::genArrayCopyWithArrayStoreCHK(node, byteSrcObjReg, byteDstObjReg, byteSrcReg, byteDstReg, tempLenReg, cg);
-#endif
-         cg->stopUsingRegister(tempLenReg);
-         }
-#ifdef J9_PROJECT_SPECIFIC
-      else
-         TR::TreeEvaluator::genArrayCopyWithArrayStoreCHK(node, byteSrcObjReg, byteDstObjReg, byteSrcReg, byteDstReg, byteLenReg, cg);
-#endif
-
-      cg->decReferenceCount(byteSrcObjNode);
-      cg->decReferenceCount(byteDstObjNode);
       cg->decReferenceCount(byteSrcNode);
       cg->decReferenceCount(byteDstNode);
       cg->decReferenceCount(byteLenNode);
 
-      if (copybyteSrcObjReg)
-         {
-         cg->stopUsingRegister(byteSrcObjReg);
-         }
-      if (copybyteDstObjReg)
-         {
-         cg->stopUsingRegister(byteDstObjReg);
-         }
-
-      if (copyByteSrcReg)
-         {
-         cg->stopUsingRegister(byteSrcReg);
-         }
-      if (copyByteDstReg)
-         {
-         cg->stopUsingRegister(byteDstReg);
-         }
-      if (byteLenReg)
-         {
-         cg->stopUsingRegister(byteLenReg);
-         }
-      return NULL;
-
+      return;
       }
 
-   // Fixed atomic issue with MVC/EX code, disabling this path
-   static char * disableAtomic = "ON"; //feGetEnv("TR_ArrayCopyDisableAtomic");   //always disable runtime check path for arraycopy
+   byteSrcReg = cg->gprClobberEvaluate(byteSrcNode);
+   byteDstReg = cg->gprClobberEvaluate(byteDstNode);
 
-   // If it's a referenced arraycopy (i.e. !isSimpleCopy), we have to ensure the elements are copied atomically - do not use MVC
-   // Everything needs to be atomically copied... disabling this path for non 8 bit arrays
-   if (isSimpleCopy &&
-       ((bool) disableAtomic || node->getArrayCopyElementType() == TR::Int8) && node->isForwardArrayCopy())
+   bool alreadyEvaluatedByteLenNode = false;
+
+#ifdef J9_PROJECT_SPECIFIC
+   TR::LabelSymbol* mergeLabel;
+   bool mustGenerateOOLGuardedLoadPath = cg->isConcurrentScavengeEnabled() &&
+                                         node->getArrayCopyElementType() == TR::Address;
+
+   if (mustGenerateOOLGuardedLoadPath)
       {
-      if (byteLenReg == NULL)
+      // The OOL path needs the byte length for the guarded load, compress, and store loop.
+      // However, the main line fast path also needs the byte length. As such, the byteLenNode
+      // must be evaluated outside of the OOL ICF region.
+      byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+      alreadyEvaluatedByteLenNode = true;
+
+      mergeLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol* slowPathLabel = generateLabelSymbol(cg);
+
+      TR_ASSERT_FATAL(J9_PRIVATE_FLAGS_CONCURRENT_SCAVENGER_ACTIVE == 0x20000,
+                 "GSCS: The OOL sequence branch is dependant on the flag being 0x20000");
+      TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(),
+                 "GSCS: Guarded Load OOL Path only defined in 64 bit mode");
+      TR::Register *vmReg = cg->getMethodMetaDataRealRegister();
+      int32_t offsetOfConcurrentScavengerActiveByte = offsetof(J9VMThread, privateFlags) + 5;
+      TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg, offsetOfConcurrentScavengerActiveByte, cg);
+      generateSIInstruction(cg, TR::InstOpCode::TM, node, privFlagMR, 0x00000002);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC3, node, slowPathLabel);
+
+      // Generate OOL Slow Path
+      TR_S390OutOfLineCodeSection* outOfLineCodeSection = new (cg->trHeapMemory()) TR_S390OutOfLineCodeSection(slowPathLabel, mergeLabel, cg);
+      cg->getS390OutOfLineCodeSectionList().push_front(outOfLineCodeSection);
+      outOfLineCodeSection->swapInstructionListsWithCompilation();
+
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, slowPathLabel);
+
+      TR::Register* strideRegister = cg->allocateRegister();
+
+      MemCpyVarLenTypedMacroOp vtOpSlow(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, true, node->isForwardArrayCopy());
+      vtOpSlow.generate(byteDstReg, byteSrcReg, strideRegister);
+      vtOpSlow.cleanUpReg();
+
+      cg->stopUsingRegister(strideRegister);
+
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel);
+
+      // Switch back from OOL Slow Path
+      outOfLineCodeSection->swapInstructionListsWithCompilation();
+      }
+#endif
+
+   if (node->isForwardArrayCopy())
+      {
+      if (byteLenNode->getOpCode().isLoadConst())
          {
-         MemCpyConstLenMacroOp op(node, byteDstNode, byteSrcNode, cg, constantByteLength);
+         MemCpyConstLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenNode->getConst<int64_t>());
+
          op.generate(byteDstReg, byteSrcReg);
          }
       else
          {
-         MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, lenMinusOne);
+         bool alreadyEvaluatedLengthMinusOne = false;
+
+         // Don't evaluate length minus one if byteLenNode was already evaluated
+         if (!alreadyEvaluatedByteLenNode)
+            {
+            byteLenReg = cg->evaluateLengthMinusOneForMemoryOps(byteLenNode, true, alreadyEvaluatedLengthMinusOne);
+            }
+
+         MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, alreadyEvaluatedLengthMinusOne);
+
          op.setUseEXForRemainder(true);
          op.generate(byteDstReg, byteSrcReg);
          }
       }
    else
       {
-      bool isConst = false;
-      if (byteLenReg == NULL)
+      // Don't clobber evaluate byteLenNode again if it was already evaluated
+      if (!alreadyEvaluatedByteLenNode)
          {
-         byteLenReg = cg->allocateRegister();
-
-         if (byteLenNode->getDataType() == TR::Int64)
-            genLoadLongConstant(cg, byteLenNode, constantByteLength, byteLenReg, NULL, NULL);
-         else
-            generateLoad32BitConstant(cg, byteLenNode, constantByteLength, byteLenReg, true);
-         cg->stopUsingRegister(byteLenReg);
-         isConst = true;
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
          }
 
-      TR::Register * strideRegister = cg->allocateRegister();
-      if ((bool) disableAtomic)
-         {
+      TR::Register* strideRegister = cg->allocateRegister();
 
-         // Problem Report 71337:
-         //
-         // We may end up in this block for backwards array copies of variable length. The problem is that
-         // MemToMemTypedMacroOp class hierarchy does not handle the use of evaluateLengthMinusOneForMemoryOps
-         // function because arraycopy deals with bytes rather than Object counts. In the case where lenMinusOne
-         // variable is set we must restore it back before performing the array copy to ensure we do not exclude
-         // copying of the last byte in the array.
+      MemCpyVarLenTypedMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, false, node->isForwardArrayCopy());
 
-         if (lenMinusOne)
-            generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), byteLenNode, byteLenReg, 1);
+      vtOp.generate(byteDstReg, byteSrcReg, strideRegister);
+      vtOp.cleanUpReg();
 
-         //Helper that can do backward copy. !node->isForwardArrayCopy() = backward copy
-         MemCpyVarLenTypedMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, node->isForwardArrayCopy());
-         vtOp.generate(byteDstReg, byteSrcReg, strideRegister);
-         vtOp.cleanUpReg();
-         }
-      else
-         {
-         // Atomic arraycopy - Doesn't reach here. (bool)disableAtomic always true
-         // Runtime check for overlapping of source and destination arrays
-         // If doesn't overlap, branch to MVC code
-         // else, fall through to atomic
-
-         TR::Instruction * cursor;
-         TR::LabelSymbol * mvcRoutine = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-
-         bool generateRuntimeMVCOverlap = false;
-
-         static char * runtimeMVC = feGetEnv("TR_ArrayCopyNoRuntimeMVC");
-
-         if ((bool)(!runtimeMVC) && isSimpleCopy)
-            generateRuntimeMVCOverlap = true;
-
-         if (generateRuntimeMVCOverlap)
-            {
-            // use strideRegister to hold difference, since it doesn't get used before the real routine. stride = dstAddr - srcAddr
-            if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
-               {
-               auto mnemonic = TR::Compiler->target.is64Bit() ? TR::InstOpCode::SGRK : TR::InstOpCode::SRK;
-
-               cursor = generateRRRInstruction(cg, mnemonic, byteSrcNode, strideRegister, byteDstReg, byteSrcReg);
-               }
-            else
-               {
-               cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), byteSrcNode, strideRegister, byteDstReg);
-               cursor = generateRRInstruction(cg, TR::InstOpCode::getSubstractRegOpCode(), byteSrcNode, strideRegister, byteSrcReg);
-            }
-
-            //mvc if stride <= 0   (src >= dst)
-            cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNHRC, byteSrcNode, mvcRoutine);
-            //mvc if length <= stride (no overlap)
-            cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCodeFromNode(byteLenNode), byteSrcNode, byteLenReg, strideRegister, TR::InstOpCode::COND_BNHRC, mvcRoutine, false, false);
-            }
-
-         static char * unroll = feGetEnv("TR_ArrayCopyDontUnroll");
-         MemCpyAtomicMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, node->isForwardArrayCopy(), (bool) !unroll,
-               isConst ? constantByteLength : -1);
-
-         // set applyDepLocally to false if generating runtime check
-         // create dependencies out here
-         cursor = vtOp.generate(byteDstReg, byteSrcReg, strideRegister, !generateRuntimeMVCOverlap);
-
-         if (generateRuntimeMVCOverlap)
-            {
-            TR::LabelSymbol * endOfCopy = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, byteSrcNode, endOfCopy);
-
-            cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, byteSrcNode, mvcRoutine);
-
-            if (byteLenReg == NULL)
-               {
-               MemCpyConstLenMacroOp op(node, byteDstNode, byteSrcNode, cg, constantByteLength, strideRegister);
-               cursor = op.generate(byteDstReg, byteSrcReg);
-               }
-            else
-               {
-               bool lengthMinusOneTmp = lenMinusOne;
-               TR::Register *itersReg = strideRegister;
-               TR::Register *raReg = vtOp.getAlignedReg();
-               MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, lengthMinusOneTmp, itersReg, raReg);
-               op.setUseEXForRemainder(true);
-
-               cursor = op.generate(byteDstReg, byteSrcReg);
-               }
-
-            // clear last instruction's dependencies
-
-            TR::Instruction * oldS390cursor = cursor;
-
-            cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, byteSrcNode, endOfCopy);
-
-            // get last instruction
-            // set it to vtOp's dependencies, clearing MVC routine's dependencies
-            // then clean up all registers
-
-            TR::RegisterDependencyConditions * loopDep = vtOp.getDependencies();
-            TR::RegisterDependencyConditions * oldDep = oldS390cursor->getDependencyConditions();
-
-            // Going through existing post conditions on old dependency to decrement total use by one,
-            // it will increase by one when added to the vtOp's dependency group
-            for (int32_t i = 0; i < oldDep->getNumPostConditions(); i++)
-               {
-               // if it exists
-               if (oldDep->getPostConditions()->getRegisterDependency(i) && oldDep->getPostConditions()->getRegisterDependency(i)->getRegister(cg))
-                     oldDep->getPostConditions()->getRegisterDependency(i)->getRegister(cg)->decTotalUseCount();
-               }
-            TR::Instruction * s390cursor = cursor;
-            s390cursor->resetDependencyConditions();
-            s390cursor->setDependencyConditionsNoBookKeeping(loopDep);
-            loopDep->bookKeepingRegisterUses(s390cursor, cg);
-            oldS390cursor->resetDependencyConditions();
-            loopDep->setIsUsed();
-            }
-
-         vtOp.cleanUpReg();
-         }
+      cg->stopUsingRegister(strideRegister);
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (!isSimpleCopy)
+   if (mustGenerateOOLGuardedLoadPath)
       {
-      TR::TreeEvaluator::genWrtbarForArrayCopy(node, cg->evaluate(byteSrcObjNode),
-                            cg->evaluate(byteDstObjNode), byteSrcNode->isNonNull(), cg);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, mergeLabel);
       }
 #endif
 
-   if (byteLenReg) cg->stopUsingRegister(byteLenReg);
+   cg->decReferenceCount(byteDstNode);
+   cg->decReferenceCount(byteSrcNode);
+   cg->decReferenceCount(byteLenNode);
 
-   if (isSimpleCopy)
-      {
-      cg->decReferenceCount(byteLenNode);
+   cg->stopUsingRegister(byteSrcReg);
+   cg->stopUsingRegister(byteDstReg);
+   cg->stopUsingRegister(byteLenReg);
+   }
 
-      if (evaluateChildren)
-         {
-         cg->decReferenceCount(byteDstNode);
-         cg->decReferenceCount(byteSrcNode);
-         }
-      }
-   else
+void
+OMR::Z::TreeEvaluator::referenceArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode, TR::Node* byteSrcObjNode, TR::Node* byteDstObjNode)
+   {
+   TR::Register* byteSrcObjReg = cg->evaluate(byteSrcObjNode);
+   TR::Register* byteDstObjReg = cg->evaluate(byteDstObjNode);
+
+   // For reference array copies that need an array store check always call the helper function
+   if (!node->isNoArrayStoreCheckArrayCopy())
       {
-      cg->decReferenceCount(byteSrcObjNode);
-      cg->decReferenceCount(byteDstObjNode);
+      TR::Register* byteSrcReg = cg->evaluate(byteSrcNode);
+      TR::Register* byteDstReg = cg->evaluate(byteDstNode);
+      TR::Register* byteLenReg = cg->evaluate(byteLenNode);
+
+#ifdef J9_PROJECT_SPECIFIC
+      TR::TreeEvaluator::genArrayCopyWithArrayStoreCHK(node, byteSrcObjReg, byteDstObjReg, byteSrcReg, byteDstReg, byteLenReg, cg);
+#endif
+
       cg->decReferenceCount(byteSrcNode);
       cg->decReferenceCount(byteDstNode);
       cg->decReferenceCount(byteLenNode);
       }
+   else
+      {
+      TR_ASSERT_FATAL(node->getArrayCopyElementType() == TR::Address, "Reference arraycopy element type should be TR::Address but was '%s'", node->getArrayCopyElementType().toString());
 
-   //
-   // If we made copies of the derived registers, these copies are now dead.
-   // At this point, copyByte{Src,Dst,Len}Reg == byte{Src,Dst,Len}Reg, respectively.
-   //
-   if (copyByteSrcReg)
-      {
-      cg->stopUsingRegister(byteSrcReg);
-      }
-   if (copyByteDstReg)
-      {
-      cg->stopUsingRegister(byteDstReg);
-      }
-   if (copyByteLenReg)
-      {
-      cg->stopUsingRegister(byteLenReg);
+      primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
+
+#ifdef J9_PROJECT_SPECIFIC
+      TR::TreeEvaluator::genWrtbarForArrayCopy(node, byteSrcObjReg, byteDstObjReg, byteSrcNode->isNonNull(), cg);
+#endif
       }
 
-   return NULL;
+   cg->decReferenceCount(byteSrcObjNode);
+   cg->decReferenceCount(byteDstObjNode);
    }
 
 /**

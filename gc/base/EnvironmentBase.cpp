@@ -336,22 +336,6 @@ MM_EnvironmentBase::releaseVMAccess()
 	_delegate.releaseVMAccess();
 }
 
-bool
-MM_EnvironmentBase::tryAcquireExclusiveVMAccess()
-{
-	if (0 == _exclusiveCount) {
-		/* Check if we won the exclusive access race..return if we lost */
-		if (!_delegate.tryAcquireExclusiveVMAccess()) {
-			return false;
-		}
-		/* Report exclusive access time if we won race */
-		reportExclusiveAccessAcquire();
-	}
-	_exclusiveCount += 1;
-
-	return true;
-}
-
 void
 MM_EnvironmentBase::acquireExclusiveVMAccess()
 {
@@ -379,48 +363,77 @@ MM_EnvironmentBase::isExclusiveAccessRequestWaiting()
 }
 
 bool
-MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector)
+MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector, bool failIfNotFirst, bool flushCaches)
 {
 	MM_GCExtensionsBase *extensions = getExtensions();
 	uintptr_t collectorAccessCount = collector->getExclusiveAccessCount();
 
-	_exclusiveAccessBeatenByOtherThread = false;
-
-	while(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-		if(NULL == extensions->gcExclusiveAccessThreadId) {
-			/* there is a chance the thread can win the race to acquiring
-			 * exclusive for GC */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			if(NULL == extensions->gcExclusiveAccessThreadId) {
-				/* thread is the winner and will request the GC */
-				extensions->gcExclusiveAccessThreadId = _omrVMThread;
-			}
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-		}
-
-		if(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-			/* thread was not the winner for requesting a GC - allow the GC to
-			 * proceed and wait for it to complete */
-			Assert_MM_true(NULL != extensions->gcExclusiveAccessThreadId);
-
-			_delegate.releaseVMAccess(true);
-
-			/* there is a chance the GC will already have executed at this
-			 * point or other threads will re-win and re-execute.  loop until
-			 * the thread sees that no more GCs are being requested.
+	/* Does the current thread have exclusive vm access? */
+	if (_omrVMThread->exclusiveCount > 0) {
+		/* Did the current thread get exclusive vm access via (or already come through this code) the
+		 * GC exclusive vm access APIs.
+		 */
+		if (_omrVMThread != extensions->gcExclusiveAccessThreadId) {
+			/* The current thread did not get exclusive vm access via the GC exclusive vm access API */
+			/* If another thread has started to get exclusive vm access for a GC cache that value so it
+			 * can be restored later. It is possible for a thread to win setting itself as the thread
+			 * requesting exclusive vm access for a GC but not actually be the next thread to perform
+			 * a GC.  It can happen if a system gc is requested while holding exclusive.
 			 */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			while(NULL != extensions->gcExclusiveAccessThreadId) {
-				omrthread_monitor_wait(extensions->gcExclusiveAccessMutex);
-			}
-			/* thread can now win and will request a GC */
+			_cachedGCExclusiveAccessThreadId = (OMR_VMThread *)extensions->gcExclusiveAccessThreadId;
+			/* Current thread has exclusive VM access so there is no reason to grab the mutex! */
 			extensions->gcExclusiveAccessThreadId = _omrVMThread;
+		}
+	} else {
+		while(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
+			if(NULL == extensions->gcExclusiveAccessThreadId) {
+				/* there is a chance the thread can win the race to acquiring
+				 * exclusive for GC */
+				omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
+				if(NULL == extensions->gcExclusiveAccessThreadId) {
+					/* thread is the winner and will request the GC */
+					extensions->gcExclusiveAccessThreadId = _omrVMThread;
+				}
+				omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
+			}
 
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
+			if(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
+				/* thread was not the winner for requesting a GC - allow the GC to
+				 * proceed and wait for it to complete */
+				Assert_MM_true(NULL != extensions->gcExclusiveAccessThreadId);
 
-			_delegate.acquireVMAccess(true);
+				uintptr_t accessMask;
+				_delegate.releaseCriticalHeapAccess(&accessMask);
+
+				/* there is a chance the GC will already have executed at this
+				 * point or other threads will re-win and re-execute.  loop until
+				 * the thread sees that no more GCs are being requested.
+				 */
+				omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
+				while(NULL != extensions->gcExclusiveAccessThreadId) {
+					omrthread_monitor_wait(extensions->gcExclusiveAccessMutex);
+				}
+
+				if (failIfNotFirst) {
+					if(collector->getExclusiveAccessCount() != collectorAccessCount) {
+						_exclusiveAccessBeatenByOtherThread = true;
+						omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
+						_delegate.reacquireCriticalHeapAccess(accessMask);
+						return false;
+					}
+				}
+
+				/* thread can now win and will request a GC */
+				extensions->gcExclusiveAccessThreadId = _omrVMThread;
+
+				omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
+
+				_delegate.reacquireCriticalHeapAccess(accessMask);
+			}
 		}
 	}
+
+	_exclusiveAccessBeatenByOtherThread = !(collector->getExclusiveAccessCount() == collectorAccessCount);
 
 	/* thread is the winner for requesting a GC (possibly through recursive
 	 * calls).  proceed with acquiring exclusive access. */
@@ -428,71 +441,14 @@ MM_EnvironmentBase::acquireExclusiveVMAccessForGC(MM_Collector *collector)
 
 	acquireExclusiveVMAccess();
 
-	_exclusiveAccessBeatenByOtherThread = !(collector->getExclusiveAccessCount() == collectorAccessCount);
 	collector->incrementExclusiveAccessCount();
 
-	GC_OMRVMInterface::flushCachesForGC(this);
+	if (flushCaches) {
+		GC_OMRVMInterface::flushCachesForGC(this);
+	}
 
 	return !_exclusiveAccessBeatenByOtherThread;
 
-}
-
-bool
-MM_EnvironmentBase::tryAcquireExclusiveVMAccessForGC(MM_Collector *collector)
-{
-	MM_GCExtensionsBase *extensions = getExtensions();
-	uintptr_t collectorAccessCount = collector->getExclusiveAccessCount();
-
-	_exclusiveAccessBeatenByOtherThread = false;
-
-	while(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-		if(NULL == extensions->gcExclusiveAccessThreadId) {
-			/* there is a chance the thread can win the race to acquiring exclusive for GC */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			if(NULL == extensions->gcExclusiveAccessThreadId) {
-				/* thread is the winner and will request the GC */
-				extensions->gcExclusiveAccessThreadId = _omrVMThread;
-			}
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-		}
-
-		if(_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-			/* thread was not the winner for requesting a GC - allow the GC to proceed and wait for it to complete */
-			Assert_MM_true(NULL != extensions->gcExclusiveAccessThreadId);
-
-			uintptr_t accessMask;
-			_delegate.releaseCriticalHeapAccess(&accessMask);
-
-			/* there is a chance the GC will already have executed at this point or other threads will re-win and re-execute.  loop until the
-			 * thread sees that no more GCs are being requested.
-			 */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			while(NULL != extensions->gcExclusiveAccessThreadId) {
-				omrthread_monitor_wait(extensions->gcExclusiveAccessMutex);
-			}
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-
-			_delegate.reacquireCriticalHeapAccess(accessMask);
-
-			/* May have been beaten to a GC, but perhaps not the one we wanted.  Check and if in fact the collection we intended has been
-			 * completed, we will not acquire exclusive access.
-			 */
-			if(collector->getExclusiveAccessCount() != collectorAccessCount) {
-				return false;
-			}
-		}
-	}
-
-	/* thread is the winner for requesting a GC (possibly through recursive calls).  proceed with acquiring exclusive access. */
-	Assert_MM_true(_omrVMThread == extensions->gcExclusiveAccessThreadId);
-
-	acquireExclusiveVMAccess();
-
-	collector->incrementExclusiveAccessCount();
-
-	GC_OMRVMInterface::flushCachesForGC(this);
-
-	return true;
 }
 
 void
@@ -506,7 +462,8 @@ MM_EnvironmentBase::releaseExclusiveVMAccessForGC()
 	_exclusiveCount -= 1;
 	if (0 == _exclusiveCount) {
 		omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-		extensions->gcExclusiveAccessThreadId = NULL;
+		extensions->gcExclusiveAccessThreadId = _cachedGCExclusiveAccessThreadId;
+		_cachedGCExclusiveAccessThreadId = NULL;
 		omrthread_monitor_notify_all(extensions->gcExclusiveAccessMutex);
 		omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
 		reportExclusiveAccessRelease();
@@ -525,7 +482,8 @@ MM_EnvironmentBase::unwindExclusiveVMAccessForGC()
 		_exclusiveCount = 0;
 
 		omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-		extensions->gcExclusiveAccessThreadId = NULL;
+		extensions->gcExclusiveAccessThreadId = _cachedGCExclusiveAccessThreadId;
+		_cachedGCExclusiveAccessThreadId = NULL;
 		omrthread_monitor_notify_all(extensions->gcExclusiveAccessMutex);
 		omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
 		reportExclusiveAccessRelease();
@@ -533,81 +491,6 @@ MM_EnvironmentBase::unwindExclusiveVMAccessForGC()
 		_delegate.releaseExclusiveVMAccess();
 	}
 }
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-bool
-MM_EnvironmentBase::tryAcquireExclusiveForConcurrentKickoff(MM_ConcurrentGCStats *stats)
-{
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
-	uintptr_t gcCount = extensions->globalGCStats.gcCount;
-
-	while (_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-		if (NULL == extensions->gcExclusiveAccessThreadId) {
-			/* there is a chance the thread can win the race to acquiring exclusive for GC */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			if (NULL == extensions->gcExclusiveAccessThreadId) {
-				/* thread is the winner and will request the GC */
-				extensions->gcExclusiveAccessThreadId =_omrVMThread ;
-			}
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-		}
-
-		if (_omrVMThread != extensions->gcExclusiveAccessThreadId) {
-			/* thread was not the winner for requesting a GC - allow the GC to proceed and wait for it to complete */
-			Assert_MM_true(NULL != extensions->gcExclusiveAccessThreadId);
-
-			uintptr_t accessMask = 0;
-
-			_delegate.releaseCriticalHeapAccess(&accessMask);
-
-			/* there is a chance the GC will already have executed at this point or other threads will re-win and re-execute.  loop until the
-			 * thread sees that no more GCs are being requested.
-			 */
-			omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-			while (NULL != extensions->gcExclusiveAccessThreadId) {
-				omrthread_monitor_wait(extensions->gcExclusiveAccessMutex);
-			}
-			omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-
-			_delegate.reacquireCriticalHeapAccess(accessMask);
-
-			/* May have been beaten to a GC, but perhaps not the one we wanted.  Check and if in fact the collection we intended has been
-			 * completed, we will not acquire exclusive access.
-			 */
-			if ((gcCount != extensions->globalGCStats.gcCount) || (CONCURRENT_INIT_COMPLETE != stats->getExecutionMode())) {
-				return false;
-			}
-		}
-	}
-
-	Assert_MM_true(_omrVMThread == extensions->gcExclusiveAccessThreadId);
-	Assert_MM_true(CONCURRENT_INIT_COMPLETE == stats->getExecutionMode());
-
-	/* thread is the winner for requesting a GC (possibly through recursive calls).  proceed with acquiring exclusive access. */
-	acquireExclusiveVMAccess();
-
-	return true;
-}
-
-void
-MM_EnvironmentBase::releaseExclusiveForConcurrentKickoff()
-{
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
-
-	Assert_MM_true(extensions->gcExclusiveAccessThreadId ==_omrVMThread );
-	Assert_MM_true(0 != _exclusiveCount);
-
-	_exclusiveCount -= 1;
-	if (0 == _exclusiveCount) {
-		omrthread_monitor_enter(extensions->gcExclusiveAccessMutex);
-		extensions->gcExclusiveAccessThreadId = NULL;
-		omrthread_monitor_notify_all(extensions->gcExclusiveAccessMutex);
-		omrthread_monitor_exit(extensions->gcExclusiveAccessMutex);
-		reportExclusiveAccessRelease();
-		_delegate.releaseExclusiveVMAccess();
-	}
-}
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
 uintptr_t
 MM_EnvironmentBase::relinquishExclusiveVMAccess()

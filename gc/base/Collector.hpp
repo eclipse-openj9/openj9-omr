@@ -278,7 +278,7 @@ public:
 	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env) { return 0; }
 	virtual	void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentGMPStats *stats, UDATA bytesConcurrentlyScanned) {}
 	virtual void forceConcurrentFinish() {}
-	virtual void completeConcurrentCycle(MM_EnvironmentBase *env) {}
+	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env) {}
 	
 	MM_Collector(MM_CollectorLanguageInterface *cli)
 		: MM_BaseVirtual()

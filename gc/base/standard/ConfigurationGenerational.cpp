@@ -219,4 +219,18 @@ MM_ConfigurationGenerational::defaultMemorySpaceAllocated(MM_GCExtensionsBase *e
 	extensions->setGuaranteedNurseryRange(nurseryStart, (void*)UDATA_MAX);
 }
 
+uintptr_t
+MM_ConfigurationGenerational::calculateDefaultRegionSize(MM_EnvironmentBase *env)
+{
+	uintptr_t regionSize = STANDARD_REGION_SIZE_BYTES;
+
+	MM_GCExtensionsBase *extensions = env->getExtensions();
+	if (extensions->isConcurrentScavengerEnabled()) {
+		/* set region size based at concurrentScavengerPageSectionSize */
+		regionSize = extensions->getConcurrentScavengerPageSectionSize();
+	}
+
+	return regionSize;
+}
+
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */

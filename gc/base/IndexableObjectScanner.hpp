@@ -47,7 +47,7 @@ protected:
 	 * @param[in] flags scanning context flags
 	 */
 	GC_IndexableObjectScanner(
-		MM_EnvironmentStandard *env
+		MM_EnvironmentBase *env
 		, omrobjectptr_t arrayPtr
 		, fomrobject_t *basePtr
 		, fomrobject_t *limitPtr
@@ -60,13 +60,16 @@ protected:
 			, arrayPtr
 			, scanPtr
 			, ((endPtr - scanPtr) < _bitsPerScanMap) ? (((uintptr_t)1 << (endPtr - scanPtr)) - 1) : UDATA_MAX
-			, setNoMoreSlots(flags | GC_ObjectScanner::indexableObject, (endPtr - scanPtr) <= _bitsPerScanMap)
+			, flags | GC_ObjectScanner::indexableObject
 		)
 		, _endPtr(endPtr)
 		, _basePtr(basePtr)
 		, _limitPtr(limitPtr)
 	{
 		_typeId = __FUNCTION__;
+		if ((endPtr - scanPtr) <= _bitsPerScanMap) {
+			setNoMoreSlots();
+		}
 	}
 
 	/**
@@ -75,20 +78,22 @@ protected:
 	 * @param[in] objectPtr the object to be scanned
 	 * @param splitAmount The number of array elements to include
 	 */
-	GC_IndexableObjectScanner(MM_EnvironmentStandard *env, GC_IndexableObjectScanner *objectScanner, uintptr_t splitAmount)
+	GC_IndexableObjectScanner(MM_EnvironmentBase *env, GC_IndexableObjectScanner *objectScanner, uintptr_t splitAmount)
 		: GC_ObjectScanner(
 			env
 			, objectScanner->_parentObjectPtr
 			, objectScanner->_endPtr
 			, splitAmount < (uintptr_t)_bitsPerScanMap ? (((uintptr_t)1 << splitAmount) - 1) : UDATA_MAX
-			, setNoMoreSlots(objectScanner->_flags, (intptr_t)splitAmount <= _bitsPerScanMap)
+			, objectScanner->_flags
 		)
 		, _endPtr(objectScanner->_endPtr + splitAmount)
 		, _basePtr(objectScanner->_basePtr)
 		, _limitPtr(objectScanner->_limitPtr)
 	{
 		_typeId = __FUNCTION__;
-		Assert_MM_true(0 <= (intptr_t)splitAmount);
+		if ((_endPtr - _scanPtr) <= _bitsPerScanMap) {
+			setNoMoreSlots();
+		}
 	}
 
 	/**
@@ -96,7 +101,7 @@ protected:
 	 * @param[in] env current environment (per thread)
 	 */
 	MMINLINE void
-	initialize(MM_EnvironmentStandard *env)
+	initialize(MM_EnvironmentBase *env)
 	{
 		Assert_MM_true(_basePtr <= _scanPtr);
 		Assert_MM_true(_scanPtr <= _endPtr);
@@ -124,7 +129,7 @@ public:
 	 * @param splitAmount The maximum number of array elements to include
 	 * @return Pointer to split scanner in allocSpace
 	 */
-	virtual GC_IndexableObjectScanner *splitTo(MM_EnvironmentStandard *env, void *allocSpace, uintptr_t splitAmount) = 0;
+	virtual GC_IndexableObjectScanner *splitTo(MM_EnvironmentBase *env, void *allocSpace, uintptr_t splitAmount) = 0;
 };
 
 #endif /* INDEXABLEOBJECTSCANNER_HPP_ */

@@ -213,11 +213,6 @@ OMR::Compilation::getNOPTranslateTable()
    }
 
 
-
-
-/* See comment below about operator new */
-bool firstCompileStarted = false;
-
 OMR::Compilation::Compilation(
       int32_t id,
       OMR_VMThread *omrVMThread,
@@ -230,7 +225,7 @@ OMR::Compilation::Compilation(
       TR_OptimizationPlan *optimizationPlan) :
    _trMemory(m),
    _knownObjectTable(NULL),
-   _fe((firstCompileStarted = true, fe)),
+   _fe(fe),
    _ilGenRequest(ilGenRequest),
    _options(&options),
    _omrVMThread(omrVMThread),
@@ -458,6 +453,9 @@ OMR::Compilation::Compilation(
 
    if (_options->getOption(TR_EnableOSR))
       {
+      // Current implementation of partial inlining will break OSR
+      self()->setOption(TR_DisablePartialInlining);
+
       //TODO: investigate the memory footprint of this allocation
       _osrCompilationData = new (self()->trHeapMemory()) TR_OSRCompilationData(self());
 
@@ -661,15 +659,18 @@ bool OMR::Compilation::isShortRunningMethod(int32_t callerIndex)
    return false;
    }
 
-bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
+bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode)
    {
    static char *disableAsyncCheckOSR = feGetEnv("TR_disableAsyncCheckOSR");
    static char *disableGuardedCallOSR = feGetEnv("TR_disableGuardedCallOSR");
    static char *disableMonentOSR = feGetEnv("TR_disableMonentOSR");
 
    bool potentialOSRPoint = false;
-   if (self()->getOSRTransitionTarget() == TR::postExecutionOSR)
+   if (self()->isOSRTransitionTarget(TR::postExecutionOSR))
       {
+      if (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck())
+         node = node->getFirstChild(); 
+
       if (_osrInfrastructureRemoved)
          potentialOSRPoint = false;
       else if (node->getOpCodeValue() == TR::asynccheck)
@@ -677,10 +678,9 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
          if (disableAsyncCheckOSR == NULL)
             potentialOSRPoint = !self()->isShortRunningMethod(node->getByteCodeInfo().getCallerIndex());
          }
-      else if ((node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck()) && node->getFirstChild()->getOpCode().isCall())
+      else if (node->getOpCode().isCall())
          {
-         TR::Node *callNode = node->getFirstChild();
-         TR::SymbolReference *callSymRef = callNode->getSymbolReference();
+         TR::SymbolReference *callSymRef = node->getSymbolReference();
          if (callSymRef->getReferenceNumber() >=
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
             potentialOSRPoint = (disableGuardedCallOSR == NULL);
@@ -690,36 +690,34 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node)
       }
    else if (node->canGCandReturn())
       potentialOSRPoint = true;
+   else if (self()->getOSRMode() == TR::involuntaryOSR && node->canGCandExcept())
+      potentialOSRPoint = true;
+
+   if (osrPointNode && potentialOSRPoint)
+      (*osrPointNode) = node;
 
    return potentialOSRPoint;
    }
 
 bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
    {
-   TR::Node *node = tt->getNode();
-
-   bool potentialOSRPoint = self()->isPotentialOSRPoint(node);
+   TR::Node *osrNode;
+   bool potentialOSRPoint = self()->isPotentialOSRPoint(tt->getNode(), &osrNode);
 
    if (potentialOSRPoint && self()->getOSRMode() == TR::voluntaryOSR)
       {
-
-      if (self()->getOSRTransitionTarget() == TR::postExecutionOSR &&
-          (node->getOpCode().isCheck() || node->getOpCodeValue() == TR::treetop))
+      if (self()->isOSRTransitionTarget(TR::postExecutionOSR) && tt->getNode() != osrNode)
          {
-         // When in OSR HCR mode we need to make sure we check the BCI of the original
-         // call node to ensure we see the correct state of the doNotProfile flag
-         node = node->getFirstChild();
-
          // The OSR point applies where the node is anchored, rather than where it may
          // be commoned. Therefore, it is necessary to check if the node is anchored under
          // a prior treetop.
-         if (node->getReferenceCount() > 1)
+         if (osrNode->getReferenceCount() > 1)
             {
             TR::TreeTop *cursor = tt->getPrevTreeTop();
             while (cursor)
                {
                if ((cursor->getNode()->getOpCode().isCheck() || cursor->getNode()->getOpCodeValue() == TR::treetop)
-                   && cursor->getNode()->getFirstChild() == node)
+                   && cursor->getNode()->getFirstChild() == osrNode)
                   {
                   potentialOSRPoint = false;
                   break;
@@ -734,10 +732,10 @@ bool OMR::Compilation::isPotentialOSRPointWithSupport(TR::TreeTop *tt)
 
       if (potentialOSRPoint)
          {
-         TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+         TR_ByteCodeInfo &bci = osrNode->getByteCodeInfo();
          TR::ResolvedMethodSymbol *method = bci.getCallerIndex() == -1 ?
             self()->getMethodSymbol() : self()->getInlinedResolvedMethodSymbol(bci.getCallerIndex());
-         potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), NULL, self(), false);
+         potentialOSRPoint = method->supportsInduceOSR(bci, tt->getEnclosingBlock(), self(), false);
          }
       }
 
@@ -770,9 +768,27 @@ OMR::Compilation::getOSRMode()
 TR::OSRTransitionTarget
 OMR::Compilation::getOSRTransitionTarget()
    {
+   TR::OSRTransitionTarget target = TR::disableOSR;
+
+   // Under NextGenHCR, transitions will occur after the OSR points
+   // Otherwise, the default is before
    if (self()->getHCRMode() == TR::osr)
-      return TR::postExecutionOSR;
-   return TR::preExecutionOSR;
+      {
+      target = TR::postExecutionOSR;
+      // If OSROnGuardFailure is enabled, transitions will also occur before
+      if (self()->getOption(TR_EnableOSROnGuardFailure))
+         target = TR::preAndPostExecutionOSR;
+      }
+   else if (self()->getOption(TR_EnableOSR))
+      target = TR::preExecutionOSR;
+
+   return target;
+   }
+
+bool
+OMR::Compilation::isOSRTransitionTarget(TR::OSRTransitionTarget target)
+   {
+   return target & self()->getOSRTransitionTarget();
    }
 
 /*
@@ -784,14 +800,25 @@ int32_t
 OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    {
    // If no induction after the OSR point, offset must be 0
-   if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
+   if (!self()->isOSRTransitionTarget(TR::postExecutionOSR))
       return 0;
+   
+   TR::Node *osrNode;
+   if (!self()->isPotentialOSRPoint(node, &osrNode))
+      {
+      TR_ASSERT(0, "getOSRInductionOffset should only be called on OSR points");
+      }
 
-   switch (node->getOpCodeValue())
+   if (osrNode->getOpCode().isCall())
+      return 3;
+
+   switch (osrNode->getOpCodeValue())
       {
       case TR::monent: return 1;
       case TR::asynccheck: return 0;
-      default: return 3;
+      default:
+         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+         return 0;
       }
    }
 
@@ -809,10 +836,20 @@ bool
 OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
    {
    // If no induction after the OSR point, cannot use analysis point
-   if (self()->getOSRTransitionTarget() != TR::postExecutionOSR)
+   if (!self()->isOSRTransitionTarget(TR::postExecutionOSR))
       return false;
 
-   switch (node->getOpCodeValue())
+   TR::Node *osrNode;
+   if (!self()->isPotentialOSRPoint(node, &osrNode))
+      {
+      TR_ASSERT(0, "requiresAnalysisOSRPoint should only be called on OSR points\n");
+      }
+
+   // Calls require an analysis and transition point as liveness may change across them
+   if (osrNode->getOpCode().isCall())
+      return true;
+
+   switch (osrNode->getOpCodeValue())
       {
       // Monents only require a trailing OSR point as they will perform OSR when executing the
       // monitor and there is no change in liveness due to the monent
@@ -820,9 +857,9 @@ OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
       // Asyncchecks will not modify liveness
       case TR::asynccheck:
          return false;
-      // Calls require an analysis and transition point as liveness may change across them
       default:
-         return true;
+         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+         return false;
       }
    }
 
@@ -2316,6 +2353,26 @@ OMR::Compilation::setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReferenc
    table[slot * 2 + 1] = loadSymRef ? loadSymRef->getReferenceNumber() : 0;
    }
 
+/*
+ * Check if it is not possible to perform an OSR transition during this call site.
+ * A true result means transitioning within this method is definitely not possible, however,
+ * a false result does not ensure OSR is possible.
+ */
+bool
+OMR::Compilation::cannotAttemptOSRDuring(uint32_t index)
+   {
+   return _inlinedCallSites[index].cannotAttemptOSRDuring();
+   }
+
+/*
+ * Store a known cannotAttemptOSRDuring result against this call site.
+ */
+void
+OMR::Compilation::setCannotAttemptOSRDuring(uint32_t index, bool cannotOSR)
+   {
+   _inlinedCallSites[index].setCannotAttemptOSRDuring(cannotOSR);
+   }
+
 TR_InlinedCallSite *
 OMR::Compilation::getCurrentInlinedCallSite()
    {
@@ -2594,39 +2651,6 @@ char * debug(const char *option)
       }
 
    return 0;
-   }
-#endif
-
-
-#if !defined(JITTEST) // TLP for the delete in checkStore
-// There should be no allocations that use the global operator new, since
-// all allocations should go through the JitMemory allocation routines.
-// To catch cases that we miss, we define global operator new here.
-// (This isn't safe on static platforms, since we don't want to affect user
-// natives which might legitimately use new and delete.  Also, xlC
-// won't link staticly with the -noe flag when we override these.)
-//
-void *operator new(size_t size)
-   {
-   #if defined(DEBUG)
-   #if LINUX
-   // glibc allocates something at dl_init; check if a method is being compiled to avoid
-   // getting assumes at _dl_init
-   if (firstCompileStarted)
-   #endif
-      {
-      printf( "\n*** ERROR *** Invalid use of global operator new\n");
-      TR_ASSERT(0,"Invalid use of global operator new");
-      }
-   #endif
-   return malloc(size);
-   }
-
-// Since we are using GC, heap deletions must be a no-op
-//
-void operator delete(void *)
-   {
-   TR_ASSERT(0, "Invalid use of global operator delete");
    }
 #endif
 

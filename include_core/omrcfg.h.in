@@ -41,6 +41,7 @@
 #undef OMR_GC_DEBUG_ASSERTS
 #undef OMR_GC_HEAP_CARD_TABLE
 #undef OMR_GC_LARGE_OBJECT_AREA
+#undef OMR_GC_LEAF_BITS
 #undef OMR_GC_MINIMUM_OBJECT_SIZE
 #undef OMR_GC_MODRON_COMPACTION
 #undef OMR_GC_MODRON_CONCURRENT_MARK
@@ -50,6 +51,7 @@
 #undef OMR_GC_NON_ZERO_TLH
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
+
 
 /**
  * Tells if a platform has support for Semaphores.
@@ -216,12 +218,6 @@
  * -- limit/control number of threads that are allowed to spin per monitor
  */
 #undef OMR_THR_SPIN_WAKE_CONTROL
-
-/**
- * This flag enables the new refactored version of omrthread_spinlock_acquire.
- * Disabling this flag will enable the old version of omrthread_spinlock_acquire.	
- */
-#undef OMR_THR_SPIN_CODE_REFACTOR
 
 /**
  * This enables the option to select different algorithms for yielding.

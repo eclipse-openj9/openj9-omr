@@ -105,3 +105,17 @@ EnumUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnl
 {
 	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
 }
+
+DDR_RC
+EnumUDT::checkDuplicate(Symbol_IR *ir)
+{
+		if ((!this->isAnonymousType()) && (this->_enumMembers.size() > 0)) {
+		string fullName = ir->getUDTname(this);
+		if (ir->_fullTypeNames.end() != ir->_fullTypeNames.find(fullName)) {
+			this->_isDuplicate = true;
+		} else {
+			ir->_fullTypeNames.insert(fullName);
+		}
+	}
+	return DDR_RC_OK;
+}

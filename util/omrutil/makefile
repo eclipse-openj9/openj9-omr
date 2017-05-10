@@ -83,6 +83,13 @@ ifeq (zos,$(OMR_HOST_OS))
   endif
 endif
 
+ifeq (zos,$(OMR_HOST_OS))
+  ifeq (1,$(OMR_ENV_DATA64))
+	OBJECTS += omrget_userExtendedPrivateAreaMemoryType$(OBJEXT)
+    vpath omrget_userExtendedPrivateAreaMemoryType.s unix/zos/64
+  endif
+endif
+
 ifeq (win,$(OMR_HOST_OS))
   OBJECTS += j9getdbghelp$(OBJEXT)
   vpath %.c win

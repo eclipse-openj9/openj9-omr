@@ -255,6 +255,9 @@ class TR_VirtualGuard
    void                    setMergedWithHCRGuard() { _mergedWithHCRGuard=true; _cannotBeRemoved = true; }
    bool                    mergedWithHCRGuard() { return _mergedWithHCRGuard; }
 
+   void                    setMergedWithOSRGuard() { _mergedWithOSRGuard=true; _cannotBeRemoved = true; }
+   bool                    mergedWithOSRGuard() { return _mergedWithOSRGuard; }
+
    int32_t                 getCurrentInlinedSiteIndex() { return _currentInlinedSiteIndex; }
    void                    setCurrentInlinedSiteIndex(int32_t index) { _currentInlinedSiteIndex = index; }
 
@@ -286,6 +289,7 @@ class TR_VirtualGuard
    List<TR_InnerAssumption>  _innerAssumptions;
    bool                      _evalChildren;
    bool                      _mergedWithHCRGuard;
+   bool                      _mergedWithOSRGuard;
 
    // These reference locations are non-null only for MutableCallSiteGuards
    uintptrj_t                *_mutableCallSiteObject;

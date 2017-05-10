@@ -3612,14 +3612,16 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
       uint32_t i = 0;
       for (auto info = vguards.begin(); info != vguards.end(); ++info, ++i)
          {
-         char guardKindName[38];
-         sprintf(guardKindName, "%s %s", getVirtualGuardKindName((*info)->getKind()), (*info)->mergedWithHCRGuard()?"+ HCRGuard ":"");
+         char guardKindName[49];
+         sprintf(guardKindName, "%s %s%s", getVirtualGuardKindName((*info)->getKind()),
+            (*info)->mergedWithHCRGuard()?"+ HCRGuard ":"",
+            (*info)->mergedWithOSRGuard()?"+ OSRGuard ":"");
 
          if (!(*info)->getSymbolReference())
-            trfprintf(pOutFile, "[%4d] %-38s %s%s\n",
+            trfprintf(pOutFile, "[%4d] %-49s %s%s\n",
                   i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", guardKindName);
          else
-            trfprintf(pOutFile, "[%4d] %-38s %scalleeSymbol=" POINTER_PRINTF_FORMAT "\n",
+            trfprintf(pOutFile, "[%4d] %-49s %scalleeSymbol=" POINTER_PRINTF_FORMAT "\n",
                   i, guardKindName ,(*info)->isInlineGuard()?"inlined ":"", (*info)->getSymbolReference()->getSymbol());
          ListIterator<TR_VirtualGuardSite> siteIt(&(*info)->getNOPSites());
          for (TR_VirtualGuardSite *site = siteIt.getFirst(); site; site = siteIt.getNext())
@@ -3909,6 +3911,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_multiANewArray:            return "jitAMultiANewArray";
          case TR_aThrow:                    return "jitThrowException";
          case TR_methodTypeCheck:           return "jitThrowWrongMethodTypeException";
+         case TR_incompatibleReceiver:      return "jitThrowIncompatibleReceiver";
          case TR_nullCheck:                 return "jitThrowNullPointerException";
          case TR_arrayBoundsCheck:          return "jitThrowArrayIndexOutOfBounds";
          case TR_divCheck:                  return "jitThrowArithmeticException";
@@ -4043,21 +4046,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
 
             case TR_IA32jitThrowCurrentException:                     return "_jitThrowCurrentException";
             case TR_IA32jitCollapseJNIReferenceFrame:                 return "_jitCollapseJNIReferenceFrame";
-            case TR_IA32arrayCopy:                                    return "__arrayCopy";
-            case TR_IA32wordArrayCopy:                                return "__wordAarrayCopy";
-            case TR_IA32halfWordArrayCopy:                            return "__halfWordArrayCopy";
-            case TR_IA32forwardArrayCopy:                             return "__forwardArrayCopy";
-            case TR_IA32forwardWordArrayCopy:                         return "__forwardWordArrayCopy";
-            case TR_IA32forwardHalfWordArrayCopy:                     return "__forwardHalfWordArrayCopy";
-
-            case TR_IA32shortArrayCopy:                               return "__shortArrayCopy";
-            case TR_IA32forwardSSEArrayCopy:                          return "__forwardSSEArrayCopy";
-            case TR_IA32forwardSSEArrayCopyNoAlignCheck:              return "__forwardSSEArrayCopyNoAlignCheck";
-            case TR_IA32forwardArrayCopy2:                            return "__forwardArrayCopy2";
-            case TR_IA32SSEforwardArrayCopy:                          return "_SSEforwardArrayCopy";
-            case TR_IA32SSEforwardHalfWordArrayCopy:                  return "_SSEforwardHalfWordArrayCopy";
-            case TR_IA32SSEforwardArrayCopyAMDOpteron:                return "_SSEforwardArrayCopyAMDOpteron";
-            case TR_IA32SSEforwardArrayCopyAggressive:                return "_SSEforwardArrayCopyAggressive";
 
             case TR_IA32compressString:                               return "_compressString";
             case TR_IA32compressStringNoCheck:                        return "_compressStringNoCheck";
@@ -4071,11 +4059,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32countingPatchCallSite:                        return "__countingPatchCallSite";
             case TR_IA32induceRecompilation:                          return "__induceRecompilation";
 
-            case TR_IA32arrayXor:                                     return "arrayxor";
-            case TR_IA32arrayOr:                                      return "arrayor";
-            case TR_IA32arrayAnd:                                     return "arrayand";
-            case TR_IA32arrayCmp:                                     return "arraycmp";
-            case TR_IA32overlapArrayCopy:                             return "overlapArrayCopy";
             case TR_IA32getTimeOfDay:                                 return "gettimeofday";
             }
          }
@@ -4085,10 +4068,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             {
             case TR_AMD64floatRemainder:                              return "__SSEfloatRemainder";
             case TR_AMD64doubleRemainder:                             return "__SSEdoubleRemainder";
-            case TR_AMD64doubleToLong:                                return "__doubleToLong";
-            case TR_AMD64doubleToInt:                                 return "__doubleToInt";
-            case TR_AMD64floatToLong:                                 return "__floatToLong";
-            case TR_AMD64floatToInt:                                  return "__floatToInt";
             case TR_AMD64icallVMprJavaSendVirtual0:                   return "_icallVMprJavaSendVirtual0";
             case TR_AMD64icallVMprJavaSendVirtual1:                   return "_icallVMprJavaSendVirtual1";
             case TR_AMD64icallVMprJavaSendVirtualJ:                   return "_icallVMprJavaSendVirtualJ";
@@ -4097,38 +4076,20 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64icallVMprJavaSendVirtualD:                   return "_icallVMprJavaSendVirtualD";
             case TR_AMD64jitThrowCurrentException:                    return "_jitThrowCurrentException";
             case TR_AMD64jitCollapseJNIReferenceFrame:                return "_jitCollapseJNIReferenceFrame";
-            case TR_AMD64arrayCopy:                                   return "__arrayCopy";
-            case TR_AMD64BCarrayCopy:                                 return "__BC_arrayCopy";
-            case TR_AMD64byteArrayCopy:                               return "__byteArrayCopy";
-            case TR_AMD64wordArrayCopy:                               return "__wordArrayCopy";
-            case TR_AMD64halfWordArrayCopy:                           return "__halfWordArrayCopy";
-            case TR_AMD64forwardArrayCopy:                            return "__forwardArrayCopy";
-            case TR_AMD64forwardWordArrayCopy:                        return "__forwardWordArrayCopy";
-            case TR_AMD64forwardHalfWordArrayCopy:                    return "__forwardHalfWordArrayCopy";
-            case TR_AMD64forwardArrayCopyAMDOpteron:                  return "_forwardArrayCopyAMDOpteron";
 
-            case TR_AMD64compressString:                               return "_compressString";
-            case TR_AMD64compressStringNoCheck:                        return "_compressStringNoCheck";
-            case TR_AMD64compressStringJ:                              return "_compressStringJ";
-            case TR_AMD64compressStringNoCheckJ:                       return "_compressStringNoCheckJ";
-            case TR_AMD64andORString:                                  return "_andORString";
+            case TR_AMD64compressString:                              return "_compressString";
+            case TR_AMD64compressStringNoCheck:                       return "_compressStringNoCheck";
+            case TR_AMD64compressStringJ:                             return "_compressStringJ";
+            case TR_AMD64compressStringNoCheckJ:                      return "_compressStringNoCheckJ";
+            case TR_AMD64andORString:                                 return "_andORString";
 
             case TR_AMD64samplingRecompileMethod:                     return "__samplingRecompileMethod";
             case TR_AMD64countingRecompileMethod:                     return "__countingRecompileMethod";
             case TR_AMD64samplingPatchCallSite:                       return "__samplingPatchCallSite";
             case TR_AMD64countingPatchCallSite:                       return "__countingPatchCallSite";
             case TR_AMD64induceRecompilation:                         return "__induceRecompilation";
-            case TR_AMD64arrayXor:                                    return "arrayxor";
-            case TR_AMD64arrayOr:                                     return "arrayor";
-            case TR_AMD64arrayAnd:                                    return "arrayand";
-            case TR_AMD64noOverlapArrayXor:                           return "noOverlapArrayXor";
-            case TR_AMD64noOverlapArrayOr:                            return "noOverlapArrayOr";
-            case TR_AMD64noOverlapArrayAnd:                           return "noOverlapArrayAnd";
-            case TR_AMD64overlapArrayXor:                             return "overlapArrayXor";
-            case TR_AMD64overlapArrayOr:                              return "overlapArrayOr";
-            case TR_AMD64overlapArrayAnd:                             return "overlapArrayAnd";
-            case TR_AMD64arrayCmp:                                    return "arraycmp";
-            case TR_AMD64overlapArrayCopy:                            return "overlapArrayCopy";
+            case TR_AMD64doAESENCDecrypt:                             return "doAESDecrypt";
+            case TR_AMD64doAESENCEncrypt:                             return "doAESEncrypt";
             }
          }
       }

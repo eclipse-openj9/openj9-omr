@@ -100,53 +100,53 @@ MM_VerboseHandlerOutputStandard::enableVerbose()
 	MM_VerboseHandlerOutput::enableVerbose();
 
 	/* GCLaunch */
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_START, verboseHandlerSystemGCStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_END, verboseHandlerSystemGCEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_START, verboseHandlerAllocationFailureStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_FAILED_ALLOCATION_COMPLETED, verboseHandlerFailedAllocationCompleted, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_END, verboseHandlerAllocationFailureEnd, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_START, verboseHandlerSystemGCStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_END, verboseHandlerSystemGCEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_START, verboseHandlerAllocationFailureStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_FAILED_ALLOCATION_COMPLETED, verboseHandlerFailedAllocationCompleted, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_END, verboseHandlerAllocationFailureEnd, OMR_GET_CALLSITE(), (void *)this);
 
 	/* Exclusive */
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_EXCLUSIVE_ACCESS_ACQUIRE, verboseHandlerExclusiveStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_EXCLUSIVE_ACCESS_RELEASE, verboseHandlerExclusiveEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ACQUIRED_EXCLUSIVE_TO_SATISFY_ALLOCATION, verboseHandlerAcquiredExclusiveToSatisfyAllocation, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_EXCLUSIVE_ACCESS_ACQUIRE, verboseHandlerExclusiveStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_EXCLUSIVE_ACCESS_RELEASE, verboseHandlerExclusiveEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_ACQUIRED_EXCLUSIVE_TO_SATISFY_ALLOCATION, verboseHandlerAcquiredExclusiveToSatisfyAllocation, OMR_GET_CALLSITE(), (void *)this);
 
 	/* Cycle */
-	(*_mmOmrHooks)->J9HookRegister(_mmOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_START, verboseHandlerCycleStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END, verboseHandlerCycleEnd, (void *)this);
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_GC_CYCLE_START, verboseHandlerCycleStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_POST_CYCLE_END, verboseHandlerCycleEnd, OMR_GET_CALLSITE(), (void *)this);
 
 	/* STW GC increment */
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_INCREMENT_START, verboseHandlerGCStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_INCREMENT_END, verboseHandlerGCEnd, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_INCREMENT_START, verboseHandlerGCStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_GC_INCREMENT_END, verboseHandlerGCEnd, OMR_GET_CALLSITE(), (void *)this);
 
 	/* GCOps */
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_MARK_END, verboseHandlerMarkEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SWEEP_END, verboseHandlerSweepEnd, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_MARK_END, verboseHandlerMarkEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SWEEP_END, verboseHandlerSweepEnd, OMR_GET_CALLSITE(), (void *)this);
 #if defined(OMR_GC_MODRON_COMPACTION)
 
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_COMPACT_START, verboseHandlerCompactStart, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_COMPACT_START, verboseHandlerCompactStart, OMR_GET_CALLSITE(), (void *)this);
 
-	(*_mmOmrHooks)->J9HookRegister(_mmOmrHooks, J9HOOK_MM_OMR_COMPACT_END, verboseHandlerCompactEnd, (void *)this);
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_COMPACT_END, verboseHandlerCompactEnd, OMR_GET_CALLSITE(), (void *)this);
 #endif /* defined(OMR_GC_MODRON_COMPACTION) */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SCAVENGE_END, verboseHandlerScavengeEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_PERCOLATE_COLLECT, verboseHandlerScavengePercolate, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_SCAVENGE_END, verboseHandlerScavengeEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_PERCOLATE_COLLECT, verboseHandlerScavengePercolate, OMR_GET_CALLSITE(), (void *)this);
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 	/* Concurrent */
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_KICKOFF, verboseHandlerConcurrentKickoff, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_HALTED, verboseHandlerConcurrentHalted, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, verboseHandlerConcurrentCollectionStart, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, verboseHandlerConcurrentCollectionEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_ABORTED, verboseHandlerConcurrentAborted, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_REMEMBERED_SET_SCAN_END, verboseHandlerConcurrentRememberedSetScanEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COMPLETE_TRACING_END, verboseHandlerConcurrentTracingEnd, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_CARD_CLEANING_END, verboseHandlerConcurrentCardCleaningEnd, (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_KICKOFF, verboseHandlerConcurrentKickoff, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_HALTED, verboseHandlerConcurrentHalted, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, verboseHandlerConcurrentCollectionStart, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, verboseHandlerConcurrentCollectionEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_ABORTED, verboseHandlerConcurrentAborted, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_REMEMBERED_SET_SCAN_END, verboseHandlerConcurrentRememberedSetScanEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COMPLETE_TRACING_END, verboseHandlerConcurrentTracingEnd, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_CARD_CLEANING_END, verboseHandlerConcurrentCardCleaningEnd, OMR_GET_CALLSITE(), (void *)this);
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
 	/* Excessive GC */
-	(*_mmOmrHooks)->J9HookRegister(_mmOmrHooks, J9HOOK_MM_OMR_EXCESSIVEGC_RAISED, verboseHandlerExcessiveGCRaised, this);
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_EXCESSIVEGC_RAISED, verboseHandlerExcessiveGCRaised, OMR_GET_CALLSITE(), this);
 }
 
 void

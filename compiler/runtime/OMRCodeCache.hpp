@@ -108,10 +108,6 @@ public:
    static TR::CodeCache *allocate(TR::CodeCacheManager *manager, size_t segmentSize, int32_t reservingCompThreadID);
    void destroy(TR::CodeCacheManager *manager);
 
-   void setupSegment(TR::CodeCacheMemorySegment *codeCacheSegment,
-                     size_t codeCacheSizeAllocated,
-                     CodeCacheHashEntrySlab *hashEntrySlab);
-
    uint8_t *allocateCodeMemory(size_t warmCodeSize,
                                size_t coldCodeSize,
                                uint8_t **coldCode,
@@ -158,10 +154,8 @@ public:
    size_t                     getSizeOfLargestFreeColdBlock() const { return _sizeOfLargestFreeColdBlock; }
 
    uint32_t                   tempTrampolinesMax()                  { return _tempTrampolinesMax; }
-   bool                       addUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    bool                       addResolvedMethod(TR_OpaqueMethodBlock *method);
 
-   static void                query(TR::CodeCache *codeCache);
    void                       printOccupancyStats();
    void                       printFreeBlocks();
    void                       checkForErrors();
@@ -169,26 +163,16 @@ public:
    void                       dumpCodeCache();
 
    int32_t                    reserveResolvedTrampoline(TR_OpaqueMethodBlock *method, bool inBinaryEncoding);
-   int32_t                    reserveUnresolvedTrampoline(void *cp, int32_t cpIndex);
    void                       createTrampoline(CodeCacheTrampolineCode *trampoline,
                                                void *targetStartPC,
                                                TR_OpaqueMethodBlock *method);
    bool                       allocateTempTrampolineSyncBlock();
-
-   void                       adjustTrampolineReservation(TR_OpaqueMethodBlock *method,
-                                                          void *cp,
-                                                          int32_t cpIndex);
-   void                       resolveHashEntry(CodeCacheHashEntry *entry, TR_OpaqueMethodBlock *method);
 
    void                       patchCallPoint(TR_OpaqueMethodBlock *method,
                                              void *callSite,
                                              void *newStartPC,
                                              void *extraArg);
 
-   void                       onClassRedefinition(TR_OpaqueMethodBlock *oldMethod, TR_OpaqueMethodBlock *newMethod);
-   void                       onFSDDecompile();
-
-   CodeCacheHashEntry *       findUnresolvedMethod(void *constPool, int32_t constPoolIndex);
    CodeCacheHashEntry *       findResolvedMethod(TR_OpaqueMethodBlock *method);
 
    void                       findOrAddResolvedMethod(TR_OpaqueMethodBlock *method);

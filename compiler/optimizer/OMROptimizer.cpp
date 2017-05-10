@@ -1942,7 +1942,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       int32_t origCfgNodeCount = comp()->getFlowGraph()->getNextNodeNumber();
       int32_t origOptMsgIndex = self()->getOptMessageIndex();
 
-      if (comp()->isOutermostMethod() && (comp()->getFlowGraph()->getMaxFrequency() < 0))
+      if (comp()->isOutermostMethod() && (comp()->getFlowGraph()->getMaxFrequency() < 0) && !manager->getDoNotSetFrequencies())
          {
          TR::Compilation::CompilationPhaseScope buildingFrequencies(comp());
          comp()->reportAnalysisPhase(BUILDING_FREQUENCIES);

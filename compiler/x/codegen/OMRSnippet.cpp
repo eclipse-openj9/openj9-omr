@@ -30,7 +30,6 @@
 #include "x/codegen/X86Ops.hpp"                    // for ::JMP4, etc
 #include "codegen/UnresolvedDataSnippet.hpp"
 
-namespace TR { class AMD64FPConversionSnippet; }
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }
 namespace TR { class X86CallSnippet; }
 namespace TR { class X86CheckFailureSnippet; }
@@ -146,9 +145,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::IsFPConvertToLong:
          return "FP Convert To Long Snippet";
          break;
-      case TR::Snippet::IsFPConvertAMD64:
-         return "FP Convert To Int/Long Snippet";
-         break;
       case TR::Snippet::IsPassJNINull:
          return "Pass JNI Null Snippet";
          break;
@@ -242,11 +238,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsFPConvertToLong:
          print(pOutFile, (TR::X86FPConvertToLongSnippet  *)snippet);
          break;
-#ifdef TR_TARGET_64BIT
-      case TR::Snippet::IsFPConvertAMD64:
-         print(pOutFile, (TR::AMD64FPConversionSnippet *)snippet);
-         break;
-#endif
       case TR::Snippet::IsUnresolvedDataIA32:
          print(pOutFile, (TR::UnresolvedDataSnippet *)snippet);
          break;

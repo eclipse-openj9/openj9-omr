@@ -46,14 +46,13 @@ say what happens when the patch is applied. Keep it short and simple. The first
 line should be less than 50 characters, sentence case, and does not end in a
 period. Leave a blank line between the first line and the message body.
 
-The body should be wrapped at 72 characters, where reasonable. Write your commit in
-[github style markdown](https://guides.github.com/features/mastering-markdown/).
-Use headers and code snippets where it makes sense.
+The body should be wrapped at 72 characters, where reasonable.
 
 Include as much information in your commit as possible. You may want to include
 designs and rationale, examples and code, or issues and next steps. Prefer
 copying resources into the body of the commit over providing external links.
-Structure large commit messages with markdown headers.
+Structure large commit messages with headers, references etc. Remember however
+that the commit message is always going to be rendered in plain text.
 
 Use the commit footer to place commit metadata. The footer is the last block of
 contiguous text in the message. It is separated from the body by one or more

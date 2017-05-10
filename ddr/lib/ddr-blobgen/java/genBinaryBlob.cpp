@@ -391,31 +391,32 @@ DDR_RC
 JavaBlobGenerator::dispatchBuildBlob(EnumUDT *e, bool addFieldsOnly, string prefix)
 {
 	DDR_RC rc = DDR_RC_OK;
-	/* Do not add anonymous inner types as their own type. */
-	if ((!e->isAnonymousType() || addFieldsOnly) && (e->_enumMembers.size() > 0)) {
-		/* Format class name */
-		string nameFormatted = e->_name;
-		if (NULL != e->_outerUDT) {
-			nameFormatted = e->_outerUDT->_name + "__" + nameFormatted;
-		}
-
-		uint32_t constCount = 0;
-		for (vector<EnumMember *>::iterator m = (e->_enumMembers).begin(); m != (e->_enumMembers).end(); ++m) {
-			rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
-			if (DDR_RC_OK != rc) {
-				break;
+	if (!e->_isDuplicate) {
+		/* Do not add anonymous inner types as their own type. */
+		if ((!e->isAnonymousType() || addFieldsOnly) && (e->_enumMembers.size() > 0)) {
+			/* Format class name */
+			string nameFormatted = e->_name;
+			if (NULL != e->_outerUDT) {
+				nameFormatted = e->_outerUDT->_name + "__" + nameFormatted;
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			if (addFieldsOnly) {
-				_buildInfo.curBlobStruct->constantCount += constCount;
-			} else {
-				rc = addBlobStruct(nameFormatted, "", constCount, 0, 0);
+			uint32_t constCount = 0;
+			for (vector<EnumMember *>::iterator m = (e->_enumMembers).begin(); m != (e->_enumMembers).end(); ++m) {
+				rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+
+			if (DDR_RC_OK == rc) {
+				if (addFieldsOnly) {
+					_buildInfo.curBlobStruct->constantCount += constCount;
+				} else {
+					rc = addBlobStruct(nameFormatted, "", constCount, 0, 0);
+				}
 			}
 		}
 	}
-
 	return rc;
 }
 
@@ -423,50 +424,52 @@ DDR_RC
 JavaBlobGenerator::dispatchBuildBlob(UnionUDT *u, bool addFieldsOnly, string prefix)
 {
 	DDR_RC rc = DDR_RC_OK;
-	/* Do not add anonymous inner types as their own type. */
-	if ((!u->isAnonymousType() || addFieldsOnly) && (u->_fieldMembers.size() > 0)) {
-		/* Format class name */
-		string nameFormatted = u->_name;
-		if (NULL != u->_outerUDT) {
-			nameFormatted = u->_outerUDT->_name + "__" + nameFormatted;
-		}
-
-		uint32_t fieldCount = 0;
-		uint32_t constCount = 0;
-		for (vector<Field *>::iterator m = (u->_fieldMembers).begin(); m != (u->_fieldMembers).end(); ++m) {
-			rc = addBlobField(*m, &fieldCount, &constCount, prefix);
-			if (DDR_RC_OK != rc) {
-				break;
+	if (!u->_isDuplicate) {
+		/* Do not add anonymous inner types as their own type. */
+		if ((!u->isAnonymousType() || addFieldsOnly) && (u->_fieldMembers.size() > 0)) {
+			/* Format class name */
+			string nameFormatted = u->_name;
+			if (NULL != u->_outerUDT) {
+				nameFormatted = u->_outerUDT->_name + "__" + nameFormatted;
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<EnumMember *>::iterator m = (u->_enumMembers).begin(); m != (u->_enumMembers).end(); ++m) {
-				rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
+			uint32_t fieldCount = 0;
+			uint32_t constCount = 0;
+			for (vector<Field *>::iterator m = (u->_fieldMembers).begin(); m != (u->_fieldMembers).end(); ++m) {
+				rc = addBlobField(*m, &fieldCount, &constCount, prefix);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<Macro>::iterator m = (u->_macros).begin(); m != (u->_macros).end(); ++m) {
-				long long value = 0;
-				if (DDR_RC_OK == m->getNumeric(&value)) {
-					rc = addBlobConst(m->_name, value, &constCount);
+			if (DDR_RC_OK == rc) {
+				for (vector<EnumMember *>::iterator m = (u->_enumMembers).begin(); m != (u->_enumMembers).end(); ++m) {
+					rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
 					if (DDR_RC_OK != rc) {
 						break;
 					}
 				}
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			if (addFieldsOnly) {
-				_buildInfo.curBlobStruct->constantCount += constCount;
-				_buildInfo.curBlobStruct->fieldCount += fieldCount;
-			} else {
-				rc = addBlobStruct(nameFormatted, "", constCount, fieldCount, (uint32_t)u->_sizeOf);
+			if (DDR_RC_OK == rc) {
+				for (vector<Macro>::iterator m = (u->_macros).begin(); m != (u->_macros).end(); ++m) {
+					long long value = 0;
+					if (DDR_RC_OK == m->getNumeric(&value)) {
+						rc = addBlobConst(m->_name, value, &constCount);
+						if (DDR_RC_OK != rc) {
+							break;
+						}
+					}
+				}
+			}
+
+			if (DDR_RC_OK == rc) {
+				if (addFieldsOnly) {
+					_buildInfo.curBlobStruct->constantCount += constCount;
+					_buildInfo.curBlobStruct->fieldCount += fieldCount;
+				} else {
+					rc = addBlobStruct(nameFormatted, "", constCount, fieldCount, (uint32_t)u->_sizeOf);
+				}
 			}
 		}
 	}
@@ -485,59 +488,61 @@ DDR_RC
 JavaBlobGenerator::dispatchBuildBlob(ClassUDT *cu, bool addFieldsOnly, string prefix)
 {
 	DDR_RC rc = DDR_RC_OK;
+	if (!cu->_isDuplicate) {
 	/* Do not add anonymous inner types as their own type. */
-	if ((!cu->isAnonymousType() || addFieldsOnly) && (cu->_fieldMembers.size() > 0)){
-		/* Format class name */
-		string nameFormatted = cu->_name;
-		if (NULL != cu->_outerUDT) {
-			nameFormatted = cu->_outerUDT->_name + "__" + nameFormatted;
-		}
-
-		/* Find super class name offset */
-		string superName;
-		if (NULL != cu->_superClass) {
-			superName = cu->_superClass->_name;
-			if (NULL != cu->_superClass->_outerUDT) {
-				superName = cu->_superClass->_outerUDT->_name + "__" + superName;
+		if ((!cu->isAnonymousType() || addFieldsOnly) && (cu->_fieldMembers.size() > 0)){
+			/* Format class name */
+			string nameFormatted = cu->_name;
+			if (NULL != cu->_outerUDT) {
+				nameFormatted = cu->_outerUDT->_name + "__" + nameFormatted;
 			}
-		}
 
-		uint32_t fieldCount = 0;
-		uint32_t constCount = 0;
-		for (vector<Field *>::iterator m = (cu->_fieldMembers).begin(); m != (cu->_fieldMembers).end(); ++m) {
-			rc = addBlobField(*m, &fieldCount, &constCount, prefix);
-			if (DDR_RC_OK != rc) {
-				break;
+			/* Find super class name offset */
+			string superName;
+			if (NULL != cu->_superClass) {
+				superName = cu->_superClass->_name;
+				if (NULL != cu->_superClass->_outerUDT) {
+					superName = cu->_superClass->_outerUDT->_name + "__" + superName;
+				}
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<EnumMember *>::iterator m = (cu->_enumMembers).begin(); m != (cu->_enumMembers).end(); ++m) {
-				rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
+			uint32_t fieldCount = 0;
+			uint32_t constCount = 0;
+			for (vector<Field *>::iterator m = (cu->_fieldMembers).begin(); m != (cu->_fieldMembers).end(); ++m) {
+				rc = addBlobField(*m, &fieldCount, &constCount, prefix);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<Macro>::iterator m = (cu->_macros).begin(); m != (cu->_macros).end(); ++m) {
-				long long value = 0;
-				if (DDR_RC_OK == m->getNumeric(&value)) {
-					rc = addBlobConst(m->_name, value, &constCount);
+			if (DDR_RC_OK == rc) {
+				for (vector<EnumMember *>::iterator m = (cu->_enumMembers).begin(); m != (cu->_enumMembers).end(); ++m) {
+					rc = addBlobConst((*m)->_name, (*m)->_value, &constCount);
 					if (DDR_RC_OK != rc) {
 						break;
 					}
 				}
 			}
-		}
 
-		if (DDR_RC_OK == rc) {
-			if (addFieldsOnly) {
-				_buildInfo.curBlobStruct->constantCount += constCount;
-				_buildInfo.curBlobStruct->fieldCount += fieldCount;
-			} else {
-				rc = addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);
+			if (DDR_RC_OK == rc) {
+				for (vector<Macro>::iterator m = (cu->_macros).begin(); m != (cu->_macros).end(); ++m) {
+					long long value = 0;
+					if (DDR_RC_OK == m->getNumeric(&value)) {
+						rc = addBlobConst(m->_name, value, &constCount);
+						if (DDR_RC_OK != rc) {
+							break;
+						}
+					}
+				}
+			}
+
+			if (DDR_RC_OK == rc) {
+				if (addFieldsOnly) {
+					_buildInfo.curBlobStruct->constantCount += constCount;
+					_buildInfo.curBlobStruct->fieldCount += fieldCount;
+				} else {
+					rc = addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);
+				}
 			}
 		}
 	}
@@ -556,31 +561,32 @@ DDR_RC
 JavaBlobGenerator::dispatchBuildBlob(NamespaceUDT *ns, bool addFieldsOnly, string prefix)
 {
 	DDR_RC rc = DDR_RC_OK;
-
-	uint32_t constCount = 0;
-	for (vector<Macro>::iterator m = (ns->_macros).begin(); m != (ns->_macros).end(); ++m) {
-		long long value = 0;
-		if (DDR_RC_OK == m->getNumeric(&value)) {
-			rc = addBlobConst(m->_name, value, &constCount);
-			if (DDR_RC_OK != rc) {
-				break;
+	if (!ns->_isDuplicate) {
+		uint32_t constCount = 0;
+		for (vector<Macro>::iterator m = (ns->_macros).begin(); m != (ns->_macros).end(); ++m) {
+			long long value = 0;
+			if (DDR_RC_OK == m->getNumeric(&value)) {
+				rc = addBlobConst(m->_name, value, &constCount);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
-	}
 
-	if (DDR_RC_OK == rc) {
-		if (addFieldsOnly) {
-			_buildInfo.curBlobStruct->constantCount += constCount;
-		} else {
-			rc = addBlobStruct(ns->_name, "", constCount, 0, 0);
+		if (DDR_RC_OK == rc) {
+			if (addFieldsOnly) {
+				_buildInfo.curBlobStruct->constantCount += constCount;
+			} else {
+				rc = addBlobStruct(ns->_name, "", constCount, 0, 0);
+			}
 		}
-	}
 
-	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
-		for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
-			rc = (*v)->buildBlob(this, false, "");
-			if (DDR_RC_OK != rc) {
-				break;
+		if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+			for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
+				rc = (*v)->buildBlob(this, false, "");
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
 	}
@@ -817,12 +823,17 @@ DDR_RC
 JavaBlobGenerator::dispatchEnumerateType(NamespaceUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
-	size_t constCount = 0;
+	if (!type->_isDuplicate) {
+		size_t constCount = 0;
+		/* Add only integer constants to the blob. */
+		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
+			if (DDR_RC_OK == it->getNumeric(NULL)) {
+				constCount += 1;
+			}
+		}
 
-	/* Add only integer constants to the blob. */
-	for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
-		if (DDR_RC_OK == it->getNumeric(NULL)) {
-			constCount += 1;
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
+			rc = addFieldAndConstCount(addFieldsOnly, 0, constCount);
 		}
 	}
 	/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
@@ -834,9 +845,6 @@ JavaBlobGenerator::dispatchEnumerateType(NamespaceUDT *type, bool addFieldsOnly)
 			}
 		}
 	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly)) {
-		rc = addFieldAndConstCount(addFieldsOnly, 0, constCount);
-	}
 	return rc;
 }
 
@@ -844,8 +852,10 @@ DDR_RC
 JavaBlobGenerator::dispatchEnumerateType(EnumUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
-	if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
-		rc = addFieldAndConstCount(addFieldsOnly, 0, type->_enumMembers.size());
+	if (!type->_isDuplicate) {
+		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
+			rc = addFieldAndConstCount(addFieldsOnly, 0, type->_enumMembers.size());
+		}
 	}
 	return rc;
 }
@@ -861,6 +871,7 @@ DDR_RC
 JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
+	if (!type->_isDuplicate) {
 	size_t fieldCount = 0;
 	size_t constCount = type->_enumMembers.size();
 
@@ -887,7 +898,12 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 				constCount += 1;
 			}
 		}
-
+	}
+	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
+	}
+	}
+	if (DDR_RC_OK == rc) {
 		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
 		if (!addFieldsOnly) {
 			for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
@@ -897,9 +913,6 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 				}
 			}
 		}
-	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
 	}
 	return rc;
 }
@@ -908,33 +921,39 @@ DDR_RC
 JavaBlobGenerator::dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
-	size_t fieldCount = 0;
-	size_t constCount = type->_enumMembers.size();
+	if (!type->_isDuplicate) {
+		size_t fieldCount = 0;
+		size_t constCount = type->_enumMembers.size();
 
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-			if (!(*v)->_isStatic) {
-				/* Anonymous type members are added to the struct and not counted as a field themselves. */
-				if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-					rc = (*v)->_fieldType->enumerateType(this, true);
-					if (DDR_RC_OK != rc) {
-						break;
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
+				if (!(*v)->_isStatic) {
+					/* Anonymous type members are added to the struct and not counted as a field themselves. */
+					if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
+						rc = (*v)->_fieldType->enumerateType(this, true);
+						if (DDR_RC_OK != rc) {
+							break;
+						}
+					} else {
+						fieldCount += 1;
 					}
-				} else {
-					fieldCount += 1;
 				}
 			}
 		}
-	}
 
-	if (DDR_RC_OK == rc) {
-		/* Add only integer constants to the blob. */
-		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
-			if (DDR_RC_OK == it->getNumeric(NULL)) {
-				constCount += 1;
+		if (DDR_RC_OK == rc) {
+			/* Add only integer constants to the blob. */
+			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
+				if (DDR_RC_OK == it->getNumeric(NULL)) {
+					constCount += 1;
+				}
 			}
 		}
-
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
+		}
+	}
+	if (DDR_RC_OK == rc) {
 		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
 		if (!addFieldsOnly) {
 			for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
@@ -944,9 +963,6 @@ JavaBlobGenerator::dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly)
 				}
 			}
 		}
-	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
 	}
 	return rc;
 }

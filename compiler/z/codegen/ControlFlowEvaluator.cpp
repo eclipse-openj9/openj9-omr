@@ -140,14 +140,14 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Compilation *comp = cg->comp();
-   if ((!node->isNopableInlineGuard() && !node->isHCRGuard()) ||
+   if ((!node->isNopableInlineGuard() && !node->isHCRGuard() && !node->isOSRGuard()) ||
       !cg->getSupportsVirtualGuardNOPing())
       {
       return false;
       }
 
    TR_VirtualGuard * virtualGuard = comp->findVirtualGuardInfo(node);
-   if (!node->isHCRGuard() && !(comp->performVirtualGuardNOPing() &&
+   if (!node->isHCRGuard() && !node->isOSRGuard() && !(comp->performVirtualGuardNOPing() &&
          comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
          virtualGuard->canBeRemoved())
       {

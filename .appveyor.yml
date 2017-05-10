@@ -1,0 +1,36 @@
+###############################################################################
+#
+# (c) Copyright IBM Corp. 2017
+#
+#  This program and the accompanying materials are made available
+#  under the terms of the Eclipse Public License v1.0 and
+#  Apache License v2.0 which accompanies this distribution.
+#
+#      The Eclipse Public License is available at
+#      http://www.eclipse.org/legal/epl-v10.html
+#
+#      The Apache License v2.0 is available at
+#      http://www.opensource.org/licenses/apache2.0.php
+#
+# Contributors:
+#    Multiple authors (IBM Corp.) - initial implementation and documentation
+###############################################################################
+
+platform: x64
+configuration: Debug
+shallow_clone: true
+clone_depth: 1
+
+environment:
+  GTEST_FILTER: '*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended'
+  GTEST_COLOR: '1'
+
+before_build:
+  - ps: cmake -Wdev -G "Visual Studio 14 2015 Win64" .
+
+build:
+  project: omr.sln
+  parallel: true
+
+test_script:
+  - ps: ctest -V -C Debug

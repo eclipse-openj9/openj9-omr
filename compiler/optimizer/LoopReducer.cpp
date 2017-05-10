@@ -928,7 +928,7 @@ bool
 TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loopHeader)
    {
    // for aladds
-   if (!comp()->cg()->getSupportsArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
+   if (!comp()->cg()->getSupportsReferenceArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy not enabled for this platform\n");
       return false;
@@ -967,7 +967,7 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
 
    bool needWriteBarrier = comp()->getOptions()->needWriteBarriers();;
    //FUTURE: can eliminate wrtbar when src and dest are equal. Currently we don't reduce arraycopy like this.
-   if (arraycopyLoop.hasWriteBarrier() && needWriteBarrier && !comp()->cg()->getSupportsArrayCopy())
+   if (arraycopyLoop.hasWriteBarrier() && needWriteBarrier && !comp()->cg()->getSupportsReferenceArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy arraystore tree has write barrier as root and write barriers are enabled but no support for this platform- no arraycopy reduction\n");
       return false;
@@ -1088,23 +1088,24 @@ TR_LoopReducer::generateArraycopy(TR_InductionVariable * indVar, TR::Block * loo
    if (arraycopyLoop.getStoreAddress()->getIncrement() < 0)
       //&& (storeAddr->getFirstChild()->getSymbol()->getRegisterMappedSymbol() == loadAddr->getFirstChild()->getSymbol()->getRegisterMappedSymbol()))
       {
-      if (comp()->cg()->getSupportsPrimitiveArrayCopy())
-         arraycopy->setBackwardArrayCopy(true); /* bit available only to primitive arraycopy */
+      arraycopy->setBackwardArrayCopy(true);
       }
    else
       {
       arraycopy->setForwardArrayCopy(true);
       }
 
-   if (!comp()->cg()->getSupportsPrimitiveArrayCopy()) /* bits only available for non-primitive arraycopy */
+   switch (arraycopyLoop.getCopySize())
       {
-      switch(arraycopyLoop.getCopySize())
-         {
-         case 2: arraycopy->setHalfWordElementArrayCopy(true); break;
-         case 4: case 8: arraycopy->setWordElementArrayCopy(true); break;
-         }
-      }
+      case 2:
+         arraycopy->setHalfWordElementArrayCopy(true);
+         break;
 
+      case 4:
+      case 8:
+         arraycopy->setWordElementArrayCopy(true);
+         break;
+      }
 
    TR::Node * top = TR::Node::create(TR::treetop, 1, arraycopy);
    arrayStoreTree->setNode(top);
@@ -3751,7 +3752,7 @@ TR_LoopReducer::generateByteToCharArraycopy(TR_InductionVariable * byteIndVar, T
       return false;
       }
 
-   if (!comp()->cg()->getSupportsArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
+   if (!comp()->cg()->getSupportsReferenceArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy not enabled for this platform\n");
       return false;
@@ -3998,7 +3999,7 @@ TR_LoopReducer::generateCharToByteArraycopy(TR_InductionVariable * byteIndVar, T
       return false;
       }
 
-   if (!comp()->cg()->getSupportsArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
+   if (!comp()->cg()->getSupportsReferenceArrayCopy() && !comp()->cg()->getSupportsPrimitiveArrayCopy())
       {
       dumpOptDetails(comp(), "arraycopy not enabled for this platform\n");
       return false;
@@ -4477,7 +4478,7 @@ TR_LoopReducer::perform()
       }
 
    if (!comp()->cg()->getSupportsArraySet() &&
-      !comp()->cg()->getSupportsArrayCopy() &&
+      !comp()->cg()->getSupportsReferenceArrayCopy() &&
       !comp()->cg()->getSupportsPrimitiveArrayCopy() &&
       !comp()->cg()->getSupportsArrayCmp() &&
       !comp()->cg()->getSupportsArrayTranslateTRxx() &&

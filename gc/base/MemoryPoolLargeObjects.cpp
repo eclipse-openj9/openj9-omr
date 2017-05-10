@@ -112,10 +112,10 @@ MM_MemoryPoolLargeObjects::initialize(MM_EnvironmentBase* env)
 	 *
 	 * THIS MUST HAPPEN AFTER VERBOSE GC PRINTS LOA SIZE. IT MUST NOT HAPPEN ON SCAVENGES.
 	 */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_GLOBAL_GC_INCREMENT_START, reportGlobalGCIncrementStart, (void*)this);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_GLOBAL_GC_INCREMENT_START, reportGlobalGCIncrementStart, OMR_GET_CALLSITE(), (void*)this);
 
 	/* ..and register hook for global GC end to check if a SOA/LOA rebalance is required. */
-	(*mmHooks)->J9HookRegister(mmHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, reportGlobalGCComplete, (void*)this);
+	(*mmHooks)->J9HookRegisterWithCallSite(mmHooks, J9HOOK_MM_OMR_GLOBAL_GC_END, reportGlobalGCComplete, OMR_GET_CALLSITE(), (void*)this);
 
 	uintptr_t minimumFreeEntrySize = OMR_MAX(_memoryPoolLargeObjects->getMinimumFreeEntrySize(), _memoryPoolSmallObjects->getMinimumFreeEntrySize());
 	_largeObjectAllocateStats = MM_LargeObjectAllocateStats::newInstance(env, (uint16_t)_extensions->largeObjectAllocationProfilingTopK, _extensions->largeObjectAllocationProfilingThreshold, _extensions->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)_extensions->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,

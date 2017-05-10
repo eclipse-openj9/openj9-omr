@@ -672,7 +672,6 @@ OMR_GC_TLH_PREFETCH_FTA
 OMR_ENV_LITTLE_ENDIAN
 OMR_GC_OBJECT_MAP
 OMR_THR_YIELD_ALG
-OMR_THR_SPIN_CODE_REFACTOR
 OMR_THR_SPIN_WAKE_CONTROL
 OMR_NOTIFY_POLICY_CONTROL
 OMR_THR_CUSTOM_SPIN_OPTIONS
@@ -693,6 +692,7 @@ OMR_GC_STACCATO
 OMR_GC_SEGREGATED_HEAP
 OMR_GC_REALTIME
 OMR_GC_OBJECT_ALLOCATION_NOTIFY
+OMR_GC_LEAF_BITS
 OMR_GC_HYBRID_ARRAYLETS
 OMR_GC_CONCURRENT_SWEEP
 OMR_GC_CONCURRENT_SCAVENGER
@@ -846,6 +846,7 @@ enable_OMR_GC_MODRON_SCAVENGER
 enable_OMR_GC_CONCURRENT_SCAVENGER
 enable_OMR_GC_CONCURRENT_SWEEP
 enable_OMR_GC_HYBRID_ARRAYLETS
+enable_OMR_GC_LEAF_BITS
 enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY
 enable_OMR_GC_REALTIME
 enable_OMR_GC_SEGREGATED_HEAP
@@ -866,7 +867,6 @@ enable_OMR_THR_THREE_TIER_LOCKING
 enable_OMR_THR_CUSTOM_SPIN_OPTIONS
 enable_OMR_NOTIFY_POLICY_CONTROL
 enable_OMR_THR_SPIN_WAKE_CONTROL
-enable_OMR_THR_SPIN_CODE_REFACTOR
 enable_OMR_THR_YIELD_ALG
 enable_OMR_GC_OBJECT_MAP
 enable_OMR_ENV_LITTLE_ENDIAN
@@ -1599,6 +1599,8 @@ Optional Features:
 
   --enable-OMR_GC_HYBRID_ARRAYLETS
 
+  --enable-OMR_GC_LEAF_BITS
+
   --enable-OMR_GC_OBJECT_ALLOCATION_NOTIFY
 
   --enable-OMR_GC_REALTIME
@@ -1632,8 +1634,6 @@ Optional Features:
   --enable-OMR_NOTIFY_POLICY_CONTROL
 
   --enable-OMR_THR_SPIN_WAKE_CONTROL
-
-  --enable-OMR_THR_SPIN_CODE_REFACTOR
 
   --enable-OMR_THR_YIELD_ALG
 
@@ -5891,6 +5891,25 @@ else
 fi
 
 
+# Check whether --enable-OMR_GC_LEAF_BITS was given.
+if test "${enable_OMR_GC_LEAF_BITS+set}" = set; then :
+  enableval=$enable_OMR_GC_LEAF_BITS; if test "x${enableval}" = xyes; then :
+  OMR_GC_LEAF_BITS=1
+
+   $as_echo "#define OMR_GC_LEAF_BITS 1" >>confdefs.h
+
+else
+  OMR_GC_LEAF_BITS=0
+
+
+fi
+else
+  OMR_GC_LEAF_BITS=0
+
+
+fi
+
+
 # Check whether --enable-OMR_GC_OBJECT_ALLOCATION_NOTIFY was given.
 if test "${enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY+set}" = set; then :
   enableval=$enable_OMR_GC_OBJECT_ALLOCATION_NOTIFY; if test "x${enableval}" = xyes; then :
@@ -6317,25 +6336,6 @@ else
 fi
 else
   OMR_THR_SPIN_WAKE_CONTROL=0
-
-
-fi
-
-
-# Check whether --enable-OMR_THR_SPIN_CODE_REFACTOR was given.
-if test "${enable_OMR_THR_SPIN_CODE_REFACTOR+set}" = set; then :
-  enableval=$enable_OMR_THR_SPIN_CODE_REFACTOR; if test "x${enableval}" = xyes; then :
-  OMR_THR_SPIN_CODE_REFACTOR=1
-
-   $as_echo "#define OMR_THR_SPIN_CODE_REFACTOR 1" >>confdefs.h
-
-else
-  OMR_THR_SPIN_CODE_REFACTOR=0
-
-
-fi
-else
-  OMR_THR_SPIN_CODE_REFACTOR=0
 
 
 fi

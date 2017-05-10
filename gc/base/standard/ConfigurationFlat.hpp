@@ -40,7 +40,7 @@ public:
 	virtual MM_MemorySpace* createDefaultMemorySpace(MM_EnvironmentBase* env, MM_Heap* heap, MM_InitializationParameters* parameters);
 
 	MM_ConfigurationFlat(MM_EnvironmentBase* env)
-		: MM_ConfigurationStandard(env, env->getExtensions()->configurationOptions._gcPolicy)
+		: MM_ConfigurationStandard(env, env->getExtensions()->configurationOptions._gcPolicy, STANDARD_REGION_SIZE_BYTES)
 	{
 		_typeId = __FUNCTION__;
 	};

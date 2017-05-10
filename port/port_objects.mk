@@ -46,14 +46,11 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += j9sysinfo_get_number_CPUs
   OBJECTS += j9jobname
   OBJECTS += j9userid
-  OBJECTS += j9csrsi
-  OBJECTS += j9csrsi_wrp
   OBJECTS += j9zfs
   OBJECTS += j9lpdat
 
   ifeq (1,$(OMR_ENV_DATA64))
     # 64-bit only
-    OBJECTS += omrget_userExtendedPrivateAreaMemoryType
     OBJECTS += omrget_large_pages_supported
     OBJECTS += omrget_large_2gb_pages_supported
     OBJECTS += omrvmem_support_above_bar

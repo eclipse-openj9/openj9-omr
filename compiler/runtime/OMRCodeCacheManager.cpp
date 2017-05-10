@@ -125,13 +125,14 @@ OMR::CodeCacheManager::initialize(
    config._needsMethodTrampolines =
       !(config.trampolineCodeSize() == 0
         || config.maxNumberOfCodeCaches() == 1
-#if !defined(STRESS_TRAMPOLINES) && !defined(TR_HOST_POWER)
-        || (!TR::Options::getCmdLineOptions()->getOption(TR_EnableMethodTrampolineReservation) &&
+#if !defined(TR_HOST_POWER)
+        || (!TR::Options::getCmdLineOptions()->getOption(TR_StressTrampolines) &&
+            !TR::Options::getCmdLineOptions()->getOption(TR_EnableMethodTrampolineReservation) &&
             _codeCacheRepositorySegment &&
             config.codeCacheTotalKB() <= REACHEABLE_RANGE_KB)
 #endif
         );
-
+   
    _lowCodeCacheSpaceThresholdReached = false;
 
    _initialized = true;
@@ -607,57 +608,6 @@ OMR::CodeCacheManager::replaceTrampoline(TR_OpaqueMethodBlock *method,
    return codeCache->replaceTrampoline(method, oldTrampoline, oldTargetPC, newTargetPC, needSync);
    }
 
-// Deal with class redefinition
-//
-void
-OMR::CodeCacheManager::onClassRedefinition(TR_OpaqueMethodBlock *oldMethod,
-                                         TR_OpaqueMethodBlock *newMethod)
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-   // Don't allow hashEntry to linger somewhere else
-   self()->synchronizeTrampolines();
-
-      {
-      CacheListCriticalSection scanCacheList(self());
-      for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-         {
-         codeCache->onClassRedefinition(oldMethod, newMethod);
-         }
-      }
-   }
-
-// Deal with FSD decompilation trigger
-//
-void
-OMR::CodeCacheManager::onFSDDecompile()
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-      {
-      CacheListCriticalSection scanCacheList(self());
-      for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-         {
-         codeCache->onFSDDecompile();
-         }
-      }
-   }
-
-
-void
-OMR::CodeCacheManager::addFaintCacheBlock(FaintCacheBlock * & faintBlockList,
-                                        FaintCacheBlock *block,
-                                        uint8_t bytesToSaveAtStart)
-   {
-   block->_next = faintBlockList;
-   block->_bytesToSaveAtStart = bytesToSaveAtStart;
-   block->_isStillLive = false;
-   faintBlockList = block;
-   }
 
 // Is there space and are we allowed to allocate a new code cache?
 //
@@ -697,15 +647,6 @@ OMR::CodeCacheManager::addFreeBlock(void *metaData, uint8_t *startPC)
    {
    TR::CodeCache *owningCodeCache = self()->findCodeCacheFromPC(startPC);
    owningCodeCache->addFreeBlock(metaData);
-   }
-
-// May add the faint cache block to freeBlockList.
-// Caller should expect that block may sometimes not be added.
-void
-OMR::CodeCacheManager::freeFaintCacheBlock(FaintCacheBlock *block, uint8_t *startPC)
-   {
-   TR::CodeCache *owningCodeCache = self()->findCodeCacheFromPC(startPC);
-   owningCodeCache->addFreeBlock(block);
    }
 
 

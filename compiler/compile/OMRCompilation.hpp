@@ -591,6 +591,7 @@ public:
       TR::SymbolReference *_callSymRef;
       int32_t *_osrCallSiteRematTable;
       bool _directCall;
+      bool _cannotAttemptOSRDuring;
 
       public:
 
@@ -599,7 +600,7 @@ public:
                              TR::ResolvedMethodSymbol *resolvedMethod,
                              TR::SymbolReference *callSymRef,
                              bool directCall):
-         _resolvedMethod(resolvedMethod), _callSymRef(callSymRef), _directCall(directCall), _osrCallSiteRematTable(0)
+         _resolvedMethod(resolvedMethod), _callSymRef(callSymRef), _directCall(directCall), _osrCallSiteRematTable(0), _cannotAttemptOSRDuring(false)
          {
          _site._methodInfo = methodInfo;
          _site._byteCodeInfo = bcInfo;
@@ -612,6 +613,8 @@ public:
       int32_t *osrCallSiteRematTable() { return _osrCallSiteRematTable; }
       void setOSRCallSiteRematTable(int32_t *array) { _osrCallSiteRematTable = array; }
       bool directCall() { return _directCall; }
+      bool cannotAttemptOSRDuring() { return _cannotAttemptOSRDuring; }
+      void setCannotAttemptOSRDuring(bool cannotOSR) { _cannotAttemptOSRDuring = cannotOSR; }
       };
 
    uint32_t getNumInlinedCallSites();
@@ -624,6 +627,8 @@ public:
    void getOSRCallSiteRemat(uint32_t callSiteIndex, uint32_t slot, TR::SymbolReference *&ppSymRef, TR::SymbolReference *&loadSymRef);
    void setOSRCallSiteRemat(uint32_t callSiteIndex, TR::SymbolReference *ppSymRef, TR::SymbolReference *loadSymRef);
    bool isInlinedDirectCall(uint32_t index);
+   bool cannotAttemptOSRDuring(uint32_t index);
+   void setCannotAttemptOSRDuring(uint32_t index, bool cannot);
 
    TR_InlinedCallSite *getCurrentInlinedCallSite();
    int32_t getCurrentInlinedSiteIndex();
@@ -820,13 +825,17 @@ public:
     * Normal usage requires you to pass in a TreeTop and the transition node will
     * be distilled from that. Supplying a node directly is a very special operation
     * and is primarily intended for ILGen before blocks are created - you risk
-    * incorrect answers if you fail to supply the TreeTop
+    * incorrect answers if you fail to supply the TreeTop.
+    *
+    * osrPointNode can be used to identify the node that is believed to be the
+    * potential OSR point. Multiple OSR points are not expected within a tree.
     */
-   bool isPotentialOSRPoint(TR::Node *node);
+   bool isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode=NULL);
    bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
 
    TR::OSRMode getOSRMode();
    TR::OSRTransitionTarget getOSRTransitionTarget();
+   bool isOSRTransitionTarget(TR::OSRTransitionTarget target);
    int32_t getOSRInductionOffset(TR::Node *node);
    bool requiresAnalysisOSRPoint(TR::Node *node);
 

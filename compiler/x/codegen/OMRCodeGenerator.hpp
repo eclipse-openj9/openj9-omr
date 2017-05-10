@@ -191,7 +191,9 @@ struct TR_X86ProcessorInfo
    bool isIntelIvyBridge()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelIvyBridge; }
    bool isIntelHaswell()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelHaswell; }
    bool isIntelBroadwell()    { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelBroadwell; }
-   bool isIntelOldMachine() ;
+   bool isIntelSkylake()      { return (_processorDescription & 0x000000ff) == TR_ProcessorIntelSkylake; }
+
+   bool isIntelOldMachine()   { return (isIntelPentium() || isIntelP6() || isIntelPentium4() || isIntelCore2() || isIntelTulsa() || isIntelNehalem()); }
 
    bool isAMDK6()             { return (_processorDescription & 0x000000fe) == TR_ProcessorAMDK5; } // accept either K5 or K6
    bool isAMDAthlonDuron()    { return (_processorDescription & 0x000000ff) == TR_ProcessorAMDAthlonDuron; }
@@ -295,7 +297,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual bool getSupportsIbyteswap();
 
-   bool supportsMergingOfHCRGuards();
+   bool supportsMergingGuards();
 
    bool supportsAtomicAdd()                {return true;}
    bool hasTMEvaluator()                       {return true;}
@@ -564,8 +566,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual void simulateNodeEvaluation (TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary);
 
-   bool isFPRUsedAsVRF() { return _targetProcessorInfo.supportsSSE2(); }
-
    protected:
 
    CodeGenerator();
@@ -658,7 +658,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    public:
 
-   bool allowHCRGuardMerging() { return false; }
+   bool allowGuardMerging() { return false; }
 
    bool enableBetterSpillPlacements()
       {

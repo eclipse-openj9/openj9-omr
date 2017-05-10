@@ -329,13 +329,6 @@ public:
    TR_BranchPreloadCallData _outlineCall;
    TR_BranchPreloadCallData _outlineArrayCall;
 
-   // TODO (GuardedStorage): This needs to be revisited. We need to avoid lowering compressedrefs trees if concurrent
-   // scavenge is enabled, rather than trying to pattern match and avoid evaluating them
-   int32_t _evaluatingCompressionSequenceCounter;
-   void incEvaluatingCompressionSequence();
-   void decEvaluatingCompressionSequence();
-   bool isEvaluatingCompressionSequence();
-
    TR::list<TR_BranchPreloadCallData*> *_callsForPreloadList;
 
    TR::list<TR_BranchPreloadCallData*> * getCallsForPreloadList() { return _callsForPreloadList; }
@@ -431,16 +424,7 @@ public:
    void RemoveMemRefFromStack(TR::MemoryReference * mr);
    void StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStackBeforeEvaluation);
 
-   bool supportsMergingOfHCRGuards();
-
-   /** \brief
-    *     Determines whether concurrent scavenge of objects during garbage collection is enabled.
-    *
-    *  \return
-    *     true if the code generator will emit read barriers for loads of object references from the heap in support
-    *     of concurrent scavenge; false otherwise.
-    */
-   bool isConcurrentScavengeEnabled();
+   bool supportsMergingGuards();
 
    bool supportsDirectJNICallsForAOT() { return true;}
 

@@ -51,7 +51,7 @@ public:
 	virtual void defaultMemorySpaceAllocated(MM_GCExtensionsBase *extensions, void* defaultMemorySpace);
 	
 	MM_ConfigurationGenerational(MM_EnvironmentBase *env)
-		: MM_ConfigurationStandard(env, gc_policy_gencon)
+		: MM_ConfigurationStandard(env, gc_policy_gencon, calculateDefaultRegionSize(env))
 	{
 		_typeId = __FUNCTION__;
 	};
@@ -59,6 +59,7 @@ public:
 protected:
 	MM_MemorySubSpaceSemiSpace *createSemiSpace(MM_EnvironmentBase *envBase, MM_Heap *heap, MM_Scavenger *scavenger, MM_InitializationParameters *parameters, UDATA numaNode = UDATA_MAX);
 private:
+	uintptr_t calculateDefaultRegionSize(MM_EnvironmentBase *env);
 };
 
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) */

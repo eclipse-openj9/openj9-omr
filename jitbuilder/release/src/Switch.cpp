@@ -46,6 +46,22 @@ SwitchMethod::SwitchMethod(TR::TypeDictionary *d)
    DefineParameter("selector", Int32);
 
    DefineReturnType(NoType);
+   }
+
+/**
+ * Example to show how RequestFunction can be used to define functions
+ * on demand, rather than up front. A perfectly viable approach (especially
+ * in this sample) would be to call DefineFunction in the MethodBuilder's
+ * constructor. But it is also possible to implement RequestFunction in
+ * a MethodBuilder subclass to define functions when they are first called.
+ * Typically used in JIT compilers rather than examples like this where
+ * "printString" is always going to be called anyway.
+ */
+bool
+SwitchMethod::RequestFunction(const char *name)
+   {
+   if (strncmp(name, "printString", 12) != 0)
+      return false;
 
    DefineFunction((char *)"printString", 
                   (char *)__FILE__,
@@ -54,6 +70,8 @@ SwitchMethod::SwitchMethod(TR::TypeDictionary *d)
                   NoType,
                   1,
                   Int64);
+
+   return true;
    }
 
 void

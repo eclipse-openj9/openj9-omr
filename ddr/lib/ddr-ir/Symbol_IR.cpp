@@ -18,17 +18,42 @@
 
 #include "ddr/ir/Symbol_IR.hpp"
 
+#include <assert.h>
 #include <algorithm>
 #include <map>
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
 
-#include "ddr/ir/ClassType.hpp"
 #include "ddr/config.hpp"
+#include "ddr/ir/ClassType.hpp"
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/ir/EnumUDT.hpp"
 #include "ddr/ir/Field.hpp"
+#include "ddr/ir/NamespaceUDT.hpp"
+#include "ddr/ir/NamespaceUDT.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
+#include "ddr/ir/UnionUDT.hpp"
 
 using std::map;
+
+string
+Symbol_IR::getUDTname(Type *type)
+{
+	UDT *udt = dynamic_cast<UDT *>(type);
+	assert(NULL != udt);
+
+	string name;
+	if (NULL != udt->_outerUDT) {
+		name = getUDTname(udt->_outerUDT) + udt->_name;
+	} else {
+		name = udt->_name;
+	}
+
+	return name;
+}
 
 Symbol_IR::~Symbol_IR()
 {
@@ -278,41 +303,10 @@ DDR_RC
 Symbol_IR::removeDuplicates()
 {
 	DDR_RC rc = DDR_RC_OK;
-	map<string, vector<Type *> > typeNames;
-
-	/* Create a map of type name to vector of types to check all types
-	 * which share a name for duplicates.
-	 */
-	for (vector<Type *>::iterator it = _types.begin(); it != _types.end();) {
-		Type *type = *it;
-		if (type->_name.empty()) {
-			it += 1;
-			continue;
-		}
-		vector<Type *> *typesWithName = &typeNames[type->_name];
-
-		/* Check all other types with the same name for a duplicate type. */
-		Type *duplicateType = NULL;
-		for (vector<Type *>::iterator it2 = typesWithName->begin(); it2 != typesWithName->end(); it2 += 1) {
-			Type *compareType = *it2;
-			if (*type == *compareType) {
-				duplicateType = compareType;
-				break;
-			}
-		}
-
-		if (NULL == duplicateType) {
-			typesWithName->push_back(type);
-			it += 1;
-		} else {
-			/* If a duplicate type is found, replace all pointers to it, remove
-			 * it from the IR, and free it.
-			 */
-			for (vector<Type *>::iterator it2 = _types.begin(); it2 != _types.end(); it2 += 1) {
-				(*it2)->replaceType(type, duplicateType);
-			}
-			it = _types.erase(it);
-			free(type);
+	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
+		rc = (*it)->checkDuplicate(this);
+		if (DDR_RC_OK != rc) {
+			break;
 		}
 	}
 	return rc;

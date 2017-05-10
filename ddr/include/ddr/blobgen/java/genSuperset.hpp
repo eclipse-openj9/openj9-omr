@@ -23,7 +23,6 @@
 #define __IBMCPP_TR1__ 1
 #endif /* defined(AIXPPC) || defined(J9ZOS390) */
 
-#include <set>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
@@ -35,7 +34,6 @@
 #include "ddr/ir/Symbol_IR.hpp"
 
 using std::string;
-using std::set;
 using std::stringstream;
 #if defined(AIXPPC) || defined(J9ZOS390)
 using std::tr1::unordered_map;

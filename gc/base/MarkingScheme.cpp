@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,18 +22,17 @@
 
 #include <string.h>
 
-#include "CollectorLanguageInterface.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "MarkMap.hpp"
 #include "MarkingScheme.hpp"
 #include "Task.hpp"
-#include "WorkPackets.hpp"
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "WorkPacketsConcurrent.hpp"
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
+#else
 #include "WorkPacketsStandard.hpp"
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 
 /**
  * Allocate and initialize a new instance of the receiver.
@@ -75,16 +74,16 @@ MM_MarkingScheme::initialize(MM_EnvironmentBase *env)
 {
 	_markMap = MM_MarkMap::newInstance(env, _extensions->heap->getMaximumPhysicalRange());
 
-	if(!_markMap) {
+	if (!_markMap) {
 		goto error_no_memory;
 	}
 
 	_workPackets = createWorkPackets(env);
-	if(NULL == _workPackets) {
+	if (NULL == _workPackets) {
 		goto error_no_memory;
 	}
 
-	return true;
+	return _delegate.initialize(env, this);
 
 error_no_memory:
 	return false;
@@ -163,7 +162,7 @@ MM_MarkingScheme::masterSetupForGC(MM_EnvironmentBase *env)
 	/* Initialize the marking stack */
 	_workPackets->reset(env);
 
-	_extensions->collectorLanguageInterface->markingScheme_masterSetupForGC(env);
+	_delegate.masterSetupForGC(env);
 }
 
 /**
@@ -179,13 +178,13 @@ MM_MarkingScheme::masterSetupForWalk(MM_EnvironmentBase *env)
 	/* Initialize the marking stack */
 	_workPackets->reset(env);
 
-	_extensions->collectorLanguageInterface->markingScheme_masterSetupForWalk(env);
+	_delegate.masterSetupForWalk(env);
 }
 
 void
 MM_MarkingScheme::masterCleanupAfterGC(MM_EnvironmentBase *env)
 {
-	_extensions->collectorLanguageInterface->markingScheme_masterCleanupAfterGC(env);
+	_delegate.masterCleanupAfterGC(env);
 }
 
 void
@@ -263,7 +262,30 @@ MM_MarkingScheme::setMarkBitsInRange(MM_EnvironmentBase *env, void *heapBase, vo
  * Scanning
  ****************************************
  */
-	
+/**
+ * Private internal. Called exclusively from completeScan();
+ */
+uintptr_t
+MM_MarkingScheme::scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
+{
+	uintptr_t sizeToDo = UDATA_MAX;
+	GC_ObjectScannerState objectScannerState;
+	GC_ObjectScanner *objectScanner = _delegate.getObjectScanner(env, objectPtr, &objectScannerState, SCAN_REASON_PACKET, &sizeToDo);
+	if (NULL != objectScanner) {
+		bool isLeafSlot = false;
+		GC_SlotObject *slotObject;
+#if defined(OMR_GC_LEAF_BITS)
+		while (NULL != (slotObject = objectScanner->getNextSlot(isLeafSlot))) {
+#else /* OMR_GC_LEAF_BITS */
+		while (NULL != (slotObject = objectScanner->getNextSlot())) {
+#endif /* OMR_GC_LEAF_BITS */
+			inlineMarkObjectNoCheck(env, slotObject->readReferenceFromSlot(), isLeafSlot);
+		}
+	}
+	return sizeToDo;
+}
+
+
 /**
  * Scan until there are no more work packets to be processed.
  * @note This is a joining scan: a thread will not exit this method until
@@ -272,14 +294,13 @@ MM_MarkingScheme::setMarkBitsInRange(MM_EnvironmentBase *env, void *heapBase, vo
 void
 MM_MarkingScheme::completeScan(MM_EnvironmentBase *env)
 {
-	omrobjectptr_t objectPtr = NULL;
-	MM_WorkPackets *packets = getWorkPackets();
-
 	do {
-		while(NULL != (objectPtr = (omrobjectptr_t )env->_workStack.pop(env))) {
-			scanObject(env, objectPtr, MM_CollectorLanguageInterface::SCAN_REASON_PACKET);
+		omrobjectptr_t objectPtr = NULL;
+		while (NULL != (objectPtr = (omrobjectptr_t )env->_workStack.pop(env))) {
+			env->_markStats._bytesScanned += scanObject(env, objectPtr);
+			env->_markStats._objectsScanned += 1;
 		}
-	} while (packets->handleWorkPacketOverflow(env));
+	} while (_workPackets->handleWorkPacketOverflow(env));
 }
 
 /****************************************
@@ -312,7 +333,7 @@ MM_MarkingScheme::markLiveObjectsInit(MM_EnvironmentBase *env, bool initMarkMap)
 void
 MM_MarkingScheme::markLiveObjectsRoots(MM_EnvironmentBase *env)
 {
-	_extensions->collectorLanguageInterface->markingScheme_scanRoots(env);
+	_delegate.scanRoots(env);
 }
 
 void
@@ -326,7 +347,7 @@ MM_MarkingScheme::completeMarking(MM_EnvironmentBase *env)
 {
 	completeScan(env);
 
-	_extensions->collectorLanguageInterface->markingScheme_completeMarking(env);
+	_delegate.completeMarking(env);
 }
 
 /**
@@ -336,19 +357,18 @@ MM_MarkingScheme::completeMarking(MM_EnvironmentBase *env)
 void
 MM_MarkingScheme::markLiveObjectsComplete(MM_EnvironmentBase *env)
 {
-	_extensions->collectorLanguageInterface->markingScheme_markLiveObjectsComplete(env);
+	_delegate.markLiveObjectsComplete(env);
 }
 
 MM_WorkPackets *
 MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
 	MM_WorkPackets *workPackets = NULL;
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	if(_extensions->concurrentMark) {
+	if (_extensions->isConcurrentMarkEnabled()) {
+#if defined OMR_GC_MODRON_CONCURRENT_MARK
 		workPackets = MM_WorkPacketsConcurrent::newInstance(env);
-	} else
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
-	{
+#endif /* defined OMR_GC_MODRON_CONCURRENT_MARK */
+	} else {
 		workPackets = MM_WorkPacketsStandard::newInstance(env);
 	}
 

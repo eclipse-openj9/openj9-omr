@@ -138,7 +138,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *f2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2sEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *f2cEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *d2iEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *d2lEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *d2fEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *d2bEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -287,6 +286,16 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    // routines for floating point values that can fit in one GPR
    static TR::Register *floatingPointStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   // For ILOpCode that can be translated to single SSE/AVX instructions
+   static TR::Register *FloatingPointAndVectorBinaryArithmeticEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   // SIMD evaluators
+   static TR::Register *SIMDRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDRegStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDloadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *SIMDsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    static TR::Register *icmpsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *bztestnsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
@@ -323,7 +332,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *coerceFPRToXMMR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
    static TR::Register *coerceXMMRToFPR(TR::Node *node, TR::Register *fpRegister, TR::CodeGenerator *cg);
    static void coerceFPOperandsToXMMRs(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *constLengthArrayCopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    enum
       {

@@ -139,6 +139,7 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
       cannotOmitTrivialDefs                = 0x00200000,
       maintainsUseDefInfo                  = 0x00400000,
       requiresAccurateNodeCount            = 0x00800000,
+      doNotSetFrequencies                  = 0x01000000,
       dummyLastEnum
       };
 
@@ -168,6 +169,7 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
    bool getLastRun()                     { return _flags.testAny(lastRun); }
    bool getCannotOmitTrivialDefs()       { return _flags.testAny(cannotOmitTrivialDefs); }
    bool getMaintainsUseDefInfo()         { return _flags.testAny(maintainsUseDefInfo); }
+   bool getDoNotSetFrequencies()         { return _flags.testAny(doNotSetFrequencies); }
 
    void setRequiresStructure(bool b)           { _flags.set(requiresStructure, b); }
    void setRequiresGlobalsUseDefInfo(bool b)   { _flags.set(requiresGlobalsUseDefInfo, b); }
@@ -192,6 +194,7 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
    void setLastRun(bool b)                     { _flags.set(lastRun,b); }
    void setCannotOmitTrivialDefs(bool b)       { _flags.set(cannotOmitTrivialDefs, b); }
    void setMaintainsUseDefInfo(bool b)         { _flags.set(maintainsUseDefInfo, b); }
+   void setDoNotSetFrequencies(bool b)         { _flags.set(doNotSetFrequencies, b); }
 
    protected:
 

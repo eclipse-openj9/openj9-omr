@@ -450,7 +450,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOptTransformations=",         "O{regex}\tlist of optimizer transformations to disable",
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledOptTransformations), 0, "P"},
    {"disableOSR",                         "O\tdisable support for on-stack replacement", SET_OPTION_BIT(TR_DisableOSR), "F"},
+   {"disableOSRCallSiteRemat",            "O\tdisable use of the call stack remat table in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRCallSiteRemat), "F"},
    {"disableOSRExceptionEdgeRemoval",     "O\tdon't trim away unused on-stack replacement points", TR::Options::disableOptimization, osrExceptionEdgeRemoval, 0, "P"},
+   {"disableOSRLocalRemat",               "O\tdisable use of remat when inserting guards for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLocalRemat), "F"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
    {"disableOutlinedPrologues",           "O\tdo all prologue logic in-line",      RESET_OPTION_BIT(TR_EnableOutlinedPrologues), "F"},
@@ -714,6 +716,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableRegisterPressureSimulation",   "O\twalk the trees to estimate register pressure during global register allocation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
+   {"enableRMODE64",                "O\tenable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},   
    {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
    {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
@@ -745,6 +748,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableZAccessRegs",                "O\tenable use of access regs as spill area on 390.", SET_OPTION_BIT(TR_Enable390AccessRegs), "F"},
    {"enableZEpilogue",                  "O\tenable 64-bit 390 load-multiple breakdown.", SET_OPTION_BIT(TR_Enable39064Epilogue), "F"},
    {"enableZFreeVMThreadReg",           "O\tenable use of vm thread reg as assignable reg on 390.", SET_OPTION_BIT(TR_Enable390FreeVMThreadReg), "F"},
+   {"enablezOSTrampolines",                  "O\tenable generation of trampolines for method dispatch on zOS64", SET_OPTION_BIT(TR_EnableZOSTrampolines), "F"},
    {"enumerateAddresses=", "D\tselect kinds of addresses to be replaced by unique identifiers in trace file", TR::Options::setAddressEnumerationBits, offsetof(OMR::Options, _addressToEnumerate), 0, "F"},
    {"estimateRegisterPressure",           "O\tdeprecated; equivalent to enableRegisterPressureSimulation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"experimentalClassLoadPhase",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F"},
@@ -1057,6 +1061,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"stopThrottlingTime=", "M<nnn>\tTime when compilation throttling should stop (ms since JVM start)",
                              TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_stopThrottlingTime, 0, "F%d", NOT_IN_SUBSET },
    {"storeSinkingLastOpt=", "C<nnn>\tLast store sinking optimization to perform", TR::Options::set32BitNumeric, offsetof(OMR::Options, _storeSinkingLastOpt), static_cast<uintptrj_t>(-1) , "F%d"},
+   {"stressTrampolines", "O\tenables trampolines to always be used for method and helper calls", SET_OPTION_BIT(TR_StressTrampolines), "F"},
    {"strictFPCompares",   "C\tassume strictFP semantics for floating point compares only", SET_OPTION_BIT(TR_StrictFPCompares), "F" },
    {"subtractLoopyMethodCounts",   "C\tSubtract loopy method counts instead of dividing", SET_OPTION_BIT(TR_SubtractLoopyMethodCounts), "F", NOT_IN_SUBSET},
    {"subtractMethodCountsWhenIprofilerIsOff",   "C\tSubtract method counts instead of dividing when Iprofiler is off", SET_OPTION_BIT(TR_SubtractMethodCountsWhenIprofilerIsOff), "F", NOT_IN_SUBSET},
@@ -1359,6 +1364,13 @@ OMR::Options::set32BitNumeric(char *option, void *base, TR::OptionTable *entry)
 
 
 char *
+OMR::Options::set32BitNumericInJitConfig(char *option, void *base, TR::OptionTable *entry)
+   {
+   return TR::Options::set32BitNumeric(option, _feBase, entry);
+   }
+
+
+char *
 OMR::Options::set64BitSignedNumeric(char *option, void *base, TR::OptionTable *entry)
    {
    int64_t sign = 1;
@@ -1458,12 +1470,17 @@ OMR::Options::setString(char *option, void *base, TR::OptionTable *entry)
    return dummy_string;
    }
 
+char *
+OMR::Options::setStringInJitConfig(char *option, void *base, TR::OptionTable *entry)
+   {
+   return TR::Options::setString(option, _feBase, entry);
+   }
 
 char *
 OMR::Options::setStringForPrivateBase(char *option, void *base, TR::OptionTable *entry)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   base = TR_J9VMBase::getPrivateConfig(base);
+   base = TR_J9VMBase::getPrivateConfig(_feBase);
    return TR::Options::setString(option, base, entry);
 #else
    return 0;
@@ -1570,7 +1587,7 @@ int32_t       OMR::Options::_sampleInterval = 30;
 int32_t       OMR::Options::_sampleThreshold = 3000;
 int32_t       OMR::Options::_startupMethodDontDowngradeThreshold = -1;
 
-int32_t       OMR::Options::_tocSizeInKB = 64;
+int32_t       OMR::Options::_tocSizeInKB = 256;
 
 int32_t       OMR::Options::_aggressiveRecompilationChances = 4;
 
@@ -2477,6 +2494,8 @@ OMR::Options::jitPreProcess()
 
 #if defined(TR_HOST_POWER)
    _bigCalleeThreshold = 300;
+#elif defined(TR_HOST_S390)
+   _bigCalleeThreshold = 600;
 #else
    _bigCalleeThreshold = 400;
 #endif
@@ -2686,10 +2705,21 @@ OMR::Options::jitPreProcess()
          self()->setOption(TR_IncreaseCountsForNonBootstrapMethods);
 
 
-#if defined(TR_HOST_64BIT) && !defined(J9ZOS390)
-       self()->setOption(TR_EnableCodeCacheConsolidation);
+#if defined(TR_HOST_64BIT) 
+#if defined(J9ZOS390)
+      // The way zOS allocates memory is by looking for 2MB free chunks and uses that for its 
+      // code caches. When we enable RMODE(64) then the addresses will be from 0x80000000
+      // to 0x7fffffffffffffff. This means two code caches could be very far apart from one another
+      // which is something we want to avoid as it may cause performance issues. The solution will 
+      // be to enable the code cache consolidation which will allocate 256MB at startup just for 
+      // code caches. This way the code caches will be together and improve performance. 
+      // Note: If all 256MB are used up then the program will abort compiles.
+      if (self()->getOption(TR_EnableRMODE64)) 
 #endif
-
+         {
+         self()->setOption(TR_EnableCodeCacheConsolidation);
+         }
+#endif
 
       _newAotrtDebugLevel = 0;
       _disableDLTBytecodeIndex = -1;
@@ -4742,11 +4772,10 @@ char *
 OMR::Options::setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::OptionTable *entry)
    {
 #ifdef J9_PROJECT_SPECIFIC
-   TR_JitPrivateConfig *privateConfig = *(TR_JitPrivateConfig**)((char*)base+entry->parm1);
+   TR_JitPrivateConfig *privateConfig = *(TR_JitPrivateConfig**)((char*)_feBase+entry->parm1);
    TR_ASSERT(sizeof(VerboseOptionFlagArray) <= sizeof(privateConfig->verboseFlags), "TR_JitPrivateConfig::verboseFlags field is too small");
-   TR::OptionTable privatizedEntry = *entry;
-   privatizedEntry.parm1 = offsetof(TR_JitPrivateConfig, verboseFlags);
-   return TR::Options::setVerboseBits(option, privateConfig, &privatizedEntry);
+   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)privateConfig + offsetof(TR_JitPrivateConfig, verboseFlags));
+   return TR::Options::setVerboseBitsHelper(option, verboseOptionFlags, entry->parm2);
 #else
    return NULL;
 #endif
@@ -4756,12 +4785,18 @@ OMR::Options::setVerboseBitsInJitPrivateConfig(char *option, void *base, TR::Opt
 char *
 OMR::Options::setVerboseBits(char *option, void *base, TR::OptionTable *entry)
    {
-   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)base+entry->parm1);
-   if (entry->parm2 != 0) // This is used for -Xjit:verbose without any options
+   VerboseOptionFlagArray *verboseOptionFlags = (VerboseOptionFlagArray*)((char*)_feBase+entry->parm1);
+   return TR::Options::setVerboseBitsHelper(option, verboseOptionFlags, entry->parm2);
+   }
+
+
+char *
+OMR::Options::setVerboseBitsHelper(char *option, VerboseOptionFlagArray *verboseOptionFlags, uintptrj_t defaultVerboseFlags)
+   {
+   if (defaultVerboseFlags != 0) // This is used for -Xjit:verbose without any options
       {
-      // Since no verbose options are specified, add the default options,
-      // specified in parm2 of the options table
-      verboseOptionFlags->maskWord(0, entry->parm2);
+      // Since no verbose options are specified, add the default options
+      verboseOptionFlags->maskWord(0, defaultVerboseFlags);
       }
    else // This is used for -Xjit:verbose={}  construct
       {

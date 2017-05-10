@@ -457,14 +457,14 @@ TR::Register *OMR::Power::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::Code
             {
             checkNode = tt->getNode();
             if (cg->getSupportsVirtualGuardNOPing() &&
-               (checkNode->isNopableInlineGuard() || checkNode->isHCRGuard()) &&
+               (checkNode->isNopableInlineGuard() || checkNode->isHCRGuard() || checkNode->isOSRGuard()) &&
                (checkNode->getOpCodeValue() == TR::ificmpne || checkNode->getOpCodeValue() == TR::iflcmpne ||
                 checkNode->getOpCodeValue() == TR::ifacmpne) &&
                 checkNode->getFirstChild() == node)
                {
                // Try get the virtual guard
                TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(checkNode);
-               if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard()) &&
+               if (!((comp->performVirtualGuardNOPing() || node->isHCRGuard() || node->isOSRGuard()) &&
                    comp->isVirtualGuardNOPingRequired(virtualGuard)) &&
                    virtualGuard->canBeRemoved())
                   {
@@ -4576,7 +4576,7 @@ TR::Register *OMR::Power::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::
    bool  supportsVSX = (processor >= TR_PPCp8) && !disableVSXArrayCopy && TR::Compiler->target.cpu.getPPCSupportsVSX();
 
    static bool disableLEArrayCopyHelper  = (feGetEnv("TR_disableLEArrayCopyHelper") != NULL);
-   static bool disableVSXArrayCopyInlining = (feGetEnv("TR_disableVSXArrayCopyInlining") != NULL);
+   static bool disableVSXArrayCopyInlining = (feGetEnv("TR_enableVSXArrayCopyInlining") == NULL); // Disabling due to a performance regression
 
    bool  supportsLEArrayCopy = !disableLEArrayCopyHelper && TR::Compiler->target.cpu.isLittleEndian() && TR::Compiler->target.cpu.hasFPU();
 

@@ -199,6 +199,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
 		<data type="uint64_t" name="timestamp" description="time of event" />		
 		<data type="const char*" name="gcPolicy" description="-Xgcpolicy value" />
+		<data type="uintptr_t" name="concurrentScavenger" description="Scavenger running Concurrently flag" />
 		<data type="uintptr_t" name="maxHeapSize" description="-Xmx value" />
 		<data type="uintptr_t" name="initialHeapSize" description="-Xms value" />
 		<data type="uint64_t" name="physicalMemory" description="the total amount of physical memory" />

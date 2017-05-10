@@ -77,7 +77,6 @@ main(int argc, char *argv[])
 	if (DDR_RC_OK == rc) {
 		rc = ir.removeDuplicates();
 	}
-
 	MacroTool macroTool;
 	/* Read macros. */
 	if ((DDR_RC_OK == rc) && (NULL != macroFile)) {

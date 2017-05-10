@@ -101,9 +101,7 @@ private:
 	omrthread_monitor_t _freeCacheMonitor; /**< monitor to synchronize threads on free list */
 	volatile uintptr_t _waitingCount; /**< count of threads waiting  on scan cache queues (blocked via _scanCacheMonitor); threads never wait on _freeCacheMonitor */
 	uintptr_t _cacheLineAlignment; /**< The number of bytes per cache line which is used to determine which boundaries in memory represent the beginning of a cache line */
-#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
-#endif	
 
 	typedef enum BackOutState {
 		backOutFlagCleared,		/* Normal state, no backout pending or in progress */
@@ -133,7 +131,9 @@ private:
 	
 	/* TODO: put it parent Collector class and share with Balanced? */ 
 	volatile bool _forceConcurrentTermination;
-#endif
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+#define IS_CONCURRENT_ENABLED _extensions->isConcurrentScavengerEnabled()
 
 protected:
 
@@ -395,7 +395,6 @@ public:
 	MMINLINE void setRememberedSetOverflowState() { _extensions->setRememberedSetOverflowState(); }
 	MMINLINE void clearRememberedSetOverflowState() { _extensions->clearRememberedSetOverflowState(); }
 
-#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Auto-remember stack objects so JIT can omit generational barriers */
 	void rescanThreadSlots(MM_EnvironmentStandard *env);
 	/**
@@ -417,7 +416,6 @@ public:
 	 * @return true if the object is a remembered thread reference
 	 */
 	bool processRememberedThreadReference(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	void clearGCStats(MM_EnvironmentStandard *env);
 	void mergeGCStats(MM_EnvironmentStandard *env);
@@ -527,11 +525,11 @@ public:
 
 	/* master thread */
 	uintptr_t scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScavenge, volatile bool *forceExit);
-	bool scavengeIncremental(MM_EnvironmentBase *env, I_64 scavengeIncrementEndTime);
+	bool scavengeIncremental(MM_EnvironmentBase *env);
 	
-	bool scavengeInit(MM_EnvironmentBase *env, int64_t timeThreshold);
+	bool scavengeInit(MM_EnvironmentBase *env);
 	bool scavengeRoots(MM_EnvironmentBase *env);
-	bool scavengeScan(MM_EnvironmentBase *env, int64_t timeThreshold);
+	bool scavengeScan(MM_EnvironmentBase *env);
 	bool scavengeComplete(MM_EnvironmentBase *env);
 	
 	/* mutator thread */
@@ -544,7 +542,7 @@ public:
 	/**
 	 * complete (trigger end) of a Concurrent Scavenger Cycle
 	 */
-	void completeConcurrentScavenger(MM_EnvironmentBase *envBase);
+	void completeConcurrentCycle(MM_EnvironmentBase *envBase);
 
 	/* worker thread */
 	void workThreadProcessRoots(MM_EnvironmentStandard *env);
@@ -658,7 +656,6 @@ public:
 	 */
 	void copyAndForwardThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect);
 
-#if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
 	 * This function is called at the end of scavenging if any stack- (or thread-) referenced
 	 * objects were tenured during the scavenge. It is called by the RootScanner on each thread
@@ -668,7 +665,6 @@ public:
 	 * @param objectPtrIndirect[in] the slot to process
 	 */
 	void rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *objectPtrIndirect);
-#endif
 
 	uintptr_t getArraySplitAmount(MM_EnvironmentStandard *env, uintptr_t sizeInElements);
 

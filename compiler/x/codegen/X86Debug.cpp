@@ -67,9 +67,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
    //print all the X86 instructions here.
    if (pOutFile == NULL)
       return;
-   // Do not print pseudo-instructions in post-binary encoding dumps.
-   if (instr->getBinaryEncoding() && (instr->getOpCode().isPseudoOp() != 0))
-      return;
    switch (instr->getKind())
       {
       case TR::Instruction::IsLabel:
@@ -317,27 +314,27 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
       r = (group->getRegisterDependency(i))->getRealRegister();
 
       if (omitNullDependencies)
-	 if (!virtReg && r != TR::RealRegister::AllFPRegisters)
-	    continue;
+        if (!virtReg && r != TR::RealRegister::AllFPRegisters)
+           continue;
 
       if  (r == TR::RealRegister::AllFPRegisters)
-	 {
-	 trfprintf(pOutFile, " [All FPRs]");
-	 }
+        {
+        trfprintf(pOutFile, " [All FPRs]");
+        }
       else
-	 {
-	 trfprintf(pOutFile, " [%s : ", getName(virtReg));
-	 if (r == TR::RealRegister::NoReg)
-	    trfprintf(pOutFile, "NoReg]");
-	 else if (r == TR::RealRegister::ByteReg)
-	    trfprintf(pOutFile, "ByteReg]");
-	 else if (r == TR::RealRegister::BestFreeReg)
-	    trfprintf(pOutFile, "BestFreeReg]");
-	 else if (r == TR::RealRegister::SpilledReg)
-	    trfprintf(pOutFile, "SpilledReg]");
-	 else
-	    trfprintf(pOutFile, "%s]", getName(_cg->machine()->getX86RealRegister(r)));
-	 }
+        {
+        trfprintf(pOutFile, " [%s : ", getName(virtReg));
+        if (r == TR::RealRegister::NoReg)
+           trfprintf(pOutFile, "NoReg]");
+        else if (r == TR::RealRegister::ByteReg)
+           trfprintf(pOutFile, "ByteReg]");
+        else if (r == TR::RealRegister::BestFreeReg)
+           trfprintf(pOutFile, "BestFreeReg]");
+        else if (r == TR::RealRegister::SpilledReg)
+           trfprintf(pOutFile, "SpilledReg]");
+        else
+           trfprintf(pOutFile, "%s]", getName(_cg->machine()->getX86RealRegister(r)));
+        }
 
       foundDep = true;
       }
@@ -403,9 +400,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86PaddingInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    if (instr->getBinaryEncoding())
       trfprintf(pOutFile, "nop (%d byte%s)\t\t%s Padding (%d byte%s)",
@@ -432,9 +426,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86AlignmentInstruction  * instr)
    uint8_t length = instr->getBinaryLength();
    uint8_t margin = instr->getMargin();
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    if (instr->getBinaryEncoding())
       trfprintf(pOutFile, "nop (%d byte%s)\t\t%s ",
@@ -457,9 +448,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RestoreVMThreadInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -511,9 +499,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86BoundaryAvoidanceInstruction  * instr
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    if (instr->getBinaryEncoding())
       trfprintf(pOutFile, "nop (%d byte%s)\t\t%s ",
@@ -534,9 +519,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86PatchableCodeAlignmentInstruction  * 
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    if (instr->getBinaryEncoding())
       trfprintf(pOutFile, "nop (%d byte%s)\t\t%s ",
@@ -555,9 +537,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86LabelInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -610,9 +589,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86FenceInstruction  * instr)
        instr->getNode()->getOpCodeValue() != TR::BBEnd)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    TR::Node *node = instr->getNode();
    if (node && node->getOpCodeValue() == TR::BBStart)
       {
@@ -662,9 +638,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86VirtualGuardNOPInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s Site:" POINTER_PRINTF_FORMAT ", ", getMnemonicName(&instr->getOpCode()), instr->getSite());
    print(pOutFile, instr->getLabelSymbol());
@@ -678,9 +651,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -714,9 +684,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64Instruction * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
 
@@ -746,9 +713,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::AMD64Imm64SymInstruction * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -795,9 +759,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::AMD64RegImm64Instruction * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -817,10 +778,6 @@ void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPSaveInstruction  *instr)
    if (pOutFile == NULL)
       return;
 
-   // vfpSave is a compile-time accounting pseudo instruction
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "vfpSave", getMnemonicName(&instr->getOpCode()));
 
@@ -833,10 +790,6 @@ void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPSaveInstruction  *instr)
 void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPRestoreInstruction  *instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   // vfpRestore is a compile-time accounting pseudo instruction
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -866,9 +819,6 @@ void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPReleaseInstruction  *instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "vfpRelease [%s]", getName(instr->getDedicateInstruction()));
 
@@ -881,10 +831,6 @@ void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPReleaseInstruction  *instr)
 void TR_Debug::print(TR::FILE *pOutFile, TR::X86VFPCallCleanupInstruction  *instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   // vfpCallCleanup is a compile-time accounting pseudo instruction
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -903,9 +849,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSnippetInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
    printIntConstant(pOutFile, instr->getSourceImmediate(), 16, getImmediateSizeFromInstruction(instr), true);
@@ -921,10 +864,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSymInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
-   TR::Symbol       *sym   = instr->getSymbolReference()->getSymbol();
+   TR::Symbol     *sym   = instr->getSymbolReference()->getSymbol();
    const char     *name  = getName(instr->getSymbolReference());
 
    printPrefix(pOutFile, instr);
@@ -986,9 +926,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -1020,9 +957,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -1064,9 +998,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegImmInstruction  * instr)
    if (pOutFile == NULL)
       return;
 
-   if (instr->getOpCode().cannotBeAssembled())
-      return;
-
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s\t", getMnemonicName(&instr->getOpCode()));
    if (!(instr->getOpCode().targetRegIsImplicit() != 0))
@@ -1084,9 +1015,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegImmInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -1113,9 +1041,6 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegRegInstruction  * instr)
    {
    if (pOutFile == NULL)
-      return;
-
-   if (instr->getOpCode().cannotBeAssembled())
       return;
 
    printPrefix(pOutFile, instr);
@@ -1881,7 +1806,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RealRegister * reg, TR_RegisterSizes siz
          trfprintf(pOutFile, "%s", getName(reg, size));
          break;
       default:
-      	break;
+         break;
       }
    }
 
@@ -2414,7 +2339,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
             numFPArgs++;
             break;
          default:
-         	break;
+            break;
          }
 
       if (opCodeName)

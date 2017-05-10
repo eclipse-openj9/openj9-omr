@@ -48,8 +48,6 @@ class X86OpCodesTest : public OpCodesTest
 
    virtual void compileDisabledIntegerArithmeticTestMethods();
    virtual void invokeDisabledIntegerArithmeticTests();
-   virtual void compileDisabledCompareOpCodesTest();
-   virtual void invokeDisabledCompareOpCodesTest();
    virtual void compileDisabledConvertOpCodesTest();
    virtual void invokeDisabledConvertOpCodesTest();
    virtual void compileDisabledMemoryOpCodesTest();

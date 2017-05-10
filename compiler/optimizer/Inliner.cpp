@@ -1796,7 +1796,7 @@ TR_InlinerBase::addGuardForVirtual(
       // will undergo special processing later in the compilation
       if (virtualGuard &&
           comp()->getHCRMode() != TR::osr &&
-          comp()->cg()->supportsMergingOfHCRGuards())
+          comp()->cg()->supportsMergingGuards())
          {
          TR::Node *guardNode = virtualGuard->getNode();
          if (guardNode)
@@ -1889,7 +1889,7 @@ TR_InlinerBase::addGuardForVirtual(
    // this is necessary to ensure the stack has the correct contents when it transitions, therefore, it
    // is necessary to add the store here as well
    //
-   if (comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+   if (comp()->isOSRTransitionTarget(TR::postExecutionOSR))
       {
       TR::TreeTop *cursor = callNodeTreeTop->getNextTreeTop();
       TR_ByteCodeInfo bci = callNode->getByteCodeInfo();
@@ -1977,7 +1977,7 @@ TR_InlinerBase::addGuardForVirtual(
    // compilation and those later processes will handle them using OSR so we don't want to complicate
    // that with additional OSR at this point
    if ((comp()->getHCRMode() != TR::osr || guard->_kind != TR_HCRGuard)
-       && callNode->getSymbolReference()->getOwningMethodSymbol(comp())->supportsInduceOSR(callNode->getByteCodeInfo(), block1, calleeSymbol, comp(), false))
+       && callNode->getSymbolReference()->getOwningMethodSymbol(comp())->supportsInduceOSR(callNode->getByteCodeInfo(), block1, comp(), false))
       {
       bool shouldUseOSR = heuristicForUsingOSR(callNode, calleeSymbol, callerSymbol, createdHCRAndVirtualGuard);
 
@@ -2069,8 +2069,7 @@ bool TR_InlinerBase::heuristicForUsingOSR(TR::Node *callNode, TR::ResolvedMethod
       int32_t osrCallerNumLiveStackSlots = 0;
       totalOSRCallersStackSlots = totalOSRCallersStackSlots + osrCallerNumStackSlots;
 
-      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex,
-         comp()->getOSRTransitionTarget() == TR::postExecutionOSR ? TR::analysisOSR : TR::inductionOSR);
+      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
       if (deadSymRefs)
          {
          osrCallerNumLiveStackSlots = osrMethodData->getNumSymRefs() - deadSymRefs->elementCount();
@@ -2414,9 +2413,8 @@ TR_ParameterToArgumentMapper::lookForModifiedParameters(TR::Node * node)
 void
 TR_ParameterToArgumentMapper::mapOSRCallSiteRematTable(uint32_t siteIndex)
    {
-   static const char *disableOSRCallSiteRemat = feGetEnv("TR_DisableOSRCallSiteRemat");
    if (!comp()->getOption(TR_EnableOSR) || comp()->getOSRMode() != TR::voluntaryOSR ||
-       comp()->osrInfrastructureRemoved() || disableOSRCallSiteRemat)
+       comp()->osrInfrastructureRemoved() || comp()->getOption(TR_DisableOSRCallSiteRemat))
       return;
 
    TR::SymbolReference *ppSymRef, *loadSymRef;
@@ -2639,7 +2637,7 @@ TR_TransformInlinedFunction::transform()
    // If the first block has exception predecessors or multiply predecessors then we can't merge
    // the first block with the caller's block
    //
-   if (comp()->isJProfilingCompilation() ||
+   if (comp()->getOption(TR_EnableJProfiling) ||
        (firstBlock->getPredecessors().size() > 1) ||
        firstBlock->hasExceptionSuccessors() ||
        comp()->fe()->isMethodEnterTracingEnabled(calleeResolvedMethod->getPersistentIdentifier()) ||
@@ -5059,11 +5057,11 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             _disableTailRecursion = true;
          }
       }
-   else if (comp()->getOSRMode() == TR::involuntaryOSR && tif->crossedBasicBlock())
+   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved())
       {
       /**
-       * In involuntary OSR mode, we need to split block even for cases without virtual guard. This is 
-       * because in involuntary OSR a block with OSR point must have an exception edge to the osrCatchBlock
+       * In OSR, we need to split block even for cases without virtual guard. This is 
+       * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
        * of correct callerIndex. Split the block here so that the OSR points from callee
        * and from caller are separated.
        */

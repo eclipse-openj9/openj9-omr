@@ -63,7 +63,7 @@ protected:
 		MM_HeapMapIterator markedObjectIterator(extensions, _markingScheme->getMarkMap(), (uintptr_t *)lowAddress, (uintptr_t *)highAddress);
 		omrobjectptr_t object = NULL;
 		while (NULL != (object = markedObjectIterator.nextObject())) {
-			_markingScheme->scanObject(env, object, MM_CollectorLanguageInterface::SCAN_REASON_OVERFLOWED_OBJECT);
+			_markingScheme->scanObject(env, object, SCAN_REASON_OVERFLOWED_OBJECT);
 		}
 	}
 

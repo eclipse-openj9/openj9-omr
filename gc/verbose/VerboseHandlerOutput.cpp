@@ -87,8 +87,8 @@ void
 MM_VerboseHandlerOutput::enableVerbose()
 {
 	/* Initialized */
-	(*_mmOmrHooks)->J9HookRegister(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, (void *)this);
-	(*_mmPrivateHooks)->J9HookRegister(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, (void *)this);
+	(*_mmOmrHooks)->J9HookRegisterWithCallSite(_mmOmrHooks, J9HOOK_MM_OMR_INITIALIZED, verboseHandlerInitialized, OMR_GET_CALLSITE(), (void *)this);
+	(*_mmPrivateHooks)->J9HookRegisterWithCallSite(_mmPrivateHooks, J9HOOK_MM_PRIVATE_HEAP_RESIZE, verboseHandlerHeapResize, OMR_GET_CALLSITE(), (void *)this);
 
 	return ;
 }
@@ -245,6 +245,9 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	enterAtomicReportingBlock();
 	writer->formatAndOutput(env, 0, "<initialized %s>", tagTemplate);
 	writer->formatAndOutput(env, 1, "<attribute name=\"gcPolicy\" value=\"%s\" />", event->gcPolicy);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />", event->concurrentScavenger ? "true" : "false");
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	writer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", event->maxHeapSize);
 	writer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", event->initialHeapSize);
 #if defined(OMR_GC_COMPRESSED_POINTERS)

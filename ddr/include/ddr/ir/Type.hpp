@@ -22,8 +22,9 @@
 #include <set>
 #include <string>
 
-#include "ddr/config.hpp"
 #include "ddr/blobgen/genBlob.hpp"
+#include "ddr/config.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
 #include "ddr/scanner/Scanner.hpp"
 
 using std::set;
@@ -47,6 +48,7 @@ protected:
 public:
 	std::string _name;
 	size_t _sizeOf; /* Size of type in bytes */
+	bool _isDuplicate;
 
 	Type(SymbolType symbolType, size_t size);
 	virtual ~Type();
@@ -60,11 +62,12 @@ public:
 	virtual string getFullName();
 	virtual string getSymbolTypeName();
 
-	/* Visitor pattern functions to allow the scanner/generator to dispatch functionality based on type. */
+	/* Visitor pattern functions to allow the scanner/generator/IR to dispatch functionality based on type. */
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
+	virtual DDR_RC checkDuplicate(Symbol_IR *ir);
 };
 
 #endif /* TYPE_HPP */

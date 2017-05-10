@@ -46,7 +46,6 @@ omrthread_monitor_unpin(omrthread_monitor_t monitor, omrthread_t self)
  *
  * @return 0 on success, -1 on failure
  */
-#if defined(OMR_THR_SPIN_CODE_REFACTOR)
 intptr_t
 omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 {
@@ -138,88 +137,6 @@ update_jlm:
 
 	return result;
 }
-#else /* OMR_THR_SPIN_CODE_REFACTOR */
-intptr_t
-omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
-{
-	volatile uintptr_t *target = (volatile uintptr_t *)&monitor->spinlockState;
-	intptr_t result = 0;
-	uintptr_t oldState = J9THREAD_MONITOR_SPINLOCK_UNOWNED;
-	uintptr_t newState = J9THREAD_MONITOR_SPINLOCK_OWNED;
-#if defined(OMR_THR_JLM)
-	J9ThreadMonitorTracing *tracing = (self->library->flags & J9THREAD_LIB_FLAG_JLM_ENABLED) ? monitor->tracing : NULL;
-#endif /* OMR_THR_JLM */
-
-#if defined(OMR_THR_SPIN_WAKE_CONTROL)
-	BOOLEAN spinning = FALSE;
-
- 	if (monitor->spinThreads >= self->library->maxSpinThreads) {
- 		result = -1;
- 		goto done;
- 	}
-
-	VM_AtomicSupport::add(&monitor->spinThreads, 1);
-	spinning = TRUE;
-#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
-
-	for (uintptr_t spinCount3 = monitor->spinCount3; spinCount3 > 0; spinCount3--) {
-		for (uintptr_t spinCount2 = monitor->spinCount2; spinCount2 > 0; spinCount2--) {
-			/* Try to put 0 into the target field (-1 indicates free)'. */
-			if (oldState == VM_AtomicSupport::lockCompareExchange(target, oldState, newState, true)) {
-#if defined(OMR_THR_JLM)
-				if (NULL != tracing) {
-					/* Update JLM spin counts after partial set of spins - add JLM counts atomically.
-					 * let m=monitor _spinCount3, n=monitor _spinCount2
-					 * let i=spinCount2, j=spinCount3
-					 * then yield count += m-j, spin2 count += (m-j)*n + (n-i)+1
-					 */
-					uintptr_t m = monitor->spinCount3;
-					uintptr_t n = monitor->spinCount2;
-					uintptr_t j = spinCount3;
-					uintptr_t i = spinCount2;
-					VM_AtomicSupport::add(&tracing->yield_count, m - j);
-					VM_AtomicSupport::add(&tracing->spin2_count, ((m - j) * n) + n - i + 1);
-				}
-#endif /* OMR_THR_JLM */
-				VM_AtomicSupport::readBarrier();
-				goto done;
-			}
-
-			VM_AtomicSupport::yieldCPU();
-
-			/* begin tight loop */
-			for (uintptr_t spinCount1 = monitor->spinCount1; spinCount1 > 0; spinCount1--)	{
-				VM_AtomicSupport::nop();
-			} /* end tight loop */
-		}
-#if defined(OMR_THR_YIELD_ALG)
-		omrthread_yield_new(spinCount3);
-#else /* OMR_THR_YIELD_ALG */
-		omrthread_yield();
-#endif /* OMR_THR_YIELD_ALG */
-	}
-	result = -1;
-#if defined(OMR_THR_JLM)
-	if (NULL != tracing) {
-		/*update JLM spin counts after complete set of spins - add JLM counts atomically
-		 * let m=monitor _spinCount3, n=monitor _spinCount2
-		 * then yield count += m, spin2 count += m*n
-		 */
-		uintptr_t m = monitor->spinCount3;
-		uintptr_t n = monitor->spinCount2;
-		VM_AtomicSupport::add(&tracing->yield_count, m);
-		VM_AtomicSupport::add(&tracing->spin2_count, m * n);
-	}
-#endif /* OMR_THR_JLM */
-done:
-#if defined(OMR_THR_SPIN_WAKE_CONTROL)
-	if (spinning) {
-		VM_AtomicSupport::subtract(&monitor->spinThreads, 1);
-	}
-#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
-	return result;
-}
-#endif /* OMR_THR_SPIN_CODE_REFACTOR */
 
 /**
   * Try to atomically swap out a value of SPINLOCK_UNOWNED from

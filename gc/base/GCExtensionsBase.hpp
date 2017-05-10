@@ -175,6 +175,11 @@ private:
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
 	bool _isRememberedSetInOverflow;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	bool debugConcurrentScavengerPageAlignment; /**< if true allows debug output prints for Concurrent Scavenger Page Alignment logic */
+	uintptr_t concurrentScavengerPageSectionSize; /**< selected section size for Concurrent Scavenger Page */
+	void *concurrentScavengerPageStartAddress; /**< start address for Concurrent Scavenger Page, UDATA_MAX if it is not initialized */
+#endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 protected:
@@ -397,8 +402,9 @@ public:
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool concurrentScavenger;
-#endif	
+	bool concurrentScavenger; /**< CS enabled/disabled flag */
+	bool concurrentScavengerRequested; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
+#endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
 	uintptr_t scvArraySplitMaximumAmount; /**< maximum number of elements to split array scanning work in the scavenger */
@@ -764,6 +770,16 @@ public:
 #endif /* defined(OMR_GC_OBJECT_MAP) */
 
 	MMINLINE bool
+	isConcurrentScavengerEnabled()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavenger;
+#else
+		return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+	
+	MMINLINE bool
 	isScavengerEnabled()
 	{
 #if defined(OMR_GC_MODRON_SCAVENGER)
@@ -1024,12 +1040,120 @@ public:
 	virtual void identityHashDataAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress);
 	virtual void identityHashDataRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress);
 
+#define CONCURRENT_SCAVENGER_PAGE_MINIMUM_SECTION_SIZE (512 * 1024)
+#define CONCURRENT_SCAVENGER_PAGE_SECTIONS 64
+
+	/**
+	 * Calculate Concurrent Scavenger Page size based on projected maximum Nursery size
+	 *
+	 * @param nurserySize projected maximum Nursery size
+	 */
+	MMINLINE void
+	calculateConcurrentScavengerPageParameters(uintptr_t nurserySize)
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/*
+		 * Concurrent Scavenger Page is a virtual memory page size 32M or larger aligned to it's size
+		 * This page is split to 64 equal Sections
+		 * We need to select Concurrent Scavenger Page size to cover entire fully expanded Nursery
+		 * To do so, find closest power of 2 larger or equal then maximum Nursery size and store 1/64th of it as a Section size
+		 * Section size can not be smaller then 32M / 64 = 512K
+		 */
+		uintptr_t log2 = MM_Math::floorLog2(nurserySize);
+		if (nurserySize > ((uintptr_t)1 << log2)) {
+			log2 += 1;
+		}
+		concurrentScavengerPageSectionSize = ((uintptr_t)1 << log2) / CONCURRENT_SCAVENGER_PAGE_SECTIONS;
+		if (concurrentScavengerPageSectionSize < CONCURRENT_SCAVENGER_PAGE_MINIMUM_SECTION_SIZE) {
+			concurrentScavengerPageSectionSize = CONCURRENT_SCAVENGER_PAGE_MINIMUM_SECTION_SIZE;
+		}
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+	/**
+	 * Get value of debugConcurrentScavengerPageAlignment if OMR_GC_CONCURRENT_SCAVENGER enabled
+	 * or false in general case
+	 *
+	 * @return value of debugConcurrentScavengerPageAlignment or false
+	 */
+	MMINLINE bool
+	isDebugConcurrentScavengerPageAlignment()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return debugConcurrentScavengerPageAlignment;
+#else /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+		return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+	/**
+	 * Set value of debugConcurrentScavengerPageAlignment if OMR_GC_CONCURRENT_SCAVENGER enabled
+	 *
+	 * @param debug value to set to debugConcurrentScavengerPageAlignment
+	 */
+	MMINLINE void
+	setDebugConcurrentScavengerPageAlignment(bool debug)
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		debugConcurrentScavengerPageAlignment = debug;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+	/**
+	 * Get value of concurrentScavengerPageSectionSize if OMR_GC_CONCURRENT_SCAVENGER enabled
+	 *
+	 * @return  value of concurrentScavengerPageSectionSize
+	 */
+	MMINLINE uintptr_t
+	getConcurrentScavengerPageSectionSize()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavengerPageSectionSize;
+#else /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+		return 0;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+	/**
+	 * Get value of concurrentScavengerPageStartAddress if OMR_GC_CONCURRENT_SCAVENGER enabled
+	 *
+	 * @return value of concurrentScavengerPageStartAddress
+	 */
+	MMINLINE void *
+	getConcurrentScavengerPageStartAddress()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavengerPageStartAddress;
+#else /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+		return (void *)UDATA_MAX;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+	/**
+	 * Set value of concurrentScavengerPageStartAddress if OMR_GC_CONCURRENT_SCAVENGER enabled
+	 *
+	 * @param address value of concurrentScavengerPageStartAddress
+	 */
+	MMINLINE void
+	setConcurrentScavengerPageStartAddress(void *address)
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		concurrentScavengerPageStartAddress = address;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+
+
 	MM_GCExtensionsBase()
 		: MM_BaseVirtual()
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)
 		, _isRememberedSetInOverflow(false)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		, debugConcurrentScavengerPageAlignment(false)
+		, concurrentScavengerPageSectionSize(0)
+		, concurrentScavengerPageStartAddress((void *)UDATA_MAX)
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 		, _omrVM(NULL)
 		, _globalCollector(NULL)
@@ -1134,8 +1258,9 @@ public:
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		, concurrentScavenger(true)
-#endif		
+		, concurrentScavenger(false)
+		, concurrentScavengerRequested(false)
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)
 		, scvArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
 		, scvArraySplitMinimumAmount(DEFAULT_ARRAY_SPLIT_MINIMUM_SIZE)
@@ -1143,12 +1268,7 @@ public:
 		, scavengerScanCacheMinimumSize(DEFAULT_SCAN_CACHE_MINIMUM_SIZE)
 		, tiltedScavenge(true)
 		, debugTiltedScavenge(false)
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* until we get dynamic tilting, make default tilting at mild 70% */
-		, survivorSpaceMinimumSizeRatio(0.30)
-#else
 		, survivorSpaceMinimumSizeRatio(0.10)
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		, survivorSpaceMaximumSizeRatio(0.50)
 		, tiltedScavengeMaximumIncrease(0.10)
 		, scavengerCollectorExpandRatio(0.1)
@@ -1268,7 +1388,7 @@ public:
 		, highAllocationThreshold(UDATA_MAX)
 		, disableInlineCacheForAllocationThreshold(false)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
-		, heapCeiling(LOW_MEMORY_HEAP_CEILING) /* By default, compressed pointers builds run in the low 32GiB */
+		, heapCeiling(LOW_MEMORY_HEAP_CEILING) /* By default, compressed pointers builds run in the low 64GiB */
 #else
 		, heapCeiling(0) /* default for normal platforms is 0 (i.e. no ceiling) */
 #endif

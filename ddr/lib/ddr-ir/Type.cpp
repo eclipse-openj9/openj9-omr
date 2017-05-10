@@ -19,7 +19,7 @@
 #include "ddr/ir/Type.hpp"
 
 Type::Type(SymbolType symbolType, size_t size)
-	: _symbolType(symbolType), _sizeOf(size)
+	: _symbolType(symbolType), _sizeOf(size), _isDuplicate(false)
 {
 }
 
@@ -93,4 +93,11 @@ DDR_RC
 Type::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix = "")
 {
 	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+}
+
+DDR_RC
+Type::checkDuplicate(Symbol_IR *ir)
+{
+	/* No-op: since Types aren't printed, there's no need to check if they're duplicates either */
+	return DDR_RC_OK;
 }

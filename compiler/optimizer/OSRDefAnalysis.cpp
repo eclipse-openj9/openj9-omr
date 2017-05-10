@@ -55,6 +55,7 @@
 #include "optimizer/Optimizer.hpp"                    // for Optimizer
 #include "optimizer/DataFlowAnalysis.hpp"             // for TR_Liveness, etc
 #include "optimizer/StructuralAnalysis.hpp"
+#include "optimizer/TransformUtil.hpp"
 #include "optimizer/UseDefInfo.hpp"
 #include "runtime/Runtime.hpp"
 
@@ -386,17 +387,17 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
       // If we reach an OSR point and we require a transition point at it,
       // build the defs immediately
-      if (isPotentialOSRPoint && (comp()->getOSRTransitionTarget() == TR::preExecutionOSR
+      if (isPotentialOSRPoint && (comp()->isOSRTransitionTarget(TR::preExecutionOSR)
           || comp()->requiresAnalysisOSRPoint(node)))
          {
          osrPoint = _methodSymbol->findOSRPoint(node->getByteCodeInfo());
-         TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", node);
+         TR_ASSERT(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
          }
  
       buildOSRDefs(node, analysisInfo, osrPoint, nextOsrPoint, NULL, aux);
       nextOsrPoint = NULL;
  
-      if (isPotentialOSRPoint && comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+      if (isPotentialOSRPoint && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
          {
          // Skip to the end of the OSR region, processing all treetops along the way
          TR::TreeTop *pps = treeTop->getNextTreeTop(); 
@@ -410,10 +411,9 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
          // If we require a induction point after the OSR point, store the OSR point
          // to be processed on the next call to buildOSRDefs
-         node = treeTop->getNode();
          bci.setByteCodeIndex(bci.getByteCodeIndex() + comp()->getOSRInductionOffset(node));
          nextOsrPoint = _methodSymbol->findOSRPoint(bci);
-         TR_ASSERT(nextOsrPoint != NULL, "Cannot find an offset OSR point for node %p", node);
+         TR_ASSERT(nextOsrPoint != NULL, "Cannot find a post OSR point for node %p", node);
          }
       }
 
@@ -847,17 +847,18 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
                }
             }
 
-         TR_ByteCodeInfo bci = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
+         TR_ByteCodeInfo &bci = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
 
          // Check if this treetop is an OSR pending push store or load. If so, it will shift the
          // cursor to before the PPs. The cursor will either point at the first PP or the treetop
          // before it, depending on whether it could be the OSR point for these PP.
          TR::TreeTop *offsetOSRTreeTop = NULL;
-         if (comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode()))
+         if (comp()->isOSRTransitionTarget(TR::postExecutionOSR) &&
+             comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode()))
             {
             offsetOSRTreeTop = tt;   
             tt = collectPendingPush(bci, tt, _liveVars);
-            TR_ByteCodeInfo osrBCI = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
+            TR_ByteCodeInfo &osrBCI = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
 
             // If it is the start of this block or has a different bytecode index, it cannot be
             // the OSR point
@@ -871,14 +872,14 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
 
          // If the transition point is after the OSR point, build the OSR live info before
          // any PPS are processed.
-         if (isPotentialOSRPoint && comp()->getOSRTransitionTarget() == TR::postExecutionOSR)
+         if (isPotentialOSRPoint && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
             {
             TR_ByteCodeInfo bcInfo = node->getByteCodeInfo();
             bcInfo.setByteCodeIndex(bcInfo.getByteCodeIndex() + comp()->getOSRInductionOffset(node));
             TR_OSRPoint *offsetOSRPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
-            TR_ASSERT(offsetOSRPoint != NULL, "Cannot find an offset OSR point for node %p", node);
+            TR_ASSERT(offsetOSRPoint != NULL, "Cannot find a post OSR point for node %p", node);
             buildOSRLiveRangeInfo(node, _liveVars, offsetOSRPoint, liveLocalIndexToSymRefNumberMap,
-               maxSymRefNumber, numBits, osrMethodData, TR::inductionOSR);
+               maxSymRefNumber, numBits, osrMethodData, TR::postExecutionOSR);
             }
 
          // Maintain liveness across post pending pushes and the OSR point itself
@@ -891,14 +892,13 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
 
          // If the transition point is before the OSR point, build the OSR live info after
          // the post PPS and the OSR point are processed.
-         if (isPotentialOSRPoint && (comp()->getOSRTransitionTarget() == TR::preExecutionOSR ||
+         if (isPotentialOSRPoint && (comp()->isOSRTransitionTarget(TR::preExecutionOSR) ||
              comp()->requiresAnalysisOSRPoint(node)))
             {
             TR_OSRPoint *osrPoint = comp()->getMethodSymbol()->findOSRPoint(bci);
-            TR_ASSERT(osrPoint != NULL, "Cannot find an OSR point for node %p", node);
+            TR_ASSERT(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
             buildOSRLiveRangeInfo(node, _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
-               maxSymRefNumber, numBits, osrMethodData,
-               comp()->getOSRTransitionTarget() == TR::postExecutionOSR ? TR::analysisOSR : TR::inductionOSR);
+               maxSymRefNumber, numBits, osrMethodData, TR::preExecutionOSR);
             }
          }
 
@@ -910,6 +910,11 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    return 0;
    }
 
+// 
+// To reduce the impact of pending push temps in postExecutionOSR, the live pending push symrefs can be stored or
+// referenced in anchored loads, between the OSR point and the transition. In the event that the anchored loads
+// are not commoned, they will be removed.
+//
 TR::TreeTop *TR_OSRLiveRangeAnalysis::collectPendingPush(TR_ByteCodeInfo bci, TR::TreeTop *tt, TR_BitVector *liveVars)
    {
    while (comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode(), bci))
@@ -921,9 +926,29 @@ TR::TreeTop *TR_OSRLiveRangeAnalysis::collectPendingPush(TR_ByteCodeInfo bci, TR
          int32_t localIndex = local->getLiveLocalIndex();
          _liveVars->set(localIndex);
          if (comp()->getOption(TR_TraceOSR))
-            traceMsg(comp(), "+++ local index %d OSR PPS LIVE\n", localIndex);
+            traceMsg(comp(), "+++ local index %d OSR PENDING PUSH STORE LIVE\n", localIndex);
          }
-      traceMsg(comp(), "Looking at [%p]\n", node);
+      else if (node->getOpCodeValue() == TR::treetop
+          && node->getFirstChild()->getOpCode().isLoad()
+          && node->getFirstChild()->getOpCode().hasSymbolReference())
+         {
+         TR::AutomaticSymbol *local = node->getFirstChild()->getSymbolReference()->getSymbol()->getAutoSymbol();
+         int32_t localIndex = local->getLiveLocalIndex();
+         _liveVars->set(localIndex);
+         if (comp()->getOption(TR_TraceOSR))
+            traceMsg(comp(), "+++ local index %d OSR PENDING PUSH LOAD LIVE\n", localIndex);
+
+         if (node->getFirstChild()->getReferenceCount() == 1)
+            {
+            if (comp()->getOption(TR_TraceOSR))
+               traceMsg(comp(), "----> removing node %p\n", node);
+            TR::TransformUtil::removeTree(comp(), tt);
+            }
+         }
+      else
+         {
+         TR_ASSERT(0, "Unexpected OSR related node %p found, should be either pending push store or anchored load", node);
+         }
       tt = tt->getPrevTreeTop();
       }
 
@@ -1097,9 +1122,10 @@ void TR_OSRLiveRangeAnalysis::maintainLiveness(TR::Node *node,
 
 void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
    int32_t *liveLocalIndexToSymRefNumberMap, int32_t maxSymRefNumber, int32_t numBits,
-   TR_OSRMethodData *osrMethodData, TR::OSRPointType osrPointType)
+   TR_OSRMethodData *osrMethodData, TR::OSRTransitionTarget target)
    {
    TR_ASSERT(liveVars, "live variable info must be available for a block\n");
+   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only add live range info for pre or post transition target");
    _deadVars->setAll(numBits);
    *_deadVars -= *liveVars;
 
@@ -1119,7 +1145,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
       }
 
    osrMethodData->setNumSymRefs(numBits);
-   osrMethodData->addLiveRangeInfo(osrPoint->getByteCodeInfo().getByteCodeIndex(), osrPointType, deadSymRefs);
+   osrMethodData->addLiveRangeInfo(osrPoint->getByteCodeInfo().getByteCodeIndex(), target, deadSymRefs);
 
    if (comp()->getOption(TR_TraceOSR))
       {

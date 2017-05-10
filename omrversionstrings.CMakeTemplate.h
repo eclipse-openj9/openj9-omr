@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016, 2016
+ * (c) Copyright IBM Corp. 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,25 +14,16 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
- ******************************************************************************/
- 
-#ifndef USELESS_INCL
-#define USELESS_INCL
+ *******************************************************************************/
 
-/**
- * This file containse JitBuilder methods that are only useful as tests and
- * not as examples of how to use JitBuilder
+/*
+ * @configure_input@
  */
 
-#include "ilgen/MethodBuilder.hpp"
+#ifndef OMRVERSIONSTRINGS_H
+#define OMRVERSIONSTRINGS_H
 
-typedef void (DoubleReturnBytecodeMethodFunction)(void);
+#cmakedefine OMR_VERSION_STRING "@OMR_VERSION_STRING@"
+#cmakedefine OMR_JIT_VERSION_STRING "@OMR_JIT_VERSION_STRING@"
 
-class DoubleReturnBytecodeMethod : public TR::MethodBuilder
-   {
-   public:
-   DoubleReturnBytecodeMethod(TR::TypeDictionary *);
-   virtual bool buildIL();
-   };
-
-#endif // !defined(USELESS_INCL)
+#endif /* OMRVERSIONSTRINGS_H */

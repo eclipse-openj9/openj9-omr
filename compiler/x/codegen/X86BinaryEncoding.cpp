@@ -211,6 +211,7 @@ uint8_t* OMR::X86::Instruction::generateBinaryEncoding()
       // cursor is NULL when generateOperand() requests to regenerate the binary code, which may happen during encoding of memref with unresolved symbols on 64-bit
       if (cursor)
          {
+         self()->getOpCode().finalize(instructionStart);
          self()->setBinaryLength(cursor - instructionStart);
          self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
          return cursor;

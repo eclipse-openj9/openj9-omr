@@ -67,8 +67,8 @@ GC_OMRVMInterface::initializeExtensions(MM_GCExtensionsBase *extensions)
 {
 	J9HookInterface** mmPrivateHooks = J9_HOOK_INTERFACE(extensions->privateHookInterface);
 
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_WALK_HEAP_START, hookWalkHeapStart, NULL);
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_WALK_HEAP_END, hookWalkHeapEnd, NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_WALK_HEAP_START, hookWalkHeapStart, OMR_GET_CALLSITE(), NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_WALK_HEAP_END, hookWalkHeapEnd, OMR_GET_CALLSITE(), NULL);
 }
 
 /**

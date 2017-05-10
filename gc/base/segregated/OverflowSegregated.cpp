@@ -22,6 +22,7 @@
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "HeapRegionIterator.hpp"
+#include "MarkingScheme.hpp"
 #include "MarkMap.hpp"
 #include "ObjectHeapIteratorSegregated.hpp"
 #include "Packet.hpp"
@@ -33,8 +34,6 @@
 #include "OverflowSegregated.hpp"
 
 #if defined(OMR_GC_SEGREGATED_HEAP)
-
-#define SCAN_MAX (uintptr_t)(-1)
 
 /**
  * Create a new MM_OverflowSegregated object
@@ -154,7 +153,7 @@ MM_OverflowSegregated::handleOverflow(MM_EnvironmentBase *env)
 					/* scan overflowed object */
 					/* TODO Fix this as it is wrong for metronome GC policy */
 					/* The subclassing of markingscheme by segregatedmarking scheme needs a lot of work and means metronome is pretty broken */
-					_extensions->collectorLanguageInterface->markingScheme_scanObject(env, object, MM_CollectorLanguageInterface::SCAN_REASON_OVERFLOWED_OBJECT);
+					markingScheme->scanObject(env, object, SCAN_REASON_OVERFLOWED_OBJECT);
 				}
 			}
 		}

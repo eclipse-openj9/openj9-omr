@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,6 +22,7 @@
 #include "omrport.h"
 #include "omrrasinit.h"
 #include "omrtrace.h"
+#include "omrhookable.h"
 #include "ut_omrvm.h"
 
 #undef UT_MODULE_LOADED
@@ -98,6 +99,9 @@ omr_ras_initTraceEngine(OMR_VM *omrVM, const char *traceOptString, const char *d
 	/* Load module for thread library tracepoints */
 	omrthread_lib_control(J9THREAD_LIB_CONTROL_TRACE_START, (uintptr_t)omrVM->_trcEngine->utIntf);
 
+	/* Load module for hookable library tracepoints */
+	omrhook_lib_control(J9HOOK_LIB_CONTROL_TRACE_START, (uintptr_t)omrVM->_trcEngine->utIntf);
+
 	UT_OMRVM_MODULE_LOADED(omrVM->_trcEngine->utIntf);
 	UT_OMRTI_MODULE_LOADED(omrVM->_trcEngine->utIntf);
 
@@ -120,6 +124,9 @@ omr_ras_cleanupTraceEngine(OMR_VMThread *currentThread)
 
 		/* stop tracing in the thread library */
 		omrthread_lib_control(J9THREAD_LIB_CONTROL_TRACE_STOP, (uintptr_t)utIntf);
+
+		/* stop tracing in the hookable library */
+		omrhook_lib_control(J9HOOK_LIB_CONTROL_TRACE_STOP, (uintptr_t)utIntf);
 
 		UT_OMRTI_MODULE_UNLOADED(utIntf);
 		UT_OMRVM_MODULE_UNLOADED(utIntf);

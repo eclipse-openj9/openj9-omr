@@ -494,7 +494,7 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    bool supports32bitAiadd() {return true;}  // no virt, default
    bool supportsMarshallingUnmarshallingIntrinsics() {return true;} // no virt, default
-   bool supportsMergingOfHCRGuards() {return false;} // no virt, default
+   bool supportsMergingGuards() {return false;} // no virt, default
 
    /** \brief
     *     Determines whether concurrent scavenge of objects during garbage collection is enabled.
@@ -1184,11 +1184,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void addToUnlatchedRegisterList(TR::RealRegister *reg);
    void freeUnlatchedRegisters();
 
-   //This indicates if TR_VRF virtual registers may need to be assigned even if the system only has TR_FPR real registers
-   //This is set to true when there is a full overlap between TR_FPR and TR_VRF registers and all of the TR_FPR/TR_VRF
-   //registers are marked as TR_FPR
-   bool isFPRUsedAsVRF() { return false; }
-
    // --------------------------------------------------------------------------
    // Listing
    //
@@ -1432,11 +1427,11 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsDivCheck() {return _flags1.testAny(SupportsDivCheck);}
    void setSupportsDivCheck() {_flags1.set(SupportsDivCheck);}
 
-   bool getSupportsArrayCopy() {return _flags1.testAny(SupportsArrayCopy);}
-   void setSupportsArrayCopy() {_flags1.set(SupportsArrayCopy);}
-
    bool getSupportsPrimitiveArrayCopy() {return _flags2.testAny(SupportsPrimitiveArrayCopy);}
    void setSupportsPrimitiveArrayCopy() {_flags2.set(SupportsPrimitiveArrayCopy);}
+
+   bool getSupportsReferenceArrayCopy() {return _flags1.testAny(SupportsReferenceArrayCopy);}
+   void setSupportsReferenceArrayCopy() {_flags1.set(SupportsReferenceArrayCopy);}
 
    bool getSupportsEfficientNarrowIntComputation() {return _flags2.testAny(SupportsEfficientNarrowIntComputation);}
    void setSupportsEfficientNarrowIntComputation() {_flags2.set(SupportsEfficientNarrowIntComputation);}
@@ -1708,7 +1703,7 @@ class OMR_EXTENSIBLE CodeGenerator
       HasResumableTrapHandler                            = 0x00000040,
       //                                                 = 0x00000080,   // Available
       SupportsPartialInlineOfMethodHooks                 = 0x00000100,
-      SupportsArrayCopy                                  = 0x00000200,
+      SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,
       SupportsInliningOfTypeCoersionMethods              = 0x00000800,
       VMThreadRequired                                   = 0x00001000,

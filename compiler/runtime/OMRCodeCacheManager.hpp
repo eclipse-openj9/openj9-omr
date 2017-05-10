@@ -168,10 +168,6 @@ public:
    TR::CodeCache * getNewCodeCache(int32_t reservingCompThreadID);
 
    void addFreeBlock(void *metaData, uint8_t *startPC);
-   void freeFaintCacheBlock(FaintCacheBlock *block, uint8_t *startPC);
-   void addFaintCacheBlock(FaintCacheBlock * & blockList,
-                           FaintCacheBlock *block,
-                           uint8_t bytesToSaveAtStart);
 
    uint8_t * allocateCodeMemory(size_t warmCodeSize,
                                 size_t coldCodeSize,
@@ -192,9 +188,6 @@ public:
                                                void *newTargetPC,
                                                bool needSync);
    void reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method);
-
-   void onClassRedefinition(TR_OpaqueMethodBlock *oldMethod, TR_OpaqueMethodBlock *newMethod);
-   void onFSDDecompile();
 
    void performSizeAdjustments(size_t &warmCodeSize,
                                size_t &coldCodeSize,

@@ -2010,7 +2010,8 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
 
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
-   if (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst))
+   
+   if (cg()->comp()->getOption(TR_StressTrampolines) || (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst)))
       {
       intptrj_t targetAddr;
 
@@ -2405,9 +2406,14 @@ TR::S390RILInstruction::generateBinaryEncoding()
          {
          i2 = (int32_t)((getTargetPtr() - (uintptrj_t)cursor) / 2);
 
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-         // get the correct target addr for helpers
-         i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+        if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
+            {
+            // get the correct target addr for helpers
+            i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+            }
 #endif
 
          (*(int32_t *) (cursor + 2)) = boi(i2);
@@ -2438,23 +2444,28 @@ TR::S390RILInstruction::generateBinaryEncoding()
          (*(uint16_t *) cursor) = bos(0x1800);
          cursor += 2;
          }
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-      if (comp->getCodeCacheSwitched())
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+      if (comp->getOption(TR_EnableZOSTrampolines)) 
+#endif
          {
-         TR::SymbolReference *calleeSymRef = NULL;
-
-         calleeSymRef = getSymbolReference();
-
-         if (calleeSymRef != NULL)
+         if (comp->getCodeCacheSwitched())
             {
-            if (calleeSymRef->getReferenceNumber()>=TR_S390numRuntimeHelpers)
-               cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
-            }
-         else
-            {
-            #ifdef DEBUG
-            printf("Missing possible re-reservation for trampolines.\n");
-            #endif
+            TR::SymbolReference *calleeSymRef = NULL;
+
+            calleeSymRef = getSymbolReference();
+
+            if (calleeSymRef != NULL)
+               {
+               if (calleeSymRef->getReferenceNumber()>=TR_S390numRuntimeHelpers)
+                  cg()->fe()->reserveTrampolineIfNecessary(comp, calleeSymRef, true);
+               }
+            else
+               {
+#ifdef DEBUG
+               printf("Missing possible re-reservation for trampolines.\n");
+#endif
+               }
             }
          }
 #endif
@@ -2502,8 +2513,13 @@ TR::S390RILInstruction::generateBinaryEncoding()
                {
                i2 = (int32_t)(((uintptrj_t)(callSymbol->getMethodAddress()) - (uintptrj_t)cursor) / 2);
                }
-#if defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
-            i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+#if defined(TR_TARGET_64BIT) 
+#if defined(J9ZOS390)
+            if (comp->getOption(TR_EnableZOSTrampolines))
+#endif
+               {
+               i2 = adjustCallOffsetWithTrampoline(i2, cursor);
+               }
 #endif
             (*(int32_t *) (cursor + 2)) = boi(i2);
             if (getSymbolReference() && getSymbolReference()->getSymbol()->castToMethodSymbol()->isHelper())
@@ -5785,7 +5801,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    // in) if the patching occurs during GC pause times.  The patching of up to 6-bytes is potentially
    // not atomic.
 
-   bool performEmptyPatch = getNode()->isHCRGuard() || getNode()->isProfiledGuard();
+   bool performEmptyPatch = getNode()->isHCRGuard() || getNode()->isProfiledGuard() || getNode()->isOSRGuard();
 
    // HCR guards that are merged with profiled guards never need to generate NOPs for patching because
    // the profiled guard will generate the NOP branch to the same location the HCR guard needs to branch

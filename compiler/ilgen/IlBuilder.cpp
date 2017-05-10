@@ -574,6 +574,7 @@ IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
    TR_ASSERT(dt->isPointer(), "indirectLoadNode must apply to pointer type");
    TR::IlType * baseType = dt->baseType();
    TR::DataType primType = baseType->getPrimitiveType();
+   TR_ASSERT(primType != TR::NoType, "Dereferencing an untyped pointer.");
    TR::DataType symRefType = primType;
    if (isVectorLoad)
       symRefType = symRefType.scalarToVector();
@@ -813,7 +814,7 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    {
    TR::IlType *elemType = dt->baseType();
    TR_ASSERT(elemType != NULL, "IndexAt should be called with pointer type");
-
+   TR_ASSERT(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
    TR::Node *baseNode = TR::Node::createLoad(base);
    TR::Node *indexNode = TR::Node::createLoad(index);
    TR::Node *elemSizeNode;
@@ -1720,6 +1721,10 @@ IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
    TR::IlValue **argValues = processCallArgs(_comp, numArgs, args);
    va_end(args);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
+      resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
    }
@@ -1736,6 +1741,10 @@ IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlValue *
    // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::ComputedCall %s\n", this, functionName);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
+      resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
    }
@@ -1750,6 +1759,10 @@ IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
    TR::IlValue **argValues = processCallArgs(_comp, numArgs, args);
    va_end(args);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
+      resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues);
    }
@@ -1760,6 +1773,10 @@ IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** argVal
    // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::Call %s\n", this, functionName);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
+      resolvedMethod = _methodBuilder->lookupFunction(functionName);
+   TR_ASSERT(resolvedMethod, "Could not identify function %s\n", functionName);
+
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues);
    }

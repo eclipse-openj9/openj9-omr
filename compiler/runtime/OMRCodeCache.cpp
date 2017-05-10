@@ -251,36 +251,6 @@ OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
    }
 
 
-void
-OMR::CodeCache::query(TR::CodeCache *cc)
-   {
-   mcc_printf("======================\n");
-   mcc_printf("helperBase = 0x%x\n",cc->_helperBase);
-   mcc_printf("helperTop = 0x%x\n",cc->_helperTop);
-   mcc_printf("tempTrampolineBase = 0x%x\n",cc->_tempTrampolineBase);
-   mcc_printf("tempTrampolineTop = 0x%x\n",cc->_tempTrampolineTop);
-   mcc_printf("tempTrampolineNext = 0x%x\n",cc->_tempTrampolineNext);
-   mcc_printf("trampolineAllocationMark = 0x%x\n",cc->_trampolineAllocationMark);
-   mcc_printf("trampolineReservationMark = 0x%x\n",cc->_trampolineReservationMark);
-   mcc_printf("trampolineBase = 0x%x\n",cc->_trampolineBase);
-   mcc_printf("warmCodeAlloc = 0x%x\n",cc->_warmCodeAlloc);
-   mcc_printf("coldCodeAlloc = 0x%x\n",cc->_coldCodeAlloc);
-   //mcc_printf(CodeCacheHashTable* resolvedMethodHT;
-   mcc_printf("unresolvedMethodHT = 0x%x\n",cc->_unresolvedMethodHT);
-   //mcc_printf(CodeCacheHashEntrySlab* hashEntrySlab;
-   //mcc_printf(CodeCacheHashEntry* hashEntryFreeList;
-   mcc_printf("tempTrampolinesMax = %d\n",cc->_tempTrampolinesMax);
-   //mcc_printf(uint32_t _flags;
-   //mcc_printf(CodeCacheTempTrampolineSyncBlock* trampolineSyncList;
-   //mcc_printf(CodeCacheFreeCacheBlock *_freeBlockList;
-   //mcc_printf(CodeCache* _next;
-
-   TR::CodeCacheConfig &config = TR::CodeCacheManager::instance()->codeCacheConfig();
-   if (config.needsMethodTrampolines())
-      cc->_unresolvedMethodHT->dumpHashUnresolvedMethod();
-   }
-
-
 // Initialize a code cache
 //
 bool
@@ -557,52 +527,6 @@ OMR::CodeCache::reserveResolvedTrampoline(TR_OpaqueMethodBlock *method,
 
 
 
-//------------------------------ reserveUnresolvedTrampoline ----------------
-// Find or create a reservation for an unresolved method trampoline.
-// Method must be called with VM access in hand to prevent unloading
-// Returns 0 on success or a negative error code on failure
-//---------------------------------------------------------------------------
-int32_t
-OMR::CodeCache::reserveUnresolvedTrampoline(void *cp, int32_t cpIndex)
-   {
-   int32_t retValue = CodeCacheErrorCode::ERRORCODE_SUCCESS; // assume success
-
-   // If the platform does not need trampolines, return success
-   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return CodeCacheErrorCode::ERRORCODE_SUCCESS;
-
-   // scope for cache critical section
-      {
-      CacheCriticalSection reserveTrampoline(self());
-
-      // check if we already have a reservation for this name/classLoader key
-      CodeCacheHashEntry *entry = _unresolvedMethodHT->findUnresolvedMethod(cp, cpIndex);
-      if (!entry)
-         {
-         // don't have any reservation for this particular name/classLoader, make one
-         CodeCacheTrampolineCode *trampoline = self()->reserveTrampoline();
-         if (trampoline)
-            {
-            if (!self()->addUnresolvedMethod(cp, cpIndex))
-               retValue = CodeCacheErrorCode::ERRORCODE_FATALERROR; // couldn't allocate memory from VM
-            }
-         else // no space in this code cache; must allocate a new one
-            {
-            _almostFull = TR_yes;
-            retValue = CodeCacheErrorCode::ERRORCODE_INSUFFICIENTSPACE;
-            if (config.verboseCodeCache())
-               {
-               TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache %p marked as full in reserveUnresolvedTrampoline", this);
-               }
-            }
-         }
-      }
-
-   return retValue;
-   }
-
-
 // Trampoline lookup for resolved methods
 //
 OMR::CodeCacheTrampolineCode *
@@ -644,46 +568,6 @@ OMR::CodeCache::findTrampoline(int32_t helperIndex)
    //TR_ASSERT(trampoline < _helperTop);
 
    return trampoline;
-   }
-
-// Remove over-booked trampoline reservations
-//
-void
-OMR::CodeCache::adjustTrampolineReservation(TR_OpaqueMethodBlock *method,
-                                           void *cp,
-                                           int32_t cpIndex)
-   {
-   CodeCacheHashEntry *unresolvedEntry;
-   CodeCacheHashEntry *resolvedEntry;
-
-   TR::CodeCacheConfig &config = _manager->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-   // scope to update reservation
-      {
-      CacheCriticalSection updateReservation(self());
-
-      unresolvedEntry = _unresolvedMethodHT->findUnresolvedMethod(cp, cpIndex);
-      resolvedEntry   = _resolvedMethodHT->findResolvedMethod(method);
-
-      //seems suspicious to have this assertion disabled....why is it ok to fall off without a reservation?
-      //TR_ASSERT(unresolvedEntry || resolvedEntry);
-      if (unresolvedEntry && resolvedEntry)
-         {
-         // remove 1 trampoline reservation
-         self()->unreserveTrampoline();
-
-         // remove the entry from the unresolved hash table and release it
-         if (_unresolvedMethodHT->remove(unresolvedEntry))
-            self()->freeHashEntry(unresolvedEntry);
-         }
-      else if (unresolvedEntry && !resolvedEntry)
-         {
-         // Move the unresolved entry to the resolved table.
-         self()->resolveHashEntry(unresolvedEntry, method);
-         }
-      }
    }
 
 
@@ -809,92 +693,6 @@ OMR::CodeCache::syncTempTrampolines()
    _tempTrampolineNext = _tempTrampolineBase;
    }
 
-
-void
-OMR::CodeCache::resolveHashEntry(CodeCacheHashEntry *entry, TR_OpaqueMethodBlock *method)
-   {
-   // extract the entry from the unresolved hash table
-   if (!_unresolvedMethodHT->remove(entry))
-      {
-      //suspicious: should any asserts actually happen? why is this commented out?
-      /////TR_ASSERT(0);     // internal inconsistency, should never happen
-      }
-
-   entry->_key = _resolvedMethodHT->hashResolvedMethod(method);
-   entry->_info._resolved._method = method;
-   entry->_info._resolved._currentStartPC = NULL;
-   entry->_info._resolved._currentTrampoline = NULL;
-
-   // insert the entry into the resolved table without any internal allocations
-   _resolvedMethodHT->add(entry);
-   }
-
-
-// Deal with class redefinition
-void
-OMR::CodeCache::onClassRedefinition(TR_OpaqueMethodBlock *oldMethod,
-                                   TR_OpaqueMethodBlock *newMethod)
-   {
-   CodeCacheHashEntry *entry = _resolvedMethodHT->findResolvedMethod(oldMethod);
-   if (!entry)
-      return;
-   _resolvedMethodHT->remove(entry);
-   entry->_key = _resolvedMethodHT->hashResolvedMethod(newMethod);
-   entry->_info._resolved._method = newMethod;
-   entry->_info._resolved._currentStartPC = NULL;
-   _resolvedMethodHT->add(entry);
-   }
-
-
-void
-OMR::CodeCache::onFSDDecompile()
-   {
-   TR_ASSERT(_manager->codeCacheConfig().needsMethodTrampolines(), "Attempting to purge trampolines when they do not exist");
-
-   CodeCacheHashEntry *entry, *next;
-   int idx;
-
-   // In theory, we can recycle everything in codeCaches at this point. For minimum changes, we will only
-   // purge trampoline hashTable(s) and temporary trampoline syncBlocks.
-   // What can be recycled further: codeCache itself, trampoline space
-   for (idx = 0; idx < _resolvedMethodHT->_size; idx++)
-      {
-      entry = _resolvedMethodHT->_buckets[idx];
-      _resolvedMethodHT->_buckets[idx] = NULL;
-      while (entry)
-         {
-         next = entry->_next;
-         self()->freeHashEntry(entry);
-         entry = next;
-         }
-      }
-
-   for (idx = 0; idx < _unresolvedMethodHT->_size; idx++)
-      {
-      entry = _unresolvedMethodHT->_buckets[idx];
-      _unresolvedMethodHT->_buckets[idx] = NULL;
-      while (entry)
-         {
-         next = entry->_next;
-         self()->freeHashEntry(entry);
-         entry = next;
-         }
-      }
-
-   //reset the trampoline marks back to their starting positions
-   _trampolineAllocationMark = _trampolineBase;
-   _trampolineReservationMark = _trampolineBase;
-
-   CodeCacheTempTrampolineSyncBlock *syncBlock;
-   if (!_tempTrampolinesMax)
-      return;
-
-   _flags &= ~CODECACHE_FULL_SYNC_REQUIRED;
-   for (syncBlock = _trampolineSyncList; syncBlock; syncBlock = syncBlock->_next)
-      syncBlock->_entryCount = 0;
-
-   _tempTrampolineNext = _tempTrampolineBase;
-   }
 
 // Patch the address of a method in this code cache's trampolines
 //
@@ -1088,23 +886,6 @@ OMR::CodeCache::freeHashEntry(CodeCacheHashEntry *entry)
    // put it back onto the first slabs free list, see comment above
    entry->_next = _hashEntryFreeList;
    _hashEntryFreeList = entry;
-   }
-
-// Add an unresolved method to the trampoline hash table
-//
-bool
-OMR::CodeCache::addUnresolvedMethod(void *constPool, int32_t constPoolIndex)
-   {
-   CodeCacheHashEntry *entry = self()->allocateHashEntry();
-
-   if (!entry)
-      return false;
-
-   entry->_key = _unresolvedMethodHT->hashUnresolvedMethod(constPool, constPoolIndex);
-   entry->_info._unresolved._constPool = constPool;
-   entry->_info._unresolved._constPoolIndex = constPoolIndex;
-   _unresolvedMethodHT->add(entry);
-   return true;
    }
 
 
@@ -1680,32 +1461,6 @@ OMR::CodeCache::checkForErrors()
          *((int32_t*)1) = 0xffffffff; // cause a crash
          }
       }
-   }
-
-
-void
-OMR::CodeCache::setupSegment(TR::CodeCacheMemorySegment *codeCacheSegment,
-                           size_t codeCacheSizeAllocated,
-                           CodeCacheHashEntrySlab *hashEntrySlab)
-   {
-   // heapSize can be calculated as (codeCache->helperTop - codeCacheSegment->heapBase), which is equal to segmentSize
-   // If codeCachePadKB is set, this will make the system believe that we allocated segmentSize bytes,
-   // instead of _jitConfig->codeCachePadKB * 1024 bytes
-   // If codeCachePadKB is not set, heapSize is segmentSize anyway
-   _segment = codeCacheSegment;
-
-   // helperTop is heapTop, usually
-   // When codeCachePadKB > segmentSize, the helperTop is not at the very end of the segemnt
-   _helperTop = _segment->segmentBase() + codeCacheSizeAllocated;
-
-   _hashEntrySlab = hashEntrySlab;
-   }
-
-
-OMR::CodeCacheHashEntry *
-OMR::CodeCache::findUnresolvedMethod(void *constPool, int32_t constPoolIndex)
-   {
-   return _unresolvedMethodHT->findUnresolvedMethod(constPool, constPoolIndex);
    }
 
 

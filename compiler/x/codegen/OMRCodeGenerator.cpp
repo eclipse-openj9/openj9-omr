@@ -106,14 +106,6 @@ extern "C" bool jitTestOSForSSESupport(void);
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
-bool TR_X86ProcessorInfo::isIntelOldMachine()
-   {
-   if(isIntelPentium() || isIntelP6() ||  isIntelPentium4() || isIntelCore2() ||  isIntelTulsa() || isIntelNehalem())
-      return true;
-
-   return false;
-   }
-
 void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
    {
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
@@ -154,6 +146,8 @@ void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
             uint32_t extended_model = getCPUModel(_processorSignature) + (getCPUExtendedModel(_processorSignature) << 4);
             switch (extended_model)
                {
+               case 0x55:
+                  _processorDescription |= TR_ProcessorIntelSkylake; break;
                case 0x4f:
                   _processorDescription |= TR_ProcessorIntelBroadwell; break;
                case 0x3f:
@@ -259,6 +253,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       {
       self()->setUseSSEForSinglePrecision();
       self()->setUseSSEForDoublePrecision();
+      self()->setSupportsAutoSIMD();
       }
 
    // Choose the best XMM double precision load instruction for the target architecture.
@@ -357,7 +352,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
 
    self()->setSupportsArrayCmp();
-   self()->setSupportsArrayCopy();
+   self()->setSupportsPrimitiveArrayCopy();
+   self()->setSupportsReferenceArrayCopy();
 
    if (!comp->getOption(TR_DisableArraySetOpts))
       {
@@ -486,7 +482,7 @@ OMR::X86::CodeGenerator::CodeGenerator() :
    _deferredSplits(getTypedAllocator<TR::X86LabelInstruction*>(TR::comp()->allocator())),
    _flags(0)
    {
-	_clobIterator = _clobberingInstructions.begin();
+   _clobIterator = _clobberingInstructions.begin();
    }
 
 TR::Linkage *
@@ -689,7 +685,6 @@ int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
 // this method is placed here as a dummy until platform specific code is removed from LocalOpt
 int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableVRs()
    {
-   //TR_ASSERT(false,"getMaximumNumbersOfAssignableVRs should never be called.");
    return INT_MAX;
    }
 
@@ -730,8 +725,8 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
       // we have assigned registers for this instruction.
       auto  iterator = self()->getLiveDiscardableRegisters().begin();
       while (iterator != self()->getLiveDiscardableRegisters().end())
-      	 {
-    	 TR::Register *registerCursor = *iterator;
+         {
+         TR::Register *registerCursor = *iterator;
          if (registerCursor->getRematerializationInfo()->isRematerializableFromMemory())
             {
             TR::SymbolReference * rmSymRef = registerCursor->getRematerializationInfo()->getSymbolReference();
@@ -785,13 +780,13 @@ void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
                      }
                   }
                else
-            	   ++iterator;
+                  ++iterator;
                }
             else
-            	++iterator;
+               ++iterator;
             }
          else
-        	 ++iterator;
+            ++iterator;
          }
 
       // If a register-dependent discardable register depends on any of the deactivated
@@ -825,7 +820,7 @@ void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::Clobb
 
       for (auto iterator = self()->getLiveDiscardableRegisters().begin(); iterator != self()->getLiveDiscardableRegisters().end();)
          {
-    	 TR::Register * candidate = *iterator;
+         TR::Register * candidate = *iterator;
          TR_RematerializationInfo * info = candidate->getRematerializationInfo();
 
          if (info->isIndirect() && info->getBaseRegister() == baseReg)
@@ -843,7 +838,7 @@ void OMR::X86::CodeGenerator::clobberLiveDependentDiscardableRegisters(TR::Clobb
                }
             }
          else
-        	 ++iterator;
+             ++iterator;
          }
       }
    }
@@ -976,27 +971,34 @@ bool
 OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
    /*
-    * This is a place holder function. It currently always returns false because none of the SIMD evaluators for OpCodes used
-    * in AutoSIMD have been implemented.
-    * This should be filled in (and this comment updated) as support for SIMD evaluators is implemented.
+    * Only a few of the vector evaluators for opcodes used in AutoSIMD have been implemented.
+    * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
       case TR::vadd:
-      case TR::vsub:
       case TR::vmul:
-      case TR::vdiv:
-      case TR::vrem:
-      case TR::vneg:
+         if (dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vload:
       case TR::vloadi:
       case TR::vstore:
       case TR::vstorei:
+      case TR::vsplats:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vsub:
+      case TR::vdiv:
+      case TR::vrem:
+      case TR::vneg:
       case TR::vxor:
       case TR::vor:
       case TR::vand:
-      case TR::vsplats:
       case TR::getvelem:
       default:
          return false;
@@ -1027,11 +1029,11 @@ OMR::X86::CodeGenerator::getSupportsIbyteswap()
    }
 
 bool
-OMR::X86::CodeGenerator::supportsMergingOfHCRGuards()
+OMR::X86::CodeGenerator::supportsMergingGuards()
    {
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&
-          self()->allowHCRGuardMerging();
+          self()->allowGuardMerging();
    }
 
 TR::RealRegister *
@@ -1381,7 +1383,7 @@ void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstru
    while (clobInstructionCursor &&
     (clobInstructionCursor->getInstruction() == instructionCursor) && self()->enableRematerialisation())
       {
-	  auto regIterator = clobInstructionCursor->getClobberedRegisters().begin();
+      auto regIterator = clobInstructionCursor->getClobberedRegisters().begin();
       while (regIterator != clobInstructionCursor->getClobberedRegisters().end())
          {
          (*regIterator)->setIsDiscardable();
@@ -1407,13 +1409,14 @@ void OMR::X86::CodeGenerator::processClobberingInstructions(TR::ClobberingInstru
          regIterator++;
          }
       if(_clobIterator == --(_clobberingInstructions.end()))
-    	  clobInstructionCursor = 0;
+         clobInstructionCursor = 0;
       else if(_clobIterator == _clobberingInstructions.end())
-    	  clobInstructionCursor = 0;
-      else {
-    	  ++_clobIterator;
-    	  clobInstructionCursor = *_clobIterator;
-      }
+         clobInstructionCursor = 0;
+      else
+         {
+         ++_clobIterator;
+         clobInstructionCursor = *_clobIterator;
+         }
       }
    }
 
@@ -1500,11 +1503,9 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       self()->tracePostRAInstruction(instructionCursor);
       TR::ClobberingInstruction * clobInst;
       if(_clobIterator == self()->getClobberingInstructions().end())
-    	  clobInst = 0;
+         clobInst = 0;
       else
-      {
-    	  clobInst = *_clobIterator;
-      }
+         clobInst = *_clobIterator;
       self()->processClobberingInstructions(clobInst, instructionCursor);
 
       // Skip over any instructions that may have been inserted prior to the
@@ -2397,9 +2398,6 @@ bool OMR::X86::CodeGenerator::processInstruction(TR::Instruction *instr, TR_BitV
                                              bool traceIt)
    {
    TR::Instruction *x86Instr = instr;
-
-   if (x86Instr->getOpCode().cannotBeAssembled())
-      return false;
 
    if (x86Instr->getOpCode().isCallOp())
       {
@@ -3705,7 +3703,7 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
             break;
             }
          default:
-         	break;
+            break;
          }
       }
    }

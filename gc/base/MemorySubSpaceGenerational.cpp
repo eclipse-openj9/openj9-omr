@@ -81,7 +81,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 	}
 
 	allocateDescription->saveObjects(env);
-	if (!env->tryAcquireExclusiveVMAccessForGC(_collector)) {
+	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
 		allocateDescription->restoreObjects(env);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 		if(NULL != addr) {
@@ -259,10 +259,10 @@ void
 MM_MemorySubSpaceGenerational::checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool _systemGC)
 {
 	getMemorySubSpaceOld()->checkResize(env, allocDescription, _systemGC);
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* restore Nursery tilt */
-	getMemorySubSpaceNew()->checkResize(env, allocDescription, _systemGC);
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	if (_extensions->isConcurrentScavengerEnabled()) {
+		/* restore Nursery tilt */
+		getMemorySubSpaceNew()->checkResize(env, allocDescription, _systemGC);
+	}
 }
 
 /**

@@ -137,37 +137,6 @@ class X86FPConvertToLongSnippet  : public TR::X86FPConversionSnippet
    virtual Kind getKind() {return IsFPConvertToLong;}
    };
 
-
-class AMD64FPConversionSnippet : public TR::X86FPConversionSnippet
-   {
-public:
-   virtual Kind getKind() {return IsFPConvertAMD64;}
-
-#if !defined(TR_TARGET_64BIT)
-   AMD64FPConversionSnippet(TR::LabelSymbol *, TR::LabelSymbol *, TR::SymbolReference *, TR::X86RegInstruction  *, TR::CodeGenerator *)
-      : TR::X86FPConversionSnippet(0, 0, 0, 0, 0) { }
-
-   virtual uint32_t getLength(int32_t estimatedSnippetStart) { return 0; }
-   uint8_t *genFPConversion(uint8_t *buffer) { return buffer; }
-#else
-
-   AMD64FPConversionSnippet(TR::LabelSymbol            *restartlab,
-                            TR::LabelSymbol            *snippetlab,
-                            TR::SymbolReference       *helperSymRef,
-                            TR::X86RegInstruction  *convertInstr,
-                            TR::CodeGenerator *codeGen)
-      : TR::X86FPConversionSnippet(codeGen, convertInstr->getNode(), restartlab, snippetlab, helperSymRef),
-           _convertInstruction(convertInstr->getIA32RegRegInstruction()) {}
-
-   TR::X86RegRegInstruction  * getConvertInstruction() {return _convertInstruction;}
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-   uint8_t *genFPConversion(uint8_t *buffer);
-private:
-   TR::X86RegRegInstruction  *_convertInstruction;
-
-#endif
-   };
-
 }
 
 #endif

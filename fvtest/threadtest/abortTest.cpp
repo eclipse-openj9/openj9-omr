@@ -129,63 +129,46 @@ runningMain(void *arg)
 }
 
 typedef struct sleep_testdata_t {
-	omrthread_monitor_t startSync;
-	omrthread_monitor_t exitSync;
-	volatile intptr_t rc;
-	volatile bool started;
+	omrthread_monitor_t sync;
 } sleep_testdata_t;
 
 TEST(ThreadAbortTest, Sleeping)
 {
 	omrthread_t t;
-	sleep_testdata_t mythread;
+	sleep_testdata_t d;
+	sleep_testdata_t *data = &d;
 
-	omrthread_monitor_init(&mythread.startSync, 0);
-	omrthread_monitor_init(&mythread.exitSync, 0);
+	omrthread_monitor_init(&data->sync, 0);
 
-	createDefaultThread(&t, sleepingMain, &mythread);
+	omrthread_monitor_enter(data->sync);
+	createDefaultThread(&t, sleepingMain, data);
+	omrthread_monitor_wait(data->sync); // startup
 
-        mythread.started = false;
-	omrthread_monitor_enter(mythread.startSync);
-	while (!mythread.started) {
-		omrthread_monitor_wait(mythread.startSync);
-	}
-	omrthread_monitor_exit(mythread.startSync);
-
-	omrthread_monitor_enter(mythread.exitSync);
-	omrthread_sleep(START_DELAY);
 	omrthread_abort(t);
 
-	omrthread_monitor_wait(mythread.exitSync);
-	omrthread_monitor_exit(mythread.exitSync);
-
-	omrthread_monitor_destroy(mythread.exitSync);
-	omrthread_monitor_destroy(mythread.startSync);
-
-	EXPECT_TRUE(mythread.rc == J9THREAD_PRIORITY_INTERRUPTED) << "Failed to abort sleeping thread!";
+	omrthread_monitor_exit(data->sync);
+	omrthread_monitor_destroy(data->sync);
 }
 
 static int
 sleepingMain(void *arg)
 {
-	sleep_testdata_t *testdata = (sleep_testdata_t *)arg;
-	intptr_t rc;
+	sleep_testdata_t *data = (sleep_testdata_t *)arg;
 
-	omrthread_monitor_enter(testdata->startSync);
-	testdata->started = true;
-	omrthread_monitor_notify(testdata->startSync);
-	omrthread_monitor_exit(testdata->startSync);
+	omrthread_monitor_enter(data->sync);
+	omrthread_monitor_notify(data->sync);
+	omrthread_monitor_exit(data->sync);
 
-	rc = omrthread_sleep_interruptable(TIMEOUT, 0);
+	intptr_t rc = J9THREAD_SUCCESS;
+	do {
+		const int timeout = 100; // in millis
+		rc = omrthread_sleep_interruptable(timeout, 0);
+	} while (rc == J9THREAD_SUCCESS);
 
-	omrthread_monitor_enter(testdata->exitSync);
-	testdata->rc = rc;
-	omrthread_monitor_notify(testdata->exitSync);
-	omrthread_monitor_exit(testdata->exitSync);
+	EXPECT_EQ(rc, J9THREAD_PRIORITY_INTERRUPTED);
 
 	return 0;
 }
-
 
 typedef struct wait_testdata_t {
 	omrthread_monitor_t exitSync;

@@ -144,16 +144,16 @@ MM_ParallelGlobalGC::initialize(MM_EnvironmentBase *env)
 	/* Attach to hooks required by the global collector's
 	 * heap resize (expand/contraction) functions
 	 */
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_CYCLE_START, globalGCHookAFCycleStart, NULL);
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_CYCLE_END, globalGCHookAFCycleEnd, NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_CYCLE_START, globalGCHookAFCycleStart, OMR_GET_CALLSITE(), NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_ALLOCATION_FAILURE_CYCLE_END, globalGCHookAFCycleEnd, OMR_GET_CALLSITE(), NULL);
 	 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, globalGCHookCCStart, NULL);
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, globalGCHookCCEnd, NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_START, globalGCHookCCStart, OMR_GET_CALLSITE(), NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CONCURRENT_COLLECTION_END, globalGCHookCCEnd, OMR_GET_CALLSITE(), NULL);
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_START, globalGCHookSysStart, NULL);
-	(*mmPrivateHooks)->J9HookRegister(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_END, globalGCHookSysEnd, NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_START, globalGCHookSysStart, OMR_GET_CALLSITE(), NULL);
+	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_SYSTEM_GC_END, globalGCHookSysEnd, OMR_GET_CALLSITE(), NULL);
 
 	_cli->parallelGlobalGC_collectorInitialized(env);
 
@@ -371,6 +371,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Aborted CS need global GC with Nursery compaction */
 	if (J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE == gcCode.getCode()) {
+		Assert_MM_true(_extensions->concurrentScavenger);
 		compactReason = COMPACT_ABORTED_SCAVENGE;
 		goto compactionReqd;
 	}	
@@ -1018,11 +1019,11 @@ MM_ParallelGlobalGC::collectorStartup(MM_GCExtensionsBase* extensions)
 void
 MM_ParallelGlobalGC::collectorShutdown(MM_GCExtensionsBase *extensions)
 {
-#if defined(J9VM_GC_MODRON_SCAVENGER)
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->scavengerEnabled && (NULL != extensions->scavenger)) {
 		extensions->scavenger->collectorShutdown(extensions);
 	}
-#endif /* defined(J9VM_GC_MODRON_SCAVENGER) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 }
 
 /**
@@ -1179,12 +1180,14 @@ MM_ParallelGlobalGC::isMarked(void *objectPtr)
 }
 
 void
-MM_ParallelGlobalGC::completeConcurrentCycle(MM_EnvironmentBase *env)
+MM_ParallelGlobalGC::completeExternalConcurrentCycle(MM_EnvironmentBase *env)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* ParallelGlobalGC or ConcurrentGC (STW phase) cannot start before Concurrent Scavenger cycle is in progress */
-	_extensions->scavenger->completeConcurrentScavenger(env);
-#endif
+	if (_extensions->isConcurrentScavengerEnabled()) {
+		/* ParallelGlobalGC or ConcurrentGC (STW phase) cannot start before Concurrent Scavenger cycle is in progress */
+		_extensions->scavenger->completeConcurrentCycle(env);
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }
 
 void

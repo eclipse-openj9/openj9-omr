@@ -227,7 +227,7 @@ OMR::Z::CodeGenerator::checkIsUnneededIALoad(TR::Node *parent, TR::Node *node, T
          else
             {
             TR_VirtualGuard * virtualGuard = self()->comp()->findVirtualGuardInfo(parent);
-            if (!parent->isHCRGuard() && !self()->comp()->performVirtualGuardNOPing() &&
+            if (!parent->isHCRGuard() && !parent->isOSRGuard() && !self()->comp()->performVirtualGuardNOPing() &&
                 self()->comp()->isVirtualGuardNOPingRequired(virtualGuard) &&
                 virtualGuard->canBeRemoved())
                {
@@ -532,8 +532,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
      _bucketPlusIndexRegisters(self()->comp()->allocator()),
      _currentDEPEND(NULL),
-     _outgoingArgLevelDuringTreeEvaluation(0),
-     _evaluatingCompressionSequenceCounter(0)
+     _outgoingArgLevelDuringTreeEvaluation(0)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -686,8 +685,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Support divided by power of 2 logic in ldivSimplifier
    self()->setSupportsLoweringConstLDivPower2();
 
-   self()->setSupportsPrimitiveArrayCopy();
-
    //enable LM/STM for volatile longs in 32 bit
    self()->setSupportsInlinedAtomicLongVolatiles();
 
@@ -809,7 +806,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_AR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
-   self()->setSupportsArrayCopy();
+   self()->setSupportsPrimitiveArrayCopy();
+   self()->setSupportsReferenceArrayCopy();
 
    self()->setSupportsPartialInlineOfMethodHooks();
 
@@ -854,14 +852,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->getS390Linkage()->initS390RealRegisterLinkage();
    self()->setAccessStaticsIndirectly(true);
-
-   if (self()->isConcurrentScavengeEnabled())
-      {
-      // TODO (GuardedStorage): Is there a way to relax this condition? Currently we have to disable array copy opts to
-      // avoid missing guarded loads on memory to memory copies of reference objects. However this restriction seems too
-      // strict as we are disabling primitive array copies as well.
-      comp->setOption(TR_DisableArrayCopyOpts);
-      }
    }
 
 TR_GlobalRegisterNumber
@@ -6089,21 +6079,11 @@ OMR::Z::CodeGenerator::StopUsingEscapedMemRefsRegisters(int32_t topOfMemRefStack
    }
 
 bool
-OMR::Z::CodeGenerator::supportsMergingOfHCRGuards()
+OMR::Z::CodeGenerator::supportsMergingGuards()
    {
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&
           !self()->comp()->compileRelocatableCode();
-   }
-
-bool
-OMR::Z::CodeGenerator::isConcurrentScavengeEnabled()
-   {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-   return TR::Compiler->target.cpu.getS390SupportsGuardedStorageFacility();
-#else
-   return false;
-#endif
    }
 
 // Helpers for profiled interface slots
@@ -6242,29 +6222,6 @@ TR_S390ScratchRegisterManager*
 OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
    return new (self()->trHeapMemory()) TR_S390ScratchRegisterManager(capacity, self());
-   }
-
-// TODO (GuardedStorage)
-void
-OMR::Z::CodeGenerator::incEvaluatingCompressionSequence()
-   {
-   TR_ASSERT(_evaluatingCompressionSequenceCounter != 0x7FFFFFFF, "_evaluatingCompressionSequenceCounter overflow");
-
-   ++_evaluatingCompressionSequenceCounter;
-   }
-
-void
-OMR::Z::CodeGenerator::decEvaluatingCompressionSequence()
-   {
-   TR_ASSERT(_evaluatingCompressionSequenceCounter != 0x00000000, "_evaluatingCompressionSequenceCounter overflow");
-
-   --_evaluatingCompressionSequenceCounter;
-   }
-
-bool
-OMR::Z::CodeGenerator::isEvaluatingCompressionSequence()
-   {
-   return _evaluatingCompressionSequenceCounter != 0;
    }
 
 void

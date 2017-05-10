@@ -15,46 +15,54 @@
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
-
-language: c++
+os:
+  - linux
+  - osx
+language: cpp
 sudo: false
-
-# https://docs.travis-ci.com/user/caching/
-cache: ccache
-
+cache: ccache # https://docs.travis-ci.com/user/caching/
+dist: trusty
 addons:
   apt:
     sources:
-       - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-       - libnuma-dev
-       - bison
-       - gcc-multilib
-       - g++-multilib
-       - clang-3.4
-       - libclang-3.4-dev
-       - llvm-3.4
-       - libdwarf-dev
-
-before_script:
-  - ulimit -c unlimited
-  - export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
-# Disable the core dump tests as container based builds don't allow setting
-# core_pattern and don't have apport installed.  This can be removed when
-# apport is available in apt whitelist
-
+      - libnuma-dev
+      - bison
+      - clang-3.4
+      - libclang-3.4-dev
+      - llvm-3.4
+      - gcc-multilib
+      - g++-multilib
+      - ninja-build
+env:
+  matrix:
+    - BUILD_WITH_CMAKE=yes
+  global:
+    - GTEST_COLOR=1
+    - GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
+    # Disable the core dump tests as container based builds don't allow setting
+    # core_pattern and don't have apport installed.  This can be removed when
+    # apport is available in apt whitelist
 matrix:
+  allow_failures:
+    - env: BUILD_WITH_CMAKE=yes
+  exclude:
+    - os: osx
+      env: BUILD_WITH_CMAKE=yes
   include:
     - os: linux
-      env: SPEC=linux_x86               PLATFORM=amd64-linux-gcc
-    - os: linux
-      env: SPEC=linux_x86-64            PLATFORM=amd64-linux64-gcc
+      env: SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
     - os: linux
       env: SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc
+    - os: linux
+      env: RUN_LINT=yes RUN_BUILD=no SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
+      dist: precise
+    - os: linux
+      env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
     - os: osx
       env: SPEC=osx_x86-64
-
+before_script:
+  - ulimit -c unlimited
 script:
-  - make -f run_configure.mk OMRGLUE=./example/glue
-  - make && make test && ([ "$SPEC" != "linux_x86-64" ] || make lint)
-
+  - bash ./scripts/build-on-travis.sh

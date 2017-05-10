@@ -1,4 +1,5 @@
 # DDR: The Data Dump Reader
+(c) Copyright IBM Corp. 2017
 
 ## Building DDR
 

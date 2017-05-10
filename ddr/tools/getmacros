@@ -190,12 +190,26 @@ restore_annotated_files() {
 
 		if [[ 1 == ${addFlags} || 1 == ${addValues} ]]; then
 			# restore the original file
-			cp ${f}.orig ${f}
-			rm ${f}.orig
+			if [[ -e ${f}.orig ]]; then
+				cp ${f}.orig ${f}
+				rm ${f}.orig
+			fi
 		fi
 	done
 }
+
+# On ctrl-c we want to restore any annotated files, and then exit
+trap_int() {
+	echo "Ctrl-c detected, exiting ..."
+	echo "Restoring annotated files ..."
+	restore_annotated_files
+	exit
+}
+
 main() {
+	# trap ctrl-c and call trap_int()
+	trap "trap_int" INT TERM
+
 	annotated_files=( $(get_all_annotated_files) )
 
 	# Overwrite the output file if it exists. This file will contain all of the final macro/type info.
@@ -204,6 +218,7 @@ main() {
 	echo "Annotating source files containing macros ..."
 	# Deal with specific policies.
 	parse_namespace_policy_files
+	
 
 	# preprocess annotated source code
 	if [[ $(command -v gmake) ]]; then

@@ -532,8 +532,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
      _bucketPlusIndexRegisters(self()->comp()->allocator()),
      _currentDEPEND(NULL),
-     _outgoingArgLevelDuringTreeEvaluation(0),
-     _evaluatingCompressionSequenceCounter(0)
+     _outgoingArgLevelDuringTreeEvaluation(0)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -6223,29 +6222,6 @@ TR_S390ScratchRegisterManager*
 OMR::Z::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
    return new (self()->trHeapMemory()) TR_S390ScratchRegisterManager(capacity, self());
-   }
-
-// TODO (GuardedStorage)
-void
-OMR::Z::CodeGenerator::incEvaluatingCompressionSequence()
-   {
-   TR_ASSERT(_evaluatingCompressionSequenceCounter != 0x7FFFFFFF, "_evaluatingCompressionSequenceCounter overflow");
-
-   ++_evaluatingCompressionSequenceCounter;
-   }
-
-void
-OMR::Z::CodeGenerator::decEvaluatingCompressionSequence()
-   {
-   TR_ASSERT(_evaluatingCompressionSequenceCounter != 0x00000000, "_evaluatingCompressionSequenceCounter overflow");
-
-   --_evaluatingCompressionSequenceCounter;
-   }
-
-bool
-OMR::Z::CodeGenerator::isEvaluatingCompressionSequence()
-   {
-   return _evaluatingCompressionSequenceCounter != 0;
    }
 
 void

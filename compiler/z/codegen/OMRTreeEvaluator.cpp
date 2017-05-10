@@ -93,6 +93,7 @@
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/TransformUtil.hpp"
 #include "ras/Debug.hpp"                            // for TR_DebugBase
 #include "ras/DebugCounter.hpp"                     // for TR::DebugCounter, etc
 #include "runtime/Runtime.hpp"                      // for ::TR_DataAddress, etc
@@ -5065,17 +5066,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          }
       else //if (form == MemReg)
          {
-         if (cg->isConcurrentScavengeEnabled())
-            {
-            // TODO (GuardedStorage): If we are in the evaluation of a compressedrefs sequence and are about to generate
-            // compressed load we override the instruction opcode to generate a guarded load and shift instead. We should
-            // figure out a better way to handle this.
-            if (cg->isEvaluatingCompressionSequence() && load == TR::InstOpCode::LLGF)
-               {
-               load = TR::InstOpCode::LLGFSG;
-               }
-            }
-
          generateRXInstruction(cg, load, node, targetRegister, tempMR);
          }
       }
@@ -6121,17 +6111,35 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
                   {
-                  // TODO (GuardedStorage): Do we need the useCompressedPointers check here? All aloads should have been lowered by now.
+                  auto loadMnemonic = TR::InstOpCode::BAD;
+
                   if (cg->isConcurrentScavengeEnabled() &&
-                      !comp->useCompressedPointers() &&
                       node->getOpCodeValue() == TR::aloadi &&
                       tempReg->containsCollectedReference())
                      {
-                     generateRXYInstruction(cg, TR::InstOpCode::LGG, node, tempReg, tempMR);
+                     if (comp->useCompressedPointers() &&
+                         TR::TransformUtil::fieldShouldBeCompressed(node, comp))
+                        {
+                        loadMnemonic = TR::InstOpCode::LLGFSG;
+                        }
+                     else
+                        {
+                        loadMnemonic = TR::InstOpCode::LGG;
+                        }
                      }
                   else
                      {
-                     generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempReg, tempMR);
+                     loadMnemonic = TR::InstOpCode::getLoadOpCode();
+                     }
+
+                  if (loadMnemonic == TR::InstOpCode::LLGFSG ||
+                      loadMnemonic == TR::InstOpCode::LGG)
+                     {
+                     generateRXYInstruction(cg, loadMnemonic, node, tempReg, tempMR);
+                     }
+                  else
+                     {
+                     generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
                      }
                   }
                }

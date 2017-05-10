@@ -485,30 +485,7 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR_ASSERT(hasCompPtrs, "no compression sequence found under l2a node [%p]\n", node);
    */
 
-   TR::Register* source = NULL;
-   
-   // TODO (GuardedStorage): Why is isl2aForCompressedArrayletLeafLoad check necessary?
-   const bool shouldGenerateGuardedLoadsForCompressedLoad = cg->isConcurrentScavengeEnabled() && comp->useCompressedPointers() && (TR::Compiler->om.compressedReferenceShift() == 0 || firstChild->containsCompressionSequence()) && !node->isl2aForCompressedArrayletLeafLoad();
-
-   if (shouldGenerateGuardedLoadsForCompressedLoad)
-      {
-      cg->incEvaluatingCompressionSequence();
-      
-      if (firstChild->containsCompressionSequence())
-         {
-         source = cg->evaluate(firstChild->getFirstChild());
-         }
-      else
-         {
-         source = cg->evaluate(firstChild);
-         }
-         
-      cg->decEvaluatingCompressionSequence();
-      }
-   else
-      {
-      source = cg->evaluate(firstChild);
-      }
+   TR::Register* source = cg->evaluate(firstChild);
 
    // first child is either iu2l (when shift==0) or
    // the first child is a compression sequence. in the
@@ -520,7 +497,7 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    node->setRegister(source);
 
 
-   if (shouldGenerateGuardedLoadsForCompressedLoad && firstChild->containsCompressionSequence())
+   if (firstChild->containsCompressionSequence())
       {
       cg->decReferenceCount(firstChild->getFirstChild());
       }

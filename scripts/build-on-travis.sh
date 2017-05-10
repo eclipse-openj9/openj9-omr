@@ -43,6 +43,17 @@ else
   if test "x$RUN_LINT" = "xyes"; then
     llvm-config --version
     clang++ --version
+
+    # Run linter for x86 target
+    time make --jobs $JOBS lint
+
+    # Run linter for p and z targets
+    export TARGET_ARCH=p
+    export TARGET_BITS=64
+    time make --jobs $JOBS lint
+
+    export TARGET_ARCH=z
+    export TARGET_BITS=64
     time make --jobs $JOBS lint
   fi
 fi

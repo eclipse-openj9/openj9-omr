@@ -354,6 +354,13 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		compactReason = COMPACT_NONE;
 		goto nocompact;
 	}	
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	if((_extensions->compactOnIdle) && (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode.getCode())) {
+		compactReason = COMPACT_FORCED_GC;
+		goto compactionReqd;
+	}
+#endif
 	
 	/* RAS dump compact requests override all other options. If a dump agent requested 
 	 * a compact we always honour it in order to produce optimal heap dumps
@@ -834,6 +841,9 @@ MM_ParallelGlobalGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSp
 	/* Clear overflow flag regardless */
 	_extensions->globalGCStats.workPacketStats.setSTWWorkStackOverflowOccured(false);
 	_extensions->allocationStats.clear();
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	_extensions->lastGCFreeBytes = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
+#endif
 }
 
 void

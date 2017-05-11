@@ -919,17 +919,59 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 	}
 
 	if (_collector && _usesGlobalCollector) {
-		/* TODO: This is bogus for multiple memory spaces - should ask the space, not the heap */
-		_extensions->heap->getResizeStats()->setFreeBytesAtSystemGCStart(getApproximateActiveFreeMemorySize());
+		bool invokeGC = true;
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+		if (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode ) {
+			MM_MemorySpace* defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
+			uintptr_t freeMemorySize = defaultMemorySpace->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
+			uintptr_t actvMemorySize = defaultMemorySpace->getActiveMemorySize(MEMORY_TYPE_OLD);
+			uintptr_t previousMemorySize = actvMemorySize;
 
-		env->acquireExclusiveVMAccessForGC(_collector);
-		reportSystemGCStart(env, gcCode);
+			if (0 < _extensions->lastGCFreeBytes) {
+				previousMemorySize = _extensions->lastGCFreeBytes;
+			}
 
-		/* system GCs are accounted into "user" time in GC/total time ratio calculation */
-		_collector->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
+			if ((0 < freeMemorySize) && (_extensions->gcOnIdleRatio > (((previousMemorySize - freeMemorySize) * 100) / actvMemorySize))) {
+				invokeGC = false;
+			}
+		}
+#endif
+		if (invokeGC) {
+			/* TODO: This is bogus for multiple memory spaces - should ask the space, not the heap */
+			_extensions->heap->getResizeStats()->setFreeBytesAtSystemGCStart(getApproximateActiveFreeMemorySize());
 
-		reportSystemGCEnd(env);
-		env->releaseExclusiveVMAccessForGC();
+			env->acquireExclusiveVMAccessForGC(_collector);
+			reportSystemGCStart(env, gcCode);
+
+			/* system GCs are accounted into "user" time in GC/total time ratio calculation */
+			_collector->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
+
+			reportSystemGCEnd(env);
+			env->releaseExclusiveVMAccessForGC();
+		}
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+		if (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode ) {
+			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
+			uint64_t startTime = omrtime_hires_clock();
+			uintptr_t releasedBytes = _extensions->heap->getDefaultMemorySpace()->releaseFreeMemoryPages(env);
+			uint64_t endTime = omrtime_hires_clock();
+			TRIGGER_J9HOOK_MM_PRIVATE_HEAP_RESIZE(
+				_extensions->privateHookInterface,
+				env->getOmrVMThread(),
+				omrtime_hires_clock(),
+				J9HOOK_MM_PRIVATE_HEAP_RESIZE,
+				HEAP_RELEASE_FREE_PAGES,
+				getTypeFlags(),
+				/* GC Time Ratio not applicable for "release free heap pages" */
+				0, 
+				releasedBytes,
+				getActiveMemorySize(),
+				omrtime_hires_delta(startTime, endTime, OMRPORT_TIME_DELTA_IN_MICROSECONDS),
+				/* reason enum variable not applicable/used, so passing univeral value 1 = not found*/
+				1 
+				);
+		}
+#endif
 	}
 }
 
@@ -1929,3 +1971,11 @@ MM_MemorySubSpace::wasContractedThisGC(uintptr_t gcCount)
 	return (gcCount == _extensions->heap->getResizeStats()->getLastHeapContractionGCCount());
 }
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemorySubSpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	Assert_MM_unreachable();
+        return 0;
+}
+#endif

@@ -855,6 +855,9 @@ MM_VerboseHandlerOutput::outputHeapResizeInfo(MM_EnvironmentBase *env, uintptr_t
 	} else if (HEAP_LOA_CONTRACT == resizeType) {
 		resizeTypeName = "loa contract";
 		reasonString = getLoaResizeReasonAsString((LoaResizeReason)reason);
+	} else if (HEAP_RELEASE_FREE_PAGES == resizeType) {
+		resizeTypeName = "release free pages";
+		reasonString = "idle";
 	} else {
 		resizeTypeName = "unknown";
 		reasonString = "unknown";

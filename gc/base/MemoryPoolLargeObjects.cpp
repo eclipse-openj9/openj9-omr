@@ -1162,3 +1162,13 @@ MM_MemoryPoolLargeObjects::resetLargeObjectAllocateStats()
 	_memoryPoolSmallObjects->resetLargeObjectAllocateStats();
 	_memoryPoolLargeObjects->resetLargeObjectAllocateStats();
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemoryPoolLargeObjects::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	uintptr_t releasedMemory = _memoryPoolSmallObjects->releaseFreeMemoryPages(env);
+	releasedMemory += _memoryPoolLargeObjects->releaseFreeMemoryPages(env);
+	return releasedMemory;
+}
+#endif

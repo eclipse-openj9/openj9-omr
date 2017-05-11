@@ -127,6 +127,9 @@ typedef struct J9VMGC_SublistFragment {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 #define J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE 11
 #endif
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+#define J9MMCONSTANT_EXPLICIT_GC_IDLE_GC 12
+#endif
 
 typedef struct J9MemorySpaceDescription {
 	uintptr_t oldSpaceSize;

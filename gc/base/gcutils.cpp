@@ -239,6 +239,10 @@ getSystemGCReasonAsString(uint32_t gcCode)
 		return "native out of memory";
 	case J9MMCONSTANT_EXPLICIT_GC_RASDUMP_COMPACT:
 		return "rasdump";
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
+		return "vm idle";
+#endif
 	default:
 		return "unknown";
 	}

@@ -138,6 +138,10 @@ public:
 	 */
 	virtual void recalculateMemoryPoolStatistics(MM_EnvironmentBase *env);
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
+
 	/**
 	 * Create a MemoryPoolAddressOrderedList object.
 	 */

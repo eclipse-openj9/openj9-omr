@@ -1855,7 +1855,7 @@ IlBuilder::AtomicAddWithOffset(TR::IlValue * baseAddress, TR::IlValue * offset, 
    genTreeTop(callNode); 
    TR::IlValue *returnValue = newValue(callNode->getDataType());
    genTreeTop(TR::Node::createStore(returnValue, callNode)); 
-   
+
    return returnValue; 
    }
 
@@ -1950,80 +1950,79 @@ IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
  */
 void
 IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder **transientFailureBuilder, TR::IlBuilder **transactionBuilder)
-    {   
-    //This assertion is to rule out platforms which don't have tstart evaluator yet. 
-    TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
+   {   
+   //This assertion is to rule out platforms which don't have tstart evaluator yet. 
+   TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
     
-    //ILB_REPLAY("%s->TransactionBegin(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(persistentFailureBuilder), REPLAY_BUILDER(transientFailureBuilder), REPLAY_BUILDER(transactionBuilder)); 
-    TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
+   //ILB_REPLAY("%s->TransactionBegin(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(persistentFailureBuilder), REPLAY_BUILDER(transientFailureBuilder), REPLAY_BUILDER(transactionBuilder)); 
+   TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
 
-    appendBlock();
+   appendBlock();
 
-    TR::Block *mergeBlock = emptyBlock();
-    *persistentFailureBuilder = createBuilderIfNeeded(*persistentFailureBuilder);
-    *transientFailureBuilder = createBuilderIfNeeded(*transientFailureBuilder);
-    *transactionBuilder = createBuilderIfNeeded(*transactionBuilder);
+   TR::Block *mergeBlock = emptyBlock();
+   *persistentFailureBuilder = createBuilderIfNeeded(*persistentFailureBuilder);
+   *transientFailureBuilder = createBuilderIfNeeded(*transientFailureBuilder);
+   *transactionBuilder = createBuilderIfNeeded(*transactionBuilder);
 
-    if (!comp()->cg()->getSupportsTM())
-       {
-       //if user's processor doesn't support TM.
-       //we will walk around transaction and transientFailure paths
+   if (!comp()->cg()->getSupportsTM())
+      {
+      //if user's processor doesn't support TM.
+      //we will walk around transaction and transientFailure paths
 
-       Goto(persistentFailureBuilder);
+      Goto(persistentFailureBuilder);
 
-       AppendBuilder(*transactionBuilder);
-       AppendBuilder(*transientFailureBuilder);
+      AppendBuilder(*transactionBuilder);
+      AppendBuilder(*transientFailureBuilder);
 
-       AppendBuilder(*persistentFailureBuilder);
-       appendBlock(mergeBlock);
-       return;
-       }
+      AppendBuilder(*persistentFailureBuilder);
+      appendBlock(mergeBlock);
+      return;
+      }
 
-    TR::Node *persistentFailureNode = TR::Node::create(TR::branch, 0, (*persistentFailureBuilder)->getEntry()->getEntry());
-    TR::Node *transientFailureNode = TR::Node::create(TR::branch, 0, (*transientFailureBuilder)->getEntry()->getEntry());
-    TR::Node *transactionNode = TR::Node::create(TR::branch, 0, (*transactionBuilder)->getEntry()->getEntry());
+   TR::Node *persistentFailureNode = TR::Node::create(TR::branch, 0, (*persistentFailureBuilder)->getEntry()->getEntry());
+   TR::Node *transientFailureNode = TR::Node::create(TR::branch, 0, (*transientFailureBuilder)->getEntry()->getEntry());
+   TR::Node *transactionNode = TR::Node::create(TR::branch, 0, (*transactionBuilder)->getEntry()->getEntry());
 
-    TR::Node *tStartNode = TR::Node::create(TR::tstart, 3, persistentFailureNode, transientFailureNode, transactionNode);   
-    tStartNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionEntrySymbolRef(comp()->getMethodSymbol()));
+   TR::Node *tStartNode = TR::Node::create(TR::tstart, 3, persistentFailureNode, transientFailureNode, transactionNode);   
+   tStartNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionEntrySymbolRef(comp()->getMethodSymbol()));
+   
+   genTreeTop(tStartNode);
+
+   //connecting the block having tstart with persistentFailure's and transaction's blocks 
+   cfg()->addEdge(_currentBlock, (*persistentFailureBuilder)->getEntry());
+   cfg()->addEdge(_currentBlock, (*transientFailureBuilder)->getEntry());
+   cfg()->addEdge(_currentBlock, (*transactionBuilder)->getEntry());
+
+   appendNoFallThroughBlock();
+   AppendBuilder(*transientFailureBuilder);
+   gotoBlock(mergeBlock);
+
+   AppendBuilder(*persistentFailureBuilder);
+   gotoBlock(mergeBlock);
+
+   AppendBuilder(*transactionBuilder);
     
-    genTreeTop(tStartNode);
+   //ending the transaction at the end of transactionBuilder
+   appendBlock();
+   TR::Node *tEndNode=TR::Node::create(TR::tfinish,0);
+   tEndNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionExitSymbolRef(comp()->getMethodSymbol()));
+   genTreeTop(tEndNode);
 
-    //connecting the block having tstart with persistentFailure's and transaction's blocks 
-    cfg()->addEdge(_currentBlock, (*persistentFailureBuilder)->getEntry());
-    cfg()->addEdge(_currentBlock, (*transientFailureBuilder)->getEntry());
-    cfg()->addEdge(_currentBlock, (*transactionBuilder)->getEntry());
-
-    appendNoFallThroughBlock();
-    AppendBuilder(*transientFailureBuilder);
-    gotoBlock(mergeBlock);
-
-    AppendBuilder(*persistentFailureBuilder);
-    gotoBlock(mergeBlock);
-
-    AppendBuilder(*transactionBuilder);
-    
-    //ending the transaction at the end of transactionBuilder
-    appendBlock();
-    TR::Node *tEndNode=TR::Node::create(TR::tfinish,0);
-    tEndNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionExitSymbolRef(comp()->getMethodSymbol()));
-    genTreeTop(tEndNode);
-
-	//Three IlBuilders above merged here
-    appendBlock(mergeBlock);
-
-	}  
+   //Three IlBuilders above merged here
+   appendBlock(mergeBlock);
+   }  
 
 /**
  * Generate XABORT instruction to abort transaction
  */
 void
 IlBuilder::TransactionAbort()
-    {
-    TraceIL("IlBuilder[ %p ]::transactionAbort", this);
-    TR::Node *tAbortNode = TR::Node::create(TR::tabort, 0);
-    tAbortNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionAbortSymbolRef(comp()->getMethodSymbol()));
-    genTreeTop(tAbortNode);
-    }
+   {
+   TraceIL("IlBuilder[ %p ]::transactionAbort", this);
+   TR::Node *tAbortNode = TR::Node::create(TR::tabort, 0);
+   tAbortNode->setSymbolReference(comp()->getSymRefTab()->findOrCreateTransactionAbortSymbolRef(comp()->getMethodSymbol()));
+   genTreeTop(tAbortNode);
+   }
 
 void
 IlBuilder::IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition)

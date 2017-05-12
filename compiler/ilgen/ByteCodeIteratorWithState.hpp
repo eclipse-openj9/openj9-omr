@@ -54,6 +54,7 @@ template<typename ByteCode,
         _tryCatchInfo(comp->allocator("IlGen"))
       {
       _printByteCodes = (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC) && (comp->isOutermostMethod() || comp->getOption(TR_DebugInliner) || comp->trace(OMR::inlining)));
+      _cannotAttemptOSR = comp->getOption(TR_EnableOSR) && !comp->isPeekingMethod() && methodSym->cannotAttemptOSRDuring(comp->getCurrentInlinedSiteIndex(), comp);
       }
 
    void printByteCodes()
@@ -421,6 +422,7 @@ protected:
    TR_LinkHead<IndexPair>                         _backwardBranches;
    bool                                           _inExceptionHandler;
    bool                                           _printByteCodes;
+   bool                                           _cannotAttemptOSR;
 
    flags8_t *                                     _flags;
 

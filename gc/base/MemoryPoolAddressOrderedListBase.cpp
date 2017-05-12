@@ -176,22 +176,25 @@ MM_MemoryPoolAddressOrderedListBase::releaseFreeEntryMemoryPages(MM_EnvironmentB
 	MM_HeapLinkedFreeHeader* currentFreeEntry = freeEntry;
 	uintptr_t pageSize = env->getExtensions()->heap->getPageSize();
 	while (NULL != currentFreeEntry) {
-		uintptr_t addressBase = MM_Math::roundToCeiling(pageSize, (uintptr_t)currentFreeEntry + sizeof(MM_HeapLinkedFreeHeader));
-		/* release/decommit memory after Header */
-		uintptr_t totalFreePagesCount = (currentFreeEntry->getSize() - (addressBase - (uintptr_t)currentFreeEntry)) / pageSize;
-		if (0 < totalFreePagesCount) {
-			uintptr_t commitPagesCount = 0;
-			uintptr_t decommitPagesCount = 0;
-			if (0 < _extensions->idleMinimumFree) {
-				commitPagesCount = totalFreePagesCount * _extensions->idleMinimumFree / 100;
-			}
-			decommitPagesCount = totalFreePagesCount - commitPagesCount;
-			/* leave commited pages of memory aside header */
-			addressBase += commitPagesCount * pageSize;
-			/* now decommit pages of memory */
-			if (0 < decommitPagesCount) {
-				if (_extensions->heap->decommitMemory((void*)addressBase, decommitPagesCount * pageSize, NULL, currentFreeEntry->afterEnd())) {
-					releasedMemory += decommitPagesCount * pageSize;
+		/* skip entry less than page size */
+		if (pageSize <= currentFreeEntry->getSize()) {
+			uintptr_t addressBase = MM_Math::roundToCeiling(pageSize, (uintptr_t)currentFreeEntry + sizeof(MM_HeapLinkedFreeHeader));
+			/* release/decommit memory after Header */
+			uintptr_t totalFreePagesCount = (currentFreeEntry->getSize() - (addressBase - (uintptr_t)currentFreeEntry)) / pageSize;
+			if (0 < totalFreePagesCount) {
+				uintptr_t commitPagesCount = 0;
+				uintptr_t decommitPagesCount = 0;
+				if (0 < _extensions->idleMinimumFree) {
+					commitPagesCount = totalFreePagesCount * _extensions->idleMinimumFree / 100;
+				}
+				decommitPagesCount = totalFreePagesCount - commitPagesCount;
+				/* leave commited pages of memory aside header */
+				addressBase += commitPagesCount * pageSize;
+				/* now decommit pages of memory */
+				if (0 < decommitPagesCount) {
+					if (_extensions->heap->decommitMemory((void*)addressBase, decommitPagesCount * pageSize, NULL, currentFreeEntry->afterEnd())) {
+						releasedMemory += decommitPagesCount * pageSize;
+					}
 				}
 			}
 		}

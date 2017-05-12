@@ -856,6 +856,22 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
 
    TR::TreeTop *lastTreeTop = NULL;
    TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(currentInlinedSiteIndex, self());
+
+   // Under NextGenHCR, the method entry for the outermost method is an implicit OSR point
+   // To ensure a transition from this point is possible, it is necessary to generate and attach
+   // a catch and code block now, with an exception edge to the catch block from the first block
+   // This exception edge should remain until OSR guards have been inserted, at which point it is no
+   // longer needed
+   //
+   bool genForOuterEntry = self()->comp()->isOutermostMethod() && self()->comp()->getHCRMode() == TR::osr;
+   if (genForOuterEntry)
+      {
+      TR::Block *OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(self()->getFirstTreeTop()->getNode());
+      TR::Block *firstBlock = self()->getFirstTreeTop()->getEnclosingBlock();
+      if (!firstBlock->hasExceptionSuccessor(OSRCatchBlock))
+         self()->comp()->getFlowGraph()->addEdge(TR::CFGEdge::createExceptionEdge(firstBlock, OSRCatchBlock, self()->comp()->trMemory()));
+      }
+
    //Using this flag we avoid processing twice a call before which we are injecting an induceOSR
    bool skipNextTT = false;
    for (TR::TreeTop* tt = self()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
@@ -931,7 +947,7 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
 
    //if an OSR code block has been created, attach its treetops and osr catch block's
    //treetops to the method's treetops
-   if (!self()->getOSRPoints().isEmpty())
+   if (!self()->getOSRPoints().isEmpty() || genForOuterEntry)
       {
       TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(currentInlinedSiteIndex, self());
       TR::Block *OSRCodeBlock = osrMethodData->getOSRCodeBlock();

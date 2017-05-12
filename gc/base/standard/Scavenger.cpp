@@ -3454,20 +3454,7 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 								_extensions->objectModel.clearRemembered(fwdObjectPtr);
 							}
 #if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
-							/* Move to the next object - the heap iterator is incapable of dealing with
-							 * tagged class pointers.
-							 */
-							/* If this scavenge was the first move of a hashed object, the sizes don't match.
-							 * This approach won't work if the flags of the original (i.e. evacuate space)
-							 * object are destroyed.
-							 */
-							if(_extensions->objectModel.hasRecentlyBeenMoved(fwdObjectPtr)) {
-								uintptr_t size = _extensions->objectModel.getSizeInBytesWithHeader(fwdObjectPtr);
-								size = _extensions->objectModel.adjustSizeInBytes(size);
-								evacuateHeapIterator.advance(size);
-							} else {
-								evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
-							}
+							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(fwdObjectPtr));
 #else
 							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
 #endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */

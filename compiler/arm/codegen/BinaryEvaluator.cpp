@@ -1307,6 +1307,13 @@ static inline TR::Register *ibooleanTypeEvaluator(TR::Node *node,
    TR::Node     *secondChild    = node->getSecondChild();
    TR::Node     *firstChild     = node->getFirstChild();
 
+   auto comp = TR::comp();
+
+   if (comp->getOption(TR_TraceCG))
+      {
+      traceMsg(comp, "In ibooleanTypeEvaluator for n%dn (%p)\n", node->getGlobalIndex(), node);
+      }
+
    uint32_t base, rotate;
 
   if (secondChild->getOpCodeValue() == TR::iconst &&

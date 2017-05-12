@@ -105,7 +105,12 @@ bool TR_RedundantAsyncCheckRemoval::shouldPerform()
    if (comp()->isProfilingCompilation() || comp()->generateArraylets())
       return false;
 
-   if (comp()->getOption(TR_EnableOSR))  // cannot move async checks around arbitrarily if OSR is possible
+
+   // It is not safe to add an asynccheck under involuntary OSR
+   // as a transition may have to occur at the added point and the
+   // required infrastructure may not exist
+   //
+   if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::involuntaryOSR)
       return false;
 
    return true;
@@ -126,8 +131,11 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
    // If this is a large acyclic method - add a yield point at each return from this method
    // so that sampling will realize that we are actually in this method.
    //
-   if (comp()->getMethodHotness() <= warm ||
-       !comp()->mayHaveLoops())
+   // Under (voluntary) OSR, it's safe to insert asynccheck immediately before
+   // return, but not necessarily elsewhere.
+   if (comp()->getMethodHotness() <= warm
+       || !comp()->mayHaveLoops()
+       || comp()->getOption(TR_EnableOSR))
       {
       static const char *p;
       static uint32_t numNodesInLargeMethod     = (p = feGetEnv("TR_LargeMethodNodes"))     ? atoi(p) : NUMBER_OF_NODES_IN_LARGE_METHOD;
@@ -140,7 +148,10 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
 
       if ((uint32_t) comp()->getNodeCount() > numNodesInLargeMethod ||
           comp()->getLoopWasVersionedWrtAsyncChecks())
-         _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(comp());
+         {
+         _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(this,
+            "redundantAsyncCheckRemoval/returns");
+         }
 
       return 1;
       }
@@ -163,7 +174,8 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
 #endif
         comp()->getRecompilationInfo()->shouldBeCompiledAgain())))
       {
-      _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(comp());
+      _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(this,
+         "redundantAsyncCheckRemoval/returns");
       }
 
    if (trace())
@@ -1571,7 +1583,7 @@ void TR_RedundantAsyncCheckRemoval::solidifySoftAsyncChecks(TR_StructureSubGraph
          if (performTransformation(comp(), "%sinserted async check in block_%d\n", OPT_DETAILS, b->getNumber()))
             {
             TR::Block *block = b->getBlock();
-            TR_AsyncCheckInsertion::insertAsyncCheck(block, comp());
+            TR_AsyncCheckInsertion::insertAsyncCheck(block, comp(), "redundantAsyncCheckRemoval/solidify");
             _numAsyncChecksInserted++;
             }
          }
@@ -1589,7 +1601,7 @@ void TR_RedundantAsyncCheckRemoval::solidifySoftAsyncChecks(TR_StructureSubGraph
             TR::Block *entryBlock = region->getEntryBlock();
             if (performTransformation(comp(), "%sinserted async check in acyclic region entry block %d\n", OPT_DETAILS, entryBlock->getNumber()))
                {
-               TR_AsyncCheckInsertion::insertAsyncCheck(entryBlock, comp());
+               TR_AsyncCheckInsertion::insertAsyncCheck(entryBlock, comp(), "redundantAsyncCheckRemoval/solidify");
                _numAsyncChecksInserted++;
                }
             }

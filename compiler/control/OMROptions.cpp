@@ -888,6 +888,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::setString,  offsetof(OMR::Options,_logFileName), 0, "P%s"},
    {"loi=", "O<nnn>\tindex of the last optimization transformation to perform",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptTransformationIndex), 0, "F%d"},
+   {"loopyAsyncCheckInsertionMaxEntryFreq=",
+        "O<nnn>\tmaximum entry block frequency for which asynccheck insertion "
+        "considers a method to contain a very frequent block",
+        TR::Options::set32BitNumeric, offsetof(OMR::Options, _loopyAsyncCheckInsertionMaxEntryFreq), 0, " %d" },
    {"lowCodeCacheThreshold=", "M<nnn>\tthreshold for available code cache contiguous space",
         TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_lowCodeCacheThreshold, 0, "F%d", NOT_IN_SUBSET},
    {"lowerCountsForAotCold", "M\tLower counts for cold aot runs", SET_OPTION_BIT(TR_LowerCountsForAotCold), "F", NOT_IN_SUBSET},
@@ -2011,8 +2015,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       // TM results in difficult situations when determining where the transition should occur,
       // so it is currently disabled. The implications of disabling TM should be investigated further.
       self()->setOption(TR_DisableTM);
-      // Asynchecks cannot be removed in NextGenHCR as they may be used for transitions
-      self()->setDisabled(redundantAsyncCheckRemoval, true);
       }
 
    if (self()->getOption(TR_EnableOSROnGuardFailure) && !self()->getOption(TR_DisableOSR))
@@ -2556,6 +2558,11 @@ OMR::Options::jitPreProcess()
    _blockShufflingSequence = "S";
    _delayCompile = 0;
    _largeNumberOfLoops = 6500;
+
+   // The entry block is under this threshold in methods containing a block
+   // expected to run >=100 times per method entry, which should be sure to
+   // catch loops that run thousands of times.
+   _loopyAsyncCheckInsertionMaxEntryFreq = 100;
 
    // --------------------------------------------------------------------------
    // J9-only

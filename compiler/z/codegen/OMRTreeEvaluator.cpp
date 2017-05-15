@@ -9516,7 +9516,7 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
-   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext) && cg->getSupportsVectorRegisters())
       return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);

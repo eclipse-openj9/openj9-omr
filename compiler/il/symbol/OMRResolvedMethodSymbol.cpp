@@ -863,13 +863,19 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
    // This exception edge should remain until OSR guards have been inserted, at which point it is no
    // longer needed
    //
-   bool genForOuterEntry = self()->comp()->isOutermostMethod() && self()->comp()->getHCRMode() == TR::osr;
-   if (genForOuterEntry)
+   if (self()->comp()->isOutermostMethod() && self()->comp()->getHCRMode() == TR::osr)
       {
+      // Add an exception edge to the OSR catch block from the first block
       TR::Block *OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(self()->getFirstTreeTop()->getNode());
       TR::Block *firstBlock = self()->getFirstTreeTop()->getEnclosingBlock();
       if (!firstBlock->hasExceptionSuccessor(OSRCatchBlock))
          self()->comp()->getFlowGraph()->addEdge(TR::CFGEdge::createExceptionEdge(firstBlock, OSRCatchBlock, self()->comp()->trMemory()));
+
+      // Create an OSR point with bytecode index 0
+      TR_ByteCodeInfo firstBCI = self()->getFirstTreeTop()->getNode()->getByteCodeInfo();
+      firstBCI.setByteCodeIndex(0);
+      TR_OSRPoint *osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(firstBCI, osrMethodData, self()->comp()->trMemory());
+      osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
       }
 
    //Using this flag we avoid processing twice a call before which we are injecting an induceOSR
@@ -947,7 +953,7 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
 
    //if an OSR code block has been created, attach its treetops and osr catch block's
    //treetops to the method's treetops
-   if (!self()->getOSRPoints().isEmpty() || genForOuterEntry)
+   if (!self()->getOSRPoints().isEmpty())
       {
       TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(currentInlinedSiteIndex, self());
       TR::Block *OSRCodeBlock = osrMethodData->getOSRCodeBlock();

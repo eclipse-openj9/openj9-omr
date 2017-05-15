@@ -58,8 +58,7 @@ public:
     template <class T>
     T  setElem(uint16_t index, T elem)
        {
-       (T)(_data[index] = (uintptr_t)elem);
-       return (T)_data[index];
+       return (T)(_data[index] = (uintptr_t)elem);
        }
 
     template <class T>

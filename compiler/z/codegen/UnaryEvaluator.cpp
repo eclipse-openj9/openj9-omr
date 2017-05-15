@@ -496,11 +496,6 @@ OMR::Z::TreeEvaluator::l2aEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    node->setRegister(source);
 
-
-   if (firstChild->containsCompressionSequence())
-      {
-      cg->decReferenceCount(firstChild->getFirstChild());
-      }
    cg->decReferenceCount(firstChild);
 
    return source;

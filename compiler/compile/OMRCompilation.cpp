@@ -433,22 +433,25 @@ OMR::Compilation::Compilation(
 
    static const char *enableOSRAtAllOptLevels = feGetEnv("TR_EnableOSRAtAllOptLevels");
 
+   // If the outermost method is native, OSR is not supported
+   if (_methodSymbol->isNative())
+      self()->setOption(TR_DisableOSR);
+
+   // Do not default OSR and HCR on if:
+   // NextGenHCR is disabled, as they are enabled for it
+   // OSR is explicitly disabled
+   // FSD is enabled, as HCR cannot be enabled with it
+   if (!self()->getOption(TR_DisableNextGenHCR) && !self()->getOption(TR_DisableOSR) && !self()->getOption(TR_FullSpeedDebug))
+      {
+      self()->setOption(TR_EnableOSR); // OSR and HCR must be enabled for NextGenHCR
+      self()->setOption(TR_EnableHCR);
+      }
+
    if (self()->isDLT() || (((self()->getMethodHotness() < warm) || self()->compileRelocatableCode() || self()->isProfilingCompilation()) && !enableOSRAtAllOptLevels && !_options->getOption(TR_FullSpeedDebug)))
       {
       self()->setOption(TR_DisableOSR);
       _options->setOption(TR_EnableOSR, false);
       _options->setOption(TR_EnableOSROnGuardFailure, false);
-      }
-
-   if (_options->getOption(TR_EnableHCR))
-      {
-      if (!self()->getOption(TR_DisableOSR))
-         self()->setOption(TR_EnableOSR); // Make OSR the default for HCR
-      if (_options->getOption(TR_EnableNextGenHCR))
-         {
-         self()->setOption(TR_EnableOSR);
-         _options->setOption(TR_DisableOSR, false);
-         }
       }
 
    if (_options->getOption(TR_EnableOSR))
@@ -2483,7 +2486,7 @@ OMR::Compilation::getHCRMode()
       return TR::none;
    if (self()->isDLT() || self()->isProfilingCompilation() || self()->getOptLevel() <= cold)
       return TR::traditional;
-   return self()->getOption(TR_EnableOSR) && self()->getOption(TR_EnableNextGenHCR) ? TR::osr : TR::traditional;
+   return self()->getOption(TR_EnableOSR) && !self()->getOption(TR_DisableNextGenHCR) ? TR::osr : TR::traditional;
    }
 
 uint32_t

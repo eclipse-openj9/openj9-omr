@@ -438,6 +438,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNewMethodOverride",           "O\tdisable replacement for jitUpdateInlineAttribute", SET_OPTION_BIT(TR_DisableNewMethodOverride), "F"},
    {"disableNewStoreHint",                "O\tdisable re-initializing BCD nodes to a new store hint when one is available", SET_OPTION_BIT(TR_DisableNewStoreHint), "F"},
    {"disableNewX86VolatileSupport",        "O\tdisable new X86 Volatile Support", SET_OPTION_BIT(TR_DisableNewX86VolatileSupport), "F"},
+   {"disableNextGenHCR",                  "O\tdisable HCR implemented with on-stack replacement",  SET_OPTION_BIT(TR_DisableNextGenHCR), "F"},
 
    {"disableNonvirtualInlining",          "O\tdisable inlining of non virtual methods",        SET_OPTION_BIT(TR_DisableNonvirtualInlining), "F"},
    {"disableNoServerDuringStartup",       "M\tDo not use NoServer during startup",  SET_OPTION_BIT(TR_DisableNoServerDuringStartup), "F"},
@@ -695,7 +696,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableNewAllocationProfiling",      "O\tenable profiling of new allocations", SET_OPTION_BIT(TR_EnableNewAllocationProfiling), "F"},
    {"enableNewCheckCastInstanceOf",      "O\tenable new Checkcast/InstanceOf evaluator", SET_OPTION_BIT(TR_EnableNewCheckCastInstanceOf), "F"},
    {"enableNewX86PrefetchTLH",           "O\tenable new X86 TLH prefetch algorithm", SET_OPTION_BIT(TR_EnableNewX86PrefetchTLH), "F"},
-   {"enableNextGenHCR",                  "O\tuse experiment HCR support based on OSR",  SET_OPTION_BIT(TR_EnableNextGenHCR), "F"},
    {"enableNodeGC",                      "M\tenable node recycling", SET_OPTION_BIT(TR_EnableNodeGC), "F"},
    {"enableOnsiteCacheForSuperClassTest", "O\tenable onsite cache for super class test",       SET_OPTION_BIT(TR_EnableOnsiteCacheForSuperClassTest), "F"},
    {"enableOSR",                          "O\tenable on-stack replacement", SET_OPTION_BIT(TR_EnableOSR), "F", NOT_IN_SUBSET},
@@ -1984,8 +1984,13 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
 #if defined(TR_HOST_ARM)
    // OSR is not available for ARM yet
+   self()->setOption(TR_DisableOSR);
    self()->setOption(TR_EnableOSR, false);
    self()->setOption(TR_EnableOSROnGuardFailure, false);
+#endif
+
+#ifndef J9_PROJECT_SPECIFIC
+   self()->setOption(TR_DisableNextGenHCR);
 #endif
 
    static const char *ccr = feGetEnv("TR_DisableCCR");
@@ -2007,21 +2012,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
-   if (self()->getOption(TR_EnableNextGenHCR) && !self()->getOption(TR_DisableOSR))
-      {
-      self()->setOption(TR_EnableOSR); // OSR and HCR must be enabled for NextGenHCR
-      self()->setOption(TR_EnableHCR);
-
-      // TM results in difficult situations when determining where the transition should occur,
-      // so it is currently disabled. The implications of disabling TM should be investigated further.
-      self()->setOption(TR_DisableTM);
-      }
-
    if (self()->getOption(TR_EnableOSROnGuardFailure) && !self()->getOption(TR_DisableOSR))
       self()->setOption(TR_EnableOSR);
-
-   if (self()->getOption(TR_EnableOSR) || (self()->getOption(TR_EnableHCR) && !self()->getOption(TR_DisableOSR)))
-       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
 
    if (TR::Compiler->om.mayRequireSpineChecks())
       {

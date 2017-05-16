@@ -86,7 +86,6 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _cachedParameterTypes(0),
    _cachedSignature(0),
    _definingFile(""),
-   _definingLine(""),
    _symbols(0),
    _newSymbolsAreTemps(false),
    _useBytecodeBuilders(false),
@@ -97,6 +96,9 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _bytecodeWorklist(NULL),
    _bytecodeHasBeenInWorklist(NULL)
    {
+
+   _definingLine[0] = '\0';
+
    REPLAY({
       std::fstream rpHpp("ReplayMethod.hpp",std::fstream::out);
       rpHpp << "#include \"ilgen/MethodBuilder.hpp\"" << std::endl;

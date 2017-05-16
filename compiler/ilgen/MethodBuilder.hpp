@@ -30,6 +30,9 @@
 #include <fstream>
 #include "ilgen/IlBuilder.hpp"
 
+// Maximum length of _definingLine string (including null terminator)
+#define MAX_LINE_NUM_LEN 7
+
 class TR_HashTabInt;
 class TR_HashTabString;
 class TR_BitVector;
@@ -97,7 +100,10 @@ class MethodBuilder : public TR::IlBuilder
    void AppendBuilder(TR::IlBuilder *b)    { this->OMR::IlBuilder::AppendBuilder(b); }
 
    void DefineFile(const char *file)                         { _definingFile = file; }
-   void DefineLine(const char *line)                         { _definingLine = line; }
+   void DefineLine(const char *line)
+      {
+      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
+      }
 
    void DefineName(const char *name);
    void DefineParameter(const char *name, TR::IlType *type);
@@ -173,7 +179,7 @@ class MethodBuilder : public TR::IlBuilder
    TR::IlType               ** _cachedParameterTypes;
    char                      * _cachedSignature;
    const char                * _definingFile;
-   const char                * _definingLine;
+   char                        _definingLine[MAX_LINE_NUM_LEN];
    TR::IlType                * _cachedParameterTypesArray[10];
    char                        _cachedSignatureArray[100];
 

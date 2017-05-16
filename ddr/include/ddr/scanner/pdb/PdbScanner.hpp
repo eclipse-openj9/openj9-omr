@@ -20,7 +20,6 @@
 #define PDBSCANNER_HPP
 
 #include <map>
-#include <set>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -64,8 +63,6 @@ private:
 	Symbol_IR *_ir;
 	unordered_map<string, Type *> _typeMap;
 	vector<PostponedType> _postponedFields;
-	set<string> _blacklist;
-	set<string> _blacklistWildcard;
 
 	void addType(Type *type, bool addToIR);
 	DDR_RC addFieldMember(IDiaSymbol *symbol, ClassUDT *const udt);
@@ -89,9 +86,6 @@ private:
 	DDR_RC loadDataFromPdb(const wchar_t *filename, IDiaDataSource **diaDataSource, IDiaSession **diaSession, IDiaSymbol **diaSymbol);
 	DDR_RC setSuperClassName(IDiaSymbol *symbol, ClassUDT *newUDT);
 	void getNamespaceFromName(string *name, NamespaceUDT **outerUDT);
-
-	bool blacklistedSymbol(string name);
-	DDR_RC getBlacklist();
 	DDR_RC getName(IDiaSymbol *symbol, string *name);
 	DDR_RC getSize(IDiaSymbol *symbol, ULONGLONG *size);
 	Type *getType(string s);

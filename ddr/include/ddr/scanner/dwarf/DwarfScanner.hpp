@@ -78,7 +78,7 @@ public:
 	DwarfScanner();
 	~DwarfScanner();
 
-	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles);
+	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath);
 
 	DDR_RC dispatchScanChildInfo(Type *newType, void *data);
 	DDR_RC dispatchScanChildInfo(NamespaceUDT *newClass, void *data);
@@ -107,7 +107,7 @@ private:
 	DDR_RC getTypeInfo(Dwarf_Die die, Dwarf_Die *dieout, string *typeName, Modifiers *modifiers, size_t *typeSize, size_t *bitField);
 	DDR_RC getTypeSize(Dwarf_Die die, size_t *typeSize);
 	DDR_RC getTypeTag(Dwarf_Die die, Dwarf_Die *typedie, Dwarf_Half *tag);
-	DDR_RC getBlacklist(Dwarf_Die die);
+	DDR_RC getSourcelist(Dwarf_Die die);
 	DDR_RC blackListedDie(Dwarf_Die die, bool *dieBlackListed);
 	DDR_RC getName(Dwarf_Die die, string *name);
 	DDR_RC createTypeKey(Dwarf_Die die, string typeName, TypeKey *key, unsigned int *lineNumber, string *fileName);

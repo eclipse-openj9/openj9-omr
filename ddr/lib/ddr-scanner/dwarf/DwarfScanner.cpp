@@ -47,7 +47,7 @@ DwarfScanner::DwarfScanner()
 }
 
 DDR_RC
-DwarfScanner::getBlacklist(Dwarf_Die die)
+DwarfScanner::getSourcelist(Dwarf_Die die)
 {
 	if (_fileNameCount > 0) {
 		/* Free the memory from the previous CU, if allocated. */
@@ -182,13 +182,15 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 
 	/* Check if the Die has the decl_file attribute. */
 	Dwarf_Bool hasDeclFile;
+	bool blacklistedFile = true;
+	bool blacklistedType = true;
 	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_decl_file, &hasDeclFile, &err)) {
 		ERRMSG("Checking if die has attribute decl_file: %s\n", dwarf_errmsg(err));
 		rc = DDR_RC_ERROR;
 		goto Done;
 	}
 	if (hasDeclFile) {
-		/* If the Die has the attribute, get the attribute and its value. */
+		/* If the Die has the attribute, then get the attribute and its value. */
 		Dwarf_Attribute attr = NULL;
 		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_decl_file, &attr, &err)) {
 			ERRMSG("Getting attr decl_file: %s\n", dwarf_errmsg(err));
@@ -211,16 +213,25 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 		 */
 		if (0 == declFile) {
 			/* declFile can be 0 when no declarating file is specified */
-			*dieBlackListed = false;
-		} else if ((NULL == strstr(_fileNamesTable[declFile - 1], "<built-in>"))
-			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/usr/", 5))
-			&& (0 != strncmp(_fileNamesTable[declFile - 1], "/Applications/Xcode.app/", 24))
-		) {
-			*dieBlackListed = false;
+			blacklistedFile = false;
+		} else {
+			string filePath = string(_fileNamesTable[declFile - 1]);
+			blacklistedFile = checkBlacklistedFile(filePath);
 		}
 	} else {
-		*dieBlackListed = false;
+		blacklistedFile = false;
 	}
+
+	/* Check if the die's name is blacklisted. */
+	if ((DDR_RC_OK == rc) && (!blacklistedFile)) {
+		string dieName = "";
+		rc = getName(die, &dieName);
+		if (DDR_RC_OK == rc) {
+			blacklistedType = checkBlacklistedType(dieName);
+		}
+	}
+
+	*dieBlackListed = !blacklistedType && !blacklistedFile;
 
 Done:
 	if (NULL != err) {
@@ -1265,8 +1276,8 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 			break;
 		}
 
-		if (DDR_RC_OK != getBlacklist(cuDie)) {
-			ERRMSG("Failed to get black list.\n");
+		if (DDR_RC_OK != getSourcelist(cuDie)) {
+			ERRMSG("Failed to get source file list.\n");
 			rc = DDR_RC_ERROR;
 			break;
 		}
@@ -1316,11 +1327,15 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 }
 
 DDR_RC
-DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles)
+DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath)
 {
 	DDR_RC rc = DDR_RC_OK;
 	DEBUGPRINTF("Init:");
 	DEBUGPRINTF("Initializing libDwarf:");
+
+	if ((DDR_RC_OK == rc) && ("" != blacklistPath)) {
+		rc = loadBlacklist(blacklistPath);
+	}
 
 	/* Read list of debug files to scan from the input file. */
 	_ir = ir;

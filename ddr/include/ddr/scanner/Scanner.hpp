@@ -19,6 +19,7 @@
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -32,13 +33,16 @@ class TypedefUDT;
 class ClassUDT;
 class UnionUDT;
 
+using std::set;
 using std::string;
 using std::vector;
 
 class Scanner
 {
+	set<string> _blacklistedFiles;
+	set<string> _blacklistedTypes;
 public:
-	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles) = 0;
+	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath) = 0;
 
 	virtual DDR_RC dispatchScanChildInfo(Type *type, void *data) = 0;
 	virtual DDR_RC dispatchScanChildInfo(EnumUDT *type, void *data) {return DDR_RC_OK;}
@@ -46,6 +50,11 @@ public:
 	virtual DDR_RC dispatchScanChildInfo(TypedefUDT *type, void *data) {return DDR_RC_OK;}
 	virtual DDR_RC dispatchScanChildInfo(ClassUDT *type, void *data) {return DDR_RC_OK;}
 	virtual DDR_RC dispatchScanChildInfo(UnionUDT *type, void *data) {return DDR_RC_OK;}
+	
+protected:
+	bool checkBlacklistedType(string name);
+	bool checkBlacklistedFile(string name);
+	DDR_RC loadBlacklist(string file);
 };
 
 #endif /* SCANNER_HPP */

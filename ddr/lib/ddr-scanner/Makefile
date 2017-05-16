@@ -34,14 +34,16 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
 
+OBJECTS = Scanner$(OBJEXT)
+
 ifneq (,$(findstring pdb,$(DEBUG_FORMAT)))
-  OBJECTS += pdb/PdbScanner.$(OBJEXT)
+  OBJECTS += pdb/PdbScanner$(OBJEXT)
   MODULE_STATIC_LIBS += diaguids.lib
 endif
 
 ifneq (,$(findstring dwo,$(DEBUG_FORMAT)))
   MODULE_INCLUDES += $(OMR_LIBDWARF_IPATH)
-  OBJECTS = \
+  OBJECTS += \
     dwarf/DwarfScanner$(OBJEXT) \
     dwarf/DwarfFunctions$(OBJEXT)
 endif

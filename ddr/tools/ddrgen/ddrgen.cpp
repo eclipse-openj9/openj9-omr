@@ -38,7 +38,7 @@
 #include "ddr/ir/Symbol_IR.hpp"
 
 DDR_RC getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideFile, vector<string> *debugFiles);
+	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile);
 DDR_RC readFileList(OMRPortLibrary *portLibrary, const char *debugFileList, vector<string> *debugFiles);
 
 int
@@ -55,8 +55,9 @@ main(int argc, char *argv[])
 	const char *supersetFile = "superset.out";
 	const char *blobFile = "blob.dat";
 	const char *overrideFile = NULL;
+	const char *blacklistFile = NULL;
 	vector<string> debugFiles;
-	rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile, &blobFile, &overrideFile, &debugFiles);
+	rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile, &blobFile, &overrideFile, &debugFiles, &blacklistFile);
 
 	/* Create IR from input. */
 #if defined(_MSC_VER)
@@ -66,7 +67,11 @@ main(int argc, char *argv[])
 #endif /* defined(_MSC_VER) */
 	Symbol_IR ir;
 	if ((DDR_RC_OK == rc) && !debugFiles.empty()) {
-		rc = scanner.startScan(&portLibrary, &ir, &debugFiles);
+		string blacklistPath = "";
+		if (blacklistFile != NULL) {
+			blacklistPath = string(blacklistFile);
+		}
+		rc = scanner.startScan(&portLibrary, &ir, &debugFiles, blacklistPath);
 	}
 
 	/* Compute field offsets for UDTs. */
@@ -105,7 +110,7 @@ main(int argc, char *argv[])
 
 DDR_RC
 getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideFile, vector<string> *debugFiles)
+	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile)
 {
 	DDR_RC rc = DDR_RC_OK;
 	bool showHelp = (argc < 2);
@@ -154,6 +159,14 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			} else {
 				*overrideFile = argv[++i];
 			}
+		} else if ((0 == strcmp(argv[i], "--blacklist"))
+			|| (0 == strcmp(argv[i], "-l"))
+		) {
+			if (argc < i + 2) {
+				showHelp = true;
+			} else {
+				*blacklistFile = argv[++i];
+			}
 		} else if ((0 == strcmp(argv[i], "--help"))
 			|| (0 == strcmp(argv[i], "-h"))
 		) {
@@ -188,6 +201,9 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			"		Optional. File containing a list of files which contain type and field overrides for specific fields.\n"
 			"		Overrides are of the format 'typeoverride.STRUCT_NAME.FIELD_NAME=TypeToChangeTo' or\n"
 			"		'fieldoverride.STRUCT_NAME.FIELD_NAME=NewFieldName'\n"
+			"	-l FILE, --blacklist FILE\n"
+			"		Optional. File containing list of type names and source file paths to ignore."
+			"		Format is 'file:[filename]' or 'type:[typename]' on each line."
 		);
 	} else if (showVersion) {
 		printf("Version 0.1\n");

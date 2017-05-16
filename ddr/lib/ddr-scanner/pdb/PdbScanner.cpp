@@ -20,8 +20,6 @@
 
 #include <assert.h>
 #include <comdef.h>
-#include <fstream>
-#include <iostream>
 #include <stdio.h>
 #include <sstream>
 
@@ -93,33 +91,6 @@ PdbScanner::addType(Type *type, bool addToIR = true)
 	}
 }
 
-DDR_RC
-PdbScanner::getBlacklist()
-{
-	/* Load the blacklist file. The blacklist contains a list of types
-	 * to ignore and not add to the IR, such as system types.
-	 */
-	DDR_RC rc = DDR_RC_OK;
-	string line = "";
-	ifstream blackListInput("tools/ddrgen/src/scanners/pdb/blackList.txt", ios::in);
-
-	if (blackListInput.is_open()) {
-		while (getline(blackListInput, line)) {
-			if (string::npos == line.find("*")) {
-				_blacklist.insert(line);
-			} else {
-				_blacklistWildcard.insert(line);
-			}
-		}
-	} else {
-		ERRMSG("Could not open blackList.txt");
-		rc = DDR_RC_ERROR;
-	}
-	blackListInput.close();
-
-	return rc;
-}
-
 void
 PdbScanner::initBaseTypeList()
 {
@@ -141,7 +112,7 @@ PdbScanner::initBaseTypeList()
 }
 
 DDR_RC
-PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles)
+PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath)
 {
 	DDR_RC rc = DDR_RC_OK;
 	IDiaDataSource *diaDataSource = NULL;
@@ -155,8 +126,8 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 		rc = DDR_RC_ERROR;
 	}
 
-	if (DDR_RC_OK == rc) {
-		rc = getBlacklist();
+	if ((DDR_RC_OK == rc) && ("" != blacklistPath)) {
+		rc = loadBlacklist(blacklistPath);
 	}
 
 	if (DDR_RC_OK == rc) {
@@ -331,42 +302,6 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	return rc;
 }
 
-bool
-PdbScanner::blacklistedSymbol(string name)
-{
-	for (set<string>::iterator it = _blacklistWildcard.begin(); it != _blacklistWildcard.end(); it ++) {
-		size_t wildcardPos = 0;
-		size_t lastWildcardPos = 0;
-		size_t lastSequencePos = 0;
-		bool matchFound = false;
-		while ((string::npos != wildcardPos) && (it->length() > wildcardPos)) {
-			wildcardPos = it->find("*", lastWildcardPos);
-			if (string::npos == wildcardPos) {
-				wildcardPos = it->length();
-			}
-			string sequence = it->substr(lastWildcardPos, wildcardPos - lastWildcardPos);
-			size_t sequencePos = name.find(sequence);
-			matchFound = sequence.empty()
-				|| (0 == lastWildcardPos && 0 == sequencePos)
-				|| (string::npos != sequencePos && sequencePos > lastSequencePos);
-			matchFound = matchFound
-				&& (sequencePos + sequence.length() == name.length()
-				|| wildcardPos < it->length()
-				|| sequence.empty());
-			if (!matchFound) {
-				break;
-			}
-			lastWildcardPos = wildcardPos + 1;
-			lastSequencePos = sequencePos;
-		}
-		if (matchFound) {
-			return true;
-		}
-	}
-
-	return _blacklist.find(name) != _blacklist.end();
-}
-
 DDR_RC
 PdbScanner::updatePostponedFieldNames()
 {
@@ -482,7 +417,7 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 	string typedefName = "";
 	rc = getName(symbol, &typedefName);
 
-	if ((DDR_RC_OK == rc) && (!blacklistedSymbol(typedefName))) {
+	if ((DDR_RC_OK == rc) && (!checkBlacklistedType(typedefName))) {
 		/* Get the typedef's type's name to check the blacklist. */
 		IDiaSymbol *baseSymbol = symbol;
 		DWORD symTag = 0;

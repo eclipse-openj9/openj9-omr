@@ -100,9 +100,14 @@ class MethodBuilder : public TR::IlBuilder
    void AppendBuilder(TR::IlBuilder *b)    { this->OMR::IlBuilder::AppendBuilder(b); }
 
    void DefineFile(const char *file)                         { _definingFile = file; }
+
    void DefineLine(const char *line)
       {
       snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
+      }
+   void DefineLine(int line)
+      {
+      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
       }
 
    void DefineName(const char *name);

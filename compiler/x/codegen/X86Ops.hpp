@@ -354,10 +354,8 @@ class TR_X86OpCode
                return 4;
             case Immediate_8:
                return 8;
-            default:
-               TR_ASSERT(false, "IMPOSSIBLE TO REACH HERE.");
-               break;
             }
+            TR_ASSERT_FATAL(false, "IMPOSSIBLE TO REACH HERE.");
          }
       // check if the instruction can be encoded as AVX
       inline bool supportsAVX() const

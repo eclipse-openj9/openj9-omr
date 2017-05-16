@@ -2888,7 +2888,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             {
             self()->getNumberOfTemporaryRegistersUsedByCall(node, state, numGPRTemporaries, numFPRTemporaries, numVRFTemporaries);
             if ((numGPRTemporaries >= 1 || numFPRTemporaries >= 1 || numVRFTemporaries >= 1)
-               && (self()->comp()->getOption(TR_TraceRegisterPressureDetails) && !performTransformation(self()->comp(), "O^O GLOBAL REGISTER ALLOCATION: Call %p has %d GPR and %d FPR and VRF % dummy registers\n", node, numGPRTemporaries, numFPRTemporaries, numVRFTemporaries)))
+               && (self()->comp()->getOption(TR_TraceRegisterPressureDetails) && !performTransformation(self()->comp(), "O^O GLOBAL REGISTER ALLOCATION: Call %p has %d GPR and %d FPR and VRF %d dummy registers\n", node, numGPRTemporaries, numFPRTemporaries, numVRFTemporaries)))
                {
                numGPRTemporaries = 0;
                numFPRTemporaries = 0;
@@ -3121,7 +3121,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
          self()->simulateMemoryReference(&memref, node->getChild(0), state, summary);
       }
 
-//   traceMsg(TR::comp(), "state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
+   traceMsg(TR::comp(), "state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
 
    if (summary->_gprPressure < summary->PRESSURE_LIMIT)
       TR_ASSERT(state->_gprPressure <= summary->_gprPressure, "Children of %s must record max register gprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_gprPressure, summary->_gprPressure);

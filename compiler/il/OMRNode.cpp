@@ -171,7 +171,7 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
 
       if (_byteCodeInfo.getCallerIndex() < 0)
          _byteCodeInfo.setCallerIndex(ilGen->currentCallSiteIndex());
-      TR_ASSERT(_byteCodeInfo.getCallerIndex() < (INT_MAX/4), "Caller index too high; cannot set high order bit\n");
+      TR_ASSERT(_byteCodeInfo.getCallerIndex() < (SHRT_MAX/4), "Caller index too high; cannot set high order bit\n");
       _byteCodeInfo.setDoNotProfile(0);
       }
    else if (originatingByteCodeNode)

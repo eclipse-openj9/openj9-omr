@@ -30,9 +30,9 @@ void TR_CallStackIterator::printStackBacktrace(TR::Compilation *comp)
    while (!isDone())
       {
       if (comp)
-         traceMsg(comp, "%s+0x%x\n", getProcedureName(), getOffsetInProcedure());
+         traceMsg(comp, "%s+0x%lx\n", getProcedureName(), getOffsetInProcedure());
       else
-         fprintf(stderr, "%s+0x%x\n", getProcedureName(), getOffsetInProcedure());
+         fprintf(stderr, "%s+0x%lx\n", getProcedureName(), getOffsetInProcedure());
       getNext();
       }
    }

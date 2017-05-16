@@ -3903,7 +3903,7 @@ TR_GeneralLoopUnroller::countNodesAndSubscripts(TR::Node *node, int32_t &numNode
          // TODO: leaf routine?
 
          // Is it always inlined BIF?
-         if (methodSym->getRecognizedMethod() != -1)
+         if (methodSym->getRecognizedMethod() != TR::unknownMethod)
             lwp._numBIFs++;
          }
       }

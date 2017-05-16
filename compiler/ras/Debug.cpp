@@ -1795,9 +1795,9 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
       {
       char * symName = (char *)_comp->trMemory()->allocateHeapMemory(20);
       if (symRef->getSymbol()->getDataType() == TR::Float || symRef->getSymbol()->getDataType() == TR::Double)
-         sprintf(symName, "#FPSPILL%d_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
+         sprintf(symName, "#FPSPILL%zu_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
       else
-         sprintf(symName, "#SPILL%d_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
+         sprintf(symName, "#SPILL%zu_%d", symRef->getSymbol()->getSize(), symRef->getReferenceNumber());
 
       if (_comp->getOption(TR_MaskAddresses))
          sprintf(name, "<%s *Masked*>", symName);

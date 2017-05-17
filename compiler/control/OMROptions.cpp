@@ -2306,7 +2306,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (self()->requiresLogFile() || self()->getBreakOnCreate() || self()->getDebugOnCreate())
       _addressToEnumerate |= TR_EnumerateRegister;
 
-
    if (self()->getOption(TR_ImmediateCountingRecompilation))
       self()->setOption(TR_EnableGCRPatching, false);
 
@@ -2414,10 +2413,6 @@ OMR::Options::jitPreProcess()
    // --------------------------------------------------------------------------
    // All projects
    //
-   if (self()->getOption(TR_EnableLargePages))
-      {
-      self()->setOption(TR_EnableLargeCodePages);
-      }
 
    //Disabling Shrink Wrapping on all platforms (functional issues)
    self()->setOption(TR_DisableShrinkWrapping);
@@ -2702,23 +2697,6 @@ OMR::Options::jitPreProcess()
 
       if (TR::isJ9() && !_quickstartDetected && (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()))
          self()->setOption(TR_IncreaseCountsForNonBootstrapMethods);
-
-
-#if defined(TR_HOST_64BIT) 
-#if defined(J9ZOS390)
-      // The way zOS allocates memory is by looking for 2MB free chunks and uses that for its 
-      // code caches. When we enable RMODE(64) then the addresses will be from 0x80000000
-      // to 0x7fffffffffffffff. This means two code caches could be very far apart from one another
-      // which is something we want to avoid as it may cause performance issues. The solution will 
-      // be to enable the code cache consolidation which will allocate 256MB at startup just for 
-      // code caches. This way the code caches will be together and improve performance. 
-      // Note: If all 256MB are used up then the program will abort compiles.
-      if (self()->getOption(TR_EnableRMODE64)) 
-#endif
-         {
-         self()->setOption(TR_EnableCodeCacheConsolidation);
-         }
-#endif
 
       _newAotrtDebugLevel = 0;
       _disableDLTBytecodeIndex = -1;
@@ -3672,6 +3650,28 @@ OMR::Options::jitPostProcess()
 
    if (_hotMaxStaticPICSlots < 0)
       _hotMaxStaticPICSlots = -_hotMaxStaticPICSlots * _maxStaticPICSlots;
+
+   if (self()->getOption(TR_EnableLargePages))
+      {
+      self()->setOption(TR_EnableLargeCodePages);
+      }
+
+#if defined(TR_TARGET_64BIT)
+#if defined(J9ZOS390)
+   // We allocate code cache memory on z/OS by asking the port library for typically small (~2MB) code cache chunks.
+   // This is done because the port library can typically only allocate executable memory (code caches) below the
+   // 2GB bar. When RMODE(64) is enabled however we are able to allocate executable memory above the 2GB bar. This
+   // means two code caches could be very far apart from one another which is something we want to avoid as it may
+   // cause performance issues. The solution is to enable the code cache consolidation which will allocate larger
+   // (~256MB) code caches at startup. The code caches will then have locality which improves performance, but
+   // moreover the size of the allocated larger code cache will ensure no trampolines are needed in JIT private
+   // linkage.
+   if (self()->getOption(TR_EnableRMODE64))
+#endif
+      {
+      self()->setOption(TR_EnableCodeCacheConsolidation);
+      }
+#endif
 
    return true;
    }

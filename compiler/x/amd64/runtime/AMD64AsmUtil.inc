@@ -23,9 +23,6 @@ public compareAndExchange2
 public compareAndExchange4
 public compareAndExchange8
 public _patchingFence16
-public _patchingFence24
-public _patchingFenceCPUID
-public atomicIncrement4
 
 Align16 macro
 ; TODO:AMD64: Find a way not to get 16 bytes of padding when we are already aligned!
@@ -102,45 +99,5 @@ ENDIF
         mfence
         ret
 _patchingFence16 ENDP
-
-        Align16
-_patchingFence24 PROC
-        mfence
-IFDEF WINDOWS
-        clflush [rcx]
-        clflush [rcx+8]
-        clflush [rcx+16]
-ELSE
-        clflush [rdi]
-        clflush [rdi+8]
-        clflush [rdi+16]
-ENDIF
-        mfence
-        ret
-_patchingFence24 ENDP
-
-
-; void _patchingFenceCPUID();
-
-_patchingFenceCPUID PROC
-         pushfq
-         push       rbx
-         cpuid
-         pop        rbx
-         popfq
-         ret
-_patchingFenceCPUID ENDP
-
-; prototype: int32_t atomicIncrement4(int32_t *value)
-atomicIncrement4 PROC
-   mov   eax, [rdi]        ; load original value
-LtryNextValue:
-   mov   ecx, eax
-   add   ecx, 1
-   lock cmpxchg dword ptr [rdi], ecx
-   jnz   LtryNextValue
-   mov   eax, ecx
-   ret
-atomicIncrement4 ENDP
 
 _TEXT   ends

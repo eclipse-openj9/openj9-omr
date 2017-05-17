@@ -148,9 +148,13 @@ public:
    virtual bool getUnresolvedSpecialMethodInCP(int32_t);
    virtual bool getUnresolvedVirtualMethodInCP(int32_t);
 
-   bool isDAAMethod();
    bool isDAAWrapperMethod();
+   bool isDAAMarshallingWrapperMethod();
+   bool isDAAPackedDecimalWrapperMethod();
+
    bool isDAAIntrinsicMethod();
+   bool isDAAMarshallingIntrinsicMethod();
+   bool isDAAPackedDecimalIntrinsicMethod();
 
    virtual void setMethodHandleLocation(uintptrj_t *location);
    virtual uintptrj_t *getMethodHandleLocation()

@@ -721,7 +721,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       self()->setSupportsBCDToDFPReduction();
       self()->setSupportsIntDFPConversions();
 
-      if (!comp->getOptions()->getOption(TR_NoResumableTrapHandler) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      if (!comp->getOptions()->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
          {
          self()->setHasResumableTrapHandler();
          }

@@ -3612,7 +3612,7 @@ OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node)
 bool
 OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
    {
-   if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+   if (self()->comp()->getOptions()->getOption(TR_DisableTraps))
       return false;
 
    if (!doChecks)

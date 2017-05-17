@@ -389,7 +389,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
+   return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -639,7 +639,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       }
 
    // Check if platform supports highword facility - both hardware and OS combination.
-   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
       {
       // On 31-bit zlinux we need to check RAS support
       if (!TR::Compiler->target.isLinux() || TR::Compiler->target.is64Bit() || TR::Compiler->target.cpu.getS390SupportsHPRDebug())
@@ -1951,7 +1951,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !self()->anyLitPoolSnippets())
+   else if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
@@ -6209,7 +6209,7 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
 bool
 OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
       return (!self()->comp()->getOptions()->getOption(TR_DisableUTF16BEEncoder) ||
                (self()->getSupportsVectorRegisters() && !self()->comp()->getOptions()->getOption(TR_DisableSIMDUTF16BEEncoder)));
@@ -6329,7 +6329,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+   if (!(bool)disableEXRLDispatch && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
@@ -10114,7 +10114,8 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
 
       // On z10 trueCompElimination may swap the previous compare operands, so give up early
-      if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) &&
+          !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
          {
          if (tReg->getKind() != TR_FPR)
             {
@@ -11271,7 +11272,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
     * Prior to zNext, vector operations that operated on floating point numbers only supported
     * Doubles. On zNext and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
       {
       return false;
       }

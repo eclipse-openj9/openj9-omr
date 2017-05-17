@@ -13478,7 +13478,7 @@ OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg)
       TR::Node* byteDstNode = node->getChild(1);
       TR::Node* byteLenNode = node->getChild(2);
 
-      primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
+      TR::TreeEvaluator::primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
       }
    else
       {
@@ -13489,7 +13489,7 @@ OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg)
       TR::Node* byteDstNode = node->getChild(3);
       TR::Node* byteLenNode = node->getChild(4);
 
-      referenceArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode, byteSrcObjNode, byteDstObjNode);
+      TR::TreeEvaluator::referenceArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode, byteSrcObjNode, byteDstObjNode);
       }
 
    return NULL;
@@ -13651,7 +13651,7 @@ OMR::Z::TreeEvaluator::referenceArraycopyEvaluator(TR::Node* node, TR::CodeGener
       {
       TR_ASSERT_FATAL(node->getArrayCopyElementType() == TR::Address, "Reference arraycopy element type should be TR::Address but was '%s'", node->getArrayCopyElementType().toString());
 
-      primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
+      TR::TreeEvaluator::primitiveArraycopyEvaluator(node, cg, byteSrcNode, byteDstNode, byteLenNode);
 
 #ifdef J9_PROJECT_SPECIFIC
       TR::TreeEvaluator::genWrtbarForArrayCopy(node, byteSrcObjReg, byteDstObjReg, byteSrcNode->isNonNull(), cg);

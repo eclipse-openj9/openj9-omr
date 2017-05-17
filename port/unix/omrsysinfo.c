@@ -246,6 +246,11 @@ static BOOLEAN isSymbolicLink(struct OMRPortLibrary *portLibrary, char *filename
 static intptr_t searchSystemPath(struct OMRPortLibrary *portLibrary, char *filename, char **result);
 #endif /* defined(AIXPPC) || defined(J9ZOS390) */
 
+#if defined(J9ZOS390)
+static void setOSFeature(OMROSDesc *desc, uint32_t feature);
+static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, OMROSDesc *desc);
+#endif /* defined(J9ZOS390) */
+
 /**
  * @internal
  * Determines the proper portable error code to return given a native error code
@@ -2969,3 +2974,82 @@ leave_routine:
 	return ret;
 }
 
+#if defined(J9ZOS390)
+/**
+ * @internal
+ * Helper to set appropriate feature field in a OMROSDesc struct
+ *
+ * @param[in] desc pointer to the struct that contains the OS features
+ * @param[in] feature to set
+ *
+ */
+static void
+setOSFeature(OMROSDesc *desc, uint32_t feature)
+{
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
+		uint32_t featureIndex = feature / 32;
+		uint32_t featureShift = feature % 32;
+
+		desc->features[featureIndex] = (desc->features[featureIndex] | (1 << (featureShift)));
+	}
+}
+
+/**
+ * @internal
+ * Populates OMROSDesc *desc for zOS
+ *
+ * @param[in] desc pointer to the struct that will contain the OS features
+ *
+ * @return 0 on success, -1 on failure
+ */
+static intptr_t
+getZOSDescription(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+{
+	intptr_t rc = 0;
+
+#if defined(OMR_ENV_DATA64)
+	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
+	uint8_t cvtoslvl6 = cvtp->cvtoslvl[6];
+	if (J9_ARE_ANY_BITS_SET(cvtoslvl6, 0x10)) {
+		setOSFeature(desc, OMRPORT_ZOS_FEATURE_RMODE64);
+	}
+#endif /* defined(OMR_ENV_DATA64) */
+
+	return rc;
+}
+#endif /* defined(J9ZOS390) */
+
+intptr_t
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+{
+	intptr_t rc = -1;
+	Trc_PRT_sysinfo_get_os_description_Entered(desc);
+
+	if (NULL != desc) {
+		memset(desc, 0, sizeof(OMROSDesc));
+
+#if defined(J9ZOS390)
+		rc = getZOSDescription(portLibrary, desc);
+#endif /* defined(J9ZOS390) */
+	}
+
+	Trc_PRT_sysinfo_get_os_description_Exit(rc);
+	return rc;
+}
+
+BOOLEAN
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature)
+{
+	BOOLEAN rc = FALSE;
+	Trc_PRT_sysinfo_os_has_feature_Entered(desc, feature);
+
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
+		uint32_t featureIndex = feature / 32;
+		uint32_t featureShift = feature % 32;
+
+		rc = J9_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+	}
+
+	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);
+	return rc;
+}

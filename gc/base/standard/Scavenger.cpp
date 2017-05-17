@@ -3444,6 +3444,9 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 				if (isObjectInEvacuateMemory((omrobjectptr_t)rootRegion->getLowAddress())) {
 					/* tell the object iterator to work on the given region */
 					GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+					evacuateHeapIterator.includeForwardedObjects();
+#endif
 					omrobjectptr_t objectPtr = NULL;
 					omrobjectptr_t fwdObjectPtr = NULL;
 					while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {

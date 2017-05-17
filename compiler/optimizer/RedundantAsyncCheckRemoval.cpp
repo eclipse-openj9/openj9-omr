@@ -1310,6 +1310,8 @@ void TR_RedundantAsyncCheckRemoval::getNearestAncestors(TR_StructureSubGraphNode
 
 void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node, TR_StructureSubGraphNode *entry)
    {
+   return;  // Disable it for performance. For more details, refer to https://github.com/eclipse/omr/pull/1138
+
    if (node == entry)
       return;
 
@@ -1318,6 +1320,8 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
 
    node->setVisitCount(comp()->getVisitCount());
 
+   if (trace())
+      traceMsg(comp(),"<===markAncestors start=== ssg node: %d, ssg entry: %d\n", node->getNumber(), entry->getNumber());
 
    for (auto edge = node->getPredecessors().begin(); edge != node->getPredecessors().end(); ++edge)
       {
@@ -1355,6 +1359,9 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
             _ancestors.add(pred);
 	    }
          }
+
+      if (trace())
+         traceMsg(comp(),"<===markAncestors recursion=== ssg pred: %d, ssg entry: %d\n", pred->getNumber(), entry->getNumber());
 
       markAncestors(pred, entry);
       }

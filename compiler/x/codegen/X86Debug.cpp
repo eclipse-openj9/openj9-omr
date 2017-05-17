@@ -2004,7 +2004,7 @@ TR_Debug::getName(TR::RealRegister * reg, TR_RegisterSizes size)
          }
       }
 
-   if (reg->getKind() == TR_FPR)
+   if (reg->getKind() == TR_FPR || reg->getKind() == TR_VRF)
       size = TR_QuadWordReg;
 
    return getName(reg->getRegisterNumber(), size);

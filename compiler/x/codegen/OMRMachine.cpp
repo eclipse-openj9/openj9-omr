@@ -1310,7 +1310,14 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          }
       else
          {
-         if (virtualRegister->isSinglePrecision())
+         if (virtualRegister->getKind() == TR_VRF)
+            {
+            instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
+                                                MOVDQURegReg,
+                                                currentAssignedRegister,
+                                                targetRegister, self()->cg());
+            }
+         else if (virtualRegister->isSinglePrecision())
             {
             instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction,
                                                 MOVAPSRegReg,
@@ -1342,7 +1349,16 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
          {
          // Exchange the contents of two XMM registers without an XCHG instruction.
          //
-         TR_X86OpCodes xchgOp = virtualRegister->isSinglePrecision() ? XORPSRegReg : XORPDRegReg;
+         TR_X86OpCodes xchgOp = BADIA32Op;
+         if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
+            {
+            xchgOp = XORPSRegReg;
+            }
+         else //virtualRegister->getKind() == TR_VRF || (virtualRegister->getKind() == TR_FPR && !virtualRegister->isSinglePrecision())
+            {
+            xchgOp = XORPDRegReg;
+            }
+
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
          self()->cg()->traceRAInstruction(instr);
@@ -1373,7 +1389,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
 
          if (targetRegister != candidate)
             {
-            if (currentTargetVirtual->isSinglePrecision())
+            if (virtualRegister->getKind() == TR_VRF)
+               {
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               }
+            else if (currentTargetVirtual->isSinglePrecision())
                {
                instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
                }
@@ -1407,7 +1427,16 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
       if (currentAssignedRegister != NULL)
          {
-         TR_X86OpCodes xchgOp = virtualRegister->isSinglePrecision() ? XORPSRegReg : XORPDRegReg;
+         TR_X86OpCodes xchgOp = BADIA32Op;
+         if (virtualRegister->getKind() == TR_FPR && virtualRegister->isSinglePrecision())
+            {
+            xchgOp = XORPSRegReg;
+            }
+         else //virtualRegister->getKind() == TR_VRF || (virtualRegister->getKind() == TR_FPR && !virtualRegister->isSinglePrecision())
+            {
+            xchgOp = XORPDRegReg;
+            }
+
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
          instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, xchgOp, currentAssignedRegister, targetRegister, self()->cg());
          self()->cg()->traceRAInstruction(instr);
@@ -1437,7 +1466,11 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
 
          if (targetRegister != candidate)
             {
-            if (currentTargetVirtual->isSinglePrecision())
+            if (virtualRegister->getKind() == TR_VRF)
+               {
+               instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVDQURegReg, targetRegister, candidate, self()->cg());
+               }
+            else if (currentTargetVirtual->isSinglePrecision())
                {
                instr = new (self()->cg()->trHeapMemory()) TR::X86RegRegInstruction(currentInstruction, MOVAPSRegReg, targetRegister, candidate, self()->cg());
                }
@@ -1770,7 +1803,9 @@ OMR::X86::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_Allocat
    int32_t endReg = TR::RealRegister::LastAssignableGPR;
 
    TR_LiveRegisters *liveFPRs = self()->cg()->getLiveRegisters(TR_FPR);
-   if(liveFPRs && liveFPRs->getNumberOfLiveRegisters() > 0)
+   TR_LiveRegisters *liveVRFs = self()->cg()->getLiveRegisters(TR_VRF);
+
+   if ((liveFPRs && liveFPRs->getNumberOfLiveRegisters() > 0) || (liveVRFs && liveVRFs->getNumberOfLiveRegisters() > 0))
       endReg = TR::RealRegister::LastXMMR;
 
    for (i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
@@ -1857,7 +1892,8 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
    //
    int32_t endReg = TR::RealRegister::LastAssignableGPR;
    TR_LiveRegisters *liveFPRs = self()->cg()->getLiveRegisters(TR_FPR);
-   if(liveFPRs && liveFPRs->getNumberOfLiveRegisters() > 0)
+   TR_LiveRegisters *liveVRFs = self()->cg()->getLiveRegisters(TR_VRF);
+   if ((liveFPRs && liveFPRs->getNumberOfLiveRegisters() > 0) || (liveVRFs && liveVRFs->getNumberOfLiveRegisters() > 0))
       endReg = TR::RealRegister::LastXMMR;
    for (i = TR::RealRegister::FirstGPR; i <= endReg; i = ((i==TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstXMMR : i+1))
       {
@@ -2309,7 +2345,26 @@ void OMR::X86::Machine::disassociateUnspilledBackingStorage()
 
          if (location)
             {
-            int32_t size = (virtReg->getKind() == TR_FPR) ? (virtReg->isSinglePrecision() ? 4:8) : TR::Compiler->om.sizeofReferenceAddress();
+            int32_t size = -1;
+            if (virtReg->getKind() == TR_FPR)
+               {
+               if (virtReg->isSinglePrecision())
+                  {
+                  size = 4;
+                  }
+               else
+                  {
+                  size = 8;
+                  }
+               }
+            else if (virtReg->getKind() == TR_VRF)
+               {
+               size = 16;
+               }
+            else
+               {
+               size = TR::Compiler->om.sizeofReferenceAddress();
+               }
             self()->cg()->freeSpill(location, size, virtReg->isSpilledToSecondHalf()? 4:0);
             virtReg->setBackingStorage(NULL);
 

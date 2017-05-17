@@ -1862,7 +1862,7 @@ void TR::X86MemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (kindsToBeAssigned & (TR_X87_Mask | TR_FPR_Mask))
+   if (kindsToBeAssigned & (TR_X87_Mask | TR_FPR_Mask | TR_VRF_Mask))
       {
       TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
       if (snippet)
@@ -1870,7 +1870,7 @@ void TR::X86MemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
          if (kindsToBeAssigned & TR_X87_Mask)
             snippet->setNumLiveX87Registers(cg()->machine()->fpGetNumberOfLiveFPRs());
 
-         if (kindsToBeAssigned & TR_FPR_Mask)
+         if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask))
             snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
          }
       }
@@ -2212,7 +2212,7 @@ void TR::X86MemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
          TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
          if (snippet)
             {
-            if (kindsToBeAssigned & TR_FPR_Mask)
+            if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask))
                snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
             }
 #endif
@@ -2420,7 +2420,7 @@ void TR::X86MemRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
          {
 #ifdef J9_PROJECT_SPECIFIC
          TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
-         if (snippet && (kindsToBeAssigned & TR_FPR_Mask))
+         if (snippet && (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask)))
             snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
 #endif
 
@@ -2713,7 +2713,7 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (kindsToBeAssigned & (TR_X87_Mask | TR_FPR_Mask))
+   if (kindsToBeAssigned & (TR_X87_Mask | TR_FPR_Mask | TR_VRF_Mask))
       {
       TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
       if (snippet)
@@ -2721,7 +2721,7 @@ void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
          if (kindsToBeAssigned & TR_X87_Mask)
             snippet->setNumLiveX87Registers(cg()->machine()->fpGetNumberOfLiveFPRs());
 
-         if (kindsToBeAssigned & TR_FPR_Mask)
+         if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask))
             snippet->setHasLiveXMMRegisters((cg()->machine()->fpGetNumberOfLiveXMMRs() > 0) ? true : false);
          }
       }
@@ -3924,7 +3924,7 @@ void TR::X86FPMemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssig
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (kindsToBeAssigned & TR_FPR_Mask)
+   if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask))
       {
       TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
       if (snippet)
@@ -3964,7 +3964,7 @@ void TR::X86FPRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssig
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (kindsToBeAssigned & TR_FPR_Mask)
+   if (kindsToBeAssigned & (TR_FPR_Mask | TR_VRF_Mask))
       {
       TR::UnresolvedDataSnippet *snippet = getMemoryReference()->getUnresolvedDataSnippet();
       if (snippet)

@@ -124,7 +124,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
       TR_GlobalRegisterNumber  highGlobalRegNum = child->getHighGlobalRegisterNumber();
 
       TR::RealRegister::RegNum realRegNum = TR::RealRegister::NoReg, realHighRegNum = TR::RealRegister::NoReg;
-      if (globalReg->getKind() == TR_GPR || XMM_GPRS_USE_DISTINCT_NUMBERS)
+      if (globalReg->getKind() == TR_GPR || globalReg->getKind() == TR_VRF || XMM_GPRS_USE_DISTINCT_NUMBERS)
          {
          realRegNum = (TR::RealRegister::RegNum) cg->getGlobalRegister(globalRegNum);
 
@@ -245,6 +245,12 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
                generateRegRegInstruction(MOVAPDRegReg, node, copyReg, child->getRegister(), cg);
                }
             }
+         else if (globalReg->getKind() == TR_VRF)
+            {
+            generateRegcopyDebugCounter(cg, "vrf");
+            copyReg = cg->allocateRegister(TR_VRF);
+            generateRegRegInstruction(MOVDQURegReg, node, copyReg, child->getRegister(), cg);
+            }
          else
             {
             generateRegcopyDebugCounter(cg, "x87");
@@ -346,7 +352,7 @@ OMR::X86::RegisterDependencyConditions::RegisterDependencyConditions(
             addPostCondition(highGlobalReg, realHighRegNum, cg);
             }
          }
-      else if (globalReg->getKind() == TR_FPR)
+      else if (globalReg->getKind() == TR_FPR || globalReg->getKind() == TR_VRF)
          {
          addPreCondition(globalReg, realRegNum, cg);
          addPostCondition(globalReg, realRegNum, cg);
@@ -775,6 +781,10 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
                   {
                   op = (assignedReg->isSinglePrecision()) ? MOVSSRegMem : (cg->getXMMDoubleLoadOpCode());
                   }
+               else if (assignedReg->getKind() == TR_VRF)
+                  {
+                  op = MOVDQURegMem;
+                  }
                else
                   {
                   op = LRegMem();
@@ -920,7 +930,7 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          dependentRealReg = machine->getX86RealRegister(dependentRegNum);
          if (dependentRealReg->getState() == TR::RealRegister::Free)
             {
-            if (virtReg->getKind() == TR_FPR)
+            if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF)
                machine->coerceXMMRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
             else
                machine->coerceGPRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -946,7 +956,7 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          dependentRealReg = machine->getX86RealRegister(dependentRegNum);
          if (dependentRealReg != assignedReg)
             {
-            if (virtReg->getKind() == TR_FPR)
+            if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF)
                machine->coerceXMMRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
             else
                machine->coerceGPRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
@@ -1006,7 +1016,7 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
             virtReg = dependencies[i]->getRegister();
             if (toRealRegister(virtReg->getAssignedRealRegister()) == NULL)
                {
-               if (virtReg->getKind() == TR_FPR)
+               if (virtReg->getKind() == TR_FPR || virtReg->getKind() == TR_VRF)
                   machine->coerceGPRegisterAssignment(currentInstruction, virtReg, TR_QuadWordReg);
                else
                   machine->coerceGPRegisterAssignment(currentInstruction, virtReg);
@@ -1540,7 +1550,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::Co
    for (i=0; i<_numPreConditions; i++)
       {
       reg = _preConditions->getRegisterDependency(i)->getRegister();
-      if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR))
+      if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR || reg->getKind() == TR_VRF))
          {
          total++;
          }
@@ -1549,7 +1559,7 @@ uint32_t OMR::X86::RegisterDependencyConditions::numReferencedGPRegisters(TR::Co
    for (i=0; i<_numPostConditions; i++)
       {
       reg = _postConditions->getRegisterDependency(i)->getRegister();
-      if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR))
+      if (reg && (reg->getKind() == TR_GPR || reg->getKind() == TR_FPR || reg->getKind() == TR_VRF))
          {
          total++;
          }

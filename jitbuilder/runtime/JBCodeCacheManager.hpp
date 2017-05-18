@@ -50,6 +50,9 @@ class OMR_EXTENSIBLE CodeCacheManager : public OMR::CodeCacheManagerConnector
 public:
    CodeCacheManager(TR_FrontEnd *fe) : OMR::CodeCacheManagerConnector(fe)
       {
+      TR_ASSERT_FATAL(!_codeCacheManager, "CodeCacheManager already instantiated. "
+                                          "Cannot create multiple instances");
+
       _codeCacheManager = reinterpret_cast<TR::CodeCacheManager *>(this);
       }
 

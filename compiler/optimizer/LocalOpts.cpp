@@ -1556,7 +1556,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
 
             if ((prevBlock->isCold()) || (prevBlock == cfgStart) || (prevBlock == block) ||
                 (exceptionEdgesMatter && cfg->compareExceptionSuccessors(block, prevBlock)))
+               {
+               nextEdge = next;
                continue;
+               };
 
             bool isLoopBackEdge = false;
             //
@@ -1576,7 +1579,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                }
 
             if (isLoopBackEdge)
+               {
+               nextEdge = next;
                continue;
+               }
 
 
             if (isLoopHdr)
@@ -1586,6 +1592,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                // peeled outside.  No convincing reason to keep hoisting out of
                // loops enabled.
                //
+               nextEdge = next;
                continue;
 
 
@@ -1616,7 +1623,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                   }
 
                if (successorsInMidLoop > 1)
+                  {
+                  nextEdge = next;
                   continue;
+                  }
                }
 
 
@@ -1628,7 +1638,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             // need for hoisting)
             //
             if (block->getPredecessors().size() == 1)
+               {
+               nextEdge = next;
                continue;
+               };
 
             TR::TreeTop *tt = prevBlock->getLastRealTreeTop();
 

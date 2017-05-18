@@ -280,8 +280,10 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
       IntegersInRegisters |
       LongsInRegisters    |
       FloatsInRegisters   |
-      ReservesOutgoingArgsInPrologue |
-      AlwaysDedicateFramePointerRegister;
+      ReservesOutgoingArgsInPrologue;
+
+   if (!cg->comp()->getOption(TR_OmitFramePointer))
+      _properties._properties |= AlwaysDedicateFramePointerRegister;
 
    // Integer arguments
    //

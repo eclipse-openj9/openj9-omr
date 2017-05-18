@@ -6268,7 +6268,8 @@ static bool identicalBranchTrees(TR::Node *node1, TR::Node *node2)
    return true;
    }
 
-static void appendPredecessors(TR::CFGEdgeList& dest, TR::Block *block)
+void
+TR_InductionVariableAnalysis::appendPredecessors(WorkQueue& dest, TR::Block *block)
    {
    const TR::CFGEdgeList& preds = block->getPredecessors();
    const TR::CFGEdgeList& excs = block->getExceptionPredecessors();
@@ -6297,8 +6298,7 @@ TR_InductionVariableAnalysis::isIVUnchangedInLoop(TR_RegionStructure *loop,
    if (trace())
       traceMsg(comp(), "\tTrying to make sure that candidate IV hasn't been modified elsewhere in the loop\n");
 
-   TR::CFGEdgeList workList(
-      getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   WorkQueue workQueue(comp()->allocator());
 
    TR::BlockChecklist nodesDone(comp());
    TR::Block * loopEntryBlock = loop->getEntryBlock();
@@ -6317,12 +6317,12 @@ TR_InductionVariableAnalysis::isIVUnchangedInLoop(TR_RegionStructure *loop,
 
    // if this is the loop header then we don't want to process it's predecessors
    if (loopEntryBlock && loopEntryBlock != loopTestBlock)
-      appendPredecessors(workList, loopTestBlock);
+      appendPredecessors(workQueue, loopTestBlock);
 
-   while (!workList.empty())
+   while (!workQueue.empty())
       {
-      TR::Block *curBlock = workList.front()->getFrom()->asBlock();
-      workList.pop_front();
+      TR::Block *curBlock = workQueue.front()->getFrom()->asBlock();
+      workQueue.pop_front();
 
       // if I've already visited this block, continue
       if (nodesDone.contains(curBlock))
@@ -6348,7 +6348,7 @@ TR_InductionVariableAnalysis::isIVUnchangedInLoop(TR_RegionStructure *loop,
 
       // if this is the loop header then we don't want to process it's predecessors
       if (loopEntryBlock != curBlock)
-         appendPredecessors(workList, curBlock);
+         appendPredecessors(workQueue, curBlock);
       }
 
    if (trace())

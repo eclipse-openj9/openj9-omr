@@ -410,11 +410,10 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
          _nodesInCycle->set(rootNode->getNumber());
 
          bool stopAnalyzingThisNode = false;
-         TR::CFGEdgeList predList(rootNode->getPredecessors());
-         predList.insert(predList.end(), rootNode->getExceptionPredecessors().begin(), rootNode->getExceptionPredecessors().end());
-         for (auto pred = predList.begin(); pred != predList.end(); ++pred)
+         TR_PredecessorIterator precedingEdges(rootNode);
+         for (auto precedingEdge = precedingEdges.getFirst(); precedingEdge; precedingEdge = precedingEdges.getNext())
             {
-            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) (*pred)->getFrom();
+            TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) precedingEdge->getFrom();
             TR_Structure *predStructure = predNode->getStructure();
             if (pendingList->get(predStructure->getNumber()))
                {
@@ -434,18 +433,17 @@ void TR_LoopTransformer::detectWhileLoopsInSubnodesInOrder(ListAppender<TR_Struc
       pendingList->reset(root->getNumber());
       _analysisStack.pop();
 
-      TR::CFGEdgeList succList(rootNode->getSuccessors());
-      succList.insert(succList.end(), rootNode->getExceptionSuccessors().begin(), rootNode->getExceptionSuccessors().end());
-      for (auto succ = succList.begin(); succ != succList.end(); ++succ)
+      TR_SuccessorIterator succeedingEdges(rootNode);
+      for (auto succeedingEdge = succeedingEdges.getFirst(); succeedingEdge; succeedingEdge = succeedingEdges.getNext())
          {
-         TR_StructureSubGraphNode *succNode = (TR_StructureSubGraphNode *) (*succ)->getTo();
+         TR_StructureSubGraphNode *succNode = (TR_StructureSubGraphNode *) succeedingEdge->getTo();
          TR_Structure *succStructure = succNode->getStructure();
          bool isExitEdge = false;
          ListIterator<TR::CFGEdge> ei(&region->getExitEdges());
          TR::CFGEdge *edge;
          for (edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
             {
-            if (edge == *succ)
+            if (edge == succeedingEdge)
                {
                isExitEdge = true;
                break;
@@ -590,8 +588,10 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
             //
             if (entryNode->getSuccessors().size() == 2)
                {
-               TR::CFGEdge* succ1 = entryNode->getSuccessors().front();
-               TR::CFGEdge* succ2 = entryNode->getSuccessors().back(); //Get the 2nd successor
+               auto it = entryNode->getSuccessors().begin();
+               TR::CFGEdge* succ1 = *it;
+               ++it;
+               TR::CFGEdge* succ2 = *it;
                bool succ1Internal = region->contains(toStructureSubGraphNode(succ1->getTo())->getStructure(), region->getParent());
                bool succ2Internal = region->contains(toStructureSubGraphNode(succ2->getTo())->getStructure(), region->getParent());
                if (succ1Internal ^ succ2Internal)
@@ -626,8 +626,10 @@ void TR_LoopTransformer::detectWhileLoops(ListAppender<TR_Structure> &whileLoops
                                  {
                                  if (exitBlock->getSuccessors().size() == 2)
                                     {
-                                    TR::CFGEdge* exitSucc1 = exitBlock->getSuccessors().front();
-                                    TR::CFGEdge* exitSucc2 = exitBlock->getSuccessors().back(); // Get the 2nd Successor
+                                    auto it = exitBlock->getSuccessors().begin();
+                                    TR::CFGEdge* exitSucc1 = *it;
+                                    ++it;
+                                    TR::CFGEdge* exitSucc2 = *it;
                                     bool successor1Internal = region->contains(toBlock(exitSucc1->getTo())->getStructureOf(), region->getParent());
                                     bool successor2Internal = region->contains(toBlock(exitSucc2->getTo())->getStructureOf(), region->getParent());
                                     if (successor1Internal ^ successor2Internal)

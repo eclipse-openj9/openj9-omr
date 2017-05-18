@@ -30,6 +30,7 @@ namespace OMR { typedef OMR::CFG CFGConnector; }
 
 #include <stddef.h>                 // for NULL
 #include <stdint.h>                 // for uint32_t
+#include <vector>
 #include "compile/Compilation.hpp"  // for Compilation
 #include "cs2/tableof.h"            // for TableOf
 #include "cs2/listof.h"             // for ListOf
@@ -199,8 +200,7 @@ class CFG
    bool removeEdge(TR::CFGEdge *e);
    bool removeEdge(TR::CFGNode *from, TR::CFGNode *to);
    bool removeEdge(TR::CFGEdge *e, bool recursiveImpl);
-   void removeSelfEdge(List<TR::CFGEdge> succList, int32_t selfNumber);
-   void removeEdge(TR::CFGEdgeList succList, int32_t selfNumber, int32_t destNumber);
+   void removeEdge(TR::CFGEdgeList &succList, int32_t selfNumber, int32_t destNumber);
 
    void removeBlock(TR::Block *);
 
@@ -367,10 +367,12 @@ public: //FIXME: These public members should eventually be wrtapped in an interf
 class TR_CFGIterator
    {
 public:
-   TR_CFGIterator(TR::CFGEdgeList& l1, TR::CFGEdgeList& l2) : combinedList(l1)
+   TR_CFGIterator(TR::CFGEdgeList& regularEdges, TR::CFGEdgeList& exceptionEdges) :
+      _regularEdges(regularEdges),
+      _exceptionEdges(exceptionEdges),
+      _regularEdgeIterator(_regularEdges.begin()),
+      _exceptionEdgeIterator(_exceptionEdges.begin())
       {
-      combinedList.insert(combinedList.end(), l2.begin(), l2.end());
-      currentIterator = combinedList.begin();
       }
 
    /**
@@ -378,8 +380,9 @@ public:
     */
    TR::CFGEdge* getFirst()
       {
-      currentIterator = combinedList.begin();
-      return (combinedList.empty()) ? NULL : *currentIterator ;
+      _regularEdgeIterator = _regularEdges.begin();
+      _exceptionEdgeIterator = _exceptionEdges.begin();
+      return getCurrent();
       }
 
    /**
@@ -387,7 +390,7 @@ public:
     */
    TR::CFGEdge* getCurrent()
       {
-      return (currentIterator == combinedList.end()) ? NULL : *currentIterator;
+      return _regularEdgeIterator == _regularEdges.end() ? ( _exceptionEdgeIterator == _exceptionEdges.end() ? NULL : *_exceptionEdgeIterator ) : *_regularEdgeIterator;
       }
 
    /**
@@ -395,16 +398,22 @@ public:
     */
    TR::CFGEdge* getNext()
       {
-      return (++currentIterator == combinedList.end()) ? NULL : *currentIterator;
+      if (_regularEdgeIterator != _regularEdges.end())
+         {
+         ++_regularEdgeIterator;
+         }
+      else if (_exceptionEdgeIterator != _exceptionEdges.end())
+         {
+         ++_exceptionEdgeIterator;
+         }
+      return getCurrent();
       }
 
 private:
-   TR::CFGEdgeList combinedList;
-
-   std::list<TR::CFGEdge*,
-             TR::typed_allocator<TR::CFGEdge*,
-             TR::Allocator>
-            >::iterator currentIterator;
+   TR::CFGEdgeList &_regularEdges;
+   TR::CFGEdgeList &_exceptionEdges;
+   TR::CFGEdgeList::iterator _regularEdgeIterator;
+   TR::CFGEdgeList::iterator _exceptionEdgeIterator;
    };
 
 class TR_SuccessorIterator : public TR_CFGIterator

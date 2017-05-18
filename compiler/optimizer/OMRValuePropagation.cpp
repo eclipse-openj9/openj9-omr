@@ -5611,10 +5611,8 @@ TR::TreeTop* TR::ArraycopyTransformation::createMultipleArrayNodes(TR::TreeTop* 
       cfg->addEdge(TR::CFGEdge::createEdge(forwardArrayCopyBlock,  followOnBlock, trMemory()));
       cfg->copyExceptionSuccessors(ifBlock, forwardArrayCopyBlock);
 
-      TR::CFGEdgeList elseSuccList = outerElseBlock->getSuccessors();
-      cfg->removeEdge(elseSuccList, outerElseBlock->getNumber(), followOnBlock->getNumber());
-      TR::CFGEdgeList condSuccList = arraycopyBlock->getSuccessors();
-      cfg->removeEdge(condSuccList, arraycopyBlock->getNumber(), ifBlock->getNumber());
+      cfg->removeEdge(outerElseBlock->getSuccessors(), outerElseBlock->getNumber(), followOnBlock->getNumber());
+      cfg->removeEdge(arraycopyBlock->getSuccessors(), arraycopyBlock->getNumber(), ifBlock->getNumber());
 
       outerArraycopyTree = arraycopyForward;
       }
@@ -6060,11 +6058,12 @@ void OMR::ValuePropagation::versionBlocks()
       // so that they now branch to the first block containing the
       // (first) versioning test.
       //
-      for (auto nextPred = block->getPredecessors().begin(); nextPred != block->getPredecessors().end();)
+      while (!block->getPredecessors().empty())
          {
-         (*nextPred)->setTo(chooserBlock);
-         TR::Block *nextPredBlock = toBlock((*nextPred)->getFrom());
-         nextPred = block->getPredecessors().erase(nextPred);
+         TR::CFGEdge * const nextPred = block->getPredecessors().front();
+         block->getPredecessors().pop_front();
+         nextPred->setTo(chooserBlock);
+         TR::Block * const nextPredBlock = toBlock(nextPred->getFrom());
 
          if (nextPredBlock != _cfg->getStart())
             {

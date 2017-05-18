@@ -168,7 +168,7 @@ void TR_DominatorsChk::initialize(TR::Block *start, TR::Block *nullParent)
    // Set up to start at the start block
    //
    TR::CFGEdge dummyEdge;
-   TR::CFGEdgeList dummyList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   TR::CFGEdgeList dummyList(comp()->region());
    dummyList.push_front(&dummyEdge);
    (*stack)[0].curIterator = dummyList.begin();
    (*stack)[0].list = &dummyList;

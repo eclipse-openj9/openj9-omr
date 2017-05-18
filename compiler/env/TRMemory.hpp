@@ -557,6 +557,7 @@ public:
    void freeMemory(void *p, TR_AllocationKind kind, ObjectType ot = UnknownType);
    TR::PersistentInfo * getPersistentInfo() { return _trPersistentMemory->getPersistentInfo(); }
    TR::Region& currentStackRegion();
+   TR::Region& heapMemoryRegion() { return _heapMemoryRegion; }
 
 private:
 
@@ -907,8 +908,7 @@ typedef TRMemoryAllocator<heapAlloc, 12, 28> TRCS2MemoryAllocator;
 
 namespace TR
    {
-   typedef CS2::stat_allocator < CS2::heap_allocator<65536, 12,
-                                   TRCS2MemoryAllocator > >  ThreadLocalAllocator;
+   typedef CS2::heap_allocator< 65536, 12, TRCS2MemoryAllocator > ThreadLocalAllocator;
    typedef CS2::shared_allocator < ThreadLocalAllocator > Allocator;
 
    typedef TRPersistentMemoryAllocator CS2PersistentAllocator;

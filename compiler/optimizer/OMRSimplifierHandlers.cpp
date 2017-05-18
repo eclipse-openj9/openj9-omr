@@ -3517,7 +3517,7 @@ static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextB
 // Changes branch destinations for merge blocks.
 //
 static void changeBranchDestinationsForMergeBlocks(TR::Block * block, TR::Block * nextBlock,
-                    TR::Node    * bbStartNode, TR::CFGEdgeList &inEdge, std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator &inEdgeIter, TR::Simplifier * s)
+                    TR::Node    * bbStartNode, TR::CFGEdgeList &inEdge, TR::CFGEdgeList::iterator &inEdgeIter, TR::Simplifier * s)
    {
    TR::CFGEdgeList &successors     = block->getSuccessors();
    TR::CFGEdge* outEdge = successors.front();
@@ -14890,7 +14890,7 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
    TR::Block * nextBlock                     = bbStartNode->getBlock();
    TR::CFGEdgeList   &inEdge        = nextBlock->getPredecessors();
-   std::list<TR::CFGEdge*, TR::typed_allocator<TR::CFGEdge*, TR::Allocator> >::iterator inEdgeIter = inEdge.begin();
+   TR::CFGEdgeList::iterator inEdgeIter = inEdge.begin();
    TR::CFGEdgeList        &nextExcpOut     = nextBlock->getExceptionSuccessors();
    bool                     moreThanOnePred = (!(nextBlock->getPredecessors().empty()) && (nextBlock->getPredecessors().size() > 1));
 

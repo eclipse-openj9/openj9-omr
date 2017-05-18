@@ -21,6 +21,7 @@
 
 #include <stddef.h>                              // for NULL
 #include <stdint.h>                              // for int32_t, int64_t
+#include <deque>                                 // for std::deque
 #include <map>                                   // for std::map
 #include <utility>                               // for std::pair
 #include "codegen/FrontEnd.hpp"                  // for TR_FrontEnd
@@ -458,6 +459,9 @@ class TR_InductionVariableAnalysis : public TR::Optimization
 
    private:
 
+   typedef TR::typed_allocator< TR::CFGEdge *, TR::Allocator > WorkQueueAllocator;
+   typedef std::deque< TR::CFGEdge *, WorkQueueAllocator > WorkQueue;
+
    class DeltaInfo
       {
       public:
@@ -496,6 +500,7 @@ class TR_InductionVariableAnalysis : public TR::Optimization
       TR_BitVector *_allDefs;
       };
 
+   static void appendPredecessors(WorkQueue &workList, TR::Block *block);
 
    void gatherCandidates(TR_Structure *s, TR_BitVector *b, TR_BitVector*);
 

@@ -516,9 +516,15 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    // Allocate the stack frame
    //
+   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
    if (allocSize == 0)
       {
       // No need to do anything
+      }
+   else if (allocSize == singleWordSize)
+      {
+      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, ebxReal, cg());
       }
    else
       {
@@ -704,6 +710,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // Deallocate the stack frame
    //
+   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
    if (_properties.getAlwaysDedicateFramePointerRegister())
       {
       // Restore stack pointer from frame pointer
@@ -714,6 +721,11 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    else if (allocSize == 0)
       {
       // No need to do anything
+      }
+   else if (allocSize == singleWordSize)
+      {
+      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, ebxReal, cg());
       }
    else
       {

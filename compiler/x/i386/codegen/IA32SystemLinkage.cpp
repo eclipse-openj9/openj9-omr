@@ -362,6 +362,7 @@ TR::Register *TR::IA32SystemLinkage::buildDirectDispatch(TR::Node *callNode, boo
 
    // Call-out
    int32_t stackAdjustment = cg()->getProperties().getCallerCleanup() ? 0 : -argSize;
+   cg()->resetIsLeafMethod();
    TR::X86ImmInstruction* instr = generateImmSymInstruction(CALLImm4, callNode, (uintptr_t)methodSymbol->getMethodAddress(), methodSymRef, cg());
    instr->setAdjustsFramePointerBy(stackAdjustment);
 

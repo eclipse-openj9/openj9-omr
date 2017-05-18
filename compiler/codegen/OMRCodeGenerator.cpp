@@ -317,7 +317,7 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
    if (self()->comp()->getDebug())
       self()->comp()->getDebug()->resetDebugData();
 
-
+   self()->setIsLeafMethod();
    }
 
 TR_StackMemory

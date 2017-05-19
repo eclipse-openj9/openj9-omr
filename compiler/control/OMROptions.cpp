@@ -471,6 +471,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableProfileGenerator",            "O\tdisable profile generator",                      TR::Options::disableOptimization, profileGenerator, 0, "P"},
 #endif
    {"disableProfiling",                   "O\tdisable profiling",                              SET_OPTION_BIT(TR_DisableProfiling), "P"},
+   {"disableProfilingDataReclamation",    "O\tdisable reclamation for profiling data",         SET_OPTION_BIT(TR_DisableProfilingDataReclamation), "F", NOT_IN_SUBSET},
    {"disableProloguePushes",              "O\tuse stores instead of pushes in x86 prologues",  SET_OPTION_BIT(TR_DisableProloguePushes), "P"},
    {"disableRampupImprovements",          "M\tDisable various changes that improve rampup",    SET_OPTION_BIT(TR_DisableRampupImprovements), "F", NOT_IN_SUBSET},
    {"disableReadMonitors",                 "O\tdisable read monitors",                         SET_OPTION_BIT(TR_DisableReadMonitors), "F"},

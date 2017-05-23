@@ -2916,7 +2916,7 @@ static void lookupScheme1(TR::Node *node, bool unbalanced, bool fromTableEval, T
    {
    int32_t      total = node->getNumChildren();
    TR::Register *selector = cg->evaluate(node->getFirstChild());
-   bool         isInt64 = false; //node->getFirstChild()->getType().isInt64();
+   bool         isInt64 = false;
    bool two_reg = (TR::Compiler->target.is32Bit()) && isInt64;
    TR::Register *cndRegister = cg->allocateRegister(TR_CCR);
    TR::RegisterDependencyConditions *acond, *bcond, *conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(3, 3, cg->trMemory());
@@ -4030,7 +4030,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
        && node->getOpCodeValue() != TR::iflcmpne
        && node->getOpCodeValue() != TR::ifacmpne)
       {
-      //TR_ASSERT(0, "virtualGuradHelper: not expecting reversed comparison");
       return false;
       }
 

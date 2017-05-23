@@ -1509,7 +1509,7 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
             cg()->traceRAInstruction(cursor = generateConditionalBranchInstruction(cg(), TR::InstOpCode::bne, currentNode, label2, getTargetRegister(0), cursor));
 
          if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
-            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction(cg(), TR::InstOpCode::mfvsrwz, currentNode, getTargetRegister(2), getTargetRegister(1), cursor)); // generateTrg1Src1Instruction(cg(), TR::InstOpCode::mftgpr, currentNode, getTargetRegister(2), getTargetRegister(1), cursor));
+            cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction(cg(), TR::InstOpCode::mfvsrwz, currentNode, getTargetRegister(2), getTargetRegister(1), cursor));
          else
             cg()->traceRAInstruction(cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::lwz, currentNode, getTargetRegister(2), new (cg()->trHeapMemory()) TR::MemoryReference(currentNode, *tempMR, 4, 4, cg()), cursor));
          cg()->traceRAInstruction(cursor = generateLabelInstruction(cg(), TR::InstOpCode::label, currentNode, label2, cursor));
@@ -1555,8 +1555,6 @@ void TR::PPCControlFlowInstruction::assignRegisters(TR_RegisterKinds kindToBeAss
          break;
       case TR::InstOpCode::iternary:
          {
-         //cursor = generateTrg1Src2Instruction   (cg(), TR::InstOpCode::cmp8, currentNode, getTargetRegister(0), getSourceRegister(0), getSourceRegister(0), cursor);
-
          cg()->traceRAInstruction(cursor = generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::cmpi4, currentNode, getTargetRegister(0), getSourceRegister(0), 0, cursor));
 
          cg()->traceRAInstruction(cursor = generateTrg1Src1Instruction   (cg(), getOpCode2Value(), currentNode, getTargetRegister(1), getSourceRegister(1), cursor));

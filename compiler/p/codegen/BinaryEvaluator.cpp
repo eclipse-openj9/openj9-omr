@@ -104,11 +104,6 @@ void generateSignExtendInstruction(TR::Node *node,
 
 TR::Register *computeCC_setNotZero(TR::CodeGenerator *cg, TR::Node *node, TR::Register *ccReg, TR::Register *testReg, bool needsZeroExtension)
    {
-   // if (testReg == 0)
-   //    ccReg = 0
-   // else
-   //    ccReg = 1
-   //
    if (ccReg == NULL)
       ccReg = cg->allocateRegister();
    int32_t size = node->getOpCode().getSize();
@@ -337,7 +332,6 @@ TR::Register *OMR::Power::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeG
             if (!firstChild->getSymbolReference()->getSymbol()->isInternalPointer())
                {
                trgReg->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToAutoSymbol());
-               //firstChild->getSymbolReference()->getSymbol()->setPinningArrayPointer();
                }
             else
                trgReg->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
@@ -734,7 +728,6 @@ TR::Register *OMR::Power::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeG
                if (!firstChild->getSymbolReference()->getSymbol()->isInternalPointer())
                   {
                   trgReg->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToAutoSymbol());
-                  //firstChild->getSymbolReference()->getSymbol()->setPinningArrayPointer();
                   }
                else
                   trgReg->setPinningArrayPointer(firstChild->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
@@ -2734,8 +2727,6 @@ TR::Register * ShiftRightLong32Bit (TR::Node *node, TR::CodeGenerator *cg, TR::R
       TR::Register *srcHighReg;
       bool         killSrcHigh = false;
 
-      //srcReg = cg->evaluate(firstChild);
-
       if (constShift && srcLowValue==0)
          {
          srcHighReg = cg->allocateRegister();
@@ -2744,7 +2735,6 @@ TR::Register * ShiftRightLong32Bit (TR::Node *node, TR::CodeGenerator *cg, TR::R
          }
       else
          {
-         //srcReg = cg->evaluate(firstChild);
          srcLowReg  = srcReg->getLowOrder();
          srcHighReg = srcReg->getHighOrder();
          }
@@ -4140,7 +4130,6 @@ TR::Register *OMR::Power::TreeEvaluator::muloverEvaluator(TR::Node *node, TR::Co
    TR::Register *src2Reg = cg->evaluate(secondChild);  // y
 
    TR::ILOpCodes secondOp            = secondChild->getOpCodeValue();
-   //TR_ASSERT((secondOp==TR::iload) ||(secondOp==TR::iloadi), "expecting iload\n");
 
    TR::Register *tmp1Reg = cg->allocateRegister();
    TR::Register *tmp2Reg = cg->allocateRegister();

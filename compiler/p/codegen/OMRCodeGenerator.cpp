@@ -1645,7 +1645,6 @@ bool OMR::Power::CodeGenerator::processInstruction(TR::Instruction *instr,
          if (node)
             {
             TR::Block *block = node->getBlock();
-            ///blockNum = block->getNumber();
             if (node->getOpCodeValue() == TR::BBStart)
                {
                blockMarker = 1;
@@ -1834,7 +1833,6 @@ OMR::Power::CodeGenerator::computeRegisterSaveDescription(TR_BitVector *regs, bo
       }
    // place the register save size in the top half
    rsd |= self()->getLinkage()->getRegisterSaveSize() << 17;
-   ///traceMsg(comp(), "computeRSD saveSize: %d rsd %d\n", getLinkage()->getRegisterSaveSize(), rsd);
    return rsd;
    }
 
@@ -3549,7 +3547,6 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                   recordInfo->data1 = (uintptr_t)node->getSymbolReference();
                   recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                   recordInfo->data3 = (uintptr_t)seqKind;
-                  //printf("TreeEvaluator.cpp:137, inlinedSiteIndex: %d, tempSR->getCPIndex(): %x, tempSR->getOffset(): %x\n", node->getInlinedSiteIndex(), node->getSymbolReference()->getCPIndex(), node->getSymbolReference()->getOffset());fflush(stdout);
                   self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)recordInfo,

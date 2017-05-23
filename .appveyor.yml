@@ -26,7 +26,7 @@ environment:
   GTEST_COLOR: '1'
 
 before_build:
-  - ps: cmake -Wdev -G "Visual Studio 14 2015 Win64" .
+  - cmd: cmake -Wdev -G "Visual Studio 14 2015 Win64" .
 
 build:
   project: omr.sln

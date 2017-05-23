@@ -560,7 +560,7 @@ void OMR::X86::TreeEvaluator::removeLiveDiscardableStatics(TR::CodeGenerator *cg
       if ((*iterator)->getRematerializationInfo()->isRematerializableFromMemory() &&
           (*iterator)->getRematerializationInfo()->getSymbolReference()->getSymbol()->isStatic())
          {
-    	 TR::Register* regCursor = *iterator;
+         TR::Register* regCursor = *iterator;
          iterator = cg->getLiveDiscardableRegisters().erase(iterator);
          regCursor->resetIsDiscardable();
 
@@ -573,7 +573,7 @@ void OMR::X86::TreeEvaluator::removeLiveDiscardableStatics(TR::CodeGenerator *cg
             }
          }
       else
-    	  ++iterator;
+         ++iterator;
       }
    }
 
@@ -2086,16 +2086,16 @@ bool OMR::X86::TreeEvaluator::stopUsingCopyRegAddr(TR::Node* node, TR::Register*
       TR::Register *copyReg = NULL;
       if (node->getReferenceCount() > 1)
          {
-	 if (reg->containsInternalPointer())
+         if (reg->containsInternalPointer())
             {
             copyReg = cg->allocateRegister();
-	    copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
-	    copyReg->setContainsInternalPointer();
+            copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
+            copyReg->setContainsInternalPointer();
             }
          else
             copyReg = cg->allocateCollectedReferenceRegister();
 
-	 generateRegRegInstruction(MOVRegReg(), node, copyReg, reg, cg);
+         generateRegRegInstruction(MOVRegReg(), node, copyReg, reg, cg);
          reg = copyReg;
          return true;
          }
@@ -2112,7 +2112,7 @@ bool OMR::X86::TreeEvaluator::stopUsingCopyRegInteger(TR::Node* node, TR::Regist
       if (node->getReferenceCount() > 1)
          {
          copyReg = cg->allocateRegister();
-	 generateRegRegInstruction(MOVRegReg(), node, copyReg, reg, cg);
+         generateRegRegInstruction(MOVRegReg(), node, copyReg, reg, cg);
          reg = copyReg;
          return true;
          }
@@ -2964,15 +2964,17 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
          elementSize = TR::Symbol::convertTypeToSize(dt);
       }
 
+   static bool optimizeForConstantLengthArrayCopy = feGetEnv("TR_OptimizeForConstantLengthArrayCopy");
+   static bool ignoreDirectionForConstantLengthArrayCopy = feGetEnv("TR_IgnoreDirectionForConstantLengthArrayCopy");
 #define shortConstArrayWithDirThreshold 256
 #define shortConstArrayWithoutDirThreshold  16*4
    bool isShortConstArrayWithDirection = false;
    bool isShortConstArrayWithoutDirection = false;
    uint32_t size;
-   if (sizeNode->getOpCode().isLoadConst() && TR::Compiler->target.is64Bit())
+   if (sizeNode->getOpCode().isLoadConst() && TR::Compiler->target.is64Bit() && optimizeForConstantLengthArrayCopy)
       {
       size = TR::TreeEvaluator::integerConstNodeValue(sizeNode, cg);
-      if (node->isForwardArrayCopy() || node->isBackwardArrayCopy())
+      if ((node->isForwardArrayCopy() || node->isBackwardArrayCopy()) && !ignoreDirectionForConstantLengthArrayCopy)
          {
          if (size <= shortConstArrayWithDirThreshold) isShortConstArrayWithDirection = true;
          }
@@ -3880,7 +3882,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
          }
 #endif
       default:
-      	break;
+         break;
       }
 
 #ifdef J9_PROJECT_SPECIFIC

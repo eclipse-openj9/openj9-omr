@@ -48,7 +48,7 @@ Field::getBaseSymbolType(SymbolType *symbolType)
 	} else {
 		TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
 		while (NULL != td) {
-			type = td->_type;
+			type = td->_aliasedType;
 			td = dynamic_cast<TypedefUDT *>(type);
 		}
 		if (NULL == type) {

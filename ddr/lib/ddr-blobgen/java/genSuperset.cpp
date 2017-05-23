@@ -168,9 +168,9 @@ JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
 			Type *type = f->_fieldType;
 			string name = type->_name;
 			TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
-			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end()) && (NULL != td->_type)) {
-				type = td->_type;
-				name = td->_type->_name;
+			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end()) && (NULL != td->_aliasedType)) {
+				type = td->_aliasedType;
+				name = td->_aliasedType->_name;
 				td = dynamic_cast<TypedefUDT *>(type);
 			}
 			if (BASE == st) {
@@ -243,7 +243,7 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 	string prefix;
 	TypedefUDT *td = dynamic_cast<TypedefUDT *>(f->_fieldType);
 	if ((DDR_RC_OK == rc) && (NULL != td)) {
-		if ((NULL != td) && (NULL != td->_type) && !td->_type->_name.empty()) {
+		if ((NULL != td) && (NULL != td->_aliasedType) && !td->_aliasedType->_name.empty()) {
 			switch (st) {
 			case CLASS:
 				prefixBase = "class ";
@@ -266,7 +266,7 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 				ERRMSG("unhandled fieldType: %d", st);
 				rc = DDR_RC_ERROR;
 			}
-			if (td->_type->_name == f->_fieldType->_name) {
+			if (td->_aliasedType->_name == f->_fieldType->_name) {
 				prefix = prefixBase;
 			}
 		}
@@ -285,7 +285,7 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 		while (NULL != td) {
 			pointerCount += td->_modifiers._pointerCount;
 			arrayDimensions += td->_modifiers.getArrayDimensions();
-			td = dynamic_cast<TypedefUDT *>(td->_type);
+			td = dynamic_cast<TypedefUDT *>(td->_aliasedType);
 		}
 		stringstream ss;
 		ss << string(pointerCount, '*');

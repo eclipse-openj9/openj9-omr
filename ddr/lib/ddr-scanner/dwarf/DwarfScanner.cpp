@@ -938,7 +938,7 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 		dwarf_dealloc(_debug, typeDie, DW_DLA_DIE);
 	}
 	if (DDR_RC_OK == rc) {
-		newTypedef->_type = typedefType;
+		newTypedef->_aliasedType = typedefType;
 		if (NULL != typedefType) {
 			/* Set typedef's size to the size of its type. */
 			newTypedef->_sizeOf = newTypedef->_modifiers.getSize(typedefType->_sizeOf);

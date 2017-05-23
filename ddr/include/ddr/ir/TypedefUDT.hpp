@@ -27,7 +27,7 @@
 class TypedefUDT : public UDT
 {
 public:
-	Type *_type;
+	Type *_aliasedType;
 	Modifiers _modifiers;
 
 	TypedefUDT(unsigned int lineNumber = 0);

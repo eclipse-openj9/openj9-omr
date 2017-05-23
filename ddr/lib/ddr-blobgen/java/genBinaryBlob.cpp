@@ -748,7 +748,7 @@ JavaBlobGenerator::formatFieldType(Field *f, string *fieldType)
 			TypedefUDT *td = dynamic_cast<TypedefUDT *>(f->_fieldType);
 			if (NULL != td) {
 				/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-				if ((NULL != td->_type) && ("void" == td->_type->_name) && (1 == td->_modifiers._pointerCount)) {
+				if ((NULL != td->_aliasedType) && ("void" == td->_aliasedType->_name) && (1 == td->_modifiers._pointerCount)) {
 					*fieldType += "void*";
 				} else {
 					*fieldType += f->_fieldType->_name;

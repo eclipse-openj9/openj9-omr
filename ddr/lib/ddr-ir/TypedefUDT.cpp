@@ -19,7 +19,7 @@
 #include "ddr/ir/TypedefUDT.hpp"
 
 TypedefUDT::TypedefUDT(unsigned int lineNumber)
-	: UDT(TYPEDEF, 0, lineNumber), _type(NULL)
+	: UDT(TYPEDEF, 0, lineNumber), _aliasedType(NULL)
 {
 }
 
@@ -38,7 +38,7 @@ TypedefUDT::equal(Type const& type, set<Type const*> *checked) const
 		TypedefUDT const *td = dynamic_cast<TypedefUDT const *>(&type);
 		if (NULL != td) {
 			ret = (UDT::equal(type, checked))
-				&& (_type == td->_type || *_type == *td->_type)
+				&& (_aliasedType == td->_aliasedType || *_aliasedType == *td->_aliasedType)
 				&& (_modifiers == td->_modifiers);
 		}
 	}
@@ -49,8 +49,8 @@ void
 TypedefUDT::replaceType(Type *typeToReplace, Type *replaceWith)
 {
 	UDT::replaceType(typeToReplace, replaceWith);
-	if (_type == typeToReplace) {
-		_type = replaceWith;
+	if (_aliasedType == typeToReplace) {
+		_aliasedType = replaceWith;
 	}
 }
 

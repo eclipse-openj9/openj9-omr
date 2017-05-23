@@ -290,9 +290,15 @@ Symbol_IR::computeFieldOffsets(Type *type)
 			for (size_t i = 0; i < ct->_fieldMembers.size(); i += 1) {
 				Field *field = (ct->_fieldMembers[i]);
 
-				/* Use the field size to compute offsets. */
-				field->_offset = offset;
-				offset += field->_sizeOf;
+				if (!field->_isStatic) {
+					/* Use the field size to compute offsets. */
+					field->_offset = offset;
+					offset += field->_sizeOf;
+				}
+			}
+			/* If class has no total size, set it now. */
+			if (0 == ct->_sizeOf) {
+				ct->_sizeOf = offset;
 			}
 		}
 	}

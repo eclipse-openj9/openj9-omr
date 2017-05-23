@@ -918,7 +918,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000400 + 28,
    TR_InlinerFanInUseCalculatedSize                   = 0x00000800 + 28,
    // Available                                       = 0x00001000 + 28,
-   // Availabe                                        = 0x00002000 + 28,
+   TR_DisableProfilingDataReclamation                 = 0x00002000 + 28,
    TR_DisableTrivialDeadBlockRemover                  = 0x00004000 + 28,
    TR_DisableInvariantCodeMotion                      = 0x00008000 + 28,
    TR_EnableSelfTuningScratchMemoryUsageBeforeCompile = 0x00010000 + 28,

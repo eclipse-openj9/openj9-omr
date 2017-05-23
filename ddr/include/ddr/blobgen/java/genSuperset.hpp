@@ -19,9 +19,7 @@
 #ifndef GENSUPERSET_HPP
 #define GENSUPERSET_HPP
 
-#if defined(AIXPPC) || defined(J9ZOS390)
-#define __IBMCPP_TR1__ 1
-#endif /* defined(AIXPPC) || defined(J9ZOS390) */
+#include "ddr/config.hpp"
 
 #include <sstream>
 #include <stdio.h>
@@ -35,11 +33,12 @@
 
 using std::string;
 using std::stringstream;
-#if defined(AIXPPC) || defined(J9ZOS390)
+
+#if defined(OMR_HAVE_TR1)
 using std::tr1::unordered_map;
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
+#else
 using std::unordered_map;
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
+#endif
 
 class JavaSupersetGenerator: public SupersetGenerator
 {

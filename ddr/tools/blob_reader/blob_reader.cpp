@@ -16,6 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#include "ddr/config.hpp"
+
 #include <algorithm>
 #include <errno.h>
 #include <stdint.h>
@@ -24,7 +26,7 @@
 #include <string.h>
 #include <vector>
 
-#include "ddr/config.hpp"
+#include "ddr/error.hpp"
 
 using std::vector;
 

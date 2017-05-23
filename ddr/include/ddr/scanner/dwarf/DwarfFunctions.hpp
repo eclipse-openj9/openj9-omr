@@ -15,11 +15,9 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-#if defined(AIXPPC)
-#define __IBMCPP_TR1__ 1 /* Need this for AIX */
-#endif /* defined(AIXPPC) */
 
 #include "ddr/config.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <stdio.h>
@@ -39,26 +37,26 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/errno.h>
-
-using std::tr1::make_tuple;
-using std::tr1::get;
-using std::tr1::tuple;
-using std::tr1::unordered_map;
-#endif /*defined(AIXPPC)*/
-
-#if !defined(AIXPPC)
-using std::get;
-using std::make_tuple;
-using std::runtime_error;
-using std::tuple;
-using std::unordered_map;
-#endif /*!defined(AIXPPC)*/
+#endif /* AIXPPC */
 
 using std::make_pair;
 using std::pair;
 using std::string;
 using std::stringstream;
 using std::vector;
+
+#if defined(OMR_HAVE_TR1)
+using std::tr1::get;
+using std::tr1::make_tuple;
+using std::tr1::tuple;
+using std::tr1::unordered_map;
+#else /* OMR_HAVE_TR1 */
+using std::get;
+using std::make_tuple;
+using std::runtime_error;
+using std::tuple;
+using std::unordered_map;
+#endif /* OMR_HAVE_TR1 */
 
 typedef /*struct Dwarf_Debug_s*/ void *Dwarf_Debug;
 typedef struct Dwarf_Die_s *Dwarf_Die;

@@ -19,9 +19,11 @@
 #ifndef MACRO_HPP
 #define MACRO_HPP
 
-#include <string>
-
 #include "ddr/config.hpp"
+
+#include "ddr/error.hpp"
+
+#include <string>
 
 class Macro
 {

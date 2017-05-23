@@ -21,14 +21,7 @@
 
 #include "ddr/config.hpp"
 
-#if defined(AIXPPC) || defined(J9ZOS390)
-#define __IBMCPP_TR1__ 1
 #include <unordered_map>
-using std::tr1::unordered_map;
-#undef __IBMCPP_TR1__
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
-#include <unordered_map>
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 #include <map>
 
 #if defined(OSX) || defined(AIXPPC)
@@ -45,20 +38,17 @@ using std::tr1::unordered_map;
 #include "ddr/ir/Symbol_IR.hpp"
 #include "ddr/ir/TypedefUDT.hpp"
 
-#if defined(AIXPPC) || defined(J9ZOS390)
-using std::tr1::hash;
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
-using std::hash;
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
+using std::make_pair;
 using std::map;
 using std::string;
-#if defined(AIXPPC) || defined(J9ZOS390)
-using std::tr1::unordered_map;
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
-using std::unordered_map;
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 
-using std::make_pair;
+#if defined(OMR_HAVE_TR1)
+using std::tr1::hash;
+using std::tr1::unordered_map;
+#else
+using std::hash;
+using std::unordered_map;
+#endif
 
 struct TypeKey {
 	char *fileName;

@@ -19,11 +19,15 @@
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
+#include "ddr/config.hpp"
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include "omrport.h"
+
+#include "ddr/error.hpp"
 
 class Symbol_IR;
 class Type;

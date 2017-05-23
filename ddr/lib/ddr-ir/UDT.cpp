@@ -16,9 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "ddr/ir/UDT.hpp"
-
 #include "ddr/config.hpp"
+#include "ddr/ir/UDT.hpp"
 
 UDT::UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber)
 	: Type(symbolKind, size), _outerUDT(NULL), _lineNumber(lineNumber)

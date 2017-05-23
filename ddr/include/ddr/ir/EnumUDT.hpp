@@ -19,6 +19,7 @@
 #ifndef ENUMUDT_HPP
 #define ENUMUDT_HPP
 
+#include "ddr/error.hpp"
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/UDT.hpp"
 

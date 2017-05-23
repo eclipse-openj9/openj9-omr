@@ -16,27 +16,22 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#if defined(AIXPPC) || defined(J9ZOS390)
-#define __IBMCPP_TR1__ 1
-#include <unordered_map>
-#undef __IBMCPP_TR1__
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
-#include <unordered_map>
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
+#include "ddr/config.hpp"
 
-#include "ddr/macros/MacroTool.hpp"
-
+#include <unordered_map>
 #include <fstream>
 #include <iostream>
 #include <set>
 
+#include "ddr/error.hpp"
+#include "ddr/macros/MacroTool.hpp"
 #include "ddr/ir/NamespaceUDT.hpp"
 
-#if defined(AIXPPC) || defined(J9ZOS390)
+#if defined(OMR_HAVE_TR1)
 using std::tr1::unordered_map;
-#else /* defined(AIXPPC) || defined(J9ZOS390) */
+#else
 using std::unordered_map;
-#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
+#endif
 
 string
 MacroTool::getTypeName(string s)

@@ -20,6 +20,7 @@
 #define CLASSUDT_HPP
 
 #include "ddr/ir/ClassType.hpp"
+#include "ddr/error.hpp"
 
 /* This type represents both class and struct types */
 class ClassUDT: public ClassType

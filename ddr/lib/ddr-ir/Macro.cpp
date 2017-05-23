@@ -16,6 +16,9 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#include "ddr/config.hpp"
+
+#include "ddr/error.hpp"
 #include "ddr/ir/Macro.hpp"
 
 #include <sstream>

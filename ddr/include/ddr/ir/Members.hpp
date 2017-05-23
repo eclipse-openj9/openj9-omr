@@ -19,6 +19,8 @@
 #ifndef MEMBERS_HPP
 #define MEMBERS_HPP
 
+#include "ddr/config.hpp"
+
 #include <string>
 
 class Members

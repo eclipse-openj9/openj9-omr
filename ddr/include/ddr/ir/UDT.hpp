@@ -19,11 +19,13 @@
 #ifndef UDT_HPP
 #define UDT_HPP
 
-#include <vector>
+#include "ddr/config.hpp"
 
 #include "ddr/ir/Members.hpp"
 #include "ddr/ir/Macro.hpp"
 #include "ddr/ir/Type.hpp"
+
+#include <vector>
 
 class UDT : public Type
 {

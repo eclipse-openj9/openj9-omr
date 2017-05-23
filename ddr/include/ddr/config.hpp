@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,33 +21,25 @@
 
 #include "omrcfg.h"
 
-#include <stdio.h>
+/* Enable standard limit macros on z/OS. */
 
-#define ERRMSG(...) { \
-	fprintf(stderr, "Error: %s:%d %s - ", __FILE__, __LINE__, __FUNCTION__);\
-	fprintf(stderr, __VA_ARGS__);\
-	fprintf(stderr, "\n");\
-}
+#if defined(J9ZOS390)
+/* We need to define these for the limit macros to get defined in z/OS */
+#define _ISOC99_SOURCE 1
+#define __STDC_LIMIT_MACROS 1
+#endif /* defined(J9ZOS390) */
 
-#if 0
-/* Enable debug printf output */
-#define DEBUGPRINTF_ON
+/* C++ TR1 support */
+
+#if defined(AIXPPC) || defined(J9ZOS390)
+#define __IBMCPP_TR1__ 1
+#define OMR_HAVE_TR1 1
+#endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
+
+/* Why is this disabled? */
+
+#if defined(NDEBUG)
+#undef NDEBUG
 #endif
-
-#if defined(DEBUGPRINTF_ON)
-#define DEBUGPRINTF(...) { \
-	printf("DEBUG: %s[%d]: %s: ", __FILE__, __LINE__, __FUNCTION__);\
-	printf(__VA_ARGS__);\
-	printf("\n");\
-	fflush(stdout);\
-}
-#else
-#define DEBUGPRINTF(...)
-#endif /* defined(DEBUG) */
-
-enum DDR_RC {
-	DDR_RC_OK,
-	DDR_RC_ERROR
-};
 
 #endif /* CONFIG_HPP */

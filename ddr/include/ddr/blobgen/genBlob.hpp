@@ -19,12 +19,13 @@
 #ifndef GENBLOB_HPP
 #define GENBLOB_HPP
 
+#include "ddr/config.hpp"
+
 #include <string>
 #include <vector>
 
 #include "omrport.h"
-
-#include "ddr/config.hpp"
+#include "ddr/error.hpp"
 
 using std::string;
 

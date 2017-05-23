@@ -61,7 +61,7 @@ ClassUDT::scanChildInfo(Scanner *scanner, void *data)
 }
 
 string
-ClassUDT::getSymbolTypeName()
+ClassUDT::getSymbolKindName()
 {
 	return _isClass ? "class" : "struct";
 }

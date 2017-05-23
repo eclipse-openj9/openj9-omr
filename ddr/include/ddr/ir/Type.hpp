@@ -30,7 +30,7 @@
 using std::set;
 using std::string;
 
-enum SymbolType {
+enum SymbolKind {
 	CLASS,
 	STRUCT,
 	ENUM,
@@ -43,24 +43,24 @@ enum SymbolType {
 class Type
 {
 protected:
-	SymbolType _symbolType;
+	SymbolKind _symbolKind;
 
 public:
 	std::string _name;
 	size_t _sizeOf; /* Size of type in bytes */
 	bool _isDuplicate;
 
-	Type(SymbolType symbolType, size_t size);
+	Type(SymbolKind symbolKind, size_t size);
 	virtual ~Type();
 
-	SymbolType getSymbolType();
+	SymbolKind getSymbolKind();
 	virtual bool isAnonymousType();
 	friend bool operator==(Type const& lhs, Type const& rhs);
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 
 	virtual string getFullName();
-	virtual string getSymbolTypeName();
+	virtual string getSymbolKindName();
 
 	/* Visitor pattern functions to allow the scanner/generator/IR to dispatch functionality based on type. */
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);

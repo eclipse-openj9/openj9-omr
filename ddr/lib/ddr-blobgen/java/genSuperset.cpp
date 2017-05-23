@@ -161,8 +161,8 @@ JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
 {
 	DDR_RC rc = DDR_RC_OK;
 	if (NULL != f->_fieldType) {
-		SymbolType st;
-		rc = f->getBaseSymbolType(&st);
+		SymbolKind st;
+		rc = f->getBaseSymbolKind(&st);
 
 		if (DDR_RC_OK == rc) {
 			Type *type = f->_fieldType;
@@ -218,12 +218,12 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 
 	/* Get the translated and simple type names for the field. */
 	string typeName;
-	SymbolType st;
+	SymbolKind st;
 	rc = getTypeName(f, &typeName);
 	if (DDR_RC_OK != rc) {
 		ERRMSG("Could not get typeName");
 	} else {
-		rc = f->getBaseSymbolType(&st);
+		rc = f->getBaseSymbolKind(&st);
 	}
 
 	string simpleName = "";

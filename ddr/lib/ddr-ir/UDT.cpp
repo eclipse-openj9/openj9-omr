@@ -20,8 +20,8 @@
 
 #include "ddr/config.hpp"
 
-UDT::UDT(SymbolType symbolType, size_t size, unsigned int lineNumber)
-	: Type(symbolType, size), _outerUDT(NULL), _lineNumber(lineNumber)
+UDT::UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber)
+	: Type(symbolKind, size), _outerUDT(NULL), _lineNumber(lineNumber)
 {
 }
 

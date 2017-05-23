@@ -38,7 +38,7 @@ Field::getTypeName()
 }
 
 DDR_RC
-Field::getBaseSymbolType(SymbolType *symbolType)
+Field::getBaseSymbolKind(SymbolKind *symbolKind)
 {
 	DDR_RC rc = DDR_RC_OK;
 	Type *type = _fieldType;
@@ -52,9 +52,9 @@ Field::getBaseSymbolType(SymbolType *symbolType)
 			td = dynamic_cast<TypedefUDT *>(type);
 		}
 		if (NULL == type) {
-			*symbolType = TYPEDEF;
+			*symbolKind = TYPEDEF;
 		} else {
-			*symbolType = type->getSymbolType();
+			*symbolKind = type->getSymbolKind();
 		}
 	}
 

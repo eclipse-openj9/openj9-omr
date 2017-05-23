@@ -18,17 +18,17 @@
 
 #include "ddr/ir/Type.hpp"
 
-Type::Type(SymbolType symbolType, size_t size)
-	: _symbolType(symbolType), _sizeOf(size), _isDuplicate(false)
+Type::Type(SymbolKind symbolKind, size_t size)
+	: _symbolKind(symbolKind), _sizeOf(size), _isDuplicate(false)
 {
 }
 
 Type::~Type() {}
 
-SymbolType
-Type::getSymbolType()
+SymbolKind
+Type::getSymbolKind()
 {
-	return _symbolType;
+	return _symbolKind;
 }
 
 bool
@@ -50,7 +50,7 @@ Type::equal(Type const& type, set<Type const*> *checked) const
 	return checked->find(this) != checked->end()
 		|| ((_name == (type._name))
 		&& (_sizeOf == type._sizeOf)
-		&& (_symbolType == type._symbolType));
+		&& (_symbolKind == type._symbolKind));
 }
 
 void
@@ -66,7 +66,7 @@ Type::getFullName()
 }
 
 string
-Type::getSymbolTypeName()
+Type::getSymbolKindName()
 {
 	return "";
 }

@@ -31,7 +31,7 @@ public:
 	UDT *_outerUDT;
 	unsigned int _lineNumber;
 
-	UDT(SymbolType symbolType, size_t size, unsigned int lineNumber = 0);
+	UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber = 0);
 	virtual ~UDT();
 
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;

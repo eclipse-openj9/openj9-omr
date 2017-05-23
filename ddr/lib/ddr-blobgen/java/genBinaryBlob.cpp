@@ -712,8 +712,8 @@ JavaBlobGenerator::formatFieldType(Field *f, string *fieldType)
 		*fieldType =  f->_modifiers.getModifierNames();
 	}
 
-	SymbolType st;
-	rc = f->getBaseSymbolType(&st);
+	SymbolKind st;
+	rc = f->getBaseSymbolKind(&st);
 
 	if (DDR_RC_OK == rc) {
 		switch (st) {

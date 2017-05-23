@@ -83,7 +83,7 @@ EnumUDT::scanChildInfo(Scanner *scanner, void *data)
 }
 
 string
-EnumUDT::getSymbolTypeName()
+EnumUDT::getSymbolKindName()
 {
 	return "enum";
 }

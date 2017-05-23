@@ -20,10 +20,10 @@
 
 #include "ddr/config.hpp"
 
-ClassType::ClassType(SymbolType symbolType, size_t size, unsigned int lineNumber)
+ClassType::ClassType(SymbolKind symbolKind, size_t size, unsigned int lineNumber)
 	: NamespaceUDT(lineNumber)
 {
-	_symbolType = symbolType;
+	_symbolKind = symbolKind;
 	_sizeOf = size;
 }
 

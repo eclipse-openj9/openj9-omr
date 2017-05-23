@@ -35,7 +35,7 @@ public:
 	bool isAnonymousType();
 	virtual bool equal(Type const& type, set<Type const*> *checked) const;
 	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
-	virtual string getSymbolTypeName();
+	virtual string getSymbolKindName();
 
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);

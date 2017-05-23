@@ -91,9 +91,9 @@ Scanner::loadBlacklist(string path)
 	if (blackListInput.is_open()) {
 		while (getline(blackListInput, line)) {
 			if (0 == line.find("file:")) {
-				_blacklistedFiles.insert(line);
+				_blacklistedFiles.insert(line.substr(5, line.length()));
 			} else if (0 == line.find("type:")) {
-				_blacklistedTypes.insert(line);
+				_blacklistedTypes.insert(line.substr(5, line.length()));
 			}
 		}
 	} else {

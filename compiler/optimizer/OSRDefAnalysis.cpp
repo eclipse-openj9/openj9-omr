@@ -370,6 +370,20 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
    comp()->incVisitCount();
 
+   // Build UseDef info for the implicit OSR point at method entry
+   //
+   if (comp()->isOutermostMethod() && comp()->getHCRMode() == TR::osr)
+      {
+      TR_ByteCodeInfo bci;
+      bci.setCallerIndex(-1);
+      bci.setByteCodeIndex(0);
+      nextOsrPoint = _methodSymbol->findOSRPoint(bci);
+      TR_ASSERT(nextOsrPoint != NULL, "Cannot find a OSR point for method entry");
+      buildOSRDefs(comp()->getStartTree()->getNode(), blockInfo[comp()->getStartTree()->getNode()->getBlock()->getNumber()],
+         NULL, nextOsrPoint, NULL, aux);
+      nextOsrPoint = NULL;
+      }
+
    for (treeTop = comp()->getStartTree(); treeTop != NULL; treeTop = treeTop->getNextTreeTop())
       {
       TR::Node *node = treeTop->getNode();
@@ -900,6 +914,19 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             buildOSRLiveRangeInfo(node, _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
                maxSymRefNumber, numBits, osrMethodData, TR::preExecutionOSR);
             }
+         }
+
+      // Store liveness data for the method entry if it is an implicit OSR point
+      //
+      if (comp()->getStartTree()->getNode()->getBlock() == block && comp()->isOutermostMethod() && comp()->getHCRMode() == TR::osr)
+         {
+         TR_ByteCodeInfo bci;
+         bci.setCallerIndex(-1);
+         bci.setByteCodeIndex(0);
+         TR_OSRPoint *osrPoint = comp()->getMethodSymbol()->findOSRPoint(bci);
+         TR_ASSERT(osrPoint != NULL, "Cannot find a OSR point for method entry");
+         buildOSRLiveRangeInfo(comp()->getStartTree()->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
+            maxSymRefNumber, numBits, osrMethodData, TR::postExecutionOSR);
          }
 
       block = block->getNextBlock();

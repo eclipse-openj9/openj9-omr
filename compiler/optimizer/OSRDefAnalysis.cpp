@@ -576,6 +576,16 @@ int32_t TR_OSRDefAnalysis::perform()
 
       return 0;
       }
+   else if (!comp()->supportsInduceOSR())
+      {
+      if (comp()->getOption(TR_TraceOSR))
+         {
+         traceMsg(comp(), "%s OSR reaching definitions analysis is not required because OSR is not supported\n",
+               optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
+         traceMsg(comp(), "Returning...\n");
+         }
+      return 0;
+      }
    else if (comp()->isPeekingMethod())
       {
       if (trace())
@@ -704,6 +714,16 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
       if (comp()->getOption(TR_TraceOSR))
          {
             traceMsg(comp(), "%s OSR live range analysis is not required because we are peeking\n",
+               optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
+         traceMsg(comp(), "Returning...\n");
+         }
+      return 0;
+      }
+   else if (!comp()->supportsInduceOSR())
+      {
+      if (comp()->getOption(TR_TraceOSR))
+         {
+         traceMsg(comp(), "%s OSR live range analysis is not required because OSR is not supported\n",
                optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
          traceMsg(comp(), "Returning...\n");
          }

@@ -32,7 +32,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 ### Getting the glue directory
 ###
 
-set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+if (NOT DEFINED OMR_GLUE)
+    set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+    message(STATUS "Glue not set, defaulting to example glue")
+endif()
 
 # TODO: OMR_EXAMPLE flag
 # TODO: OMR_RTTI flag

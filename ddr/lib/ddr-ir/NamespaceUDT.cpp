@@ -31,63 +31,6 @@ NamespaceUDT::~NamespaceUDT()
 	_subUDTs.clear();
 }
 
-bool
-NamespaceUDT::equal(Type const& type, set<Type const*> *checked) const
-{
-	bool ret = false;
-	if (checked->find(this) != checked->end()) {
-		ret = true;
-	} else {
-		checked->insert(this);
-		NamespaceUDT const *ns = dynamic_cast<NamespaceUDT const *>(&type);
-		if (NULL != ns) {
-			bool subUDTsEqual = _subUDTs.size() == ns->_subUDTs.size();
-			if (subUDTsEqual) {
-				for (size_t i = 0; i < _subUDTs.size(); i += 1) {
-					if ((_subUDTs[i] != ns->_subUDTs[i])
-						&& !(*_subUDTs[i] == *ns->_subUDTs[i])
-					) {
-						subUDTsEqual = false;
-						break;
-					}
-				}
-			}
-
-			bool macrosEqual = _macros.size() == ns->_macros.size() && subUDTsEqual;
-			if (macrosEqual) {
-				for (size_t i = 0; i < _macros.size(); i += 1) {
-					if ((_macros[i].getValue() != ((Macro)ns->_macros[i]).getValue())
-						|| (_macros[i]._name != ns->_macros[i]._name)
-					) {
-						macrosEqual = false;
-						break;
-					}
-				}
-			}
-
-			ret = (UDT::equal(type, checked))
-				&& (subUDTsEqual)
-				&& (macrosEqual);
-		}
-	}
-	return ret;
-}
-
-void
-NamespaceUDT::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	UDT::replaceType(typeToReplace, replaceWith);
-	UDT *udtFrom = dynamic_cast<UDT *>(typeToReplace);
-	UDT *udtTo = dynamic_cast<UDT *>(replaceWith);
-	for (size_t i = 0; i < _subUDTs.size(); i += 1) {
-		if (_subUDTs[i] == udtFrom) {
-			_subUDTs[i] = udtTo;
-		} else {
-			_subUDTs[i]->replaceType(typeToReplace, replaceWith);
-		}
-	}
-}
-
 DDR_RC
 NamespaceUDT::scanChildInfo(Scanner *scanner, void *data)
 {

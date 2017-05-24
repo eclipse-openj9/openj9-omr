@@ -33,9 +33,6 @@ public:
 	TypedefUDT(unsigned int lineNumber = 0);
 	~TypedefUDT();
 
-	virtual bool equal(Type const& type, set<Type const*> *checked) const;
-	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
-
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);

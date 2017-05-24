@@ -55,9 +55,6 @@ public:
 
 	SymbolKind getSymbolKind();
 	virtual bool isAnonymousType();
-	friend bool operator==(Type const& lhs, Type const& rhs);
-	virtual bool equal(Type const& type, set<Type const*> *checked) const;
-	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 
 	virtual string getFullName();
 	virtual string getSymbolKindName();

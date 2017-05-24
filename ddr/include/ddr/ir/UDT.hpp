@@ -36,8 +36,6 @@ public:
 	UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber = 0);
 	virtual ~UDT();
 
-	virtual bool equal(Type const& type, set<Type const*> *checked) const;
-	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 	virtual string getFullName();
 };
 

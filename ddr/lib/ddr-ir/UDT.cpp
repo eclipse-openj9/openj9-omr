@@ -28,39 +28,6 @@ UDT::~UDT()
 {
 }
 
-bool
-UDT::equal(Type const& type, set<Type const*> *checked) const
-{
-	bool ret = false;
-	if (checked->find(this) != checked->end()) {
-		ret = true;
-	} else {
-		checked->insert(this);
-		UDT const *udt = dynamic_cast<UDT const *>(&type);
-		if (NULL == udt) {
-			ret = false;
-		} else {
-			/* Do not check if the outer UDT is equal when comparing sub UDTs,
-			 * otherwise an infinite loop will be created.
-			 */
-			ret = (Type::equal(type, checked))
-				&& ((_outerUDT == udt->_outerUDT) || (*_outerUDT == *udt->_outerUDT))
-				&& (_lineNumber == udt->_lineNumber);
-		}
-	}
-	return ret;
-}
-
-void
-UDT::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	Type::replaceType(typeToReplace, replaceWith);
-	if (_outerUDT == typeToReplace) {
-		UDT *udt = dynamic_cast<UDT *>(replaceWith);
-		_outerUDT = udt;
-	}
-}
-
 string
 UDT::getFullName()
 {

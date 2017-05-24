@@ -27,33 +27,6 @@ TypedefUDT::~TypedefUDT()
 {
 }
 
-bool
-TypedefUDT::equal(Type const& type, set<Type const*> *checked) const
-{
-	bool ret = false;
-	if (checked->find(this) != checked->end()) {
-		ret = true;
-	} else {
-		checked->insert(this);
-		TypedefUDT const *td = dynamic_cast<TypedefUDT const *>(&type);
-		if (NULL != td) {
-			ret = (UDT::equal(type, checked))
-				&& (_aliasedType == td->_aliasedType || *_aliasedType == *td->_aliasedType)
-				&& (_modifiers == td->_modifiers);
-		}
-	}
-	return ret;
-}
-
-void
-TypedefUDT::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	UDT::replaceType(typeToReplace, replaceWith);
-	if (_aliasedType == typeToReplace) {
-		_aliasedType = replaceWith;
-	}
-}
-
 DDR_RC
 TypedefUDT::scanChildInfo(Scanner *scanner, void *data)
 {

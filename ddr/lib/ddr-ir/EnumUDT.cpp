@@ -43,39 +43,6 @@ EnumUDT::isAnonymousType()
 	return (NULL != _outerUDT) && (_name.empty());
 }
 
-bool
-EnumUDT::equal(Type const& type, set<Type const*> *checked) const
-{
-	bool ret = false;
-	if (checked->find(this) != checked->end()) {
-		ret = true;
-	} else {
-		checked->insert(this);
-		EnumUDT const *enumUDT = dynamic_cast<EnumUDT const *>(&type);
-		if (NULL != enumUDT) {
-			bool membersEqual = _enumMembers.size() == enumUDT->_enumMembers.size();
-			if (membersEqual) {
-				for (size_t i = 0; i < _enumMembers.size(); i += 1) {
-					if ((_enumMembers[i]->_name != enumUDT->_enumMembers[i]->_name)
-						|| (_enumMembers[i]->_value != enumUDT->_enumMembers[i]->_value)
-					) {
-						membersEqual = false;
-						break;
-					}
-				}
-			}
-			ret = (UDT::equal(type, checked) && (membersEqual));
-		}
-	}
-	return ret;
-}
-
-void
-EnumUDT::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	UDT::replaceType(typeToReplace, replaceWith);
-}
-
 DDR_RC
 EnumUDT::scanChildInfo(Scanner *scanner, void *data)
 {

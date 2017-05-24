@@ -32,8 +32,6 @@ public:
 	ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
 	virtual ~ClassUDT();
 
-	virtual bool equal(Type const& type, set<Type const*> *checked) const;
-	virtual void replaceType(Type *typeToReplace, Type *replaceWith);
 	virtual string getSymbolKindName();
 
 	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);

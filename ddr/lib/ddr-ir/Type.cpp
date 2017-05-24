@@ -37,28 +37,6 @@ Type::isAnonymousType()
 	return false;
 }
 
-bool
-operator==(Type const& lhs, Type const& rhs)
-{
-	set <Type const*> checked;
-	return lhs.equal(rhs, &checked);
-}
-
-bool
-Type::equal(Type const& type, set<Type const*> *checked) const
-{
-	return checked->find(this) != checked->end()
-		|| ((_name == (type._name))
-		&& (_sizeOf == type._sizeOf)
-		&& (_symbolKind == type._symbolKind));
-}
-
-void
-Type::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	/* Nothing to replace in base types. */
-}
-
 string
 Type::getFullName()
 {

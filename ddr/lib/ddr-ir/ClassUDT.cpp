@@ -25,35 +25,6 @@ ClassUDT::ClassUDT(size_t size, bool isClass, unsigned int lineNumber)
 
 ClassUDT::~ClassUDT() {};
 
-bool
-ClassUDT::equal(Type const& type, set<Type const*> *checked) const
-{
-	bool ret = false;
-	if (checked->find(this) != checked->end()) {
-		ret = true;
-	} else {
-		checked->insert(this);
-		ClassUDT const *classUDT = dynamic_cast<ClassUDT const *>(&type);
-		if (NULL != classUDT) {
-			ret = (ClassType::equal(type, checked))
-				&& (( NULL == _superClass) == (NULL == classUDT->_superClass))
-				&& ((_superClass == classUDT->_superClass) || (*_superClass == *classUDT->_superClass));
-		}
-	}
-	return ret;
-}
-
-void
-ClassUDT::replaceType(Type *typeToReplace, Type *replaceWith)
-{
-	ClassType::replaceType(typeToReplace, replaceWith);
-
-	ClassUDT *classUDT = dynamic_cast<ClassUDT *>(replaceWith);
-	if (_superClass == typeToReplace) {
-		_superClass = classUDT;
-	}
-}
-
 DDR_RC
 ClassUDT::scanChildInfo(Scanner *scanner, void *data)
 {

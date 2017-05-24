@@ -18,6 +18,11 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
+# Warn user that CMake support is currently experimental
+message(WARNING
+"CMake support is currently experimental.\n\
+Various components may fail to compile with default configuration options, and some are not even attempted.")
+
 #TODO figure out method of sharing version info with makefile build
 set(OMR_VERSION_MAJOR 0)
 set(OMR_VERSION_MINOR 0)

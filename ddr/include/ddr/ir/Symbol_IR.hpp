@@ -45,9 +45,7 @@ public:
 
 	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
 	DDR_RC computeOffsets();
-	DDR_RC removeDuplicates();
-
-	string getUDTname(Type *type);
+	void removeDuplicates();
 private:
 	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
 	DDR_RC computeFieldOffsets(Type *type);

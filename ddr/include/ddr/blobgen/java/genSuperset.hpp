@@ -55,7 +55,6 @@ private:
 	void replaceBaseTypedef(Type *type, string *name);
 	DDR_RC getFieldType(Field *f, string *assembledTypeName, string *simpleTypeName);
 	DDR_RC getTypeName(Field *f, string *typeName);
-	string getUDTname(Type *type);
 	DDR_RC printFieldMember(Field *field, string prefix);
 	void printConstantMember(string name);
 

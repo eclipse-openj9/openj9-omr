@@ -37,6 +37,7 @@ public:
 	virtual ~UDT();
 
 	virtual string getFullName();
+	virtual void checkDuplicate(Symbol_IR *ir);
 };
 
 #endif /* UDT_HPP */

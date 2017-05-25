@@ -39,22 +39,6 @@
 
 using std::map;
 
-string
-Symbol_IR::getUDTname(Type *type)
-{
-	UDT *udt = dynamic_cast<UDT *>(type);
-	assert(NULL != udt);
-
-	string name;
-	if (NULL != udt->_outerUDT) {
-		name = getUDTname(udt->_outerUDT) + udt->_name;
-	} else {
-		name = udt->_name;
-	}
-
-	return name;
-}
-
 Symbol_IR::~Symbol_IR()
 {
 	for (size_t i = 0; i < _types.size(); i++) {
@@ -305,15 +289,10 @@ Symbol_IR::computeFieldOffsets(Type *type)
 	return rc;
 }
 
-DDR_RC
+void
 Symbol_IR::removeDuplicates()
 {
-	DDR_RC rc = DDR_RC_OK;
 	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
-		rc = (*it)->checkDuplicate(this);
-		if (DDR_RC_OK != rc) {
-			break;
-		}
+		(*it)->checkDuplicate(this);
 	}
-	return rc;
 }

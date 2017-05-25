@@ -48,29 +48,3 @@ UnionUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOn
 {
 	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
 }
-
-DDR_RC
-UnionUDT::checkDuplicate(Symbol_IR *ir)
-{
-	DDR_RC rc = DDR_RC_OK;
-	if ((!this->isAnonymousType()) && (this->_fieldMembers.size() > 0)) {
-		string fullName = ir->getUDTname(this);
-		if (ir->_fullTypeNames.end() != ir->_fullTypeNames.find(fullName)) {
-			this->_isDuplicate = true;
-		} else {
-			ir->_fullTypeNames.insert(fullName);
-		}
-	}
-
-	/* Still check the sub UDTs. This is because a previous duplicate of this UDT could have
-	 * contained an empty version of the same sub UDT as this one, which was skipped over due
-	 * to its emptiness.
-	 */
-	for (vector<UDT *>::iterator v = this->_subUDTs.begin(); v != this->_subUDTs.end(); ++v) {
-		rc = (*v)->checkDuplicate(ir);
-		if (DDR_RC_OK != rc) {
-			break;
-		}
-	}
-	return rc;
-}

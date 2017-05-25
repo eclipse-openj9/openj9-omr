@@ -33,22 +33,6 @@ JavaSupersetGenerator::JavaSupersetGenerator() : _file(0), _portLibrary(NULL)
 	initBaseTypedefSet();
 }
 
-string
-JavaSupersetGenerator::getUDTname(Type *type)
-{
-	UDT *udt = dynamic_cast<UDT *>(type);
-	assert(NULL != udt);
-
-	string name;
-	if (NULL != udt->_outerUDT) {
-		name = getUDTname(udt->_outerUDT) + "$" + udt->_name;
-	} else {
-		name = udt->_name;
-	}
-
-	return name;
-}
-
 void
 JavaSupersetGenerator::initBaseTypedefSet()
 {
@@ -168,6 +152,7 @@ JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
 			Type *type = f->_fieldType;
 			string name = type->_name;
 			TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
+			// Only need to check last name to ignore list, not at each iteration
 			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end()) && (NULL != td->_aliasedType)) {
 				type = td->_aliasedType;
 				name = td->_aliasedType->_name;
@@ -176,7 +161,7 @@ JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
 			if (BASE == st) {
 				convertJ9BaseTypedef(type, typeName);
 			} else {
-				*typeName = getUDTname(type);
+				*typeName = replace(type->getFullName(), "::", "$");
 			}
 		}
 	} else {
@@ -233,7 +218,7 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 				simpleName = f->_fieldType->_name;
 				replaceBaseTypedef(f->_fieldType, &simpleName);
 			} else {
-				simpleName = getUDTname(f->_fieldType);
+				simpleName = replace(f->_fieldType->getFullName(), "::", "$");
 			}
 		}
 	}
@@ -374,7 +359,7 @@ JavaSupersetGenerator::replace(string str, string subStr, string newStr)
 		}
 
 		str.replace(i, subStr.length(), newStr);
-		i += subStr.length();
+		i += subStr.length() - 1;
 	}
 
 	return str;
@@ -402,10 +387,10 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 	if (!type->_isDuplicate) {
 		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 			if (!addFieldsOnly) {
-				string nameFormatted = getUDTname(type);
+				string nameFormatted = replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|";
 				if (NULL != type->_superClass) {
-					string superClassFormatted = getUDTname(type->_superClass);
+					string superClassFormatted = replace(type->getFullName(), "::", "$");
 					lineToPrint += superClassFormatted + "\n";
 				} else {
 					lineToPrint += "\n";
@@ -452,7 +437,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnl
 	if (!type->_isDuplicate) {
 		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
 			if (!addFieldsOnly) {
-				string nameFormatted = getUDTname(type);
+				string nameFormatted = replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
 				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
 			}
@@ -498,7 +483,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly
 	if (!type->_isDuplicate) {
 		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
 			if (!addFieldsOnly) {
-				string nameFormatted = getUDTname(type);
+				string nameFormatted = replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
 				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
 			}
@@ -519,7 +504,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(NamespaceUDT *type, bool addField
 	if (!type->_isDuplicate) {
 		if (!type->isAnonymousType() || addFieldsOnly) {
 			if (!addFieldsOnly) {
-				string nameFormatted = getUDTname(type);
+				string nameFormatted = replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
 				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
 			}

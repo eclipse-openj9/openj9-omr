@@ -80,7 +80,7 @@ main(int argc, char *argv[])
 	}
 	/* Remove duplicate types. */
 	if (DDR_RC_OK == rc) {
-		rc = ir.removeDuplicates();
+		ir.removeDuplicates();
 	}
 	MacroTool macroTool;
 	/* Read macros. */

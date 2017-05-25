@@ -33,3 +33,17 @@ UDT::getFullName()
 {
 	return ((NULL == _outerUDT) ? "" : _outerUDT->getFullName() + "::") + _name;
 }
+
+
+void
+UDT::checkDuplicate(Symbol_IR *ir)
+{
+	if (!this->isAnonymousType()) {
+		string fullName = getFullName();
+		if (ir->_fullTypeNames.end() != ir->_fullTypeNames.find(fullName)) {
+			this->_isDuplicate = true;
+		} else {
+			ir->_fullTypeNames.insert(fullName);
+		}
+	}
+}

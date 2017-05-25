@@ -37,7 +37,7 @@ public:
 	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
-	virtual DDR_RC checkDuplicate(Symbol_IR *ir);
+	virtual void checkDuplicate(Symbol_IR *ir);
 };
 
 #endif /* TYPEDEFUDT_HPP */

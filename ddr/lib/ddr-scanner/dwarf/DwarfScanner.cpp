@@ -231,7 +231,7 @@ DwarfScanner::blackListedDie(Dwarf_Die die, bool *dieBlackListed)
 		}
 	}
 
-	*dieBlackListed = !blacklistedType && !blacklistedFile;
+	*dieBlackListed = blacklistedType || blacklistedFile;
 
 Done:
 	if (NULL != err) {

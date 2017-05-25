@@ -60,10 +60,11 @@ checkStringMatch(string checked, set<string> *patterns)
 			}
 			if (matchFound) {
 				match = true;
+				break;
 			}
 		}
 	}
-	return !match;
+	return match;
 }
 
 bool
@@ -91,9 +92,9 @@ Scanner::loadBlacklist(string path)
 	if (blackListInput.is_open()) {
 		while (getline(blackListInput, line)) {
 			if (0 == line.find("file:")) {
-				_blacklistedFiles.insert(line.substr(5, line.length()));
+				_blacklistedFiles.insert(line.substr(5, line.length() - 6));
 			} else if (0 == line.find("type:")) {
-				_blacklistedTypes.insert(line.substr(5, line.length()));
+				_blacklistedTypes.insert(line.substr(5, line.length() - 6));
 			}
 		}
 	} else {

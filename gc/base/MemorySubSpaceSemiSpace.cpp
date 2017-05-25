@@ -34,6 +34,7 @@
 #include "MemorySubSpaceRegionIterator.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
 #include "PhysicalSubArena.hpp"
+#include "Scavenger.hpp"
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
@@ -130,7 +131,14 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	 *  CMVC 144061 
 	 */
 	if (ALLOCATION_TYPE_TLH != allocationType) {
+		if (_extensions->isConcurrentScavengerEnabled() && _extensions->scavenger->isBackOutFlagRaised()) {
+			_extensions->heap->getPercolateStats()->setLastPercolateReason(ABORTED_SCAVENGE);
+		}
 		addr = _parent->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, this, this);
+		if (NONE_SET != _extensions->heap->getPercolateStats()->getLastPercolateReason()) {
+			_extensions->heap->getPercolateStats()->resetLastPercolateReason();
+			_extensions->heap->getPercolateStats()->clearScavengesSincePercolate();
+		}
 	}
 
 	return addr;
@@ -260,8 +268,16 @@ MM_MemorySubSpaceSemiSpace::getActiveMemorySize()
 uintptr_t
 MM_MemorySubSpaceSemiSpace::getActiveMemorySize(uintptr_t includeMemoryType)
 {
-	if (includeMemoryType & MEMORY_TYPE_NEW){ 
-		return _memorySubSpaceAllocate->getActiveMemorySize() + _memorySubSpaceSurvivor->getActiveMemorySize();
+	if (includeMemoryType & MEMORY_TYPE_NEW) {
+		if (_memorySubSpaceSurvivor == _memorySubSpaceEvacuate) {
+			return _memorySubSpaceAllocate->getActiveMemorySize() + _memorySubSpaceSurvivor->getActiveMemorySize();
+		} else if (_memorySubSpaceSurvivor == _memorySubSpaceAllocate) {
+			return _memorySubSpaceSurvivor->getActiveMemorySize() + _memorySubSpaceEvacuate->getActiveMemorySize();
+		} else if (_memorySubSpaceEvacuate == _memorySubSpaceAllocate) {
+			return _memorySubSpaceSurvivor->getActiveMemorySize() + _memorySubSpaceEvacuate->getActiveMemorySize();
+		} else {
+			Assert_MM_unreachable();
+		}
 	} else {
 		return 0;
 	}		
@@ -921,14 +937,12 @@ void
 MM_MemorySubSpaceSemiSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool systemGC)
 {
 	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_CHECK_RESIZE);
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* this we are called at the end of precolate global GC, due to aborted Concurrent Scavenge,
 	 * we have to restore tilt (that has been set to 100% to do unified sliding compact of Nursery */
-	if (_extensions->concurrentScavenger && J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE == env->_cycleState->_gcCode.getCode()) {
+	if (ABORTED_SCAVENGE == _extensions->heap->getPercolateStats()->getLastPercolateReason()) {
+		Assert_MM_true(_extensions->isConcurrentScavengerEnabled());
 		flip(env, MM_MemorySubSpaceSemiSpace::restore_tilt_after_percolate);
-	} else
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-	{
+	} else {
 		checkSubSpaceMemoryPostCollectTilt(env);
 		checkSubSpaceMemoryPostCollectResize(env);
 	}

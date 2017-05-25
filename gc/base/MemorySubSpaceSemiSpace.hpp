@@ -173,7 +173,7 @@ public:
 		MM_MemorySubSpace(env, collector, physicalSubArena, usesGlobalCollector, minimumSize, initialSize, maximumSize, MEMORY_TYPE_NEW, 0)
 		,_memorySubSpaceAllocate(memorySubSpaceAllocate)
 		,_memorySubSpaceSurvivor(memorySubSpaceSurvivor)
-		,_memorySubSpaceEvacuate(NULL)
+		,_memorySubSpaceEvacuate(memorySubSpaceSurvivor)
 		,_allocateSpaceBase(NULL)
 		,_allocateSpaceTop(NULL)
 		,_survivorSpaceBase(NULL)

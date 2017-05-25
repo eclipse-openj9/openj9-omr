@@ -1576,3 +1576,33 @@ omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *cou
 	return OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED;
 }
 
+intptr_t
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+{
+	intptr_t rc = -1;
+	Trc_PRT_sysinfo_get_os_description_Entered(desc);
+
+	if (NULL != desc) {
+		memset(desc, 0, sizeof(OMROSDesc));
+	}
+
+	Trc_PRT_sysinfo_get_os_description_Exit(rc);
+	return rc;
+}
+
+BOOLEAN
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature)
+{
+	BOOLEAN rc = FALSE;
+	Trc_PRT_sysinfo_os_has_feature_Entered(desc, feature);
+
+	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
+		uint32_t featureIndex = feature / 32;
+		uint32_t featureShift = feature % 32;
+
+		rc = J9_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+	}
+
+	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);
+	return rc;
+}

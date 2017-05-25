@@ -2036,3 +2036,26 @@ TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
 }
 #endif /* defined(LINUX) || defined(AIXPPC) */
 #endif /* !(defined(WIN32) || defined(WIN64)) */
+
+/**
+ * Test omrsysinfo_test_get_os_description.
+ */
+TEST(PortSysinfoTest, sysinfo_test_get_os_description)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_test_get_os_description";
+
+	intptr_t rc = 0;
+	reportTestEntry(OMRPORTLIB, testName);
+
+	OMROSDesc desc;
+	rc =  omrsysinfo_get_os_description(&desc);
+
+	for (int i = 0; i < OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32; i++) {
+		BOOLEAN feature = omrsysinfo_os_has_feature(&desc, i);
+		portTestEnv->log(LEVEL_VERBOSE, "omrsysinfo_test_get_os_description() feature %d: value=%d, rc=%zi\n", i, feature, rc);
+	}
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}

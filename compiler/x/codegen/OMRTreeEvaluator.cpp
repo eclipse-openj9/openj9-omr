@@ -1576,7 +1576,7 @@ OMR::X86::TreeEvaluator::arraycmpEvaluator(
 
    TR::Node *byteLenNode = node->getChild(2);
 
-   static bool repArrayCmpOpt = (feGetEnv("TR_NoArrayCompareOpt") == NULL);
+   static bool repArrayCmpOpt = (feGetEnv("TR_NewArrayCompareOpt") != NULL);
    static bool constLenArrayCmpOpt = (feGetEnv("TR_NoConstLenArrayCompareOpt") == NULL);
    static char* maxLengthOfConstArrayStr = feGetEnv("TR_MaxLengthOfConstArray");
    int32_t maxLengthOfConstArray = maxLengthOfConstArrayStr ? atoi(maxLengthOfConstArrayStr) : 32;
@@ -4116,8 +4116,8 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
 
 TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   static bool useDeprecatedArraycopy = feGetEnv("TR_UseDeprecatedArraycopy");
-   if (useDeprecatedArraycopy)
+   static bool useNewArraycopy = feGetEnv("TR_UseNewArraycopy");
+   if (useNewArraycopy == NULL)
       {
       return deprecated_arraycopyEvaluator(node, cg);
       }

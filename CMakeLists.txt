@@ -37,7 +37,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 ### Getting the glue directory
 ###
 
-set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+if (NOT DEFINED OMR_GLUE)
+    set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+    message(STATUS "Glue not set, defaulting to example glue")
+endif()
 
 # TODO: OMR_EXAMPLE flag
 # TODO: OMR_RTTI flag
@@ -59,6 +62,19 @@ enable_testing()
 #include current source dir and current bin dir automatically
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# VPathResolve takes a list of source files, a list of directories to search in,
+# and produces a list of source files, prepended with the directory in which the
+# file was found. This is inspired by the VPATH system of Make.
+#
+# ie. if you have a/a.c and b/b.c in your directories, and
+#
+#     inlist  = [a.c, b.c]
+#     dirlist = [a, b]
+#
+# then
+#
+#     outlist = [a/a.c, b/b.c]
+#
 function(VPathResolve inlist dirlist outlist)
     set(output "")
   foreach(currentFile ${${inlist}})

@@ -30,7 +30,7 @@ else(NOT CMAKE_CROSSCOMPILING)
 		"Point it to the ImportTools.cmake file of a native build")
 
 	#Logically we should be importing the file here, however,
-	#burried in the cmake docs, it says imported targets are directory scoped
+	#buried in the cmake docs, it says imported targets are directory scoped
 	#thus they would be useless if imported here
 	#include(${OMR_TOOLS_IMPORTFILE})
 

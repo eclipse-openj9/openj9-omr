@@ -164,7 +164,8 @@ MacroTool::addMacrosToIR(Symbol_IR *ir)
 						}
 					}
 					if (!alreadyExists) {
-						ns->_macros.push_back(Macro(it->first, it->second));
+						Macro macro(it->first, it->second);
+						ns->addMacro(&macro);
 					}
 				}
 			}

@@ -30,7 +30,7 @@
 class UDT : public Type
 {
 public:
-	UDT *_outerUDT;
+	NamespaceUDT *_outerNamespace;
 	unsigned int _lineNumber;
 
 	UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber = 0);
@@ -38,6 +38,7 @@ public:
 
 	virtual string getFullName();
 	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual NamespaceUDT * getNamespace();
 };
 
 #endif /* UDT_HPP */

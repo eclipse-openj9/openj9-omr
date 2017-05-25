@@ -36,6 +36,8 @@ public:
 	virtual ~ClassType();
 
 	virtual bool isAnonymousType();
+	virtual void computeFieldOffsets();
+	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
 };
 
 #endif /* CLASSTYPE_HPP */

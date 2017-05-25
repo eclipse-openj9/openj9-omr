@@ -56,3 +56,9 @@ TypedefUDT::checkDuplicate(Symbol_IR *ir)
 {
 	/* No-op: since TypedefUDTs aren't printed, there's no need to check if they're duplicates either */
 }
+
+int
+TypedefUDT::getPointerCount()
+{
+	return _modifiers._pointerCount + _aliasedType->getPointerCount();
+}

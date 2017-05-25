@@ -40,7 +40,7 @@ EnumUDT::~EnumUDT()
 bool
 EnumUDT::isAnonymousType()
 {
-	return (NULL != _outerUDT) && (_name.empty());
+	return (NULL != _outerNamespace) && (_name.empty());
 }
 
 DDR_RC

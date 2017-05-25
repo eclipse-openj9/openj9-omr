@@ -38,6 +38,7 @@ public:
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual int getPointerCount();
 };
 
 #endif /* TYPEDEFUDT_HPP */

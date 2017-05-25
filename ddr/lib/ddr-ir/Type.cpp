@@ -78,3 +78,40 @@ Type::checkDuplicate(Symbol_IR *ir)
 {
 	/* No-op: since Types aren't printed, there's no need to check if they're duplicates either */
 }
+
+NamespaceUDT *
+Type::getNamespace()
+{
+	return NULL;
+}
+
+int
+Type::getPointerCount()
+{
+	return 0;
+}
+
+void
+Type::computeFieldOffsets()
+{
+	/* No-op: base types have no fields. */
+}
+
+void
+Type::addMacro(Macro *macro)
+{
+	/* No-op: macros cannot be associated with base types. */
+}
+
+std::vector<UDT *> *
+Type::getSubUDTS()
+{
+	return NULL;
+}
+
+void
+Type::renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType)
+{
+	/* No-op: base types have no fields. */
+}
+	

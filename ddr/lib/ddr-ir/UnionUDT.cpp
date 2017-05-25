@@ -48,3 +48,10 @@ UnionUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOn
 {
 	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
 }
+
+string
+UnionUDT::getSymbolKindName()
+{
+	return "union";
+}
+

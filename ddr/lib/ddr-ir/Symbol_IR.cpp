@@ -51,14 +51,6 @@ Symbol_IR::~Symbol_IR()
 	_types.clear();
 }
 
-typedef struct {
-	string structName;
-	string fieldName;
-	string overrideName;
-	bool isTypeOverride;
-} FieldOverride;
-
-
 DDR_RC
 Symbol_IR::applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles)
 {
@@ -205,34 +197,7 @@ Symbol_IR::applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile)
 			/* Iterate over the types with a matching name for the override. */
 			vector<Type *> *typesWithName = &typeNames[type.structName];
 			for (vector<Type *>::iterator it2 = typesWithName->begin(); it2 != typesWithName->end(); it2 += 1) {
-				ClassType *ct = dynamic_cast<ClassType *>(*it2);
-				/* Iterate the fields of structures with matching names. */
-				if (NULL != ct) {
-					for (vector<Field *>::iterator it3 = ct->_fieldMembers.begin(); it3 != ct->_fieldMembers.end(); it3 += 1) {
-						/* Once a matching structure and field name are found, apply the override. */
-						if ((*it3)->_name == type.fieldName) {
-							if (type.isTypeOverride) {
-								if (0 == replacementType->_sizeOf) {
-									replacementType->_sizeOf = (*it3)->_fieldType->_sizeOf;
-								}
-								(*it3)->_fieldType = replacementType;
-							} else {
-								(*it3)->_name = type.overrideName;
-							}
-						}
-					}
-				}
-				NamespaceUDT *ns = dynamic_cast<NamespaceUDT *>(*it2);
-				/* Iterate the macros as well for field name overrides. */
-				if (!type.isTypeOverride) {
-					if (NULL != ns) {
-						for (vector<Macro>::iterator it3 = ns->_macros.begin(); it3 != ns->_macros.end(); it3 += 1) {
-							if (it3->_name == type.fieldName) {
-								it3->_name = type.overrideName;
-							}
-						}
-					}
-				}
+				(*it2)->renameFieldsAndMacros(type, replacementType);
 			}
 		}
 	}
@@ -241,52 +206,13 @@ Symbol_IR::applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile)
 }
 
 /* Compute the field offsets for all types in the IR from the sizes of the fields. */
-DDR_RC
+void
 Symbol_IR::computeOffsets()
 {
-	DDR_RC rc = DDR_RC_OK;
 	/* For each Type in the ir, compute the field offsets from the size of each field. */
 	for (size_t i = 0; i < _types.size(); i++) {
-		rc = computeFieldOffsets(_types[i]);
-		if (DDR_RC_OK != rc) {
-			break;
-		}
+		_types[i]->computeFieldOffsets();
 	}
-	return rc;
-}
-
-DDR_RC
-Symbol_IR::computeFieldOffsets(Type *type)
-{
-	DDR_RC rc = DDR_RC_OK;
-	NamespaceUDT *ns = dynamic_cast<NamespaceUDT *>(type);
-	if (NULL != ns) {
-		for (size_t i = 0; i < ns->_subUDTs.size(); i += 1) {
-			rc = computeFieldOffsets(ns->_subUDTs[i]);
-			if (DDR_RC_OK != rc) {
-				break;
-			}
-		}
-		/* For classes, structs, and unions, find the field offsets. */
-		ClassType *ct = dynamic_cast<ClassType *>(ns);
-		if ((NULL != ct) && (DDR_RC_OK == rc)) {
-			size_t offset = 0;
-			for (size_t i = 0; i < ct->_fieldMembers.size(); i += 1) {
-				Field *field = (ct->_fieldMembers[i]);
-
-				if (!field->_isStatic) {
-					/* Use the field size to compute offsets. */
-					field->_offset = offset;
-					offset += field->_sizeOf;
-				}
-			}
-			/* If class has no total size, set it now. */
-			if (0 == ct->_sizeOf) {
-				ct->_sizeOf = offset;
-			}
-		}
-	}
-	return rc;
 }
 
 void

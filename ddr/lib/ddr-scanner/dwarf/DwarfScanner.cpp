@@ -652,24 +652,21 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 	if(DDR_RC_OK == rc) {
 		if (2 == typeNum) {
 			rc = DDR_RC_OK;
-			if (isSubUDT) {
-				UDT *udt = dynamic_cast<UDT *>(newType);
-				if ((NULL != udt) && (NULL == udt->_outerUDT)) {
-					/* If this UDT has been added before when it was found as a field,
-					 * there was no way to know its an inner type at that time and it
-					 * would have gone into the main udt list.
-					 */
-					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
+			if ((isSubUDT) && (NULL == newType->getNamespace())) {
+				/* If this UDT has been added before when it was found as a field,
+				 * there was no way to know its an inner type at that time and it
+				 * would have gone into the main udt list.
+				 */
+				_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
 
-					/* Anonymous types would have been named incorrectly if they were
-					 * found as a field before they were known to be an inner type.
-					 */
-					if ((newType->_name.length() > 9)
-						&& ("Constants" == newType->_name.substr(newType->_name.length() - 9, 9))
-					) {
-						newType->_name = "";
-						rc = getName(die, &newType->_name);
-					}
+				/* Anonymous types would have been named incorrectly if they were
+				 * found as a field before they were known to be an inner type.
+				 */
+				if ((newType->_name.length() > 9)
+					&& ("Constants" == newType->_name.substr(newType->_name.length() - 9, 9))
+				) {
+					newType->_name = "";
+					rc = getName(die, &newType->_name);
 				}
 			}
 		} else if ((0 == typeNum) || (1 == typeNum) || (3 == typeNum)|| (4 == typeNum)) {
@@ -696,8 +693,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 			} else if (isSubUDT && (4 == typeNum)) {
 				/* When the type is a stub that was found as a stub before, it might be found as a subUDT now,
 				 * so we check if it is, and remove it from the main types list if it is. */
-				UDT *udt = dynamic_cast<UDT *>(newType);
-				if ((NULL != udt) && (NULL == udt->_outerUDT)) {
+				if (NULL == newType->getNamespace()) {
 					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
 				}
 			}
@@ -769,12 +765,11 @@ DwarfScanner::getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const new
 			bool isInTypeMap = (_typeMap.find(key) != _typeMap.end());
 			if (isInTypeMap) {
 				Type *existingType = _typeMap[key];
-				UDT *udt = dynamic_cast<UDT *>(existingType);
-				if (NULL != udt) {
-					/* Type name, file name, line number is not a unique identifier for a type when macros change the name of the outer class */
-					/* Will not work when macros change if it is an inner class or not */
-					isInTypeMap = ((udt->_outerUDT == outerUDT) || (NULL == outerUDT) || (NULL == udt->_outerUDT));
-				}
+				/* Type name, file name, line number is not a unique identifier for a type when macros change the name of the outer class */
+				/* Will not work when macros change if it is an inner class or not */
+				isInTypeMap = ((existingType->getNamespace() == outerUDT)
+					|| (NULL == outerUDT)
+					|| (NULL == existingType->getNamespace()));
 			}
 			if (!isInTypeMap) {
 				/* If the Type is not in the stub map either, or as a stub which has already
@@ -1041,11 +1036,11 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 				if (DDR_RC_OK != addDieToIR(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
-				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL  == innerUDT->_outerUDT)) {
-					/* We only add it to list of subUDTs if innerUDT's _outerUDT is NULL, because there should only be one outer UDT per inner UDT */
+				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL  == innerUDT->getNamespace())) {
+					/* We only add it to list of subUDTs if innerUDT's _outerNamespace is NULL, because there should only be one outer UDT per inner UDT */
 					/* Check that the subUDT wasn't already added when the type was found as a stub type */
 					if (newClass->_subUDTs.end() == std::find(newClass->_subUDTs.begin(), newClass->_subUDTs.end(), innerUDT)) {
-						innerUDT->_outerUDT = newClass;
+						innerUDT->_outerNamespace = newClass;
 						newClass->_subUDTs.push_back(innerUDT);
 					}
 				}

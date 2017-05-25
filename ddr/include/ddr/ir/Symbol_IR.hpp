@@ -30,6 +30,13 @@
 using std::vector;
 using std::set;
 
+struct FieldOverride {
+	string structName;
+	string fieldName;
+	string overrideName;
+	bool isTypeOverride;
+};
+
 class Symbol_IR {
 public:
 	vector<Type *> _types;
@@ -44,11 +51,10 @@ public:
 	~Symbol_IR();
 
 	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
-	DDR_RC computeOffsets();
+	void computeOffsets();
 	void removeDuplicates();
 private:
 	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
-	DDR_RC computeFieldOffsets(Type *type);
 };
 
 #endif /* SYMBOL_IR_HPP */

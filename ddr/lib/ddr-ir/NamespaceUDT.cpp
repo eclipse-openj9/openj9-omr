@@ -68,3 +68,44 @@ NamespaceUDT::checkDuplicate(Symbol_IR *ir)
 		(*v)->checkDuplicate(ir);
 	}
 }
+
+string
+NamespaceUDT::getSymbolKindName()
+{
+	return "namespace";
+}
+
+void
+NamespaceUDT::computeFieldOffsets()
+{
+	for (vector<UDT *>::iterator it = _subUDTs.begin(); it != _subUDTs.end(); it += 1) {
+		(*it)->computeFieldOffsets();
+	}
+}
+
+void
+NamespaceUDT::addMacro(Macro *macro)
+{
+	_macros.push_back(*macro);
+}
+
+std::vector<UDT *> *
+NamespaceUDT::getSubUDTS()
+{
+	return &_subUDTs;
+}
+
+void
+NamespaceUDT::renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType)
+{
+	if (!fieldOverride.isTypeOverride) {
+		for (vector<Macro>::iterator it = _macros.begin(); it != _macros.end(); it += 1) {
+			if (it->_name == fieldOverride.fieldName) {
+				it->_name = fieldOverride.overrideName;
+			}
+		}
+	}
+	for (vector<UDT *>::iterator it = _subUDTs.begin(); it != _subUDTs.end(); it += 1) {
+		(*it)->renameFieldsAndMacros(fieldOverride, replacementType);
+	}		
+}

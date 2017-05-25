@@ -390,7 +390,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 				string nameFormatted = replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|";
 				if (NULL != type->_superClass) {
-					string superClassFormatted = replace(type->getFullName(), "::", "$");
+					string superClassFormatted = replace(type->_superClass->getFullName(), "::", "$");
 					lineToPrint += superClassFormatted + "\n";
 				} else {
 					lineToPrint += "\n";

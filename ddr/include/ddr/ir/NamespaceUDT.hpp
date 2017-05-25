@@ -38,6 +38,11 @@ public:
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual string getSymbolKindName();
+	virtual void computeFieldOffsets();
+	virtual void addMacro(Macro *macro);
+	virtual std::vector<UDT *> * getSubUDTS();
+	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
 };
 
 #endif /* NAMESPACEUDT_HPP */

@@ -396,8 +396,8 @@ JavaBlobGenerator::dispatchBuildBlob(EnumUDT *e, bool addFieldsOnly, string pref
 		if ((!e->isAnonymousType() || addFieldsOnly) && (e->_enumMembers.size() > 0)) {
 			/* Format class name */
 			string nameFormatted = e->_name;
-			if (NULL != e->_outerUDT) {
-				nameFormatted = e->_outerUDT->_name + "__" + nameFormatted;
+			if (NULL != e->_outerNamespace) {
+				nameFormatted = e->_outerNamespace->_name + "__" + nameFormatted;
 			}
 
 			uint32_t constCount = 0;
@@ -429,8 +429,8 @@ JavaBlobGenerator::dispatchBuildBlob(UnionUDT *u, bool addFieldsOnly, string pre
 		if ((!u->isAnonymousType() || addFieldsOnly) && (u->_fieldMembers.size() > 0)) {
 			/* Format class name */
 			string nameFormatted = u->_name;
-			if (NULL != u->_outerUDT) {
-				nameFormatted = u->_outerUDT->_name + "__" + nameFormatted;
+			if (NULL != u->_outerNamespace) {
+				nameFormatted = u->_outerNamespace->_name + "__" + nameFormatted;
 			}
 
 			uint32_t fieldCount = 0;
@@ -493,16 +493,16 @@ JavaBlobGenerator::dispatchBuildBlob(ClassUDT *cu, bool addFieldsOnly, string pr
 		if ((!cu->isAnonymousType() || addFieldsOnly) && (cu->_fieldMembers.size() > 0)){
 			/* Format class name */
 			string nameFormatted = cu->_name;
-			if (NULL != cu->_outerUDT) {
-				nameFormatted = cu->_outerUDT->_name + "__" + nameFormatted;
+			if (NULL != cu->_outerNamespace) {
+				nameFormatted = cu->_outerNamespace->_name + "__" + nameFormatted;
 			}
 
 			/* Find super class name offset */
 			string superName;
 			if (NULL != cu->_superClass) {
 				superName = cu->_superClass->_name;
-				if (NULL != cu->_superClass->_outerUDT) {
-					superName = cu->_superClass->_outerUDT->_name + "__" + superName;
+				if (NULL != cu->_superClass->_outerNamespace) {
+					superName = cu->_superClass->_outerNamespace->_name + "__" + superName;
 				}
 			}
 
@@ -759,8 +759,8 @@ JavaBlobGenerator::formatFieldType(Field *f, string *fieldType)
 		} else {
 			UDT *udt = (UDT *)f->_fieldType;
 			if (NULL != udt) {
-				if (NULL != udt->_outerUDT) {
-					*fieldType += udt->_outerUDT->_name + "::";
+				if (NULL != udt->_outerNamespace) {
+					*fieldType += udt->_outerNamespace->_name + "::";
 				}
 				*fieldType += udt->_name;
 			} else {

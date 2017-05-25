@@ -74,12 +74,10 @@ main(int argc, char *argv[])
 		rc = scanner.startScan(&portLibrary, &ir, &debugFiles, blacklistPath);
 	}
 
-	/* Compute field offsets for UDTs. */
 	if (DDR_RC_OK == rc) {
-		rc = ir.computeOffsets();
-	}
-	/* Remove duplicate types. */
-	if (DDR_RC_OK == rc) {
+		/* Compute field offsets for UDTs. */
+		ir.computeOffsets();
+		/* Remove duplicate types. */
 		ir.removeDuplicates();
 	}
 	MacroTool macroTool;

@@ -40,6 +40,11 @@ enum SymbolKind {
 	NAMESPACE
 };
 
+struct Macro;
+class UDT;
+class NamespaceUDT;
+struct FieldOverride;
+
 class Type
 {
 protected:
@@ -65,6 +70,12 @@ public:
 	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix);
 	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual NamespaceUDT * getNamespace();
+	virtual int getPointerCount();
+	virtual void computeFieldOffsets();
+	virtual void addMacro(Macro *macro);
+	virtual std::vector<UDT *> * getSubUDTS();
+	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
 };
 
 #endif /* TYPE_HPP */

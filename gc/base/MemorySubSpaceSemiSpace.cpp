@@ -278,9 +278,8 @@ MM_MemorySubSpaceSemiSpace::getActiveMemorySize(uintptr_t includeMemoryType)
 		} else {
 			Assert_MM_unreachable();
 		}
-	} else {
-		return 0;
-	}		
+	}
+	return 0;
 }
 
 /**

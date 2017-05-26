@@ -546,11 +546,43 @@ JavaBlobGenerator::dispatchBuildBlob(ClassUDT *cu, bool addFieldsOnly, string pr
 			}
 		}
 	}
+
+	/* Anonymous sub udt's not used as fields are to have their fields added to this struct.*/
 	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
-		for (vector<UDT *>::iterator v = cu->_subUDTs.begin(); v != cu->_subUDTs.end(); ++v) {
-			rc = (*v)->buildBlob(this, false, "");
-			if (DDR_RC_OK != rc) {
-				break;
+		for (vector<UDT *>::iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
+			if ((*it)->isAnonymousType()) {
+				bool isUsedAsField = false;
+				for (vector<Field *>::iterator fit = cu->_fieldMembers.begin(); fit != cu->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
+				if (!isUsedAsField) {
+					rc = (*it)->buildBlob(this, true, "");
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				}
+			}
+		}
+	}
+	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+		for (vector<UDT *>::iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
+			bool isUsedAsField = false;
+			if ((*it)->isAnonymousType()) {
+				for (vector<Field *>::iterator fit = cu->_fieldMembers.begin(); fit != cu->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
+			}
+			if (!(*it)->isAnonymousType() || isUsedAsField) {
+				rc = (*it)->buildBlob(this, false, "");
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
 	}
@@ -582,10 +614,23 @@ JavaBlobGenerator::dispatchBuildBlob(NamespaceUDT *ns, bool addFieldsOnly, strin
 		}
 
 		if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+			/* Anonymous sub udt's are to have their fields added to this struct.*/
 			for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
-				rc = (*v)->buildBlob(this, false, "");
-				if (DDR_RC_OK != rc) {
-					break;
+				if ((*v)->isAnonymousType()) {
+					rc = (*v)->buildBlob(this, true, "");
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				}
+			}
+		}
+		if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+			for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
+				if (!(*v)->isAnonymousType()) {
+					rc = (*v)->buildBlob(this, false, "");
+					if (DDR_RC_OK != rc) {
+						break;
+					}
 				}
 			}
 		}

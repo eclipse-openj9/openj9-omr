@@ -418,11 +418,44 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 			}
 		}
 	}
+
+	/* Anonymous sub udt's not used as fields are to have their fields added to this struct.*/
 	if ((DDR_RC_OK == rc) && (!addFieldsOnly)) {
-		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-			rc = (*v)->printToSuperset(this, false, prefix);
-			if (DDR_RC_OK != rc) {
-				break;
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			if ((*it)->isAnonymousType()) {
+				bool isUsedAsField = false;
+				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
+				if (!isUsedAsField) {
+					rc = (*it)->printToSuperset(this, true, prefix);
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if ((DDR_RC_OK == rc) && (!addFieldsOnly)) {
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			bool isUsedAsField = false;
+			if ((*it)->isAnonymousType()) {
+				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
+			}
+			if (!(*it)->isAnonymousType() || isUsedAsField) {
+				rc = (*it)->printToSuperset(this, false, prefix);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
 	}
@@ -517,10 +550,22 @@ JavaSupersetGenerator::dispatchPrintToSuperset(NamespaceUDT *type, bool addField
 		}
 	}
 	if (!addFieldsOnly) {
+		/* Anonymous sub udt's are to have their fields added to this struct.*/
 		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-			rc = (*v)->printToSuperset(this, false, prefix);
-			if (DDR_RC_OK != rc) {
-				break;
+			if ((*v)->isAnonymousType()) {
+				rc = (*v)->printToSuperset(this, true, prefix);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+
+		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
+			if (!(*v)->isAnonymousType()) {
+				rc = (*v)->printToSuperset(this, false, prefix);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
 	}

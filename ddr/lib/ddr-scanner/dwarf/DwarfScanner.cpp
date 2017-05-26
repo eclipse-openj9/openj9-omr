@@ -807,10 +807,7 @@ DwarfScanner::getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const new
 
 					/* Add the line number for the stub type as well, now that it is found. */
 					if (DDR_RC_OK == rc) {
-						UDT *udt = dynamic_cast<UDT *>(*newType);
-						if (NULL != udt) {
-							udt->_lineNumber = lineNumber;
-						}
+						((UDT *)(*newType))->_lineNumber = lineNumber;
 					}
 					*typeNum = 1;
 				}
@@ -1046,11 +1043,7 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 				}
 			} else if (DW_TAG_inheritance == childTag) {
 				/* The child is a super type. */
-				ClassUDT *classUDT = dynamic_cast<ClassUDT *>(newClass);
-				if (NULL == classUDT || DDR_RC_OK != getSuperUDT(childDie, classUDT)) {
-					rc = DDR_RC_ERROR;
-					break;
-				}
+				rc = getSuperUDT(childDie, (ClassUDT *)newClass);
 			} else if (DW_TAG_member == childTag) {
 				/* The child is a member field. */
 				string fieldName = "";
@@ -1063,46 +1056,6 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 			}
 		} while (DDR_RC_OK == getNextSibling(&childDie));
 		dwarf_dealloc(_debug, childDie, DW_DLA_DIE);
-
-		/* If the class is not a stub and contained an anonymous enum not used as a field within the class, add
-		 * the enum members to the class instead. */
-		ClassType *ct = dynamic_cast<ClassType *>(newClass);
-		if ((NULL != ct) && (0 != newClass->_lineNumber)) {
-			for (vector<UDT *>::iterator it = ct->_subUDTs.begin(); it != ct->_subUDTs.end(); ++it) {
-				EnumUDT *enumUDT = dynamic_cast<EnumUDT *>(*it);
-				if ((NULL != enumUDT) && (*it)->isAnonymousType()) {
-					bool usedAsField = false;
-					for (vector<Field *>::iterator fit = ct->_fieldMembers.begin(); fit != ct->_fieldMembers.end(); fit += 1) {
-						if ((*fit)->_fieldType == (*it)) {
-							usedAsField = true;
-							break;
-						}
-					}
-					if (!usedAsField) {
-						EnumUDT *eu = dynamic_cast<EnumUDT *>(*it);
-						/* Only add enumerators which have not already been added, because duplicate full types 
-						 * might otherwise lead to duplicate enumerators, one for each time the type is found with
-						 * the anonymous EnumUDT as a subUDT. There is no need to delete the empty anonymous enum,
-						 * as it will not be printed in genSuperset (since genSuperset does not print empty enums)
-						 * and since the anonymous enum is still a subUDT, no memory leak occurs.
-						 */
-						for (vector<EnumMember *>::iterator enumMember = eu->_enumMembers.begin(); enumMember != eu->_enumMembers.end(); ++enumMember) {
-							bool hasAlreadyBeenAdded = false;
-							for (vector<EnumMember *>::iterator enumMemberInClassType = ct->_enumMembers.begin(); enumMemberInClassType != ct->_enumMembers.end(); ++ enumMemberInClassType) {
-								if (((*enumMemberInClassType)->_name == (*enumMember)->_name) && ((*enumMemberInClassType)->_value == (*enumMember)->_value)) {
-									hasAlreadyBeenAdded = true;
-									break;
-								}
-							}
-							if (!hasAlreadyBeenAdded) {
-								ct->_enumMembers.push_back(*enumMember);
-							}
-						}
-						eu->_enumMembers.clear();
-					}
-				}
-			}
-		}
 	}
 
 	if (NULL != error) {

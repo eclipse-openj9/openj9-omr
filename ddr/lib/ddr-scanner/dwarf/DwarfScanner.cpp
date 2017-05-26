@@ -837,7 +837,7 @@ DwarfScanner::getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const new
 		}
 	}
 
-	if(-1 == *typeNum) {
+	if (-1 == *typeNum) {
 		rc = DDR_RC_ERROR;
 	}
 	return rc;
@@ -935,7 +935,7 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 			/* Set typedef's size to the size of its type. */
 			newTypedef->_sizeOf = newTypedef->_modifiers.getSize(typedefType->_sizeOf);
 			/* If the typedef's type has no associated name, let it assume the typedef's name. */
-			if (typedefName.empty()) {
+			if (typedefName.empty() && typedefType->_name.empty()) {
 				typedefType->_name = newTypedef->_name;
 			}
 		}

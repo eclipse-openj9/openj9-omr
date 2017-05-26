@@ -42,6 +42,14 @@ private:
 		ENUM_B,
 		ENUM_C
 	};
+	InnerEnum innerEnum;
+
+	enum
+	{
+		ENUM_A2,
+		ENUM_B2,
+		ENUM_C2
+	};
 
 	// - struct
 	struct Z {
@@ -53,7 +61,7 @@ private:
 public:
 	// - typedef
 	typedef unsigned short USDATA;
-	uint64_t getData() { return (data + Z.g * (USDATA)Z.h[7][2]); }
+	uint64_t getData() { return (data + Z.g * (USDATA)Z.h[7][2] + ENUM_A2); }
 };
 MyClass instanceOfMyClass;
 
@@ -253,4 +261,6 @@ sample2()
 	std::cout << "w: " << w << std::endl;
 	std::cout << "y: " << y << std::endl;
 	std::cout << "z: " << z << std::endl;
+	
+	std::cout << instanceOfMyClass.getData() << std::endl;
 }

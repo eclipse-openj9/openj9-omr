@@ -86,7 +86,17 @@ NamespaceUDT::computeFieldOffsets()
 void
 NamespaceUDT::addMacro(Macro *macro)
 {
-	_macros.push_back(*macro);
+	/* Check if the macro already exists before adding it. */
+	bool alreadyExists = false;
+	for (vector<Macro>::iterator it = _macros.begin(); it != _macros.end(); ++it) {
+		if (macro->_name == it->_name) {
+			alreadyExists = true;
+			break;
+		}
+	}
+	if (!alreadyExists) {
+		_macros.push_back(*macro);
+	}
 }
 
 std::vector<UDT *> *

@@ -126,47 +126,34 @@ MacroTool::addMacrosToIR(Symbol_IR *ir)
 	 */
 	unordered_map<string, Type *> irMap;
 	for (vector<Type *>::iterator it = ir->_types.begin(); it != ir->_types.end(); it += 1) {
-		NamespaceUDT *ns = dynamic_cast<NamespaceUDT *>(*it);
-		if (NULL != ns) {
-			irMap[(*it)->_name] = *it;
-		}
+		irMap[(*it)->_name] = *it;
 	}
 
 	for (vector<MacroInfo>::iterator it = macroList.begin(); it != macroList.end(); it += 1) {
 		/* For each found MacroInfo which contains macros, add the macros to the IR. */
 		MacroInfo *macroInfo = &*it;
 		if (macroInfo->getNumMacros() > 0) {
-			NamespaceUDT *ns = NULL;
+			Type *outerType = NULL;
 			/* If there is a type of the correct name already, use it. Otherwise,
 			 * create a new namespace to contain the macros.
 			 */
 			if (irMap.find(macroInfo->getTypeName()) == irMap.end()) {
-				ns = new NamespaceUDT();
-				ns->_name = macroInfo->getTypeName();
-				ir->_types.push_back(ns);
-				irMap[macroInfo->getTypeName()] = ns;
+				outerType = new NamespaceUDT();
+				outerType->_name = macroInfo->getTypeName();
+				ir->_types.push_back(outerType);
+				irMap[macroInfo->getTypeName()] = outerType;
 			} else {
-				ns = dynamic_cast<NamespaceUDT *>(irMap[macroInfo->getTypeName()]);
+				outerType = irMap[macroInfo->getTypeName()];
 			}
 
-			if (NULL == ns) {
+			if (NULL == outerType) {
 				ERRMSG("Cannot find or create UDT to add macro");
 				rc = DDR_RC_ERROR;
 				break;
 			} else {
 				for (set<pair<string, string> >::iterator it = macroInfo->getMacroStart(); it != macroInfo->getMacroEnd(); ++it) {
-					/* Check if the macro already exists before adding it. */
-					bool alreadyExists = false;
-					for (vector<Macro>::iterator it2 = ns->_macros.begin(); it2 != ns->_macros.end(); ++it2) {
-						if (it2->_name == it->first) {
-							alreadyExists = true;
-							break;
-						}
-					}
-					if (!alreadyExists) {
-						Macro macro(it->first, it->second);
-						ns->addMacro(&macro);
-					}
+					Macro macro(it->first, it->second);
+					outerType->addMacro(&macro);
 				}
 			}
 		}

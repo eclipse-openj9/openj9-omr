@@ -50,7 +50,7 @@ ClassUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string pre
 }
 
 DDR_RC
-ClassUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix = "")
+ClassUDT::acceptVisitor(TypeVisitor const &visitor)
 {
-	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+	return visitor.visitType(this);
 }

@@ -68,9 +68,9 @@ Type::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
 }
 
 DDR_RC
-Type::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix = "")
+Type::acceptVisitor(TypeVisitor const &visitor)
 {
-	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+	return visitor.visitType(this);
 }
 
 void

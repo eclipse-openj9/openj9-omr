@@ -63,13 +63,6 @@ class SupersetGenerator
 {
 public:
 	virtual DDR_RC printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetFile) = 0;
-
-	virtual DDR_RC dispatchPrintToSuperset(Type *type, bool addFieldsOnly, string prefix) = 0;
-	virtual DDR_RC dispatchPrintToSuperset(NamespaceUDT *type, bool addFieldsOnly, string prefix) {return dispatchPrintToSuperset((Type *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly, string prefix = "") {return dispatchPrintToSuperset((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchPrintToSuperset(TypedefUDT *type, bool addFieldsOnly, string prefix = "") {return dispatchPrintToSuperset((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnly, string prefix = "") {return dispatchPrintToSuperset((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnly, string prefix = "") {return dispatchPrintToSuperset((NamespaceUDT *)type, addFieldsOnly, prefix);}
 };
 
 #endif /* GENBLOB_HPP */

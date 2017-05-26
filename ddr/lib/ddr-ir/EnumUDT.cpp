@@ -68,7 +68,7 @@ EnumUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string pref
 }
 
 DDR_RC
-EnumUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix = "")
+EnumUDT::acceptVisitor(TypeVisitor const &visitor)
 {
-	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+	return visitor.visitType(this);
 }

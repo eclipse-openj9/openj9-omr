@@ -46,9 +46,9 @@ TypedefUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string p
 }
 
 DDR_RC
-TypedefUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix)
+TypedefUDT::acceptVisitor(TypeVisitor const &visitor)
 {
-	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+	return visitor.visitType(this);
 }
 
 void

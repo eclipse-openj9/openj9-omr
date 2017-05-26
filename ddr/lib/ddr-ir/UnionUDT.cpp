@@ -44,9 +44,9 @@ UnionUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string pre
 }
 
 DDR_RC
-UnionUDT::printToSuperset(SupersetGenerator *supersetGenerator, bool addFieldsOnly, string prefix = "")
+UnionUDT::acceptVisitor(TypeVisitor const &visitor)
 {
-	return supersetGenerator->dispatchPrintToSuperset(this, addFieldsOnly, prefix);
+	return visitor.visitType(this);
 }
 
 string

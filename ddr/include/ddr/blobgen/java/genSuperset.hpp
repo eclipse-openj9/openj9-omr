@@ -40,6 +40,8 @@ using std::tr1::unordered_map;
 using std::unordered_map;
 #endif
 
+class SupersetVisitor;
+
 class JavaSupersetGenerator: public SupersetGenerator
 {
 private:
@@ -60,17 +62,12 @@ private:
 
 	string replace(string str, string subStr, string newStr);
 
+	friend class SupersetVisitor;
+
 public:
 	JavaSupersetGenerator();
 
 	DDR_RC printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetFile);
-
-	DDR_RC dispatchPrintToSuperset(Type *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchPrintToSuperset(NamespaceUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchPrintToSuperset(TypedefUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnly, string prefix);
 };
 
 #endif /* GENSUPERSET_HPP */

@@ -26,6 +26,7 @@
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/EnumUDT.hpp"
 #include "ddr/ir/TypedefUDT.hpp"
+#include "ddr/ir/TypeVisitor.hpp"
 #include "ddr/ir/UnionUDT.hpp"
 
 JavaSupersetGenerator::JavaSupersetGenerator() : _file(0), _portLibrary(NULL)
@@ -299,6 +300,24 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 	return rc;
 }
 
+class SupersetVisitor : public TypeVisitor
+{
+private:
+	JavaSupersetGenerator *_supersetGen;
+	bool _addFieldsOnly;
+	string _prefix;
+
+public:
+	SupersetVisitor(JavaSupersetGenerator *supersetGen, bool addFieldsOnly, string prefix) : _supersetGen(supersetGen), _addFieldsOnly(addFieldsOnly), _prefix(prefix) {}
+
+	DDR_RC visitType(Type *type) const;
+	DDR_RC visitType(NamespaceUDT *type) const;
+	DDR_RC visitType(EnumUDT *type) const;
+	DDR_RC visitType(TypedefUDT *type) const;
+	DDR_RC visitType(ClassUDT *type) const;
+	DDR_RC visitType(UnionUDT *type) const;
+};
+
 /* Print a field member with the format:
  *     F|PREFIX OUTER_TYPE$assembledBaseTypeName:BIT_FIELD|MODIFIERS PREFIX OUTER_TYPE.typeName:BIT_FIELD
  * See getFieldType() for more details on how these type names are constructed.
@@ -316,7 +335,7 @@ JavaSupersetGenerator::printFieldMember(Field *field, string prefix = "")
 		ERRMSG("Field %s has NULL type", field->_name.c_str());
 	} else if (!field->_isStatic) {
 		if (field->_fieldType->isAnonymousType()) {
-			field->_fieldType->printToSuperset(this, true, prefix + field->_name + ".");
+			field->_fieldType->acceptVisitor(SupersetVisitor(this, true, prefix + field->_name + "."));
 		} else {
 			string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
 			string lineToPrint = "F|" + replace(nameFormatted, ".", "$") + "|" + nameFormatted + "|";
@@ -366,44 +385,44 @@ JavaSupersetGenerator::replace(string str, string subStr, string newStr)
 }
 
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(Type *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(Type *type) const
 {
 	/* No-op: do not print base types at this time. */
 	return DDR_RC_OK;
 }
 
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(TypedefUDT *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(TypedefUDT *type) const
 {
-	/* No-op: do not print typedefs at this time. */
+	/* No-op: do not print base types at this time. */
 	return DDR_RC_OK;
 }
 
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(ClassUDT *type) const
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-			if (!addFieldsOnly) {
-				string nameFormatted = replace(type->getFullName(), "::", "$");
+		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			if (!_addFieldsOnly) {
+				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|";
 				if (NULL != type->_superClass) {
-					string superClassFormatted = replace(type->_superClass->getFullName(), "::", "$");
+					string superClassFormatted = _supersetGen->replace(type->_superClass->getFullName(), "::", "$");
 					lineToPrint += superClassFormatted + "\n";
 				} else {
 					lineToPrint += "\n";
 				}
-				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+				omrfile_write(_supersetGen->_file, lineToPrint.c_str(), lineToPrint.length());
 			}
 
 			for (vector<EnumMember *>::iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				printConstantMember((*m)->_name);
+				_supersetGen->printConstantMember((*m)->_name);
 			}
 
 			for (vector<Field *>::iterator m = type->_fieldMembers.begin(); m != type->_fieldMembers.end(); ++m) {
-				rc = printFieldMember(*m, prefix);
+				rc = _supersetGen->printFieldMember(*m, _prefix);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -412,7 +431,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 			if (DDR_RC_OK == rc) {
 				for (vector<Macro>::iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
 					if (DDR_RC_OK == m->getNumeric(NULL)) {
-						printConstantMember(m->_name);
+						_supersetGen->printConstantMember(m->_name);
 					}
 				}
 			}
@@ -420,7 +439,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 	}
 
 	/* Anonymous sub udt's not used as fields are to have their fields added to this struct.*/
-	if ((DDR_RC_OK == rc) && (!addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!_addFieldsOnly)) {
 		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
 			if ((*it)->isAnonymousType()) {
 				bool isUsedAsField = false;
@@ -431,7 +450,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 					}
 				}
 				if (!isUsedAsField) {
-					rc = (*it)->printToSuperset(this, true, prefix);
+					rc = (*it)->acceptVisitor(SupersetVisitor(_supersetGen, true, _prefix));
 					if (DDR_RC_OK != rc) {
 						break;
 					}
@@ -440,7 +459,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 		}
 	}
 
-	if ((DDR_RC_OK == rc) && (!addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!_addFieldsOnly)) {
 		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
 			bool isUsedAsField = false;
 			if ((*it)->isAnonymousType()) {
@@ -452,7 +471,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 				}
 			}
 			if (!(*it)->isAnonymousType() || isUsedAsField) {
-				rc = (*it)->printToSuperset(this, false, prefix);
+				rc = (*it)->acceptVisitor(SupersetVisitor(_supersetGen, false, _prefix));
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -462,26 +481,27 @@ JavaSupersetGenerator::dispatchPrintToSuperset(ClassUDT *type, bool addFieldsOnl
 	return rc;
 }
 
+
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(UnionUDT *type) const
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-			if (!addFieldsOnly) {
-				string nameFormatted = replace(type->getFullName(), "::", "$");
+		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			if (!_addFieldsOnly) {
+				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
-				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+				omrfile_write(_supersetGen->_file, lineToPrint.c_str(), lineToPrint.length());
 			}
 
 			for (vector<EnumMember *>::iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				printConstantMember((*m)->_name);
+				_supersetGen->printConstantMember((*m)->_name);
 			}
 
 			if (DDR_RC_OK == rc) {
 				for (vector<Field *>::iterator m = type->_fieldMembers.begin(); m != type->_fieldMembers.end(); ++m) {
-					rc = printFieldMember(*m, prefix);
+					rc = _supersetGen->printFieldMember(*m, _prefix);
 					if (DDR_RC_OK != rc) {
 						break;
 					}
@@ -491,15 +511,15 @@ JavaSupersetGenerator::dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnl
 			if (DDR_RC_OK == rc) {
 				for (vector<Macro>::iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
 					if (DDR_RC_OK == m->getNumeric(NULL)) {
-						printConstantMember(m->_name);
+						_supersetGen->printConstantMember(m->_name);
 					}
 				}
 			}
 		}
 	}
-	if ((DDR_RC_OK == rc) && (!addFieldsOnly)) {
+	if ((DDR_RC_OK == rc) && (!_addFieldsOnly)) {
 		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-			rc = (*v)->printToSuperset(this, false, prefix);
+			rc = (*v)->acceptVisitor(SupersetVisitor(_supersetGen, false, ""));
 			if (DDR_RC_OK != rc) {
 				break;
 			}
@@ -509,20 +529,20 @@ JavaSupersetGenerator::dispatchPrintToSuperset(UnionUDT *type, bool addFieldsOnl
 }
 
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(EnumUDT *type) const
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || addFieldsOnly) && (type->_enumMembers.size() > 0)) {
-			if (!addFieldsOnly) {
-				string nameFormatted = replace(type->getFullName(), "::", "$");
+		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_enumMembers.size() > 0)) {
+			if (!_addFieldsOnly) {
+				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
-				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+				omrfile_write(_supersetGen->_file, lineToPrint.c_str(), lineToPrint.length());
 			}
 
 			for (vector<EnumMember *>::iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				printConstantMember((*m)->_name);
+				_supersetGen->printConstantMember((*m)->_name);
 			}
 		}
 	}
@@ -530,30 +550,30 @@ JavaSupersetGenerator::dispatchPrintToSuperset(EnumUDT *type, bool addFieldsOnly
 }
 
 DDR_RC
-JavaSupersetGenerator::dispatchPrintToSuperset(NamespaceUDT *type, bool addFieldsOnly, string prefix)
+SupersetVisitor::visitType(NamespaceUDT *type) const
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if (!type->isAnonymousType() || addFieldsOnly) {
-			if (!addFieldsOnly) {
-				string nameFormatted = replace(type->getFullName(), "::", "$");
+		if (!type->isAnonymousType() || _addFieldsOnly) {
+			if (!_addFieldsOnly) {
+				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
-				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+				omrfile_write(_supersetGen->_file, lineToPrint.c_str(), lineToPrint.length());
 			}
 
 			for (vector<Macro>::iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
 				if (DDR_RC_OK == m->getNumeric(NULL)) {
-					printConstantMember(m->_name);
+					_supersetGen->printConstantMember(m->_name);
 				}
 			}
 		}
 	}
-	if (!addFieldsOnly) {
-		/* Anonymous sub udt's are to have their fields added to this struct.*/
+	if (!_addFieldsOnly) {
+		/* Anonymous sub udt's are to have their fields added to this struct. */
 		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
 			if ((*v)->isAnonymousType()) {
-				rc = (*v)->printToSuperset(this, true, prefix);
+				rc = (*v)->acceptVisitor(SupersetVisitor(_supersetGen, true, _prefix));
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -562,7 +582,7 @@ JavaSupersetGenerator::dispatchPrintToSuperset(NamespaceUDT *type, bool addField
 
 		for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
 			if (!(*v)->isAnonymousType()) {
-				rc = (*v)->printToSuperset(this, false, prefix);
+				rc = (*v)->acceptVisitor(SupersetVisitor(_supersetGen, false, _prefix));
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -581,7 +601,7 @@ JavaSupersetGenerator::printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir,
 
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
-		rc = (*v)->printToSuperset(this, false, "");
+		rc = (*v)->acceptVisitor(SupersetVisitor(this, false, ""));
 		if (DDR_RC_OK != rc) {
 			break;
 		}

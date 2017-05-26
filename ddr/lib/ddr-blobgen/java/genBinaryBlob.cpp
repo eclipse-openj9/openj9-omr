@@ -882,11 +882,23 @@ JavaBlobGenerator::dispatchEnumerateType(NamespaceUDT *type, bool addFieldsOnly)
 		}
 	}
 	/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-	if (!addFieldsOnly) {
-		for (vector<UDT *>::iterator v = (type->_subUDTs).begin(); v != (type->_subUDTs).end(); ++v) {
-			rc = (*v)->enumerateType(this, false);
-			if (DDR_RC_OK != rc) {
-				break;
+	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			if ((*it)->isAnonymousType()) {
+				rc = (*it)->enumerateType(this, true);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+	}
+	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			if (!(*it)->isAnonymousType()) {
+				rc = (*it)->enumerateType(this, false);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
 			}
 		}
 	}
@@ -917,42 +929,72 @@ JavaBlobGenerator::dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly)
 {
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-	size_t fieldCount = 0;
-	size_t constCount = type->_enumMembers.size();
+		size_t fieldCount = 0;
+		size_t constCount = type->_enumMembers.size();
 
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-			if (!(*v)->_isStatic) {
-				/* Anonymous type members are added to the struct and not counted as a field themselves. */
-				if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-					rc = (*v)->_fieldType->enumerateType(this, true);
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
+				if (!(*v)->_isStatic) {
+					/* Anonymous type members are added to the struct and not counted as a field themselves. */
+					if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
+						rc = (*v)->_fieldType->enumerateType(this, true);
+						if (DDR_RC_OK != rc) {
+							break;
+						}
+					} else {
+						fieldCount += 1;
+					}
+				}
+			}
+		}
+
+		if (DDR_RC_OK == rc) {
+			/* Add only integer constants to the blob. */
+			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
+				if (DDR_RC_OK == it->getNumeric(NULL)) {
+					constCount += 1;
+				}
+			}
+		}
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+			rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
+		}
+	}
+
+	/* Anonymous sub udt's not used as fields are to have their fields added to this struct. */
+	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			if ((*it)->isAnonymousType()) {
+				bool isUsedAsField = false;
+				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
+				if (!isUsedAsField) {
+					rc = (*it)->enumerateType(this, true);
 					if (DDR_RC_OK != rc) {
 						break;
 					}
-				} else {
-					fieldCount += 1;
 				}
 			}
 		}
 	}
-
-	if (DDR_RC_OK == rc) {
-		/* Add only integer constants to the blob. */
-		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
-			if (DDR_RC_OK == it->getNumeric(NULL)) {
-				constCount += 1;
+	if ((DDR_RC_OK == rc) && !addFieldsOnly) {
+		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			bool isUsedAsField = false;
+			if ((*it)->isAnonymousType()) {
+				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
+					if ((*fit)->_fieldType == (*it)) {
+						isUsedAsField = true;
+						break;
+					}
+				}
 			}
-		}
-	}
-	if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
-		rc = addFieldAndConstCount(addFieldsOnly, fieldCount, constCount);
-	}
-	}
-	if (DDR_RC_OK == rc) {
-		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-		if (!addFieldsOnly) {
-			for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-				rc = (*v)->enumerateType(this, false);
+			if (!(*it)->isAnonymousType() || isUsedAsField) {
+				rc = (*it)->enumerateType(this, false);
 				if (DDR_RC_OK != rc) {
 					break;
 				}

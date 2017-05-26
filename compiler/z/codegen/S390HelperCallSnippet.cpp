@@ -104,7 +104,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
 
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)
-   if (cg()->comp()->getOption(TR_EnableZOSTrampolines))
+   if (cg()->comp()->getOption(TR_EnableRMODE64))
 #endif
       {
       if (NEEDS_TRAMPOLINE(destAddr, cursor, cg()))

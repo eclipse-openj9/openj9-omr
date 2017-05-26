@@ -898,7 +898,7 @@ enum TR_CompilationOptions
    TR_DisableSIMDStringCaseConv                       = 0x00040000 + 27,
    TR_DisableSIMDUTF16BEEncoder                       = 0x00080000 + 27,
    TR_DisableSIMDArrayCopy                            = 0x00100000 + 27,
-   TR_EnableZOSTrampolines                            = 0x00200000 + 27,
+   // Available                                       = 0x00200000 + 27,
    TR_EnableRMODE64                                   = 0x00400000 + 27,
    TR_EnableLocalVPSkipLowFreqBlock                   = 0x00800000 + 27,
    TR_DisableLastITableCache                          = 0x01000000 + 27,

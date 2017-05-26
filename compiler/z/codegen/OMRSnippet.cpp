@@ -133,7 +133,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
 
 #if defined(TR_TARGET_64BIT) 
 #if defined(J9ZOS390)
-      if (cg->comp()->getOption(TR_EnableZOSTrampolines))
+      if (cg->comp()->getOption(TR_EnableRMODE64))
 #endif
          {
          if (NEEDS_TRAMPOLINE(destAddr, cursor, cg))

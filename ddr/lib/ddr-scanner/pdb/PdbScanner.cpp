@@ -216,8 +216,7 @@ void
 PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 {
 	if ((string::npos != type->_name.find("<unnamed-type-")) || ("<unnamed-tag>" == type->_name)) {
-		UDT *udt = dynamic_cast<UDT *>(type);
-		if ((NULL != udt) && ((NULL == udt->_outerUDT) && (string::npos == type->_name.find("::")))) {
+		if ((NULL != type->getNamespace()) && (string::npos == type->_name.find("::")))) {
 			/* Anonymous global types would ideally be named by file name,
 			 * but PDB info does not associate types with source files.
 			 * Since they also cannot be referenced by outer type, give them
@@ -231,11 +230,8 @@ PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 		}
 
 	}
-	NamespaceUDT *namespaceUDT = dynamic_cast<NamespaceUDT *>(type);
-	if (NULL != namespaceUDT) {
-		for (vector<UDT *>::iterator it = namespaceUDT->_subUDTs.begin(); it != namespaceUDT->_subUDTs.end(); it ++) {
-			renameAnonymousType(*it, unnamedTypeCount);
-		}
+	for (vector<UDT *>::iterator it = type->getSubUDTs->begin(); it != type->getSubUDTs->end(); it ++) {
+		renameAnonymousType(*it, unnamedTypeCount);
 	}
 }
 

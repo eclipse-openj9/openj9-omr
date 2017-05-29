@@ -65,10 +65,7 @@ public:
 	virtual string getFullName();
 	virtual string getSymbolKindName();
 
-	/* Visitor pattern functions to allow the scanner/generator/IR to dispatch functionality based on type. */
-	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
-	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
-	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
+	/* Visitor pattern function to allow the scanner/generator/IR to dispatch functionality based on type. */
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
 
 	virtual void checkDuplicate(Symbol_IR *ir);

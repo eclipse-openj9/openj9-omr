@@ -43,28 +43,10 @@ EnumUDT::isAnonymousType()
 	return (NULL != _outerNamespace) && (_name.empty());
 }
 
-DDR_RC
-EnumUDT::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
 string
 EnumUDT::getSymbolKindName()
 {
 	return "enum";
-}
-
-DDR_RC
-EnumUDT::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-EnumUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
 }
 
 DDR_RC

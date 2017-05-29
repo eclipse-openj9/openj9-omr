@@ -47,13 +47,6 @@ class Scanner
 	set<string> _blacklistedTypes;
 public:
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath) = 0;
-
-	virtual DDR_RC dispatchScanChildInfo(Type *type, void *data) = 0;
-	virtual DDR_RC dispatchScanChildInfo(EnumUDT *type, void *data) {return DDR_RC_OK;}
-	virtual DDR_RC dispatchScanChildInfo(NamespaceUDT *type, void *data) {return DDR_RC_OK;}
-	virtual DDR_RC dispatchScanChildInfo(TypedefUDT *type, void *data) {return DDR_RC_OK;}
-	virtual DDR_RC dispatchScanChildInfo(ClassUDT *type, void *data) {return DDR_RC_OK;}
-	virtual DDR_RC dispatchScanChildInfo(UnionUDT *type, void *data) {return DDR_RC_OK;}
 	
 protected:
 	bool checkBlacklistedType(string name);

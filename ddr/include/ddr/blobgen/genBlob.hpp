@@ -43,20 +43,6 @@ class BlobGenerator
 {
 public:
 	virtual DDR_RC genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *blobFile) = 0;
-
-	virtual DDR_RC dispatchEnumerateType(Type *type, bool addFieldsOnly) = 0;
-	virtual DDR_RC dispatchEnumerateType(NamespaceUDT *type, bool addFieldsOnly) {return dispatchEnumerateType((Type *)type, addFieldsOnly);}
-	virtual DDR_RC dispatchEnumerateType(EnumUDT *type, bool addFieldsOnly) {return dispatchEnumerateType((NamespaceUDT *)type, addFieldsOnly);}
-	virtual DDR_RC dispatchEnumerateType(TypedefUDT *type, bool addFieldsOnly) {return dispatchEnumerateType((NamespaceUDT *)type, addFieldsOnly);}
-	virtual DDR_RC dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly) {return dispatchEnumerateType((NamespaceUDT *)type, addFieldsOnly);}
-	virtual DDR_RC dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly) {return dispatchEnumerateType((NamespaceUDT *)type, addFieldsOnly);}
-
-	virtual DDR_RC dispatchBuildBlob(Type *type, bool addFieldsOnly, string prefix) = 0;
-	virtual DDR_RC dispatchBuildBlob(NamespaceUDT *type, bool addFieldsOnly, string prefix) {return dispatchBuildBlob((Type *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchBuildBlob(EnumUDT *type, bool addFieldsOnly, string prefix) {return dispatchBuildBlob((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchBuildBlob(TypedefUDT *type, bool addFieldsOnly, string prefix) {return dispatchBuildBlob((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchBuildBlob(ClassUDT *type, bool addFieldsOnly, string prefix) {return dispatchBuildBlob((NamespaceUDT *)type, addFieldsOnly, prefix);}
-	virtual DDR_RC dispatchBuildBlob(UnionUDT *type, bool addFieldsOnly, string prefix) {return dispatchBuildBlob((NamespaceUDT *)type, addFieldsOnly, prefix);}
 };
 
 class SupersetGenerator

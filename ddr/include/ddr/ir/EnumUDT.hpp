@@ -36,9 +36,6 @@ public:
 	bool isAnonymousType();
 	virtual string getSymbolKindName();
 
-	virtual DDR_RC scanChildInfo(Scanner *scanner, void *data);
-	virtual DDR_RC enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly);
-	virtual DDR_RC buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix);
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
 };
 

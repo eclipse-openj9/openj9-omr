@@ -1207,9 +1207,3 @@ PdbScanner::getUDTname(UDT *u)
 
 	return name;
 }
-
-DDR_RC
-PdbScanner::dispatchScanChildInfo(Type *type, void *data)
-{
-	return DDR_RC_OK;
-}

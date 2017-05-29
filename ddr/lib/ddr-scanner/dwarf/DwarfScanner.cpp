@@ -41,6 +41,23 @@
 #include <functional>
 #include <utility>
 
+class DwarfVisitor : public TypeVisitor
+{
+private:
+	DwarfScanner *_scanner;
+	Dwarf_Die _die;
+
+public:
+	DwarfVisitor(DwarfScanner *scanner, Dwarf_Die die) : _scanner(scanner), _die(die) {}
+
+	DDR_RC visitType(Type *type) const;
+	DDR_RC visitType(NamespaceUDT *type) const;
+	DDR_RC visitType(EnumUDT *type) const;
+	DDR_RC visitType(TypedefUDT *type) const;
+	DDR_RC visitType(ClassUDT *type) const;
+	DDR_RC visitType(UnionUDT *type) const;
+};
+
 DwarfScanner::DwarfScanner()
 	: _fileNameCount(0), _fileNamesTable(NULL), _ir(NULL), _debug(NULL)
 {
@@ -682,7 +699,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 				 * for types defined within namespaces, do not add it to the main list of types.
 				 */
 				isSubUDT = (isSubUDT) || (string::npos != newType->getFullName().find("::"));
-				rc = newType->scanChildInfo(this, die);
+				rc = newType->acceptVisitor(DwarfVisitor(this, die));
 				DEBUGPRINTF("Done scanning child info");
 			} else {
 				rc = DDR_RC_OK;
@@ -906,13 +923,12 @@ DwarfScanner::createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsig
 }
 
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
+DwarfVisitor::visitType(TypedefUDT *newTypedef) const
 {
-	Dwarf_Die die = (Dwarf_Die)data;
 	Dwarf_Die typeDie = NULL;
 	string typedefName = "";
 	/* Find and add the typedef's modifiers. */
-	DDR_RC rc = getTypeInfo(die, &typeDie, &typedefName, &newTypedef->_modifiers, &newTypedef->_sizeOf, NULL);
+	DDR_RC rc = _scanner->getTypeInfo(_die, &typeDie, &typedefName, &newTypedef->_modifiers, &newTypedef->_sizeOf, NULL);
 
 	/* Add a type for the typedef's type. */
 	Type *typedefType = NULL;
@@ -926,8 +942,8 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
 		}
 	}
 	if ((DDR_RC_OK == rc) && (NULL != typeDie)) {
-		rc = addDieToIR(typeDie, tag, true, NULL, &typedefType);
-		dwarf_dealloc(_debug, typeDie, DW_DLA_DIE);
+		rc = _scanner->addDieToIR(typeDie, tag, true, NULL, &typedefType);
+		dwarf_dealloc(_scanner->_debug, typeDie, DW_DLA_DIE);
 	}
 	if (DDR_RC_OK == rc) {
 		newTypedef->_aliasedType = typedefType;
@@ -947,13 +963,12 @@ DwarfScanner::dispatchScanChildInfo(TypedefUDT *newTypedef, void *data)
  * gets the enum members by processing the children.
  */
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(EnumUDT *const newUDT, void *data)
+DwarfVisitor::visitType(EnumUDT *newUDT) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	Dwarf_Die die = (Dwarf_Die)data;
 	Dwarf_Die childDie = NULL;
 	Dwarf_Error error = NULL;
-	int dwRc = dwarf_child(die, &childDie, &error);
+	int dwRc = dwarf_child(_die, &childDie, &error);
 
 	if (DW_DLV_ERROR == dwRc) {
 		ERRMSG("Getting child of CU DIE: %s\n", dwarf_errmsg(error));
@@ -974,17 +989,17 @@ DwarfScanner::dispatchScanChildInfo(EnumUDT *const newUDT, void *data)
 
 			if (DW_TAG_enumerator == childTag) {
 				/* The child is an enumerator member. */
-				if (DDR_RC_OK != addEnumMember(childDie, (EnumUDT *)newUDT)) {
+				if (DDR_RC_OK != _scanner->addEnumMember(childDie, (EnumUDT *)newUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
 				}
 			}
-		} while (DDR_RC_OK == getNextSibling(&childDie));
-		dwarf_dealloc(_debug, childDie, DW_DLA_DIE);
+		} while (DDR_RC_OK == _scanner->getNextSibling(&childDie));
+		dwarf_dealloc(_scanner->_debug, childDie, DW_DLA_DIE);
 	}
 
 	if (NULL != error) {
-		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
+		dwarf_dealloc(_scanner->_debug, error, DW_DLA_ERROR);
 	}
 	return rc;
 }
@@ -994,13 +1009,12 @@ DwarfScanner::dispatchScanChildInfo(EnumUDT *const newUDT, void *data)
  * processes those properties to populate a NamespaceUDT or ClassUDT.
  */
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
+DwarfVisitor::visitType(NamespaceUDT *newClass) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	Dwarf_Die die = (Dwarf_Die)data;
 	Dwarf_Die childDie = NULL;
 	Dwarf_Error error = NULL;
-	int dwRc = dwarf_child(die, &childDie, &error);
+	int dwRc = dwarf_child(_die, &childDie, &error);
 
 	if (DW_DLV_ERROR == dwRc) {
 		ERRMSG("Getting child of CU DIE: %s\n", dwarf_errmsg(error));
@@ -1030,7 +1044,7 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 			) {
 				/* The child is an inner type. */
 				UDT *innerUDT = NULL;
-				if (DDR_RC_OK != addDieToIR(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
+				if (DDR_RC_OK != _scanner->addDieToIR(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
 				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL  == innerUDT->getNamespace())) {
@@ -1043,44 +1057,44 @@ DwarfScanner::dispatchScanChildInfo(NamespaceUDT *newClass, void *data)
 				}
 			} else if (DW_TAG_inheritance == childTag) {
 				/* The child is a super type. */
-				rc = getSuperUDT(childDie, (ClassUDT *)newClass);
+				rc = _scanner->getSuperUDT(childDie, (ClassUDT *)newClass);
 			} else if (DW_TAG_member == childTag) {
 				/* The child is a member field. */
 				string fieldName = "";
-				rc = getName(childDie, &fieldName);
+				rc = _scanner->getName(childDie, &fieldName);
 				DEBUGPRINTF("fieldName: %s", fieldName.c_str());
-				if (DDR_RC_OK != addClassField(childDie, (ClassType *)newClass, fieldName)) {
+				if (DDR_RC_OK != _scanner->addClassField(childDie, (ClassType *)newClass, fieldName)) {
 					rc = DDR_RC_ERROR;
 					break;
 				}
 			}
-		} while (DDR_RC_OK == getNextSibling(&childDie));
-		dwarf_dealloc(_debug, childDie, DW_DLA_DIE);
+		} while (DDR_RC_OK == _scanner->getNextSibling(&childDie));
+		dwarf_dealloc(_scanner->_debug, childDie, DW_DLA_DIE);
 	}
 
 	if (NULL != error) {
-		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
+		dwarf_dealloc(_scanner->_debug, error, DW_DLA_ERROR);
 	}
 	return rc;
 }
 
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(Type *newType, void *data)
+DwarfVisitor::visitType(Type *newType) const
 {
 	/* No-op: base types do not have children Die's to scan. */
 	return DDR_RC_OK;
 }
 
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(ClassUDT *newType, void *data)
+DwarfVisitor::visitType(ClassUDT *newType) const
 {
-	return dispatchScanChildInfo((NamespaceUDT *)newType, data);
+	return visitType((NamespaceUDT *)newType);
 }
 
 DDR_RC
-DwarfScanner::dispatchScanChildInfo(UnionUDT *newType, void *data)
+DwarfVisitor::visitType(UnionUDT *newType) const
 {
-	return dispatchScanChildInfo((NamespaceUDT *)newType, data);
+	return visitType((NamespaceUDT *)newType);
 }
 
 /* Add an enum member to an enum UDT from a Die. */

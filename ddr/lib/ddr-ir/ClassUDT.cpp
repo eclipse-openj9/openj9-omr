@@ -25,28 +25,10 @@ ClassUDT::ClassUDT(size_t size, bool isClass, unsigned int lineNumber)
 
 ClassUDT::~ClassUDT() {};
 
-DDR_RC
-ClassUDT::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
 string
 ClassUDT::getSymbolKindName()
 {
 	return _isClass ? "class" : "struct";
-}
-
-DDR_RC
-ClassUDT::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-ClassUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
 }
 
 DDR_RC

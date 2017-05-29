@@ -26,24 +26,6 @@ UnionUDT::UnionUDT(size_t size, unsigned int lineNumber)
 UnionUDT::~UnionUDT() {};
 
 DDR_RC
-UnionUDT::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
-DDR_RC
-UnionUDT::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-UnionUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
-}
-
-DDR_RC
 UnionUDT::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);

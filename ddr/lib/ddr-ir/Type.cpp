@@ -50,24 +50,6 @@ Type::getSymbolKindName()
 }
 
 DDR_RC
-Type::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
-DDR_RC
-Type::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-Type::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
-}
-
-DDR_RC
 Type::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);

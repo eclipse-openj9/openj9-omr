@@ -94,8 +94,6 @@ private:
 	DDR_RC updatePostponedFieldNames();
 	void renameAnonymousTypes();
 	void renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount);
-
-	DDR_RC dispatchScanChildInfo(Type *type, void *data);
 };
 
 #endif /* PDBSCANNER_HPP */

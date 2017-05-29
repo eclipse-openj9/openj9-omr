@@ -141,22 +141,11 @@ private:
 	DDR_RC addBlobStruct(string name, string superName, uint32_t constCount, uint32_t fieldCount, uint32_t size);
 	DDR_RC formatFieldType(Field *f, string *fieldType);
 
+	friend class BlobBuildVisitor;
+	friend class BlobEnumerateVisitor;
+
 public:
 	DDR_RC genBinaryBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *blobFile);
-
-	DDR_RC dispatchEnumerateType(Type *type, bool addFieldsOnly);
-	DDR_RC dispatchEnumerateType(NamespaceUDT *type, bool addFieldsOnly);
-	DDR_RC dispatchEnumerateType(EnumUDT *type, bool addFieldsOnly);
-	DDR_RC dispatchEnumerateType(TypedefUDT *type, bool addFieldsOnly);
-	DDR_RC dispatchEnumerateType(ClassUDT *type, bool addFieldsOnly);
-	DDR_RC dispatchEnumerateType(UnionUDT *type, bool addFieldsOnly);
-
-	DDR_RC dispatchBuildBlob(Type *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchBuildBlob(NamespaceUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchBuildBlob(EnumUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchBuildBlob(TypedefUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchBuildBlob(ClassUDT *type, bool addFieldsOnly, string prefix);
-	DDR_RC dispatchBuildBlob(UnionUDT *type, bool addFieldsOnly, string prefix);
 };
 
 #endif /* GENBINARYBLOB_HPP */

@@ -28,24 +28,6 @@ TypedefUDT::~TypedefUDT()
 }
 
 DDR_RC
-TypedefUDT::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
-DDR_RC
-TypedefUDT::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-TypedefUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
-}
-
-DDR_RC
 TypedefUDT::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);

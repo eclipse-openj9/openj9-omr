@@ -70,13 +70,6 @@ public:
 
 	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath);
 
-	DDR_RC dispatchScanChildInfo(Type *newType, void *data);
-	DDR_RC dispatchScanChildInfo(NamespaceUDT *newClass, void *data);
-	DDR_RC dispatchScanChildInfo(EnumUDT *newEnum, void *data);
-	DDR_RC dispatchScanChildInfo(TypedefUDT *newTypedef, void *data);
-	DDR_RC dispatchScanChildInfo(ClassUDT *newTypedef, void *data);
-	DDR_RC dispatchScanChildInfo(UnionUDT *newTypedef, void *data);
-
 private:
 	Dwarf_Signed _fileNameCount;
 	char **_fileNamesTable;
@@ -103,6 +96,8 @@ private:
 	DDR_RC createTypeKey(Dwarf_Die die, string typeName, TypeKey *key, unsigned int *lineNumber, string *fileName);
 	DDR_RC getNextSibling(Dwarf_Die *die);
 	DDR_RC getBitField(Dwarf_Die die, size_t *bitField);
+
+	friend class DwarfVisitor;
 };
 
 #endif /* DWARFSCANNER_HPP */

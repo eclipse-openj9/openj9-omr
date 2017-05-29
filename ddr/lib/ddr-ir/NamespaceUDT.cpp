@@ -32,24 +32,6 @@ NamespaceUDT::~NamespaceUDT()
 }
 
 DDR_RC
-NamespaceUDT::scanChildInfo(Scanner *scanner, void *data)
-{
-	return scanner->dispatchScanChildInfo(this, data);
-}
-
-DDR_RC
-NamespaceUDT::enumerateType(BlobGenerator *blobGenerator, bool addFieldsOnly)
-{
-	return blobGenerator->dispatchEnumerateType(this, addFieldsOnly);
-}
-
-DDR_RC
-NamespaceUDT::buildBlob(BlobGenerator *blobGenerator, bool addFieldsOnly, string prefix)
-{
-	return blobGenerator->dispatchBuildBlob(this, addFieldsOnly, prefix);
-}
-
-DDR_RC
 NamespaceUDT::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);

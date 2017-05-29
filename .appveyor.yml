@@ -26,6 +26,7 @@ environment:
   GTEST_COLOR: '1'
 
 before_build:
+  - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
   - cmd: cmake -Wdev -G "Visual Studio 14 2015 Win64" .
 
 build:

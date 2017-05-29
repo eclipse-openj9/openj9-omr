@@ -97,6 +97,11 @@ class ObjectModel
    uintptrj_t objectHeaderSizeInBytes() { return 0; }
    uintptrj_t offsetOfIndexableSizeField() { return 0; }
 
+   /**
+   * @brief: Returns true if concurrent scavenging enabled in the VM's GC
+   */
+   bool shouldGenerateReadBarriersForFieldLoads() { return false; };
+
    };
 }
 

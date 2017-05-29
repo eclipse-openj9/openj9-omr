@@ -1902,22 +1902,6 @@ static TR::Node *intDemoteSimplifier(TR::Node * node, TR::Block * block, TR::Sim
    return node;
    }
 
-static TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   if (branchToFollowingBlock(node, block, s->comp()))
-      {
-      // Branch to the immediately following block. The branch can be removed
-      //
-      if (performTransformation(s->comp(), "%sRemoving %s [" POINTER_PRINTF_FORMAT "] to following block\n", s->optDetailString(), node->getOpCode().getName(), node))
-         {
-         s->prepareToStopUsingNode(node, s->_curTree);
-         node->recursivelyDecReferenceCount();
-         return NULL;
-         }
-      }
-   return node;
-   }
-
 static bool hasCommonedChild(TR::Node *node, TR::SparseBitVector &isVisited)
    {
    TR::ILOpCode& op   = node->getOpCode();
@@ -5287,6 +5271,8 @@ static bool skipRemLowering(int64_t divisor, TR::Simplifier *s)
 //
 TR::Node *dftSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (node->getOpCode().isBranch() && (removeIfToFollowingBlock(node, block, s) == NULL))
+      return NULL;
    simplifyChildren(node, block, s);
    return node;
    }
@@ -13498,6 +13484,8 @@ TR::Node *normalizeCmpSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
 
 TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
@@ -13529,6 +13517,8 @@ TR::Node *ifacmpeqSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 //
 TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
@@ -13561,6 +13551,8 @@ TR::Node *ifacmpneSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
 
 TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
@@ -13662,6 +13654,8 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
 
 TR::Node *ifCmpWithoutEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
@@ -15845,6 +15839,8 @@ TR::Node *dbits2lSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *ifxcmpoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::ILOpCodes opCode = node->getOpCodeValue();
@@ -15868,6 +15864,8 @@ TR::Node *ifxcmpoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier *
 
 TR::Node *ifxcmnoSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
+   if (removeIfToFollowingBlock(node, block, s) == NULL)
+      return NULL;
    simplifyChildren(node, block, s);
 
    TR::ILOpCodes opCode = node->getOpCodeValue();

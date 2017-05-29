@@ -966,3 +966,18 @@ TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block)
    return NULL;
    }
 
+TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   if (branchToFollowingBlock(node, block, s->comp()))
+      {
+      // Branch to the immediately following block. The branch can be removed
+      //
+      if (performTransformation(s->comp(), "%sRemoving %s [" POINTER_PRINTF_FORMAT "] to following block\n", s->optDetailString(), node->getOpCode().getName(), node))
+         {
+         s->prepareToStopUsingNode(node, s->_curTree);
+         node->recursivelyDecReferenceCount();
+         return NULL;
+         }
+      }
+   return node;
+   }

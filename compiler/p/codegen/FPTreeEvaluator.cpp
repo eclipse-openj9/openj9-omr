@@ -829,7 +829,6 @@ TR::Register *OMR::Power::TreeEvaluator::vdsetelemEvaluator(TR::Node *node, TR::
 	      {
          TR::Register *fprReg = cg->evaluate(secondChild);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, fprReg, fprReg);
-         //resReg = fprReg;
 
          cg->decReferenceCount(secondChild);
          }
@@ -1061,7 +1060,6 @@ static TR::Register *generateFusedMultiplyAdd(TR::Node *addNode,TR::InstOpCode::
       {
       addChild = addNode->getFirstChild();
       mulNode  = addNode->getSecondChild();
-      // TR_ASSERT(!addChild->getOpCode().isSub(),"Subtract not commutative %p %p\n", addNode, addChild);
       }
 
    TR_ASSERT(mulNode->getReferenceCount() < 2,"Mul node 0x%p reference count %d >= 2\n",mulNode,mulNode->getReferenceCount());

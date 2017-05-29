@@ -867,9 +867,7 @@ getRegisterName(TR::RealRegister::RegNum num, bool isVSR = false)
       case TR::RealRegister::cr6: return "cr6";
       case TR::RealRegister::cr7: return "cr7";
 
-//    case TR::RealRegister::mq: return "mq";
       case TR::RealRegister::lr: return "lr";
-//    case TR::RealRegister::ctr: return "ctr";
 
       case TR::RealRegister::vr0: return (isVSR? "vsr32":"vr0");
       case TR::RealRegister::vr1: return (isVSR? "vsr33":"vr1");

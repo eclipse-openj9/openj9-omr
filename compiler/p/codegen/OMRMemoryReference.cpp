@@ -200,10 +200,6 @@ OMR::Power::MemoryReference::MemoryReference(TR::Node *rootLoadOrStore, uint32_t
       self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       self()->adjustForResolution(cg);
-   if (symbol->isParm())
-      {
-      //        setOffset(getOffset() + cg->getLinkage()->calculateActualParameterOffset(0, *symbol->castToParmSymbol()));
-      }
    // TODO: aliasing sets?
    }
 
@@ -574,7 +570,6 @@ void OMR::Power::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
                intptrj_t amount = (integerChild->getOpCodeValue() == TR::iconst) ?
                                    integerChild->getInt() :
                                    integerChild->getLongInt();
-               ////addToOffset(subTree, amount, cg);
                self()->addToOffset(integerChild, amount, cg);
                }
             else

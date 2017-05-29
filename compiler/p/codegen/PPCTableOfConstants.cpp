@@ -62,7 +62,6 @@ void *TR_PPCTableOfConstants::initTOC(TR_FrontEnd *fe, TR::PersistentInfo * pinf
    if (tsize > 2048)
       {
       tsize = 2048;
-      ;//diagnostic(comp, "TOC is currently limited to 2MB maximum.\n");
       }
    tsize <<= 10;     // Turn it into size in byte
 
@@ -220,8 +219,6 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
             if ((strcmp((char *)hash[idx]._nKey, (char *)tmplate->_nKey) == 0) &&
                 (hash[idx]._keyTag == tmplate->_keyTag))
                {
-               if (debug("traceTOCHash"))
-                  ;//diagnostic(comp, "   Hash Hit name:%s    return:%d\n", hash[idx]._nKey, rval);
                tocManagement->getTOCMonitor()->exit();
                return rval;
                }
@@ -230,8 +227,6 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
          case TR_FLAG_tocAddrKey:
             if (hash[idx]._addrKey == tmplate->_addrKey)
                {
-               if (debug("traceTOCHash"))
-                  ;//diagnostic(comp, "   Hash Hit addr:%p    return:%d\n", (void *)hash[idx]._addrKey, rval);
                tocManagement->getTOCMonitor()->exit();
                return rval;
                }
@@ -240,8 +235,6 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
          case TR_FLAG_tocDoubleKey:
             if (hash[idx]._dKey == tmplate->_dKey)
                {
-               if (debug("traceTOCHash"))
-                  ;//diagnostic(comp, "   Hash Hit double:%p    return:%d\n", (void *)hash[idx]._dKey, rval);
                tocManagement->getTOCMonitor()->exit();
                return rval;
                }
@@ -252,8 +245,6 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
                {
                if (hash[idx]._flag & TR_FLAG_tocFloatHigh)
                   *offsetInSlot = 4;
-               if (debug("traceTOCHash"))
-                  ;//diagnostic(comp, "   Hash Hit float:%x    return:%d  offset:%d\n", hash[idx]._fKey, rval, *offsetInSlot);
                tocManagement->getTOCMonitor()->exit();
                return rval;
                }
@@ -264,8 +255,6 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
                 hash[idx]._cpKey == tmplate->_cpKey   &&
                 hash[idx]._staticCPIndex == tmplate->_staticCPIndex)
                {
-               if (debug("traceTOCHash"))
-                  ;//diagnostic(comp, "   Hash Hit static2class:%p  cpIndex:%d  return:%d\n", (void *)hash[idx]._cpKey, hash[idx]._staticCPIndex, rval);
                tocManagement->getTOCMonitor()->exit();
                return rval;
                }
@@ -364,40 +353,28 @@ TR_PPCTableOfConstants::lookUp(int32_t val, struct TR_tocHashEntry *tmplate, int
             hash[idx]._nKey = (int8_t *)&hash[idx]._staticCPIndex;
             }
          hash[idx]._keyTag = tmplate->_keyTag ;
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New hash name:%s   return:%d\n", hash[idx]._nKey, rval);
          break;
          }
       case TR_FLAG_tocAddrKey:
          hash[idx]._addrKey = tmplate->_addrKey;
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New hash addr:%p   return:%d\n", (void *)hash[idx]._addrKey, rval);
          break;
       case TR_FLAG_tocDoubleKey:
          hash[idx]._dKey = tmplate->_dKey;
          setTOCSlot(rval*sizeof(intptrj_t), hash[idx]._dKey);
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New hash double:%p set:%p  return:%d\n", (void *)hash[idx]._dKey, (void *)getTOCSlot(rval*sizeof(intptrj_t)), rval);
          break;
       case TR_FLAG_tocFloatKey:
          hash[idx]._fKey = tmplate->_fKey;
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New float prior slot: %p\n", (void *)getTOCSlot(rval*sizeof(intptrj_t)));
          uintptrj_t slotValue;
          if (TR::Compiler->target.cpu.isBigEndian())
             slotValue = (*offsetInSlot == 0)?(((uintptrj_t)hash[idx]._fKey)<<32):(getTOCSlot(rval*sizeof(intptrj_t))|hash[idx]._fKey);
          else
             slotValue = (*offsetInSlot == 0)?((uintptrj_t)hash[idx]._fKey):(getTOCSlot(rval*sizeof(intptrj_t))|(((uintptrj_t)hash[idx]._fKey)<<32));
          setTOCSlot(rval*sizeof(intptrj_t), slotValue);
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New hash float:%x set:%p return:%d offset:%d\n", hash[idx]._fKey, (void *)getTOCSlot(rval*sizeof(intptrj_t)), rval, *offsetInSlot);
          break;
       case TR_FLAG_tocStatic2ClassKey:
          hash[idx]._keyTag = tmplate->_keyTag;
          hash[idx]._cpKey = tmplate->_cpKey;
          hash[idx]._staticCPIndex = tmplate->_staticCPIndex;
-         if (debug("traceTOCHash"))
-            ;//diagnostic(comp, "    New hash static2class:%p cpIndex:%d return:%d\n", (void *)hash[idx]._cpKey, hash[idx]._staticCPIndex, rval);
          break;
       }
    tocManagement->getTOCMonitor()->exit();
@@ -590,8 +567,6 @@ int32_t TR_PPCTableOfConstants::allocateChunk(uint32_t numEntries, TR::CodeGener
    if (ret+numEntries<=tocManagement->getDownLast())
       {
       tocManagement->setDownCursor(ret+numEntries);
-      if (debug("traceTOCHash"))
-         ;//diagnostic(comp, "   Allocate: %d\n", ret);
 
       result = ret;
       goto Lexit;
@@ -601,8 +576,6 @@ int32_t TR_PPCTableOfConstants::allocateChunk(uint32_t numEntries, TR::CodeGener
    if (ret >= tocManagement->getUpLast())
       {
       tocManagement->setUpCursor(ret);
-      if (debug("traceTOCHash"))
-         ;//diagnostic(comp, "   Allocate: %d\n", ret+1);
 
       result = ret + 1;
       goto Lexit;

@@ -166,7 +166,6 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
 
 
       // TODO: Is there an accurate assume to insert here ?
-      // TR_ASSERT(!fsd || (fsd && lri >=0 && (ai<0 || hasToBeOnStack(paramCursor))), "Registers not saved on Full Speed Debug");
       if (lri >= 0)
          {
          if (!paramCursor->isReferencedParameter() && !paramCursor->isParmHasToBeOnStack()) continue;
@@ -232,7 +231,6 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          // Global register is allocated to this argument.
 
          // Don't process if in Full Speed Debug and saveOnly is set
-         // (!fsd || (fsd && !saveOnly))
          if (ai>=0 && (!fsd || !saveOnly))
             {
             if (regNum != ai)      // Equal assignment: do nothing
@@ -299,7 +297,6 @@ TR::Instruction *OMR::Power::Linkage::saveArguments(TR::Instruction *cursor, boo
          }
 
       // Don't process if in Full Speed Debug and saveOnly is set
-      // (!fsd || (fsd && !saveOnly))
       else if (ai >= 0 && (!fsd || !saveOnly))     // lri<0: arg needs to come from memory
          {
          switch (dtype)

@@ -2037,7 +2037,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdp, node, resReg, intermediateResReg);
          }
-      else //(firstChild->getDataType() == TR::VectorInt64) || (firstChild->getDataType() == TR::VectorDouble)
+      else
          {
          /*
           * Conditional statements are used to determine if the indexReg has the value 0 or 1. Other values are invalid.
@@ -2063,7 +2063,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, intermediateResReg);
             }
-         else //firstChild->getDataType() == TR::VectorDouble
+         else
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, intermediateResReg, intermediateResReg);
             }
@@ -4110,9 +4110,8 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
    condRegToBeUsed = condReg2;
 
    mid2Label = generateLabelSymbol(cg);
-   //generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, byteLenRemainingRegister);
    generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condRegToBeUsed, byteLenRemainingRegister, byteLen);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, /* residueLoopStartLabel */ mid2Label, condRegToBeUsed);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, mid2Label, condRegToBeUsed);
 
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1*byteLen);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1*byteLen);
@@ -4267,7 +4266,6 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
       if (condReg2)
          addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
 
-      //generateLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel);
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
       residueEndLabel->setEndInternalControlFlow();
       }
@@ -5452,7 +5450,6 @@ void addPrefetch(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetRegi
             if (!(firstChild &&
                 firstChild->getOpCodeValue() == TR::aiadd &&
                 firstChild->isInternalPointer() &&
-                //comp->fe()->sampleSignature(node->getOwningMethod(comp)) != NULL &&
                 strstr(comp->fe()->sampleSignature(node->getOwningMethod(), 0, 0, cg->trMemory()),"java/util/TreeMap$UnboundedValueIterator.next()")))
                {
                optDisabled = true;
@@ -5464,7 +5461,6 @@ void addPrefetch(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetRegi
             if (!(firstChild &&
                 firstChild->getOpCodeValue() == TR::aladd &&
                 firstChild->isInternalPointer() &&
-                //comp->fe()->sampleSignature(node->getOwningMethod(comp)) != NULL &&
                 strstr(comp->fe()->sampleSignature(node->getOwningMethod(), 0, 0, cg->trMemory()),"java/util/TreeMap$UnboundedValueIterator.next()")))
                {
                optDisabled = true;

@@ -6028,7 +6028,8 @@
    S390OpProp_SetsOperand1,
 
       // VLGV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_Is64Bit,
 
       // VLLEZ
    S390OpProp_IsLoad |

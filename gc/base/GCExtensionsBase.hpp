@@ -106,6 +106,12 @@ enum ExcessiveLevel {
 	excessive_gc_fatal_consumed
 };
 
+enum BackOutState {
+	backOutFlagCleared,		/* Normal state, no backout pending or in progress */
+	backOutFlagRaised,		/* Backout pending */
+	backOutStarted			/* Backout started */
+};
+
 /* Note:  These should be templates if DDR ever supports them (JAZZ 40487) */
 class MM_UserSpecifiedParameterUDATA {
 	/* Data Members */
@@ -174,7 +180,10 @@ private:
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	void* _guaranteedNurseryStart; /**< lowest address guaranteed to be in the nursery */
 	void* _guaranteedNurseryEnd; /**< highest address guaranteed to be in the nursery */
+
 	bool _isRememberedSetInOverflow;
+
+	BackOutState _backOutState; /**< set if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool debugConcurrentScavengerPageAlignment; /**< if true allows debug output prints for Concurrent Scavenger Page Alignment logic */
 	uintptr_t concurrentScavengerPageSectionSize; /**< selected section size for Concurrent Scavenger Page */
@@ -921,6 +930,10 @@ public:
 	MMINLINE bool isRememberedSetInOverflowState() { return _isRememberedSetInOverflow; }
 	MMINLINE void setRememberedSetOverflowState() { _isRememberedSetInOverflow = true; }
 	MMINLINE void clearRememberedSetOverflowState() { _isRememberedSetInOverflow = false; }
+	
+	MMINLINE void setScavengerBackOutState(BackOutState backOutState) { _backOutState = backOutState; }
+	MMINLINE BackOutState getScavengerBackOutState() { return _backOutState; }
+	MMINLINE bool isScavengerBackOutFlagRaised() { return backOutFlagCleared < _backOutState; }
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/**
@@ -1156,6 +1169,7 @@ public:
 		, _guaranteedNurseryStart(NULL)
 		, _guaranteedNurseryEnd(NULL)
 		, _isRememberedSetInOverflow(false)
+		, _backOutState(backOutFlagCleared)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, debugConcurrentScavengerPageAlignment(false)
 		, concurrentScavengerPageSectionSize(0)

@@ -103,13 +103,6 @@ private:
 	uintptr_t _cacheLineAlignment; /**< The number of bytes per cache line which is used to determine which boundaries in memory represent the beginning of a cache line */
 	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
 
-	typedef enum BackOutState {
-		backOutFlagCleared,		/* Normal state, no backout pending or in progress */
-		backOutFlagRaised,		/* Backout pending */
-		backOutStarted			/* Backout started */
-	} BackOutState;
-
-	BackOutState _backOutFlag; /**< set to true if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
 	uintptr_t _backOutDoneIndex; /**< snapshot of _doneIndex, when backOut was detected */
 
 	void *_heapBase;  /**< Cached base pointer of heap */
@@ -144,6 +137,17 @@ public:
 	 * Function members
 	 */
 private:
+	void setBackOutFlag(MM_EnvironmentBase *env, BackOutState value);
+	MMINLINE bool isBackOutFlagRaised() { return _extensions->isScavengerBackOutFlagRaised(); }
+	MMINLINE bool shouldAbortScanLoop() {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/* Concurrent Scavenger needs to drain the scan queue, even if Scavenge aborted */
+		return false;
+#else		
+		return isBackOutFlagRaised();
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */		
+	}
+
 public:
 	/**
 	 * Hook callback. Called when a global collect has started
@@ -347,17 +351,6 @@ public:
 	void abandonTLHRemainders(MM_EnvironmentStandard *env);
 	void abandonSurvivorTLHRemainder(MM_EnvironmentStandard *env);
 	void abandonTenureTLHRemainder(MM_EnvironmentStandard *env);
-
-	void setBackOutFlag(MM_EnvironmentBase *env, BackOutState value);
-	MMINLINE bool isBackOutFlagRaised() { return backOutFlagCleared < _backOutFlag; }
-	MMINLINE bool shouldAbortScanLoop() {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* Concurrent Scavenger needs to drain the scan queue, even if Scavenge aborted */
-		return false;
-#else		
-		return isBackOutFlagRaised();
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */		
-	}
 
 	void reportGCStart(MM_EnvironmentStandard *env);
 	void reportGCEnd(MM_EnvironmentStandard *env);
@@ -719,7 +712,6 @@ public:
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, _rescanThreadsForRememberedObjects(false)
 #endif
-		, _backOutFlag(backOutFlagCleared)
 		, _backOutDoneIndex(0)
 		, _heapBase(NULL)
 		, _heapTop(NULL)

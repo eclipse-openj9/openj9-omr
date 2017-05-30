@@ -378,7 +378,7 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* Aborted CS need global GC with Nursery compaction */
-	if (ABORTED_SCAVENGE == _extensions->heap->getPercolateStats()->getLastPercolateReason()) {
+	if (_extensions->isScavengerBackOutFlagRaised()) {
 		Assert_MM_true(_extensions->concurrentScavenger);
 		compactReason = COMPACT_ABORTED_SCAVENGE;
 		goto compactionReqd;

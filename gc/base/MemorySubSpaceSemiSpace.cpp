@@ -34,7 +34,6 @@
 #include "MemorySubSpaceRegionIterator.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
 #include "PhysicalSubArena.hpp"
-#include "Scavenger.hpp"
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
@@ -131,14 +130,7 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	 *  CMVC 144061 
 	 */
 	if (ALLOCATION_TYPE_TLH != allocationType) {
-		if (_extensions->isConcurrentScavengerEnabled() && _extensions->scavenger->isBackOutFlagRaised()) {
-			_extensions->heap->getPercolateStats()->setLastPercolateReason(ABORTED_SCAVENGE);
-		}
 		addr = _parent->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, this, this);
-		if (NONE_SET != _extensions->heap->getPercolateStats()->getLastPercolateReason()) {
-			_extensions->heap->getPercolateStats()->resetLastPercolateReason();
-			_extensions->heap->getPercolateStats()->clearScavengesSincePercolate();
-		}
 	}
 
 	return addr;
@@ -542,6 +534,7 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		_memorySubSpaceAllocate->isAllocatable(true);
 		getMemorySpace()->getTenureMemorySubSpace()->isAllocatable(true);
 
+		_extensions->setScavengerBackOutState(backOutFlagCleared);
 	}
 		break;
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
@@ -938,7 +931,7 @@ MM_MemorySubSpaceSemiSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDesc
 	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_CHECK_RESIZE);
 	/* this we are called at the end of precolate global GC, due to aborted Concurrent Scavenge,
 	 * we have to restore tilt (that has been set to 100% to do unified sliding compact of Nursery */
-	if (ABORTED_SCAVENGE == _extensions->heap->getPercolateStats()->getLastPercolateReason()) {
+	if (_extensions->isScavengerBackOutFlagRaised()) {
 		Assert_MM_true(_extensions->isConcurrentScavengerEnabled());
 		flip(env, MM_MemorySubSpaceSemiSpace::restore_tilt_after_percolate);
 	} else {

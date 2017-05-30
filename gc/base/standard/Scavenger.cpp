@@ -1432,7 +1432,7 @@ MM_Scavenger::getArraySplitAmount(MM_EnvironmentStandard *env, uintptr_t sizeInE
 {
 	uintptr_t scvArraySplitAmount = 0;
 
-	if (backOutStarted != _backOutFlag) {
+	if (backOutStarted != _extensions->getScavengerBackOutState()) {
 		/* pointer arrays are split into segments to improve parallelism. split amount is proportional to array size.
 		 * the less busy we are, the smaller the split amount, while obeying specified minimum and maximum.
 		 * but for single-threaded backout, do not split arrays.
@@ -1449,7 +1449,7 @@ MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_Object
 {
 	bool result = false;
 
-	if (backOutStarted != _backOutFlag) {
+	if (backOutStarted != _extensions->getScavengerBackOutState()) {
 		Assert_MM_true(objectScanner->isIndexableObject());
 		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
 		uintptr_t maxIndex = indexableScanner->getIndexableRange();
@@ -3021,17 +3021,17 @@ MM_Scavenger::scavengeCompletedSuccessfully(MM_EnvironmentStandard *env)
  * Change the value of _backOutFlag and inform consumers.
  */
 void
-MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, BackOutState value)
+MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, BackOutState backOutState)
 {
 	/* Skip triggering of trace point and hook if we trying to set flag to true multiple times */
-	if (_backOutFlag != value) {
+	if (_extensions->getScavengerBackOutState() != backOutState) {
 		_backOutDoneIndex = _doneIndex;
-		_backOutFlag = value;
+		_extensions->setScavengerBackOutState(backOutState);
 		/* Might be an overkill, but ensure that other CPUs see correct _backOutDoneIndex, by the time they see _backOutFlag is set */
 		MM_AtomicOperations::writeBarrier();
-		if (backOutStarted > value) {
-			Trc_MM_ScavengerBackout(env->getLanguageVMThread(), backOutFlagCleared < value ? "true" : "false");
-			TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), backOutFlagCleared < value);
+		if (backOutStarted > backOutState) {
+			Trc_MM_ScavengerBackout(env->getLanguageVMThread(), backOutFlagCleared < backOutState ? "true" : "false");
+			TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), backOutFlagCleared < backOutState);
 		}
 	}
 }
@@ -3321,11 +3321,11 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 						objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
 						Assert_MM_false(MM_ForwardedHeader(objectPtr).isForwardedPointer());
 
-					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
-					if (!shouldRememberObject(env, objectPtr)) {
-						/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
-						_extensions->objectModel.clearRemembered(objectPtr);
-						remSetSlotIterator.removeSlot();
+						/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
+						if (!shouldRememberObject(env, objectPtr)) {
+							/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
+							_extensions->objectModel.clearRemembered(objectPtr);
+							remSetSlotIterator.removeSlot();
 
 							/* No need to inform anybody about creation of old-to-old reference (see regular pruning pass).
 							 * For CS, this is already handled during scanning of old objects
@@ -3912,8 +3912,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		bool result = percolateGarbageCollect(env, subSpace, NULL, ABORTED_SCAVENGE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE);
 
 		Assert_MM_true(result);
-
-		setBackOutFlag(env, backOutFlagCleared);
 
 		return true;
 	}

@@ -31,16 +31,6 @@
 using std::set;
 using std::string;
 
-enum SymbolKind {
-	CLASS,
-	STRUCT,
-	ENUM,
-	UNION,
-	BASE,
-	TYPEDEF,
-	NAMESPACE
-};
-
 struct Macro;
 class UDT;
 class NamespaceUDT;
@@ -48,18 +38,14 @@ struct FieldOverride;
 
 class Type
 {
-protected:
-	SymbolKind _symbolKind;
-
 public:
 	std::string _name;
 	size_t _sizeOf; /* Size of type in bytes */
 	bool _isDuplicate;
 
-	Type(SymbolKind symbolKind, size_t size);
+	Type(size_t size);
 	virtual ~Type();
 
-	SymbolKind getSymbolKind();
 	virtual bool isAnonymousType();
 
 	virtual string getFullName();

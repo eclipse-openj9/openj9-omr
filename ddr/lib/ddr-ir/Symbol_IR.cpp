@@ -186,7 +186,7 @@ Symbol_IR::applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile)
 			if (type.isTypeOverride) {
 				/* If the type for the override exists in the IR, use it. Otherwise, create it. */
 				if (typeNames.find(type.overrideName) == typeNames.end()) {
-					replacementType = new Type(BASE, 0);
+					replacementType = new Type(0);
 					replacementType->_name = type.overrideName;
 					typeNames[replacementType->_name].push_back(replacementType);
 				} else {

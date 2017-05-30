@@ -33,7 +33,7 @@ public:
 	NamespaceUDT *_outerNamespace;
 	unsigned int _lineNumber;
 
-	UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber = 0);
+	UDT(size_t size, unsigned int lineNumber = 0);
 	virtual ~UDT();
 
 	virtual string getFullName();

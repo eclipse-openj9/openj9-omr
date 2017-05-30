@@ -99,13 +99,13 @@ PdbScanner::initBaseTypeList()
 	 */
 	size_t length = sizeof(baseTypeArray) / sizeof(char *);
 	for (size_t i = 0; i < length; i += 1) {
-		Type *type = new Type(BASE, 0);
+		Type *type = new Type(0);
 		type->_name = baseTypeArray[i];
 		_typeMap[type->_name] = type;
 		_ir->_types.push_back(type);
 	}
 
-	Type *type = new Type(BASE, 0);
+	Type *type = new Type(0);
 	type->_name = errorNoType;
 	_typeMap[type->_name] = type;
 	_ir->_types.push_back(type);

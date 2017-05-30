@@ -32,7 +32,7 @@ public:
 	vector<Field *> _fieldMembers;
 	vector<EnumMember *> _enumMembers; /* used for anonymous enums*/
 
-	ClassType(SymbolKind symbolKind, size_t size, unsigned int lineNumber = 0);
+	ClassType(size_t size, unsigned int lineNumber = 0);
 	virtual ~ClassType();
 
 	virtual bool isAnonymousType();

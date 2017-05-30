@@ -18,18 +18,12 @@
 
 #include "ddr/ir/Type.hpp"
 
-Type::Type(SymbolKind symbolKind, size_t size)
-	: _symbolKind(symbolKind), _sizeOf(size), _isDuplicate(false)
+Type::Type(size_t size)
+	: _sizeOf(size), _isDuplicate(false)
 {
 }
 
 Type::~Type() {}
-
-SymbolKind
-Type::getSymbolKind()
-{
-	return _symbolKind;
-}
 
 bool
 Type::isAnonymousType()

@@ -19,7 +19,7 @@
 #include "ddr/ir/ClassUDT.hpp"
 
 ClassUDT::ClassUDT(size_t size, bool isClass, unsigned int lineNumber)
-	: ClassType(isClass ? CLASS : STRUCT, size, lineNumber), _superClass(NULL), _isClass(isClass)
+	: ClassType(size, lineNumber), _superClass(NULL), _isClass(isClass)
 {
 }
 

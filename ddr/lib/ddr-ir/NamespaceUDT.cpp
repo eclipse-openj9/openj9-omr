@@ -19,7 +19,7 @@
 #include "ddr/ir/NamespaceUDT.hpp"
 
 NamespaceUDT::NamespaceUDT(unsigned int lineNumber)
-	: UDT(NAMESPACE, 0, lineNumber)
+	: UDT(0, lineNumber)
 {
 }
 

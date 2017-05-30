@@ -910,7 +910,7 @@ DwarfScanner::createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsig
 		if (DDR_RC_OK != rc) {
 			break;
 		}
-		*newType = new Type(BASE, typeSize);
+		*newType = new Type(typeSize);
 		break;
 	default:
 		ERRMSG("Unknown symbol type: %d\n", tag);

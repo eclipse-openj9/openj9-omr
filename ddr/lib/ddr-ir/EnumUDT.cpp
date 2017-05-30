@@ -21,7 +21,7 @@
 #include "ddr/config.hpp"
 
 EnumUDT::EnumUDT(unsigned int lineNumber)
-	: UDT(ENUM, 4, lineNumber)
+	: UDT(4, lineNumber)
 {
 };
 

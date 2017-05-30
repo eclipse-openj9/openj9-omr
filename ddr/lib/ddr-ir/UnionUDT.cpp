@@ -19,7 +19,7 @@
 #include "ddr/ir/UnionUDT.hpp"
 
 UnionUDT::UnionUDT(size_t size, unsigned int lineNumber)
-	: ClassType(UNION, size, lineNumber)
+	: ClassType(size, lineNumber)
 {
 }
 

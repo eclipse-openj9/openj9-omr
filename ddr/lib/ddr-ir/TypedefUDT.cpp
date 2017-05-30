@@ -19,7 +19,7 @@
 #include "ddr/ir/TypedefUDT.hpp"
 
 TypedefUDT::TypedefUDT(unsigned int lineNumber)
-	: UDT(TYPEDEF, 0, lineNumber), _aliasedType(NULL)
+	: UDT(0, lineNumber), _aliasedType(NULL)
 {
 }
 

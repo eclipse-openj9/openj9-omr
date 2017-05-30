@@ -20,8 +20,8 @@
 #include "ddr/ir/UDT.hpp"
 #include "ddr/ir/NamespaceUDT.hpp"
 
-UDT::UDT(SymbolKind symbolKind, size_t size, unsigned int lineNumber)
-	: Type(symbolKind, size), _outerNamespace(NULL), _lineNumber(lineNumber)
+UDT::UDT(size_t size, unsigned int lineNumber)
+	: Type(size), _outerNamespace(NULL), _lineNumber(lineNumber)
 {
 }
 

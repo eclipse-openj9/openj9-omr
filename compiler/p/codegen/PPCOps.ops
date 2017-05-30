@@ -18,13 +18,10 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!                                                                       !!
-!!  After updating this file you should                                  !!
-!!     1) run "gmake ftops" or "make ftops". This will re-generate       !!
-!!        PPCOps.hpp, OpBinary.cpp, OpProperties.cpp and PPCOpNames.cpp. !!
-!!     2) if you have added opcodes you should also run "gmake schinfo". !!
-!!        or "make schinfo". This will re-generate s_machg.h, s_mach_0.h !!
-!!        and schinfo.h.                                                 !!
-!!     3) check the newly created files into source control.             !!
+!! After updating this file you should                                   !!
+!!     1) run 'perl $OMR/tools/compiler/p/ftops.pl'. This will           !!
+!!        re-generate various files.                                     !!
+!!     2) check the newly created files into source control.             !!
 !!                                                                       !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

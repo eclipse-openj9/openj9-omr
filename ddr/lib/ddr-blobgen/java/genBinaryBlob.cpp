@@ -525,7 +525,7 @@ BlobBuildVisitor::visitType(ClassUDT *cu) const
 	DDR_RC rc = DDR_RC_OK;
 	if (!cu->_isDuplicate) {
 	/* Do not add anonymous inner types as their own type. */
-		if ((!cu->isAnonymousType() || _addFieldsOnly) && (cu->_fieldMembers.size() > 0)){
+		if ((!cu->isAnonymousType() || _addFieldsOnly) && (cu->_fieldMembers.size() > 0)) {
 			/* Format class name */
 			string nameFormatted = cu->_name;
 			if (NULL != cu->_outerNamespace) {
@@ -793,86 +793,97 @@ JavaBlobGenerator::addBlobStruct(string name, string superName, uint32_t constCo
 	return rc;
 }
 
+class BlobFieldVisitor : public TypeVisitor
+{
+private:
+	string *_fieldString;
+
+public:
+	BlobFieldVisitor(string *fieldString) : _fieldString(fieldString) {}
+
+	DDR_RC visitType(Type *type) const;
+	DDR_RC visitType(NamespaceUDT *type) const;
+	DDR_RC visitType(EnumUDT *type) const;
+	DDR_RC visitType(TypedefUDT *type) const;
+	DDR_RC visitType(ClassUDT *type) const;
+	DDR_RC visitType(UnionUDT *type) const;
+};
+
 DDR_RC
-JavaBlobGenerator::formatFieldType(Field *f, string *fieldType)
+BlobFieldVisitor::visitType(Type *type) const
+{
+	*_fieldString += type->_name;
+	return DDR_RC_OK;
+}
+
+DDR_RC
+BlobFieldVisitor::visitType(NamespaceUDT *type) const
+{
+	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
+	return DDR_RC_OK;
+}
+
+DDR_RC
+BlobFieldVisitor::visitType(EnumUDT *type) const
+{
+	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
+	return DDR_RC_OK;
+}
+
+DDR_RC
+BlobFieldVisitor::visitType(TypedefUDT *type) const
+{
+	/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
+	if ((NULL != type->_aliasedType) && ("void" == type->_aliasedType->_name) && (1 == type->_modifiers._pointerCount)) {
+		*_fieldString += "void*";
+	} else {
+		string prefix = type->getSymbolKindName();
+		*_fieldString += (prefix.empty() ? "" : prefix + " ") + type->getFullName();
+	}
+
+	return DDR_RC_OK;
+}
+
+DDR_RC
+BlobFieldVisitor::visitType(ClassUDT *type) const
+{
+	return visitType((NamespaceUDT *)type);
+}
+
+DDR_RC
+BlobFieldVisitor::visitType(UnionUDT *type) const
+{
+	return visitType((NamespaceUDT *)type);
+}
+
+DDR_RC
+JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 {
 	DDR_RC rc = DDR_RC_OK;
 	*fieldType = "";
 
-	if (0 != (f->_modifiers._modifierFlags & ~Modifiers::MODIFIER_FLAGS)) {
-		ERRMSG("Unhandled field modifer flags: %d", f->_modifiers._modifierFlags);
+	if (0 != (field->_modifiers._modifierFlags & ~Modifiers::MODIFIER_FLAGS)) {
+		ERRMSG("Unhandled field modifer flags: %d", field->_modifiers._modifierFlags);
 		rc = DDR_RC_ERROR;
 	} else {
-		*fieldType =  f->_modifiers.getModifierNames();
-	}
-
-	SymbolKind st;
-	rc = f->getBaseSymbolKind(&st);
-
-	if (DDR_RC_OK == rc) {
-		switch (st) {
-		case CLASS:
-			break;
-		case STRUCT:
-			*fieldType += "struct ";
-			break;
-		case UNION:
-			*fieldType += "union ";
-			break;
-		case ENUM:
-			*fieldType += "enum ";
-			break;
-		case BASE:
-			*fieldType += "";
-			break;
-		case TYPEDEF:
-			*fieldType += "";
-			break;
-		case NAMESPACE:
-			*fieldType += "namespace ";
-			break;
-		default:
-			ERRMSG("Unhandled fieldType: %d", st);
-			rc = DDR_RC_ERROR;
-		}
+		*fieldType =  field->_modifiers.getModifierNames();
 	}
 
 	if (DDR_RC_OK == rc) {
-		if (BASE == st) {
-			TypedefUDT *td = dynamic_cast<TypedefUDT *>(f->_fieldType);
-			if (NULL != td) {
-				/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-				if ((NULL != td->_aliasedType) && ("void" == td->_aliasedType->_name) && (1 == td->_modifiers._pointerCount)) {
-					*fieldType += "void*";
-				} else {
-					*fieldType += f->_fieldType->_name;
-				}
-			} else {
-				*fieldType += f->_fieldType->_name;
-			}
-		} else {
-			UDT *udt = (UDT *)f->_fieldType;
-			if (NULL != udt) {
-				if (NULL != udt->_outerNamespace) {
-					*fieldType += udt->_outerNamespace->_name + "::";
-				}
-				*fieldType += udt->_name;
-			} else {
-				ERRMSG("NULL field type");
-				rc = DDR_RC_ERROR;
-			}
-		}
+		rc = field->_fieldType->acceptVisitor(BlobFieldVisitor(fieldType));
+	}
 
-		for (int i = 0; i < f->_modifiers._pointerCount; i++) {
+	if (DDR_RC_OK == rc) {
+		for (int i = 0; i < field->_modifiers._pointerCount; i++) {
 			*fieldType += "*";
 		}
 
-		if (f->_modifiers.isArray()) {
+		if (field->_modifiers.isArray()) {
 			stringstream stream;
-			for (unsigned int i = 0; i < f->_modifiers.getArrayDimensions(); i++) {
+			for (unsigned int i = 0; i < field->_modifiers.getArrayDimensions(); i++) {
 				stream << "[";
-				if (f->_modifiers.getArrayLength(i) > 0) {
-					stream << f->_modifiers.getArrayLength(i);
+				if (field->_modifiers.getArrayLength(i) > 0) {
+					stream << field->_modifiers.getArrayLength(i);
 				}
 				stream << "]";
 			}

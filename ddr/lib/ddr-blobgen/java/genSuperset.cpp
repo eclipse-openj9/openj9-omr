@@ -106,7 +106,7 @@ JavaSupersetGenerator::initBaseTypedefSet()
 void
 JavaSupersetGenerator::convertJ9BaseTypedef(Type *type, string *typeName)
 {
-	string name = type->_name;
+	string name = type->getFullName();
 
 	/* Convert int types to J9 base typedefs. */
 	if (_baseTypedefMap.find(name) != _baseTypedefMap.end()) {
@@ -141,36 +141,107 @@ JavaSupersetGenerator::replaceBaseTypedef(Type *type, string *name)
 	}
 }
 
-DDR_RC
-JavaSupersetGenerator::getTypeName(Field *f, string *typeName)
+class SupersetFieldVisitor : public TypeVisitor
 {
-	DDR_RC rc = DDR_RC_OK;
-	if (NULL != f->_fieldType) {
-		SymbolKind st;
-		rc = f->getBaseSymbolKind(&st);
+private:
+	JavaSupersetGenerator *_gen;
+	string *_typeName;
+	string *_simpleName;
+	string *_prefixBase;
+	string *_prefix;
+	string *_pointerTypeBase;
 
-		if (DDR_RC_OK == rc) {
-			Type *type = f->_fieldType;
-			string name = type->_name;
-			TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
-			// Only need to check last name to ignore list, not at each iteration
-			while ((NULL != td) && (_baseTypedefIgnore.find(name) == _baseTypedefIgnore.end()) && (NULL != td->_aliasedType)) {
-				type = td->_aliasedType;
-				name = td->_aliasedType->_name;
-				td = dynamic_cast<TypedefUDT *>(type);
-			}
-			if (BASE == st) {
-				convertJ9BaseTypedef(type, typeName);
-			} else {
-				*typeName = replace(type->getFullName(), "::", "$");
-			}
-		}
+public:
+	SupersetFieldVisitor(JavaSupersetGenerator *gen, string *typeName, string *simpleName, string *prefixBase, string *prefix, string *pointerTypeBase)
+		: _gen(gen), _typeName(typeName), _simpleName(simpleName), _prefixBase(prefixBase), _prefix(prefix), _pointerTypeBase(pointerTypeBase) {}
+
+	DDR_RC visitType(Type *type) const;
+	DDR_RC visitType(NamespaceUDT *type) const;
+	DDR_RC visitType(EnumUDT *type) const;
+	DDR_RC visitType(TypedefUDT *type) const;
+	DDR_RC visitType(ClassUDT *type) const;
+	DDR_RC visitType(UnionUDT *type) const;
+};
+
+DDR_RC
+SupersetFieldVisitor::visitType(Type *type) const
+{
+	*_simpleName = type->_name;
+	_gen->replaceBaseTypedef(type, _simpleName);
+	_gen->convertJ9BaseTypedef(type, _typeName);
+	return DDR_RC_OK;
+}
+
+DDR_RC
+SupersetFieldVisitor::visitType(NamespaceUDT *type) const
+{
+	*_simpleName = _gen->replace(type->getFullName(), "::", "$");
+	*_typeName = *_simpleName;
+	return DDR_RC_OK;
+}
+
+DDR_RC
+SupersetFieldVisitor::visitType(EnumUDT *type) const
+{
+	*_simpleName = _gen->replace(type->getFullName(), "::", "$");
+	*_typeName = *_simpleName;
+	return DDR_RC_OK;
+}
+
+DDR_RC
+SupersetFieldVisitor::visitType(TypedefUDT *type) const
+{
+	Type *baseType = type;
+	string name = baseType->_name;
+	while ((_gen->_baseTypedefIgnore.find(name) == _gen->_baseTypedefIgnore.end()) && (NULL != baseType->getBaseType())) {
+		baseType = baseType->getBaseType();
+		name = baseType->_name;
+	}
+	if (baseType == type) {
+		*_typeName = _gen->replace(type->getFullName(), "::", "$");
+		_gen->convertJ9BaseTypedef(type, _typeName);
 	} else {
-		ERRMSG("NULL _fieldType");
-		rc = DDR_RC_ERROR;
+		baseType->acceptVisitor(SupersetFieldVisitor(_gen, _typeName, _simpleName, _prefixBase, _prefix, _pointerTypeBase));
+	}
+			
+	if (type->getSymbolKindName().empty()) {
+		*_simpleName = type->_name;
+		_gen->replaceBaseTypedef(type, _simpleName);
+	} else {
+		*_simpleName = _gen->replace(type->getFullName(), "::", "$");
 	}
 
-	return rc;
+	/* Get the field type. */
+	/* Should "union " be printed in superset or is that not allowed? */
+	*_prefixBase = type->getSymbolKindName();
+	if (!_prefixBase->empty()) {
+		*_prefixBase += " ";
+	}
+	if (type->_aliasedType->_name == type->_name) {
+		*_prefix = *_prefixBase;
+	}
+
+	/* Get field pointer/array notation. */
+	for (int i = 0; i < type->getPointerCount(); i += 1) {
+		*_pointerTypeBase = "*" + *_pointerTypeBase;
+	}
+	for (int i = 0; i < type->getArrayDimensions(); i += 1) {
+		*_pointerTypeBase = *_pointerTypeBase + "[]";
+	}
+
+	return DDR_RC_OK;
+}
+
+DDR_RC
+SupersetFieldVisitor::visitType(ClassUDT *type) const
+{
+	return visitType((NamespaceUDT *)type);
+}
+
+DDR_RC
+SupersetFieldVisitor::visitType(UnionUDT *type) const
+{
+	return visitType((NamespaceUDT *)type);
 }
 
 /* The printed format for fields is:
@@ -202,85 +273,21 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 		modifiers =  f->_modifiers.getModifierNames();
 	}
 
-	/* Get the translated and simple type names for the field. */
-	string typeName;
-	SymbolKind st;
-	rc = getTypeName(f, &typeName);
-	if (DDR_RC_OK != rc) {
-		ERRMSG("Could not get typeName");
-	} else {
-		rc = f->getBaseSymbolKind(&st);
-	}
-
-	string simpleName = "";
-	if (DDR_RC_OK == rc) {
-		if (NULL != f->_fieldType) {
-			if (BASE == st) {
-				simpleName = f->_fieldType->_name;
-				replaceBaseTypedef(f->_fieldType, &simpleName);
-			} else {
-				simpleName = replace(f->_fieldType->getFullName(), "::", "$");
-			}
-		}
-	}
-
-	/* Get the field type. */
-	string prefixBase;
-	string prefix;
-	TypedefUDT *td = dynamic_cast<TypedefUDT *>(f->_fieldType);
-	if ((DDR_RC_OK == rc) && (NULL != td)) {
-		if ((NULL != td) && (NULL != td->_aliasedType) && !td->_aliasedType->_name.empty()) {
-			switch (st) {
-			case CLASS:
-				prefixBase = "class ";
-				break;
-			case STRUCT:
-				prefixBase = "struct ";
-				break;
-			case UNION:
-				break;
-			case ENUM:
-				prefixBase = "enum ";
-				break;
-			case BASE:
-				break;
-			case TYPEDEF:
-				break;
-			case NAMESPACE:
-				break;
-			default:
-				ERRMSG("unhandled fieldType: %d", st);
-				rc = DDR_RC_ERROR;
-			}
-			if (td->_aliasedType->_name == f->_fieldType->_name) {
-				prefix = prefixBase;
-			}
-		}
-	}
-
 	/* Get field pointer/array notation. */
 	string pointerType = "";
-	string pointerTypeBase = "";
 	if (DDR_RC_OK == rc) {
 		pointerType = f->_modifiers.getPointerType();
-
-		/* For typedef types, follow the typedef recursively and add pointer/array notation. */
-		size_t pointerCount = f->_modifiers._pointerCount;
-		size_t arrayDimensions = f->_modifiers.getArrayDimensions();
-		TypedefUDT *td = dynamic_cast<TypedefUDT *>(f->_fieldType);
-		while (NULL != td) {
-			pointerCount += td->_modifiers._pointerCount;
-			arrayDimensions += td->_modifiers.getArrayDimensions();
-			td = dynamic_cast<TypedefUDT *>(td->_aliasedType);
-		}
-		stringstream ss;
-		ss << string(pointerCount, '*');
-		for (size_t i = 0; i < arrayDimensions; i += 1) {
-			ss << "[]";
-		}
-		pointerTypeBase = ss.str();
 	}
 
+	string typeName;
+	string simpleName;
+	string prefix;
+	string prefixBase;
+	string pointerTypeBase = pointerType;
+	if (DDR_RC_OK == rc) {
+		rc = f->_fieldType->acceptVisitor(SupersetFieldVisitor(this, &typeName, &simpleName, &prefixBase, &prefix, &pointerTypeBase));
+	}
+	
 	/* Get the bit field, if it has one. */
 	string bitField;
 	if ((DDR_RC_OK == rc) && (0 != f->_bitField)) {

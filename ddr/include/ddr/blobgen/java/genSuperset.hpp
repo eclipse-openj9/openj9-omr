@@ -56,13 +56,13 @@ private:
 	void convertJ9BaseTypedef(Type *type, string *name);
 	void replaceBaseTypedef(Type *type, string *name);
 	DDR_RC getFieldType(Field *f, string *assembledTypeName, string *simpleTypeName);
-	DDR_RC getTypeName(Field *f, string *typeName);
 	DDR_RC printFieldMember(Field *field, string prefix);
 	void printConstantMember(string name);
 
 	string replace(string str, string subStr, string newStr);
 
 	friend class SupersetVisitor;
+	friend class SupersetFieldVisitor;
 
 public:
 	JavaSupersetGenerator();

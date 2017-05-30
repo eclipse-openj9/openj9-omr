@@ -36,27 +36,3 @@ Field::getTypeName()
 {
 	return _fieldType->_name;
 }
-
-DDR_RC
-Field::getBaseSymbolKind(SymbolKind *symbolKind)
-{
-	DDR_RC rc = DDR_RC_OK;
-	Type *type = _fieldType;
-	if (NULL == type) {
-		ERRMSG("fieldType is NULL");
-		rc = DDR_RC_ERROR;
-	} else {
-		TypedefUDT *td = dynamic_cast<TypedefUDT *>(type);
-		while (NULL != td) {
-			type = td->_aliasedType;
-			td = dynamic_cast<TypedefUDT *>(type);
-		}
-		if (NULL == type) {
-			*symbolKind = TYPEDEF;
-		} else {
-			*symbolKind = type->getSymbolKind();
-		}
-	}
-
-	return rc;
-}

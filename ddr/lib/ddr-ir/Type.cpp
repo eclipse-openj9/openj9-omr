@@ -73,6 +73,12 @@ Type::getPointerCount()
 	return 0;
 }
 
+int
+Type::getArrayDimensions()
+{
+	return 0;
+}
+
 void
 Type::computeFieldOffsets()
 {
@@ -95,5 +101,11 @@ void
 Type::renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType)
 {
 	/* No-op: base types have no fields. */
+}
+
+Type *
+Type::getBaseType()
+{
+	return NULL;
 }
 	

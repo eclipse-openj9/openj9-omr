@@ -666,7 +666,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 
 	rc = getOrCreateNewType(die, tag, &newType, outerUDT, &typeNum);
 
-	if(DDR_RC_OK == rc) {
+	if (DDR_RC_OK == rc) {
 		if (2 == typeNum) {
 			rc = DDR_RC_OK;
 			if ((isSubUDT) && (NULL == newType->getNamespace())) {

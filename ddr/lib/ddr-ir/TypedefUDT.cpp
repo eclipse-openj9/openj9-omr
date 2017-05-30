@@ -39,8 +39,26 @@ TypedefUDT::checkDuplicate(Symbol_IR *ir)
 	/* No-op: since TypedefUDTs aren't printed, there's no need to check if they're duplicates either */
 }
 
+string
+TypedefUDT::getSymbolKindName()
+{
+	return _aliasedType->getSymbolKindName();
+}
+
 int
 TypedefUDT::getPointerCount()
 {
 	return _modifiers._pointerCount + _aliasedType->getPointerCount();
+}
+
+int
+TypedefUDT::getArrayDimensions()
+{
+	return _modifiers.getArrayDimensions() + _aliasedType->getArrayDimensions();
+}
+
+Type *
+TypedefUDT::getBaseType()
+{
+	return _aliasedType;
 }

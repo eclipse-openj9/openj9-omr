@@ -35,7 +35,10 @@ public:
 
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
 	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual string getSymbolKindName();
 	virtual int getPointerCount();
+	virtual int getArrayDimensions();
+	virtual Type *getBaseType();
 };
 
 #endif /* TYPEDEFUDT_HPP */

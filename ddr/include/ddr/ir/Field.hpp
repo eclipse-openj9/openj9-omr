@@ -39,7 +39,6 @@ public:
 	Field();
 
 	std::string getTypeName();
-	DDR_RC getBaseSymbolKind(SymbolKind *symbolKind);
 };
 
 #endif /* FIELD_HPP */

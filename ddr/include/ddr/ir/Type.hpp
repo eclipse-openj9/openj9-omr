@@ -69,12 +69,14 @@ public:
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
 
 	virtual void checkDuplicate(Symbol_IR *ir);
-	virtual NamespaceUDT * getNamespace();
+	virtual NamespaceUDT *getNamespace();
 	virtual int getPointerCount();
+	virtual int getArrayDimensions();
 	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
-	virtual std::vector<UDT *> * getSubUDTS();
+	virtual std::vector<UDT *> *getSubUDTS();
 	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+	virtual Type *getBaseType();
 };
 
 #endif /* TYPE_HPP */

@@ -221,7 +221,6 @@ OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
    uint8_t *expectedHeapAlloc = (uint8_t *) memoryBlock + oldSize;
    if (config.verboseReclamation())
       {
-      TR_FrontEnd *fe = _manager->fe();
       TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--resizeCodeMemory-- CC=%p cacheHeader=%p oldSize=%u newSize=%d shrinkage=%u", this, cacheHeader, oldSize, newSize, shrinkage);
       }
 
@@ -939,7 +938,6 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
       {
       if (config.verboseReclamation())
          {
-         TR_FrontEnd *fe = _manager->fe();
          TR_VerboseLog::writeLineLocked(TR_Vlog_FAILURE,"addFreeBlock2[%s.%d]: failed to add free block. start = 0x%016x end = 0x%016x alignment = 0x%04x sizeof(CodeCacheFreeCacheBlock) = 0x%08x",
             file, lineNumber, start_o, end, config.codeCacheAlignment(), sizeof(CodeCacheFreeCacheBlock));
          }
@@ -1052,7 +1050,6 @@ OMR::CodeCache::addFreeBlock2WithCallSite(uint8_t *start,
 
    if (config.verboseReclamation())
       {
-      TR_FrontEnd *fe = _manager->fe();
       TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr-- addFreeBlock2WithCallSite CC=%p start=%p end=%p mergedBlock=%p link=%p link->_size=%u, _sizeOfLargestFreeWarmBlock=%d _sizeOfLargestFreeColdBlock=%d warmCodeAlloc=%p coldBlockAlloc=%p",
          this,  (void*)start, (void*)end, mergedBlock, link, (uint32_t)link->_size, _sizeOfLargestFreeWarmBlock, _sizeOfLargestFreeColdBlock, _warmCodeAlloc, _coldCodeAlloc);
       }
@@ -1199,7 +1196,6 @@ OMR::CodeCache::findFreeBlock(size_t size, bool isCold, bool isMethodHeaderNeede
      //fprintf(stderr, "--ccr-- reallocate free'd block of size %d\n", size);
      if (config.verboseReclamation())
          {
-         TR_FrontEnd *fe = _manager->fe();
          TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr- findFreeBlock: CodeCache=%p size=%u isCold=%d bestFitLink=%p bestFitLink->size=%u leftBlock=%p", this, size, isCold, bestFitLink, bestFitLink->_size, leftBlock);
          }
       }
@@ -1502,22 +1498,8 @@ OMR::CodeCache::allocateCodeMemory(size_t warmCodeSize,
    size_t coldSize = coldCodeSize;
    _manager->performSizeAdjustments(warmSize, coldSize, needsToBeContiguous, isMethodHeaderNeeded); // side effect on warmSize and coldSize
 
-#if 0
-   if (config.verboseReclamation())
-      {
-      TR_FrontEnd *fe = _manager->fe();
-      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--ccr-- allocateCodeMemory CC=%p warmSize=%u, coldSize=%u headerNeeded=%d warmCodeAlloc=%p coldCodeAlloc=%p",
-         this, warmSize, coldSize, isMethodHeaderNeeded, _warmCodeAlloc, _coldCodeAlloc);
-      }
-#endif
-
    // Acquire mutex because we are walking the list of free blocks
    CacheCriticalSection walkingFreeList(self());
-
-#if 0
-   if (config.doSanityCheck())
-      checkForErrors();
-#endif
 
    // See if we can get a warm and/or cold block from the reclaimed method list
    if (!needsToBeContiguous)

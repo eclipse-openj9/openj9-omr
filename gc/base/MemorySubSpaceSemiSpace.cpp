@@ -931,8 +931,7 @@ MM_MemorySubSpaceSemiSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDesc
 	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_CHECK_RESIZE);
 	/* this we are called at the end of precolate global GC, due to aborted Concurrent Scavenge,
 	 * we have to restore tilt (that has been set to 100% to do unified sliding compact of Nursery */
-	if (_extensions->isScavengerBackOutFlagRaised()) {
-		Assert_MM_true(_extensions->isConcurrentScavengerEnabled());
+	if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
 		flip(env, MM_MemorySubSpaceSemiSpace::restore_tilt_after_percolate);
 	} else {
 		checkSubSpaceMemoryPostCollectTilt(env);

@@ -376,14 +376,11 @@ MM_ParallelGlobalGC::shouldCompactThisCycle(MM_EnvironmentBase *env, MM_Allocate
 		goto compactionReqd;
 	}
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* Aborted CS need global GC with Nursery compaction */
-	if (_extensions->isScavengerBackOutFlagRaised()) {
-		Assert_MM_true(_extensions->concurrentScavenger);
+	/* Aborted CS needs global GC with Nursery compaction */
+	if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
 		compactReason = COMPACT_ABORTED_SCAVENGE;
 		goto compactionReqd;
 	}	
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	/* Is this a system GC ? */ 
 	if(gcCode.isExplicitGC()) { 

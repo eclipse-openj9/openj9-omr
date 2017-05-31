@@ -104,6 +104,18 @@ add_definitions(
   -DUT_DIRECT_TRACE_REGISTRATION # TODO:  Deal with that stupid jni issue in tracegen
 )
 
+# Check for existing omrcfg in the source tree since this can cause alot of headaches
+# Also check if we are building in tree while we are at it
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	if(NOT MSVC_IDE) #MSVC will handle in tree builds ok
+		message(WARNING "In tree builds are not recommended")
+	endif()
+else()
+include(cmake/CheckSourceTree.cmake)
+add_custom_target(header_check ALL
+	${CMAKE_COMMAND} "-Domr_SOURCE_DIR=${omr_SOURCE_DIR}" -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckSourceTree.cmake)
+endif()
+
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 

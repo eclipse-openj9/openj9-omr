@@ -732,6 +732,7 @@ MM_ConcurrentGC::tearDown(MM_EnvironmentBase *env)
 	if (NULL != _cardTable){
 		_cardTable->kill(env);
 		_cardTable= NULL;
+		_extensions->cardTable = NULL;
 	}
 
 	if (NULL != _conHelpersTable) {

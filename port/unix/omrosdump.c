@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -127,6 +127,11 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 
 	lastSep = filename ? strrchr(filename, DIR_SEPARATOR) : NULL;
 
+	/*
+	 * Ensure that ulimit doesn't get in our way.
+	 */
+	unlimitCoreFileSize(portLibrary);
+
 	/* fork a child process from which we'll dump a core file */
 	if ((pid = fork()) == 0) {
 		/* in the child process */
@@ -167,11 +172,6 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 			lastSep[1] = '\0';
 			chdir(filename);
 		}
-
-		/*
-		 * Ensure that ulimit doesn't get in our way
-		 */
-		unlimitCoreFileSize(portLibrary);
 
 #if defined(LINUX) || defined(OSX)
 		pthread_kill(pthread_self(), J9_DUMP_SIGNAL);

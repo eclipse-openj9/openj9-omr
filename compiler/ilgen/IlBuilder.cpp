@@ -1758,14 +1758,14 @@ IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlVal
       callNode->setAndIncChild(childIndex++, loadValue(arg));
       }
 
+   // callNode must be anchored by itself
+   genTreeTop(callNode);
+
    if (returnType != TR::NoType)
       {
       TR::IlValue *returnValue = newValue(callNode->getDataType(), callNode);
       return returnValue;
       }
-
-   // callNode must still be anchored in this case
-   genTreeTop(callNode);
 
    return NULL;
    }

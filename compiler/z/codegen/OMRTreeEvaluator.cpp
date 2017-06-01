@@ -6412,8 +6412,15 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
                TR::DebugCounter::incStaticDebugCounter(cg->comp(), "z/optimization/directMemoryStore/indirect");
 
                // Force the memory references to not use an index register because MVC is an SS instruction
+               // After generating a memory reference, Enforce it to generate LA instruction.
+               // This will avoid scenarios when we have common base/index between destination and source
+               // And when generating the source memory reference, it clobber evaluates one of the node shared between 
+               // target memory reference as well.
                TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
+               targetMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
+
                TR::MemoryReference* sourceMemRef = generateS390MemoryReference(valueNode, cg, false);
+               sourceMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
 
                generateSS1Instruction(cg, TR::InstOpCode::MVC, storeNode, storeNode->getSize() - 1, targetMemRef, sourceMemRef);
 

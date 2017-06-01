@@ -45,13 +45,13 @@ TypedefUDT::getSymbolKindName()
 	return _aliasedType->getSymbolKindName();
 }
 
-int
+size_t
 TypedefUDT::getPointerCount()
 {
 	return _modifiers._pointerCount + _aliasedType->getPointerCount();
 }
 
-int
+size_t
 TypedefUDT::getArrayDimensions()
 {
 	return _modifiers.getArrayDimensions() + _aliasedType->getArrayDimensions();

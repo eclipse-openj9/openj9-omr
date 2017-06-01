@@ -28,8 +28,8 @@ public:
 	std::vector<size_t> _arrayLengths;
 	int _modifierFlags;
 	size_t _offset;
-	int _pointerCount;
-	int _referenceCount;
+	size_t _pointerCount;
+	size_t _referenceCount;
 
 	static const int MODIFIER_FLAGS = 31;
 	static const int NO_MOD = 0;

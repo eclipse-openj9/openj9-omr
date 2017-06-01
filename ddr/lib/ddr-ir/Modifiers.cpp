@@ -53,16 +53,16 @@ Modifiers::getPointerType()
 {
 	string s = string("");
 
-	for (int i = 0; i < _pointerCount; i++) {
+	for (size_t i = 0; i < _pointerCount; i++) {
 		s += "*";
 	}
 
-	for (int i = 0; i < _referenceCount; i++) {
+	for (size_t i = 0; i < _referenceCount; i++) {
 		s += "&";
 	}
 
 	if (isArray()) {
-		for (unsigned int i = 0; i < getArrayDimensions(); i++) {
+		for (size_t i = 0; i < getArrayDimensions(); i++) {
 			s += "[]";
 		}
 	}

@@ -31,7 +31,7 @@
 using std::set;
 using std::string;
 
-struct Macro;
+class Macro;
 class UDT;
 class NamespaceUDT;
 struct FieldOverride;
@@ -56,8 +56,8 @@ public:
 
 	virtual void checkDuplicate(Symbol_IR *ir);
 	virtual NamespaceUDT *getNamespace();
-	virtual int getPointerCount();
-	virtual int getArrayDimensions();
+	virtual size_t getPointerCount();
+	virtual size_t getArrayDimensions();
 	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
 	virtual std::vector<UDT *> *getSubUDTS();

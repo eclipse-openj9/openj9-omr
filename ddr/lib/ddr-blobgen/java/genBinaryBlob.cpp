@@ -874,13 +874,13 @@ JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 	}
 
 	if (DDR_RC_OK == rc) {
-		for (int i = 0; i < field->_modifiers._pointerCount; i++) {
+		for (size_t i = 0; i < field->_modifiers._pointerCount; i++) {
 			*fieldType += "*";
 		}
 
 		if (field->_modifiers.isArray()) {
 			stringstream stream;
-			for (unsigned int i = 0; i < field->_modifiers.getArrayDimensions(); i++) {
+			for (size_t i = 0; i < field->_modifiers.getArrayDimensions(); i++) {
 				stream << "[";
 				if (field->_modifiers.getArrayLength(i) > 0) {
 					stream << field->_modifiers.getArrayLength(i);

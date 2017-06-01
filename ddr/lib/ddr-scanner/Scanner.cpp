@@ -91,10 +91,11 @@ Scanner::loadBlacklist(string path)
 
 	if (blackListInput.is_open()) {
 		while (getline(blackListInput, line)) {
+			string pattern = line.substr(5, line.length() - (string::npos == line.find_last_of("\n") ? 5 : 6));
 			if (0 == line.find("file:")) {
-				_blacklistedFiles.insert(line.substr(5, line.length() - 6));
+				_blacklistedFiles.insert(pattern);
 			} else if (0 == line.find("type:")) {
-				_blacklistedTypes.insert(line.substr(5, line.length() - 6));
+				_blacklistedTypes.insert(pattern);
 			}
 		}
 	} else {

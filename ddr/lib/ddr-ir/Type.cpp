@@ -61,13 +61,13 @@ Type::getNamespace()
 	return NULL;
 }
 
-int
+size_t
 Type::getPointerCount()
 {
 	return 0;
 }
 
-int
+size_t
 Type::getArrayDimensions()
 {
 	return 0;

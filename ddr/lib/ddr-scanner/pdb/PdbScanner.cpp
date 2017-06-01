@@ -16,21 +16,21 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "PdbScanner.hpp"
+#include "ddr/scanner/pdb/PdbScanner.hpp"
 
 #include <assert.h>
 #include <comdef.h>
 #include <stdio.h>
 #include <sstream>
 
-#include "config.hpp"
-#include "EnumMember.hpp"
-#include "ClassUDT.hpp"
-#include "EnumUDT.hpp"
-#include "Field.hpp"
-#include "Symbol_IR.hpp"
-#include "Type.hpp"
-#include "TypedefUDT.hpp"
+#include "ddr/config.hpp"
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/ir/Field.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
+#include "ddr/ir/Type.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
 
 using std::ios;
 using std::stringstream;
@@ -216,7 +216,7 @@ void
 PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 {
 	if ((string::npos != type->_name.find("<unnamed-type-")) || ("<unnamed-tag>" == type->_name)) {
-		if ((NULL != type->getNamespace()) && (string::npos == type->_name.find("::")))) {
+		if ((NULL != type->getNamespace()) && (string::npos == type->_name.find("::"))) {
 			/* Anonymous global types would ideally be named by file name,
 			 * but PDB info does not associate types with source files.
 			 * Since they also cannot be referenced by outer type, give them
@@ -230,8 +230,10 @@ PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 		}
 
 	}
-	for (vector<UDT *>::iterator it = type->getSubUDTs->begin(); it != type->getSubUDTs->end(); it ++) {
-		renameAnonymousType(*it, unnamedTypeCount);
+	if (NULL != type->getSubUDTS()) {
+		for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); it ++) {
+			renameAnonymousType(*it, unnamedTypeCount);
+		}
 	}
 }
 
@@ -250,7 +252,9 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 			HMODULE hmodule = LoadLibrary(libraries[i]);
 			BOOL (WINAPI *DllGetClassObject)(REFCLSID, REFIID, LPVOID) = NULL;
 			if (NULL != hmodule) {
-				 DllGetClassObject = (BOOL (WINAPI *)(REFCLSID, REFIID, LPVOID))GetProcAddress(hmodule, "DllGetClassObject");
+				DllGetClassObject = (BOOL (WINAPI *)(REFCLSID, REFIID, LPVOID))GetProcAddress(hmodule, "DllGetClassObject");
+			} else {
+				ERRMSG("Cannot find %s.dll\n", libraries[i]);
 			}
 
 			IClassFactory *classFactory = NULL;
@@ -406,7 +410,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 }
 
 DDR_RC
-PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
+PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 {
 	DDR_RC rc = DDR_RC_OK;
 	/* Get the typedef name and check if it is blacklisted. */
@@ -445,19 +449,19 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 			rc = getName(baseSymbol, &baseName);
 		}
 		if (DDR_RC_OK == rc) {
-			if (!blacklistedSymbol(baseName)) {
+			if (!checkBlacklistedType(baseName)) {
 				TypedefUDT *newTypedef = new TypedefUDT();
 				newTypedef->_name = typedefName;
-				newTypedef->_type = NULL;
-				newTypedef->_outerUDT = outerUDT;
-				if (NULL != outerUDT) {
-					outerUDT->_subUDTs.push_back(newTypedef);
+				newTypedef->_aliasedType = NULL;
+				newTypedef->_outerNamespace = outerNamespace;
+				if (NULL != outerNamespace) {
+					outerNamespace->_subUDTs.push_back(newTypedef);
 				}
 				/* Get the typedef type. */
-				rc = setType(symbol, &newTypedef->_type, &newTypedef->_modifiers, NULL);
+				rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
 				if (DDR_RC_OK == rc) {
-					newTypedef->_sizeOf = newTypedef->_type->_sizeOf;
-					addType(newTypedef, NULL == outerUDT);
+					newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
+					addType(newTypedef, NULL == outerNamespace);
 				} else {
 					delete(newTypedef);
 				}
@@ -513,7 +517,7 @@ PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *const enumUDT)
 }
 
 DDR_RC
-PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
+PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 {
 	DDR_RC rc = DDR_RC_OK;
 
@@ -538,20 +542,20 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 		 * child symbol of another UDT symbol. They are also found with
 		 * a decorated "Parent::SubUDT" name again while iterating all Enums.
 		 */
-		if (!blacklistedSymbol(name)) {
+		if (!checkBlacklistedType(name)) {
 			ULONGLONG size = 0ULL;
 			if (DDR_RC_OK == rc) {
 				rc = getSize(symbol, &size);
 			}
 			if (DDR_RC_OK == rc) {
 				stringstream ss;
-				if (NULL == outerUDT) {
+				if (NULL == outerNamespace) {
 					ss << size << name;
 				} else {
-					ss << size << outerUDT->_name << "::" << name;
+					ss << size << outerNamespace->_name << "::" << name;
 				}
 				if (_typeMap.end() == _typeMap.find(ss.str())) {
-					getNamespaceFromName(&name, &outerUDT);
+					getNamespaceFromName(&name, &outerNamespace);
 
 					/* If this is a new enum, get its members and add it to the IR. */
 					EnumUDT *enumUDT = new EnumUDT();
@@ -560,11 +564,11 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 
 					/* If successful, add the new enum to the IR. */
 					if (DDR_RC_OK == rc) {
-						if (NULL != outerUDT) {
-							outerUDT->_subUDTs.push_back(enumUDT);
-							enumUDT->_outerUDT = outerUDT;
+						if (NULL != outerNamespace) {
+							outerNamespace->_subUDTs.push_back(enumUDT);
+							enumUDT->_outerNamespace = outerNamespace;
 						}
-						addType(enumUDT, NULL == outerUDT);
+						addType(enumUDT, NULL == outerNamespace);
 					} else {
 						delete(enumUDT);
 					}
@@ -1067,7 +1071,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 		 * child symbol of another UDT symbol. They are also found with
 		 * a decorated "Parent::SubUDT" name again while iterating all UDTs.
 		 */
-		if (!blacklistedSymbol(name)) {
+		if (!checkBlacklistedType(name)) {
 			ULONGLONG size = 0ULL;
 			if (DDR_RC_OK == rc) {
 				rc = getSize(symbol, &size);
@@ -1085,7 +1089,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 					ClassUDT *classUDT = new ClassUDT(0);
 					classUDT->_sizeOf = (size_t)size;
 					classUDT->_name = name;
-					classUDT->_outerUDT = outerUDT;
+					classUDT->_outerNamespace = outerUDT;
 					if (NULL != outerUDT) {
 						outerUDT->_subUDTs.push_back(classUDT);
 					}
@@ -1093,7 +1097,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 
 					/* If successful, add the new UDT to the IR. Otherwise, free it. */
 					if (DDR_RC_OK == rc) {
-						addType(classUDT, NULL == classUDT->_outerUDT);
+						addType(classUDT, NULL == classUDT->_outerNamespace);
 					} else {
 						delete(classUDT);
 						classUDT = NULL;
@@ -1126,7 +1130,7 @@ PdbScanner::getNamespaceFromName(string *name, NamespaceUDT **outerUDT)
 				if (NULL == ns) {
 					ns = new NamespaceUDT();
 					ns->_name = namespaceName;
-					ns->_outerUDT = outerNamespace;
+					ns->_outerNamespace = outerNamespace;
 					addType(ns, previousPos == 0);
 				}
 				if (NULL != outerNamespace) {
@@ -1199,8 +1203,8 @@ PdbScanner::getUDTname(UDT *u)
 	assert(NULL != u);
 
 	string name = "";
-	if (NULL != u->_outerUDT) {
-		name = getUDTname(u->_outerUDT) + "::" + u->_name;
+	if (NULL != u->_outerNamespace) {
+		name = getUDTname(u->_outerNamespace) + "::" + u->_name;
 	} else {
 		name = u->_name;
 	}

@@ -332,10 +332,12 @@ CS2_ARTEMP inline void CS2_BASEARDECL::GrowTo (size_t newSize) {
       fMaxSegments = updatedMaxSegments;
     } else {
       size_t maxSegments = segmentMapIndex + (fMaxSegments >> 1) + 1;
-      DerivedElement ** newSegmentMap = (DerivedElement **) Allocator::allocate (maxSegments * sizeof(DerivedElement *));
-      memcpy(newSegmentMap, fSegmentMap, fMaxSegments * sizeof(DerivedElement *));
-      Allocator::deallocate(fSegmentMap, fMaxSegments * sizeof(DerivedElement *));
-      fSegmentMap = newSegmentMap;
+      void * newSegmentMapAllocation = Allocator::reallocate(
+        maxSegments * sizeof(DerivedElement *),
+        fSegmentMap,
+        fMaxSegments * sizeof(DerivedElement *)
+        );
+      fSegmentMap = static_cast<DerivedElement **>(newSegmentMapAllocation);
       fMaxSegments = maxSegments;
     }
 

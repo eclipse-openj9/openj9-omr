@@ -436,9 +436,9 @@ TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >:
     newIndex = ClearLastOneIfThereIsOne(foundone);
   }
 
-  fHighestIndex +=1;
-  newIndex = fHighestIndex;
-  fStorage.GrowTo (fHighestIndex+1);
+  newIndex = fHighestIndex + 1;
+  fStorage.GrowTo (newIndex + 1);
+  fHighestIndex = newIndex;
 
 found:
   return newIndex;
@@ -486,19 +486,28 @@ template <
 bool TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::CheckEntryAtPosition (TableIndex newIndex) {
   bool shouldConstruct = true;
   if (fHighestIndex < newIndex) {
+    TableIndex const currentHighIndex = fHighestIndex;
+    fStorage.GrowTo(newIndex + 1);
     if (fHighestIndex < newIndex-1) {
+      bool updateLowestRemoved = false;
        if (fLowestPossibleRemoved == fHighestPossibleRemoved &&
            !fFreeVector.ValueAt(fLowestPossibleRemoved)) {
-          fLowestPossibleRemoved = fHighestIndex + 1;
+         updateLowestRemoved = true;
        }
-       fHighestPossibleRemoved = newIndex - 1;
        while (fHighestIndex < newIndex-1) {
-          fHighestIndex+=1;
-          fFreeVector[fHighestIndex]=true;
+        /*
+         * Each of these bit writes can throw so we have to
+         * keep track of our incremental progress :(
+         */
+         fFreeVector[fHighestIndex+1]=true;
+         ++fHighestIndex;
+         fHighestPossibleRemoved = fHighestIndex;
        }
+      if (updateLowestRemoved) {
+         fLowestPossibleRemoved = currentHighIndex + 1;
+      }
     }
     fHighestIndex = newIndex;
-    fStorage.GrowTo(newIndex + 1);
   } else if (fFreeVector.ValueAt(newIndex)) {
     fFreeVector[newIndex]=false;
     if (newIndex == fHighestPossibleRemoved) {

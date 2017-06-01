@@ -162,7 +162,7 @@ public:
    TR::TreeTop *genInduceOSRCallForGuardedCallee(TR::TreeTop* insertionPoint, TR::ResolvedMethodSymbol *calleeSymbol, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
    TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
    TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, TR_OSRMethodData *osrMethodData, TR::ResolvedMethodSymbol *callSymbolForDeadSlots, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
-   TR::TreeTop *genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool copyChildren, bool shouldSplitBlock, TR::Compilation *comp);
+   TR::TreeTop *genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp);
 
    bool canInjectInduceOSR(TR::Node* node);
 

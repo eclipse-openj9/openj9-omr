@@ -815,14 +815,22 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    if (osrNode->getOpCode().isCall())
       return 3;
 
-   switch (osrNode->getOpCodeValue())
+   // If the monent has a bytecode index of 0, it must be the
+   // monent for a synchronized method. A transition here
+   // must target the method entry.
+   if (osrNode->getOpCodeValue() == TR::monent)
       {
-      case TR::monent: return 1;
-      case TR::asynccheck: return 0;
-      default:
-         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+      if (osrNode->getByteCodeIndex() == 0)
          return 0;
+      else
+         return 1;
       }
+
+   if (osrNode->getOpCodeValue() == TR::asynccheck)
+      return 0;
+
+   TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+   return 0;
    }
 
 /*

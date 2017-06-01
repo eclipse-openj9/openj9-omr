@@ -1864,12 +1864,7 @@ OMR::Power::Machine::createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::lis
    // it is space conscious.
    //
    int32_t c = 0;
-   int32_t endReg = TR::RealRegister::LastCCR;
-
-   // As the real registers order between VR and CR are exchanged, LastCCR will cover all VRFs
-   TR_LiveRegisters *liveVRFs = self()->cg()->getLiveRegisters(TR_VRF);
-   if (liveVRFs && liveVRFs->getNumberOfLiveRegisters() > 0)
-      endReg = TR::RealRegister::LastVRF;
+   int32_t endReg = TR::RealRegister::LastCCR; // As the real registers order between VR and CR are exchanged, LastCCR will cover all VRFs
 
    for (int32_t i = TR::RealRegister::FirstGPR; i <= endReg; i++)
       {

@@ -123,7 +123,7 @@ void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg)
    for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
       {
       	// Construct the right number of table entries
-      _infoTable.AddEntry(_infoTable);
+      _infoTable.AddEntry(_allocator);
       _totalNumberOfNodes++;
       }
 

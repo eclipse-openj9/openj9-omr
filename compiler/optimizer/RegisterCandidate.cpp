@@ -297,8 +297,7 @@ TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
    }
 
  TR_RegisterCandidate *TR_RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
-   TR_RegisterCandidate rc(ref, _trMemory, comp()->allocator());
-   CS2::TableIndex cix = _candidateTable.AddEntry(rc);
+   CS2::TableIndex cix = _candidateTable.AddEntry(TR_RegisterCandidate(ref, _trMemory, comp()->allocator()));
    return &_candidateTable[cix];
  }
 

@@ -69,7 +69,7 @@ private:
   class BitRef;
 public:
 
-  ABitVector(const Allocator &a = Allocator()) :
+  explicit ABitVector(const Allocator &a = Allocator()) :
     Allocator(a), fNumBits(0), fBitWords(NULL) {
   }
 

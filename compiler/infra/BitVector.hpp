@@ -191,7 +191,7 @@ class TR_BitVector
 
    // Construct a bit vector from a second bit vector
    //
-   TR_BitVector(TR_BitVector &v2)
+   TR_BitVector(const TR_BitVector &v2)
       : _numChunks(0), _firstChunkWithNonZero(0), _lastChunkWithNonZero(-1), _chunks(NULL), _growable(growable)
       {
       _allocationKind = v2._allocationKind;
@@ -337,7 +337,7 @@ class TR_BitVector
 
    // Copy a second vector into this one
    //
-   void operator= (TR_BitVector& v2)
+   void operator= (const TR_BitVector& v2)
       {
       int32_t i;
       int32_t v2Used = v2._numChunks;

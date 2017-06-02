@@ -5331,8 +5331,23 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
    // reusing the source 64bit GPR, as this would trigger an assume in RA.
    if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && (numberOfExtendBits==64))
       canClobberSrc = false;
-
-   if (!node->isUnneededConversion() && !childRegister->alreadySignExtended())
+    
+   /**
+   * A load (for proper type conversion) is required if the node is unsigned, not sign extended and
+   * not marked as unneeded conversion.
+   *
+   * For example, codegen can encounter the following tree:
+   *
+   * n4188n   (  0)  iRegStore GPR6  (Unsigned NeedsSignExt privatizedInlinerArg )
+   * n4109n   (  3)    l2i
+   * n19339n  (  1)      ==>lRegLoad (in GPR_3616) (highWordZero X>=0 cannotOverflow SeenRealReference )
+   *  .....
+   * n4182n   (  0)      iu2l (in GPR_3616) (highWordZero X>=0 )
+   * n4109n   (  0)        ==>l2i (in GPR_3616)
+   *
+   * In this case, a load is needed to zero the high half of the long to corretly convert iu to l.
+   */
+   if (!node->isUnneededConversion() && !(isSourceTypeSigned && childRegister->alreadySignExtended()))
       {
       targetRegister = genericLoadHelper<srcSize, numberOfExtendBits, RegReg> (firstChild, cg, NULL, targetRegister, isSourceTypeSigned, canClobberSrc);
       }

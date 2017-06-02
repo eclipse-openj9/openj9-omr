@@ -607,9 +607,16 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			break;
 		}
 		case LocIsStatic:
-			/* TODO: Decide how to represent offset of static class members. */
+		{
+			/* Get offset of static class members. */
 			newField->_isStatic = true;
+			LONG loffset = 0;
+			hr = symbol->get_offset(&loffset);
+			if (SUCCEEDED(hr)) {
+				offset = (size_t)loffset;
+			}
 			break;
+		}
 		case LocIsBitField:
 		{
 			LONG loffset = 0;
@@ -877,6 +884,89 @@ PdbScanner::setBaseType(IDiaSymbol *typeSymbol, Type **type)
 	}
 
 	return rc;
+}
+
+static const char *
+symTagToString(DWORD value)
+{
+	switch (value) {
+	case SymTagNull:
+		return "SymTagNull";
+	case SymTagExe:
+		return "SymTagExe";
+	case SymTagCompiland:
+		return "SymTagCompiland";
+	case SymTagCompilandDetails:
+		return "SymTagCompilandDetails";
+	case SymTagCompilandEnv:
+		return "SymTagCompilandEnv";
+	case SymTagFunction:
+		return "SymTagFunction";
+	case SymTagBlock:
+		return "SymTagBlock";
+	case SymTagData:
+		return "SymTagData";
+	case SymTagAnnotation:
+		return "SymTagAnnotation";
+	case SymTagLabel:
+		return "SymTagLabel";
+	case SymTagPublicSymbol:
+		return "SymTagPublicSymbol";
+	case SymTagUDT:
+		return "SymTagUDT";
+	case SymTagEnum:
+		return "SymTagEnum";
+	case SymTagFunctionType:
+		return "SymTagFunctionType";
+	case SymTagPointerType:
+		return "SymTagPointerType";
+	case SymTagArrayType:
+		return "SymTagArrayType";
+	case SymTagBaseType:
+		return "SymTagBaseType";
+	case SymTagTypedef:
+		return "SymTagTypedef";
+	case SymTagBaseClass:
+		return "SymTagBaseClass";
+	case SymTagFriend:
+		return "SymTagFriend";
+	case SymTagFunctionArgType:
+		return "SymTagFunctionArgType";
+	case SymTagFuncDebugStart:
+		return "SymTagFuncDebugStart"; 
+	case SymTagFuncDebugEnd:
+		return "SymTagFuncDebugEnd";
+	case SymTagUsingNamespace:
+		return "SymTagUsingNamespace";
+	case SymTagVTableShape:
+		return "SymTagVTableShape";
+	case SymTagVTable:
+		return "SymTagVTable";
+	case SymTagCustom:
+		return "SymTagCustom";
+	case SymTagThunk:
+		return "SymTagThunk";
+	case SymTagCustomType:
+		return "SymTagCustomType";
+	case SymTagManagedType:
+		return "SymTagManagedType";
+	case SymTagDimension:
+		return "SymTagDimension";
+	/* Note: The following are not present in all versions. */
+	/*case SymTagCallSite:
+		return "SymTagCallSite";
+	case SymTagInlineSite:
+		return "SymTagInlineSite";
+	case SymTagBaseInterface:
+		return "SymTagBaseInterface";
+	case SymTagVectorType:
+		return "SymTagVectorType";
+	case SymTagMatrixType:
+		return "SymTagMatrixType";
+	case SymTagHLSLType:
+		return "SymTagHLSLType";*/
+	};
+	return "value " + value;
 }
 
 DDR_RC
@@ -1188,8 +1278,7 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 			}
 			break;
 		default:
-			/* TODO: print human-readable symTag. */
-			ERRMSG("Unidentified symbol: %d", symTag);
+			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag));
 			rc = DDR_RC_ERROR;
 		}
 	}

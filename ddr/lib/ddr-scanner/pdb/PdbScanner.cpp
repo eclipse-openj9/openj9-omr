@@ -60,6 +60,7 @@ const char *const baseTypeArray[] = {
 	"U16",
 	"U32",
 	"U64",
+	"U128",
 	"unsigned __int128",
 	"<currency>",
 	"<date>",
@@ -833,6 +834,9 @@ PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 		break;
 	case 8:
 		*type = getType("U64");
+		break;
+	case 16:
+		*type = getType("U128");
 		break;
 	default:
 		ERRMSG("Unknown int length: %d", ulLen);

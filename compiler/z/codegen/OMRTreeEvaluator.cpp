@@ -18271,7 +18271,8 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
       }
 
    // if the FloatMAF option is not set and the node is not FP strict, we can't generate FMA operations
-   if (addNode->getType().isFloatingPoint() && !comp->getOption(TR_FloatMAF) && !mulNode->isFPStrictCompliant())
+   if ((addNode->getType().isFloatingPoint() || TR::VectorFloat == addNode->getType() || TR::VectorDouble == addNode->getType())
+       && !comp->getOption(TR_FloatMAF) && !mulNode->isFPStrictCompliant())
       return false;
 
    if (!performTransformation(comp, "O^O Changing [%p] to fused multiply and add (FMA) operation\n", addNode))

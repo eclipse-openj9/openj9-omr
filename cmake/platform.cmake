@@ -26,6 +26,16 @@ message(STATUS "CMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 
+# Remove a specified option from a variable
+macro(omr_remove_option var opt)
+    string( REGEX REPLACE
+		"(^| )${opt}($| )"
+		""
+		${var}
+		"${${var}}"
+	)
+endmacro(omr_remove_option)
+
 # TODO: Support all system types known in OMR
 # TODO: Is there a better way to do system flags?
 
@@ -141,13 +151,24 @@ if(OMR_HOST_OS STREQUAL "win")
 		set(linker_common "${linker_common} /SAFESEH")
 	endif()
 
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${linker_common} /INCREMENTAL:NO /NOLOGO /LARGEADDRESSAWARE wsetargv.obj")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${linker_common} /LARGEADDRESSAWARE wsetargv.obj")
 	if(OMR_ENV_DATA64)
 		#TODO: makefile has this but it seems to break linker
 		#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:MSVCRTD")
 	endif()
 
+
+	# Make sure we are building without incremental linking
+	omr_remove_option(CMAKE_EXE_LINKER_FLAGS "/INCREMENTAL")
+	omr_remove_option(CMAKE_SHARED_LINKER_FLAGS "/INCREMENTAL")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
+	foreach(build_type IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER "${build_type}" build_type)
+		omr_remove_option("CMAKE_EXE_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
+		omr_remove_option("CMAKE_SHARED_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
+	endforeach()
+
 	if(OMR_ENV_DATA64)
 		set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -entry:_DllMainCRTStartup")
 	else()
@@ -155,9 +176,9 @@ if(OMR_HOST_OS STREQUAL "win")
 	endif()
 
 	#strip out exception handling flags (added by default by cmake)
-	string(REPLACE "/EHsc" "" filtered_cxx_flags ${CMAKE_CXX_FLAGS})
-	string(REPLACE "/GR" "" filtered_cxx_flags ${filtered_cxx_flags})
-	set(CMAKE_CXX_FLAGS "${filtered_cxx_flags} ${common_flags}")
+	omr_remove_option(CMAKE_CXX_FLAGS "/EHsc")
+	omr_remove_option(CMAKE_CXX_FLAGS "/GR")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${common_flags}")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${common_flags}")
 
 	message(STATUS "CFLAGS = ${CMAKE_C_FLAGS}")

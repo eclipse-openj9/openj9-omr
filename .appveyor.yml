@@ -34,4 +34,4 @@ build:
   parallel: true
 
 test_script:
-  - ps: ctest -V -C Debug
+  - cmd: ctest -V -C Debug

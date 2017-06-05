@@ -972,6 +972,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::set32BitNumeric, offsetof(OMR::Options,_numRestrictedGPRs), 0, "F%d"},
    {"oldDataCacheImplementation",         "I\trevert to old data cache implementation.", SET_OPTION_BIT(TR_OldDataCacheImplementation),"F", NOT_IN_SUBSET},
    {"oldJVMPI",           "D\told way of determining which jit options to use with JVMPI",    SET_OPTION_BIT(TR_OldJVMPI), "P" },
+   {"omitFramePointer",         "I\tdo not dedicate a frame pointer register for X86 system linkage.", SET_OPTION_BIT(TR_OmitFramePointer),"F", NOT_IN_SUBSET},
    {"onlyInline=",                        "O{regex}\tlist of methods that can be inlined",
                                           TR::Options::setRegex, offsetof(OMR::Options, _onlyInline), 0, "P"},
    {"optDetails",         "L\tlog all optimizer transformations",

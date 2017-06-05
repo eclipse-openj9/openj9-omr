@@ -470,7 +470,7 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       + ( properties.getAlwaysDedicateFramePointerRegister() ? properties.getGPRWidth() : 0);
 
    uint32_t adjust = 0;
-   if (_properties.getOutgoingArgAlignment())
+   if (_properties.getOutgoingArgAlignment() && !cg()->isLeafMethod())
       {
       // AMD64 SysV spec requires: The end of the input argument area shall be aligned on a 16 (32, if __m256 is passed on stack) byte boundary. In other words, the value (%rsp + 8) is always a multiple of 16 (32) when control is transferred to the function entry point.
       TR_ASSERT(_properties.getOutgoingArgAlignment() == 16 || _properties.getOutgoingArgAlignment() == 4, "AMD64 SysV linkage require outgoingArgAlignment be 16/32 bytes aligned, while IA32 linkage require 4 bytes aligned.  We currently haven't support 32 bytes alignment for AMD64 SysV ABI yet.\n");
@@ -516,9 +516,15 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
 
    // Allocate the stack frame
    //
+   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
    if (allocSize == 0)
       {
       // No need to do anything
+      }
+   else if (allocSize == singleWordSize)
+      {
+      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, ebxReal, cg());
       }
    else
       {
@@ -704,6 +710,7 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // Deallocate the stack frame
    //
+   const int32_t singleWordSize = TR::Compiler->target.is32Bit() ? 4 : 8;
    if (_properties.getAlwaysDedicateFramePointerRegister())
       {
       // Restore stack pointer from frame pointer
@@ -714,6 +721,11 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
    else if (allocSize == 0)
       {
       // No need to do anything
+      }
+   else if (allocSize == singleWordSize)
+      {
+      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, ebxReal, cg());
       }
    else
       {

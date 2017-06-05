@@ -740,6 +740,10 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_InterferenceGraph *getLocalsIG() {return _localsIG;}
    TR_InterferenceGraph *setLocalsIG(TR_InterferenceGraph *ig) {return (_localsIG = ig);}
 
+   bool isLeafMethod()      { return _flags1.testAny(IsLeafMethod); }
+   void setIsLeafMethod()   { _flags1.set(IsLeafMethod); }
+   void resetIsLeafMethod() { _flags1.reset(IsLeafMethod); }
+
    // --------------------------------------------------------------------------
    // Binary encoding code cache
    //
@@ -1701,7 +1705,7 @@ class OMR_EXTENSIBLE CodeGenerator
       UsesRegisterMaps                                   = 0x00000010,
       JNILinkageCalleeCleanup                            = 0x00000020,
       HasResumableTrapHandler                            = 0x00000040,
-      //                                                 = 0x00000080,   // Available
+      IsLeafMethod                                       = 0x00000080,
       SupportsPartialInlineOfMethodHooks                 = 0x00000100,
       SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,

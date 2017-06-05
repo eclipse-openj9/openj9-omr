@@ -421,7 +421,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    {
    TR::Compilation *comp = cg->comp();
 
-   if (cg->isConcurrentScavengeEnabled())
+   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
       // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
       // to enforce certain evaluation order

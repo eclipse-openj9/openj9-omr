@@ -6128,7 +6128,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   {
                   auto loadMnemonic = TR::InstOpCode::BAD;
 
-                  if (cg->isConcurrentScavengeEnabled() &&
+                  if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
                       node->getOpCodeValue() == TR::aloadi &&
                       tempReg->containsCollectedReference())
                      {
@@ -13544,7 +13544,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
 
 #ifdef J9_PROJECT_SPECIFIC
    TR::LabelSymbol* mergeLabel;
-   bool mustGenerateOOLGuardedLoadPath = cg->isConcurrentScavengeEnabled() &&
+   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
                                          node->getArrayCopyElementType() == TR::Address;
 
    if (mustGenerateOOLGuardedLoadPath)

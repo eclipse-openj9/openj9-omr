@@ -504,9 +504,11 @@ omrsysinfo_get_tmp(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufL
 extern J9_CFUNC int32_t 
 omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *count);
 extern J9_CFUNC intptr_t
-omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc);
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc);
 extern J9_CFUNC BOOLEAN
-omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature);
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature);
+extern J9_CFUNC BOOLEAN
+omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

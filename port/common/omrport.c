@@ -249,6 +249,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_open_file_count, /* sysinfo_get_open_file_count */
 	omrsysinfo_get_os_description, /* sysinfo_get_os_description */
 	omrsysinfo_os_has_feature, /* sysinfo_os_has_feature */
+	omrsysinfo_os_kernel_info, /* sysinfo_os_kernel_info */
 	omrport_init_library, /* port_init_library */
 	omrport_startup_library, /* port_startup_library */
 	omrport_create_library, /* port_create_library */

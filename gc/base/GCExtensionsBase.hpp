@@ -719,6 +719,7 @@ public:
 	uintptr_t idleMinimumFree;   /** < percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
 	uintptr_t lastGCFreeBytes;  /** < records the free memory size from last Global GC cycle */
 	uintptr_t gcOnIdleRatio; /**< the percentage of allocation since the last GC allocation determines the invocation of global GC, default global GC is invoked if allocation is > 20% */
+	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 #endif
 
@@ -1498,6 +1499,7 @@ public:
 		, idleMinimumFree(0)
 		, lastGCFreeBytes(0)
 		, gcOnIdleRatio(20)
+		, gcOnIdle(false)
 		, compactOnIdle(false)
 #endif
 	{

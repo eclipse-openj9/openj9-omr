@@ -921,7 +921,7 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 	if (_collector && _usesGlobalCollector) {
 		bool invokeGC = true;
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-		if (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode ) {
+		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle || _extensions->compactOnIdle)) {
 			MM_MemorySpace* defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
 			uintptr_t freeMemorySize = defaultMemorySpace->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
 			uintptr_t actvMemorySize = defaultMemorySpace->getActiveMemorySize(MEMORY_TYPE_OLD);
@@ -950,7 +950,7 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 			env->releaseExclusiveVMAccessForGC();
 		}
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-		if (J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode ) {
+		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle)) {
 			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 			uint64_t startTime = omrtime_hires_clock();
 			uintptr_t releasedBytes = _extensions->heap->getDefaultMemorySpace()->releaseFreeMemoryPages(env);

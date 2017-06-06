@@ -291,6 +291,10 @@ class TR_OSRMethodData
    TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target);
    TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex);
 
+   void ensureArgInfoAt(int32_t byteCodeIndex, int32_t argNum);
+   void addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t argSymRef);
+   TR_Array<int32_t>* getArgInfo(int32_t byteCodeIndex);
+
    bool linkedToCaller() { return _linkedToCaller; }
    void setLinkedToCaller(bool b) { _linkedToCaller = b; }
 
@@ -302,6 +306,7 @@ class TR_OSRMethodData
    typedef CS2::CompoundHashKey<int32_t, TR::OSRTransitionTarget> TR_BCLiveRangeInfoHashKey;
    typedef CS2::HashTable<TR_BCLiveRangeInfoHashKey, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_OSRSlotSharingInfo*, TR::Allocator> TR_BCInfoHashTable;
+   typedef CS2::HashTable<int32_t, TR_Array<int32_t>*, TR::Allocator> TR_ArgInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_Array<int32_t>, TR::Allocator> TR_Slot2ScratchBufferOffset;
 
 
@@ -317,6 +322,8 @@ class TR_OSRMethodData
    TR_BCInfoHashTable           bcInfoHashTab;
 
    TR_BCLiveRangeInfoHashTable  bcLiveRangeInfoHashTab;
+
+   TR_ArgInfoHashTable argInfoHashTab;
 
    int32_t _numSymRefs;
 

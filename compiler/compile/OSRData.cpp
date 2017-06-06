@@ -610,7 +610,7 @@ TR_OSRMethodData::TR_OSRMethodData(int32_t _inlinedSiteIndex, TR::ResolvedMethod
         _linkedToCaller(false),
         slot2ScratchBufferOffset(comp()->allocator()),
         _numSymRefs(0),
-        bcInfoHashTab(comp()->allocator()),  bcLiveRangeInfoHashTab(comp()->allocator()) {};
+        bcInfoHashTab(comp()->allocator()),  bcLiveRangeInfoHashTab(comp()->allocator()), argInfoHashTab(comp()->allocator()) {};
 
 TR::Block *
 TR_OSRMethodData::findOrCreateOSRCodeBlock(TR::Node* n)
@@ -738,6 +738,66 @@ TR_OSRMethodData::getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarge
       }
 
    return liveRangeInfo;
+   }
+
+/*
+ * Ensure it is possible to store the required number of symbol reference
+ * arguments against a bytecode index
+ */
+void
+TR_OSRMethodData::ensureArgInfoAt(int32_t byteCodeIndex, int32_t argNum)
+   {
+   CS2::HashIndex hashIndex;
+   bool generate = false;
+   if (!argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      generate = true;
+      }
+   else
+      {
+      TR_Array<int32_t> *args = getArgInfo(byteCodeIndex);
+      if (args->size() != argNum)
+         {
+         argInfoHashTab.Remove(byteCodeIndex);
+         generate = true;
+         }
+      }
+ 
+   if (generate)
+      argInfoHashTab.Add(byteCodeIndex,
+         new (comp()->trMemory()->trHeapMemory()) TR_Array<int32_t>(comp()->trMemory(), argNum, false, heapAlloc), hashIndex);
+   }
+
+/*
+ * Stash the symbol reference numbers against a bytecode index,
+ * to be used as arguments when transitioning to this index.
+ */
+void
+TR_OSRMethodData::addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t argSymRef)
+   {
+   CS2::HashIndex hashIndex;
+   TR_Array<int32_t> *args;
+   if (argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      args = argInfoHashTab.DataAt(hashIndex);
+      (*args)[argIndex] = argSymRef;
+      }
+   }
+
+/*
+ * Get the list of symbol reference numbers for a bytecode index
+ * to be used as arguments to the induce call targeting it
+ */ 
+TR_Array<int32_t>*
+TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
+   {
+   CS2::HashIndex hashIndex;
+   TR_Array<int32_t> *args = NULL;
+   if (argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      args = argInfoHashTab.DataAt(hashIndex);
+      }
+   return args;
    }
 
 void

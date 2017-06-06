@@ -610,7 +610,7 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
       cfg->copyExceptionSuccessors(block, osrBlock);
 
       // induce OSR in the new block
-      self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, false, self()->comp());
+      self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, self()->comp());
       return true;
       }
    return false;
@@ -620,39 +620,38 @@ TR::TreeTop *
 OMR::ResolvedMethodSymbol::induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint)
    {
    if (self()->supportsInduceOSR(insertionPoint->getNode()->getByteCodeInfo(), insertionPoint->getEnclosingBlock(), self()->comp()))
-      return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(insertionPoint, insertionPoint->getNode()->getByteCodeInfo(), false, false, self()->comp());
+      return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(insertionPoint, insertionPoint->getNode()->getByteCodeInfo(), false, self()->comp());
    if (self()->comp()->getOption(TR_TraceOSR))
       traceMsg(self()->comp(), "induceImmediateOSRWithoutChecksBefore n%dn failed - supportsInduceOSR returned false\n", insertionPoint->getNode()->getGlobalIndex());
    return NULL;
    }
 
 TR::TreeTop *
-OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool copyChildren, bool shouldSplitBlock, TR::Compilation *comp)
+OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp)
    {
-   int32_t numChildrenOfInduceCall = 0;
-   int32_t firstArgChild = 0;
-   int32_t numOfChildren = 0;
-   TR::Node *refCallNode = NULL;
-   if ((insertionPoint->getNode()->getNumChildren() > 0) &&
-       (insertionPoint->getNode()->getFirstChild()->getOpCode().isCall()))
-      {
-      refCallNode = insertionPoint->getNode()->getFirstChild();
-      firstArgChild = refCallNode->getFirstArgumentIndex();
-      numOfChildren = refCallNode->getNumChildren();
-      numChildrenOfInduceCall = numOfChildren - firstArgChild;
-      }
+   // Add children to the induce node if they have been registered for this bytecode index
+   // TODO: Eventually all implementations of OSR should place call arguments in pending push slots
+   // and either transition with them in the OSR buffer or as arguments to the induce here
+   TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(induceBCI.getCallerIndex(), self());
+   TR_Array<int32_t> *args = osrMethodData->getArgInfo(induceBCI.getByteCodeIndex());
+   int32_t children = args == NULL ? 0 : args->size();
 
-   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), numChildrenOfInduceCall, copyChildren, shouldSplitBlock);
+   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), children, false, shouldSplitBlock);
 
    if (induceOSRCallTree)
       {
       TR::TreeTop *treeAfterInduceOSRCall = induceOSRCallTree->getNextTreeTop();
-
-      if (refCallNode)
+   
+      // Add loads of the required symrefs to the induce call
+      TR::Node *induceOSRCall = induceOSRCallTree->getNode()->getFirstChild();
+      if (args)
          {
-         TR::Node *induceOSRCallNode = induceOSRCallTree->getNode()->getFirstChild();
-         for (int32_t i = firstArgChild; i < numOfChildren; i++)
-            induceOSRCallNode->setAndIncChild(i-firstArgChild, refCallNode->getChild(i));
+         induceOSRCall->setNumChildren(children);
+         for (int32_t i = 0; i < children; ++i)
+            {
+            induceOSRCall->setAndIncChild(i,
+               TR::Node::createLoad(induceOSRCall, self()->comp()->getSymRefTab()->getSymRef((*args)[i])));
+            }
          }
 
       while (treeAfterInduceOSRCall)

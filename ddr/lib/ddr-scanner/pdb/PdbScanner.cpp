@@ -112,6 +112,38 @@ PdbScanner::initBaseTypeList()
 	_ir->_types.push_back(type);
 }
 
+
+DDR_RC
+getName(IDiaSymbol *symbol, string *name)
+{
+	DDR_RC rc = DDR_RC_OK;
+	/* Attempt to get the name associated with a symbol. */
+	BSTR nameBstr;
+	HRESULT hr = symbol->get_name(&nameBstr);
+	if (FAILED(hr)) {
+		ERRMSG("get_name failed with HRESULT = %08X", hr);
+		rc = DDR_RC_ERROR;
+	} else {
+		char *nameChar = _com_util::ConvertBSTRToString(nameBstr);
+		if (NULL == nameChar) {
+			ERRMSG("Could not convert Bstr");
+		} else {
+			*name = string(nameChar);
+			size_t pos = name->find("`anonymous-namespace'::");
+			if (string::npos == pos) {
+				pos = name->find("`anonymous namespace'::");
+			}
+			if (string::npos != pos) {
+				*name = name->replace(pos, 23, "");
+			}
+			free(nameChar);
+		}
+		SysFreeString(nameBstr);
+	}
+
+	return rc;
+}
+
 DDR_RC
 PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath)
 {
@@ -149,6 +181,9 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 			}
 
 			string file = *it;
+			size_t first = file.find_first_not_of(" \r\n\t");
+			size_t last = file.find_last_not_of(" \r\n\t");
+			file = file.substr(first, last - first + 1);
 			const size_t len = strlen(file.c_str());
 			wchar_t *filename = new wchar_t[len + 1];
 			mbstowcs(filename, file.c_str(), len + 1);
@@ -217,7 +252,7 @@ void
 PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 {
 	if ((string::npos != type->_name.find("<unnamed-type-")) || ("<unnamed-tag>" == type->_name)) {
-		if ((NULL != type->getNamespace()) && (string::npos == type->_name.find("::"))) {
+		if ((NULL == type->getNamespace()) && (string::npos == type->_name.find("::"))) {
 			/* Anonymous global types would ideally be named by file name,
 			 * but PDB info does not associate types with source files.
 			 * Since they also cannot be referenced by outer type, give them
@@ -229,7 +264,6 @@ PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 		} else {
 			type->_name = "";
 		}
-
 	}
 	if (NULL != type->getSubUDTS()) {
 		for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); it ++) {
@@ -279,7 +313,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	if (DDR_RC_OK == rc) {
 		hr = (*dataSource)->loadDataFromPdb(filename);
 		if (FAILED(hr)) {
-			ERRMSG("loadDataFromPdb() failed for file %ls with HRESULT = %08X. Ensure the input is a pdb and not an exe.", filename, hr);
+			ERRMSG("loadDataFromPdb() failed for file with HRESULT = %08X. Ensure the input is a pdb and not an exe.\nFile: %ls", hr, filename);
 			rc = DDR_RC_ERROR;
 		}
 	}

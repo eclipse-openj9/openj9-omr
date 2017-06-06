@@ -45,9 +45,9 @@ public:
 
 	std::string getPointerType();
 	std::string getModifierNames();
-	void addArrayDimension(int length);
+	void addArrayDimension(size_t length);
 	bool isArray();
-	size_t getArrayLength(unsigned int i);
+	size_t getArrayLength(size_t i);
 	size_t getArrayDimensions();
 	size_t getSize(size_t typeSize);
 	bool operator==(Modifiers const& type) const;

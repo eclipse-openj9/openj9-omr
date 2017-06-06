@@ -57,7 +57,7 @@ typedef struct PostponedType
 class PdbScanner: public Scanner
 {
 public:
-	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles);
+	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath);
 
 private:
 	Symbol_IR *_ir;

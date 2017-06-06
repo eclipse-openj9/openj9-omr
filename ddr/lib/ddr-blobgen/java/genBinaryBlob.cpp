@@ -165,7 +165,6 @@ JavaBlobGenerator::copyStringTable()
 	J9HashTableState state;
 
 	/* Iterate the table and copy each string to its already-assigned offset */
-
 	StringTableEntry *entry = (StringTableEntry *)hashTableStartDo(_buildInfo.stringHash, &state);
 	while (NULL != entry) {
 		J9UTF8 *utf = (J9UTF8 *)(stringData + entry->offset);
@@ -266,8 +265,8 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 		assert(wb == sizeof(_buildInfo.header));
 
 		/* write structs */
-		int f_ix = 0;
-		int c_ix = 0;
+		uint32_t f_ix = 0;
+		uint32_t c_ix = 0;
 		intptr_t amountWritten = 0;
 		for (unsigned int s_ix = 0; s_ix < _buildInfo.header.structureCount; s_ix++) {
 			wb = omrfile_write(fd, &_buildInfo.blobStructs[s_ix], sizeof(BlobStruct));
@@ -290,6 +289,7 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 				   _buildInfo.fieldCount, _buildInfo.constCount, _buildInfo.header.structureCount);
 			ERRMSG("Expected %d to be written, but %d was written.\n", (int)_buildInfo.header.structDataSize, (int)amountWritten);
 		}
+
 		/* write string data */
 		wb = omrfile_write(fd, _buildInfo.stringBuffer, _buildInfo.header.stringDataSize);
 
@@ -524,7 +524,7 @@ BlobBuildVisitor::visitType(ClassUDT *cu) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	if (!cu->_isDuplicate) {
-	/* Do not add anonymous inner types as their own type. */
+		/* Do not add anonymous inner types as their own type. */
 		if ((!cu->isAnonymousType() || _addFieldsOnly) && (cu->_fieldMembers.size() > 0)) {
 			/* Format class name */
 			string nameFormatted = cu->_name;
@@ -583,7 +583,7 @@ BlobBuildVisitor::visitType(ClassUDT *cu) const
 	}
 
 	/* Anonymous sub udt's not used as fields are to have their fields added to this struct.*/
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly && !cu->_isDuplicate) {
 		for (vector<UDT *>::iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
 			if ((*it)->isAnonymousType()) {
 				bool isUsedAsField = false;
@@ -783,7 +783,7 @@ JavaBlobGenerator::addBlobStruct(string name, string superName, uint32_t constCo
 		_buildInfo.curBlobStruct->constantCount += constCount;
 		_buildInfo.curBlobStruct->fieldCount += fieldCount;
 		_buildInfo.curBlobStruct->structSize = size;
-		if ((uintptr_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs) < (uintptr_t)(_buildInfo.header.structureCount - 1)) {
+		if ((uintptr_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs) < (uintptr_t)_buildInfo.header.structureCount - 1) {
 			_buildInfo.curBlobStruct += 1;
 			_buildInfo.curBlobStruct->constantCount = 0;
 			_buildInfo.curBlobStruct->fieldCount = 0;
@@ -940,24 +940,24 @@ BlobEnumerateVisitor::visitType(NamespaceUDT *type) const
 		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)) {
 			rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, constCount);
 		}
-	}
-	/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-			if ((*it)->isAnonymousType()) {
-				rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, true));
-				if (DDR_RC_OK != rc) {
-					break;
+		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
+		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+			for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+				if ((*it)->isAnonymousType()) {
+					rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, true));
+					if (DDR_RC_OK != rc) {
+						break;
+					}
 				}
 			}
 		}
-	}
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-			if (!(*it)->isAnonymousType()) {
-				rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, false));
-				if (DDR_RC_OK != rc) {
-					break;
+		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+			for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+				if (!(*it)->isAnonymousType()) {
+					rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, false));
+					if (DDR_RC_OK != rc) {
+						break;
+					}
 				}
 			}
 		}
@@ -1001,7 +1001,7 @@ BlobEnumerateVisitor::visitType(ClassUDT *type) const
 						if (DDR_RC_OK != rc) {
 							break;
 						}
-					} else {
+					} else if (NULL != (*v)->_fieldType) {
 						fieldCount += 1;
 					}
 				}
@@ -1022,7 +1022,7 @@ BlobEnumerateVisitor::visitType(ClassUDT *type) const
 	}
 
 	/* Anonymous sub udt's not used as fields are to have their fields added to this struct. */
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly && !type->_isDuplicate) {
 		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
 		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
 			if ((*it)->isAnonymousType()) {

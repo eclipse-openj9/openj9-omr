@@ -71,7 +71,7 @@ Modifiers::getPointerType()
 }
 
 void
-Modifiers::addArrayDimension(int length)
+Modifiers::addArrayDimension(size_t length)
 {
 	_arrayLengths.push_back(length);
 }
@@ -83,7 +83,7 @@ Modifiers::isArray()
 }
 
 size_t
-Modifiers::getArrayLength(unsigned int i)
+Modifiers::getArrayLength(size_t i)
 {
 	if (i >= _arrayLengths.size()) {
 		return 0;

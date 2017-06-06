@@ -3087,6 +3087,11 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
             if (tt->getNode()->getOpCode().isBranch() || tt->getNode()->getOpCode().isSwitch())
                tt = tt->getPrevTreeTop();
 
+            // If this treetop is an OSR point, a store cannot be placed between it and the 
+            // transition treetop in postExecutionOSR
+            if (comp()->isPotentialOSRPoint(tt->getNode()))
+               tt = comp()->getMethodSymbol()->getOSRTransitionTreeTop(tt);
+
             TR::Node *value = ref->_node;
             // Convert the node being stored to the type required by the FE
             if (comp()->fe()->dataTypeForLoadOrStore(nodeDataType) != nodeDataType)

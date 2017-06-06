@@ -34,21 +34,22 @@ namespace CS2{
 // or when the table is destroyed.
 // ------------------------------------------------------------------------
 
-#define CS2_TBL_TEMP template <class AElementType, class Allocator, uint32_t segmentBits, template<class> class SupportingBitVector>
-#define CS2_TBL_DECL TableOf <AElementType, Allocator, segmentBits, SupportingBitVector>
-#define CS2_TAR_DECL BaseArrayOf <AElementType, Allocator, segmentBits>
-
 typedef size_t TableIndex;
 
-template <class AElementType, class Allocator, uint32_t segmentBits = 8, template<class = Allocator>class SupportingBitVector = ASparseBitVector>
-class TableOf : public CS2_TAR_DECL {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits = 8,
+  template< class = Allocator > class SupportingBitVector = ASparseBitVector
+  >
+class TableOf {
   public:
 
   TableOf (const Allocator &a = Allocator());
   TableOf (uint32_t ignore, const Allocator &a = Allocator());
   ~TableOf();
-  TableOf (const CS2_TBL_DECL &);
-  CS2_TBL_DECL &operator= (const CS2_TBL_DECL &);
+  TableOf (const TableOf &);
+  TableOf &operator= (const TableOf &);
 
   /// \brief Return the element at the given index.  The element must have been
   /// previously added and not subsequently removed from the table.
@@ -63,7 +64,7 @@ class TableOf : public CS2_TAR_DECL {
   TableIndex AddEntryNoConstruct();
 
   template <class Initializer>
-    TableIndex AddEntry(Initializer &element);
+    TableIndex AddEntry(const Initializer &element);
 
   TableIndex AddEntryAtPosition(TableIndex);
   TableIndex AddEntryAtPositionNoConstruct(TableIndex);
@@ -73,6 +74,9 @@ class TableOf : public CS2_TAR_DECL {
 
   /// \brief Remove an entry at a given position.
   void RemoveEntry (TableIndex);
+
+  /// \return Current total number of table entries
+  size_t NumberOfElements() const;
 
   /// \brief Determine if an entry exists at a given position.
   bool Exists (TableIndex) const;
@@ -87,12 +91,11 @@ class TableOf : public CS2_TAR_DECL {
   unsigned long MemoryUsage() const;
 
   // The following is a sub-class used to traverse tables.
-  #define CS2_TBLCC_DECL CS2_TBL_DECL::ConstCursor
   class ConstCursor {
     public:
 
-    ConstCursor (const CS2_TBL_DECL &);
-    ConstCursor (const CS2_TBL_DECL &, const SupportingBitVector<Allocator> &);
+    ConstCursor (const TableOf &);
+    ConstCursor (const TableOf &, const SupportingBitVector<Allocator> &);
     ConstCursor (const ConstCursor &c);
     ConstCursor (const ConstCursor &c, const SupportingBitVector<Allocator> &);
 
@@ -110,16 +113,15 @@ class TableOf : public CS2_TAR_DECL {
 
     ConstCursor &operator= (const ConstCursor &);
 
-    const CS2_TBL_DECL &fTable;
+    const TableOf &fTable;
     typename SupportingBitVector<Allocator>::Cursor fFreeCursor;
     TableIndex fNextFree;
     TableIndex fIndex;
   };
 
-  #define CS2_TBLC_DECL CS2_TBL_DECL::Cursor
   class Cursor : public ConstCursor {
   public:
-    Cursor (const CS2_TBL_DECL &);
+    Cursor (const TableOf &);
     Cursor (const Cursor &);
 
   private:
@@ -128,8 +130,8 @@ class TableOf : public CS2_TAR_DECL {
 
   template <class ostr>
   friend
-  ostr &operator<<  (ostr &out, const CS2_TBL_DECL &table) {
-    typename CS2_TBL_DECL::ConstCursor tblCursor(table);
+  ostr &operator<<  (ostr &out, const TableOf &table) {
+    typename TableOf::ConstCursor tblCursor(table);
 
     for (tblCursor.SetToFirst();
          tblCursor.Valid();
@@ -143,12 +145,15 @@ class TableOf : public CS2_TAR_DECL {
   }
 
   private:
+  TableIndex ClearLastOneIfThereIsOne(bool&);
+  bool CheckEntryAtPosition(TableIndex);
+  void DestroyElements();
 
+  typedef BaseArrayOf< AElementType, Allocator, segmentBits > StorageProvider;
+  StorageProvider fStorage;
   TableIndex fHighestIndex;
   TableIndex fLowestPossibleRemoved;
   TableIndex fHighestPossibleRemoved;
-  TableIndex ClearLastOneIfThereIsOne(bool&);
-  bool       CheckEntryAtPosition(TableIndex);
   SupportingBitVector<Allocator> fFreeVector;
 };
 
@@ -159,7 +164,14 @@ class TableOf : public CS2_TAR_DECL {
 // for ASparseBitVector, that is not necessary.
 // The original implementation preferred to re-use elements starting
 // with the highest free-ed element.  So this code maintains that discipline
-CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::ClearLastOneIfThereIsOne(bool& foundone) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableIndex
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ClearLastOneIfThereIsOne(bool& foundone) {
    foundone = false;
    if (fLowestPossibleRemoved == fHighestPossibleRemoved) {
       // in this case either we really do have a free spot here or we there are no free spots
@@ -203,16 +215,29 @@ CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::ClearLastOneIfThereIsOne(bool& foun
 //
 // Indexing method.
 
-CS2_TBL_TEMP inline AElementType &CS2_TBL_DECL::ElementAt (TableIndex index) const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+AElementType &TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ElementAt (TableIndex index) const {
   CS2Assert (Exists(index), ("Table index " CS2_ZU " does not exist", index));
-  return CS2_TAR_DECL::ElementAt(index);
+  return fStorage.ElementAt(index);
 }
 
 // TableOf::operator[]
 //
 // Indexing operator.
 
-CS2_TBL_TEMP inline AElementType &CS2_TBL_DECL::operator[] (TableIndex index) const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+AElementType
+&TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::operator[] (TableIndex index) const {
   return ElementAt(index);
 }
 
@@ -220,7 +245,14 @@ CS2_TBL_TEMP inline AElementType &CS2_TBL_DECL::operator[] (TableIndex index) co
 //
 // Predicate to determine if an element exists.
 
-CS2_TBL_TEMP inline bool CS2_TBL_DECL::Exists (TableIndex index) const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+bool
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::Exists (TableIndex index) const {
   if (index == 0) return false;
   if (index > fHighestIndex) return false;
   return !fFreeVector.ValueAt(index);
@@ -230,7 +262,14 @@ CS2_TBL_TEMP inline bool CS2_TBL_DECL::Exists (TableIndex index) const {
 //
 // Predicate to determine if the table contains any elements.
 
-CS2_TBL_TEMP inline bool CS2_TBL_DECL::IsEmpty() const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+bool
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::IsEmpty() const {
   return (fHighestIndex == 0) || fFreeVector.PopulationCount()>=fHighestIndex;
 }
 
@@ -239,58 +278,91 @@ CS2_TBL_TEMP inline bool CS2_TBL_DECL::IsEmpty() const {
 // Construct a table with at least the given number of elements and with
 // the (optional) segment size.
 
-CS2_TBL_TEMP inline CS2_TBL_DECL::TableOf (const Allocator &a) :
-  CS2_TAR_DECL (a),
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::TableOf (const Allocator &a) :
+  fStorage(a),
   fHighestIndex (0),
   fLowestPossibleRemoved(0),
   fHighestPossibleRemoved(0),
   fFreeVector(a) { }
 
-CS2_TBL_TEMP inline CS2_TBL_DECL::TableOf (uint32_t, const Allocator &a) :
-  CS2_TAR_DECL (a),
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::TableOf (uint32_t, const Allocator &a) :
+  fStorage(a),
   fHighestIndex (0),
   fLowestPossibleRemoved(0),
   fHighestPossibleRemoved(0),
   fFreeVector(a) { }
+
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+void
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::DestroyElements() {
+   ConstCursor elementIndex(*this);
+   // Destroy every existing element.
+   for (elementIndex.SetToFirst();
+        elementIndex.Valid();
+        elementIndex.SetToNext()) {
+     auto derivedElement = fStorage.DerivedElementAt(elementIndex);
+     derivedElement->~DerivedElement();
+   }
+}
 
 // TableOf::~TableOf
 //
 // Destroy a table and all of its elements.
 
-CS2_TBL_TEMP inline CS2_TBL_DECL::~TableOf() {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::~TableOf() {
   if (is_pod<AElementType>()) return;
 
   if (fHighestIndex==0) return;
 
-  typename CS2_TBL_DECL::ConstCursor elementIndex(*this);
-  // Destroy every existing element.
-  for (elementIndex.SetToFirst();
-       elementIndex.Valid();
-       elementIndex.SetToNext()) {
-    AElementType &currentElement = ElementAt(elementIndex);
-    typename CS2_TAR_DECL::DerivedElement *derivedElement = (typename CS2_TAR_DECL::DerivedElement *) &currentElement;
-    derivedElement->CS2_TAR_DECL::DerivedElement::~DerivedElement();
-  }
+  DestroyElements();
 }
 
 // TableOf::TableOf (const TableOf &)
 //
 // Copy construct a table.
 
-CS2_TBL_TEMP inline CS2_TBL_DECL::TableOf (const CS2_TBL_DECL &table) :
-  CS2_TAR_DECL(table),
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::TableOf (const TableOf & table) :
+  fStorage(table),
   fHighestIndex(table.fHighestIndex),
   fLowestPossibleRemoved(table.fLowestPossibleRemoved),
   fHighestPossibleRemoved(table.fHighestPossibleRemoved),
   fFreeVector(table.fFreeVector) {
 
-  typename CS2_TBL_DECL::ConstCursor elementIndex(table);
+  ConstCursor elementIndex(table);
   // Copy every existing element.
   for (elementIndex.SetToFirst();
        elementIndex.Valid();
        elementIndex.SetToNext()) {
-    AElementType &currentElement = ElementAt(elementIndex);
-    new (&currentElement) typename CS2_TAR_DECL::DerivedElement (table.ElementAt(elementIndex));
+    new (&fStorage.DerivedElementAt(elementIndex)) typename StorageProvider::DerivedElement(table.ElementAt(elementIndex));
   }
 }
 
@@ -298,7 +370,14 @@ CS2_TBL_TEMP inline CS2_TBL_DECL::TableOf (const CS2_TBL_DECL &table) :
 //
 // Assign a table to another.
 
-CS2_TBL_TEMP inline CS2_TBL_DECL &CS2_TBL_DECL::operator= (const CS2_TBL_DECL &table) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector > &
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::operator= (const TableOf &table) {
   MakeEmpty();
 
   fHighestIndex = table.fHighestIndex;
@@ -306,13 +385,12 @@ CS2_TBL_TEMP inline CS2_TBL_DECL &CS2_TBL_DECL::operator= (const CS2_TBL_DECL &t
   fHighestPossibleRemoved = table.fHighestPossibleRemoved;
   fFreeVector = table.fFreeVector;
 
-  typename CS2_TBL_DECL::ConstCursor elementIndex(table);
+  ConstCursor elementIndex(table);
   // Copy every existing element.
   for (elementIndex.SetToFirst();
        elementIndex.Valid();
        elementIndex.SetToNext()) {
-    AElementType &currentElement = ElementAt(elementIndex);
-    new (&currentElement) typename CS2_TAR_DECL::DerivedElement (table.ElementAt(elementIndex));
+    new (fStorage.DerivedElementAt(elementIndex)) typename StorageProvider::DerivedElement(table.ElementAt(elementIndex));
   }
   return *this;
 }
@@ -321,23 +399,20 @@ CS2_TBL_TEMP inline CS2_TBL_DECL &CS2_TBL_DECL::operator= (const CS2_TBL_DECL &t
 //
 // Destroy all existing table elements.
 
-CS2_TBL_TEMP inline void CS2_TBL_DECL::MakeEmpty () {
-  ConstCursor elementIndex(*this);
-
-  // Destroy every existing element.
-  for (elementIndex.SetToFirst();
-       elementIndex.Valid();
-       elementIndex.SetToNext()) {
-    AElementType &currentElement = ElementAt(elementIndex);
-    typename CS2_TAR_DECL::DerivedElement *derivedElement = (typename CS2_TAR_DECL::DerivedElement *) &currentElement;
-    derivedElement->CS2_TAR_DECL::DerivedElement::~DerivedElement();
-  }
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+void TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::MakeEmpty () {
+  DestroyElements();
 
   fHighestIndex = 0;
   fLowestPossibleRemoved = 0;
   fHighestPossibleRemoved = 0;
   fFreeVector.Clear();
-  CS2_TAR_DECL::ShrinkTo(0);
+  fStorage.ShrinkTo(0);
 }
 
 // TableOf::AddEntry
@@ -345,7 +420,13 @@ CS2_TBL_TEMP inline void CS2_TBL_DECL::MakeEmpty () {
 // Add an entry to the table at the next available index without constructing
 // the object. ONLY USE THIS IF YOU ARE GOING TO EXPLICITLY CONSTRUCT THE
 // THE DerivedElement YOURSELF.
-CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::AddEntryNoConstruct () {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntryNoConstruct () {
   TableIndex newIndex;
   bool foundone;
 
@@ -355,28 +436,39 @@ CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::AddEntryNoConstruct () {
     newIndex = ClearLastOneIfThereIsOne(foundone);
   }
 
-  fHighestIndex +=1;
-  newIndex = fHighestIndex;
-  CS2_TAR_DECL::GrowTo (fHighestIndex+1);
+  newIndex = fHighestIndex + 1;
+  fStorage.GrowTo (newIndex + 1);
+  fHighestIndex = newIndex;
 
 found:
   return newIndex;
 }
 
 // Add an entry to the table at the next available index
-CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::AddEntry () {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntry () {
   // Construct the new table entry
   TableIndex newIndex = AddEntryNoConstruct();
-  new (&ElementAt(newIndex)) typename CS2_TAR_DECL::DerivedElement;
+  new (fStorage.DerivedElementAt(newIndex)) typename StorageProvider::DerivedElement;
   return newIndex;
 }
 
-CS2_TBL_TEMP
-  template <class Initializer>
-inline TableIndex CS2_TBL_DECL::AddEntry (Initializer &initializer) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+template <class Initializer>
+TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntry (const Initializer &initializer) {
   // Construct the new table entry
   TableIndex newIndex = AddEntryNoConstruct();
-  new (&ElementAt(newIndex)) typename CS2_TAR_DECL::DerivedElement(initializer);
+  new (fStorage.DerivedElementAt(newIndex)) typename StorageProvider::DerivedElement(initializer);
   return newIndex;
 }
 
@@ -385,22 +477,37 @@ inline TableIndex CS2_TBL_DECL::AddEntry (Initializer &initializer) {
 // Add an entry to the table at the specified position without constructing
 // the object. ONLY USE THIS IF YOU ARE GOING TO EXPLICITLY CONSTRUCT THE
 // THE DerivedElement YOURSELF.
-CS2_TBL_TEMP inline bool CS2_TBL_DECL::CheckEntryAtPosition (TableIndex newIndex) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+bool TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::CheckEntryAtPosition (TableIndex newIndex) {
   bool shouldConstruct = true;
   if (fHighestIndex < newIndex) {
+    TableIndex const currentHighIndex = fHighestIndex;
+    fStorage.GrowTo(newIndex + 1);
     if (fHighestIndex < newIndex-1) {
+      bool updateLowestRemoved = false;
        if (fLowestPossibleRemoved == fHighestPossibleRemoved &&
            !fFreeVector.ValueAt(fLowestPossibleRemoved)) {
-          fLowestPossibleRemoved = fHighestIndex + 1;
+         updateLowestRemoved = true;
        }
-       fHighestPossibleRemoved = newIndex - 1;
        while (fHighestIndex < newIndex-1) {
-          fHighestIndex+=1;
-          fFreeVector[fHighestIndex]=true;
+        /*
+         * Each of these bit writes can throw so we have to
+         * keep track of our incremental progress :(
+         */
+         fFreeVector[fHighestIndex+1]=true;
+         ++fHighestIndex;
+         fHighestPossibleRemoved = fHighestIndex;
        }
+      if (updateLowestRemoved) {
+         fLowestPossibleRemoved = currentHighIndex + 1;
+      }
     }
     fHighestIndex = newIndex;
-    CS2_TAR_DECL::GrowTo (newIndex+1);
   } else if (fFreeVector.ValueAt(newIndex)) {
     fFreeVector[newIndex]=false;
     if (newIndex == fHighestPossibleRemoved) {
@@ -423,24 +530,42 @@ CS2_TBL_TEMP inline bool CS2_TBL_DECL::CheckEntryAtPosition (TableIndex newIndex
 }
 
 // Add an entry to the table at the specified position.
-CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::AddEntryAtPositionNoConstruct (TableIndex newIndex) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntryAtPositionNoConstruct (TableIndex newIndex) {
   bool ignore = CheckEntryAtPosition(newIndex);
   return newIndex;
 }
 
-CS2_TBL_TEMP inline TableIndex CS2_TBL_DECL::AddEntryAtPosition (TableIndex newIndex) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntryAtPosition (TableIndex newIndex) {
   if (CheckEntryAtPosition(newIndex)) {
      // Construct the new table entry
-     new (&ElementAt(newIndex)) typename CS2_TAR_DECL::DerivedElement;
+     new (fStorage.DerivedElementAt(newIndex)) typename StorageProvider::DerivedElement;
   }
   return newIndex;
 }
 
-CS2_TBL_TEMP template <class Initializer>
-  inline TableIndex CS2_TBL_DECL::AddEntryAtPosition (TableIndex newIndex, Initializer initializer) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+ template <class Initializer>
+  TableIndex TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::AddEntryAtPosition (TableIndex newIndex, Initializer initializer) {
   if (CheckEntryAtPosition(newIndex)) {
      // Construct the new table entry
-     new (&ElementAt(newIndex)) typename CS2_TAR_DECL::DerivedElement(initializer);
+     new (fStorage.DerivedElementAt(newIndex)) typename StorageProvider::DerivedElement(initializer);
   }
   return newIndex;
 }
@@ -449,15 +574,21 @@ CS2_TBL_TEMP template <class Initializer>
 //
 // Remove the given entry from the table.
 
-CS2_TBL_TEMP inline void CS2_TBL_DECL::RemoveEntry (TableIndex index) {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+void TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::RemoveEntry (TableIndex index) {
   // The entry must already exist
   CS2Assert (Exists(index), ("Index " CS2_ZU " does not exist", index));
 
   if (index==0 || index > fHighestIndex) return;
 
   // Destroy this element
-  typename CS2_TAR_DECL::DerivedElement *derivedElement = (typename CS2_TAR_DECL::DerivedElement *) & ElementAt(index);
-  derivedElement->CS2_TAR_DECL::DerivedElement::~DerivedElement();
+  auto derivedElement = fStorage.DerivedElementAt(index);
+  derivedElement->~DerivedElement();
 
   if (index==fHighestIndex) {
      fHighestIndex-=1;
@@ -474,16 +605,33 @@ CS2_TBL_TEMP inline void CS2_TBL_DECL::RemoveEntry (TableIndex index) {
   }
 }
 
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+size_t
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::NumberOfElements() const {
+  return fStorage.NumberOfElements();
+  }
+
 // TableOf::MemoryUsage
 //
 // Return the memory usage in bytes for this table.
 
-CS2_TBL_TEMP inline unsigned long CS2_TBL_DECL::MemoryUsage() const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+unsigned long TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::MemoryUsage() const {
   unsigned long sizeInBytes;
 
-  sizeInBytes = CS2_TAR_DECL::MemoryUsage();
-  sizeInBytes += sizeof(CS2_TBL_DECL) - sizeof(CS2_TAR_DECL);
+  sizeInBytes = fStorage.DynamicMemoryUsage();
   sizeInBytes += fFreeVector.MemoryUsage();
+  sizeInBytes += sizeof(TableOf);
 
   return sizeInBytes;
 }
@@ -495,20 +643,40 @@ CS2_TBL_TEMP inline unsigned long CS2_TBL_DECL::MemoryUsage() const {
 //
 // Construct a table cursor.
 
-  CS2_TBL_TEMP inline CS2_TBLCC_DECL::ConstCursor (const CS2_TBL_DECL &aTable) :
-   fTable(aTable),
-   fFreeCursor(aTable.fFreeVector),
-   fNextFree(0),
-   fIndex(0) {}
+  template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::ConstCursor (const TableOf &aTable) :
+  fTable(aTable),
+  fFreeCursor(aTable.fFreeVector),
+  fNextFree(0),
+  fIndex(0) {}
 
- CS2_TBL_TEMP inline CS2_TBLCC_DECL::ConstCursor (const CS2_TBL_DECL &aTable,
-						  const SupportingBitVector<Allocator> &fv) :
-   fTable(aTable),
-   fFreeCursor(fv),
-   fNextFree(0),
-   fIndex(0) {}
+ template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::ConstCursor(
+  const TableOf &aTable,
+  const SupportingBitVector<Allocator> &fv
+  ) :
+  fTable(aTable),
+  fFreeCursor(fv),
+  fNextFree(0),
+  fIndex(0) {}
 
-  CS2_TBL_TEMP inline CS2_TBLC_DECL::Cursor (const CS2_TBL_DECL &aTable) :
+  template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::Cursor::Cursor (const TableOf &aTable) :
     fFreeVector(aTable.fFreeVector),
     ConstCursor(aTable, fFreeVector) {}
 
@@ -516,15 +684,31 @@ CS2_TBL_TEMP inline unsigned long CS2_TBL_DECL::MemoryUsage() const {
 //
 // Copy construct a table cursor.
 
-CS2_TBL_TEMP inline CS2_TBLCC_DECL::ConstCursor (const typename CS2_TBLCC_DECL &inputCursor) :
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::ConstCursor(
+  const ConstCursor &inputCursor
+  ) :
   fTable(inputCursor.fTable),
   fFreeCursor(inputCursor.fFreeCursor),
   fIndex(inputCursor.fIndex),
   fNextFree(inputCursor.fNextFree) {
 }
 
-CS2_TBL_TEMP inline CS2_TBLCC_DECL::ConstCursor (const typename CS2_TBLCC_DECL &inputCursor,
-						 const SupportingBitVector<Allocator> &fv) :
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::ConstCursor(
+  const ConstCursor &inputCursor,
+  const SupportingBitVector<Allocator> &fv
+  ) :
   fTable(inputCursor.fTable),
   fFreeCursor(fv),
   fIndex(inputCursor.fIndex),
@@ -532,7 +716,13 @@ CS2_TBL_TEMP inline CS2_TBLCC_DECL::ConstCursor (const typename CS2_TBLCC_DECL &
   fFreeCursor.SetToNextOneAfter(fIndex);
 }
 
-CS2_TBL_TEMP inline CS2_TBLC_DECL::Cursor (const typename CS2_TBLC_DECL &inputCursor) :
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::Cursor::Cursor(const Cursor &inputCursor) :
   fFreeVector(inputCursor.fFreeVector),
   ConstCursor(inputCursor, fFreeVector) {
 }
@@ -541,7 +731,13 @@ CS2_TBL_TEMP inline CS2_TBLC_DECL::Cursor (const typename CS2_TBLC_DECL &inputCu
 //
 // Set the cursor to the first allocated element in the table.
 
-CS2_TBL_TEMP inline void CS2_TBLCC_DECL::SetToFirst() {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+void TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::SetToFirst() {
   fIndex=1;
   fFreeCursor.SetToFirstOne();
   if (fFreeCursor.Valid()){
@@ -556,7 +752,13 @@ CS2_TBL_TEMP inline void CS2_TBLCC_DECL::SetToFirst() {
 //
 // Set the cursor to the next allocated element in the table.
 
-CS2_TBL_TEMP inline void CS2_TBLCC_DECL::SetToNext() {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+void TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::SetToNext() {
   fIndex+=1;
   if (fIndex<fNextFree) return;
 
@@ -577,7 +779,13 @@ CS2_TBL_TEMP inline void CS2_TBLCC_DECL::SetToNext() {
 //
 // Predicate to determine if the cursor points at a valid element.
 
-CS2_TBL_TEMP inline bool CS2_TBLCC_DECL::Valid() const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+bool TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::Valid() const {
   return fIndex<fNextFree;
 }
 
@@ -585,16 +793,15 @@ CS2_TBL_TEMP inline bool CS2_TBLCC_DECL::Valid() const {
 //
 // Return the index of the element pointed to by the cursor.
 
-CS2_TBL_TEMP inline CS2_TBLCC_DECL::operator TableIndex() const {
+template <
+  class AElementType,
+  class Allocator,
+  uint32_t segmentBits,
+  template<class> class SupportingBitVector
+  >
+TableOf< AElementType, Allocator, segmentBits, SupportingBitVector >::ConstCursor::operator TableIndex() const {
   return fIndex;
 }
 
-
-
-#undef CS2_TBL_TEMP
-#undef CS2_TBL_DECL
-#undef CS2_TAR_DECL
-#undef CS2_TBLC_DECL
-#undef CS2_TBLCC_DECL
 }
 #endif // CS2_TABLEOF_H

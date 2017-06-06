@@ -1433,7 +1433,7 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
                else
                   {
                   // Create a new loop entry
-                  lowestLoop = loops.AddEntry(loops);
+                  lowestLoop = loops.AddEntry(comp()->allocator());
                   loops[lowestLoop].bottom = seenIndex[n];
                   loops[lowestLoop].top = index;
                   if (trace)

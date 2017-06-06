@@ -102,7 +102,7 @@ TR::BitVector *
 TR_BasicDFSetAnalysis<Container *>::
 allocateBitVector()
    {
-   CS2::TableIndex i = _bitVectorTable->AddEntry(*_bitVectorTable);
+   CS2::TableIndex i = _bitVectorTable->AddEntry(comp()->allocator());
    return &_bitVectorTable->ElementAt(i);
    }
 

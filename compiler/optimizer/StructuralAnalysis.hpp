@@ -89,12 +89,18 @@ class TR_RegionAnalysis
       int32_t getNumber() { return _originalBlock ? _originalBlock->getNumber() : -1; }
       };
 
-   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, const TR::Allocator &allocator)
-      : _compilation(comp), _dominators(dominators), _cfg(cfg),
-        _infoTable(cfg->getNumberOfNodes(), allocator)
-      {}
+   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, const TR::Allocator &allocator) :
+      _compilation(comp),
+      _allocator(allocator),
+      _infoTable(cfg->getNumberOfNodes(), _allocator),
+      _dominators(dominators),
+      _cfg(cfg)
+      {
+      }
 
    TR::Compilation *_compilation;
+
+   TR::Allocator _allocator;
 
    /** The StructInfoTable is 1-based */
    StructInfo &getInfo(int32_t index) { return _infoTable[index+1]; }

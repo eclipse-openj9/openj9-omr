@@ -450,58 +450,10 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
    {
    TR::Compilation *comp = TR::comp();
    int32_t estimate = 0;
-   TR::Recompilation *recomp = comp->getRecompilationInfo();
-   TR::Instruction *tempInstruction;
    TR::Instruction *cursorInstruction = comp->getFirstInstruction();
-   TR::Instruction *i2jEntryInstruction;
-   TR::Instruction *j2jEntryInstruction;
-   TR::ResolvedMethodSymbol *methodSymbol  = comp->getMethodSymbol();
-   bool  isPrivateLinkage = (methodSymbol->getLinkageConvention() == TR_Private);
 
-   if (methodSymbol->isJNI())
-      {
-      // leave space for the JNI target address
-      cursorInstruction = cursorInstruction->getNext();
-      }
+   self()->getLinkage()->createPrologue(cursorInstruction);
 
-   if (isPrivateLinkage)
-      {
-      j2jEntryInstruction = cursorInstruction->getNext();
-      self()->getLinkage()->loadUpArguments(cursorInstruction);
-      i2jEntryInstruction = cursorInstruction->getNext();
-      }
-   else
-      {
-      i2jEntryInstruction = j2jEntryInstruction = cursorInstruction;
-
-      // TODO: Probably bogus; what does loadUpArguments do when cursorInstruction == NULL?
-      cursorInstruction = NULL;
-      self()->getLinkage()->loadUpArguments(cursorInstruction);
-      }
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (recomp != NULL)
-      {
-      recomp->generatePrePrologue();
-      }
-#endif
-   cursorInstruction = comp->getFirstInstruction();
-
-   while (cursorInstruction && cursorInstruction->getOpCodeValue() != ARMOp_proc)
-      {
-      estimate          = cursorInstruction->estimateBinaryLength(estimate);
-      cursorInstruction = cursorInstruction->getNext();
-      }
-   tempInstruction = cursorInstruction;
-
-#ifdef J9_PROJECT_SPECIFIC
-   if ((recomp != NULL) && (!recomp->useSampling()))
-      {
-      tempInstruction = recomp->generatePrologue(tempInstruction);
-      }
-#endif
-
-   self()->getLinkage()->createPrologue(tempInstruction);
    bool skipOneReturn = false;
    while (cursorInstruction)
       {
@@ -522,7 +474,9 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
       estimate          = cursorInstruction->estimateBinaryLength(estimate);
       cursorInstruction = cursorInstruction->getNext();
       }
+
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
+
    if (estimate > 32768)
       {
       estimate = identifyFarConditionalBranches(estimate, self());
@@ -537,70 +491,12 @@ void OMR::ARM::CodeGenerator::doBinaryEncoding()
 
    self()->setBinaryBufferStart(temp);
    self()->setBinaryBufferCursor(temp);
+   self()->alignBinaryBufferCursor();
 
    while (cursorInstruction)
       {
-#ifdef DEBUG
-      uint32_t estLen = cursorInstruction->estimateBinaryLength((int32_t)0);
-#endif
       self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
-      self()->addToAtlas(cursorInstruction);
-      if (cursorInstruction->getNext() == i2jEntryInstruction)
-         {
-         self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
-         comp->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
-         }
-#ifdef DEBUG
-      uint32_t binLen;
-      binLen = cursorInstruction->getBinaryLength();
-      if(binLen > estLen)
-         {
-         TR_ASSERT(0, "bin length estimated too small");
-         }
-#endif
-
       cursorInstruction = cursorInstruction->getNext();
-      if (isPrivateLinkage && cursorInstruction == j2jEntryInstruction)
-         {
-         uint32_t magicWord = ((self()->getBinaryBufferCursor()-self()->getCodeStart())<<16) | static_cast<uint32_t>(comp->getReturnInfo());
-         TR_ASSERT(_returnTypeInfoInstruction && _returnTypeInfoInstruction->getOpCodeValue() == ARMOp_dd, "assertion failure");
-         ((TR::ARMImmInstruction *)_returnTypeInfoInstruction)->setSourceImmediate(magicWord);
-         *(uint32_t *)(_returnTypeInfoInstruction->getBinaryEncoding()) = magicWord;
-
-#ifdef J9_PROJECT_SPECIFIC
-         if (recomp != NULL && recomp->couldBeCompiledAgain())
-            {
-            TR_LinkageInfo *lkInfo = TR_LinkageInfo::get(self()->getCodeStart());
-            if (recomp->useSampling())
-               lkInfo->setSamplingMethodBody();
-            else
-               lkInfo->setCountingMethodBody();
-            }
-#endif
-         }
-      }
-   // Create exception table entries for outlined instructions.
-   //
-   if (!comp->getOption(TR_DisableOOL))
-      {
-      ListIterator<TR_ARMOutOfLineCodeSection> oiIterator(&self()->getARMOutOfLineCodeSectionList());
-      TR_ARMOutOfLineCodeSection *oiCursor = oiIterator.getFirst();
-
-      while (oiCursor)
-         {
-         uint32_t startOffset = oiCursor->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
-         uint32_t endOffset   = oiCursor->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
-
-         TR::Block * block = oiCursor->getBlock();
-         bool needsETE = oiCursor->getFirstInstruction()->getNode()->getOpCode().hasSymbolReference() &&
-                         oiCursor->getFirstInstruction()->getNode()->getSymbolReference() &&
-                         oiCursor->getFirstInstruction()->getNode()->getSymbolReference()->canCauseGC();
-
-         if (needsETE && block && !block->getExceptionSuccessors().empty())
-            block->addExceptionRangeForSnippet(startOffset, endOffset);
-
-         oiCursor = oiIterator.getNext();
-         }
       }
    }
 
@@ -619,7 +515,7 @@ int32_t OMR::ARM::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32
    return estimatedSnippetStart+_constantData->getLength();
    }
 
-#if DEBUG
+#ifdef DEBUG
 void OMR::ARM::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
    if (outFile == NULL)

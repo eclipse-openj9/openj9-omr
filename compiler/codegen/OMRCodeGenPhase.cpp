@@ -194,7 +194,12 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(), "Method length estimate must be conservatively large");
+     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(),
+               "Method length estimate must be conservatively large\n"
+               "    warmCodeLength = %d, estimatedWarmLength = %d \n"
+               "    coldCodeLength = %d, estimatedColdLength = %d",
+               cg->getWarmCodeLength(), cg->getEstimatedWarmLength(),
+               cg->getColdCodeLength(),cg->getEstimatedColdLength());
 
      // also trace the interal stack atlas
      cg->getStackAtlas()->close(cg);

@@ -36,6 +36,11 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
+struct UnsupportedParameterType : public virtual TR::CompilationException
+   {
+   virtual const char* what() const throw() { return "Unsupported Parameter Type"; }
+   };
+
 TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
     {                           // TR_System
     IntegersInRegisters|        // linkage properties
@@ -167,33 +172,49 @@ TR::ARMLinkageProperties TR::ARMSystemLinkage::properties =
 
 void TR::ARMSystemLinkage::initARMRealRegisterLinkage()
    {
-#if 0
-   // Each real register's weight is set to match this linkage convention
-   TR_ARMMachine *machine = cg()->getARMMachine();
-   int icount;
+   TR::Machine *machine = cg()->machine();
 
-   icount = TR::RealRegister::gr1;
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setState(TR::RealRegister::Locked);
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setAssignedRegister(machine->getARMRealRegister((TR::RealRegister::RegNum)icount));
+   // make r15 (PC) unavailable for RA
+   TR::RealRegister *reg = machine->getARMRealRegister(TR::RealRegister::gr15);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   icount = TR::RealRegister::gr2;
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setState(TR::RealRegister::Locked);
-   machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setAssignedRegister(machine->getARMRealRegister((TR::RealRegister::RegNum)icount));
+   // make r14 (LR) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr14);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::gr3; icount<=TR::RealRegister::gr12; icount++)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(icount);
+   // make r13 (SP) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr13);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::LastGPR; icount>=TR::RealRegister::gr13; icount--)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000-icount);
+   // make r12 (IP) unavailable for RA
+   reg = machine->getARMRealRegister(TR::RealRegister::gr12);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::FirstFPR;        icount<=TR::RealRegister::fp3; icount++)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(icount);
+   // make r9 unavailable for RA (just in case, because it's meaning is platform defined)
+   reg = machine->getARMRealRegister(TR::RealRegister::gr9);
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
 
-   for (icount=TR::RealRegister::LastFPR; icount>=TR::RealRegister::fp4; icount--)
-      machine->getARMRealRegister((TR::RealRegister::RegNum)icount)->setWeight(0xf000-icount);
-#else
-   TR_ASSERT(0, "unimplemented");
-#endif
+   /*
+    * Note: we can assign the same weight to all registers because loads/stores
+    * can be done on multiple registers simultaneously.
+    */
+
+   // assign "maximum" weight to registers r0-r8
+   for (int32_t r = TR::RealRegister::gr0; r <= TR::RealRegister::gr8; ++r)
+      {
+      machine->getARMRealRegister(static_cast<TR::RealRegister::RegNum>(r))->setWeight(0xf000);
+      }
+
+   // assign "maximum" weight to registers r10-r12
+   for (int32_t r = TR::RealRegister::gr10; r <= TR::RealRegister::gr12; ++r)
+      {
+      machine->getARMRealRegister(static_cast<TR::RealRegister::RegNum>(r))->setWeight(0xf000);
+      }
    }
 
 uint32_t TR::ARMSystemLinkage::getRightToLeft()
@@ -201,122 +222,220 @@ uint32_t TR::ARMSystemLinkage::getRightToLeft()
    return getProperties().getRightToLeft();
    }
 
+static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIndex)
+   {
+   auto size = parameter->getSize();
+   auto alignment = size <= 4 ? 4 : 8;
+   stackIndex = (stackIndex + alignment - 1)&(~(alignment - 1));
+   parameter->setParameterOffset(stackIndex);
+   stackIndex += size;
+   }
+
+/**
+ * @brief Maps symbols in the IL to locations on the stack
+ * @param method is the method for which symbols are being stack mapped
+ *
+ * In general, the shape of a stack frame is as follows:
+ *
+ * +-----------------------------+
+ * | caller frame                |
+ * +-----------------------------+
+ * | stack arguments             |
+ * +=============================+ <-+ (start of callee frame)
+ * | saved registers             |   |
+ * +-----------------------------+   | frame size
+ * | locals                      |   |
+ * +-----------------------------+ <-+- $sp
+ *
+ * A symbol is mapped onto the stack by assigning to it an offset from the stack
+ * pointer. All symbols representing stack allocated values must be mapped,
+ * including automatics (locals) on the callee frame and stack allocated
+ * arguments on the caller frame
+ *
+ * The algorithm used to map symbols iterates over each symbol in ascending
+ * address order. Using the frame shape depicted above as a general example:
+ * locals are mapped first, registers second. The algorithm is:
+ *
+ * 1. Set stackIndex to 0
+ * 2. For each symbol that must be mapped onto the **callee** stack frame,
+ *    starting at the lowest address:
+ *       a. set stackIndex as the symbol offset
+ *       b. increment stackIndex by the size of the symbol's type
+ *          plus alignment requirements
+ * 3. Increment stackIndex by the necessary amount to account for the stack
+ *    space required for saved registers
+ * 4. Save stackIndex as the size of the callee stack frame
+ * 5. For each symbol that must be mapped onto the **caller** stack frame,
+ *    starting at the lowest address:
+ *       a. set the symbol offset as the current stack index
+ *       b. increment the stack index by the size of the symbol's type,
+ *          plus alignment requirements
+ */
 void TR::ARMSystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
-#if 0
-   ListIterator<TR::AutomaticSymbol>  automaticIterator(&method->getAutomaticList());
-   TR::AutomaticSymbol               *localCursor       = automaticIterator.getFirst();
-   const TR::ARMLinkageProperties&    linkage           = getProperties();
-   TR_ARMCodeGenerator              *codeGen           = cg();
-   TR_ARMMachine                    *machine           = codeGen->getARMMachine();
-   uint32_t                          stackIndex;
-   int32_t                           lowGCOffset;
-   TR::GCStackAtlas                  *atlas             = codeGen->getStackAtlas();
+   uint32_t stackIndex = 0;
+   ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
+   TR::AutomaticSymbol *localCursor = automaticIterator.getFirst();
 
-   // map all garbage collected references together so can concisely represent
-   // stack maps. They must be mapped so that the GC map index in each local
-   // symbol is honoured.
+   // map non-double automatics
+   while (localCursor != NULL)
+      {
+      if (localCursor->getGCMapIndex() < 0 &&
+          localCursor->getDataType() != TR::Double)
+         {
+         localCursor->setOffset(stackIndex);
+         stackIndex += (localCursor->getSize()+3)&(~3);
+         }
+      localCursor = automaticIterator.getNext();
+      }
 
-   stackIndex = linkage.getOffsetToFirstLocal() +
-                codeGen->getLargestOutgoingArgSize();
-   lowGCOffset = stackIndex;
-   int32_t firstLocalGCIndex = atlas->getNumberOfParmSlotsMapped();
-
-   // Map local references to get the right amount of stack reserved
-   //
-   for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
-      if (localCursor->getGCMapIndex() >= 0)
-         mapSingleAutomatic(localCursor,stackIndex);
-
-   // Map local references again to set the stack position correct according to
-   // the GC map index.
-   //
-   automaticIterator.reset();
-   for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
-      if (localCursor->getGCMapIndex() >= 0)
-         localCursor->setOffset(stackIndex +4*(localCursor->getGCMapIndex()-firstLocalGCIndex));
-
-   method->setObjectTempSlots((lowGCOffset-stackIndex) >> 2);
-   atlas->setLocalBaseOffset(lowGCOffset);
-   lowGCOffset = stackIndex;
-
-   // Now map the rest of the locals
-   //
+   stackIndex += (stackIndex & 0x4) ? 4 : 0; // align to 8 bytes
    automaticIterator.reset();
    localCursor = automaticIterator.getFirst();
 
+   // map double automatics
    while (localCursor != NULL)
       {
-      if (localCursor->getGCMapIndex() < 0)
-         mapSingleAutomatic(localCursor, stackIndex);
+      if (localCursor->getDataType() == TR::Double)
+         {
+         localCursor->setOffset(stackIndex);
+         stackIndex += (localCursor->getSize()+7)&(~7);
+         }
       localCursor = automaticIterator.getNext();
       }
-   method->setScalarTempSlots((stackIndex-lowGCOffset) >> 2);
-
-   TR::RealRegister::RegNum regIndex = TR::RealRegister::gr13;
-   if (!method->isEHAware())
-      {
-      while (regIndex<=TR::RealRegister::LastGPR && !machine->getARMRealRegister(regIndex)->getHasBeenAssignedInMethod())
-         regIndex = (TR::RealRegister::RegNum)((uint32_t)regIndex+1);
-      }
-   stackIndex += (TR::RealRegister::LastGPR-regIndex+1)*4;
-   // Make the stack frame doubleword aligned.
-   stackIndex = ((stackIndex+7)>>3)<<3;
-
-   regIndex = TR::RealRegister::fp4;  // TODO - random fix
-   if (!method->isEHAware())
-      {
-      while (regIndex<=TR::RealRegister::LastFPR && !machine->getARMRealRegister(regIndex)->getHasBeenAssignedInMethod())
-         regIndex = (TR::RealRegister::RegNum)((uint32_t)regIndex+1);
-      }
-   stackIndex += (TR::RealRegister::LastFPR-regIndex+1)*8;
    method->setLocalMappingCursor(stackIndex);
 
+   // allocate space for preserved registers and link register (9 registers total)
+   stackIndex += 9*4;
+
+   /*
+    * Because the rest of the code generator currently expects **all** arguments
+    * to be passed on the stack, arguments passed in registers must be spilled
+    * in the callee frame. To map the arguments correctly, we use two loops. The
+    * first maps the arguments that will come in registers onto the callee stack.
+    * At the end of this loop, the `stackIndex` is the the size of the frame.
+    * The second loop then maps the remaining arguments onto the caller frame.
+    */
+
+   auto nextIntArgReg = 0;
+   auto nextFltArgReg = 0;
+
    ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
-   TR::ParameterSymbol              *parmCursor = parameterIterator.getFirst();
-   int32_t                          offsetToFirstParm = linkage.getOffsetToFirstParm();
-   if (linkage.getRightToLeft())
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter!=NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter=parameterIterator.getNext())
       {
-      while (parmCursor != NULL)
+      switch (parameter->getDataType())
          {
-         parmCursor->setParameterOffset(parmCursor->getParameterOffset() + offsetToFirstParm + stackIndex);
-         parmCursor = parameterIterator.getNext();
-         }
-      }
-   else
-      {
-      uint32_t sizeOfParameterArea = method->getNumParameterSlots() << 2;
-      while (parmCursor != NULL)
-         {
-         parmCursor->setParameterOffset(sizeOfParameterArea -
-                                        parmCursor->getParameterOffset() -
-                                        parmCursor->getSize() + stackIndex +
-                                        offsetToFirstParm);
-         parmCursor = parameterIterator.getNext();
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               mapSingleParameter(parameter, stackIndex);
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Int64:
+            nextIntArgReg += nextIntArgReg & 0x1; // round to next even number
+            if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg += 2;
+               mapSingleParameter(parameter, stackIndex);
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Float:
+            comp()->failCompilation<UnsupportedParameterType>("Compiling methods with a single precision floating point parameter is not supported");
+            break;
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               nextFltArgReg += 1;
+               mapSingleParameter(parameter, stackIndex);
+               }
+            else
+               {
+               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on ARM.");
          }
       }
 
-   atlas->setParmBaseOffset(atlas->getParmBaseOffset() + offsetToFirstParm + stackIndex);
-#else
-   TR_ASSERT(0, "unimplemented");
-#endif
+   // save the stack frame size, aligned to 8 bytes
+   stackIndex = (stackIndex + 7)&(~7);
+   cg()->setFrameSizeInBytes(stackIndex);
+
+   nextIntArgReg = 0;
+   nextFltArgReg = 0;
+   parameterIterator.reset();
+
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter!=NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter=parameterIterator.getNext())
+      {
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               }
+            else
+               {
+               mapSingleParameter(parameter, stackIndex);
+               }
+            break;
+         case TR::Int64:
+            nextIntArgReg += stackIndex & 0x1; // round to next even number
+            if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg += 2;
+               }
+            else
+               {
+               mapSingleParameter(parameter, stackIndex);
+               }
+            break;
+         case TR::Float:
+            comp()->failCompilation<UnsupportedParameterType>("Compiling methods with a single precision floating point parameter is not supported");
+            break;
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               nextFltArgReg += 1;
+               }
+            else
+               {
+               mapSingleParameter(parameter, stackIndex);
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on ARM.");
+         }
+      }
    }
 
 void TR::ARMSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
    {
-#if 0
-   p->setOffset(stackIndex);
-   if (p->getSize() <= 4)
-      {
-      stackIndex += 4;
-      }
-   else
-      {
-      stackIndex += 8;
-      }
-#else
-   TR_ASSERT(0, "unimplemented");
-#endif
+   int32_t roundedSize = (p->getSize()+3)&(~3);
+   if (roundedSize == 0)
+      roundedSize = 4;
+
+   p->setOffset(stackIndex -= roundedSize);
    }
 
 TR::ARMLinkageProperties& TR::ARMSystemLinkage::getProperties()
@@ -326,12 +445,122 @@ TR::ARMLinkageProperties& TR::ARMSystemLinkage::getProperties()
 
 void TR::ARMSystemLinkage::createPrologue(TR::Instruction *cursor)
    {
-   TR_ASSERT(0, "unimplemented");
+   TR::CodeGenerator *codeGen = cg();
+   const TR::ARMLinkageProperties& properties = getProperties();
+   TR::Machine *machine = codeGen->machine();
+   TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
+   TR::Node *firstNode = comp()->getStartTree()->getNode();
+   TR::RealRegister *stackPtr = machine->getARMRealRegister(properties.getStackPointerRegister());
+
+   // Entry breakpoint
+   //
+   if (comp()->getOption(TR_EntryBreakPoints))
+      {
+      cursor = new (trHeapMemory()) TR::Instruction(cursor, ARMOp_bad, firstNode, cg());
+      }
+
+   // allocate stack space
+   auto frameSize = codeGen->getFrameSizeInBytes();
+   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_sub, firstNode, stackPtr, stackPtr, frameSize, 0, cursor);
+
+   // spill argument registers
+   auto nextIntArgReg = 0;
+   auto nextFltArgReg = 0;
+   ListIterator<TR::ParameterSymbol> parameterIterator(&bodySymbol->getParameterList());
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter!=NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter=parameterIterator.getNext())
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset(), codeGen);
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               nextIntArgReg++;
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Int64:
+            nextIntArgReg += nextIntArgReg & 0x1; // round to next even number
+            if (nextIntArgReg + 1 < getProperties().getNumIntArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg)), cursor);
+               stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, parameter->getParameterOffset() + 4, codeGen);
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::gr0 + nextIntArgReg + 1)), cursor);
+               nextIntArgReg += 2;
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Float:
+            comp()->failCompilation<UnsupportedParameterType>("Compiling methods with a single precision floating point parameter is not supported");
+            break;
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), ARMOp_fstd, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)(TR::RealRegister::fp0 + nextFltArgReg)), cursor);
+               nextFltArgReg += 1;
+               }
+            else
+               {
+               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on ARM.");
+         }
+      }
+
+   // save all preserved registers
+   for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)r), cursor);
+      }
+
+   // save link register (r14)
+   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), ARMOp_str, firstNode, stackSlot, machine->getARMRealRegister(TR::RealRegister::gr14), cursor);
    }
 
 void TR::ARMSystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
-   TR_ASSERT(0, "unimplemented");
+   TR::CodeGenerator *codeGen = cg();
+   const TR::ARMLinkageProperties& properties = getProperties();
+   TR::Machine *machine = codeGen->machine();
+   TR::Node *lastNode = cursor->getNode();
+   TR::ResolvedMethodSymbol* bodySymbol = comp()->getJittedMethodSymbol();
+   TR::RealRegister *stackPtr = machine->getARMRealRegister(properties.getStackPointerRegister());
+
+   // restore link register (r14)
+   auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getARMRealRegister(TR::RealRegister::gr14), cursor);
+
+   // restore all preserved registers
+   for (int r = TR::RealRegister::gr4; r <= TR::RealRegister::gr11; ++r)
+      {
+      auto *stackSlot = new (trHeapMemory()) TR::MemoryReference(stackPtr, (TR::RealRegister::gr11 - r + 1)*4 + bodySymbol->getLocalMappingCursor(), codeGen);
+      cursor = generateMemSrc1Instruction(cg(), ARMOp_ldr, lastNode, stackSlot, machine->getARMRealRegister((TR::RealRegister::RegNum)r), cursor);
+      }
+
+   // remove space for preserved registers
+   auto frameSize = codeGen->getFrameSizeInBytes();
+   cursor = generateTrg1Src1ImmInstruction(codeGen, ARMOp_add, lastNode, stackPtr, stackPtr, frameSize, 0, cursor);
+
+   // return using `mov r15, r14`
+   TR::RealRegister *gr14 = machine->getARMRealRegister(TR::RealRegister::gr14);
+   TR::RealRegister *gr15 = machine->getARMRealRegister(TR::RealRegister::gr15);
+   cursor = generateTrg1Src1Instruction(codeGen, ARMOp_mov, lastNode, gr15, gr14, cursor);
    }
 
 TR::MemoryReference *TR::ARMSystemLinkage::getOutgoingArgumentMemRef(int32_t               totalSize,

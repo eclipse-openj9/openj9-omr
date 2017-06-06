@@ -29,6 +29,7 @@ OBJECTS := \
 	FieldAddressTest \
 	AnonymousTest \
 	ControlFlowTest \
+	SystemLinkageTest \
 	WorklistTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
@@ -46,6 +47,8 @@ MODULE_STATIC_LIBS += \
 
 MODULE_LIBPATH += \
   $(top_srcdir)/jitbuilder/release
+
+MODULE_CXXFLAGS += "-Wno-unused-variable"
 
 ifeq (linux,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += rt pthread

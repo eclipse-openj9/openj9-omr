@@ -93,6 +93,17 @@ TR::Instruction *armLoadConstant(TR::Node *node, int32_t value, TR::Register *tr
      uint32_t notBase     = notBits>>notTrailing;
      TR::Compilation *comp = TR::comp();
 
+     if (comp->getOption(TR_TraceCG))
+        {
+        traceMsg(comp, "In armLoadConstant with\n");
+        traceMsg(comp, "\tvalue = %d\n", value);
+        traceMsg(comp, "\tnotBits = %d\n", notBits);
+        traceMsg(comp, "\tbitTrailing = %d\n", bitTrailing);
+        traceMsg(comp, "\tnotTrailing = %d\n", notTrailing);
+        traceMsg(comp, "\tbase = %d\n", base);
+        traceMsg(comp, "\tnotBase = %d\n", notBase);
+        }
+
      TR::Instruction *insertingInstructions = cursor;
      if (cursor == NULL)
         cursor = comp->getAppendInstruction();

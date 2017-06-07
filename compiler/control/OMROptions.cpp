@@ -488,6 +488,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableRegisterPressureSimulation",  "O\tdon't walk the trees to estimate register pressure during global register allocation", SET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"disableRematerialization",           "O\tdisable rematerialization",                      TR::Options::disableOptimization, rematerialization, 0, "P"},
    {"disableReorderArrayIndexExpr",       "O\tdisable reordering of index expressions",        TR::Options::disableOptimization, reorderArrayExprGroup, 0, "P"},
+   {"disableRMODE64",                     "O\tDisable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", RESET_OPTION_BIT(TR_EnableRMODE64), "F"},
    {"disableRXusage",                     "O\tdisable increased usage of RX instructions",     SET_OPTION_BIT(TR_DisableRXusage), "F"},
    {"disableSamplingJProfiling",          "O\tDisable profiling in the jitted code", SET_OPTION_BIT(TR_DisableSamplingJProfiling), "F" },
    {"disableScorchingSampleThresholdScalingBasedOnNumProc", "M\t", SET_OPTION_BIT(TR_DisableScorchingSampleThresholdScalingBasedOnNumProc), "F", NOT_IN_SUBSET},
@@ -717,7 +718,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableRegisterPressureSimulation",   "O\twalk the trees to estimate register pressure during global register allocation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
-   {"enableRMODE64",                "O\tenable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},   
+   {"enableRMODE64",                      "O\tEnable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},
    {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
    {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
@@ -2552,6 +2553,10 @@ OMR::Options::jitPreProcess()
    // catch loops that run thousands of times.
    _loopyAsyncCheckInsertionMaxEntryFreq = 100;
 
+#if defined(TR_TARGET_64BIT)
+   self()->setOption(TR_EnableCodeCacheConsolidation);
+#endif
+
    // --------------------------------------------------------------------------
    // J9-only
    //
@@ -3657,8 +3662,7 @@ OMR::Options::jitPostProcess()
       self()->setOption(TR_EnableLargeCodePages);
       }
 
-#if defined(TR_TARGET_64BIT)
-#if defined(J9ZOS390)
+#if defined(TR_TARGET_64BIT) && defined(J9ZOS390)
    // We allocate code cache memory on z/OS by asking the port library for typically small (~2MB) code cache chunks.
    // This is done because the port library can typically only allocate executable memory (code caches) below the
    // 2GB bar. When RMODE(64) is enabled however we are able to allocate executable memory above the 2GB bar. This
@@ -3667,10 +3671,12 @@ OMR::Options::jitPostProcess()
    // (~256MB) code caches at startup. The code caches will then have locality which improves performance, but
    // moreover the size of the allocated larger code cache will ensure no trampolines are needed in JIT private
    // linkage.
-   if (self()->getOption(TR_EnableRMODE64))
-#endif
+   //
+   // Code cache consolidation is enabled on all 64-bit platforms by default. However if RMODE64 is not available
+   // on the OS or if the user specified to disable it we must also disable code cache consolidation.
+   if (!self()->getOption(TR_EnableRMODE64))
       {
-      self()->setOption(TR_EnableCodeCacheConsolidation);
+      self()->setOption(TR_EnableCodeCacheConsolidation, false);
       }
 #endif
 

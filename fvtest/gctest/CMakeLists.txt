@@ -62,5 +62,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrgctest j9a2e)
 endif()
 
-#TODO Currently disabled as gctest has dependecies on certain build options that need to be figured out
-#add_test(NAME gctest COMMAND omrgctest "-configListFile=${CMAKE_SOURCE_DIR}/fvtest/gctest/configuration/fvConfigListFile.txt")
+
+add_test(NAME gctest
+	COMMAND omrgctest "-configListFile=${omr_SOURCE_DIR}/fvtest/gctest/configuration/fvConfigListFile.txt"
+	WORKING_DIRECTORY "${omr_SOURCE_DIR}")

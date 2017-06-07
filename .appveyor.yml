@@ -22,16 +22,16 @@ shallow_clone: true
 clone_depth: 1
 
 environment:
-  GTEST_FILTER: '*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended'
+  GTEST_FILTER: '-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:PortSysinfoTest.sysinfo_test0'
   GTEST_COLOR: '1'
 
 before_build:
   - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
-  - cmd: cmake -Wdev -G "Visual Studio 14 2015 Win64" .
+  - cmd: cmake -Wdev -G "Visual Studio 14 2015 Win64" -Ccmake\caches\Appveyor.cmake.
 
 build:
   project: omr.sln
   parallel: true
 
 test_script:
-  - ps: ctest -V -C Debug
+  - cmd: ctest -V -C Debug

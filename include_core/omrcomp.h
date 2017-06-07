@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 #ifndef OMRCOMP_H
@@ -58,7 +59,7 @@ typedef int8_t					I_8;
 
 #if defined(MVS)
 typedef int32_t					BOOLEAN;
-#elif defined(LINUX) || defined(RS6000) || defined(J9ZOS390) || defined(OSX) /* MVS */
+#elif defined(LINUX) || defined(RS6000) || defined(J9ZOS390) || defined(OSX) || defined(OMRZTPF) /* MVS */
 typedef uint32_t					BOOLEAN;
 #else /* MVS */
 /* Don't typedef BOOLEAN since it's already defined on Windows */
@@ -108,7 +109,7 @@ EXE_EXTENSION_CHAR: the executable has a delimiter that we want to stop at as pa
 
 /* NOTE: Linux supports different processors -- do not assume 386 */
 
-#if defined(J9HAMMER) || defined(S39064) || defined(LINUXPPC64)
+#if defined(J9HAMMER) || defined(S39064) || defined(LINUXPPC64) || defined(OMRZTPF)
 
 /* LinuxPPC64 is like AIX64 so we need direct function pointers */
 #if defined(LINUXPPC64)
@@ -122,7 +123,7 @@ extern uintptr_t getTOC();
 #define TOC_STORE_TOC(dest,wrappedPointer) (dest = (((uintptr_t*)(wrappedPointer))[1]))
 #endif /* OMR_ENV_LITTLE_ENDIAN */
 #endif /* LINUXPPC64 */
-#endif /* J9HAMMER || S39064 || LINUXPPC64 */
+#endif /* J9HAMMER || S39064 || LINUXPPC64 || OMRZTPF */
 
 typedef double SYS_FLOAT;
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -22,13 +23,13 @@
  * @brief shared library
  */
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 
 /* defining _GNU_SOURCE allows the use of dladdr() in dlfcn.h */
 #define _GNU_SOURCE
 #elif defined(OSX)
 #define _XOPEN_SOURCE
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX)  && !defined(OMRZTPF) */
 
 /*
  *	Standard unix shared libraries

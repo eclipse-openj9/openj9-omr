@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -72,6 +73,8 @@ omrmem_allocate_memory_basic(struct OMRPortLibrary *portLibrary, uintptr_t byteA
 	retval = malloc(byteAmount);
 	Assert_AddressAbove4GBBar((NULL == retval) || (0x100000000 <= ((uintptr_t)retval)));
 	return retval;
+#elif defined(OMRZTPF)
+    return malloc64(byteAmount);
 #else
 	return malloc(byteAmount);
 #endif
@@ -125,7 +128,7 @@ omrmem_advise_and_free_memory_basic(struct OMRPortLibrary *portLibrary, void *me
 
 			Trc_PRT_mem_advise_and_free_memory_basic_oscall(memPtrPageRounded, memPtrSizePageRounded);
 
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 			if (-1 == madvise((void *)memPtrPageRounded, memPtrSizePageRounded, MADV_DONTNEED)) {
 				Trc_PRT_mem_advise_and_free_memory_basic_madvise_failed((void *)memPtrPageRounded, memPtrSizePageRounded, errno);
 			}
@@ -160,6 +163,8 @@ omrmem_reallocate_memory_basic(struct OMRPortLibrary *portLibrary, void *memoryP
 {
 #if (defined(S390) || defined(J9ZOS390)) && !defined(OMR_ENV_DATA64)
 	return (void *)(((uintptr_t) realloc(memoryPointer, byteAmount)) & 0x7FFFFFFF);
+#elif defined(OMRZTPF)
+    return realloc64(memoryPointer, byteAmount);
 #else
 	return realloc(memoryPointer, byteAmount);
 #endif

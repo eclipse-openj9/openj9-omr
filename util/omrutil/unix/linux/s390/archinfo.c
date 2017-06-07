@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2001, 2015
+ * (c) Copyright IBM Corp. 2001, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,12 +14,17 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF Port updates
  ******************************************************************************/
 
 /* _GNU_SOURCE forces GLIBC_2.0 sscanf/vsscanf/fscanf for RHEL5 compatability */
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #define _GNU_SOURCE
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
+#if defined(OMRZTPF)
+#include <tpf/c_cinfc.h>   /* for access to cinfc */
+#include <tpf/c_pi1dt.h>   /* for access to machine type. */
+#endif /* defined(OMRZTPF) */
 
 #include <string.h>
 #include <stdio.h>
@@ -60,7 +65,7 @@ int32_t
 get390zLinuxMachineType(void)
 {
 	int machine = -1;
-#if (defined (LINUX) && defined(S390))
+#if (defined (LINUX) && defined(S390) && !defined(OMRZTPF))
 	int i;
 	char line[80];
 	const int LINE_SIZE = sizeof(line) - 1;
@@ -93,6 +98,11 @@ get390zLinuxMachineType(void)
 			machine = -1; /* unsupported platform */
 		}
 	}
+#elif defined(OMRZTPF)
+        struct pi1dt *pid;
+        /* machine hardware name */
+        pid = (struct pi1dt *)cinfc_fast(CINFC_CMMPID);
+        machine = (int)(pid->pi1pids.pi1mslr.pi1mod);
 #endif
 	return machine;
 }

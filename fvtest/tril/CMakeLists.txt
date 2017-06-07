@@ -41,6 +41,7 @@ add_executable(trilc
     ${FLEX_tril_scanner_OUTPUTS}
     ast.c
     ilgen.cpp
+    main.cpp
 )
 
 target_include_directories(trilc PUBLIC

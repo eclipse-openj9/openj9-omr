@@ -19,7 +19,6 @@
 #ifndef ILGEN_HPP
 #define ILGEN_HPP
 
-#include "Jit.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/MethodBuilder.hpp"
 
@@ -42,5 +41,7 @@ class TRLangBuilder : public TR::MethodBuilder {
         std::map<std::string, TR::SymbolReference*> _symRefMap;
         std::map<std::string, int> _blockMap;
 };
+
+using TreeMethodFunction = int32_t(int32_t*);
 
 #endif // ILGEN_HPP

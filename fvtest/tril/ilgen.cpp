@@ -21,9 +21,6 @@
 #include "il/Block.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-//#include "il/TreeTop.hpp"
-//#include "il/TreeTop_inlines.hpp"
-//#include "infra/Cfg.hpp"
 
 #include <unordered_map>
 #include <string>
@@ -66,8 +63,6 @@ TRLangBuilder::TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d) : _trees(tre
     DefineParameter("arg0", d->PointerTo(Int32));
     DefineReturnType(Int32);
 }
-
-using TreeMethodFunction = int32_t(int32_t*);
 
 static uint16_t countNodes(const ASTNode* n) {
     uint16_t count = 0;
@@ -261,34 +256,4 @@ bool TRLangBuilder::injectIL() {
     }
 
     return true;
-}
-
-int main(int argc, char const * const * const argv) {
-   initializeJit();
-
-   TR::TypeDictionary types;
-
-   for (int i = 1; i < argc; ++i) {
-      FILE* inputFile = fopen(argv[i], "r");
-      ASTNode* trees = genTrees(inputFile);
-      printf("parsed trees:\n");
-      printTrees(trees, 0);
-      TRLangBuilder builder{trees, &types};
-      uint8_t* entry;
-      auto rc = compileMethodBuilder(&builder, &entry);
-      auto treeMethod = (TreeMethodFunction*)entry;
-      if (rc == 0) {
-         auto a = 1;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = 2;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = -1;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = -2;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-      }
-   }
-
-   shutdownJit();
-   return 0;
 }

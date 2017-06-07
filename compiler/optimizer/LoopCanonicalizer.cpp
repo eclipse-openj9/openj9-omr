@@ -104,6 +104,7 @@ int32_t TR_LoopCanonicalizer::perform()
    _writtenExactlyOnce.Clear();
    _readExactlyOnce.Clear();
    _allKilledSymRefs.Clear();
+   _allSymRefs.Clear();
 
    _numberOfIterations = NULL;
    _constNode = NULL;
@@ -3442,6 +3443,7 @@ void TR_LoopTransformer::updateInfo(TR::Node *node, vcount_t visitCount, updateI
    if (node->getOpCode().hasSymbolReference())
       {
       refNo = node->getSymbolReference()->getReferenceNumber();
+      _allSymRefs[refNo] = true; 
       }
 
 //   traceMsg(comp(), "bf _allKilledSymRefs = ");

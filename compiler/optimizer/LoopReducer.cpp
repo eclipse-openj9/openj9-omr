@@ -4438,7 +4438,7 @@ TR_LoopReducer::perform()
    // enable only if the new loop reduction framework is
    // disabled
    //
-   if (!comp()->getOptions()->isDisabled(OMR::idiomRecognition))
+   if (optimizer()->isEnabled(OMR::idiomRecognition))
       {
       dumpOptDetails(comp(), "idiom recognition is enabled, skipping loopReducer\n");
       return 0;

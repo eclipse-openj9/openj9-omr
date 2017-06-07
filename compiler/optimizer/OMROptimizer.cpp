@@ -925,6 +925,14 @@ OMR::Optimizer::getOptimizationName(OMR::Optimizations opt)
    return ::optimizer_name[opt];
    }
 
+bool
+OMR::Optimizer::isEnabled(OMR::Optimizations i)
+   {
+   if (_opts[i] != NULL)
+      return _opts[i]->enabled();
+   return false;
+   }
+
 TR_Debug *OMR::Optimizer::getDebug()
    {
    return _compilation->getDebug();
@@ -1621,7 +1629,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       bool needTreeDump = false;
       bool needStructureDump = false;
 
-      if (comp()->getOptions()->isDisabled(optNum))
+      if (!isEnabled(optNum))
          return 0;
 
       TR::SimpleRegex * regex = comp()->getOptions()->getDisabledOpts();

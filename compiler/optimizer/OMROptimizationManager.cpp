@@ -49,7 +49,7 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
         _numPassesCompleted(0),
         _optData(NULL),
         _optPolicy(NULL),
-        _enabled(false),
+        _enabled(!o->comp()->isDisabled(optNum)),
         _requested(false),
         _requestedBlocks(o->trMemory()),
         _trace(o->comp()->getOptions()->trace(optNum))

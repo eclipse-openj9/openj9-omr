@@ -198,7 +198,7 @@ int32_t TR_TrivialInliner::perform()
    comp()->generateAccurateNodeCount();
 
    TR::ResolvedMethodSymbol * sym = comp()->getMethodSymbol();
-   if (sym->mayHaveInlineableCall() && !comp()->isDisabled(OMR::inlining))
+   if (sym->mayHaveInlineableCall() && optimizer()->isEnabled(OMR::inlining))
       {
       uint32_t initialSize = comp()->getOptions()->getTrivialInlinerMaxSize();;
       if (comp()->getOption(TR_Randomize) || comp()->getOption(TR_VerbosePseudoRandom))
@@ -245,7 +245,7 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
    _util = optimizer->getInlinerUtil();
    _policy->setInliner(this);
    _util->setInliner(this);
-   if (comp()->getOptions()->isDisabled(OMR::innerPreexistence))
+   if (!optimizer->isEnabled(OMR::innerPreexistence))
       _disableInnerPrex = true;
 
    setInlineVirtuals(true);
@@ -1058,7 +1058,7 @@ bool
 TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * thisClass, bool recursiveInlining, TR_PrexArgInfo *argInfo, int32_t initialMaxSize)
    {
    TR_InlinerDelimiter delimiter(tracer(),"TR_InlineCall::inlineCall");
-   if (comp()->isDisabled(OMR::inlining))
+   if (!getOptimizer()->isEnabled(OMR::inlining))
       return false;
 
    TR::Node * parent = callNodeTreeTop->getNode();

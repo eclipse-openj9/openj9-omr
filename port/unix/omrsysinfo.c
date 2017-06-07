@@ -247,8 +247,8 @@ static intptr_t searchSystemPath(struct OMRPortLibrary *portLibrary, char *filen
 #endif /* defined(AIXPPC) || defined(J9ZOS390) */
 
 #if defined(J9ZOS390)
-static void setOSFeature(OMROSDesc *desc, uint32_t feature);
-static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, OMROSDesc *desc);
+static void setOSFeature(struct OMROSDesc *desc, uint32_t feature);
+static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc);
 #endif /* defined(J9ZOS390) */
 
 /**
@@ -2984,7 +2984,7 @@ leave_routine:
  *
  */
 static void
-setOSFeature(OMROSDesc *desc, uint32_t feature)
+setOSFeature(struct OMROSDesc *desc, uint32_t feature)
 {
 	if ((NULL != desc) && (feature < (OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32))) {
 		uint32_t featureIndex = feature / 32;
@@ -3003,7 +3003,7 @@ setOSFeature(OMROSDesc *desc, uint32_t feature)
  * @return 0 on success, -1 on failure
  */
 static intptr_t
-getZOSDescription(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc)
 {
 	intptr_t rc = 0;
 
@@ -3020,7 +3020,7 @@ getZOSDescription(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
 #endif /* defined(J9ZOS390) */
 
 intptr_t
-omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc)
 {
 	intptr_t rc = -1;
 	Trc_PRT_sysinfo_get_os_description_Entered(desc);
@@ -3038,7 +3038,7 @@ omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *des
 }
 
 BOOLEAN
-omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature)
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature)
 {
 	BOOLEAN rc = FALSE;
 	Trc_PRT_sysinfo_os_has_feature_Entered(desc, feature);
@@ -3052,4 +3052,22 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, u
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);
 	return rc;
+}
+
+BOOLEAN
+omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo)
+{
+	BOOLEAN success = FALSE;
+
+#if defined(LINUX)
+	struct utsname name = {0};
+
+	if (0 == uname(&name)) {
+		if (3 == sscanf(name.release, "%u.%u.%u", &kernelInfo->kernelVersion, &kernelInfo->majorRevision, &kernelInfo->minorRevision)) {
+			success = TRUE;
+		}
+	}
+#endif /* defined(LINUX) */
+
+	return success;
 }

@@ -961,6 +961,12 @@ typedef struct OMROSDesc {
 /* zOS features */
 #define OMRPORT_ZOS_FEATURE_RMODE64 31 /* RMODE64. */
 
+typedef struct OMROSKernelInfo {
+	uint32_t kernelVersion;
+	uint32_t majorRevision;
+	uint32_t minorRevision;
+} OMROSKernelInfo;
+
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
 
@@ -1391,9 +1397,11 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsysinfo.c::omrsysinfo_get_open_file_count "omrsysinfo_get_open_file_count"*/
 	int32_t (*sysinfo_get_open_file_count)(struct OMRPortLibrary *portLibrary, uint64_t *count) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_os_description "omrsysinfo_get_os_description"*/
-	intptr_t  ( *sysinfo_get_os_description)(struct OMRPortLibrary *portLibrary, OMROSDesc *desc) ;
+	intptr_t  ( *sysinfo_get_os_description)(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_os_has_feature "omrsysinfo_os_has_feature"*/
-	BOOLEAN  ( *sysinfo_os_has_feature)(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature) ;
+	BOOLEAN  ( *sysinfo_os_has_feature)(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_os_kernel_info "omrsysinfo_os_kernel_info"*/
+	BOOLEAN  ( *sysinfo_os_kernel_info)(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo) ;
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1832,6 +1840,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_open_file_count(param1) privateOmrPortLibrary->sysinfo_get_open_file_count(privateOmrPortLibrary, (param1))
 #define omrsysinfo_get_os_description(param1) privateOmrPortLibrary->sysinfo_get_os_description(privateOmrPortLibrary, (param1))
 #define omrsysinfo_os_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_os_has_feature(privateOmrPortLibrary, (param1), (param2))
+#define omrsysinfo_os_kernel_info(param1) privateOmrPortLibrary->sysinfo_os_kernel_info(privateOmrPortLibrary, (param1))
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

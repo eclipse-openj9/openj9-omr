@@ -1577,7 +1577,7 @@ omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *cou
 }
 
 intptr_t
-omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc)
 {
 	intptr_t rc = -1;
 	Trc_PRT_sysinfo_get_os_description_Entered(desc);
@@ -1591,7 +1591,7 @@ omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *des
 }
 
 BOOLEAN
-omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature)
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature)
 {
 	BOOLEAN rc = FALSE;
 	Trc_PRT_sysinfo_os_has_feature_Entered(desc, feature);
@@ -1605,4 +1605,10 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, u
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);
 	return rc;
+}
+
+BOOLEAN
+omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo)
+{
+	return FALSE;
 }

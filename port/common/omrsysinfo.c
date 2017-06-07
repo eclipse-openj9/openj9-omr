@@ -748,7 +748,7 @@ omrsysinfo_get_open_file_count(struct OMRPortLibrary *portLibrary, uint64_t *cou
  * @return 0 on success, -1 on failure
  */
 intptr_t
-omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *desc)
+omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc)
 {
 	intptr_t rc = -1;
 	Trc_PRT_sysinfo_get_os_description_Entered(desc);
@@ -771,7 +771,7 @@ omrsysinfo_get_os_description(struct OMRPortLibrary *portLibrary, OMROSDesc *des
  * @return TRUE if feature is present, FALSE otherwise.
  */
 BOOLEAN
-omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, uint32_t feature)
+omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature)
 {
 	BOOLEAN rc = FALSE;
 	Trc_PRT_sysinfo_os_has_feature_Entered(desc, feature);
@@ -785,4 +785,21 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, OMROSDesc *desc, u
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);
 	return rc;
+}
+
+/**
+ * Retrieves information about OS kernel. Only Linux kernel is supported at this point.
+ *
+ * For Linux kernel, version info is retrieved. For example, if the version is 2.6.32, it
+ * will set kernelVersion to 2, majorRevision to 6 and minorRevision to 32.
+ *
+ * @param[in] portLibrary instance of port library
+ * @param[in/out] kernelInfo contains information about the kernel
+ *
+ * @return TRUE on success, FALSE on unsupported platforms and on failure.
+ */
+BOOLEAN
+omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo)
+{
+	return FALSE;
 }

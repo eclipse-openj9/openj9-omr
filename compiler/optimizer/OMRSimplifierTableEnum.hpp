@@ -511,6 +511,7 @@
    dftSimplifier,           // TR::vcalli
    dftSimplifier,           // TR::vternary
    v2vSimplifier,           // TR::v2v
+   dftSimplifier,           // TR::vl2vd
    dftSimplifier,           // TR::vconst
    dftSimplifier,           // TR::getvelem
    vsetelemSimplifier,      // TR::vsetelem

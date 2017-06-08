@@ -637,7 +637,7 @@ vaddshs    vaddshs    10000340 IsVMX,SyncSideEffectFree                         
 vaddsws    vaddsws    10000380 IsVMX,SyncSideEffectFree                                                      // vector add signed word saturate
 vaddubm    vaddubm    10000000 IsVMX,SyncSideEffectFree                                                      // vector add unsigned byte modulo
 vaddubs    vaddubs    10000200 IsVMX,SyncSideEffectFree                                                      // vector add unsigned byte saturate
-!vaddudm    vaddudm    100000c0 IsVMX,SyncSideEffectFree                                                      // Vector Add Unsigned Dword Modulo
+vaddudm    vaddudm    100000c0 IsVMX,SyncSideEffectFree                                                      // Vector Add Unsigned Dword Modulo
 vadduhm    vadduhm    10000040 IsVMX,SyncSideEffectFree                                                      // vector add unsigned halfword modulo
 vadduhs    vadduhs    10000240 IsVMX,SyncSideEffectFree                                                      // vector add unsigned halfword saturate
 vadduwm    vadduwm    10000080 IsVMX,SyncSideEffectFree                                                      // vector add unsigned word modulo
@@ -655,6 +655,7 @@ vsubshs    vsubshs    10000740 IsVMX,SyncSideEffectFree                         
 vsubsws    vsubsws    10000780 IsVMX,SyncSideEffectFree                                                      // vector subtract signed word saturate
 vsububm    vsububm    10000400 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned byte modulo
 vsububs    vsububs    10000600 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned byte saturate
+vsubudm    vsubudm    100004C0 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned Dword modulo
 vsubuhm    vsubuhm    10000440 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned halfword modulo
 vsubuhs    vsubuhs    10000640 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned halfword saturate
 vsubuwm    vsubuwm    10000480 IsVMX,SyncSideEffectFree                                                      // vector subtract unsigned word modulo

@@ -490,6 +490,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcalli
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vternary
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::v2v
+   TR::TreeEvaluator::vl2vdEvaluator,                    // TR::vl2vd
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vconst
    TR::TreeEvaluator::getvelemEvaluator,                // TR::getvelem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsetelem

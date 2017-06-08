@@ -585,6 +585,7 @@ const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[PPCNumOpCo
    0x10000380,  // vaddsws
    0x10000000,  // vaddubm
    0x10000200,  // vaddubs
+   0x100000c0,  // vaddudm
    0x10000040,  // vadduhm
    0x10000240,  // vadduhs
    0x10000080,  // vadduwm
@@ -594,6 +595,7 @@ const TR_PPCOpCodeBinaryEntry OMR::Power::InstOpCode::binaryEncodings[PPCNumOpCo
    0x10000780,  // vsubsws
    0x10000400,  // vsububm
    0x10000600,  // vsububs
+   0x100004c0,  // vsubudm
    0x10000440,  // vsubuhm
    0x10000640,  // vsubuhs
    0x10000480,  // vsubuwm

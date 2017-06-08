@@ -3451,6 +3451,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
        dt != TR::Int64)
       return false;
 
+   if (TR::Compiler->target.cpu.id() >= TR_PPCp8 &&
+       (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub) &&
+       dt == TR::Int64)
+      return true;
+
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
@@ -3486,6 +3491,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return true;
          else
             return false;
+      case TR::vl2vd:
+         return true;
       default:
          return false;
       }

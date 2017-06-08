@@ -2635,6 +2635,10 @@ PPCOpProp_SyncSideEffectFree,
 PPCOpProp_IsVMX |
 PPCOpProp_SyncSideEffectFree,
 
+// vaddudm
+PPCOpProp_IsVMX |
+PPCOpProp_SyncSideEffectFree,
+
 // vadduhm
 PPCOpProp_IsVMX |
 PPCOpProp_SyncSideEffectFree,
@@ -2668,6 +2672,10 @@ PPCOpProp_IsVMX |
 PPCOpProp_SyncSideEffectFree,
 
 // vsububs
+PPCOpProp_IsVMX |
+PPCOpProp_SyncSideEffectFree,
+
+// vsubudm
 PPCOpProp_IsVMX |
 PPCOpProp_SyncSideEffectFree,
 

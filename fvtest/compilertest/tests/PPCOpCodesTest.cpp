@@ -49,6 +49,7 @@ PPCOpCodesTest::compileUnaryTestMethods()
    compileOpCodeMethod(_s2b, _numberOfUnaryArgs, TR::s2b, "s2b", _argTypesUnaryShort, TR::Int8, rc);
    compileOpCodeMethod(_su2i, _numberOfUnaryArgs, TR::su2i, "su2i", _argTypesUnaryShort, TR::Int32, rc);
    compileOpCodeMethod(_su2l, _numberOfUnaryArgs, TR::su2l, "su2l", _argTypesUnaryShort, TR::Int64, rc);
+   compileOpCodeMethod(_iByteswap, _numberOfUnaryArgs, TR::ibyteswap, "iByteswap", _argTypesUnaryInt, TR::Int32, rc);
 
    }
 
@@ -199,6 +200,7 @@ PPCOpCodesTest::invokeUnaryTests()
    int8_t byteDataArray[] = {BYTE_NEG, BYTE_POS, BYTE_MAXIMUM, BYTE_MINIMUM, BYTE_ZERO};
    float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_ZERO, FLOAT_MAXIMUM, FLOAT_MINIMUM};
    double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_ZERO, DOUBLE_MAXIMUM, DOUBLE_MINIMUM};
+   int32_t intDataArray[] = {INT_NEG, INT_POS, INT_MAXIMUM, INT_MINIMUM, INT_ZERO};
 
    uint16_t ushortDataArray[] = {USHORT_POS, USHORT_MAXIMUM, USHORT_MINIMUM};
    uint8_t ubyteDataArray[] = {UBYTE_POS, UBYTE_MAXIMUM, UBYTE_MINIMUM};
@@ -208,6 +210,7 @@ PPCOpCodesTest::invokeUnaryTests()
    uint32_t testCaseNum = 0;
    char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
 
+   signatureCharI_I_testMethodType  *iUnaryCons = 0;
    signatureCharD_D_testMethodType  *dUnaryCons = 0;
    signatureCharF_F_testMethodType  *fUnaryCons = 0;
 
@@ -362,6 +365,17 @@ PPCOpCodesTest::invokeUnaryTests()
             resolvedMethodName, _argTypesUnaryShort, TR::Int64, rc, 2, 1, &ushortDataArray[i]);
       OMR_CT_EXPECT_EQ(su2lConst, convert(ushortDataArray[i], LONG_POS), su2lConst(SHORT_PLACEHOLDER_1));
       }
+   //ibyteswap
+   testCaseNum = sizeof(intDataArray) / sizeof(intDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; i++)
+      {
+      OMR_CT_EXPECT_EQ(_iByteswap, byteswap(intDataArray[i]), _iByteswap(intDataArray[i]));
+      sprintf(resolvedMethodName, "iByteswapConst%d", i + 1);
+      compileOpCodeMethod(iUnaryCons, _numberOfUnaryArgs, TR::ibyteswap,
+            resolvedMethodName, _argTypesUnaryInt, TR::Int32, rc, 2, 1, &intDataArray[i]);
+      OMR_CT_EXPECT_EQ(iUnaryCons, byteswap(intDataArray[i]), iUnaryCons(INT_PLACEHOLDER_1));
+      }
+
    }
 
 void

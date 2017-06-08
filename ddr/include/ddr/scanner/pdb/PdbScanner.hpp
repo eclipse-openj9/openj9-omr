@@ -49,8 +49,6 @@ typedef struct PostponedType
 {
 	Type **type;
 	string name;
-	size_t size;
-	string typeIdentifier;
 } PostponedType;
 
 
@@ -75,7 +73,7 @@ private:
 	DDR_RC setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, NamespaceUDT *outerUDT);
 	DDR_RC setTypeModifier(IDiaSymbol *symbol, Modifiers *modifiers);
 
-	DDR_RC addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerUDT);
+	DDR_RC addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace);
 	DDR_RC setMemberOffset(IDiaSymbol *symbol, Field *newField);
 
 	DDR_RC addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, NamespaceUDT *outerUDT);

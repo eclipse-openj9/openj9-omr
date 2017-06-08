@@ -4275,12 +4275,13 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
    TR::Register *dummy1 = cg->allocateRegister();
    TR::Register *dummy2 = cg->allocateRegister(TR_FPR);
    TR::Register *dummy3 = cg->allocateRegister(TR_FPR);
+   TR::Register *dummy4 = cg->allocateRegister(TR_FPR);
 
    bool arraytranslateOT = false;
    if  (sourceByte && (node->getChild(3)->getOpCodeValue() == TR::iconst) && (node->getChild(3)->getInt() == 0))
 	arraytranslateOT = true;
 
-   int noOfDependencies = (sourceByte && !arraytranslateOT) ? 7 : 8;
+   int noOfDependencies = (sourceByte && !arraytranslateOT) ? 8 : 9;
 
 
    TR::RegisterDependencyConditions  *dependencies =
@@ -4294,6 +4295,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
    dependencies->addPostCondition(dummy1, TR::RealRegister::ebx, cg);
    dependencies->addPostCondition(dummy2, TR::RealRegister::xmm1, cg);
    dependencies->addPostCondition(dummy3, TR::RealRegister::xmm2, cg);
+   dependencies->addPostCondition(dummy4, TR::RealRegister::xmm3, cg);
 
 
    TR_RuntimeHelper helper ;
@@ -4320,6 +4322,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
    cg->stopUsingRegister(dummy1);
    cg->stopUsingRegister(dummy2);
    cg->stopUsingRegister(dummy3);
+   cg->stopUsingRegister(dummy4);
 
    for (uint16_t i = 0; i < node->getNumChildren(); i++)
       cg->decReferenceCount(node->getChild(i));

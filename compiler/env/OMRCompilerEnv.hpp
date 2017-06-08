@@ -38,6 +38,7 @@ namespace OMR { typedef OMR::CompilerEnv CompilerEnvConnector; }
 #include "env/ObjectModel.hpp"
 #include "env/ArithEnv.hpp"
 #include "env/VMEnv.hpp"
+#include "env/VMMethodEnv.hpp"
 
 namespace TR { class CompilerEnv; }
 
@@ -73,6 +74,10 @@ public:
    // Information about the VM environment.
    //
    TR::VMEnv vm;
+
+   // Information about methods in this compilation environment
+   //
+   TR::VMMethodEnv mth;
 
    // Object model in this compilation environment
    //

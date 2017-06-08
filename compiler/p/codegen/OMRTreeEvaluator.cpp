@@ -1509,6 +1509,9 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 	kind = TR_VRF;
 	break;
      case TR::VectorInt64:
+	opcode = TR::InstOpCode::lxvd2x;
+	kind = TR_VRF;
+        break;
      case TR::VectorDouble:
 	opcode = TR::InstOpCode::lxvd2x;
 	kind = TR_VSX_VECTOR;
@@ -2459,6 +2462,7 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
    switch(node->getDataType())
      {
      case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
+     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddudm);
      case TR::VectorFloat: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvadddp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -2471,6 +2475,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
    switch(node->getDataType())
      {
      case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
+     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
      case TR::VectorFloat: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubdp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -2755,6 +2760,10 @@ TR::Register *OMR::Power::TreeEvaluator::vdlogEvaluator(TR::Node *node, TR::Code
     return TR::TreeEvaluator::directCallEvaluator(node, cg);
     }
 
+TR::Register *OMR::Power::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+    {
+    return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvcvsxddp);
+    }
 
 // Branch if all are true in VMX
 #define PPCOp_bva TR::InstOpCode::blt

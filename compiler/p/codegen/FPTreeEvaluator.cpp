@@ -652,7 +652,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::Co
    else if (node->getDataType() == TR::VectorInt64)
       {
       TR::Register *srcReg = cg->evaluate(child);
-      TR::Register *trgReg = cg->allocateRegister(TR_VSX_VECTOR);
+      TR::Register *trgReg = cg->allocateRegister(TR_VRF);
 
       if (!disableDirectMove && TR::Compiler->target.cpu.id() >= TR_PPCp8 && TR::Compiler->target.cpu.getPPCSupportsVSX())
          {

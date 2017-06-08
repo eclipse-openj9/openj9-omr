@@ -7076,6 +7076,22 @@
    /* .ifCompareOpCode      = */ TR::BadILOp,
    },
 
+
+   {
+   /* .opcode               = */ TR::vl2vd,
+   /* .name                 = */ "vl2vd",
+   /* .properties1          = */ ILProp1::Conversion,
+   /* .properties2          = */ ILProp2::ValueNumberShare,
+   /* .properties3          = */ 0,
+   /* .properties4          = */ 0,
+   /* .dataType             = */ TR::VectorDouble,
+   /* .typeProperties       = */ ILTypeProp::Size_16 | ILTypeProp::Vector,
+   /* .swapChildrenOpCode   = */ TR::BadILOp,
+   /* .reverseBranchOpCode  = */ TR::BadILOp,
+   /* .booleanCompareOpCode = */ TR::BadILOp,
+   /* .ifCompareOpCode      = */ TR::BadILOp,
+   },
+
    {
    /* .opcode               = */ TR::vconst,
    /* .name                 = */ "vconst",

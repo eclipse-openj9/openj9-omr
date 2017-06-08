@@ -650,6 +650,7 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainCall,            // TR::vcalli
    constrainChildrenFirstToLast,        // TR::vternary
    constrainChildren,        // TR::v2v
+   constrainChildren,        // TR::vl2vd
    constrainChildren,        // TR::vconst
    constrainChildren,        // TR::getvelem
    constrainChildren,        // TR::vsetelem

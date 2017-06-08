@@ -534,6 +534,7 @@
    vcalli,     // indirect call returning a vector
    vternary,   // vector ternary operator
    v2v,        // vector to vector conversion. preserves bit pattern (noop), only changes datatype
+   vl2vd,      // vector to vector conversion. converts each long element to double
    vconst,     // vector constant
    getvelem,   // get vector element, returns a scalar
    vsetelem,   // vector set element

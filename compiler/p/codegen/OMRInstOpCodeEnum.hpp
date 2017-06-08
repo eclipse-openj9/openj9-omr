@@ -586,6 +586,7 @@
    vaddsws,          // vector add signed word saturate
    vaddubm,          // vector add unsigned byte modulo
    vaddubs,          // vector add unsigned byte saturate
+   vaddudm,          // Vector Add Unsigned Dword Modulo
    vadduhm,          // vector add unsigned halfword modulo
    vadduhs,          // vector add unsigned halfword saturate
    vadduwm,          // vector add unsigned word modulo
@@ -595,6 +596,7 @@
    vsubsws,          // vector subtract signed word saturate
    vsububm,          // vector subtract unsigned byte modulo
    vsububs,          // vector subtract unsigned byte saturate
+   vsubudm,          // vector subtract unsigned Dword modulo
    vsubuhm,          // vector subtract unsigned halfword modulo
    vsubuhs,          // vector subtract unsigned halfword saturate
    vsubuwm,          // vector subtract unsigned word modulo

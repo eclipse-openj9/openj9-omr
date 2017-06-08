@@ -1354,6 +1354,8 @@ public:
          case TR::iushr:
          case TR::lushr:
             return TR::vushr;
+         case TR::l2d:
+            return TR::vl2vd;
          default:
             return TR::BadILOp;
 

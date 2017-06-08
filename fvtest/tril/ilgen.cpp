@@ -60,7 +60,9 @@ TRLangBuilder::TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d) : _trees(tre
     DefineFile(__FILE__);
 
     DefineName("treeMethod");
-    DefineParameter("arg0", d->PointerTo(Int32));
+    DefineParameter("arg0", Int32);
+    DefineParameter("arg1", Int32);
+    DefineParameter("arg2", d->PointerTo(d->PointerTo(Int32)));
     DefineReturnType(Int32);
 }
 

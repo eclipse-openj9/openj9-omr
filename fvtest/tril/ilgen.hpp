@@ -42,6 +42,6 @@ class TRLangBuilder : public TR::MethodBuilder {
         std::map<std::string, int> _blockMap;
 };
 
-using TreeMethodFunction = int32_t(int32_t*);
+using TreeMethodFunction = void(int32_t, int32_t, int32_t*);
 
 #endif // ILGEN_HPP

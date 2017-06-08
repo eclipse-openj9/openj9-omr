@@ -34,14 +34,26 @@ int main(int argc, char const * const * const argv) {
       auto rc = compileMethodBuilder(&builder, &entry);
       auto treeMethod = (TreeMethodFunction*)entry;
       if (rc == 0) {
-         auto a = 1;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = 2;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = -1;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
-         a = -2;
-         printf("treeMethod(%d) = %d\n", a, treeMethod(&a));
+         constexpr auto size = 80;
+         int32_t table[size][size] = {{0}};
+         treeMethod(1000, size, table[0]);
+         for (auto row = 0; row < size; ++row) {
+            for (auto i = 0; i < size; ++i) {
+#if defined(FULL_COLOUR)
+               auto c = table[row][i] < 1000 ? '#' : ' ';
+               int colors[] = {1, 1, 5, 4, 6, 2, 3, 3, 3, 3};
+               printf(" \e[0;3%dm%c\e[0m ", colors[table[row][i] % 10], c);
+#elif defined(SIMPLE_COLOUR)
+               auto c = table[row][i] >= 1000 ? '#' : ' ';
+               int colors[] = {0, 1, 3, 2, 6, 4, 5, 5, 5};
+               printf(" \e[0;3%dm%c\e[0m ", colors[i / 10], c);
+#else
+               auto c = table[row][i] >= 1000 ? '#' : ' ';
+               printf(" %c ", c );
+#endif
+            }
+            printf("\n");
+         }
       }
    }
 

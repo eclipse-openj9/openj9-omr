@@ -47,7 +47,7 @@ checkStringMatch(string checked, set<string> *patterns)
 				size_t sequencePos = checked.find(sequence);
 				matchFound = sequence.empty()
 					|| (0 == lastWildcardPos && 0 == sequencePos)
-					|| (string::npos != sequencePos && sequencePos > lastSequencePos);
+					|| ((string::npos != sequencePos) && (sequencePos > lastSequencePos) && (0 != lastWildcardPos));
 				matchFound = matchFound
 					&& (sequencePos + sequence.length() == checked.length()
 					|| wildcardPos < it->length()

@@ -866,6 +866,7 @@ MM_VerboseHandlerOutput::outputHeapResizeInfo(MM_EnvironmentBase *env, uintptr_t
 	getTagTemplate(tagTemplate, sizeof(tagTemplate), omrtime_current_time_millis());
 
 	writer->formatAndOutput(env, indent, "<heap-resize id=\"%zu\" type=\"%s\" space=\"%s\" amount=\"%zu\" count=\"%zu\" timems=\"%llu.%03llu\" reason=\"%s\" %s />", id, resizeTypeName, getSubSpaceType(subSpaceType), resizeAmount, resizeCount, timeInMicroSeconds / 1000, timeInMicroSeconds % 1000, reasonString, tagTemplate);
+	writer->flush(env);
 }
 
 void

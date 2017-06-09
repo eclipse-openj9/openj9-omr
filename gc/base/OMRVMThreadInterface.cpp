@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -19,8 +19,8 @@
 
 #include "omrcfg.h"
 
-#include "CollectorLanguageInterface.hpp"
-#include "EnvironmentBase.hpp"
+#include "EnvironmentStandard.hpp"
+#include "GCExtensionsBase.hpp"
 #include "ObjectAllocationInterface.hpp"
 
 #include "OMRVMThreadInterface.hpp"
@@ -34,7 +34,10 @@ GC_OMRVMThreadInterface::flushCachesForWalk(MM_EnvironmentBase *env)
 void
 GC_OMRVMThreadInterface::flushNonAllocationCaches(MM_EnvironmentBase *env)
 {
-	env->getExtensions()->collectorLanguageInterface->flushNonAllocationCaches(env);
+	env->flushNonAllocationCaches();
+	if (env->getExtensions()->isStandardGC()) {
+		((MM_EnvironmentStandard *)env)->flushRememberedSet();
+	}
 }
 
 void

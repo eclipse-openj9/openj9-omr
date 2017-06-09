@@ -31,6 +31,7 @@
 
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
+#include "SublistFragment.hpp"
 
 class MM_CopyScanCacheStandard;
 
@@ -85,6 +86,14 @@ public:
 		,_threadCleaningCards(false)
 	{
 		_typeId = __FUNCTION__;
+	}
+
+	/**
+	 * Flush (to global stores) the local remembered object caches in thread-local GC_Environment
+	 */
+	void flushRememberedSet()
+	{
+		MM_SublistFragment::flush(&_scavengerRememberedSet);
 	}
 
 protected:

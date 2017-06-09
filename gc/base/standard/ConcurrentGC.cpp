@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -154,7 +154,7 @@ con_helper_thread_proc2(OMRPortLibrary* portLib, void *info)
 
 	/* Attach the thread as a system daemon thread */
 	/* You need a VM thread so that the stack walker can work */
-	OMR_VMThread *omrThread = collector->_cli->attachVMThread(omrVM, "Concurrent Mark Helper", MM_CollectorLanguageInterfaceImpl::ATTACH_GC_HELPER_THREAD);
+	OMR_VMThread *omrThread = MM_EnvironmentBase::attachVMThread(omrVM, "Concurrent Mark Helper", MM_EnvironmentBase::ATTACH_GC_HELPER_THREAD);
 
 	/* Signal that the concurrent helper thread has started (or not) */
 	conHelperThreadInfo->threadFlags = NULL != omrThread ? CON_HELPER_INFO_FLAG_OK : CON_HELPER_INFO_FLAG_FAIL;
@@ -1189,7 +1189,7 @@ MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID)
 void
 MM_ConcurrentGC::shutdownAndExitConHelperThread(OMR_VMThread *omrThread)
 {
-	_cli->detachVMThread(_extensions->getOmrVM(), omrThread, MM_CollectorLanguageInterfaceImpl::ATTACH_GC_HELPER_THREAD);
+	MM_EnvironmentBase::detachVMThread(_extensions->getOmrVM(), omrThread, MM_EnvironmentBase::ATTACH_GC_HELPER_THREAD);
 	omrthread_monitor_enter(_conHelpersActivationMonitor);
 	_conHelpersShutdownCount += 1;
 	/* The last thread to shut down must notify the master thread */

@@ -47,6 +47,12 @@ MM_EnvironmentStandard::newInstance(MM_GCExtensionsBase *extensions, OMR_VMThrea
 bool
 MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 {
+	_scavengerRememberedSet.count = 0;
+	_scavengerRememberedSet.fragmentCurrent = NULL;
+	_scavengerRememberedSet.fragmentTop = NULL;
+	_scavengerRememberedSet.fragmentSize = (uintptr_t)J9_SCV_REMSET_FRAGMENT_SIZE;
+	_scavengerRememberedSet.parentList = &extensions->rememberedSet;
+
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (extensions->concurrentScavenger) {
 		extensions->scavenger->mutatorSetupForGC(this);

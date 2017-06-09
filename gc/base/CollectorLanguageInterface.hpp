@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -61,29 +61,12 @@ protected:
 public:
 
 private:
-	MMINLINE void writeBarrier(OMR_VMThread *omrThread, omrobjectptr_t parentObject, omrobjectptr_t childObject);
 
 protected:
 
 public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;
-
-	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env) = 0;
-	virtual OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason) = 0;
-	virtual void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrThread, uintptr_t reason) = 0;
-
-	/**
-	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated.  You are however
-	 * guaranteed by the start of the next gc, you will be notified for all objects allocated since the last gc.
-	 * hooktool is actually functionality better for this but is probably too heavy-weight for what we want for performant code.
-	 */
-	virtual bool objectAllocationNotify(MM_EnvironmentBase * env, omrobjectptr_t omrObject) { return true;} ;
-
-	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) = 0;
-	
-	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) = 0;
-	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) = 0;
 
 #if defined(OMR_GC_MODRON_COMPACTION)
 	virtual void compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env) = 0;
@@ -506,6 +489,7 @@ public:
 	virtual void concurrentGC_scanThread(MM_EnvironmentBase *env) = 0;
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
+
 	/**
 	 * This method is called to check if vm is in Startup stage, return true if vm is in Startup stage(Default: false).
 	 *
@@ -513,26 +497,6 @@ public:
 	 * @return true if vm is in Startup stage.
 	 */
 	virtual bool isVMInStartupPhase(MM_EnvironmentBase *env) { return false; }
-
-
-	/**
-	 * In the absence of other (equivalent) write barrier, this method must be called
-	 * to effect the assignment of a child reference to a parent slot.
-	 *
-	 * To support OMR concurrent marking and/or generational collectors, this method also
-	 * calls the necessary concurrent and generational write barriers.
-	 */
-	void writeBarrierStore(OMR_VMThread *omrThread, omrobjectptr_t parentObject, fomrobject_t *parentSlot, omrobjectptr_t childObject);
-
-	/**
-	 * This method calls the concurrent and generational write barriers without effecting the assignment
-	 * of child to parent slot. Use this method in cases where the assignment has been effected by another
-	 * agent.
-	 *
-	 * To support OMR concurrent marking and/or generational collectors, this method calls the necessary
-	 * concurrent and generational write barriers.
-	 */
-	void writeBarrierUpdate(OMR_VMThread *omrThread, omrobjectptr_t parentObject, omrobjectptr_t childObject);
 
 	MM_CollectorLanguageInterface()
 		: MM_BaseVirtual()

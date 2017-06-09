@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -26,12 +26,18 @@
 
 MM_HeapRegionDescriptor::MM_HeapRegionDescriptor(MM_EnvironmentBase *env, void *lowAddress, void *highAddress)
 	: _regionsInSpan(0)
+	, _heapRegionDescriptorExtension(NULL)
 	, _lowAddress(lowAddress)
 	, _highAddress(highAddress)
 	, _previousRegion(NULL)
 	, _nextRegion(NULL)
+	, _previousRegionInSubSpace(NULL)
+	, _nextRegionInSubSpace(NULL)
+	, _nextInSet(NULL)
+	, _isAllocated(false)
 	, _memorySubSpace(NULL)
 	, _regionType(MM_HeapRegionDescriptor::RESERVED)
+	, _memoryPool(NULL)
 	, _numaNode(0)
 	, _regionProperties(MM_HeapRegionDescriptor::MANAGED)
 {

@@ -21,9 +21,31 @@
 #include "omrExampleVM.hpp"
 
 #include "AtomicOperations.hpp"
-#include "EnvironmentBase.hpp"
+#include "EnvironmentStandard.hpp"
 #include "EnvironmentDelegate.hpp"
 #include "GCExtensionsBase.hpp"
+#include "SublistFragment.hpp"
+
+OMR_VMThread *
+MM_EnvironmentDelegate::attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason)
+{
+	OMR_VMThread *omrVMThread = NULL;
+	omr_error_t rc = OMR_ERROR_NONE;
+
+	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
+	if (OMR_ERROR_NONE != rc) {
+		return NULL;
+	}
+	return omrVMThread;
+}
+
+void
+MM_EnvironmentDelegate::detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason)
+{
+	if (NULL != omrVMThread) {
+		OMR_Glue_UnbindCurrentThread(omrVMThread);
+	}
+}
 
 void
 MM_EnvironmentDelegate::acquireVMAccess()

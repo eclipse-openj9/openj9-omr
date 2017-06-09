@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -60,6 +60,7 @@ public:
 	};
 	uintptr_t _regionsInSpan; /**< most likely a temporary piece of data which, along with _nextInSet, builds a freelist (public for assertions) */
 	MM_HeapRegionDescriptor *_headOfSpan; /**< in a spanning region, points to the HEAD of the span.  In non-spanning, points at this */
+	void *_heapRegionDescriptorExtension; /**< Language-specific extension of per region descriptor can be attached by configuration delegate (MM_ConfigurationDelegate) */
 
 	/**
 	 * The values of the members in this enum will be ORed into @ref _regionProperties

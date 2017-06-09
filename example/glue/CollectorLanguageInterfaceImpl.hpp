@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -45,12 +45,6 @@ protected:
 	MM_GCExtensionsBase *_extensions;
 	MM_MarkingScheme *_markingScheme;
 public:
-	enum AttachVMThreadReason {
-		ATTACH_THREAD = 0x0,
-		ATTACH_GC_DISPATCHER_THREAD = 0x1,
-		ATTACH_GC_HELPER_THREAD = 0x2,
-		ATTACH_GC_MASTER_THREAD = 0x3,
-	};
 
 private:
 protected:
@@ -68,11 +62,6 @@ protected:
 public:
 	static MM_CollectorLanguageInterfaceImpl *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
-
-	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env);
-
-	virtual OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason);
-	virtual void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason);
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	virtual MM_ConcurrentSafepointCallback* concurrentGC_createSafepointCallback(MM_EnvironmentBase *env);
@@ -100,11 +89,6 @@ public:
 	virtual uintptr_t concurrentGC_reportConcurrentScanningMode(MM_EnvironmentBase *env) {return 0;}
 	virtual void concurrentGC_scanThread(MM_EnvironmentBase *env) {}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {return true;}
-	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {}
-
-	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env);

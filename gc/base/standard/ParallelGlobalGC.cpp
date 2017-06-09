@@ -31,6 +31,7 @@
 #if defined(OMR_GC_MODRON_COMPACTION)
 #include "CompactScheme.hpp"
 #endif /* OMR_GC_MODRON_COMPACTION */
+#include "Configuration.hpp"
 #include "CycleState.hpp"
 #include "Dispatcher.hpp"
 #include "EnvironmentBase.hpp"
@@ -1005,8 +1006,9 @@ MM_ParallelGlobalGC::processLargeAllocateStatsAfterSweep(MM_EnvironmentBase *env
 
 	stats->verifyFreeEntryCount(memoryPool->getActualFreeEntryCount());
 	/* estimate Fragmentation */
-	if ((GLOBALGC_ESTIMATE_FRAGMENTATION == (_extensions->estimateFragmentation & GLOBALGC_ESTIMATE_FRAGMENTATION)) &&
-		!_cli->isVMInStartupPhase(env)) {
+	if ((GLOBALGC_ESTIMATE_FRAGMENTATION == (_extensions->estimateFragmentation & GLOBALGC_ESTIMATE_FRAGMENTATION))
+		&& _extensions->configuration->canCollectFragmentationStats(env)
+	) {
 		stats->estimateFragmentation(env);
 	} else {
 		stats->resetRemainingFreeMemoryAfterEstimate();

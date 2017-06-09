@@ -70,28 +70,76 @@ public:
 	}
 
 	/**
-	 * This method is called on the master garbage collection thread at the beginning of a GC cycle. Any
-	 * language-specific setup that is required to support marking can be performed here.
+	 * This method is called on the master garbage collection thread at the beginning of the marking
+	 * phase of a global GC cycle. Any language-specific setup that is required to support marking
+	 * can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
 	 *
 	 * @param env The environment for the calling thread
 	 */
 	MMINLINE void masterSetupForGC(MM_EnvironmentBase *env) { }
 
 	/**
-	 * This method will be called on the master garbage collection thread in place of masterSetupForGC()
-	 * if the heap is being walked without performing an actual garbage collection cycle.
+	 * This method is called on the master garbage collection thread at the beginning of the marking
+	 * phase preceding a heap walk. Any language-specific setup that is required to prepare for the
+	 * heap walk can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
 	 *
 	 * @param env the current environment
 	 */
 	MMINLINE void masterSetupForWalk(MM_EnvironmentBase *env) { }
 
 	/**
-	 * This method is called on the master garbage collection thread at the end of a GC cycle. Any
-	 * language-specific finalization that is required to support marking can be performed here.
+	 * This method is called on the master garbage collection thread at the end of the marking phase
+	 * for a global GC cycle. Any language-specific finalization that is required to support marking
+	 * can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
 	 *
 	 * @param env the current environment
 	 */
 	void masterCleanupAfterGC(MM_EnvironmentBase *env);
+
+	/**
+	 * This method is called on each worker thread participating in garbage collection at the beginning
+	 * of the marking phase of a global GC cycle. Any language-specific actions required to support
+	 * marking can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
+	 *
+	 * @param env The environment for the calling thread
+	 */
+	MMINLINE void workerSetupForGC(MM_EnvironmentBase *env) { }
+
+	/**
+	 * This method is called on each worker thread participating in garbage collection at the end
+	 * of the live object marking phase of a global GC cycle. Any language-specific actions required
+	 * to support additional marking can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
+	 *
+	 * @param env The environment for the calling thread
+	 */
+	MMINLINE void workerCompleteGC(MM_EnvironmentBase *env)
+	{
+		/* All threads flush buffers before this point, and complete any remaining language-specific marking tasks */
+		if (env->_currentTask->synchronizeGCThreadsAndReleaseSingleThread(env, UNIQUE_ID)) {
+			/* Perform single-threaded tasks here */
+			env->_currentTask->releaseSynchronizedGCThreads(env);
+		}
+	}
+
+	/**
+	 * This method is called on each worker thread participating in garbage collection at the end of a
+	 * global GC cycle. Any final language-specific actions related to marking can be performed here.
+	 *
+	 * This method is informational, no specific action is required.
+	 *
+	 * @param env The environment for the calling thread
+	 */
+	MMINLINE void workerCleanupAfterGC(MM_EnvironmentBase *env) { }
 
 	/**
 	 * This method is called on each active thread to commence root scanning. Each thread should scan its own
@@ -124,8 +172,18 @@ public:
 		GC_MixedObjectScanner *objectScanner = GC_MixedObjectScanner::newInstance(env, objectPtr, scannerSpace, 0);
 		*sizeToDo = sizeof(fomrobject_t) + objectScanner->getBytesRemaining();
 		return objectScanner;
-
 	}
+
+	/**
+	 * This method is called when a marked object cannot be enqueued on a work packet. This condition is handled
+	 * primariliy by OMR but such objects are presented here in case additional language-dependent handling is
+	 * required.
+	 *
+	 * This method is informational, no specific action is required.
+	 *
+	 * @param env The environment for the calling thread
+	 */
+	MMINLINE void handleWorkPacketOverflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) { }
 
 	/**
 	 * This method is called after the object graph depending from the root set has been traversed and all live
@@ -134,34 +192,11 @@ public:
 	 * this additional marking is complete, MM_MarkingScheme::completeScan() must be called to mark live objects
 	 * depending from additional marked objects.
 	 *
+	 * This method is informational, no specific action is required.
+	 *
 	 * @param env The environment for the calling thread
 	 */
 	MMINLINE void completeMarking(MM_EnvironmentBase *env) { }
-
-
-	/**
-	 * This method is called on each active thread after it has completed its live marking scan and before
-	 * initiating the final (clearable) marking phase. The called thread should flush any buffers that it is
-	 * holding. This method requires that all GC threads be synchronized before returning, and any single-
-	 * threaded tasks that are required should be performed in the synchronization block. If there are other
-	 * objects to be scanned and marked they should be scanned here, after synchonizing. The OMR runtime
-	 * will subsequently call MM_MarkingScheme::completeScan() to mark any objects depending from objects
-	 * marked here.
-	 *
-	 * If there is no subsequent marking do be done, synchronization is not required. Synchronization is
-	 * included in this example for illustration only.
-	 *
-	 * @param env The environment for the calling thread
-	 */
-	MMINLINE void markLiveObjectsComplete(MM_EnvironmentBase *env)
-	{
-		/* All threads flush buffers here, before synchronization */
-		if (env->_currentTask->synchronizeGCThreadsAndReleaseSingleThread(env, UNIQUE_ID)) {
-			/* Perform single-threaded tasks here */
-			env->_currentTask->releaseSynchronizedGCThreads(env);
-		}
-		/* Start scanning any remaining unscanned objects here, with all threads participating */
-	}
 
 	/**
 	 * Constructor.

@@ -2288,7 +2288,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
       if (isEquivalent)
          {
          bool canBeRemoved = true; //comp()->cg()->canNullChkBeImplicit(cursorNode);
-         if (TR::comp()->getOptions()->getOption(TR_NoResumableTrapHandler) ||
+         if (TR::comp()->getOptions()->getOption(TR_DisableTraps) ||
              TR::Compiler->om.offsetOfObjectVftField() >= comp()->cg()->getNumberBytesReadInaccessible())
            canBeRemoved = false;
 

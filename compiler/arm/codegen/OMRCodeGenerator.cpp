@@ -160,7 +160,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
       // wrapping-around.
       _maxObjectSizeGuaranteedNotToOverflow = 0x10000000;
       self()->setSupportsDivCheck();
-      if (!self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+      if (!self()->comp()->getOptions()->getOption(TR_DisableTraps))
          self()->setHasResumableTrapHandler();
       }
    else

@@ -493,7 +493,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Capabilities
    //
    bool supports32bitAiadd() {return true;}  // no virt, default
-   bool supportsMarshallingUnmarshallingIntrinsics() {return true;} // no virt, default
    bool supportsMergingGuards() {return false;} // no virt, default
 
    // --------------------------------------------------------------------------

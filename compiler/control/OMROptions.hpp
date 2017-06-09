@@ -337,7 +337,7 @@ enum TR_CompilationOptions
    TR_UseLowPriorityQueueDuringCLP        = 0x10000000 + 7,
    TR_DisableVectorBCD                    = 0x20000000 + 7,
    TR_EnableTrivialStoreSinking           = 0x40000000 + 7,
-   // Available                           = 0x80000000 + 7,
+   TR_DisableTraps                        = 0x80000000 + 7,
 
    // Option word 8
    //
@@ -472,8 +472,8 @@ enum TR_CompilationOptions
    TR_DisableHPRSpill                         = 0x00004000 + 12, // zGryphon
    TR_DisableHPRUpgrade                       = 0x00008000 + 12, // zGryphon
    TR_AggressiveOpts                          = 0x00010000 + 12,
-   // Available                                = 0x00020000 + 12,
-   // Available                               = 0x00040000 + 12, // zGryphon
+   TR_DisableMarshallingIntrinsics            = 0x00020000 + 12,
+   TR_DisablePackedDecimalIntrinsics          = 0x00040000 + 12,
    TR_DisablePackedLongConversion             = 0x00080000 + 12,
    TR_DisableDememoization                    = 0x00100000 + 12,
    TR_DisableStringBuilderTransformer         = 0x00200000 + 12,
@@ -2071,10 +2071,10 @@ private:
    //
    static char *set32BitNumeric(char *option, void *base, TR::OptionTable *entry);
 
-  /** 
+  /**
    * \brief Option processing function for 32 bit numeric fields stored in JitConfig
    *
-   * Scans the option for a numeric value and set the 32-bit word at offset 
+   * Scans the option for a numeric value and set the 32-bit word at offset
    * entry->param1 from the start of JitConfig to that value.
    *
    * \param [in] option  String representing the value of the option

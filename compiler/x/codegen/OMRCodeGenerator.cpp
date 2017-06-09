@@ -945,7 +945,7 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 
 bool OMR::X86::CodeGenerator::allowVMThreadRematerialization()
    {
-   if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler)) return false;
+   if (self()->comp()->getOptions()->getOption(TR_DisableTraps)) return false;
 
    static bool flag = (feGetEnv("TR_disableRematerializeVMThread") == NULL);
    return flag;

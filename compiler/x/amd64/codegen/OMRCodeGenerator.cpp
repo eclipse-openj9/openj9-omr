@@ -45,7 +45,7 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
    OMR::X86::CodeGenerator()
    {
 
-   if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+   if (self()->comp()->getOptions()->getOption(TR_DisableTraps))
       {
       _numberBytesReadInaccessible  = 0;
       _numberBytesWriteInaccessible = 0;

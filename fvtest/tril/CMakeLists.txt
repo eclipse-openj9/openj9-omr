@@ -63,3 +63,5 @@ target_link_libraries(trilc PUBLIC
     ${JITBUILDER_PATH}/release/libjitbuilder.a
     dl
 )
+
+add_subdirectory(test)

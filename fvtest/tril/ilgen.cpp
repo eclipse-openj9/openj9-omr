@@ -55,17 +55,6 @@ class OpCodeTable : public TR::ILOpCode {
 
 std::unordered_map<std::string, TR::ILOpCodes> OpCodeTable::_opcodeNameMap;
 
-TRLangBuilder::TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d) : _trees(trees), TR::MethodBuilder(d) {
-    DefineLine(__LINE__);
-    DefineFile(__FILE__);
-
-    DefineName("treeMethod");
-    DefineParameter("arg0", Int32);
-    DefineParameter("arg1", Int32);
-    DefineParameter("arg2", d->PointerTo(d->PointerTo(Int32)));
-    DefineReturnType(Int32);
-}
-
 static uint16_t countNodes(const ASTNode* n) {
     uint16_t count = 0;
     while (n) {

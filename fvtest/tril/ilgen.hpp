@@ -20,16 +20,18 @@
 #define ILGEN_HPP
 
 #include "ilgen/TypeDictionary.hpp"
-#include "ilgen/MethodBuilder.hpp"
+#include "ilgen/IlInjector.hpp"
 
 #include "ast.h"
 
 #include <map>
 #include <string>
 
-class TRLangBuilder : public TR::MethodBuilder {
+class TRLangBuilder : public TR::IlInjector {
     public:
-        TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d);
+        TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d)
+              : TR::IlInjector(d), _trees(trees) {}
+
         bool injectIL() override;
 
         TR::Node* toTRNode(const ASTNode* const tree);

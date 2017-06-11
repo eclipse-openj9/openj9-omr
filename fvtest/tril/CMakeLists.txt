@@ -24,7 +24,7 @@ find_package(BISON)
 find_package(FLEX)
 
 set(OMR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../omr)
-set(JITBUILDER_PATH ${OMR_PATH}/jitbuilder/release)
+set(JITBUILDER_PATH ${OMR_PATH}/jitbuilder)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
@@ -47,8 +47,10 @@ add_executable(trilc
 target_include_directories(trilc PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${JITBUILDER_PATH}/include
-    ${JITBUILDER_PATH}/include/compiler
+    ${JITBUILDER_PATH}/release/include
+    ${JITBUILDER_PATH}/x/amd64
+    ${JITBUILDER_PATH}/x
+    ${JITBUILDER_PATH}
     ${OMR_PATH}/compiler/x/amd64
     ${OMR_PATH}/compiler/x
     ${OMR_PATH}/compiler
@@ -58,6 +60,6 @@ target_include_directories(trilc PUBLIC
 target_link_libraries(trilc PUBLIC
     ${FLEX_LIBRARIES}
     ${BISON_LIBRARIES}
-    ${JITBUILDER_PATH}/libjitbuilder.a
+    ${JITBUILDER_PATH}/release/libjitbuilder.a
     dl
 )

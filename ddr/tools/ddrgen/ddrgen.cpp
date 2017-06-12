@@ -38,7 +38,7 @@
 #include "ddr/ir/Symbol_IR.hpp"
 
 DDR_RC getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile);
+	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile, bool *printEmptyTypes);
 DDR_RC readFileList(OMRPortLibrary *portLibrary, const char *debugFileList, vector<string> *debugFiles);
 
 int
@@ -56,8 +56,10 @@ main(int argc, char *argv[])
 	const char *blobFile = "blob.dat";
 	const char *overrideFile = NULL;
 	const char *blacklistFile = NULL;
+	bool printEmptyTypes;
 	vector<string> debugFiles;
-	rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile, &blobFile, &overrideFile, &debugFiles, &blacklistFile);
+	rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile,
+		&blobFile, &overrideFile, &debugFiles, &blacklistFile, &printEmptyTypes);
 
 	/* Create IR from input. */
 #if defined(_MSC_VER)
@@ -97,7 +99,7 @@ main(int argc, char *argv[])
 
 	/* Generate output. */
 	if ((DDR_RC_OK == rc) && !ir._types.empty()) {
-		rc = genBlob(&portLibrary, &ir, supersetFile, blobFile);
+		rc = genBlob(&portLibrary, &ir, supersetFile, blobFile, printEmptyTypes);
 	}
 
 	portLibrary.port_shutdown_library(&portLibrary);
@@ -108,11 +110,13 @@ main(int argc, char *argv[])
 
 DDR_RC
 getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile)
+	const char **blobFile, const char **overrideFile, vector<string> *debugFiles, const char **blacklistFile,
+	bool *printEmptyTypes)
 {
 	DDR_RC rc = DDR_RC_OK;
 	bool showHelp = (argc < 2);
 	bool showVersion = false;
+	*printEmptyTypes = false;
 	for (int i = 1; i < argc; i += 1) {
 		if ((0 == strcmp(argv[i], "--filelist"))
 			|| (0 == strcmp(argv[i], "-f"))
@@ -165,6 +169,10 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			} else {
 				*blacklistFile = argv[++i];
 			}
+		} else if ((0 == strcmp(argv[i], "--show-empty"))
+			|| (0 == strcmp(argv[i], "-e"))
+		) {
+			*printEmptyTypes = true;
 		} else if ((0 == strcmp(argv[i], "--help"))
 			|| (0 == strcmp(argv[i], "-h"))
 		) {
@@ -201,7 +209,10 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			"		'fieldoverride.STRUCT_NAME.FIELD_NAME=NewFieldName'\n"
 			"	-l FILE, --blacklist FILE\n"
 			"		Optional. File containing list of type names and source file paths to ignore."
-			"		Format is 'file:[filename]' or 'type:[typename]' on each line."
+			"		Format is 'file:[filename]' or 'type:[typename]' on each line.\n"
+			"	-e, --show-empty\n"
+			"		Print structures, enums, and unions to the superset and blob even if they do not contain any fields.\n"
+			"		The default behaviour is to hide them."
 		);
 	} else if (showVersion) {
 		printf("Version 0.1\n");

@@ -27,15 +27,15 @@
 #include "ddr/blobgen/java/genSuperset.hpp"
 
 DDR_RC
-genBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *const ir, const char *supersetFile, const char *blobFile)
+genBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *const ir, const char *supersetFile, const char *blobFile, bool printEmptyTypes)
 {
-	JavaSupersetGenerator supersetGenerator;
+	JavaSupersetGenerator supersetGenerator(printEmptyTypes);
 	DDR_RC rc = supersetGenerator.printSuperset(portLibrary, ir, supersetFile);
 
 	if (DDR_RC_OK == rc) {
 		printf("Superset written to file: %s\n", supersetFile);
 
-		JavaBlobGenerator blobGenerator;
+		JavaBlobGenerator blobGenerator(printEmptyTypes);
 		rc = blobGenerator.genBinaryBlob(portLibrary, ir, blobFile);
 	}
 

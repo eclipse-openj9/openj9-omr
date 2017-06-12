@@ -51,6 +51,7 @@ private:
 	set<string> _baseTypedefIgnore; /* Set of types to not rename when found as a typedef */
 	intptr_t _file;
 	OMRPortLibrary *_portLibrary;
+	bool _printEmptyTypes;
 
 	void initBaseTypedefSet();
 	void convertJ9BaseTypedef(Type *type, string *name);
@@ -65,7 +66,7 @@ private:
 	friend class SupersetFieldVisitor;
 
 public:
-	JavaSupersetGenerator();
+	JavaSupersetGenerator(bool printEmptyTypes);
 
 	DDR_RC printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetFile);
 };

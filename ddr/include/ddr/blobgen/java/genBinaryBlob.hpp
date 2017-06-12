@@ -127,6 +127,7 @@ private:
 	static pair<string, unsigned long long> cLimits[];
 
 	BuildBlobInfo _buildInfo;
+	bool _printEmptyTypes;
 
 	void copyStringTable();
 	DDR_RC stringTableOffset(BlobHeader *blobHeader, J9HashTable *stringTable, const char *cString, uint32_t *offset);
@@ -145,6 +146,7 @@ private:
 	friend class BlobEnumerateVisitor;
 
 public:
+	JavaBlobGenerator(bool printEmptyTypes) : _printEmptyTypes(printEmptyTypes) {}
 	DDR_RC genBinaryBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *blobFile);
 };
 

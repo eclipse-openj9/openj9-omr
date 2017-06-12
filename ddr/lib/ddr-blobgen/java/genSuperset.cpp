@@ -29,7 +29,7 @@
 #include "ddr/ir/TypeVisitor.hpp"
 #include "ddr/ir/UnionUDT.hpp"
 
-JavaSupersetGenerator::JavaSupersetGenerator() : _file(0), _portLibrary(NULL)
+JavaSupersetGenerator::JavaSupersetGenerator(bool printEmptyTypes) : _file(0), _portLibrary(NULL), _printEmptyTypes(printEmptyTypes)
 {
 	initBaseTypedefSet();
 }
@@ -411,7 +411,8 @@ SupersetVisitor::visitType(ClassUDT *type) const
 	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _supersetGen->_printEmptyTypes)) {
 			if (!_addFieldsOnly) {
 				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|";
@@ -488,14 +489,14 @@ SupersetVisitor::visitType(ClassUDT *type) const
 	return rc;
 }
 
-
 DDR_RC
 SupersetVisitor::visitType(UnionUDT *type) const
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _supersetGen->_printEmptyTypes)) {
 			if (!_addFieldsOnly) {
 				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";
@@ -541,7 +542,8 @@ SupersetVisitor::visitType(EnumUDT *type) const
 	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_enumMembers.size() > 0)) {
+		if ((!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_enumMembers.size() > 0) || _supersetGen->_printEmptyTypes)) {
 			if (!_addFieldsOnly) {
 				string nameFormatted = _supersetGen->replace(type->getFullName(), "::", "$");
 				string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|\n";

@@ -428,7 +428,8 @@ BlobBuildVisitor::visitType(EnumUDT *e) const
 	DDR_RC rc = DDR_RC_OK;
 	if (!e->_isDuplicate) {
 		/* Do not add anonymous inner types as their own type. */
-		if ((!e->isAnonymousType() || _addFieldsOnly) && (e->_enumMembers.size() > 0)) {
+		if ((!e->isAnonymousType() || _addFieldsOnly)
+			&& ((e->_enumMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			/* Format class name */
 			string nameFormatted = e->_name;
 			if (NULL != e->_outerNamespace) {
@@ -461,7 +462,8 @@ BlobBuildVisitor::visitType(UnionUDT *u) const
 	DDR_RC rc = DDR_RC_OK;
 	if (!u->_isDuplicate) {
 		/* Do not add anonymous inner types as their own type. */
-		if ((!u->isAnonymousType() || _addFieldsOnly) && (u->_fieldMembers.size() > 0)) {
+		if ((!u->isAnonymousType() || _addFieldsOnly)
+			&& ((u->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			/* Format class name */
 			string nameFormatted = u->_name;
 			if (NULL != u->_outerNamespace) {
@@ -525,7 +527,8 @@ BlobBuildVisitor::visitType(ClassUDT *cu) const
 	DDR_RC rc = DDR_RC_OK;
 	if (!cu->_isDuplicate) {
 		/* Do not add anonymous inner types as their own type. */
-		if ((!cu->isAnonymousType() || _addFieldsOnly) && (cu->_fieldMembers.size() > 0)) {
+		if ((!cu->isAnonymousType() || _addFieldsOnly)
+			&& ((cu->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			/* Format class name */
 			string nameFormatted = cu->_name;
 			if (NULL != cu->_outerNamespace) {
@@ -970,7 +973,8 @@ BlobEnumerateVisitor::visitType(EnumUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || _addFieldsOnly) && (type->_enumMembers.size() > 0)) {
+		if ((!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_enumMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, type->_enumMembers.size());
 		}
 	}
@@ -992,7 +996,8 @@ BlobEnumerateVisitor::visitType(ClassUDT *type) const
 		size_t fieldCount = 0;
 		size_t constCount = type->_enumMembers.size();
 
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
 				if (!(*v)->_isStatic) {
 					/* Anonymous type members are added to the struct and not counted as a field themselves. */
@@ -1016,7 +1021,8 @@ BlobEnumerateVisitor::visitType(ClassUDT *type) const
 				}
 			}
 		}
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
 		}
 	}
@@ -1072,7 +1078,8 @@ BlobEnumerateVisitor::visitType(UnionUDT *type) const
 		size_t fieldCount = 0;
 		size_t constCount = type->_enumMembers.size();
 
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
 				if (!(*v)->_isStatic) {
 					/* Anonymous type members are added to the struct and not counted as a field themselves. */
@@ -1096,7 +1103,8 @@ BlobEnumerateVisitor::visitType(UnionUDT *type) const
 				}
 			}
 		}
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly) && (type->_fieldMembers.size() > 0)) {
+		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
+			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
 			rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
 		}
 	}

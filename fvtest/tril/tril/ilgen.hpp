@@ -44,6 +44,4 @@ class TRLangBuilder : public TR::IlInjector {
         std::map<std::string, int> _blockMap;
 };
 
-using TreeMethodFunction = void(int32_t, int32_t, int32_t*);
-
 #endif // ILGEN_HPP

@@ -154,7 +154,7 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
          auto targetEntry = _blocks[targetId]->getEntry();
          TraceIL("  is branch to target block %d (%s, entry = %p", targetId, targetName, targetEntry);
          node = TR::Node::create(opcode.getOpCodeValue(), childCount);
-         node->setBranchDestination(_blocks[targetId]->getEntry());
+         node->setBranchDestination(targetEntry);
      }
      else {
         TraceIL("  unrecognized opcode; using default creation mechanism\n", "");

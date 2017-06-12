@@ -18,33 +18,29 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(triltest LANGUAGES CXX)
+project(tril_mandelbrot LANGUAGES C CXX)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 if(NOT DEFINED tril_DIR)
-    set(tril_DIR ${CMAKE_CURRENT_LIST_DIR}/../tril/build)
+    set(tril_DIR ${CMAKE_CURRENT_LIST_DIR}/../../tril/build)
 endif()
 
-# Setup testing
-enable_testing()
-find_package(GTest REQUIRED)
 find_package(tril REQUIRED)
 
 if(NOT tril_FOUND)
     message(FATAL "404: Tril not found.")
 endif()
 
-add_executable(triltest
-   ASTTest.cpp
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always -fno-rtti -fno-threadsafe-statics -Wno-deprecated -Wno-enum-compare -Wno-invalid-offsetof -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing")
+
+add_executable(mandelbrot
+   main.cpp
 )
 
-target_link_libraries(triltest 
-   ${GTEST_BOTH_LIBRARIES} 
-   ${tril_LIBRARIES}
+target_link_libraries(mandelbrot
+   ${tril_LIBRAREIS}
    tril
 )
-
-add_test(
-    NAME triltest
-    COMMAND triltest --gtest_color=yes
-)
-

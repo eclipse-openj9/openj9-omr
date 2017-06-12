@@ -18,33 +18,11 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(triltest LANGUAGES CXX)
+project(tril_examples)
 
 if(NOT DEFINED tril_DIR)
     set(tril_DIR ${CMAKE_CURRENT_LIST_DIR}/../tril/build)
 endif()
 
-# Setup testing
-enable_testing()
-find_package(GTest REQUIRED)
-find_package(tril REQUIRED)
-
-if(NOT tril_FOUND)
-    message(FATAL "404: Tril not found.")
-endif()
-
-add_executable(triltest
-   ASTTest.cpp
-)
-
-target_link_libraries(triltest 
-   ${GTEST_BOTH_LIBRARIES} 
-   ${tril_LIBRARIES}
-   tril
-)
-
-add_test(
-    NAME triltest
-    COMMAND triltest --gtest_color=yes
-)
-
+add_subdirectory(incordec)
+add_subdirectory(mandelbrot)

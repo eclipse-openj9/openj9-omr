@@ -65,6 +65,14 @@ private:
 		Assert_GC_true_with_message(env, objectPtr != J9_INVALID_OBJECT, "Invalid object pointer %p\n", objectPtr);
 		Assert_MM_objectAligned(env, objectPtr);
 		Assert_GC_true_with_message3(env, isHeapObject(objectPtr), "Object %p not in heap range [%p,%p)\n", objectPtr, _heapBase, _heapTop);
+		
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+			MM_ForwardedHeader forwardHeader(objectPtr);
+			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+			Assert_MM_true(NULL == forwardPtr);
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 				
 	}
 
 	/**
@@ -236,6 +244,8 @@ public:
 #else /* OMR_GC_LEAF_BITS */
 			while (NULL != (slotObject = objectScanner->getNextSlot())) {
 #endif /* OMR_GC_LEAF_BITS */
+				fixupForwardedSlot(slotObject);
+
 				/* with concurrentMark mutator may NULL the slot so must fetch and check here */
 				inlineMarkObject(env, slotObject->readReferenceFromSlot(), isLeafSlot);
 			}
@@ -266,6 +276,31 @@ public:
 	MMINLINE bool isHeapObject(omrobjectptr_t objectPtr)
 	{
 		return ((_heapBase <= (uint8_t *)objectPtr) && (_heapTop > (uint8_t *)objectPtr));
+	}
+	
+	/**
+	 * Update the slot value to point to (Scavenger) forwarded object. If self-forwarded,
+	 * the slot is unchanged, but the class slot of the self-forwarded object is restored (self-forwarded bits are reset).
+	 * This is currently used only in presence of Concurrent Scavenger. When abort is detected CS does not fix up 
+	 * heap references within Scavenger abort handling, but relies on marking in percolate Global to do it.
+	 * The updates are non-atomic, but even though multiple threads could be doing it, they set it to the same value.
+	 */
+	
+	void fixupForwardedSlot(GC_SlotObject *slotObject) {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+			MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
+			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+	
+			if (NULL != forwardPtr) {
+				if (forwardHeader.isSelfForwardedPointer()) {
+					forwardHeader.restoreSelfForwardedPointer();
+				} else {
+					slotObject->writeReferenceToSlot(forwardPtr);
+				}
+			}
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 			
 	}
 
 	/**

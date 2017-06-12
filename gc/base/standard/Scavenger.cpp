@@ -3185,9 +3185,13 @@ MM_Scavenger::fixupSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 
 	if(NULL != objectPtr) {
 		MM_ForwardedHeader forwardHeader(objectPtr);
-		Assert_MM_false(forwardHeader.isSelfForwardedPointer());
-		if (forwardHeader.isForwardedPointer()) {
-			*slotPtr = forwardHeader.getForwardedObject();
+		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+		if (NULL != forwardPtr) {
+			if (forwardHeader.isSelfForwardedPointer()) {
+				forwardHeader.restoreSelfForwardedPointer();
+			} else {
+				*slotPtr = forwardPtr;
+			}
 			return true;
 		}
 	}
@@ -3227,74 +3231,6 @@ MM_Scavenger::fixupObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t object
 	// todo: check if need to do anything about indirect references
 }
 
-void
-MM_Scavenger::fixupNurserySlots(MM_EnvironmentStandard *env)
-{
-	GC_MemorySubSpaceRegionIteratorStandard regionIterator(_activeSubSpace);
-	MM_HeapRegionDescriptorStandard* rootRegion = NULL;
-
-	/* Walk whole Nursery and update slots that still point to forwarded objects */
-	/* Even Survivor can have them, created by stores with references to Evacuate */
-	/* Tenure could have them too, but RS comes to the rescue to find those objects faster */
-	while(NULL != (rootRegion = regionIterator.nextRegion())) {
-		GC_ObjectHeapIteratorAddressOrderedList objectHeapIterator(_extensions, rootRegion, false);
-
-		omrobjectptr_t objectPtr = NULL;
-		while((objectPtr = objectHeapIterator.nextObjectNoAdvance()) != NULL) {
-			MM_ForwardedHeader header(objectPtr);
-			if (!header.isForwardedPointer()) {
-				fixupObjectScan(env, objectPtr);
-			} else if (header.isSelfForwardedPointer()) {
-				header.restoreSelfForwardedPointer();
-				Assert_MM_false(_extensions->objectModel.isDeadObject(objectPtr));
-				MM_ForwardedHeader header(objectPtr);
-				Assert_MM_false(header.isSelfForwardedPointer());
-				fixupObjectScan(env, objectPtr);
-			} else {
-				/* Strictly forwarded object should be skipped by the iterator */
-				Assert_MM_unreachable();
-			}
-		}
-	}
-
-	/* todo: revisit how much work should be done here
-	 * - finalizable are hard roots and could be skipped?
-	 * - unfinalized list could be valid since we updated all (including hidden?) stale references?
-	 */
-	MM_ScavengerBackOutScanner backOutScanner(env, true, this);
-	backOutScanner.scanAllSlots(env);
-
-	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator(_activeSubSpace);
-	rootRegion = NULL;
-
- 	/* Create holes out of strictly forwarded objects */
-	/* todo: this pass is probably necessary only to make the heap walkable for GC checks that run
-	 * at the end of aborted scavenge and the start of percolate global GC */
-	while(NULL != (rootRegion = evacuateRegionIterator.nextRegion())) {
-		/* Forwarded objects are only in Evacuate */
-		if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {
-			/* tell the object iterator to work on the given region */
-			GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
-			evacuateHeapIterator.includeForwardedObjects();
-			omrobjectptr_t objectPtr = NULL;
-
-			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr);
-				if (header.isForwardedPointer()) {
-					Assert_MM_true(header.isStrictlyForwardedPointer());
-					omrobjectptr_t forwardedObject = header.getForwardedObject();
-					omrobjectptr_t originalObject = header.getObject();
-
-					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(forwardedObject);
-					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(originalObject);
-					freeHeader->setNext((MM_HeapLinkedFreeHeader*)forwardedObject);
-					freeHeader->setSize(evacuateObjectSizeInBytes);
-					Assert_MM_true(objectPtr == originalObject);
-				}
-			}
-		}
-	}
-}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 void
@@ -3493,32 +3429,17 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 			_cli->scavenger_backOutIndirectObjects(env);
 		} else {
 			/* RS not in overflow */
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (!_extensions->concurrentScavenger)
-#endif
-			{
-				/*
-				 * 2.c)Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space
-				 */
+			if (!_extensions->isConcurrentScavengerEnabled()) {
+				/* Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space */
 				backoutFixupAndReverseForwardPointersInSurvivor(env);
 			}
 
 			processRememberedSetInBackout(env);
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (_extensions->concurrentScavenger) {
-				fixupNurserySlots(env);
-			}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		} /* end of 'is RS in overflow' */
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		if (!_extensions->concurrentScavenger)
-#endif
-		{
-			MM_ScavengerBackOutScanner backOutScanner(env, true, this);
-			backOutScanner.scanAllSlots(env);
-		}
+		MM_ScavengerBackOutScanner backOutScanner(env, true, this);
+		backOutScanner.scanAllSlots(env);
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 		omrtty_printf("{SCAV: Done back out}\n");

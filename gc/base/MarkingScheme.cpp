@@ -279,6 +279,8 @@ MM_MarkingScheme::scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
 #else /* OMR_GC_LEAF_BITS */
 		while (NULL != (slotObject = objectScanner->getNextSlot())) {
 #endif /* OMR_GC_LEAF_BITS */
+			fixupForwardedSlot(slotObject);
+
 			inlineMarkObjectNoCheck(env, slotObject->readReferenceFromSlot(), isLeafSlot);
 		}
 	}

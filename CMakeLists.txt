@@ -23,11 +23,7 @@ message(WARNING
 "CMake support is currently experimental.\n\
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
-#TODO figure out method of sharing version info with makefile build
-set(OMR_VERSION_MAJOR 0)
-set(OMR_VERSION_MINOR 0)
-set(OMR_VERSION_PATCH 1)
-set(OMR_VERSION ${OMR_VERSION_MAJOR}.${OMR_VERSION_MINOR}.${OMR_VERSION_PATCH})
+include(cmake/versions.cmake) # Required for OMR_VERSION 
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 
@@ -46,9 +42,6 @@ endif()
 # TODO: OMR_RTTI flag
 
 # TODO: Version things
-
-set(OMR_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
-set(OMR_JIT_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
 
 ###
 ### Versions and stuff

@@ -113,8 +113,18 @@ bool TR_FieldPrivatizer::isFieldAliasAccessed(TR::SymbolReference * symRef)
 
    if (symRef->getUseDefAliases().hasAliases())
       {
-      aliasAccessed = true;
+
+      TR_ASSERT(_allSymRefs[symRef->getReferenceNumber()] == true, "symRef should have been seen in the loop");
+      _allSymRefs[symRef->getReferenceNumber()] = false;
+
+      if (symRef->getUseDefAliases().containsAny(_allSymRefs, comp()))
+         {
+         aliasAccessed = true;
+         }
+      _allSymRefs[symRef->getReferenceNumber()] = true;
+
       }
+
    return aliasAccessed;
    }
 

@@ -338,7 +338,6 @@ target_link_libraries(omrport
 
 #TODO: at the moment this assumes all C source files which is a lie
 target_include_directories(omrport PRIVATE 
-	.
 	../nls
 )
 

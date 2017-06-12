@@ -66,6 +66,7 @@ typedef struct J9HookInterface {
 #define J9HOOK_TAG_AGENT_ID  0x20000000
 #define J9HOOK_TAG_COUNTED  0x40000000
 #define J9HOOK_TAG_ONCE  0x80000000
+#define J9HOOK_TAG_SAMPLING_MASK	0x00ff0000
 #define J9HOOK_AGENTID_FIRST  ((uintptr_t)0)
 #define J9HOOK_AGENTID_DEFAULT  ((uintptr_t)1)
 #define J9HOOK_AGENTID_LAST  ((uintptr_t)-1)
@@ -74,8 +75,11 @@ typedef struct J9HookInterface {
 #define OMRHOOK_DEFAULT_THRESHOLD_IN_MILLISECONDS_WARNING_CALLBACK_ELAPSED_TIME	100
 
 /* array of OMREventInfo4Dump is added in individual hookInterface by Hook generation tool to avoid
-   rumtime native memory allocation(malloc), use this macro to access &infos4Dump[event] */
-#define J9HOOK_DUMPINFO(interface, event) (&((OMREventInfo4Dump *)&((uint8_t*)((interface) + 1))[(interface)->eventSize])[event])
+   rumtime native memory allocation(malloc), use this macro to access &infos4Dump[event]
+   locate infos4Dump from end of interface to avoid alignment calculating
+*/
+
+#define J9HOOK_DUMPINFO(interface, event) (&((OMREventInfo4Dump *)&(((J9HookRecord **)((uint8_t*)(interface) + (interface)->size ))[0 - (interface)->eventSize]))[event - (interface)->eventSize])
 
 typedef struct OMRHookInfo4Dump {
 	const char *callsite;
@@ -87,6 +91,7 @@ typedef struct OMRHookInfo4Dump {
 typedef struct OMREventInfo4Dump {
 	struct OMRHookInfo4Dump longestHook;
 	struct OMRHookInfo4Dump lastHook;
+	volatile uintptr_t count;
 }OMREventInfo4Dump;
 
 typedef struct J9CommonHookInterface {

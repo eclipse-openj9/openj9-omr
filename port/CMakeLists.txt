@@ -16,16 +16,17 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-#TODO: at the moment this assumes all C source files which is a lie
-include_directories(
-	.
-	../nls
-)
 
-add_definitions(-DOMRPORT_LIBRARY_DEFINE)
 
 set(OBJECTS "")
 set(VPATH "")
+
+# Logic below will set the target_includes, and supplement the 
+# target_sources
+add_library(omrport STATIC 
+	ut_omrport.c
+)
+
 
 if(OMR_HOST_OS STREQUAL "aix")
 	list(APPEND OBJECTS omrgetsp.c)
@@ -221,13 +222,13 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND VPATH zos390)
-	include_directories(zos390)
+	target_include_directories(omrport PRIVATE zos390)
 endif()
 
 if(OMR_HOST_OS STREQUAL "win")
 	if(OMR_ENV_DATA64)
 		list(APPEND VPATH win64amd)
-		include_directories(win64amd)
+		target_include_directories(omrport PRIVATE win64amd)
 	endif()
 endif()
 
@@ -279,41 +280,41 @@ if(OMR_HOST_OS STREQUAL "linux")
 
 	if(OMR_ARCH_ARM)
 		list(APPEND VPATH linuxarm)
-		include_directories(linuxarm)
+		target_include_directories(omrport PRIVATE linuxarm)
 	endif()
 
 	if(OMR_ARCH_X86)
 		if(OMR_ENV_DATA64)
 			list(APPEND VPATH linuxamd64)
-			include_directories(linuxamd64)
+			target_include_directories(omrport PRIVATE linuxamd64)
 		else()
 			list(APPEND VPATH linux386)
-			include_directories(linux386)
+			target_include_directories(omrport PRIVATE linux386)
 		endif()
 
 	endif()
 
 	list(APPEND VPATH linux)
-	include_directories(linux)
+	target_include_directories(omrport PRIVATE linux)
 endif()
 
 
 if(OMR_HOST_OS STREQUAL "osx")
 	list(APPEND VPATH osx_include osx)
-	include_directories(osx_include osx)
+	target_include_directories(omrport PRIVATE osx_include osx)
 endif()
 
 
 if(OMR_HOST_OS STREQUAL "win")
 	list(APPEND VPATH win32_include win32)
-	include_directories(win32_include win32)
+	target_include_directories(omrport PRIVATE win32_include win32)
 else()
 	list(APPEND VPATH unix)
-	include_directories(unix unix_include)
+	target_include_directories(omrport PRIVATE unix unix_include)
 endif()
 
 list(APPEND VPATH common include)
-include_directories(common include)
+target_include_directories(omrport PRIVATE common include)
 
 #TODO need to set some flags and etc see line 300
 
@@ -328,15 +329,23 @@ endif()
 
 add_tracegen(common/omrport.tdf)
 
-add_library(omrport STATIC 
-	ut_omrport.c
-	${resolvedPaths}
-)
+target_sources(omrport PRIVATE ${resolvedPaths})
 
 target_link_libraries(omrport
 	j9thrstatic
 	j9hashtable
 )
+
+#TODO: at the moment this assumes all C source files which is a lie
+target_include_directories(omrport PRIVATE 
+	.
+	../nls
+)
+
+# This flag indicates that we are compiling the port library
+target_compile_definitions(omrport PRIVATE -DOMRPORT_LIBRARY_DEFINE)
+
+
 
 #TODO hack to get to compile. Need platform checks
 if(NOT OMR_HOST_OS STREQUAL "win")

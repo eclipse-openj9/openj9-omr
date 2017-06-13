@@ -11705,14 +11705,6 @@ bool OMR::Z::CodeGenerator::loadAndStoreMayOverlap(TR::Node *store, size_t store
    }
 
 
-template <class TR_AliasSetInterface>
-bool OMR::Z::CodeGenerator::loadAndStoreMayOverlap(TR::Node *store, size_t storeSize, TR::Node *load, size_t loadSize, TR_AliasSetInterface &storeAliases)
-   {
-   return storeAliases.contains(load->getSymbolReference(), self()->comp());
-   }
-
-
-
 bool
 OMR::Z::CodeGenerator::checkIfcmpxx(TR::Node *node)
    {

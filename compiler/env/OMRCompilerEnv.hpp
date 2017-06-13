@@ -77,7 +77,7 @@ public:
 
    // Information about methods in this compilation environment
    //
-   TR::VMMethodEnv mth;
+   TR::VMMethodEnv mtd;
 
    // Object model in this compilation environment
    //

@@ -31,6 +31,7 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"           // for TR_Recompilation
+#include "env/CompilerEnv.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/jittypes.h"                      // for TR_ByteCodeInfo, etc
 #include "il/Block.hpp"                        // for Block, toBlock
@@ -889,7 +890,7 @@ bool TR_RedundantAsyncCheckRemoval::originatesFromShortRunningMethod(TR_RegionSt
 	    }
 	 TR_InlinedCallSite &ics = comp()->getInlinedCallSite(callerIndex);
 	 if (!comp()->isShortRunningMethod(callerIndex) &&
-	     comp()->fe()->hasBackwardBranches((TR_OpaqueMethodBlock*)ics._vmMethodInfo))
+	     TR::Compiler->mtd.hasBackwardBranches((TR_OpaqueMethodBlock*)ics._vmMethodInfo))
 	    break;
 	 //set callerIndex to its caller
 	 callerIndex = comp()->getInlinedCallSite(callerIndex)._byteCodeInfo.getCallerIndex();

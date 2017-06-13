@@ -20,7 +20,7 @@
 # and to fail with Autoconf v2.59. Autoconf v2.59 does not recognize
 # AS_CASE(), AS_ECHO(), AC_MSG_ERROR().
 AC_PREREQ(2.63)
-AC_INIT([OMR], [1.0])
+AC_INIT([OMR], [0.1])
 
 m4_include([omrmakefiles/confighelpers.m4])
 
@@ -48,6 +48,23 @@ AC_ARG_VAR([OMR_CROSS_CONFIGURE],
 	[Indicates that configure is not being run on a system that is capable of building the package.
 	Compiler and feature detection tests will be invalid. All options must be configured manually.
 	One of: yes,no. (Default: no)])
+
+AC_ARG_VAR([OMR_COMPANY_NAME],
+  [The company name of product integrating OMR.] (Default: ))
+AC_ARG_VAR([OMR_COMPANY_COPYRIGHT],
+  [The copyright of product integrating OMR.] (Default: ))
+AC_ARG_VAR([OMR_PRODUCT_DESCRIPTION],
+  [The description of product integrating OMR.] (Default: AC_PACKAGE_STRING))
+AC_ARG_VAR([OMR_PRODUCT_VERSION],
+  [The version of product integrating OMR.] (Default: AC_PACKAGE_VERSION))
+AC_ARG_VAR([OMR_PRODUCT_DESCRIPTION],
+  [The description of product integrating OMR.] (Default: AC_PACKAGE_STRING AC_PACKAGE_URL))
+
+OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
+OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
+OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"AC_PACKAGE_STRING AC_PACKAGE_URL"}
+OMR_PRODUCT_NAME=${OMR_PRODUCT_NAME:-"AC_PACKAGE_NAME"}
+OMR_PRODUCT_VERSION=${OMR_PRODUCT_VERSION:-"AC_PACKAGE_VERSION"}
 
 AC_ARG_ENABLE([optimized],
 	AS_HELP_STRING([--enable-optimized], [Create an optimized build. (Default: yes)]),
@@ -606,6 +623,7 @@ cross_compiling=$save_cross_compiling
 AC_CONFIG_FILES([
 	include_core/omrversionstrings.h:include_core/omrversionstrings.h.in
 	omrmakefiles/configure.mk:omrmakefiles/configure.mk.in
+	omr.rc
 ])
 
 AC_CONFIG_HEADERS([include_core/omrcfg.h:include_core/omrcfg.h.in])
@@ -624,3 +642,4 @@ AC_CONFIG_COMMANDS([toolconfigure],
 		[OMR_HOSTCONFIG_ENV="CC= CXX="])])
 
 AC_OUTPUT
+

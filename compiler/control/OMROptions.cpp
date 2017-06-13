@@ -4803,6 +4803,7 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "hookDetailsClassUnloading",
    "sampleDensity",
    "profiling"
+   "JITaaS",
    };
 
 

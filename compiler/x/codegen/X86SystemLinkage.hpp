@@ -82,6 +82,17 @@ class X86SystemLinkage : public TR::Linkage
    virtual int32_t layoutParm(TR::ParameterSymbol *paramSymbol, int32_t &dataCursor, uint16_t &intReg, uint16_t &floatRrgs, TR::parmLayoutResult&) = 0;
 
    virtual TR::Register* buildVolatileAndReturnDependencies(TR::Node*, TR::RegisterDependencyConditions*) = 0;
+
+   /**
+    * @brief Returns a register appropriate for allocating/de-allocating small stack frames
+    *
+    * When the size of a new stack frame that is the same size as a word on the
+    * platform, the frame can be simply allocated/de-allocated by pushing/popping
+    * a volatile, non-return register. This function returns a register that
+    * is guarenteed to be safe for such uses.
+    */
+   virtual TR::RealRegister* getSingleWordFrameAllocationRegister() = 0;
+
    public:
 
    const TR::X86LinkageProperties& getProperties();

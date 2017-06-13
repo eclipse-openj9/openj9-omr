@@ -523,8 +523,8 @@ TR::X86SystemLinkage::createPrologue(TR::Instruction *cursor)
       }
    else if (allocSize == singleWordSize)
       {
-      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
-      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, ebxReal, cg());
+      TR::RealRegister *realReg = getSingleWordFrameAllocationRegister();
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, PUSHReg, realReg, cg());
       }
    else
       {
@@ -724,8 +724,8 @@ TR::X86SystemLinkage::createEpilogue(TR::Instruction *cursor)
       }
    else if (allocSize == singleWordSize)
       {
-      TR::RealRegister *ebxReal = machine()->getX86RealRegister(TR::RealRegister::ebx);
-      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, ebxReal, cg());
+      TR::RealRegister *realReg = getSingleWordFrameAllocationRegister();
+      cursor = new (trHeapMemory()) TR::X86RegInstruction(cursor, POPReg, realReg, cg());
       }
    else
       {

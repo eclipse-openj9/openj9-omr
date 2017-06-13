@@ -67,7 +67,8 @@ void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg);
 
 void printTrees(ASTNode* trees, int indent);
 
-ASTNode* genTrees(FILE* in);
+ASTNode* parseFile(FILE* in);
+ASTNode* parseString(const char* in);
 
 #ifdef __cplusplus
 }

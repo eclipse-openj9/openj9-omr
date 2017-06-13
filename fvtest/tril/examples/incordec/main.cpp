@@ -40,7 +40,7 @@ int main(int argc, char const * const * const argv) {
 
    for (unsigned int i = 1; i < argc; ++i) {
       FILE* inputFile = fopen(argv[i], "r");
-      ASTNode* trees = genTrees(inputFile);
+      ASTNode* trees = parseFile(inputFile);
       printf("parsed trees:\n");
       printTrees(trees, 0);
 

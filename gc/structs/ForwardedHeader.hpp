@@ -105,6 +105,12 @@ public:
 	omrobjectptr_t getForwardedObject();
 	
 	/**
+	 * Get either strict or non-strict forwarded version of the object, or NULL if object is not forwarded at all.
+	 * In non Concurrent Scavenger world, this is identical to getForwardedObject()
+	 */
+	omrobjectptr_t getNonStrictForwardedObject();
+	
+	/**
 	 * @return the object pointer represented by the receiver
 	 */
 	MMINLINE omrobjectptr_t
@@ -142,10 +148,6 @@ public:
 		return _forwardedTag == ((uintptr_t)_preserved.slot & _selfForwardedTag);
 	}
 
-	/**
-	 * Get either strict or non-strict forwarded version of the object, or NULL if object is not forwarded at all.
-	 */
-	omrobjectptr_t getNonStrictForwardedObject();
 	
 	omrobjectptr_t setSelfForwardedObject();
 	

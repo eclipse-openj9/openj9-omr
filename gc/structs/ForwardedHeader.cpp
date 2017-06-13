@@ -110,6 +110,38 @@ MM_ForwardedHeader::getForwardedObject()
 	return forwardedObject;
 }
 
+
+omrobjectptr_t
+MM_ForwardedHeader::getNonStrictForwardedObject()
+{
+	omrobjectptr_t forwardedObject = NULL;
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (isStrictlyForwardedPointer()) {
+#else
+	if (isForwardedPointer()) {
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN)
+		/* Compressed big endian - read two halves separately */
+		uint32_t hi = (uint32_t)_preserved.overlap;
+		uint32_t lo = (uint32_t)_preserved.slot & ~_forwardedTag;
+		uintptr_t restoredForwardingSlotValue = (((uintptr_t)hi) <<32 ) | ((uintptr_t)lo);
+#else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
+		/* Little endian or not compressed - read all uintptr_t bytes at once */
+		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~_forwardedTag;
+#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
+
+		forwardedObject = (omrobjectptr_t)(restoredForwardingSlotValue);
+	}
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	else if (isSelfForwardedPointer()) {
+		forwardedObject = _objectPtr;
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+	return forwardedObject;
+}
+
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 omrobjectptr_t
 MM_ForwardedHeader::setSelfForwardedObject()
@@ -149,27 +181,4 @@ MM_ForwardedHeader::restoreSelfForwardedPointer()
 	objectHeader->slot = newValue;
 }
 
-omrobjectptr_t
-MM_ForwardedHeader::getNonStrictForwardedObject()
-{
-	omrobjectptr_t forwardedObject = NULL;
-
-	if (isStrictlyForwardedPointer()) {
-#if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN)
-		/* Compressed big endian - read two halves separately */
-		uint32_t hi = (uint32_t)_preserved.overlap;
-		uint32_t lo = (uint32_t)_preserved.slot & ~_forwardedTag;
-		uintptr_t restoredForwardingSlotValue = (((uintptr_t)hi) <<32 ) | ((uintptr_t)lo);
-#else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
-		/* Little endian or not compressed - read all uintptr_t bytes at once */
-		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~_forwardedTag;
-#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
-
-		forwardedObject = (omrobjectptr_t)(restoredForwardingSlotValue);
-	} else if (isSelfForwardedPointer()) {
-		forwardedObject = _objectPtr;
-	}
-
-	return forwardedObject;
-}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */

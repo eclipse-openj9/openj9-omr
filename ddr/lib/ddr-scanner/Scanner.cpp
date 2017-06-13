@@ -87,7 +87,7 @@ Scanner::loadBlacklist(string path)
 	 */
 	DDR_RC rc = DDR_RC_OK;
 	string line = "";
-	ifstream blackListInput(path, ios::in);
+	ifstream blackListInput(path.c_str(), ios::in);
 
 	if (blackListInput.is_open()) {
 		while (getline(blackListInput, line)) {

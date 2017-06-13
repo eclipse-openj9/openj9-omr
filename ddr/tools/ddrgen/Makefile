@@ -56,7 +56,7 @@ endif
 ifeq (linux,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += rt pthread
   ifeq (ppc,$(OMR_HOST_ARCH))
-    MODULE_SHARED_LIBS += elf z
+    MODULE_SHARED_LIBS += elf
   endif
   ifeq (s390,$(OMR_HOST_ARCH))
     MODULE_SHARED_LIBS += z

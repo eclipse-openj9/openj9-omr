@@ -42,19 +42,28 @@ TypedefUDT::checkDuplicate(Symbol_IR *ir)
 string
 TypedefUDT::getSymbolKindName()
 {
+	if (NULL == _aliasedType) return "";
 	return _aliasedType->getSymbolKindName();
 }
 
 size_t
 TypedefUDT::getPointerCount()
 {
-	return _modifiers._pointerCount + _aliasedType->getPointerCount();
+	size_t count = _modifiers._pointerCount;
+	if (NULL != _aliasedType) {
+		count += _aliasedType->getPointerCount();
+	}
+	return count;
 }
 
 size_t
 TypedefUDT::getArrayDimensions()
 {
-	return _modifiers.getArrayDimensions() + _aliasedType->getArrayDimensions();
+	size_t count = _modifiers.getArrayDimensions();
+	if (NULL != _aliasedType) {
+		count += _aliasedType->getArrayDimensions();
+	}
+	return count;
 }
 
 Type *

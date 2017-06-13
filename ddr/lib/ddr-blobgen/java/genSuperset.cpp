@@ -217,7 +217,7 @@ SupersetFieldVisitor::visitType(TypedefUDT *type) const
 	if (!_prefixBase->empty()) {
 		*_prefixBase += " ";
 	}
-	if (type->_aliasedType->_name == type->_name) {
+	if ((NULL != type->_aliasedType) && (type->_aliasedType->_name == type->_name)) {
 		*_prefix = *_prefixBase;
 	}
 

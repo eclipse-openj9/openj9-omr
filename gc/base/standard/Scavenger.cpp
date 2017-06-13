@@ -3228,7 +3228,9 @@ MM_Scavenger::fixupObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t object
 		}
 	}
 
-	// todo: check if need to do anything about indirect references
+	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+		_cli->scavenger_fixupIndirectObjectSlots(env, objectPtr);
+	}
 }
 
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */

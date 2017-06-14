@@ -3772,10 +3772,15 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    TR::Node *storeCall =  TR::Node::createWithSymRef(TR::istore, 1, 1, dupCallTree->getNode()->getFirstChild(), symRefConvert);
    dupCallTree->insertAfter(TR::TreeTop::create(comp(), storeCall, NULL, NULL));
 
-   TR::TreeTop *actt = TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, TR::asynccheck, 0,
-                                       getSymRefTab()->findOrCreateAsyncCheckSymbolRef
-                                       (comp()->getMethodSymbol())));
-   fastArraytranslateBlock->append(actt);
+   //The async check is inserted because the converter call might have been the only
+   //yield point in a loop due to asyn check removel. 
+   if (comp()->getOSRMode() != TR::involuntaryOSR && comp()->getHCRMode() != TR::osr)
+      {
+      TR::TreeTop *actt = TR::TreeTop::create(comp(), TR::Node::createWithSymRef(callNode, TR::asynccheck, 0,
+                                          getSymRefTab()->findOrCreateAsyncCheckSymbolRef
+                                          (comp()->getMethodSymbol())));
+      fastArraytranslateBlock->append(actt);
+      }
 
    fastArraytranslateBlock->setIsCold(false);
    fastArraytranslateBlock->setFrequency(origCallBlock->getFrequency());

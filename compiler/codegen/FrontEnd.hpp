@@ -224,7 +224,6 @@ public:
    virtual void releaseCodeMemory(void *, uint8_t);
    virtual void unreserveCodeCache(TR::CodeCache *codeCache) { TR_ASSERT(0, "This method needs to be implemented"); }
    virtual TR::CodeCache *getDesignatedCodeCache(TR::Compilation* comp); // MCT
-   virtual void setHasFailedCodeCacheAllocation(); // MCT
    virtual void reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding);
    virtual void reserveNTrampolines(TR::Compilation *, int32_t n, bool inBinaryEncoding);
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);

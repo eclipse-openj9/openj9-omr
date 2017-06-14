@@ -375,11 +375,6 @@ TR_FrontEnd::getDesignatedCodeCache(TR::Compilation *comp)
    return 0;
    }
 
-void
-TR_FrontEnd::setHasFailedCodeCacheAllocation()
-   {
-   notImplemented("setHasFailedCodeCacheAllocation");
-   }
 
 void
 TR_FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding)

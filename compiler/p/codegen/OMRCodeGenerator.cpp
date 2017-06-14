@@ -1212,8 +1212,14 @@ static void lhsPeephole(TR::CodeGenerator *cg, TR::Instruction *storeInstruction
       // Found the pattern:
       //   stw/std rX, ...
       //   lwz/ld rX, ...
-      // and will remove lwz/ld
-      if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove redundant load %p after store %p.\n", loadInstruction, storeInstruction))
+      // will remove ld
+      // and replace lwz with rlwinm, rX, rX, 0, 0xffffffff
+      if (loadInstruction->getOpCodeValue() == TR::InstOpCode::lwz && performTransformation(comp, "O^O PPC PEEPHOLE: Replace lwz " POINTER_PRINTF_FORMAT " with rlwinm after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
+         {
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, loadInstruction->getNode(), trgReg, srcReg, 0, 0xffffffff, storeInstruction);
+         loadInstruction->remove();
+         }
+      else if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
          {
          loadInstruction->remove();
          }
@@ -1227,7 +1233,7 @@ static void lhsPeephole(TR::CodeGenerator *cg, TR::Instruction *storeInstruction
    //   stw/std rX, ...
    //   mr rY, rX
    // and then the mr peephole should run on the resulting mr
-   if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace redundant load %p after store %p with mr.\n", loadInstruction, storeInstruction))
+   if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT " with mr.\n", loadInstruction, storeInstruction))
       {
       generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, loadInstruction->getNode(), trgReg, srcReg, storeInstruction);
       loadInstruction->remove();

@@ -29,9 +29,6 @@ add_executable(omralgotest
 	hashtabletest.c
 	hooksample.h
 	hooksample_internal.h
-	#hooksample.hdf
-	#hooksample.sentinel
-	#hooksample_internal.h
 	hooktest.c
 	main.cpp
 	pooltest.c

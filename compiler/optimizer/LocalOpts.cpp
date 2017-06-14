@@ -3569,7 +3569,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
             TR::Block *predBlock = current->getFrom()->asBlock();
             requestOpt(OMR::treeSimplification, true, predBlock);
 
-            if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
                placeAsyncCheckBefore(predBlock->getLastRealTreeTop());
 
             if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
@@ -3620,7 +3620,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
             TR::CFGEdge* current = *(inEdge++);
             TR::Block *prevBlock = toBlock(current->getFrom());
 
-            if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
                placeAsyncCheckBefore(prevBlock->getLastRealTreeTop());
 
             if (prevBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
@@ -3661,7 +3661,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
       // Place an asynccheck as the first treetop of the successor, if there was one in the removed block
       // This is necessary as placing it in the predecessor may result in a seperation from its OSR guard
       //
-      if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+      if (asyncMessagesFlag && comp()->getHCRMode() == TR::osr)
          placeAsyncCheckBefore(destBlock->getFirstRealTreeTop());
 
       if (emptyBlock &&

@@ -337,6 +337,13 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
       if (block && !b->isExtensionOfPreviousBlock())
          break;
 
+      if (b->isOSRCodeBlock() || b->isOSRCatchBlock())
+         {
+         b->setHasBeenVisited();
+         treeTop = b->getExit();
+         continue;
+         }
+
 #ifdef DEBUG
       if (block != b)
          b->setHasBeenVisited();

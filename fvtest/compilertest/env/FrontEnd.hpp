@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -62,12 +62,6 @@ class FrontEnd : public TR::FEBase<FrontEnd>
 #endif
 
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef,  void *currentCodeCache);
-
-   uint8_t *getMethodStartPC(TR_OpaqueMethodBlock *method)
-      {
-      return 0;
-      //return (uint8_t *)((PyCodeObject *)method)->co_compiledCodeEntry;
-      }
 
   TR_ResolvedMethod * createResolvedMethod(TR_Memory * trMemory, TR_OpaqueMethodBlock * aMethod,
                                             TR_ResolvedMethod * owningMethod, TR_OpaqueClassBlock *classForNewInstance);

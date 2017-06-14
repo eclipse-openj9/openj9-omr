@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -127,10 +127,7 @@ public:
    // Method
    // --------------------------------------------------------------------------
 
-   virtual bool hasBackwardBranches(TR_OpaqueMethodBlock *method);
-   virtual bool isCompiledMethod(TR_OpaqueMethodBlock *method);
    virtual TR_ResolvedMethod * createResolvedMethod(TR_Memory *, TR_OpaqueMethodBlock *, TR_ResolvedMethod * = 0, TR_OpaqueClassBlock * = 0);
-   virtual uint8_t * getMethodStartPC(TR_OpaqueMethodBlock *method);
    virtual OMR::MethodMetaDataPOD *createMethodMetaData(TR::Compilation *comp) { return NULL; }
 
    virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod=0);

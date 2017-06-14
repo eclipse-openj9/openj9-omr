@@ -1120,7 +1120,7 @@ int32_t OMR::Compilation::compile()
             TR_VerboseLog::writeLine(TR_Vlog_INL, "#%d: %x #%d inlined %x@%d -> %x bcsz=%d %s",
                i, jittedBodyHash, callerIndex,
                strHash(callerSig), site._byteCodeInfo.getByteCodeIndex(),
-               strHash(calleeBuf), self()->fej9()->getMethodSize(site._methodInfo), calleeBuf);
+               strHash(calleeBuf), TR::Compiler->mtd.bytecodeSize(site._methodInfo), calleeBuf);
             }
 
          TR::Block *curBlock = NULL;
@@ -1150,7 +1150,7 @@ int32_t OMR::Compilation::compile()
                      const char *calleeSig = method->signature(self()->trMemory(), stackAlloc);
                      uint32_t calleeSize = UINT_MAX;
                      if (node->getSymbol()->getResolvedMethodSymbol())
-                        calleeSize = self()->fej9()->getMethodSize(node->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier());
+                        calleeSize = TR::Compiler->mtd.bytecodeSize(node->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier());
                      TR_VerboseLog::writeLine(TR_Vlog_INL, "%x %s %x@%d -> %x bcsz=%d %s",
                         jittedBodyHash,
                         curBlock->isCold()? "coldCalled":"called",

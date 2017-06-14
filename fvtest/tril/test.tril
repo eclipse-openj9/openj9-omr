@@ -1,0 +1,18 @@
+;(block
+;   (goto target="add") )
+(block fallthrough="sub" name="start"
+   (ificmpge target="add"
+      (iloadi offset=0 (aload parm=0) )
+      (iconst 0) ) )
+(block name="sub"
+   (ireturn
+      (isub
+         (iloadi offset=0 (aload parm=0) )
+         (d2i (dconst 1.0) ) ) ) )
+(block name="add"
+   (istore temp="x" (iconst 1))
+   (ireturn
+      (iadd
+         (iloadi offset=0 (aload parm=0) )
+         (iload temp="x") ) ) )
+

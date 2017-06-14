@@ -276,6 +276,7 @@ public:
    bool cannotAttemptOSRAt(TR_ByteCodeInfo &bci, TR::Block *blockToOSRAt, TR::Compilation *comp);
    bool cannotAttemptOSRDuring(int32_t callSite, TR::Compilation *comp, bool runCleanup = true);
    bool supportsInduceOSR(TR_ByteCodeInfo &bci, TR::Block *blockToOSRAt, TR::Compilation *comp, bool runCleanup = true);
+   bool hasOSRProhibitions();
 
    typedef enum
       {

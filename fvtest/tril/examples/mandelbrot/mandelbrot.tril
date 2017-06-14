@@ -1,3 +1,4 @@
+(method "NoType" "Int32" "Int32" "Address"
 (block name="start" fallthrough="yloop"      ; start:
    (istore temp="py"                         ; int py = 0;
       (iconst 0) ) )
@@ -112,4 +113,4 @@
    (goto target="yloop") )                   ; goto yloop;
 (block name="yloop_exit"                     ; yloop_exit:
    (return) )                                ; return;
-
+)

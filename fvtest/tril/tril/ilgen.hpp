@@ -26,6 +26,8 @@
 
 #include <map>
 #include <string>
+#include <vector>
+#include <type_traits>
 
 class TRLangBuilder : public TR::IlInjector {
     public:

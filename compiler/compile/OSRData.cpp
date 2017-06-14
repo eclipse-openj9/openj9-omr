@@ -686,53 +686,17 @@ TR_OSRMethodData::inlinesAnyMethod() const
    }
 
 void
-TR_OSRMethodData::addLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target, TR_BitVector *liveRangeInfo)
+TR_OSRMethodData::addLiveRangeInfo(int32_t byteCodeIndex, TR_BitVector *liveRangeInfo)
    {
-   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only add live range info for pre or post transition target");
-
-   TR_BCLiveRangeInfoHashKey key(byteCodeIndex, target);
-   bcLiveRangeInfoHashTab.Add(key, liveRangeInfo);
+   bcLiveRangeInfoHashTab.Add(byteCodeIndex, liveRangeInfo);
    }
 
-/*
- * Get the live range info for a bytecode index
- * In postExecution OSR, it is possible for the same bytecode index to have different
- * liveness information, based on whether it was generated for a induction or
- * an analysis point.
- *
- * For example, consider two calls, where the result of one feeds into the other.
- * For a transition point after the first call, its result is on the stack, whilst,
- * for an analysis point before the second call, the result has been taken as an
- * argument and is no longer on the stack.
- *
- * This method will default to using the postExecutionOSR point, as it will always
- * contain the live values at the preExecutionOSR point. However, a more exact
- * result can be achieve by specifing the point type.
- */
 TR_BitVector *
 TR_OSRMethodData::getLiveRangeInfo(int32_t byteCodeIndex)
    {
-   TR_BitVector* liveRangeInfo = NULL;
-   if (getMethodSymbol()->comp()->isOSRTransitionTarget(TR::postExecutionOSR))
-      {
-      liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::postExecutionOSR);
-      if (!liveRangeInfo)
-         liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
-      }
-   else
-      liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
-   return liveRangeInfo;
-   }
-
-TR_BitVector *
-TR_OSRMethodData::getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target)
-   {
-   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only get live range info for pre or post transition target");
-
-   TR_BCLiveRangeInfoHashKey key(byteCodeIndex, target);
    CS2::HashIndex hashIndex;
    TR_BitVector* liveRangeInfo = NULL;
-   if (bcLiveRangeInfoHashTab.Locate(key, hashIndex))
+   if (bcLiveRangeInfoHashTab.Locate(byteCodeIndex, hashIndex))
       {
       liveRangeInfo = bcLiveRangeInfoHashTab.DataAt(hashIndex);
       }
@@ -787,7 +751,7 @@ TR_OSRMethodData::addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t ar
 /*
  * Get the list of symbol reference numbers for a bytecode index
  * to be used as arguments to the induce call targeting it
- */ 
+ */
 TR_Array<int32_t>*
 TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
    {

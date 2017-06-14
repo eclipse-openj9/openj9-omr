@@ -43,15 +43,15 @@
 #include "ras/Debug.hpp"                              // for TR_DebugBase
 
 void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
-                                        SparseBitVector& vector,
+                                        StructureBitVector& vector,
                                         WorkBitVector &regionNodes,
                                         WorkBitVector &nodesInPath,
                                         bool &cyclesFound,
                                         TR::Block *hdrBlock,
                                         bool doThisCheck)
    {
-   SparseBitVector::Cursor cursor(vector);
-   for (cursor.SetToLastOne(); cursor.Valid(); cursor.SetToPreviousOne())
+   StructureBitVector::Cursor cursor(vector);
+   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
       StructInfo &next = getInfo(cursor);
 
@@ -345,7 +345,7 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
 
    int32_t numBackEdges = 0;
 
-   SparseBitVector::Cursor cursor(node._pred);
+   StructureBitVector::Cursor cursor(node._pred);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
       StructInfo &backEdgeNode = getInfo(cursor);
@@ -472,14 +472,14 @@ void TR_RegionAnalysis::addNaturalLoopNodes(StructInfo &node, WorkBitVector &reg
    regionNodes[index] = true;
    nodesInPath[index] = true;
 
-   SparseBitVector::Cursor cursor(node._pred);
+   StructureBitVector::Cursor cursor(node._pred);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
       StructInfo &next = getInfo(cursor);
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addNaturalLoopNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
-   SparseBitVector::Cursor eCursor(node._exceptionPred);
+   StructureBitVector::Cursor eCursor(node._exceptionPred);
    for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
       {
       StructInfo &next = getInfo(eCursor);
@@ -604,7 +604,7 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
    regionNodes[index] = true;
    nodesInPath[index] = true;
 
-   SparseBitVector::Cursor cursor(node._succ);
+   StructureBitVector::Cursor cursor(node._succ);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
       StructInfo &next = getInfo(cursor);
@@ -622,7 +622,7 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
          addRegionNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
 
       }
-   SparseBitVector::Cursor eCursor(node._exceptionSucc);
+   StructureBitVector::Cursor eCursor(node._exceptionSucc);
    for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
       {
       StructInfo &next = getInfo(eCursor);
@@ -658,7 +658,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
 
    // Bits cannot be turned off while iterating over a CS2 sparse bit vector,
    // so they are accumulated in a separate vector and turned off after iteration
-   SparseBitVector bitsToBeRemoved(_compilation->allocator());
+   StructureBitVector bitsToBeRemoved(_compilation->allocator());
 
    WorkBitVector::Cursor rCursor(regionNodes);
    for (rCursor.SetToFirstOne(); rCursor.Valid(); rCursor.SetToNextOne())
@@ -671,7 +671,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
-      SparseBitVector::Cursor cursor(fromNode._succ);
+      StructureBitVector::Cursor cursor(fromNode._succ);
       for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
          {
          toIndex = cursor;
@@ -706,7 +706,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       fromNode._succ -= bitsToBeRemoved;
 
       bitsToBeRemoved.Clear();
-      SparseBitVector::Cursor eCursor(fromNode._exceptionSucc);
+      StructureBitVector::Cursor eCursor(fromNode._exceptionSucc);
       for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
          {
          toIndex = eCursor;

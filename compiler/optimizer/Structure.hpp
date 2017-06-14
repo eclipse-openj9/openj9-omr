@@ -626,8 +626,8 @@ class TR_RegionStructure : public TR_Structure
         void reset() {_iter.SetToFirstOne();}
 
         private:
-          TR::SparseBitVector _nodes;
-          TR::SparseBitVector::Cursor _iter;
+          TR::BitVector _nodes;
+          TR::BitVector::Cursor _iter;
           TR::CFG * _cfg;
        };
 
@@ -646,7 +646,7 @@ class TR_RegionStructure : public TR_Structure
 
    void checkForInternalCycles();
    void removeEdge(TR::CFGEdge *edge, bool isExitEdge);
-   typedef TR::SparseBitVector SubNodeIndices;
+   typedef TR::BitVector SubNodeIndices;
 
    TR_StructureSubGraphNode         *_entryNode;
    TR_BitVector                     *_invariantSymbols;

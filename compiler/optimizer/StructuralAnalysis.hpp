@@ -58,12 +58,12 @@ class TR_RegionAnalysis
 
    class StructInfo;
    typedef CS2::TableOf<StructInfo, TR::Allocator> InfoTable;
-   typedef TR::SparseBitVector SparseBitVector;
+   typedef TR::BitVector StructureBitVector;
    typedef TR::BitVector WorkBitVector;
    typedef TR::deque<TR_StructureSubGraphNode*> SubGraphNodes;
 
    void simpleIterator(TR_Stack<int32_t>& workStack,
-                       SparseBitVector& vector,
+                       StructureBitVector& vector,
                        WorkBitVector &regionNodes,
                        WorkBitVector &nodesInPath,
                        bool &cyclesFound,
@@ -77,10 +77,10 @@ class TR_RegionAnalysis
          : _pred(allocator), _succ(allocator), _exceptionPred(allocator), _exceptionSucc(allocator)
          {
          }
-      SparseBitVector     _pred;
-      SparseBitVector     _succ;
-      SparseBitVector     _exceptionPred;
-      SparseBitVector     _exceptionSucc;
+      StructureBitVector     _pred;
+      StructureBitVector     _succ;
+      StructureBitVector     _exceptionPred;
+      StructureBitVector     _exceptionSucc;
       TR_Structure       *_structure;
       TR::Block           *_originalBlock;
       int32_t             _nodeIndex;

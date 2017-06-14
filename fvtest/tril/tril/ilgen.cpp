@@ -55,15 +55,6 @@ class OpCodeTable : public TR::ILOpCode {
 
 std::unordered_map<std::string, TR::ILOpCodes> OpCodeTable::_opcodeNameMap;
 
-static uint16_t countNodes(const ASTNode* n) {
-    uint16_t count = 0;
-    while (n) {
-       ++count;
-       n = n->next;
-    }
-    return count;
-}
-
 TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TR::Node* node = nullptr;
 

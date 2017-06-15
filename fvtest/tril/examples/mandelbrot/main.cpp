@@ -19,44 +19,74 @@
 #include "method_handler.hpp"
 #include "Jit.hpp"
 
-using TreeMethodFunction = void(int32_t, int32_t, int32_t*);
+#include <assert.h>
+
+using MandelbrotFunction = void(int32_t, int32_t, int32_t*);
 
 int main(int argc, char const * const * const argv) {
-   initializeJit();
+    assert(argc == 2);
+    assert(initializeJit());
 
-   for (int i = 1; i < argc; ++i) {
-      FILE* inputFile = fopen(argv[i], "r");
-      ASTNode* trees = parseFile(inputFile);
-      printf("parsed trees:\n");
-      printTrees(trees, 0);
+    // parse the input Tril file
+    FILE* inputFile = fopen(argv[1], "r");
+    assert(inputFile != nullptr);
+    ASTNode* trees = parseFile(inputFile);
+    fclose(inputFile);
 
-      MethodHandler mandelbrot{trees};
-      auto rc = mandelbrot.compile();
-      auto treeMethod = mandelbrot.getEntryPoint<TreeMethodFunction*>();
+    printf("parsed trees:\n");
+    printTrees(trees, 0);
 
-      if (rc == 0) {
-         constexpr auto size = 80;
-         int32_t table[size][size] = {{0}};
-         treeMethod(1000, size, table[0]);
-         for (auto row = 0; row < size; ++row) {
-            for (auto i = 0; i < size; ++i) {
+    // assume that the file contians a single method and compile it
+    MethodHandler mandelbrotHandle{trees};
+    assert(mandelbrotHandle.compile() == 0);
+    auto mandelbrot = mandelbrotHandle.getEntryPoint<MandelbrotFunction*>();
+
+    constexpr auto size = 80;                   // number of rows/columns in the output table
+    constexpr auto iterations = 1000;           // number of iterations to be performed
+    int32_t table[size][size] = {{0}};          // the output table
+
+    mandelbrot(iterations, size, &table[0][0]);
+
+    // iterate over each cell in the table and print a corresponding character
+    for (auto y = 0; y < size; ++y) {
+        for (auto x = 0; x < size; ++x) {
+
 #if defined(FULL_COLOUR)
-               auto c = table[row][i] < 1000 ? '#' : ' ';
-               int colors[] = {1, 1, 5, 4, 6, 2, 3, 3, 3, 3};
-               printf(" \e[0;3%dm%c\e[0m ", colors[table[row][i] % 10], c);
+            // if the current cell is *outside* the Mandelbrot set, print a '#',
+            // other wise print ' ' (blank space)
+            auto c = table[y][x] < iterations ? '#' : ' ';
+
+            // map the modulus of the cell's value to a terminal color
+            int colors[] = {1, 1, 5, 4, 6, 2, 3, 3, 3, 3};
+            auto color = colors[table[y][x] % 10];
+
+            // print the selected character in the calculated color
+            // using ANSI escape codes
+            printf(" \e[0;3%dm%c\e[0m ", color, c);
 #elif defined(SIMPLE_COLOUR)
-               auto c = table[row][i] >= 1000 ? '#' : ' ';
-               int colors[] = {0, 1, 3, 2, 6, 4, 5, 5, 5};
-               printf(" \e[0;3%dm%c\e[0m ", colors[i / 10], c);
+            // if the current cell is *inside* the Mandelbrot set, print a '#',
+            // other wise print ' ' (blank space)
+            auto c = table[y][x] >= 1000 ? '#' : ' ';
+
+            // map the cell's x-coordinate to a color
+            int colors[] = {0, 1, 3, 2, 6, 4, 5, 5, 5};
+            auto color = colors[x / 10];
+
+            // print the selected character in the calculated color
+            // using ANSI escape codes
+            printf(" \e[0;3%dm%c\e[0m ", color , c);
 #else
-               auto c = table[row][i] >= 1000 ? '#' : ' ';
-               printf(" %c ", c );
+            // if the current cell is *inside* the Mandelbrot set, print a '#',
+            // other wise print ' ' (blank space)
+            auto c = table[y][x] >= 1000 ? '#' : ' ';
+
+            // print the selected character
+            printf(" %c ", c );
 #endif
-            }
-            printf("\n");
-         }
-      }
-   }
+
+        }
+        printf("\n");
+    }
 
    shutdownJit();
    return 0;

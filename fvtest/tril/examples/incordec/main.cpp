@@ -19,35 +19,37 @@
 #include "method_handler.hpp"
 #include "Jit.hpp"
 
-typedef int32_t (TreeMethodFunction)(int32_t*);
+#include <assert.h>
+
+typedef int32_t (IncOrDecFunction)(int32_t*);
 
 int main(int argc, char const * const * const argv) {
-   initializeJit();
+    assert(argc == 2);
+    assert(initializeJit());
 
-   for (unsigned int i = 1; i < argc; ++i) {
-      FILE* inputFile = fopen(argv[i], "r");
-      ASTNode* trees = parseFile(inputFile);
-      printf("parsed trees:\n");
-      printTrees(trees, 0);
+    // parse the input Tril file
+    FILE* inputFile = fopen(argv[1], "r");
+    assert(inputFile != nullptr);
+    ASTNode* trees = parseFile(inputFile);
+    fclose(inputFile);
 
-      MethodHandler incordec{trees};
-      auto rc = incordec.compile();
-      auto treeMethod = incordec.getEntryPoint<TreeMethodFunction*>();
+    printf("parsed trees:\n");
+    printTrees(trees, 0);
 
-      if (rc == 0) {
-         int32_t value = 1;
-         printf("%d -> %d\n", value, treeMethod(&value));
-         value = 2;
-         printf("%d -> %d\n", value, treeMethod(&value));
-         value = -1;
-         printf("%d -> %d\n", value, treeMethod(&value));
-         value = -2;
-         printf("%d -> %d\n", value, treeMethod(&value));
-      }
+    // assume that the file contians a single method and compile it
+    MethodHandler incordecHandle{trees};
+    assert(incordecHandle.compile() == 0);
+    auto incordec = incordecHandle.getEntryPoint<IncOrDecFunction*>();
 
-      fclose(inputFile);
-   }
+    int32_t value = 1;
+    printf("%d -> %d\n", value, incordec(&value));
+    value = 2;
+    printf("%d -> %d\n", value, incordec(&value));
+    value = -1;
+    printf("%d -> %d\n", value, incordec(&value));
+    value = -2;
+    printf("%d -> %d\n", value, incordec(&value));
 
-   shutdownJit();
-   return 0;
+    shutdownJit();
+    return 0;
 }

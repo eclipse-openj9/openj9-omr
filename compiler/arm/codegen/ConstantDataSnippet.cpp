@@ -44,7 +44,7 @@ int32_t TR::ARMConstantDataSnippet::addConstantRequest(void              *v,
                                                   TR::Node *node,
                                                   bool isUnloadablePicSite)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
 
    intptrj_t   ain, aex;
 
@@ -300,7 +300,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
    float      fconv;
    uint32_t   i32;
 
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    setSnippetBinaryStart(codeCursor);
    count = 4;
 
@@ -557,7 +557,7 @@ void TR::ARMConstantDataSnippet::print(TR::FILE *outFile)
    if (outFile == NULL)
       return;
 
-   TR_FrontEnd *fe = TR::comp()->fe();
+   TR_FrontEnd *fe = cg()->comp()->fe();
 
    uint8_t   *codeCursor = getSnippetBinaryStart();
    uint8_t   *codeStart  = cg()->getBinaryBufferStart();

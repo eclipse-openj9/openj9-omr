@@ -91,7 +91,7 @@ TR::Instruction *armLoadConstant(TR::Node *node, int32_t value, TR::Register *tr
      uint32_t notTrailing = trailingZeroes(notBits) & ~1;
      uint32_t base        = bitValue>>bitTrailing;
      uint32_t notBase     = notBits>>notTrailing;
-     TR::Compilation *comp = TR::comp();
+     TR::Compilation *comp = cg->comp();
 
      if (comp->getOption(TR_TraceCG))
         {
@@ -469,7 +469,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGe
    TR::Register           *lowReg  = cg->allocateRegister();
    TR::Register           *highReg = cg->allocateRegister();
    TR::RegisterPair       *trgReg = cg->allocateRegisterPair(lowReg, highReg);
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    bool bigEndian = TR::Compiler->target.cpu.isBigEndian();
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
 
@@ -638,7 +638,7 @@ TR::Register *OMR::ARM::TreeEvaluator::iwrtbarEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *valueChild;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    if (node->getOpCode().isIndirect())
       {
       valueChild = node->getSecondChild();
@@ -1074,7 +1074,7 @@ TR::Register *OMR::ARM::TreeEvaluator::newObjectEvaluator(TR::Node *node, TR::Co
 
 TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::comp()->suppressAllocationInlining())
+   if (cg->comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
       TR::Node::recreate(node, TR::acall);
@@ -1090,7 +1090,7 @@ TR::Register *OMR::ARM::TreeEvaluator::newArrayEvaluator(TR::Node *node, TR::Cod
 
 TR::Register *OMR::ARM::TreeEvaluator::anewArrayEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (TR::comp()->suppressAllocationInlining())
+   if (cg->comp()->suppressAllocationInlining())
       {
       TR::ILOpCodes opCode = node->getOpCodeValue();
       TR::Node::recreate(node, TR::acall);
@@ -1176,7 +1176,7 @@ TR::Register *OMR::ARM::TreeEvaluator::loadaddrEvaluator(TR::Node *node, TR::Cod
       resultReg = sym->isLocalObject() ?  cg->allocateCollectedReferenceRegister() : cg->allocateRegister();
       if (mref->useIndexedForm())
          {
-         TR::comp()->failCompilation<TR::CompilationException>("implement unresolved loadAddr indexed");
+         cg->comp()->failCompilation<TR::CompilationException>("implement unresolved loadAddr indexed");
          generateTrg1MemInstruction(cg, ARMOp_add, node, resultReg, mref);
          }
       else
@@ -1324,7 +1324,7 @@ TR::Register *OMR::ARM::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::ARM::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Block *block = node->getBlock();
    TR::RegisterDependencyConditions *deps = NULL;
 

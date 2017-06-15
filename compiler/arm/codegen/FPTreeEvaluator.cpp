@@ -141,7 +141,7 @@ static TR::Register *singlePrecisionEvaluator(TR::Node *node, TR_ARMOpCodes opCo
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = floatTrgReg;
          }
       else
@@ -188,7 +188,7 @@ static TR::Register *doublePrecisionEvaluator(TR::Node *node, TR_ARMOpCodes opCo
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = doubleTrgReg;
          }
       else
@@ -274,7 +274,7 @@ static TR::Register *callLong2DoubleHelper(TR::Node *node, TR::CodeGenerator *cg
 #if defined(__ARM_PCS_VFP)
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          doubleTrgReg = trgReg;
          }
       else
@@ -361,7 +361,7 @@ static TR::Register *callLong2FloatHelper(TR::Node *node, TR::CodeGenerator *cg)
 #if defined(__ARM_PCS_VFP)
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          floatTrgReg = trgReg;
          }
       else
@@ -681,7 +681,7 @@ static TR::Register *callDoubleRemainderHelper(TR::Node *node, TR::CodeGenerator
 #if defined(__ARM_PCS_VFP)
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          doubleTrgReg = trgReg;
          }
       else
@@ -784,7 +784,7 @@ static TR::Register *callFloatRemainderHelper(TR::Node *node, TR::CodeGenerator 
 #if defined(__ARM_PCS_VFP)
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          floatTrgReg = trgReg;
          }
       else
@@ -819,7 +819,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::Code
       	 {
 
          if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
-            traceMsg(TR::comp(), "Result of node %p can stay in FP reg (not exec.).\n", node);
+            traceMsg(cg->comp(), "Result of node %p can stay in FP reg (not exec.).\n", node);
 
          target = cg->allocateRegister();
          generateTrg1MemInstruction(cg, ARMOp_ldr, node, target, tempMR);
@@ -899,7 +899,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Code
    TR::Register            *target = NULL;
    TR::Register            *lowReg  = NULL;
    TR::Register            *highReg = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
 
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
@@ -968,7 +968,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Code
    TR::Register            *srcReg = NULL;
    TR::Register            *lowReg  = NULL;
    TR::Register            *highReg = NULL;
-   TR::Compilation         *comp = TR::comp();
+   TR::Compilation         *comp = cg->comp();
 
    TR_ASSERT(!node->normalizeNanValues(), "Check NAN\n");
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
@@ -1021,7 +1021,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
    TR::Register *floatTrgReg = cg->allocateSinglePrecisionRegister();
    float value = node->getFloat();
    uint32_t i32 = *(int32_t *)(&value);
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getARMRealRegister(TR::RealRegister::gr15);
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
@@ -1047,7 +1047,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = floatTrgReg;
          }
       else
@@ -1081,7 +1081,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
    TR::Register *doubleTrgReg = cg->allocateRegister(TR_FPR);
    double value = node->getDouble();
    uint64_t i64 = (*(int64_t *)&value);
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::RealRegister *machineIPReg = cg->machine()->getARMRealRegister(TR::RealRegister::gr15);
    TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(2, 2, cg->trMemory());
 
@@ -1163,7 +1163,7 @@ TR::Register *OMR::ARM::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGe
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg in fload.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg in fload.\n", node);
          // This seem to break things.. trgReg = floatTrgReg;
 #ifdef STAYINFP
          trgReg = floatTrgReg;
@@ -1231,7 +1231,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::CodeGe
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg in dload.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg in dload.\n", node);
          trgReg = doubleTrgReg;
          }
       else
@@ -1523,7 +1523,7 @@ TR::Register *OMR::ARM::TreeEvaluator::freturnEvaluator(TR::Node *node, TR::Code
    else
       TR_ASSERT(0, "Unknown register type\n");
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
-   TR::comp()->setReturnInfo(TR_FloatReturn);
+   cg->comp()->setReturnInfo(TR_FloatReturn);
    return NULL;
    }
 
@@ -1546,7 +1546,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dreturnEvaluator(TR::Node *node, TR::Code
    else
       TR_ASSERT(0, "Unknown register type\n");
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
-   TR::comp()->setReturnInfo(TR_DoubleReturn);
+   cg->comp()->setReturnInfo(TR_DoubleReturn);
    return NULL;
    }
 
@@ -1572,7 +1572,7 @@ static TR::Register *generateFusedMultiplyAdd(TR::Node *addNode, TR_ARMOpCodes O
    TR::Node     *mulNode = addNode->getFirstChild();
    TR::Node     *addChild    = addNode->getSecondChild();
 
-   if (!isFPStrictMul(mulNode, TR::comp()))
+   if (!isFPStrictMul(mulNode, cg->comp()))
       {
       addChild = addNode->getFirstChild();
       mulNode  = addNode->getSecondChild();
@@ -1628,7 +1628,7 @@ static TR::Register *generateFusedMultiplyAdd(TR::Node *addNode, TR_ARMOpCodes O
 TR::Register *OMR::ARM::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // TODO: Check conditions to use fmacs if possible
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Register *result = NULL;
    if (((isFPStrictMul(node->getFirstChild(), comp) && (node->getSecondChild()->getReferenceCount() == 1)) ||
         (isFPStrictMul(node->getSecondChild(), comp) && (node->getFirstChild()->getReferenceCount() == 1))) &&
@@ -1647,7 +1647,7 @@ TR::Register *OMR::ARM::TreeEvaluator::daddEvaluator(TR::Node *node, TR::CodeGen
    {
    // TODO: Check conditions to use fmacd if possible
    TR::Register *result = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    if (((isFPStrictMul(node->getFirstChild(), comp) && (node->getSecondChild()->getReferenceCount() == 1)) ||
         (isFPStrictMul(node->getSecondChild(), comp) && (node->getFirstChild()->getReferenceCount() == 1))) &&
          performTransformation(comp, "O^O Changing [%p] to fmacd\n", node))
@@ -1664,7 +1664,7 @@ TR::Register *OMR::ARM::TreeEvaluator::daddEvaluator(TR::Node *node, TR::CodeGen
 TR::Register *OMR::ARM::TreeEvaluator::dsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // TODO: Check conditions to use fmscd if possible
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Register *result = NULL;
    if (isFPStrictMul(node->getFirstChild(), comp) &&
       (node->getSecondChild()->getReferenceCount() == 1) &&
@@ -1688,7 +1688,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dsubEvaluator(TR::Node *node, TR::CodeGen
 TR::Register *OMR::ARM::TreeEvaluator::fsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // TODO: Check conditions to use fmscs if possible
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Register *result = NULL;
    if (isFPStrictMul(node->getFirstChild(), comp) &&
       (node->getSecondChild()->getReferenceCount() == 1) &&
@@ -1759,7 +1759,7 @@ TR::Register *OMR::ARM::TreeEvaluator::fnegEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *result = NULL;
    TR::Node *firstChild = node->getFirstChild();
    bool isAdd = firstChild->getOpCode().isAdd();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
 
    if (firstChild->getReferenceCount() < 2 &&
       !firstChild->getRegister() && isAdd)
@@ -1815,7 +1815,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGen
    TR::Register *result = NULL;
    TR::Node *firstChild = node->getFirstChild();
    bool isAdd = firstChild->getOpCode().isAdd();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
 
    if (firstChild->getReferenceCount() < 2 &&
       !firstChild->getRegister() && isAdd)
@@ -1892,7 +1892,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGene
          {
          if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
             {
-            traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+            traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
             trgReg = floatTrgReg;
             }
          else
@@ -1954,7 +1954,7 @@ TR::Register *OMR::ARM::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGene
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = doubleTrgReg;
          }
       else
@@ -2026,7 +2026,7 @@ TR::Register *OMR::ARM::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGene
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = doubleTrgReg;
          }
       else
@@ -2192,7 +2192,7 @@ TR::Register *OMR::ARM::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGene
       {
       if (resultCanStayInFloatRegister(cg->getCurrentEvaluationTreeTop()->getNode(), node))
          {
-         traceMsg(TR::comp(), "Result of node %p can stay in FP reg.\n", node);
+         traceMsg(cg->comp(), "Result of node %p can stay in FP reg.\n", node);
          trgReg = floatTrgReg;
          }
       else
@@ -2709,7 +2709,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Code
    TR::Register            *target = NULL;
    TR::Register            *lowReg  = NULL;
    TR::Register            *highReg = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
 
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&
        child->getOpCode().isLoadVar())
@@ -2745,7 +2745,7 @@ TR::Register *OMR::ARM::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Code
    TR::Register            *target = NULL;
    TR::Register            *lowReg  = NULL;
    TR::Register            *highReg = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
 
    TR_ASSERT(!node->normalizeNanValues(), "Check NAN\n");
    if (child->getRegister() == NULL && child->getReferenceCount() == 1 &&

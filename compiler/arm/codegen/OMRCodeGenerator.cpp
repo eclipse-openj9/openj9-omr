@@ -273,7 +273,7 @@ directToInterpreterHelper(TR::ResolvedMethodSymbol *methodSymbol, TR::CodeGenera
 
 TR::Instruction *OMR::ARM::CodeGenerator::generateSwitchToInterpreterPrePrologue(TR::Instruction *cursor, TR::Node *node)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->comp();
    TR::Register   *gr4 = self()->machine()->getARMRealRegister(TR::RealRegister::gr4);
    TR::Register   *lr = self()->machine()->getARMRealRegister(TR::RealRegister::gr14); // link register
    TR::ResolvedMethodSymbol *methodSymbol = comp->getJittedMethodSymbol();
@@ -343,7 +343,7 @@ static void removeGhostRegistersFromGCMaps(TR::CodeGenerator *cg, TR::Instructio
 
 void OMR::ARM::CodeGenerator::beginInstructionSelection()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->comp();
    TR::Node *startNode = comp->getStartTree()->getNode();
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
       {
@@ -371,13 +371,13 @@ void OMR::ARM::CodeGenerator::endInstructionSelection()
    {
    if (_returnTypeInfoInstruction != NULL)
       {
-      _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(TR::comp()->getReturnInfo()));
+      _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
       }
    }
 
 void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->comp();
 
    if (comp->getOption(TR_TraceCG))
       diagnostic("\nPerforming Register Assignment:\n");
@@ -448,7 +448,7 @@ void OMR::ARM::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssig
 
 void OMR::ARM::CodeGenerator::doBinaryEncoding()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->comp();
    int32_t estimate = 0;
    TR::Instruction *cursorInstruction = comp->getFirstInstruction();
 
@@ -569,7 +569,7 @@ TR::Register *OMR::ARM::CodeGenerator::gprClobberEvaluate(TR::Node *node)
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg)
    {
    TR_Array<TR::ARMConditionalBranchInstruction *> candidateBranches(cg->trMemory(), 256);
-   TR::Instruction *cursorInstruction = TR::comp()->getFirstInstruction();
+   TR::Instruction *cursorInstruction = cg->comp()->getFirstInstruction();
 
    while (cursorInstruction)
       {
@@ -652,7 +652,7 @@ void OMR::ARM::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap *map)
 /* @@
 bool OMR::ARM::CodeGenerator::canNullChkBeImplicit(TR::Node *node)
    {
-   return TR::comp()->cg()->canNullChkBeImplicit(node, true);
+   return self()->canNullChkBeImplicit(node, true);
    }
 */
 

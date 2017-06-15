@@ -78,7 +78,7 @@ TR::Register *OMR::ARM::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::Code
    addDependency(deps, returnRegister, cg->getProperties().getIntegerReturnRegister(), TR_GPR, cg);
 
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
-   TR::comp()->setReturnInfo(TR_IntReturn);
+   cg->comp()->setReturnInfo(TR_IntReturn);
    return NULL;
    }
 
@@ -93,7 +93,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
    addDependency(deps, highReg, cg->getProperties().getLongHighReturnRegister(), TR_GPR, cg);
 
    generateAdminInstruction(cg, ARMOp_ret, node, deps);
-   TR::comp()->setReturnInfo(TR_LongReturn);
+   cg->comp()->setReturnInfo(TR_LongReturn);
    return NULL;
    }
 
@@ -102,7 +102,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::Code
 TR::Register *OMR::ARM::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    generateAdminInstruction(cg, ARMOp_ret, node);
-   TR::comp()->setReturnInfo(TR_VoidReturn);
+   cg->comp()->setReturnInfo(TR_VoidReturn);
    return NULL;
    }
 
@@ -122,7 +122,7 @@ static TR::Instruction *compareIntsForOrder(TR_ARMConditionCode  branchType,
    bool            cannotInline = false;
 
    // For TR::instanceof, the opcode must be ificmpeq/ne.
-   if (!TR::comp()->getOption(TR_OptimizeForSpace) &&
+   if (!cg->comp()->getOption(TR_OptimizeForSpace) &&
         firstChild->getOpCodeValue() == TR::instanceof &&
         firstChild->getRegister() == NULL &&
         node->getReferenceCount() <=1 &&
@@ -204,7 +204,7 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
    if (virtualGuardHelper(node, cg))
       return NULL;
 
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Node        *secondChild = node->getSecondChild();
    TR::Node        *firstChild = node->getFirstChild();
 
@@ -230,7 +230,7 @@ TR::Instruction *OMR::ARM::TreeEvaluator::compareIntsForEquality(TR_ARMCondition
    bool            cannotInline = false;
 
    // For TR::instanceof, the opcode must be ificmpeq/ne.
-   if (!TR::comp()->getOption(TR_OptimizeForSpace) &&
+   if (!cg->comp()->getOption(TR_OptimizeForSpace) &&
         firstChild->getOpCodeValue() == TR::instanceof &&
         firstChild->getRegister() == NULL &&
         node->getReferenceCount() <=1 &&
@@ -549,7 +549,7 @@ static TR::Register *compareLongsForOrder(TR_ARMConditionCode branchOp, TR::Node
    // For now we just generate pessimistic code.
    static bool disableOOLForLongCompares = (feGetEnv("TR_DisableOOLForLongCompares") != NULL);
    TR::Register *src2Reg = cg->evaluate(secondChild);
-   if (/* isSmall() || */ TR::comp()->getOption(TR_DisableOOL) || disableOOLForLongCompares)
+   if (cg->comp()->getOption(TR_DisableOOL) || disableOOLForLongCompares)
       {
       TR::ARMControlFlowInstruction *cfop = generateControlFlowInstruction(cg, ARMOp_iflong, node, deps);
       cfop->addSourceRegister(src1Reg->getHighOrder());
@@ -1239,7 +1239,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
       }
 
    /* TODO: AOT fixup */
-   if (!TR::comp()->getOption(TR_AOT))
+   if (!cg->comp()->getOption(TR_AOT))
       {
       armLoadConstant(node, address, addrRegister, cg, NULL);
       }
@@ -1301,7 +1301,7 @@ static void lookupScheme3(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced
 // Called by switchDispatch().
 static void lookupScheme4(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::comp()->failCompilation<TR::CompilationException>("Automatically failing on lookup scheme 4");
+   cg->comp()->failCompilation<TR::CompilationException>("Automatically failing on lookup scheme 4");
 
 /*  TODO implement lookups
    int32_t  total = node->getNumChildren();

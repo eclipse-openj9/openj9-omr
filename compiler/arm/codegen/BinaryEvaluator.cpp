@@ -1307,7 +1307,7 @@ static inline TR::Register *ibooleanTypeEvaluator(TR::Node *node,
    TR::Node     *secondChild    = node->getSecondChild();
    TR::Node     *firstChild     = node->getFirstChild();
 
-   auto comp = TR::comp();
+   auto comp = cg->comp();
 
    if (comp->getOption(TR_TraceCG))
       {

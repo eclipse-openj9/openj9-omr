@@ -890,7 +890,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          if (comp()->isOSRTransitionTarget(TR::postExecutionOSR) &&
              comp()->getMethodSymbol()->isOSRRelatedNode(tt->getNode()))
             {
-            offsetOSRTreeTop = tt;   
+            offsetOSRTreeTop = tt->getNextTreeTop();
             tt = collectPendingPush(bci, tt, _liveVars);
             TR_ByteCodeInfo &osrBCI = comp()->getMethodSymbol()->getOSRByteCodeInfo(tt->getNode());
 
@@ -899,6 +899,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             if (tt == firstTT || osrBCI.getCallerIndex() != bci.getCallerIndex()
                 || osrBCI.getByteCodeIndex() != bci.getByteCodeIndex())
                tt = tt->getNextTreeTop();
+            offsetOSRTreeTop = offsetOSRTreeTop->getPrevTreeTop();
             }
 
          TR::Node *node = tt->getNode();
@@ -979,16 +980,13 @@ TR::TreeTop *TR_OSRLiveRangeAnalysis::collectPendingPush(TR_ByteCodeInfo bci, TR
           && node->getFirstChild()->getOpCode().isLoad()
           && node->getFirstChild()->getOpCode().hasSymbolReference())
          {
-         TR::AutomaticSymbol *local = node->getFirstChild()->getSymbolReference()->getSymbol()->getAutoSymbol();
-         int32_t localIndex = local->getLiveLocalIndex();
-         _liveVars->set(localIndex);
-         if (comp()->getOption(TR_TraceOSR))
-            traceMsg(comp(), "+++ local index %d OSR PENDING PUSH LOAD LIVE\n", localIndex);
-
          if (node->getFirstChild()->getReferenceCount() == 1)
             {
+            TR::AutomaticSymbol *local = node->getFirstChild()->getSymbolReference()->getSymbol()->getAutoSymbol();
+            int32_t localIndex = local->getLiveLocalIndex();
+            _liveVars->set(localIndex);
             if (comp()->getOption(TR_TraceOSR))
-               traceMsg(comp(), "----> removing node %p\n", node);
+               traceMsg(comp(), "+++ local index %d OSR PENDING PUSH LOAD LIVE\n", localIndex);
             TR::TransformUtil::removeTree(comp(), tt);
             }
          }

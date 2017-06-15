@@ -390,94 +390,60 @@ class InstOpCode: public OMR::InstOpCode
 
    enum S390BranchCondition
       {
-      COND_NOPR,
-      COND_JNOP,
-      COND_BRO,
-      COND_JO,
-      COND_BRH,
-      COND_JH,
-      COND_BRP,
-      COND_JP,
-      COND_BRL,
-      COND_JL,
-      COND_BRM,
-      COND_JM,
-      COND_BRNE,
-      COND_JNE,
-      COND_BRNZ,
-      COND_JNZ,
-      COND_BRE,
-      COND_JE,
-      COND_BRZ,
-      COND_JZ,
-      COND_BRNH,
-      COND_JNH,
-      COND_BRNL,
-      COND_JNL,
-      COND_BRNM,
-      COND_JNM,
-      COND_BRNP,
-      COND_JNP,
-      COND_BRNO,
-      COND_JNO,
-      COND_B,
-      COND_BR,
-      COND_BRU,
-      COND_J,
-      COND_BRUL,
-      COND_JLU,
-      COND_BC,
-      COND_BCR,
-      COND_BCRC,
-      COND_BE,
-      COND_BER,
-      COND_BERC,
-      COND_BH,
-      COND_BHR,
-      COND_BHRC,
-      COND_BL,
-      COND_BLR,
-      COND_BLRC,
-      COND_BM,
-      COND_BMR,
-      COND_BMRC,
-      COND_BNANRC,
-      COND_BNCRC,
-      COND_BNE,
-      COND_BNER,
-      COND_BNERC,
-      COND_BNH,
-      COND_BNHR,
-      COND_BNHRC,
-      COND_BNL,
-      COND_BNLR,
-      COND_BNLRC,
-      COND_BNM,
-      COND_BNMR,
-      COND_BNMRC,
-      COND_BNNANRC,
-      COND_BNO,
-      COND_BNOR,
-      COND_BNORC,
-      COND_BNP,
-      COND_BNPR,
-      COND_BNPRC,
-      COND_BNZ,
-      COND_BNZR,
-      COND_BNZRC,
-      COND_BNZORC,
-      COND_BO,
-      COND_BOR,
-      COND_BORC,
-      COND_BP,
-      COND_BPR,
-      COND_BPRC,
-      COND_BRC,
-      COND_BZ,
-      COND_BZR,
-      COND_BZRC,
-      COND_NOP,
-      COND_VGNOP,
+                        /* Instruction Type    |  Meaning (Operands)
+                           ----------------------------------------- */
+      COND_NOPR,        // Conditional Branch     No operation (RR)
+      COND_NOP,         // Conditional Branch     No Operation (RX)
+      COND_VGNOP,       // Virtual Guard          No Operation 
+      COND_BRO,         // Relative Branch        Branch Relative on Overflow 
+      COND_BRH,         // Relative Branch        Branch Relative on High
+      COND_BRP,         // Relative Branch        Branch Relative on Plus 
+      COND_BRL,         // Relative Branch        Branch Relative on A Low
+      COND_BRM,         // Relative Branch        Branch Relative on Minus
+      COND_BRNE,        // Relative Branch        Branch Relative on A Not Equal B
+      COND_BRNZ,        // Relative Branch        Branch Relative on Not Zero
+      COND_BRE,         // Relative Branch        Branch Relative on A Equal B 
+      COND_BRZ,         // Relative Branch        Branch Relative on Zero 
+      COND_BRNH,        // Relative Branch        Branch Relative on A Not High 
+      COND_BRNL,        // Relative Branch        Branch Relative on A Not Low
+      COND_BRNM,        // Relative Branch        Branch Relative on Not Minus 
+      COND_BRNP,        // Relative Branch        Branch Relative on Not Plus
+      COND_BRNO,        // Relative Branch        Branch Relative on No Overflow 
+      COND_B,           // Conditional Branch     Unconditional Branch (RX)
+      COND_BR,          // Branch on Condition    Unconditional Branch (RR)
+      COND_BRU,         // Relative Branch        Unconditional Branch Relative 
+      COND_BRUL,        // Relative Branch        Unconditional Branch Relative
+      COND_BC,          // Conditional Branch     Branch on Condition (RX)  
+      COND_BCR,         // Conditional Branch     Branch on Condition (RR)
+      COND_BE,          // Conditional Branch     Branch on A Equal B (RX)
+      COND_BER,         // Conditional Branch     Branch on A Equal B (RR) 
+      COND_BH,          // Conditional Branch     Branch on A High (RX)
+      COND_BHR,         // Conditional Branch     Branch on A High (RR)
+      COND_BL,          // Conditional Branch     Branch on A Low (RX)
+      COND_BLR,         // Conditional Branch     Branch on A Low (RR) 
+      COND_BM,          // Conditional Branch     Branch on Minus (RX)
+      COND_BMR,         // Conditional Branch     Branch on Minus (RR)
+      COND_BNE,         // Conditional Branch     Branch on A Not Equal B (RX)
+      COND_BNER,        // Conditional Branch     Branch on A Not Equal B (RR)
+      COND_BNH,         // Conditional Branch     Branch on A Not High (RX)
+      COND_BNHR,        // Conditional Branch     Branch on A Not High (RR) 
+      COND_BNL,         // Conditional Branch     Branch on A Not Low (RX)
+      COND_BNLR,        // Conditional Branch     Branch on A Not Low (RR) 
+      COND_BNM,         // Conditional Branch     Branch on Not Minus (RX)
+      COND_BNMR,        // Conditional Branch     Branch on Not Minus (RR)
+      COND_BNO,         // Conditional Branch     Branch on No Overflow (RX)
+      COND_BNOR,        // Conditional Branch     Branch on No Overflow (RR) 
+      COND_BNP,         // Conditional Branch     Branch on Not Plus (RX) 
+      COND_BNPR,        // Conditional Branch     Branch on Not Plus (RR)
+      COND_BNZ,         // Conditional Branch     Branch on Not Zero (RX)
+      COND_BNZR,        // Conditional Branch     Branch on Not Zero (RR)
+      COND_BO,          // Conditional Branch     Branch on Overflow (RX) 
+      COND_BOR,         // Conditional Branch     Branch on Overflow (RR)
+      COND_BP,          // Conditional Branch     Branch on Plus (RX)
+      COND_BPR,         // Conditional Branch     Branch on Plus (RR)
+      COND_BRC,         // Relative Branch        Branch Relative on Condition               
+      COND_BZ,          // Conditional Branch     Branch on Zero (RX)
+      COND_BZR,         // Conditional Branch     Branch on Zero (RR)
       COND_MASK0,
       COND_MASK1,
       COND_MASK2,

@@ -1479,6 +1479,12 @@ OMR::ResolvedMethodSymbol::supportsInduceOSR(TR_ByteCodeInfo &bci,
    return true;
    }
 
+bool
+OMR::ResolvedMethodSymbol::hasOSRProhibitions()
+   {
+   return _cannotAttemptOSR != NULL && !_cannotAttemptOSR->isEmpty();
+   }
+
 /*
  * Prevent OSR transitions to the specified bytecode index.
  * Will only prevent those directed immediately to this index,

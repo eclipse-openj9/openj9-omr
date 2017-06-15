@@ -250,9 +250,6 @@ bool skipCompare (TR::Node *node)
    {
    TR::Node     *firstChild  = node->getFirstChild();
    TR::Node     *secondChild = node->getSecondChild();
-   TR::Compilation *comp = TR::comp();
-
-
    return false;
    }
 

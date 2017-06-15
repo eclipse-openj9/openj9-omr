@@ -43,7 +43,7 @@ int32_t OMR::ConstantDataSnippet::addConstantRequest(void              *v,
                                                   TR::Node *node,
                                                   bool isUnloadablePicSite)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    union {
       float       fvalue;
       int32_t     ivalue;
@@ -537,7 +537,7 @@ void OMR::ConstantDataSnippet::print(TR::FILE *outFile)
    if (outFile == NULL)
       return;
 
-   TR_FrontEnd *fe = TR::comp()->fe();
+   TR_FrontEnd *fe = cg()->comp()->fe();
 
    uint8_t   *codeCursor = getSnippetBinaryStart();
    uint8_t   *codeStart  = cg()->getBinaryBufferStart();

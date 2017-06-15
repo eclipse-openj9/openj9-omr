@@ -4359,7 +4359,7 @@ OMR::Power::TreeEvaluator::generateHelperBranchAndLinkInstruction(
 
 TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Node             *dstAddrNode, *lengthNode, *valueNode;
    dstAddrNode = node->getChild(0);
    lengthNode = node->getChild(1);

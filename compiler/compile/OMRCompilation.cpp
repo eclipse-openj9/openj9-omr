@@ -1537,13 +1537,15 @@ OMR::Compilation::addVirtualGuard(TR_VirtualGuard *guard)
 TR_VirtualGuard *
 OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
    {
-   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard(), "@node %p\n", guardNode);
+   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isOSRGuard() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard(), "@node %p\n", guardNode);
 
    TR_VirtualGuardKind guardKind = TR_NoGuard;
    if (guardNode->isSideEffectGuard())
       guardKind = TR_SideEffectGuard;
    else if (guardNode->isHCRGuard())
       guardKind = TR_HCRGuard;
+   else if (guardNode->isOSRGuard())
+      guardKind = TR_OSRGuard;
    else if (guardNode->isMethodEnterExitGuard())
       guardKind = TR_MethodEnterExitGuard;
    else if (guardNode->isMutableCallSiteTargetGuard())
@@ -1579,6 +1581,7 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
              (*current)->getCalleeIndex() == guardNode->getByteCodeInfo().getCallerIndex() &&
              (*current)->getKind() != TR_SideEffectGuard &&
              (*current)->getKind() != TR_HCRGuard &&
+             (*current)->getKind() != TR_OSRGuard &&
              (*current)->getKind() != TR_MethodEnterExitGuard &&
              (*current)->getKind() != TR_MutableCallSiteTargetGuard)
             {
@@ -1590,7 +1593,7 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
          }
       }
 
-   TR_ASSERT(guard, "Can't find the virtual guard @ node %p \n", guardNode);
+   TR_ASSERT(guard, "Can't find the virtual guard @ bci %d:%d, node %p \n", guardNode->getByteCodeInfo().getCallerIndex(), guardNode->getByteCodeInfo().getByteCodeIndex(), guardNode);
 
    return guard;
    }

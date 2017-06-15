@@ -377,7 +377,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
 
 bool OMR::Z::CodeGenerator::supportsInliningOfIsInstance()
    {
-   return !TR::comp()->getOption(TR_DisableInlineIsInstance);
+   return !self()->comp()->getOption(TR_DisableInlineIsInstance);
    }
 
 bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
@@ -6903,8 +6903,8 @@ OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterInde
 
    else
       {
-//      traceMsg(TR::comp(), "lastLinkageGPR = %d linkaeRegisterIndex = %d  getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1) = %d\n",machine()->getLastLinkageGPR(),linkageRegisterIndex, self()->getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1));
-//      traceMsg(TR::comp(), "getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex) = %d\n",getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex));
+//      traceMsg(self()->comp(), "lastLinkageGPR = %d linkaeRegisterIndex = %d  getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1) = %d\n",machine()->getLastLinkageGPR(),linkageRegisterIndex, self()->getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1));
+//      traceMsg(self()->comp(), "getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex) = %d\n",getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex));
 
       result = self()->getGlobalRegisterNumber(self()->getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1);
       }

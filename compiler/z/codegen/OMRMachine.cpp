@@ -1326,7 +1326,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
    {
    TR_RegisterKinds kindOfRegister = targetRegister->getKind();
    TR::RealRegister * assignedRegister = targetRegister->getAssignedRealRegister();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    bool reverseSpilled = false;
 
@@ -1698,7 +1698,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
 
    TR::Register * firstVirtualBaseAR = NULL;
    TR::Register * lastVirtualBaseAR = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    if (regPair->isArGprPair())
       {
@@ -2199,7 +2199,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
    uint32_t interference = 0;
    int32_t first, maskI;
    int32_t last;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    TR::RealRegister * freeRegisterLow = NULL;
    TR::RealRegister * freeRegisterHigh = NULL;
@@ -2338,7 +2338,7 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
    uint64_t          availRegMask)
    {
    TR::Node * currentNode = currInst->getNode();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t first, maskI;
    int32_t last;
    TR::Instruction * cursor = NULL;
@@ -2542,7 +2542,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    int32_t first, maskI;
    int32_t last;
    TR::Instruction * cursor = NULL;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    TR::Machine *machine = self()->cg()->machine();
 
    TR_BackingStore * locationLow;
@@ -2980,7 +2980,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    uint32_t randomInterference;
    int32_t randomWeight;
    uint32_t randomPreference;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    uint32_t preference = 0;
    if(virtualReg != NULL)
@@ -3844,7 +3844,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
                                  uint64_t availRegMask, bool allowNullReturn, bool doNotSpillToSiblingHPR)
    {
    _cg->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    if (virtReg->containsCollectedReference())
       _cg->traceRegisterAssignment("%R contains collected", virtReg);
@@ -4170,7 +4170,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
  */
 void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::RealRegister *targetReal, bool is64BitReg)
   {
-  TR::Compilation *comp = TR::comp();
+  TR::Compilation *comp = _cg->comp();
   TR::Register *virtReg=targetReal->getAssignedRegister();
   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                           targetReal->getKind() != TR_FPR && targetReal->getKind() != TR_VRF;
@@ -4283,7 +4283,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
 void
 OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Register* virtReg, uint32_t availHighWordRegMap)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    TR::InstOpCode::Mnemonic opCode;
    bool containsInternalPointer = false;
    bool containsCollectedReg    = false;
@@ -4694,7 +4694,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    TR::Instruction * cursor = NULL;
    TR::RealRegister * freeHighWordReg = NULL;
    TR_Debug * debugObj = self()->cg()->getDebug();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->cg()->comp();
    //This may not actually need to be reversed if
    //this is a dummy register used for OOL dependencies
 
@@ -5030,7 +5030,7 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
       }
    else
       {
-      if (_cg->supportsHighWordFacility() && !TR::comp()->getOption(TR_DisableHighWordRA) &&
+      if (_cg->supportsHighWordFacility() && !_cg->comp()->getOption(TR_DisableHighWordRA) &&
           virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
          {
          if ((virtReg->is64BitReg() && realReg->getLowWordRegister()->getAssignedRegister() == realReg->getHighWordRegister()->getAssignedRegister()) ||
@@ -5073,7 +5073,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    TR::Instruction * cursor = NULL;
    TR::Node * currentNode = currentInstruction->getNode();
    bool doNotRegCopy = false;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    if(virtualRegister->isArGprPair())
      virtualRegister->getGPRofArGprPair()->setIsLive();
@@ -6102,7 +6102,7 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
                                                              TR::Instruction *currInst)
   {
   uint64_t mask=0xffffffff;
-  TR::Compilation *comp = TR::comp();
+  TR::Compilation *comp = _cg->comp();
   TR::list<TR::Register *> conflictRegs(getTypedAllocator<TR::Register*>(comp->allocator()));
 
   if(currInst->defsAnyRegister(targetRegister))
@@ -6552,7 +6552,7 @@ OMR::Z::Machine::initializeFPRegPairTable()
 uint32_t *
 OMR::Z::Machine::initializeGlobalRegisterTable()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
@@ -7047,7 +7047,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 uint32_t
 OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
    {
-   if (!_cg->getSupportsVectorRegisters() && !TR::comp()->getOption(TR_DisableVectorRegGRA))
+   if (!_cg->getSupportsVectorRegisters() && !_cg->comp()->getOption(TR_DisableVectorRegGRA))
       {
       self()->setFirstGlobalVRFRegisterNumber(-1);
       self()->setLastGlobalVRFRegisterNumber(-1);
@@ -7133,7 +7133,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 
    if (traceVectorGRN)
       {
-      printf("Java func: %s func: %s\n", TR::comp()->getCurrentMethod()->nameChars(), __FUNCTION__);
+      printf("Java func: %s func: %s\n", _cg->comp()->getCurrentMethod()->nameChars(), __FUNCTION__);
       printf("ff %d\t", self()->getFirstGlobalFPRRegisterNumber());
       printf("lf %d\t", self()->getLastGlobalFPRRegisterNumber());
       printf("fof %d\t", self()->getFirstOverlappedGlobalFPRRegisterNumber());
@@ -7153,7 +7153,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 void
 OMR::Z::Machine::lockGlobalRegister(int32_t globalRegisterTableIndex)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    if (comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       _globalRegisterNumberToRealRegisterMap[globalRegisterTableIndex] = (uint32_t) (-1);
@@ -7191,7 +7191,7 @@ OMR::Z::Machine::findGlobalRegisterIndex(TR::RealRegister::RegNum gReg)
 void
 OMR::Z::Machine::releaseLiteralPoolRegister()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    if (comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       _globalRegisterNumberToRealRegisterMap[GLOBAL_REG_FOR_LITPOOL] = TR::RealRegister::GPR6;
@@ -7328,7 +7328,7 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
    {
    TR::Linkage * linkage = _cg->getS390Linkage();
    int32_t first = TR::RealRegister::FirstGPR;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
    if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       last = TR::RealRegister::LastHPR;
@@ -7373,7 +7373,7 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
 void
 OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
    TR::RegisterDependencyConditions * associations;
 
@@ -7457,7 +7457,7 @@ OMR::Z::Machine::isRestrictedReg(TR::RealRegister::RegNum reg)
       TR::RealRegister::GPR11,
       TR::RealRegister::GPR12,
       };
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    static const int32_t regListSize = (sizeof(regList) / sizeof(TR::RealRegister::RegNum));
 
    int32_t numRestrictedRegs = comp->getOptions()->getNumRestrictedGPRs();
@@ -7616,7 +7616,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
    // Calculate number of register dependencies required. This step is not really necessary, but
    // it is space conscious
    //
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
    for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastVRF; i = ((i == TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstVRF : i+1) )
       {
       TR::RealRegister *realReg = self()->getS390RealRegister(i);

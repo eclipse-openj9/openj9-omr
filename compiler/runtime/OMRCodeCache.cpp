@@ -26,6 +26,7 @@
 #include "codegen/FrontEnd.hpp"         // for TR_VerboseLog, etc
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"  // for TR::Options, etc
+#include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"                   // for POINTER_PRINTF_FORMAT
 #include "env/defines.h"                // for HOST_OS, OMR_LINUX
 #include "env/jittypes.h"               // for FLUSH_MEMORY
@@ -541,7 +542,7 @@ OMR::CodeCache::findTrampoline(TR_OpaqueMethodBlock * method)
       trampoline = entry->_info._resolved._currentTrampoline;
       if (!trampoline)
          {
-         void *newPC = _manager->fe()->getMethodStartPC(method);
+         void *newPC = (void *) TR::Compiler->mtd.startPC(method);
 
          trampoline = self()->allocateTrampoline();
 
@@ -648,7 +649,7 @@ OMR::CodeCache::syncTempTrampolines()
          {
          for (CodeCacheHashEntry *entry = _resolvedMethodHT->_buckets[entryIdx]; entry; entry = entry->_next)
             {
-            void *newPC = (void *) _manager->fe()->getMethodStartPC(entry->_info._resolved._method);
+            void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);
             void *trampoline = entry->_info._resolved._currentTrampoline;
             if (trampoline && entry->_info._resolved._currentStartPC != newPC)
                {
@@ -676,7 +677,7 @@ OMR::CodeCache::syncTempTrampolines()
          for (uint32_t entryIdx = 0; entryIdx < syncBlock->_entryCount; entryIdx++)
             {
             CodeCacheHashEntry *entry = syncBlock->_hashEntryArray[entryIdx];
-            void *newPC = (void *) _manager->fe()->getMethodStartPC(entry->_info._resolved._method);
+            void *newPC = (void *) TR::Compiler->mtd.startPC(entry->_info._resolved._method);
 
             // call the codegen to perform the trampoline code modification
             self()->createTrampoline(entry->_info._resolved._currentTrampoline,

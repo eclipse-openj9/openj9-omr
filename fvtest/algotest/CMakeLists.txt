@@ -38,22 +38,13 @@ add_executable(omralgotest
 )
 
 target_link_libraries(omralgotest
-	j9avl
-	j9hashtable
-	j9pool
 	omrGtestGlue
-	#omrGtest
-	omrcore
 	omrport
 	omrtestutil
 )
 
 #TODO hack to get building
-if(OMR_HOST_OS STREQUAL "linux")
-	target_link_libraries(omralgotest
-		rt
-	)
-elseif(OMR_HOST_OS STREQUAL "win")
+if(OMR_HOST_OS STREQUAL "win")
 	target_link_libraries(omralgotest
 		ws2_32
 		shell32

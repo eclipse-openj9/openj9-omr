@@ -68,20 +68,12 @@ add_executable(omrthreadtest
 #include $(top_srcdir)/omrmakefiles/rules.mk
 
 target_link_libraries(omrthreadtest
-	omrglue
 	omrtestutil
 	omrGtestGlue
 	j9thrstatic
-	omrutil
-	omrport
 	j9hashtable
-	j9avl
-	j9pool
 )
-if(OMR_HOST_OS STREQUAL "linux")
-    target_link_libraries(omrthreadtest
-        rt)
-elseif(OMR_HOST_OS STREQUAL "win")
+if(OMR_HOST_OS STREQUAL "win")
     target_link_libraries(omrthreadtest
         ws2_32
         shell32

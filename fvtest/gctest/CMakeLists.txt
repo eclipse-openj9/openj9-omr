@@ -29,18 +29,7 @@ target_link_libraries(omrgctest
 	omrGtestGlue
 	pugixml
 	omrtestutil
-	omrcore
-	omrglue
 	omrgc
-	omrglue
-	omrcore
-	omrtrace
-	j9hookstatic
-	omrport
-	j9thrstatic
-	j9hashtable
-	omrutil
-	omrglue
 )
 
 # TODO check linker flags from makefile are ported properly.

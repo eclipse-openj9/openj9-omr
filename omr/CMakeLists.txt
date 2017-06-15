@@ -48,4 +48,6 @@ target_include_directories(omrcore
 target_link_libraries(omrcore
 	PUBLIC
 		omrgc # mminitcore.h
+		omrport
+		omrtrace
 )

@@ -275,12 +275,11 @@ target_include_directories(omrgc
 		structs
 		verbose
 		verbose/handler_standard
-		$<TARGET_PROPERTY:omrglue,INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
 )
 
 target_link_libraries(omrgc
 	PUBLIC
-		# TODO: omrcore
-		#omrglue
+		omrcore
+		omrglue
+		j9hookstatic
 )

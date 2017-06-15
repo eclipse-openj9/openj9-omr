@@ -34,4 +34,8 @@ add_library(omrglue STATIC
 )
 
 target_include_directories(omrglue PUBLIC . ..)
-target_link_libraries(omrglue PRIVATE omrgc)
+
+target_link_libraries(omrglue PUBLIC
+	omrgc
+	j9thrstatic
+)

@@ -211,7 +211,7 @@ public:
     return PlatformTimer::Read();
   }
 
-  static char* Name(bool csv = false) {
+  static const char* Name(bool csv = false) {
     if (csv)
       return "Timing";
     else
@@ -219,7 +219,7 @@ public:
   }
 
   // must be 13 chars or less, alternativeFormat is in seconds/millisecs
-  static char *UnitsText(bool alternativeFormat = false) {
+  static const char *UnitsText(bool alternativeFormat = false) {
     if (alternativeFormat)
       return "  ssssss.msec (% total)";
     else

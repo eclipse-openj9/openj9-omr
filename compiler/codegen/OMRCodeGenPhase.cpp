@@ -407,7 +407,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
          {
          if (TO_KIND_MASK(r) & cg->getSupportedLiveRegisterKinds())
             {
-            TR::CodeGenerator::checkForLiveRegisters(cg->getLiveRegisters((TR_RegisterKinds)r));
+            cg->checkForLiveRegisters(cg->getLiveRegisters((TR_RegisterKinds)r));
             }
          }
 #endif
@@ -622,7 +622,7 @@ OMR::CodeGenPhase::performCleanUpFlagsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 void
 OMR::CodeGenPhase::performFindAndFixCommonedReferencesPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
-   if (!TR::comp()->useRegisterMaps())
+   if (!cg->comp()->useRegisterMaps())
       cg->findAndFixCommonedReferences();
    }
 

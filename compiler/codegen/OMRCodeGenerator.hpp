@@ -799,7 +799,7 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Live registers
    //
-   static void checkForLiveRegisters(TR_LiveRegisters *);
+   void checkForLiveRegisters(TR_LiveRegisters *);
    TR_LiveRegisters *getLiveRegisters(TR_RegisterKinds rk) {return _liveRegisters[rk];}
    TR_LiveRegisters *setLiveRegisters(TR_LiveRegisters *p, TR_RegisterKinds rk) {return (_liveRegisters[rk] = p);}
 

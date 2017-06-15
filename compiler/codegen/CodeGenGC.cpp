@@ -459,7 +459,7 @@ TR_GCStackMap::addToAtlas(TR::Instruction * instruction, TR::CodeGenerator *code
    uint8_t * codeStart = codeGen->getCodeStart();
    setLowestCodeOffset(instruction->getBinaryEncoding() - codeStart);
    codeGen->getStackAtlas()->addStackMap(this);
-   bool osrEnabled = TR::comp()->getOption(TR_EnableOSR);
+   bool osrEnabled = codeGen->comp()->getOption(TR_EnableOSR);
    if (osrEnabled)
       codeGen->addToOSRTable(instruction);
    }
@@ -472,7 +472,7 @@ TR_GCStackMap::addToAtlas(uint8_t * callSiteAddress, TR::CodeGenerator *codeGen)
    uint32_t callSiteOffset = callSiteAddress - codeGen->getCodeStart();
    setLowestCodeOffset(callSiteOffset - 1);
    codeGen->getStackAtlas()->addStackMap(this);
-   bool osrEnabled = TR::comp()->getOption(TR_EnableOSR);
+   bool osrEnabled = codeGen->comp()->getOption(TR_EnableOSR);
    if (osrEnabled)
       codeGen->addToOSRTable(callSiteOffset, getByteCodeInfo());
    }

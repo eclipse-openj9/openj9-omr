@@ -23,11 +23,7 @@ message(WARNING
 "CMake support is currently experimental.\n\
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
-#TODO figure out method of sharing version info with makefile build
-set(OMR_VERSION_MAJOR 0)
-set(OMR_VERSION_MINOR 0)
-set(OMR_VERSION_PATCH 1)
-set(OMR_VERSION ${OMR_VERSION_MAJOR}.${OMR_VERSION_MINOR}.${OMR_VERSION_PATCH})
+include(cmake/versions.cmake) # Required for OMR_VERSION 
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 
@@ -47,51 +43,18 @@ endif()
 
 # TODO: Version things
 
-set(OMR_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
-set(OMR_JIT_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
-
 ###
 ### Versions and stuff
 ###
 
 include(cmake/platform.cmake)
 include(cmake/config.cmake)
+include(cmake/vpath.cmake)
 
 enable_testing()
 
 #include current source dir and current bin dir automatically
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-# VPathResolve takes a list of source files, a list of directories to search in,
-# and produces a list of source files, prepended with the directory in which the
-# file was found. This is inspired by the VPATH system of Make.
-#
-# ie. if you have a/a.c and b/b.c in your directories, and
-#
-#     inlist  = [a.c, b.c]
-#     dirlist = [a, b]
-#
-# then
-#
-#     outlist = [a/a.c, b/b.c]
-#
-function(VPathResolve inlist dirlist outlist)
-    set(output "")
-  foreach(currentFile ${${inlist}})
-    set(fileFound False)
-    foreach(currentDir ${${dirlist}})
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${currentDir}/${currentFile}")
-            list(APPEND output "${currentDir}/${currentFile}")
-            set(fileFound True)
-            break()
-        endif()
-    endforeach()
-    if(NOT fileFound)
-        message(FATAL_ERROR "Could not find file ${currentFile}")
-    endif()
-  endforeach()
-  set(${outlist} ${output} PARENT_SCOPE)
-endfunction()
 
 include_directories(
   ${PROJECT_BINARY_DIR}

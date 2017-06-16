@@ -32,11 +32,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fdiagnostics-color=always -fno-rtti 
 
 add_executable(comptest
    main.cpp
+   TreeVerifierTest.cpp
 )
 
 target_link_libraries(comptest
-   ${GTEST_BOTH_LIBRARIES} 
-   ${tril_LIBRAREIS}
+   ${GTEST_BOTH_LIBRARIES}
    tril
 )
 

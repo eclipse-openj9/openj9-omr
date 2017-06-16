@@ -2877,7 +2877,7 @@ tryGenerateConversionRXComparison(TR::Node *node, TR::CodeGenerator *cg, bool *i
          case TR::ifacmpge:
          case TR::ifacmpgt:
             isUnsignedCmp = true;
-//            traceMsg(TR::comp(), "Setting isUnsignedCmp to true for address compare\n");
+//            traceMsg(cg->comp(), "Setting isUnsignedCmp to true for address compare\n");
             break;
          default:
             break;
@@ -9529,7 +9529,7 @@ TR::Register * inlineVMSL256Multiply(TR::Node * node, TR::CodeGenerator * cg)
 TR::Register *
 inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    static const char * disableECCSIMD = feGetEnv("TR_disableECCSIMD");
    static const char * disableECCMLGR = feGetEnv("TR_disableECCMLGR");
    static const char * disableECCKarat = feGetEnv("TR_disableECCKarat");
@@ -17810,7 +17810,7 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register*
 inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation* comp = TR::comp();
+   TR::Compilation* comp = cg->comp();
 
    // Create the necessary registers
    TR::Register* output    = cg->gprClobberEvaluate(node->getChild(1));
@@ -18348,8 +18348,8 @@ OMR::Z::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       (canUseNodeForFusedMultiply(node->getFirstChild()) || canUseNodeForFusedMultiply(node->getSecondChild())) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMA))
       {
-      if (TR::comp()->getOption(TR_TraceCG))
-         traceMsg(TR::comp(), "Successfully changed vadd with vmul child to fused multiply and add operation\n");
+      if (cg->comp()->getOption(TR_TraceCG))
+         traceMsg(cg->comp(), "Successfully changed vadd with vmul child to fused multiply and add operation\n");
 
       return node->getRegister();
       }
@@ -18383,8 +18383,8 @@ OMR::Z::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       canUseNodeForFusedMultiply(node->getFirstChild()) &&
       generateFusedMultiplyAddIfPossible(cg, node, TR::InstOpCode::VFMS))
       {
-      if (TR::comp()->getOption(TR_TraceCG))
-         traceMsg(TR::comp(), "Successfully changed vsub with vmul child to fused multiply and sub operation\n");
+      if (cg->comp()->getOption(TR_TraceCG))
+         traceMsg(cg->comp(), "Successfully changed vsub with vmul child to fused multiply and sub operation\n");
 
       return node->getRegister();
       }

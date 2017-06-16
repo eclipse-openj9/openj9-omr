@@ -246,7 +246,7 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
 
 uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor           = instructionStart;
    cursor = getOpCode().copyBinaryToBuffer(instructionStart);

@@ -764,7 +764,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
                                                                       TR::Node      *carry)
    {
    TR::Register *targetRegister;
-   TR::Compilation* comp = TR::comp();
+   TR::Compilation* comp = _cg->comp();
    TR::Register *firstRegister  = firstChild->getRegister();
    TR::Register *secondRegister = secondChild->getRegister();
 

@@ -36,7 +36,7 @@ Instruction::Instruction(
       TR::Node *node) :
    _opcode(op),
    _next(0),
-   _prev(TR::comp()->getAppendInstruction()),
+   _prev(cg->comp()->getAppendInstruction()),
    _node(node),
    _binaryEncodingBuffer(0),
    _binaryLength(0),

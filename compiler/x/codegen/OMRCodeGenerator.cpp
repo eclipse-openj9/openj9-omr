@@ -2902,7 +2902,7 @@ bool OMR::X86::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandida
 bool OMR::X86::CodeGenerator::supportsInliningOfIsInstance()
    {
    static const char *envp = feGetEnv("TR_NINLINEISINSTANCE");
-   return !envp && !TR::comp()->getOption(TR_DisableInlineIsInstance);
+   return !envp && !self()->comp()->getOption(TR_DisableInlineIsInstance);
    }
 
 uint8_t OMR::X86::CodeGenerator::getSizeOfCombinedBuffer()

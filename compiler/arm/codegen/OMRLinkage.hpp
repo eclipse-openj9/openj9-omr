@@ -329,7 +329,7 @@ class OMR_EXTENSIBLE Linkage : public OMR::Linkage
 
    TR_Debug        *getDebug()         {return _cg->getDebug();}
    TR::CodeGenerator *cg()               {return _cg;}
-   TR::Compilation      *comp()             {return TR::comp();}
+   TR::Compilation      *comp()             {return _cg->comp();}
    TR_FrontEnd         *fe()               {return _cg->fe();}
    TR_Memory *          trMemory()         {return _cg->trMemory(); }
    TR_HeapMemory        trHeapMemory();

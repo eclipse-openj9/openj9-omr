@@ -141,7 +141,7 @@ bool OMR::TreeEvaluator::instanceOfOrCheckCastNeedSuperTest(TR::Node * node, TR:
           !TR::Compiler->cls.isInterfaceClass(cg->comp(), clazz) &&
           !TR::Compiler->cls.isClassFinal(cg->comp(), clazz) &&
            helperSym->preservesAllRegisters() &&
-          !TR::comp()->getOption(TR_OptimizeForSpace))
+          !cg->comp()->getOption(TR_OptimizeForSpace))
          return true;
       }
    return false;

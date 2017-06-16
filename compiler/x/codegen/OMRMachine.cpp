@@ -2080,7 +2080,7 @@ TR_RegisterAssignerState::createDependenciesFromRegisterState(TR_OutlinedInstruc
    {
    // Calculate the required number of dependencies.
    //
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _machine->cg()->comp();
    int32_t numDeps = 0;
    int32_t i;
    int32_t endReg = TR::RealRegister::LastXMMR;
@@ -2251,7 +2251,7 @@ bool TR_RegisterAssignerState::isLive(TR::Register *virtReg)
 
 void TR_RegisterAssignerState::dump()
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _machine->cg()->comp();
 
    if (comp->getOptions()->getOption(TR_TraceNonLinearRegisterAssigner))
       {

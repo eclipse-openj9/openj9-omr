@@ -96,22 +96,22 @@ int OMR::CodeGenerator::_totalNumRematerializedXMMRs = 0;
 void
 OMR::CodeGenerator::checkForLiveRegisters(TR_LiveRegisters *liveRegisters)
    {
-   TR_Debug * debug = TR::comp()->getDebug();
+   TR_Debug * debug = self()->comp()->getDebug();
    bool regsAreLive = false;
 
    if (liveRegisters && liveRegisters->getFirstLiveRegister())
       {
-      traceMsg(TR::comp(), "\n\n");
+      traceMsg(self()->comp(), "\n\n");
       for (TR_LiveRegisterInfo *p = liveRegisters->getFirstLiveRegister(); p; p = p->getNext())
          {
          if (p->getNode() && p->getNode()->hasOptAttributes())
-            traceMsg(TR::comp(), "Virtual register %s (for node [%s], ref count=%d) is live at end of method\n",
+            traceMsg(self()->comp(), "Virtual register %s (for node [%s], ref count=%d) is live at end of method\n",
                         debug->getName(p->getRegister()), debug->getName(p->getNode()), p->getNode()->getReferenceCount());
          else if (p->getNode())
-                     traceMsg(TR::comp(), "Virtual register %s (for node [%s]) is live at end of method\n",
+                     traceMsg(self()->comp(), "Virtual register %s (for node [%s]) is live at end of method\n",
                                  debug->getName(p->getRegister()), debug->getName(p->getNode()));
          else
-            traceMsg(TR::comp(), "Virtual register %s %p is live at end of method with node count %d\n", debug->getName(p->getRegister()), p->getRegister(), p->getNodeCount());
+            traceMsg(self()->comp(), "Virtual register %s %p is live at end of method with node count %d\n", debug->getName(p->getRegister()), p->getRegister(), p->getNodeCount());
          regsAreLive = true;
          }
       }
@@ -1157,18 +1157,20 @@ OMR::CodeGenerator::TR_RegisterPressureState::updateRegisterPressure(TR::Symbol 
    {
    TR::DataType dt = TR::NoType;
 
+   TR::CodeGenerator *cg = TR::comp()->cg();
+
    if (symbol->getType().isAggregate())
       {
-      dt = TR::comp()->cg()->getDataTypeFromSymbolMap(symbol);
+      dt = cg->getDataTypeFromSymbolMap(symbol);
       traceMsg(TR::comp(), "\nxxx2, rcSymbol %p is aggregate but found better dt = %s\n",symbol,dt.toString());
       }
 
    if (dt == TR::NoType)
       dt = symbol->getDataType();
 
-   _gprPressure += TR::comp()->cg()->gprCount(TR::DataType(dt),symbol->getSize());
-   _fprPressure += TR::comp()->cg()->fprCount(TR::DataType(dt));
-   _vrfPressure += TR::comp()->cg()->vrfCount(TR::DataType(dt));
+   _gprPressure += cg->gprCount(TR::DataType(dt),symbol->getSize());
+   _fprPressure += cg->fprCount(TR::DataType(dt));
+   _vrfPressure += cg->vrfCount(TR::DataType(dt));
 
 
    }
@@ -2152,7 +2154,7 @@ OMR::CodeGenerator::findUsedCandidate(TR::Node *node, TR_RegisterCandidate *rc, 
 
    TR_RegisterCandidate *gprToCoalesce = NULL;
    if (node->getOpCode().isLoadVarDirect() || node->getOpCode().isStoreDirect())
-      gprToCoalesce = TR::comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
+      gprToCoalesce = self()->comp()->getGlobalRegisterCandidates()->find(node->getSymbolReference());
 
    for (int32_t i = 0; (gprToCoalesce == NULL) && (i < node->getNumChildren()); i++)
       gprToCoalesce = self()->findUsedCandidate(node->getChild(i), rc, visitedNodes);
@@ -2170,7 +2172,7 @@ OMR::CodeGenerator::findUsedCandidate(TR::Node *node, TR_RegisterCandidate *rc, 
 // linkage.  For now, we just always include the linkages of the caller and
 // all callees.
 //
-#define LINKAGE_THAT_IS_ALWAYS_PRESENT (TR::comp()->getMethodSymbol()->getLinkageConvention())
+#define LINKAGE_THAT_IS_ALWAYS_PRESENT (self()->comp()->getMethodSymbol()->getLinkageConvention())
 
 void
 OMR::CodeGenerator::computeSimulatedSpilledRegs(TR_BitVector *spilledRegisters, int32_t blockNum, TR::SymbolReference *candidate)
@@ -3121,7 +3123,7 @@ OMR::CodeGenerator::simulateNodeEvaluation(TR::Node *node, TR_RegisterPressureSt
          self()->simulateMemoryReference(&memref, node->getChild(0), state, summary);
       }
 
-   traceMsg(TR::comp(), "state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
+   traceMsg(self()->comp(), "state->_gprPressure = %d summary->_gprPressure = %d summary->PRESSURE_LIMIT = %d\n",state->_gprPressure,summary->_gprPressure,summary->PRESSURE_LIMIT);
 
    if (summary->_gprPressure < summary->PRESSURE_LIMIT)
       TR_ASSERT(state->_gprPressure <= summary->_gprPressure, "Children of %s must record max register gprPressure in summary; %d > %d", self()->getDebug()->getName(node), state->_gprPressure, summary->_gprPressure);

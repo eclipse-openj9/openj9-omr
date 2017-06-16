@@ -82,7 +82,7 @@ struct TR_ARMRegisterDependency
 void print(TR::FILE *pOutFile, TR::CodeGenerator *cg)
    {
    TR_ARMMachine *machine = getARMMachine(cg);
-   TR_FrontEnd *fe = TR::comp()->fe();
+   TR_FrontEnd *fe = cg->comp()->fe();
    trfprintf(pOutFile,"\nVirtual: ");
    (void)trfflush(pOutFile);
    _virtualRegister->print(pOutFile, TR_WordReg);

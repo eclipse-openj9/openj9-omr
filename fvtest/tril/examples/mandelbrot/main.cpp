@@ -16,8 +16,22 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
+#include "ilgen/TypeDictionary.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/Method.hpp"
+#include "control/CompileMethod.hpp"
+#include "env/jittypes.h"
+#include "gtest/gtest.h"
+#include "il/DataTypes.hpp"
 #include "ilgen.hpp"
 #include "Jit.hpp"
+#include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
+
+using TreeMethodFunction = void(int32_t, int32_t, int32_t*);
 
 int main(int argc, char const * const * const argv) {
    initializeJit();
@@ -29,10 +43,22 @@ int main(int argc, char const * const * const argv) {
       ASTNode* trees = genTrees(inputFile);
       printf("parsed trees:\n");
       printTrees(trees, 0);
+
       TRLangBuilder builder{trees, &types};
-      uint8_t* entry;
-      auto rc = compileMethodBuilder(&builder, &entry);
+      auto Int32 = types.PrimitiveType(TR::Int32);
+      auto argTypes = new TR::IlType*[3];
+      argTypes[0] = Int32;
+      argTypes[1] = Int32;
+      argTypes[2] = types.PointerTo(Int32);
+
+      TR::ResolvedMethod compilee(__FILE__, LINETOSTR(__LINE__), "mandelbrot", 3, argTypes, Int32, 0, &builder);
+      TR::IlGeneratorMethodDetails methodDetails(&compilee);
+
+      int32_t rc = 0;
+      auto entry = compileMethodFromDetails(NULL, methodDetails, warm, rc);
       auto treeMethod = (TreeMethodFunction*)entry;
+
+
       if (rc == 0) {
          constexpr auto size = 80;
          int32_t table[size][size] = {{0}};

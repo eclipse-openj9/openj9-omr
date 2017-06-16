@@ -16,8 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#ifndef AST_H
+#define AST_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,7 +40,7 @@ typedef struct {
 struct ASTNodeArg;
 typedef struct ASTNodeArg ASTNodeArg;
 struct ASTNodeArg {
-    char* name;
+    const char* name;
     ASTValue value;
     ASTNodeArg* next;
 };
@@ -56,7 +56,7 @@ struct ASTNode {
 
 ASTNode* createNode(char* name, ASTNodeArg* args, ASTNode* children,  ASTNode* next);
 
-ASTNodeArg* createNodeArg(char* name, ASTValue value,  ASTNodeArg* next);
+ASTNodeArg* createNodeArg(const char* name, ASTValue value,  ASTNodeArg* next);
 
 ASTValue createInt64Value(uint64_t val);
 ASTValue createDoubleValue(double val);
@@ -73,4 +73,4 @@ ASTNode* genTrees(FILE* in);
 }
 #endif
 
-#endif // NODE_H
+#endif // AST_H

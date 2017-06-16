@@ -148,6 +148,11 @@ Here is the checklist for contributions to be _acceptable_:
 5. Ensure that you use the _same_ email address as your Eclipse account in commits.
 6. Include the appropriate copyright notice and license at the top of each file.
 
+Your signing of the ECA will be verified by a webservice called 'ip-validation'
+that checks the email address that signed-off on your commits has signed the
+ECA. **Note**: This service is case-sensitive, so ensure the email that signed
+the ECA and that signed-off on your commits is the same, down to the case. 
+
 ### Copyright Notice and Licensing Requirements
 
 **It is the responsibility of each contributor to obtain legal advice, and

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -27,13 +28,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #include <sys/vfs.h>
 #elif defined(OSX)
 #include <sys/param.h>
 #include <sys/mount.h>
-#endif /*  defined(LINUX) */
+#endif /*  defined(LINUX)  && !defined(OMRZTPF) */
+#if !defined(OMRZTPF)
 #include <sys/statvfs.h>
+#endif /* !defined(OMRZTPF) */
 #include <dirent.h>
 #include <fcntl.h>
 #include <time.h>
@@ -67,11 +70,11 @@ static const char *const fileFStatVFSErrorMsgPrefix = "fstatvfs : ";
 static int32_t EsTranslateOpenFlags(int32_t flags);
 static void setPortableError(OMRPortLibrary *portLibrary, const char *funcName, int32_t portlibErrno, int systemErrno);
 static int32_t findError(int32_t errorCode);
-#if defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5))
 static void updateJ9FileStat(struct OMRPortLibrary *portLibrary, J9FileStat *j9statBuf, struct stat *statBuf, PlatformStatfs *statfsBuf);
-#else /* defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5) */
+#else /* (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5)) */
 static void updateJ9FileStat(struct OMRPortLibrary *portLibrary, J9FileStat *j9statBuf, struct stat *statBuf);
-#endif /* defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5) */
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5)) */
 
 static int32_t
 EsTranslateOpenFlags(int32_t flags)
@@ -206,13 +209,13 @@ findError(int32_t errorCode)
  *
  * @return void
  */
-#if defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5))
 static void
 updateJ9FileStat(struct OMRPortLibrary *portLibrary, J9FileStat *j9statBuf, struct stat *statBuf, PlatformStatfs *statfsBuf)
-#else /* defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5) */
+#else /* (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5)) */
 static void
 updateJ9FileStat(struct OMRPortLibrary *portLibrary, J9FileStat *j9statBuf, struct stat *statBuf)
-#endif /* defined(LINUX) || defined(OSX) || defined(AIXPPC) && !defined(J9OS_I5) */
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || (defined(AIXPPC) && !defined(J9OS_I5)) */
 {
 	if (S_ISDIR(statBuf->st_mode)) {
 		j9statBuf->isDir = 1;
@@ -242,7 +245,7 @@ updateJ9FileStat(struct OMRPortLibrary *portLibrary, J9FileStat *j9statBuf, stru
 	j9statBuf->ownerUid = statBuf->st_uid;
 	j9statBuf->ownerGid = statBuf->st_gid;
 
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	if (NULL != statfsBuf) {
 		switch (statfsBuf->f_type) {
 		/* Detect remote filesystem types */
@@ -783,7 +786,11 @@ omrfile_mkdir(struct OMRPortLibrary *portLibrary, const char *path)
 int32_t
 omrfile_move(struct OMRPortLibrary *portLibrary, const char *pathExist, const char *pathNew)
 {
+#ifndef OMRZTPF
 	return rename(pathExist, pathNew);
+#else
+	return rename(pathExist, (char *)pathNew);
+#endif
 }
 
 int32_t
@@ -793,8 +800,11 @@ omrfile_unlinkdir(struct OMRPortLibrary *portLibrary, const char *path)
 
 	/* QNX has modified the API for remove and rmdir.*/
 	/* Remove does not call rmdir automagically like every other Unix.*/
-
+#ifndef OMRZTPF
 	return remove(path);
+#else
+	return rmdir(path);
+#endif
 }
 
 
@@ -1133,9 +1143,9 @@ int32_t
 omrfile_fstat(struct OMRPortLibrary *portLibrary, intptr_t fd, struct J9FileStat *buf)
 {
 	struct stat statbuf;
-#if defined(LINUX) || defined(AIXPPC) || defined(OSX)
+#if (!defined(OMRZTPF) && defined(LINUX)) || defined(AIXPPC) || defined(OSX)
 	PlatformStatfs statfsbuf;
-#endif /* defined(LINUX) || defined(AIXPPC) || defined(OSX) */
+#endif /* (!defined(OMRZTPF) && defined(LINUX)) || defined(AIXPPC) || defined(OSX) */
 	int32_t rc = 0;
 	int localfd = (int)fd;
 
@@ -1153,7 +1163,7 @@ omrfile_fstat(struct OMRPortLibrary *portLibrary, intptr_t fd, struct J9FileStat
 		goto _end;
 	}
 
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	if (0 != fstatfs(localfd - FD_BIAS, &statfsbuf)) {
 		intptr_t myerror = errno;
 		Trc_PRT_file_fstat_fstatfsFailed(myerror);
@@ -1185,7 +1195,7 @@ int32_t
 omrfile_stat(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flags, struct J9FileStat *buf)
 {
 	struct stat statbuf;
-#if defined(LINUX) || defined(AIXPPC) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(AIXPPC) || defined(OSX)
 	PlatformStatfs statfsbuf;
 #endif /* defined(LINUX) || defined(AIXPPC) || defined(OSX) */
 
@@ -1196,7 +1206,7 @@ omrfile_stat(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flag
 		return portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
 	}
 
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	if (statfs(path, &statfsbuf)) {
 		return portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
 	}
@@ -1217,6 +1227,7 @@ omrfile_stat(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flag
 int32_t
 omrfile_stat_filesystem(struct OMRPortLibrary *portLibrary, const char *path, uint32_t flags, struct J9FileStatFilesystem *buf)
 {
+#ifndef OMRZTPF
 	struct statvfs statvfsbuf;
 
 	if (statvfs(path, &statvfsbuf)) {
@@ -1233,6 +1244,9 @@ omrfile_stat_filesystem(struct OMRPortLibrary *portLibrary, const char *path, ui
 	}
 
 	return 0;
+#else
+    return -4;
+#endif
 }
 
 intptr_t

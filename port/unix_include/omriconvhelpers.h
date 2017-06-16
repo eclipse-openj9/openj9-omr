@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 #ifndef omriconvhelpers_h_
@@ -25,7 +26,7 @@
 
 /* __STDC_ISO_10646__ indicates that the platform wchar_t encoding is Unicode */
 /* but older versions of libc fail to set the flag, even though they are Unicode */
-#if !defined(__STDC_ISO_10646__) && !defined(LINUX) && !defined(OSX)
+#if (!defined(__STDC_ISO_10646__) && !defined(LINUX) && !defined(OSX)) || defined(OMRZTPF)
 #define J9VM_USE_ICONV
 #endif /* !defined(__STDC_ISO_10646__) && !defined(LINUX) && !defined(OSX) */
 

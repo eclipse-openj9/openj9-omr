@@ -82,20 +82,20 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 	Dwarf_Error error = NULL;
 	Dwarf_Attribute attr = NULL;
 
-	/* Get the dwarf source file names. */
-	if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
-		ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
-		_fileNamesTable = NULL;
-		_fileNameCount = 0;
-		goto Failed;
-	}
-
 	if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_comp_dir, &hasAttr, &error)) {
 		ERRMSG("Checking for compilation directory attribute: %s\n", dwarf_errmsg(error));
 		goto Failed;
 	}
 
 	if (hasAttr) {
+		/* Get the dwarf source file names. */
+		if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
+			//ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
+			_fileNamesTable = NULL;
+			_fileNameCount = 0;
+			goto Done;
+		}
+
 		/* Get the CU directory. */
 		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
 			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
@@ -111,6 +111,8 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 		 * over getting the absolute paths from the relative paths.  AIX does
 		 * not provide this attribute.
 		 */
+		_fileNamesTable = NULL;
+		_fileNameCount = 0;
 		goto Done;
 	}
 
@@ -711,7 +713,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 				/* When the type is a stub that was found as a stub before, it might be found as a subUDT now,
 				 * so we check if it is, and remove it from the main types list if it is. */
 				if (NULL == newType->getNamespace()) {
-					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType));
+					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), newType), _ir->_types.end());
 				}
 			}
 		} else {
@@ -835,7 +837,7 @@ DwarfScanner::getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const new
 				*typeNum = 2;
 			}
 		} else {
-			if (dieName.empty()) {
+			if (dieName.empty() && (NULL == outerUDT)) {
 				dieName = "void";
 				tag = DW_TAG_base_type;
 				stubKey = dieName + char(tag);
@@ -1004,17 +1006,23 @@ DwarfVisitor::visitType(EnumUDT *newUDT) const
 	return rc;
 }
 
+DDR_RC
+DwarfVisitor::visitType(NamespaceUDT *newClass) const
+{
+	return _scanner->scanClassChildren(newClass, _die, false);
+}
+
 /* A Die for a class/struct/union has children Die's for all of its properties,
  * including member fields, sub types, functions, and super type. This function
  * processes those properties to populate a NamespaceUDT or ClassUDT.
  */
 DDR_RC
-DwarfVisitor::visitType(NamespaceUDT *newClass) const
+DwarfScanner::scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die, bool alreadyHadFields)
 {
 	DDR_RC rc = DDR_RC_OK;
 	Dwarf_Die childDie = NULL;
 	Dwarf_Error error = NULL;
-	int dwRc = dwarf_child(_die, &childDie, &error);
+	int dwRc = dwarf_child(die, &childDie, &error);
 
 	if (DW_DLV_ERROR == dwRc) {
 		ERRMSG("Getting child of CU DIE: %s\n", dwarf_errmsg(error));
@@ -1044,7 +1052,7 @@ DwarfVisitor::visitType(NamespaceUDT *newClass) const
 			) {
 				/* The child is an inner type. */
 				UDT *innerUDT = NULL;
-				if (DDR_RC_OK != _scanner->addDieToIR(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
+				if (DDR_RC_OK != addDieToIR(childDie, childTag, true, newClass, (Type **)&innerUDT)) {
 					rc = DDR_RC_ERROR;
 					break;
 				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL  == innerUDT->getNamespace())) {
@@ -1057,23 +1065,25 @@ DwarfVisitor::visitType(NamespaceUDT *newClass) const
 				}
 			} else if (DW_TAG_inheritance == childTag) {
 				/* The child is a super type. */
-				rc = _scanner->getSuperUDT(childDie, (ClassUDT *)newClass);
+				rc = getSuperUDT(childDie, (ClassUDT *)newClass);
 			} else if (DW_TAG_member == childTag) {
-				/* The child is a member field. */
-				string fieldName = "";
-				rc = _scanner->getName(childDie, &fieldName);
-				DEBUGPRINTF("fieldName: %s", fieldName.c_str());
-				if (DDR_RC_OK != _scanner->addClassField(childDie, (ClassType *)newClass, fieldName)) {
-					rc = DDR_RC_ERROR;
-					break;
+				if (!alreadyHadFields) {
+					/* The child is a member field. */
+					string fieldName = "";
+					rc = getName(childDie, &fieldName);
+					DEBUGPRINTF("fieldName: %s", fieldName.c_str());
+					if (DDR_RC_OK != addClassField(childDie, (ClassType *)newClass, fieldName)) {
+						rc = DDR_RC_ERROR;
+						break;
+					}
 				}
 			}
-		} while (DDR_RC_OK == _scanner->getNextSibling(&childDie));
-		dwarf_dealloc(_scanner->_debug, childDie, DW_DLA_DIE);
+		} while (DDR_RC_OK == getNextSibling(&childDie));
+		dwarf_dealloc(_debug, childDie, DW_DLA_DIE);
 	}
 
 	if (NULL != error) {
-		dwarf_dealloc(_scanner->_debug, error, DW_DLA_ERROR);
+		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
 	}
 	return rc;
 }
@@ -1088,13 +1098,13 @@ DwarfVisitor::visitType(Type *newType) const
 DDR_RC
 DwarfVisitor::visitType(ClassUDT *newType) const
 {
-	return visitType((NamespaceUDT *)newType);
+	return _scanner->scanClassChildren(newType, _die, !newType->_fieldMembers.empty());
 }
 
 DDR_RC
 DwarfVisitor::visitType(UnionUDT *newType) const
 {
-	return visitType((NamespaceUDT *)newType);
+	return _scanner->scanClassChildren(newType, _die, !newType->_fieldMembers.empty());
 }
 
 /* Add an enum member to an enum UDT from a Die. */
@@ -1145,30 +1155,47 @@ DDR_RC
 DwarfScanner::addClassField(Dwarf_Die die, ClassType *const newClass, string fieldName)
 {
 	DDR_RC rc = DDR_RC_ERROR;
-	string typeName;
-	Field *newField = new Field();
+	string typeName = "";
 	size_t typeSize = 0;
 	Dwarf_Error error = NULL;
 	Dwarf_Die baseDie = NULL;
+	Modifiers fieldModifiers;
+	size_t bitField = 0;
 
-	if (DDR_RC_OK == getTypeInfo(die, &baseDie, &typeName, &newField->_modifiers, &typeSize, &newField->_bitField)) {
+	if (DDR_RC_OK == getTypeInfo(die, &baseDie, &typeName, &fieldModifiers, &typeSize, &bitField)
+		&& (!fieldName.empty() || (NULL != baseDie))) {
+		/* Get the field UDT. */
+		Dwarf_Half tag = 0;
+		if (NULL == baseDie) {
+			ERRMSG("Missing field type for field: %s. Possible missing or corrupt dwarf info.\n", fieldName.c_str());
+			typeName = "void";
+			tag = DW_TAG_base_type;
+		} else {
+			if (DW_DLV_ERROR == dwarf_tag(baseDie, &tag, &error)) {
+				ERRMSG("Getting field's tag: %s\n", dwarf_errmsg(error));
+				goto AddUDTFieldDone;
+			}
+		}
 		DEBUGPRINTF("typeName: %s", typeName.c_str());
 
-		/* Get the field UDT. */
-		Dwarf_Half tag;
-		if (DW_DLV_ERROR == dwarf_tag(baseDie, &tag, &error)) {
-			ERRMSG("Getting field's tag: %s\n", dwarf_errmsg(error));
-			goto AddUDTFieldDone;
-		}
+		Field *newField = new Field();
+		newClass->_fieldMembers.push_back(newField);
+		newField->_modifiers = fieldModifiers;
+		newField->_bitField = bitField;
+
 		Type *fieldType = NULL;
-		if ((DDR_RC_OK != addDieToIR(baseDie, tag, true, NULL, &fieldType)) || (NULL == fieldType)) {
-			goto AddUDTFieldDone;
+		if (typeName == newClass->_name) {
+			fieldType = newClass;
+		} else if (NULL != baseDie) {
+			if ((DDR_RC_OK != addDieToIR(baseDie, tag, true, NULL, &fieldType)) || (NULL == fieldType)) {
+				goto AddUDTFieldDone;
+			}
 		}
 		newField->_fieldType = fieldType;
 		newField->_name = fieldName;
 		newField->_sizeOf = newField->_modifiers.getSize(typeSize);
 
-		newClass->_fieldMembers.push_back(newField);
+		//newClass->_fieldMembers.push_back(newField);
 		rc = DDR_RC_OK;
 
 		dwarf_dealloc(_debug, baseDie, DW_DLA_DIE);
@@ -1176,9 +1203,6 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *const newClass, string fie
 AddUDTFieldDone:
 	if (NULL != error) {
 		dwarf_dealloc(_debug, error, DW_DLA_ERROR);
-	}
-	if (DDR_RC_OK != rc) {
-		delete(newField);
 	}
 	return rc;
 }

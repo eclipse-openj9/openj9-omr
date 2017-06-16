@@ -84,6 +84,7 @@ private:
 	DDR_RC addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, NamespaceUDT *outerUDT, Type **type);
 	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const newUDT, NamespaceUDT *outerUDT, int *typeNum);
 	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsigned int lineNumber, Type **const newUDT);
+	DDR_RC scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die, bool alreadyHadFields);
 	DDR_RC addEnumMember(Dwarf_Die die, EnumUDT *const udt);
 	DDR_RC addClassField(Dwarf_Die die, ClassType *const newClass, string fieldName);
 	DDR_RC getSuperUDT(Dwarf_Die die, ClassUDT *const udt);

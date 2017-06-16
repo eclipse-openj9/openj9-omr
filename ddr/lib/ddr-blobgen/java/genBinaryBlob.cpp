@@ -701,14 +701,10 @@ JavaBlobGenerator::addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constC
 {
 	DDR_RC rc = DDR_RC_OK;
 
-	Type *type = f->_fieldType;
-	if (NULL == type) {
-		ERRMSG("Field %s has NULL type", f->_name.c_str());
-		rc = DDR_RC_ERROR;
-	} else if (!f->_isStatic) {
+	if (!f->_isStatic) {
 		/* Anonymous classes, structs, and unions add their fields directly to the outer type. */
-		if (type->isAnonymousType()) {
-			type->acceptVisitor(BlobBuildVisitor(this, true, prefix + f->_name + "."));
+		if ((NULL != f->_fieldType) && f->_fieldType->isAnonymousType()) {
+			f->_fieldType->acceptVisitor(BlobBuildVisitor(this, true, prefix + f->_name + "."));
 		} else {
 			*fieldCount += 1;
 			string typeName;
@@ -873,7 +869,11 @@ JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 	}
 
 	if (DDR_RC_OK == rc) {
-		rc = field->_fieldType->acceptVisitor(BlobFieldVisitor(fieldType));
+		if (NULL == field->_fieldType) {
+			*fieldType = "void";
+		} else {
+			rc = field->_fieldType->acceptVisitor(BlobFieldVisitor(fieldType));
+		}
 	}
 
 	if (DDR_RC_OK == rc) {
@@ -1006,7 +1006,7 @@ BlobEnumerateVisitor::visitType(ClassUDT *type) const
 						if (DDR_RC_OK != rc) {
 							break;
 						}
-					} else if (NULL != (*v)->_fieldType) {
+					} else {
 						fieldCount += 1;
 					}
 				}

@@ -279,13 +279,18 @@ JavaSupersetGenerator::getFieldType(Field *f, string *assembledTypeName, string 
 		pointerType = f->_modifiers.getPointerType();
 	}
 
-	string typeName;
-	string simpleName;
-	string prefix;
-	string prefixBase;
+	string typeName = "";
+	string simpleName = "";
+	string prefix = "";
+	string prefixBase = "";
 	string pointerTypeBase = pointerType;
 	if (DDR_RC_OK == rc) {
-		rc = f->_fieldType->acceptVisitor(SupersetFieldVisitor(this, &typeName, &simpleName, &prefixBase, &prefix, &pointerTypeBase));
+		if (NULL == f->_fieldType) {
+			typeName = "void";
+			simpleName = "void";
+		} else {
+			rc = f->_fieldType->acceptVisitor(SupersetFieldVisitor(this, &typeName, &simpleName, &prefixBase, &prefix, &pointerTypeBase));
+		}
 	}
 	
 	/* Get the bit field, if it has one. */
@@ -337,11 +342,8 @@ JavaSupersetGenerator::printFieldMember(Field *field, string prefix = "")
 	/* If the type of a field is an anonymous inner type, print its fields prefixed by its field
 	 * name in place of the field.
 	 */
-	if (NULL == field->_fieldType) {
-		rc = DDR_RC_ERROR;
-		ERRMSG("Field %s has NULL type", field->_name.c_str());
-	} else if (!field->_isStatic) {
-		if (field->_fieldType->isAnonymousType()) {
+	if (!field->_isStatic) {
+		if ((NULL != field->_fieldType) && field->_fieldType->isAnonymousType()) {
 			field->_fieldType->acceptVisitor(SupersetVisitor(this, true, prefix + field->_name + "."));
 		} else {
 			string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);

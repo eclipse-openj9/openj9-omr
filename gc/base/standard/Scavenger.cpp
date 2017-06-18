@@ -4444,17 +4444,19 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 
-	/* caches should all be reset */
-	Assert_MM_true(NULL == env->_survivorCopyScanCache);
-	Assert_MM_true(NULL == env->_tenureCopyScanCache);
-	Assert_MM_true(NULL == env->_scanCache);
-	Assert_MM_true(NULL == env->_deferredScanCache);
-	Assert_MM_true(NULL == env->_deferredCopyCache);
-	Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
-	Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
-	Assert_MM_false(env->_loaAllocation);
-	Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
-	Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+	if (isConcurrentInProgress()) {
+		/* caches should all be reset */
+		Assert_MM_true(NULL == env->_survivorCopyScanCache);
+		Assert_MM_true(NULL == env->_tenureCopyScanCache);
+		Assert_MM_true(NULL == env->_scanCache);
+		Assert_MM_true(NULL == env->_deferredScanCache);
+		Assert_MM_true(NULL == env->_deferredCopyCache);
+		Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
+		Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
+		Assert_MM_false(env->_loaAllocation);
+		Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
+		Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+	}
 }
 
 void
@@ -4463,7 +4465,7 @@ MM_Scavenger::mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_Envi
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 	MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(threadEnvironmentBase);
 
-	if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+	if (isConcurrentInProgress() && (MUTATOR_THREAD == threadEnvironment->getThreadType())) {
 		/* in case of scavenge complete phase, master thread will act on behalf (use its own environment) of mutator threads
 		 * in case of thread teardown, caller ensures that own environment is used
 		 */

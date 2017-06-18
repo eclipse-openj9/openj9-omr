@@ -45,9 +45,6 @@
 class MM_AllocationContext;
 class MM_AllocateDescription;
 class MM_Collector;
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-class MM_ConcurrentGCStats;
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 class MM_HeapRegionQueue;
 class MM_MemorySpace;
 class MM_ObjectAllocationInterface;

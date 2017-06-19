@@ -214,8 +214,8 @@ TraceHeaderWriter::tpTemplate(FILE *fd, unsigned int overhead, unsigned int test
 	char *parmString = NULL;
 	char *parmStringNoLeadingComma = NULL;
 	char *pos = NULL;
-	char *testMacro = (char *) "";
-	char *testNop = (char *) "";
+	char *testMacro =  NULL;
+	char *testNop =  NULL;
 	char *testMacroTemplate = (char *)  "#define TrcEnabled_%s  (%s_UtActive[%u] != 0)\n";
 	char *testNopTemplate = (char *) "#define TrcEnabled_%s  (0)\n";
 
@@ -247,6 +247,9 @@ TraceHeaderWriter::tpTemplate(FILE *fd, unsigned int overhead, unsigned int test
 			goto failed;
 		}
 		sprintf(testNop, testNopTemplate, name);
+	} else {
+		testMacro = (char *) "";
+		testNop = (char *) "";
 	}
 
 	for (unsigned int i = 0; i < parmCount; i++) {
@@ -313,7 +316,6 @@ TraceHeaderWriter::tpTemplate(FILE *fd, unsigned int overhead, unsigned int test
 		}
 	}
 
-
 	Port::omrmem_free((void **)&parmString);
 
 	if (test) {
@@ -342,8 +344,8 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 	char *parmString = NULL;
 	char *parmStringNoLeadingComma = NULL;
 	char *pos = NULL;
-	char *testmacro = (char *) "";
-	char *testnop = (char *) "";
+	char *testmacro = NULL;
+	char *testnop = NULL;
 	char *testmacrotemplate = (char *)  "#define TrcEnabled_%s  (%s_UtActive[%u] != 0)\n";
 	char *testnoptemplate = (char *) "#define TrcEnabled_%s  (0)\n";
 
@@ -376,6 +378,9 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 			goto failed;
 		}
 		sprintf(testnop, testnoptemplate, name);
+	} else {
+		testmacro = (char *) "";
+		testnop = (char *) "";
 	}
 
 	for (unsigned int i = 0; i < parmCount; i++) {
@@ -414,10 +419,21 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 		goto failed;
 	}
 
+	if (test) {
+		Port::omrmem_free((void **)&testmacro);
+		Port::omrmem_free((void **)&testnop);
+	}
+
 	Port::omrmem_free((void **)&parmString);
 	return rc;
 
 failed:
+
+	if (test) {
+		Port::omrmem_free((void **)&testmacro);
+		Port::omrmem_free((void **)&testnop);
+	}
+
 	Port::omrmem_free((void **)&parmString);
 
 	return rc;

@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2017
+# (c) Copyright IBM Corp. 2017,2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -16,17 +16,33 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-add_subdirectory(util)
+add_executable(omrvmtest
+	main.cpp
+)
+if(OMR_THR_FORK_SUPPORT)
+	target_sources(omrvmtest PRIVATE vmForkTest.cpp)
+endif()
 
-add_subdirectory(omrGtestGlue)
-add_subdirectory(algotest)
-# add_subdirectory(compilertest)
-add_subdirectory(gctest)
-# add_subdirectory(jitbuildertest)
-add_subdirectory(porttest)
-# add_subdirectory(rastest)
-add_subdirectory(sigtest)
-add_subdirectory(threadextendedtest)
-add_subdirectory(threadtest)
-add_subdirectory(utiltest)
-add_subdirectory(vmtest)
+target_link_libraries(omrvmtest
+	omrGtestGlue
+	omrtestutil
+	omrcore
+	omrtrace
+	omrgc
+	j9hookstatic
+	omrglue
+	j9thrstatic
+	omrutil
+	omrport
+	j9hashtable
+	j9avl
+	j9pool
+	omrgc
+	omrglue
+	omrcore
+
+)
+
+add_test(NAME vmtest COMMAND omrvmtest)
+
+

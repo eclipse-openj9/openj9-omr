@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2017
+# (c) Copyright IBM Corp. 2017, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -16,17 +16,25 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-add_subdirectory(util)
+add_executable(omrthreadextendedtest
+	processTimeTest.cpp
+	threadCpuTimeTest.cpp
+	threadExtendedTestHelpers.cpp
+	threadExtendedTestMain.cpp
+	timeBaseTest.cpp
+)
 
-add_subdirectory(omrGtestGlue)
-add_subdirectory(algotest)
-# add_subdirectory(compilertest)
-add_subdirectory(gctest)
-# add_subdirectory(jitbuildertest)
-add_subdirectory(porttest)
-# add_subdirectory(rastest)
-add_subdirectory(sigtest)
-add_subdirectory(threadextendedtest)
-add_subdirectory(threadtest)
-add_subdirectory(utiltest)
-add_subdirectory(vmtest)
+
+target_link_libraries(omrthreadextendedtest
+	omrtestutil
+	omrGtestGlue
+	j9thrstatic
+	omrport
+)
+
+if(OMR_HOST_OS STREQUAL "zos")
+	target_link_libraries(omrthreadextendedtest j9a2e)
+endif()
+
+add_test(NAME threadextendedtest COMMAND omrthreadextendedtest)
+

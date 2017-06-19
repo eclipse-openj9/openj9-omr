@@ -103,3 +103,7 @@ if(OMR_HOST_OS STREQUAL "win")
 			win/j9getdbghelp.c
 	)
 endif()
+target_link_libraries(omrutil PUBLIC
+	j9hashtable
+	omrglue
+)

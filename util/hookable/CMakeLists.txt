@@ -23,9 +23,13 @@ add_library(j9hookstatic STATIC
 	ut_j9hook.c
 	ut_j9hook.h
 )
+
 target_include_directories(j9hookstatic
 	PUBLIC
 		.
+)
+target_link_libraries(j9hookstatic PUBLIC
+	j9thrstatic
 )
 add_tracegen(j9hook.tdf)
 

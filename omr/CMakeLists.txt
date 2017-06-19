@@ -39,6 +39,7 @@ add_library(omrcore
 	ut_omrvm.h
 )
 
+add_dependencies(omrcore omrgc_tracegen)
 target_include_directories(omrcore
 	PUBLIC
 		.
@@ -47,4 +48,6 @@ target_include_directories(omrcore
 target_link_libraries(omrcore
 	PUBLIC
 		omrgc # mminitcore.h
+		omrport
+		omrtrace
 )

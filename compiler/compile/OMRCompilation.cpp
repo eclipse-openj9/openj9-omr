@@ -437,14 +437,14 @@ OMR::Compilation::Compilation(
    if (_methodSymbol->isNative())
       self()->setOption(TR_DisableOSR);
 
-   // Do not default OSR and HCR on if:
-   // NextGenHCR is disabled, as they are enabled for it
+   // Do not default OSR on if:
+   // NextGenHCR is disabled, as it is enabled for it
    // OSR is explicitly disabled
    // FSD is enabled, as HCR cannot be enabled with it
-   if (!self()->getOption(TR_DisableNextGenHCR) && !self()->getOption(TR_DisableOSR) && !self()->getOption(TR_FullSpeedDebug))
+   // HCR has not been enabled
+   if (!self()->getOption(TR_DisableNextGenHCR) && !self()->getOption(TR_DisableOSR) && !self()->getOption(TR_FullSpeedDebug) && self()->getOption(TR_EnableHCR))
       {
-      self()->setOption(TR_EnableOSR); // OSR and HCR must be enabled for NextGenHCR
-      self()->setOption(TR_EnableHCR);
+      self()->setOption(TR_EnableOSR); // OSR must be enabled for NextGenHCR
       }
 
    if (self()->isDLT() || (((self()->getMethodHotness() < warm) || self()->compileRelocatableCode() || self()->isProfilingCompilation()) && !enableOSRAtAllOptLevels && !_options->getOption(TR_FullSpeedDebug)))

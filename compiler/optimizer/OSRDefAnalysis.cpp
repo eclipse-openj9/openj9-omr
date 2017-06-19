@@ -914,7 +914,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             TR_OSRPoint *offsetOSRPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
             TR_ASSERT(offsetOSRPoint != NULL, "Cannot find a post OSR point for node %p", node);
             buildOSRLiveRangeInfo(node, _liveVars, offsetOSRPoint, liveLocalIndexToSymRefNumberMap,
-               maxSymRefNumber, numBits, osrMethodData, TR::postExecutionOSR);
+               maxSymRefNumber, numBits, osrMethodData);
             }
 
          // Maintain liveness across post pending pushes and the OSR point itself
@@ -933,7 +933,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             TR_OSRPoint *osrPoint = comp()->getMethodSymbol()->findOSRPoint(bci);
             TR_ASSERT(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
             buildOSRLiveRangeInfo(node, _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
-               maxSymRefNumber, numBits, osrMethodData, TR::preExecutionOSR);
+               maxSymRefNumber, numBits, osrMethodData);
             }
          }
 
@@ -947,7 +947,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          TR_OSRPoint *osrPoint = comp()->getMethodSymbol()->findOSRPoint(bci);
          TR_ASSERT(osrPoint != NULL, "Cannot find a OSR point for method entry");
          buildOSRLiveRangeInfo(comp()->getStartTree()->getNode(), _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
-            maxSymRefNumber, numBits, osrMethodData, TR::postExecutionOSR);
+            maxSymRefNumber, numBits, osrMethodData);
          }
 
       block = block->getNextBlock();
@@ -1167,10 +1167,9 @@ void TR_OSRLiveRangeAnalysis::maintainLiveness(TR::Node *node,
 
 void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
    int32_t *liveLocalIndexToSymRefNumberMap, int32_t maxSymRefNumber, int32_t numBits,
-   TR_OSRMethodData *osrMethodData, TR::OSRTransitionTarget target)
+   TR_OSRMethodData *osrMethodData)
    {
    TR_ASSERT(liveVars, "live variable info must be available for a block\n");
-   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only add live range info for pre or post transition target");
    _deadVars->setAll(numBits);
    *_deadVars -= *liveVars;
 
@@ -1190,7 +1189,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
       }
 
    osrMethodData->setNumSymRefs(numBits);
-   osrMethodData->addLiveRangeInfo(osrPoint->getByteCodeInfo().getByteCodeIndex(), target, deadSymRefs);
+   osrMethodData->addLiveRangeInfo(osrPoint->getByteCodeInfo().getByteCodeIndex(), deadSymRefs);
 
    if (comp()->getOption(TR_TraceOSR))
       {

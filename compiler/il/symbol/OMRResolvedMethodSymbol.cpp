@@ -529,8 +529,15 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
        firstHalfBlock->split(insertionPoint, self()->comp()->getFlowGraph(), true);
    firstHalfBlock->setIsOSRInduceBlock();
 
+   // The arguments for a transition to this bytecode index may have already been stashed.
+   // If they have, use these directly rather than copying the reference node.
+   TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(
+      refNode->getByteCodeInfo().getCallerIndex(), self());
+   TR_Array<int32_t> *stashedArgs = osrMethodData->getArgInfo(refNode->getByteCodeIndex());
    int32_t firstArgIndex = 0;
-   if ((refNode->getNumChildren() > 0) &&
+   if (stashedArgs)
+      numChildren = stashedArgs->size(); 
+   else if ((refNode->getNumChildren() > 0) &&
        refNode->getFirstChild()->getOpCode().isCall())
       {
       refNode = refNode->getFirstChild();
@@ -545,7 +552,14 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    TR_OSRPoint *point = self()->findOSRPoint(refNode->getByteCodeInfo());
    TR_ASSERT(point, "Could not find osr point for bytecode %d:%d!", refNode->getByteCodeInfo().getCallerIndex(), refNode->getByteCodeInfo().getByteCodeIndex());
 
-   if (copyChildren)
+   // If arguments have been stashed against this BCI, copy them now, ignoring the copyChildren flag
+   if (stashedArgs)
+      {
+      for (int32_t i = 0; i < numChildren; ++i)
+         induceOSRCallNode->setAndIncChild(i,
+            TR::Node::createLoad(induceOSRCallNode, self()->comp()->getSymRefTab()->getSymRef((*stashedArgs)[i])));
+      }
+   else if (copyChildren)
       {
       for (int i = firstArgIndex; i < numChildren; i++)
          induceOSRCallNode->setAndIncChild(i-firstArgIndex, refNode->getChild(i));
@@ -630,30 +644,11 @@ OMR::ResolvedMethodSymbol::induceImmediateOSRWithoutChecksBefore(TR::TreeTop *in
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp)
    {
-   // Add children to the induce node if they have been registered for this bytecode index
-   // TODO: Eventually all implementations of OSR should place call arguments in pending push slots
-   // and either transition with them in the OSR buffer or as arguments to the induce here
-   TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(induceBCI.getCallerIndex(), self());
-   TR_Array<int32_t> *args = osrMethodData->getArgInfo(induceBCI.getByteCodeIndex());
-   int32_t children = args == NULL ? 0 : args->size();
-
-   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), children, false, shouldSplitBlock);
+   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), 0, false, shouldSplitBlock);
 
    if (induceOSRCallTree)
       {
       TR::TreeTop *treeAfterInduceOSRCall = induceOSRCallTree->getNextTreeTop();
-   
-      // Add loads of the required symrefs to the induce call
-      TR::Node *induceOSRCall = induceOSRCallTree->getNode()->getFirstChild();
-      if (args)
-         {
-         induceOSRCall->setNumChildren(children);
-         for (int32_t i = 0; i < children; ++i)
-            {
-            induceOSRCall->setAndIncChild(i,
-               TR::Node::createLoad(induceOSRCall, self()->comp()->getSymRefTab()->getSymRef((*args)[i])));
-            }
-         }
 
       while (treeAfterInduceOSRCall)
          {
@@ -670,7 +665,6 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(T
 
    return induceOSRCallTree;
    }
-
 
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCallForGuardedCallee(TR::TreeTop* insertionPoint,
@@ -698,7 +692,6 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t
    TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, self());
    return self()->genInduceOSRCall(insertionPoint, inlinedSiteIndex, osrMethodData, NULL, numChildren, copyChildren, shouldSplitBlock);
    }
-
 
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
@@ -1828,14 +1821,21 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
    TR::TreeTop *prev = induceOSRTree->getPrevTreeTop();
    TR::TreeTop *next = induceOSRTree;
 
-   TR::OSRTransitionTarget pointType = TR::preAndPostExecutionOSR;
+   // The arguments to the induce OSR call may be stashed against its bytecode index.
+   // If so, dead stores must not be generated for these symrefs.
+   TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
+   TR_Array<int32_t> *args = osrMethodData->getArgInfo(byteCodeIndex);
+   if (deadSymRefs && args)
+      {
+      for (int32_t i = 0; i < args->size(); ++i)
+         deadSymRefs->reset((*args)[i]);
+      }
 
    while (osrMethodData)
       {
       if (comp->getOption(TR_TraceOSR))
          traceMsg(comp, "Inserting stores for dead stack slots in method at caller index %d and bytecode index %d for induceOSR call %p\n", callSite, byteCodeIndex, induceOSRTree->getNode());
 
-      TR_BitVector *deadSymRefs = pointType == TR::preAndPostExecutionOSR ? osrMethodData->getLiveRangeInfo(byteCodeIndex) : osrMethodData->getLiveRangeInfo(byteCodeIndex, pointType);
       if (deadSymRefs)
          {
          TR_BitVectorIterator bvi(*deadSymRefs);
@@ -1864,7 +1864,7 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
          callSite = callSiteInfo._byteCodeInfo.getCallerIndex();
          osrMethodData = comp->getOSRCompilationData()->findCallerOSRMethodData(osrMethodData);
          byteCodeIndex = callSiteInfo._byteCodeInfo.getByteCodeIndex();
-         pointType = TR::preExecutionOSR;
+         deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
          }
       else
          osrMethodData = NULL;

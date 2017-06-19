@@ -4314,6 +4314,54 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       dumpOptDetails(comp(), "The node %p has been created for testing if virtual guard is required\n", nextComparisonNode);
       }
 
+   // If all yield points have been removed from the loop but OSR guards remain, 
+   // they can be versioned out. Currently, this code assumes all OSR guards
+   // will be patched by the same runtime assumptions, so only one OSR guard is added
+   // to branch to the slow loop.
+   //
+   bool safeToRemoveOSRGuards = false;
+   bool seenOSRGuards = false;
+   static char *disableLoopOSR = feGetEnv("TR_DisableOSRGuardLoopVersioner");
+   if (comp()->getHCRMode() == TR::osr && disableLoopOSR == NULL)
+      {
+      safeToRemoveOSRGuards = true;
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      TR::Node *osrGuard = NULL;
+      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveOSRGuards && block; block = blocksIt.getNext())
+         {
+         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
+            {
+            if (comp()->isPotentialOSRPoint(tt->getNode()))
+               {
+               safeToRemoveOSRGuards = false;
+               break;
+               }
+            else if (tt->getNode()->isOSRGuard())
+               {
+               osrGuard = tt->getNode();
+               seenOSRGuards = true;
+               }
+            }
+         }
+      if (seenOSRGuards && safeToRemoveOSRGuards)
+         {
+         if (performTransformation(comp(), "%sCreate versioned OSRGuard\n", OPT_DETAILS_LOOP_VERSIONER))
+            {
+            TR_ASSERT(osrGuard, "should have found an OSR guard to version");
+
+            // Duplicate the OSR guard tree
+            TR::Node *guard = osrGuard->duplicateTree();
+            traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
+            guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+            comparisonTrees.add(guard);
+            }
+         else
+            {
+            safeToRemoveOSRGuards = false;
+            }
+         }
+      }
+
    // Due to RAS changes to make each loop version test a transformation, disableOptTransformations or lastOptTransformationIndex can now potentially remove all the tests above the 2 versioned loops.  When there are two versions of the loop, it is necessary that there be at least one test at the top.  Therefore, the following is required to ensure that a test is created.
    if (comparisonTrees.isEmpty())
       {
@@ -4721,8 +4769,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, trMemory());
       }
 
-
-
    // Add appropriate exit edges into the new proper region based
    // on the original loop's exit edges.
    //
@@ -4740,7 +4786,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          seenExitNodes.set(node->getNumber());
          }
       }
-
 
    // Patch up the cloned while loop edges properly
    //
@@ -4773,6 +4818,24 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::Block *succBlock = toBlock(newGotoBlockStructure->getBlock()->getSuccessors().front()->getTo());
       properRegion->addExternalEdge(newGotoBlockStructure, succBlock->getStructureOf()->getNumber(), false);
       properRegion->removeExternalEdgeTo(predBlock->getStructureOf(), succBlock->getStructureOf()->getNumber());
+      }
+
+   // If OSR guards have been versioned out of the loop, walk the
+   // original loop and remove the guards and their branch edges
+   //
+   if (seenOSRGuards && safeToRemoveOSRGuards)
+      {
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+       for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
+          {
+          TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
+          if (lastRealTT
+              && lastRealTT->getNode()->isOSRGuard()
+              && performTransformation(comp(), "%sRemove OSR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
+             {
+             block->removeBranch(comp());
+             }
+          }
       }
 
    if (trace())

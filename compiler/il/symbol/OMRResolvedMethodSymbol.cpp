@@ -1844,7 +1844,8 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
             int32_t nextDeadVar = bvi.getNextElement();
             TR::SymbolReference *nextSymRef = symRefTab->getSymRef(nextDeadVar);
 
-            if (performTransformation(comp, "OSR LIVE RANGE ANALYSIS : Local %d is reset before induceOSR call tree %p (caller index %d bytecode index %d)\n", nextSymRef->getReferenceNumber(), induceOSRTree->getNode(), callSite, byteCodeIndex))
+            if (!nextSymRef->getSymbol()->isParm()
+                && performTransformation(comp, "OSR LIVE RANGE ANALYSIS : Local %d is reset before induceOSR call tree %p (caller index %d bytecode index %d)\n", nextSymRef->getReferenceNumber(), induceOSRTree->getNode(), callSite, byteCodeIndex))
                {
                TR::Node *storeNode = TR::Node::createWithSymRef(comp->il.opCodeForDirectStore(nextSymRef->getSymbol()->getDataType()), 1, 1,
                                                     TR::Node::createConstDead(induceOSRTree->getNode(), nextSymRef->getSymbol()->getDataType()), nextSymRef);

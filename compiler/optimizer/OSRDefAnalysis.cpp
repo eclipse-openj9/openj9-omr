@@ -1267,35 +1267,17 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
    TR::CFGNode *cfgNode;
    for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
       {
-      if (cfgNode->getExceptionSuccessors().empty())
-         continue;
-
       TR::Block *block = toBlock(cfgNode);
-      bool seenInduceOSRCall = false;
-      TR::TreeTop *treeTop;
-      for (treeTop = block->getEntry(); treeTop != block->getExit(); treeTop = treeTop->getNextTreeTop())
-         {
-         if ((treeTop->getNode()->getNumChildren() > 0) &&
-             treeTop->getNode()->getFirstChild()->getOpCode().hasSymbolReference() &&
-             (comp()->getSymRefTab()->element(TR_induceOSRAtCurrentPC) == treeTop->getNode()->getFirstChild()->getSymbolReference()))
-	    {
-            seenInduceOSRCall = true;
-            break;
-	    }
-         }
-
-      if (seenInduceOSRCall)
+      TR_ASSERT(block->verifyOSRInduceBlock(comp()), "osr induce calls can only exist in osr induce blocks");
+      if (cfgNode->getExceptionSuccessors().empty() || block->isOSRInduceBlock())
          continue;
 
       for (auto edge = block->getExceptionSuccessors().begin(); edge != block->getExceptionSuccessors().end();)
          {
          TR::Block *catchBlock = toBlock((*edge++)->getTo());
-         if (catchBlock->isOSRCatchBlock())
-            {
-            if (!seenInduceOSRCall &&
-                performTransformation(comp(), "%s: Remove redundant exception edge from block_%d at [%p] to OSR catch block_%d at [%p]\n", OPT_DETAILS, block->getNumber(), block, catchBlock->getNumber(), catchBlock))
-                cfg->removeEdge(block, catchBlock);
-            }
+         if (catchBlock->isOSRCatchBlock()
+             && performTransformation(comp(), "%s: Remove redundant exception edge from block_%d at [%p] to OSR catch block_%d at [%p]\n", OPT_DETAILS, block->getNumber(), block, catchBlock->getNumber(), catchBlock))
+            cfg->removeEdge(block, catchBlock);
          }
       }
 

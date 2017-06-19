@@ -366,7 +366,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    int32_t getNormalizedFrequency(TR::CFG *);
    int32_t getGlobalNormalizedFrequency(TR::CFG *);
 
-   bool isOSRInduceBlock(TR::Compilation *);
+   bool verifyOSRInduceBlock(TR::Compilation *);
 
    /**
     * Field functions end
@@ -411,6 +411,9 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    void setIsAdded()                                  { _flags.set(_isAdded); }
    bool isAdded()                                     { return _flags.testAny(_isAdded); }
+
+   void setIsOSRInduceBlock()                         { _flags.set(_isOSRInduceBlock); }
+   bool isOSRInduceBlock()                            { return _flags.testAny(_isOSRInduceBlock); }
 
    void setIsOSRCodeBlock()                           { _flags.set(_isOSRCodeBlock); }
    bool isOSRCodeBlock()                              { return _flags.testAny(_isOSRCodeBlock); }
@@ -500,6 +503,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _hasBeenVisited                       = 0x00000400,
       _isPRECandidate                       = 0x00000800,
       _isAdded                              = 0x00001000,
+      _isOSRInduceBlock                     = 0x00002000,
       _isOSRCodeBlock                       = 0x00004000,
       _isOSRCatchBlock                      = 0x00008000,
       _createdAtCodeGen                     = 0x00080000,

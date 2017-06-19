@@ -2042,6 +2042,8 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
          block = prevNode->getBlock();
               exitTree = block->getExit();
          }
+      if (block->isOSRInduceBlock() || block->isOSRCatchBlock() || block->isOSRCodeBlock())
+         return;
 
       //
       // Mark calls and stores that have already been evaluated with this

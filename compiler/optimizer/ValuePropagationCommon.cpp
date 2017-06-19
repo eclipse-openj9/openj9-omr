@@ -4014,6 +4014,9 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    TR::Node *node = startTree->getNode();
    _curBlock     = node->getBlock();
 
+   if (_curBlock->isOSRCodeBlock() || _curBlock->isOSRCatchBlock() || _curBlock->isOSRInduceBlock())
+      return _curBlock->getExit()->getNextTreeTop();
+
 #if DEBUG
    static int32_t stopAtBlock = -1;
    if (_curBlock->getNumber() == stopAtBlock)

@@ -1319,7 +1319,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[bnum];
          }
 
-      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock();
       if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio))
          ++origNumberOfBlocks;
 
@@ -1352,7 +1352,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[block->getNumber()];
          }
 
-      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock();
       if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio || useProfilingFrequencies))
          {
          ++numberOfBlocks;

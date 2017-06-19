@@ -527,6 +527,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    TR::Block * firstHalfBlock = insertionPoint->getEnclosingBlock();
    if (shouldSplitBlock)
        firstHalfBlock->split(insertionPoint, self()->comp()->getFlowGraph(), true);
+   firstHalfBlock->setIsOSRInduceBlock();
 
    int32_t firstArgIndex = 0;
    if ((refNode->getNumChildren() > 0) &&

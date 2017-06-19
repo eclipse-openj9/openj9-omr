@@ -1,42 +1,43 @@
 # Contributing to Eclipse OMR
+
 Thanks for your interest in this project.
 
-## Project description
-The Eclipse OMR project consists of a highly integrated set of open source C
-and C++ components that can be used to build robust language runtimes that will
-support many different hardware and operating system platforms. These components
-include but are not limited to: memory management, threading, platform port
-(abstraction) library, diagnostic file support, monitoring support,
-garbage collection, and native Just In Time compilation. The long term goal for 
-the Eclipse OMR project is to foster an open ecosystem of language runtime
-developers to collaborate and collectively innovate with hardware platform
-designers, operating system developers, as well as tool and framework developers
-and to provide a robust runtime technology platform so that language
-implementers can much more quickly and easily create more fully featured
-languages to enrich the options available to programmers.
+We welcome and enourage all kinds of contribution to the project, not only code. 
+This can incuding bug reports, user experience feedback, assistance in reproducing
+issues and more.
 
-- [https://projects.eclipse.org/projects/technology.omr](https://projects.eclipse.org/projects/technology.omr)
+This project uses GitHub Issues to track ongoing development, discuss project
+plans, and keep track of bugs.  Be sure to search for existing issues before
+you create another one.
 
-
-## GitHub Issues
-
-This project uses GitHub Issues to track ongoing development and issues. Be sure
-to search for existing bugs before you create another one. Contributions are always welcome!
-
-- [https://github.com/eclipse/omr/issues](https://github.com/eclipse/omr/issues)
+Visit [our Issues page on GitHub to search and submit](https://github.com/eclipse/omr/issues)
 
 ## Submitting a contribution
-You can propose contributions by sending pull requests through GitHub. Following these guidelines
-will help us to merge your pull requests smoothly:
 
-1. It is generally a good idea to file an issue to explain your idea before
-   writing code or submitting a pull request.
-2. Please read carefully and adhere to the legal considerations and
+You can propose contributions by sending pull requests through GitHub.
+Following these guidelines will help us to merge your pull requests smoothly:
+
+1. If you're not sure your contribution would be accepted, and want to validate
+   your approach or idea before writing code, feel free to open an issue. However, 
+   not every feature or fix needs an issue. If the problem and fix are cleanly 
+   connected, and you have the fix in hand, feel free to just submit a pull request.
+
+2. Your pull request is an opportunity to explain both what changes you'd like
+   pulled in, but also _why_ you'd like them added. Providing clarity on why
+   you want changes makes it easier to accept, and provides valuable context to
+   review.
+ 
+3. Please read carefully and adhere to the legal considerations and
    copyright/license requirements outlined below.
-3. Follow the coding style and format of the code you are modifying (see the
-   [coding standards](doc/CodingStandard.md)).
-4. Follow the commit guidelines found below.
-5. Ensure that `make test` passes all tests and `make lint` passes before you
+
+4. Follow the coding style and format of the code you are modifying (see the
+   [coding standards](doc/CodingStandard.md)). The code base is yet to be unified
+   in style however, so if the file you are editing seems to have a diffferent
+   style, defer to the style of the file as you found it. 
+
+5. Follow the commit guidelines found below.
+
+6. Ensure that `make test` passes all tests and `make lint` passes before you
    submit a Pull Request.
 
 ## Commit Guidelines
@@ -169,6 +170,7 @@ with a committer before contributing.
 notice and licensing requirements with a committer before contributing.
 
 The template for the copyright notice and dual-license is as follows:
+
 ```c
 /*******************************************************************************
  *

@@ -25,6 +25,9 @@
 
 #include "BaseVirtual.hpp"
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#include "CollectorLanguageInterface.hpp"
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MarkingDelegate.hpp"
@@ -59,6 +62,19 @@ public:
 	 * Function members
 	 */
 private:
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	bool isConcurrentMarkInProgress() {
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK) 
+		uintptr_t mode = _extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getExecutionMode();
+		return (CONCURRENT_ROOT_TRACING <= mode) && (mode < CONCURRENT_EXHAUSTED);
+#else	
+		return false;
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	
+
+
 	MMINLINE void
 	assertSaneObjectPtr(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
 	{
@@ -70,7 +86,8 @@ private:
 		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
 			MM_ForwardedHeader forwardHeader(objectPtr);
 			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
-			Assert_MM_true(NULL == forwardPtr);
+			/* It is ok to encounter a self-forwarded object during concurrent marking (or even root scanning), but we must do nothing about it, yet. */
+			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && (objectPtr == forwardPtr)));
 		}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */ 				
 	}
@@ -284,6 +301,9 @@ public:
 	 * This is currently used only in presence of Concurrent Scavenger. When abort is detected CS does not fix up 
 	 * heap references within Scavenger abort handling, but relies on marking in percolate Global to do it.
 	 * The updates are non-atomic, but even though multiple threads could be doing it, they set it to the same value.
+	 * During Concurrent Marking, ignore forwarded objects (especially true for self-forwarded objects which are very important
+	 * during Scavenger aborted cycle to prevent duplicate copies). The fixup will be done after Scavenger Cycle is done, 
+	 * in the final phase of Concurrent GC when we scan Nursery. 
 	 */
 	
 	void fixupForwardedSlot(GC_SlotObject *slotObject) {
@@ -292,7 +312,7 @@ public:
 			MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
 			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
 	
-			if (NULL != forwardPtr) {
+			if ((NULL != forwardPtr) && !isConcurrentMarkInProgress()) {
 				if (forwardHeader.isSelfForwardedPointer()) {
 					forwardHeader.restoreSelfForwardedPointer();
 				} else {

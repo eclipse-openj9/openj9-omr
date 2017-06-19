@@ -69,36 +69,10 @@ public:
 	static MM_CollectorLanguageInterfaceImpl *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 
-	virtual void doFrequentObjectAllocationSampling(MM_EnvironmentBase* env) {}
-	virtual bool checkForExcessiveGC(MM_EnvironmentBase *env, MM_Collector *collector) {return false;}
-
 	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env);
 
 	virtual OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason);
 	virtual void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason);
-
-	virtual bool globalCollector_isTimeForGlobalGCKickoff() {return false;}
-	virtual void globalCollector_internalPostCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace) {}
-
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_beforeGC(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_afterGC(MM_EnvironmentBase *env, bool compactThisCycle) {}
-	virtual void parallelGlobalGC_postPrepareHeapForWalk(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_postMarkProcessing(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_setupBeforeGC(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_setMarkingScheme(MM_EnvironmentBase *env, void *markingScheme) {_markingScheme = (MM_MarkingScheme *)markingScheme;}
-	virtual bool parallelGlobalGC_createAccessBarrier(MM_EnvironmentBase *env) {return true;}
-	virtual void parallelGlobalGC_destroyAccessBarrier(MM_EnvironmentBase *env) {}
-	virtual bool parallelGlobalGC_heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress) {return true;}
-	virtual bool parallelGlobalGC_heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress) {return true;}
-	virtual bool parallelGlobalGC_createHeapWalker(MM_EnvironmentBase *env, MM_GlobalCollector *collector, MM_MarkMap *markMap) {return true;}
-	virtual void parallelGlobalGC_destroyHeapWalker(MM_EnvironmentBase *env) {}
-	virtual MM_HeapWalker *parallelGlobalGC_getHeapWalker() {return NULL;}
-#if defined(OMR_GC_MODRON_COMPACTION)
-	virtual CompactPreventedReason parallelGlobalGC_checkIfCompactionShouldBePrevented(MM_EnvironmentBase *env) {return COMPACT_PREVENTED_NONE;}
-#endif /* OMR_GC_MODRON_COMPACTION */
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_gcComplete(MM_EnvironmentBase *env, bool didCompact) {}
-	virtual void parallelGlobalGC_collectorInitialized(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_reportObjectEvents(MM_EnvironmentBase *env) {}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	virtual MM_ConcurrentSafepointCallback* concurrentGC_createSafepointCallback(MM_EnvironmentBase *env);
@@ -130,8 +104,6 @@ public:
 	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {return true;}
 	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {}
 
-	virtual void parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread);
-
 	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
@@ -161,8 +133,6 @@ public:
 	virtual void compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env);
 	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap);
 #endif /* OMR_GC_MODRON_COMPACTION */
-
-	virtual omrobjectptr_t heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object);
 };
 
 #endif /* COLLECTORLANGUAGEINTERFACEIMPL_HPP_ */

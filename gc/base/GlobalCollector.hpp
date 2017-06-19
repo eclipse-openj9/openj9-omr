@@ -25,6 +25,7 @@
 #include "omr.h"
 
 #include "Collector.hpp"
+#include "GlobalCollectorDelegate.hpp"
 
 class MM_EnvironmentBase;
 class MM_MemorySubSpace;
@@ -36,9 +37,17 @@ class MM_MemorySubSpace;
 class MM_GlobalCollector : public MM_Collector {
 private:
 protected:
+	MM_GlobalCollectorDelegate _delegate; /**< Language specific delegate -- subclass must initialize */
+
+public:
+
+private:
+protected:
 	virtual void internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace);
 
 public:
+	MM_GlobalCollectorDelegate *getGlobalCollectorDelegate() { return &_delegate; }
+
 	virtual bool isTimeForGlobalGCKickoff();
 
 	virtual bool condYield(MM_EnvironmentBase *env, uint64_t timeSlackNanoSec)
@@ -84,6 +93,7 @@ public:
 
 	MM_GlobalCollector(MM_EnvironmentBase* env, MM_CollectorLanguageInterface *cli)
 		: MM_Collector(cli)
+		, _delegate()
 	{
 		_typeId = __FUNCTION__;
 		_cycleType = OMR_GC_CYCLE_TYPE_GLOBAL;

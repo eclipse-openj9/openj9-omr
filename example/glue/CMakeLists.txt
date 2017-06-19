@@ -21,6 +21,7 @@ add_library(omrglue STATIC
 	CompactSchemeFixupObject.cpp
 	EnvironmentDelegate.cpp
 	FrequentObjectsStats.cpp
+	GlobalCollectorDelegate.cpp
 	LanguageVMGlue.c
 	MarkingDelegate.cpp
 	ObjectIterator.cpp

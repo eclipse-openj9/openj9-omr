@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,28 +14,13 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
- ******************************************************************************/
+ *******************************************************************************/
 
-#include "GlobalCollector.hpp"
-#include "GlobalCollectorDelegate.hpp"
+#include "ParallelGlobalGCTask.hpp"
+#include "ParallelGlobalGC.hpp"
 
 void
-MM_GlobalCollector::internalPostCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace)
+MM_ParallelGlobalGCTask::run(MM_EnvironmentBase *env)
 {
-	_delegate.postCollect(env, subSpace);
+	_collector->workThreadGarbageCollect(env);
 }
-
-bool
-MM_GlobalCollector::isTimeForGlobalGCKickoff()
-{
-	return _delegate.isTimeForGlobalGCKickoff();
-}
-
-/**
- * Abort any currently active garbage collection activity.
- */
-void
-MM_GlobalCollector::abortCollection(MM_EnvironmentBase* env, CollectionAbortReason reason)
-{
-}
-

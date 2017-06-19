@@ -311,7 +311,12 @@ public:
 	 * Sets the threads type.
 	 * @param threadType The thread type to set thread to.
 	 */
-	MMINLINE void setThreadType(ThreadType threadType) {_threadType= threadType; } ;
+	MMINLINE void
+	setThreadType(ThreadType threadType)
+	{
+		_threadType = threadType;
+		_delegate.setGCMasterThread(GC_MASTER_THREAD == _threadType);
+	}
 
 	/**
 	 * Gets the id used for calculating work packet sublist indexes.

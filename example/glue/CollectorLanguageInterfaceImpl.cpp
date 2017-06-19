@@ -133,13 +133,6 @@ MM_CollectorLanguageInterfaceImpl::detachVMThread(OMR_VM *omrVM, OMR_VMThread *o
 		OMR_Glue_UnbindCurrentThread(omrVMThread);
 	}
 }
-
-void
-MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread)
-{
-	/* Do nothing for now.  only required for SRT */
-}
-
 #if defined(OMR_GC_MODRON_SCAVENGER)
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
@@ -380,9 +373,3 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStand
 	return bytesScanned;
 }
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-omrobjectptr_t
-MM_CollectorLanguageInterfaceImpl::heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object)
-{
-	return NULL;
-}

@@ -372,9 +372,3 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStand
 	return bytesScanned;
 }
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-omrobjectptr_t
-MM_CollectorLanguageInterfaceImpl::heapWalker_heapWalkerObjectSlotDo(omrobjectptr_t object)
-{
-	return NULL;
-}

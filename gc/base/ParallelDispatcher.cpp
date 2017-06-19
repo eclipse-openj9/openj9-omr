@@ -27,6 +27,7 @@
 #include "ModronAssertions.h"
 #include "ut_j9mm.h"
 
+#include "Collector.hpp"
 #include "CollectorLanguageInterfaceImpl.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -82,8 +83,8 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 	/* Begin running the thread */
 	if (env->isMasterThread()) {
 		env->setThreadType(GC_MASTER_THREAD);
-		cli->parallelDispatcher_handleMasterThread(omrVMThread);
 		dispatcher->masterEntryPoint(env);
+		env->setThreadType(GC_SLAVE_THREAD);
 	} else {
 		env->setThreadType(GC_SLAVE_THREAD);
 		dispatcher->slaveEntryPoint(env);

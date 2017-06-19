@@ -83,18 +83,15 @@ static void
 heapWalkerObjectSlotDo(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, omrobjectptr_t object, void *userData)
 {
 	OMR_VM *omrVM = omrVMThread->_vm;
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
 	MM_HeapWalkerSlotFunc oSlotIterator = (MM_HeapWalkerSlotFunc)((SlotObjectDoUserData *)userData)->function;
 	void *localUserData = ((SlotObjectDoUserData *)userData)->userData;
 
 
-	/* NOTE: this "O-slot" is actually a pointer to a local variable in this
-	 * function. As such, any changes written back into it will be lost.
-	 * Since no-one writes back into the slot in classes-on-heap VMs this is
-	 * OK. We should simplify this code once classes-on-heap is enabled
-	 * everywhere.
-	 */
-	omrobjectptr_t clazzObject = MM_GCExtensionsBase::getExtensions(omrVM)->collectorLanguageInterface->heapWalker_heapWalkerObjectSlotDo(object);
-	(*oSlotIterator)(omrVM, &clazzObject, localUserData, 0);
+	omrobjectptr_t indirectObject = extensions->objectModel.getIndirectObject(object);
+	if (NULL != indirectObject) {
+		(*oSlotIterator)(omrVM, &indirectObject, localUserData, 0);
+	}
 
 	heapWalkerObjectSlotDo(omrVM, object, oSlotIterator, localUserData);
 }

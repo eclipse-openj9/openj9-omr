@@ -498,15 +498,19 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 	case restore_tilt_after_percolate:
 	{
 		Assert_MM_true(_extensions->concurrentScavenger);
+		uintptr_t lastFreeEntrySize = 0;
+		if (NULL != getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()) {
+			lastFreeEntrySize = getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()->getSize();
+		}
 		/* Make Survivor space from the last free entry in the unified Nursery */
-		uintptr_t heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->heapAlignment, getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()->getSize());
+		uintptr_t heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->heapAlignment, lastFreeEntrySize);
 
 		/* Region size is aligned to Concurrent Scavenger Page Section size already */
 		heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->regionSize, heapAlignedLastFreeEntrySize);
 
 		if(debug) {
 			omrtty_printf("tilt restore_tilt_after_percolate heapAlignedLastFreeEntry %llx section (%llx) aligned size %llx\n",
-					getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry(), _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
+					lastFreeEntrySize, _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
 		}
 
 		/* allocate/survivor base/top still hold the values from before we did 100% tilt */

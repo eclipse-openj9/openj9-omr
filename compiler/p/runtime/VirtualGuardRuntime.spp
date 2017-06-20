@@ -1,0 +1,101 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!
+!! (c) Copyright IBM Corp. 2000, 2017
+!!
+!!  This program and the accompanying materials are made available
+!!  under the terms of the Eclipse Public License v1.0 and
+!!  Apache License v2.0 which accompanies this distribution.
+!!
+!!      The Eclipse Public License is available at
+!!      http://www.eclipse.org/legal/epl-v10.html
+!!
+!!      The Apache License v2.0 is available at
+!!      http://www.opensource.org/licenses/apache2.0.php
+!!
+!! Contributors:
+!!    Multiple authors (IBM Corp.) - initial implementation and documentation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#include "p/runtime/ppcasmdefines.inc"
+	.file "VirtualGuard.s"
+
+#ifdef AIXPPC
+	.globl	._patchVirtualGuard
+	.globl	_patchVirtualGuard
+
+#elif defined(LINUXPPC64)
+	.globl	FUNC_LABEL(_patchVirtualGuard)
+	.type	FUNC_LABEL(_patchVirtualGuard), @function
+
+#elif defined(LINUX)
+	.globl	_patchVirtualGuard
+#endif
+
+
+#ifdef AIXPPC
+! .text section
+	.csect    VGuard_TEXT{PR}
+#elif defined(LINUXPPC64)
+	.section  ".text"
+	.align    2
+#endif
+
+
+
+
+#ifdef AIXPPC
+._patchVirtualGuard:
+	.function ._patchVirtualGuard,startproc._patchVirtualGuard,16,0,(endproc._patchVirtualGuard-startproc._patchVirtualGuard)
+#elif defined(LINUXPPC64)
+FUNC_LABEL(_patchVirtualGuard):
+#else
+_patchVirtualGuard:
+#endif
+!       parameters
+!           r3 - location of nop
+!           r4 - address of jump destination / offset?
+!           r5 - TR_VM struct
+!           r6 - smpflag
+	startproc._patchVirtualGuard:
+        sub     r4,r4,r3
+        lis     r6,0x4800
+        rlwimi  r6,r4,0,6,31
+        stw     r6,0(r3)
+        dcbst   0,r3
+        sync
+        icbi    0,r3
+	sync
+        isync
+        blr
+	endproc._patchVirtualGuard:
+
+! .data section
+#ifdef AIXPPC
+	.toc
+TOC_patchVirtualGuard:
+	.tc	_patchVirtualGuard[TC],_patchVirtualGuard
+
+	.csect    _patchVirtualGuard{DS}
+	ADDR      ._patchVirtualGuard
+	ADDR      TOC{TC0}
+	ADDR      0x00000000
+! End   csect     _patchVirtualGuard{DS}
+#elif defined(LINUXPPC64)
+	.section  ".toc"
+TOC_patchVirtualGuard:
+	.tc	_patchVirtualGuard[TC],_patchVirtualGuard
+
+#if !defined(__LITTLE_ENDIAN__)
+	.section  ".opd","aw"
+	.align    3
+	.globl    _patchVirtualGuard
+	.size     _patchVirtualGuard,24
+_patchVirtualGuard:
+	.quad     ._patchVirtualGuard
+	.quad     .TOC.@tocbase
+	.long     0x00000000
+	.long     0x00000000
+#endif
+
+#endif
+

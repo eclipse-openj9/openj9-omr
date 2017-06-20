@@ -31,7 +31,7 @@
 
 class TR_FrontEnd;
 class TR_PatchJNICallSite;
-class TR_PatchNOPedGuardSite;
+namespace TR { class PatchNOPedGuardSite; }
 class TR_PreXRecompile;
 class TR_RedefinedClassPicSite;
 class TR_UnloadedClassPicSite;
@@ -70,7 +70,7 @@ class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
    virtual bool matches(uintptrj_t key) { return _key == key; }
    virtual bool matches(char *sig, uint32_t sigLen) { return false; }
 
-   virtual TR_PatchNOPedGuardSite   *asPNGSite() { return 0; }
+   virtual TR::PatchNOPedGuardSite   *asPNGSite() { return 0; }
    virtual TR_PreXRecompile         *asPXRecompile() { return 0; }
    virtual TR_UnloadedClassPicSite  *asUCPSite() { return 0; }
    virtual TR_RedefinedClassPicSite *asRCPSite() { return 0; }
@@ -127,7 +127,7 @@ class ValueModifyRuntimeAssumption : public RuntimeAssumption
    virtual RuntimeAssumptionCategory getAssumptionCategory() { return ValueModification; }
    };
 
-}
+}  // namespace OMR
 
 namespace TR
 {
@@ -148,6 +148,42 @@ class SentinelRuntimeAssumption : public OMR::RuntimeAssumption
    virtual void     dumpInfo() {};
    }; // TR::SentinelRuntimeAssumption
 
-}
+class PatchNOPedGuardSite : public OMR::LocationRedirectRuntimeAssumption
+   {
+   protected:
+   PatchNOPedGuardSite(TR_PersistentMemory *pm, uintptrj_t key, TR_RuntimeAssumptionKind kind,
+                       uint8_t *location, uint8_t *destination)
+      : OMR::LocationRedirectRuntimeAssumption(pm, key), _location(location), _destination(destination) {}
+
+   public:
+   static  void compensate(bool isSMP, uint8_t *loc, uint8_t *dest);
+
+   /**
+    * This method is invoked to perform atomic patching at a given location to
+    * unconditionally jump to a given destination when the runtime assumption
+    * is violated. Location and destination being used here have been passed in
+    * during the class constructor.
+    */
+   virtual void compensate(TR_FrontEnd *vm, bool isSMP, void *) { compensate(isSMP, _location, _destination); }
+
+   virtual bool equals(OMR::RuntimeAssumption &other)
+         {
+         PatchNOPedGuardSite *site = other.asPNGSite();
+         return site != 0 && _location == site->getLocation();
+         }
+
+   virtual PatchNOPedGuardSite *asPNGSite() { return this; }
+   virtual uint8_t *getAssumingPC() { return _location; }
+   uint8_t* getLocation() { return _location; }
+   uint8_t* getDestination() { return _destination; }
+
+   virtual void dumpInfo();
+
+   private:
+   uint8_t *_location;
+   uint8_t *_destination;
+   }; // TR::PatchNOPedGuardSite
+
+}  // namespace TR
 
 #endif

@@ -147,7 +147,8 @@ class LocalCSE : public TR::Optimization
    virtual void prePerformOnBlocks();
    virtual void postPerformOnBlocks();
 
-   typedef std::multimap<int32_t, TR::Node*, std::less<int32_t>, TR::typed_allocator<void*, TR::Region>> HashTable;
+   typedef TR::typed_allocator< std::pair< const int32_t, TR::Node* >, TR::Region & > HashTableAllocator;
+   typedef std::multimap< int32_t, TR::Node*, std::less<int32_t>, HashTableAllocator > HashTable;
 
    protected:
 

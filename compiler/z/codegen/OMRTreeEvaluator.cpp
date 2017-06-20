@@ -16279,6 +16279,9 @@ OMR::Z::TreeEvaluator::inlineVectorUnaryOp(TR::Node * node,
 
    switch (op)
       {
+      case TR::InstOpCode::VCDG:
+         generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, 3);
+         break;
       case TR::InstOpCode::VLC:
          generateVRRaInstruction(cg, op, node, returnReg, sourceReg1, 0, 0, getVectorElementSizeMask(node));
          break;
@@ -18241,6 +18244,12 @@ OMR::Z::TreeEvaluator::vnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       }
 
    return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, opCode);
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::VCDG);
    }
 
 TR::Register *

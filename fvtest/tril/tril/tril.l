@@ -15,12 +15,12 @@
                         return IDENTIFIER;
                      };
 
-[0-9]+      {
+[-]?[0-9]+      {
                 yylval.integer = atol(yytext);
                 return INTEGER;
             }
 
-[0-9]+[.][0-9]+      {
+[-]?[0-9]+[.][0-9]+      {
                 yylval.f64 = strtod(yytext, NULL);
                 return DOUBLE;
             }

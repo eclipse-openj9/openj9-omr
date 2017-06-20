@@ -49,6 +49,7 @@
 #include "ras/Debug.hpp"                       // for createDebugObject, etc
 #include "omr.h"
 #include "env/SystemSegmentProvider.hpp"
+#include "env/DebugSegmentProvider.hpp"
 
 static void
 writePerfToolEntry(void *start, uint32_t size, const char *name)
@@ -245,7 +246,12 @@ compileMethodFromDetails(
    OMR::FrontEnd &fe = OMR::FrontEnd::singleton();
    auto jitConfig = fe.jitConfig();
    TR::RawAllocator rawAllocator;
-   TR::SystemSegmentProvider scratchSegmentProvider(1 << 16, rawAllocator);
+   TR::SystemSegmentProvider defaultSegmentProvider(1 << 16, rawAllocator);
+   TR::DebugSegmentProvider debugSegmentProvider(1 << 16, rawAllocator);
+   TR::SegmentAllocator &scratchSegmentProvider =
+      TR::Options::getCmdLineOptions()->getOption(TR_EnableScratchMemoryDebugging) ?
+         static_cast<TR::SegmentAllocator &>(debugSegmentProvider) :
+         static_cast<TR::SegmentAllocator &>(defaultSegmentProvider);
    TR::Region dispatchRegion(scratchSegmentProvider, rawAllocator);
    TR_Memory trMemory(*fe.persistentMemory(), dispatchRegion);
    TR_ResolvedMethod & compilee = *((TR_ResolvedMethod *)details.getMethod());

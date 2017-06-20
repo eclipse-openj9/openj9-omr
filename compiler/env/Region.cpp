@@ -25,6 +25,7 @@
 namespace TR {
 
 Region::Region(TR::SegmentProvider &segmentProvider, TR::RawAllocator rawAllocator) :
+   _bytesAllocated(0),
    _segmentProvider(segmentProvider),
    _rawAllocator(rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
@@ -34,6 +35,7 @@ Region::Region(TR::SegmentProvider &segmentProvider, TR::RawAllocator rawAllocat
    }
 
 Region::Region(const Region &prototype) :
+   _bytesAllocated(0),
    _segmentProvider(prototype._segmentProvider),
    _rawAllocator(prototype._rawAllocator),
    _initialSegment(_initialSegmentArea.data, INITIAL_SEGMENT_SIZE),
@@ -74,12 +76,14 @@ Region::allocate(size_t const size, void *hint)
    size_t const roundedSize = round(size);
    if (_currentSegment.get().remaining() >= roundedSize)
       {
+      _bytesAllocated += roundedSize;
       return _currentSegment.get().allocate(roundedSize);
       }
    TR::MemorySegment &newSegment = _segmentProvider.request(roundedSize);
    TR_ASSERT(newSegment.remaining() >= roundedSize, "Allocated segment is too small");
    newSegment.link(_currentSegment.get());
    _currentSegment = TR::ref(newSegment);
+   _bytesAllocated += roundedSize;
    return _currentSegment.get().allocate(roundedSize);
    }
 

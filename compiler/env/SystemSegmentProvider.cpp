@@ -20,7 +20,7 @@
 #include "env/MemorySegment.hpp"
 
 OMR::SystemSegmentProvider::SystemSegmentProvider(size_t segmentSize, TR::RawAllocator rawAllocator) :
-   TR::SegmentProvider(segmentSize),
+   TR::SegmentAllocator(segmentSize),
    _rawAllocator(rawAllocator),
    _segments(std::less< TR::MemorySegment >(), SegmentSetAllocator(rawAllocator))
    {
@@ -64,4 +64,28 @@ size_t
 OMR::SystemSegmentProvider::bytesAllocated() const throw()
    {
    return _bytesAllocated;
+   }
+
+size_t
+OMR::SystemSegmentProvider::regionBytesAllocated() const throw()
+   {
+   return _bytesAllocated;
+   }
+
+size_t
+OMR::SystemSegmentProvider::systemBytesAllocated() const throw()
+   {
+   return _bytesAllocated;
+   }
+
+size_t
+OMR::SystemSegmentProvider::allocationLimit() const throw()
+   {
+   return static_cast<size_t>(-1);
+   }
+
+void
+OMR::SystemSegmentProvider::setAllocationLimit(size_t)
+   {
+   return;
    }

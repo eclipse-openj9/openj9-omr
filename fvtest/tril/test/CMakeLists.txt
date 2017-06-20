@@ -40,7 +40,7 @@ add_executable(triltest
    ASTTest.cpp
    ParserTest.cpp
    IlGenTest.cpp
-   MethodHandlerTest.cpp
+   CompileTest.cpp
 )
 
 target_link_libraries(triltest 

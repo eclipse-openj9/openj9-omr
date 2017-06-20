@@ -61,6 +61,7 @@ class TRLangBuilder : public TR::IlInjector {
         void cfgFor(const ASTNode* const tree);
 
     private:
+        TR::TypeDictionary _types;
         const ASTNode* _trees;    // pointer to the AST node list representing Trees
         std::map<std::string, TR::SymbolReference*> _symRefMap; // mapping of string names to symrefs
         std::map<std::string, int> _blockMap;   // mapping of string names to basic block numbers

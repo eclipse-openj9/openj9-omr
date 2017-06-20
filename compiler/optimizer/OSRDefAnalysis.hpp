@@ -98,6 +98,8 @@ class TR_OSRLiveRangeAnalysis : public TR::Optimization
    void buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
       int32_t *liveLocalIndexToSymRefNumberMap, int32_t maxSymRefNumber, int32_t numBits,
       TR_OSRMethodData *osrMethodData);
+   void buildOSRSlotSharingInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
+      int32_t *liveLocalIndexToSymRefNumberMap, TR_BitVector *slotSharingVars);
    void maintainLiveness(TR::Node *node, TR::Node *parent, int32_t childNum, vcount_t  visitCount,
        TR_Liveness *liveLocals, TR_BitVector *liveVars, TR::Block *block);
    TR::TreeTop *collectPendingPush(TR_ByteCodeInfo bci, TR::TreeTop *pps, TR_BitVector *liveVars);

@@ -21,12 +21,16 @@
 
 #include "method_compiler.hpp"
 
-class JitBuilderCompiler : public MethodCompiler {
+namespace Tril {
+
+class JitBuilderCompiler : public Tril::MethodCompiler {
     public:
         explicit JitBuilderCompiler(const ASTNode* methodNode)
             : MethodCompiler{methodNode} {}
 
         int32_t compile() override;
 };
+
+} // namespace Tril
 
 #endif // JITBUILDER_COMPILER_HPP

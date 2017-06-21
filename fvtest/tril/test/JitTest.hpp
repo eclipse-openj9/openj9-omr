@@ -22,6 +22,9 @@
 #include <gtest/gtest.h>
 #include "Jit.hpp"
 
+namespace Tril {
+namespace Test {
+
 /**
  * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
  *
@@ -45,5 +48,8 @@ class JitTest : public ::testing::Test
       shutdownJit();
       }
    };
+
+} // namespace Test
+} // namespace Tril
 
 #endif // JITTEST_HPP

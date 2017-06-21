@@ -26,6 +26,8 @@
 #include <string>
 #include <stdexcept>
 
+namespace Tril {
+
 /**
  * @brief Class for extracting infromation about a Tril method from its AST node
  */
@@ -97,5 +99,7 @@ class MethodInfo {
         TR::DataTypes _returnType;
         std::vector<TR::DataTypes> _argTypes;
 };
+
+} // namespace Tril
 
 #endif // METHOD_INFO_HPP

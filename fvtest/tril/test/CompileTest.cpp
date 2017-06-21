@@ -22,14 +22,14 @@
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
 
-class CompileTest : public JitTest {};
+class CompileTest : public Tril::Test::JitTest {};
 
 TEST_F(CompileTest, Return3) {
     auto trees = parseString("(method \"Int32\" (block (ireturn (iconst 3))))");
 
     ASSERT_NOTNULL(trees);
 
-    JitBuilderCompiler compiler{trees};
+    Tril::JitBuilderCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed";
 

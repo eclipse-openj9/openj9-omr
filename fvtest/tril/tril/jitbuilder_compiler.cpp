@@ -34,10 +34,10 @@
 
 #include <algorithm>
 
-int32_t JitBuilderCompiler::compile() {
+int32_t Tril::JitBuilderCompiler::compile() {
     auto methodInfo = getMethodInfo();
     TR::TypeDictionary types;
-    TRLangBuilder ilgenerator{methodInfo->getBodyAST(), &types};
+    Tril::TRLangBuilder ilgenerator{methodInfo->getBodyAST(), &types};
 
     auto argTypes = methodInfo->getArgTypes();
     auto argIlTypes = std::vector<TR::IlType*>{argTypes.size()};

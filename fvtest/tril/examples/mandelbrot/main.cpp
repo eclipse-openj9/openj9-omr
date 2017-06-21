@@ -37,7 +37,7 @@ int main(int argc, char const * const * const argv) {
     printTrees(trees, 0);
 
     // assume that the file contians a single method and compile it
-    JitBuilderCompiler mandelbrotCompiler{trees};
+    Tril::JitBuilderCompiler mandelbrotCompiler{trees};
     assert(mandelbrotCompiler.compile() == 0);
     auto mandelbrot = mandelbrotCompiler.getEntryPoint<MandelbrotFunction*>();
 

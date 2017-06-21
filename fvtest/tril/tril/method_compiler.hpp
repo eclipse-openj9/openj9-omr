@@ -24,6 +24,8 @@
 
 #include "ilgen/TypeDictionary.hpp"
 
+namespace Tril {
+
 class MethodCompiler {
     public:
         explicit MethodCompiler(const ASTNode* methodNode)
@@ -46,11 +48,13 @@ class MethodCompiler {
     protected:
         void setEntryPoint(void* entry_point) { _entry_point = entry_point; }
 
-        MethodInfo* getMethodInfo() { return &_method; }
+        Tril::MethodInfo* getMethodInfo() { return &_method; }
 
     private:
-        MethodInfo _method;
+        Tril::MethodInfo _method;
         void* _entry_point;
 };
+
+} // namespace Tril
 
 #endif // METHOD_COMPILER_HPP

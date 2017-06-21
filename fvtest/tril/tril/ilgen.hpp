@@ -29,6 +29,8 @@
 #include <vector>
 #include <type_traits>
 
+namespace Tril {
+
 /**
  * @brief IL generator for Tril
  *
@@ -66,5 +68,7 @@ class TRLangBuilder : public TR::IlInjector {
         std::map<std::string, TR::SymbolReference*> _symRefMap; // mapping of string names to symrefs
         std::map<std::string, int> _blockMap;   // mapping of string names to basic block numbers
 };
+
+} // namespace Tril
 
 #endif // ILGEN_HPP

@@ -22,6 +22,8 @@
 OMR::SystemSegmentProvider::SystemSegmentProvider(size_t segmentSize, TR::RawAllocator rawAllocator) :
    TR::SegmentAllocator(segmentSize),
    _rawAllocator(rawAllocator),
+   _currentBytesAllocated(0),
+   _highWaterMark(0),
    _segments(std::less< TR::MemorySegment >(), SegmentSetAllocator(rawAllocator))
    {
    }
@@ -40,7 +42,8 @@ OMR::SystemSegmentProvider::request(size_t requiredSize)
       auto result = _segments.insert( TR::MemorySegment(newSegmentArea, adjustedSize) );
       TR_ASSERT(result.first != _segments.end(), "Bad iterator");
       TR_ASSERT(result.second, "Insertion failed");
-      _bytesAllocated += adjustedSize;
+      _currentBytesAllocated += adjustedSize;
+      _highWaterMark = _currentBytesAllocated > _highWaterMark ? _currentBytesAllocated : _highWaterMark;
       return const_cast<TR::MemorySegment &>(*(result.first));
       }
    catch (...)
@@ -55,7 +58,7 @@ OMR::SystemSegmentProvider::release(TR::MemorySegment &segment) throw()
    {
    auto it = _segments.find(segment);
    _rawAllocator.deallocate(segment.base());
-   _bytesAllocated -= segment.size();
+   _currentBytesAllocated -= segment.size();
    TR_ASSERT(it != _segments.end(), "Segment lookup should never fail");
    _segments.erase(it);
    }
@@ -63,19 +66,19 @@ OMR::SystemSegmentProvider::release(TR::MemorySegment &segment) throw()
 size_t
 OMR::SystemSegmentProvider::bytesAllocated() const throw()
    {
-   return _bytesAllocated;
+   return _highWaterMark;
    }
 
 size_t
 OMR::SystemSegmentProvider::regionBytesAllocated() const throw()
    {
-   return _bytesAllocated;
+   return _highWaterMark;
    }
 
 size_t
 OMR::SystemSegmentProvider::systemBytesAllocated() const throw()
    {
-   return _bytesAllocated;
+   return _highWaterMark;
    }
 
 size_t

@@ -6220,3 +6220,40 @@ TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR:
 {
    return cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
 }
+
+TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+{
+   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in ibyteswapEvaluator");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *tgtRegister = cg->allocateRegister();
+
+   if (!firstChild->getRegister() &&
+       firstChild->getOpCode().isMemoryReference() &&
+       firstChild->getReferenceCount() == 1)
+      {
+      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      tempMR->forceIndexedForm(firstChild, cg);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, tgtRegister, tempMR);
+      tempMR->decNodeReferenceCounts(cg);
+      }
+   else
+      {
+      TR::Register *srcRegister = cg->evaluate(firstChild);
+      TR::Register *tmp1Register = cg->allocateRegister();
+
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8, 0x00000000ff);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, 0x0000ff0000);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x000000ff00);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x00ff000000);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+
+      cg->stopUsingRegister(tmp1Register);
+      cg->decReferenceCount(firstChild);
+      }
+
+   node->setRegister(tgtRegister);
+   return tgtRegister;
+}

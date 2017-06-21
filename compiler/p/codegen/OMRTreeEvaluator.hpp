@@ -514,6 +514,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *xfRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *xdRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
+   static TR::Register *ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needsResolve, TR::CodeGenerator *cg);
    static TR::Instruction *generateNullTestInstructions(
          TR::CodeGenerator *cg,

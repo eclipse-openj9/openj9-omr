@@ -11321,6 +11321,8 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
             return true;
          else
             return false;
+      case TR::vl2vd:
+         return true;
       default:
         return false;
       }

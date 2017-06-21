@@ -520,7 +520,7 @@
    TR::TreeEvaluator::indirectCallEvaluator,// TR::vcalli
    TR::TreeEvaluator::ternaryEvaluator,     // TR::vternary
    TR::TreeEvaluator::passThroughEvaluator, // TR::v2v
-   TR::TreeEvaluator::unImpOpEvaluator,     // TR::vl2vd 
+   TR::TreeEvaluator::vl2vdEvaluator,       // TR::vl2vd 
    TR::TreeEvaluator::vconstEvaluator,      // TR::vconst
    TR::TreeEvaluator::getvelemEvaluator,    // TR::getvelem
    TR::TreeEvaluator::vsetelemEvaluator,    // TR::vsetelem

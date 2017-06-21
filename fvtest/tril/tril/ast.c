@@ -72,6 +72,15 @@ void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg) {
    a->next = newArg;
 }
 
+uint16_t countNodes(const ASTNode* n) {
+    uint16_t count = 0;
+    while (n) {
+       ++count;
+       n = n->next;
+    }
+    return count;
+}
+
 void printTrees(ASTNode* trees, int indent) {
     ASTNode* t = trees;
     while(t) {

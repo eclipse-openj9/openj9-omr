@@ -26,10 +26,12 @@ find_package(FLEX)
 set(OMR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../../omr)
 set(JITBUILDER_PATH ${OMR_PATH}/jitbuilder)
 
-set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
-set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CXX_EXTENSIONS OFF)
+
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 add_definitions(-g -fdiagnostics-color=always -Wno-deprecated -Wno-enum-compare -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-threadsafe-statics -Wno-invalid-offsetof")
@@ -45,6 +47,7 @@ add_library(tril STATIC
     ${FLEX_tril_scanner_OUTPUTS}
     ast.c
     ilgen.cpp
+    method_handler.cpp
 )
 
 target_compile_definitions(tril PUBLIC

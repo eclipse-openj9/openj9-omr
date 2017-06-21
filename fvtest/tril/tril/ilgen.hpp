@@ -26,22 +26,44 @@
 
 #include <map>
 #include <string>
+#include <vector>
+#include <type_traits>
 
+/**
+ * @brief IL generator for Tril
+ *
+ * This class takes care of transformaing the Tril AST into Testarossa IL
+ */
 class TRLangBuilder : public TR::IlInjector {
     public:
+
+        /**
+         * @brief Constructs a Tril IL Generator
+         * @param trees is the list of AST nodes representing the TR::Node instances to be generated
+         * @param d is the type dictionary to be used this IL generator
+         */
         TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d)
               : TR::IlInjector(d), _trees(trees) {}
 
         bool injectIL() override;
 
+        /**
+         * @brief Given an AST structure, returns a TR::Node represented by the AST
+         * @param tree the AST structure
+         * @return TR::Node represented by the AST
+         */
         TR::Node* toTRNode(const ASTNode* const tree);
 
+        /**
+         * @brief Given an AST structure, generates a corresponding CFG
+         * @param tree the AST structure that the CFG will be generated from
+         */
         void cfgFor(const ASTNode* const tree);
 
     private:
-        ASTNode* _trees;
-        std::map<std::string, TR::SymbolReference*> _symRefMap;
-        std::map<std::string, int> _blockMap;
+        ASTNode* _trees;    // pointer to the AST node list representing Trees
+        std::map<std::string, TR::SymbolReference*> _symRefMap; // mapping of string names to symrefs
+        std::map<std::string, int> _blockMap;   // mapping of string names to basic block numbers
 };
 
 #endif // ILGEN_HPP

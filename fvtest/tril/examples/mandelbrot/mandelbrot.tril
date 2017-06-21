@@ -1,115 +1,147 @@
-(block name="start" fallthrough="yloop"      ; start:
-   (istore temp="py"                         ; int py = 0;
-      (iconst 0) ) )
-(block name="yloop" fallthrough="xloop"      ; yloop:
-   (istore temp="px"                         ; int px = 0;
-      (iconst 0) )                           ;
-   (ificmpge target="yloop_exit"             ; if (py >= parm1) goto yloop_exit;
-      (iload temp="py")
-      (iload parm=1) ) )
-(block name="xloop" fallthrough="setup"      ; xloop:
-   (ificmpge target="xloop_exit"             ; if (px >= parm1) goto xloop_exit;
-      (iload temp="px")
-      (iload parm=1) ) )
-(block name="setup" fallthrough="loop"       ; setup:
-   (dstore temp="x0"                         ; double x0 = px * 3.5 / parm1 - 2.5; // map pixel x-coordinate to Mandelbrot range [-2.5, 1]
-      (dsub
-         (dmul
-            (i2d
-               (iload temp="px") )
-            (ddiv
-               (dconst 3.5000)
-               (i2d
-                  (iload parm=1) ) ) )
-         (dconst 2.5000) ) )
-   (dstore temp="y0"                         ; double y0 = py * 2.0 /parm1 - 1; // map pixel y-coordinate to Mandelbrot range [-1, 1]
-      (dsub
-         (dmul
-            (i2d
-               (iload temp="py") )
-            (ddiv
-               (dconst 2.0000)
-               (i2d
-                  (iload parm=1) ) ) )
-         (dconst 1.0000) ) )
-   (dstore temp="x"                          ; double x = 0.0;
-      (dconst 0.0000) )
-   (dstore temp="y"                          ; double y = 0.0;
-      (dconst 0.0000) )
-   (istore temp="iter"                       ; int iter = 0;
-      (iconst 0) ) )
-(block name="loop" fallthrough="loop_body"   ; loop:
-   (istore temp="comp1"                      ; int comp1 = (x*x + y*y) < 4.0;
-      (dcmplt
-         (dadd
-            (dmul
-               (dload temp="x")
-               (dload temp="x") )
-            (dmul
-               (dload temp="y")
-               (dload temp="y") ) )
-         (dconst 4.0000) ) )
-   (istore temp="comp2"                      ; int comp2 = iter < parm0;
-      (icmplt
-         (iload temp="iter")
-         (iload parm=0) ) )
-   (ificmpeq target="loop_exit"              ; if ((comp1 && comp2) == 0) goto loop_exit;
-      (iconst 0)
-      (iand
-         (iload temp="comp1")
-         (iload temp="comp2") ) ) )
-(block name="loop_body"                      ; loop_body:
-   (dstore temp="xtemp"                      ; double xtemp = x0 + x*x - y*y;
-      (dadd
-         (dload temp="x0")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; (c) Copyright IBM Corp. 2017, 2017
+;;
+;;  This program and the accompanying materials are made available
+;;  under the terms of the Eclipse Public License v1.0 and
+;;  Apache License v2.0 which accompanies this distribution.
+;;
+;;      The Eclipse Public License is available at
+;;      http://www.eclipse.org/legal/epl-v10.html
+;;
+;;      The Apache License v2.0 is available at
+;;      http://www.opensource.org/licenses/apache2.0.php
+;;
+;; Contributors:
+;;    Multiple authors (IBM Corp.) - initial implementation and documentation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; This file defines a method to compute values in the Mandelbrot set. It takes
+; as arguments:
+; 
+; 1. The number of iterations to be done as a 32-bit integer
+; 2. The number of rows/colomns that in the output table as an 32-bit integer
+; 3. A pointer to the output table as a pointer to a 32-bit integer
+;
+; The function does not return anything.
+;
+; With the given parameters, it fills the output table with the values from the
+; calculation. The resulting table can be used to generate a graph of the
+; Mandelbrot set (e.g. by letting each table cell represent a point on the graph). 
+
+(method "NoType" "Int32" "Int32" "Address"
+   (block name="start" fallthrough="yloop"      ; start:
+      (istore temp="py"                         ; int py = 0;
+         (iconst 0) ) )
+   (block name="yloop" fallthrough="xloop"      ; yloop:
+      (istore temp="px"                         ; int px = 0;
+         (iconst 0) )                           ;
+      (ificmpge target="yloop_exit"             ; if (py >= parm1) goto yloop_exit;
+         (iload temp="py")
+         (iload parm=1) ) )
+   (block name="xloop" fallthrough="setup"      ; xloop:
+      (ificmpge target="xloop_exit"             ; if (px >= parm1) goto xloop_exit;
+         (iload temp="px")
+         (iload parm=1) ) )
+   (block name="setup" fallthrough="loop"       ; setup:
+      (dstore temp="x0"                         ; double x0 = px * 3.5 / parm1 - 2.5; // map pixel x-coordinate to Mandelbrot range [-2.5, 1]
          (dsub
             (dmul
-               (dload temp="x")
-               (dload temp="x") )
+               (i2d
+                  (iload temp="px") )
+               (ddiv
+                  (dconst 3.5000)
+                  (i2d
+                     (iload parm=1) ) ) )
+            (dconst 2.5000) ) )
+      (dstore temp="y0"                         ; double y0 = py * 2.0 /parm1 - 1; // map pixel y-coordinate to Mandelbrot range [-1, 1]
+         (dsub
             (dmul
-               (dload temp="y")
-               (dload temp="y") ) ) ) )
-   (dstore temp="y"                          ; y = y0 + 2.0 * x * y;
-      (dadd
-         (dload temp="y0")
-         (dmul
-            (dconst 2.0000)
+               (i2d
+                  (iload temp="py") )
+               (ddiv
+                  (dconst 2.0000)
+                  (i2d
+                     (iload parm=1) ) ) )
+            (dconst 1.0000) ) )
+      (dstore temp="x"                          ; double x = 0.0;
+         (dconst 0.0000) )
+      (dstore temp="y"                          ; double y = 0.0;
+         (dconst 0.0000) )
+      (istore temp="iter"                       ; int iter = 0;
+         (iconst 0) ) )
+   (block name="loop" fallthrough="loop_body"   ; loop:
+      (istore temp="comp1"                      ; int comp1 = (x*x + y*y) < 4.0;
+         (dcmplt
+            (dadd
+               (dmul
+                  (dload temp="x")
+                  (dload temp="x") )
+               (dmul
+                  (dload temp="y")
+                  (dload temp="y") ) )
+            (dconst 4.0000) ) )
+      (istore temp="comp2"                      ; int comp2 = iter < parm0;
+         (icmplt
+            (iload temp="iter")
+            (iload parm=0) ) )
+      (ificmpeq target="loop_exit"              ; if ((comp1 && comp2) == 0) goto loop_exit;
+         (iconst 0)
+         (iand
+            (iload temp="comp1")
+            (iload temp="comp2") ) ) )
+   (block name="loop_body"                      ; loop_body:
+      (dstore temp="xtemp"                      ; double xtemp = x0 + x*x - y*y;
+         (dadd
+            (dload temp="x0")
+            (dsub
+               (dmul
+                  (dload temp="x")
+                  (dload temp="x") )
+               (dmul
+                  (dload temp="y")
+                  (dload temp="y") ) ) ) )
+      (dstore temp="y"                          ; y = y0 + 2.0 * x * y;
+         (dadd
+            (dload temp="y0")
             (dmul
-               (dload temp="x")
-               (dload temp="y") ) ) ) )
-   (dstore temp="x"                          ; x = xtemp;
-      (dload temp="xtemp" ) )
-   (istore temp="iter"                       ; iter += 1;
-      (iadd
-         (iconst 1)
-         (iload temp="iter") ) )
-   (goto target="loop") )                    ; goto loop;
-(block name="loop_exit"                      ; loop_exit:
-   (astore temp="addr"                       ; int* addr = parm2 + (px + py * parm1); // map pixel to array index
-      (aladd
-         (aload parm=2)
-         (i2l
-            (imul
-               (iconst 4)
-               (iadd
-                  (iload temp="px")
-                  (imul
-                     (iload temp="py")
-                     (iload parm=1) ) ) ) ) ) )
-   (istorei offset=0                         ; *addr = iter;
-      (aload temp="addr")
-      (iload temp="iter") ) 
-   (istore temp="px"                         ; px += 1;
-      (iadd
-         (iconst 1)
-         (iload temp="px") ) )
-   (goto target="xloop") )                   ; goto xloop;
-(block name="xloop_exit"                     ; xloop_exit:
-   (istore temp="py"                         ; py += 1;
-      (iadd
-         (iconst 1)
-         (iload temp="py") ) )
-   (goto target="yloop") )                   ; goto yloop;
-(block name="yloop_exit"                     ; yloop_exit:
-   (return) )                                ; return;
+               (dconst 2.0000)
+               (dmul
+                  (dload temp="x")
+                  (dload temp="y") ) ) ) )
+      (dstore temp="x"                          ; x = xtemp;
+         (dload temp="xtemp" ) )
+      (istore temp="iter"                       ; iter += 1;
+         (iadd
+            (iconst 1)
+            (iload temp="iter") ) )
+      (goto target="loop") )                    ; goto loop;
+   (block name="loop_exit"                      ; loop_exit:
+      (astore temp="addr"                       ; int* addr = parm2 + (px + py * parm1); // map pixel to array index
+         (aladd
+            (aload parm=2)
+            (i2l
+               (imul
+                  (iconst 4)
+                  (iadd
+                     (iload temp="px")
+                     (imul
+                        (iload temp="py")
+                        (iload parm=1) ) ) ) ) ) )
+      (istorei offset=0                         ; *addr = iter;
+         (aload temp="addr")
+         (iload temp="iter") ) 
+      (istore temp="px"                         ; px += 1;
+         (iadd
+            (iconst 1)
+            (iload temp="px") ) )
+      (goto target="xloop") )                   ; goto xloop;
+   (block name="xloop_exit"                     ; xloop_exit:
+      (istore temp="py"                         ; py += 1;
+         (iadd
+            (iconst 1)
+            (iload temp="py") ) )
+      (goto target="yloop") )                   ; goto yloop;
+   (block name="yloop_exit"                     ; yloop_exit:
+      (return) ) )                              ; return;
 

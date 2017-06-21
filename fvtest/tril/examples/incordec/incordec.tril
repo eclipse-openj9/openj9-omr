@@ -1,18 +1,46 @@
-;(block
-;   (goto target="add") )
-(block fallthrough="sub" name="start"
-   (ificmpge target="add"
-      (iloadi offset=0 (aload parm=0) )
-      (iconst 0) ) )
-(block name="sub"
-   (ireturn
-      (isub
-         (iloadi offset=0 (aload parm=0) )
-         (d2i (dconst 1.0) ) ) ) )
-(block name="add"
-   (istore temp="x" (iconst 1))
-   (ireturn
-      (iadd
-         (iloadi offset=0 (aload parm=0) )
-         (iload temp="x") ) ) )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; (c) Copyright IBM Corp. 2017, 2017
+;;
+;;  This program and the accompanying materials are made available
+;;  under the terms of the Eclipse Public License v1.0 and
+;;  Apache License v2.0 which accompanies this distribution.
+;;
+;;      The Eclipse Public License is available at
+;;      http://www.eclipse.org/legal/epl-v10.html
+;;
+;;      The Apache License v2.0 is available at
+;;      http://www.opensource.org/licenses/apache2.0.php
+;;
+;; Contributors:
+;;    Multiple authors (IBM Corp.) - initial implementation and documentation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; This simple method takes as argument a pointer to a 32-bit integer. If the
+; integer pointed to by the argument has a negative value, then the value
+; decremented by 1 is returned. Otherwise (value is positive), the value
+; incremented by 1 is returned.
+;
+; An equivalent C implementation:
+;
+; int incordec(int* parm0) {
+;    if (*value < 0) return *parm - 1;
+;    else return *parm + 1;
+; }
+
+(method "Int32" "Address"
+   (block fallthrough="sub" name="start"     ; start:
+      (ificmpge target="add"                 ; if (*parm0 >= 0) goto add;
+         (iloadi offset=0 (aload parm=0) )
+         (iconst 0) ) )
+   (block name="sub"                         ; sub:
+      (ireturn                               ; return *parm0 - 1;
+         (isub
+            (iloadi offset=0 (aload parm=0) )
+            (d2i (dconst 1.0) ) ) ) )
+   (block name="add"                         ; add:
+      (istore temp="x" (iconst 1))           ; int x = 1;
+      (ireturn                               ; return *parm0 + x;
+         (iadd
+            (iloadi offset=0 (aload parm=0) )
+            (iload temp="x") ) ) ) )

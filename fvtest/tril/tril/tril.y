@@ -5,6 +5,8 @@
 
     void yyerror(char *);
     int yylex(void);
+    void set_input_string(const char* in);
+    void end_lexical_scan(void);
 
     static ASTNode* trees;
 %}
@@ -111,8 +113,15 @@ void yyerror(char *s) {
     fprintf(stderr, "line %d: %s\n", yylineno, s);
 }
 
-ASTNode* genTrees(FILE* in) {
+ASTNode* parseFile(FILE* in) {
     yyin = in;
     yyparse();
+    return trees;
+}
+
+ASTNode* parseString(const char* in) {
+    set_input_string(in);
+    yyparse();
+    end_lexical_scan();
     return trees;
 }

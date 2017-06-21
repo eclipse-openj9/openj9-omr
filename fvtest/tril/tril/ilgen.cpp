@@ -28,11 +28,17 @@
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
 
+/**
+ * @brief A table to map the string representation of opcode names to corresponding TR::OpCodes value
+ */
 class OpCodeTable : public TR::ILOpCode {
    public:
       explicit OpCodeTable(TR::ILOpCodes opcode) : TR::ILOpCode{opcode} {}
       explicit OpCodeTable(const std::string& name) : TR::ILOpCode{getOpCodeFromName(name)} {}
 
+      /**
+       * @brief Given an opcode name, returns the corresponding TR::OpCodes value
+       */
       static TR::ILOpCodes getOpCodeFromName(const std::string& name) {
          auto opcode = _opcodeNameMap.find(name);
          if (opcode == _opcodeNameMap.cend()) {
@@ -55,15 +61,20 @@ class OpCodeTable : public TR::ILOpCode {
 
 std::unordered_map<std::string, TR::ILOpCodes> OpCodeTable::_opcodeNameMap;
 
-static uint16_t countNodes(const ASTNode* n) {
-    uint16_t count = 0;
-    while (n) {
-       ++count;
-       n = n->next;
-    }
-    return count;
-}
-
+/*
+ * The general algorithm for generating a TR::Node from it's AST representation
+ * is like this:
+ *
+ * 1. Allocate a new TR::Node instance, using the AST node's name
+ *    to detemine the opcode
+ * 2. Set any special values, flags, or properties on the newly created TR::Node
+ *    based on the AST node arguments
+ * 3. Recursively call this function to generate the child nodes and set them
+ *    as children of the current TR::Node
+ *
+ * However, certain opcodes must be created using a special interface. For this
+ * reason, special opcodes are detected using opcode properties.
+ */
 TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TR::Node* node = nullptr;
 
@@ -74,6 +85,8 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      if (opcode.isLoadConst()) {
         TraceIL("  is load const of ", "");
         node = TR::Node::create(opcode.getOpCodeValue(), childCount);
+
+        // assume the constant to be loaded is the first argument of the AST node
         if (opcode.isIntegerOrAddress()) {
            node->set64bitIntegralValue(tree->args->value.value.int64);
            TraceIL("integral value %d\n", tree->args->value.value.int64);
@@ -94,6 +107,8 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      }
      else if (opcode.isLoadDirect()) {
         TraceIL("  is direct load of ", "");
+
+        // the name of the first argument tells us what kind of symref we're loading
         if (strcmp("parm", tree->args->name) == 0) {
              auto arg = tree->args->value.value.int64;
              TraceIL("parameter %d\n", arg);
@@ -109,25 +124,34 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
              node = TR::Node::createLoad(symref);
          }
          else {
+             // symref kind not recognized
              return nullptr;
          }
      }
      else if (opcode.isStoreDirect()) {
         TraceIL("  is direct store of ", "");
+
+        // the name of the first argument tells us what kind of symref we're storing to
         if (strcmp("temp", tree->args->name) == 0) {
             const auto symName = tree->args->value.value.str;
             TraceIL("temporary %s\n", symName);
+
+            // check if a symref has already been created for the temp
+            // and if not, create one
             if (_symRefMap.find(symName) == _symRefMap.end()) {
                 _symRefMap[symName] = symRefTab()->createTemporary(methodSymbol(), opcode.getDataType());
             }
+
             auto symref =_symRefMap[symName];
             node = TR::Node::createWithSymRef(opcode.getOpCodeValue(), childCount, symref);
         }
         else {
+            // symref kind not recognized
             return nullptr;
         }
      }
      else if (opcode.isLoadIndirect() || opcode.isStoreIndirect()) {
+         // the first AST node argument holds the offset
          auto offset = tree->args->value.value.int64;
          TraceIL("  is indirect store/load with offset %d\n", offset);
          const auto name = tree->name;
@@ -143,6 +167,13 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
          auto targetId = _blockMap[targetName];
          auto targetEntry = _blocks[targetId]->getEntry();
          TraceIL("  is if with target block %d (%s, entry = %p", targetId, targetName, targetEntry);
+
+         /* If jumps must be created using `TR::Node::createif()`, which expected
+          * two child nodes to be given as argument. However, because children
+          * are only processed at the end, we create a dummy `BadILOp` node and
+          * pass it as both the first and second child. When the children are
+          * eventually created, they will override the dummy.
+          */
          auto c1 = TR::Node::create(TR::BadILOp);
          auto c2 = c1;
          TraceIL("  created temporary %s n%dn (%p)\n", c1->getOpCode().getName(), c1->getGlobalIndex(), c1);
@@ -163,6 +194,7 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TraceIL("  node address %p\n", node);
      TraceIL("  node index n%dn\n", node->getGlobalIndex());
 
+     // create a set child nodes
      const ASTNode* t = tree->children;
      int i = 0;
      while (t) {
@@ -176,7 +208,14 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
      return node;
 }
 
+/*
+ * The CFG is generated by doing a post-order walk of the AST and creating edges
+ * whenever opcodes that affect control flow are visited. As is the case in
+ * `toTRNode`, the opcode properties are used to determine how a particular
+ * opcode affects the control flow.
+ */
 void TRLangBuilder::cfgFor(const ASTNode* const tree) {
+   // visit the children first
    const ASTNode* t = tree->children;
    while (t) {
        cfgFor(t);
@@ -197,11 +236,24 @@ void TRLangBuilder::cfgFor(const ASTNode* const tree) {
    }
 }
 
+/*
+ * Generating IL from a Tril AST is done in three steps:
+ *
+ * 1. Generate basic blocks for each block represented in the AST
+ * 2. Generate the IL itself (Trees) by walking the AST
+ * 3. Generate the CFG by walking the AST
+ */
 bool TRLangBuilder::injectIL() {
-   TraceIL("=== %s ===\n", "Generating Blocks");
+    TraceIL("=== %s ===\n", "Generating Blocks");
+
+    // the top level nodes of the AST should be all the basic blocks
     createBlocks(countNodes(_trees));
+
+    // evaluate the arguments for each basic block
     const ASTNode* block = _trees;
     auto blockIndex = 0;
+
+    // iterate over each argument for each basic block
     while (block) {
        const ASTNodeArg* a = block->args;
        while (a) {
@@ -218,6 +270,8 @@ bool TRLangBuilder::injectIL() {
     TraceIL("=== %s ===\n", "Generating IL");
     block = _trees;
     generateToBlock(0);
+
+    // iterate over each treetop in each basic block
     while (block) {
        const ASTNode* t = block->children;
        while (t) {
@@ -233,7 +287,10 @@ bool TRLangBuilder::injectIL() {
     TraceIL("=== %s ===\n", "Generating CFG");
     block = _trees;
     generateToBlock(0);
+
+    // iterate over each basic block
     while (block) {
+       // create CFG edges from the arguments for a basic block (e.g. "fallthrough")
        const ASTNodeArg* a = block->args;
        while (a) {
            if (strcmp("fallthrough", a->name) == 0) {
@@ -250,6 +307,7 @@ bool TRLangBuilder::injectIL() {
            a = a->next;
        }
 
+       // create CFG edges from the nodes withing the current basic block
        const ASTNode* t = block->children;
        while (t) {
            cfgFor(t);

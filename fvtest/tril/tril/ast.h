@@ -65,9 +65,12 @@ ASTValue createStrValue(const char* val);
 void appendSiblingNode(ASTNode* list, ASTNode* newNode);
 void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg);
 
+uint16_t countNodes(const ASTNode* n);
+
 void printTrees(ASTNode* trees, int indent);
 
-ASTNode* genTrees(FILE* in);
+ASTNode* parseFile(FILE* in);
+ASTNode* parseString(const char* in);
 
 #ifdef __cplusplus
 }

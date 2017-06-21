@@ -23,11 +23,18 @@
 
 namespace Tril {
 
+/**
+ * @brief Concrete realization of MethodCompiler that uses JitBuilder for compilation
+ */
 class JitBuilderCompiler : public Tril::MethodCompiler {
     public:
         explicit JitBuilderCompiler(const ASTNode* methodNode)
             : MethodCompiler{methodNode} {}
 
+        /**
+         * @brief Compiles the Tril method using JitBuilder
+         * @return 0 on compilation success, an error code otherwise
+         */
         int32_t compile() override;
 };
 

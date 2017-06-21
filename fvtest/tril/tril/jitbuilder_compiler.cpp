@@ -35,24 +35,33 @@
 #include <algorithm>
 
 int32_t Tril::JitBuilderCompiler::compile() {
+    // construct an IL generator for the method
     auto methodInfo = getMethodInfo();
     TR::TypeDictionary types;
-    Tril::TRLangBuilder ilgenerator{methodInfo->getBodyAST(), &types};
+    Tril::TRLangBuilder ilgenerator{methodInfo.getBodyAST(), &types};
 
-    auto argTypes = methodInfo->getArgTypes();
+    // get a list of the method's argument types and transform it
+    // into a list of `TR::IlType`
+    auto argTypes = methodInfo.getArgTypes();
     auto argIlTypes = std::vector<TR::IlType*>{argTypes.size()};
     std::transform(argTypes.cbegin(), argTypes.cend(), argIlTypes.begin(),
                    [&types](TR::DataTypes d){ return types.PrimitiveType(d); } );
 
+    // construct a `TR::ResolvedMethod` instance from the IL generator and use
+    // to compile the method
     TR::ResolvedMethod resolvedMethod("file", "line", "name",
                                       argIlTypes.size(),
                                       argIlTypes.data(),
-                                      types.PrimitiveType(methodInfo->getReturnType()),
+                                      types.PrimitiveType(methodInfo.getReturnType()),
                                       0,
                                       &ilgenerator);
     TR::IlGeneratorMethodDetails methodDetails(&resolvedMethod);
     int32_t rc = 0;
-    setEntryPoint(compileMethodFromDetails(nullptr, methodDetails, warm, rc));
+    auto entry_point = compileMethodFromDetails(nullptr, methodDetails, warm, rc);
 
+    // if compilation was successful, set the entry point for the compiled body
+    if (rc == 0) setEntryPoint(entry_point);
+
+    // return the return code for the compilation
     return rc;
 }

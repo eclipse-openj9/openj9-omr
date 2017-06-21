@@ -5062,13 +5062,18 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             _disableTailRecursion = true;
          }
       }
-   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved())
+   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved()
+       && (tif->resultNode() == NULL || tif->resultNode()->getReferenceCount() == 0))
       {
       /**
        * In OSR, we need to split block even for cases without virtual guard. This is 
        * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
        * of correct callerIndex. Split the block here so that the OSR points from callee
        * and from caller are separated.
+       *
+       * This will not uncommon the return value if the block is split, instead it expects a temporary
+       * to have been generated so that nothing is commoned. This is valid under the current
+       * inliner behaviour, as the existance of a catch block will result in the required temporary being created.
        */
       TR::Block * blockOfCaller = previousBBStartInCaller->getNode()->getBlock();
       TR::Block * blockOfCallerInCalleeCFG = nextBBEndInCaller->getNode()->getBlock()->split(callNodeTreeTop, callerCFG);

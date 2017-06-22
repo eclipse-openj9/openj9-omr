@@ -27,8 +27,10 @@
 #endif
 
 
+#include <map>
 #include <fstream>
 #include "ilgen/IlBuilder.hpp"
+#include "env/TypedAllocator.hpp"
 
 // Maximum length of _definingLine string (including null terminator)
 #define MAX_LINE_NUM_LEN 7
@@ -193,7 +195,12 @@ class MethodBuilder : public TR::IlBuilder
    TR_HashTabInt             * _symbolNameFromSlot;
    TR_HashTabString          * _symbolIsArray;
    TR_HashTabString          * _memoryLocations;
-   TR_HashTabString          * _functions;
+
+   typedef bool (*StrComparator)(const char *, const char*);
+
+   typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
+   typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;
+   FunctionMap                 _functions;
 
    TR::IlType               ** _cachedParameterTypes;
    char                      * _cachedSignature;

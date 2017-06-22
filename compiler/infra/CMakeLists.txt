@@ -30,6 +30,7 @@ compiler_library(infra
 	${CMAKE_CURRENT_SOURCE_DIR}/OMRMonitorTable.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/Random.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/SimpleRegex.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/STLUtils.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/TreeServices.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/OMRCfg.cpp 

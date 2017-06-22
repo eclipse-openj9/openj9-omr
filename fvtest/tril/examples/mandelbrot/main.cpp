@@ -16,7 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#include "method_handler.hpp"
+#include "jitbuilder_compiler.hpp"
 #include "Jit.hpp"
 
 #include <assert.h>
@@ -37,9 +37,9 @@ int main(int argc, char const * const * const argv) {
     printTrees(trees, 0);
 
     // assume that the file contians a single method and compile it
-    MethodHandler mandelbrotHandle{trees};
-    assert(mandelbrotHandle.compile() == 0);
-    auto mandelbrot = mandelbrotHandle.getEntryPoint<MandelbrotFunction*>();
+    Tril::JitBuilderCompiler mandelbrotCompiler{trees};
+    assert(mandelbrotCompiler.compile() == 0);
+    auto mandelbrot = mandelbrotCompiler.getEntryPoint<MandelbrotFunction*>();
 
     constexpr auto size = 80;                   // number of rows/columns in the output table
     constexpr auto iterations = 1000;           // number of iterations to be performed

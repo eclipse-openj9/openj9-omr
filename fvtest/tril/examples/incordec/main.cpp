@@ -16,7 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#include "method_handler.hpp"
+#include "jitbuilder_compiler.hpp"
 #include "Jit.hpp"
 
 #include <assert.h>
@@ -37,9 +37,9 @@ int main(int argc, char const * const * const argv) {
     printTrees(trees, 0);
 
     // assume that the file contians a single method and compile it
-    MethodHandler incordecHandle{trees};
-    assert(incordecHandle.compile() == 0);
-    auto incordec = incordecHandle.getEntryPoint<IncOrDecFunction*>();
+    Tril::JitBuilderCompiler incordecCompiler{trees};
+    assert(incordecCompiler.compile() == 0);
+    auto incordec = incordecCompiler.getEntryPoint<IncOrDecFunction*>();
 
     int32_t value = 1;
     printf("%d -> %d\n", value, incordec(&value));

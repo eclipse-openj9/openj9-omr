@@ -75,7 +75,7 @@ std::unordered_map<std::string, TR::ILOpCodes> OpCodeTable::_opcodeNameMap;
  * However, certain opcodes must be created using a special interface. For this
  * reason, special opcodes are detected using opcode properties.
  */
-TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
+TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TR::Node* node = nullptr;
 
      auto childCount = countNodes(tree->children);
@@ -214,7 +214,7 @@ TR::Node* TRLangBuilder::toTRNode(const ASTNode* const tree) {
  * `toTRNode`, the opcode properties are used to determine how a particular
  * opcode affects the control flow.
  */
-void TRLangBuilder::cfgFor(const ASTNode* const tree) {
+void Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
    // visit the children first
    const ASTNode* t = tree->children;
    while (t) {
@@ -243,7 +243,7 @@ void TRLangBuilder::cfgFor(const ASTNode* const tree) {
  * 2. Generate the IL itself (Trees) by walking the AST
  * 3. Generate the CFG by walking the AST
  */
-bool TRLangBuilder::injectIL() {
+bool Tril::TRLangBuilder::injectIL() {
     TraceIL("=== %s ===\n", "Generating Blocks");
 
     // the top level nodes of the AST should be all the basic blocks

@@ -17,23 +17,23 @@
  ******************************************************************************/
 
 #include "JitTest.hpp"
-#include "method_handler.hpp"
+#include "jitbuilder_compiler.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
 
-class MethodHandlerTest : public JitTest {};
+class CompileTest : public Tril::Test::JitTest {};
 
-TEST_F(MethodHandlerTest, Return3) {
+TEST_F(CompileTest, Return3) {
     auto trees = parseString("(method \"Int32\" (block (ireturn (iconst 3))))");
 
     ASSERT_NOTNULL(trees);
 
-    MethodHandler handle{trees};
+    Tril::JitBuilderCompiler compiler{trees};
 
-    ASSERT_EQ(0, handle.compile()) << "Compilation failed";
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed";
 
-    auto entry = handle.getEntryPoint<int32_t (*)(void)>();
+    auto entry = compiler.getEntryPoint<int32_t (*)(void)>();
     ASSERT_NOTNULL(entry) << "Entry point of compiled body cannot be null";
     ASSERT_EQ(3, entry()) << "Compiled body did not return expected value";
 }

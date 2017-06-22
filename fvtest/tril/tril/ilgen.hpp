@@ -29,6 +29,8 @@
 #include <vector>
 #include <type_traits>
 
+namespace Tril {
+
 /**
  * @brief IL generator for Tril
  *
@@ -42,7 +44,7 @@ class TRLangBuilder : public TR::IlInjector {
          * @param trees is the list of AST nodes representing the TR::Node instances to be generated
          * @param d is the type dictionary to be used this IL generator
          */
-        TRLangBuilder(ASTNode* trees, TR::TypeDictionary* d)
+        TRLangBuilder(const ASTNode* trees, TR::TypeDictionary* d)
               : TR::IlInjector(d), _trees(trees) {}
 
         bool injectIL() override;
@@ -61,9 +63,12 @@ class TRLangBuilder : public TR::IlInjector {
         void cfgFor(const ASTNode* const tree);
 
     private:
-        ASTNode* _trees;    // pointer to the AST node list representing Trees
+        TR::TypeDictionary _types;
+        const ASTNode* _trees;    // pointer to the AST node list representing Trees
         std::map<std::string, TR::SymbolReference*> _symRefMap; // mapping of string names to symrefs
         std::map<std::string, int> _blockMap;   // mapping of string names to basic block numbers
 };
+
+} // namespace Tril
 
 #endif // ILGEN_HPP

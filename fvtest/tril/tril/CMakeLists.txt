@@ -47,7 +47,7 @@ add_library(tril STATIC
     ${FLEX_tril_scanner_OUTPUTS}
     ast.c
     ilgen.cpp
-    method_handler.cpp
+    jitbuilder_compiler.cpp
 )
 
 target_compile_definitions(tril PUBLIC

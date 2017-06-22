@@ -16,40 +16,28 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#ifndef JITTEST_HPP
-#define JITTEST_HPP
+#ifndef JITBUILDER_COMPILER_HPP
+#define JITBUILDER_COMPILER_HPP
 
-#include <gtest/gtest.h>
-#include "Jit.hpp"
+#include "method_compiler.hpp"
 
 namespace Tril {
-namespace Test {
 
 /**
- * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
- *
- * Most JitBuilder test case fixtures should publically inherit from this class.
- *
- * Example use:
- *
- *    class MyTestCase : public JitBuilderTest {};
+ * @brief Concrete realization of MethodCompiler that uses JitBuilder for compilation
  */
-class JitTest : public ::testing::Test
-   {
-   public:
+class JitBuilderCompiler : public Tril::MethodCompiler {
+    public:
+        explicit JitBuilderCompiler(const ASTNode* methodNode)
+            : MethodCompiler{methodNode} {}
 
-   static void SetUpTestCase()
-      {
-      ASSERT_TRUE(initializeJit()) << "Failed to initialize the JIT.";
-      }
+        /**
+         * @brief Compiles the Tril method using JitBuilder
+         * @return 0 on compilation success, an error code otherwise
+         */
+        int32_t compile() override;
+};
 
-   static void TearDownTestCase()
-      {
-      shutdownJit();
-      }
-   };
-
-} // namespace Test
 } // namespace Tril
 
-#endif // JITTEST_HPP
+#endif // JITBUILDER_COMPILER_HPP

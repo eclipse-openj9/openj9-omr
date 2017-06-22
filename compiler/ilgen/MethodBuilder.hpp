@@ -187,22 +187,25 @@ class MethodBuilder : public TR::IlBuilder
    TR::IlType                * _returnType;
    int32_t                     _numParameters;
 
+   typedef bool (*StrComparator)(const char *, const char*);
+
    // This map should only be accessed inside a compilation via lookupSymbol
    TR_HashTabString          * _symbols;
 
-   TR_HashTabString          * _parameterSlot;
+   typedef TR::typed_allocator<std::pair<const char *, int32_t>, TR::Region &> ParameterMapAllocator;
+   typedef std::map<const char *, int32_t, StrComparator, ParameterMapAllocator> ParameterMap;
+   ParameterMap                _parameterSlot;
+
    TR_HashTabString          * _symbolTypes;
    TR_HashTabInt             * _symbolNameFromSlot;
    TR_HashTabString          * _symbolIsArray;
    TR_HashTabString          * _memoryLocations;
 
-   typedef bool (*StrComparator)(const char *, const char*);
-
    typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
    typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;
    FunctionMap                 _functions;
 
-   TR::IlType               ** _cachedParameterTypes;
+   TR::IlType                ** _cachedParameterTypes;
    char                      * _cachedSignature;
    const char                * _definingFile;
    char                        _definingLine[MAX_LINE_NUM_LEN];

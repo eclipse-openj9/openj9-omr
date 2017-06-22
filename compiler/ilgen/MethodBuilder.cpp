@@ -100,7 +100,7 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _returnType(NoType),
    _numParameters(0),
    _symbols(new (*_memoryRegion) TR_HashTabString(_trMemory)),
-   _parameterSlot(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _parameterSlot(str_comparator, *_memoryRegion),
    _symbolTypes(new (*_memoryRegion) TR_HashTabString(_trMemory)),
    _symbolNameFromSlot(new (*_memoryRegion) TR_HashTabInt(_trMemory)),
    _symbolIsArray(new (*_memoryRegion) TR_HashTabString(_trMemory)),
@@ -154,6 +154,7 @@ MethodBuilder::MethodBuilder(const MethodBuilder &src) = default;
 MethodBuilder::~MethodBuilder()
    {
    // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
+   _parameterSlot.clear();
    _functions.clear();
 
    _trMemory->~TR_Memory();
@@ -380,11 +381,12 @@ MethodBuilder::lookupSymbol(const char *name)
 
    TR::DataType type = ((TR::IlType *)(_symbolTypes->getData(typesID)))->getPrimitiveType();
 
-   TR_HashId slotID;
-   if (_parameterSlot->locate(name, slotID))
+   ParameterMap::iterator it = _parameterSlot.find(name);
+   if (it != _parameterSlot.end())
       {
+      int32_t slot = it->second;
       symRef = symRefTab()->findOrCreateAutoSymbol(_methodSymbol,
-                                                   (int32_t)(uintptr_t)_parameterSlot->getData(slotID),
+                                                   slot,
                                                    type,
                                                    true, false, true);
       }
@@ -476,8 +478,7 @@ void
 MethodBuilder::DefineParameter(const char *name, TR::IlType *dt)
    {
    MB_REPLAY("DefineParameter(\"%s\", %s);", name, REPLAY_TYPE(dt));
-   TR_HashId slotID;
-   _parameterSlot->add(name, slotID, (void *)(uintptr_t) _numParameters);
+   _parameterSlot.insert(std::make_pair(name, _numParameters));
 
    TR_HashId nameFromSlotID;
    _symbolNameFromSlot->add(_numParameters, nameFromSlotID, (void *) name);

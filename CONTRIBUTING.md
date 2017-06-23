@@ -37,8 +37,11 @@ Following these guidelines will help us to merge your pull requests smoothly:
 
 5. Follow the commit guidelines found below.
 
-6. Ensure that `make test` passes all tests and `make lint` passes before you
-   submit a Pull Request.
+6. We encourage you to open a pull request early, and mark it as "Work In Progress"
+   (prefix the PR title with WIP). This allows feedback to start early, and helps
+   create a better end product. Committers will wait until after you've removed
+   the WIP prefix to merge your changes. 
+
 
 ## Commit Guidelines
 

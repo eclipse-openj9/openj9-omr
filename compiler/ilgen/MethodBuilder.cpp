@@ -100,7 +100,7 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _methodName("NoName"),
    _returnType(NoType),
    _numParameters(0),
-   _symbols(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _symbols(str_comparator, *_memoryRegion),
    _parameterSlot(str_comparator, *_memoryRegion),
    _symbolTypes(str_comparator, *_memoryRegion),
    _symbolNameFromSlot(new (*_memoryRegion) TR_HashTabInt(_trMemory)),
@@ -155,6 +155,7 @@ MethodBuilder::MethodBuilder(const MethodBuilder &src) = default;
 MethodBuilder::~MethodBuilder()
    {
    // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
+   _symbols.clear();
    _parameterSlot.clear();
    _symbolTypes.clear();
    _functions.clear();
@@ -359,10 +360,10 @@ MethodBuilder::symbolDefined(const char *name)
 void
 MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
    {
-   TR_HashId id1=0, id2=0;
+   _symbols.insert(std::make_pair(name, symRef));
 
-   _symbols->add(name, id1, (void *)symRef);
-   _symbolNameFromSlot->add(symRef->getCPIndex(), id2, (void *)name);
+   TR_HashId id=0;
+   _symbolNameFromSlot->add(symRef->getCPIndex(), id, (void *)name);
    
    TR::IlType *type = typeDictionary()->PrimitiveType(symRef->getSymbol()->getDataType());
    _symbolTypes.insert(std::make_pair(name, type));
@@ -374,12 +375,15 @@ MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
 TR::SymbolReference *
 MethodBuilder::lookupSymbol(const char *name)
    {
-   TR_HashId symbolsID=0;
-   bool present = _symbols->locate(name, symbolsID);
-   if (present)
-      return (TR::SymbolReference *)_symbols->getData(symbolsID);
-
    TR::SymbolReference *symRef;
+
+   SymbolMap::iterator symbolsIterator = _symbols.find(name);
+   if (symbolsIterator != _symbols.end())  // Found
+      {
+      symRef = symbolsIterator->second;
+      return symRef;
+      }
+
    SymbolTypeMap::iterator symTypesIterator =  _symbolTypes.find(name);
 
    TR_ASSERT_FATAL(symTypesIterator != _symbolTypes.end(), "Symbol '%s' doesn't exist", name);
@@ -405,7 +409,7 @@ MethodBuilder::lookupSymbol(const char *name)
       }
    symRef->getSymbol()->setNotCollected();
 
-   _symbols->add(name, symbolsID, (void *)symRef);
+   _symbols.insert(std::make_pair(name, symRef));
 
    return symRef;
    }

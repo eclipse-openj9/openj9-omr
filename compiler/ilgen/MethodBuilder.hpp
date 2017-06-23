@@ -189,8 +189,11 @@ class MethodBuilder : public TR::IlBuilder
 
    typedef bool (*StrComparator)(const char *, const char*);
 
+   typedef TR::typed_allocator<std::pair<const char *, TR::SymbolReference *>, TR::Region &> SymbolMapAllocator;
+   typedef std::map<const char *, TR::SymbolReference *, StrComparator, SymbolMapAllocator> SymbolMap;
+
    // This map should only be accessed inside a compilation via lookupSymbol
-   TR_HashTabString          * _symbols;
+   SymbolMap                   _symbols;
 
    typedef TR::typed_allocator<std::pair<const char *, int32_t>, TR::Region &> ParameterMapAllocator;
    typedef std::map<const char *, int32_t, StrComparator, ParameterMapAllocator> ParameterMap;

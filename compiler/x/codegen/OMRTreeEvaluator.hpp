@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -220,15 +220,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *encodeUTF16Evaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *overflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *compressStringEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
-   static TR::Register *compressStringNoCheckEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool japaneseMethod);
-   static TR::Register *andORStringEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -304,7 +300,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *VMmergenewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMarrayStoreCheckArrayCopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static bool VMinlineCallEvaluator(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
-   static TR::Register *VMAESHelperEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Instruction *VMtestForReferenceArray(TR::Node *, TR::Register *objectReg, TR::CodeGenerator *cg);
    static bool genNullTestSequence(TR::Node *node, TR::Register *opReg, TR::Register *targetReg, TR::CodeGenerator *cg);
    static TR::Register *VMifArrayCmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);

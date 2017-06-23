@@ -4710,7 +4710,8 @@ MM_Scavenger::scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScav
 	Assert_MM_true(concurrent_state_scan == _concurrentState);
 
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, totalBytesToScavenge, forceExit, env->_cycleState);
-	_dispatcher->run(env, &scavengeTask);
+	/* Concurrent background task will run with different (typically lower) number of threads. */
+	_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
 
 	uintptr_t bytesScanned = scavengeTask.getBytesScanned();
 	/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */

@@ -389,6 +389,19 @@ MM_ParallelDispatcher::wakeUpThreads(uintptr_t count)
 }
 
 /**
+ * Let tasks run with reduced thread count.
+ * After the task is complete the thread count should be restored.
+ * Dispatcher may additionally adjust (reduce) the count.
+ */
+void
+MM_ParallelDispatcher::setThreadCount(uintptr_t threadCount)
+{
+	Assert_MM_true(threadCount <= _threadCountMaximum);
+	Assert_MM_true(0 < threadCount);
+ 	_threadCount = threadCount;
+}
+
+/**
  * Decide how many threads should be active for a given task.
  */
 void

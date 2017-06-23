@@ -412,6 +412,7 @@ public:
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
 	bool concurrentScavengerRequested; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
+	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 #endif	/* OMR_GC_CONCURRENT_SCAVENGER */
 	uintptr_t scavengerFailedTenureThreshold;
 	uintptr_t maxScavengeBeforeGlobal;
@@ -1321,6 +1322,7 @@ public:
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, concurrentScavenger(false)
 		, concurrentScavengerRequested(false)
+		, concurrentScavengerBackgroundThreads(0)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 		, scavengerFailedTenureThreshold(0)
 		, maxScavengeBeforeGlobal(0)

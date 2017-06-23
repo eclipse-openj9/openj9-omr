@@ -810,7 +810,26 @@ public:
    TR_S390OutOfLineCodeSection *findS390OutOfLineCodeSectionFromLabel(TR::LabelSymbol *label);
 
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *preced=0, TR_NOPKind nopKind=TR_NOPStandard);
-   void insertPad(TR::Node *theNode,TR::Instruction *insertionPoint,int32_t padSize,bool);
+
+   /** \brief
+    *     Inserts padding (NOP) instructions in the instruction stream.
+    *
+    *  \param node
+    *     The node with which the generated instruction will be associated.
+    *
+    *  \param cursor
+    *     The instruction following which the padding instructions will be inserted.
+    *
+    *  \param size
+    *     The size in number of bytes of how much padding to insert. This value can be one of 0, 2, 4, or 6.
+    *
+    *  \param prependCursor
+    *     Determines whether the padding instructions will be inserted before or after \param cursor.
+    *
+    *  \return
+    *     The last padding instruction generated, or \param cursor if \param size is zero.
+    */
+   TR::Instruction* insertPad(TR::Node* node, TR::Instruction* cursor, uint32_t size, bool prependCursor);
 
    void setCurrentlyClobberedRestrictedRegister(int32_t regNum)
       {

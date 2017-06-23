@@ -1388,37 +1388,46 @@ OMR::Z::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPK
    return new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
    }
 
-void
-OMR::Z::CodeGenerator::insertPad(TR::Node * theNode, TR::Instruction * insertionPoint, int32_t padSize, bool before)
+TR::Instruction*
+OMR::Z::CodeGenerator::insertPad(TR::Node* node, TR::Instruction* cursor, uint32_t size, bool prependCursor)
    {
-   if (0 == padSize)
+   if (size != 0)
       {
-      return;
-      }
+      if (prependCursor)
+         {
+         cursor = cursor->getPrev();
+         }
 
-   if (before)
-      {
-      insertionPoint = insertionPoint->getPrev();
-      }
-
-   switch (padSize)
-      {
-      case 4:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
+      switch (size)
+         {
+         case 2:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            }
          break;
 
-      case 6:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         case 4:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            }
          break;
 
-      case 2:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         case 6:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            }
          break;
 
-      default:
-         TR_ASSERT(false, "Unexpected pad size %d\n", padSize);
+         default:
+            {
+            TR_ASSERT(false, "Unexpected pad size %d\n", size);
+            }
+         break;
+         }
       }
+
+   return cursor;
    }
 
 ////////////////////////////////////////////////////////////////////////////////

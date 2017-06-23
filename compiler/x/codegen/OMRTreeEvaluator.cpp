@@ -5005,15 +5005,14 @@ TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node*
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
 TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   static bool useJapaneseCompression = (feGetEnv("TR_JapaneseComp") != NULL);
-   static bool disableECCP256AESCBC = (feGetEnv("TR_disableECCP256AESCBC") != NULL);
-
    TR::Compilation *comp = cg->comp();
    TR::SymbolReference* SymRef = node->getSymbolReference();
+
    if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::singlePrecisionSQRTSymbol))
       {
       return inlineSinglePrecisionSQRT(node, cg);
       }
+
    if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
       {
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
@@ -5045,147 +5044,7 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
    // If the method to be called is marked as an inline method, see if it can
    // actually be generated inline.
    //
-   TR::Register     *returnRegister = NULL;
-   TR::MethodSymbol *symbol = node->getSymbol()->castToMethodSymbol();
-
-   switch (symbol->getRecognizedMethod())
-      {
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::java_nio_Bits_keepAlive:
-         {
-         TR_ASSERT(node->getNumChildren() == 1, "keepAlive is assumed to have just one argument");
-
-         // The only purpose of keepAlive is to prevent an otherwise
-         // unreachable object from being garbage collected, because we don't
-         // want its finalizer to be called too early.  There's no need to
-         // generate a full-blown call site just for this purpose.
-
-         TR::Register *valueToKeepAlive = cg->evaluate(node->getFirstChild());
-
-         // In theory, a value could be kept alive on the stack, rather than in
-         // a register.  It is unfortunate that the following deps will force
-         // the value into a register for no reason.  However, in many common
-         // cases, this label will have no effect on the generated code, and
-         // will only affect GC maps.
-         //
-         TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
-         deps->addPreCondition  (valueToKeepAlive, TR::RealRegister::NoReg, cg);
-         deps->addPostCondition (valueToKeepAlive, TR::RealRegister::NoReg, cg);
-         new (cg->trHeapMemory()) TR::X86LabelInstruction(LABEL, node, generateLabelSymbol(cg), deps, cg);
-         cg->decReferenceCount(node->getFirstChild());
-
-         return NULL; // keepAlive has no return value
-         }
-#endif
-      default:
-         break;
-      }
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (cg->enableAESInHardwareTransformations() &&
-       (symbol->getRecognizedMethod() == TR::com_ibm_jit_crypto_JITAESCryptInHardware_doAESInHardware ||
-        symbol->getRecognizedMethod() == TR::com_ibm_jit_crypto_JITAESCryptInHardware_expandAESKeyInHardware))
-      {
-      return TR::TreeEvaluator::VMAESHelperEvaluator(node, cg);
-      }
-
-   if (symbol->getMandatoryRecognizedMethod() == TR::com_ibm_jit_JITHelpers_transformedEncodeUTF16Big ||
-       symbol->getMandatoryRecognizedMethod() == TR::com_ibm_jit_JITHelpers_transformedEncodeUTF16Little)
-      {
-      return TR::TreeEvaluator::encodeUTF16Evaluator(node, cg);
-      }
-
-   if (cg->getSupportsBDLLHardwareOverflowCheck() &&
-       (symbol->getRecognizedMethod() == TR::java_math_BigDecimal_noLLOverflowAdd ||
-        symbol->getRecognizedMethod() == TR::java_math_BigDecimal_noLLOverflowMul))
-      {
-      // Eat this call as its only here to anchor where a long lookaside overflow check
-      // needs to be done.  There should be a TR::icmpeq node following
-      // this one where the real overflow check will be inserted.
-      //
-      cg->recursivelyDecReferenceCount(node->getFirstChild());
-      cg->recursivelyDecReferenceCount(node->getSecondChild());
-      cg->evaluate(node->getChild(2));
-      cg->decReferenceCount(node->getChild(2));
-      returnRegister = cg->allocateRegister();
-      node->setRegister(returnRegister);
-      return returnRegister;
-      }
-
-   // If the method to be called is marked as an inline method, see if it can
-   // actually be generated inline.
-   //
-   else if (symbol->isVMInternalNative() || symbol->isJITInternalNative() ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Integer_rotateLeft)  ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_sqrt)  ||
-       (symbol->getRecognizedMethod()==TR::java_lang_StrictMath_sqrt)  ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_max_I) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_min_I) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_max_L) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_min_L) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_L) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_D) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_F) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Math_abs_I) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Long_reverseBytes) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Integer_reverseBytes) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Short_reverseBytes) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Class_isAssignableFrom) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_System_nanoTime) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicMarkableReference_doubleWordCAS) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicStampedReference_doubleWordCAS) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicMarkableReference_doubleWordSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicStampedReference_doubleWordSet) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicMarkableReference_doubleWordCASSupported) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicStampedReference_doubleWordCASSupported) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicMarkableReference_doubleWordSetSupported) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_AtomicStampedReference_doubleWordSetSupported) ||
-
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_orderAccesses) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_orderReads) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_orderWrites) ||
-       (symbol->getRecognizedMethod()==TR::java_util_concurrent_atomic_Fences_reachabilityFence) ||
-
-       (symbol->getRecognizedMethod()==TR::sun_nio_ch_NativeThread_current) ||
-       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_copyMemory) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_String_hashCodeImplCompressed) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_String_hashCodeImplDecompressed)
-      )
-      {
-      if (TR::TreeEvaluator::VMinlineCallEvaluator(node, false, cg))
-         returnRegister = node->getRegister();
-      else
-         returnRegister = TR::TreeEvaluator::performCall(node, false, true, cg);
-      }
-   else if (symbol->getRecognizedMethod() == TR::java_lang_String_compress)
-      {
-      return TR::TreeEvaluator::compressStringEvaluator(node, cg, useJapaneseCompression);
-      }
-   else if (symbol->getRecognizedMethod() == TR::java_lang_String_compressNoCheck)
-      {
-      return TR::TreeEvaluator::compressStringNoCheckEvaluator(node, cg, useJapaneseCompression);
-      }
-   else if (symbol->getRecognizedMethod() == TR::java_lang_String_andOR)
-      {
-      return TR::TreeEvaluator::andORStringEvaluator(node, cg);
-      }
-   else if ((symbol->getRecognizedMethod() == TR::com_ibm_crypto_provider_AEScryptInHardware_cbcEncrypt)
-         && cg->enableAESInHardwareTransformations() && !disableECCP256AESCBC
-         && !TR::Compiler->om.canGenerateArraylets() && TR::Compiler->target.is64Bit())
-      {
-      return TR::TreeEvaluator::VMP256AESCBCEncryptionEvaluator(node,cg);
-      }
-   else if ((symbol->getRecognizedMethod() == TR::com_ibm_crypto_provider_AEScryptInHardware_cbcDecrypt)
-         && cg->enableAESInHardwareTransformations() && !disableECCP256AESCBC
-         && !TR::Compiler->om.canGenerateArraylets() && TR::Compiler->target.is64Bit())
-      {
-       return TR::TreeEvaluator::VMP256AESCBCDecryptionEvaluator(node, cg);
-      }
-   else
-#endif
-      {
-      returnRegister = TR::TreeEvaluator::performCall(node, false, true, cg);
-      }
+   TR::Register *returnRegister = TR::TreeEvaluator::performCall(node, false, true, cg);
 
    // A strictfp caller needs to adjust double return values;
    // a float callee always returns values that have correct precision.

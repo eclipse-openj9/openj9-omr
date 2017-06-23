@@ -196,7 +196,10 @@ class MethodBuilder : public TR::IlBuilder
    typedef std::map<const char *, int32_t, StrComparator, ParameterMapAllocator> ParameterMap;
    ParameterMap                _parameterSlot;
 
-   TR_HashTabString          * _symbolTypes;
+   typedef TR::typed_allocator<std::pair<const char *, TR::IlType *>, TR::Region &> SymbolTypeMapAllocator;
+   typedef std::map<const char *, TR::IlType *, StrComparator, SymbolTypeMapAllocator> SymbolTypeMap;
+   SymbolTypeMap               _symbolTypes;
+
    TR_HashTabInt             * _symbolNameFromSlot;
    TR_HashTabString          * _symbolIsArray;
    TR_HashTabString          * _memoryLocations;

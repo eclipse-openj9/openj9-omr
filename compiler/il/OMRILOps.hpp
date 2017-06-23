@@ -52,6 +52,7 @@ struct OpCodeProperties
 
    TR::DataType        dataType;
    uint32_t            typeProperties;
+   TR::ILChildPropType childTypes;
    TR::ILOpCodes       swapChildrenOpCode;
    TR::ILOpCodes       reverseBranchOpCode;
    TR::ILOpCodes       booleanCompareOpCode;
@@ -144,6 +145,13 @@ public:
     * symrefs, etc.
     */
    bool hasNoDataType()              const { return typeProperties().testAny(ILTypeProp::HasNoDataType); }
+
+   /**
+    * ILChildProp
+    */
+   uint32_t expectedChildCount()     const { return GET_CHILD_COUNT(childProperties()); }
+   TR::DataTypes expectedChildType(uint32_t childIndex) const { return GET_CHILD_TYPE(childIndex, childProperties()); }
+   bool canHaveGlRegDeps()           const { return getOpCodeValue() == TR::BBStart || getOpCodeValue() == TR::BBEnd || isCall() || isBranch(); }
 
    /**
     * ILProp1
@@ -1410,6 +1418,7 @@ protected:
    flags32_t properties3()    const { return flags32_t(_opCodeProperties[_opCode].properties3); }
    flags32_t properties4()    const { return flags32_t(_opCodeProperties[_opCode].properties4); }
    flags32_t typeProperties() const { return flags32_t(_opCodeProperties[_opCode].typeProperties); }
+   TR::ILChildPropType childProperties() const { return _opCodeProperties[_opCode].childTypes; }
 
    static OpCodeProperties _opCodeProperties[TR::NumIlOps];
 

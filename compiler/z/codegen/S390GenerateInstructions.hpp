@@ -88,6 +88,32 @@ TR::Instruction *generateS390BranchInstruction(
                    TR::LabelSymbol *sym,
                    TR::Instruction *preced = 0);
 
+/** \brief
+ *     Generates a branch instruction accepting a branch condition and a target register.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param op
+ *     The mnemonic of the branch instruction.
+ *
+ *  \param node
+ *     The node to which the generated instruction will be associated with.
+ *
+ *  \param compareOpCode
+ *     The branch condition code.
+ *
+ *  \param targetReg
+ *     The data to inline in the instruction stream.
+ *
+ *  \param preced
+ *     The preceeding instruction to link the generated branch instruction with.
+ *
+ *  \return
+ *     The generated instruction.
+ */
+TR::Instruction* generateS390BranchInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, TR::InstOpCode::S390BranchCondition compareOpCode, TR::Register* targetReg, TR::Instruction* preced = NULL);
+
 TR::Instruction *generateS390BranchInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic                       op,
@@ -1299,6 +1325,29 @@ TR::Instruction *generateDirectCall(
                    TR::SymbolReference                  *callSymRef,
                    TR::RegisterDependencyConditions *cond,
                    TR::Instruction                      *preced = 0);
+
+/** \brief
+ *     Generates a data constant in the instruction stream.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param op
+ *     The mnemonic of the data constant pseudo instruction.
+ *
+ *  \param node
+ *     The node with which the generated instruction will be associated.
+ *
+ *  \param data
+ *     The data constant to inline in the instruction stream.
+ *
+ *  \param preced
+ *     The preceeding instruction to link the generated data constant instruction with.
+ *
+ *  \return
+ *     The generated instruction.
+ */
+TR::Instruction* generateDataConstantInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, uint32_t data, TR::Instruction* preced = NULL);
 
 TR::Instruction *generateRegUnresolvedSym(
                    TR::CodeGenerator *cg,

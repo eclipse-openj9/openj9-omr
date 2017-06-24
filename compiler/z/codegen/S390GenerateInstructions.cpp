@@ -134,6 +134,16 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    return cursor;
    }
 
+TR::Instruction* generateS390BranchInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, TR::InstOpCode::S390BranchCondition compareOpCode, TR::Register* targetReg, TR::Instruction* preced)
+   {
+   TR::Instruction* returnInstruction = generateS390RegInstruction(cg, op, node, targetReg, preced);
+
+   // RR type branch instructions use the first operand register field as a mask value
+   static_cast<TR::S390RegInstruction*>(returnInstruction)->setBranchCondition(compareOpCode);
+
+   return returnInstruction;
+   }
+
 TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::LabelSymbol * sym, TR::Instruction * preced)
@@ -2354,6 +2364,18 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 #endif
 
       }  
+   }
+
+TR::Instruction* generateDataConstantInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, uint32_t data, TR::Instruction* preced)
+   {
+   if (preced != NULL)
+      {
+      return new (INSN_HEAP) TR::S390ImmInstruction(op, node, data, preced, cg);
+      }
+   else
+      {
+      return new (INSN_HEAP) TR::S390ImmInstruction(op, node, data, cg);
+      }
    }
 
 /**

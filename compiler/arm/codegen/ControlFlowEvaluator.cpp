@@ -308,7 +308,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Compilation *comp = cg->comp();
-   if ((!node->isNopableInlineGuard() && !node->isHCRGuard()) ||
+   if ((!node->isNopableInlineGuard() && !node->isHCRGuard() && !node->isBreakpointGuard()) ||
        !cg->getSupportsVirtualGuardNOPing())
       return false;
 

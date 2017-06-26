@@ -159,6 +159,7 @@ class SymbolReferenceTable
       heapBaseSymbol,
       heapTopSymbol,
       j9methodExtraFieldSymbol,
+      j9methodConstantPoolSymbol,
       startPCLinkageInfoSymbol,
       instanceShapeFromROMClassSymbol,
 

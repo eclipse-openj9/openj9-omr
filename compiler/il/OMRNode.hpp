@@ -1296,6 +1296,10 @@ public:
    void setIsOSRGuard();
    const char * printIsOSRGuard();
 
+   bool isBreakpointGuard();
+   void setIsBreakpointGuard();
+   const char * printIsBreakpointGuard();
+
    bool childrenWereSwapped();
    void setSwappedChildren(bool v);
 
@@ -1889,6 +1893,7 @@ protected:
       methodEnterExitGuard                  = 0x0000A000,
       directMethodGuard                     = 0x0000B000,
       osrGuard                              = 0x0000C000,
+      breakpointGuard                       = 0x0000D000,
       swappedChildren                       = 0x00020000,
       versionIfWithMaxExpr                  = 0x00010000,
       versionIfWithMinExpr                  = 0x00040000,

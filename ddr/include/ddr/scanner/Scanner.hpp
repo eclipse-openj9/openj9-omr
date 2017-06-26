@@ -43,12 +43,13 @@ using std::vector;
 
 class Scanner
 {
-	set<string> _blacklistedFiles;
-	set<string> _blacklistedTypes;
 public:
 	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath) = 0;
 	
 protected:
+	set<string> _blacklistedFiles;
+	set<string> _blacklistedTypes;
+
 	bool checkBlacklistedType(string name);
 	bool checkBlacklistedFile(string name);
 	DDR_RC loadBlacklist(string file);

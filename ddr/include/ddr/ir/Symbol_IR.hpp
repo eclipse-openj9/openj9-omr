@@ -25,6 +25,8 @@
 #include "omrport.h"
 
 #include "ddr/config.hpp"
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/Field.hpp"
 #include "ddr/ir/Type.hpp"
 
 using std::vector;
@@ -36,6 +38,9 @@ struct FieldOverride {
 	string overrideName;
 	bool isTypeOverride;
 };
+
+class Field;
+class NamespaceUDT;
 
 class Symbol_IR {
 public:
@@ -53,8 +58,16 @@ public:
 	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
 	void computeOffsets();
 	void removeDuplicates();
+	DDR_RC mergeIR(Symbol_IR *other);
+
 private:
 	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
+	template<typename T> void mergeTypes(vector<T *> *source, vector<T *> *other, bool mergeAnonymous,
+		NamespaceUDT *outerNamespace, vector<Type *> *merged);
+	void mergeFields(vector<Field *> *source, vector<Field *> *other, Type *type, vector<Type *> *merged);
+	void mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other);
+
+	friend class MergeVisitor;
 };
 
 #endif /* SYMBOL_IR_HPP */

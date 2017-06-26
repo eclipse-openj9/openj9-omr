@@ -50,18 +50,6 @@ using std::hash;
 using std::unordered_map;
 #endif
 
-struct TypeKey {
-	char *fileName;
-	string typeName;
-	int lineNumber;
-
-	bool operator==(const TypeKey& other) const;
-};
-
-struct KeyHasher {
-	size_t operator()(const TypeKey& key) const;
-};
-
 class DwarfScanner: public Scanner
 {
 public:
@@ -74,16 +62,15 @@ private:
 	Dwarf_Signed _fileNameCount;
 	char **_fileNamesTable;
 	unordered_map<string, int> _anonymousEnumNames;
-	unordered_map<TypeKey, Type *, KeyHasher> _typeMap;
-	unordered_map<string, Type *> _typeStubMap;
+	unordered_map<Dwarf_Off, Type *> _typeOffsetMap;
 	Symbol_IR *_ir;
 	Dwarf_Debug _debug;
 
 	DDR_RC scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *filepath);
 	DDR_RC traverse_cu_in_debug_section(Symbol_IR *const ir);
 	DDR_RC addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, NamespaceUDT *outerUDT, Type **type);
-	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const newUDT, NamespaceUDT *outerUDT, int *typeNum);
-	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, unsigned int lineNumber, Type **const newUDT);
+	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const newUDT, NamespaceUDT *outerUDT, bool *isNewType);
+	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, Type **const newUDT);
 	DDR_RC scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die, bool alreadyHadFields);
 	DDR_RC addEnumMember(Dwarf_Die die, EnumUDT *const udt);
 	DDR_RC addClassField(Dwarf_Die die, ClassType *const newClass, string fieldName);
@@ -93,8 +80,7 @@ private:
 	DDR_RC getTypeTag(Dwarf_Die die, Dwarf_Die *typedie, Dwarf_Half *tag);
 	DDR_RC getSourcelist(Dwarf_Die die);
 	DDR_RC blackListedDie(Dwarf_Die die, bool *dieBlackListed);
-	DDR_RC getName(Dwarf_Die die, string *name);
-	DDR_RC createTypeKey(Dwarf_Die die, string typeName, TypeKey *key, unsigned int *lineNumber, string *fileName);
+	DDR_RC getName(Dwarf_Die die, string *name, Dwarf_Off *dieOffset = NULL);
 	DDR_RC getNextSibling(Dwarf_Die *die);
 	DDR_RC getBitField(Dwarf_Die die, size_t *bitField);
 

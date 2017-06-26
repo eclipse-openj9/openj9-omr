@@ -5979,16 +5979,23 @@ int32_t TR_BlockSplitter::perform()
          children->push(unvisitedEdge->getTo());
          continue;
          }
+      mergeNode = toBlock(children->top());
       if (
-            (toBlock(children->top())->hasExceptionPredecessors() == true) ||
-            (children->top()->getPredecessors().size() == 1) ||
-            children->top()->getPredecessors().empty()
+            (mergeNode->hasExceptionPredecessors() == true) ||
+            (mergeNode->getPredecessors().size() == 1) ||
+            mergeNode->getPredecessors().empty()
          )
          {
          children->pop();
          continue;
          }
-      mergeNode = toBlock(children->top());
+      if (mergeNode->isOSRCodeBlock() || mergeNode->isOSRInduceBlock())
+         {
+         if (trace())
+            traceMsg(comp(), "    rejecting osr block_%d\n", mergeNode->getNumber());
+         children->pop();
+         continue;
+         }
       if (!mergeNode->getEntry())
          {
          if (trace())

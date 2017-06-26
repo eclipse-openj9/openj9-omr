@@ -44,7 +44,7 @@ class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
          TR_ResolvedMethod *method,
          TR::IlGenRequest &request,
          TR::Options &options,
-         const TR::Region &dispatchRegion,
+         TR::Region &heapMemoryRegion,
          TR_Memory *memory,
          TR_OptimizationPlan *optimizationPlan) :
       OMR::CompilationConnector(
@@ -54,7 +54,7 @@ class OMR_EXTENSIBLE Compilation : public OMR::CompilationConnector
          method,
          request,
          options,
-         dispatchRegion,
+         heapMemoryRegion,
          memory,
          optimizationPlan)
       {}

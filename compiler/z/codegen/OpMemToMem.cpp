@@ -2414,7 +2414,7 @@ MemCpyAtomicMacroOp::generateLoop()
    static char * traceACM = feGetEnv("TR_ArrayCopyMethods");
    if (traceACM)
       {
-      printf("%s\n", comp->_signature);
+      printf("%s\n", comp->signature());
       }
 
    static char * singular = feGetEnv("TR_ArrayCopySingular");

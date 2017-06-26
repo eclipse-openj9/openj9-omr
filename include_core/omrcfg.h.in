@@ -234,4 +234,9 @@
 #undef HAVE_LIBDWARF_H
 #undef HAVE_LIBDWARF_LIBDWARF_H
 
+/**
+ * Flag to enable integration of valgrind api.
+ */
+#undef OMR_VALGRIND_MEMCHECK
+
 #endif /* !defined(OMRCFG_H_) */

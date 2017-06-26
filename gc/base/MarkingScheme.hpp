@@ -71,6 +71,7 @@ private:
 		return false;
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 	}
+	bool isConcurrentScavengeInProgress();
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	
 
@@ -83,11 +84,16 @@ private:
 		Assert_GC_true_with_message3(env, isHeapObject(objectPtr), "Object %p not in heap range [%p,%p)\n", objectPtr, _heapBase, _heapTop);
 		
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+		/* This is an expensive assert - fetching class slot during marking operation, thus invalidating benefits of leaf optimization.  
+		 * TODO: after some soaking remove it!
+		 */
+		if (_extensions->isConcurrentScavengerEnabled()) {
 			MM_ForwardedHeader forwardHeader(objectPtr);
 			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
-			/* It is ok to encounter a self-forwarded object during concurrent marking (or even root scanning), but we must do nothing about it, yet. */
-			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && (objectPtr == forwardPtr)));
+			/* It is ok to encounter a forwarded object during overlapped concurrent scavenger/marking (or even root scanning),
+			 * but we must do nothing about it (if in backout, STW global phase will recover them).
+			 */
+			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && isConcurrentScavengeInProgress()));
 		}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */ 				
 	}

@@ -566,9 +566,10 @@ const char *
 MethodBuilder::getSymbolName(int32_t slot)
    {
    SlotToSymNameMap::iterator it = _symbolNameFromSlot.find(slot);
-   if (it != _symbolNameFromSlot.end())
-      return it->second;
-   return NULL;
+   TR_ASSERT_FATAL(it != _symbolNameFromSlot.end(), "No symbol found in slot %d", slot);
+
+   const char *symbolName = it->second;
+   return symbolName;
    }
 
 TR::IlType **

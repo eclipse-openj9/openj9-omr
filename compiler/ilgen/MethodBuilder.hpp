@@ -212,7 +212,9 @@ class MethodBuilder : public TR::IlBuilder
    // This set acts as an identifier for symbols which correspond to arrays
    ArrayIdentifierSet          _symbolIsArray;
 
-   TR_HashTabString          * _memoryLocations;
+   typedef TR::typed_allocator<std::pair<const char *, void *>, TR::Region &> MemoryLocationMapAllocator;
+   typedef std::map<const char *, void *, StrComparator, MemoryLocationMapAllocator> MemoryLocationMap;
+   MemoryLocationMap           _memoryLocations;
 
    typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
    typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;

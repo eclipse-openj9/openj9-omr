@@ -105,7 +105,7 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _symbolTypes(str_comparator, *_memoryRegion),
    _symbolNameFromSlot(new (*_memoryRegion) TR_HashTabInt(_trMemory)),
    _symbolIsArray(str_comparator, *_memoryRegion),
-   _memoryLocations(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _memoryLocations(str_comparator, *_memoryRegion),
    _functions(str_comparator, *_memoryRegion),
    _cachedParameterTypes(0),
    _cachedSignature(0),
@@ -159,6 +159,7 @@ MethodBuilder::~MethodBuilder()
    _parameterSlot.clear();
    _symbolTypes.clear();
    _symbolIsArray.clear();
+   _memoryLocations.clear();
    _functions.clear();
 
    _trMemory->~TR_Memory();
@@ -478,8 +479,7 @@ MethodBuilder::DefineMemory(const char *name, TR::IlType *dt, void *location)
    MB_REPLAY("DefineMemory(\"%s\", %s, " REPLAY_POINTER_FMT ");", name, REPLAY_TYPE(dt), REPLAY_POINTER(location, name));
    _symbolTypes.insert(std::make_pair(name, dt));
 
-   TR_HashId locationsID;
-   _memoryLocations->add(name, locationsID, location);
+   _memoryLocations.insert(std::make_pair(name, location));
    }
 
 void

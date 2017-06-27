@@ -28,6 +28,7 @@
 
 
 #include <map>
+#include <set>
 #include <fstream>
 #include "ilgen/IlBuilder.hpp"
 #include "env/TypedAllocator.hpp"
@@ -204,7 +205,13 @@ class MethodBuilder : public TR::IlBuilder
    SymbolTypeMap               _symbolTypes;
 
    TR_HashTabInt             * _symbolNameFromSlot;
-   TR_HashTabString          * _symbolIsArray;
+   
+   typedef TR::typed_allocator<const char *, TR::Region &> StringSetAllocator;
+   typedef std::set<const char *, StrComparator, StringSetAllocator> ArrayIdentifierSet;
+
+   // This set acts as an identifier for symbols which correspond to arrays
+   ArrayIdentifierSet          _symbolIsArray;
+
    TR_HashTabString          * _memoryLocations;
 
    typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;

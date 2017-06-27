@@ -104,7 +104,7 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _parameterSlot(str_comparator, *_memoryRegion),
    _symbolTypes(str_comparator, *_memoryRegion),
    _symbolNameFromSlot(new (*_memoryRegion) TR_HashTabInt(_trMemory)),
-   _symbolIsArray(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _symbolIsArray(str_comparator, *_memoryRegion),
    _memoryLocations(new (*_memoryRegion) TR_HashTabString(_trMemory)),
    _functions(str_comparator, *_memoryRegion),
    _cachedParameterTypes(0),
@@ -158,6 +158,7 @@ MethodBuilder::~MethodBuilder()
    _symbols.clear();
    _parameterSlot.clear();
    _symbolTypes.clear();
+   _symbolIsArray.clear();
    _functions.clear();
 
    _trMemory->~TR_Memory();
@@ -434,8 +435,7 @@ MethodBuilder::lookupFunction(const char *name)
 bool
 MethodBuilder::isSymbolAnArray(const char *name)
    {
-   TR_HashId isArrayID;
-   return _symbolIsArray->locate(name, isArrayID);
+   return _symbolIsArray.find(name) != _symbolIsArray.end();
    }
 
 TR::BytecodeBuilder *
@@ -502,9 +502,7 @@ MethodBuilder::DefineArrayParameter(const char *name, TR::IlType *elementType)
    MB_REPLAY("DefineArrayParameter(\"%s\", %s);", name, REPLAY_TYPE(elementType));
    DefineParameter(name, elementType);
 
-   TR_HashId isArrayID;
-   // doesn't actually matter what we put there; its presence says isArray
-   _symbolIsArray->add(name, isArrayID, (void *)(uintptr_t) 1);
+   _symbolIsArray.insert(name);
    }
 
 void

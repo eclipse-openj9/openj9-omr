@@ -509,6 +509,14 @@ extern J9_CFUNC BOOLEAN
 omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature);
 extern J9_CFUNC BOOLEAN
 omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo);
+extern J9_CFUNC int32_t 
+omrsysinfo_is_cgroup_limits_supported(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC BOOLEAN 
+omrsysinfo_is_cgroup_limits_enabled(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC int32_t 
+omrsysinfo_enable_cgroup_limits(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC int32_t 
+omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

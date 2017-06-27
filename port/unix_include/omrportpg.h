@@ -24,7 +24,9 @@
  */
 
 #include "omrcfg.h"
-
+#if defined(LINUX)
+#include "omrcgroup.h"
+#endif /* defined(LINUX) */
 #include "omrport.h"
 #if defined(OMR_ENV_DATA64)
 #include "omrportpriv.h"
@@ -76,6 +78,10 @@ typedef struct OMRPortPlatformGlobals {
 #if defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL)
 	int32_t introspect_threadSuspendSignal;
 #endif /* defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL) */
+#if defined(LINUX)
+	BOOLEAN cgroupLimitsEnabled; /**< indicates if port library supports cgroup limits */
+	CgroupEntry *cgroupEntryList; /**< head of the circular linked list, each element contains information about cgroup of the process for a subsystem */
+#endif /* defined(LINUX) */
 } OMRPortPlatformGlobals;
 
 
@@ -112,6 +118,11 @@ typedef struct OMRPortPlatformGlobals {
 #if defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL)
 #define PPG_introspect_threadSuspendSignal (portLibrary->portGlobals->platformGlobals.introspect_threadSuspendSignal)
 #endif
+
+#if defined(LINUX)
+#define PPG_cgroupLimitsEnabled (portLibrary->portGlobals->platformGlobals.cgroupLimitsEnabled)
+#define PPG_cgroupEntryList (portLibrary->portGlobals->platformGlobals.cgroupEntryList)
+#endif /* defined(LINUX) */
 
 #endif /* omrportpg_h */
 

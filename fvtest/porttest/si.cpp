@@ -2100,3 +2100,60 @@ exit:
 	reportTestExit(OMRPORTLIB, testName);
 	return;
 }
+
+/**
+ * Test omrsysinfo_cgroup_get_memlimit.
+ */
+TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_cgroup_get_memlimit";
+	uint64_t cgroupMemLimit = 0;
+	int32_t cgroupLimitEnabled = 0;
+	int32_t rc = 0;
+	
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* Call omrsysinfo_cgroup_get_memlimit without enabling cgroup limits */
+	rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
+
+#if defined(LINUX)
+	if (OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, expected %d\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED);
+	}
+#else
+	if (OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, exptected %d on platform that does not support cgroups\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM);
+	}
+#endif
+
+	/* Call omrsysinfo_cgroup_get_memlimit after enabling cgroup limits */
+	cgroupLimitEnabled = omrsysinfo_enable_cgroup_limits();
+
+	rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
+
+#if defined(LINUX)
+	if (0 == cgroupLimitEnabled) {
+		if (OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED == rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d when cgroup limits was enabled successfully\n", rc);
+		} else if (0 == rc) {
+			uint64_t physicalMemLimit = 0;
+
+			physicalMemLimit = omrsysinfo_get_physical_memory();
+			if (cgroupMemLimit != physicalMemLimit) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "Expected omrsysinfo_cgroup_get_memlimit and omrsysinfo_get_physical_memory to return same value, but omrsysinfo_cgroup_get_memlimit returned %ld and omrsysinfo_get_physical_memory returned %ld\n");
+			}
+		}
+	} else {
+		if (OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED != rc) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, expected %d\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED);
+        	}
+	}
+#else
+	if (OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM != rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit returned %d, exptected %d on platform that does not support cgroups\n", rc, OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM);
+	}
+#endif
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}

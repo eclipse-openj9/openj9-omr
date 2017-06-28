@@ -251,6 +251,7 @@ public:
 
 private:
    int32_t addSuccessors(TR::CFGNode * cfgNode, TR_Stack<TR::SymbolReference *> *, bool traceIt, bool dontPropagateMonitor = false, MonitorInBlock monitorType = NoMonitor, int32_t callerIndex = -1, bool walkOnlyExceptionSuccs = false);
+   bool isMonitorStateConsistentForBlock(TR::Block *block, TR_Stack<TR::SymbolReference *> *newMonitorStack, bool popMonitor);
 
    TR_Memory *        trMemory()  { return comp()->trMemory(); }
    TR_HeapMemory   trHeapMemory() { return trMemory(); }
@@ -1677,6 +1678,8 @@ class OMR_EXTENSIBLE CodeGenerator
    bool trackingInMemoryKilledLoads() {return _flags4.testAny(TrackingInMemoryKilledLoads);}
    void setTrackingInMemoryKilledLoads() {_flags4.set(TrackingInMemoryKilledLoads);}
    void resetTrackingInMemoryKilledLoads() {_flags4.reset(TrackingInMemoryKilledLoads);}
+
+   void setLmmdFailed() { _lmmdFailed = true;}
 
    protected:
 

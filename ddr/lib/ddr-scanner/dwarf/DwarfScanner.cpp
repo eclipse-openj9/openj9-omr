@@ -1121,7 +1121,7 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *const newClass, string fie
 		newField->_modifiers = fieldModifiers;
 		newField->_bitField = bitField;
 
-		if (typeName == newClass->_name) {
+		if ((typeName == newClass->_name) && (!newClass->_name.empty())) {
 			newField->_fieldType = newClass;
 		} else if (NULL != baseDie) {
 			if ((DDR_RC_OK != addDieToIR(baseDie, tag, true, NULL, &newField->_fieldType))

@@ -95,15 +95,24 @@ OMR::IlValue::storeOver(TR::IlValue *value, TR::Block *block)
       {
       // more commonly, if any value is in another block or this use will be in a different block, first ensure this value is
       // stored to an auto symbol
-      // NOTE this may mean nodes may be stored to more than one auto, but that's ok
+      // NOTE this may mean that nodes will be stored to more than one auto, but that's ok
       storeToAuto();
 
-      // then make sure value has been stored to the same auto
-      TR::Node *store = TR::Node::createStore(_symRefThatCanBeUsedInOtherBlocks, value->_nodeThatComputesValue);
+      // on the off chance that value was computed in this block, we can use its node pointer directly here
+      TR::Node *sourceValue = value->_nodeThatComputesValue;
+
+      // if, however, value was computed in a different block, make sure it's stored to an auto and then load it from that auto
+      if (value->_blockThatComputesValue != block)
+         {
+         value->storeToAuto();
+         sourceValue = value->load(block);
+         }
+
+      // finally store sourceValue into our own auto symbol (which we know exists because we called storeToAuto())
+      TR::Node *store = TR::Node::createStore(_symRefThatCanBeUsedInOtherBlocks, sourceValue);
       TR::TreeTop *tt = TR::TreeTop::create(TR::comp(), store);
       block->append(tt);
 
-      // finally, subsequent uses of this value should load the auto, so update the node pointer
-      _nodeThatComputesValue = TR::Node::createLoad(_symRefThatCanBeUsedInOtherBlocks);
+      // any downstream use of "this" IlValue will now load the value computed by "value"
       }
    }

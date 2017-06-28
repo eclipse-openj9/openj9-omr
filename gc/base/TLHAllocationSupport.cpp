@@ -47,7 +47,7 @@
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include <valgrind/memcheck.h>
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 /**
@@ -176,14 +176,14 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	    VALGRIND_MAKE_MEM_DEFINED(newCache, sizeof(*newCache));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	    newCache->setSize(getSize());
 		newCache->_memoryPool = getMemoryPool();
 		newCache->_memorySubSpace = getMemorySubSpace();
 		newCache->setNext(_abandonedList);
 #if defined(OMR_VALGRIND_MEMCHECK)
 	    VALGRIND_MAKE_MEM_DEFINED(newCache, sizeof(*newCache));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		_abandonedList = newCache;
 		++_abandonedListSize;

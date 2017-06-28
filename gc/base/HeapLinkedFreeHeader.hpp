@@ -27,7 +27,7 @@
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include <valgrind/memcheck.h>
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /* Split pointer for all compressed platforms */
 #if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
@@ -89,14 +89,14 @@ private:
 #if defined(SPLIT_NEXT_POINTER)		
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_DEFINED(this, sizeof(*this));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	    uintptr_t lowBits = _next;
 		uintptr_t highBits = _nextHighBits;
 #if defined(OMR_VALGRIND_MEMCHECK)
 		uintptr_t temp = (highBits << 32) | lowBits;
 		VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
 		return temp;
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	    return (highBits << 32) | lowBits;
 #else /* defined(SPLIT_NEXT_POINTER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
@@ -104,7 +104,7 @@ private:
 	    uintptr_t next = _next;
 		VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
 		return next;
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		return _next;
 #endif /* defined(SPLIT_NEXT_POINTER) */
 	}
@@ -122,7 +122,7 @@ private:
 	{
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_DEFINED(this, sizeof(*this));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 #if defined(SPLIT_NEXT_POINTER)
 		_next = (uint32_t)value;
 		_nextHighBits = (uint32_t)(value >> 32);
@@ -131,7 +131,7 @@ private:
 #endif /* defined(SPLIT_NEXT_POINTER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	}
 
 public:
@@ -172,7 +172,7 @@ public:
 	    uintptr_t size = _size;
 	    VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
 	    return size;
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	    return _size;
 	}
 
@@ -182,11 +182,11 @@ public:
 	MMINLINE void setSize(uintptr_t size) {
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_DEFINED(this, sizeof(*this));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_size = size;
 #if defined(OMR_VALGRIND_MEMCHECK)
 	    VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	}
 
 	/**
@@ -213,7 +213,7 @@ public:
 	{
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_DEFINED(addrBase, freeEntrySize);
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 #if defined(SPLIT_NEXT_POINTER)
 		uint32_t *freeSlot = (uint32_t *) addrBase;
 		while(freeEntrySize) {
@@ -229,7 +229,7 @@ public:
 #endif /* defined(SPLIT_NEXT_POINTER) */
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_NOACCESS(addrBase, freeEntrySize);
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	}
 
 	/**
@@ -243,7 +243,7 @@ public:
 	{
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_DEFINED(addrBase, freeEntrySize);
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		MM_HeapLinkedFreeHeader *freeEntry = NULL;
 		if (freeEntrySize < sizeof(MM_HeapLinkedFreeHeader)) {
 			/* Entry will be abandoned. Recycle the remainder as single slot entries */
@@ -257,7 +257,7 @@ public:
 		}
 #if defined(OMR_VALGRIND_MEMCHECK)
 		VALGRIND_MAKE_MEM_NOACCESS(addrBase, freeEntrySize);
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		return freeEntry;
 	}
 

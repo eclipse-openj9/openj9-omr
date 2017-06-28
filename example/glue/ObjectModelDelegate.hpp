@@ -23,6 +23,10 @@
 
 #include "ForwardedHeader.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 class MM_AllocateInitialization;
 class MM_EnvironmentBase;
 
@@ -69,7 +73,14 @@ private:
 	uintptr_t
 	extractSizeFromObjectHeaderSlot(fomrobject_t headerSlot)
 	{
-		return headerSlot >> _objectHeaderSlotSizeShift;
+#if defined(OMR_VALGRIND_MEMCHECK)
+		VALGRIND_MAKE_MEM_DEFINED(&headerSlot + _objectHeaderSlotSizeShift,sizeof(uintptr_t));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		uintptr_t size = headerSlot >> _objectHeaderSlotSizeShift;
+#if defined(OMR_VALGRIND_MEMCHECK)
+		VALGRIND_MAKE_MEM_NOACCESS(&headerSlot + _objectHeaderSlotSizeShift,sizeof(uintptr_t));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		return size;
 	}
 
 protected:
@@ -142,7 +153,14 @@ public:
 	getObjectSizeInBytesWithHeader(omrobjectptr_t objectPtr)
 	{
 		fomrobject_t *headerSlotAddress = (fomrobject_t *)objectPtr + _objectHeaderSlotOffset;
-		return extractSizeFromObjectHeaderSlot(*headerSlotAddress);
+#if defined(OMR_VALGRIND_MEMCHECK)
+		VALGRIND_MAKE_MEM_DEFINED(headerSlotAddress,sizeof(fomrobject_t));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		uintptr_t objectSize = extractSizeFromObjectHeaderSlot(*headerSlotAddress);
+#if defined(OMR_VALGRIND_MEMCHECK)
+		VALGRIND_MAKE_MEM_NOACCESS(headerSlotAddress,sizeof(fomrobject_t));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		return objectSize;
 	}
 
 	/**

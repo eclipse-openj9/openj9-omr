@@ -32,7 +32,7 @@
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include <valgrind/memcheck.h>
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #define HIGH_ADDRESS UDATA_MAX
 #define OVERFLOW_ROUNDING ((uintptr_t)16 * 1024)
@@ -348,7 +348,7 @@ MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//add heap range to valgrind
 	VALGRIND_MAKE_MEM_NOACCESS(lowAddress,size);
-#endif
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return result;
 }

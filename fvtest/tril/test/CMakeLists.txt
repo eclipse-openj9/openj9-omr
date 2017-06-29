@@ -32,6 +32,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 add_executable(triltest
    ASTTest.cpp
    ParserTest.cpp
+   MethodInfoTest.cpp
    IlGenTest.cpp
    CompileTest.cpp
 )

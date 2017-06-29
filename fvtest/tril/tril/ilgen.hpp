@@ -68,6 +68,7 @@ class TRLangBuilder : public TR::IlInjector {
         const ASTNode* _trees;    // pointer to the AST node list representing Trees
         std::map<std::string, TR::SymbolReference*> _symRefMap; // mapping of string names to symrefs
         std::map<std::string, int> _blockMap;   // mapping of string names to basic block numbers
+        std::map<std::string, TR::Node*> _nodeMap;
 };
 
 } // namespace Tril

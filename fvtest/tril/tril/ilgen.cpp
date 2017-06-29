@@ -194,6 +194,13 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TraceIL("  node address %p\n", node);
      TraceIL("  node index n%dn\n", node->getGlobalIndex());
 
+     auto nodeIdArg = getArgByName(tree, "id");
+     if (nodeIdArg != nullptr) {
+         auto id = nodeIdArg->value->value.str;
+         _nodeMap[id] = node;
+         TraceIL("  node ID %s", id);
+     }
+
      // create a set child nodes
      const ASTNode* t = tree->children;
      int i = 0;

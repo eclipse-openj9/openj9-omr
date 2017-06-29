@@ -316,6 +316,7 @@ public:
 	bool debugLOAResize;
 	bool debugLOAFreelist;
 	bool debugLOAAllocate;
+	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
 	ConcurrentMetering concurrentMetering;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
@@ -441,7 +442,6 @@ public:
 	double dnssMaximumContraction;
 	double dnssMinimumExpansion;
 	double dnssMinimumContraction;
-	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
 	bool enableSplitHeap; /**< true if we are using gencon with -Xgc:splitheap (we will fail to boostrap if we can't allocate both ranges) */
 
 	enum HeapInitializationSplitHeapSection {
@@ -1253,6 +1253,7 @@ public:
 		, debugLOAResize(false)
 		, debugLOAFreelist(false)
 		, debugLOAAllocate(false)
+		, loaFreeHistorySize(15)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
@@ -1353,7 +1354,6 @@ public:
 		, dnssMaximumContraction(0.5)
 		, dnssMinimumExpansion(0.0)
 		, dnssMinimumContraction(0.0)
-		, loaFreeHistorySize(15)
 		, enableSplitHeap(false)
 		, splitHeapSection(HEAP_INITIALIZATION_SPLIT_HEAP_UNKNOWN)
 #endif /* OMR_GC_MODRON_SCAVENGER */

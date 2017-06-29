@@ -40,12 +40,12 @@ class MethodInfo {
          */
         explicit MethodInfo(const ASTNode* methodNode) : _methodNode{methodNode} {
             // assume the first argument of the method's AST node specifies the return type
-            _returnType = getTRDataTypes(_methodNode->args->value.value.str);
+            _returnType = getTRDataTypes(_methodNode->args->value->value.str);
 
             // assume the remaining arguments specify the types of the arguments
             auto argType = _methodNode->args->next;
             while (argType) {
-                _argTypes.push_back(getTRDataTypes(argType->value.value.str));
+                _argTypes.push_back(getTRDataTypes(argType->value->value.str));
                 argType = argType->next;
             }
         }

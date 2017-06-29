@@ -31,7 +31,7 @@ ASTNode* createNode(char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* 
     return n;
 }
 
-ASTNodeArg* createNodeArg(const char * name, ASTValue value,  ASTNodeArg* next) {
+ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
     ASTNodeArg* a = (ASTNodeArg*)malloc(sizeof(ASTNodeArg));
     a->name = name;
     a->value = value;
@@ -39,24 +39,27 @@ ASTNodeArg* createNodeArg(const char * name, ASTValue value,  ASTNodeArg* next) 
     return a;
 }
 
-ASTValue createInt64Value(uint64_t val) {
-    ASTValue v;
-    v.type = Int64;
-    v.value.int64 = val;
+ASTValue* createInt64Value(uint64_t val) {
+    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+    v->type = Int64;
+    v->value.int64 = val;
+    v->next = NULL;
     return v;
 }
 
-ASTValue createDoubleValue(double val) {
-    ASTValue v;
-    v.type = Double;
-    v.value.f64 = val;
+ASTValue* createDoubleValue(double val) {
+    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+    v->type = Double;
+    v->value.f64 = val;
+    v->next = NULL;
     return v;
 }
 
-ASTValue createStrValue(const char* val) {
-   ASTValue v;
-   v.type = String;
-   v.value.str = val;
+ASTValue* createStrValue(const char* val) {
+   ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+   v->type = String;
+   v->value.str = val;
+   v->next = NULL;
    return v;
 }
 
@@ -70,6 +73,12 @@ void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg) {
    ASTNodeArg* a = list;
    while (a->next) { a = a->next; }
    a->next = newArg;
+}
+
+void appendSiblingValue(ASTValue* list, ASTValue* newValue) {
+    ASTValue* v = list;
+    while (v->next) { v = v->next; }
+    v->next = newValue;
 }
 
 uint16_t countNodes(const ASTNode* n) {
@@ -92,11 +101,29 @@ void printTrees(ASTNode* trees, int indent) {
             if (a->name != NULL && strcmp("", a->name) != 0) {
                 printf("%s=", a->name);
             }
-            switch (a->value.type) {
-                case Int64: printf("%lu", a->value.value.int64); break;
-                case Double: printf("%f", a->value.value.f64); break;
-                case String: printf("\"%s\"", a->value.value.str); break;
-                default: printf(" [bad arg]");
+            ASTValue* v = a->value;
+            int isList = v->next != NULL;
+            if (isList) {
+                printf("[");
+            }
+            switch (v->type) {
+                case Int64: printf("%lu", v->value.int64); break;
+                case Double: printf("%f", v->value.f64); break;
+                case String: printf("\"%s\"", v->value.str); break;
+                default: printf("{bad arg type %d}", v->type);
+            };
+            while (v->next) {
+                v = v->next;
+                printf(", ");
+                switch (v->type) {
+                    case Int64: printf("%lu", v->value.int64); break;
+                    case Double: printf("%f", v->value.f64); break;
+                    case String: printf("\"%s\"", v->value.str); break;
+                    default: printf("{bad arg type %d}", v->type);
+                };
+            }
+            if (isList) {
+                printf("]");
             }
             a = a->next;
         }

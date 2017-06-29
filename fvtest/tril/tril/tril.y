@@ -17,7 +17,7 @@
     char* str;
     uint64_t integer;
     double f64;
-    ASTValue value;
+    ASTValue* value;
 };
 
 %token <str> IDENTIFIER STRING
@@ -26,7 +26,7 @@
 
 %type <node> node nodeList
 %type <arg> arg argList
-%type <value> value
+%type <value> value valueList
 
 %%
 
@@ -88,7 +88,22 @@ arg:
         {
             $$ = createNodeArg($1, $3, NULL);
         }
+    | IDENTIFIER '=' '[' valueList ']'
+        {
+            $$ = createNodeArg($1, $4, NULL);
+        }
     ;
+
+valueList:
+    value
+        {
+            $$ = $1;
+        }
+    | valueList ',' value
+        {
+            appendSiblingValue($1, $3);
+            $$ = $1;
+        }
 
 value:
     INTEGER

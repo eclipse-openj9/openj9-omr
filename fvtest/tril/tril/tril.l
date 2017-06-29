@@ -34,7 +34,7 @@
                 return STRING;
             };
 
-[()[\]=]      return *yytext;
+[()[\]=,]      return *yytext;
 
 [ \t\n]     ; /* ignore white space */
 

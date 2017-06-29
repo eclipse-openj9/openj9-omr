@@ -33,6 +33,16 @@ TEST(ParserTest, SingleNodeWithJustName) {
     ASSERT_NULL(trees->next);
 }
 
+TEST(ParserTest, SingleCommandNodeWithJustName) {
+    auto trees = parseString("(@commandName)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("@commandName", trees->name);
+    ASSERT_NULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+}
+
 TEST(ParserTest, TwoNodesWithJustName) {
     auto trees = parseString("(nodeName)(otherNode)");
 

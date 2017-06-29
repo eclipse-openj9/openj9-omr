@@ -29,7 +29,7 @@
 ; calculation. The resulting table can be used to generate a graph of the
 ; Mandelbrot set (e.g. by letting each table cell represent a point on the graph). 
 
-(method "NoType" "Int32" "Int32" "Address"
+(method return="NoType" args=["Int32", "Int32", "Address"]
    (block name="start" fallthrough="yloop"      ; start:
       (istore temp="py"                         ; int py = 0;
          (iconst 0) ) )

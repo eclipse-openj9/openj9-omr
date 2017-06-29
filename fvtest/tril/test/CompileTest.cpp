@@ -25,7 +25,7 @@
 class CompileTest : public Tril::Test::JitTest {};
 
 TEST_F(CompileTest, Return3) {
-    auto trees = parseString("(method \"Int32\" (block (ireturn (iconst 3))))");
+    auto trees = parseString("(method return=\"Int32\" (block (ireturn (iconst 3))))");
 
     ASSERT_NOTNULL(trees);
 

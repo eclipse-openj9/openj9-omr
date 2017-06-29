@@ -39,14 +39,16 @@ class MethodInfo {
          * @param methodNode is the Tril AST node
          */
         explicit MethodInfo(const ASTNode* methodNode) : _methodNode{methodNode} {
-            // assume the first argument of the method's AST node specifies the return type
-            _returnType = getTRDataTypes(_methodNode->args->value->value.str);
+            auto returnTypeArg = getArgByName(_methodNode, "return");
+            _returnType = getTRDataTypes(returnTypeArg->value->value.str);
 
-            // assume the remaining arguments specify the types of the arguments
-            auto argType = _methodNode->args->next;
-            while (argType) {
-                _argTypes.push_back(getTRDataTypes(argType->value->value.str));
-                argType = argType->next;
+            auto argTypesArg = getArgByName(_methodNode, "args");
+            if (argTypesArg != nullptr) {
+                auto typeValue = argTypesArg->value;
+                while (typeValue != nullptr) {
+                    _argTypes.push_back(getTRDataTypes(typeValue->value.str));
+                    typeValue = typeValue->next;
+                }
             }
         }
 

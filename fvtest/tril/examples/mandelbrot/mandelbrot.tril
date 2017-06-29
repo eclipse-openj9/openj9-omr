@@ -30,20 +30,20 @@
 ; Mandelbrot set (e.g. by letting each table cell represent a point on the graph). 
 
 (method name="mandelbrot" return="NoType" args=["Int32", "Int32", "Address"]
-   (block name="start" fallthrough="yloop"      ; start:
+   (block name="start"                          ; start:
       (istore temp="py"                         ; int py = 0;
          (iconst 0) ) )
-   (block name="yloop" fallthrough="xloop"      ; yloop:
+   (block name="yloop"                          ; yloop:
       (istore temp="px"                         ; int px = 0;
          (iconst 0) )                           ;
       (ificmpge target="yloop_exit"             ; if (py >= parm1) goto yloop_exit;
          (iload temp="py")
          (iload parm=1) ) )
-   (block name="xloop" fallthrough="setup"      ; xloop:
+   (block name="xloop"                          ; xloop:
       (ificmpge target="xloop_exit"             ; if (px >= parm1) goto xloop_exit;
          (iload temp="px")
          (iload parm=1) ) )
-   (block name="setup" fallthrough="loop"       ; setup:
+   (block name="setup"                          ; setup:
       (dstore temp="x0"                         ; double x0 = px * 3.5 / parm1 - 2.5; // map pixel x-coordinate to Mandelbrot range [-2.5, 1]
          (dsub
             (dmul
@@ -70,7 +70,7 @@
          (dconst 0.0000) )
       (istore temp="iter"                       ; int iter = 0;
          (iconst 0) ) )
-   (block name="loop" fallthrough="loop_body"   ; loop:
+   (block name="loop"                           ; loop:
       (istore temp="comp1"                      ; int comp1 = (x*x + y*y) < 4.0;
          (dcmplt
             (dadd

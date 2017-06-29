@@ -59,8 +59,9 @@ class TRLangBuilder : public TR::IlInjector {
         /**
          * @brief Given an AST structure, generates a corresponding CFG
          * @param tree the AST structure that the CFG will be generated from
+         * @return true if a fall-through edge needs to be added, false otherwise
          */
-        void cfgFor(const ASTNode* const tree);
+        bool cfgFor(const ASTNode* const tree);
 
     private:
         TR::TypeDictionary _types;

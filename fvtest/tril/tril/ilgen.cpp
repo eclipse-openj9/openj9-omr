@@ -213,12 +213,17 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
  * whenever opcodes that affect control flow are visited. As is the case in
  * `toTRNode`, the opcode properties are used to determine how a particular
  * opcode affects the control flow.
+ *
+ * For the fall-through edge, the assumption is that one is always needed unless
+ * a node specifically adds one (e.g. goto, return, etc.).
  */
-void Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
+bool Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
+   auto isFallthroughNeeded = true;
+
    // visit the children first
    const ASTNode* t = tree->children;
    while (t) {
-       cfgFor(t);
+       isFallthroughNeeded = isFallthroughNeeded && cfgFor(t);
        t = t->next;
    }
 
@@ -226,14 +231,22 @@ void Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
 
    if (opcode.isReturn()) {
        cfg()->addEdge(_currentBlock, cfg()->getEnd());
+       isFallthroughNeeded = false;
        TraceIL("Added CFG edge from block %d to {exit} -> %s\n", _currentBlockNumber, tree->name);
    }
    else if (opcode.isBranch()) {
       const auto targetName = tree->args->value->value.str;
       auto targetId = _blockMap[targetName];
       cfg()->addEdge(_currentBlock, _blocks[targetId]);
+      isFallthroughNeeded = isFallthroughNeeded && opcode.isIf();
       TraceIL("Added CFG edge from block %d to block %d (\"%s\") -> %s\n", _currentBlockNumber, targetId, targetName, tree->name);
    }
+
+   if (!isFallthroughNeeded) {
+       TraceIL("  (no fall-through needed)\n", "");
+   }
+
+   return isFallthroughNeeded;
 }
 
 /*
@@ -290,28 +303,36 @@ bool Tril::TRLangBuilder::injectIL() {
 
     // iterate over each basic block
     while (block) {
-       // create CFG edges from the arguments for a basic block (e.g. "fallthrough")
-       const ASTNodeArg* a = block->args;
-       while (a) {
-           if (strcmp("fallthrough", a->name) == 0) {
-               if (strcmp("{exit}", a->value->value.str) == 0) {
-                   cfg()->addEdge(_currentBlock, cfg()->getEnd());
-                   TraceIL("Added fallthrough edge from block %d to \"%s\"\n", _currentBlockNumber, a->value->value.str);
-               }
-               else {
-                   auto destBlock = _blockMap.at(a->value->value.str);
-                   cfg()->addEdge(_currentBlock, _blocks[destBlock]);
-                   TraceIL("Added fallthrough edge from block %d to block %d \"%s\"\n", _currentBlockNumber, destBlock, a->value->value.str);
-               }
-           }
-           a = a->next;
-       }
+       auto isFallthroughNeeded = true;
 
        // create CFG edges from the nodes withing the current basic block
        const ASTNode* t = block->children;
        while (t) {
-           cfgFor(t);
+           isFallthroughNeeded = isFallthroughNeeded && cfgFor(t);
            t = t->next;
+       }
+
+       // create fall-through edge
+       auto fallthroughArg = getArgByName(block, "fallthrough");
+       if (fallthroughArg != nullptr) {
+           auto target = std::string(fallthroughArg->value->value.str);
+           if (target == "{exit}") {
+               cfg()->addEdge(_currentBlock, cfg()->getEnd());
+               TraceIL("Added fallthrough edge from block %d to \"%s\"\n", _currentBlockNumber, target.c_str());
+           }
+           else if (target == "{none}") {
+               // do nothing, no fall-throught block specified
+           }
+           else {
+               auto destBlock = _blockMap.at(target);
+               cfg()->addEdge(_currentBlock, _blocks[destBlock]);
+               TraceIL("Added fallthrough edge from block %d to block %d \"%s\"\n", _currentBlockNumber, destBlock, target.c_str());
+           }
+       }
+       else if (isFallthroughNeeded) {
+           auto dest = _currentBlockNumber + 1 == numBlocks() ? cfg()->getEnd() : _blocks[_currentBlockNumber + 1];
+           cfg()->addEdge(_currentBlock, dest);
+           TraceIL("Added fallthrough edge from block %d to following block\n", _currentBlockNumber);
        }
 
        generateToBlock(_currentBlockNumber + 1);

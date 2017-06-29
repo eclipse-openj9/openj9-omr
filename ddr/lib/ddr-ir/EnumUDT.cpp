@@ -54,3 +54,23 @@ EnumUDT::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);
 }
+
+bool
+EnumUDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToEnum(*this);
+}
+
+bool
+EnumUDT::compareToEnum(EnumUDT const &other) const
+{
+	bool enumMembersEqual = _enumMembers.size() == other._enumMembers.size();
+	vector<EnumMember *>::const_iterator it2 = other._enumMembers.begin();
+	for (vector<EnumMember *>::const_iterator it = _enumMembers.begin();
+		it != _enumMembers.end() && it2 != other._enumMembers.end() && enumMembersEqual;
+		++ it, ++ it2) {
+		enumMembersEqual = ((*it)->_name == (*it2)->_name) && ((*it)->_value == (*it2)->_value);
+	}
+	return compareToUDT(other)
+		&& enumMembersEqual;
+}

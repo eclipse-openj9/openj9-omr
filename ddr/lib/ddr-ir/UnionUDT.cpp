@@ -37,3 +37,14 @@ UnionUDT::getSymbolKindName()
 	return "union";
 }
 
+bool
+UnionUDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToUnion(*this);
+}
+
+bool
+UnionUDT::compareToUnion(UnionUDT const &other) const
+{
+	return compareToClasstype(other);
+}

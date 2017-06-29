@@ -31,9 +31,14 @@
 using std::set;
 using std::string;
 
+class ClassUDT;
+class ClassType;
+class EnumUDT;
 class Macro;
-class UDT;
 class NamespaceUDT;
+class TypedefUDT;
+class UDT;
+class UnionUDT;
 struct FieldOverride;
 
 class Type
@@ -63,6 +68,16 @@ public:
 	virtual std::vector<UDT *> *getSubUDTS();
 	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
 	virtual Type *getBaseType();
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToClass(ClassUDT const &) const;
+	virtual bool compareToClasstype(ClassType const &) const;
+	virtual bool compareToEnum(EnumUDT const &) const;
+	virtual bool compareToNamespace(NamespaceUDT const &) const;
+	virtual bool compareToType(Type const &) const;
+	virtual bool compareToTypedef(TypedefUDT const &) const;
+	virtual bool compareToUDT(UDT const &) const;
+	virtual bool compareToUnion(UnionUDT const &) const;
 };
 
 #endif /* TYPE_HPP */

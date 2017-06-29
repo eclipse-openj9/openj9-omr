@@ -101,3 +101,23 @@ NamespaceUDT::renameFieldsAndMacros(FieldOverride fieldOverride, Type *replaceme
 		(*it)->renameFieldsAndMacros(fieldOverride, replacementType);
 	}		
 }
+
+bool
+NamespaceUDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToNamespace(*this);
+}
+
+bool
+NamespaceUDT::compareToNamespace(NamespaceUDT const &other) const
+{
+	bool subUDTsEqual = _subUDTs.size() == other._subUDTs.size();
+	vector<UDT *>::const_iterator it2 = other._subUDTs.begin();
+	for (vector<UDT *>::const_iterator it = _subUDTs.begin();
+		it != _subUDTs.end() && it2 != other._subUDTs.end() && subUDTsEqual;
+		++ it, ++ it2) {
+		subUDTsEqual = (**it == **it2);
+	}
+	return compareToUDT(other)
+		&& subUDTsEqual;
+}

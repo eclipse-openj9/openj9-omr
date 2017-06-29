@@ -30,6 +30,9 @@ public:
 
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
 	virtual string getSymbolKindName();
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToUnion(UnionUDT const &) const;
 };
 
 #endif /* UNIONUDT_HPP */

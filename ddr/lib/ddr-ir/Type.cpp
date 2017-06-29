@@ -102,4 +102,58 @@ Type::getBaseType()
 {
 	return NULL;
 }
-	
+
+bool
+Type::operator==(Type const & rhs) const
+{
+	return rhs.compareToType(*this);
+}
+
+bool
+Type::compareToType(Type const &other) const
+{
+	return (_name == other._name)
+		&& ((0 == _sizeOf) || (0 == other._sizeOf) || (_sizeOf == other._sizeOf));
+}
+
+bool
+Type::compareToUDT(UDT const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToNamespace(NamespaceUDT const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToEnum(EnumUDT const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToTypedef(TypedefUDT const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToClasstype(ClassType const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToUnion(UnionUDT const &) const
+{
+	return false;
+}
+
+bool
+Type::compareToClass(ClassUDT const &) const
+{
+	return false;
+}

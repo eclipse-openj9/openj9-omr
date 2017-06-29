@@ -39,6 +39,9 @@ public:
 	virtual size_t getPointerCount();
 	virtual size_t getArrayDimensions();
 	virtual Type *getBaseType();
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToTypedef(TypedefUDT const &) const;
 };
 
 #endif /* TYPEDEFUDT_HPP */

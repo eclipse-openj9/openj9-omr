@@ -423,11 +423,11 @@ Symbol_IR::mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other)
 class TypeReplaceVisitor : public TypeVisitor
 {
 private:
-	unordered_map<string, Type *> *_typeMap;
+	unordered_map<string, vector<Type *> > *_typeMap;
 	set<Type *> *_typeSet;
 
 public:
-	TypeReplaceVisitor(unordered_map<string, Type *> *typeMap, set<Type *> *typeSet)
+	TypeReplaceVisitor(unordered_map<string, vector<Type *> > *typeMap, set<Type *> *typeSet)
 		: _typeMap(typeMap), _typeSet(typeSet) {}
 
 	DDR_RC visitType(Type *type) const;
@@ -437,6 +437,47 @@ public:
 	DDR_RC visitType(ClassUDT *type) const;
 	DDR_RC visitType(UnionUDT *type) const;
 };
+
+struct TypeCheck
+{
+    TypeCheck(const Type* other) : _other(other) {}
+    bool operator()(Type *compare) const {
+		return  *compare == *_other;
+	}
+
+private:
+    const Type* _other;
+};
+
+static DDR_RC
+findType(unordered_map<string, vector<Type *> > *typeMap, Type **typeToReplace)
+{
+	DDR_RC rc = DDR_RC_OK;
+	if ((NULL != typeToReplace) && (NULL != *typeToReplace)) {
+		string nameKey = (*typeToReplace)->getFullName();
+		if (NULL == (*typeToReplace)->getBaseType()) {
+			nameKey = (*typeToReplace)->getSymbolKindName() + nameKey;
+		}
+
+		if (typeMap->end() == typeMap->find(nameKey)) {
+			ERRMSG("Error replacing type. Type not found, but was expected to be in IR after merge: '%s'.",
+				(*typeToReplace)->getFullName().c_str());
+			rc = DDR_RC_ERROR;
+		} else {
+			vector<Type *> v = typeMap->find(nameKey)->second;
+			if (1 == v.size()) {
+				*typeToReplace = v.at(0);
+			} else if (1 < v.size()) {
+				*typeToReplace = *find_if(v.begin(), v.end(), TypeCheck(*typeToReplace));
+			} else {
+				ERRMSG("Error replacing type. Type not found, but was expected to be in IR after merge: '%s'.",
+					(*typeToReplace)->getFullName().c_str());
+				rc = DDR_RC_ERROR;
+			}
+		}
+	}
+	return rc;
+}
 
 DDR_RC
 TypeReplaceVisitor::visitType(Type *type) const
@@ -463,24 +504,7 @@ TypeReplaceVisitor::visitType(EnumUDT *type) const
 DDR_RC
 TypeReplaceVisitor::visitType(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-	if ((NULL != type->_aliasedType) && (!type->_aliasedType->_name.empty())) {
-		if (_typeSet->end() == _typeSet->find(type->_aliasedType)) {
-			string nameKey = type->_aliasedType->getFullName();
-			if (NULL == type->_aliasedType->getBaseType()) {
-				nameKey = type->_aliasedType->getSymbolKindName() + nameKey;
-			}
-
-			if (_typeMap->end() == _typeMap->find(nameKey)) {
-				ERRMSG("Error replacing aliased type. Type not found, but was expected to be in IR after merge: Typedef '%s' of type '%s'.",
-					type->getFullName().c_str(), type->_aliasedType->getFullName().c_str());
-				rc = DDR_RC_ERROR;
-			} else {
-				type->_aliasedType = _typeMap->find(nameKey)->second;
-			}
-		}
-	}
-	return rc;
+	return findType(_typeMap, &type->_aliasedType);
 }
 
 DDR_RC
@@ -488,43 +512,14 @@ TypeReplaceVisitor::visitType(ClassUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		(*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
 	}
 	for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end(); ++it) {
-		if ((NULL != (*it)->_fieldType) && (!(*it)->_fieldType->_name.empty())) {
-			if (_typeSet->end() == _typeSet->find((*it)->_fieldType)) {
-				string nameKey = (*it)->_fieldType->getFullName();
-				if (NULL == (*it)->_fieldType->getBaseType()) {
-					nameKey = (*it)->_fieldType->getSymbolKindName() + nameKey;
-				}
-
-				if (_typeMap->end() == _typeMap->find(nameKey)) {
-					ERRMSG("Error replacing field type. Type not found, but was expected to be in IR after merge: Type '%s', field '%s', type '%s'.",
-						type->getFullName().c_str(), (*it)->_name.c_str(), (*it)->_fieldType->getFullName().c_str());
-					rc = DDR_RC_ERROR;
-				} else {
-					(*it)->_fieldType = _typeMap->find(nameKey)->second;
-				}
-			}
-		}
+		rc = findType(_typeMap, &(*it)->_fieldType);
 	}
 
-	/* Replace super class too. */
-	if ((NULL != type->_superClass) && (!type->_superClass->_name.empty())) {
-		if (_typeSet->end() == _typeSet->find(type->_superClass)) {
-			string nameKey = type->_superClass->getFullName();
-			if (NULL == type->_superClass->getBaseType()) {
-				nameKey = type->_superClass->getSymbolKindName() + nameKey;
-			}
-
-			if (_typeMap->end() == _typeMap->find(nameKey)) {
-				ERRMSG("Error replacing superclass type. Type not found, but was expected to be in IR after merge: Type '%s', superclass '%s'.",
-					type->getFullName().c_str(), type->_superClass->_name.c_str());
-				rc = DDR_RC_ERROR;
-			} else {
-				type->_superClass = (ClassUDT *)_typeMap->find(nameKey)->second;
-			}
-		}
+	if (DDR_RC_OK == rc) {
+		rc = findType(_typeMap, (Type **)&type->_superClass);
 	}
 	return rc;
 }
@@ -534,25 +529,10 @@ TypeReplaceVisitor::visitType(UnionUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		(*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
 	}
 	for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end(); ++it) {
-		if ((NULL != (*it)->_fieldType) && (!(*it)->_fieldType->_name.empty())) {
-			if (_typeSet->end() == _typeSet->find((*it)->_fieldType)) {
-				string nameKey = (*it)->_fieldType->getFullName();
-				if (NULL == (*it)->_fieldType->getBaseType()) {
-					nameKey = (*it)->_fieldType->getSymbolKindName() + nameKey;
-				}
-
-				if (_typeMap->end() == _typeMap->find(nameKey)) {
-					ERRMSG("Error replacing field type. Type not found, but was expected to be in IR after merge: Type '%s', field '%s', type '%s'.",
-						type->getFullName().c_str(), (*it)->_name.c_str(), (*it)->_fieldType->getFullName().c_str());
-					rc = DDR_RC_ERROR;
-				} else {
-					(*it)->_fieldType = _typeMap->find(nameKey)->second;
-				}
-			}
-		}
+		rc = findType(_typeMap, &(*it)->_fieldType);
 	}
 	return rc;
 }
@@ -569,7 +549,7 @@ Symbol_IR::mergeIR(Symbol_IR *other)
 	 * types to replace that are not yet in this IR is solved by doing all of the type
 	 * replacement after all types are merged.
 	 */
-	unordered_map<string, Type *> typeMap;
+	unordered_map<string, vector<Type *> > typeMap;
 	set<Type *> typeSet;
 	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
 		Type *t = *it;
@@ -584,7 +564,7 @@ Symbol_IR::mergeIR(Symbol_IR *other)
 				nameKey = t->getSymbolKindName() + nameKey;
 			}
 
-			typeMap[nameKey] = t;
+			typeMap[nameKey].push_back(t);
 			typeSet.insert(t);
 			if (NULL == t->getSubUDTS() || t->getSubUDTS()->empty()) {
 				t = t->getNamespace();

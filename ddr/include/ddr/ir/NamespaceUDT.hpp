@@ -40,6 +40,9 @@ public:
 	virtual void addMacro(Macro *macro);
 	virtual std::vector<UDT *> * getSubUDTS();
 	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToNamespace(NamespaceUDT const &) const;
 };
 
 #endif /* NAMESPACEUDT_HPP */

@@ -36,3 +36,16 @@ ClassUDT::acceptVisitor(TypeVisitor const &visitor)
 {
 	return visitor.visitType(this);
 }
+
+bool
+ClassUDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToClass(*this);
+}
+
+bool
+ClassUDT::compareToClass(ClassUDT const &other) const
+{
+	return compareToClasstype(other)
+		&& (*_superClass == *other._superClass);
+}

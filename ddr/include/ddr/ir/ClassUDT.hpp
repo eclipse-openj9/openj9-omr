@@ -35,6 +35,9 @@ public:
 	virtual string getSymbolKindName();
 
 	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToClass(ClassUDT const &) const;
 };
 
 #endif /* CLASSUDT_HPP */

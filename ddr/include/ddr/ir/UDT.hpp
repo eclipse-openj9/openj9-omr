@@ -39,6 +39,9 @@ public:
 	virtual string getFullName();
 	virtual void checkDuplicate(Symbol_IR *ir);
 	virtual NamespaceUDT * getNamespace();
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToUDT(UDT const &) const;
 };
 
 #endif /* UDT_HPP */

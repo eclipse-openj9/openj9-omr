@@ -38,6 +38,9 @@ public:
 	virtual bool isAnonymousType();
 	virtual void computeFieldOffsets();
 	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+
+	bool operator==(Type const & rhs) const;
+	virtual bool compareToClasstype(ClassType const &) const;
 };
 
 #endif /* CLASSTYPE_HPP */

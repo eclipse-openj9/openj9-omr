@@ -54,3 +54,16 @@ UDT::getNamespace()
 {
 	return _outerNamespace;
 }
+
+bool
+UDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToUDT(*this);
+}
+
+bool
+UDT::compareToUDT(UDT const &other) const
+{
+	return compareToType(other)
+		&& (*_outerNamespace == *other._outerNamespace);
+}

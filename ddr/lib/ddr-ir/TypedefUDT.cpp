@@ -71,3 +71,17 @@ TypedefUDT::getBaseType()
 {
 	return _aliasedType;
 }
+
+bool
+TypedefUDT::operator==(Type const & rhs) const
+{
+	return rhs.compareToTypedef(*this);
+}
+
+bool
+TypedefUDT::compareToTypedef(TypedefUDT const &other) const
+{
+	return compareToType(other)
+		&& *_aliasedType == *other._aliasedType
+		&& _modifiers == other._modifiers;
+}

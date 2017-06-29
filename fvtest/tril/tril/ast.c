@@ -90,6 +90,45 @@ uint16_t countNodes(const ASTNode* n) {
     return count;
 }
 
+const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
+    const ASTNodeArg* arg = node->args;
+    while (arg) {
+        if (arg->name != NULL && strcmp(name, arg->name) == 0) { // arg need not have a name
+            return arg;
+        }
+        arg = arg->next;
+    }
+    return NULL;
+}
+
+const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
+    const ASTNode* node = list;
+    while (node) {
+        if (strcmp(name, node->name) == 0) {
+            return node;
+        }
+        node = node->next;
+    }
+    return NULL;
+}
+
+const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
+    const ASTNode* node = tree;
+    while (node) {
+        if (strcmp(name, node->name) == 0) {
+            return node;
+        }
+
+        const ASTNode* child = findNodeByNameInTree(node, name);
+        if (child != NULL) {
+            return child;
+        }
+
+        node = node->next;
+    }
+    return NULL;
+}
+
 void printASTValueUnion(FILE* file, ASTValue* value) {
     switch (value->type) {
         case Int64: fprintf(file, "%lu", value->value.int64); break;

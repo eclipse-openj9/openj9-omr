@@ -71,6 +71,10 @@ void appendSiblingValue(ASTValue* list, ASTValue* newValue);
 
 uint16_t countNodes(const ASTNode* n);
 
+const ASTNodeArg* getArgByName(const ASTNode* node, const char* name);
+const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name);
+const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name);
+
 void printASTValueUnion(FILE* file, ASTValue* value);
 void printASTValue(FILE* file, ASTValue* value);
 void printASTArgs(FILE* file, ASTNodeArg* args);

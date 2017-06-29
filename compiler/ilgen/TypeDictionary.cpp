@@ -478,7 +478,7 @@ TypeDictionary::TypeDictionary() :
    _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
    _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) ),
    _structsByName(str_comparator, _trMemory->heapMemoryRegion()),
-   _unionsByName( new (PERSISTENT_NEW) TR_HashTabString(trMemory()) )
+   _unionsByName(str_comparator, _trMemory->heapMemoryRegion())
    {
    // primitive types
    NoType       = _primitiveType[TR::NoType]                = new (PERSISTENT_NEW) OMR::PrimitiveType("NoType", TR::NoType);
@@ -528,6 +528,7 @@ TypeDictionary::~TypeDictionary() throw()
    {
    // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
    _structsByName.clear();
+   _unionsByName.clear();
 
    _trMemory->~TR_Memory();
    ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
@@ -546,10 +547,7 @@ TypeDictionary::LookupStruct(const char *structName)
 TR::IlType *
 TypeDictionary::LookupUnion(const char *unionName)
    {
-   TR_HashId unionID = 0;
-   if (_unionsByName->locate(unionName, unionID))
-      return (TR::IlType *) _unionsByName->getData(unionID);
-   return NULL;
+   return getUnion(unionName);
    }
 
 TR::IlType *
@@ -560,7 +558,7 @@ TypeDictionary::DefineStruct(const char *structName)
    StructType *newType = new (PERSISTENT_NEW) StructType(structName);
    _structsByName.insert(std::make_pair(structName, newType));
 
-   return (TR::IlType *) newType;
+   return newType;
    }
 
 void
@@ -602,42 +600,30 @@ TypeDictionary::CloseStruct(const char *structName)
 TR::IlType *
 TypeDictionary::DefineUnion(const char *unionName)
    {
-   TR_HashId unionID=0;
-   _unionsByName->locate(unionName, unionID);
-
+   TR_ASSERT_FATAL(_unionsByName.find(unionName) == _unionsByName.end(), "Union '%s' already exists", unionName);
+   
    UnionType *newType = new (PERSISTENT_NEW) UnionType(unionName, _trMemory);
-   _unionsByName->add(unionName, unionID, (void *) newType);
+   _unionsByName.insert(std::make_pair(unionName, newType));
 
-   return (TR::IlType *) newType;
+   return newType;
    }
 
 void
 TypeDictionary::UnionField(const char *unionName, const char *fieldName, TR::IlType *type)
    {
-   TR_HashId unionID=0;
-   if (_unionsByName->locate(unionName, unionID))
-      {
-      UnionType *unionType = (UnionType *) _unionsByName->getData(unionID);
-      unionType->AddField(fieldName, type);
-      }
+   getUnion(unionName)->AddField(fieldName, type);
    }
 
 void
 TypeDictionary::CloseUnion(const char *unionName)
    {
-   TR_HashId unionID = 0;
-   _unionsByName->locate(unionName, unionID);
-   UnionType *theUnion = (UnionType *) _unionsByName->getData(unionID);
-   theUnion->Close();
+   getUnion(unionName)->Close();
    }
 
 TR::IlType *
 TypeDictionary::UnionFieldType(const char *unionName, const char *fieldName)
    {
-   TR_HashId unionID = 0;
-   _unionsByName->locate(unionName, unionID);
-   UnionType *theUnion = (UnionType *) _unionsByName->getData(unionID);
-   return theUnion->getFieldType(fieldName);
+   return getUnion(unionName)->getFieldType(fieldName);
    }
 
 TR::IlType *
@@ -655,22 +641,21 @@ TypeDictionary::PointerTo(TR::IlType *baseType)
 TR::IlReference *
 TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    {
-   TR_HashId typeID = 0;
-
-   StructMap::iterator it = _structsByName.find(typeName);
-   if (it != _structsByName.end())
+   StructMap::iterator structIterator = _structsByName.find(typeName);
+   if (structIterator != _structsByName.end())
       {
-      StructType *theStruct = it->second;
+      StructType *theStruct = structIterator->second;
       return theStruct->getFieldSymRef(fieldName);
       }
 
-   if (_unionsByName->locate(typeName, typeID))
+   UnionMap::iterator unionIterator = _unionsByName.find(typeName);
+   if (unionIterator != _unionsByName.end())
       {
-      UnionType *theUnion = (UnionType *) _unionsByName->getData(typeID);
+      UnionType *theUnion = unionIterator->second;
       return theUnion->getFieldSymRef(fieldName);
       }
 
-   TR_ASSERT(false, "No type with name `%s`", typeName);
+   TR_ASSERT_FATAL(false, "No type with name '%s'", typeName);
    return NULL;
    }
 
@@ -685,9 +670,9 @@ TypeDictionary::NotifyCompilationDone()
       }
 
    // clear all symbol references for union fields
-   TR_HashTabIterator unionIterator(_unionsByName);
-   for (UnionType *aUnion = (UnionType *)unionIterator.getFirst();aUnion;aUnion = (UnionType *)unionIterator.getNext())
+   for (UnionMap::iterator it = _unionsByName.begin(); it != _unionsByName.end(); it++)
       {
+      UnionType *aUnion = it->second;
       aUnion->clearSymRefs();
       }
    }
@@ -702,4 +687,13 @@ TypeDictionary::getStruct(const char *structName)
    return theStruct;
    }
 
+OMR::UnionType *
+TypeDictionary::getUnion(const char *unionName)
+   {
+   UnionMap::iterator it = _unionsByName.find(unionName);
+   TR_ASSERT_FATAL(it != _unionsByName.end(), "No union named '%s'", unionName);
+
+   UnionType *theUnion = it->second;
+   return theUnion;
+   }
 } // namespace OMR

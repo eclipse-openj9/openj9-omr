@@ -37,9 +37,9 @@
 #include "env/TypedAllocator.hpp"
 
 class TR_Memory;
-class TR_HashTabString;
 
 namespace OMR { class StructType; }
+namespace OMR { class UnionType; }
 namespace TR  { class SegmentProvider; }
 namespace TR  { class Region; }
 namespace TR  { typedef TR::SymbolReference IlReference; }
@@ -428,7 +428,9 @@ protected:
    typedef std::map<const char *, OMR::StructType *, StrComparator, StructMapAllocator> StructMap;
    StructMap          _structsByName;
 
-   TR_HashTabString * _unionsByName;
+   typedef TR::typed_allocator<std::pair<const char *, OMR::UnionType *>, TR::Region &> UnionMapAllocator;
+   typedef std::map<const char *, OMR::UnionType *, StrComparator, UnionMapAllocator> UnionMap;
+   UnionMap           _unionsByName;
 
    // convenience for primitive types
    TR::IlType       * _primitiveType[TR::NumOMRTypes];
@@ -466,6 +468,7 @@ protected:
    TR::IlType       * pVectorDouble;
 
    OMR::StructType * getStruct(const char *structName);
+   OMR::UnionType  * getUnion(const char *unionName);
    };
 
 } // namespace OMR

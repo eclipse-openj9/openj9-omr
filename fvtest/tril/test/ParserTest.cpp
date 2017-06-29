@@ -145,6 +145,38 @@ TEST(ParserTest, SingleNodeWithStringArg) {
     ASSERT_NULL(arg->next);
 }
 
+TEST(ParserTest, SingleNodeWithIdentiferArg) {
+    auto trees = parseString("(nodeName id)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("id", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithCommandArg) {
+    auto trees = parseString("(nodeName @cmd)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("@cmd", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
 TEST(ParserTest, SingleNodeWithNamedArg) {
     auto trees = parseString("(nodeName arg=3.14)");
 
@@ -158,6 +190,38 @@ TEST(ParserTest, SingleNodeWithNamedArg) {
     ASSERT_STREQ("arg", arg->name);
     ASSERT_EQ(Double, arg->value->type);
     ASSERT_EQ(3.14, arg->value->value.f64);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNamedIdentifierArg) {
+    auto trees = parseString("(nodeName arg=ID)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("arg", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("ID", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNamedCommandArg) {
+    auto trees = parseString("(nodeName arg=@cmd)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("arg", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("@cmd", arg->value->value.str);
     ASSERT_NULL(arg->next);
 }
 

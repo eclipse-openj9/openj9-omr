@@ -239,7 +239,7 @@ bool Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
    if (opcode.isReturn()) {
        cfg()->addEdge(_currentBlock, cfg()->getEnd());
        isFallthroughNeeded = false;
-       TraceIL("Added CFG edge from block %d to {exit} -> %s\n", _currentBlockNumber, tree->name);
+       TraceIL("Added CFG edge from block %d to @exit -> %s\n", _currentBlockNumber, tree->name);
    }
    else if (opcode.isBranch()) {
       const auto targetName = tree->args->value->value.str;
@@ -323,11 +323,11 @@ bool Tril::TRLangBuilder::injectIL() {
        auto fallthroughArg = getArgByName(block, "fallthrough");
        if (fallthroughArg != nullptr) {
            auto target = std::string(fallthroughArg->value->value.str);
-           if (target == "{exit}") {
+           if (target == "@exit") {
                cfg()->addEdge(_currentBlock, cfg()->getEnd());
                TraceIL("Added fallthrough edge from block %d to \"%s\"\n", _currentBlockNumber, target.c_str());
            }
-           else if (target == "{none}") {
+           else if (target == "@none") {
                // do nothing, no fall-throught block specified
            }
            else {

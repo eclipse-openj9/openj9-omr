@@ -120,6 +120,11 @@ value:
             //printf("Generating value \"%s\"\n", $1);
             $$ = createStrValue($1);
         }
+    | IDENTIFIER
+        {
+            //printf("Generating value \"%s\"\n", $1);
+            $$ = createStrValue($1);
+        }
     ;
 
 %%

@@ -90,45 +90,52 @@ uint16_t countNodes(const ASTNode* n) {
     return count;
 }
 
-void printTrees(ASTNode* trees, int indent) {
+void printASTValueUnion(FILE* file, ASTValue* value) {
+    switch (value->type) {
+        case Int64: fprintf(file, "%lu", value->value.int64); break;
+        case Double: fprintf(file, "%f", value->value.f64); break;
+        case String: fprintf(file, "\"%s\"", value->value.str); break;
+        default: fprintf(file, "{bad arg type %d}", value->type);
+    };
+}
+
+void printASTValue(FILE* file, ASTValue* value) {
+    ASTValue* v = value;
+    int isList = v->next != NULL;
+    if (isList) {
+        printf("[");
+    }
+    printASTValueUnion(file, v);
+    while (v->next) {
+        v = v->next;
+        fprintf(file, ", ");
+        printASTValueUnion(file, v);
+    }
+    if (isList) {
+        fprintf(file, "]");
+    }
+}
+
+void printASTArgs(FILE* file, ASTNodeArg* args) {
+    ASTNodeArg* a = args;
+    while (a) {
+        printf(" ");
+        if (a->name != NULL && strcmp("", a->name) != 0) {
+            fprintf(file, "%s=", a->name);
+        }
+        printASTValue(file, a->value);
+        a = a->next;
+    }
+}
+
+void printTrees(FILE* file, ASTNode* trees, int indent) {
     ASTNode* t = trees;
     while(t) {
         int indentVal = indent*2 + (int)strlen(t->name); // indent with two spaces
-        printf("(%p) %*s", t, indentVal, t->name);
-        ASTNodeArg* a = t->args;
-        while (a) {
-            printf(" ");
-            if (a->name != NULL && strcmp("", a->name) != 0) {
-                printf("%s=", a->name);
-            }
-            ASTValue* v = a->value;
-            int isList = v->next != NULL;
-            if (isList) {
-                printf("[");
-            }
-            switch (v->type) {
-                case Int64: printf("%lu", v->value.int64); break;
-                case Double: printf("%f", v->value.f64); break;
-                case String: printf("\"%s\"", v->value.str); break;
-                default: printf("{bad arg type %d}", v->type);
-            };
-            while (v->next) {
-                v = v->next;
-                printf(", ");
-                switch (v->type) {
-                    case Int64: printf("%lu", v->value.int64); break;
-                    case Double: printf("%f", v->value.f64); break;
-                    case String: printf("\"%s\"", v->value.str); break;
-                    default: printf("{bad arg type %d}", v->type);
-                };
-            }
-            if (isList) {
-                printf("]");
-            }
-            a = a->next;
-        }
-        printf("\n");
-        printTrees(t->children, indent + 1);
+        fprintf(file, "(%p) %*s", t, indentVal, t->name);
+        printASTArgs(file, t->args);
+        fprintf(file, "\n");
+        printTrees(file, t->children, indent + 1);
         t = t->next;
     }
 }

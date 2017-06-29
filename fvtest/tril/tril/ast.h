@@ -71,7 +71,10 @@ void appendSiblingValue(ASTValue* list, ASTValue* newValue);
 
 uint16_t countNodes(const ASTNode* n);
 
-void printTrees(ASTNode* trees, int indent);
+void printASTValueUnion(FILE* file, ASTValue* value);
+void printASTValue(FILE* file, ASTValue* value);
+void printASTArgs(FILE* file, ASTNodeArg* args);
+void printTrees(FILE* file, ASTNode* trees, int indent);
 
 ASTNode* parseFile(FILE* in);
 ASTNode* parseString(const char* in);

@@ -50,7 +50,17 @@ class MethodInfo {
                     typeValue = typeValue->next;
                 }
             }
+
+            auto nameArg = getArgByName(_methodNode, "name");
+            if (nameArg != nullptr) {
+                _name = nameArg->value->value.str;
+            }
         }
+
+        /**
+         * @brief Returns the name of the Tril method
+         */
+        const std::string& getName() const { return _name; }
 
         /**
          * @brief Retruns the AST node representing the Tril method
@@ -98,6 +108,7 @@ class MethodInfo {
 
     private:
         const ASTNode* _methodNode;
+        std::string _name;
         TR::DataTypes _returnType;
         std::vector<TR::DataTypes> _argTypes;
 };

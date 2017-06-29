@@ -362,6 +362,8 @@ MethodBuilder::symbolDefined(const char *name)
 void
 MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
    {
+   TR_ASSERT_FATAL(_symbols.find(name) == _symbols.end(), "Symbol '%s' already defined", name);
+
    _symbols.insert(std::make_pair(name, symRef));
    _symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
    
@@ -467,6 +469,8 @@ void
 MethodBuilder::DefineLocal(const char *name, TR::IlType *dt)
    {
    MB_REPLAY("DefineLocal(\"%s\", %s);", name, REPLAY_TYPE(dt));
+
+   TR_ASSERT_FATAL(_symbolTypes.find(name) == _symbolTypes.end(), "Symbol '%s' already defined", name);
    _symbolTypes.insert(std::make_pair(name, dt));
    }
 
@@ -474,6 +478,8 @@ void
 MethodBuilder::DefineMemory(const char *name, TR::IlType *dt, void *location)
    {
    MB_REPLAY("DefineMemory(\"%s\", %s, " REPLAY_POINTER_FMT ");", name, REPLAY_TYPE(dt), REPLAY_POINTER(location, name));
+
+   TR_ASSERT_FATAL(_memoryLocations.find(name) == _memoryLocations.end(), "Memory '%s' already defined", name);
 
    _symbolTypes.insert(std::make_pair(name, dt));
    _memoryLocations.insert(std::make_pair(name, location));
@@ -483,6 +489,8 @@ void
 MethodBuilder::DefineParameter(const char *name, TR::IlType *dt)
    {
    MB_REPLAY("DefineParameter(\"%s\", %s);", name, REPLAY_TYPE(dt));
+
+   TR_ASSERT_FATAL(_parameterSlot.find(name) == _parameterSlot.end(), "Parameter '%s' already defined", name);
 
    _parameterSlot.insert(std::make_pair(name, _numParameters));
    _symbolNameFromSlot.insert(std::make_pair(_numParameters, name));
@@ -543,6 +551,8 @@ MethodBuilder::DefineFunction(const char* const name,
    MB_REPLAY("               " REPLAY_POINTER_FMT ",", REPLAY_POINTER(entryPoint, name));
    MB_REPLAY("               %s,", REPLAY_TYPE(returnType));
    MB_REPLAY_NONL("               %d", numParms);
+
+   TR_ASSERT_FATAL(_functions.find(name) == _functions.end(), "Function '%s' already defined", name);
 
    for (int32_t p=0;p < numParms;p++)
       {   

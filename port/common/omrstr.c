@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -2301,17 +2301,16 @@ omrstr_ftime(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, con
  *
  * If buf is too small, will return the minimum buf size required.
  */
-static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis)
+static uint32_t
+omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf, uint32_t bufLen, const char *format, int64_t timeMillis)
 {
-	int8_t enoughSpace = 1;
 	int8_t haveTick = 0;
 	uint32_t count = 0;
 	uint64_t curTick = 0;
 	const char *read = format;
 	char *write = buf;
 	char ticks[TICK_BUF_SIZE];
-	uint32_t tickSize;
-	char c;
+	uint32_t tickSize = 0;
 	J9TimeInfo tm;
 	static const char abbMonthName[12][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 											 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -2320,89 +2319,80 @@ static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf,
 	convertUTCMillisToLocalJ9Time(timeMillis, &tm);
 
 	while (0 != *read) {
-		c = *read;
+		char c = *read;
 		if (c == '%') {
 			char key = read[1];
 			switch (key) {
 			case 'Y':
-				enoughSpace |= (bufLen - count >= 4);
-				if (enoughSpace) {
+				count += 4;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 4, 4, J9F_NO_VALUE, tm.year, J9FFLAG_ZERO, 0, digits_dec);
 					write += 4;
 				}
 				read += 2;
-				count += 4;
 				break;
 			case 'y':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.year % 100, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'm':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.month, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'd':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.day, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'H':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.hour, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'M':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.minute, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'S':
-				enoughSpace |= (bufLen - count >= 2);
-				if (enoughSpace) {
+				count += 2;
+				if (count <= bufLen) {
 					writeIntToBuffer(write, 2, 2, J9F_NO_VALUE, tm.second, J9FFLAG_ZERO, 0, digits_dec);
 					write += 2;
 				}
 				read += 2;
-				count += 2;
 				break;
 			case 'b':
-				enoughSpace |= (bufLen - count >= 3);
-				if (enoughSpace) {
+				count += 3;
+				if (count <= bufLen) {
 					writeStringToBuffer(write, 3, J9F_NO_VALUE, J9F_NO_VALUE, abbMonthName[tm.month - 1], 0);
 					write += 3;
 				}
 				read += 2;
-				count += 3;
 				break;
 			case '%':
-				enoughSpace |= (bufLen > count);
-				if (enoughSpace) {
+				count += 1;
+				if (count <= bufLen) {
 					*write++ = '%';
 				}
 				read += 2;
-				count++;
 				break;
 			case 't':
 				if (strncmp(read + 2, "ick", 3) == 0) {
@@ -2411,32 +2401,29 @@ static uint32_t omrstr_subst_time(struct OMRPortLibrary *portLibrary, char *buf,
 						haveTick = 1;
 					}
 					tickSize = (uint32_t)writeIntToBuffer(ticks, TICK_BUF_SIZE, J9F_NO_VALUE, J9F_NO_VALUE, curTick, J9FSPEC_L, 0, digits_dec);
-					enoughSpace |= (bufLen - count >= tickSize);
-					if (enoughSpace) {
+					count += tickSize;
+					if (count <= bufLen) {
 						strncpy(write, ticks, tickSize);
 						write += tickSize;
 					}
-					count += tickSize;
 					read += 5;
 					break;
 				}
 				/* fall through */
 			default:
-				enoughSpace |= (count < bufLen);
-				if (enoughSpace) {
+				count += 1;
+				if (count <= bufLen) {
 					*write++ = *read;
 				}
-				++read;
-				++count;
+				read += 1;
 				break;
 			}
 		} else {
-			enoughSpace |= (count < bufLen);
-			if (enoughSpace) {
+			count += 1;
+			if (count <= bufLen) {
 				*write++ = *read;
 			}
-			++read;
-			++count;
+			read += 1;
 		}
 	}
 	if (count < bufLen) {

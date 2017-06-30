@@ -79,6 +79,22 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TR::Node* node = nullptr;
 
      auto childCount = countNodes(tree->children);
+
+     if (strcmp("@common", tree->name) == 0) {
+         auto idArg = getArgByName(tree, "id");
+         auto id = idArg->value->value.str;
+         auto iter = _nodeMap.find(id);
+         if (iter != _nodeMap.end()) {
+             auto n = iter->second;
+             TraceIL("Commoning node n%dn (%p) from ASTNode %p (ID \"%s\")\n", n->getGlobalIndex(), n, tree, id);
+             return n;
+         }
+         else {
+             TraceIL("Failed to find node for commoning (id=\"%s\")\n", id)
+             return nullptr;
+         }
+     }
+
      auto opcode = OpCodeTable{tree->name};
 
      TraceIL("Creating %s from ASTNode %p\n", opcode.getName(), tree);
@@ -198,7 +214,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      if (nodeIdArg != nullptr) {
          auto id = nodeIdArg->value->value.str;
          _nodeMap[id] = node;
-         TraceIL("  node ID %s", id);
+         TraceIL("  node ID %s\n", id);
      }
 
      // create a set child nodes

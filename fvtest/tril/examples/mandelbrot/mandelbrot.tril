@@ -52,7 +52,7 @@
                (ddiv
                   (dconst 3.5000)
                   (i2d
-                     (iload parm=1) ) ) )
+                     (iload parm=1 id="setup_iload_parm1") ) ) )
             (dconst 2.5000) ) )
       (dstore temp="y0"                         ; double y0 = py * 2.0 /parm1 - 1; // map pixel y-coordinate to Mandelbrot range [-1, 1]
          (dsub
@@ -62,12 +62,12 @@
                (ddiv
                   (dconst 2.0000)
                   (i2d
-                     (iload parm=1) ) ) )
+                     (@common id="setup_iload_parm1") ) ) )
             (dconst 1.0000) ) )
       (dstore temp="x"                          ; double x = 0.0;
-         (dconst 0.0000) )
+         (dconst 0.0000 id="setup_dconst_0") )
       (dstore temp="y"                          ; double y = 0.0;
-         (dconst 0.0000) )
+         (@common id="setup_dconst_0") )
       (istore temp="iter"                       ; int iter = 0;
          (iconst 0) ) )
    (block name="loop"                           ; loop:
@@ -75,11 +75,11 @@
          (dcmplt
             (dadd
                (dmul
-                  (dload temp="x")
-                  (dload temp="x") )
+                  (dload temp="x" id="loop_dload_x")
+                  (@common id="loop_dload_x") )
                (dmul
-                  (dload temp="y")
-                  (dload temp="y") ) )
+                  (dload temp="y" id="loop_dload_y")
+                  (@common id="loop_dload_y") ) )
             (dconst 4.0000) ) )
       (istore temp="comp2"                      ; int comp2 = iter < parm0;
          (icmplt
@@ -96,11 +96,11 @@
             (dload temp="x0")
             (dsub
                (dmul
-                  (dload temp="x")
-                  (dload temp="x") )
+                  (dload temp="x" id="loop_body_dload_x")
+                  (@common id="loop_body_dload_x") )
                (dmul
-                  (dload temp="y")
-                  (dload temp="y") ) ) ) )
+                  (dload temp="y" id="loop_body_dload_y")
+                  (@common id="loop_body_dload_y") ) ) ) )
       (dstore temp="y"                          ; y = y0 + 2.0 * x * y;
          (dadd
             (dload temp="y0")

@@ -118,6 +118,7 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
 
    { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
+   { OMR::loopCanonicalization,                      OMR::IfLoops                  },
    { OMR::generalLoopUnroller,                       OMR::IfLoops                  },
    { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // extend blocks; move trees around if reqd
    { OMR::treeSimplification                                                       }, // revisit; not really required ?

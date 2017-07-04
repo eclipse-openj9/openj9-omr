@@ -146,6 +146,7 @@ public:
    void cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex, TR::Compilation *comp);
    void insertRematableStoresFromCallSites(TR::Compilation *comp, int32_t siteIndex, TR::TreeTop *induceOSRTree);
    void insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots);
+   void insertStoresForDeadStackSlots(TR::Compilation *comp, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *insertTree, bool keepStashedArgsLive=true);
    bool sharesStackSlots(TR::Compilation *comp);
    void resetLiveLocalIndices();
 

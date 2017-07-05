@@ -491,6 +491,8 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 				if (NULL != dieOut) {
 					*dieOut = typeDie;
 				}
+			} else if (DW_TAG_reference_type == tag) {
+				modifiers->_referenceCount += 1;
 			} else {
 				/* Once the base type is reached, get its name and exit the loop. */
 				/* Get type size. */
@@ -825,6 +827,8 @@ DwarfScanner::createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, Type 
 	case DW_TAG_ptr_to_member_type:
 		dieName = "void";
 		*newType = new Type(0);
+		break;
+	case DW_TAG_reference_type:
 		break;
 	default:
 		{

@@ -230,6 +230,7 @@ public:
                                            bool needsToBeContiguous,
                                            bool isMethodHeaderNeeded=true);
    void setCodeCacheFull() { };  // default does nothing
+   void setHasFailedCodeCacheAllocation() { }
 
    bool initialized() const                 { return _initialized; }
    bool lowCodeCacheSpaceThresholdReached() { return _lowCodeCacheSpaceThresholdReached; }

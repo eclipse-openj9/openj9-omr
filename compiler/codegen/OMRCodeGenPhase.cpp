@@ -235,6 +235,12 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
    cg->emitSnippets();
 
+   if (comp->getOption(TR_EnableOSR))
+      {
+      comp->getOSRCompilationData()->checkOSRLimits();
+      comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
+      }
+
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
       diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedWarmLength());
@@ -288,11 +294,6 @@ OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator * cg, TR::CodeGe
       {
       if (cg->getDebug())
          cg->getDebug()->verifyFinalNodeReferenceCounts(comp->getMethodSymbol());
-      }
-   if (comp->getOption(TR_EnableOSR))
-      {
-      comp->getOSRCompilationData()->checkOSRLimits();
-      comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
       }
    }
 

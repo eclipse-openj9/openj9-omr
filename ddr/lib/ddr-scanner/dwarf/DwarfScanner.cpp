@@ -1302,11 +1302,11 @@ DwarfScanner::scanFile(OMRPortLibrary *portLibrary, Symbol_IR *const ir, const c
 		res = dwarf_init(fd, access, errhand, errarg, &_debug, &error);
 		if (DW_DLV_OK != res) {
 			if (DW_DLV_ERROR == res) {
-				ERRMSG("Failed to Initialize libDwarf! DW_DLV_ERROR: res: %s\nExiting...\n", dwarf_errmsg(error));
+				ERRMSG("Failed to Initialize libDwarf scanning %s! DW_DLV_ERROR: res: %s\nExiting...\n", filepath, dwarf_errmsg(error));
 			} else if (DW_DLV_NO_ENTRY == res) {
-				ERRMSG("Failed to Initialize libDwarf! DW_DLV_NO_ENTRY: res: %s\nExiting...\n", dwarf_errmsg(error));
+				ERRMSG("Failed to Initialize libDwarf scanning %s! DW_DLV_ERROR: res: %s\nExiting...\n", filepath, dwarf_errmsg(error));
 			} else {
-				ERRMSG("Failed to Initialize libDwarf! Unknown ERROR: res: %s\nExiting...\n", dwarf_errmsg(error));
+				ERRMSG("Failed to Initialize libDwarf scanning %s! DW_DLV_ERROR: res: %s\nExiting...\n", filepath, dwarf_errmsg(error));
 			}
 			if (NULL != error) {
 				dwarf_dealloc(_debug, error, DW_DLA_ERROR);

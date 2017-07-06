@@ -58,13 +58,6 @@ public:
 
 	virtual void kill(MM_EnvironmentBase *env) = 0;
 
-#if defined(OMR_GC_MODRON_COMPACTION)
-	virtual void compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env) = 0;
-	virtual void compactScheme_fixupRoots(MM_EnvironmentBase *env, MM_CompactScheme *compactScheme) = 0;
-	virtual void compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env) = 0;
-	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap) = 0;
-#endif /* OMR_GC_MODRON_COMPACTION */
-
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/**
 	 * This method will be called on the master GC thread after each scavenger cycle, successful or

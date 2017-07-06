@@ -207,29 +207,3 @@ MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBa
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
-#if defined(OMR_GC_MODRON_COMPACTION)
-void
-MM_CollectorLanguageInterfaceImpl::compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap)
-{
-	Assert_MM_unimplemented();
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::compactScheme_fixupRoots(MM_EnvironmentBase *env, MM_CompactScheme *compactScheme)
-{
-	Assert_MM_unimplemented();
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env)
-{
-	Assert_MM_unimplemented();
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env)
-{
-	Assert_MM_unimplemented();
-}
-#endif /* OMR_GC_MODRON_COMPACTION */
-

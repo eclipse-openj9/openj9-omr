@@ -58,6 +58,7 @@
 #include "SublistPool.hpp"
 #include "SublistPuddle.hpp"
 #include "SweepHeapSectioning.hpp"
+#include "CompactDelegate.hpp"
 
 /* OMRTODO temporary workaround to allow both ut_j9mm.h and ut_omrmm.h to be included.
  *                 Dependency on ut_j9mm.h should be removed in the future.
@@ -279,13 +280,13 @@ public:
 bool
 MM_CompactScheme::initialize(MM_EnvironmentBase *env)
 {
-	return true;
+	return _delegate.initialize(env, _omrVM, _markMap, this);
 }
 
 void
 MM_CompactScheme::tearDown(MM_EnvironmentBase *env)
 {
-	/* Do nothing */
+	_delegate.tearDown(env);
 }
 
 /**
@@ -355,7 +356,7 @@ MM_CompactScheme::masterSetupForGC(MM_EnvironmentStandard *env)
 	_compactTable = (CompactTableEntry*)_markingScheme->getMarkMap()->getMarkBits();
 	_subAreaTable = (SubAreaEntry*)_extensions->sweepHeapSectioning->getBackingStoreAddress();
 	_subAreaTableSize = _extensions->sweepHeapSectioning->getBackingStoreSize();
-	_extensions->collectorLanguageInterface->compactScheme_languageMasterSetupForGC(env);
+	_delegate.masterSetupForGC(env);
 }
 
 omrobjectptr_t
@@ -543,7 +544,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 		 */
 		masterSetupForGC(env);
 #if defined(DEBUG)
-		_extensions->collectorLanguageInterface->compactScheme_verifyHeap(env, _markMap);
+		_delegate.verifyHeap(env, _markMap);
 #endif /* DEBUG */
 
 		/* Reset largestFreeEntry of all subSpaces at beginning of compaction */
@@ -593,7 +594,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 
 	/* FixupRoots can always be done in parallel */
 	env->_compactStats._rootFixupStartTime = omrtime_hires_clock();
-	_extensions->collectorLanguageInterface->compactScheme_fixupRoots(env, this);
+	_delegate.fixupRoots(env, this);
 	env->_compactStats._rootFixupEndTime = omrtime_hires_clock();
 
 	MM_AtomicOperations::sync();
@@ -617,7 +618,7 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 		MM_AtomicOperations::sync();
 	}
 
-	_extensions->collectorLanguageInterface->compactScheme_workerCleanupAfterGC(env);
+	_delegate.workerCleanupAfterGC(env);
 
 	env->_compactStats._movedObjects = objectCount;
 	env->_compactStats._movedBytes = byteCount;

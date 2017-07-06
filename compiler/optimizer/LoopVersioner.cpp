@@ -4321,7 +4321,10 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    bool safeToRemoveOSRGuards = false;
    bool seenOSRGuards = false;
+   bool safeToRemoveHCRGuards = false;
+   TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
    static char *disableLoopOSR = feGetEnv("TR_DisableOSRGuardLoopVersioner");
+   static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
    if (comp()->getHCRMode() == TR::osr && disableLoopOSR == NULL)
       {
       safeToRemoveOSRGuards = true;
@@ -4359,6 +4362,52 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             {
             safeToRemoveOSRGuards = false;
             }
+         }
+      }
+   if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
+      {
+      safeToRemoveHCRGuards = true;
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveHCRGuards && block; block = blocksIt.getNext())
+         {
+         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
+            {
+            if (tt->getNode()->isHCRGuard())
+               {
+               hcrGuards.add(tt);
+               }
+            else
+               {
+               // Identify virtual call nodes for the taken side of HCR guards
+               bool isVirtualCallForHCR = (tt->getNode()->getOpCodeValue() == TR::treetop || tt->getNode()->getOpCode().isCheck())
+                  && tt->getNode()->getFirstChild()->isTheVirtualCallNodeForAGuardedInlinedCall()
+                  && block->getPredecessors().size() == 1
+                  && block->getPredecessors().front()->getFrom()->asBlock()->getLastRealTreeTop()->getNode()->isHCRGuard();
+
+               if ((tt->getNode()->canGCandReturn() || tt->getNode()->canGCandExcept()) && !isVirtualCallForHCR)
+                  {
+                  safeToRemoveHCRGuards = false;
+                  break;
+                  }
+               }
+            }
+         }
+      if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
+         {
+         ListIterator<TR::TreeTop> guardIt(&hcrGuards);
+         for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
+             {
+             if (performTransformation(comp(), "%sCreated versioned HCRGuard for guard n%dn\n", OPT_DETAILS_LOOP_VERSIONER, tt->getNode()->getGlobalIndex()))
+                {
+                TR::Node *guard = tt->getNode()->duplicateTree();
+                guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+                comparisonTrees.add(guard);
+                }
+             else
+                {
+                safeToRemoveHCRGuards = false;
+                }
+             }
          }
       }
 
@@ -4836,6 +4885,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
              block->removeBranch(comp());
              }
           }
+      }
+   if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
+      {
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
+         {
+         TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
+         if (lastRealTT
+             && lastRealTT->getNode()->isHCRGuard()
+             && performTransformation(comp(), "%sRemove HCR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
+            {
+            block->removeBranch(comp());
+            }
+         }
       }
 
    if (trace())

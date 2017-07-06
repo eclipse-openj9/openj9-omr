@@ -25,12 +25,12 @@ namespace TR {
 
 class ILValidator
    {
-   TR::Optimization *_opt; // TODO: Operate without an Optimization
+   TR::Compilation  *_comp;
    bool              _isValidSoFar;
 
    public:
 
-   ILValidator(TR::Optimization *opt);
+   ILValidator(TR::Compilation *comp);
 
    bool isLoggingEnabled();
 

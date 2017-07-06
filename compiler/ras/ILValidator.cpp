@@ -18,16 +18,16 @@
 
 #include "ras/ILValidator.hpp"
 
-TR::ILValidator::ILValidator(TR::Optimization *opt)
-   :_opt(opt)
-   ,_nodeStates(opt->comp()->trMemory())
-   ,_liveNodes(_nodeStates, opt->comp()->trMemory())
+TR::ILValidator::ILValidator(TR::Compilation *comp)
+   :_comp(comp)
+   ,_nodeStates(comp->trMemory())
+   ,_liveNodes(_nodeStates, comp->trMemory())
    {
    }
 
 TR::Compilation *TR::ILValidator::comp()
    {
-   return _opt->comp();
+   return _comp;
    }
 
 void TR::ILValidator::checkSoundness(TR::TreeTop *start, TR::TreeTop *stop)
@@ -183,7 +183,7 @@ bool TR::ILValidator::treesAreValid(TR::TreeTop *start, TR::TreeTop *stop)
    {
    checkSoundness(start, stop);
 
-   for (PostorderNodeOccurrenceIterator iter(start, _opt, "VALIDATOR"); iter != stop; ++iter)
+   for (PostorderNodeOccurrenceIterator iter(start, _comp, "VALIDATOR"); iter != stop; ++iter)
       {
       updateNodeState(iter);
 

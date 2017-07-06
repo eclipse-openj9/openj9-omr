@@ -42,11 +42,9 @@
 // TreeTopIterator and TreeTopIteratorImpl
 //
 
-TR::TreeTopIteratorImpl::TreeTopIteratorImpl(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :_current(start),_opt(opt),_name(name)
+TR::TreeTopIteratorImpl::TreeTopIteratorImpl(TR::TreeTop *start, TR::Compilation * comp, const char *name)
+   :_current(start),_comp(comp),_name(name)
    {
-   if (opt && !name)
-      _name = opt->name();
    }
 
 TR::Node *TR::TreeTopIteratorImpl::currentNode()
@@ -61,18 +59,16 @@ bool TR::TreeTopIteratorImpl::isAt(PreorderNodeIterator &other)
 
 void TR::TreeTopIteratorImpl::logCurrentLocation()
    {
-   // TODO: Log even without an _opt.
-
-   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+   if (_name && _comp && _comp->getOption(TR_TraceILWalks))
       {
       if (currentTree())
          {
          TR::Node *node = currentTree()->getNode();
-         traceMsg(_opt->comp(), "TREE  %s @ %s n%dn [%p]\n", _name, node->getOpCode().getName(), node->getGlobalIndex(), node);
+         traceMsg(_comp, "TREE  %s @ %s n%dn [%p]\n", _name, node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
-         traceMsg(_opt->comp(), "TREE  %s finished\n", _name);
+         traceMsg(_comp, "TREE  %s finished\n", _name);
          }
       }
    }
@@ -93,14 +89,8 @@ void TR::TreeTopIteratorImpl::stepBackward()
 // Node iterators
 //
 
-TR::NodeIterator::NodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :TreeTopIteratorImpl(start, opt, name)
-   ,_checklist(opt->comp())
-   ,_stack(opt->comp()->trMemory(), 5, false, stackAlloc)
-   {}
-
-TR::NodeIterator::NodeIterator(TR::TreeTop *start, TR::Compilation *comp)
-   :TreeTopIteratorImpl(start, NULL, NULL)
+TR::NodeIterator::NodeIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name)
+   :TreeTopIteratorImpl(start, comp, name)
    ,_checklist(comp)
    ,_stack(comp->trMemory(), 5, false, stackAlloc)
    {}
@@ -128,46 +118,38 @@ bool TR::NodeIterator::isAt(PreorderNodeIterator &other)
 
 void TR::NodeIterator::logCurrentLocation()
    {
-   // TODO: Log even without an _opt.
-
-   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+   if (_name && comp() && comp()->getOption(TR_TraceILWalks))
       {
       if (currentTree())
          {
          TR::Node *node = currentNode();
-         traceMsg(_opt->comp(), "NODE  %s  ", _name);
+         traceMsg(comp(), "NODE  %s  ", _name);
          if (stackDepth() >= 2)
             {
-            traceMsg(_opt->comp(), " ");
+            traceMsg(comp(), " ");
             for (int32_t i = 0; i < stackDepth()-2; i++)
                {
                if (_stack[i]._isBetweenChildren)
-                  traceMsg(_opt->comp(), " |");
+                  traceMsg(comp(), " |");
                else
-                  traceMsg(_opt->comp(), "  ");
+                  traceMsg(comp(), "  ");
                }
-            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
+            traceMsg(comp(), " %d: ", _stack[_stack.topIndex()-1]._child);
             }
-         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         traceMsg(comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
          // Usualy this one doesn't print, because when the iterator finishes
          // naturally, logCurrentLocation is not even called.
          //
-         traceMsg(_opt->comp(), "NODE  %s finished\n", _name );
+         traceMsg(comp(), "NODE  %s finished\n", _name );
          }
       }
    }
 
-TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :NodeIterator(start, opt, name)
-   {
-   push(start->getNode());
-   }
-
-TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp)
-   :NodeIterator(start, comp)
+TR::PreorderNodeIterator::PreorderNodeIterator(TR::TreeTop *start, TR::Compilation * comp, const char *name)
+   :NodeIterator(start, comp, name)
    {
    push(start->getNode());
    }
@@ -226,15 +208,8 @@ void TR::PreorderNodeIterator::stepForward()
       }
    }
 
-TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :NodeIterator(start, opt, name)
-   {
-   push(start->getNode());
-   descend();
-   }
-
-TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp)
-   :NodeIterator(start, comp)
+TR::PostorderNodeIterator::PostorderNodeIterator(TR::TreeTop *start, TR::Compilation * comp, const char *name)
+   :NodeIterator(start, comp, name)
    {
    push(start->getNode());
    descend();
@@ -312,40 +287,38 @@ TR::Node *TR::NodeOccurrenceIterator::currentNode()
 
 void TR::NodeOccurrenceIterator::logCurrentLocation()
    {
-   // TODO: Log even without an _opt.
-
-   if (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks))
+   if (_name && comp() && comp()->getOption(TR_TraceILWalks))
       {
       if (currentTree())
          {
          TR::Node *node = currentNode();
-         traceMsg(_opt->comp(), "WALK  %s  ", _name);
+         traceMsg(comp(), "WALK  %s  ", _name);
          if (stackDepth() >= 1)
             {
-            traceMsg(_opt->comp(), " ");
+            traceMsg(comp(), " ");
             for (int32_t i = 0; i < stackDepth()-1; i++)
                {
                if (_stack[i]._isBetweenChildren)
-                  traceMsg(_opt->comp(), " |");
+                  traceMsg(comp(), " |");
                else
-                  traceMsg(_opt->comp(), "  ");
+                  traceMsg(comp(), "  ");
                }
-            traceMsg(_opt->comp(), " %d: ", _stack[_stack.topIndex()]._child);
+            traceMsg(comp(), " %d: ", _stack[_stack.topIndex()]._child);
             }
-         traceMsg(_opt->comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         traceMsg(comp(), "%s n%dn [%p]\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
          }
       else
          {
          // Usually this one doesn't print, because when the iterator finishes
          // naturally, logCurrentLocation is not even called.
          //
-         traceMsg(_opt->comp(), "WALK  %s finished\n", _name );
+         traceMsg(comp(), "WALK  %s finished\n", _name );
          }
       }
    }
 
-TR::PreorderNodeOccurrenceIterator::PreorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :NodeOccurrenceIterator(start, opt, name)
+TR::PreorderNodeOccurrenceIterator::PreorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Compilation * comp, const char *name)
+   :NodeOccurrenceIterator(start, comp, name)
    {
    logCurrentLocation();
    }
@@ -395,8 +368,8 @@ void TR::PreorderNodeOccurrenceIterator::stepForward()
       }
    }
 
-TR::PostorderNodeOccurrenceIterator::PostorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Optimization *opt, const char *name)
-   :NodeOccurrenceIterator(start, opt, name)
+TR::PostorderNodeOccurrenceIterator::PostorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Compilation * comp, const char *name)
+   :NodeOccurrenceIterator(start, comp, name)
    {
    pushLeftmost(currentTree()->getNode());
    }
@@ -446,37 +419,35 @@ void TR::PostorderNodeOccurrenceIterator::stepForward()
 // Block iterators
 //
 
-TR::BlockIterator::BlockIterator(TR::Optimization *opt, const char *name)
-   :_opt(opt),_name(name)
+TR::BlockIterator::BlockIterator(TR::Compilation * comp, const char *name)
+   :_comp(comp),_name(name)
    {
-   if (opt && !name)
-      _name = opt->name();
    }
 
 bool TR::BlockIterator::isLoggingEnabled()
    {
-   return (_name && _opt && _opt->trace() && _opt->comp()->getOption(TR_TraceILWalks));
+   return (_name && _comp && _comp->getOption(TR_TraceILWalks));
    }
 
-TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator(TR::Block *start, TR::Optimization *opt, const char *name)
-   :BlockIterator(opt, name),
-   _postorder(opt->comp()->trMemory(), 5, false, stackAlloc)
+TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator(TR::Block *start, TR::Compilation * comp, const char *name)
+   :BlockIterator(comp, name),
+   _postorder(comp->trMemory(), 5, false, stackAlloc)
    {
    takeSnapshot(start);
    logCurrentLocation();
    }
 
-TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator(TR::CFG *cfg, TR::Optimization *opt, const char *name)
-   :BlockIterator(opt, name),
-   _postorder(opt->comp()->trMemory(), cfg->getNumberOfNodes(), false, stackAlloc)
+TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator(TR::CFG *cfg, TR::Compilation *comp, const char *name)
+   :BlockIterator(comp, name),
+   _postorder(comp->trMemory(), cfg->getNumberOfNodes(), false, stackAlloc)
    {
    takeSnapshot(cfg->getStart()->asBlock());
    if (isLoggingEnabled())
       {
-      traceMsg(_opt->comp(), "BLOCK  %s Snapshot:", _name);
+      traceMsg(comp, "BLOCK  %s Snapshot:", _name);
       for (int32_t i = _postorder.lastIndex(); i >= 0; --i)
-         traceMsg(_opt->comp(), " %d", _postorder[i]->getNumber());
-      traceMsg(_opt->comp(), "\n");
+         traceMsg(comp, " %d", _postorder[i]->getNumber());
+      traceMsg(comp, "\n");
       }
    logCurrentLocation();
    }
@@ -484,7 +455,7 @@ TR::ReversePostorderSnapshotBlockIterator::ReversePostorderSnapshotBlockIterator
 void TR::ReversePostorderSnapshotBlockIterator::takeSnapshot(TR::Block *start)
    {
    // TODO: This should use an iterative algorithm with a worklist, but the recursive algo is so much easier to write...
-   TR::BlockChecklist alreadyVisited(_opt->comp());
+   TR::BlockChecklist alreadyVisited(comp());
    visit(start, alreadyVisited);
    _currentIndex = _postorder.lastIndex();
    }
@@ -536,25 +507,23 @@ bool TR::ReversePostorderSnapshotBlockIterator::isStepOperationFinished()
       return true; // Reached the next block in the walk
 
    if (isLoggingEnabled())
-      traceMsg(_opt->comp(), "BLOCK  %s Skip block_%d removed during walk\n", _name, currentBlock()->getNumber());
+      traceMsg(comp(), "BLOCK  %s Skip block_%d removed during walk\n", _name, currentBlock()->getNumber());
    return false;
    }
 
 void TR::ReversePostorderSnapshotBlockIterator::logCurrentLocation()
    {
-   // TODO: Log even without an _opt.
-
    if (isLoggingEnabled())
       {
       if (currentBlock())
-         traceMsg(_opt->comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         traceMsg(comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         traceMsg(_opt->comp(), "BLOCK  %s finished\n", _name);
+         traceMsg(comp(), "BLOCK  %s finished\n", _name);
       }
    }
 
-TR::AllBlockIterator::AllBlockIterator(TR::CFG *cfg, TR::Optimization *opt, const char *name)
-   :BlockIterator(opt, name),_cfg(cfg),_currentBlock(cfg->getFirstNode()->asBlock()),_nextBlock(_currentBlock->getNext()->asBlock()),_alreadyVisited(cfg->comp())
+TR::AllBlockIterator::AllBlockIterator(TR::CFG *cfg, TR::Compilation * comp, const char *name)
+   :BlockIterator(comp, name),_cfg(cfg),_currentBlock(cfg->getFirstNode()->asBlock()),_nextBlock(_currentBlock->getNext()->asBlock()),_alreadyVisited(cfg->comp())
    {
    _alreadyVisited.add(_currentBlock);
    logCurrentLocation();
@@ -613,7 +582,7 @@ void TR::AllBlockIterator::stepForward()
             // Found one!
             //
             if (isLoggingEnabled())
-               traceMsg(_opt->comp(), "BLOCK  %s REMOVED_BLOCKS_CAN_BE_REINSERTED: block_%d found via extra scan\n", _name, next->asBlock()->getNumber());
+               traceMsg(comp(), "BLOCK  %s REMOVED_BLOCKS_CAN_BE_REINSERTED: block_%d found via extra scan\n", _name, next->asBlock()->getNumber());
             break;
             }
          }
@@ -644,13 +613,11 @@ void TR::AllBlockIterator::stepForward()
 
 void TR::AllBlockIterator::logCurrentLocation()
    {
-   // TODO: Log even without an _opt.
-
    if (isLoggingEnabled())
       {
       if (currentBlock())
-         traceMsg(_opt->comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
+         traceMsg(comp(), "BLOCK  %s @ block_%d\n", _name, currentBlock()->getNumber());
       else
-         traceMsg(_opt->comp(), "BLOCK  %s finished\n", _name);
+         traceMsg(comp(), "BLOCK  %s finished\n", _name);
       }
    }

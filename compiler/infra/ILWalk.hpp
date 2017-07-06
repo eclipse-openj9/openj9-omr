@@ -59,15 +59,17 @@ class TreeTopIteratorImpl
 
    // For logging
    //
+   TR::Compilation  *_comp;
    const char       *_name; // NULL means we don't want logging
-   TR::Optimization *_opt;
+
+   TR::Compilation * comp() { return _comp; }
 
    void logCurrentLocation();
 
    void stepForward();
    void stepBackward();
 
-   TreeTopIteratorImpl(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   TreeTopIteratorImpl(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
 
    public:
 
@@ -93,8 +95,8 @@ class TreeTopIterator: public TreeTopIteratorImpl
 
    public:
 
-   TreeTopIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL):
-      TreeTopIteratorImpl(start, opt, name){ logCurrentLocation(); }
+   TreeTopIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL):
+      TreeTopIteratorImpl(start, comp, name){ logCurrentLocation(); }
 
    void stepForward()  { Super::stepForward();  logCurrentLocation(); }
    void stepBackward() { Super::stepBackward(); logCurrentLocation(); }
@@ -122,7 +124,7 @@ class NodeIterator: protected TreeTopIteratorImpl // abstract
    TR_Stack<WalkState> _stack;
    NodeChecklist       _checklist;
 
-   NodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   NodeIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
    NodeIterator(TR::TreeTop *start, TR::Compilation *comp);
 
    int32_t stackDepth()
@@ -161,8 +163,7 @@ class PreorderNodeIterator: public NodeIterator
 
    public:
 
-   PreorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
-   PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp);
+   PreorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
 
    void         stepForward();
 
@@ -186,8 +187,7 @@ class PostorderNodeIterator: public NodeIterator
 
    public:
 
-   PostorderNodeIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
-   PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp);
+   PostorderNodeIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
 
    void         stepForward();
 
@@ -200,8 +200,8 @@ class NodeOccurrenceIterator: public NodeIterator
    {
    protected:
 
-   NodeOccurrenceIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL):
-      NodeIterator(start, opt, name){}
+   NodeOccurrenceIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL):
+      NodeIterator(start, comp, name){}
 
    void logCurrentLocation();
 
@@ -224,7 +224,7 @@ class PreorderNodeOccurrenceIterator: public NodeOccurrenceIterator
 
    public:
 
-   PreorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   PreorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
 
    void stepForward();
 
@@ -249,7 +249,7 @@ class PostorderNodeOccurrenceIterator: public NodeOccurrenceIterator
 
    public:
 
-   PostorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Optimization *opt=NULL, const char *name=NULL);
+   PostorderNodeOccurrenceIterator(TR::TreeTop *start, TR::Compilation *comp, const char *name=NULL);
 
    void stepForward();
 
@@ -263,12 +263,12 @@ class BlockIterator
    {
    protected:
 
-   TR::Optimization *_opt;
+   TR::Compilation  *_comp;
    const char       *_name;
 
    bool isLoggingEnabled();
 
-   BlockIterator(TR::Optimization *opt, const char *name);
+   BlockIterator(TR::Compilation *comp, const char *name);
    };
 
 // Scans blocks in reverse postorder from a given starting point, building up a
@@ -290,8 +290,8 @@ class ReversePostorderSnapshotBlockIterator: protected BlockIterator
 
    public:
 
-   ReversePostorderSnapshotBlockIterator(TR::Block *start, TR::Optimization *opt=NULL, const char *name=NULL);
-   ReversePostorderSnapshotBlockIterator(TR::CFG *cfg, TR::Optimization *opt=NULL, const char *name=NULL);
+   ReversePostorderSnapshotBlockIterator(TR::Block *start, TR::Compilation *comp, const char *name=NULL);
+   ReversePostorderSnapshotBlockIterator(TR::CFG *cfg, TR::Compilation * comp, const char *name=NULL);
 
    TR::Block   *currentBlock();
    bool         isAt(TR::Block *block){ return currentBlock() == block; }
@@ -328,7 +328,7 @@ class AllBlockIterator: protected BlockIterator
 
    public:
 
-   AllBlockIterator(TR::CFG *cfg, TR::Optimization *opt=NULL, const char *name=NULL);
+   AllBlockIterator(TR::CFG *cfg, TR::Compilation *comp, const char *name=NULL);
 
    TR::Block   *currentBlock();
    bool         isAt(TR::Block *block){ return currentBlock() == block; }

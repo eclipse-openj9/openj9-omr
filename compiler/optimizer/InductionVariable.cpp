@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -6643,7 +6643,7 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
          TR::Block * const branchBlock = controllingBranch->getEnclosingBlock();
          TR::TreeTop * const start = branchBlock->startOfExtendedBlock()->getEntry();
          TR::TreeTop * const end = controllingBranch->getNextTreeTop();
-         for (TR::PostorderNodeIterator it(start, this); it != end; ++it)
+         for (TR::PostorderNodeIterator it(start, comp()); it != end; ++it)
             {
             TR::Node * const node = it.currentNode();
             if (node == valueNode)

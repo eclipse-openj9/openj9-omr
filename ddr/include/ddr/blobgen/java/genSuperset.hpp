@@ -24,21 +24,16 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include <unordered_map>
 
 #include "ddr/ir/ClassType.hpp"
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/Field.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
+#include "ddr/std/unordered_map.hpp"
 
 using std::string;
 using std::stringstream;
-
-#if defined(OMR_HAVE_TR1)
-using std::tr1::unordered_map;
-#else
 using std::unordered_map;
-#endif
 
 class SupersetVisitor;
 

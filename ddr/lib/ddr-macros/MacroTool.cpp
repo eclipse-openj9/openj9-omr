@@ -26,12 +26,9 @@
 #include "ddr/error.hpp"
 #include "ddr/macros/MacroTool.hpp"
 #include "ddr/ir/NamespaceUDT.hpp"
+#include "ddr/std/unordered_map.hpp"
 
-#if defined(OMR_HAVE_TR1)
-using std::tr1::unordered_map;
-#else
 using std::unordered_map;
-#endif
 
 string
 MacroTool::getTypeName(string s)

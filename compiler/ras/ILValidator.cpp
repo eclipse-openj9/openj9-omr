@@ -73,7 +73,7 @@ void TR::ILValidator::checkSoundness(TR::TreeTop *start, TR::TreeTop *stop)
          }
       else
          {
-         soundnessRule(currentTree, stop == NULL, "Reached the end of the trees after n%dn without encountering the stop tree n%dn", currentTree->getNode()->getGlobalIndex(), stop? stop->getNode()->getGlobalIndex() : NULL);
+         soundnessRule(currentTree, stop == NULL, "Reached the end of the trees after n%dn without encountering the stop tree n%dn", currentTree->getNode()->getGlobalIndex(), stop? stop->getNode()->getGlobalIndex() : 0);
          checkNodeSoundness(currentTree, currentTree->getNode(), ancestorNodes, visitedNodes);
          }
       }
@@ -208,7 +208,7 @@ bool TR::ILValidator::treesAreValid(TR::TreeTop *start, TR::TreeTop *stop)
          if (nextTree)
             {
             validityRule(iter, nextTree->getNode()->getOpCodeValue() == TR::BBStart, "Expected BBStart after BBEnd");
-            isEndOfExtendedBlock = nextTree->getNode()->getBlock()->isExtensionOfPreviousBlock();
+            isEndOfExtendedBlock = ! nextTree->getNode()->getBlock()->isExtensionOfPreviousBlock();
             }
          else
             {

@@ -144,7 +144,7 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
             generateRegRegInstruction(MOVDRegReg4, node, tempVectorReg, childReg->getHighOrder(), cg);
             generateRegImmInstruction(PSLLQRegImm1, node, tempVectorReg, 0x20, cg);
             generateRegRegInstruction(MOVDRegReg4, node, resultReg, childReg->getLowOrder(), cg);
-            generateRegRegInstruction(POR, node, resultReg, tempVectorReg, cg);
+            generateRegRegInstruction(PORRegReg, node, resultReg, tempVectorReg, cg);
             cg->stopUsingRegister(tempVectorReg);
             }
          else
@@ -170,3 +170,162 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
    cg->decReferenceCount(childNode);
    return resultReg;
    }
+
+TR::Register* OMR::X86::TreeEvaluator::SIMDgetvelemEvaluator(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* firstChild = node->getChild(0);
+   TR::Node* secondChild = node->getChild(1);
+
+   TR::Register* srcVectorReg = cg->evaluate(firstChild);
+   TR::Register* resReg = 0;
+   TR::Register* lowResReg = 0;
+   TR::Register* highResReg = 0;
+
+   int32_t elementCount = -1;
+   switch (firstChild->getDataType())
+      {
+      case TR::VectorInt8:
+      case TR::VectorInt16:
+         TR_ASSERT(false, "unsupported vector type %s in SIMDgetvelemEvaluator.\n", firstChild->getDataType().toString());
+         break;
+      case TR::VectorInt32:
+         elementCount = 4;
+         resReg = cg->allocateRegister();
+         break;
+      case TR::VectorInt64:
+         elementCount = 2;
+         if (TR::Compiler->target.is32Bit())
+            {
+            lowResReg = cg->allocateRegister();
+            highResReg = cg->allocateRegister();
+            resReg = cg->allocateRegisterPair(lowResReg, highResReg);
+            }
+         else
+            {
+            resReg = cg->allocateRegister();
+            }
+         break;
+      case TR::VectorFloat:
+         elementCount = 4;
+         resReg = cg->allocateSinglePrecisionRegister(TR_FPR);
+         break;
+      case TR::VectorDouble:
+         elementCount = 2;
+         resReg = cg->allocateRegister(TR_FPR);
+         break;
+      default:
+         TR_ASSERT(false, "unrecognized vector type %s in SIMDgetvelemEvaluator.\n", firstChild->getDataType().toString());
+      }
+
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int32_t elem = secondChild->getInt();
+
+      TR_ASSERT(elem >= 0 && elem < elementCount, "Element can only be 0 to %u\n", elementCount - 1);
+
+      uint8_t shufconst = 0x00;
+      TR::Register* dstReg = 0;
+      if (4 == elementCount)
+         {
+         /*
+          * if elem = 0, access the most significant 32 bits (set shufconst to 0x03)
+          * if elem = 1, access the second most significant 32 bits (set shufconst to 0x02)
+          * if elem = 2, access the third most significant 32 bits (set shufconst to 0x01)
+          * if elem = 3, access the least significant 32 bits (set shufconst to 0x00)
+          */
+         shufconst = (uint8_t)((3 - elem) & 0x03);
+
+         /*
+          * the value to be read (indicated by shufconst) from srcVectorReg is splatted into all 4 slots in the dstReg
+          * this puts the value we want in the least significant bits and the other bits should never be read.
+          * for float, dstReg and resReg are the same because PSHUFD can work directly with TR_FPR registers
+          * for Int32, the result needs to be moved from the dstReg to a TR_GPR resReg.
+          */
+         if (TR::VectorInt32 == firstChild->getDataType())
+            {
+            dstReg = cg->allocateRegister(TR_VRF);
+            }
+         else //TR::VectorFloat == firstChild->getDataType()
+            {
+            dstReg = resReg;
+            }
+
+         /*
+          * if elem = 3, the value we want is already in the least significant 32 bits
+          * as a result, a mov instruction is good enough and splatting the value is unnecessary
+          */
+         if (3 == elem)
+            {
+            generateRegRegInstruction(MOVDQURegReg, node, dstReg, srcVectorReg, cg);
+            }
+         else
+            {
+            generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, shufconst, cg);
+            }
+
+         if (TR::VectorInt32 == firstChild->getDataType())
+            {
+            generateRegRegInstruction(MOVDReg4Reg, node, resReg, dstReg, cg);
+            cg->stopUsingRegister(dstReg);
+            }
+         }
+      else //2 == elementCount
+         {
+         /*
+          * for double, dstReg and resReg are the same because PSHUFD can work directly with TR_FPR registers
+          * for Int64, the result needs to be moved from the dstReg to a TR_GPR resReg.
+          */
+         if (TR::VectorInt64 == firstChild->getDataType())
+            {
+            dstReg = cg->allocateRegister(TR_VRF);
+            }
+         else //TR::VectorDouble == firstChild->getDataType()
+            {
+            dstReg = resReg;
+            }
+
+         /*
+          * the value to be read needs to be in the least significant 64 bits.
+          * if elem = 0, the value we want is in the most significant 64 bits and needs to be splatted into
+          * the least significant 64 bits (the other bits affected by the splat are never read)
+          * if elem = 1, the value we want is already in the least significant 64 bits
+          * as a result, a mov instruction is good enough and splatting the value is unnecessary
+          */
+         if (1 == elem)
+            {
+            generateRegRegInstruction(MOVDQURegReg, node, dstReg, srcVectorReg, cg);
+            }
+         else //0 == elem
+            {
+            generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, 0x0e, cg);
+            }
+
+         if (TR::VectorInt64 == firstChild->getDataType())
+            {
+            if (TR::Compiler->target.is32Bit())
+               {
+               generateRegRegInstruction(MOVDReg4Reg, node, lowResReg, dstReg, cg);
+               generateRegRegImmInstruction(PSHUFDRegRegImm1, node, dstReg, srcVectorReg, (0 == elem) ? 0x03 : 0x01, cg);
+               generateRegRegInstruction(MOVDReg4Reg, node, highResReg, dstReg, cg);
+               }
+            else
+               {
+               generateRegRegInstruction(MOVQReg8Reg, node, resReg, dstReg, cg);
+               }
+            cg->stopUsingRegister(dstReg);
+            }
+         }
+      }
+   else
+      {
+      //TODO: handle non-constant second child case
+      TR_ASSERT(false, "non-const second child not currently supported in SIMDgetvelemEvaluator.\n");
+      }
+
+   node->setRegister(resReg);
+   cg->decReferenceCount(firstChild);
+   cg->decReferenceCount(secondChild);
+
+   return resReg;
+   }
+

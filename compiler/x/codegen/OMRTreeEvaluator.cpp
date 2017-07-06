@@ -5876,42 +5876,64 @@ enum BinaryArithmeticOps : uint32_t
    BinaryArithmeticSub,
    BinaryArithmeticMul,
    BinaryArithmeticDiv,
+   BinaryArithmeticAnd,
+   BinaryArithmeticOr,
+   BinaryArithmeticXor,
    NumBinaryArithmeticOps
    };
+
 static const TR_X86OpCodes BinaryArithmeticOpCodes[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
-   //  Invalid,       Add,         Sub,       Mul,         Div
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // NoType
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Int8
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Int16
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Int32
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Int64
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Float
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Double
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Address
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // VectorInt8
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // VectorInt16
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // VectorInt32
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // VectorInt64
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // VectorFloat
-   { BADIA32Op, ADDPDRegReg, BADIA32Op, MULPDRegReg, BADIA32Op }, // VectorDouble
-   { BADIA32Op, BADIA32Op,   BADIA32Op, BADIA32Op,   BADIA32Op }, // Aggregate
+   //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int8
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int16
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int32
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int64
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
+   { BADIA32Op, PADDD,       PSUBDRegReg, PMULLD,       BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt32
+   { BADIA32Op, PADDQRegReg, PSUBQRegReg, BADIA32Op,    BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt64
+   { BADIA32Op, ADDPSRegReg, SUBPSRegReg, MULPSRegReg,  DIVPSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorFloat
+   { BADIA32Op, ADDPDRegReg, SUBPDRegReg, MULPDRegReg,  DIVPDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorDouble
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
    };
+
 // For ILOpCode that can be translated to single SSE/AVX instructions
 TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
    auto arithmetic = BinaryArithmeticInvalid;
+
    switch (node->getOpCodeValue())
       {
       case TR::vadd:
          arithmetic = BinaryArithmeticAdd;
          break;
+      case TR::vsub:
+         arithmetic = BinaryArithmeticSub;
+         break;
       case TR::vmul:
          arithmetic = BinaryArithmeticMul;
+         break;
+      case TR::vdiv:
+         arithmetic = BinaryArithmeticDiv;
+         break;
+      case TR::vand:
+         arithmetic = BinaryArithmeticAnd;
+         break;
+      case TR::vor:
+         arithmetic = BinaryArithmeticOr;
+         break;
+      case TR::vxor:
+         arithmetic = BinaryArithmeticXor;
          break;
       default:
          TR_ASSERT(false, "Unsupported OpCode");
       }
+
    TR::Node* operandNode0 = node->getChild(0);
    TR::Node* operandNode1 = node->getChild(1);
    TR::Register* operandReg0 = cg->evaluate(operandNode0);
@@ -5929,3 +5951,4 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    cg->decReferenceCount(operandNode1);
    return resultReg;
    }
+

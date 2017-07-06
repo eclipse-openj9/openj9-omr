@@ -34,6 +34,8 @@
 #if defined(AIXPPC) || defined(J9ZOS390)
 #define __IBMCPP_TR1__ 1
 #define OMR_HAVE_TR1 1
+#else
+#define OMR_HAVE_CXX11 1
 #endif /* !defined(AIXPPC) && !defined(J9ZOS390) */
 
 /* Why is this disabled? */

@@ -173,6 +173,8 @@ OMR::BytecodeBuilder::AddSuccessorBuilders(uint32_t numExits, ...)
    for (int32_t e=0;e < numExits;e++)
       {
       TR::BytecodeBuilder **builder = (TR::BytecodeBuilder **) va_arg(exits, TR::BytecodeBuilder **);
+      if ((*builder)->_bcIndex < _bcIndex) //If the successor has a bcIndex < than the current bcIndex this may be a loop
+         _methodSymbol->setMayHaveLoops(true);
       transferVMState(builder);            // may change what builder points at!
       _successorBuilders->add(*builder);   // must be the bytecode builder that comes back from transferVMState()
       _methodBuilder->addBytecodeBuilderToWorklist(*builder);

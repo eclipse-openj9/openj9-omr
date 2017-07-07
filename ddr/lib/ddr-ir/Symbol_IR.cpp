@@ -261,14 +261,7 @@ MergeVisitor::visitType(NamespaceUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	NamespaceUDT *other = (NamespaceUDT *)_other;
-	bool currentlyHasAnonymousSubtypes = false;
-	for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); ++it) {
-		if ((*it)->_name.empty()) {
-			currentlyHasAnonymousSubtypes = true;
-			break;
-		}
-	}
-	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), !currentlyHasAnonymousSubtypes, type, _merged);
+	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	return DDR_RC_OK;
 }
 
@@ -293,14 +286,7 @@ MergeVisitor::visitType(ClassUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	ClassUDT *other = (ClassUDT *)_other;
-	bool currentlyHasAnonymousSubtypes = false;
-	for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); ++it) {
-		if ((*it)->_name.empty()) {
-			currentlyHasAnonymousSubtypes = true;
-			break;
-		}
-	}
-	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), !currentlyHasAnonymousSubtypes, type, _merged);
+	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	return DDR_RC_OK;
@@ -311,69 +297,32 @@ MergeVisitor::visitType(UnionUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	UnionUDT *other = (UnionUDT *)_other;
-	bool currentlyHasAnonymousSubtypes = false;
-	for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); ++it) {
-		if ((*it)->_name.empty()) {
-			currentlyHasAnonymousSubtypes = true;
-			break;
-		}
-	}
-	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), !currentlyHasAnonymousSubtypes, type, _merged);
+	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	return DDR_RC_OK;
 }
 
 template<typename T> void
-Symbol_IR::mergeTypes(vector<T *> *source, vector<T *> *other, bool mergeAnonymous,
+Symbol_IR::mergeTypes(vector<T *> *source, vector<T *> *other,
 	NamespaceUDT *outerNamespace, vector<Type *> *merged)
 {
-	// of the same class of the merged type. Broken for typedefs with same name as class.. why is that so anyway?
-	/* Create a map of all types in the source list. */
-	/* Types are matched by full name. */
-	unordered_map<string, Type *> typeMapName;
-	for (typename vector<T *>::iterator it = source->begin(); it != source->end(); ++it) {
-		Type *t = (Type *)(*it);
-		string nameKey = t->getFullName();
-		if (NULL == t->getBaseType()) {
-			nameKey = t->getSymbolKindName() + nameKey;
-		}
-		if (!t->_name.empty()) {
-			typeMapName[nameKey] = t;
-		}
-	}
 	for (typename vector<T *>::iterator it = other->begin(); it != other->end();) {
-		Type *t = (Type *)(*it);
-		bool moved = false;
-		string nameKey = t->getFullName();
-		if (NULL == t->getBaseType()) {
-			nameKey = t->getSymbolKindName() + nameKey;
-		}
+		Type *type = (Type *)(*it);
+		Type *originalType = findTypeInMap(type);
 
 		/* Types in the other list not in the source list are added. */
 		/* Types in both lists are merged. */
-		if (!t->_name.empty()) {
-			if (typeMapName.end() == typeMapName.find(nameKey)) {
-				moved = true;
-				typeMapName[nameKey] = t;
-			} else {
-				Type *original = typeMapName.find(nameKey)->second;
-				original->acceptVisitor(MergeVisitor(this, t, merged));
-			}
-		} else if (mergeAnonymous) {
-			/* Anonymous subtypes within one scan must be all or nothing.
-			 * If a type has anonymous subtypes already, do not add/merge more.
-			 */
-			moved = true;
-		}
-		if (moved) {
-			source->push_back((T *)t);
-			merged->push_back(t);
+		if (NULL == originalType) {
+			addTypeToMap(type);
+			source->push_back((T *)type);
+			merged->push_back(type);
 			it = other->erase(it);
 			if (NULL != outerNamespace) {
-				((UDT *)t)->_outerNamespace = outerNamespace;
+				((UDT *)type)->_outerNamespace = outerNamespace;
 			}
 		} else {
+			originalType->acceptVisitor(MergeVisitor(this, type, merged));
 			++ it;
 		}
 	}
@@ -423,12 +372,11 @@ Symbol_IR::mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other)
 class TypeReplaceVisitor : public TypeVisitor
 {
 private:
-	unordered_map<string, vector<Type *> > *_typeMap;
-	set<Type *> *_typeSet;
+	Symbol_IR *_ir;
 
 public:
-	TypeReplaceVisitor(unordered_map<string, vector<Type *> > *typeMap, set<Type *> *typeSet)
-		: _typeMap(typeMap), _typeSet(typeSet) {}
+	TypeReplaceVisitor(Symbol_IR *ir)
+		: _ir(ir) {}
 
 	DDR_RC visitType(Type *type) const;
 	DDR_RC visitType(NamespaceUDT *type) const;
@@ -449,36 +397,6 @@ private:
     const Type* _other;
 };
 
-static DDR_RC
-findType(unordered_map<string, vector<Type *> > *typeMap, Type **typeToReplace)
-{
-	DDR_RC rc = DDR_RC_OK;
-	if ((NULL != typeToReplace) && (NULL != *typeToReplace)) {
-		string nameKey = (*typeToReplace)->getFullName();
-		if (NULL == (*typeToReplace)->getBaseType()) {
-			nameKey = (*typeToReplace)->getSymbolKindName() + nameKey;
-		}
-
-		if (typeMap->end() == typeMap->find(nameKey)) {
-			ERRMSG("Error replacing type. Type not found, but was expected to be in IR after merge: '%s'.",
-				(*typeToReplace)->getFullName().c_str());
-			rc = DDR_RC_ERROR;
-		} else {
-			vector<Type *> v = typeMap->find(nameKey)->second;
-			if (1 == v.size()) {
-				*typeToReplace = v.at(0);
-			} else if (1 < v.size()) {
-				*typeToReplace = *find_if(v.begin(), v.end(), TypeCheck(*typeToReplace));
-			} else {
-				ERRMSG("Error replacing type. Type not found, but was expected to be in IR after merge: '%s'.",
-					(*typeToReplace)->getFullName().c_str());
-				rc = DDR_RC_ERROR;
-			}
-		}
-	}
-	return rc;
-}
-
 DDR_RC
 TypeReplaceVisitor::visitType(Type *type) const
 {
@@ -490,7 +408,7 @@ TypeReplaceVisitor::visitType(NamespaceUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
 	}
 	return rc;
 }
@@ -504,7 +422,7 @@ TypeReplaceVisitor::visitType(EnumUDT *type) const
 DDR_RC
 TypeReplaceVisitor::visitType(TypedefUDT *type) const
 {
-	return findType(_typeMap, &type->_aliasedType);
+	return _ir->replaceTypeUsingMap(&type->_aliasedType, type);
 }
 
 DDR_RC
@@ -512,14 +430,16 @@ TypeReplaceVisitor::visitType(ClassUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
 	}
-	for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end(); ++it) {
-		rc = findType(_typeMap, &(*it)->_fieldType);
+	if (DDR_RC_OK == rc) {
+		for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end() && DDR_RC_OK == rc; ++it) {
+			rc = _ir->replaceTypeUsingMap(&(*it)->_fieldType, type);
+		}
 	}
 
 	if (DDR_RC_OK == rc) {
-		rc = findType(_typeMap, (Type **)&type->_superClass);
+		rc = _ir->replaceTypeUsingMap((Type **)&type->_superClass, type);
 	}
 	return rc;
 }
@@ -529,60 +449,116 @@ TypeReplaceVisitor::visitType(UnionUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_typeMap, _typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
 	}
-	for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end(); ++it) {
-		rc = findType(_typeMap, &(*it)->_fieldType);
+	if (DDR_RC_OK == rc) {
+		for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end() && DDR_RC_OK == rc; ++it) {
+			rc = _ir->replaceTypeUsingMap(&(*it)->_fieldType, type);
+		}
 	}
 	return rc;
+}
+
+DDR_RC
+Symbol_IR::replaceTypeUsingMap(Type **type, Type *outer)
+{
+	DDR_RC rc = DDR_RC_OK;
+	if ((NULL != type) && (NULL != *type) && (_typeSet.end() == _typeSet.find(*type))) {
+		Type *replacementType = findTypeInMap(*type);
+		if (NULL == replacementType) {
+			ERRMSG("Error replacing type '%s' in '%s'", (*type)->getFullName().c_str(), outer->getFullName().c_str());
+			rc = DDR_RC_ERROR;
+		}
+		*type = replacementType;
+	}
+	return rc;
+}
+
+Type *
+Symbol_IR::findTypeInMap(Type *typeToFind)
+{
+	Type *returnType = NULL;
+	if (NULL != typeToFind) {
+		string nameKey = typeToFind->getFullName();
+		if (NULL == typeToFind->getBaseType()) {
+			nameKey = typeToFind->getSymbolKindName() + nameKey;
+		}
+
+		if (_typeMap.end() != _typeMap.find(nameKey)) {
+			set<Type *> s = _typeMap.find(nameKey)->second;
+			if ((1 == s.size()) && (!typeToFind->_name.empty())) {
+				returnType = *s.begin();
+			} else if (1 < s.size()) {
+				set<Type *>::iterator it = find_if(s.begin(), s.end(), TypeCheck(typeToFind));
+				if (s.end() != it) {
+					returnType = *it;
+				}
+			}
+		}
+	}
+	return returnType;
+}
+
+void
+Symbol_IR::addTypeToMap(Type *type)
+{
+	stack<vector<UDT *>::iterator> itStack;
+	if ((NULL != type->getSubUDTS()) && (!type->getSubUDTS()->empty())) {
+		itStack.push(type->getSubUDTS()->begin());
+	}
+
+	Type *startType = type;
+	while (NULL != type) {
+		string nameKey = type->getFullName();
+		if (NULL == type->getBaseType()) {
+			nameKey = type->getSymbolKindName() + nameKey;
+		}
+
+		_typeMap[nameKey].insert(type);
+		_typeSet.insert(type);
+		if (NULL == type->getSubUDTS() || type->getSubUDTS()->empty()) {
+			if (startType == type) {
+				type = NULL;
+			} else {
+				type = type->getNamespace();
+			}
+		} else if (type->getSubUDTS()->end() == itStack.top()) {
+			if (startType == type) {
+				type = NULL;
+			} else {
+				type = type->getNamespace();
+			}
+			itStack.pop();
+		} else {
+			type = *itStack.top();
+			itStack.top() ++;
+			if (NULL != type->getSubUDTS() && !type->getSubUDTS()->empty()) {
+				itStack.push(type->getSubUDTS()->begin());
+			}
+		}
+	};
 }
 
 DDR_RC
 Symbol_IR::mergeIR(Symbol_IR *other)
 {
 	DDR_RC rc = DDR_RC_OK;
-	vector<Type *> mergedTypes;
-	mergeTypes(&_types, &other->_types, true, NULL, &mergedTypes);
-
 	/* Create map of this source IR of type full name to type. Use it to replace all
 	 * pointers in types acquired from other IRs. The problem of encountering
 	 * types to replace that are not yet in this IR is solved by doing all of the type
 	 * replacement after all types are merged.
 	 */
-	unordered_map<string, vector<Type *> > typeMap;
-	set<Type *> typeSet;
-	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
-		Type *t = *it;
-		stack<vector<UDT *>::iterator> itStack;
-		if (NULL != t->getSubUDTS()) {
-			itStack.push(t->getSubUDTS()->begin());
+	if (_typeMap.empty() && _typeSet.empty()) {
+		for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
+			addTypeToMap(*it);
 		}
-
-		while (NULL != t) {
-			string nameKey = t->getFullName();
-			if (NULL == t->getBaseType()) {
-				nameKey = t->getSymbolKindName() + nameKey;
-			}
-
-			typeMap[nameKey].push_back(t);
-			typeSet.insert(t);
-			if (NULL == t->getSubUDTS() || t->getSubUDTS()->empty()) {
-				t = t->getNamespace();
-			} else if (t->getSubUDTS()->end() == itStack.top()) {
-				t = t->getNamespace();
-				itStack.pop();
-			} else {
-				t = *itStack.top();
-				itStack.top() ++;
-				if (NULL != t->getSubUDTS() && !t->getSubUDTS()->empty()) {
-					itStack.push(t->getSubUDTS()->begin());
-				}
-			}
-		};
 	}
 
+	vector<Type *> mergedTypes;
+	mergeTypes(&_types, &other->_types, NULL, &mergedTypes);
+
 	for (vector<Type *>::iterator it = mergedTypes.begin(); it != mergedTypes.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(&typeMap, &typeSet));
+		rc = (*it)->acceptVisitor(TypeReplaceVisitor(this));
 		if (DDR_RC_OK != rc) {
 			break;
 		}

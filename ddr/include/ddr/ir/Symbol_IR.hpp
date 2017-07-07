@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <set>
+#include <unordered_map>
 
 #include "omrport.h"
 
@@ -31,6 +32,7 @@
 
 using std::vector;
 using std::set;
+using std::unordered_map;
 
 struct FieldOverride {
 	string structName;
@@ -52,7 +54,10 @@ public:
 	 * approach.
 	 */
 	set<string> _fullTypeNames;
+	set<Type *> _typeSet;
+	unordered_map<string, set<Type *> > _typeMap;
 
+	Symbol_IR() {}
 	~Symbol_IR();
 
 	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
@@ -62,12 +67,16 @@ public:
 
 private:
 	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
-	template<typename T> void mergeTypes(vector<T *> *source, vector<T *> *other, bool mergeAnonymous,
+	template<typename T> void mergeTypes(vector<T *> *source, vector<T *> *other,
 		NamespaceUDT *outerNamespace, vector<Type *> *merged);
 	void mergeFields(vector<Field *> *source, vector<Field *> *other, Type *type, vector<Type *> *merged);
 	void mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other);
+	void addTypeToMap(Type *type);
+	Type *findTypeInMap(Type *typeToFind);
+	DDR_RC replaceTypeUsingMap(Type **type, Type *outer);
 
 	friend class MergeVisitor;
+	friend class TypeReplaceVisitor;
 };
 
 #endif /* SYMBOL_IR_HPP */

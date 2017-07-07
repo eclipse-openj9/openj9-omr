@@ -18,6 +18,14 @@
 
 #include "ras/ILValidator.hpp"
 
+#include "il/DataTypes.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/ILProps.hpp"
+#include "il/ILOps.hpp"
+#include "il/Block.hpp"
+#include "il/Block_inlines.hpp"
+
 TR::ILValidator::ILValidator(TR::Compilation *comp)
    :_comp(comp)
    ,_nodeStates(comp->trMemory())
@@ -214,6 +222,61 @@ bool TR::ILValidator::treesAreValid(TR::TreeTop *start, TR::TreeTop *stop)
 
          if (isEndOfExtendedBlock)
             validateEndOfExtendedBlock(iter);
+         }
+
+      auto opcode = node->getOpCode();
+      if (opcode.expectedChildCount() != ILChildProp::UnspecifiedChildCount)
+         {
+         // Validate child expectations
+         //
+
+         const auto expChildCount = opcode.expectedChildCount();
+         const auto actChildCount = node->getNumChildren();
+
+         // validate child count
+         if (!opcode.canHaveGlRegDeps())
+            {
+            // in the common case, no GlRegDeps child is expect nor present
+            validityRule(iter, actChildCount == expChildCount,
+                         "Child count %d does not match expected value of %d", actChildCount, expChildCount);
+            }
+         else if (actChildCount == (expChildCount + 1))
+            {
+            // adjust expected child number to account for a possible extra GlRegDeps
+            // child and make sure the last child is actually a GlRegDeps
+            validityRule(iter, node->getChild(actChildCount - 1)->getOpCodeValue() == TR::GlRegDeps,
+                         "Child count %d does not match expected value of %d (%d without GlRegDeps) and last child is not a GlRegDeps",
+                         actChildCount, expChildCount + 1, expChildCount);
+            }
+         else
+            {
+            // if expected and actual child counts don't match, then the child
+            // count is just wrong, even with an expected GlRegDeps
+            validityRule(iter, actChildCount == expChildCount,
+                         "Child count %d matches neither expected values of %d (without GlRegDeps) nor %d (with GlRegDeps)",
+                         actChildCount, expChildCount, expChildCount + 1);
+            }
+
+         // validate child types
+         for (auto i = 0; i < actChildCount; ++i)
+            {
+            auto childOpcode = node->getChild(i)->getOpCode();
+            if (childOpcode.getOpCodeValue() != TR::GlRegDeps)
+               {
+               const auto expChildType = opcode.expectedChildType(i);
+               const auto actChildType = childOpcode.getDataType().getDataType();
+               const auto expChildTypeName = expChildType == ILChildProp::UnspecifiedChildType ? "UnspecifiedChildType" : TR::DataType::getName(expChildType);
+               const auto actChildTypeName = TR::DataType::getName(actChildType);
+               validityRule(iter, expChildType == ILChildProp::UnspecifiedChildType || actChildType == expChildType,
+                            "Child %d has unexpected type %s (expected %s)" , i, actChildTypeName, expChildTypeName);
+               }
+            else
+               {
+               // make sure the node is allowed to have a GlRegDeps child
+               // and make sure that it is the last child
+               validityRule(iter, opcode.canHaveGlRegDeps() && (i == actChildCount - 1), "Unexpected GlRegDeps child %d", i);
+               }
+            }
          }
       }
 

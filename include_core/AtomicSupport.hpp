@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #if !defined(ATOMIC_SUPPORT_HPP_)
@@ -24,6 +25,10 @@
 #if defined(TYPESTUBS_H)
 #define ATOMIC_SUPPORT_STUB
 #endif /* defined(TYPESTUBS_H) */
+
+#if defined(OMRZTPF)
+#include <tpf/cmpswp.h>
+#endif
 
 #include <stdlib.h>
 #if !defined(ATOMIC_SUPPORT_STUB)
@@ -321,7 +326,10 @@ public:
 			}
 		}
 #endif /* defined(ATOMIC_ALLOW_PRE_READ) */
-#if defined(__GNUC__) /* defined(ATOMIC_SUPPORT_STUB) */
+#if defined(OMRZTPF)
+        cs((cs_t *)&oldValue, (cs_t *)address, (cs_t)newValue);
+        return oldValue;
+#elif defined(__GNUC__) /* defined(OMRZTPF) */ 
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(_MSC_VER) /* defined(__GNUC__) */
@@ -375,7 +383,10 @@ public:
 #endif /* defined(ATOMIC_ALLOW_PRE_READ) */
 #if defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) /* defined(ATOMIC_SUPPORT_STUB) */
 		return J9CAS8Helper(address, ((uint32_t*)&oldValue)[1], ((uint32_t*)&oldValue)[0], ((uint32_t*)&newValue)[1], ((uint32_t*)&newValue)[0]);
-#elif defined(__GNUC__) /* defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) */
+#elif defined(OMRZTPF) /* defined(OMR_ARCH_POWER) && !defined(OMR_ENV_DATA64) */
+		csg((csg_t *)&oldValue, (csg_t *)address, (csg_t)newValue);
+		return oldValue;
+#elif defined(__GNUC__) /* defined(OMRZTPF) */
 		/* Assume GCC >= 4.2 */
 		return __sync_val_compare_and_swap(address, oldValue, newValue);
 #elif defined(_MSC_VER) /* defined(__GNUC__) */

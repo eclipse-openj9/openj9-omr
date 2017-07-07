@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2015, 2016
+# (c) Copyright IBM Corp. 2015, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
 #
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
+#    James Johnston (IBM Corp.) - initial z/TPF Port Updates
 ###############################################################################
 
 ###
@@ -83,6 +84,9 @@ ifneq (,$(findstring win_x86,$(SPEC)))
 endif
 ifneq (,$(findstring zos_390,$(SPEC)))
   include $(CONFIG_INCL_DIR)/configure_zos_390.mk
+endif
+ifneq (,$(findstring linux_ztpf_390-64,$(SPEC)))
+  include $(CONFIG_INCL_DIR)/configure_linux_ztpf_390.mk
 endif
 endif # ifdef CONFIG_INCL_DIR
 CONFIGURE_ARGS += $(EXTRA_CONFIGURE_ARGS)

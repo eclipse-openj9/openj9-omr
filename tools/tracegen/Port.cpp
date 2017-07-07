@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,9 +14,10 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #include <sys/vfs.h>
 #elif defined(OSX)
 #include <sys/param.h>
@@ -29,7 +30,9 @@
 #define J9FILE_UNC_EXTENDED_LENGTH_PREFIX (L"\\\\?\\")
 #else /* defined(WIN32) */
 #include <sys/types.h>
+#if !defined(OMRZTPF)
 #include <sys/statvfs.h>
+#endif
 #include <dirent.h>
 #endif /* defined(WIN32)*/
 
@@ -629,7 +632,7 @@ RCType
 Port::omrfile_stat(const char *path, unsigned int flags, struct J9FileStat *buf)
 {
 	struct stat statbuf;
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX)
 	struct statfs statfsbuf;
 #elif defined(AIXPPC)
 	struct statvfs statvfsbuf;
@@ -669,7 +672,7 @@ Port::omrfile_stat(const char *path, unsigned int flags, struct J9FileStat *buf)
 	buf->ownerUid = statbuf.st_uid;
 	buf->ownerGid = statbuf.st_gid;
 
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) && !defined(J9ZTPF)) || defined(OSX)
 	if (statfs(path, &statfsbuf)) {
 		return RC_FAILED;
 	}

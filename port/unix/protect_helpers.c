@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include "omrcomp.h"
@@ -45,6 +46,12 @@ struct {
 intptr_t
 protect_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t length, uintptr_t flags)
 {
+#if defined(OMRZTPF)
+	/* Return success, zTPF does not support mprotect. */
+	IDATA rc = 0;
+
+	return rc;
+#else /* defined(OMRZTPF) */
 	uintptr_t index;
 	intptr_t unixFlags = 0;
 	intptr_t rc = -1;
@@ -63,6 +70,7 @@ protect_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t leng
 	}
 
 	return rc;
+#endif /* defined(OMRZTPF) */
 }
 
 uintptr_t

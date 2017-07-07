@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include <ctype.h>
@@ -472,7 +473,11 @@ TDFParser::processAssertTemplate(const char *formatTemplate, unsigned int *count
 		if ('P' == *pos) {
 			pos++;
 			numStart = pos;
+#if !defined(OMRZTPF)
 			while (isdigit(*pos)) {
+#else
+			while (isdigit((unsigned char)*pos)) {
+#endif
 				pos++;
 			}
 			num = atoi(numStart);
@@ -579,7 +584,11 @@ TDFParser::processTemplate(const char *formatTemplate, char *str, unsigned int *
 					 * For a valid string, there must always be a follow on
 					 * type specifier, so this code runs in all valid cases
 					 */
+#if !defined(OMRZTPF)
 					char peekAhead = *(pos + 1);
+#else
+					unsigned char peekAhead = *(pos + 1);
+#endif
 					if (3 == state) {
 						/* This 0 is a continuation of a width specifier */
 					} else if ('.' == peekAhead) {

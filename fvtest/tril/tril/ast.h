@@ -28,20 +28,23 @@ extern "C" {
 
 typedef enum {Int64, Double, String} ASTValueType;
 
-typedef struct {
+struct ASTValue;
+typedef struct ASTValue ASTValue;
+struct ASTValue {
     ASTValueType type;
     union {
         uint64_t int64;
         double f64;
         const char* str;
     } value;
-} ASTValue;
+    ASTValue* next;
+};
 
 struct ASTNodeArg;
 typedef struct ASTNodeArg ASTNodeArg;
 struct ASTNodeArg {
     const char* name;
-    ASTValue value;
+    ASTValue* value;
     ASTNodeArg* next;
 };
 
@@ -56,18 +59,26 @@ struct ASTNode {
 
 ASTNode* createNode(char* name, ASTNodeArg* args, ASTNode* children,  ASTNode* next);
 
-ASTNodeArg* createNodeArg(const char* name, ASTValue value,  ASTNodeArg* next);
+ASTNodeArg* createNodeArg(const char* name, ASTValue * value,  ASTNodeArg* next);
 
-ASTValue createInt64Value(uint64_t val);
-ASTValue createDoubleValue(double val);
-ASTValue createStrValue(const char* val);
+ASTValue* createInt64Value(uint64_t val);
+ASTValue* createDoubleValue(double val);
+ASTValue* createStrValue(const char* val);
 
 void appendSiblingNode(ASTNode* list, ASTNode* newNode);
 void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg);
+void appendSiblingValue(ASTValue* list, ASTValue* newValue);
 
 uint16_t countNodes(const ASTNode* n);
 
-void printTrees(ASTNode* trees, int indent);
+const ASTNodeArg* getArgByName(const ASTNode* node, const char* name);
+const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name);
+const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name);
+
+void printASTValueUnion(FILE* file, ASTValue* value);
+void printASTValue(FILE* file, ASTValue* value);
+void printASTArgs(FILE* file, ASTNodeArg* args);
+void printTrees(FILE* file, ASTNode* trees, int indent);
 
 ASTNode* parseFile(FILE* in);
 ASTNode* parseString(const char* in);

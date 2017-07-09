@@ -31,7 +31,7 @@ ASTNode* createNode(char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* 
     return n;
 }
 
-ASTNodeArg* createNodeArg(const char * name, ASTValue value,  ASTNodeArg* next) {
+ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
     ASTNodeArg* a = (ASTNodeArg*)malloc(sizeof(ASTNodeArg));
     a->name = name;
     a->value = value;
@@ -39,24 +39,27 @@ ASTNodeArg* createNodeArg(const char * name, ASTValue value,  ASTNodeArg* next) 
     return a;
 }
 
-ASTValue createInt64Value(uint64_t val) {
-    ASTValue v;
-    v.type = Int64;
-    v.value.int64 = val;
+ASTValue* createInt64Value(uint64_t val) {
+    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+    v->type = Int64;
+    v->value.int64 = val;
+    v->next = NULL;
     return v;
 }
 
-ASTValue createDoubleValue(double val) {
-    ASTValue v;
-    v.type = Double;
-    v.value.f64 = val;
+ASTValue* createDoubleValue(double val) {
+    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+    v->type = Double;
+    v->value.f64 = val;
+    v->next = NULL;
     return v;
 }
 
-ASTValue createStrValue(const char* val) {
-   ASTValue v;
-   v.type = String;
-   v.value.str = val;
+ASTValue* createStrValue(const char* val) {
+   ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
+   v->type = String;
+   v->value.str = val;
+   v->next = NULL;
    return v;
 }
 
@@ -72,6 +75,12 @@ void appendSiblingArg(ASTNodeArg* list, ASTNodeArg* newArg) {
    a->next = newArg;
 }
 
+void appendSiblingValue(ASTValue* list, ASTValue* newValue) {
+    ASTValue* v = list;
+    while (v->next) { v = v->next; }
+    v->next = newValue;
+}
+
 uint16_t countNodes(const ASTNode* n) {
     uint16_t count = 0;
     while (n) {
@@ -81,27 +90,91 @@ uint16_t countNodes(const ASTNode* n) {
     return count;
 }
 
-void printTrees(ASTNode* trees, int indent) {
+const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
+    const ASTNodeArg* arg = node->args;
+    while (arg) {
+        if (arg->name != NULL && strcmp(name, arg->name) == 0) { // arg need not have a name
+            return arg;
+        }
+        arg = arg->next;
+    }
+    return NULL;
+}
+
+const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
+    const ASTNode* node = list;
+    while (node) {
+        if (strcmp(name, node->name) == 0) {
+            return node;
+        }
+        node = node->next;
+    }
+    return NULL;
+}
+
+const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
+    const ASTNode* node = tree;
+    while (node) {
+        if (strcmp(name, node->name) == 0) {
+            return node;
+        }
+
+        const ASTNode* child = findNodeByNameInTree(node, name);
+        if (child != NULL) {
+            return child;
+        }
+
+        node = node->next;
+    }
+    return NULL;
+}
+
+void printASTValueUnion(FILE* file, ASTValue* value) {
+    switch (value->type) {
+        case Int64: fprintf(file, "%lu", value->value.int64); break;
+        case Double: fprintf(file, "%f", value->value.f64); break;
+        case String: fprintf(file, "\"%s\"", value->value.str); break;
+        default: fprintf(file, "{bad arg type %d}", value->type);
+    };
+}
+
+void printASTValue(FILE* file, ASTValue* value) {
+    ASTValue* v = value;
+    int isList = v->next != NULL;
+    if (isList) {
+        printf("[");
+    }
+    printASTValueUnion(file, v);
+    while (v->next) {
+        v = v->next;
+        fprintf(file, ", ");
+        printASTValueUnion(file, v);
+    }
+    if (isList) {
+        fprintf(file, "]");
+    }
+}
+
+void printASTArgs(FILE* file, ASTNodeArg* args) {
+    ASTNodeArg* a = args;
+    while (a) {
+        printf(" ");
+        if (a->name != NULL && strcmp("", a->name) != 0) {
+            fprintf(file, "%s=", a->name);
+        }
+        printASTValue(file, a->value);
+        a = a->next;
+    }
+}
+
+void printTrees(FILE* file, ASTNode* trees, int indent) {
     ASTNode* t = trees;
     while(t) {
         int indentVal = indent*2 + (int)strlen(t->name); // indent with two spaces
-        printf("(%p) %*s", t, indentVal, t->name);
-        ASTNodeArg* a = t->args;
-        while (a) {
-            printf(" ");
-            if (a->name != NULL && strcmp("", a->name) != 0) {
-                printf("%s=", a->name);
-            }
-            switch (a->value.type) {
-                case Int64: printf("%lu", a->value.value.int64); break;
-                case Double: printf("%f", a->value.value.f64); break;
-                case String: printf("\"%s\"", a->value.value.str); break;
-                default: printf(" [bad arg]");
-            }
-            a = a->next;
-        }
-        printf("\n");
-        printTrees(t->children, indent + 1);
+        fprintf(file, "(%p) %*s", t, indentVal, t->name);
+        printASTArgs(file, t->args);
+        fprintf(file, "\n");
+        printTrees(file, t->children, indent + 1);
         t = t->next;
     }
 }

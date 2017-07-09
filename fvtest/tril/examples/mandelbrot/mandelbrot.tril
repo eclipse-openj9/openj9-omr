@@ -29,21 +29,21 @@
 ; calculation. The resulting table can be used to generate a graph of the
 ; Mandelbrot set (e.g. by letting each table cell represent a point on the graph). 
 
-(method "NoType" "Int32" "Int32" "Address"
-   (block name="start" fallthrough="yloop"      ; start:
+(method name="mandelbrot" return="NoType" args=["Int32", "Int32", "Address"]
+   (block name="start"                          ; start:
       (istore temp="py"                         ; int py = 0;
          (iconst 0) ) )
-   (block name="yloop" fallthrough="xloop"      ; yloop:
+   (block name="yloop"                          ; yloop:
       (istore temp="px"                         ; int px = 0;
          (iconst 0) )                           ;
       (ificmpge target="yloop_exit"             ; if (py >= parm1) goto yloop_exit;
          (iload temp="py")
          (iload parm=1) ) )
-   (block name="xloop" fallthrough="setup"      ; xloop:
+   (block name="xloop"                          ; xloop:
       (ificmpge target="xloop_exit"             ; if (px >= parm1) goto xloop_exit;
          (iload temp="px")
          (iload parm=1) ) )
-   (block name="setup" fallthrough="loop"       ; setup:
+   (block name="setup"                          ; setup:
       (dstore temp="x0"                         ; double x0 = px * 3.5 / parm1 - 2.5; // map pixel x-coordinate to Mandelbrot range [-2.5, 1]
          (dsub
             (dmul
@@ -52,7 +52,7 @@
                (ddiv
                   (dconst 3.5000)
                   (i2d
-                     (iload parm=1) ) ) )
+                     (iload parm=1 id="setup_iload_parm1") ) ) )
             (dconst 2.5000) ) )
       (dstore temp="y0"                         ; double y0 = py * 2.0 /parm1 - 1; // map pixel y-coordinate to Mandelbrot range [-1, 1]
          (dsub
@@ -62,24 +62,24 @@
                (ddiv
                   (dconst 2.0000)
                   (i2d
-                     (iload parm=1) ) ) )
+                     (@common id="setup_iload_parm1") ) ) )
             (dconst 1.0000) ) )
       (dstore temp="x"                          ; double x = 0.0;
-         (dconst 0.0000) )
+         (dconst 0.0000 id="setup_dconst_0") )
       (dstore temp="y"                          ; double y = 0.0;
-         (dconst 0.0000) )
+         (@common id="setup_dconst_0") )
       (istore temp="iter"                       ; int iter = 0;
          (iconst 0) ) )
-   (block name="loop" fallthrough="loop_body"   ; loop:
+   (block name="loop"                           ; loop:
       (istore temp="comp1"                      ; int comp1 = (x*x + y*y) < 4.0;
          (dcmplt
             (dadd
                (dmul
-                  (dload temp="x")
-                  (dload temp="x") )
+                  (dload temp="x" id="loop_dload_x")
+                  (@common id="loop_dload_x") )
                (dmul
-                  (dload temp="y")
-                  (dload temp="y") ) )
+                  (dload temp="y" id="loop_dload_y")
+                  (@common id="loop_dload_y") ) )
             (dconst 4.0000) ) )
       (istore temp="comp2"                      ; int comp2 = iter < parm0;
          (icmplt
@@ -96,11 +96,11 @@
             (dload temp="x0")
             (dsub
                (dmul
-                  (dload temp="x")
-                  (dload temp="x") )
+                  (dload temp="x" id="loop_body_dload_x")
+                  (@common id="loop_body_dload_x") )
                (dmul
-                  (dload temp="y")
-                  (dload temp="y") ) ) ) )
+                  (dload temp="y" id="loop_body_dload_y")
+                  (@common id="loop_body_dload_y") ) ) ) )
       (dstore temp="y"                          ; y = y0 + 2.0 * x * y;
          (dadd
             (dload temp="y0")

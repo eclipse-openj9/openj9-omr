@@ -8,12 +8,12 @@
 
 %%
 
-[a-zA-Z][a-zA-Z0-9]* {
-                        char* name = (char*)malloc(yyleng*sizeof(char) + 1);
-                        snprintf(name, yyleng + 1, "%s", yytext);
-                        yylval.str = name;
-                        return IDENTIFIER;
-                     };
+@?[a-zA-Z][a-zA-Z0-9]* {
+                          char* name = (char*)malloc(yyleng*sizeof(char) + 1);
+                          snprintf(name, yyleng + 1, "%s", yytext);
+                          yylval.str = name;
+                          return IDENTIFIER;
+                       };
 
 [-]?[0-9]+      {
                 yylval.integer = atol(yytext);
@@ -34,7 +34,7 @@
                 return STRING;
             };
 
-[()[\]=]      return *yytext;
+[()[\]=,]      return *yytext;
 
 [ \t\n]     ; /* ignore white space */
 

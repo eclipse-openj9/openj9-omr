@@ -20,6 +20,7 @@
 #include "Jit.hpp"
 
 #include <assert.h>
+#include <stdio.h>
 
 using MandelbrotFunction = void(int32_t, int32_t, int32_t*);
 
@@ -34,7 +35,7 @@ int main(int argc, char const * const * const argv) {
     fclose(inputFile);
 
     printf("parsed trees:\n");
-    printTrees(trees, 0);
+    printTrees(stdout, trees, 0);
 
     // assume that the file contians a single method and compile it
     Tril::JitBuilderCompiler mandelbrotCompiler{trees};

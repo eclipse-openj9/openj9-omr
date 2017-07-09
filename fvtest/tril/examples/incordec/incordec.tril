@@ -28,7 +28,7 @@
 ;    else return *parm + 1;
 ; }
 
-(method "Int32" "Address"
+(method name="incordec" return="Int32" args=["Address"]
    (block fallthrough="sub" name="start"     ; start:
       (ificmpge target="add"                 ; if (*parm0 >= 0) goto add;
          (iloadi offset=0 (aload parm=0) )

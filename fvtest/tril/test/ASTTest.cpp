@@ -36,8 +36,8 @@ TEST(ASTValueTest, CreateInt64ASTValue) {
 
    auto value = createInt64Value(baseValue);
 
-   ASSERT_EQ(Int64, value.type);
-   ASSERT_EQ(baseValue, value.value.int64);
+   ASSERT_EQ(Int64, value->type);
+   ASSERT_EQ(baseValue, value->value.int64);
 }
 
 TEST(ASTValueTest, CreateFloat64ASTValue) {
@@ -45,8 +45,8 @@ TEST(ASTValueTest, CreateFloat64ASTValue) {
 
    auto value = createDoubleValue(baseValue);
 
-   ASSERT_EQ(Double, value.type);
-   ASSERT_EQ(baseValue, value.value.f64);
+   ASSERT_EQ(Double, value->type);
+   ASSERT_EQ(baseValue, value->value.f64);
 }
 
 TEST(ASTValueTest, CreateStringASTValue) {
@@ -54,8 +54,36 @@ TEST(ASTValueTest, CreateStringASTValue) {
 
    auto value = createStrValue(baseValue);
 
-   ASSERT_EQ(String, value.type);
-   ASSERT_EQ(baseValue, value.value.str);
+   ASSERT_EQ(String, value->type);
+   ASSERT_STREQ(baseValue, value->value.str);
+}
+
+TEST(ASTValueTest, CreateValueList) {
+    auto intBaseValue = 3UL;
+    auto doubleBaseValue = 2.71828;
+    auto stringBaseValue = "a string";
+
+    auto intValue = createInt64Value(intBaseValue);
+    auto doubleValue = createDoubleValue(doubleBaseValue);
+    auto stringValue = createStrValue(stringBaseValue);
+
+    appendSiblingValue(intValue, doubleValue);
+    appendSiblingValue(intValue, stringValue);
+
+    auto v = intValue;
+    ASSERT_EQ(Int64, v->type);
+    ASSERT_EQ(intBaseValue, v->value.int64);
+    ASSERT_EQ(doubleValue, v->next);
+
+    v = v->next;
+    ASSERT_EQ(Double, v->type);
+    ASSERT_EQ(doubleBaseValue, v->value.f64);
+    ASSERT_EQ(stringValue, v->next);
+
+    v = v->next;
+    ASSERT_EQ(String, v->type);
+    ASSERT_STREQ(stringBaseValue, v->value.str);
+    ASSERT_EQ(NULL, v->next);
 }
 
 TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustInt64Value) {

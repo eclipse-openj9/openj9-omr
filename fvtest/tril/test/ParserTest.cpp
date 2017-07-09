@@ -33,6 +33,16 @@ TEST(ParserTest, SingleNodeWithJustName) {
     ASSERT_NULL(trees->next);
 }
 
+TEST(ParserTest, SingleCommandNodeWithJustName) {
+    auto trees = parseString("(@commandName)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("@commandName", trees->name);
+    ASSERT_NULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+}
+
 TEST(ParserTest, TwoNodesWithJustName) {
     auto trees = parseString("(nodeName)(otherNode)");
 
@@ -98,8 +108,8 @@ TEST(ParserTest, SingleNodeWithIntArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Int64, arg->value.type);
-    ASSERT_EQ(3, arg->value.value.int64);
+    ASSERT_EQ(Int64, arg->value->type);
+    ASSERT_EQ(3, arg->value->value.int64);
     ASSERT_NULL(arg->next);
 }
 
@@ -114,8 +124,8 @@ TEST(ParserTest, SingleNodeWithFloatArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(3.00, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(3.00, arg->value->value.f64);
     ASSERT_NULL(arg->next);
 }
 
@@ -130,8 +140,40 @@ TEST(ParserTest, SingleNodeWithStringArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(String, arg->value.type);
-    ASSERT_STREQ("foo", arg->value.value.str);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("foo", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithIdentiferArg) {
+    auto trees = parseString("(nodeName id)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("id", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithCommandArg) {
+    auto trees = parseString("(nodeName @cmd)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("@cmd", arg->value->value.str);
     ASSERT_NULL(arg->next);
 }
 
@@ -146,8 +188,40 @@ TEST(ParserTest, SingleNodeWithNamedArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("arg", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(3.14, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(3.14, arg->value->value.f64);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNamedIdentifierArg) {
+    auto trees = parseString("(nodeName arg=ID)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("arg", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("ID", arg->value->value.str);
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNamedCommandArg) {
+    auto trees = parseString("(nodeName arg=@cmd)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("arg", arg->name);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("@cmd", arg->value->value.str);
     ASSERT_NULL(arg->next);
 }
 
@@ -162,15 +236,44 @@ TEST(ParserTest, SingleNodeWithNamedArgAndAnonymousArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("arg", arg->name);
-    ASSERT_EQ(String, arg->value.type);
-    ASSERT_STREQ("foo", arg->value.value.str);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("foo", arg->value->value.str);
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(6.33, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(6.33, arg->value->value.f64);
     ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNamedListArg) {
+    auto trees = parseString("(nodeName arg=[5, 3.14159, \"foo\"])");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->name);
+    ASSERT_NOTNULL(trees->args);
+    ASSERT_NULL(trees->children);
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->args;
+    ASSERT_STREQ("arg", arg->name);
+    ASSERT_NOTNULL(arg->value);
+
+    auto value = arg->value;
+    ASSERT_EQ(Int64, value->type);
+    ASSERT_EQ(5, value->value.int64);
+    ASSERT_NOTNULL(value->next);
+
+    value = value->next;
+    ASSERT_EQ(Double, value->type);
+    ASSERT_EQ(3.14159, value->value.f64);
+    ASSERT_NOTNULL(value->next);
+
+    value = value->next;
+    ASSERT_EQ(String, value->type);
+    ASSERT_STREQ("foo", value->value.str);
+    ASSERT_NULL(value->next);
 }
 
 TEST(ParserTest, SingleNodeWithAnonymousArgAndNamedArg) {
@@ -184,14 +287,14 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndNamedArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(5.11, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(5.11, arg->value->value.f64);
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("arg2", arg->name);
-    ASSERT_EQ(Int64, arg->value.type);
-    ASSERT_EQ(2, arg->value.value.int64);
+    ASSERT_EQ(Int64, arg->value->type);
+    ASSERT_EQ(2, arg->value->value.int64);
     ASSERT_NULL(arg->next);
 }
 
@@ -206,8 +309,8 @@ TEST(ParserTest, SingleNodeWithNamedArgAndChild) {
 
     auto arg = trees->args;
     ASSERT_STREQ("arg", arg->name);
-    ASSERT_EQ(Int64, arg->value.type);
-    ASSERT_EQ(3, arg->value.value.int64);
+    ASSERT_EQ(Int64, arg->value->type);
+    ASSERT_EQ(3, arg->value->value.int64);
     ASSERT_NULL(arg->next);
 
     trees = trees->children;
@@ -228,8 +331,8 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndChildWithNamedArg) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(String, arg->value.type);
-    ASSERT_STREQ("bar", arg->value.value.str);
+    ASSERT_EQ(String, arg->value->type);
+    ASSERT_STREQ("bar", arg->value->value.str);
     ASSERT_NULL(arg->next);
 
     trees = trees->children;
@@ -240,8 +343,8 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndChildWithNamedArg) {
 
     arg = trees->args;
     ASSERT_STREQ("arg", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(4.0, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(4.0, arg->value->value.f64);
     ASSERT_NULL(arg->next);
 }
 
@@ -256,14 +359,14 @@ TEST(ParserTest, SingleNodeWithTwoAnonymousArgs) {
 
     auto arg = trees->args;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(2.71828, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(2.71828, arg->value->value.f64);
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(3.14159, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(3.14159, arg->value->value.f64);
     ASSERT_NULL(arg->next);
 }
 
@@ -278,13 +381,13 @@ TEST(ParserTest, SingleNodeWithTwoNamedArgs) {
 
     auto arg = trees->args;
     ASSERT_STREQ("pi", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(3.14159, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(3.14159, arg->value->value.f64);
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("e", arg->name);
-    ASSERT_EQ(Double, arg->value.type);
-    ASSERT_EQ(2.71828, arg->value.value.f64);
+    ASSERT_EQ(Double, arg->value->type);
+    ASSERT_EQ(2.71828, arg->value->value.f64);
     ASSERT_NULL(arg->next);
 }

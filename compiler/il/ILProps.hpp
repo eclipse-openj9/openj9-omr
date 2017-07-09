@@ -19,6 +19,8 @@
 #ifndef OMR_ILPROPS_INCL
 #define OMR_ILPROPS_INCL
 
+#include <il/DataTypes.hpp>
+
 namespace ILTypeProp
    {
 
@@ -46,6 +48,109 @@ namespace ILTypeProp
       LastOMRILTypeProp                 = Vector
       };
    }
+
+/**
+ * @brief A type representing the expected number and types of child nodes
+ *
+ * The expected number of children and their types is stored a 64-bit integer.
+ * The 64-bit integer is divided into 8 segments, 8 bits each. The high 8 bits
+ * specify the expected number of children. The remaining bits, from high to low,
+ * specify the expected type of each child, from last to first. Types are
+ * represented by their TR::DataTypes value. A value of 0xff for any field means
+ * the field is unspecified.
+ *
+ *    +-------------+-------------+-------------+-------------+
+ *    | child count | child7 type | child6 type | child5 type |
+ *    +-------------+-------------+-------------+-------------+
+ *    63           56            48            40            32
+ *
+ *    +-------------+-------------+-------------+-------------+
+ *    | child4 type | child3 type | child2 type | child1 type |
+ *    +-------------+-------------+-------------+-------------+
+ *    31           24            16             8             0
+ *
+ * Examples:
+ *
+ * 0x00_00_00_00_00_00_00_00
+ *    means a node expects no children
+ *
+ * 0x01_00_00_00_00_00_00_00 | TR::Int32
+ *    means a nodes expects one 32-bit integer child
+ *
+ * 0x02_00_00_00_00_00_00_00 | (TR::Int16 << 8) | TR::Int8
+ *    means a node expects two children: the first an 8-bit integer,
+ *    the second a 16-bit integer
+ *
+ * 0x01_00_00_00_00_00_00_ff
+ *    means a node expects one child of an unspecified type
+ *
+ * 0xff_ff_ff_ff_ff_ff_ff_ff
+ *    means a node expects an unspecified number of children of unspecified type
+ *
+ * 0xff_ff_ff_ff_ff_ff_00_00 | (TR::Int64 << 8) | TR::Int32
+ *    means a node expects an unspecified number of children with the first
+ *    child being a 32-bit integer, the second child being a 64-bit integer, and
+ *    the type of any other chidlren is unspecified
+ *
+ * To simplify handling of these values, some macros are defined for correctly
+ * composing and decomposing them using bit-masks. Some default values are also
+ * provided as static const variables. Although this could be implemented as an
+ * enum, some compilers used for testing had problems handling 64-bit enums.
+ */
+namespace TR { typedef uint64_t ILChildPropType; }
+namespace ILChildProp
+   {
+
+   static const TR::ILChildPropType NoChildren = 0;
+   static const TR::ILChildPropType UnspecifiedChildType = 0xff;
+   static const TR::ILChildPropType UnspecifiedChildCount = 0xff;
+   static const TR::ILChildPropType Unspecified = 0xffffffffffffffff;
+
+   static const TR::ILChildPropType IndirectCallType = 0xffffffffffffff00 | TR::Address;
+
+   static const TR::ILChildPropType FirstChildTypeMask   =               0xff;
+   static const TR::ILChildPropType SecondChildTypeMask  =             0xff00;
+   static const TR::ILChildPropType ThirdChildTypeMask   =           0xff0000;
+   static const TR::ILChildPropType FourthChildTypeMask  =         0xff000000;
+   static const TR::ILChildPropType FifthChildTypeMask   =       0xff00000000;
+   static const TR::ILChildPropType SixthChildTypeMask   =     0xff0000000000;
+   static const TR::ILChildPropType SeventhChildTypeMask =   0xff000000000000;
+   static const TR::ILChildPropType ChildCountMask       = 0xff00000000000000;
+   }
+
+// make sure that all TR::DataTypes can fit in one byte
+// (remembering that 255 is a reserved value)
+static_assert(TR::NumTypes < 254, "There are too many data types to fit in one byte.");
+
+#define FIRST_CHILD(type)     (type) <<  0
+#define SECOND_CHILD(type)    (type) <<  8
+#define THIRD_CHILD(type)     (type) << 16
+#define FOURTH_CHILD(type)    (type) << 24
+#define FIFTH_CHILD(type)     (type) << 32
+#define SIXTH_CHILD(type)     (type) << 40
+#define SEVENTH_CHILD(type)   (type) << 48
+#define CHILD_COUNT(c)        (c)    << 56
+
+#define ONE_CHILD(type)                                              CHILD_COUNT(1L) | FIRST_CHILD(type)
+#define TWO_CHILD(type1, type2)                                      CHILD_COUNT(2L) | FIRST_CHILD(type1) | SECOND_CHILD(type2)
+#define THREE_CHILD(type1, type2, type3)                             CHILD_COUNT(3L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3)
+#define FOUR_CHILD(type1, type2, type3, type4)                       CHILD_COUNT(4L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4)
+#define FIVE_CHILD(type1, type2, type3, type4, type5)                CHILD_COUNT(5L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5)
+#define SIX_CHILD(type1, type2, type3, type4, type5, type6)          CHILD_COUNT(6L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6)
+#define SEVEN_CHILD(type1, type2, type3, type4, type5, type6, type7) CHILD_COUNT(7L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6) | SEVENTH_CHILD(type7)
+
+#define TWO_SAME_CHILD(type)     TWO_CHILD((type), (type))
+#define THREE_SAME_CHILD(type)   THREE_CHILD((type), (type), (type))
+
+#define GET_FIRST_CHILD_TYPE(childProp)   TR::DataTypes(((childProp) >>  0) & 0xff)
+#define GET_SECOND_CHILD_TYPE(childProp)  TR::DataTypes(((childProp) >>  8) & 0xff)
+#define GET_THIRD_CHILD_TYPE(childProp)   TR::DataTypes(((childProp) >> 16) & 0xff)
+#define GET_FOURTH_CHILD_TYPE(childProp)  TR::DataTypes(((childProp) >> 24) & 0xff)
+#define GET_FIFTH_CHILD_TYPE(childProp)   TR::DataTypes(((childProp) >> 32) & 0xff)
+#define GET_SIXTH_CHILD_TYPE(childProp)   TR::DataTypes(((childProp) >> 40) & 0xff)
+#define GET_SEVENTH_CHILD_TYPE(childProp) TR::DataTypes(((childProp) >> 48) & 0xff)
+#define GET_CHILD_TYPE(index, childProp)  TR::DataTypes(((childProp) >> ((index)*8)) & 0xff)
+#define GET_CHILD_COUNT(childProp)        ((childProp) >> 56) & 0xff
 
 // Property flags for property word 1
 namespace ILProp1

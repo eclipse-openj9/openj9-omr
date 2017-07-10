@@ -390,7 +390,8 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 	if (0 <= fprintf(fd, TP_ASSERT_TEMPLATE
 			, overhead
 			, testmacro
-			, name, parmStringNoLeadingComma
+			, name
+			, envParam ? "thr" : parmStringNoLeadingComma
 			, module
 			, id
 			, module
@@ -410,7 +411,7 @@ TraceHeaderWriter::tpAssert(FILE *fd, unsigned int overhead, unsigned int test, 
 			, conditionStr
 			, testnop
 			, name
-			, parmStringNoLeadingComma
+			, envParam ? "thr" : parmStringNoLeadingComma
 			, module
 			, id)) {
 		rc = RC_OK;

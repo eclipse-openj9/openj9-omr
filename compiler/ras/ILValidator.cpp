@@ -27,6 +27,8 @@
 #include "il/Block_inlines.hpp"
 #include "infra/Assert.hpp"
 
+#include <stdarg.h>
+
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 #define ABORT() TR::trap()
 #else
@@ -103,14 +105,14 @@ void TR::ILValidator::soundnessRule(TR::TreeTop *location, bool condition, const
    if (!condition)
       {
       if (location && location->getNode())
-         fprintf(stderr, "*** VALIDATION ERROR: IL is unsound at n%dn ***\nMethod: %s\n", location->getNode()->getGlobalIndex(), comp()->signature());
+         printDiagnostic("*** VALIDATION ERROR: IL is unsound at n%dn ***\nMethod: %s\n", location->getNode()->getGlobalIndex(), comp()->signature());
       else
-         fprintf(stderr, "*** VALIDATION ERROR: IL is unsound ***\nMethod: %s\n", comp()->signature());
+         printDiagnostic("*** VALIDATION ERROR: IL is unsound ***\nMethod: %s\n", comp()->signature());
       va_list args;
       va_start(args, formatStr);
-      vfprintf(stderr, formatStr, args);
+      vprintDiagnostic(formatStr, args);
       va_end(args);
-      fprintf(stderr, "\n");
+      printDiagnostic("\n");
       FAIL();
       }
    }
@@ -121,12 +123,12 @@ void TR::ILValidator::validityRule(Location &location, bool condition, const cha
       {
       _isValidSoFar = false;
       TR::Node *node = location.currentNode();
-      fprintf(stderr, "*** VALIDATION ERROR ***\nNode: %s n%dn\nMethod: %s\n", node->getOpCode().getName(), node->getGlobalIndex(), comp()->signature());
+      printDiagnostic("*** VALIDATION ERROR ***\nNode: %s n%dn\nMethod: %s\n", node->getOpCode().getName(), node->getGlobalIndex(), comp()->signature());
       va_list args;
       va_start(args, formatStr);
-      vfprintf(stderr, formatStr, args);
+      vprintDiagnostic(formatStr, args);
       va_end(args);
-      fprintf(stderr, "\n");
+      printDiagnostic("\n");
       FAIL();
       }
    }
@@ -311,4 +313,34 @@ bool TR::ILValidator::isLoggingEnabled()
    {
    // TODO: IL validation should have its own logging option.
    return (comp()->getOption(TR_TraceILWalks));
+   }
+
+void TR::ILValidator::printDiagnostic(const char *formatStr, ...)
+   {
+   va_list stderr_args;
+   va_start(stderr_args, formatStr);
+   vfprintf(stderr, formatStr, stderr_args);
+   va_end(stderr_args);
+   if (comp()->getOutFile() != NULL)
+      {
+      va_list log_args;
+      va_start(log_args, formatStr);
+      comp()->diagnosticImplVA(formatStr, log_args);
+      va_end(log_args);
+      }
+   }
+
+void TR::ILValidator::vprintDiagnostic(const char *formatStr, va_list ap)
+   {
+   va_list stderr_copy;
+   va_copy(stderr_copy, ap);
+   vfprintf(stderr, formatStr, stderr_copy);
+   va_end(stderr_copy);
+   if (comp()->getOutFile() != NULL)
+      {
+      va_list log_copy;
+      va_copy(log_copy, ap);
+      comp()->diagnosticImplVA(formatStr, log_copy);
+      va_end(log_copy);
+      }
    }

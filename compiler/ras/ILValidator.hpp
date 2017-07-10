@@ -192,6 +192,9 @@ class ILValidator
    TR::Compilation *comp();
 
    void updateNodeState(Location &newLocation);
+
+   void printDiagnostic(const char *formatStr, ...);
+   void vprintDiagnostic(const char *formatStr, va_list ap);
    };
 
 } // namespace TR

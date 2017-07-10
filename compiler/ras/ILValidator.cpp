@@ -25,6 +25,15 @@
 #include "il/ILOps.hpp"
 #include "il/Block.hpp"
 #include "il/Block_inlines.hpp"
+#include "infra/Assert.hpp"
+
+#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
+#define ABORT() TR::trap()
+#else
+#define ABORT() comp()->failCompilation<TR::CompilationException>("Validation error")
+#endif
+
+#define FAIL() if (!feGetEnv("TR_continueAfterValidationError")) ABORT()
 
 TR::ILValidator::ILValidator(TR::Compilation *comp)
    :_comp(comp)
@@ -93,7 +102,6 @@ void TR::ILValidator::soundnessRule(TR::TreeTop *location, bool condition, const
    {
    if (!condition)
       {
-      // TODO: Beef this up to do smart things in debug and prod
       if (location && location->getNode())
          fprintf(stderr, "*** VALIDATION ERROR: IL is unsound at n%dn ***\nMethod: %s\n", location->getNode()->getGlobalIndex(), comp()->signature());
       else
@@ -103,11 +111,7 @@ void TR::ILValidator::soundnessRule(TR::TreeTop *location, bool condition, const
       vfprintf(stderr, formatStr, args);
       va_end(args);
       fprintf(stderr, "\n");
-      static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
-      if (!continueAfterValidationError)
-         {
-         comp()->failCompilation<TR::CompilationException>("Validation error");
-         }
+      FAIL();
       }
    }
 
@@ -115,7 +119,6 @@ void TR::ILValidator::validityRule(Location &location, bool condition, const cha
    {
    if (!condition)
       {
-      // TODO: Beef this up to do smart things in debug and prod
       _isValidSoFar = false;
       TR::Node *node = location.currentNode();
       fprintf(stderr, "*** VALIDATION ERROR ***\nNode: %s n%dn\nMethod: %s\n", node->getOpCode().getName(), node->getGlobalIndex(), comp()->signature());
@@ -124,11 +127,7 @@ void TR::ILValidator::validityRule(Location &location, bool condition, const cha
       vfprintf(stderr, formatStr, args);
       va_end(args);
       fprintf(stderr, "\n");
-      static char *continueAfterValidationError = feGetEnv("TR_continueAfterValidationError");
-      if (!continueAfterValidationError)
-         {
-         comp()->failCompilation<TR::CompilationException>("Validation error");
-         }
+      FAIL();
       }
    }
 

@@ -1273,9 +1273,82 @@ DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector
 
 	/* Read list of debug files to scan from the input file. */
 	for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
-		rc = scanFile(portLibrary, ir, it->c_str());
+		Symbol_IR newIR;
+		rc = scanFile(portLibrary, &newIR, it->c_str());
 		if (DDR_RC_OK != rc) {
 			break;
+		}
+		for (vector<Type *>::iterator it2 = newIR._types.begin(); it2 != newIR._types.end(); ++it2) {
+			typeToContainingFiles[*it2].insert(*it);
+			fileToContainedTypes[*it].insert(*it2);
+			if (NULL != (*it2)->getSubUDTS()) {
+				for (vector<UDT *>::iterator it3 = (*it2)->getSubUDTS()->begin(); it3 != (*it2)->getSubUDTS()->end(); ++it3) {
+					typeToContainingFiles[*it3].insert(*it);
+					fileToContainedTypes[*it].insert(*it3);
+				}
+			}
+		}
+		ir->mergeIR(&newIR);
+	}
+
+	if (DDR_RC_OK == rc) {
+		/* Create a set of all files and remove from that set any files that are necessary. */
+		set<string> unnecessaryFiles;
+		unnecessaryFiles.insert(debugFiles->begin(), debugFiles->end());
+
+		/* Any type scanned in only one file is necessary, so remove them first. */
+		for (map<Type *, set<string> >::iterator it = typeToContainingFiles.begin(); it != typeToContainingFiles.end() && !unnecessaryFiles.empty();) {
+			if (1 == it->second.size()) {
+				string fileName = *it->second.begin();
+				if (unnecessaryFiles.end() != unnecessaryFiles.find(fileName)) {
+					unnecessaryFiles.erase(unnecessaryFiles.find(fileName));
+				}
+				fileToContainedTypes[fileName].erase(fileToContainedTypes[fileName].find(it->first));
+				map<Type *, set<string> >::iterator previous = it;
+				++ it;
+				typeToContainingFiles.erase(previous);
+			} else {
+				++ it;
+			}
+		}
+
+		while (!typeToContainingFiles.empty()) {
+			/* Next, count how many unmarked types are contained in each file.
+			 * Keep the file which contains the most until no unmarked types remain.
+			 */
+			string fileWithMostTypes = "";
+			size_t greatestNumberOfTypes = 0;
+			for (map<string, set<Type *> >::iterator it = fileToContainedTypes.begin(); it != fileToContainedTypes.end(); ++ it)
+			{
+				if ((it->second.size() > greatestNumberOfTypes) && (unnecessaryFiles.end() != unnecessaryFiles.find(it->first))) {
+					greatestNumberOfTypes = it->second.size();
+					fileWithMostTypes = it->first;
+				}
+			}
+			if (greatestNumberOfTypes > 0) {
+				/* Consider the file that adds the most new types necessary and remove its types from the maps. */
+				unnecessaryFiles.erase(unnecessaryFiles.find(fileWithMostTypes));
+				for (set<Type *>::iterator it = fileToContainedTypes[fileWithMostTypes].begin(); it != fileToContainedTypes[fileWithMostTypes].end(); ++ it) {
+					Type *typeFromFile = *it;
+					/* For each type contained in the file, remove it from the type set of each file it is in. */
+					for (set<string>::iterator it2 = typeToContainingFiles[typeFromFile].begin(); it2 != typeToContainingFiles[typeFromFile].end(); ++ it2) {
+						string fileContainingType = *it2;
+						fileToContainedTypes[fileContainingType].erase(fileToContainedTypes[fileContainingType].find(typeFromFile));
+					}
+					typeToContainingFiles.erase(typeToContainingFiles.find(typeFromFile));
+				}
+				fileToContainedTypes.erase(fileToContainedTypes.find(fileWithMostTypes));
+			} else {
+				break;
+			}
+		};
+
+		/* Afterwards, print the files that are found to be uneccessary for a complete superset. */
+		if (!unnecessaryFiles.empty()) {
+			printf("These files can be ommited from scanning without missing any data:\n");
+			for (set<string>::iterator it = unnecessaryFiles.begin(); it != unnecessaryFiles.end(); ++ it) {
+				printf("%s,\n", it->c_str());
+			}
 		}
 	}
 

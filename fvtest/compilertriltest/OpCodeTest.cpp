@@ -31,7 +31,7 @@ TEST_P(Int32Arithmetic, ConstArithmetic) {
     auto param = to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method \"Int32\" (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -48,7 +48,7 @@ TEST_P(Int32Arithmetic, LoadParamArithmetic) {
     auto param = to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method \"Int32\" \"Int32\" \"Int32\" (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);

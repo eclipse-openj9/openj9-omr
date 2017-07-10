@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -37,6 +37,40 @@
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
 #endif
+
+void OMR_NORETURN TR::trap()
+   {
+   static char * noDebug = feGetEnv("TR_NoDebuggerBreakPoint");
+   if (noDebug)
+      {
+      exit(1337);
+      }
+   else
+      {
+      static char *crashLogOnAssume = feGetEnv("TR_crashLogOnAssume");
+      if (crashLogOnAssume)
+         {
+         //FIXME: this doesn't work on z/OS
+         *(volatile int*)(0) = 0; // let crashlog do its thing
+         }
+
+#ifdef _MSC_VER
+      static char *revertToDebugbreakWin = feGetEnv("TR_revertToDebugbreakWin");
+#ifdef DEBUG
+      DebugBreak();
+#else
+      if(revertToDebugbreakWin)
+         DebugBreak();
+      else
+         *(int*)(NULL) = 1;
+#endif
+#else // of _MSC_VER
+
+      assert(0);
+
+#endif // ifdef _MSC_VER
+      }
+   }
 
 static void assumeDontCallMeDirectlyImpl( const char * file, int32_t line, const char *condition, const char *s, va_list ap, bool fatal)
    {
@@ -112,35 +146,7 @@ static void assumeDontCallMeDirectlyImpl( const char * file, int32_t line, const
       comp->diagnosticImpl("\n");
       }
 
-   char *feGetEnv(const char *);
-   static char * noDebug = feGetEnv("TR_NoDebuggerBreakPoint");
-   if (noDebug)
-      exit(1337);
-   else
-      {
-      static char *crashLogOnAssume = feGetEnv("TR_crashLogOnAssume");
-      if (crashLogOnAssume)
-         {
-         //FIXME: this doesn't work on z/OS
-         *(volatile int*)(0) = 0; // let crashlog do its thing
-         }
-
-#ifdef _MSC_VER
-      static char *revertToDebugbreakWin = feGetEnv("TR_revertToDebugbreakWin");
-#ifdef DEBUG
-      DebugBreak();
-#else
-      if(revertToDebugbreakWin)
-         DebugBreak();
-      else
-         *(int*)(NULL) = 1;
-#endif
-#else // of _MSC_VER
-
-      assert(0);
-
-#endif // ifdef _MSC_VER
-      }
+   TR::trap();
    }
 
 namespace TR

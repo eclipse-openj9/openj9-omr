@@ -59,7 +59,7 @@ JIT_PRODUCT_DIR?=fvtest/compilertest
 # Dirs used internally by the makefiles
 #
 JIT_MAKE_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build
-JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/fvtest/compilertest/build/scripts
+JIT_SCRIPT_DIR?=$(FIXED_SRCBASE)/tools/compiler/scripts
 
 #
 # First we set a bunch of tokens about the platform that the rest of the

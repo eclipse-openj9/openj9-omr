@@ -145,7 +145,7 @@ public:
    bool genIL(TR_FrontEnd *fe, TR::Compilation *comp, TR::SymbolReferenceTable *symRefTab, TR::IlGenRequest & customRequest);
    void cleanupUnreachableOSRBlocks(int32_t inlinedSiteIndex, TR::Compilation *comp);
    void insertRematableStoresFromCallSites(TR::Compilation *comp, int32_t siteIndex, TR::TreeTop *induceOSRTree);
-   void insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots);
+   void insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree);
    void insertStoresForDeadStackSlots(TR::Compilation *comp, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *insertTree, bool keepStashedArgsLive=true);
    bool sharesStackSlots(TR::Compilation *comp);
    void resetLiveLocalIndices();
@@ -160,9 +160,8 @@ public:
                                const char* childPath);
 
    TR::TreeTop *genInduceOSRCallNode(TR::TreeTop* insertionPoint, int32_t numChildren, bool copyChildren, bool shouldSplitBlock = true);
-   TR::TreeTop *genInduceOSRCallForGuardedCallee(TR::TreeTop* insertionPoint, TR::ResolvedMethodSymbol *calleeSymbol, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
    TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
-   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, TR_OSRMethodData *osrMethodData, TR::ResolvedMethodSymbol *callSymbolForDeadSlots, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
+   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, TR_OSRMethodData *osrMethodData, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
    TR::TreeTop *genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp);
 
    bool canInjectInduceOSR(TR::Node* node);

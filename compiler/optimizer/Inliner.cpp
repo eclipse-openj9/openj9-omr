@@ -1988,7 +1988,7 @@ TR_InlinerBase::addGuardForVirtual(
            createdHCRGuard ||
            (osrForNonHCRGuards && shouldAttemptOSR)))
          {
-         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCallForGuardedCallee(guardedCallNodeTreeTop, calleeSymbol, (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false);
+         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false);
          if (induceOSRCallTree)
             *induceOSRCallTree = induceTree;
          }

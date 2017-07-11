@@ -263,7 +263,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum);
    void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd);
    bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end);
-   bool enableAESInHardwareTransformations();
    virtual bool supportsAESInstructions();
 
    virtual bool getSupportsTLE()

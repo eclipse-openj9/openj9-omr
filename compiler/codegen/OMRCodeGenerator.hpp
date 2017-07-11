@@ -1377,7 +1377,6 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t arrayInitMinimumNumberOfBytes() {return 8;} // no virt
 
    int32_t getMaxPatchableInstructionLength() { return 0; } // no virt
-   bool enableAESInHardwareTransformations() {return false;}
 
    TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);
 

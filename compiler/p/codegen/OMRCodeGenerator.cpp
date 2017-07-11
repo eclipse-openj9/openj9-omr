@@ -1926,15 +1926,6 @@ OMR::Power::CodeGenerator::isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR
       return false;
    }
 
-bool OMR::Power::CodeGenerator::enableAESInHardwareTransformations()
-   {
-   if (  (TR::Compiler->target.cpu.getPPCSupportsAES() || (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())) &&
-         !self()->comp()->getOptions()->getOption(TR_DisableAESInHardware))
-      return true;
-   else
-      return false;
-   }
-
 bool OMR::Power::CodeGenerator::supportsAESInstructions()
    {
     if ( TR::Compiler->target.cpu.getPPCSupportsAES() && !self()->comp()->getOptions()->getOption(TR_DisableAESInHardware))

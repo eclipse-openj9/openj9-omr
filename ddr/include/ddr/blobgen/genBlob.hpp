@@ -41,7 +41,7 @@ DDR_RC genBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetF
 
 class BlobGenerator
 {
-private:
+protected:
 	 bool _printEmptyTypes;
 
 public:
@@ -50,7 +50,7 @@ public:
 
 class SupersetGenerator
 {
-private:
+protected:
 	bool _printEmptyTypes;
 
 public:

@@ -960,15 +960,6 @@ bool OMR::X86::CodeGenerator::supportsFS0VMThreadRematerialization()
 #endif
    }
 
-bool OMR::X86::CodeGenerator::enableAESInHardwareTransformations()
-   {
-   if (TR::CodeGenerator::getX86ProcessorInfo().supportsAESNI() && !self()->comp()->getOptions()->getOption(TR_DisableAESInHardware) && !self()->comp()->getCurrentMethod()->isJNINative())
-      return true;
-   else
-      return false;
-   }
-
-
 #undef ALLOWED_TO_REMATERIALIZE
 #undef CAN_REMATERIALIZE
 

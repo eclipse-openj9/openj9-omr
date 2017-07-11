@@ -86,7 +86,6 @@ class TR_ResolvedMethod;
 namespace OMR { class RuntimeAssumption; }
 class TR_VirtualGuard;
 class TR_VirtualGuardSite;
-namespace TR { class AOTClassInfo; }
 namespace TR { class Block; }
 namespace TR { class CFG; }
 namespace TR { class CodeCache; }
@@ -290,9 +289,10 @@ public:
          TR_ResolvedMethod *,
          TR::IlGenRequest &,
          TR::Options &,
-         const TR::Region &dispatchRegion,
+         TR::Region &heapMemoryRegion,
          TR_Memory *,
-         TR_OptimizationPlan *optimizationPlan);
+         TR_OptimizationPlan *optimizationPlan
+         );
 
    TR::SymbolReference * getSymbolReferenceByReferenceNumber(int32_t referenceNumber);
 
@@ -300,7 +300,7 @@ public:
 
    inline TR::Compilation *self();
 
-   TR::Region &region() { return _region; }
+   TR::Region &region() { return _heapMemoryRegion; }
 
    TR::IL il;
 
@@ -947,10 +947,6 @@ public:
 
 
 public:
-   // Signature of the method we are compiling -- keep this at offset 0
-   const char * _signature;
-   TR::list<TR::AOTClassInfo*>* _aotClassInfo;
-
 #ifdef J9_PROJECT_SPECIFIC
    // Access to this list must be performed with assumptionTableMutex in hand
    OMR::RuntimeAssumption** getMetadataAssumptionList() { return &_metadataAssumptionList; }
@@ -969,15 +965,15 @@ private:
    void reportFailure(const char *reason);
 
 protected:
+
+   const char * _signature;
    TR::Options *_options;
    flags32_t _flags;
-
-
-   TR::Region _region;
+   TR::Region & _heapMemoryRegion;
+   TR_Memory * _trMemory;
 
    TR_FrontEnd                       *_fe; // must be declared before _flowGraph
    TR::IlGenRequest                  &_ilGenRequest;
-   TR_Memory                         *_trMemory;
    TR::CodeGenerator                 *_codeGenerator;
 
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016, 2016
+ * (c) Copyright IBM Corp. 2016, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -557,7 +557,7 @@ OperandStackTestMethod::testStack(TR::BytecodeBuilder *b, bool useEqual)
 bool
 OperandStackTestMethod::buildIL()
    {
-   TR::IlType *pElementType = _types->PointerTo(Word);
+   TR::IlType *pElementType = _types->PointerTo(_types->PointerTo(STACKVALUEILTYPE));
 
    Call("createStack", 0);
 
@@ -585,7 +585,7 @@ OperandStackTestUsingStructMethod::OperandStackTestUsingStructMethod(TR::TypeDic
    : OperandStackTestMethod(d)
    {
    d->DefineStruct("Thread");
-   d->DefineField("Thread", "sp", d->PointerTo(STACKVALUEILTYPE), offsetof(Thread, sp));
+   d->DefineField("Thread", "sp", d->PointerTo(d->PointerTo(STACKVALUEILTYPE)), offsetof(Thread, sp));
    d->CloseStruct("Thread");
 
    DefineParameter("thread", d->PointerTo("Thread"));

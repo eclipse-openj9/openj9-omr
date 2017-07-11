@@ -221,11 +221,9 @@ class MethodBuilder : public TR::IlBuilder
    FunctionMap                 _functions;
 
    TR::IlType                ** _cachedParameterTypes;
-   char                      * _cachedSignature;
    const char                * _definingFile;
    char                        _definingLine[MAX_LINE_NUM_LEN];
    TR::IlType                * _cachedParameterTypesArray[10];
-   char                        _cachedSignatureArray[100];
 
    bool                        _newSymbolsAreTemps;
    int32_t                     _nextValueID;

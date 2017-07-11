@@ -1046,6 +1046,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printIsDummyGuard()        );
    output.append(format, node->printIsHCRGuard()          );
    output.append(format, node->printIsOSRGuard()          );
+   output.append(format, node->printIsBreakpointGuard()          );
    output.append(format, node->printIsMutableCallSiteTargetGuard() );
    output.append(format, node->printIsByteToByteTranslate());
    output.append(format, node->printIsByteToCharTranslate());
@@ -2127,6 +2128,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<heapBase>",
    "<heapTop>",
    "<j9methodExtraField>",
+   "<j9methodConstantPoolField>",
    "<startPCLinkageInfo>",
    "<instanceShapeFromROMClass>",
    "<synchronizedFieldLoad>",
@@ -4544,6 +4546,8 @@ TR_Debug::getVirtualGuardKindName(TR_VirtualGuardKind kind)
          return "ArrayStoreCheckGuard";
       case TR_OSRGuard:
          return "OSRGuard";
+      case TR_BreakpointGuard:
+         return "BreakpointGuard";
       default:
          break;
       }
@@ -4566,6 +4570,8 @@ TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
          return "NonoverriddenTest";
       case TR_RubyInlineTest:
          return "RubyInlineTest";
+      case TR_FSDTest:
+         return "FSDTest";
       }
    TR_ASSERT(0, "Unknown virtual guard test type");
    return "(unknown virtual guard test type)";

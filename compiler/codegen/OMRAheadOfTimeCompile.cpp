@@ -173,7 +173,14 @@ void createGuardSiteForRemovedGuard(TR::Compilation *comp, TR::Node *ifNode)
       if (virtualGuard->getKind() == TR_HCRGuard)
          {
          if (comp->getOption(TR_TraceReloCG))
-                     traceMsg(comp, "createGuardSiteForRemovedGuard: removing HCRGuard, no need to add AOTNOPsite, node %p\n", ifNode);
+            traceMsg(comp, "createGuardSiteForRemovedGuard: removing HCRGuard, no need to add AOTNOPsite, node %p\n", ifNode);
+         return;
+         }
+
+      if (virtualGuard->getKind() == TR_BreakpointGuard)
+         {
+         if (comp->getOption(TR_TraceReloCG))
+            traceMsg(comp, "createGuardSiteForRemovedGuard: removing BreakpointGuard, no need to add AOTNOPsite, node %p\n", ifNode);
          return;
          }
 

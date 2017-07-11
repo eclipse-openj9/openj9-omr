@@ -56,6 +56,7 @@ enum TR_VirtualGuardKind
    TR_InnerGuard,
    TR_ArrayStoreCheckGuard,
    TR_OSRGuard,
+   TR_BreakpointGuard
    };
 
 enum TR_VirtualGuardTestType
@@ -64,7 +65,8 @@ enum TR_VirtualGuardTestType
    TR_VftTest,
    TR_MethodTest,
    TR_NonoverriddenTest,
-   TR_RubyInlineTest
+   TR_RubyInlineTest,
+   TR_FSDTest /**< used in debugging mode to test if a breakpoint is set for the inlined callee */
    };
 
 
@@ -169,6 +171,9 @@ class TR_VirtualGuard
          TR::TreeTop *destination,
          TR::ResolvedMethodSymbol * symbol,
          TR_OpaqueClassBlock *thisClass);
+
+   static TR::Node *createBreakpointGuard(TR::Compilation * comp, int16_t calleeIndex, TR::Node* callNode, TR::TreeTop * destination, TR::ResolvedMethodSymbol * calleeSymbol);
+   static TR::Node *createBreakpointGuardNode(TR::Compilation * comp, int16_t calleeIndex, TR::Node* callNode, TR::TreeTop * destination, TR::ResolvedMethodSymbol * calleeSymbol);
 
    static void setGuardKind(TR::Node *guard, TR_VirtualGuardKind kind, TR::Compilation * comp);
 

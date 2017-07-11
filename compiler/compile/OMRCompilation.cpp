@@ -1536,7 +1536,7 @@ OMR::Compilation::addVirtualGuard(TR_VirtualGuard *guard)
 TR_VirtualGuard *
 OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
    {
-   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isOSRGuard() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard(), "@node %p\n", guardNode);
+   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isOSRGuard() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard() || guardNode->isBreakpointGuard(), "@node %p\n", guardNode);
 
    TR_VirtualGuardKind guardKind = TR_NoGuard;
    if (guardNode->isSideEffectGuard())
@@ -1549,6 +1549,8 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
       guardKind = TR_MethodEnterExitGuard;
    else if (guardNode->isMutableCallSiteTargetGuard())
       guardKind = TR_MutableCallSiteTargetGuard;
+   else if (guardNode->isBreakpointGuard())
+      guardKind = TR_BreakpointGuard;
 
    TR_VirtualGuard *guard = NULL;
 
@@ -1582,7 +1584,8 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
              (*current)->getKind() != TR_HCRGuard &&
              (*current)->getKind() != TR_OSRGuard &&
              (*current)->getKind() != TR_MethodEnterExitGuard &&
-             (*current)->getKind() != TR_MutableCallSiteTargetGuard)
+             (*current)->getKind() != TR_MutableCallSiteTargetGuard &&
+             (*current)->getKind() != TR_BreakpointGuard)
             {
             guard = *current;
             if (self()->getOption(TR_TraceRelocatableDataDetailsCG))

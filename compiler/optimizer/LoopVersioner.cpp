@@ -5627,7 +5627,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
       TR::Node *dupThisChild = NULL;
 
       if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall() &&
-          !conditionalNode->isNonoverriddenGuard()  && !conditionalNode->isHCRGuard())
+          !conditionalNode->isNonoverriddenGuard()  && !conditionalNode->isHCRGuard() && !conditionalNode->isBreakpointGuard())
          {
          bool searchReqd = true;
          TR::Node *nextRealNode = NULL;

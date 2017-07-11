@@ -7440,7 +7440,7 @@ OMR::Node::resetIsTheVirtualGuardForAGuardedInlinedCall()
 bool
 OMR::Node::isNopableInlineGuard()
    {
-   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard();
+   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() && !self()->isBreakpointGuard();
    }
 
 
@@ -7529,13 +7529,32 @@ OMR::Node::setIsOSRGuard()
       _flags.set(osrGuard);
    }
 
+void
+OMR::Node::setIsBreakpointGuard()
+   {
+   TR::Compilation *c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
+   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting breakpoint guard flag on node %p\n", self()))
+      _flags.set(breakpointGuard);
+   }
+
+bool
+OMR::Node::isBreakpointGuard()
+   {
+   return _flags.testValue(inlineGuardMask, breakpointGuard) && self()->getOpCode().isIf();
+   }
+
+const char *
+OMR::Node::printIsBreakpointGuard()
+   {
+   return self()->isBreakpointGuard() ? "breakpointGuard " : "";
+   }
+
 const char *
 OMR::Node::printIsOSRGuard()
    {
    return self()->isOSRGuard() ? "osrGuard " : "";
    }
-
-
 
 bool
 OMR::Node::childrenWereSwapped()

@@ -1,0 +1,108 @@
+#!/usr/bin/env ruby
+###############################################################################
+##
+## (c) Copyright IBM Corp. 2017
+##
+##  This program and the accompanying materials are made available
+##  under the terms of the Eclipse Public License v1.0 and
+##  Apache License v2.0 which accompanies this distribution.
+##
+##      The Eclipse Public License is available at
+##      http://www.eclipse.org/legal/epl-v10.html
+##
+##      The Apache License v2.0 is available at
+##      http://www.opensource.org/licenses/apache2.0.php
+##
+## Contributors:
+##    Multiple authors (IBM Corp.) - initial implementation and documentation
+################################################################################
+
+# This script is intended to be used under omr_repo_dir/.git/hooks to check
+# each git commit message against OMR contributing guidelines. The script
+# needs to be executable and it will be invoked when a 'git commit' command 
+# is issued. OMR contributing guidelines can be found at:
+# https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md#commit-guidelines
+
+message_file = ARGV[0]
+message = File.read(message_file)
+
+# remove git generated messages
+commit = ""
+message.each_line do |line|
+  if (line.match(/^(?!#).*$/))
+    commit.concat(line)
+  end
+end
+
+title, body = commit.split("\n", 2)
+
+# check commit title length
+title_len = title.length
+#puts "Title is #{title}, length is #{title_len}"
+
+if (title_len > 0 && title_len < 50)
+  # shortcut to skip commit message checking
+  if (title.match(/^skip.*/) || title.match(/^fixup.*/))
+    puts "PASSED: Skipping commit checks!\n"
+    exit 0
+  end
+
+  if (title.match(/^[A-Z]/) && title.match(/[a-zA-Z0-9]$/))
+    state = "success"
+  else
+    state = "failure"
+    description = "Commit title should begin with a capital letter and" \
+                  " does not end in a punctuation."
+  end
+else
+  state = "failure"
+  description = "Commit title should be less than 50 characters: actual #{title_len}"
+end
+
+# check commit message body length
+if (state == "success")
+  body.each_line.with_index() do |line, j|
+    line.chomp!
+#    puts "Line length is #{line.length}"
+    if (line.length >= 0 && line.length <= 72)
+      if (j == 0 && line.length != 0)
+	state = "failure"
+	description = "Commit message after title should be blank."
+	break
+      else
+        state = "success"
+      end
+    else
+      state = "success"
+      puts "[WARNING] Commit body should be wrapped at 72 characters, " \
+           "where reasonable: line #{j+1} actual #{line.length}"
+    end
+  end
+end
+
+# check signed-off line
+if (state == "success")
+  lines = body.split(/\n+/)
+  if (lines.empty?)
+    state = "failure"
+    description = "Commit requires a message body and a sign-off footer."
+  elsif (!lines.last.match(/^Signed-off-by/))
+    state = "failure"
+    description = "Commit requires a sign-off footer."
+  elsif (lines.count < 3)
+    state = "failure"
+    description = "Commit requires a message body explaining your changes."
+  else
+    state = "success"
+  end
+end
+
+# display results
+if (state == "failure")
+  puts "FAILED: #{description}" 
+  puts "Please see guidelines: https://github.com/eclipse/omr/blob/master/CONTRIBUTING.md#commit-guidelines\n"
+  exit 1
+end
+
+puts "PASSED: All OK!\n"
+exit 0

@@ -42,7 +42,6 @@ ifneq (,$(findstring pdb,$(DEBUG_FORMAT)))
 endif
 
 ifneq (,$(findstring dwo,$(DEBUG_FORMAT)))
-  MODULE_INCLUDES += $(OMR_LIBDWARF_IPATH)
   OBJECTS += \
     dwarf/DwarfScanner$(OBJEXT) \
     dwarf/DwarfFunctions$(OBJEXT)

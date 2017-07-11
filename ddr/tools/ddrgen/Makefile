@@ -28,15 +28,14 @@ DDRGEN_STATIC_LIBS = \
   ddr-blobgen \
   ddr-macros
 
-DEPENDENCIES = $(call buildStaticLibFilename,$(DDRGEN_STATIC_LIBS))
+DEPENDENCIES += $(call buildStaticLibFilename,$(DDRGEN_STATIC_LIBS))
+MODULE_STATIC_LIBS += $(DDRGEN_STATIC_LIBS)
 
-MODULE_STATIC_LIBS = $(DDRGEN_STATIC_LIBS)
 MODULE_STATIC_LIBS += omrstatic
-ifeq (dwo,$(DEBUG_FORMAT))
-MODULE_STATIC_LIBS += $(OMR_LIBDWARF_STATIC_LIBS)
-MODULE_SHARED_LIBS += $(OMR_LIBDWARF_SHARED_LIBS)
-endif
 
+ifeq (dwo,$(DEBUG_FORMAT))
+MODULE_SHARED_LIBS += dwarf
+endif
 
 # TODO libpath hack because ddrgen libs don't go into the same directory as omr libs (yet)
 MODULE_LIBPATH += $(top_srcdir)/lib
@@ -46,8 +45,6 @@ MODULE_INCLUDES += \
   $(top_srcdir)/include_core
 
 ifeq (dwo,$(DEBUG_FORMAT))
-MODULE_INCLUDES += \
-  $(OMR_LIBDWARF_IPATH)
 else
 MODULE_INCLUDES += \
   $(ddrgen_srcdir)/scanners/pdb/DIA-SDK/include
@@ -55,6 +52,9 @@ endif
 
 ifeq (linux,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += rt pthread
+  ifeq (x86,$(OMR_HOST_ARCH))
+    MODULE_SHARED_LIBS += elf
+  endif
   ifeq (ppc,$(OMR_HOST_ARCH))
     MODULE_SHARED_LIBS += elf
   endif

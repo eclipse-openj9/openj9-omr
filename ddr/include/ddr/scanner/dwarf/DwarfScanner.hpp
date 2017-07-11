@@ -27,9 +27,24 @@
 #if defined(OSX) || defined(AIXPPC)
 #include "ddr/scanner/dwarf/DwarfFunctions.hpp"
 #else /* defined(OSX) || defined(AIXPPC) */
+
+#if defined(HAVE_DWARF_H)
 #include <dwarf.h>
+#elif defined(HAVE_LIBDWARF_DWARF_H)
+#include <libdwarf/dwarf.h>
+#else
+#error
+#endif /* defined(HAVE_DWARF_H) */
+
+#if defined(HAVE_LIBDWARF_H)
 #include <libdwarf.h>
-#endif /* defined(OSX) */
+#elif defined(HAVE_LIBDWARF_LIBDWARF_H)
+#include <libdwarf/libdwarf.h>
+#else
+#error
+#endif
+
+#endif /* defined(OSX) || defined(AIXPPX) */
 
 #include "ddr/ir/ClassUDT.hpp"
 #include "ddr/config.hpp"

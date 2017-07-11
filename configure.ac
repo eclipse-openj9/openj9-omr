@@ -311,7 +311,6 @@ AC_DEFUN([OMRCFG_DEFINE_FLAG],
 # --disable-<flag name> is passed to configure. If --disable-<flag-name> is not
 # passed to configure, then the flag is enabled.
 # $3 is an optional help message.
-#
 AC_DEFUN([OMRCFG_DEFINE_FLAG_ON],
 	[AC_ARG_ENABLE([$1], [AS_HELP_STRING([--disable-$1], [$3])],
 		[AS_IF([test "x${enableval}" = xyes],
@@ -488,19 +487,18 @@ OMRCFG_DEFINE_FLAG([OMRTHREAD_LIB_UNIX],[1],
 	)]
 )
 
-AS_IF([[test "$cross_compiling" != "yes"] && [test "$OMR_HOST_OS" != osx] && [test "$OMR_HOST_OS" != aix]],
-	[# Look for libdwarf.h
-	AC_CHECK_HEADER([libdwarf.h], [],
-		[AC_CHECK_HEADER([/usr/include/libdwarf/libdwarf.h],
-			[OMR_LIBDWARF_IPATH="/usr/include/libdwarf"])])
+AS_IF([[test "x$enable_DDR" = "xyes"] && [test "$cross_compiling" != "yes"] && [test "$OMR_HOST_OS" != osx] && [test "$OMR_HOST_OS" != aix]],
+	[
+	# Look for libdwarf
+	AC_CHECK_HEADERS([dwarf.h libdwarf/dwarf.h libdwarf.h libdwarf/libdwarf.h])
 
-	# Look for libdwarf.so
-	# If the shared lib isn't found, assume we're linking the static lib,
-	# so elf must be linked explicitly.
-	AC_CHECK_FILE([/usr/lib/libdwarf.so],
-		[OMR_LIBDWARF_SHARED_LIBS="dwarf"],
-		[OMR_LIBDWARF_STATIC_LIBS="dwarf elf"])]
+	AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [])
+	AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [-lelf])
+	AC_SEARCH_LIBS([elf_begin], [elf], [], [], [])
+	]
 )
+
+OMRCFG_DEFINE_FLAG_OFF([OMR_GC_IDLE_HEAP_MANAGER])
 
 ###
 ### Variable Substitution
@@ -556,11 +554,6 @@ AC_SUBST(libprefix)
 
 AC_SUBST(lib_output_dir)
 AC_SUBST(exe_output_dir)
-
-
-AC_SUBST(OMR_LIBDWARF_IPATH)
-AC_SUBST(OMR_LIBDWARF_SHARED_LIBS)
-AC_SUBST(OMR_LIBDWARF_STATIC_LIBS)
 
 ###
 ### Version strings

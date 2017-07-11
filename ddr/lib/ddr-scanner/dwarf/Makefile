@@ -38,6 +38,5 @@ MODULE_INCLUDES += \
   $(ddrgen_srcdir)/scanners \
   $(ddrgen_srcdir)/intermediate_representation \
   $(ddrgen_srcdir)/blob_generation
-MODULE_INCLUDES += $(OMR_LIBDWARF_IPATH)
 
 include $(top_srcdir)/omrmakefiles/rules.mk

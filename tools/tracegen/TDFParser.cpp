@@ -229,6 +229,9 @@ TDFParser::processTracePointDetail(const char *line, J9TDFTracepoint *tp, const 
 			tok = strtok(NULL, " \t");
 		} else if (StringUtils::startsWithUpperLower(tok, (UT_ASSERT_TYPE == tp->type ? "Assert=" : "Template="))) {
 			tp->format = getTemplate(line, (UT_ASSERT_TYPE == tp->type ? "Assert=" : "Template="));
+			if (NULL == tp->format){
+				goto failed;
+			}
 			line = line + strlen((UT_ASSERT_TYPE == tp->type ? "Assert=" : "Template=")) + (strlen(tp->format) + 2 /* two quotes */);
 			while ((' ' == *line  || '\t' == *line) && '\0' != *line) {
 				line = line + 1;
@@ -336,6 +339,10 @@ TDFParser::getTemplate(const char *line, const char *key)
 {
 	char *format = NULL;
 	size_t len = 0;
+	/*
+	 * Number of quotes in the string. Must be 2 when the string is fully parsed to ensure there is an opening and closing quote.
+	 */
+	int count = 0;
 
 	const char *vpos = line;
 
@@ -358,6 +365,18 @@ TDFParser::getTemplate(const char *line, const char *key)
 	}
 
 	len = (pos - vpos);
+	for (int i = strlen(line); i >= 0; i--){
+		if (line[i] == ' '){
+			continue;
+		}
+		else if (line[i] == '\"'){
+			count++;
+		}
+	}
+	if (!(count % 2 == 0)){
+		goto failed;
+	}
+
 	format = (char *)Port::omrmem_calloc(1, len + 1);
 	if (NULL == format) {
 		FileUtils::printError("Failed to allocate memory\n");

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -6028,7 +6028,8 @@
    S390OpProp_SetsOperand1,
 
       // VLGV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_Is64Bit,
 
       // VLLEZ
    S390OpProp_IsLoad |
@@ -6048,10 +6049,12 @@
       // VLVG
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_Is64Bit,
 
       // VLVGP
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_Is64Bit,
 
       // VLL
    S390OpProp_IsLoad |

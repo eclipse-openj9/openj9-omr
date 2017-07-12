@@ -72,6 +72,7 @@ class TR_LoopTransformer : public TR::Optimization
         _writtenExactlyOnce(comp()->allocator("LoopTransformer")),
         _readExactlyOnce(comp()->allocator("LoopTransformer")),
         _allKilledSymRefs(comp()->allocator("LoopTransformer")),
+        _allSymRefs(comp()->allocator("LoopTransformer")),
         _autosAccessed(NULL)
       {
       _doingVersioning = false;
@@ -98,6 +99,7 @@ class TR_LoopTransformer : public TR::Optimization
       _writtenExactlyOnce.Clear();
       _readExactlyOnce.Clear();
       _allKilledSymRefs.Clear();
+      _allSymRefs.Clear();
       }
 
    virtual int32_t perform(){return 0;}
@@ -176,6 +178,7 @@ class TR_LoopTransformer : public TR::Optimization
    TR::SparseBitVector _writtenExactlyOnce;
    TR::SparseBitVector _readExactlyOnce;
    TR::SparseBitVector _allKilledSymRefs;
+   TR::SparseBitVector _allSymRefs;
 
    TR::Node *_numberOfIterations, *_constNode, *_loadUsedInLoopIncrement;
 

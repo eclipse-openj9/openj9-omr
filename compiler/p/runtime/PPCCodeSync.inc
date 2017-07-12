@@ -22,25 +22,46 @@
 extern "C" void *getCodeSync();
 
 #if defined(TR_HOST_POWER)
-#if defined(__ibmxl__)
-#define dcbf(x)  __dcbf(x)
-#define sync()  __sync()
+#if defined(__IBMC__) || defined(__IBMCPP__)
+
+#if defined(__cplusplus)
+#include <builtins.h>
+#endif /* __cplusplus */
+
+#define dcbf(x) __dcbf(x)
+#define sync() __sync()
 #define isync() __isync()
-#elif (__IBMC__ || __IBMCPP__)
-void dcbf(unsigned char *);
-void icbi(unsigned char *);
-void sync();
-void isync();
-#pragma mc_func dcbf  {"7c0018ac"}
-#pragma mc_func icbi  {"7c001fac"}
-#pragma mc_func sync  {"7c0004ac"}
-#pragma mc_func isync {"4c00012c"}
-#pragma reg_killed_by dcbf
-#pragma reg_killed_by icbi
-#pragma reg_killed_by sync
-#pragma reg_killed_by isync
-#endif
-#endif
+
+#else
+static inline void dcbf(unsigned char *addr)
+   {
+   __asm__(
+      "dcbf 0,%0"
+      : /* no outputs */
+      : "r" (addr) );
+   }
+
+static inline void sync()
+   {
+   __asm__("sync");
+   }
+
+static inline void isync()
+   {
+   __asm__("isync");
+   }
+
+#endif /* __IBMC__ || __IBMCPP__ */
+
+static inline void icbi(unsigned char *addr)
+   {
+   __asm__(
+      "icbi 0,%0"
+      : /* no outputs */
+      : "r" (addr) );
+   }
+
+#endif /* TR_HOST_POWER */
 
 uint32_t getPPCCacheLineSize();
 
@@ -83,52 +104,25 @@ void ppcCodeSync(unsigned char *codeStart, unsigned int codeSize)
 	unsigned char  *addr;
 	unsigned char  *limit;
 
-        limit = (unsigned char *)(((unsigned long)codeStart + codeSize + (cacheLineSize - 1))
+    limit = (unsigned char *)(((unsigned long)codeStart + codeSize + (cacheLineSize - 1))
 						/ cacheLineSize * cacheLineSize);
 
 	// for each cache line, do a data cache block flush
 	for(addr = codeStart ; addr < limit; addr += cacheLineSize)
-	   {
-		#if defined(__IBMC__) || defined(__IBMCPP__) || defined(__ibmxl__)
 		dcbf(addr);
-		#elif defined(LINUX)
-		__asm__(
-			"dcbf 0,%0"
-			: /* no outputs */
-			: "r" (addr) );
-		#endif
-	   }
 
-#if defined(__IBMC__) || defined(__IBMCPP__) || defined(__ibmxl__)
 	sync();
-#elif defined(LINUX)
-	__asm__("sync");
-#endif
 
 	limit = (unsigned char *)(((unsigned long)codeStart + codeSize + (cacheLineSize - 1))
 						/ cacheLineSize * cacheLineSize);
 
 	// for each cache line  do an icache block invalidate
 	for(addr = codeStart ; addr < limit; addr += cacheLineSize)
-	   {
-
-		#if defined(__IBMC__) || defined(__IBMCPP__)
 		icbi(addr);
-		#elif defined(LINUX)
-		__asm__(
-			"icbi 0,%0"
-			: /* no outputs */
-			: "r" (addr) );
-		#endif
-      }
 
-#if defined(__IBMC__) || defined(__IBMCPP__) || defined(__ibmxl__)
 	sync();
 	isync();
-#elif defined(LINUX)
-	__asm__("sync");
-	__asm__("isync");
-#endif
+
 #endif /* TR_HOST_POWER */
    }
 

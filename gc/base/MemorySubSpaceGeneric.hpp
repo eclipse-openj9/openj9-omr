@@ -119,6 +119,10 @@ public:
 
 	virtual bool isActive();
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
+
 	/**
 	 * Create a MemorySubSpaceGeneric object
 	 */

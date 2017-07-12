@@ -291,7 +291,9 @@ void TR_VirtualGuardTailSplitter::initializeDataStructures()
       TR_SuccessorIterator it(block);
       for (TR::CFGEdge *edge = it.getFirst(); edge; edge = it.getNext())
          {
-         dfsList.add(toBlock(edge->getTo()));
+         TR::Block *to = toBlock(edge->getTo());
+         if (!to->isOSRInduceBlock() && !to->isOSRCatchBlock() && !to->isOSRCodeBlock())
+            dfsList.add(toBlock(edge->getTo()));
          }
       }
 

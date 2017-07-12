@@ -27,6 +27,7 @@
 #include "ModronAssertions.h"
 #include "ut_j9mm.h"
 
+#include "Collector.hpp"
 #include "CollectorLanguageInterfaceImpl.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
@@ -82,8 +83,8 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 	/* Begin running the thread */
 	if (env->isMasterThread()) {
 		env->setThreadType(GC_MASTER_THREAD);
-		cli->parallelDispatcher_handleMasterThread(omrVMThread);
 		dispatcher->masterEntryPoint(env);
+		env->setThreadType(GC_SLAVE_THREAD);
 	} else {
 		env->setThreadType(GC_SLAVE_THREAD);
 		dispatcher->slaveEntryPoint(env);
@@ -385,6 +386,19 @@ void
 MM_ParallelDispatcher::wakeUpThreads(uintptr_t count)
 {
 	omrthread_monitor_notify_all(_slaveThreadMutex);	
+}
+
+/**
+ * Let tasks run with reduced thread count.
+ * After the task is complete the thread count should be restored.
+ * Dispatcher may additionally adjust (reduce) the count.
+ */
+void
+MM_ParallelDispatcher::setThreadCount(uintptr_t threadCount)
+{
+	Assert_MM_true(threadCount <= _threadCountMaximum);
+	Assert_MM_true(0 < threadCount);
+ 	_threadCount = threadCount;
 }
 
 /**

@@ -64,7 +64,7 @@ namespace CS2 {
 ///
 // ------------------------------------------------------------------------
 template <class AElementType, class Allocator, size_t segmentBits = 8>
-class BaseArrayOf : private Allocator {
+struct BaseArrayOf : private Allocator {
 public:
 
   BaseArrayOf (const Allocator &a = Allocator());
@@ -102,10 +102,12 @@ public:
   /// \param[in] s Size to grow the array.
   void GrowTo (size_t s);
 
+  /// \return Size in bytes of memory dynamically allocated for the array
+  unsigned long DynamicMemoryUsage() const;
+
   /// \return Size in bytes currently allocated for the array
   unsigned long MemoryUsage() const;
 
-  protected:
   /// \return Number of elements per segment.
   size_t ElementsPerSegment() const;
 
@@ -132,7 +134,6 @@ public:
     return out;
   }
 
-  protected:
   class DerivedElement {
     public:
 
@@ -142,7 +143,7 @@ public:
 
     DerivedElement() : fElement() {}
     template <class Initializer>
-    DerivedElement (Initializer &element) : fElement(element) {}
+    DerivedElement (const Initializer &element) : fElement(element) {}
     ~DerivedElement() {}
 
     AElementType &Element() { return fElement; }
@@ -189,7 +190,8 @@ CS2_ARTEMP inline typename CS2_BASEARDECL::DerivedElement *CS2_BASEARDECL::Segme
 }
 
 CS2_ARTEMP inline
-typename CS2_BASEARDECL::DerivedElement *CS2_BASEARDECL::DerivedElementAt (size_t elementIndex) const {
+typename CS2_BASEARDECL::DerivedElement *
+CS2_BASEARDECL::DerivedElementAt (size_t elementIndex) const {
   size_t segmentMapIndex = elementIndex >> segmentBits;
   CS2Assert (segmentMapIndex < fNumberOfSegments,
           ("Index %lu does not exist", elementIndex));
@@ -330,10 +332,12 @@ CS2_ARTEMP inline void CS2_BASEARDECL::GrowTo (size_t newSize) {
       fMaxSegments = updatedMaxSegments;
     } else {
       size_t maxSegments = segmentMapIndex + (fMaxSegments >> 1) + 1;
-      DerivedElement ** newSegmentMap = (DerivedElement **) Allocator::allocate (maxSegments * sizeof(DerivedElement *));
-      memcpy(newSegmentMap, fSegmentMap, fMaxSegments * sizeof(DerivedElement *));
-      Allocator::deallocate(fSegmentMap, fMaxSegments * sizeof(DerivedElement *));
-      fSegmentMap = newSegmentMap;
+      void * newSegmentMapAllocation = Allocator::reallocate(
+        maxSegments * sizeof(DerivedElement *),
+        fSegmentMap,
+        fMaxSegments * sizeof(DerivedElement *)
+        );
+      fSegmentMap = static_cast<DerivedElement **>(newSegmentMapAllocation);
       fMaxSegments = maxSegments;
     }
 
@@ -385,14 +389,17 @@ CS2_ARTEMP inline void CS2_BASEARDECL::ShrinkTo (size_t newSize) {
   }
 }
 
-CS2_ARTEMP inline unsigned long CS2_BASEARDECL::MemoryUsage() const {
+CS2_ARTEMP inline unsigned long CS2_BASEARDECL::DynamicMemoryUsage() const {
   unsigned long sizeInBytes;
 
   sizeInBytes = fMaxSegments * sizeof(DerivedElement *);
   sizeInBytes += NumberOfElements() * sizeof(DerivedElement);
-  sizeInBytes += sizeof(CS2_BASEARDECL);
 
   return sizeInBytes;
+}
+
+CS2_ARTEMP inline unsigned long CS2_BASEARDECL::MemoryUsage() const {
+  return DynamicMemoryUsage() + sizeof(CS2_BASEARDECL);
 }
 
 

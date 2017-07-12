@@ -28,6 +28,9 @@
 #include "MarkMap.hpp"
 #include "MarkingScheme.hpp"
 #include "Task.hpp"
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+#include "Scavenger.hpp"
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "WorkPacketsConcurrent.hpp"
 #else
@@ -279,6 +282,8 @@ MM_MarkingScheme::scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
 #else /* OMR_GC_LEAF_BITS */
 		while (NULL != (slotObject = objectScanner->getNextSlot())) {
 #endif /* OMR_GC_LEAF_BITS */
+			fixupForwardedSlot(slotObject);
+
 			inlineMarkObjectNoCheck(env, slotObject->readReferenceFromSlot(), isLeafSlot);
 		}
 	}
@@ -374,4 +379,13 @@ MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
 
 	return workPackets;
 }
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+bool
+MM_MarkingScheme::isConcurrentScavengeInProgress()
+{
+	return _extensions->scavenger->isConcurrentInProgress();
+}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 

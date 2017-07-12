@@ -1648,3 +1648,14 @@ MM_MemoryPoolAddressOrderedList::appendCollectorLargeAllocateStats()
 	_largeObjectCollectorAllocateStats = _largeObjectAllocateStats;
 }
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemoryPoolAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	uintptr_t releasedBytes = 0;
+	_heapLock.acquire();
+	releasedBytes = releaseFreeEntryMemoryPages(env, _heapFreeList);
+	_heapLock.release();
+	return releasedBytes;
+}
+#endif

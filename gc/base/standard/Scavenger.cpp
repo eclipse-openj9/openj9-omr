@@ -1432,7 +1432,7 @@ MM_Scavenger::getArraySplitAmount(MM_EnvironmentStandard *env, uintptr_t sizeInE
 {
 	uintptr_t scvArraySplitAmount = 0;
 
-	if (backOutStarted != _backOutFlag) {
+	if (backOutStarted != _extensions->getScavengerBackOutState()) {
 		/* pointer arrays are split into segments to improve parallelism. split amount is proportional to array size.
 		 * the less busy we are, the smaller the split amount, while obeying specified minimum and maximum.
 		 * but for single-threaded backout, do not split arrays.
@@ -1449,7 +1449,7 @@ MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_Object
 {
 	bool result = false;
 
-	if (backOutStarted != _backOutFlag) {
+	if (backOutStarted != _extensions->getScavengerBackOutState()) {
 		Assert_MM_true(objectScanner->isIndexableObject());
 		GC_IndexableObjectScanner *indexableScanner = (GC_IndexableObjectScanner *)objectScanner;
 		uintptr_t maxIndex = indexableScanner->getIndexableRange();
@@ -3021,17 +3021,17 @@ MM_Scavenger::scavengeCompletedSuccessfully(MM_EnvironmentStandard *env)
  * Change the value of _backOutFlag and inform consumers.
  */
 void
-MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, BackOutState value)
+MM_Scavenger::setBackOutFlag(MM_EnvironmentBase *env, BackOutState backOutState)
 {
 	/* Skip triggering of trace point and hook if we trying to set flag to true multiple times */
-	if (_backOutFlag != value) {
+	if (_extensions->getScavengerBackOutState() != backOutState) {
 		_backOutDoneIndex = _doneIndex;
-		_backOutFlag = value;
+		_extensions->setScavengerBackOutState(backOutState);
 		/* Might be an overkill, but ensure that other CPUs see correct _backOutDoneIndex, by the time they see _backOutFlag is set */
 		MM_AtomicOperations::writeBarrier();
-		if (backOutStarted > value) {
-			Trc_MM_ScavengerBackout(env->getLanguageVMThread(), backOutFlagCleared < value ? "true" : "false");
-			TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), backOutFlagCleared < value);
+		if (backOutStarted > backOutState) {
+			Trc_MM_ScavengerBackout(env->getLanguageVMThread(), backOutFlagCleared < backOutState ? "true" : "false");
+			TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGER_BACK_OUT(_extensions->privateHookInterface, env->getOmrVM(), backOutFlagCleared < backOutState);
 		}
 	}
 }
@@ -3185,9 +3185,13 @@ MM_Scavenger::fixupSlotWithoutCompression(volatile omrobjectptr_t *slotPtr)
 
 	if(NULL != objectPtr) {
 		MM_ForwardedHeader forwardHeader(objectPtr);
-		Assert_MM_false(forwardHeader.isSelfForwardedPointer());
-		if (forwardHeader.isForwardedPointer()) {
-			*slotPtr = forwardHeader.getForwardedObject();
+		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+		if (NULL != forwardPtr) {
+			if (forwardHeader.isSelfForwardedPointer()) {
+				forwardHeader.restoreSelfForwardedPointer();
+			} else {
+				*slotPtr = forwardPtr;
+			}
 			return true;
 		}
 	}
@@ -3224,77 +3228,11 @@ MM_Scavenger::fixupObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t object
 		}
 	}
 
-	// todo: check if need to do anything about indirect references
-}
-
-void
-MM_Scavenger::fixupNurserySlots(MM_EnvironmentStandard *env)
-{
-	GC_MemorySubSpaceRegionIteratorStandard regionIterator(_activeSubSpace);
-	MM_HeapRegionDescriptorStandard* rootRegion = NULL;
-
-	/* Walk whole Nursery and update slots that still point to forwarded objects */
-	/* Even Survivor can have them, created by stores with references to Evacuate */
-	/* Tenure could have them too, but RS comes to the rescue to find those objects faster */
-	while(NULL != (rootRegion = regionIterator.nextRegion())) {
-		GC_ObjectHeapIteratorAddressOrderedList objectHeapIterator(_extensions, rootRegion, false);
-
-		omrobjectptr_t objectPtr = NULL;
-		while((objectPtr = objectHeapIterator.nextObjectNoAdvance()) != NULL) {
-			MM_ForwardedHeader header(objectPtr);
-			if (!header.isForwardedPointer()) {
-				fixupObjectScan(env, objectPtr);
-			} else if (header.isSelfForwardedPointer()) {
-				header.restoreSelfForwardedPointer();
-				Assert_MM_false(_extensions->objectModel.isDeadObject(objectPtr));
-				MM_ForwardedHeader header(objectPtr);
-				Assert_MM_false(header.isSelfForwardedPointer());
-				fixupObjectScan(env, objectPtr);
-			} else {
-				/* Strictly forwarded object should be skipped by the iterator */
-				Assert_MM_unreachable();
-			}
-		}
-	}
-
-	/* todo: revisit how much work should be done here
-	 * - finalizable are hard roots and could be skipped?
-	 * - unfinalized list could be valid since we updated all (including hidden?) stale references?
-	 */
-	MM_ScavengerBackOutScanner backOutScanner(env, true, this);
-	backOutScanner.scanAllSlots(env);
-
-	GC_MemorySubSpaceRegionIteratorStandard evacuateRegionIterator(_activeSubSpace);
-	rootRegion = NULL;
-
- 	/* Create holes out of strictly forwarded objects */
-	/* todo: this pass is probably necessary only to make the heap walkable for GC checks that run
-	 * at the end of aborted scavenge and the start of percolate global GC */
-	while(NULL != (rootRegion = evacuateRegionIterator.nextRegion())) {
-		/* Forwarded objects are only in Evacuate */
-		if (isObjectInEvacuateMemory((omrobjectptr_t )rootRegion->getLowAddress())) {
-			/* tell the object iterator to work on the given region */
-			GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
-			evacuateHeapIterator.includeForwardedObjects();
-			omrobjectptr_t objectPtr = NULL;
-
-			while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-				MM_ForwardedHeader header(objectPtr);
-				if (header.isForwardedPointer()) {
-					Assert_MM_true(header.isStrictlyForwardedPointer());
-					omrobjectptr_t forwardedObject = header.getForwardedObject();
-					omrobjectptr_t originalObject = header.getObject();
-
-					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(forwardedObject);
-					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(originalObject);
-					freeHeader->setNext((MM_HeapLinkedFreeHeader*)forwardedObject);
-					freeHeader->setSize(evacuateObjectSizeInBytes);
-					Assert_MM_true(objectPtr == originalObject);
-				}
-			}
-		}
+	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+		_cli->scavenger_fixupIndirectObjectSlots(env, objectPtr);
 	}
 }
+
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 void
@@ -3321,11 +3259,11 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 						objectPtr = (omrobjectptr_t)((uintptr_t)objectPtr & ~(uintptr_t)DEFERRED_RS_REMOVE_FLAG);
 						Assert_MM_false(MM_ForwardedHeader(objectPtr).isForwardedPointer());
 
-					/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
-					if (!shouldRememberObject(env, objectPtr)) {
-						/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
-						_extensions->objectModel.clearRemembered(objectPtr);
-						remSetSlotIterator.removeSlot();
+						/* The object did not have Nursery references at initial RS scan, but one could have been added during CS cycle by a mutator. */
+						if (!shouldRememberObject(env, objectPtr)) {
+							/* A simple mask out can be used - we are guaranteed to be the only manipulator of the object */
+							_extensions->objectModel.clearRemembered(objectPtr);
+							remSetSlotIterator.removeSlot();
 
 							/* No need to inform anybody about creation of old-to-old reference (see regular pruning pass).
 							 * For CS, this is already handled during scanning of old objects
@@ -3444,6 +3382,9 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 				if (isObjectInEvacuateMemory((omrobjectptr_t)rootRegion->getLowAddress())) {
 					/* tell the object iterator to work on the given region */
 					GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+					evacuateHeapIterator.includeForwardedObjects();
+#endif
 					omrobjectptr_t objectPtr = NULL;
 					omrobjectptr_t fwdObjectPtr = NULL;
 					while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
@@ -3454,20 +3395,7 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 								_extensions->objectModel.clearRemembered(fwdObjectPtr);
 							}
 #if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
-							/* Move to the next object - the heap iterator is incapable of dealing with
-							 * tagged class pointers.
-							 */
-							/* If this scavenge was the first move of a hashed object, the sizes don't match.
-							 * This approach won't work if the flags of the original (i.e. evacuate space)
-							 * object are destroyed.
-							 */
-							if(_extensions->objectModel.hasRecentlyBeenMoved(fwdObjectPtr)) {
-								uintptr_t size = _extensions->objectModel.getSizeInBytesWithHeader(fwdObjectPtr);
-								size = _extensions->objectModel.adjustSizeInBytes(size);
-								evacuateHeapIterator.advance(size);
-							} else {
-								evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
-							}
+							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(fwdObjectPtr));
 #else
 							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
 #endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
@@ -3503,32 +3431,17 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 			_cli->scavenger_backOutIndirectObjects(env);
 		} else {
 			/* RS not in overflow */
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (!_extensions->concurrentScavenger)
-#endif
-			{
-				/*
-				 * 2.c)Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space
-				 */
+			if (!_extensions->isConcurrentScavengerEnabled()) {
+				/* Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space */
 				backoutFixupAndReverseForwardPointersInSurvivor(env);
 			}
 
 			processRememberedSetInBackout(env);
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (_extensions->concurrentScavenger) {
-				fixupNurserySlots(env);
-			}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		} /* end of 'is RS in overflow' */
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		if (!_extensions->concurrentScavenger)
-#endif
-		{
-			MM_ScavengerBackOutScanner backOutScanner(env, true, this);
-			backOutScanner.scanAllSlots(env);
-		}
+		MM_ScavengerBackOutScanner backOutScanner(env, true, this);
+		backOutScanner.scanAllSlots(env);
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 		omrtty_printf("{SCAV: Done back out}\n");
@@ -3922,8 +3835,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		bool result = percolateGarbageCollect(env, subSpace, NULL, ABORTED_SCAVENGE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE);
 
 		Assert_MM_true(result);
-
-		setBackOutFlag(env, backOutFlagCleared);
 
 		return true;
 	}
@@ -4533,17 +4444,19 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 
-	/* caches should all be reset */
-	Assert_MM_true(NULL == env->_survivorCopyScanCache);
-	Assert_MM_true(NULL == env->_tenureCopyScanCache);
-	Assert_MM_true(NULL == env->_scanCache);
-	Assert_MM_true(NULL == env->_deferredScanCache);
-	Assert_MM_true(NULL == env->_deferredCopyCache);
-	Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
-	Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
-	Assert_MM_false(env->_loaAllocation);
-	Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
-	Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+	if (isConcurrentInProgress()) {
+		/* caches should all be reset */
+		Assert_MM_true(NULL == env->_survivorCopyScanCache);
+		Assert_MM_true(NULL == env->_tenureCopyScanCache);
+		Assert_MM_true(NULL == env->_scanCache);
+		Assert_MM_true(NULL == env->_deferredScanCache);
+		Assert_MM_true(NULL == env->_deferredCopyCache);
+		Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
+		Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
+		Assert_MM_false(env->_loaAllocation);
+		Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
+		Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+	}
 }
 
 void
@@ -4552,7 +4465,7 @@ MM_Scavenger::mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_Envi
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 	MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(threadEnvironmentBase);
 
-	if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
+	if (isConcurrentInProgress() && (MUTATOR_THREAD == threadEnvironment->getThreadType())) {
 		/* in case of scavenge complete phase, master thread will act on behalf (use its own environment) of mutator threads
 		 * in case of thread teardown, caller ensures that own environment is used
 		 */
@@ -4797,7 +4710,8 @@ MM_Scavenger::scavengeConcurrent(MM_EnvironmentBase *env, UDATA totalBytesToScav
 	Assert_MM_true(concurrent_state_scan == _concurrentState);
 
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, totalBytesToScavenge, forceExit, env->_cycleState);
-	_dispatcher->run(env, &scavengeTask);
+	/* Concurrent background task will run with different (typically lower) number of threads. */
+	_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
 
 	uintptr_t bytesScanned = scavengeTask.getBytesScanned();
 	/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */

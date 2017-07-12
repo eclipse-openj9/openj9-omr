@@ -232,13 +232,16 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    uint32_t                         _numFPR;
    TR::RealRegister            *_frameRegister;
    TR::RealRegister            *_methodMetaDataRegister;
-   TR::ARMImmInstruction          *_returnTypeInfoInstruction;
    TR::ARMConstantDataSnippet       *_constantData;
    TR::ARMLinkageProperties   *_linkageProperties;
    List<TR_ARMOutOfLineCodeSection> _outOfLineCodeSectionList;
    // Internal Control Flow Depth Counters
    int32_t                          _internalControlFlowNestingDepth;
    int32_t                          _internalControlFlowSafeNestingDepth;
+
+   protected:
+
+   TR::ARMImmInstruction          *_returnTypeInfoInstruction;
 
    };
 

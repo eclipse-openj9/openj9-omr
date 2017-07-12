@@ -73,6 +73,11 @@ private:
 	uint64_t _lastScavengeEndTime;
 
 	double _desiredSurvivorSpaceRatio;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uintptr_t _bytesAllocatedAtConcurrentStart;
+	uintptr_t _bytesAllocatedAtConcurrentEnd;
+	uintptr_t _avgBytesAllocatedDuringConcurrent;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 	MM_LargeObjectAllocateStats *_largeObjectAllocateStats; /**< Approximate allocation profile for large objects. Struct to keep merged stats from two allocate pools */
 
@@ -124,10 +129,6 @@ public:
 
 	void cacheRanges(MM_MemorySubSpace *subSpace, void **base, void **top);
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);
-#endif
-
 	MM_MemorySubSpace *getTenureMemorySubSpace() { 	return _parent->getTenureMemorySubSpace(); }
 	MM_MemorySubSpace *getMemorySubSpaceAllocate() { return _memorySubSpaceAllocate; };
 	MM_MemorySubSpace *getMemorySubSpaceSurvivor() { return _memorySubSpaceSurvivor; };
@@ -173,7 +174,7 @@ public:
 		MM_MemorySubSpace(env, collector, physicalSubArena, usesGlobalCollector, minimumSize, initialSize, maximumSize, MEMORY_TYPE_NEW, 0)
 		,_memorySubSpaceAllocate(memorySubSpaceAllocate)
 		,_memorySubSpaceSurvivor(memorySubSpaceSurvivor)
-		,_memorySubSpaceEvacuate(NULL)
+		,_memorySubSpaceEvacuate(memorySubSpaceSurvivor)
 		,_allocateSpaceBase(NULL)
 		,_allocateSpaceTop(NULL)
 		,_survivorSpaceBase(NULL)
@@ -185,6 +186,11 @@ public:
 		,_averageScavengeTimeRatio(0.0)
 		,_lastScavengeEndTime(0)
 		,_desiredSurvivorSpaceRatio(0.0)
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)		
+		,_bytesAllocatedAtConcurrentStart(0)
+		,_bytesAllocatedAtConcurrentEnd(0)
+		,_avgBytesAllocatedDuringConcurrent(0)
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 		
 	{
 		_typeId = __FUNCTION__;
 	}

@@ -29,31 +29,19 @@ add_executable(omralgotest
 	hashtabletest.c
 	hooksample.h
 	hooksample_internal.h
-	#hooksample.hdf
-	#hooksample.sentinel
-	#hooksample_internal.h
 	hooktest.c
 	main.cpp
 	pooltest.c
 )
 
 target_link_libraries(omralgotest
-	j9avl
-	j9hashtable
-	j9pool
 	omrGtestGlue
-	#omrGtest
-	omrcore
 	omrport
 	omrtestutil
 )
 
 #TODO hack to get building
-if(OMR_HOST_OS STREQUAL "linux")
-	target_link_libraries(omralgotest
-		rt
-	)
-elseif(OMR_HOST_OS STREQUAL "win")
+if(OMR_HOST_OS STREQUAL "win")
 	target_link_libraries(omralgotest
 		ws2_32
 		shell32

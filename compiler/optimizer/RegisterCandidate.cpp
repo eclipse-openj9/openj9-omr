@@ -297,8 +297,7 @@ TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
    }
 
  TR_RegisterCandidate *TR_RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
-   TR_RegisterCandidate rc(ref, _trMemory, comp()->allocator());
-   CS2::TableIndex cix = _candidateTable.AddEntry(rc);
+   CS2::TableIndex cix = _candidateTable.AddEntry(TR_RegisterCandidate(ref, _trMemory, comp()->allocator()));
    return &_candidateTable[cix];
  }
 
@@ -1320,7 +1319,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[bnum];
          }
 
-      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock();
       if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio))
          ++origNumberOfBlocks;
 
@@ -1353,7 +1352,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          blockWeight = blockStructureWeight[block->getNumber()];
          }
 
-      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock(comp);
+      bool ignoreBlock = (dontAssignInColdBlocks(comp) && block->isCold()) || block->isOSRInduceBlock();
       if (!ignoreBlock && (blockWeight >= maxFrequency*freqRatio || useProfilingFrequencies))
          {
          ++numberOfBlocks;
@@ -2249,7 +2248,7 @@ static void assign_candidate_loop_trace_increment(TR::Compilation *comp, TR_Regi
 bool
 TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, int32_t & lowestNumber, int32_t & highestNumber)
    {
-#if (defined(__IBMCPP__) || defined(__IBMC__))
+#if (defined(__IBMCPP__) || defined(__IBMC__)) && !defined(__ibmxl__)
    // __func__ is not defined for this function on XLC compilers (Notably XLC on Linux PPC and ZOS)
    static const char __func__[] = "TR_RegisterCandidates::assign";
 #endif

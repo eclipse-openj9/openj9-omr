@@ -274,6 +274,7 @@ class TR_OSRMethodData
    void addSlotSharingInfo(int32_t byteCodeIndex,
                            int32_t slot, int32_t symRefNum, int32_t symRefOrder, int32_t symSize, bool takesTwoSlots);
    void ensureSlotSharingInfoAt(int32_t byteCodeIndex);
+   bool hasSlotSharingInfo();
    void addInstruction(int32_t instructionPC, int32_t byteCodeIndex);
 
    int32_t getHeaderSize() const;
@@ -287,9 +288,12 @@ class TR_OSRMethodData
    void setNumSymRefs(int32_t numBits) {_numSymRefs = numBits; }
    int32_t getNumSymRefs() { return _numSymRefs; }
 
-   void addLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target, TR_BitVector *liveRangeInfo);
-   TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target);
+   void addLiveRangeInfo(int32_t byteCodeIndex, TR_BitVector *liveRangeInfo);
    TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex);
+
+   void ensureArgInfoAt(int32_t byteCodeIndex, int32_t argNum);
+   void addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t argSymRef);
+   TR_Array<int32_t>* getArgInfo(int32_t byteCodeIndex);
 
    bool linkedToCaller() { return _linkedToCaller; }
    void setLinkedToCaller(bool b) { _linkedToCaller = b; }
@@ -299,9 +303,9 @@ class TR_OSRMethodData
    private:
    void createOSRBlocks(TR::Node* n);
 
-   typedef CS2::CompoundHashKey<int32_t, TR::OSRTransitionTarget> TR_BCLiveRangeInfoHashKey;
-   typedef CS2::HashTable<TR_BCLiveRangeInfoHashKey, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
+   typedef CS2::HashTable<int32_t, TR_BitVector *, TR::Allocator> TR_BCLiveRangeInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_OSRSlotSharingInfo*, TR::Allocator> TR_BCInfoHashTable;
+   typedef CS2::HashTable<int32_t, TR_Array<int32_t>*, TR::Allocator> TR_ArgInfoHashTable;
    typedef CS2::HashTable<int32_t, TR_Array<int32_t>, TR::Allocator> TR_Slot2ScratchBufferOffset;
 
 
@@ -317,6 +321,8 @@ class TR_OSRMethodData
    TR_BCInfoHashTable           bcInfoHashTab;
 
    TR_BCLiveRangeInfoHashTable  bcLiveRangeInfoHashTab;
+
+   TR_ArgInfoHashTable argInfoHashTab;
 
    int32_t _numSymRefs;
 

@@ -25,6 +25,9 @@
 
 #include "BaseVirtual.hpp"
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#include "CollectorLanguageInterface.hpp"
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MarkingDelegate.hpp"
@@ -59,12 +62,40 @@ public:
 	 * Function members
 	 */
 private:
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	bool isConcurrentMarkInProgress() {
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK) 
+		uintptr_t mode = _extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getExecutionMode();
+		return (CONCURRENT_ROOT_TRACING <= mode) && (mode < CONCURRENT_EXHAUSTED);
+#else	
+		return false;
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+	}
+	bool isConcurrentScavengeInProgress();
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	
+
+
 	MMINLINE void
 	assertSaneObjectPtr(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
 	{
 		Assert_GC_true_with_message(env, objectPtr != J9_INVALID_OBJECT, "Invalid object pointer %p\n", objectPtr);
 		Assert_MM_objectAligned(env, objectPtr);
 		Assert_GC_true_with_message3(env, isHeapObject(objectPtr), "Object %p not in heap range [%p,%p)\n", objectPtr, _heapBase, _heapTop);
+		
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/* This is an expensive assert - fetching class slot during marking operation, thus invalidating benefits of leaf optimization.  
+		 * TODO: after some soaking remove it!
+		 */
+		if (_extensions->isConcurrentScavengerEnabled()) {
+			MM_ForwardedHeader forwardHeader(objectPtr);
+			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+			/* It is ok to encounter a forwarded object during overlapped concurrent scavenger/marking (or even root scanning),
+			 * but we must do nothing about it (if in backout, STW global phase will recover them).
+			 */
+			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && isConcurrentScavengeInProgress()));
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 				
 	}
 
 	/**
@@ -236,6 +267,8 @@ public:
 #else /* OMR_GC_LEAF_BITS */
 			while (NULL != (slotObject = objectScanner->getNextSlot())) {
 #endif /* OMR_GC_LEAF_BITS */
+				fixupForwardedSlot(slotObject);
+
 				/* with concurrentMark mutator may NULL the slot so must fetch and check here */
 				inlineMarkObject(env, slotObject->readReferenceFromSlot(), isLeafSlot);
 			}
@@ -266,6 +299,34 @@ public:
 	MMINLINE bool isHeapObject(omrobjectptr_t objectPtr)
 	{
 		return ((_heapBase <= (uint8_t *)objectPtr) && (_heapTop > (uint8_t *)objectPtr));
+	}
+	
+	/**
+	 * Update the slot value to point to (Scavenger) forwarded object. If self-forwarded,
+	 * the slot is unchanged, but the class slot of the self-forwarded object is restored (self-forwarded bits are reset).
+	 * This is currently used only in presence of Concurrent Scavenger. When abort is detected CS does not fix up 
+	 * heap references within Scavenger abort handling, but relies on marking in percolate Global to do it.
+	 * The updates are non-atomic, but even though multiple threads could be doing it, they set it to the same value.
+	 * During Concurrent Marking, ignore forwarded objects (especially true for self-forwarded objects which are very important
+	 * during Scavenger aborted cycle to prevent duplicate copies). The fixup will be done after Scavenger Cycle is done, 
+	 * in the final phase of Concurrent GC when we scan Nursery. 
+	 */
+	
+	void fixupForwardedSlot(GC_SlotObject *slotObject) {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
+			MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
+			omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+	
+			if ((NULL != forwardPtr) && !isConcurrentMarkInProgress()) {
+				if (forwardHeader.isSelfForwardedPointer()) {
+					forwardHeader.restoreSelfForwardedPointer();
+				} else {
+					slotObject->writeReferenceToSlot(forwardPtr);
+				}
+			}
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 			
 	}
 
 	/**

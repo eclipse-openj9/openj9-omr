@@ -83,9 +83,17 @@ TR_ExceptionTableEntryIterator::TR_ExceptionTableEntryIterator(TR::Compilation *
                bool found = false;
                TR_ASSERT(tt->getNode(), "a treetop doesn't have a node ????");
                TR::Block * prevBlock = tt->getNode()->getBlock();
-               for (auto e = exceptionPredecessors.begin(); e != exceptionPredecessors.end(); ++e)
-                  if (toBlock((*e)->getFrom()) == prevBlock)
-                     { exceptionPredecessors.erase(e); found = true; break; }
+               for (auto previousEdge = exceptionPredecessors.before_begin(), currentEdge = exceptionPredecessors.begin();
+                    currentEdge != exceptionPredecessors.end();
+                    ++previousEdge, ++currentEdge)
+                  {
+                  if (toBlock((*currentEdge)->getFrom()) == prevBlock)
+                     {
+                     currentEdge = exceptionPredecessors.erase_after(previousEdge);
+                     found = true;
+                     break;
+                     }
+                  }
                if (!found) break;
                first = prevBlock;
                addSnippetRanges(tableEntries, prevBlock, catchBlock, catchType, method, comp);
@@ -99,9 +107,17 @@ TR_ExceptionTableEntryIterator::TR_ExceptionTableEntryIterator(TR::Compilation *
                if (!tt) break;
                bool found = false;
                TR::Block * nextBlock = tt->getNode()->getBlock();
-               for (auto e = exceptionPredecessors.begin(); e != exceptionPredecessors.end(); ++e)
-                  if (toBlock((*e)->getFrom()) == nextBlock)
-                     { exceptionPredecessors.erase(e); found = true; break; }
+               for (auto previousEdge = exceptionPredecessors.before_begin(), currentEdge = exceptionPredecessors.begin();
+                    currentEdge != exceptionPredecessors.end();
+                    ++previousEdge, ++currentEdge)
+                  {
+                  if (toBlock((*currentEdge)->getFrom()) == nextBlock)
+                     {
+                     exceptionPredecessors.erase_after(previousEdge);
+                     found = true;
+                     break;
+                     }
+                  }
                if (!found) break;
                last = nextBlock;
                addSnippetRanges(tableEntries, nextBlock, catchBlock, catchType, method, comp);

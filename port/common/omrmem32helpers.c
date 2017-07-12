@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 #include "omrmem32helpers.h"
@@ -416,6 +417,9 @@ allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount, cons
 	void *returnPtr = NULL;
 #if defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 	BOOLEAN useMalloc31 = FALSE;
+#elif defined(OMRZTPF)
+	/* malloc on z/TPF is 32 bits */
+	BOOLEAN useMalloc = TRUE;
 #endif
 
 	Trc_PRT_mem_allocate_memory32_Entry(byteAmount);
@@ -425,6 +429,10 @@ allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount, cons
 	}
 	if (TRUE == useMalloc31) {
 		returnPtr = __malloc31(byteAmount);
+	} else {
+#elif defined(OMRZTPF)
+	if (TRUE == useMalloc) {
+		returnPtr = malloc(byteAmount);
 	} else {
 #endif
 		omrthread_monitor_enter(PPG_mem_mem32_subAllocHeapMem32.monitor);
@@ -442,7 +450,7 @@ allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount, cons
 		}
 
 		omrthread_monitor_exit(PPG_mem_mem32_subAllocHeapMem32.monitor);
-#if defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if (defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)) || defined(OMRZTPF)
 	}
 #endif
 
@@ -653,11 +661,18 @@ free_memory32(struct OMRPortLibrary *portLibrary, void *memoryPointer)
 {
 	J9HeapWrapper *foundHeapWrapper = NULL;
 	J9HeapWrapper **heapWrapperUpdate = NULL;
-
+#if defined(OMRZTPF)
+	/* use free unconditionally for z/TPF */
+	BOOLEAN useFree = TRUE;
+#endif
 	Trc_PRT_mem_free_memory32_Entry(memoryPointer);
 
 #if defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 	if (OMRPORT_DISABLE_ENSURE_CAP32 == portLibrary->portGlobals->disableEnsureCap32) {
+		free(memoryPointer);
+	} else {
+#elif defined(OMRZTPF)
+	if (TRUE == useFree) {
 		free(memoryPointer);
 	} else {
 #endif
@@ -702,7 +717,7 @@ free_memory32(struct OMRPortLibrary *portLibrary, void *memoryPointer)
 
 		omrthread_monitor_exit(PPG_mem_mem32_subAllocHeapMem32.monitor);
 
-#if defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
+#if (defined(J9ZOS390) && defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)) || defined(OMRZTPF)
 	}
 #endif
 

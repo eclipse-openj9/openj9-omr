@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 #include <pthread.h>
@@ -24,10 +25,16 @@
 #include "pool_api.h"
 #include "threaddef.h"
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #include <sys/prctl.h>
 #include <linux/prctl.h>
 #endif /* defined(LINUX) */
+
+#if defined(OMRZTPF)
+#include <tpf/c_eb0eb.h>
+#include <tpf/sysapi.h>
+#include <tpf/tpfapi.h>
+#endif /* if defined(OMRZTPF) */
 
 #if (defined(LINUX) || defined(OSX)) && defined(J9X86)
 #include <fpu_control.h>
@@ -63,6 +70,9 @@ intptr_t sem_wait_zos(j9sem_t s);
 intptr_t sem_trywait_zos(j9sem_t s);
 intptr_t sem_post_zos(j9sem_t s);
 
+#if defined (OMRZTPF)
+void  ztpf_init_proc(void);
+#endif /* defined (OMRZTPF) */
 
 void omrthread_init(struct J9ThreadLibrary *lib);
 void omrthread_shutdown(void);
@@ -117,7 +127,9 @@ set_pthread_name(pthread_t self, pthread_t thread, const char *name)
 #ifndef PR_SET_NAME
 #define PR_SET_NAME 15
 #endif
+#ifndef OMRZTPF
 	prctl(PR_SET_NAME, name);
+#endif
 	/* we ignore the return value of prctl, since naming is not supported on some older linux distributions */
 #else /* defined(LINUX) */
 	pthread_setname_np(name);
@@ -291,6 +303,25 @@ initCondAttr(void)
 	return rc;
 }
 #endif /* J9THREAD_USE_MONOTONIC_COND_CLOCK */
+
+#if  defined(OMRZTPF)
+/**
+ * process scoped settings for the z/TPF operating system.
+ *
+ */
+void
+ztpf_init_proc()
+{
+        /*
+         * Disable heap check mode for the jvm process. See tpf rtc 15110.
+         */
+        tpf_eheap_heapcheck(TPF_EHEAP_HEAPCHECK_DISABLE);
+        /*
+         *  Set ECB attributes, ensure that these attributes are set in child ECBs too.
+         */
+        tpf_easetc(TPF_EASETC_SWITCHABLE, TPF_EASETC_SET_ON+TPF_EASETC_INHERIT_YES);
+}
+#endif /* defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
 /**

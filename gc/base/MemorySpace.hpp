@@ -180,6 +180,10 @@ public:
 	void heapReconfigured(MM_EnvironmentBase *env);
 
 	static MM_MemorySpace *getMemorySpace(void *memorySpace) { return (MM_MemorySpace *)memorySpace; }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
 	
 	/**
 	 * Create a MemorySpace object.

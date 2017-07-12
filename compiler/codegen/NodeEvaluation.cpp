@@ -466,7 +466,7 @@ OMR::CodeGenerator::evaluateChildrenWithMultipleRefCount(TR::Node * node)
 	     (child->getOpCode().hasSymbolReference() ||
 	      (child->getOpCodeValue() == TR::l2a && child->getChild(0)->containsCompressionSequence())))
             {
-            TR::SymbolReference *vftPointerSymRef = TR::comp()->getSymRefTab()->element(TR::SymbolReferenceTable::vftSymbol);
+            TR::SymbolReference *vftPointerSymRef = self()->comp()->getSymRefTab()->element(TR::SymbolReferenceTable::vftSymbol);
             if (node->isNopableInlineGuard()
                 && self()->getSupportsVirtualGuardNOPing()
                 && child->getOpCodeValue() == TR::aloadi

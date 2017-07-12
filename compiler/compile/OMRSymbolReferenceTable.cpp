@@ -1759,6 +1759,8 @@ OMR::SymbolReferenceTable::findOrCreatePendingPushTemporary(
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR_ASSERT(!type.isBCD() || size,"binary coded decimal types must provide a size\n");
+   TR_ASSERT_FATAL(!owningMethodSymbol->comp()->getOption(TR_EnableOSR) || (slot + TR::Symbol::convertTypeToNumberOfSlots(type) - 1) < owningMethodSymbol->getNumPPSlots(),
+      "cannot create a pending push temporary that exceeds the number of slots for this method\n");
 #endif
    TR::SymbolReference *tempSymRef = findOrCreateAutoSymbol(owningMethodSymbol, -(slot + 1), type, true, false, false, false, size);
    tempSymRef->getSymbol()->setIsPendingPush();

@@ -45,9 +45,6 @@
 class MM_AllocationContext;
 class MM_AllocateDescription;
 class MM_Collector;
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-class MM_ConcurrentGCStats;
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 class MM_HeapRegionQueue;
 class MM_MemorySpace;
 class MM_ObjectAllocationInterface;
@@ -311,7 +308,12 @@ public:
 	 * Sets the threads type.
 	 * @param threadType The thread type to set thread to.
 	 */
-	MMINLINE void setThreadType(ThreadType threadType) {_threadType= threadType; } ;
+	MMINLINE void
+	setThreadType(ThreadType threadType)
+	{
+		_threadType = threadType;
+		_delegate.setGCMasterThread(GC_MASTER_THREAD == _threadType);
+	}
 
 	/**
 	 * Gets the id used for calculating work packet sublist indexes.

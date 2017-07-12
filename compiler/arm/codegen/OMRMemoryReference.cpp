@@ -55,7 +55,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Register *br, TR::Register *ir, T
    _indexNode(NULL),
    _modBase(NULL),
    _unresolvedSnippet(NULL),
-   _symbolReference(TR::comp()->getSymRefTab()),
+   _symbolReference(cg->comp()->getSymRefTab()),
    _flag(0),
    _scale(0)
    {
@@ -68,7 +68,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Register *br, TR::Register *ir, u
    _indexNode(NULL),
    _modBase(NULL),
    _unresolvedSnippet(NULL),
-   _symbolReference(TR::comp()->getSymRefTab()),
+   _symbolReference(cg->comp()->getSymRefTab()),
    _flag(0),
    _scale(scale)
    {
@@ -81,7 +81,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Register *br, int32_t disp, TR::C
    _indexNode(NULL),
    _modBase(NULL),
    _unresolvedSnippet(NULL),
-   _symbolReference(TR::comp()->getSymRefTab()),
+   _symbolReference(cg->comp()->getSymRefTab()),
    _flag(0),
    _scale(0)
    {
@@ -99,13 +99,13 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node          *rootLoadOrStore,
      _indexRegister(NULL),
      _indexNode(NULL),
      _unresolvedSnippet(NULL),
-     _symbolReference(TR::comp()->getSymRefTab()),
+     _symbolReference(cg->comp()->getSymRefTab()),
      _modBase(NULL),
      _length(len),
      _scale(0),
      _flag(0)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::SymbolReference *ref    = rootLoadOrStore->getSymbolReference();
    TR::Symbol           *symbol = ref->getSymbol();
    bool               isStore = rootLoadOrStore->getOpCode().isStore();
@@ -167,7 +167,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference *
      _indexRegister(NULL),
      _indexNode(NULL),
      _unresolvedSnippet(NULL),
-     _symbolReference(TR::comp()->getSymRefTab()),
+     _symbolReference(cg->comp()->getSymRefTab()),
      _modBase(NULL),
      _length(len),
      _scale(0),
@@ -202,7 +202,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::Node *node, TR::SymbolReference *
 
    self()->setSymbol(symbol, cg);
    _symbolReference.copyFlags(symRef);
-   _symbolReference.copyRefNumIfPossible(symRef, TR::comp()->getSymRefTab());
+   _symbolReference.copyRefNumIfPossible(symRef, cg->comp()->getSymRefTab());
    self()->addToOffset(0, symRef->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       self()->adjustForResolution(cg);
@@ -213,7 +213,7 @@ OMR::ARM::MemoryReference::MemoryReference(TR::MemoryReference &mr,
                                              int32_t                displacement,
                                              uint32_t               len,
                                              TR::CodeGenerator      *cg)
-   : _symbolReference(TR::comp()->getSymRefTab())
+   : _symbolReference(cg->comp()->getSymRefTab())
    {
    _baseRegister    = mr._baseRegister;
    _baseNode        = NULL;
@@ -1333,7 +1333,7 @@ static void loadRelocatableConstant(TR::Node               *node,
    TR::Symbol                        *symbol;
    int32_t                          addr, offset, highAddr;
    TR::Instruction                  *instr;
-   TR::Compilation * comp = TR::comp();
+   TR::Compilation * comp = cg->comp();
    symbol = ref->getSymbol();
    /* This method is called only if symbol->isStatic() && !ref->isUnresolved(). */
    TR_ASSERT(symbol->isStatic() || symbol->isMethod(), "loadRelocatableConstant, problem with new symbol hierarchy");

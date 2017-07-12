@@ -170,7 +170,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
    TR::Node             *targetChild        = NULL,
                         *sourceChild        = NULL,
                         *opChild[2]         = {NULL, NULL};
-   TR::Compilation      *comp               = TR::comp();
+   TR::Compilation      *comp               = _cg->comp();
    TR::MemoryReference  *constMR            = NULL;
    bool                 operandNeedsScaling = false;
    TR::Register         *scalingRegister    = NULL;

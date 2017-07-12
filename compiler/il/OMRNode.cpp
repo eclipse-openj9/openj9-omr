@@ -171,7 +171,7 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
 
       if (_byteCodeInfo.getCallerIndex() < 0)
          _byteCodeInfo.setCallerIndex(ilGen->currentCallSiteIndex());
-      TR_ASSERT(_byteCodeInfo.getCallerIndex() < (INT_MAX/4), "Caller index too high; cannot set high order bit\n");
+      TR_ASSERT(_byteCodeInfo.getCallerIndex() < (SHRT_MAX/4), "Caller index too high; cannot set high order bit\n");
       _byteCodeInfo.setDoNotProfile(0);
       }
    else if (originatingByteCodeNode)
@@ -7440,7 +7440,7 @@ OMR::Node::resetIsTheVirtualGuardForAGuardedInlinedCall()
 bool
 OMR::Node::isNopableInlineGuard()
    {
-   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard();
+   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() && !self()->isBreakpointGuard();
    }
 
 
@@ -7529,13 +7529,32 @@ OMR::Node::setIsOSRGuard()
       _flags.set(osrGuard);
    }
 
+void
+OMR::Node::setIsBreakpointGuard()
+   {
+   TR::Compilation *c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isIf(), "assertion failure");
+   if (performNodeTransformation1(c, "O^O NODE FLAGS: Setting breakpoint guard flag on node %p\n", self()))
+      _flags.set(breakpointGuard);
+   }
+
+bool
+OMR::Node::isBreakpointGuard()
+   {
+   return _flags.testValue(inlineGuardMask, breakpointGuard) && self()->getOpCode().isIf();
+   }
+
+const char *
+OMR::Node::printIsBreakpointGuard()
+   {
+   return self()->isBreakpointGuard() ? "breakpointGuard " : "";
+   }
+
 const char *
 OMR::Node::printIsOSRGuard()
    {
    return self()->isOSRGuard() ? "osrGuard " : "";
    }
-
-
 
 bool
 OMR::Node::childrenWereSwapped()

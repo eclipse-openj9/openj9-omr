@@ -18,11 +18,12 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-#TODO figure out method of sharing version info with makefile build
-set(OMR_VERSION_MAJOR 0)
-set(OMR_VERSION_MINOR 0)
-set(OMR_VERSION_PATCH 1)
-set(OMR_VERSION ${OMR_VERSION_MAJOR}.${OMR_VERSION_MINOR}.${OMR_VERSION_PATCH})
+# Warn user that CMake support is currently experimental
+message(WARNING
+"CMake support is currently experimental.\n\
+Various components may fail to compile with default configuration options, and some are not even attempted.")
+
+include(cmake/versions.cmake) # Required for OMR_VERSION 
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 
@@ -32,15 +33,15 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 ### Getting the glue directory
 ###
 
-set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+if (NOT DEFINED OMR_GLUE)
+    set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+    message(STATUS "Glue not set, defaulting to example glue")
+endif()
 
 # TODO: OMR_EXAMPLE flag
 # TODO: OMR_RTTI flag
 
 # TODO: Version things
-
-set(OMR_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
-set(OMR_JIT_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
 
 ###
 ### Versions and stuff
@@ -48,29 +49,12 @@ set(OMR_JIT_VERSION_STRING "<Unknown>" CACHE STRING "") # TODO: Set the version
 
 include(cmake/platform.cmake)
 include(cmake/config.cmake)
+include(cmake/vpath.cmake)
 
 enable_testing()
 
 #include current source dir and current bin dir automatically
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-function(VPathResolve inlist dirlist outlist)
-    set(output "")
-  foreach(currentFile ${${inlist}})
-    set(fileFound False)
-    foreach(currentDir ${${dirlist}})
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${currentDir}/${currentFile}")
-            list(APPEND output "${currentDir}/${currentFile}")
-            set(fileFound True)
-            break()
-        endif()
-    endforeach()
-    if(NOT fileFound)
-        message(FATAL_ERROR "Could not find file ${currentFile}")
-    endif()
-  endforeach()
-  set(${outlist} ${output} PARENT_SCOPE)
-endfunction()
 
 include_directories(
   ${PROJECT_BINARY_DIR}
@@ -82,6 +66,18 @@ include_directories(
 add_definitions(
   -DUT_DIRECT_TRACE_REGISTRATION # TODO:  Deal with that stupid jni issue in tracegen
 )
+
+# Check for existing omrcfg in the source tree since this can cause alot of headaches
+# Also check if we are building in tree while we are at it
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	if(NOT MSVC_IDE) #MSVC will handle in tree builds ok
+		message(WARNING "In tree builds are not recommended")
+	endif()
+else()
+include(cmake/CheckSourceTree.cmake)
+add_custom_target(header_check ALL
+	${CMAKE_COMMAND} "-Domr_SOURCE_DIR=${omr_SOURCE_DIR}" -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckSourceTree.cmake)
+endif()
 
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)

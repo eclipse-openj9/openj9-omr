@@ -67,8 +67,9 @@ public:
 	MMINLINE virtual uintptr_t threadCount() { return 1; }
 	MMINLINE virtual uintptr_t threadCountMaximum() { return 1; }
 	MMINLINE virtual uintptr_t activeThreadCount() { return 1; }
+	MMINLINE virtual void setThreadCount(uintptr_t threadCount) {}
 
-	void run(MM_EnvironmentBase *env, MM_Task *task);
+	void run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount = UDATA_MAX);
 	virtual void reinitAfterFork(MM_EnvironmentBase *env, uintptr_t newThreadCount) {}
 
 	/**

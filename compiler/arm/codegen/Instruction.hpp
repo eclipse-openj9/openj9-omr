@@ -74,6 +74,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
 
 }
 
+#include "codegen/OMRInstruction_inlines.hpp"
 
 //TODO: these downcasts everywhere need to be removed
 inline uint32_t        * toARMCursor(uint8_t *i) { return (uint32_t *)i; }

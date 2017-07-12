@@ -490,6 +490,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcalli
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vternary
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::v2v
+   TR::TreeEvaluator::vl2vdEvaluator,                    // TR::vl2vd
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vconst
    TR::TreeEvaluator::getvelemEvaluator,                // TR::getvelem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsetelem
@@ -747,5 +748,5 @@
    TR::TreeEvaluator::longNumberOfLeadingZeros,         // TR::lnolz (J9)
    TR::TreeEvaluator::longNumberOfTrailingZeros,        // TR::lnotz (J9)
    TR::TreeEvaluator::longBitCount,                     // TR::lpopcnt (J9)
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ibyteswap
+   TR::TreeEvaluator::ibyteswapEvaluator,               // TR::ibyteswap
    TR::TreeEvaluator::PrefetchEvaluator,                // TR::Prefetch

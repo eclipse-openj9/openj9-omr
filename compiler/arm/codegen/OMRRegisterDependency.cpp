@@ -320,7 +320,7 @@ void TR_ARMRegisterDependencyGroup::assignRegisters(TR::Instruction  *currentIns
                                                     uint32_t         numberOfRegisters,
                                                     TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Machine *machine = cg->machine();
    TR::Register  *virtReg;
    TR::RealRegister::RegNum dependentRegNum;

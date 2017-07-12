@@ -31,6 +31,7 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"           // for TR_Recompilation
+#include "env/CompilerEnv.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/jittypes.h"                      // for TR_ByteCodeInfo, etc
 #include "il/Block.hpp"                        // for Block, toBlock
@@ -105,7 +106,12 @@ bool TR_RedundantAsyncCheckRemoval::shouldPerform()
    if (comp()->isProfilingCompilation() || comp()->generateArraylets())
       return false;
 
-   if (comp()->getOption(TR_EnableOSR))  // cannot move async checks around arbitrarily if OSR is possible
+
+   // It is not safe to add an asynccheck under involuntary OSR
+   // as a transition may have to occur at the added point and the
+   // required infrastructure may not exist
+   //
+   if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::involuntaryOSR)
       return false;
 
    return true;
@@ -126,8 +132,11 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
    // If this is a large acyclic method - add a yield point at each return from this method
    // so that sampling will realize that we are actually in this method.
    //
-   if (comp()->getMethodHotness() <= warm ||
-       !comp()->mayHaveLoops())
+   // Under (voluntary) OSR, it's safe to insert asynccheck immediately before
+   // return, but not necessarily elsewhere.
+   if (comp()->getMethodHotness() <= warm
+       || !comp()->mayHaveLoops()
+       || comp()->getOption(TR_EnableOSR))
       {
       static const char *p;
       static uint32_t numNodesInLargeMethod     = (p = feGetEnv("TR_LargeMethodNodes"))     ? atoi(p) : NUMBER_OF_NODES_IN_LARGE_METHOD;
@@ -140,7 +149,10 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
 
       if ((uint32_t) comp()->getNodeCount() > numNodesInLargeMethod ||
           comp()->getLoopWasVersionedWrtAsyncChecks())
-         _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(comp());
+         {
+         _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(this,
+            "redundantAsyncCheckRemoval/returns");
+         }
 
       return 1;
       }
@@ -163,7 +175,8 @@ int32_t TR_RedundantAsyncCheckRemoval::perform()
 #endif
         comp()->getRecompilationInfo()->shouldBeCompiledAgain())))
       {
-      _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(comp());
+      _numAsyncChecksInserted += TR_AsyncCheckInsertion::insertReturnAsyncChecks(this,
+         "redundantAsyncCheckRemoval/returns");
       }
 
    if (trace())
@@ -877,7 +890,7 @@ bool TR_RedundantAsyncCheckRemoval::originatesFromShortRunningMethod(TR_RegionSt
 	    }
 	 TR_InlinedCallSite &ics = comp()->getInlinedCallSite(callerIndex);
 	 if (!comp()->isShortRunningMethod(callerIndex) &&
-	     comp()->fe()->hasBackwardBranches((TR_OpaqueMethodBlock*)ics._vmMethodInfo))
+	     TR::Compiler->mtd.hasBackwardBranches((TR_OpaqueMethodBlock*)ics._vmMethodInfo))
 	    break;
 	 //set callerIndex to its caller
 	 callerIndex = comp()->getInlinedCallSite(callerIndex)._byteCodeInfo.getCallerIndex();
@@ -1298,6 +1311,8 @@ void TR_RedundantAsyncCheckRemoval::getNearestAncestors(TR_StructureSubGraphNode
 
 void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node, TR_StructureSubGraphNode *entry)
    {
+   return;  // Disable it for performance. For more details, refer to https://github.com/eclipse/omr/pull/1138
+
    if (node == entry)
       return;
 
@@ -1306,6 +1321,8 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
 
    node->setVisitCount(comp()->getVisitCount());
 
+   if (trace())
+      traceMsg(comp(),"<===markAncestors start=== ssg node: %d, ssg entry: %d\n", node->getNumber(), entry->getNumber());
 
    for (auto edge = node->getPredecessors().begin(); edge != node->getPredecessors().end(); ++edge)
       {
@@ -1343,6 +1360,9 @@ void TR_RedundantAsyncCheckRemoval::markAncestors(TR_StructureSubGraphNode *node
             _ancestors.add(pred);
 	    }
          }
+
+      if (trace())
+         traceMsg(comp(),"<===markAncestors recursion=== ssg pred: %d, ssg entry: %d\n", pred->getNumber(), entry->getNumber());
 
       markAncestors(pred, entry);
       }
@@ -1571,7 +1591,7 @@ void TR_RedundantAsyncCheckRemoval::solidifySoftAsyncChecks(TR_StructureSubGraph
          if (performTransformation(comp(), "%sinserted async check in block_%d\n", OPT_DETAILS, b->getNumber()))
             {
             TR::Block *block = b->getBlock();
-            TR_AsyncCheckInsertion::insertAsyncCheck(block, comp());
+            TR_AsyncCheckInsertion::insertAsyncCheck(block, comp(), "redundantAsyncCheckRemoval/solidify");
             _numAsyncChecksInserted++;
             }
          }
@@ -1589,7 +1609,7 @@ void TR_RedundantAsyncCheckRemoval::solidifySoftAsyncChecks(TR_StructureSubGraph
             TR::Block *entryBlock = region->getEntryBlock();
             if (performTransformation(comp(), "%sinserted async check in acyclic region entry block %d\n", OPT_DETAILS, entryBlock->getNumber()))
                {
-               TR_AsyncCheckInsertion::insertAsyncCheck(entryBlock, comp());
+               TR_AsyncCheckInsertion::insertAsyncCheck(entryBlock, comp(), "redundantAsyncCheckRemoval/solidify");
                _numAsyncChecksInserted++;
                }
             }

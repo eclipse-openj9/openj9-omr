@@ -83,8 +83,14 @@ MM_Dispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 }
 
 void
-MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task)
+MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
 {
+	uintptr_t defaultThreadCount = threadCount();
+	if (UDATA_MAX != newThreadCount) {
+		/* Let tasks run with different (typically reduced) thread count. */
+		setThreadCount(newThreadCount);
+	}
+
 	task->masterSetup(env);
 	prepareThreadsForTask(env, task);
 	acceptTask(env);
@@ -92,6 +98,9 @@ MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task)
 	completeTask(env);
 	cleanupAfterTask(env);
 	task->masterCleanup(env);
+
+	/* restore the default thread count */
+	setThreadCount(defaultThreadCount);
 }
 
 bool 

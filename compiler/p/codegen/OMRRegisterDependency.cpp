@@ -155,7 +155,7 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
       TR::Node     *child = node->getChild(i);
       TR::Register *reg   = child->getRegister();
 
-      if (reg!=NULL /* && reg->getKind()==TR_GPR */)
+      if (reg!=NULL)
 	 {
 	 if (TR::TreeEvaluator::getHighGlobalRegisterNumberIfAny(child, cg) != -1)
 	    numLongs++;
@@ -258,7 +258,6 @@ OMR::Power::RegisterDependencyConditions::RegisterDependencyConditions(
                break;
             case TR_VRF:
                opCode = TR::InstOpCode::vor;
-               //TR_ASSERT(0, "VMX not fully supported.");
                break;
             case TR_VSX_VECTOR:
                opCode = TR::InstOpCode::xxlor;

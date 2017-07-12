@@ -56,7 +56,7 @@ uint32_t getCCPreLoadedCodeSize();
 #define BRANCH_FORWARD_LIMIT      (0x01fffffc)
 #define BRANCH_BACKWARD_LIMIT     ((int32_t)0xfe000000)
 
-#ifdef TR_HOST_POWER
+#if defined(TR_HOST_POWER) || defined(TR_TARGET_POWER)
 extern void     ppcCodeSync(uint8_t *, uint32_t);
 #endif
 

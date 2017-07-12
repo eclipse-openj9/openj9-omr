@@ -273,6 +273,8 @@ class Optimizer
       return _opts[i];
       }
 
+   bool isEnabled(OMR::Optimizations i);
+
    enum // RAS
       {
       // Analyses start with "A", but not "A0" because that's "After Optimization"

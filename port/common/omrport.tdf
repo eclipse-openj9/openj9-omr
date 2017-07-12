@@ -1003,3 +1003,9 @@ TraceExit=Trc_PRT_vmem_reserve_using_moservices_exit Group=mem Overhead=1 Level=
 TraceException=Trc_PRT_vmem_omrvmem_decommit_nonpageable_memory Group=mem Overhead=1 Level=1 NoEnv Template="omrvmem_decommit_memory attemp to decommit non-pageable memory at address=%p byteAmount=%u"
 
 TraceExit=Trc_PRT_mmap_map_seek_failed Group=mmap Overhead=1 Level=1 NoEnv Template="omrmmap_map_file: Failed to seek to offset = %lld"
+
+TraceEntry=Trc_PRT_sysinfo_get_os_description_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_os_description: desc = %p"
+TraceExit=Trc_PRT_sysinfo_get_os_description_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_get_os_description: returning with %zd"
+
+TraceEntry=Trc_PRT_sysinfo_os_has_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_os_has_feature: desc = %p, feature = %d"
+TraceExit=Trc_PRT_sysinfo_os_has_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_os_has_feature: returning with %zu."

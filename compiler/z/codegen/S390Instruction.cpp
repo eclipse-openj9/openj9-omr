@@ -2408,7 +2408,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)
-        if (comp->getOption(TR_EnableZOSTrampolines))
+        if (comp->getOption(TR_EnableRMODE64))
 #endif
             {
             // get the correct target addr for helpers
@@ -2446,7 +2446,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
          }
 #if defined(TR_TARGET_64BIT)
 #if defined(J9ZOS390)
-      if (comp->getOption(TR_EnableZOSTrampolines)) 
+      if (comp->getOption(TR_EnableRMODE64))
 #endif
          {
          if (comp->getCodeCacheSwitched())
@@ -2515,7 +2515,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
                }
 #if defined(TR_TARGET_64BIT) 
 #if defined(J9ZOS390)
-            if (comp->getOption(TR_EnableZOSTrampolines))
+            if (comp->getOption(TR_EnableRMODE64))
 #endif
                {
                i2 = adjustCallOffsetWithTrampoline(i2, cursor);

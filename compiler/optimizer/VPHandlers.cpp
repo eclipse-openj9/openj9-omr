@@ -2861,7 +2861,7 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
 
-   if (vp->cg()->isConcurrentScavengeEnabled())
+   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
       // TODO (GuardedStorage): Why do we need this restriction?
       doOpt = false;
@@ -3317,6 +3317,7 @@ TR::Node *constrainTstart(OMR::ValuePropagation *vp, TR::Node *node)
    {
    //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
+   vp->setUnreachablePath(); // no fallthrough
    return node;
    }
 

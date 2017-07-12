@@ -39,7 +39,8 @@ class MM_MemorySubSpace;
  * @todo Provide class documentation
  * @ingroup GC_Base_Core
  */
-class MM_Collector : public MM_BaseVirtual {
+class MM_Collector : public MM_BaseVirtual
+{
 	/*
 	 * Data members
 	 */
@@ -86,7 +87,7 @@ public:
 
 private:
 	void setThreadFailAllocFlag(MM_EnvironmentBase *env, bool flag);
-
+	bool checkForExcessiveGC(MM_EnvironmentBase* env, MM_Collector *collector);
 	void recordExcessiveStatsForGCStart(MM_EnvironmentBase *env);
 	void recordExcessiveStatsForGCEnd(MM_EnvironmentBase *env);
 

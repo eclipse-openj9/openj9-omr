@@ -41,9 +41,7 @@ endif()
 target_link_libraries(omrsigtest
 	omrGtestGlue
 	omrtestutil
-	j9thrstatic
-	omrport
-	omrglue
+	j9hashtable
 	omrsig
 )
 

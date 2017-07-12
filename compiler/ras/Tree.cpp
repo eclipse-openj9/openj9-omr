@@ -2804,6 +2804,7 @@ int32_t childTypes[] =
    TR::NoType,                           //TR::vcalli
    TR::NoType,                           //TR::vternary
    TR::NoType,                           //TR::v2v
+   TR::NoType,                           //TR::vl2vd
    TR::NoType,                           //TR::vconst
    TR::NoType,                           //TR::getvelem
    TR::NoType,                           //TR::vsetelem

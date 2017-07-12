@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -32,6 +32,7 @@
 #include "GlobalCollector.hpp"
 #include "MarkMap.hpp"
 #include "MarkingScheme.hpp"
+#include "ParallelHeapWalker.hpp"
 #include "ParallelSweepScheme.hpp"
 
 
@@ -63,9 +64,11 @@ private:
 protected:
 	MM_MarkingScheme *_markingScheme;
 	MM_ParallelSweepScheme *_sweepScheme;
+	MM_ParallelHeapWalker *_heapWalker;
 	MM_Dispatcher *_dispatcher;
 	MM_CycleState _cycleState;  /**< Embedded cycle state to be used as the master cycle state for GC activity */
 	MM_CollectionStatisticsStandard _collectionStatistics; /** Common collect stats (memory, time etc.) */
+	bool _fixHeapForWalkCompleted;
 public:
 	
 /*
@@ -139,11 +142,6 @@ private:
 	void markAll(MM_EnvironmentBase *env, bool initMarkMap);
 	
 	/**
-	 *	Main call for reportObjectEvents
-	 */
-	void masterThreadReportObjectEvents(MM_EnvironmentBase *env);
-	
-	/**
 	 *	Main call for Sweep operation
 	 *	Start of sweep for concurrentGC, full sweep for other cases
 	 */
@@ -162,10 +160,6 @@ private:
 	void masterThreadCompact(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool rebuildMarkBits);
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-	/**
-	 *  Fixes up all unloaded objects so that the heap can be walked and only live objects returned
-	 *  @param reason fix heap reason
-	 */
 	void masterThreadRestartAllocationCaches(MM_EnvironmentBase *env);
 
 	/**
@@ -178,6 +172,10 @@ private:
 	 */
 	void cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 
+	/**
+	 * redistribute free memory in tenure after global collection (move free memory from LOA to SOA)
+	 */
+	void tenureMemoryPoolPostCollect(MM_EnvironmentBase *env);
 protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
@@ -259,7 +257,14 @@ public:
 	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
 	virtual void collectorShutdown(MM_GCExtensionsBase *extensions);
 
+	/**
+	 *  Fixes up all unloaded objects so that the heap can be walked and only live objects returned
+	 *  @param reason fix heap reason
+	 */
+	uintptr_t fixHeapForWalk(MM_EnvironmentBase *env, UDATA walkFlags, uintptr_t walkReason, MM_HeapWalkerObjectFunc walkFunction);
+	MM_HeapWalker *getHeapWalker() { return _heapWalker; }
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
+
 
 	void workThreadGarbageCollect(MM_EnvironmentBase *env);
 
@@ -311,9 +316,11 @@ public:
 #endif /* OMR_GC_MODRON_COMPACTION */
 		, _markingScheme(NULL)
 		, _sweepScheme(NULL)
+		, _heapWalker(NULL)
 		, _dispatcher(_extensions->dispatcher)
 		, _cycleState()
 		, _collectionStatistics()
+		, _fixHeapForWalkCompleted(false)
 	{
 		_typeId = __FUNCTION__;
 	}

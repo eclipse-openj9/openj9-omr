@@ -53,6 +53,9 @@ class AMD64SystemLinkage : public TR::X86SystemLinkage
    virtual TR::Register *buildDirectDispatch(TR::Node *callNode, bool spillFPRegs);
 
    TR::Register *buildVolatileAndReturnDependencies(TR::Node *callNode, TR::RegisterDependencyConditions *deps);
+
+   virtual TR::RealRegister* getSingleWordFrameAllocationRegister() { return machine()->getX86RealRegister(TR::RealRegister::r11); }
+
    private:
    bool layoutTypeInRegs(TR::DataType type, uint16_t &intReg, uint16_t &floatReg, TR::parmLayoutResult&);
 

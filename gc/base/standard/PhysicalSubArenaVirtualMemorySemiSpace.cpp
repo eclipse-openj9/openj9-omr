@@ -560,7 +560,8 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::contract(MM_EnvironmentBase *env, uin
 			psavmssMoveData.dstBase = (void *)allocateSegmentBase;
 
 			/* TODO: can this walk be parallelized? Probably not trivially, since the mark map isn't up to date at this point */
-			MM_HeapWalker *heapWalker = extensions->collectorLanguageInterface->parallelGlobalGC_getHeapWalker();
+			MM_ParallelGlobalGC *globalCollector = (MM_ParallelGlobalGC *)extensions->getGlobalCollector();
+			MM_HeapWalker *heapWalker = globalCollector->getHeapWalker();
 			heapWalker->allObjectSlotsDo(env, psavmssMoveFunction, (void *)&psavmssMoveData, J9_MU_WALK_ALL | J9_MU_WALK_NEW_AND_REMEMBERED_ONLY, false, true);
 		}
 
@@ -728,7 +729,8 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::contract(MM_EnvironmentBase *env, uin
 			psavmssMoveData.dstBase = (void *)allocateSegmentBase;
 
 			/* TODO: can this walk be parallelized? Probably not trivially, since the mark map isn't up to date at this point */
-			MM_HeapWalker *heapWalker = env->getExtensions()->collectorLanguageInterface->parallelGlobalGC_getHeapWalker();
+			MM_ParallelGlobalGC *globalCollector = (MM_ParallelGlobalGC *)extensions->getGlobalCollector();
+			MM_HeapWalker *heapWalker = globalCollector->getHeapWalker();
 			heapWalker->allObjectSlotsDo(env, psavmssMoveFunction, (void *)&psavmssMoveData, J9_MU_WALK_ALL | J9_MU_WALK_NEW_AND_REMEMBERED_ONLY, false, true);
 		}
 

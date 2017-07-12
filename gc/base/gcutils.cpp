@@ -75,10 +75,8 @@ getCompactionReasonAsString(CompactReason reason)
 			return "very low free space (less than 128kB)";
 		case COMPACT_ALWAYS:
 			return "forced compaction";
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		case COMPACT_ABORTED_SCAVENGE:
 			return "previous scavenge aborted";
-#endif
 		case COMPACT_CONTRACT:
 			return "compact to aid heap contraction";
 		default:
@@ -149,10 +147,8 @@ getPercolateReasonAsString(PercolateReason mode)
 		return "Previous scavenge failed to expand";
 	case CRITICAL_REGIONS:
 		return "Active JNI critical regions";
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	case ABORTED_SCAVENGE:
 		return "previous scavenge aborted";
-#endif		
 	case NONE_SET:
 	default:
 		return "unknown";
@@ -214,6 +210,8 @@ const char *
 getLoaResizeReasonAsString(LoaResizeReason reason)
 {
 	switch(reason) {
+	case LOA_EXPAND_HEAP_ALIGNMENT:
+		return "expand to align heap";
 	case LOA_EXPAND_FAILED_ALLOCATE:
 		return "expand on failed allocate";
 	case LOA_CONTRACT_AGGRESSIVE:
@@ -239,6 +237,10 @@ getSystemGCReasonAsString(uint32_t gcCode)
 		return "native out of memory";
 	case J9MMCONSTANT_EXPLICIT_GC_RASDUMP_COMPACT:
 		return "rasdump";
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	case J9MMCONSTANT_EXPLICIT_GC_IDLE_GC:
+		return "vm idle";
+#endif
 	default:
 		return "unknown";
 	}

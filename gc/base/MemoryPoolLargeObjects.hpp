@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -89,11 +89,13 @@ private:
 	uintptr_t _loaSize;
 	uintptr_t _soaSize;
 	double _currentLOARatio;
+	double _minLOAFreeRatio;
+	double *_loaFreeRatioHistory; /**<history of LOA free/total size ratio  for a past few global GCs */
+
 
 	uintptr_t _soaObjectSizeLWM;
-	uintptr_t _expandedLOA;
 
-	uintptr_t _soaBytesAfterLastGC;
+	uintptr_t _soaFreeBytesAfterLastGC;
 
 protected:
 public:
@@ -118,7 +120,7 @@ public:
 	virtual void unlock(MM_EnvironmentBase* env);
 
 	void preCollect(MM_EnvironmentBase* env, bool systemGC, bool aggressive, uintptr_t bytesRequested);
-	virtual void postCollect(MM_EnvironmentBase* env);
+	virtual void resizeLOA(MM_EnvironmentBase* env);
 	virtual bool completeFreelistRebuildRequired(MM_EnvironmentBase* env);
 
 	virtual MM_MemoryPool* getMemoryPool(void* addr);
@@ -213,6 +215,10 @@ public:
 		return _currentLOARatio;
 	}
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
+
 	/**
 	 * Create a MemoryPoolLargeObjects object.
 	 */
@@ -227,8 +233,7 @@ public:
 		, _soaSize(0)
 		, _currentLOARatio(_extensions->largeObjectAreaInitialRatio)
 		, _soaObjectSizeLWM(UDATA_MAX)
-		, _expandedLOA(0)
-		, _soaBytesAfterLastGC(0)
+		, _soaFreeBytesAfterLastGC(0)
 	{
 		_typeId = __FUNCTION__;
 	}

@@ -28,6 +28,10 @@ add_library(omrtrace STATIC
 	omrtracewrappers.cpp
 )
 
+target_link_libraries(omrtrace
+	PUBLIC
+	omrutil
+)
 #TODO: check if following makefile fragment still required:
 #ifeq (gcc,$(OMR_TOOLCHAIN))
 ## disable builtin strncpy buffer length check for optimized builds (_FORTIFY_SOURCE=1 requires -O3)

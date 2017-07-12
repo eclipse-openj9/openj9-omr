@@ -280,8 +280,10 @@ TR::AMD64ABILinkage::AMD64ABILinkage(TR::CodeGenerator *cg)
       IntegersInRegisters |
       LongsInRegisters    |
       FloatsInRegisters   |
-      ReservesOutgoingArgsInPrologue |
-      AlwaysDedicateFramePointerRegister;
+      ReservesOutgoingArgsInPrologue;
+
+   if (!cg->comp()->getOption(TR_OmitFramePointer))
+      _properties._properties |= AlwaysDedicateFramePointerRegister;
 
    // Integer arguments
    //
@@ -766,6 +768,7 @@ TR::AMD64SystemLinkage::buildIndirectDispatch(TR::Node *callNode)
    // Dispatch
    //
    generateRegInstruction(CALLReg, callNode, vftRegister, callDeps, cg());
+   cg()->resetIsLeafMethod();
 
    // Build label post-conditions
    //
@@ -891,6 +894,8 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
       {
       instr = generateImmSymInstruction(CALLImm4, callNode, (uintptrj_t)methodSymbol->getMethodAddress(), methodSymRef, preDeps, cg());
       }
+
+   cg()->resetIsLeafMethod();
 
    instr->setNeedsGCMap(getProperties().getPreservedRegisterMapForGC());
 

@@ -136,13 +136,6 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	return addr;
 }
 
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-void
-MM_MemorySubSpaceSemiSpace::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription)
-{
-}
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-
 #if defined(OMR_GC_ARRAYLETS)
 void *
 MM_MemorySubSpaceSemiSpace::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)
@@ -260,11 +253,18 @@ MM_MemorySubSpaceSemiSpace::getActiveMemorySize()
 uintptr_t
 MM_MemorySubSpaceSemiSpace::getActiveMemorySize(uintptr_t includeMemoryType)
 {
-	if (includeMemoryType & MEMORY_TYPE_NEW){ 
-		return _memorySubSpaceAllocate->getActiveMemorySize() + _memorySubSpaceSurvivor->getActiveMemorySize();
-	} else {
-		return 0;
-	}		
+	if (includeMemoryType & MEMORY_TYPE_NEW) {
+		if (_memorySubSpaceSurvivor == _memorySubSpaceEvacuate) {
+			return _memorySubSpaceAllocate->getActiveMemorySize() + _memorySubSpaceSurvivor->getActiveMemorySize();
+		} else if (_memorySubSpaceSurvivor == _memorySubSpaceAllocate) {
+			return _memorySubSpaceSurvivor->getActiveMemorySize() + _memorySubSpaceEvacuate->getActiveMemorySize();
+		} else if (_memorySubSpaceEvacuate == _memorySubSpaceAllocate) {
+			return _memorySubSpaceSurvivor->getActiveMemorySize() + _memorySubSpaceEvacuate->getActiveMemorySize();
+		} else {
+			Assert_MM_unreachable();
+		}
+	}
+	return 0;
 }
 
 /**
@@ -434,7 +434,6 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	bool debug = _extensions->debugTiltedScavenge;
 #endif
-
 	switch (step) {
 	case set_evacuate:
 		_memorySubSpaceEvacuate = _memorySubSpaceAllocate;
@@ -445,6 +444,9 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		_memorySubSpaceAllocate->isAllocatable(true);
 		/* Let know MemorySpace about new default MemorySubSpace */
 		getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		_bytesAllocatedAtConcurrentStart = _extensions->allocationStats.bytesAllocated();
+#endif
 		break;
 	case disable_allocation:
 		_memorySubSpaceAllocate->isAllocatable(false);
@@ -452,6 +454,12 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 	case restore_allocation_and_set_survivor:
 		_memorySubSpaceAllocate->isAllocatable(true);
 		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		_bytesAllocatedAtConcurrentEnd = _extensions->allocationStats.bytesAllocated();
+		Assert_MM_true(_bytesAllocatedAtConcurrentStart <= _bytesAllocatedAtConcurrentEnd);
+		_avgBytesAllocatedDuringConcurrent = (uintptr_t)MM_Math::weightedAverage((float)_avgBytesAllocatedDuringConcurrent,
+											 (float)(_bytesAllocatedAtConcurrentEnd - _bytesAllocatedAtConcurrentStart), 0.5);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		break;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	case backout:
@@ -491,15 +499,19 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 	case restore_tilt_after_percolate:
 	{
 		Assert_MM_true(_extensions->concurrentScavenger);
+		uintptr_t lastFreeEntrySize = 0;
+		if (NULL != getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()) {
+			lastFreeEntrySize = getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()->getSize();
+		}
 		/* Make Survivor space from the last free entry in the unified Nursery */
-		uintptr_t heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->heapAlignment, getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry()->getSize());
+		uintptr_t heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->heapAlignment, lastFreeEntrySize);
 
 		/* Region size is aligned to Concurrent Scavenger Page Section size already */
 		heapAlignedLastFreeEntrySize = MM_Math::roundToFloor(_extensions->regionSize, heapAlignedLastFreeEntrySize);
 
 		if(debug) {
 			omrtty_printf("tilt restore_tilt_after_percolate heapAlignedLastFreeEntry %llx section (%llx) aligned size %llx\n",
-					getDefaultMemorySubSpace()->getMemoryPool()->getLastFreeEntry(), _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
+					lastFreeEntrySize, _extensions->getConcurrentScavengerPageSectionSize(), heapAlignedLastFreeEntrySize);
 		}
 
 		/* allocate/survivor base/top still hold the values from before we did 100% tilt */
@@ -527,6 +539,7 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		_memorySubSpaceAllocate->isAllocatable(true);
 		getMemorySpace()->getTenureMemorySubSpace()->isAllocatable(true);
 
+		_extensions->setScavengerBackOutState(backOutFlagCleared);
 	}
 		break;
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
@@ -624,124 +637,125 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectTilt(MM_EnvironmentBas
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 
 	if(extensions->tiltedScavenge) {
-		if (_extensions->isConcurrentScavengerEnabled()) {
-			/* for now, support static tilting only */
-			_desiredSurvivorSpaceRatio = extensions->survivorSpaceMinimumSizeRatio;
+		uintptr_t flipBytes;
+		uintptr_t flipBytesDelta;
+		bool debug = extensions->debugTiltedScavenge;
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+
+		uintptr_t currentSize = getTopLevelMemorySubSpace(MEMORY_TYPE_NEW)->getCurrentSize();
+
+		if(debug) {
+			omrtty_printf("\nTilt check:\n");
+		}
+
+		flipBytes = extensions->scavengerStats._flipBytes + extensions->scavengerStats._failedFlipBytes;
+
+		if(debug) {
+			omrtty_printf("\tBytes flip:%zu fail:%zu total:%zu\n",
+				extensions->scavengerStats._flipBytes,
+				extensions->scavengerStats._failedFlipBytes,
+				flipBytes);
+		}
+
+		/* Determine the absolute value of the change in bytes flipped since the last scavenge */
+		if(flipBytes > _previousBytesFlipped) {
+			flipBytesDelta = flipBytes - _previousBytesFlipped;
 		} else {
-			uintptr_t flipBytes;
-			uintptr_t flipBytesDelta;
-			bool debug = extensions->debugTiltedScavenge;
-			OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+			flipBytesDelta = _previousBytesFlipped - flipBytes;
+		}
 
-			/* OMRTODO consider maintaining _flipBytes separately for each NUMA SemiSpace.
-			 * Currently, _flipBytes is cumulative for all SemiSpaces. To compensate, current size is obtained
-			 * for all of SemiSpaces too (from top level New SubSpace). This will result in blended tilt ratio,
-			 * set equally for all of SemiSpaces.
-			 */
-			uintptr_t currentSize = getTopLevelMemorySubSpace(MEMORY_TYPE_NEW)->getCurrentSize();
+		if(debug) {
+			omrtty_printf("\tflip delta from last (%zu):%zu\n", _previousBytesFlipped, flipBytesDelta);
+		}
 
+		/* Current flip count becomes previous */
+		_previousBytesFlipped = flipBytes;
+
+		/* The average bytes flipped weighted average is more heavily affected if the current size is
+		 * greater than the current average
+		 */
+		if(debug) {
+			omrtty_printf("\tcurrent average bytes flipped: %zu (avg delta %zu)\n",
+				_tiltedAverageBytesFlipped,
+				_tiltedAverageBytesFlippedDelta);
+		}
+
+		/* Check if there was any failed to flip objects - which puts us into a bit of a panic mode */
+		if(0 != extensions->scavengerStats._failedFlipCount) {
+			/* Panic mode - the current numbers should heavily influence the averages */
 			if(debug) {
-				omrtty_printf("\nTilt check:\n");
+				omrtty_printf("\tfailed flip weight\n");
 			}
-
-			flipBytes = extensions->scavengerStats._flipBytes + extensions->scavengerStats._failedFlipBytes;
-
-			if(debug) {
-				omrtty_printf("\tBytes flip:%zu fail:%zu total:%zu\n",
-					extensions->scavengerStats._flipBytes,
-					extensions->scavengerStats._failedFlipBytes,
-					flipBytes);
-			}
-
-			/* Determine the absolute value of the change in bytes flipped since the last scavenge */
-			if(flipBytes > _previousBytesFlipped) {
-				flipBytesDelta = flipBytes - _previousBytesFlipped;
-			} else {
-				flipBytesDelta = _previousBytesFlipped - flipBytes;
-			}
-
-			if(debug) {
-				omrtty_printf("\tflip delta from last (%zu):%zu\n", _previousBytesFlipped, flipBytesDelta);
-			}
-
-			/* Current flip count becomes previous */
-			_previousBytesFlipped = flipBytes;
-
-			/* The average bytes flipped weighted average is more heavily affected if the current size is
-			 * greater than the current average
-			 */
-			if(debug) {
-				omrtty_printf("\tcurrent average bytes flipped: %zu (avg delta %zu)\n",
-					_tiltedAverageBytesFlipped,
-					_tiltedAverageBytesFlippedDelta);
-			}
-
-			/* Check if there was any failed to flip objects - which puts us into a bit of a panic mode */
-			if(0 != extensions->scavengerStats._failedFlipCount) {
-				/* Panic mode - the current numbers should heavily influence the averages */
+			_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.0f);
+			_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.0f);
+		} else {
+			/* No panic situation - determine the new tilt ratio through normal means */
+			if(flipBytes > _tiltedAverageBytesFlipped) {
 				if(debug) {
-					omrtty_printf("\tfailed flip weight\n");
+					omrtty_printf("\tincrease flip weight\n");
 				}
-				_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.0f);
-				_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.0f);
+				_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.2f);
+				_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.2f);
 			} else {
-				/* No panic situation - determine the new tilt ratio through normal means */
-				if(flipBytes > _tiltedAverageBytesFlipped) {
-					if(debug) {
-						omrtty_printf("\tincrease flip weight\n");
-					}
-					_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.2f);
-					_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.2f);
-				} else {
-					if(debug) {
-						omrtty_printf("\tdecrease flip weight\n");
-					}
-					_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.8f);
-					_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.8f);
+				if(debug) {
+					omrtty_printf("\tdecrease flip weight\n");
 				}
+				_tiltedAverageBytesFlipped = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlipped, (float)flipBytes, 0.8f);
+				_tiltedAverageBytesFlippedDelta = (uintptr_t)MM_Math::weightedAverage((float)_tiltedAverageBytesFlippedDelta, (float)flipBytesDelta, 0.8f);
 			}
+		}
 
-			if(debug) {
-				omrtty_printf("\tnew average bytes flipped: %zu (avg delta %zu)\n",
-					_tiltedAverageBytesFlipped,
-					_tiltedAverageBytesFlippedDelta);
+		if(debug) {
+			omrtty_printf("\tnew average bytes flipped: %zu (avg delta %zu)\n",
+				_tiltedAverageBytesFlipped,
+				_tiltedAverageBytesFlippedDelta);
+		}
+
+		/* Calculate the desired survivor space ratio */
+		double survivorSizeAmplification = 1.04 + extensions->dispatcher->threadCount() / 100.0;
+		double desiredSurvivorSize = (_tiltedAverageBytesFlipped + _tiltedAverageBytesFlippedDelta) * survivorSizeAmplification;
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled()) {
+			/* Account for mutator allocated objects in hybrid survivor/allocated during concurrent phase of Concurrent Scavenger */
+			desiredSurvivorSize += _avgBytesAllocatedDuringConcurrent * 1.2 + extensions->concurrentScavengerSlack;
+			if (debug) {
+				omrtty_printf("\tmutator bytesAllocated current %zu average %zu\n", _bytesAllocatedAtConcurrentEnd - _bytesAllocatedAtConcurrentStart,
+																					_avgBytesAllocatedDuringConcurrent);
 			}
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
-			/* Calculate the desired survivor space ratio */
+		_desiredSurvivorSpaceRatio = desiredSurvivorSize / currentSize;
 
-			double survivorSizeAmplification = 1.04 + extensions->dispatcher->threadCount() / 100.0;
-			_desiredSurvivorSpaceRatio = (_tiltedAverageBytesFlipped + _tiltedAverageBytesFlippedDelta)
-											* survivorSizeAmplification	/ currentSize;
+		if(debug) {
+			omrtty_printf("\tDesired survivor size: %zu  ratio: %zu\n",
+				(uintptr_t)(currentSize * _desiredSurvivorSpaceRatio),	(uintptr_t) (_desiredSurvivorSpaceRatio * 100));
+		}
 
-			if(debug) {
-				omrtty_printf("\tDesired survivor size: %zu  ratio: %zu\n",
-					(uintptr_t)(currentSize * _desiredSurvivorSpaceRatio),	(uintptr_t) (_desiredSurvivorSpaceRatio * 100));
-			}
+		/* Sanity check for lowest possible ratio */
+		if (_desiredSurvivorSpaceRatio <  extensions->survivorSpaceMinimumSizeRatio) {
+			_desiredSurvivorSpaceRatio =  extensions->survivorSpaceMinimumSizeRatio;
+		}
 
-			/* Sanity check for lowest possible ratio */
-			if (_desiredSurvivorSpaceRatio <  extensions->survivorSpaceMinimumSizeRatio) {
-				_desiredSurvivorSpaceRatio =  extensions->survivorSpaceMinimumSizeRatio;
-			}
+		/* Never hand out more than 50% to the survivor */
+		if (_desiredSurvivorSpaceRatio > extensions->survivorSpaceMaximumSizeRatio) {
+			_desiredSurvivorSpaceRatio = extensions->survivorSpaceMaximumSizeRatio;
+		}
 
-			/* Never hand out more than 50% to the survivor */
-			if (_desiredSurvivorSpaceRatio > extensions->survivorSpaceMaximumSizeRatio) {
-				_desiredSurvivorSpaceRatio = extensions->survivorSpaceMaximumSizeRatio;
-			}
+		/* we have flipped already, so to get old survivor space ratio we fetch allocate size */
+		double previousSurvivorSpaceRatio = (double) _memorySubSpaceAllocate->getActiveMemorySize() / currentSize;
 
-			/* we have flipped already, so to get old survivor space ratio we fetch allocate size */
-			double previousSurvivorSpaceRatio = (double) _memorySubSpaceAllocate->getActiveMemorySize() / currentSize;
+		/* Do not let survivor space shrink by more than the maximum tilt increase */
+		assume0(previousSurvivorSpaceRatio >= extensions->tiltedScavengeMaximumIncrease);
+		if (_desiredSurvivorSpaceRatio < (previousSurvivorSpaceRatio - extensions->tiltedScavengeMaximumIncrease)) {
+			_desiredSurvivorSpaceRatio = previousSurvivorSpaceRatio -  extensions->tiltedScavengeMaximumIncrease;
+		}
 
-			/* Do not let survivor space shrink by more than the maximum tilt increase */
-			assume0(previousSurvivorSpaceRatio >= extensions->tiltedScavengeMaximumIncrease);
-			if (_desiredSurvivorSpaceRatio < (previousSurvivorSpaceRatio - extensions->tiltedScavengeMaximumIncrease)) {
-				_desiredSurvivorSpaceRatio = previousSurvivorSpaceRatio -  extensions->tiltedScavengeMaximumIncrease;
-			}
-
-			if(debug) {
-				omrtty_printf("\tPrevious survivor ratio: %zu\n", (uintptr_t) (previousSurvivorSpaceRatio * 100));
-				omrtty_printf("\tAdjusted survivor size: %zu  ratio: %zu\n",(uintptr_t)(currentSize * _desiredSurvivorSpaceRatio),
-					(uintptr_t) (_desiredSurvivorSpaceRatio * 100));
-			}
+		if(debug) {
+			omrtty_printf("\tPrevious survivor ratio: %zu\n", (uintptr_t) (previousSurvivorSpaceRatio * 100));
+			omrtty_printf("\tAdjusted survivor size: %zu  ratio: %zu\n",(uintptr_t)(currentSize * _desiredSurvivorSpaceRatio),
+				(uintptr_t) (_desiredSurvivorSpaceRatio * 100));
 		}
 	}
 }
@@ -921,14 +935,11 @@ void
 MM_MemorySubSpaceSemiSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool systemGC)
 {
 	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_CHECK_RESIZE);
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/* this we are called at the end of precolate global GC, due to aborted Concurrent Scavenge,
 	 * we have to restore tilt (that has been set to 100% to do unified sliding compact of Nursery */
-	if (_extensions->concurrentScavenger && J9MMCONSTANT_IMPLICIT_GC_PERCOLATE_ABORTED_SCAVENGE == env->_cycleState->_gcCode.getCode()) {
+	if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
 		flip(env, MM_MemorySubSpaceSemiSpace::restore_tilt_after_percolate);
-	} else
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */
-	{
+	} else {
 		checkSubSpaceMemoryPostCollectTilt(env);
 		checkSubSpaceMemoryPostCollectResize(env);
 	}

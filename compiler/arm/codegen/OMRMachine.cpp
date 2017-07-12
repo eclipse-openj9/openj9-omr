@@ -104,7 +104,7 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
                         							bool isSinglePrecision)
    {
    TR::Register           *candidates[NUM_ARM_MAXR];
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->cg()->comp();
    TR::MemoryReference *tmemref;
    TR_BackingStore       *location;
    TR::RealRegister    *best, *crtemp=NULL;
@@ -204,7 +204,7 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
          //!(cursor->refsRegister(candidates[0])))
          //  cursor = cursor->getPrev();
          //if (!cursor->getOpCode().doubleFPOp())
-         //  location = cg()->getFreeLocalFloatSpill();
+         //  location = self()->cg()->getFreeLocalFloatSpill();
          //else
          if (candidates[0]->getBackingStorage())
             {
@@ -1013,7 +1013,7 @@ void
 OMR::ARM::Machine::takeRegisterStateSnapShot()
    {
    int32_t i;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->cg()->comp();
    for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::gr12; i++) // Skipping the special/reserved register.  Add FPR later
       {
       //_registerAssociationsSnapShot[i] = _registerAssociations[i];
@@ -1040,7 +1040,7 @@ void
 OMR::ARM::Machine::restoreRegisterStateFromSnapShot()
    {
    int32_t i;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->cg()->comp();
    for (i = TR::RealRegister::FirstGPR; i < TR::RealRegister::gr12; i++) // Skipping SpilledReg
       {
       _registerFile[i]->setFlags(_registerFlagsSnapShot[i]);

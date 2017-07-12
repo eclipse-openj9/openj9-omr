@@ -149,13 +149,13 @@ typedef struct TR_InlinedCallSite
       #define FLUSH_MEMORY(smp)
    #endif
 #else
-   #if (__IBMC__ || __IBMCPP__)
-      void do_lwsync (void);
-      #pragma mc_func do_lwsync {"7c2004ac"}
-      #pragma reg_killed_by do_lwsync
-      #define FLUSH_MEMORY(smp) if( smp ) do_lwsync();
+   #if defined(__IBMC__) || defined(__IBMCPP__)
+      #if defined(__cplusplus)
+      #include <builtins.h>
+      #endif /* __cplusplus */
+      #define FLUSH_MEMORY(smp) if( smp ) __lwsync();
    #elif defined(LINUX)
-      #define FLUSH_MEMORY(smp) if( smp ) __asm__("sync");
+      #define FLUSH_MEMORY(smp) if( smp ) __asm__("lwsync");
    #endif
 #endif
 

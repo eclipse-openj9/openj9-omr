@@ -319,11 +319,10 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    memset(_replacedNodesAsArray, 0, _numNodes*sizeof(TR::Node*));
    memset(_replacedNodesByAsArray, 0, _numNodes*sizeof(TR::Node*));
 
-   TR::typed_allocator<void*, TR::Region> alloc(stackMemoryRegion);
-   _hashTable = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
-   _hashTableWithSyms = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
-   _hashTableWithCalls = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
-   _hashTableWithConsts = new (stackMemoryRegion) HashTable(std::less<int32_t>(), alloc);
+   _hashTable = new (stackMemoryRegion) HashTable(std::less<int32_t>(), stackMemoryRegion);
+   _hashTableWithSyms = new (stackMemoryRegion) HashTable(std::less<int32_t>(), stackMemoryRegion);
+   _hashTableWithCalls = new (stackMemoryRegion) HashTable(std::less<int32_t>(), stackMemoryRegion);
+   _hashTableWithConsts = new (stackMemoryRegion) HashTable(std::less<int32_t>(), stackMemoryRegion);
 
    _nextReplacedNode = 0;
    SharedSparseBitVector seenAvailableLoadedSymbolReferences(comp()->allocator());

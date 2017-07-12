@@ -464,6 +464,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *vdcmpanyltEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdsqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *vdlogEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *inlineVectorUnaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
    static TR::Register *inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op);
@@ -512,6 +513,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *strcFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *xfRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *xdRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
+   static TR::Register *ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *evaluateNULLCHKWithPossibleResolve(TR::Node *node, bool needsResolve, TR::CodeGenerator *cg);
    static TR::Instruction *generateNullTestInstructions(

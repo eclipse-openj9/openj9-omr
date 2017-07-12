@@ -86,9 +86,9 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _cachedParameterTypes(0),
    _cachedSignature(0),
    _definingFile(""),
-   _definingLine(""),
    _symbols(0),
    _newSymbolsAreTemps(false),
+   _nextValueID(0),
    _useBytecodeBuilders(false),
    _countBlocksWorklist(0),
    _connectTreesWorklist(0),
@@ -97,6 +97,9 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _bytecodeWorklist(NULL),
    _bytecodeHasBeenInWorklist(NULL)
    {
+
+   _definingLine[0] = '\0';
+
    REPLAY({
       std::fstream rpHpp("ReplayMethod.hpp",std::fstream::out);
       rpHpp << "#include \"ilgen/MethodBuilder.hpp\"" << std::endl;
@@ -329,24 +332,24 @@ MethodBuilder::symbolDefined(const char *name)
    }
 
 void
-MethodBuilder::defineSymbol(const char *name, TR::IlValue *v)
+MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
    {
    TR_HashId id1=0, id2=0, id3;
 
-   _symbols->add(name, id1, (void *)v);
-   _symbolNameFromSlot->add(v->getCPIndex(), id2, (void *)name);
-   _symbolTypes->add(name, id3, (void *)(uintptr_t) v->getSymbol()->getDataType());
+   _symbols->add(name, id1, (void *)symRef);
+   _symbolNameFromSlot->add(symRef->getCPIndex(), id2, (void *)name);
+   _symbolTypes->add(name, id3, (void *)(uintptr_t) symRef->getSymbol()->getDataType());
    if (!_newSymbolsAreTemps)
       _methodSymbol->setFirstJitTempIndex(_methodSymbol->getTempIndex());
    }
 
-TR::IlValue *
+TR::SymbolReference *
 MethodBuilder::lookupSymbol(const char *name)
    {
    TR_HashId symbolsID=0;
    bool present = _symbols->locate(name, symbolsID);
    if (present)
-      return (TR::IlValue *)_symbols->getData(symbolsID);
+      return (TR::SymbolReference *)_symbols->getData(symbolsID);
 
    TR::SymbolReference *symRef;
    TR_HashId typesID;
@@ -370,7 +373,9 @@ MethodBuilder::lookupSymbol(const char *name)
       _symbolNameFromSlot->add(symRef->getCPIndex(), nameFromSlotID, (void *)name);
       }
    symRef->getSymbol()->setNotCollected();
+
    _symbols->add(name, symbolsID, (void *)symRef);
+
    return symRef;
    }
 

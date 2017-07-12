@@ -253,7 +253,7 @@ void TR_Dominators::initialize(TR::Block *start, BBInfo *nullParent) {
     * Seed an initial list of successors using a dummy loop edge connecting the start to itself.
     */
    TR::CFGEdge dummyEdge;
-   TR::CFGEdgeList startList(getTypedAllocator<TR::CFGEdge*>(comp()->allocator()));
+   TR::CFGEdgeList startList(comp()->region());
    startList.push_front(&dummyEdge);
 
    StackInfo seed(startList, startList.begin(), -1);
@@ -461,7 +461,7 @@ void TR_PostDominators::findControlDependents()
 
    // Initialize the table of direct control dependents
    for (i = 0; i < nextNodeNumber; i++)
-      _directControlDependents.AddEntry(_directControlDependents);
+      _directControlDependents.AddEntry(comp()->allocator("PostDominators"));
 
    TR::Block * block;
    for (block = comp()->getStartBlock(); block!=NULL; block = block->getNextBlock())

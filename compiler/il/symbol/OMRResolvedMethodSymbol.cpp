@@ -527,9 +527,17 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    TR::Block * firstHalfBlock = insertionPoint->getEnclosingBlock();
    if (shouldSplitBlock)
        firstHalfBlock->split(insertionPoint, self()->comp()->getFlowGraph(), true);
+   firstHalfBlock->setIsOSRInduceBlock();
 
+   // The arguments for a transition to this bytecode index may have already been stashed.
+   // If they have, use these directly rather than copying the reference node.
+   TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(
+      refNode->getByteCodeInfo().getCallerIndex(), self());
+   TR_Array<int32_t> *stashedArgs = osrMethodData->getArgInfo(refNode->getByteCodeIndex());
    int32_t firstArgIndex = 0;
-   if ((refNode->getNumChildren() > 0) &&
+   if (stashedArgs)
+      numChildren = stashedArgs->size(); 
+   else if ((refNode->getNumChildren() > 0) &&
        refNode->getFirstChild()->getOpCode().isCall())
       {
       refNode = refNode->getFirstChild();
@@ -544,7 +552,14 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    TR_OSRPoint *point = self()->findOSRPoint(refNode->getByteCodeInfo());
    TR_ASSERT(point, "Could not find osr point for bytecode %d:%d!", refNode->getByteCodeInfo().getCallerIndex(), refNode->getByteCodeInfo().getByteCodeIndex());
 
-   if (copyChildren)
+   // If arguments have been stashed against this BCI, copy them now, ignoring the copyChildren flag
+   if (stashedArgs)
+      {
+      for (int32_t i = 0; i < numChildren; ++i)
+         induceOSRCallNode->setAndIncChild(i,
+            TR::Node::createLoad(induceOSRCallNode, self()->comp()->getSymRefTab()->getSymRef((*stashedArgs)[i])));
+      }
+   else if (copyChildren)
       {
       for (int i = firstArgIndex; i < numChildren; i++)
          induceOSRCallNode->setAndIncChild(i-firstArgIndex, refNode->getChild(i));
@@ -610,7 +625,7 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
       cfg->copyExceptionSuccessors(block, osrBlock);
 
       // induce OSR in the new block
-      self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, false, self()->comp());
+      self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, self()->comp());
       return true;
       }
    return false;
@@ -620,40 +635,20 @@ TR::TreeTop *
 OMR::ResolvedMethodSymbol::induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint)
    {
    if (self()->supportsInduceOSR(insertionPoint->getNode()->getByteCodeInfo(), insertionPoint->getEnclosingBlock(), self()->comp()))
-      return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(insertionPoint, insertionPoint->getNode()->getByteCodeInfo(), false, false, self()->comp());
+      return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(insertionPoint, insertionPoint->getNode()->getByteCodeInfo(), false, self()->comp());
    if (self()->comp()->getOption(TR_TraceOSR))
       traceMsg(self()->comp(), "induceImmediateOSRWithoutChecksBefore n%dn failed - supportsInduceOSR returned false\n", insertionPoint->getNode()->getGlobalIndex());
    return NULL;
    }
 
 TR::TreeTop *
-OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool copyChildren, bool shouldSplitBlock, TR::Compilation *comp)
+OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp)
    {
-   int32_t numChildrenOfInduceCall = 0;
-   int32_t firstArgChild = 0;
-   int32_t numOfChildren = 0;
-   TR::Node *refCallNode = NULL;
-   if ((insertionPoint->getNode()->getNumChildren() > 0) &&
-       (insertionPoint->getNode()->getFirstChild()->getOpCode().isCall()))
-      {
-      refCallNode = insertionPoint->getNode()->getFirstChild();
-      firstArgChild = refCallNode->getFirstArgumentIndex();
-      numOfChildren = refCallNode->getNumChildren();
-      numChildrenOfInduceCall = numOfChildren - firstArgChild;
-      }
-
-   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), numChildrenOfInduceCall, copyChildren, shouldSplitBlock);
+   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCall(insertionPoint, induceBCI.getCallerIndex(), 0, false, shouldSplitBlock);
 
    if (induceOSRCallTree)
       {
       TR::TreeTop *treeAfterInduceOSRCall = induceOSRCallTree->getNextTreeTop();
-
-      if (refCallNode)
-         {
-         TR::Node *induceOSRCallNode = induceOSRCallTree->getNode()->getFirstChild();
-         for (int32_t i = firstArgChild; i < numOfChildren; i++)
-            induceOSRCallNode->setAndIncChild(i-firstArgChild, refCallNode->getChild(i));
-         }
 
       while (treeAfterInduceOSRCall)
          {
@@ -671,40 +666,18 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(T
    return induceOSRCallTree;
    }
 
-
-TR::TreeTop *
-OMR::ResolvedMethodSymbol::genInduceOSRCallForGuardedCallee(TR::TreeTop* insertionPoint,
-                                                          TR::ResolvedMethodSymbol *calleeSymbol,
-                                                          int32_t numChildren,
-                                                          bool copyChildren,
-                                                          bool shouldSplitBlock)
-   {
-   if (self()->comp()->getOption(TR_TraceOSR))
-      {
-      const char * mSignature = calleeSymbol->signature(self()->comp()->trMemory());
-      traceMsg(self()->comp(), "induce %p generated for %s index %d\n",
-                      insertionPoint->getNode(), mSignature, insertionPoint->getNode()->getByteCodeInfo().getCallerIndex());
-      }
-
-   TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findCallerOSRMethodData(self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(self()->comp()->getCurrentInlinedSiteIndex(), calleeSymbol));
-   return self()->genInduceOSRCall(insertionPoint, self()->comp()->getCurrentInlinedSiteIndex(), osrMethodData, calleeSymbol, numChildren, copyChildren, shouldSplitBlock);
-   }
-
-
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex,
                         int32_t numChildren, bool copyChildren, bool shouldSplitBlock)
    {
    TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, self());
-   return self()->genInduceOSRCall(insertionPoint, inlinedSiteIndex, osrMethodData, NULL, numChildren, copyChildren, shouldSplitBlock);
+   return self()->genInduceOSRCall(insertionPoint, inlinedSiteIndex, osrMethodData, numChildren, copyChildren, shouldSplitBlock);
    }
-
 
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
                                           int32_t inlinedSiteIndex,
                                           TR_OSRMethodData *osrMethodData,
-                                          TR::ResolvedMethodSymbol *callSymbolForDeadSlots,
                                           int32_t numChildren,
                                           bool copyChildren,
                                           bool shouldSplitBlock)
@@ -774,7 +747,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
       }
 
    self()->insertRematableStoresFromCallSites(self()->comp(), inlinedSiteIndex, induceOSRCallTree);
-   self()->insertStoresForDeadStackSlotsBeforeInducingOSR(self()->comp(), inlinedSiteIndex, insertionPoint->getNode()->getByteCodeInfo(), induceOSRCallTree, callSymbolForDeadSlots);
+   self()->insertStoresForDeadStackSlotsBeforeInducingOSR(self()->comp(), inlinedSiteIndex, insertionPoint->getNode()->getByteCodeInfo(), induceOSRCallTree);
    traceMsg(self()->comp(), "last real tree n%dn\n", enclosingBlock->getLastRealTreeTop()->getNode()->getGlobalIndex());
    return induceOSRCallTree;
    }
@@ -856,6 +829,28 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
 
    TR::TreeTop *lastTreeTop = NULL;
    TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(currentInlinedSiteIndex, self());
+
+   // Under NextGenHCR, the method entry for the outermost method is an implicit OSR point
+   // To ensure a transition from this point is possible, it is necessary to generate and attach
+   // a catch and code block now, with an exception edge to the catch block from the first block
+   // This exception edge should remain until OSR guards have been inserted, at which point it is no
+   // longer needed
+   //
+   if (self()->comp()->isOutermostMethod() && self()->comp()->getHCRMode() == TR::osr)
+      {
+      // Add an exception edge to the OSR catch block from the first block
+      TR::Block *OSRCatchBlock = osrMethodData->findOrCreateOSRCatchBlock(self()->getFirstTreeTop()->getNode());
+      TR::Block *firstBlock = self()->getFirstTreeTop()->getEnclosingBlock();
+      if (!firstBlock->hasExceptionSuccessor(OSRCatchBlock))
+         self()->comp()->getFlowGraph()->addEdge(TR::CFGEdge::createExceptionEdge(firstBlock, OSRCatchBlock, self()->comp()->trMemory()));
+
+      // Create an OSR point with bytecode index 0
+      TR_ByteCodeInfo firstBCI = self()->getFirstTreeTop()->getNode()->getByteCodeInfo();
+      firstBCI.setByteCodeIndex(0);
+      TR_OSRPoint *osrPoint = new (self()->comp()->trHeapMemory()) TR_OSRPoint(firstBCI, osrMethodData, self()->comp()->trMemory());
+      osrPoint->setOSRIndex(self()->addOSRPoint(osrPoint));
+      }
+
    //Using this flag we avoid processing twice a call before which we are injecting an induceOSR
    bool skipNextTT = false;
    for (TR::TreeTop* tt = self()->getFirstTreeTop(); tt; tt = tt->getNextTreeTop())
@@ -1159,6 +1154,12 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
       }
    else
       {
+      // Add the dead stores for this call site
+      TR_OSRMethodData* callerOSRData = self()->comp()->getOSRCompilationData()->findCallerOSRMethodData(osrMethodData);
+      TR_InlinedCallSite &callSiteInfo = self()->comp()->getInlinedCallSite(currentInlinedSiteIndex);
+      callerOSRData->getMethodSymbol()->insertStoresForDeadStackSlots(self()->comp(), callSiteInfo._byteCodeInfo,
+         OSRCodeBlock->getExit(), false);
+
       //create an appropritely-typed return node and append it to the OSR code block and add
       //the corresponding cfg edge
       bool voidReturn = self()->getResolvedMethod()->returnOpCode() == TR::Return;
@@ -1253,7 +1254,7 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             //
             bool doOSR = comp->getOption(TR_EnableOSR)
                && !comp->isPeekingMethod()
-               && (comp->getOption(TR_EnableNextGenHCR) || !comp->getOption(TR_EnableHCR))
+               && !(comp->getOption(TR_DisableNextGenHCR) && comp->getOption(TR_EnableHCR))
                && comp->supportsInduceOSR()
                && !self()->cannotAttemptOSRDuring(comp->getCurrentInlinedSiteIndex(), comp);
 
@@ -1456,6 +1457,12 @@ OMR::ResolvedMethodSymbol::supportsInduceOSR(TR_ByteCodeInfo &bci,
       return false;
 
    return true;
+   }
+
+bool
+OMR::ResolvedMethodSymbol::hasOSRProhibitions()
+   {
+   return _cannotAttemptOSR != NULL && !_cannotAttemptOSR->isEmpty();
    }
 
 /*
@@ -1777,8 +1784,114 @@ OMR::ResolvedMethodSymbol::getOSRTransitionTreeTop(TR::TreeTop *tt)
    return tt;
    }
 
+/**
+ * Inserts irrelevant stores before the provided tree to limit symrefs that appear live at an OSR transition.
+ * This is based on the results from OSRLiveRangeAnalysis. It is assumed that the byteCodeInfo's call site is a call
+ * to this resolved method symbol.
+ *
+ * \param byteCodeInfo BCI the OSR transition targets, used to look up dead symrefs in OSRLiveRangeAnalysis results.
+ * \param insertTree Tree to prepend dead stores to.
+ * \param keepStashedArgsLive Flag to toggle how symrefs used as arguments to this BCI are treated. If transitioning directly to this
+ *  BCI, it should be true. If transitioning within a deeper frame to the current, it should be false. Defaults true.
+ */
 void
-OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree, TR::ResolvedMethodSymbol *callSymbolForDeadSlots)
+OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlots(TR::Compilation *comp, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *insertTree, bool keepStashedArgsLive)
+   {
+   TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
+   int32_t callSite = byteCodeInfo.getCallerIndex();
+   int32_t byteCodeIndex = byteCodeInfo.getByteCodeIndex();
+   TR_OSRMethodData *osrMethodData = comp->getOSRCompilationData()->findOrCreateOSRMethodData(callSite, self());
+
+   TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
+   if (deadSymRefs == NULL)
+      return;
+
+   // The arguments to the induce OSR call may be stashed against its bytecode index.
+   // If so, dead stores must not be generated for these symrefs.
+   if (keepStashedArgsLive)
+      {
+      TR_Array<int32_t> *args = osrMethodData->getArgInfo(byteCodeIndex);
+      for (int32_t i = 0; args && i < args->size(); ++i)
+         deadSymRefs->reset((*args)[i]);
+      }
+
+   TR::TreeTop *prev = insertTree->getPrevTreeTop();
+   TR::TreeTop *next = insertTree;
+
+   if (comp->getOption(TR_TraceOSR))
+      traceMsg(comp, "Inserting stores for dead stack slots in method at caller index %d and bytecode index %d for induceOSR call %p\n", callSite, byteCodeIndex, insertTree->getNode());
+
+   TR_BitVectorIterator bvi(*deadSymRefs);
+   while (bvi.hasMoreElements())
+      {
+      int32_t nextDeadVar = bvi.getNextElement();
+      TR::SymbolReference *nextSymRef = symRefTab->getSymRef(nextDeadVar);
+
+      if (!nextSymRef->getSymbol()->isParm()
+          && performTransformation(comp, "OSR LIVE RANGE ANALYSIS : Local %d is reset before tree [%p] (caller index %d bytecode index %d)\n", nextSymRef->getReferenceNumber(), insertTree->getNode(), callSite, byteCodeIndex))
+         {
+         TR::Node *storeNode = TR::Node::createWithSymRef(comp->il.opCodeForDirectStore(nextSymRef->getSymbol()->getDataType()), 1, 1,
+                                              TR::Node::createConstDead(insertTree->getNode(), nextSymRef->getSymbol()->getDataType()), nextSymRef);
+         storeNode->setStoredValueIsIrrelevant(true);
+         TR::TreeTop *storeTree = TR::TreeTop::create(comp, storeNode);
+         prev->join(storeTree);
+         storeTree->join(next);
+         prev = storeTree;
+         }
+      }
+   }
+
+/**
+ * \verbatim
+ * OSR dead stores for a transition at BCI 1:N
+ *
+ * CalleeIndex CallerIndex ByteCodeIndex
+ *     0         -1           P
+ *     1         0            M
+ *
+ *        |
+ *        |
+ *   -------------    ---------------------------
+ *   | MAINLINE  |    | OSR INDUCE BLOCK        |
+ *   -------------    ---------------------------
+ *   | OSR Guard |--->| Dead stores for 1:N     |
+ *   -------------    ---------------------------
+ *        |                        |
+ *        |                        |
+ *        V           ---------------------------
+ *                    | OSR CATCH + CODE BLOCKS |
+ *                    ---------------------------
+ *                    | Callee 1 prepareForOSR  |
+ *                    | Dead stores for 0:M     |
+ *                    ---------------------------
+ *                                 |
+ *                                 |
+ *                    ---------------------------
+ *                    | OSR CATCH + CODE BLOCKS |
+ *                    ---------------------------
+ *                    | Callee 0 prepareForOSR  |
+ *                    | Dead stores for -1:P    |
+ *                    ---------------------------
+ *                                 |
+ *                                 |
+ *                    ---------------------------
+ *                    | OSR CATCH + CODE BLOCKS |
+ *                    ---------------------------
+ *                    | Callee -1 prepareForOSR |
+ *                    ---------------------------
+ *                                 |
+ *                                 V
+ * \endverbatim
+ * This function adds the dead stores for the current BCI.
+ * It does not have to concern itself with dead stores for any outer call sites, as they are located in the OSRCodeBlocks for
+ * each frame, as demonstrated in the above example. This is safe as all OSR transitions in a callee will have the same liveness 
+ * in the caller's frame.
+ *
+ * \param byteCodeInfo BCI the OSR transition targets, used to look up dead symrefs in OSRLiveRangeAnalysis results.
+ * \param induceOSRTree Tree to prepend dead stores to.
+ */
+void
+OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Compilation *comp, int32_t inlinedSiteIndex, TR_ByteCodeInfo &byteCodeInfo, TR::TreeTop *induceOSRTree)
    {
    if (!comp->osrStateIsReliable())
       {
@@ -1786,64 +1899,8 @@ OMR::ResolvedMethodSymbol::insertStoresForDeadStackSlotsBeforeInducingOSR(TR::Co
       return;
       }
 
-   TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
-   int32_t callSite = byteCodeInfo.getCallerIndex();
-   int32_t byteCodeIndex = byteCodeInfo.getByteCodeIndex();
-   TR_OSRMethodData *osrMethodData;
-   if (callSymbolForDeadSlots)
-      osrMethodData = comp->getOSRCompilationData()->findCallerOSRMethodData(comp->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, callSymbolForDeadSlots));
-   else
-      osrMethodData = comp->getOSRCompilationData()->findOrCreateOSRMethodData(callSite, self());
-
-   traceMsg(comp, "About to do dead store insertion using osrMethodData %p - %d:%d\n", osrMethodData, callSite, byteCodeIndex);
-
-   TR::TreeTop *prev = induceOSRTree->getPrevTreeTop();
-   TR::TreeTop *next = induceOSRTree;
-
-   TR::OSRTransitionTarget pointType = TR::preAndPostExecutionOSR;
-
-   while (osrMethodData)
-      {
-      if (comp->getOption(TR_TraceOSR))
-         traceMsg(comp, "Inserting stores for dead stack slots in method at caller index %d and bytecode index %d for induceOSR call %p\n", callSite, byteCodeIndex, induceOSRTree->getNode());
-
-      TR_BitVector *deadSymRefs = pointType == TR::preAndPostExecutionOSR ? osrMethodData->getLiveRangeInfo(byteCodeIndex) : osrMethodData->getLiveRangeInfo(byteCodeIndex, pointType);
-      if (deadSymRefs)
-         {
-         TR_BitVectorIterator bvi(*deadSymRefs);
-         while (bvi.hasMoreElements())
-            {
-            int32_t nextDeadVar = bvi.getNextElement();
-            TR::SymbolReference *nextSymRef = symRefTab->getSymRef(nextDeadVar);
-
-            if (performTransformation(comp, "OSR LIVE RANGE ANALYSIS : Local %d is reset before induceOSR call tree %p (caller index %d bytecode index %d)\n", nextSymRef->getReferenceNumber(), induceOSRTree->getNode(), callSite, byteCodeIndex))
-               {
-               TR::Node *storeNode = TR::Node::createWithSymRef(comp->il.opCodeForDirectStore(nextSymRef->getSymbol()->getDataType()), 1, 1,
-                                                    TR::Node::createConstDead(induceOSRTree->getNode(), nextSymRef->getSymbol()->getDataType()), nextSymRef);
-               storeNode->setStoredValueIsIrrelevant(true);
-               TR::TreeTop *storeTree = TR::TreeTop::create(comp, storeNode);
-               prev->join(storeTree);
-               storeTree->join(next);
-               prev = storeTree;
-               }
-            }
-         }
-
-      TR_ASSERT((callSite == osrMethodData->getInlinedSiteIndex()), "OSR method data and inlined call sites array being walked out of sync\n");
-      if (osrMethodData->getInlinedSiteIndex() > -1)
-         {
-         TR_InlinedCallSite &callSiteInfo = comp->getInlinedCallSite(callSite);
-         callSite = callSiteInfo._byteCodeInfo.getCallerIndex();
-         osrMethodData = comp->getOSRCompilationData()->findCallerOSRMethodData(osrMethodData);
-         byteCodeIndex = callSiteInfo._byteCodeInfo.getByteCodeIndex();
-         pointType = TR::preExecutionOSR;
-         }
-      else
-         osrMethodData = NULL;
-      }
+   self()->insertStoresForDeadStackSlots(comp, byteCodeInfo, induceOSRTree);
    }
-
-
 
 TR_OSRPoint *
 OMR::ResolvedMethodSymbol::findOSRPoint(TR_ByteCodeInfo &bcInfo)

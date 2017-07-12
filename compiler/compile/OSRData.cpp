@@ -610,7 +610,7 @@ TR_OSRMethodData::TR_OSRMethodData(int32_t _inlinedSiteIndex, TR::ResolvedMethod
         _linkedToCaller(false),
         slot2ScratchBufferOffset(comp()->allocator()),
         _numSymRefs(0),
-        bcInfoHashTab(comp()->allocator()),  bcLiveRangeInfoHashTab(comp()->allocator()) {};
+        bcInfoHashTab(comp()->allocator()),  bcLiveRangeInfoHashTab(comp()->allocator()), argInfoHashTab(comp()->allocator()) {};
 
 TR::Block *
 TR_OSRMethodData::findOrCreateOSRCodeBlock(TR::Node* n)
@@ -686,58 +686,82 @@ TR_OSRMethodData::inlinesAnyMethod() const
    }
 
 void
-TR_OSRMethodData::addLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target, TR_BitVector *liveRangeInfo)
+TR_OSRMethodData::addLiveRangeInfo(int32_t byteCodeIndex, TR_BitVector *liveRangeInfo)
    {
-   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only add live range info for pre or post transition target");
-
-   TR_BCLiveRangeInfoHashKey key(byteCodeIndex, target);
-   bcLiveRangeInfoHashTab.Add(key, liveRangeInfo);
+   bcLiveRangeInfoHashTab.Add(byteCodeIndex, liveRangeInfo);
    }
 
-/*
- * Get the live range info for a bytecode index
- * In postExecution OSR, it is possible for the same bytecode index to have different
- * liveness information, based on whether it was generated for a induction or
- * an analysis point.
- *
- * For example, consider two calls, where the result of one feeds into the other.
- * For a transition point after the first call, its result is on the stack, whilst,
- * for an analysis point before the second call, the result has been taken as an
- * argument and is no longer on the stack.
- *
- * This method will default to using the postExecutionOSR point, as it will always
- * contain the live values at the preExecutionOSR point. However, a more exact
- * result can be achieve by specifing the point type.
- */
 TR_BitVector *
 TR_OSRMethodData::getLiveRangeInfo(int32_t byteCodeIndex)
    {
-   TR_BitVector* liveRangeInfo = NULL;
-   if (getMethodSymbol()->comp()->isOSRTransitionTarget(TR::postExecutionOSR))
-      {
-      liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::postExecutionOSR);
-      if (!liveRangeInfo)
-         liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
-      }
-   else
-      liveRangeInfo = getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
-   return liveRangeInfo;
-   }
-
-TR_BitVector *
-TR_OSRMethodData::getLiveRangeInfo(int32_t byteCodeIndex, TR::OSRTransitionTarget target)
-   {
-   TR_ASSERT(target == TR::postExecutionOSR || target == TR::preExecutionOSR, "can only get live range info for pre or post transition target");
-
-   TR_BCLiveRangeInfoHashKey key(byteCodeIndex, target);
    CS2::HashIndex hashIndex;
    TR_BitVector* liveRangeInfo = NULL;
-   if (bcLiveRangeInfoHashTab.Locate(key, hashIndex))
+   if (bcLiveRangeInfoHashTab.Locate(byteCodeIndex, hashIndex))
       {
       liveRangeInfo = bcLiveRangeInfoHashTab.DataAt(hashIndex);
       }
 
    return liveRangeInfo;
+   }
+
+/*
+ * Ensure it is possible to store the required number of symbol reference
+ * arguments against a bytecode index
+ */
+void
+TR_OSRMethodData::ensureArgInfoAt(int32_t byteCodeIndex, int32_t argNum)
+   {
+   CS2::HashIndex hashIndex;
+   bool generate = false;
+   if (!argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      generate = true;
+      }
+   else
+      {
+      TR_Array<int32_t> *args = getArgInfo(byteCodeIndex);
+      if (args->size() != argNum)
+         {
+         argInfoHashTab.Remove(byteCodeIndex);
+         generate = true;
+         }
+      }
+ 
+   if (generate)
+      argInfoHashTab.Add(byteCodeIndex,
+         new (comp()->trMemory()->trHeapMemory()) TR_Array<int32_t>(comp()->trMemory(), argNum, false, heapAlloc), hashIndex);
+   }
+
+/*
+ * Stash the symbol reference numbers against a bytecode index,
+ * to be used as arguments when transitioning to this index.
+ */
+void
+TR_OSRMethodData::addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t argSymRef)
+   {
+   CS2::HashIndex hashIndex;
+   TR_Array<int32_t> *args;
+   if (argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      args = argInfoHashTab.DataAt(hashIndex);
+      (*args)[argIndex] = argSymRef;
+      }
+   }
+
+/*
+ * Get the list of symbol reference numbers for a bytecode index
+ * to be used as arguments to the induce call targeting it
+ */
+TR_Array<int32_t>*
+TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
+   {
+   CS2::HashIndex hashIndex;
+   TR_Array<int32_t> *args = NULL;
+   if (argInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      args = argInfoHashTab.DataAt(hashIndex);
+      }
+   return args;
    }
 
 void
@@ -767,6 +791,12 @@ TR_OSRMethodData::ensureSlotSharingInfoAt(int32_t byteCodeIndex)
       TR_OSRSlotSharingInfo* ssinfo = new (getMethodSymbol()->comp()->trHeapMemory()) TR_OSRSlotSharingInfo(getMethodSymbol()->comp());
       bcInfoHashTab.Add(byteCodeIndex, ssinfo);
       }
+   }
+
+bool
+TR_OSRMethodData::hasSlotSharingInfo()
+   {
+   return !bcInfoHashTab.IsEmpty();
    }
 
 void

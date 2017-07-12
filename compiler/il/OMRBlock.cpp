@@ -1710,43 +1710,51 @@ OMR::Block::getGlobalNormalizedFrequency(TR::CFG * cfg)
 
 /*
  * An OSR induce block is used in voluntary OSR to contain the OSR point's dead stores
- * and to induce the transition. It will always have the exit and at least one exception
- * successor to an OSR catch block.
+ * and to induce the transition. It will always have a single edge to the exit and at least one
+ * exception successor to an OSR catch block.
+ *
+ * This function verifies that any blocks marked as an OSRInduceBlock hold these properties.
  */
 bool
-OMR::Block::isOSRInduceBlock(TR::Compilation *comp)
+OMR::Block::verifyOSRInduceBlock(TR::Compilation *comp)
    {
-   // An OSR induce block should have one successor, the end, and will not exist in involuntary OSR
-   if (comp->getOSRMode() != TR::voluntaryOSR || self()->getSuccessors().size() != 1 ||
-       self()->getSuccessors().front()->getTo() != comp->getFlowGraph()->getEnd())
-      return false;
+   // This check only applies when in voluntary OSR
+   if (comp->getOSRMode() != TR::voluntaryOSR)
+      return true;
 
-   // At least one of the exception edges must be to an OSR catch block
-   auto e = self()->getExceptionSuccessors().begin();
-   for (; e != self()->getExceptionSuccessors().end(); ++e)
-      if ((*e)->getTo()->asBlock()->isOSRCatchBlock())
-         break;
-   bool isOSRBlock = e != self()->getExceptionSuccessors().end();
-
-#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
+   // OSR induce blocks should contain an induce OSR call
    TR::TreeTop *cursor = self()->getExit();
-   bool found = false;
+   bool foundOSRInduceCall = false;
    while (cursor && cursor->getNode()->getOpCodeValue() != TR::BBStart)
       {
       TR::Node *node = cursor->getNode();
       if (node->getOpCodeValue() == TR::treetop && node->getFirstChild()->getOpCode().hasSymbolReference()
           && node->getFirstChild()->getSymbolReference() == comp->getSymRefTab()->element(TR_induceOSRAtCurrentPC))
          {
-         found = true;
+         foundOSRInduceCall = true;
          break;
          }
       cursor = cursor->getPrevTreeTop();
       }
-   TR_ASSERT(found == isOSRBlock, "an OSR induce block should contain an induce call and at least one exception successor to an OSR catch block");
-#endif
+   if (self()->isOSRInduceBlock() != foundOSRInduceCall)
+      return false;
 
-   return isOSRBlock;
+   if (!self()->isOSRInduceBlock())
+      return true;
+
+   // OSR induce blocks should have a single successor to the exit
+   if (self()->getSuccessors().size() != 1
+       || self()->getSuccessors().front()->getTo() != comp->getFlowGraph()->getEnd())
+      return false;
+
+   // OSR induce blocks should have at least one exception edge to an OSR catch block
+   auto e = self()->getExceptionSuccessors().begin();
+   for (; e != self()->getExceptionSuccessors().end(); ++e)
+      if ((*e)->getTo()->asBlock()->isOSRCatchBlock())
+         break;
+   return e != self()->getExceptionSuccessors().end();
    }
+
 
 /**
  * Field functions end

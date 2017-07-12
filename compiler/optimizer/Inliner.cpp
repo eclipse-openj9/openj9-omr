@@ -198,7 +198,7 @@ int32_t TR_TrivialInliner::perform()
    comp()->generateAccurateNodeCount();
 
    TR::ResolvedMethodSymbol * sym = comp()->getMethodSymbol();
-   if (sym->mayHaveInlineableCall() && !comp()->isDisabled(OMR::inlining))
+   if (sym->mayHaveInlineableCall() && optimizer()->isEnabled(OMR::inlining))
       {
       uint32_t initialSize = comp()->getOptions()->getTrivialInlinerMaxSize();;
       if (comp()->getOption(TR_Randomize) || comp()->getOption(TR_VerbosePseudoRandom))
@@ -245,7 +245,7 @@ TR_InlinerBase::TR_InlinerBase(TR::Optimizer * optimizer, TR::Optimization *opti
    _util = optimizer->getInlinerUtil();
    _policy->setInliner(this);
    _util->setInliner(this);
-   if (comp()->getOptions()->isDisabled(OMR::innerPreexistence))
+   if (!optimizer->isEnabled(OMR::innerPreexistence))
       _disableInnerPrex = true;
 
    setInlineVirtuals(true);
@@ -1058,7 +1058,7 @@ bool
 TR_InlineCall::inlineCall(TR::TreeTop * callNodeTreeTop, TR_OpaqueClassBlock * thisClass, bool recursiveInlining, TR_PrexArgInfo *argInfo, int32_t initialMaxSize)
    {
    TR_InlinerDelimiter delimiter(tracer(),"TR_InlineCall::inlineCall");
-   if (comp()->isDisabled(OMR::inlining))
+   if (!getOptimizer()->isEnabled(OMR::inlining))
       return false;
 
    TR::Node * parent = callNodeTreeTop->getNode();
@@ -1530,6 +1530,11 @@ TR_InlinerBase::createVirtualGuard(
    else if (guard->_type == TR_MethodTest)
       return TR_VirtualGuard::createMethodGuard(guard->_kind, comp(), calleeIndex, callNode,
              destination, calleeSymbol, thisClass);
+   else if (guard->_kind == TR_BreakpointGuard)
+      {
+      return TR_VirtualGuard::createBreakpointGuard(comp(), calleeIndex, callNode,
+             destination, calleeSymbol);
+      }
    else
       {
       TR_ASSERT(guard->_type == TR_NonoverriddenTest, "assertion failure");
@@ -1699,6 +1704,26 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
       }
    }
 
+void
+TR_InlinerBase::addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock * thisClass, TR::Block *prevBlock, TR::Block *inlinedBody, TR::Block *slowPath, TR_VirtualGuardKind kind, TR_VirtualGuardTestType type, bool favourVFTCompare, TR::CFG *callerCFG)
+   {
+   TR::Block *guardBlock = TR::Block::createEmptyBlock(callNode, comp(), prevBlock->getFrequency());
+      callerCFG->addNode(guardBlock);
+      callerCFG->addEdge(prevBlock, guardBlock);
+      callerCFG->addEdge(guardBlock, inlinedBody);
+      callerCFG->addEdge(guardBlock, slowPath);
+      callerCFG->copyExceptionSuccessors(prevBlock, guardBlock);
+      callerCFG->removeEdge(prevBlock, inlinedBody);
+
+      TR_VirtualGuardSelection *guard = new (trStackMemory()) TR_VirtualGuardSelection(kind, type);
+      TR::TreeTop *tt = guardBlock->append(TR::TreeTop::create(comp(),
+                                    createVirtualGuard(callNode, calleeSymbol, slowPath->getEntry(),
+                                       calleeSymbol->getFirstTreeTop()->getNode()->getInlinedSiteIndex(),
+                                       thisClass, favourVFTCompare, guard)));
+      guardBlock->setDoNotProfile();
+      prevBlock->getExit()->join(guardBlock->getEntry());
+      guardBlock->getExit()->join(inlinedBody->getEntry());
+   }
 
 TR::TreeTop *
 TR_InlinerBase::addGuardForVirtual(
@@ -1832,6 +1857,11 @@ TR_InlinerBase::addGuardForVirtual(
       }
    else if (!disableHCRGuards && comp()->getHCRMode() != TR::none)
       createdHCRGuard = true;
+
+   if (comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
+      {
+      addAdditionalGuard(callNode, calleeSymbol, thisClass, block1, block2, block4, TR_BreakpointGuard, TR_FSDTest, false /*favourVftCompare*/,callerCFG);
+      }
 
    bool appendTestToBlock1 = false;
    if (guard->_kind == TR_InnerGuard)
@@ -1988,7 +2018,7 @@ TR_InlinerBase::addGuardForVirtual(
            createdHCRGuard ||
            (osrForNonHCRGuards && shouldAttemptOSR)))
          {
-         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCallForGuardedCallee(guardedCallNodeTreeTop, calleeSymbol, (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false);
+         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false);
          if (induceOSRCallTree)
             *induceOSRCallTree = induceTree;
          }
@@ -2069,7 +2099,7 @@ bool TR_InlinerBase::heuristicForUsingOSR(TR::Node *callNode, TR::ResolvedMethod
       int32_t osrCallerNumLiveStackSlots = 0;
       totalOSRCallersStackSlots = totalOSRCallersStackSlots + osrCallerNumStackSlots;
 
-      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex, TR::preExecutionOSR);
+      TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
       if (deadSymRefs)
          {
          osrCallerNumLiveStackSlots = osrMethodData->getNumSymRefs() - deadSymRefs->elementCount();
@@ -3087,6 +3117,11 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
             if (tt->getNode()->getOpCode().isBranch() || tt->getNode()->getOpCode().isSwitch())
                tt = tt->getPrevTreeTop();
 
+            // If this treetop is an OSR point, a store cannot be placed between it and the 
+            // transition treetop in postExecutionOSR
+            if (comp()->isPotentialOSRPoint(tt->getNode()))
+               tt = comp()->getMethodSymbol()->getOSRTransitionTreeTop(tt);
+
             TR::Node *value = ref->_node;
             // Convert the node being stored to the type required by the FE
             if (comp()->fe()->dataTypeForLoadOrStore(nodeDataType) != nodeDataType)
@@ -3870,6 +3905,11 @@ bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerB
       {
       tempreceiverClass = _initialCalleeMethod->classOfMethod();
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
+      }
+   else if (comp()->getOption(TR_FullSpeedDebug))
+      {
+      tempreceiverClass = _receiverClass;
+      guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_BreakpointGuard, TR_FSDTest);
       }
    else
       {
@@ -5057,13 +5097,18 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             _disableTailRecursion = true;
          }
       }
-   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved())
+   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved()
+       && (tif->resultNode() == NULL || tif->resultNode()->getReferenceCount() == 0))
       {
       /**
        * In OSR, we need to split block even for cases without virtual guard. This is 
        * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
        * of correct callerIndex. Split the block here so that the OSR points from callee
        * and from caller are separated.
+       *
+       * This will not uncommon the return value if the block is split, instead it expects a temporary
+       * to have been generated so that nothing is commoned. This is valid under the current
+       * inliner behaviour, as the existance of a catch block will result in the required temporary being created.
        */
       TR::Block * blockOfCaller = previousBBStartInCaller->getNode()->getBlock();
       TR::Block * blockOfCallerInCalleeCFG = nextBBEndInCaller->getNode()->getBlock()->split(callNodeTreeTop, callerCFG);

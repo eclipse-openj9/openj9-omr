@@ -735,8 +735,6 @@ class PPCDepImmInstruction : public PPCDepInstruction
    virtual PPCDepImmInstruction *getPPCDepImmInstruction();
 
    virtual uint8_t *generateBinaryEncoding();
-
-//   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class PPCDepImmSymInstruction : public PPCDepInstruction
@@ -1240,8 +1238,6 @@ class PPCTrg1Src1Imm2Instruction : public PPCTrg1Src1ImmInstruction
    int64_t setLongMask(uint64_t mi) {return _mask = mi;}
 
    virtual uint8_t *generateBinaryEncoding();
-
-//   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
 
    virtual void registersGoLive(TR::CodeGenerator::TR_RegisterPressureState *state)
       {

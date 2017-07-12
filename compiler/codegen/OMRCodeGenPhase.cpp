@@ -194,7 +194,12 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(), "Method length estimate must be conservatively large");
+     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(),
+               "Method length estimate must be conservatively large\n"
+               "    warmCodeLength = %d, estimatedWarmLength = %d \n"
+               "    coldCodeLength = %d, estimatedColdLength = %d",
+               cg->getWarmCodeLength(), cg->getEstimatedWarmLength(),
+               cg->getColdCodeLength(),cg->getEstimatedColdLength());
 
      // also trace the interal stack atlas
      cg->getStackAtlas()->close(cg);
@@ -229,6 +234,12 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
    LexicalTimer pt("Emit Snippets", comp->phaseTimer());
 
    cg->emitSnippets();
+
+   if (comp->getOption(TR_EnableOSR))
+      {
+      comp->getOSRCompilationData()->checkOSRLimits();
+      comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
+      }
 
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
@@ -283,11 +294,6 @@ OMR::CodeGenPhase::performBinaryEncodingPhase(TR::CodeGenerator * cg, TR::CodeGe
       {
       if (cg->getDebug())
          cg->getDebug()->verifyFinalNodeReferenceCounts(comp->getMethodSymbol());
-      }
-   if (comp->getOption(TR_EnableOSR))
-      {
-      comp->getOSRCompilationData()->checkOSRLimits();
-      comp->getOSRCompilationData()->compressInstruction2SharedSlotMap();
       }
    }
 
@@ -402,7 +408,7 @@ OMR::CodeGenPhase::performInstructionSelectionPhase(TR::CodeGenerator * cg, TR::
          {
          if (TO_KIND_MASK(r) & cg->getSupportedLiveRegisterKinds())
             {
-            TR::CodeGenerator::checkForLiveRegisters(cg->getLiveRegisters((TR_RegisterKinds)r));
+            cg->checkForLiveRegisters(cg->getLiveRegisters((TR_RegisterKinds)r));
             }
          }
 #endif
@@ -421,7 +427,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    {
    TR::Compilation *comp = cg->comp();
 
-   if (cg->isConcurrentScavengeEnabled())
+   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
       // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
       // to enforce certain evaluation order
@@ -617,7 +623,7 @@ OMR::CodeGenPhase::performCleanUpFlagsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 void
 OMR::CodeGenPhase::performFindAndFixCommonedReferencesPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
-   if (!TR::comp()->useRegisterMaps())
+   if (!cg->comp()->useRegisterMaps())
       cg->findAndFixCommonedReferences();
    }
 

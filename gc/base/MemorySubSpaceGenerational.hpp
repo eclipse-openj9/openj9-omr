@@ -103,6 +103,10 @@ public:
 
 	virtual uintptr_t counterBalanceContract(MM_EnvironmentBase *env, MM_MemorySubSpace *previousSubSpace, MM_MemorySubSpace *contractSubSpace, uintptr_t contractSize, uintptr_t contractAlignment);
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
+
 	/**
 	 * Create a MemorySubSpaceGenerational object.
 	 */

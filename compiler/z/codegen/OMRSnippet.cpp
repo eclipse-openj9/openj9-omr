@@ -133,7 +133,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
 
 #if defined(TR_TARGET_64BIT) 
 #if defined(J9ZOS390)
-      if (cg->comp()->getOption(TR_EnableZOSTrampolines))
+      if (cg->comp()->getOption(TR_EnableRMODE64))
 #endif
          {
          if (NEEDS_TRAMPOLINE(destAddr, cursor, cg))
@@ -150,7 +150,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
       self()->setSnippetDestAddr(destAddr);
 
       *(int32_t *) cursor = (int32_t)((destAddr - (intptrj_t)(cursor - 2)) / 2);
-      AOTcgDiag1(TR::comp(), "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
+      AOTcgDiag1(cg->comp(), "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
       cg->addProjectSpecializedRelocation(cursor, (uint8_t*) glueRef, NULL, TR_HelperAddress,
                                       __FILE__, __LINE__, self()->getNode());
       cursor += sizeof(int32_t);

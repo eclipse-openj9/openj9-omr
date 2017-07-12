@@ -1212,8 +1212,17 @@ static void lhsPeephole(TR::CodeGenerator *cg, TR::Instruction *storeInstruction
       // Found the pattern:
       //   stw/std rX, ...
       //   lwz/ld rX, ...
-      // and will remove lwz/ld
-      if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove redundant load %p after store %p.\n", loadInstruction, storeInstruction))
+      // will remove ld
+      // and replace lwz with rlwinm, rX, rX, 0, 0xffffffff
+      if (loadInstruction->getOpCodeValue() == TR::InstOpCode::lwz)
+         {
+         if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace lwz " POINTER_PRINTF_FORMAT " with rlwinm after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
+            {
+            generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, loadInstruction->getNode(), trgReg, srcReg, 0, 0xffffffff, storeInstruction);
+            loadInstruction->remove();
+            }
+         }
+      else if (performTransformation(comp, "O^O PPC PEEPHOLE: Remove redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT ".\n", loadInstruction, storeInstruction))
          {
          loadInstruction->remove();
          }
@@ -1223,11 +1232,22 @@ static void lhsPeephole(TR::CodeGenerator *cg, TR::Instruction *storeInstruction
    // Found the pattern:
    //   stw/std rX, ...
    //   lwz/ld rY, ...
-   // and will remove lwz/ld, which will result in:
-   //   stw/std rX, ...
+   // and will remove lwz, which will result in:
+   //   stw rX, ...
+   //   rlwinm rY, rX, 0, 0xffffffff
+   // or will remove ld, which will result in:
+   //   std rX, ...
    //   mr rY, rX
    // and then the mr peephole should run on the resulting mr
-   if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace redundant load %p after store %p with mr.\n", loadInstruction, storeInstruction))
+   if (loadInstruction->getOpCodeValue() == TR::InstOpCode::lwz)
+      { 
+      if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT " with rlwinm.\n", loadInstruction, storeInstruction))
+         {
+         generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, loadInstruction->getNode(), trgReg, srcReg, 0, 0xffffffff, storeInstruction);
+         loadInstruction->remove();
+         }
+      }
+   else if (performTransformation(comp, "O^O PPC PEEPHOLE: Replace redundant load " POINTER_PRINTF_FORMAT " after store " POINTER_PRINTF_FORMAT " with mr.\n", loadInstruction, storeInstruction))
       {
       generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, loadInstruction->getNode(), trgReg, srcReg, storeInstruction);
       loadInstruction->remove();
@@ -1645,7 +1665,6 @@ bool OMR::Power::CodeGenerator::processInstruction(TR::Instruction *instr,
          if (node)
             {
             TR::Block *block = node->getBlock();
-            ///blockNum = block->getNumber();
             if (node->getOpCodeValue() == TR::BBStart)
                {
                blockMarker = 1;
@@ -1834,7 +1853,6 @@ OMR::Power::CodeGenerator::computeRegisterSaveDescription(TR_BitVector *regs, bo
       }
    // place the register save size in the top half
    rsd |= self()->getLinkage()->getRegisterSaveSize() << 17;
-   ///traceMsg(comp(), "computeRSD saveSize: %d rsd %d\n", getLinkage()->getRegisterSaveSize(), rsd);
    return rsd;
    }
 
@@ -1904,15 +1922,6 @@ OMR::Power::CodeGenerator::isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR
       *end = oiCursor->getAppendInstruction();
       return true;
       }
-   else
-      return false;
-   }
-
-bool OMR::Power::CodeGenerator::enableAESInHardwareTransformations()
-   {
-   if (  (TR::Compiler->target.cpu.getPPCSupportsAES() || (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())) &&
-         !self()->comp()->getOptions()->getOption(TR_DisableAESInHardware))
-      return true;
    else
       return false;
    }
@@ -3453,6 +3462,11 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
        dt != TR::Int64)
       return false;
 
+   if (TR::Compiler->target.cpu.id() >= TR_PPCp8 &&
+       (opcode.getOpCodeValue() == TR::vadd || opcode.getOpCodeValue() == TR::vsub) &&
+       dt == TR::Int64)
+      return true;
+
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
@@ -3488,6 +3502,8 @@ bool OMR::Power::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode
             return true;
          else
             return false;
+      case TR::vl2vd:
+         return true;
       default:
          return false;
       }
@@ -3549,7 +3565,6 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                   recordInfo->data1 = (uintptr_t)node->getSymbolReference();
                   recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                   recordInfo->data3 = (uintptr_t)seqKind;
-                  //printf("TreeEvaluator.cpp:137, inlinedSiteIndex: %d, tempSR->getCPIndex(): %x, tempSR->getOffset(): %x\n", node->getInlinedSiteIndex(), node->getSymbolReference()->getCPIndex(), node->getSymbolReference()->getOffset());fflush(stdout);
                   self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)recordInfo,
@@ -3958,4 +3973,9 @@ bool OMR::Power::CodeGenerator::supportsTransientPrefetch()
 bool OMR::Power::CodeGenerator::is64BitProcessor()
    {
    return TR::Compiler->target.cpu.getPPCis64bit();
+   }
+
+bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
+   {
+   return true;
    }

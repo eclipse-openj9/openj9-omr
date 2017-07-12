@@ -371,7 +371,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableInterpreterProfiling",        "O\tdisable Interpreter Profiling hooks   ",         SET_OPTION_BIT(TR_DisableInterpreterProfiling), "F"},
    {"disableInterpreterProfilingThread",  "O\tdo not create a separate thread for interpreter profiling", SET_OPTION_BIT(TR_DisableIProfilerThread), "F", NOT_IN_SUBSET},
    {"disableInterpreterSampling",         "O\tdisable sampling of interpreted methods",        SET_OPTION_BIT(TR_DisableInterpreterSampling), "F"},
-   {"disableIntrinsics",                   "O\tdisable inlining of intrinsic functions", SET_OPTION_BIT(TR_DisableIntrinsics), "F"},
+   {"disableIntrinsics",                   "O\tdisable inlining of packed decimal intrinsic functions", SET_OPTION_BIT(TR_DisableIntrinsics), "F"},
    {"disableInvariantArgumentPreexistence", "O\tdisable invariable argument preexistence",     TR::Options::disableOptimization, invariantArgumentPreexistence, 0, "P"},
    {"disableInvariantCodeMotion",           "O\tdisable invariant code motion.", SET_OPTION_BIT(TR_DisableInvariantCodeMotion), "P"},
    {"disableIPA",                          "O\tdisable inter procedural analysis.", SET_OPTION_BIT(TR_DisableIPA), "P"},
@@ -414,6 +414,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLoopStrider",                 "O\tdisable loop strider",                           TR::Options::disableOptimization, loopStrider, 0, "P"},
    {"disableLoopVersioner",               "O\tdisable loop versioner",                         TR::Options::disableOptimization, loopVersioner, 0, "P"},
    {"disableMarkingOfHotFields",          "O\tdisable marking of Hot Fields",                  SET_OPTION_BIT(TR_DisableMarkingOfHotFields), "F"},
+   {"disableMarshallingIntrinsics",       "O\tDisable packed decimal to binary marshalling and un-marshalling optimization. They will not be inlined.", SET_OPTION_BIT(TR_DisableMarshallingIntrinsics), "F"},
    {"disableMaskVFTPointers",             "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaskVFTPointers), "F"},
    {"disableMaxMinOptimization",          "O\tdisable masking of VFT Pointers",                SET_OPTION_BIT(TR_DisableMaxMinOptimization), "F"},
    {"disableMccFreeBlockRecycling",       "O\tdo not reuse code cache freed blocks",           SET_OPTION_BIT(TR_DisableFreeCodeCacheBlockRecycling), "F", NOT_IN_SUBSET},
@@ -438,6 +439,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNewMethodOverride",           "O\tdisable replacement for jitUpdateInlineAttribute", SET_OPTION_BIT(TR_DisableNewMethodOverride), "F"},
    {"disableNewStoreHint",                "O\tdisable re-initializing BCD nodes to a new store hint when one is available", SET_OPTION_BIT(TR_DisableNewStoreHint), "F"},
    {"disableNewX86VolatileSupport",        "O\tdisable new X86 Volatile Support", SET_OPTION_BIT(TR_DisableNewX86VolatileSupport), "F"},
+   {"disableNextGenHCR",                  "O\tdisable HCR implemented with on-stack replacement",  SET_OPTION_BIT(TR_DisableNextGenHCR), "F"},
 
    {"disableNonvirtualInlining",          "O\tdisable inlining of non virtual methods",        SET_OPTION_BIT(TR_DisableNonvirtualInlining), "F"},
    {"disableNoServerDuringStartup",       "M\tDo not use NoServer during startup",  SET_OPTION_BIT(TR_DisableNoServerDuringStartup), "F"},
@@ -456,6 +458,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
    {"disableOutlinedPrologues",           "O\tdo all prologue logic in-line",      RESET_OPTION_BIT(TR_EnableOutlinedPrologues), "F"},
+   {"disablePackedDecimalIntrinsics",     "O\tDisables packed decimal function optimizations and avoid generating exception triggering packed decimal instructions on z/Architecture.", SET_OPTION_BIT(TR_DisablePackedDecimalIntrinsics), "F"},
    {"disablePackedLongConversionOn32Bit", "O\t prevent pd2l/l2pd/pd2lu/lu2pd conversions from using the 64 bit IL (instead call out or use 32 bit operations)", SET_OPTION_BIT(TR_DisablePackedLongConversion), "F"},
    {"disablePartialInlining",             "O\tdisable  partial Inlining ",        SET_OPTION_BIT(TR_DisablePartialInlining), "F"},
    {"disablePostProfileCompPriorityBoost","M\tdisable boosting the priority of post profiling compilations",  SET_OPTION_BIT(TR_DisablePostProfileCompPriorityBoost), "F"},
@@ -470,6 +473,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableProfileGenerator",            "O\tdisable profile generator",                      TR::Options::disableOptimization, profileGenerator, 0, "P"},
 #endif
    {"disableProfiling",                   "O\tdisable profiling",                              SET_OPTION_BIT(TR_DisableProfiling), "P"},
+   {"disableProfilingDataReclamation",    "O\tdisable reclamation for profiling data",         SET_OPTION_BIT(TR_DisableProfilingDataReclamation), "F", NOT_IN_SUBSET},
    {"disableProloguePushes",              "O\tuse stores instead of pushes in x86 prologues",  SET_OPTION_BIT(TR_DisableProloguePushes), "P"},
    {"disableRampupImprovements",          "M\tDisable various changes that improve rampup",    SET_OPTION_BIT(TR_DisableRampupImprovements), "F", NOT_IN_SUBSET},
    {"disableReadMonitors",                 "O\tdisable read monitors",                         SET_OPTION_BIT(TR_DisableReadMonitors), "F"},
@@ -486,6 +490,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableRegisterPressureSimulation",  "O\tdon't walk the trees to estimate register pressure during global register allocation", SET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"disableRematerialization",           "O\tdisable rematerialization",                      TR::Options::disableOptimization, rematerialization, 0, "P"},
    {"disableReorderArrayIndexExpr",       "O\tdisable reordering of index expressions",        TR::Options::disableOptimization, reorderArrayExprGroup, 0, "P"},
+   {"disableRMODE64",                     "O\tDisable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", RESET_OPTION_BIT(TR_EnableRMODE64), "F"},
    {"disableRXusage",                     "O\tdisable increased usage of RX instructions",     SET_OPTION_BIT(TR_DisableRXusage), "F"},
    {"disableSamplingJProfiling",          "O\tDisable profiling in the jitted code", SET_OPTION_BIT(TR_DisableSamplingJProfiling), "F" },
    {"disableScorchingSampleThresholdScalingBasedOnNumProc", "M\t", SET_OPTION_BIT(TR_DisableScorchingSampleThresholdScalingBasedOnNumProc), "F", NOT_IN_SUBSET},
@@ -529,6 +534,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableTM",                          "O\tdisable transactional memory support", SET_OPTION_BIT(TR_DisableTM), "F"},
    {"disableTOCForConsts",                "O\tdisable use of the TOC for constants and floats materialization", SET_OPTION_BIT(TR_DisableTOCForConsts), "F"},
    {"disableTraceRegDeps",                "O\tdisable printing of register dependancies for each instruction in trace file",              SET_OPTION_BIT(TR_DisableTraceRegDeps), "F"},
+   {"disableTraps",                       "C\disable trap instructions",                       SET_OPTION_BIT(TR_DisableTraps), "F"},
    {"disableTreeCleansing",               "O\tdisable tree cleansing",                         TR::Options::disableOptimization, treesCleansing, 0, "P"},
    {"disableTreeSimplification",          "O\tdisable tree simplification",                    TR::Options::disableOptimization, treeSimplification, 0, "P"},
    {"disableTrivialBlockExtension",       "O\tdisable trivial block extension",                TR::Options::disableOptimization, trivialBlockExtension, 0, "P"},
@@ -695,7 +701,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableNewAllocationProfiling",      "O\tenable profiling of new allocations", SET_OPTION_BIT(TR_EnableNewAllocationProfiling), "F"},
    {"enableNewCheckCastInstanceOf",      "O\tenable new Checkcast/InstanceOf evaluator", SET_OPTION_BIT(TR_EnableNewCheckCastInstanceOf), "F"},
    {"enableNewX86PrefetchTLH",           "O\tenable new X86 TLH prefetch algorithm", SET_OPTION_BIT(TR_EnableNewX86PrefetchTLH), "F"},
-   {"enableNextGenHCR",                  "O\tuse experiment HCR support based on OSR",  SET_OPTION_BIT(TR_EnableNextGenHCR), "F"},
    {"enableNodeGC",                      "M\tenable node recycling", SET_OPTION_BIT(TR_EnableNodeGC), "F"},
    {"enableOnsiteCacheForSuperClassTest", "O\tenable onsite cache for super class test",       SET_OPTION_BIT(TR_EnableOnsiteCacheForSuperClassTest), "F"},
    {"enableOSR",                          "O\tenable on-stack replacement", SET_OPTION_BIT(TR_EnableOSR), "F", NOT_IN_SUBSET},
@@ -716,7 +721,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableRegisterPressureSimulation",   "O\twalk the trees to estimate register pressure during global register allocation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
-   {"enableRMODE64",                "O\tenable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},   
+   {"enableRMODE64",                      "O\tEnable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},
    {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
    {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
@@ -734,6 +739,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSpecializedEpilogues",         "O\tapply restore non-volatiles selectively",         SET_OPTION_BIT(TR_EnableSpecializedEpilogues), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
+   {"enableTraps",                        "C\tenable trap instructions",                     RESET_OPTION_BIT(TR_DisableTraps), "F"},
    {"enableTreePatternMatching",          "O\tEnable opts that use the TR_Pattern framework", RESET_OPTION_BIT(TR_DisableTreePatternMatching), "F"},
    {"enableTrivialStoreSinking",          "O\tenable trivial store sinking", SET_OPTION_BIT(TR_EnableTrivialStoreSinking), "F"},
    {"enableTrueRegisterModel",            "C\tUse true liveness model in local RA instead of Future Use Count", SET_OPTION_BIT(TR_EnableTrueRegisterModel), "F"},
@@ -748,7 +754,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableZAccessRegs",                "O\tenable use of access regs as spill area on 390.", SET_OPTION_BIT(TR_Enable390AccessRegs), "F"},
    {"enableZEpilogue",                  "O\tenable 64-bit 390 load-multiple breakdown.", SET_OPTION_BIT(TR_Enable39064Epilogue), "F"},
    {"enableZFreeVMThreadReg",           "O\tenable use of vm thread reg as assignable reg on 390.", SET_OPTION_BIT(TR_Enable390FreeVMThreadReg), "F"},
-   {"enablezOSTrampolines",                  "O\tenable generation of trampolines for method dispatch on zOS64", SET_OPTION_BIT(TR_EnableZOSTrampolines), "F"},
    {"enumerateAddresses=", "D\tselect kinds of addresses to be replaced by unique identifiers in trace file", TR::Options::setAddressEnumerationBits, offsetof(OMR::Options, _addressToEnumerate), 0, "F"},
    {"estimateRegisterPressure",           "O\tdeprecated; equivalent to enableRegisterPressureSimulation", RESET_OPTION_BIT(TR_DisableRegisterPressureSimulation), "F"},
    {"experimentalClassLoadPhase",         "O\tenable the experimental class load phase algorithm", SET_OPTION_BIT(TR_ExperimentalClassLoadPhase), "F"},
@@ -888,6 +893,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::setString,  offsetof(OMR::Options,_logFileName), 0, "P%s"},
    {"loi=", "O<nnn>\tindex of the last optimization transformation to perform",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_lastOptTransformationIndex), 0, "F%d"},
+   {"loopyAsyncCheckInsertionMaxEntryFreq=",
+        "O<nnn>\tmaximum entry block frequency for which asynccheck insertion "
+        "considers a method to contain a very frequent block",
+        TR::Options::set32BitNumeric, offsetof(OMR::Options, _loopyAsyncCheckInsertionMaxEntryFreq), 0, " %d" },
    {"lowCodeCacheThreshold=", "M<nnn>\tthreshold for available code cache contiguous space",
         TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_lowCodeCacheThreshold, 0, "F%d", NOT_IN_SUBSET},
    {"lowerCountsForAotCold", "M\tLower counts for cold aot runs", SET_OPTION_BIT(TR_LowerCountsForAotCold), "F", NOT_IN_SUBSET},
@@ -968,6 +977,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
         TR::Options::set32BitNumeric, offsetof(OMR::Options,_numRestrictedGPRs), 0, "F%d"},
    {"oldDataCacheImplementation",         "I\trevert to old data cache implementation.", SET_OPTION_BIT(TR_OldDataCacheImplementation),"F", NOT_IN_SUBSET},
    {"oldJVMPI",           "D\told way of determining which jit options to use with JVMPI",    SET_OPTION_BIT(TR_OldJVMPI), "P" },
+   {"omitFramePointer",         "I\tdo not dedicate a frame pointer register for X86 system linkage.", SET_OPTION_BIT(TR_OmitFramePointer),"F", NOT_IN_SUBSET},
    {"onlyInline=",                        "O{regex}\tlist of methods that can be inlined",
                                           TR::Options::setRegex, offsetof(OMR::Options, _onlyInline), 0, "P"},
    {"optDetails",         "L\tlog all optimizer transformations",
@@ -1980,8 +1990,13 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
 
 #if defined(TR_HOST_ARM)
    // OSR is not available for ARM yet
+   self()->setOption(TR_DisableOSR);
    self()->setOption(TR_EnableOSR, false);
    self()->setOption(TR_EnableOSROnGuardFailure, false);
+#endif
+
+#ifndef J9_PROJECT_SPECIFIC
+   self()->setOption(TR_DisableNextGenHCR);
 #endif
 
    static const char *ccr = feGetEnv("TR_DisableCCR");
@@ -2003,23 +2018,8 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
-   if (self()->getOption(TR_EnableNextGenHCR) && !self()->getOption(TR_DisableOSR))
-      {
-      self()->setOption(TR_EnableOSR); // OSR and HCR must be enabled for NextGenHCR
-      self()->setOption(TR_EnableHCR);
-
-      // TM results in difficult situations when determining where the transition should occur,
-      // so it is currently disabled. The implications of disabling TM should be investigated further.
-      self()->setOption(TR_DisableTM);
-      // Asynchecks cannot be removed in NextGenHCR as they may be used for transitions
-      self()->setDisabled(redundantAsyncCheckRemoval, true);
-      }
-
    if (self()->getOption(TR_EnableOSROnGuardFailure) && !self()->getOption(TR_DisableOSR))
       self()->setOption(TR_EnableOSR);
-
-   if (self()->getOption(TR_EnableOSR) || (self()->getOption(TR_EnableHCR) && !self()->getOption(TR_DisableOSR)))
-       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
 
    if (TR::Compiler->om.mayRequireSpineChecks())
       {
@@ -2312,7 +2312,6 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
    if (self()->requiresLogFile() || self()->getBreakOnCreate() || self()->getDebugOnCreate())
       _addressToEnumerate |= TR_EnumerateRegister;
 
-
    if (self()->getOption(TR_ImmediateCountingRecompilation))
       self()->setOption(TR_EnableGCRPatching, false);
 
@@ -2420,10 +2419,6 @@ OMR::Options::jitPreProcess()
    // --------------------------------------------------------------------------
    // All projects
    //
-   if (self()->getOption(TR_EnableLargePages))
-      {
-      self()->setOption(TR_EnableLargeCodePages);
-      }
 
    //Disabling Shrink Wrapping on all platforms (functional issues)
    self()->setOption(TR_DisableShrinkWrapping);
@@ -2556,6 +2551,15 @@ OMR::Options::jitPreProcess()
    _blockShufflingSequence = "S";
    _delayCompile = 0;
    _largeNumberOfLoops = 6500;
+
+   // The entry block is under this threshold in methods containing a block
+   // expected to run >=100 times per method entry, which should be sure to
+   // catch loops that run thousands of times.
+   _loopyAsyncCheckInsertionMaxEntryFreq = 100;
+
+#if defined(TR_TARGET_64BIT)
+   self()->setOption(TR_EnableCodeCacheConsolidation);
+#endif
 
    // --------------------------------------------------------------------------
    // J9-only
@@ -2703,23 +2707,6 @@ OMR::Options::jitPreProcess()
 
       if (TR::isJ9() && !_quickstartDetected && (TR::Compiler->target.is64Bit() && TR::Compiler->target.isLinux()))
          self()->setOption(TR_IncreaseCountsForNonBootstrapMethods);
-
-
-#if defined(TR_HOST_64BIT) 
-#if defined(J9ZOS390)
-      // The way zOS allocates memory is by looking for 2MB free chunks and uses that for its 
-      // code caches. When we enable RMODE(64) then the addresses will be from 0x80000000
-      // to 0x7fffffffffffffff. This means two code caches could be very far apart from one another
-      // which is something we want to avoid as it may cause performance issues. The solution will 
-      // be to enable the code cache consolidation which will allocate 256MB at startup just for 
-      // code caches. This way the code caches will be together and improve performance. 
-      // Note: If all 256MB are used up then the program will abort compiles.
-      if (self()->getOption(TR_EnableRMODE64)) 
-#endif
-         {
-         self()->setOption(TR_EnableCodeCacheConsolidation);
-         }
-#endif
 
       _newAotrtDebugLevel = 0;
       _disableDLTBytecodeIndex = -1;
@@ -3673,6 +3660,29 @@ OMR::Options::jitPostProcess()
 
    if (_hotMaxStaticPICSlots < 0)
       _hotMaxStaticPICSlots = -_hotMaxStaticPICSlots * _maxStaticPICSlots;
+
+   if (self()->getOption(TR_EnableLargePages))
+      {
+      self()->setOption(TR_EnableLargeCodePages);
+      }
+
+#if defined(TR_TARGET_64BIT) && defined(J9ZOS390)
+   // We allocate code cache memory on z/OS by asking the port library for typically small (~2MB) code cache chunks.
+   // This is done because the port library can typically only allocate executable memory (code caches) below the
+   // 2GB bar. When RMODE(64) is enabled however we are able to allocate executable memory above the 2GB bar. This
+   // means two code caches could be very far apart from one another which is something we want to avoid as it may
+   // cause performance issues. The solution is to enable the code cache consolidation which will allocate larger
+   // (~256MB) code caches at startup. The code caches will then have locality which improves performance, but
+   // moreover the size of the allocated larger code cache will ensure no trampolines are needed in JIT private
+   // linkage.
+   //
+   // Code cache consolidation is enabled on all 64-bit platforms by default. However if RMODE64 is not available
+   // on the OS or if the user specified to disable it we must also disable code cache consolidation.
+   if (!self()->getOption(TR_EnableRMODE64))
+      {
+      self()->setOption(TR_EnableCodeCacheConsolidation, false);
+      }
+#endif
 
    return true;
    }

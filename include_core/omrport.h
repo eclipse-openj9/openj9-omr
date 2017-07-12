@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 #if !defined(OMRPORT_H_)
@@ -197,12 +198,12 @@
  * Flags used to describe type of the page for the virtual memory
  * @{
  */
-#define OMRPORT_VMEM_PAGE_FLAG_NOT_USED 		0x1
-#define OMRPORT_VMEM_PAGE_FLAG_FIXED 		0x2
-#define OMRPORT_VMEM_PAGE_FLAG_PAGEABLE 		0x4
-#define OMRPORT_VMEM_PAGE_FLAG_SUPERPAGE_ANY	0x8
+#define OMRPORT_VMEM_PAGE_FLAG_NOT_USED 0x1
+#define OMRPORT_VMEM_PAGE_FLAG_FIXED 0x2
+#define OMRPORT_VMEM_PAGE_FLAG_PAGEABLE 0x4
+#define OMRPORT_VMEM_PAGE_FLAG_SUPERPAGE_ANY 0x8
 
-#define OMRPORT_VMEM_PAGE_FLAG_TYPE_MASK 		0xF
+#define OMRPORT_VMEM_PAGE_FLAG_TYPE_MASK 0xF
 /** @} */
 
 /**
@@ -231,7 +232,7 @@
 #define OMRPORT_TIME_DELTA_IN_NANOSECONDS ((uint64_t) 1000000000)
 /** @} */
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #define OMR_CONFIGURABLE_SUSPEND_SIGNAL
 #endif /* defined(LINUX) */
 
@@ -366,6 +367,7 @@ typedef enum J9VMemMemoryQuery {
 #define OMRPORT_VMEM_STRICT_PAGE_SIZE	8
 #define OMRPORT_VMEM_ZOS_USE2TO32G_AREA 16
 #define OMRPORT_VMEM_ALLOC_QUICK 		32
+#define OMRPORT_VMEM_ZTPF_USE_31BIT_MALLOC 64
 
 /**
  * @name Virtual Memory Address
@@ -597,7 +599,11 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SL_UNKNOWN 4					/* Unknown Shared Library related error. */
 
 #define OMRPORT_SLOPEN_DECORATE  1 			/* Note this value must remain 1, in order for legacy callers using TRUE and FALSE to control decoration */
+#if !defined(OMRZTPF)
 #define OMRPORT_SLOPEN_LAZY  2
+#else /* !defined(OMRZTPF) */
+#define J9PORT_SLOPEN_LAZY  0
+#endif /* defined(OMRZTPF) */
 #define OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND  4
 #define OMRPORT_SLOPEN_OPEN_EXECUTABLE 8     /* Can be ORed without affecting existing flags. */
 
@@ -951,6 +957,21 @@ typedef struct J9PortSysInfoLoadData {
 typedef struct J9StringTokens {
 	void *table;
 } J9StringTokens;
+
+/* Holds OS features used with omrsysinfo_get_os_description and omrsysinfo_os_has_feature */
+#define OMRPORT_SYSINFO_OS_FEATURES_SIZE 1
+typedef struct OMROSDesc {
+	uint32_t features[OMRPORT_SYSINFO_OS_FEATURES_SIZE];
+} OMROSDesc;
+
+/* zOS features */
+#define OMRPORT_ZOS_FEATURE_RMODE64 31 /* RMODE64. */
+
+typedef struct OMROSKernelInfo {
+	uint32_t kernelVersion;
+	uint32_t majorRevision;
+	uint32_t minorRevision;
+} OMROSKernelInfo;
 
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
@@ -1381,6 +1402,12 @@ typedef struct OMRPortLibrary {
 	void (*sysinfo_set_number_entitled_CPUs)(struct OMRPortLibrary *portLibrary, uintptr_t number) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_open_file_count "omrsysinfo_get_open_file_count"*/
 	int32_t (*sysinfo_get_open_file_count)(struct OMRPortLibrary *portLibrary, uint64_t *count) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_get_os_description "omrsysinfo_get_os_description"*/
+	intptr_t  ( *sysinfo_get_os_description)(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_os_has_feature "omrsysinfo_os_has_feature"*/
+	BOOLEAN  ( *sysinfo_os_has_feature)(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_os_kernel_info "omrsysinfo_os_kernel_info"*/
+	BOOLEAN  ( *sysinfo_os_kernel_info)(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo) ;
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1817,6 +1844,9 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_cwd(param1,param2) privateOmrPortLibrary->sysinfo_get_cwd(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_get_tmp(param1,param2,param3) privateOmrPortLibrary->sysinfo_get_tmp(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsysinfo_get_open_file_count(param1) privateOmrPortLibrary->sysinfo_get_open_file_count(privateOmrPortLibrary, (param1))
+#define omrsysinfo_get_os_description(param1) privateOmrPortLibrary->sysinfo_get_os_description(privateOmrPortLibrary, (param1))
+#define omrsysinfo_os_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_os_has_feature(privateOmrPortLibrary, (param1), (param2))
+#define omrsysinfo_os_kernel_info(param1) privateOmrPortLibrary->sysinfo_os_kernel_info(privateOmrPortLibrary, (param1))
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

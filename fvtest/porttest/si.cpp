@@ -2036,3 +2036,67 @@ TEST(PortSysinfoTest, sysinfo_test_get_open_file_count)
 }
 #endif /* defined(LINUX) || defined(AIXPPC) */
 #endif /* !(defined(WIN32) || defined(WIN64)) */
+
+/**
+ * Test omrsysinfo_test_get_os_description.
+ */
+TEST(PortSysinfoTest, sysinfo_test_get_os_description)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_test_get_os_description";
+
+	intptr_t rc = 0;
+	reportTestEntry(OMRPORTLIB, testName);
+
+	struct OMROSDesc desc;
+	rc =  omrsysinfo_get_os_description(&desc);
+
+	for (int i = 0; i < OMRPORT_SYSINFO_OS_FEATURES_SIZE * 32; i++) {
+		BOOLEAN feature = omrsysinfo_os_has_feature(&desc, i);
+		portTestEnv->log(LEVEL_VERBOSE, "omrsysinfo_test_get_os_description() feature %d: value=%d, rc=%zi\n", i, feature, rc);
+	}
+
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}
+
+/**
+ * Test omrsysinfo_test_os_kernel_info.
+ */
+TEST(PortSysinfoTest, sysinfo_test_os_kernel_info)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrsysinfo_test_os_kernel_info";
+
+	BOOLEAN rc = 0;
+	struct OMROSKernelInfo kernelInfo = {0};
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	rc = omrsysinfo_os_kernel_info(&kernelInfo);
+
+#if defined(LINUX)
+	/* Throw an error if failure happens on Linux */
+	if (FALSE == rc) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS,
+				"omrsysinfo_os_kernel_info failed on Linux: kernelVersion=%zu, majorRevision=%zu, minorRevision=%zu\n", kernelInfo.kernelVersion, kernelInfo.majorRevision, kernelInfo.minorRevision);
+		goto exit;
+	} else {
+		/* Throw an error if kernel version is 0 */
+		if (0 == kernelInfo.kernelVersion) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_os_kernel_info failed on Linux - kernel version can't be 0 (unsupported)\n");
+			goto exit;
+		}
+	}
+#else /* defined(LINUX) */
+	if (TRUE == rc) {
+		/* Throw an error if omrsysinfo_os_kernel_info passes on an unsupported platform */
+		outputErrorMessage(PORTTEST_ERROR_ARGS,	"omrsysinfo_os_kernel_info passed on an unsupported platform\n");
+		goto exit;
+	}
+#endif /* defined(LINUX) */
+
+exit:
+	reportTestExit(OMRPORTLIB, testName);
+	return;
+}

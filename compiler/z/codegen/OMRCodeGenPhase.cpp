@@ -40,7 +40,7 @@ OMR::Z::CodeGenPhase::performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerato
    {
    if (TR::Compiler->target.cpu.isZ() && cg->getOptimizationPhaseIsComplete())
       {
-      TR::Compilation* comp = TR::comp();
+      TR::Compilation* comp = cg->comp();
       TR::OptimizationManager *manager = comp->getOptimizer()->getOptimization(OMR::loadExtensions);
       TR_ASSERT(manager, "Load extensions optimization should be initialized.");
       TR_LoadExtensions *loadExtensions = (TR_LoadExtensions *) manager->factory()(manager);

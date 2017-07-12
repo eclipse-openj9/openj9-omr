@@ -176,5 +176,4 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    };
 }
 }
-//
 #endif

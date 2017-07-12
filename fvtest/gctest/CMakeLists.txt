@@ -29,18 +29,7 @@ target_link_libraries(omrgctest
 	omrGtestGlue
 	pugixml
 	omrtestutil
-	omrcore
-	omrglue
 	omrgc
-	omrglue
-	omrcore
-	omrtrace
-	j9hookstatic
-	omrport
-	j9thrstatic
-	j9hashtable
-	omrutil
-	omrglue
 )
 
 # TODO check linker flags from makefile are ported properly.
@@ -62,5 +51,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrgctest j9a2e)
 endif()
 
-#TODO Currently disabled as gctest has dependecies on certain build options that need to be figured out
-#add_test(NAME gctest COMMAND omrgctest "-configListFile=${CMAKE_SOURCE_DIR}/fvtest/gctest/configuration/fvConfigListFile.txt")
+
+add_test(NAME gctest
+	COMMAND omrgctest "-configListFile=${omr_SOURCE_DIR}/fvtest/gctest/configuration/fvConfigListFile.txt"
+	WORKING_DIRECTORY "${omr_SOURCE_DIR}")

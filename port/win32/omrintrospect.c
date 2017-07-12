@@ -241,7 +241,7 @@ cleanup(J9ThreadWalkState *state)
 					result = -1;
 				}
 
-				if (result != -1 || (HANDLE) GetLastError() != INVALID_HANDLE_VALUE) {
+				if (result != -1 || GetLastError() != ERROR_INVALID_HANDLE) {
 					/* it seems this can raise an exception if the handle has become invalid */
 					CloseHandle(data->snapshot);
 				}

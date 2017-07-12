@@ -106,5 +106,6 @@ int32_t doubleToInt(double value, bool roundUp);
 void removePaddingNode(TR::Node *node, TR::Simplifier *s);
 void stopUsingSingleNode(TR::Node *node, bool removePadding, TR::Simplifier *s);
 TR::TreeTop *findTreeTop(TR::Node * callNode, TR::Block * block);
+TR::Node *removeIfToFollowingBlock(TR::Node * node, TR::Block * block, TR::Simplifier * s);
 
 #endif

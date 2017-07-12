@@ -238,33 +238,6 @@ omrtime_shutdown(struct OMRPortLibrary *portLibrary)
 }
 
 /**
- * Retrieves the Linux Kernel version.
- *
- * Returns the Linux Kernel version. For example, if the version is 2.6.32, it
- * will set kernelVersion to 2, majorRevision to 6 and minorRevision to 32.
- *
- * @param[out] kernelVersion
- * @param[out] majorVersion
- * @param[out] minorVersion
- *
- * @return TRUE on success, FALSE otherwise.
- */
-static BOOLEAN
-getLinuxKernelVersion(uint32_t *kernelVersion, uint32_t *majorRevision, uint32_t *minorRevision)
-{
-	BOOLEAN success = FALSE;
-	struct utsname name;
-
-	if (0 == uname(&name)) {
-		if (3 == sscanf(name.release, "%u.%u.%u", kernelVersion, majorRevision, minorRevision)) {
-			success = TRUE;
-		}
-	}
-
-	return success;
-}
-
-/**
  * PortLibrary startup.
  *
  * This function is called during startup of the portLibrary.  Any resources that are required for
@@ -320,10 +293,10 @@ omrtime_startup(struct OMRPortLibrary *portLibrary)
 	 */
 	systemcfgP_nanos = NULL;
 	if (NULL != systemcfgP_millis) {
-		uint32_t kernelVersion, majorRevision, minorRevision;
+		struct OMROSKernelInfo kernelInfo = {0};
 
-		if (getLinuxKernelVersion(&kernelVersion, &majorRevision, &minorRevision)) {
-			if ((2 == kernelVersion) && (6 == majorRevision) && (18 >= minorRevision)) {
+		if (omrsysinfo_os_kernel_info(portLibrary, &kernelInfo)) {
+			if ((2 == kernelInfo.kernelVersion) && (6 == kernelInfo.majorRevision) && (18 >= kernelInfo.minorRevision)) {
 				systemcfgP_nanos = systemcfgP_millis;
 			}
 		}

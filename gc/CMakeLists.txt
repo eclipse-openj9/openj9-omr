@@ -31,6 +31,21 @@ add_hookgen(base/omrmmprivate.hdf
 add_tracegen(base/j9mm.tdf)
 add_tracegen(base/omrmm.tdf)
 add_tracegen(verbose/j9vgc.tdf)
+add_custom_target(omrgc_hookgen
+		DEPENDS
+		${CMAKE_CURRENT_SOURCE_DIR}/../include_core/mmomrhook.h
+		${CMAKE_CURRENT_SOURCE_DIR}/base/mmomrhook_internal.h
+		${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook.h
+		${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook_internal.h
+)
+
+# Ideally We would handle the tracegen stuff like the hookgen stuff above
+# But for whatever reason that breaks the ninja builds
+add_library(omrgc_tracegen OBJECT 
+	${CMAKE_CURRENT_BINARY_DIR}/ut_j9mm.c
+	${CMAKE_CURRENT_BINARY_DIR}/ut_omrmm.c
+	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
+)
 
 add_library(omrgc
 	base/AddressOrderedListPopulator.cpp
@@ -64,9 +79,10 @@ add_library(omrgc
 	base/HeapVirtualMemory.cpp
 	base/LightweightNonReentrantLock.cpp
 	base/LightweightNonReentrantReaderWriterLock.cpp
-	base/MarkMap.cpp
 	base/MarkedObjectPopulator.cpp
 	base/MarkingScheme.cpp
+	base/MarkMap.cpp
+	base/MarkMapSegmentChunkIterator.cpp
 	base/MasterGCThread.cpp
 	base/Math.cpp
 	base/MemoryManager.cpp
@@ -100,6 +116,8 @@ add_library(omrgc
 	base/Packet.cpp
 	base/PacketList.cpp
 	base/ParallelDispatcher.cpp
+	base/ParallelHeapWalker.cpp
+	base/ParallelObjectHeapIterator.cpp
 	base/ParallelMarkTask.cpp
 	base/ParallelSweepChunk.cpp
 	base/ParallelTask.cpp
@@ -183,6 +201,7 @@ add_library(omrgc
 	base/standard/OverflowStandard.cpp
 	base/standard/ParallelCompactTask.cpp
 	base/standard/ParallelGlobalGC.cpp
+	base/standard/ParallelGlobalGCTask.cpp
 	base/standard/ParallelScavengeTask.cpp
 	base/standard/ParallelSweepScheme.cpp
 	base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
@@ -243,17 +262,9 @@ add_library(omrgc
 	verbose/VerboseWriterStreamOutput.cpp
 	verbose/handler_standard/VerboseHandlerOutputStandard.cpp
 
-	# Hookgen generated files
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook.h
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook_internal.h
-	${CMAKE_CURRENT_SOURCE_DIR}/../include_core/mmomrhook.h
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmomrhook_internal.h
-
-	# Tracegen generated files
-	${CMAKE_CURRENT_BINARY_DIR}/ut_j9mm.c
-	${CMAKE_CURRENT_BINARY_DIR}/ut_omrmm.c
-	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
+	$<TARGET_OBJECTS:omrgc_tracegen>
 )
+add_dependencies(omrgc omrgc_hookgen)
 
 target_include_directories(omrgc
 	PUBLIC
@@ -268,12 +279,11 @@ target_include_directories(omrgc
 		structs
 		verbose
 		verbose/handler_standard
-		$<TARGET_PROPERTY:omrglue,INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
 )
 
 target_link_libraries(omrgc
 	PUBLIC
-		# TODO: omrcore
-		#omrglue
+		omrcore
+		omrglue
+		j9hookstatic
 )

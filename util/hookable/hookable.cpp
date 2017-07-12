@@ -140,7 +140,6 @@ J9HookInitializeInterface(struct J9HookInterface **hookInterface, OMRPortLibrary
 	commonInterface->threshold4Trace = OMRHOOK_DEFAULT_THRESHOLD_IN_MILLISECONDS_WARNING_CALLBACK_ELAPSED_TIME;
 
 	commonInterface->eventSize = (interfaceSize - sizeof(J9CommonHookInterface)) / (sizeof(U_8) + sizeof(OMREventInfo4Dump) + sizeof(J9HookRecord*));
-
 	return 0;
 }
 
@@ -181,6 +180,9 @@ J9HookDispatch(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 	uintptr_t eventNum = taggedEventNum & J9HOOK_EVENT_NUM_MASK;
 	J9CommonHookInterface *commonInterface = (J9CommonHookInterface *)hookInterface;
 	J9HookRecord *record = HOOK_RECORD(commonInterface, eventNum);
+	OMREventInfo4Dump *eventDump = J9HOOK_DUMPINFO(commonInterface, eventNum);
+	uintptr_t samplingInterval = (taggedEventNum & J9HOOK_TAG_SAMPLING_MASK) >> 16;
+	bool sampling = false;
 
 	if (taggedEventNum & J9HOOK_TAG_ONCE) {
 		uint8_t oldFlags;
@@ -213,39 +215,49 @@ J9HookDispatch(struct J9HookInterface **hookInterface, uintptr_t taggedEventNum,
 			/* now read the id again to make sure that nothing has changed */
 			VM_AtomicSupport::readBarrier();
 			if (record->id == id) {
-				uint64_t timeDelta = 0;
+				uint64_t startTime = 0;
+				uintptr_t count = 0;
+				if (NULL != eventDump) {
+					count = VM_AtomicSupport::add((volatile uintptr_t *)&eventDump->count, 1);
+					sampling = (1 >= samplingInterval) || ((100 >= samplingInterval) && (0 == (count % samplingInterval)));
+				} else {
+					sampling =  false;
+				}
 				OMRPORT_ACCESS_FROM_OMRPORT(commonInterface->portLib);
-				uint64_t startTime = omrtime_current_time_millis();
-				function(hookInterface, eventNum, eventData, userData);
-				timeDelta = omrtime_current_time_millis() - startTime;
-
-				OMREventInfo4Dump *eventDump = J9HOOK_DUMPINFO(commonInterface, eventNum);
-
-				/* record hook info for dump if elapse time is longer than 1 millisecond */
-				if ((NULL != eventDump) && (0 != timeDelta)) {
-					eventDump->lastHook.callsite = record->callsite;
-					eventDump->lastHook.func_ptr = (void *)record->function;
-					eventDump->lastHook.startTime = startTime;
-					eventDump->lastHook.duration = timeDelta;
-					if (eventDump->longestHook.duration < eventDump->lastHook.duration) {
-						eventDump->longestHook.callsite = eventDump->lastHook.callsite;
-						eventDump->longestHook.startTime = eventDump->lastHook.startTime;
-						eventDump->longestHook.func_ptr = eventDump->lastHook.func_ptr;
-						eventDump->longestHook.duration = eventDump->lastHook.duration;
-					}
+				if (sampling) {
+					startTime = omrtime_current_time_millis();
 				}
 
-				if (commonInterface->threshold4Trace <= timeDelta) {
-					const char *callsite = "UNKNOWN";
-					char buffer[32];
-					if (NULL != record->callsite) {
-						callsite = record->callsite;
-					} else {
-						/* if the callsite info can not be retrieved, use callback function pointer instead  */
-						omrstr_printf(buffer, sizeof(buffer), "0x%p", record->function);
-						callsite = buffer;
+				function(hookInterface, eventNum, eventData, userData);
+
+				if (sampling) {
+					uint64_t timeDelta = omrtime_current_time_millis() - startTime;
+
+					eventDump->lastHook.startTime = startTime;
+					eventDump->lastHook.callsite = record->callsite;
+					eventDump->lastHook.func_ptr = (void *)record->function;
+					eventDump->lastHook.duration = timeDelta;
+
+					if ((eventDump->longestHook.duration < timeDelta) ||
+						(0 == eventDump->longestHook.startTime)) {
+							eventDump->longestHook.startTime = startTime;
+							eventDump->longestHook.callsite = record->callsite;
+							eventDump->longestHook.func_ptr = (void *)record->function;
+							eventDump->longestHook.duration = timeDelta;
 					}
-					Trc_Hook_Dispatch_Exceed_Threshold_Event(callsite, timeDelta);
+
+					if (commonInterface->threshold4Trace <= timeDelta) {
+						const char *callsite = "UNKNOWN";
+						char buffer[32];
+						if (NULL != record->callsite) {
+							callsite = record->callsite;
+						} else {
+							/* if the callsite info can not be retrieved, use callback function pointer instead  */
+							omrstr_printf(buffer, sizeof(buffer), "0x%p", record->function);
+							callsite = buffer;
+						}
+						Trc_Hook_Dispatch_Exceed_Threshold_Event(callsite, timeDelta);
+					}
 				}
 			} else {
 				/* this record has been updated while we were reading it. Skip it. */

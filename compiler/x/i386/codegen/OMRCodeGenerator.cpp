@@ -73,7 +73,7 @@ OMR::X86::i386::CodeGenerator::CodeGenerator() :
 
    if (TR::Compiler->target.isWindows())
       {
-      if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+      if (self()->comp()->getOptions()->getOption(TR_DisableTraps))
          {
          _numberBytesReadInaccessible = 0;
          _numberBytesWriteInaccessible = 0;
@@ -123,7 +123,7 @@ OMR::X86::i386::CodeGenerator::CodeGenerator() :
       }
    else if (TR::Compiler->target.isLinux())
       {
-      if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+      if (self()->comp()->getOptions()->getOption(TR_DisableTraps))
          {
          _numberBytesReadInaccessible = 0;
          _numberBytesWriteInaccessible = 0;

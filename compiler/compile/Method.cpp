@@ -37,12 +37,7 @@ class TR_PrexArgInfo;
 namespace TR { class IlGeneratorMethodDetails; }
 namespace TR { class LabelSymbol; }
 
-bool TR_ResolvedMethod::isDAAMethod()
-   {
-   return TR_ResolvedMethod::isDAAWrapperMethod() || TR_ResolvedMethod::isDAAIntrinsicMethod();
-   }
-
-bool TR_ResolvedMethod::isDAAWrapperMethod()
+bool TR_ResolvedMethod::isDAAMarshallingWrapperMethod()
    {
 #ifdef J9_PROJECT_SPECIFIC
    if (getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayMarshaller_writeShort        ||
@@ -68,9 +63,20 @@ bool TR_ResolvedMethod::isDAAWrapperMethod()
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readLongLength  ||
 
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readFloat       ||
-       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readDouble      ||
+       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readDouble)
+      {
+      return true;
+      }
+   return false;
+#else
+   return false;
+#endif
+   }
 
-       // Byte array utility methods
+bool TR_ResolvedMethod::isDAAPackedDecimalWrapperMethod()
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   if (// Byte array utility methods
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUtils_trailingZeros          ||
 
        // DAA Packed Decimal arithmetic methods
@@ -168,11 +174,23 @@ bool TR_ResolvedMethod::isDAAWrapperMethod()
       {
       return true;
       }
-#endif
    return false;
+#else
+   return false;
+#endif
    }
 
-bool TR_ResolvedMethod::isDAAIntrinsicMethod()
+bool TR_ResolvedMethod::isDAAWrapperMethod()
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   return isDAAMarshallingWrapperMethod() || isDAAPackedDecimalWrapperMethod();
+#else
+   return false;
+#endif
+   }
+
+
+bool TR_ResolvedMethod::isDAAMarshallingIntrinsicMethod()
    {
 #ifdef J9_PROJECT_SPECIFIC
    if (getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayMarshaller_writeShort_        ||
@@ -198,9 +216,21 @@ bool TR_ResolvedMethod::isDAAIntrinsicMethod()
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readLongLength_  ||
 
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readFloat_       ||
-       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readDouble_      ||
+       getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUnmarshaller_readDouble_)
+      {
+      return true;
+      }
+   return false;
+#else
+   return false;
+#endif
+   }
 
-       // Byte array utility methods
+
+bool TR_ResolvedMethod::isDAAPackedDecimalIntrinsicMethod()
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   if (// Byte array utility methods
        getRecognizedMethod() == TR::com_ibm_dataaccess_ByteArrayUtils_trailingZerosQuadWordAtATime_   ||
 
        // DAA Packed Decimal arithmetic methods
@@ -249,9 +279,19 @@ bool TR_ResolvedMethod::isDAAIntrinsicMethod()
       {
       return true;
       }
-
-#endif
    return false;
+#else
+   return false;
+#endif
+   }
+
+bool TR_ResolvedMethod::isDAAIntrinsicMethod()
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   return isDAAMarshallingIntrinsicMethod() || isDAAPackedDecimalIntrinsicMethod();
+#else
+   return false;
+#endif
    }
 
 #define notImplemented(A) TR_ASSERT(0, "TR_Method::%s is undefined", (A) )

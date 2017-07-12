@@ -377,7 +377,7 @@ OMR::Z::CodeGenerator::lowerTreeIfNeeded(
 
 bool OMR::Z::CodeGenerator::supportsInliningOfIsInstance()
    {
-   return !TR::comp()->getOption(TR_DisableInlineIsInstance);
+   return !self()->comp()->getOption(TR_DisableInlineIsInstance);
    }
 
 bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
@@ -389,7 +389,7 @@ bool OMR::Z::CodeGenerator::canTransformUnsafeCopyToArrayCopy()
 
 bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    {
-   return getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
+   return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10);
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -639,7 +639,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       }
 
    // Check if platform supports highword facility - both hardware and OS combination.
-   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
       {
       // On 31-bit zlinux we need to check RAS support
       if (!TR::Compiler->target.isLinux() || TR::Compiler->target.is64Bit() || TR::Compiler->target.cpu.getS390SupportsHPRDebug())
@@ -721,7 +721,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       self()->setSupportsBCDToDFPReduction();
       self()->setSupportsIntDFPConversions();
 
-      if (!comp->getOptions()->getOption(TR_NoResumableTrapHandler) && TR::Compiler->vm.hasResumableTrapHandler(comp))
+      if (!comp->getOptions()->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
          {
          self()->setHasResumableTrapHandler();
          }
@@ -1388,37 +1388,46 @@ OMR::Z::CodeGenerator::generateNop(TR::Node *n, TR::Instruction *preced, TR_NOPK
    return new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, n, preced, self());
    }
 
-void
-OMR::Z::CodeGenerator::insertPad(TR::Node * theNode, TR::Instruction * insertionPoint, int32_t padSize, bool before)
+TR::Instruction*
+OMR::Z::CodeGenerator::insertPad(TR::Node* node, TR::Instruction* cursor, uint32_t size, bool prependCursor)
    {
-   if (0 == padSize)
+   if (size != 0)
       {
-      return;
-      }
+      if (prependCursor)
+         {
+         cursor = cursor->getPrev();
+         }
 
-   if (before)
-      {
-      insertionPoint = insertionPoint->getPrev();
-      }
-
-   switch (padSize)
-      {
-      case 4:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
+      switch (size)
+         {
+         case 2:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            }
          break;
 
-      case 6:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, theNode, insertionPoint, self());
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         case 4:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            }
          break;
 
-      case 2:
-         (void) new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, theNode, insertionPoint, self());
+         case 6:
+            {
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 4, node, cursor, self());
+            cursor = new (self()->trHeapMemory()) TR::S390NOPInstruction(TR::InstOpCode::NOP, 2, node, cursor, self());
+            }
          break;
 
-      default:
-         TR_ASSERT(false, "Unexpected pad size %d\n", padSize);
+         default:
+            {
+            TR_ASSERT(false, "Unexpected pad size %d\n", size);
+            }
+         break;
+         }
       }
+
+   return cursor;
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1951,7 +1960,7 @@ OMR::Z::CodeGenerator::isLitPoolFreeForAssignment()
       {
       litPoolRegIsFree = true;
       }
-   else if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !self()->anyLitPoolSnippets())
+   else if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !self()->anyLitPoolSnippets())
       {
       litPoolRegIsFree = true;
       }
@@ -3747,7 +3756,7 @@ TR_S390Peephole::LRReduction()
       // from:
       // SLR @01, @04
       // LTR @01, @01
-      // BRC (BERC, 0x8) Label
+      // BRC (MASK8, 0x8) Label
       //
       // to:
       // SLR @01, @04
@@ -3757,13 +3766,13 @@ TR_S390Peephole::LRReduction()
          {
          TR::InstOpCode::S390BranchCondition branchCond = ((TR::S390BranchInstruction *) next)->getBranchCondition();
 
-         if ((branchCond == TR::InstOpCode::COND_BERC || branchCond == TR::InstOpCode::COND_BNERC) &&
+         if ((branchCond == TR::InstOpCode::COND_BE || branchCond == TR::InstOpCode::COND_BNE) &&
             performTransformation(comp(), "\nO^O S390 PEEPHOLE: Removing redundant Load and Test instruction at %p, because CC can be reused from logical instruction %p\n",_cursor, prev))
             {
             _cg->deleteInst(_cursor);
-            if (branchCond == TR::InstOpCode::COND_BERC)
+            if (branchCond == TR::InstOpCode::COND_BE)
                ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK10);
-            else if (branchCond == TR::InstOpCode::COND_BNERC)
+            else if (branchCond == TR::InstOpCode::COND_BNE)
                ((TR::S390BranchInstruction *) next)->setBranchCondition(TR::InstOpCode::COND_MASK5);
             performed = true;
             return performed;
@@ -6209,7 +6218,7 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
 bool
 OMR::Z::CodeGenerator::getSupportsEncodeUtf16BigWithSurrogateTest()
    {
-   if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
       {
       return (!self()->comp()->getOptions()->getOption(TR_DisableUTF16BEEncoder) ||
                (self()->getSupportsVectorRegisters() && !self()->comp()->getOptions()->getOption(TR_DisableSIMDUTF16BEEncoder)));
@@ -6329,7 +6338,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    data.estimate = self()->setEstimatedLocationsForSnippetLabels(data.estimate);
    // need to reset constant data snippets offset for inlineEXTarget peephole optimization
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
-   if (!(bool)disableEXRLDispatch && getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+   if (!(bool)disableEXRLDispatch && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
@@ -6903,8 +6912,8 @@ OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterInde
 
    else
       {
-//      traceMsg(TR::comp(), "lastLinkageGPR = %d linkaeRegisterIndex = %d  getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1) = %d\n",machine()->getLastLinkageGPR(),linkageRegisterIndex, self()->getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1));
-//      traceMsg(TR::comp(), "getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex) = %d\n",getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex));
+//      traceMsg(self()->comp(), "lastLinkageGPR = %d linkaeRegisterIndex = %d  getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1) = %d\n",machine()->getLastLinkageGPR(),linkageRegisterIndex, self()->getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1));
+//      traceMsg(self()->comp(), "getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex) = %d\n",getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex));
 
       result = self()->getGlobalRegisterNumber(self()->getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1);
       }
@@ -10114,7 +10123,8 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
       TR::Register* ccSrcReg = ccInst->srcRegArrElem(0);
 
       // On z10 trueCompElimination may swap the previous compare operands, so give up early
-      if (getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+      if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) &&
+          !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
          {
          if (tReg->getKind() != TR_FPR)
             {
@@ -11271,7 +11281,7 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
     * Prior to zNext, vector operations that operated on floating point numbers only supported
     * Doubles. On zNext and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
       {
       return false;
       }
@@ -11320,6 +11330,8 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
             return true;
          else
             return false;
+      case TR::vl2vd:
+         return true;
       default:
         return false;
       }
@@ -11702,14 +11714,6 @@ bool OMR::Z::CodeGenerator::loadAndStoreMayOverlap(TR::Node *store, size_t store
    TR_UseDefAliasSetInterface storeAliases = store->getSymbolReference()->getUseDefAliases();
    return self()->loadAndStoreMayOverlap(store, storeSize, load, loadSize, storeAliases);
    }
-
-
-template <class TR_AliasSetInterface>
-bool OMR::Z::CodeGenerator::loadAndStoreMayOverlap(TR::Node *store, size_t storeSize, TR::Node *load, size_t loadSize, TR_AliasSetInterface &storeAliases)
-   {
-   return storeAliases.contains(load->getSymbolReference(), self()->comp());
-   }
-
 
 
 bool

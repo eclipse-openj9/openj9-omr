@@ -254,6 +254,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       self()->setUseSSEForSinglePrecision();
       self()->setUseSSEForDoublePrecision();
       self()->setSupportsAutoSIMD();
+      self()->setSupportsJavaFloatSemantics();
       }
 
    // Choose the best XMM double precision load instruction for the target architecture.
@@ -297,6 +298,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
    self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
    self()->setLastGlobalFPR(self()->machine()->getLastGlobalFPRRegisterNumber());
+   self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
+   self()->setLastGlobalVRF(self()->getLastGlobalFPR());
 
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -350,6 +353,8 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
+   self()->addSupportedLiveRegisterKind(TR_VRF);
+   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsArrayCmp();
    self()->setSupportsPrimitiveArrayCopy();
@@ -940,7 +945,7 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 
 bool OMR::X86::CodeGenerator::allowVMThreadRematerialization()
    {
-   if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler)) return false;
+   if (self()->comp()->getOptions()->getOption(TR_DisableTraps)) return false;
 
    static bool flag = (feGetEnv("TR_disableRematerializeVMThread") == NULL);
    return flag;
@@ -954,15 +959,6 @@ bool OMR::X86::CodeGenerator::supportsFS0VMThreadRematerialization()
    return false;
 #endif
    }
-
-bool OMR::X86::CodeGenerator::enableAESInHardwareTransformations()
-   {
-   if (TR::CodeGenerator::getX86ProcessorInfo().supportsAESNI() && !self()->comp()->getOptions()->getOption(TR_DisableAESInHardware) && !self()->comp()->getCurrentMethod()->isJNINative())
-      return true;
-   else
-      return false;
-   }
-
 
 #undef ALLOWED_TO_REMATERIALIZE
 #undef CAN_REMATERIALIZE
@@ -2897,7 +2893,7 @@ bool OMR::X86::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandida
 bool OMR::X86::CodeGenerator::supportsInliningOfIsInstance()
    {
    static const char *envp = feGetEnv("TR_NINLINEISINSTANCE");
-   return !envp && !TR::comp()->getOption(TR_DisableInlineIsInstance);
+   return !envp && !self()->comp()->getOption(TR_DisableInlineIsInstance);
    }
 
 uint8_t OMR::X86::CodeGenerator::getSizeOfCombinedBuffer()

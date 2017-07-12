@@ -1556,7 +1556,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
 
             if ((prevBlock->isCold()) || (prevBlock == cfgStart) || (prevBlock == block) ||
                 (exceptionEdgesMatter && cfg->compareExceptionSuccessors(block, prevBlock)))
+               {
+               nextEdge = next;
                continue;
+               };
 
             bool isLoopBackEdge = false;
             //
@@ -1576,7 +1579,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                }
 
             if (isLoopBackEdge)
+               {
+               nextEdge = next;
                continue;
+               }
 
 
             if (isLoopHdr)
@@ -1586,6 +1592,7 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                // peeled outside.  No convincing reason to keep hoisting out of
                // loops enabled.
                //
+               nextEdge = next;
                continue;
 
 
@@ -1616,7 +1623,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                   }
 
                if (successorsInMidLoop > 1)
+                  {
+                  nextEdge = next;
                   continue;
+                  }
                }
 
 
@@ -1628,7 +1638,10 @@ int32_t TR_HoistBlocks::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
             // need for hoisting)
             //
             if (block->getPredecessors().size() == 1)
+               {
+               nextEdge = next;
                continue;
+               };
 
             TR::TreeTop *tt = prevBlock->getLastRealTreeTop();
 
@@ -2029,6 +2042,8 @@ void TR_CompactNullChecks::compactNullChecks(TR::Block *block, TR_BitVector *wri
          block = prevNode->getBlock();
               exitTree = block->getExit();
          }
+      if (block->isOSRInduceBlock() || block->isOSRCatchBlock() || block->isOSRCodeBlock())
+         return;
 
       //
       // Mark calls and stores that have already been evaluated with this
@@ -2275,7 +2290,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
       if (isEquivalent)
          {
          bool canBeRemoved = true; //comp()->cg()->canNullChkBeImplicit(cursorNode);
-         if (TR::comp()->getOptions()->getOption(TR_NoResumableTrapHandler) ||
+         if (TR::comp()->getOptions()->getOption(TR_DisableTraps) ||
              TR::Compiler->om.offsetOfObjectVftField() >= comp()->cg()->getNumberBytesReadInaccessible())
            canBeRemoved = false;
 
@@ -3556,7 +3571,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
             TR::Block *predBlock = current->getFrom()->asBlock();
             requestOpt(OMR::treeSimplification, true, predBlock);
 
-            if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
                placeAsyncCheckBefore(predBlock->getLastRealTreeTop());
 
             if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
@@ -3607,7 +3622,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
             TR::CFGEdge* current = *(inEdge++);
             TR::Block *prevBlock = toBlock(current->getFrom());
 
-            if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
                placeAsyncCheckBefore(prevBlock->getLastRealTreeTop());
 
             if (prevBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
@@ -3648,7 +3663,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
       // Place an asynccheck as the first treetop of the successor, if there was one in the removed block
       // This is necessary as placing it in the predecessor may result in a seperation from its OSR guard
       //
-      if (asyncMessagesFlag && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
+      if (asyncMessagesFlag && comp()->getHCRMode() == TR::osr)
          placeAsyncCheckBefore(destBlock->getFirstRealTreeTop());
 
       if (emptyBlock &&
@@ -5964,16 +5979,23 @@ int32_t TR_BlockSplitter::perform()
          children->push(unvisitedEdge->getTo());
          continue;
          }
+      mergeNode = toBlock(children->top());
       if (
-            (toBlock(children->top())->hasExceptionPredecessors() == true) ||
-            (children->top()->getPredecessors().size() == 1) ||
-            children->top()->getPredecessors().empty()
+            (mergeNode->hasExceptionPredecessors() == true) ||
+            (mergeNode->getPredecessors().size() == 1) ||
+            mergeNode->getPredecessors().empty()
          )
          {
          children->pop();
          continue;
          }
-      mergeNode = toBlock(children->top());
+      if (mergeNode->isOSRCodeBlock() || mergeNode->isOSRInduceBlock())
+         {
+         if (trace())
+            traceMsg(comp(), "    rejecting osr block_%d\n", mergeNode->getNumber());
+         children->pop();
+         continue;
+         }
       if (!mergeNode->getEntry())
          {
          if (trace())

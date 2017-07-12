@@ -320,7 +320,7 @@ OMR::CodeCacheManager::reserveCodeCache(bool compilationCodeAllocationsMustBeCon
    else
       {
       if (numCachesAlreadyReserved > 0)
-         self()->fe()->setHasFailedCodeCacheAllocation();
+         self()->setHasFailedCodeCacheAllocation();
       }
 
    if (codeCache)
@@ -786,7 +786,7 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
          {
          // Here we don't declare code cache full, because we may still have the chance to
          // find some space in one of the other caches that are currently reserved
-         self()->fe()->setHasFailedCodeCacheAllocation();
+         self()->setHasFailedCodeCacheAllocation();
          }
       else // If one allocation request cannot be satisfied by any code cache
          { // in the system, then we must declare that code caches have become full

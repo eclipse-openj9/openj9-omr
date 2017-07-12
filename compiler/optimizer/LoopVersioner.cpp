@@ -4314,6 +4314,103 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       dumpOptDetails(comp(), "The node %p has been created for testing if virtual guard is required\n", nextComparisonNode);
       }
 
+   // If all yield points have been removed from the loop but OSR guards remain, 
+   // they can be versioned out. Currently, this code assumes all OSR guards
+   // will be patched by the same runtime assumptions, so only one OSR guard is added
+   // to branch to the slow loop.
+   //
+   bool safeToRemoveOSRGuards = false;
+   bool seenOSRGuards = false;
+   bool safeToRemoveHCRGuards = false;
+   TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
+   static char *disableLoopOSR = feGetEnv("TR_DisableOSRGuardLoopVersioner");
+   static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
+   if (comp()->getHCRMode() == TR::osr && disableLoopOSR == NULL)
+      {
+      safeToRemoveOSRGuards = true;
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      TR::Node *osrGuard = NULL;
+      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveOSRGuards && block; block = blocksIt.getNext())
+         {
+         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
+            {
+            if (comp()->isPotentialOSRPoint(tt->getNode()))
+               {
+               safeToRemoveOSRGuards = false;
+               break;
+               }
+            else if (tt->getNode()->isOSRGuard())
+               {
+               osrGuard = tt->getNode();
+               seenOSRGuards = true;
+               }
+            }
+         }
+      if (seenOSRGuards && safeToRemoveOSRGuards)
+         {
+         if (performTransformation(comp(), "%sCreate versioned OSRGuard\n", OPT_DETAILS_LOOP_VERSIONER))
+            {
+            TR_ASSERT(osrGuard, "should have found an OSR guard to version");
+
+            // Duplicate the OSR guard tree
+            TR::Node *guard = osrGuard->duplicateTree();
+            traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
+            guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+            comparisonTrees.add(guard);
+            }
+         else
+            {
+            safeToRemoveOSRGuards = false;
+            }
+         }
+      }
+   if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
+      {
+      safeToRemoveHCRGuards = true;
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveHCRGuards && block; block = blocksIt.getNext())
+         {
+         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
+            {
+            if (tt->getNode()->isHCRGuard())
+               {
+               hcrGuards.add(tt);
+               }
+            else
+               {
+               // Identify virtual call nodes for the taken side of HCR guards
+               bool isVirtualCallForHCR = (tt->getNode()->getOpCodeValue() == TR::treetop || tt->getNode()->getOpCode().isCheck())
+                  && tt->getNode()->getFirstChild()->isTheVirtualCallNodeForAGuardedInlinedCall()
+                  && block->getPredecessors().size() == 1
+                  && block->getPredecessors().front()->getFrom()->asBlock()->getLastRealTreeTop()->getNode()->isHCRGuard();
+
+               if ((tt->getNode()->canGCandReturn() || tt->getNode()->canGCandExcept()) && !isVirtualCallForHCR)
+                  {
+                  safeToRemoveHCRGuards = false;
+                  break;
+                  }
+               }
+            }
+         }
+      if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
+         {
+         ListIterator<TR::TreeTop> guardIt(&hcrGuards);
+         for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
+             {
+             if (performTransformation(comp(), "%sCreated versioned HCRGuard for guard n%dn\n", OPT_DETAILS_LOOP_VERSIONER, tt->getNode()->getGlobalIndex()))
+                {
+                TR::Node *guard = tt->getNode()->duplicateTree();
+                guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+                comparisonTrees.add(guard);
+                }
+             else
+                {
+                safeToRemoveHCRGuards = false;
+                }
+             }
+         }
+      }
+
    // Due to RAS changes to make each loop version test a transformation, disableOptTransformations or lastOptTransformationIndex can now potentially remove all the tests above the 2 versioned loops.  When there are two versions of the loop, it is necessary that there be at least one test at the top.  Therefore, the following is required to ensure that a test is created.
    if (comparisonTrees.isEmpty())
       {
@@ -4456,11 +4553,12 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // so that they now branch to the first block containing the
    // (first) versioning test.
    //
-   for (auto nextPred = invariantBlock->getPredecessors().begin(); nextPred != invariantBlock->getPredecessors().end();)
+   while (!invariantBlock->getPredecessors().empty())
       {
-	  (*nextPred)->setTo(chooserBlock);
-	  TR::Block *nextPredBlock = toBlock((*nextPred)->getFrom());
-      nextPred = invariantBlock->getPredecessors().erase(nextPred);
+      TR::CFGEdge * const nextPred = invariantBlock->getPredecessors().front();
+      invariantBlock->getPredecessors().pop_front();
+      nextPred->setTo(chooserBlock);
+      TR::Block * const nextPredBlock = toBlock(nextPred->getFrom());
       if (nextPredBlock != _cfg->getStart())
          {
          TR::TreeTop *lastTreeInPred = nextPredBlock->getLastRealTreeTop();
@@ -4720,8 +4818,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, trMemory());
       }
 
-
-
    // Add appropriate exit edges into the new proper region based
    // on the original loop's exit edges.
    //
@@ -4739,7 +4835,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          seenExitNodes.set(node->getNumber());
          }
       }
-
 
    // Patch up the cloned while loop edges properly
    //
@@ -4772,6 +4867,38 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::Block *succBlock = toBlock(newGotoBlockStructure->getBlock()->getSuccessors().front()->getTo());
       properRegion->addExternalEdge(newGotoBlockStructure, succBlock->getStructureOf()->getNumber(), false);
       properRegion->removeExternalEdgeTo(predBlock->getStructureOf(), succBlock->getStructureOf()->getNumber());
+      }
+
+   // If OSR guards have been versioned out of the loop, walk the
+   // original loop and remove the guards and their branch edges
+   //
+   if (seenOSRGuards && safeToRemoveOSRGuards)
+      {
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+       for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
+          {
+          TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
+          if (lastRealTT
+              && lastRealTT->getNode()->isOSRGuard()
+              && performTransformation(comp(), "%sRemove OSR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
+             {
+             block->removeBranch(comp());
+             }
+          }
+      }
+   if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
+      {
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      for (TR::Block *block = blocksIt.getCurrent(); block; block = blocksIt.getNext())
+         {
+         TR::TreeTop *lastRealTT = block->getLastRealTreeTop();
+         if (lastRealTT
+             && lastRealTT->getNode()->isHCRGuard()
+             && performTransformation(comp(), "%sRemove HCR guard n%dn from hot loop\n", OPT_DETAILS_LOOP_VERSIONER, lastRealTT->getNode()->getGlobalIndex()))
+            {
+            block->removeBranch(comp());
+            }
+         }
       }
 
    if (trace())
@@ -4816,13 +4943,13 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
                TR::Node *dupInvariantNullCheckReference;
                if(nullCheckReferenceisField)
                   {
-                  dupInvariantNullCheckReference=nextNode->getData()->duplicateTree();
-                  dupInvariantNullCheckReference->setAndIncChild(0,invariantNullCheckReference->duplicateTree());
+                  dupInvariantNullCheckReference=nextNode->getData()->duplicateTreeForCodeMotion();
+                  dupInvariantNullCheckReference->setAndIncChild(0,invariantNullCheckReference->duplicateTreeForCodeMotion());
                   nodeToBeNullChkd = dupInvariantNullCheckReference;
                   }
                else
                   {
-                  dupInvariantNullCheckReference= invariantNullCheckReference->duplicateTree();
+                  dupInvariantNullCheckReference= invariantNullCheckReference->duplicateTreeForCodeMotion();
                   TR::Node *oldInvariantNullCheckReference = nextNode->getData();
                   nextTree->getData()->getNode()->setNullCheckReference(dupInvariantNullCheckReference);
                   oldInvariantNullCheckReference->recursivelyDecReferenceCount();
@@ -4853,17 +4980,11 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
             if(nullCheckReferenceisField)
                duplicateNullCheckReference = nodeToBeNullChkd;
             else
-               duplicateNullCheckReference = nodeToBeNullChkd->duplicateTree();
+               duplicateNullCheckReference = nodeToBeNullChkd->duplicateTreeForCodeMotion();
             }
          else
-            duplicateNullCheckReference = nextNode->getData()->duplicateTree();
+            duplicateNullCheckReference = nextNode->getData()->duplicateTreeForCodeMotion();
 
-         // nothing is known anymore about the null-ness of the object
-         if (duplicateNullCheckReference->getOpCodeValue() != TR::loadaddr)
-            {
-            duplicateNullCheckReference->setIsNonNull(false);
-            duplicateNullCheckReference->setIsNull(false);
-            }
          //TR::Node *nextComparisonNode = TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::create(duplicateNullCheckReference, TR::aconst, 0, 0), exitGotoBlock->getEntry());
          TR::Node *nextComparisonNode = TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(duplicateNullCheckReference, 0), exitGotoBlock->getEntry());
          comparisonTrees->add(nextComparisonNode);
@@ -4905,9 +5026,7 @@ void TR_LoopVersioner::buildIwrtbarComparisonsTree(List<TR::TreeTop> *iwrtbarTre
 
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is iwrtbar is required\n", OPT_DETAILS_LOOP_VERSIONER, iwrtbarNode))
          {
-         TR::Node *duplicateBase = iwrtbarNode->getLastChild()->duplicateTree();
-         duplicateBase->setIsNull(false);
-         duplicateBase->setIsNonNull(false);
+         TR::Node *duplicateBase = iwrtbarNode->getLastChild()->duplicateTreeForCodeMotion();
          TR::Node *ifNode, *ifNode1, *ifNode2;
 
          bool isX86 = false;
@@ -4944,11 +5063,7 @@ void TR_LoopVersioner::buildIwrtbarComparisonsTree(List<TR::TreeTop> *iwrtbarTre
 
          dumpOptDetails(comp(), "1 The node %p has been created for testing if iwrtbar is required\n", ifNode1);
 
-         duplicateBase = iwrtbarNode->getLastChild()->duplicateTree();
-         duplicateBase->setIsNull(false);
-         duplicateBase->setIsNonNull(false);
-
-         //printf(" stack compare value %p\n", stackCompareValue);
+         duplicateBase = iwrtbarNode->getLastChild()->duplicateTreeForCodeMotion();
 
          if (!isX86 && (isVariableHeapBase || isVariableHeapSize))
             {
@@ -4998,7 +5113,7 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
 
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is divide by zero\n", OPT_DETAILS_LOOP_VERSIONER, divCheckNode))
          {
-         TR::Node *duplicateDivisor = divCheckNode->getFirstChild()->getSecondChild()->duplicateTree();
+         TR::Node *duplicateDivisor = divCheckNode->getFirstChild()->getSecondChild()->duplicateTreeForCodeMotion();
          TR::Node *ifNode;
          if (duplicateDivisor->getType().isInt64())
             ifNode =  TR::Node::createif(TR::iflcmpeq, duplicateDivisor, TR::Node::create(duplicateDivisor, TR::lconst, 0, 0), exitGotoBlock->getEntry());
@@ -5072,17 +5187,12 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
       //collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, arrayNode, comparisonTrees, exitGotoBlock, visitCount);
 
 
-      TR::Node *duplicateSrcArray = arrayNode->duplicateTree();
+      TR::Node *duplicateSrcArray = arrayNode->duplicateTreeForCodeMotion();
       TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateSrcArray, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
 
       collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, duplicateClassPtr, comparisonTrees, exitGotoBlock, visitCount);
 
-      TR::Node *duplicateCheckedValue = childOfAddressNode->duplicateTree();
-      if (duplicateCheckedValue->getOpCodeValue() != TR::loadaddr)
-         {
-         duplicateCheckedValue->setIsNonNull(false);
-         duplicateCheckedValue->setIsNull(false);
-         }
+      TR::Node *duplicateCheckedValue = childOfAddressNode->duplicateTreeForCodeMotion();
 
      TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue,  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
      TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(arrayStoreCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
@@ -5389,7 +5499,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
             {
             TR::Node *invariantSpecializedNode = isDependentOnInvariant(specializedNode);
             if (invariantSpecializedNode)
-               dupSpecializedNode = invariantSpecializedNode->duplicateTree();
+               dupSpecializedNode = invariantSpecializedNode->duplicateTreeForCodeMotion();
             else
                TR_ASSERT(0, "Should not be considering profiled expr for versioning\n");
             }
@@ -5409,7 +5519,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
          {
          TR::Node *duplicateNode = dupSpecializedNode;
          if (!duplicateNode)
-            duplicateNode = specializedNode->duplicateTree();
+            duplicateNode = specializedNode->duplicateTreeForCodeMotion();
 
          TR_ValueInfo *valueInfo = (TR_ValueInfo *)TR_ValueProfiler::getProfiledValueInfo(specializedNode, comp());
          int32_t value = valueInfo->getTopValue();
@@ -5517,7 +5627,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
       TR::Node *dupThisChild = NULL;
 
       if (conditionalNode->isTheVirtualGuardForAGuardedInlinedCall() &&
-          !conditionalNode->isNonoverriddenGuard()  && !conditionalNode->isHCRGuard())
+          !conditionalNode->isNonoverriddenGuard()  && !conditionalNode->isHCRGuard() && !conditionalNode->isBreakpointGuard())
          {
          bool searchReqd = true;
          TR::Node *nextRealNode = NULL;
@@ -5996,7 +6106,7 @@ void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *nullChe
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p has spine\n", OPT_DETAILS_LOOP_VERSIONER, spineCheckNode))
          {
          performSpineCheck = true;
-         TR::Node *contigArrayLength = TR::Node::create(TR::contigarraylength, 1, arrayBase->duplicateTree());
+         TR::Node *contigArrayLength = TR::Node::create(TR::contigarraylength, 1, arrayBase->duplicateTreeForCodeMotion());
          TR::Node *nextComparisonNode = TR::Node::createif(TR::ificmpne, contigArrayLength, TR::Node::create(spineCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
 
          comparisonTrees->add(nextComparisonNode);
@@ -6243,7 +6353,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
          if (performTransformation(comp(), "%s Creating test outside loop for checking if %p exceeds bounds\n", OPT_DETAILS_LOOP_VERSIONER, boundCheckNode))
             {
             performFirstBoundCheck = true;
-            nextComparisonNode = TR::Node::createif(TR::ificmplt, indexNode->duplicateTree(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
+            nextComparisonNode = TR::Node::createif(TR::ificmplt, indexNode->duplicateTreeForCodeMotion(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
 
             if (trace())
                traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
@@ -6260,9 +6370,9 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
             {
             performSecondBoundCheck = true;
             if (boundCheckNode->getOpCodeValue() == TR::BNDCHK || boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK)
-               nextComparisonNode = TR::Node::createif(TR::ificmpge, indexNode->duplicateTree(), arrayLengthNode->duplicateTree(), exitGotoBlock->getEntry());
+               nextComparisonNode = TR::Node::createif(TR::ificmpge, indexNode->duplicateTreeForCodeMotion(), arrayLengthNode->duplicateTreeForCodeMotion(), exitGotoBlock->getEntry());
             else
-               nextComparisonNode = TR::Node::createif(TR::ificmpgt, indexNode->duplicateTree(), arrayLengthNode->duplicateTree(), exitGotoBlock->getEntry());
+               nextComparisonNode = TR::Node::createif(TR::ificmpgt, indexNode->duplicateTreeForCodeMotion(), arrayLengthNode->duplicateTreeForCodeMotion(), exitGotoBlock->getEntry());
 
             if (trace())
                traceMsg(comp(), "Index invariant in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
@@ -6639,13 +6749,13 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
             if (isSpecialInductionVariable)
                {
                //printf("Found an opportunity for special versioning in method %s\n", comp()->signature());
-               nextComparisonNode = TR::Node::createif(TR::ificmplt, boundCheckNode->getChild(indexChildIndex)->duplicateTree(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
+               nextComparisonNode = TR::Node::createif(TR::ificmplt, boundCheckNode->getChild(indexChildIndex)->duplicateTreeForCodeMotion(), TR::Node::create(boundCheckNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
                if (trace())
                   traceMsg(comp(), "Induction variable added in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
                }
             else
                {
-               TR::Node *duplicateIndex = boundCheckNode->getChild(indexChildIndex)->duplicateTree();
+               TR::Node *duplicateIndex = boundCheckNode->getChild(indexChildIndex)->duplicateTreeForCodeMotion();
 
                if ( changedIndexSymRefAtSomePoint || !_unchangedValueUsedInBndCheck->get(boundCheckNode->getGlobalIndex()))
                   {
@@ -6685,7 +6795,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
                else
                   {
                   int32_t boundChildIndex = (boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK) ? 2 : 0;
-                  nextComparisonNode = TR::Node::createif(TR::ificmpge, duplicateIndex, boundCheckNode->getChild(boundChildIndex)->duplicateTree(), exitGotoBlock->getEntry());
+                  nextComparisonNode = TR::Node::createif(TR::ificmpge, duplicateIndex, boundCheckNode->getChild(boundChildIndex)->duplicateTreeForCodeMotion(), exitGotoBlock->getEntry());
                   nextComparisonNode->setIsVersionableIfWithMaxExpr(comp());
                   if (trace())
                      traceMsg(comp(), "Induction variable subed in each iter -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
@@ -7312,13 +7422,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             }
 
 
-         TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTree();
-         // nothing is known anymore about the null-ness of the object
-         if (duplicateNullCheckReference->getOpCodeValue() != TR::loadaddr)
-            {
-            duplicateNullCheckReference->setIsNonNull(false);
-            duplicateNullCheckReference->setIsNull(false);
-            }
+         TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTreeForCodeMotion();
          TR::Node *ifacmpeqNode =  TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(node, 0),  exitGotoBlock->getEntry());
          comparisonTrees->add(ifacmpeqNode);
          dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", ifacmpeqNode);
@@ -7377,12 +7481,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             {
             if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is of the correct type\n", OPT_DETAILS_LOOP_VERSIONER, node->getFirstChild()))
                {
-               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTree();
-               if (duplicateCheckedValue->getOpCodeValue() != TR::loadaddr)
-                  {
-                  duplicateCheckedValue->setIsNonNull(false);
-                  duplicateCheckedValue->setIsNull(false);
-                  }
+               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
                TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue,  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
                TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(node, TR::iconst, 0, 0), exitGotoBlock->getEntry());
                comparisonTrees->add(ificmpeqNode);
@@ -7396,12 +7495,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
 #ifdef J9_PROJECT_SPECIFIC
             if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is of array type\n", OPT_DETAILS_LOOP_VERSIONER, node->getFirstChild()))
                {
-               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTree();
-               if (duplicateCheckedValue->getOpCodeValue() != TR::loadaddr)
-                  {
-                  duplicateCheckedValue->setIsNonNull(false);
-                  duplicateCheckedValue->setIsNull(false);
-                  }
+               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
                TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateCheckedValue, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
                //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
                TR::Node *romClassLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassRomPtrSymbolRef());
@@ -7474,13 +7568,13 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             {
             if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
                (childInRequiredForm->getSecondChild()->getInt() == shiftWidth))
-               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTree();
+               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTreeForCodeMotion();
             }
          else if (childInRequiredForm->getOpCodeValue() == TR::imul || childInRequiredForm->getOpCodeValue() == TR::lmul)
             {
             if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
                (childInRequiredForm->getSecondChild()->getInt() == dataWidth))
-               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTree();
+               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTreeForCodeMotion();
             }
          }
 
@@ -7490,35 +7584,35 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
          if (!childInRequiredForm)
             {
             TR::Node *constNode = TR::Node::create(node, type.isInt32() ? TR::iconst : TR::lconst, 0, 0);
-            duplicateIndex = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset->duplicateTree(), constNode);
+            duplicateIndex = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset->duplicateTreeForCodeMotion(), constNode);
             if (type.isInt64())
                constNode->setLongInt((int64_t)headerSize);
             else
                constNode->setInt((int64_t)headerSize);
             }
          else
-            duplicateIndex = childInRequiredForm->duplicateTree();
+            duplicateIndex = childInRequiredForm->duplicateTreeForCodeMotion();
 
 
          duplicateIndex = TR::Node::create(type.isInt32() ? TR::iushr : TR::lushr, 2, duplicateIndex,
                                           TR::Node::create(node, TR::iconst, 0, shiftWidth));
          }
 
-      TR::Node *duplicateBase = node->getFirstChild()->getFirstChild()->duplicateTree();
+      TR::Node *duplicateBase = node->getFirstChild()->getFirstChild()->duplicateTreeForCodeMotion();
       TR::Node *arrayLengthNode = TR::Node::create(TR::arraylength, 1, duplicateBase);
 
       arrayLengthNode->setArrayStride(dataWidth);
       if (type.isInt64())
          arrayLengthNode = TR::Node::create(TR::i2l, 1, arrayLengthNode);
 
-      TR::Node *ificmpgeNode = TR::Node::createif(
-                                                type.isInt32() ? TR::ificmpge : TR::iflcmpge, duplicateIndex, arrayLengthNode, exitGotoBlock->getEntry());
+      TR::Node *ificmpgeNode = TR::Node::createif(type.isInt32() ? TR::ificmpge : TR::iflcmpge, duplicateIndex, arrayLengthNode, exitGotoBlock->getEntry());
       comparisonTrees->add(ificmpgeNode);
       TR::Node *constNode = 0;
       if(type.isInt32())
          constNode = TR::Node::create(arrayLengthNode, TR::iconst , 0, 0);
       else
          constNode = TR::Node::create(arrayLengthNode, TR::lconst, 0, 0);
+      // Note: duplicateIndex was already duplicated for code motion, we don't need to duplicate the duplicate for code motion
       TR::Node *ificmpltNode = TR::Node::createif(type.isInt32() ? TR::ificmplt : TR::iflcmplt, duplicateIndex->duplicateTree(), constNode, exitGotoBlock->getEntry());
       if (type.isInt64())
          ificmpltNode->getSecondChild()->setLongInt(0);
@@ -7571,7 +7665,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
    }
 
 
-      TR::Node *duplicateDivisor = node->getSecondChild()->duplicateTree();
+      TR::Node *duplicateDivisor = node->getSecondChild()->duplicateTreeForCodeMotion();
       TR::Node *ifNode;
       if (duplicateDivisor->getType().isInt64())
          ifNode =  TR::Node::createif(TR::iflcmpeq, duplicateDivisor, TR::Node::create(node, TR::lconst, 0, 0), exitGotoBlock->getEntry());
@@ -7593,21 +7687,11 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             {
             if ((checkCastNode == node) && performTransformation(comp(), "%s Creating test outside loop for checking if %p is casted\n", OPT_DETAILS_LOOP_VERSIONER, node))
                {
-               TR::Node *duplicateClassPtr = node->getSecondChild()->duplicateTree();
-               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTree();
-               if (duplicateCheckedValue->getOpCodeValue() != TR::loadaddr)
-                  {
-                  duplicateCheckedValue->setIsNonNull(false);
-                  duplicateCheckedValue->setIsNull(false);
-                  }
+               TR::Node *duplicateClassPtr = node->getSecondChild()->duplicateTreeForCodeMotion();
+               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
                if (node->getOpCodeValue() == TR::checkcastAndNULLCHK)
                   {
-                  TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTree();
-                  if (duplicateNullCheckReference->getOpCodeValue() != TR::loadaddr)
-                     {
-                     duplicateNullCheckReference->setIsNonNull(false);
-                     duplicateNullCheckReference->setIsNull(false);
-                     }
+                  TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTreeForCodeMotion();
                   TR::Node *ifacmpeqNode =  TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(node, 0),  exitGotoBlock->getEntry());
                   comparisonTrees->add(ifacmpeqNode);
                   dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", ifacmpeqNode);

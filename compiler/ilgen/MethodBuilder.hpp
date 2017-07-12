@@ -30,11 +30,15 @@
 #include <fstream>
 #include "ilgen/IlBuilder.hpp"
 
+// Maximum length of _definingLine string (including null terminator)
+#define MAX_LINE_NUM_LEN 7
+
 class TR_HashTabInt;
 class TR_HashTabString;
 class TR_BitVector;
 namespace TR { class BytecodeBuilder; }
 namespace TR { class ResolvedMethod; }
+namespace TR { class SymbolReference; }
 namespace OMR { class VirtualMachineState; }
 
 namespace OMR
@@ -51,6 +55,8 @@ class MethodBuilder : public TR::IlBuilder
    virtual void setupForBuildIL();
 
    virtual bool injectIL();
+
+   int32_t getNextValueID()                                  { return _nextValueID++; }
 
    bool usesBytecodeBuilders()                               { return _useBytecodeBuilders; }
    void setUseBytecodeBuilders()                             { _useBytecodeBuilders = true; }
@@ -84,8 +90,8 @@ class MethodBuilder : public TR::IlBuilder
       return getSignature(_numParameters, paramTypeArray);
       }
 
-   TR::IlValue *lookupSymbol(const char *name);
-   void defineSymbol(const char *name, TR::IlValue *v);
+   TR::SymbolReference *lookupSymbol(const char *name);
+   void defineSymbol(const char *name, TR::SymbolReference *v);
    bool symbolDefined(const char *name);
    bool isSymbolAnArray(const char * name);
 
@@ -97,7 +103,15 @@ class MethodBuilder : public TR::IlBuilder
    void AppendBuilder(TR::IlBuilder *b)    { this->OMR::IlBuilder::AppendBuilder(b); }
 
    void DefineFile(const char *file)                         { _definingFile = file; }
-   void DefineLine(const char *line)                         { _definingLine = line; }
+
+   void DefineLine(const char *line)
+      {
+      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
+      }
+   void DefineLine(int line)
+      {
+      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
+      }
 
    void DefineName(const char *name);
    void DefineParameter(const char *name, TR::IlType *type);
@@ -173,13 +187,15 @@ class MethodBuilder : public TR::IlBuilder
    TR::IlType               ** _cachedParameterTypes;
    char                      * _cachedSignature;
    const char                * _definingFile;
-   const char                * _definingLine;
+   char                        _definingLine[MAX_LINE_NUM_LEN];
    TR::IlType                * _cachedParameterTypesArray[10];
    char                        _cachedSignatureArray[100];
 
    // This map should only be accessed inside a compilation via lookupSymbol
    TR_HashTabString          * _symbols;
    bool                        _newSymbolsAreTemps;
+
+   int32_t                     _nextValueID;
 
    bool                        _useBytecodeBuilders;
    uint32_t                    _numBlocksBeforeWorklist;

@@ -279,7 +279,7 @@ extern "C" bool jitTestOSForSSESupport(void) { return false; } // TODO there are
 #ifdef J9_PROJECT_SPECIFIC
 // FIXME:
 #include "runtime/RuntimeAssumptions.hpp"
-void TR_PatchNOPedGuardSite::compensate(TR_FrontEnd *fe, bool isSMP, uint8_t *location, uint8_t *destination) { notImplemented("TR_PatchNOPedGuardSite::compensate"); }
+void TR::PatchNOPedGuardSite::compensate(TR_FrontEnd *fe, bool isSMP, uint8_t *location, uint8_t *destination) { notImplemented("TR::PatchNOPedGuardSite::compensate"); }
 void TR_PersistentClassInfo::removeASubClass(TR_PersistentClassInfo *) { notImplemented("TR_PersistentClassInfo::removeASubClass"); }
 bool isOrderedPair(uint8_t recordType) { notImplemented("isOrderedPair"); return false; }
 void OMR::RuntimeAssumption::addToRAT(TR_PersistentMemory * persistentMemory, TR_RuntimeAssumptionKind kind, TR_FrontEnd *fe, OMR::RuntimeAssumption** sentinel) { notImplemented("addToRAT"); }

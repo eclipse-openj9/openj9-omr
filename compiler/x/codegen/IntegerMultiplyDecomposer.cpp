@@ -47,7 +47,7 @@ inline bool getNodeIs64Bit(TR::Node *node, TR::CodeGenerator *cg)
 // decomposeIntegerMultiplier needs to update this array if it allocates new temporary registers inside
 TR::Register *TR_X86IntegerMultiplyDecomposer::decomposeIntegerMultiplier(int32_t &tempRegArraySize, TR::Register **tempRegArray)
    {
-   TR::Compilation* comp = TR::comp();
+   TR::Compilation* comp = _cg->comp();
    bool nodeIs64Bit = getNodeIs64Bit(_node, _cg);
    int64_t absMultiplier = _multiplier;
    if (_multiplier < 0)

@@ -187,7 +187,7 @@ enum TR_CompilationOptions
    TR_DisableOnDemandLiteralPoolRegister  = 0x08000000 + 2,
    TR_DisableInternalPointers             = 0x10000000 + 2,
    TR_EnableNodeGC                        = 0x20000000 + 2,
-   // Available                           = 0x40000000 + 2,
+   TR_OmitFramePointer                    = 0x40000000 + 2,
    TR_ForceAOT                            = 0x80000000 + 2,
 
    // Option word 3
@@ -337,7 +337,7 @@ enum TR_CompilationOptions
    TR_UseLowPriorityQueueDuringCLP        = 0x10000000 + 7,
    TR_DisableVectorBCD                    = 0x20000000 + 7,
    TR_EnableTrivialStoreSinking           = 0x40000000 + 7,
-   // Available                           = 0x80000000 + 7,
+   TR_DisableTraps                        = 0x80000000 + 7,
 
    // Option word 8
    //
@@ -472,8 +472,8 @@ enum TR_CompilationOptions
    TR_DisableHPRSpill                         = 0x00004000 + 12, // zGryphon
    TR_DisableHPRUpgrade                       = 0x00008000 + 12, // zGryphon
    TR_AggressiveOpts                          = 0x00010000 + 12,
-   // Available                                = 0x00020000 + 12,
-   // Available                               = 0x00040000 + 12, // zGryphon
+   TR_DisableMarshallingIntrinsics            = 0x00020000 + 12,
+   TR_DisablePackedDecimalIntrinsics          = 0x00040000 + 12,
    TR_DisablePackedLongConversion             = 0x00080000 + 12,
    TR_DisableDememoization                    = 0x00100000 + 12,
    TR_DisableStringBuilderTransformer         = 0x00200000 + 12,
@@ -898,7 +898,7 @@ enum TR_CompilationOptions
    TR_DisableSIMDStringCaseConv                       = 0x00040000 + 27,
    TR_DisableSIMDUTF16BEEncoder                       = 0x00080000 + 27,
    TR_DisableSIMDArrayCopy                            = 0x00100000 + 27,
-   TR_EnableZOSTrampolines                            = 0x00200000 + 27,
+   // Available                                       = 0x00200000 + 27,
    TR_EnableRMODE64                                   = 0x00400000 + 27,
    TR_EnableLocalVPSkipLowFreqBlock                   = 0x00800000 + 27,
    TR_DisableLastITableCache                          = 0x01000000 + 27,
@@ -918,7 +918,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000400 + 28,
    TR_InlinerFanInUseCalculatedSize                   = 0x00000800 + 28,
    // Available                                       = 0x00001000 + 28,
-   // Availabe                                        = 0x00002000 + 28,
+   TR_DisableProfilingDataReclamation                 = 0x00002000 + 28,
    TR_DisableTrivialDeadBlockRemover                  = 0x00004000 + 28,
    TR_DisableInvariantCodeMotion                      = 0x00008000 + 28,
    TR_EnableSelfTuningScratchMemoryUsageBeforeCompile = 0x00010000 + 28,
@@ -946,7 +946,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00001000 + 29,
    TR_UseHigherCountsForNonSCCMethods                 = 0x00002000 + 29,
    TR_UseHigherMethodCountsAfterStartup               = 0x00004000 + 29,
-   TR_EnableNextGenHCR                                = 0x00008000 + 29,
+   TR_DisableNextGenHCR                               = 0x00008000 + 29,
    TR_DisableMetadataReclamation                      = 0x00010000 + 29,
    TR_DisableInlineIsInstance                         = 0x00020000 + 29,
    TR_DisableSIMDStringHashCode                       = 0x00040000 + 29,
@@ -1761,6 +1761,11 @@ public:
 
    int32_t getProfilingCompNodecountThreshold()  { return _profilingCompNodecountThreshold; }
 
+   int32_t getLoopyAsyncCheckInsertionMaxEntryFreq()
+      {
+      return _loopyAsyncCheckInsertionMaxEntryFreq;
+      }
+
 public:
 
    static void shutdown(TR_FrontEnd * fe);
@@ -2066,10 +2071,10 @@ private:
    //
    static char *set32BitNumeric(char *option, void *base, TR::OptionTable *entry);
 
-  /** 
+  /**
    * \brief Option processing function for 32 bit numeric fields stored in JitConfig
    *
-   * Scans the option for a numeric value and set the 32-bit word at offset 
+   * Scans the option for a numeric value and set the 32-bit word at offset
    * entry->param1 from the start of JitConfig to that value.
    *
    * \param [in] option  String representing the value of the option
@@ -2423,6 +2428,8 @@ private:
    int32_t                     _inlinerVeryLargeCompiledMethodFaninThreshold; // for inlining
    int32_t                     _largeCompiledMethodExemptionFreqCutoff;
    int32_t                     _maxSzForVPInliningWarm;
+
+   int32_t                     _loopyAsyncCheckInsertionMaxEntryFreq;
 
    }; // TR::Options
 

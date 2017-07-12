@@ -1284,3 +1284,20 @@ MM_MemoryPoolSplitAddressOrderedList::removeFreeEntriesWithinRange(MM_Environmen
 	Assert_GC_true_with_message2(env, reservedFreeEntryConsistencyCheck(), "removeFreeEntriesWithinRange _previousReservedFreeEntry=%p, _reservedFreeEntrySize=%zu\n", _previousReservedFreeEntry, _reservedFreeEntrySize);
 	return true;
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+uintptr_t
+MM_MemoryPoolSplitAddressOrderedList::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+	uintptr_t releasedMemory = 0;
+
+	for (uintptr_t i = 0; i < _heapFreeListCountExtended; i++) {
+		_heapFreeLists[i]._lock.acquire();
+		_heapFreeLists[i]._timesLocked += 1;
+		releasedMemory += releaseFreeEntryMemoryPages(env, _heapFreeLists[i]._freeList);
+		_heapFreeLists[i]._lock.release();
+	}
+
+	return releasedMemory;
+}
+#endif

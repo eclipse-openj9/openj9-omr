@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -34,11 +35,11 @@
 
 /* __STDC_ISO_10646__ indicates that the platform wchar_t encoding is Unicode */
 /* but older versions of libc fail to set the flag, even though they are Unicode */
-#if defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX)
+#if (defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX)) && !defined(OMRZTPF)
 #define J9VM_USE_WCTOMB
-#else /* defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX) */
+#else /* (defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX)) && !defined(OMRZTPF) */
 #include "omriconvhelpers.h"
-#endif /* defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX) */
+#endif /* (defined(__STDC_ISO_10646__) || defined(LINUX) || defined(OSX)) && !defined(OMRZTPF) */
 
 /* Some older platforms (Netwinder) don't declare CODESET */
 #ifndef CODESET
@@ -79,8 +80,8 @@ omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *
 #pragma convlit(resume)
 #endif
 
-#ifdef J9ZOS390
-	/* z/OS always needs to translate to EBCDIC */
+#if defined(J9ZOS390) || defined(OMRZTPF)
+	/* z/OS and z/TPF always needs to translate to EBCDIC */
 	requiresTranslation = 1;
 #else
 	/* we can short circuit if the string is all ASCII */
@@ -304,7 +305,11 @@ file_write_using_iconv(struct OMRPortLibrary *portLibrary, intptr_t fd, const ch
 #pragma convlit(suspend)
 #endif
 
+#ifndef OMRZTPF
 		converter = iconv_get(portLibrary, J9FILETEXT_ICONV_DESCRIPTOR, nl_langinfo(CODESET), "UTF-8");
+#else
+		converter = iconv_get(portLibrary, J9FILETEXT_ICONV_DESCRIPTOR, "IBM1047", "ISO8859-1" );
+#endif
 
 #ifdef J9ZOS390
 #pragma convlit(resume)

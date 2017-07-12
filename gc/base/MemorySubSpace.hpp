@@ -440,6 +440,10 @@ public:
 	void unlockRegionList();
 	bool wasContractedThisGC(uintptr_t gcCount);
 
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+	virtual uintptr_t releaseFreeMemoryPages(MM_EnvironmentBase* env);
+#endif
+
 	/**
 	 * Create a MemorySubSpace object.
 	 */

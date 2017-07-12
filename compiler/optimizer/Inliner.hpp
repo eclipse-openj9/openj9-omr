@@ -356,6 +356,8 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       TR::TreeTop * addGuardForVirtual(TR::ResolvedMethodSymbol *, TR::ResolvedMethodSymbol *, TR::TreeTop *, TR::Node *,
                                       TR_OpaqueClassBlock *, TR::TreeTop *, TR::TreeTop *, TR::TreeTop *, TR_TransformInlinedFunction&,
                                       List<TR::SymbolReference> &, TR_VirtualGuardSelection *, TR::TreeTop **, TR_CallTarget *calltarget=0);
+
+      void addAdditionalGuard(TR::Node *callNode, TR::ResolvedMethodSymbol * calleeSymbol, TR_OpaqueClassBlock *thisClass, TR::Block *prevBlock, TR::Block *inlinedBody, TR::Block *slowPath, TR_VirtualGuardKind kind, TR_VirtualGuardTestType type, bool favourVftCompare, TR::CFG *callerCFG);
       void rematerializeCallArguments(TR_TransformInlinedFunction & tif,
    TR_VirtualGuardSelection *guard, TR::Node *callNode, TR::Block *block1, TR::TreeTop *rematPoint);
       void replaceCallNode(TR::ResolvedMethodSymbol *, TR::Node *, rcount_t, TR::TreeTop *, TR::Node *, TR::Node *);

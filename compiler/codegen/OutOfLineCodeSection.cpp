@@ -85,7 +85,7 @@ TR_OutOfLineCodeSection::TR_OutOfLineCodeSection(TR::LabelSymbol *entryLabel, TR
 void TR_OutOfLineCodeSection::swapInstructionListsWithCompilation()
    {
    TR::Instruction *temp;
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = _cg->comp();
 
    temp = comp->getFirstInstruction();
    comp->setFirstInstruction(_firstInstruction);
@@ -107,7 +107,7 @@ void TR_OutOfLineCodeSection::swapInstructionListsWithCompilation()
 void TR_OutOfLineCodeSection::preEvaluatePersistentHelperArguments()
    {
    TR_ASSERT(_callNode, "preEvaluatePersistentHelperArguments can only be called for TR_OutOfLineCodeSection which are helper calls");
-   TR::TreeEvaluator::initializeStrictlyFutureUseCounts(_callNode, TR::comp()->incVisitCount(), _cg);
+   TR::TreeEvaluator::initializeStrictlyFutureUseCounts(_callNode, _cg->comp()->incVisitCount(), _cg);
    evaluateNodesWithFutureUses(_callNode);
    }
 
@@ -138,7 +138,7 @@ void TR_OutOfLineCodeSection::evaluateNodesWithFutureUses(TR::Node *node)
 TR::Node *TR_OutOfLineCodeSection::createOutOfLineCallNode(TR::Node *callNode, TR::ILOpCodes callOp)
    {
    int32_t   i;
-   vcount_t  visitCount = TR::comp()->incVisitCount();
+   vcount_t  visitCount = _cg->comp()->incVisitCount();
    TR::Node  *child;
 
    for (i=0; i<callNode->getNumChildren(); i++)

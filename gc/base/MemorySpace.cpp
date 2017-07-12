@@ -573,3 +573,20 @@ MM_MemorySpace::getAllTypeFlags()
 {
 	return MEMORY_TYPE_OLD | MEMORY_TYPE_NEW;
 }
+
+#if defined(OMR_GC_IDLE_HEAP_MANAGER)
+/**
+ * iterate through memorysubspace list & free up pages of free entries 
+ */
+uintptr_t
+MM_MemorySpace::releaseFreeMemoryPages(MM_EnvironmentBase* env)
+{
+        uintptr_t releasedMemory = 0;
+        MM_MemorySubSpace* memorySubSpace = _memorySubSpaceList;
+        while(NULL != memorySubSpace) {
+                releasedMemory += memorySubSpace->releaseFreeMemoryPages(env);
+                memorySubSpace = memorySubSpace->getNext();
+        }
+        return releasedMemory;
+}
+#endif

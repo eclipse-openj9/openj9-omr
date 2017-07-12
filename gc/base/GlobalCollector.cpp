@@ -17,19 +17,18 @@
  ******************************************************************************/
 
 #include "GlobalCollector.hpp"
-
-#include "CollectorLanguageInterface.hpp"
+#include "GlobalCollectorDelegate.hpp"
 
 void
 MM_GlobalCollector::internalPostCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace)
 {
-	_cli->globalCollector_internalPostCollect(env, subSpace);
+	_delegate.postCollect(env, subSpace);
 }
 
 bool
 MM_GlobalCollector::isTimeForGlobalGCKickoff()
 {
-	return _cli->globalCollector_isTimeForGlobalGCKickoff();
+	return _delegate.isTimeForGlobalGCKickoff();
 }
 
 /**
@@ -39,3 +38,4 @@ void
 MM_GlobalCollector::abortCollection(MM_EnvironmentBase* env, CollectionAbortReason reason)
 {
 }
+

@@ -487,7 +487,7 @@ int32_t OMR::ARM::Linkage::buildARMLinkageArgs(TR::Node                         
                                            bool                                isVirtualOrJNI)
    {
    const TR::ARMLinkageProperties &properties = self()->getProperties();
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = self()->comp();
    TR::CodeGenerator  *codeGen      = self()->cg();
    TR::ARMMemoryArgument *pushToMemory = NULL;
    void                 *stackMark;

@@ -186,7 +186,9 @@ TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR:
 
 TR::Instruction *
 OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, TR_NOPKind nopKind)
-    { TR_ASSERT(0, "shouldn't get here"); return NULL;}OMR::CodeGenerator::CodeGenerator() :
+    { TR_ASSERT(0, "shouldn't get here"); return NULL;}
+
+OMR::CodeGenerator::CodeGenerator() :
       _compilation(TR::comp()),
       _trMemory(TR::comp()->trMemory()),
       _liveLocals(0),
@@ -317,7 +319,7 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
    if (self()->comp()->getDebug())
       self()->comp()->getDebug()->resetDebugData();
 
-
+   self()->setIsLeafMethod();
    }
 
 TR_StackMemory
@@ -659,7 +661,7 @@ OMR::CodeGenerator::doInstructionSelection()
 
    // Set default value for pre-prologue size
    //
-   self()->setPrePrologueSize(4);
+   self()->setPrePrologueSize(0);
 
    if (comp->getOption(TR_TraceCG))
       {
@@ -3612,7 +3614,7 @@ OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node)
 bool
 OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
    {
-   if (self()->comp()->getOptions()->getOption(TR_NoResumableTrapHandler))
+   if (self()->comp()->getOptions()->getOption(TR_DisableTraps))
       return false;
 
    if (!doChecks)
@@ -3791,7 +3793,7 @@ void OMR::CodeGenerator::recordSingleRegisterUse(TR::Register *reg)
 
 void OMR::CodeGenerator::startRecordingRegisterUsage()
    {
-   self()->setReferencedRegisterList(new (self()->trHeapMemory()) TR::list<OMR::RegisterUsage*>(getTypedAllocator<OMR::RegisterUsage*>(TR::comp()->allocator())));
+   self()->setReferencedRegisterList(new (self()->trHeapMemory()) TR::list<OMR::RegisterUsage*>(getTypedAllocator<OMR::RegisterUsage*>(self()->comp()->allocator())));
    self()->setEnableRegisterUsageTracking();
    }
 

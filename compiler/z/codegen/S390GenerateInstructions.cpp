@@ -134,6 +134,16 @@ generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    return cursor;
    }
 
+TR::Instruction* generateS390BranchInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, TR::InstOpCode::S390BranchCondition compareOpCode, TR::Register* targetReg, TR::Instruction* preced)
+   {
+   TR::Instruction* returnInstruction = generateS390RegInstruction(cg, op, node, targetReg, preced);
+
+   // RR type branch instructions use the first operand register field as a mask value
+   static_cast<TR::S390RegInstruction*>(returnInstruction)->setBranchCondition(compareOpCode);
+
+   return returnInstruction;
+   }
+
 TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::LabelSymbol * sym, TR::Instruction * preced)
@@ -2255,15 +2265,14 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
    bool isHelper = callSymRef->getSymbol()->castToMethodSymbol()->isHelper();
 
-   // Direct Call on zlinux64 and zOS64 can require a trampoline. As the trampoline will kill EPReg
-   // we should always see EPReg defined in the post-deps of such calls.
+   // Direct calls on 64-bit systems may require a trampoline. As the trampoline will kill the EP register we should
+   // always see the EP register defined in the post-dependencies of such calls.
 #if defined(TR_TARGET_64BIT) 
 #if defined(J9ZOS390)
-   if (comp->getOption(TR_EnableZOSTrampolines))
+   if (comp->getOption(TR_EnableRMODE64))
 #endif
       {
-      TR_ASSERT(RegEP != NULL,
-         "generateDirectCall: zLinux64 and zOS require EPReg be defined on directCalls to correctly handle trampolines.\n");
+      TR_ASSERT(RegEP != NULL, "Trampoline support on 64-bit systems requires EP register to be defined.\n");
       }
 #endif
 
@@ -2302,7 +2311,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
    else // address known
       {
 #if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
-      if (cg->canUseRelativeLongInstructions(imm) || isHelper || comp->getOption(TR_EnableZOSTrampolines))
+      if (cg->canUseRelativeLongInstructions(imm) || isHelper || comp->getOption(TR_EnableRMODE64))
 #endif
          {
          if (!isHelper && cg->supportsBranchPreloadForCalls())
@@ -2322,7 +2331,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
          TR::S390RILInstruction *tempInst;
 #if defined(TR_TARGET_64BIT)
 #if defined (J9ZOS390)
-         if (comp->getOption(TR_EnableZOSTrampolines))
+         if (comp->getOption(TR_EnableRMODE64))
 #endif
             {
             tempInst = (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
@@ -2330,7 +2339,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 #endif
 #if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
 #if (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
-         if (!comp->getOption(TR_EnableZOSTrampolines))
+         if (!comp->getOption(TR_EnableRMODE64))
 #endif
 
             {
@@ -2355,6 +2364,18 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 #endif
 
       }  
+   }
+
+TR::Instruction* generateDataConstantInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* node, uint32_t data, TR::Instruction* preced)
+   {
+   if (preced != NULL)
+      {
+      return new (INSN_HEAP) TR::S390ImmInstruction(op, node, data, preced, cg);
+      }
+   else
+      {
+      return new (INSN_HEAP) TR::S390ImmInstruction(op, node, data, cg);
+      }
    }
 
 /**

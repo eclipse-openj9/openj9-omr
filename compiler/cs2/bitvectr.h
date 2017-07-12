@@ -69,7 +69,7 @@ private:
   class BitRef;
 public:
 
-  ABitVector(const Allocator &a = Allocator()) :
+  explicit ABitVector(const Allocator &a = Allocator()) :
     Allocator(a), fNumBits(0), fBitWords(NULL) {
   }
 
@@ -515,19 +515,20 @@ void ABitVector<Allocator>::GrowTo (BitIndex newBitSize, bool geometric, bool fo
   oldBitSize = fNumBits;
 
   newWordSize = SizeInWords(newBitSize);
-  fNumBits = newWordSize * kBitWordSize;
+  uint32_t numBits = newWordSize * kBitWordSize;
 
   if (oldBitSize == 0) {
-    fBitWords = (BitWord *) Allocator::allocate(SizeInBytes(fNumBits));
-    memset(fBitWords,0, SizeInBytes(fNumBits));
+    fBitWords = (BitWord *) Allocator::allocate(SizeInBytes(numBits));
+    memset(fBitWords,0, SizeInBytes(numBits));
   } else {
-    fBitWords = (BitWord *) Allocator::reallocate(SizeInBytes(fNumBits),
+    fBitWords = (BitWord *) Allocator::reallocate(SizeInBytes(numBits),
                                                   fBitWords,
                                                   SizeInBytes(oldBitSize));
     memset(((char *)fBitWords)+SizeInBytes(oldBitSize),0,
-           SizeInBytes(fNumBits) -
+           SizeInBytes(numBits) -
            SizeInBytes(oldBitSize));
   }
+  fNumBits = numBits;
 }
 
 template <class Allocator>

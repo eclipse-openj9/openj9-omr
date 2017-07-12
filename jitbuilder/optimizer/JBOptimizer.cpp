@@ -89,23 +89,26 @@ static const OptimizationStrategy cheapTacticalGlobalRegisterAllocatorOpts[] =
    { OMR::endGroup                        }
    };
 
+static const OptimizationStrategy JBcoldStrategyOpts[] =
+   {
+   { OMR::deadTreesElimination                                                     },
+   { OMR::treeSimplification                                                       },
+   { OMR::localCSE                                                                 },
+   { OMR::basicBlockExtension                                                      },
+   { OMR::cheapTacticalGlobalRegisterAllocatorGroup                                },
+   };
+
 static const OptimizationStrategy JBwarmStrategyOpts[] =
    {
-   { OMR::treeSimplification                                                       }, // lots to simplify
-   { OMR::localCSE                                                                 }, // common as much as possible
-   { OMR::treeSimplification                                                       }, // simplify again
-   { OMR::localCSE                                                                 }, // and common
-   { OMR::basicBlockOrdering,                                                      }, // straighten goto's
-   { OMR::globalCopyPropagation,                                                   },
-   { OMR::globalDeadStoreElimination,                                              },
    { OMR::deadTreesElimination                                                     },
    { OMR::treeSimplification                                                       },
-   { OMR::deadTreesElimination                                                     },
-   { OMR::lastLoopVersionerGroup,                    OMR::IfLoops                  },
-   { OMR::globalDeadStoreElimination,                OMR::IfEnabledAndLoops        },
+   { OMR::localCSE                                                                 },
+   { OMR::basicBlockOrdering                                                       }, // straighten goto's
+   { OMR::globalCopyPropagation                                                    },
+   { OMR::globalDeadStoreElimination,                OMR::IfMoreThanOneBlock       },
    { OMR::deadTreesElimination                                                     },
    { OMR::treeSimplification                                                       },
-   { OMR::blockSplitter                                                            },
+   { OMR::basicBlockHoisting                                                       },
    { OMR::treeSimplification                                                       },
 
    { OMR::globalValuePropagation,                    OMR::IfMoreThanOneBlock       },
@@ -115,13 +118,14 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
 
    { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
+   { OMR::loopCanonicalization,                      OMR::IfLoops                  },
    { OMR::generalLoopUnroller,                       OMR::IfLoops                  },
    { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // extend blocks; move trees around if reqd
    { OMR::treeSimplification                                                       }, // revisit; not really required ?
    { OMR::localCSE                                                                 },
    { OMR::treeSimplification,                        OMR::IfEnabled                },
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
-   { OMR::cheapTacticalGlobalRegisterAllocatorGroup, OMR::IfEnabled                },
+   { OMR::cheapTacticalGlobalRegisterAllocatorGroup                                },
    { OMR::globalDeadStoreGroup,                                                    },
    { OMR::rematerialization                                                        },
    { OMR::deadTreesElimination,                      OMR::IfEnabled                }, // remove dead anchors created by check/store removal

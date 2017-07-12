@@ -100,7 +100,7 @@ uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    if (!(distance>=BRANCH_BACKWARD_LIMIT && distance<=BRANCH_FORWARD_LIMIT))
       {
-      distance = TR::comp()->fe()->indexedTrampolineLookup(getDestination()->getReferenceNumber(), (void *)buffer) - (intptrj_t)buffer;
+      distance = cg()->comp()->fe()->indexedTrampolineLookup(getDestination()->getReferenceNumber(), (void *)buffer) - (intptrj_t)buffer;
       TR_ASSERT(distance>=BRANCH_BACKWARD_LIMIT && distance<=BRANCH_FORWARD_LIMIT,
              "CodeCache is more than 32MB.\n");
       }

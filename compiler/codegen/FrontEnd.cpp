@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -216,12 +216,6 @@ TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signatu
    return 0;
    }
 
-uint8_t *
-TR_FrontEnd::getMethodStartPC(TR_OpaqueMethodBlock *method)
-   {
-   notImplemented("getMethodStartPC");
-   return 0;
-   }
 
 TR_OpaqueClassBlock *
 TR_FrontEnd::getClassOfMethod(TR_OpaqueMethodBlock *method)
@@ -230,11 +224,6 @@ TR_FrontEnd::getClassOfMethod(TR_OpaqueMethodBlock *method)
    return 0;
    }
 
-bool
-TR_FrontEnd::isCompiledMethod(TR_OpaqueMethodBlock *method)
-   {
-   return false;
-   }
 
 TR_OpaqueClassBlock *
 TR_FrontEnd::getComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass)
@@ -386,11 +375,6 @@ TR_FrontEnd::getDesignatedCodeCache(TR::Compilation *comp)
    return 0;
    }
 
-void
-TR_FrontEnd::setHasFailedCodeCacheAllocation()
-   {
-   notImplemented("setHasFailedCodeCacheAllocation");
-   }
 
 void
 TR_FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding)
@@ -426,10 +410,3 @@ TR_FrontEnd::reserveNTrampolines(TR::Compilation *, int32_t n, bool inBinaryEnco
    notImplemented("reserveNTrampolines");
    }
 
-
-bool
-TR_FrontEnd::hasBackwardBranches(TR_OpaqueMethodBlock *method)
-   {
-   notImplemented("hasBackwardBranches");
-   return 0;
-   }

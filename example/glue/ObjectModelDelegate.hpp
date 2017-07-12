@@ -75,6 +75,21 @@ private:
 protected:
 public:
 	/**
+	 * If the received object holds an indirect reference (ie a reference to an object
+	 * that is not reachable from the object reference graph) a pointer to the referenced
+	 * object should be returned here. This method is called during heap walks for each
+	 * heap object.
+	 *
+	 * @param objectPtr the object to botain indirct reference from
+	 * @return a pointer to the indirect object, or NULL if none
+	 */
+	MMINLINE omrobjectptr_t
+	getIndirectObject(omrobjectptr_t objectPtr)
+	{
+		return NULL;
+	}
+
+	/**
 	 * Get the fomrobjectptr_t offset of the slot containing the object header.
 	 */
 	MMINLINE uintptr_t

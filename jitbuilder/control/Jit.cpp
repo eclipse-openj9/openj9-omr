@@ -179,7 +179,7 @@ extern "C"
 bool
 initializeJit()
    {
-   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods");
+   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer");
    }
 
 extern "C"

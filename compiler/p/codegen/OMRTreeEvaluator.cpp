@@ -1509,6 +1509,9 @@ TR::Register *OMR::Power::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::Code
 	kind = TR_VRF;
 	break;
      case TR::VectorInt64:
+	opcode = TR::InstOpCode::lxvd2x;
+	kind = TR_VRF;
+        break;
      case TR::VectorDouble:
 	opcode = TR::InstOpCode::lxvd2x;
 	kind = TR_VSX_VECTOR;
@@ -2037,7 +2040,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
          generateDepLabelInstruction(cg, TR::InstOpCode::label, node, jumpLabelDone, deps);
          generateTrg1Src1Instruction(cg, TR::InstOpCode::xscvspdp, node, resReg, intermediateResReg);
          }
-      else //(firstChild->getDataType() == TR::VectorInt64) || (firstChild->getDataType() == TR::VectorDouble)
+      else
          {
          /*
           * Conditional statements are used to determine if the indexReg has the value 0 or 1. Other values are invalid.
@@ -2063,7 +2066,7 @@ TR::Register *OMR::Power::TreeEvaluator::getvelemDirectMoveHelper(TR::Node *node
             {
             generateMvFprGprInstructions(cg, node, fpr2gprHost64, false, resReg, intermediateResReg);
             }
-         else //firstChild->getDataType() == TR::VectorDouble
+         else
             {
             generateTrg1Src2Instruction(cg, TR::InstOpCode::xxlor, node, resReg, intermediateResReg, intermediateResReg);
             }
@@ -2459,6 +2462,7 @@ TR::Register *OMR::Power::TreeEvaluator::vaddEvaluator(TR::Node *node, TR::CodeG
    switch(node->getDataType())
      {
      case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vadduwm);
+     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vaddudm);
      case TR::VectorFloat: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvaddsp);
      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvadddp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -2471,6 +2475,7 @@ TR::Register *OMR::Power::TreeEvaluator::vsubEvaluator(TR::Node *node, TR::CodeG
    switch(node->getDataType())
      {
      case TR::VectorInt32:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubuwm);
+     case TR::VectorInt64:  return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::vsubudm);
      case TR::VectorFloat: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubsp);
      case TR::VectorDouble: return TR::TreeEvaluator::inlineVectorBinaryOp(node, cg, TR::InstOpCode::xvsubdp);
      default: TR_ASSERT(false, "unrecognized vector type %s\n", node->getDataType().toString()); return NULL;
@@ -2755,6 +2760,10 @@ TR::Register *OMR::Power::TreeEvaluator::vdlogEvaluator(TR::Node *node, TR::Code
     return TR::TreeEvaluator::directCallEvaluator(node, cg);
     }
 
+TR::Register *OMR::Power::TreeEvaluator::vl2vdEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+    {
+    return TR::TreeEvaluator::inlineVectorUnaryOp(node, cg, TR::InstOpCode::xvcvsxddp);
+    }
 
 // Branch if all are true in VMX
 #define PPCOp_bva TR::InstOpCode::blt
@@ -4110,9 +4119,8 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
    condRegToBeUsed = condReg2;
 
    mid2Label = generateLabelSymbol(cg);
-   //generateSrc1Instruction(cg, TR::InstOpCode::mtctr, node, byteLenRemainingRegister);
    generateTrg1Src1ImmInstruction(cg, (byteLen == 8) ? TR::InstOpCode::cmpi8 : TR::InstOpCode::cmpi4, node, condRegToBeUsed, byteLenRemainingRegister, byteLen);
-   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, /* residueLoopStartLabel */ mid2Label, condRegToBeUsed);
+   generateConditionalBranchInstruction(cg, TR::InstOpCode::blt, node, mid2Label, condRegToBeUsed);
 
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src1AddrReg, src1AddrReg, -1*byteLen);
    generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, src2AddrReg, src2AddrReg, -1*byteLen);
@@ -4267,7 +4275,6 @@ static TR::Register *inlineArrayCmp(TR::Node *node, TR::CodeGenerator *cg)
       if (condReg2)
          addDependency(dependencies, condReg2, TR::RealRegister::NoReg, TR_CCR, cg);
 
-      //generateLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel);
       generateDepLabelInstruction(cg, TR::InstOpCode::label, node, residueEndLabel, dependencies);
       residueEndLabel->setEndInternalControlFlow();
       }
@@ -4352,7 +4359,7 @@ OMR::Power::TreeEvaluator::generateHelperBranchAndLinkInstruction(
 
 TR::Register *OMR::Power::TreeEvaluator::setmemoryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg->comp();
    TR::Node             *dstAddrNode, *lengthNode, *valueNode;
    dstAddrNode = node->getChild(0);
    lengthNode = node->getChild(1);
@@ -5452,7 +5459,6 @@ void addPrefetch(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetRegi
             if (!(firstChild &&
                 firstChild->getOpCodeValue() == TR::aiadd &&
                 firstChild->isInternalPointer() &&
-                //comp->fe()->sampleSignature(node->getOwningMethod(comp)) != NULL &&
                 strstr(comp->fe()->sampleSignature(node->getOwningMethod(), 0, 0, cg->trMemory()),"java/util/TreeMap$UnboundedValueIterator.next()")))
                {
                optDisabled = true;
@@ -5464,7 +5470,6 @@ void addPrefetch(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetRegi
             if (!(firstChild &&
                 firstChild->getOpCodeValue() == TR::aladd &&
                 firstChild->isInternalPointer() &&
-                //comp->fe()->sampleSignature(node->getOwningMethod(comp)) != NULL &&
                 strstr(comp->fe()->sampleSignature(node->getOwningMethod(), 0, 0, cg->trMemory()),"java/util/TreeMap$UnboundedValueIterator.next()")))
                {
                optDisabled = true;
@@ -6214,4 +6219,41 @@ void OMR::Power::TreeEvaluator::restoreTOCRegister(TR::Node *node, TR::CodeGener
 TR::Register *OMR::Power::TreeEvaluator::retrieveTOCRegister(TR::Node *node, TR::CodeGenerator *cg, TR::RegisterDependencyConditions *dependencies)
 {
    return cg->machine()->getPPCRealRegister(TR::RealRegister::gr2);
+}
+
+TR::Register * OMR::Power::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+{
+   TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in ibyteswapEvaluator");
+
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *tgtRegister = cg->allocateRegister();
+
+   if (!firstChild->getRegister() &&
+       firstChild->getOpCode().isMemoryReference() &&
+       firstChild->getReferenceCount() == 1)
+      {
+      TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(firstChild, 4, cg);
+      tempMR->forceIndexedForm(firstChild, cg);
+      generateTrg1MemInstruction(cg, TR::InstOpCode::lwbrx, node, tgtRegister, tempMR);
+      tempMR->decNodeReferenceCounts(cg);
+      }
+   else
+      {
+      TR::Register *srcRegister = cg->evaluate(firstChild);
+      TR::Register *tmp1Register = cg->allocateRegister();
+
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tgtRegister, srcRegister, 8, 0x00000000ff);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 8, 0x0000ff0000);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x000000ff00);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+      generateTrg1Src1Imm2Instruction(cg, TR::InstOpCode::rlwinm, node, tmp1Register, srcRegister, 24, 0x00ff000000);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::OR, node, tgtRegister, tgtRegister, tmp1Register);
+
+      cg->stopUsingRegister(tmp1Register);
+      cg->decReferenceCount(firstChild);
+      }
+
+   node->setRegister(tgtRegister);
+   return tgtRegister;
 }

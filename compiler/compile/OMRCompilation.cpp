@@ -220,65 +220,46 @@ OMR::Compilation::Compilation(
       TR_ResolvedMethod *compilee,
       TR::IlGenRequest &ilGenRequest,
       TR::Options &options,
-      const TR::Region &dispatchRegion,
+      TR::Region &heapMemoryRegion,
       TR_Memory *m,
       TR_OptimizationPlan *optimizationPlan) :
+   _signature(compilee->signature(m)),
+   _options(&options),
+   _heapMemoryRegion(heapMemoryRegion),
    _trMemory(m),
-   _knownObjectTable(NULL),
    _fe(fe),
    _ilGenRequest(ilGenRequest),
-   _options(&options),
-   _omrVMThread(omrVMThread),
    _currentOptIndex(0),
    _lastBegunOptIndex(0),
    _lastPerformedOptIndex(0),
    _currentOptSubIndex(0), // The transformation index within the current opt
    _lastPerformedOptSubIndex(0),
    _debug(0),
-   _region(dispatchRegion),
-   _compThreadID(id),
+   _knownObjectTable(NULL),
+   _omrVMThread(omrVMThread),
    _allocator(TRCS2MemoryAllocator(m)),
+   _method(compilee),
    _arenaAllocator(TR::Allocator(self()->allocator("Arena"))),
    _allocatorName(NULL),
-   _method(compilee),
+   _ilGenerator(0),
+   _optimizer(0),
    _firstInstruction(NULL),
    _appendInstruction(NULL),
    _firstColdInstruction(NULL),
-   _returnInfo(TR_VoidReturn),
-   _methodSymbols(m, 10),
-   _visitCount(0),
-   _nodeCount(0),
-   _accurateNodeCount(0),
-   _lastValidNodeCount(0),
-   _maxInlineDepth(0),
-   _numNestingLevels(0),
-   _numLivePendingPushSlots(0),
-   _ilGenerator(0),
-   _optimizer(0),
-   _usesPreexistence(options.getOption(TR_ForceUsePreexistence)),
-   _loopVersionedWrtAsyncChecks(false),
-   _nextOptLevel(unknownHotness),
-   _errorCode(COMPILATION_SUCCEEDED),
-   _codeCacheSwitched(false),
-   _commitedCallSiteInfo(false),
    _currentSymRefTab(NULL),
-   _peekingSymRefTab(NULL),
    _recompilationInfo(0),
+   _optimizationPlan(optimizationPlan),
    _primaryRandom(NULL),
    _adhocRandom(NULL),
-   _toNumberMap(self()->allocator("toNumberMap")),
-   _toStringMap(self()->allocator("toStringMap")),
-   _toCommentMap(self()->allocator("toCommentMap")),
-   _signature(compilee->signature(m)),
-   _containsBigDecimalLoad(false),
-   _useLongRegAllocation(false),
+   _methodSymbols(m, 10),
    _resolvedMethodSymbolReferences(m),
    _inlinedCallSites(m),
-   _peekingArgInfo(m),
    _inlinedCallStack(m),
    _inlinedCallArgInfoStack(m),
+   _devirtualizedCalls(getTypedAllocator<TR_DevirtualizedCallInfo*>(self()->allocator())),
    _inlinedCalls(0),
    _inlinedFramesAdded(0),
+   _virtualGuards(getTypedAllocator<TR_VirtualGuard*>(self()->allocator())),
    _staticPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticHCRPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
    _staticMethodPICSites(getTypedAllocator<TR::Instruction*>(self()->allocator())),
@@ -286,38 +267,56 @@ OMR::Compilation::Compilation(
    _methodSnippetsToBePatchedOnClassUnload(getTypedAllocator<TR::Snippet*>(self()->allocator())),
    _snippetsToBePatchedOnClassRedefinition(getTypedAllocator<TR::Snippet*>(self()->allocator())),
    _snippetsToBePatchedOnRegisterNative(getTypedAllocator<TR_Pair<TR::Snippet,TR_ResolvedMethod> *>(self()->allocator())),
-   _virtualGuards(getTypedAllocator<TR_VirtualGuard*>(self()->allocator())),
    _genILSyms(getTypedAllocator<TR::ResolvedMethodSymbol*>(self()->allocator())),
-   _devirtualizedCalls(getTypedAllocator<TR_DevirtualizedCallInfo*>(self()->allocator())),
-   _checkcastNullChkInfo(getTypedAllocator<TR_Pair<TR_ByteCodeInfo, TR::Node> *>(self()->allocator())),
-   _nodesThatShouldPrefetchOffset(getTypedAllocator<TR_Pair<TR::Node,uint32_t> *>(self()->allocator())),
-   _extraPrefetchInfo(getTypedAllocator<TR_PrefetchInfo*>(self()->allocator())),
    _noEarlyInline(true),
-   _optimizationPlan(optimizationPlan),
-   _verboseOptTransformationCount(0),
-   _currentBlock(NULL),
-   _aotMethodCodeStart(NULL),
-   _failCHtableCommitFlag(false),
-   _numReservedIPICTrampolines(0),
+   _returnInfo(TR_VoidReturn),
+   _visitCount(0),
+   _nodeCount(0),
+   _accurateNodeCount(0),
+   _lastValidNodeCount(0),
+   _maxInlineDepth(0),
+   _numLivePendingPushSlots(0),
+   _numNestingLevels(0),
+   _usesPreexistence(options.getOption(TR_ForceUsePreexistence)),
+   _loopVersionedWrtAsyncChecks(false),
+   _codeCacheSwitched(false),
+   _commitedCallSiteInfo(false),
+   _useLongRegAllocation(false),
+   _containsBigDecimalLoad(false),
    _osrStateIsReliable(true),
    _canAffordOSRControlFlow(true),
    _osrInfrastructureRemoved(false),
+   _toNumberMap(self()->allocator("toNumberMap")),
+   _toStringMap(self()->allocator("toStringMap")),
+   _toCommentMap(self()->allocator("toCommentMap")),
+   _nextOptLevel(unknownHotness),
+   _errorCode(COMPILATION_SUCCEEDED),
+   _peekingArgInfo(m),
+   _peekingSymRefTab(NULL),
+   _checkcastNullChkInfo(getTypedAllocator<TR_Pair<TR_ByteCodeInfo, TR::Node> *>(self()->allocator())),
+   _nodesThatShouldPrefetchOffset(getTypedAllocator<TR_Pair<TR::Node,uint32_t> *>(self()->allocator())),
+   _extraPrefetchInfo(getTypedAllocator<TR_PrefetchInfo*>(self()->allocator())),
+   _currentBlock(NULL),
+   _verboseOptTransformationCount(0),
+   _aotMethodCodeStart(NULL),
+   _compThreadID(id),
+   _failCHtableCommitFlag(false),
+   _numReservedIPICTrampolines(0),
    _phaseTimer("Compilation", self()->allocator("phaseTimer"), self()->getOption(TR_Timing)),
    _phaseMemProfiler("Compilation", self()->allocator("phaseMemProfiler"), self()->getOption(TR_LexicalMemProfiler)),
-   _copyPropagationRematerializationCandidates(self()->allocator("CP rematerialization")),
-   _prevSymRefTabSize(0),
    _compilationNodes(NULL),
+   _copyPropagationRematerializationCandidates(self()->allocator("CP rematerialization")),
    _nodeOpCodeLength(0),
-   _gpuPtxList(m),
-   _gpuKernelLineNumberList(m),
-   _gpuPtxCount(0),
+   _prevSymRefTabSize(0),
    _scratchSpaceLimit(TR::Options::_scratchSpaceLimit),
    _cpuTimeAtStartOfCompilation(-1),
    _ilVerifier(NULL),
+   _gpuPtxList(m),
+   _gpuKernelLineNumberList(m),
+   _gpuPtxCount(0),
    _bitVectorPool(self()),
    _tlsManager(*self())
    {
-   _aotClassInfo = new (m->trHeapMemory()) TR::list<TR::AOTClassInfo*>(getTypedAllocator<TR::AOTClassInfo*>(self()->allocator()));
 
    //Avoid expensive initialization and uneeded option checking if we are doing AOT Loads
    if (_optimizationPlan && _optimizationPlan->getIsAotLoad())
@@ -433,22 +432,25 @@ OMR::Compilation::Compilation(
 
    static const char *enableOSRAtAllOptLevels = feGetEnv("TR_EnableOSRAtAllOptLevels");
 
+   // If the outermost method is native, OSR is not supported
+   if (_methodSymbol->isNative())
+      self()->setOption(TR_DisableOSR);
+
+   // Do not default OSR on if:
+   // NextGenHCR is disabled, as it is enabled for it
+   // OSR is explicitly disabled
+   // FSD is enabled, as HCR cannot be enabled with it
+   // HCR has not been enabled
+   if (!self()->getOption(TR_DisableNextGenHCR) && !self()->getOption(TR_DisableOSR) && !self()->getOption(TR_FullSpeedDebug) && self()->getOption(TR_EnableHCR))
+      {
+      self()->setOption(TR_EnableOSR); // OSR must be enabled for NextGenHCR
+      }
+
    if (self()->isDLT() || (((self()->getMethodHotness() < warm) || self()->compileRelocatableCode() || self()->isProfilingCompilation()) && !enableOSRAtAllOptLevels && !_options->getOption(TR_FullSpeedDebug)))
       {
       self()->setOption(TR_DisableOSR);
       _options->setOption(TR_EnableOSR, false);
       _options->setOption(TR_EnableOSROnGuardFailure, false);
-      }
-
-   if (_options->getOption(TR_EnableHCR))
-      {
-      if (!self()->getOption(TR_DisableOSR))
-         self()->setOption(TR_EnableOSR); // Make OSR the default for HCR
-      if (_options->getOption(TR_EnableNextGenHCR))
-         {
-         self()->setOption(TR_EnableOSR);
-         _options->setOption(TR_DisableOSR, false);
-         }
       }
 
    if (_options->getOption(TR_EnableOSR))
@@ -812,14 +814,22 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    if (osrNode->getOpCode().isCall())
       return 3;
 
-   switch (osrNode->getOpCodeValue())
+   // If the monent has a bytecode index of 0, it must be the
+   // monent for a synchronized method. A transition here
+   // must target the method entry.
+   if (osrNode->getOpCodeValue() == TR::monent)
       {
-      case TR::monent: return 1;
-      case TR::asynccheck: return 0;
-      default:
-         TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+      if (osrNode->getByteCodeIndex() == 0)
          return 0;
+      else
+         return 1;
       }
+
+   if (osrNode->getOpCodeValue() == TR::asynccheck)
+      return 0;
+
+   TR_ASSERT(0, "OSR points should only be calls, monents or asyncchecks");
+   return 0;
    }
 
 /*
@@ -1109,7 +1119,7 @@ int32_t OMR::Compilation::compile()
             TR_VerboseLog::writeLine(TR_Vlog_INL, "#%d: %x #%d inlined %x@%d -> %x bcsz=%d %s",
                i, jittedBodyHash, callerIndex,
                strHash(callerSig), site._byteCodeInfo.getByteCodeIndex(),
-               strHash(calleeBuf), self()->fej9()->getMethodSize(site._methodInfo), calleeBuf);
+               strHash(calleeBuf), TR::Compiler->mtd.bytecodeSize(site._methodInfo), calleeBuf);
             }
 
          TR::Block *curBlock = NULL;
@@ -1139,7 +1149,7 @@ int32_t OMR::Compilation::compile()
                      const char *calleeSig = method->signature(self()->trMemory(), stackAlloc);
                      uint32_t calleeSize = UINT_MAX;
                      if (node->getSymbol()->getResolvedMethodSymbol())
-                        calleeSize = self()->fej9()->getMethodSize(node->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier());
+                        calleeSize = TR::Compiler->mtd.bytecodeSize(node->getSymbol()->getResolvedMethodSymbol()->getResolvedMethod()->getPersistentIdentifier());
                      TR_VerboseLog::writeLine(TR_Vlog_INL, "%x %s %x@%d -> %x bcsz=%d %s",
                         jittedBodyHash,
                         curBlock->isCold()? "coldCalled":"called",
@@ -1526,17 +1536,21 @@ OMR::Compilation::addVirtualGuard(TR_VirtualGuard *guard)
 TR_VirtualGuard *
 OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
    {
-   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard(), "@node %p\n", guardNode);
+   TR_ASSERT(guardNode->isTheVirtualGuardForAGuardedInlinedCall() || guardNode->isOSRGuard() || guardNode->isHCRGuard() || guardNode->isProfiledGuard() || guardNode->isMethodEnterExitGuard() || guardNode->isBreakpointGuard(), "@node %p\n", guardNode);
 
    TR_VirtualGuardKind guardKind = TR_NoGuard;
    if (guardNode->isSideEffectGuard())
       guardKind = TR_SideEffectGuard;
    else if (guardNode->isHCRGuard())
       guardKind = TR_HCRGuard;
+   else if (guardNode->isOSRGuard())
+      guardKind = TR_OSRGuard;
    else if (guardNode->isMethodEnterExitGuard())
       guardKind = TR_MethodEnterExitGuard;
    else if (guardNode->isMutableCallSiteTargetGuard())
       guardKind = TR_MutableCallSiteTargetGuard;
+   else if (guardNode->isBreakpointGuard())
+      guardKind = TR_BreakpointGuard;
 
    TR_VirtualGuard *guard = NULL;
 
@@ -1568,8 +1582,10 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
              (*current)->getCalleeIndex() == guardNode->getByteCodeInfo().getCallerIndex() &&
              (*current)->getKind() != TR_SideEffectGuard &&
              (*current)->getKind() != TR_HCRGuard &&
+             (*current)->getKind() != TR_OSRGuard &&
              (*current)->getKind() != TR_MethodEnterExitGuard &&
-             (*current)->getKind() != TR_MutableCallSiteTargetGuard)
+             (*current)->getKind() != TR_MutableCallSiteTargetGuard &&
+             (*current)->getKind() != TR_BreakpointGuard)
             {
             guard = *current;
             if (self()->getOption(TR_TraceRelocatableDataDetailsCG))
@@ -1579,7 +1595,7 @@ OMR::Compilation::findVirtualGuardInfo(TR::Node*guardNode)
          }
       }
 
-   TR_ASSERT(guard, "Can't find the virtual guard @ node %p \n", guardNode);
+   TR_ASSERT(guard, "Can't find the virtual guard @ bci %d:%d, node %p \n", guardNode->getByteCodeInfo().getCallerIndex(), guardNode->getByteCodeInfo().getByteCodeIndex(), guardNode);
 
    return guard;
    }
@@ -2483,7 +2499,7 @@ OMR::Compilation::getHCRMode()
       return TR::none;
    if (self()->isDLT() || self()->isProfilingCompilation() || self()->getOptLevel() <= cold)
       return TR::traditional;
-   return self()->getOption(TR_EnableOSR) && self()->getOption(TR_EnableNextGenHCR) ? TR::osr : TR::traditional;
+   return self()->getOption(TR_EnableOSR) && !self()->getOption(TR_DisableNextGenHCR) ? TR::osr : TR::traditional;
    }
 
 uint32_t

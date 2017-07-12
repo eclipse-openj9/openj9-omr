@@ -537,8 +537,8 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling },
-   { osrDefAnalysis                                },
    { osrLiveRangeAnalysis                          },
+   { osrDefAnalysis                                },
 #endif
    { endOpts },
    };
@@ -923,6 +923,14 @@ const char *
 OMR::Optimizer::getOptimizationName(OMR::Optimizations opt)
    {
    return ::optimizer_name[opt];
+   }
+
+bool
+OMR::Optimizer::isEnabled(OMR::Optimizations i)
+   {
+   if (_opts[i] != NULL)
+      return _opts[i]->enabled();
+   return false;
    }
 
 TR_Debug *OMR::Optimizer::getDebug()
@@ -1621,7 +1629,7 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
       bool needTreeDump = false;
       bool needStructureDump = false;
 
-      if (comp()->getOptions()->isDisabled(optNum))
+      if (!isEnabled(optNum))
          return 0;
 
       TR::SimpleRegex * regex = comp()->getOptions()->getDisabledOpts();
@@ -2336,9 +2344,9 @@ TR_Hotness OMR::Optimizer::checkMaxHotnessOfInlinedMethods( TR::Compilation *com
          {
          TR_InlinedCallSite & ics = comp->getInlinedCallSite(i);
          TR_OpaqueMethodBlock *method = comp->fe()->getInlinedCallSiteMethod(&ics);
-         if (comp->fe()->isCompiledMethod(method))
+         if (TR::Compiler->mtd.isCompiledMethod(method))
             {
-            TR_PersistentJittedBodyInfo * bodyInfo = TR::Recompilation::getJittedBodyInfoFromPC(comp->fe()->getMethodStartPC(method));
+            TR_PersistentJittedBodyInfo * bodyInfo = TR::Recompilation::getJittedBodyInfoFromPC((void *)TR::Compiler->mtd.startPC(method));
             if (bodyInfo &&
                 bodyInfo->getHotness() > strategy)
                {

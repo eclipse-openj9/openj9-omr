@@ -30,11 +30,8 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"                   // for TR::Options, etc
 #include "cs2/allocator.h"
-#include "cs2/arrayof.h"                                 // for ArrayOf
 #include "cs2/bitvectr.h"                                // for ABitVector, etc
-#include "cs2/cs2.h"                                     // for Pair
 #include "cs2/hashtab.h"                                 // for HashTable, etc
-#include "cs2/llistof.h"
 #include "cs2/sparsrbit.h"
 #include "env/TRMemory.hpp"                              // for Allocator, etc
 #include "il/AliasSetInterface.hpp"
@@ -77,24 +74,25 @@ const char* const TR_UseDefInfo::allocatorName = "UseDefInfo";
 
 TR_UseDefInfo::TR_UseDefInfo(TR::Compilation *comp, TR::CFG *cfg, TR::Optimizer *optimizer,
       bool requiresGlobals, bool prefersGlobals, bool loadsShouldBeDefs, bool cannotOmitTrivialDefs, bool conversionRegsOnly, bool doCompletion)
-   : _compilation(comp),
+   : _region(comp->trMemory()->heapMemoryRegion()),
+     _compilation(comp),
      _optimizer(optimizer),
-     _atoms(comp->allocator(allocatorName), CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
+     _atoms(0, std::make_pair<TR::Node *, TR::TreeTop *>(NULL, NULL), _region),
      _useDefForMemorySymbols(false),
-     _useDefInfo(comp->allocator(allocatorName), TR_UseDefInfo::BitVector(comp->allocator(allocatorName))),
+     _useDefInfo(0, TR_UseDefInfo::BitVector(comp->allocator(allocatorName)), _region),
      _isUseDefInfoValid(false),
-     _infoCache(getTypedAllocator<BitVector>(comp->allocator(allocatorName))),
+     _infoCache(_region),
      _EMPTY(comp->allocator(allocatorName)),
-     _useDerefDefInfo(comp->allocator(allocatorName), NULL),
-     _defUseInfo(comp->allocator(allocatorName), TR_UseDefInfo::BitVector(comp->allocator(allocatorName))),
-     _loadDefUseInfo(comp->allocator(allocatorName), TR_UseDefInfo::BitVector(comp->allocator(allocatorName))),
+     _useDerefDefInfo(0, static_cast<const BitVector *>(NULL), _region),
+     _defUseInfo(0, TR_UseDefInfo::BitVector(comp->allocator(allocatorName)), _region),
+     _loadDefUseInfo(0, TR_UseDefInfo::BitVector(comp->allocator(allocatorName)), _region),
      _tempsOnly(false),
      _trace(comp->getOption(TR_TraceUseDefs)),
      _hasLoadsAsDefs(loadsShouldBeDefs),
-     _useDefs(comp->allocator(allocatorName)),
+     _useDefs(0, _region),
      _numMemorySymbols(0),
-     _valueNumbersToMemorySymbolsMap(comp->allocator(allocatorName), TR_UseDefInfo::MemorySymbolList(comp->allocator(allocatorName))),
-     _sideTableToSymRefNumMap(comp->allocator(allocatorName)),
+     _valueNumbersToMemorySymbolsMap(0, static_cast<MemorySymbolList *>(NULL), _region),
+     _sideTableToSymRefNumMap(comp->getSymRefCount(), _region),
      _cfg(cfg),
      _valueNumberInfo(NULL)
    {
@@ -134,8 +132,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    TR::SymbolReferenceTable *symRefTab = comp()->getSymRefTab();
    int32_t numSymRefs = comp()->getSymRefCount();
-
-   _sideTableToSymRefNumMap.GrowTo(numSymRefs);
 
    if (_hasLoadsAsDefs &&
        !cannotOmitTrivialDefs &&
@@ -285,10 +281,10 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
       traceMsg(comp(), "   Number of defs on entry     = %d\n", _numDefsOnEntry);
       }
 
-   _atoms.GrowTo(getTotalNodes());
+   _atoms.resize(getTotalNodes());
 
    //  traceMsg(comp(), "Growing useDefInfo to %d\n",getNumUseNodes());
-   _useDefInfo.GrowTo(getNumUseNodes());
+   _useDefInfo.resize(getNumUseNodes(), TR_UseDefInfo::BitVector(comp()->allocator(allocatorName)));
    //   for (i = getNumUseNodes()-1; i >= 0; --i)
    //      _useDefInfo[i].GrowTo(getNumDefNodes());
    _isUseDefInfoValid = true;
@@ -320,15 +316,15 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    // Flatten the info.. keep the node around for uses - and the treetop around for defs
    //
-   _useDefs.GrowTo(getTotalNodes());
+   _useDefs.resize(getTotalNodes());
    for (int32_t k = 0; k < getTotalNodes(); ++k)
       {
-      CS2::Pair<TR::Node *, TR::TreeTop *> &atom = _atoms[k];
-      TR::Node *node = atom.getKey();
+      std::pair<TR::Node *, TR::TreeTop *> &atom = _atoms[k];
+      TR::Node *node = atom.first;
       if (!node) continue;
       int32_t index = node->getUseDefIndex();
       if (isDefIndex(index) && !isUseIndex(index))
-         _useDefs[k] = TR_UseDef(atom.getValue());
+         _useDefs[k] = TR_UseDef(atom.second);
       else
          _useDefs[k] = TR_UseDef(node);
       }
@@ -348,9 +344,9 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 void TR_UseDefInfo::invalidateUseDefInfo()
    {
    _isUseDefInfoValid = false;
-   _useDefInfo.MakeEmpty();
-   _defUseInfo.MakeEmpty();
-   _loadDefUseInfo.MakeEmpty();
+   _useDefInfo.clear();
+   _defUseInfo.clear();
+   _loadDefUseInfo.clear();
    if (_valueNumberInfo)
       {
       delete _valueNumberInfo;
@@ -760,7 +756,9 @@ void TR_UseDefInfo::buildValueNumbersToMemorySymbolsMap()
    {
    LexicalTimer tlex("useDefInfo_buildValueNosToMSM", comp()->phaseTimer());
 
-   _valueNumbersToMemorySymbolsMap.GrowTo(_valueNumberInfo->getNumberOfValues());
+   _valueNumbersToMemorySymbolsMap.resize(_valueNumberInfo->getNumberOfValues(), NULL);
+   for (size_t i = 0; i < _valueNumbersToMemorySymbolsMap.size(); ++i)
+      _valueNumbersToMemorySymbolsMap[i] = new (_region) MemorySymbolList(_region);
 
    comp()->incVisitCount();
    _numMemorySymbols = 0;
@@ -795,12 +793,11 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
       uint32_t size = node->getSymbolReference()->getSymbol()->getSize();
       uint32_t offset = node->getSymbolReference()->getOffset();
 
-      TR_UseDefInfo::MemorySymbolList::Cursor cursor(_valueNumbersToMemorySymbolsMap[valueNumber]);
-
       bool found = false;
-      for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
+      for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
+           itr != end; ++itr)
          {
-         MemorySymbol &memorySymbol = *cursor;
+         MemorySymbol &memorySymbol = *itr;
          if ((memorySymbol._size == size) && (memorySymbol._offset == offset))
             {
             found = true;
@@ -809,10 +806,10 @@ void TR_UseDefInfo::findMemorySymbols(TR::Node *node)
          }
 
       if (!found)
-         _valueNumbersToMemorySymbolsMap[valueNumber].Push(MemorySymbol(size, offset, _numMemorySymbols++));
+         _valueNumbersToMemorySymbolsMap[valueNumber]->push_front(MemorySymbol(size, offset, _numMemorySymbols++));
 
       if (trace())
-         traceMsg(comp(), "Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber].Head()->_localIndex, valueNumber, size, offset);
+         traceMsg(comp(), "Node %p has memory symbol index %d (%d:%d:%d)\n", node, _valueNumbersToMemorySymbolsMap[valueNumber]->front()._localIndex, valueNumber, size, offset);
       }
    }
 
@@ -829,11 +826,10 @@ int32_t TR_UseDefInfo::getMemorySymbolIndex(TR::Node * node)
    uint32_t size = node->getSymbolReference()->getSymbol()->getSize();
    uint32_t offset = node->getSymbolReference()->getOffset();
 
-   TR_UseDefInfo::MemorySymbolList::Cursor cursor(_valueNumbersToMemorySymbolsMap[valueNumber]);
-
-   for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
+   for (auto itr = _valueNumbersToMemorySymbolsMap[valueNumber]->begin(), end = _valueNumbersToMemorySymbolsMap[valueNumber]->end();
+        itr != end; ++itr)
       {
-      MemorySymbol &memorySymbol = *cursor;
+      MemorySymbol &memorySymbol = *itr;
       if ((memorySymbol._size == size) && (memorySymbol._offset == offset))
          return memorySymbol._localIndex;
       }
@@ -1143,7 +1139,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
 
    // A cleared symRefToLocalIndexMap is required for each call to indexSymbolsAndNodes - so we create it as a local variable here,
    // and pass it down to findUseDefNodes, as findUseDefNodes is recursive.
-   TR::deque<uint32_t> symRefToLocalIndexMap(comp()->getSymRefCount(), comp()->allocator());
+   TR::deque<uint32_t, TR::Region&> symRefToLocalIndexMap(comp()->getSymRefCount(), _region);
 
    for (treeTop = comp()->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
       {
@@ -1235,7 +1231,7 @@ bool TR_UseDefInfo::findUseDefNodes(
    TR::Node *parent,
    TR::TreeTop *treeTop,
    AuxiliaryData &aux,
-   TR::deque<uint32_t> &symRefToLocalIndexMap,
+   TR::deque<uint32_t, TR::Region&> &symRefToLocalIndexMap,
    bool considerImplicitStores
    )
    {
@@ -1687,7 +1683,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
       return;
 
    aux._sideTableToUseDefMap[node->getLocalIndex()] = node->getUseDefIndex();
-   _atoms[node->getUseDefIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+   _atoms[node->getUseDefIndex()] = std::make_pair(node, treeTop);
    if (!isTrivialUseDefNode(node, aux) && adjustArray)
       aux._expandedAtoms[node->getLocalIndex()] = std::make_pair(node, treeTop);
 
@@ -1947,7 +1943,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
 
    if (_hasLoadsAsDefs)
       {
-      _useDerefDefInfo.GrowTo(getNumUseNodes());
+      _useDerefDefInfo.resize(getNumUseNodes(), NULL);
 
       // Go through any use nodes whose use/def info must be dereferenced.
       //
@@ -2222,14 +2218,14 @@ void TR_UseDefInfo::dereferenceDef(TR_UseDefInfo::BitVector &useDefInfo, int32_t
    {
    TR_ASSERT(defIndex < getTotalNodes(), "TR_UseDefInfo::getNode index(%d) is bigger than total(%d)\n", defIndex, getTotalNodes());
 
-   CS2::LinkedListOf<CS2::Pair<TR::Node *,TR::TreeTop *>, TR::Allocator> defIndices(comp()->allocator());
-   defIndices.Push(_atoms[defIndex]);
+   TR::list<std::pair<TR::Node *,TR::TreeTop *>, TR::Region&> defIndices(_region);
+   defIndices.push_front(_atoms[defIndex]);
    nodesLookedAt[defIndex - getFirstUseIndex()] = true;
 
-   while (!defIndices.IsEmpty())
+   while (!defIndices.empty())
       {
-      defIndex = defIndices.Head()->getKey()->getUseDefIndex();
-      defIndices.Pop();
+      defIndex = defIndices.front().first->getUseDefIndex();
+      defIndices.pop_front();
       int32_t useIndex = defIndex - getFirstUseIndex();
 
       if (getNode(defIndex)->getSymbolReference()->getSymbol()->isMethod() ||
@@ -2273,7 +2269,7 @@ void TR_UseDefInfo::dereferenceDef(TR_UseDefInfo::BitVector &useDefInfo, int32_t
                {
                if (trace())
                   traceMsg(comp(), "      Adding def index %d\n", myDef);
-               defIndices.Push(_atoms[myDef]);
+               defIndices.push_front(_atoms[myDef]);
                nodesLookedAt[myDef - getFirstUseIndex()] = true;
                }
             }
@@ -2812,13 +2808,13 @@ bool TR_UseDefInfo::getUsesFromDef(BitVector &usesFromDef, int32_t defIndex, boo
 
 const TR_UseDefInfo::BitVector &TR_UseDefInfo::getUsesFromDef_ref(int32_t defIndex, bool loadAsDef)
    {
-   if ((_defUseInfo.NumberOfElements() > 0) && !loadAsDef)
+   if ((_defUseInfo.size() > 0) && !loadAsDef)
       {
       //      traceMsg(comp(), "UDI: returning _defUseInfo at index %d numberOfElements = %d\n_defUseInfo = ",defIndex,_defUseInfo.NumberOfElements());
       //      *(comp()) << _defUseInfo;
       return _defUseInfo[defIndex];
       }
-   else if ((_loadDefUseInfo.NumberOfElements() > 0) && loadAsDef)
+   else if ((_loadDefUseInfo.size() > 0) && loadAsDef)
       {
       //      traceMsg(comp(), "UDI: returning _loadDefUseInfo at index %d\n",defIndex);
       return _loadDefUseInfo[defIndex];
@@ -2943,14 +2939,14 @@ void TR_UseDefInfo::buildDefUseInfo(bool loadAsDef)
    // Build def/use info from the use/def info
    //
    //We build uses for real defs (stores) only.
-   if ((_defUseInfo.NumberOfElements() > 0) &&
-       ((_loadDefUseInfo.NumberOfElements() > 0) || !loadAsDef))
+   if ((_defUseInfo.size() > 0) &&
+       ((_loadDefUseInfo.size() > 0) || !loadAsDef))
       return;
 
-   _defUseInfo.GrowTo(getNumDefNodes());
+   _defUseInfo.resize(getNumDefNodes(), TR_UseDefInfo::BitVector(comp()->allocator(allocatorName)));
 
    if (loadAsDef)
-      _loadDefUseInfo.GrowTo(getNumDefNodes());
+      _loadDefUseInfo.resize(getNumDefNodes(), TR_UseDefInfo::BitVector(allocator()));
 
    for (int32_t i = getFirstUseIndex(); i <= getLastUseIndex(); i++)
       {
@@ -3002,6 +2998,6 @@ bool TR_UseDefInfo::canComputeReachingDefs()
 
 int32_t TR_UseDefInfo::getSymRefIndexFromUseDefIndex(int32_t udIndex)
    {
-   TR_ASSERT( udIndex < _sideTableToSymRefNumMap.NumberOfElements(), "index into _sideTableToSymRefNumMap out of bounds");
+   TR_ASSERT( udIndex < _sideTableToSymRefNumMap.size(), "index into _sideTableToSymRefNumMap out of bounds");
    return _sideTableToSymRefNumMap[udIndex];
    }

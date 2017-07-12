@@ -22,10 +22,7 @@
 #include <stddef.h>                 // for NULL
 #include <stdint.h>                 // for int32_t, uint32_t, intptr_t
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/arrayof.h"            // for ArrayOf
 #include "cs2/bitvectr.h"           // for ABitVector
-#include "cs2/cs2.h"                // for Pair
-#include "cs2/llistof.h"            // for LinkedListOf
 #include "cs2/sparsrbit.h"          // for ASparseBitVector
 #include "env/TRMemory.hpp"         // for Allocator, SparseBitVector, etc
 #include "il/Node.hpp"              // for Node, scount_t
@@ -61,6 +58,7 @@ namespace TR { class TreeTop; }
  */
 class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    {
+   TR::Region _region;
    public:
 
    // Construct use def info for the current method's trees. This also assigns
@@ -186,7 +184,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    public:
 
    TR::Node      *getSingleDefiningLoad(TR::Node *node);
-   void          resetDefUseInfo() {_defUseInfo.MakeEmpty();}
+   void          resetDefUseInfo() {_defUseInfo.clear();}
 
    bool          skipAnalyzingForCompileTime(TR::Node *node, TR::Block *block, TR::Compilation *comp, AuxiliaryData &aux);
 
@@ -295,7 +293,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       TR::Node *parent,
       TR::TreeTop *treeTop,
       AuxiliaryData &aux,
-      TR::deque<uint32_t> &symRefToLocalIndexMap,
+      TR::deque<uint32_t, TR::Region&> &symRefToLocalIndexMap,
       bool considerImplicitStores = false
       );
    bool assignAdjustedNodeIndex(TR::Block *, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, bool considerImplicitStores = false);
@@ -312,18 +310,18 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
 
    private:
 
-   CS2::ArrayOf<CS2::Pair<TR::Node *, TR::TreeTop *>, TR::Allocator> _atoms;                          //TR::Node            **_nodes;
+   TR::vector<std::pair<TR::Node *, TR::TreeTop *>, TR::Region&> _atoms;
 
    private:
-   CS2::ArrayOf<BitVector,TR::Allocator> _useDefInfo;
+   TR::vector<BitVector, TR::Region&> _useDefInfo;
    bool _isUseDefInfoValid;
 
-   TR::list<BitVector> _infoCache;                                 ///< initially empty bit vectors that are used for caching
+   TR::list<BitVector, TR::Region&> _infoCache;                    ///< initially empty bit vectors that are used for caching
    const BitVector _EMPTY;                                         ///< the empty bit vector
-   CS2::ArrayOf<const BitVector *,TR::Allocator> _useDerefDefInfo; ///< all load defs are dereferenced
-   CS2::ArrayOf<BitVector,TR::Allocator> _defUseInfo;
-   CS2::ArrayOf<BitVector,TR::Allocator> _loadDefUseInfo;
-   CS2::ArrayOf<int32_t, TR::Allocator> _sideTableToSymRefNumMap;
+   TR::vector<const BitVector *,TR::Region&> _useDerefDefInfo; ///< all load defs are dereferenced
+   TR::vector<BitVector, TR::Region&> _defUseInfo;
+   TR::vector<BitVector, TR::Region&> _loadDefUseInfo;
+   TR::vector<int32_t, TR::Region&> _sideTableToSymRefNumMap;
 
    int32_t             _numDefOnlyNodes;
    int32_t             _numDefUseNodes;
@@ -364,7 +362,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       };
 
 
-   CS2::ArrayOf<TR_UseDef,TR::Allocator> _useDefs;
+   TR::vector<TR_UseDef, TR::Region &> _useDefs;
 
    class MemorySymbol
       {
@@ -376,10 +374,10 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
 
       friend class TR_UseDefInfo;
       };
-   typedef CS2::LinkedListOf<MemorySymbol,TR::Allocator> MemorySymbolList;
+   typedef TR::list<MemorySymbol, TR::Region&> MemorySymbolList;
 
    int32_t                 _numMemorySymbols;
-   CS2::ArrayOf<MemorySymbolList, TR::Allocator> _valueNumbersToMemorySymbolsMap;
+   TR::vector<MemorySymbolList *, TR::Region&> _valueNumbersToMemorySymbolsMap;
    TR_ValueNumberInfo *_valueNumberInfo;
    TR::CFG                   *_cfg;
    };

@@ -27,7 +27,7 @@
 #
 ifeq (,$(PLATFORM))
     # TODO: move guess-platform.sh into a common directory
-    PLATFORM:=$(shell $(SHELL) ../fvtest/compilertest/build/scripts/guess-platform.sh)
+    PLATFORM:=$(shell $(SHELL) $(JIT_SCRIPT_DIR)/guess-platform.sh)
     $(warning PLATFORM not set. Guessing '$(PLATFORM)')
 endif
 

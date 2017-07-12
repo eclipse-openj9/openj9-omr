@@ -85,7 +85,7 @@ JIT_PRODUCT_DIR?=jitbuilder
 # Dirs used internally by the makefiles
 #
 JIT_MAKE_DIR?=$(JIT_SRCBASE)/$(JIT_PRODUCT_DIR)/build
-JIT_SCRIPT_DIR?=$(JIT_SRCBASE)/$(JIT_PRODUCT_DIR)/build/scripts
+JIT_SCRIPT_DIR?=$(JIT_SRCBASE)/tools/compiler/scripts
 
 #
 # First we set a bunch of tokens about the platform that the rest of the

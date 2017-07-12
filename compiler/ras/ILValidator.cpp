@@ -149,25 +149,19 @@ void TR::ILValidator::updateNodeState(Location &newLocation)
          {
          _liveNodes.add(node);
          }
+      }
 
-      // Simulate decrement reference count on children
-      //
-      for (auto childIter = node->childIterator(); TR::Node *child = *childIter; ++childIter)
+   if (_liveNodes.contains(node))
+      {
+      validityRule(newLocation, state._futureReferenceCount >= 1, "Node already has reference count 0");
+      if (--state._futureReferenceCount == 0)
          {
-         NodeState &childState = _nodeStates[child];
-         if (_liveNodes.contains(child))
-            {
-            validityRule(newLocation, childState._futureReferenceCount >= 1, "Child %s n%dn already has reference count 0", child->getOpCode().getName(), child->getGlobalIndex());
-            if (--childState._futureReferenceCount == 0)
-               {
-               _liveNodes.remove(child);
-               }
-            }
-         else
-            {
-            validityRule(newLocation, node->getOpCode().isTreeTop(), "Child %s n%dn has already gone dead", child->getOpCode().getName(), child->getGlobalIndex());
-            }
+         _liveNodes.remove(node);
          }
+      }
+   else
+      {
+      validityRule(newLocation, node->getOpCode().isTreeTop(), "Node has already gone dead");
       }
 
    if (isLoggingEnabled())

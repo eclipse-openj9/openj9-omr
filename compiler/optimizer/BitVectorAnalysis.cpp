@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,8 +22,6 @@
 #include "compile/Method.hpp"                       // for HIGH_VISIT_COUNT
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"
-#include "cs2/tableof.h"                            // for TableOf, etc
 #include "env/TRMemory.hpp"                         // for BitVector, etc
 #include "il/Block.hpp"                             // for Block, toBlock
 #include "il/Node.hpp"                              // for Node, etc
@@ -81,9 +79,6 @@ performAnalysis(TR_Structure *rootStructure,
    //traceMsg(comp(), "DJS perform analysis %d, nodes = %d, bits = %d\n", this->getKind(), comp()->getFlowGraph()->getNextNodeNumber(), getNumberOfBits());
    //comp()->printMemStatsBefore("DJS - Before DFA");
    // Table of bit vectors to be used during the analysis.
-   CS2::TableOf<TR::BitVector, TR::Allocator>
-      bvTable(64, comp()->allocator());
-   _bitVectorTable = &bvTable;
    rootStructure->resetAnalysisInfo();
    rootStructure->resetAnalyzedStatus();
    initializeDFSetAnalysis();
@@ -95,15 +90,6 @@ performAnalysis(TR_Structure *rootStructure,
    //rootStructure->resetAnalyzedStatus();
    //comp()->printMemStatsAfter("DJS - After DFA");
    return true;
-   }
-
-template<class Container>
-TR::BitVector *
-TR_BasicDFSetAnalysis<Container *>::
-allocateBitVector()
-   {
-   CS2::TableIndex i = _bitVectorTable->AddEntry(comp()->allocator());
-   return &_bitVectorTable->ElementAt(i);
    }
 
 template<class Container>
@@ -188,7 +174,7 @@ template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeBasi
    this->allocateContainer(&_exceptionInfo);
    this->allocateContainer(&_temp);
    this->allocateContainer(&_temp2);
-   _nodesInCycle = allocateBitVector();
+   _nodesInCycle = new (trMemory()->currentStackRegion()) TR_BitVector(trMemory()->currentStackRegion());
 
    if (supportsGenAndKillSets())
       {
@@ -304,16 +290,16 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::canGenAndKil
       {
       TR_StructureSubGraphNode *entryNode = naturalLoop->getEntry();
 
-      TR::BitVector seenExitNodes(this->comp()->allocator());
+      TR_BitVector seenExitNodes(this->comp()->trMemory()->currentStackRegion());
       ListIterator<TR::CFGEdge> ei(&naturalLoop->getExitEdges());
       for (TR::CFGEdge *edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
         {
         TR::CFGNode *toNode = edge->getTo();
 
-        if (seenExitNodes.ValueAt(toNode->getNumber()))
+        if (seenExitNodes.get(toNode->getNumber()))
            continue;
 
-        seenExitNodes[toNode->getNumber()] = true;
+        seenExitNodes.set(toNode->getNumber());
 
         bool seenNonBackEdge = false;
         bool seenLoopBackEdge = false;
@@ -364,7 +350,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::canGenAndKil
 
 template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGenAndKillSetInfoForRegion(TR_RegionStructure *region)
    {
-   TR::BitVector exitNodes(this->comp()->allocator());
+   TR_BitVector exitNodes(this->comp()->trMemory()->currentStackRegion());
 
    //
    // Allocate the storage for every exit out of the region
@@ -390,7 +376,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
       for (TR::CFGEdge *edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
          {
          int32_t toStructureNumber = edge->getTo()->getNumber();
-         if (!exitNodes.ValueAt(toStructureNumber))
+         if (!exitNodes.get(toStructureNumber))
             {
             Container *b = NULL;
 
@@ -418,7 +404,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
             pair = new (this->trStackMemory()) typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair(b, toStructureNumber);
             analysisInfo->_currentExceptionKillSetInfo->add(pair);
 
-            exitNodes[toStructureNumber] = true;
+            exitNodes.set(toStructureNumber);
             }
          }
 
@@ -455,18 +441,18 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
       }
 
 
-   TR::BitVector pendingList(this->comp()->allocator());
+   TR_BitVector pendingList(this->comp()->trMemory()->currentStackRegion());
 
    // Set the pending list to be all of the region's subnodes.
    //
    TR_RegionStructure::Cursor si(*region);
    TR_StructureSubGraphNode *subNode;
    for (subNode = si.getCurrent(); subNode; subNode = si.getNext())
-      pendingList[subNode->getNumber()] = true;
+      pendingList.set(subNode->getNumber());
 
    int32_t numIterations = 1;
 
-   this->_nodesInCycle->Clear();
+   this->_nodesInCycle->empty();
 
    if (this->traceBVA())
       traceMsg(this->comp(), "\nGen : Analyzing REGION : %p NUMBER : %d ITERATION NUMBER : %d\n", region, region->getNumber(), numIterations);
@@ -586,13 +572,13 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
    // Use pendingList to remember which exit nodes have already been seen
    // when merging the out information for the region.
    //
-   pendingList.Clear();
+   pendingList.empty();
    }
 
 
 
 
-template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGenAndKillSetInfo(TR_RegionStructure *regionStructure, TR::BitVector &pendingList)
+template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGenAndKillSetInfo(TR_RegionStructure *regionStructure, TR_BitVector &pendingList)
    {
    while (this->_analysisQueue.getListHead() &&
           (this->_analysisQueue.getListHead()->getData()->getStructure() != regionStructure))
@@ -617,7 +603,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;
 
-      if (!pendingList.ValueAt(nodeStructure->getStructure()->getNumber()) &&
+      if (!pendingList.get(nodeStructure->getStructure()->getNumber()) &&
           (*(this->_changedSetsQueue.getListHead()->getData()) == 0))
          {
          this->removeHeadFromAnalysisQueue();
@@ -628,10 +614,10 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
          traceMsg(this->comp(), "Gen : Begin analyzing node %p numbered %d in region %p (%d)\n", nodeStructure->getStructure(), node->getNumber(), regionStructure, regionStructure->getNumber());
 
       bool alreadyVisitedNode = false;
-      if (this->_nodesInCycle->ValueAt(nodeStructure->getNumber()))
+      if (this->_nodesInCycle->get(nodeStructure->getNumber()))
          alreadyVisitedNode = true;
 
-      (*(this->_nodesInCycle))[nodeStructure->getNumber()] = true;
+      this->_nodesInCycle->set(nodeStructure->getNumber());
 
       if (node != regionStructure->getEntry())
          initializeCurrentGenKillSetInfo();
@@ -648,7 +634,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
             bool normalPred = (++count <= node->getPredecessors().size());
             TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) pred->getFrom();
             TR_Structure *predStructure = predNode->getStructure();
-            if (pendingList.ValueAt(predStructure->getNumber()) && (!alreadyVisitedNode))
+            if (pendingList.get(predStructure->getNumber()) && (!alreadyVisitedNode))
                {
                this->removeHeadFromAnalysisQueue();
                this->addToAnalysisQueue(predNode, 0);
@@ -656,7 +642,7 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
                break;
                }
 
-              if (pendingList.ValueAt(predStructure->getNumber()) && !predStructure->hasBeenAnalyzedBefore())  //_firstIteration)
+              if (pendingList.get(predStructure->getNumber()) && !predStructure->hasBeenAnalyzedBefore())  //_firstIteration)
                {
                }
             else
@@ -710,9 +696,9 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
 
       bool checkForChange = !regionStructure->isAcyclic();
       typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *nodeInfo = this->getAnalysisInfo(nodeStructure->getStructure());
-      this->_nodesInCycle->Clear();
+      this->_nodesInCycle->empty();
       this->initializeGenAndKillSetInfoForStructure(nodeStructure->getStructure());
-      pendingList[nodeStructure->getStructure()->getNumber()] = false;
+      pendingList.reset(nodeStructure->getStructure()->getNumber());
       this->removeHeadFromAnalysisQueue();
 
       *_currentRegularGenSetInfo = *temp1;
@@ -863,9 +849,9 @@ template<class Container>void TR_ForwardDFSetAnalysis<Container *>::initializeGe
             }
 
          if ((!regionStructure->isExitEdge(succ)) &&
-             (pendingList.ValueAt(succNode->getNumber())))
+             (pendingList.get(succNode->getNumber())))
             {
-            this->_nodesInCycle->Clear();
+            this->_nodesInCycle->empty();
             this->addToAnalysisQueue(toStructureSubGraphNode(succNode), 1);
             }
          }
@@ -979,7 +965,7 @@ template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnal
 
 template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnalysisInfo(typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *info, TR_RegionStructure *region)
    {
-   TR::BitVector exitNodes(comp()->allocator());
+   TR_BitVector exitNodes(comp()->trMemory()->currentStackRegion());
    //
    // Copy the current out set for comparison the next time we analyze this region
    //
@@ -990,12 +976,12 @@ template<class Container>void TR_BasicDFSetAnalysis<Container *>::initializeAnal
       for (TR::CFGEdge *edge = ei.getCurrent(); edge != NULL; edge = ei.getNext())
          {
          int32_t toStructureNumber = edge->getTo()->getNumber();
-         if (!exitNodes.ValueAt(toStructureNumber))
+         if (!exitNodes.get(toStructureNumber))
             {
             Container *b = initializeInfo(NULL);
             typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair *pair = new (this->trStackMemory()) typename TR_BasicDFSetAnalysis<Container *>::TR_ContainerNodeNumberPair(b, toStructureNumber);
             info->_outSetInfo->add(pair);
-            exitNodes[toStructureNumber] = true;
+            exitNodes.set(toStructureNumber);
             }
          }
       }
@@ -1059,7 +1045,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
    //
    this->copyFromInto(this->_currentInSetInfo, analysisInfo->_inSetInfo);
 
-   TR::BitVector pendingList(this->comp()->allocator());
+   TR_BitVector pendingList(this->comp()->trMemory()->currentStackRegion());
 
    // Set the pending list to be all of the region's subnodes.
    //
@@ -1067,7 +1053,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
    TR_StructureSubGraphNode *subNode;
    for (subNode = si.getCurrent(); subNode; subNode = si.getNext())
       {
-      pendingList[subNode->getNumber()] = true;
+      pendingList.set(subNode->getNumber());
       }
 
    bool changed = true;
@@ -1076,7 +1062,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
 
    while (changed)
       {
-      this->_nodesInCycle->Clear();
+      this->_nodesInCycle->empty();
 
       changed = false;
 
@@ -1102,7 +1088,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
    // Use pendingList to remember which exit nodes have already been seen
    // when merging the out information for the region.
    //
-   pendingList.Clear();
+   pendingList.empty();
    if (regionStructure != this->_cfg->getStructure())
       {
       ListIterator<TR::CFGEdge> ei(&regionStructure->getExitEdges());
@@ -1133,9 +1119,9 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
             }
          else
             {
-            if (!pendingList.ValueAt(toStructureNumber))
+            if (!pendingList.get(toStructureNumber))
                {
-               pendingList[toStructureNumber] = true;
+               pendingList.set(toStructureNumber);
                if (checkForChange && !changed &&
                    !(*fromBitVector == *toBitVector))
                   changed = true;
@@ -1161,7 +1147,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeRegio
 
 
 
-template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeIfPredecessorsAnalyzed(TR_RegionStructure *regionStructure, TR::BitVector &pendingList)
+template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeIfPredecessorsAnalyzed(TR_RegionStructure *regionStructure, TR_BitVector &pendingList)
    {
    bool anyNodeChanged = false;
 
@@ -1188,7 +1174,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
       TR::CFGNode *node = this->_analysisQueue.getListHead()->getData();
       TR_StructureSubGraphNode *nodeStructure = (TR_StructureSubGraphNode *) node;
 
-      if (!pendingList.ValueAt(nodeStructure->getStructure()->getNumber()) &&
+      if (!pendingList.get(nodeStructure->getStructure()->getNumber()) &&
           (*(this->_changedSetsQueue.getListHead()->getData()) == 0))
          {
          this->removeHeadFromAnalysisQueue();
@@ -1199,10 +1185,10 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
          traceMsg(this->comp(), "Begin analyzing node %p numbered %d\n", node, node->getNumber());
 
       bool alreadyVisitedNode = false;
-      if (this->_nodesInCycle->ValueAt(nodeStructure->getNumber()))
+      if (this->_nodesInCycle->get(nodeStructure->getNumber()))
          alreadyVisitedNode = true;
 
-      (*(this->_nodesInCycle))[nodeStructure->getNumber()] = true;
+      this->_nodesInCycle->set(nodeStructure->getNumber());
 
       typename TR_BasicDFSetAnalysis<Container *>::ExtraAnalysisInfo *analysisInfo = this->getAnalysisInfo(nodeStructure->getStructure());
 
@@ -1215,7 +1201,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
          {
          TR_StructureSubGraphNode *predNode = (TR_StructureSubGraphNode *) pred->getFrom();
          TR_Structure *predStructure = predNode->getStructure();
-         if (pendingList.ValueAt(predStructure->getNumber()) && (!alreadyVisitedNode))
+         if (pendingList.get(predStructure->getNumber()) && (!alreadyVisitedNode))
             {
             this->removeHeadFromAnalysisQueue();
             this->addToAnalysisQueue(predNode, 0);
@@ -1223,7 +1209,7 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
             break;
             }
 
-         if (pendingList.ValueAt(predStructure->getNumber()) && !predStructure->hasBeenAnalyzedBefore()) //this->_firstIteration)
+         if (pendingList.get(predStructure->getNumber()) && !predStructure->hasBeenAnalyzedBefore()) //this->_firstIteration)
             {
             if (firstPred)
                initializeInfo(_currentInSetInfo);
@@ -1343,11 +1329,11 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
             }
         }
 
-      this->_nodesInCycle->Clear();
+      this->_nodesInCycle->empty();
       bool b = nodeStructure->getStructure()->doDataFlowAnalysis(this, checkForChange);
-      if (b || pendingList.ValueAt(node->getNumber()))
+      if (b || pendingList.get(node->getNumber()))
          outSetChanged = true;
-      pendingList[nodeStructure->getStructure()->getNumber()] = false;
+      pendingList.reset(nodeStructure->getStructure()->getNumber());
       this->removeHeadFromAnalysisQueue();
 
       if (this->traceBVA())
@@ -1375,9 +1361,9 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
          {
          TR::CFGNode *succNode = (*succ)->getTo();
          if ((!regionStructure->isExitEdge(*succ)) && (needToIterate || (succNode != regionStructure->getEntry())) &&
-             (pendingList.ValueAt(succNode->getNumber()) || outSetChanged))
+             (pendingList.get(succNode->getNumber()) || outSetChanged))
             {
-            this->_nodesInCycle->Clear();
+            this->_nodesInCycle->empty();
             this->addToAnalysisQueue(toStructureSubGraphNode(succNode), outSetChanged ? 1 : 0);
             }
          }
@@ -1386,9 +1372,9 @@ template<class Container>bool TR_ForwardDFSetAnalysis<Container *>::analyzeNodeI
          {
          TR::CFGNode *succNode = (*succ)->getTo();
          if ((!regionStructure->isExitEdge(*succ)) && (needToIterate || (succNode != regionStructure->getEntry())) &&
-             (pendingList.ValueAt(succNode->getNumber()) || outSetChanged))
+             (pendingList.get(succNode->getNumber()) || outSetChanged))
             {
-            this->_nodesInCycle->Clear();
+            this->_nodesInCycle->empty();
             this->addToAnalysisQueue(toStructureSubGraphNode(succNode), outSetChanged ? 1 : 0);
             }
          }

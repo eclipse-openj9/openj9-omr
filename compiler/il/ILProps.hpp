@@ -101,21 +101,21 @@ namespace TR { typedef uint64_t ILChildPropType; }
 namespace ILChildProp
    {
 
-   static const TR::ILChildPropType NoChildren = 0;
-   static const TR::ILChildPropType UnspecifiedChildType = 0xff;
-   static const TR::ILChildPropType UnspecifiedChildCount = 0xff;
-   static const TR::ILChildPropType Unspecified = 0xffffffffffffffff;
+   static const TR::ILChildPropType NoChildren = 0ULL;
+   static const TR::ILChildPropType UnspecifiedChildType = 0xffULL;
+   static const TR::ILChildPropType UnspecifiedChildCount = 0xffULL;
+   static const TR::ILChildPropType Unspecified = 0xffffffffffffffffULL;
 
-   static const TR::ILChildPropType IndirectCallType = 0xffffffffffffff00 | TR::Address;
+   static const TR::ILChildPropType IndirectCallType = 0xffffffffffffff00ULL | TR::Address;
 
-   static const TR::ILChildPropType FirstChildTypeMask   =               0xff;
-   static const TR::ILChildPropType SecondChildTypeMask  =             0xff00;
-   static const TR::ILChildPropType ThirdChildTypeMask   =           0xff0000;
-   static const TR::ILChildPropType FourthChildTypeMask  =         0xff000000;
-   static const TR::ILChildPropType FifthChildTypeMask   =       0xff00000000;
-   static const TR::ILChildPropType SixthChildTypeMask   =     0xff0000000000;
-   static const TR::ILChildPropType SeventhChildTypeMask =   0xff000000000000;
-   static const TR::ILChildPropType ChildCountMask       = 0xff00000000000000;
+   static const TR::ILChildPropType FirstChildTypeMask   =               0xffULL;
+   static const TR::ILChildPropType SecondChildTypeMask  =             0xff00ULL;
+   static const TR::ILChildPropType ThirdChildTypeMask   =           0xff0000ULL;
+   static const TR::ILChildPropType FourthChildTypeMask  =         0xff000000ULL;
+   static const TR::ILChildPropType FifthChildTypeMask   =       0xff00000000ULL;
+   static const TR::ILChildPropType SixthChildTypeMask   =     0xff0000000000ULL;
+   static const TR::ILChildPropType SeventhChildTypeMask =   0xff000000000000ULL;
+   static const TR::ILChildPropType ChildCountMask       = 0xff00000000000000ULL;
    }
 
 // make sure that all TR::DataTypes can fit in one byte
@@ -131,13 +131,13 @@ static_assert(TR::NumTypes < 254, "There are too many data types to fit in one b
 #define SEVENTH_CHILD(type)   (type) << 48
 #define CHILD_COUNT(c)        (c)    << 56
 
-#define ONE_CHILD(type)                                              CHILD_COUNT(1L) | FIRST_CHILD(type)
-#define TWO_CHILD(type1, type2)                                      CHILD_COUNT(2L) | FIRST_CHILD(type1) | SECOND_CHILD(type2)
-#define THREE_CHILD(type1, type2, type3)                             CHILD_COUNT(3L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3)
-#define FOUR_CHILD(type1, type2, type3, type4)                       CHILD_COUNT(4L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4)
-#define FIVE_CHILD(type1, type2, type3, type4, type5)                CHILD_COUNT(5L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5)
-#define SIX_CHILD(type1, type2, type3, type4, type5, type6)          CHILD_COUNT(6L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6)
-#define SEVEN_CHILD(type1, type2, type3, type4, type5, type6, type7) CHILD_COUNT(7L) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6) | SEVENTH_CHILD(type7)
+#define ONE_CHILD(type)                                              CHILD_COUNT(1ULL) | FIRST_CHILD(type)
+#define TWO_CHILD(type1, type2)                                      CHILD_COUNT(2ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2)
+#define THREE_CHILD(type1, type2, type3)                             CHILD_COUNT(3ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3)
+#define FOUR_CHILD(type1, type2, type3, type4)                       CHILD_COUNT(4ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4)
+#define FIVE_CHILD(type1, type2, type3, type4, type5)                CHILD_COUNT(5ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5)
+#define SIX_CHILD(type1, type2, type3, type4, type5, type6)          CHILD_COUNT(6ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6)
+#define SEVEN_CHILD(type1, type2, type3, type4, type5, type6, type7) CHILD_COUNT(7ULL) | FIRST_CHILD(type1) | SECOND_CHILD(type2) | THIRD_CHILD(type3) | FOURTH_CHILD(type4) | FIFTH_CHILD(type5) | SIXTH_CHILD(type6) | SEVENTH_CHILD(type7)
 
 #define TWO_SAME_CHILD(type)     TWO_CHILD((type), (type))
 #define THREE_SAME_CHILD(type)   THREE_CHILD((type), (type), (type))

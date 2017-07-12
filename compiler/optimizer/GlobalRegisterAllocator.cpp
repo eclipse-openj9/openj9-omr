@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -3516,10 +3516,9 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
          int32_t symRefNumber = symRef->getReferenceNumber();
          if (rc)
             {
-            TR_RegisterCandidate::BlockInfo::Cursor bc(rc->_blocks.all());
-            while (bc.hasMoreElements())
+            for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
                {
-               int32_t block_num = bc.getNextElement();
+               int32_t block_num = itr->first;
                TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
                block = cfgBlocks[block_num];
                if (!block) continue;
@@ -3643,10 +3642,9 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                // If it is new then set the count to zero or one based on use in the block
                if (rc)
                   {
-                  TR_RegisterCandidate::BlockInfo::Cursor bc(rc->_blocks.all());
-                  while (bc.hasMoreElements())
+                  for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
                      {
-                     int32_t block_num = bc.getNextElement();
+                     int32_t block_num = itr->first;
                      TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
                      block = cfgBlocks[block_num];
                      if (!block) continue;
@@ -3791,10 +3789,10 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
                  (sym->isParm() && methodSymbol->getParameterList().find(sym->castToParmSymbol()) && sym->isReferencedParameter())))
                {
                TR_RegisterCandidate *rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-
-         TR_RegisterCandidate::BlockInfo::Cursor bc(rc->_blocks.all());
-               while (bc.hasMoreElements()) {
-                  int32_t block_num = bc.getNextElement();
+               
+               for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
+                  {
+                  int32_t block_num = itr->first;
                   TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
       block = cfgBlocks[block_num];
                   if (!block) continue;

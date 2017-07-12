@@ -81,8 +81,8 @@
 // Duplicated in GlobalRegisterAllocator.cpp. TODO try and factor this out
 #define keepAllStores false
 
-TR::GlobalSet::GlobalSet(TR::Compilation * comp, const TR::Allocator &alloc)
-   :_refAutosPerBlock((RefMapComparator()),(RefMapAllocator(comp->trMemory()->heapMemoryRegion()))),
+TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
+   :_refAutosPerBlock((RefMapComparator()),(RefMapAllocator(region))),
     _comp(comp),_maxEntries(0)
    {
    }
@@ -183,18 +183,18 @@ int32_t TR_RegisterCandidates::_candidateTypeWeights[TR_NumRegisterCandidateType
    1 // 10        // TR_PRECandidate
    };
 
-TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR_Memory * m, TR::Allocator a)
+TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region &r)
    : _symRef(sr), _splitSymRef(NULL), _restoreSymRef(NULL), _lowRegNumber(-1), _highRegNumber(-1), _allBlocks(false),
      _failedToAssignToARegister(false),
      _liveOnEntry(), _liveOnExit(), _originalLiveOnEntry(),
      _8BitGlobalGPR(false),
      _reprioritized(0),
-     _blocks(m,a),
+     _blocks(r),
      _valueModified(false),
      _liveAcrossExceptionEdge(false),
-     _loopExitBlocks(m),
-     _stores(m),
-     _loopsWithHoles(m),
+     _loopExitBlocks(r),
+     _stores(r),
+     _loopsWithHoles(r),
      _mostRecentValue(NULL),
      _lastLoad(NULL),
      _highWordZero(false),
@@ -280,16 +280,15 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
 
 
 TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
-  : _compilation(comp), _trMemory(comp->trMemory()), _candidateTable(128, comp->allocator()),
-    _referencedAutoSymRefsInBlock(comp,comp->allocator())
+  : _compilation(comp), _trMemory(comp->trMemory()), _candidateRegion(_trMemory->heapMemoryRegion()),
+    _referencedAutoSymRefsInBlock(comp,_trMemory->heapMemoryRegion())
    {
    _candidateForSymRefs = 0;
    _candidateForSymRefsSize      = 0;
    }
 
  TR_RegisterCandidate *TR_RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
-   CS2::TableIndex cix = _candidateTable.AddEntry(TR_RegisterCandidate(ref, _trMemory, comp()->allocator()));
-   return &_candidateTable[cix];
+   return new (_candidateRegion) TR_RegisterCandidate(ref, _candidateRegion);
  }
 
 TR_RegisterCandidate *
@@ -638,9 +637,8 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
 
    TR::CodeGenerator * cg = comp->cg();
 
-   TR_RegisterCandidate::BlockInfo::Cursor bc(_blocks.all());
-   while (bc.hasMoreElements()) {
-      int32_t blockNumber = bc.getNextElement();
+   for (auto itr = _blocks.begin(), end = _blocks.end(); itr != end; ++itr) {
+      int32_t blockNumber = itr->first;
       TR_ASSERT(blockNumber < cfg->getNextNodeNumber(), "Overflow on candidate BB numbers");
       TR::Block * b = blocks[blockNumber];
       if (!b) continue;
@@ -2235,7 +2233,8 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    static const char __func__[] = "TR_RegisterCandidates::assign";
 #endif
    LexicalTimer t("assign", comp()->phaseTimer());
-   ReferenceTable ot(0, comp()->allocator());
+   //ReferenceTable ot(0, comp()->allocator());
+   ReferenceTable ot((ReferenceTableComparator()), (ReferenceTableAllocator(comp()->trMemory()->currentStackRegion())));
    overlapTable = &ot;
 
    // Init scratch bitvectors for extendLiveRangesForLiveOnExit
@@ -3767,14 +3766,14 @@ void  ComputeOverlaps(TR::Node *node,
    if (node->getOpCode().hasSymbolReference())
       {
       seqno+=1;
-      int32_t ref = node->getSymbolReference()->getReferenceNumber();
+      uint32_t ref = node->getSymbolReference()->getReferenceNumber();
 
-      CS2::HashIndex hi;
-      if (overlaps.Locate(ref, hi))
-         overlaps[hi].last = seqno;
+      TR_RegisterCandidates::Coordinates::iterator itr = overlaps.find(ref);
+      if (itr != overlaps.end())
+         itr->second.last = seqno;
       else
          {
-         overlaps.Add(ref, TR_RegisterCandidates::coordinates(seqno, seqno));
+         overlaps.insert(std::make_pair(ref, TR_RegisterCandidates::coordinates(seqno, seqno)));
          }
       }
 
@@ -3829,24 +3828,27 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
          int32_t blockNumber = bvi.getNextElement();
          TR::Block * b = blocks[blockNumber];
 
-         if (!overlapTable->Exists(blockNumber))
+         if (overlapTable->find(blockNumber) == overlapTable->end())
             {
-            Coordinates c(comp()->allocator());
-            overlapTable->AddEntryAtPosition(blockNumber, c);
-            Coordinates &overlaps = (*overlapTable)[blockNumber];
-            ComputeOverlaps(b, comp(), overlaps);
+            Coordinates *c = new (comp()->trMemory()->currentStackRegion()) Coordinates((CoordinatesComparator()), (CoordinatesAllocator(comp()->trMemory()->currentStackRegion())));
+            (*overlapTable)[blockNumber] = c;
+            ComputeOverlaps(b, comp(), *c);
             }
-         Coordinates &overlaps = (*overlapTable)[blockNumber];
+         Coordinates &overlaps = *(*overlapTable)[blockNumber];
          CS2::HashIndex hi1, hi2;
 
          TR_RegisterCandidate *rc1 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
-
-         if (rc1 &&
-             (!overlaps.Locate(rc1->getSymbolReference()->getReferenceNumber(), hi1) ||
-              !overlaps.Locate(rc->getSymbolReference()->getReferenceNumber(), hi2) ||
-              overlaps[hi1].last < overlaps[hi2].first))
+         if (rc1)
             {
-            _entryExitConflicts[i].reset(blockNumber);
+            Coordinates::iterator rc1Itr = overlaps.find(rc1->getSymbolReference()->getReferenceNumber());
+            Coordinates::iterator rcItr = overlaps.find(rc->getSymbolReference()->getReferenceNumber());
+
+            if (rc1Itr == overlaps.end() ||
+                rcItr == overlaps.end() ||
+                rc1Itr->second.last < rcItr->second.first)
+               {
+               _entryExitConflicts[i].reset(blockNumber);
+               }
             }
          }
 
@@ -3857,24 +3859,25 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
          int32_t blockNumber = bvi.getNextElement();
          TR::Block * b = blocks[blockNumber];
 
-         if (!overlapTable->Exists(blockNumber))
+         if (overlapTable->find(blockNumber) == overlapTable->end())
             {
-            Coordinates c(comp()->allocator());
-            overlapTable->AddEntryAtPosition(blockNumber, c);
-            Coordinates &overlaps = (*overlapTable)[blockNumber];
-            ComputeOverlaps(b, comp(), overlaps);
+            Coordinates *c = new (comp()->trMemory()->currentStackRegion()) Coordinates((CoordinatesComparator()), (CoordinatesAllocator(comp()->trMemory()->currentStackRegion())));
+            (*overlapTable)[blockNumber] = c;
+            ComputeOverlaps(b, comp(), *c);
             }
-         Coordinates &overlaps = (*overlapTable)[blockNumber];
-         CS2::HashIndex hi1, hi2;
+         Coordinates &overlaps = *(*overlapTable)[blockNumber];
 
          TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
-
-         if (rc2 &&
-             (!overlaps.Locate(rc->getSymbolReference()->getReferenceNumber(), hi1) ||
-              !overlaps.Locate(rc2->getSymbolReference()->getReferenceNumber(), hi2) ||
-              overlaps[hi1].last < overlaps[hi2].first))
+         if (rc2)
             {
-            _exitEntryConflicts[i].reset(blockNumber);
+            Coordinates::iterator rcItr = overlaps.find(rc->getSymbolReference()->getReferenceNumber());
+            Coordinates::iterator rc2Itr = overlaps.find(rc2->getSymbolReference()->getReferenceNumber());
+            if (rcItr == overlaps.end() ||
+                rc2Itr == overlaps.end()  ||
+                rcItr->second.last < rc2Itr->second.first)
+               {
+               _exitEntryConflicts[i].reset(blockNumber);
+               }
             }
          }
 

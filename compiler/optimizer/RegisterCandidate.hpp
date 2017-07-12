@@ -22,10 +22,6 @@
 #include <stddef.h>                       // for NULL
 #include <stdint.h>                       // for int32_t, uint32_t, uint8_t
 #include "codegen/RegisterConstants.hpp"  // for TR_GlobalRegisterNumber, etc
-#include "cs2/bitvectr.h"                 // for ABitVector, etc
-#include "cs2/hashtab.h"                  // for HashTable, HashIndex
-#include "cs2/sparsrbit.h"
-#include "cs2/tableof.h"                  // for TableOf
 #include "env/TRMemory.hpp"               // for Allocator, TR_Memory, etc
 #include "il/DataTypes.hpp"               // for TR::DataType, DataTypes
 #include "il/Node.hpp"                    // for Node (ptr only), etc
@@ -51,7 +47,7 @@ namespace TR
 class GlobalSet
    {
 public:
-   GlobalSet(TR::Compilation * comp, const TR::Allocator & alloc);
+   GlobalSet(TR::Compilation * comp, TR::Region &region);
 
    class Set;
    Set * operator[](uint32_t blockNum)
@@ -134,55 +130,40 @@ enum TR_RegisterCandidateTypes
 class TR_RegisterCandidate : public TR_Link<TR_RegisterCandidate>
    {
 public:
-   TR_RegisterCandidate(TR::SymbolReference *, TR_Memory *, TR::Allocator);
+   TR_RegisterCandidate(TR::SymbolReference *, TR::Region &r);
 
    class BlockInfo {
-     TR_BitVector _block_set;
-     CS2::HashTable<uint32_t, uint32_t, TR::Allocator > _block_map;
+     typedef TR::typed_allocator<std::pair<uint32_t, uint32_t>, TR::Region &> InfoMapAllocator;
+     typedef std::less<uint32_t> InfoMapComparator;
+     typedef std::map<uint32_t, uint32_t, InfoMapComparator, InfoMapAllocator> InfoMap;
+     InfoMap _blockMap;
 
    public:
-     BlockInfo(TR_Memory *m, TR::Allocator &a) : _block_set(),
-     _block_map(_block_map.DefaultSize, TR::Allocator(a)) {
-       _block_set.init(1024, m, heapAlloc, growable);
-     }
+     typedef InfoMap::iterator InfoMapIterator;
+
+     BlockInfo(TR::Region &region)
+        : _blockMap((InfoMapComparator()), (InfoMapAllocator(region))) { }
 
      void setNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _block_set.set(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map[hi]=count;
-       else if (count)
-         _block_map.Add(block, count);
+       _blockMap[block] = count;
      }
      void incNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _block_set.set(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map[hi]+=count;
-       else if (count)
-         _block_map.Add(block, count);
+       _blockMap[block] += count;
      }
      void removeBlock(uint32_t block) {
-       _block_set.reset(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map.Remove(hi);
+       _blockMap.erase(block);
      }
 
      bool find(uint32_t block) {
-       return (bool)_block_set.get(block);
+       return _blockMap.find(block) != _blockMap.end();
      }
      uint32_t getNumberOfLoadsAndStores(uint32_t block) {
-       CS2::HashIndex hi;
-       if (find(block) && _block_map.Locate(block, hi))
-         return _block_map[hi];
-       return 0;
+       auto result = _blockMap.find(block);
+       return result != _blockMap.end() ? result->second : 0;
      }
 
-     typedef TR_BitVectorIterator Cursor;
-     Cursor all() {
-       return Cursor(_block_set);
-     }
+     InfoMapIterator begin() { return _blockMap.begin(); }
+     InfoMapIterator end() { return _blockMap.end(); }
    };
 
    struct LoopInfo : TR_Link<LoopInfo>
@@ -384,8 +365,8 @@ public:
    TR_RegisterCandidate *newCandidate(TR::SymbolReference *ref);
 
    void releaseCandidates() {
-     _candidates.setFirst(0);
-     _candidateTable.MakeEmpty();
+     _candidateRegion.~Region();
+     new (_candidateRegion) TR::Region(_trMemory->heapMemoryRegion());
    }
 
    void collectCfgProperties(TR::Block **, int32_t);
@@ -403,8 +384,8 @@ private:
 
    TR::Compilation                   *_compilation;
    TR_Memory *                       _trMemory;
+   TR::Region                         _candidateRegion;
    TR_LinkHead<TR_RegisterCandidate> _candidates;
-   CS2::TableOf<TR_RegisterCandidate, TR::Allocator> _candidateTable;
 
    static int32_t                    _candidateTypeWeights[TR_NumRegisterCandidateTypes];
    TR::GlobalSet            _referencedAutoSymRefsInBlock;
@@ -433,9 +414,13 @@ public:
      uint32_t first, last;
    };
 
-   typedef CS2::HashTable<int32_t, struct coordinates, TR::Allocator> Coordinates;
-   typedef CS2::TableOf<Coordinates, TR::Allocator > ReferenceTable;
+   typedef TR::typed_allocator<std::pair<int32_t, struct coordinates>, TR::Region &> CoordinatesAllocator;
+   typedef std::less<int32_t> CoordinatesComparator;
+   typedef std::map<int32_t, struct coordinates, CoordinatesComparator, CoordinatesAllocator> Coordinates;
 
+   typedef TR::typed_allocator<std::pair<uint32_t, Coordinates *>, TR::Region &> ReferenceTableAllocator;
+   typedef std::less<uint32_t> ReferenceTableComparator;
+   typedef std::map<uint32_t, Coordinates *, ReferenceTableComparator, ReferenceTableAllocator> ReferenceTable;
 private:
    ReferenceTable *overlapTable;
  };

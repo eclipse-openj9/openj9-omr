@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -110,6 +110,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    TR_UseDefInfo::AuxiliaryData aux(
       comp()->getSymRefCount(),
       comp()->getNodeCount(),
+      comp()->trMemory()->heapMemoryRegion(),
       comp()->allocator("UseDefAux")
       );
 
@@ -136,7 +137,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    _sideTableToSymRefNumMap.GrowTo(numSymRefs);
 
-   aux._neverReadSymbols.GrowTo(numSymRefs);
    if (_hasLoadsAsDefs &&
        !cannotOmitTrivialDefs &&
        (comp()->getMethodHotness() < hot))
@@ -151,11 +151,6 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
          }
       }
 
-   aux._neverReferencedSymbols.GrowTo(numSymRefs);
-   aux._neverWrittenSymbols.GrowTo(numSymRefs);
-
-   aux._volatileOrAliasedToVolatileSymbols.GrowTo(numSymRefs);
-
    if (_hasLoadsAsDefs &&
          !cannotOmitTrivialDefs)
       {
@@ -169,10 +164,10 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
          }
       }
 
-   aux._neverWrittenSymbols.SetAll(numSymRefs);
-   aux._neverReadSymbols.SetAll(numSymRefs);
+   aux._neverWrittenSymbols.setAll(numSymRefs);
+   aux._neverReadSymbols.setAll(numSymRefs);
 
-   aux._neverReferencedSymbols.SetAll(numSymRefs);
+   aux._neverReferencedSymbols.setAll(numSymRefs);
 
    comp()->incVisitCount();
    TR::TreeTop *treeTop;
@@ -316,7 +311,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
       aux._defsForSymbol[j][i] = true;
       }
 
-   aux._sideTableToUseDefMap.GrowTo(getExpandedTotalNodes());
+   aux._sideTableToUseDefMap.resize(getExpandedTotalNodes());
 
    int32_t expandedNodeArraySize = getExpandedTotalNodes() * sizeof(TR::Node*);
    aux._expandedAtoms.GrowTo(expandedNodeArraySize);
@@ -526,7 +521,7 @@ void TR_UseDefInfo::fillInDataStructures(AuxiliaryData &aux)
             TR::Symbol *aliasedSym = aliasedSymRef->getSymbol();
             if (!aliasedSym || !aliasedSym->isMethod())
                continue;
-            if (aux._neverReferencedSymbols.ValueAt(aliasedSymRef->getReferenceNumber()))
+            if (aux._neverReferencedSymbols.get(aliasedSymRef->getReferenceNumber()))
                continue;
             if (excludedGlobals(aliasedSymRef->getSymbol()))
                continue;
@@ -563,9 +558,9 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
 
 
    if (node->getOpCode().hasSymbolReference() &&
-       aux._neverReferencedSymbols.ValueAt(node->getSymbolReference()->getReferenceNumber()))
+       aux._neverReferencedSymbols.get(node->getSymbolReference()->getReferenceNumber()))
       {
-      aux._neverReferencedSymbols[node->getSymbolReference()->getReferenceNumber()] = false;
+      aux._neverReferencedSymbols.reset(node->getSymbolReference()->getReferenceNumber());
       }
 
    //if (!node->getOpCode().isStore() &&
@@ -585,9 +580,9 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
                traceMsg(comp(), "SETTING node %p symRefNum %d\n", node, symRefNum);
             }
 
-         if (aux._neverWrittenSymbols.ValueAt(symRefNum))
+         if (aux._neverWrittenSymbols.get(symRefNum))
             {
-            aux._neverWrittenSymbols[symRefNum] = false;
+            aux._neverWrittenSymbols.reset(symRefNum);
             aux._nodesByGlobalIndex[node->getGlobalIndex()] = node;
 
             if (trace())
@@ -634,9 +629,9 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
          {
          //aux._nodesByGlobalIndex[node->getGlobalIndex()] = node;
 
-         if (aux._neverReadSymbols.ValueAt(symRefNum))
+         if (aux._neverReadSymbols.get(symRefNum))
             {
-            aux._neverReadSymbols[symRefNum] = false;
+            aux._neverReadSymbols.reset(symRefNum);
             aux._loadsBySymRefNum[symRefNum] = node;
 
             if (trace())
@@ -672,7 +667,7 @@ bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
    TR::SymbolReference *symRef = node->getSymbolReference();
    if (symRef->getSymbol()->isParm())
       {
-      if (!aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber()))
+      if (!aux._neverWrittenSymbols.get(symRef->getReferenceNumber()))
          {
          return false;
          }
@@ -716,15 +711,15 @@ bool TR_UseDefInfo::isTrivialUseDefSymRef(TR::SymbolReference *symRef, Auxiliary
       {
       if (symRef->getSymbol()->isParm())
          {
-         if (!aux._neverWrittenSymbols.ValueAt(symRefNum))
+         if (!aux._neverWrittenSymbols.get(symRefNum))
             {
             return false;
             }
          }
 
-      if (aux._neverWrittenSymbols.ValueAt(symRefNum))
+      if (aux._neverWrittenSymbols.get(symRefNum))
          return true;
-      else if (aux._neverReadSymbols.ValueAt(symRefNum))
+      else if (aux._neverReadSymbols.get(symRefNum))
          return true;
       }
    return false;
@@ -892,8 +887,8 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
 
    if (trace())
       {
-      traceMsg(comp(), "_neverReferencedSymbols[count = %d]: ", aux._neverReferencedSymbols.PopulationCount());
-      (*comp()) << aux._neverReferencedSymbols;
+      traceMsg(comp(), "_neverReferencedSymbols[count = %d]: ", aux._neverReferencedSymbols.elementCount());
+      aux._neverReferencedSymbols.print(comp());
       traceMsg(comp(), "\n");
       }
 
@@ -912,7 +907,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       if (!symRef || !symRef->getSymbol())
          continue;
 
-      if (aux._neverReferencedSymbols.ValueAt(symRefNumber))
+      if (aux._neverReferencedSymbols.get(symRefNumber))
          continue;
 
       referencedSymRefs[symRefNumber] = true;
@@ -985,7 +980,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             if (!shouldIndexVolatileSym(symRef,aux))
                {
                if (trace())
-                  traceMsg(comp(), "Ignoring Symbol [%p] because it is volatile %d or aliased to a volatile %d\n",sym,sym->isVolatile(),aux._volatileOrAliasedToVolatileSymbols[symRefNumber] == true);
+                  traceMsg(comp(), "Ignoring Symbol [%p] because it is volatile %d or aliased to a volatile %d\n",sym,sym->isVolatile(),aux._volatileOrAliasedToVolatileSymbols.get(symRefNumber));
                continue;
                }
 
@@ -1004,7 +999,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
             _sideTableToSymRefNumMap[_numSymbols] = symRefNumber;
             sym->setLocalIndex(_numSymbols++);
          if (!isTrivialUseDefSymRef(symRef, aux) &&
-             ((sym->isParm() && !aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber())) ||
+             ((sym->isParm() && !aux._neverWrittenSymbols.get(symRef->getReferenceNumber())) ||
               (aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].IsNull() &&
                aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].IsNull())))
                _numNonTrivialSymbols++;
@@ -1024,14 +1019,14 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
          {
          traceMsg(comp(), "Non Trivial symbol Ref [%p:%d] isTrivial=%d isParm=%d _neverWritten=%d",
                symRef, symRef->getReferenceNumber(), isTrivialUseDefSymRef(symRef, aux),
-               symRef->getSymbol()->isParm(), aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber()));
+               symRef->getSymbol()->isParm(), aux._neverWrittenSymbols.get(symRef->getReferenceNumber()));
          (*comp()) << " _onceRead= " << aux._onceReadSymbolsIndices[symRef->getReferenceNumber()];
          (*comp()) << " _onceWritten= " << aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()] << "\n";
          }
 
       if (symRef &&
           (!isTrivialUseDefSymRef(symRef, aux) &&
-           ((symRef->getSymbol()->isParm() && !aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber())) ||
+           ((symRef->getSymbol()->isParm() && !aux._neverWrittenSymbols.get(symRef->getReferenceNumber())) ||
             (aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].IsNull() &&
              aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].IsNull()))))
          {
@@ -1083,7 +1078,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       if (symRef &&
           (isTrivialUseDefSymRef(symRef, aux) ||
            ((symRef->getSymbol()->isParm() &&
-             aux._neverWrittenSymbols.ValueAt(symRef->getReferenceNumber()))) ||
+             aux._neverWrittenSymbols.get(symRef->getReferenceNumber()))) ||
             !aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].IsNull() ||
             !aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].IsNull()))
          {
@@ -1365,10 +1360,18 @@ bool TR_UseDefInfo::findUseDefNodes(
          if (isTrivialUseDefNode(node, aux))
             {
             if (symRef && aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].ValueAt(node->getGlobalIndex()))
-               aux._onceReadSymbols[symRef->getReferenceNumber()][useDefIndex] = true;
+               {
+               if (aux._onceReadSymbols[symRef->getReferenceNumber()] == NULL)
+                  aux._onceReadSymbols[symRef->getReferenceNumber()] = new (aux._region) TR_BitVector(aux._region);
+               aux._onceReadSymbols[symRef->getReferenceNumber()]->set(useDefIndex);
+               }
 
             if (symRef && aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].ValueAt(node->getGlobalIndex()))
-               aux._onceWrittenSymbols[symRef->getReferenceNumber()][useDefIndex] = true;
+               {
+               if (aux._onceWrittenSymbols[symRef->getReferenceNumber()] == NULL)
+                  aux._onceWrittenSymbols[symRef->getReferenceNumber()] = new (aux._region) TR_BitVector(aux._region);
+               aux._onceWrittenSymbols[symRef->getReferenceNumber()]->set(useDefIndex);
+               }
             }
          }
       //else
@@ -1379,7 +1382,7 @@ bool TR_UseDefInfo::findUseDefNodes(
       }
    else if (!_tempsOnly && (opCode.isCall() || opCode.isFence()) && num_aliases > 0)
       {
-      if (!aux._volatileOrAliasedToVolatileSymbols[symRef->getReferenceNumber()])
+      if (!aux._volatileOrAliasedToVolatileSymbols.get(symRef->getReferenceNumber()))
          {
          localIndex = _numExpandedDefOnlyNodes;
          _numExpandedDefOnlyNodes += _numStaticsAndFields;
@@ -1532,14 +1535,18 @@ bool TR_UseDefInfo::assignAdjustedNodeIndex(TR::Block *block, TR::Node *node, TR
 
    if (symRef && aux._onceReadSymbolsIndices[symRef->getReferenceNumber()].ValueAt(node->getGlobalIndex()))
       {
-      aux._onceReadSymbols[symRef->getReferenceNumber()][nodeIndex] = false;
-      aux._onceReadSymbols[symRef->getReferenceNumber()][nodeIndex+adjustment] = true;
+      if (aux._onceReadSymbols[symRef->getReferenceNumber()] == NULL)
+         aux._onceReadSymbols[symRef->getReferenceNumber()] = new (aux._region) TR_BitVector(aux._region);
+      aux._onceReadSymbols[symRef->getReferenceNumber()]->reset(nodeIndex);
+      aux._onceReadSymbols[symRef->getReferenceNumber()]->set(nodeIndex+adjustment);
       }
 
    if (symRef && aux._onceWrittenSymbolsIndices[symRef->getReferenceNumber()].ValueAt(node->getGlobalIndex()))
       {
-      aux._onceWrittenSymbols[symRef->getReferenceNumber()][nodeIndex] = false;
-      aux._onceWrittenSymbols[symRef->getReferenceNumber()][nodeIndex+adjustment] = true;
+      if (aux._onceWrittenSymbols[symRef->getReferenceNumber()] == NULL)
+         aux._onceWrittenSymbols[symRef->getReferenceNumber()] = new (aux._region) TR_BitVector(aux._region);
+      aux._onceWrittenSymbols[symRef->getReferenceNumber()]->reset(nodeIndex);
+      aux._onceWrittenSymbols[symRef->getReferenceNumber()]->set(nodeIndex+adjustment);
       }
 
    // Make sure there is no overflow in either index before setting them
@@ -1733,7 +1740,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          int32_t j = aliasedSymRef->getSymbol()->getLocalIndex();
          if (j == NULL_USEDEF_SYMBOL_INDEX) continue;
 
-         if (aux._neverReferencedSymbols.ValueAt(aliasedSymRef->getReferenceNumber()))
+         if (aux._neverReferencedSymbols.get(aliasedSymRef->getReferenceNumber()))
             continue;
 
 
@@ -1795,7 +1802,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          int32_t num = num_aliases;
          for (i = 0; i < num; i++)
             {
-             aux._defsForSymbol[symRef->getSymbol()->getLocalIndex()][nodeIndex+i] = true;
+            aux._defsForSymbol[symRef->getSymbol()->getLocalIndex()][nodeIndex+i] = true;
             aux._expandedAtoms[nodeIndex+i] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
             }
          }
@@ -2315,7 +2322,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
          int32_t realIndex = nodeIndex - getFirstUseIndex();
          if (trace())
             traceMsg(comp(), "For node %p index = %d and first use index = %d\n", node, nodeIndex, getFirstUseIndex());
-         if (aux._neverWrittenSymbols.ValueAt(node->getSymbolReference()->getReferenceNumber()))
+         if (aux._neverWrittenSymbols.get(node->getSymbolReference()->getReferenceNumber()))
             {
             TR_ASSERT(realIndex >= 0, "Out of bounds negative index, realIndex = %d\n", realIndex);
             //           traceMsg(comp(), "UDI: setting _useDefInfo[realIndex=%d][0] to true\n",realIndex);
@@ -2332,7 +2339,8 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
             TR_ASSERT(realIndex >= 0, "Out of bounds negative index, realIndex = %d\n", realIndex);
             //            traceMsg(comp(), "UDI: oring in _useDefInfo[realIndex=%d] with ",realIndex);
             //           *(comp()) << aux._onceReadSymbols[node->getSymbolReference()->getReferenceNumber()];
-            _useDefInfo[realIndex] |= aux._onceReadSymbols[node->getSymbolReference()->getReferenceNumber()];
+            if (aux._onceReadSymbols[node->getSymbolReference()->getReferenceNumber()])
+               _useDefInfo[realIndex] |= CS2_TR_BitVector(*(aux._onceReadSymbols[node->getSymbolReference()->getReferenceNumber()]));
             defsKnownTrivially = true;
 
             }
@@ -2344,7 +2352,8 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
             TR_ASSERT(realIndex >= 0, "Out of bounds negative index, realIndex = %d\n", realIndex);
             //           traceMsg(comp(), "UDI: oring2 in _useDefInfo[realIndex=%d] with ",realIndex);
             //           *(comp()) << aux._onceWrittenSymbols[node->getSymbolReference()->getReferenceNumber()];
-            _useDefInfo[realIndex] |= aux._onceWrittenSymbols[node->getSymbolReference()->getReferenceNumber()];
+            if (aux._onceWrittenSymbols[node->getSymbolReference()->getReferenceNumber()])
+               _useDefInfo[realIndex] |= CS2_TR_BitVector(*(aux._onceWrittenSymbols[node->getSymbolReference()->getReferenceNumber()]));
             defsKnownTrivially = true;
             }
          else

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016, 2016
+ * (c) Copyright IBM Corp. 2016, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,12 +27,12 @@
 
 namespace TR {
 
-template <typename T>
-class deque : public std::deque<T, typed_allocator<T, Allocator> >
+template <typename T, class Alloc = TR::Allocator>
+class deque : public std::deque<T, typed_allocator<T, Alloc> >
    {
 public:
-   typedef typed_allocator<T, Allocator> allocator_type;
-   typedef std::deque<T, typed_allocator<T, Allocator> > container_type;
+   typedef typed_allocator<T, Alloc> allocator_type;
+   typedef std::deque<T, typed_allocator<T, Alloc> > container_type;
    typedef typename allocator_type::value_type value_type;
    typedef typename allocator_type::reference reference;
    typedef typename allocator_type::const_reference const_reference;
@@ -42,11 +42,11 @@ public:
     */
    typedef std::size_t size_type;
 
-   explicit deque(const Allocator &allocator);
-   explicit deque(size_type size, const Allocator &allocator);
-   explicit deque(size_type size, const T& initialValue, const Allocator &allocator);
-   template <typename InputIterator> deque(InputIterator first, InputIterator last, const Allocator &allocator);
-   deque(const deque<T> &x);
+   explicit deque(const allocator_type &allocator);
+   explicit deque(size_type size, const allocator_type &allocator);
+   explicit deque(size_type size, const T& initialValue, const allocator_type &allocator);
+   template <typename InputIterator> deque(InputIterator first, InputIterator last, const allocator_type &allocator);
+   deque(const deque<T, Alloc> &x);
    ~deque();
 
    reference operator[](size_type index);
@@ -55,45 +55,45 @@ public:
 
 }
 
-template <typename T>
-TR::deque<T>::deque(const Allocator &allocator) :
-   container_type(allocator_type(allocator))
+template <typename T, class Alloc>
+TR::deque<T, Alloc>::deque(const allocator_type &allocator) :
+   container_type(allocator)
    {
    }
 
-template <typename T>
-TR::deque<T>::deque(size_type size, const Allocator &allocator) :
-   container_type(size, T(), allocator_type(allocator))
+template <typename T, class Alloc>
+TR::deque<T, Alloc>::deque(size_type size, const allocator_type &allocator) :
+   container_type(size, T(), allocator)
    {
    }
 
-template <typename T>
-TR::deque<T>::deque(size_type size, const T& initialValue, const Allocator &allocator) :
-   container_type(size, initialValue, allocator_type(allocator))
+template <typename T, class Alloc>
+TR::deque<T, Alloc>::deque(size_type size, const T& initialValue, const allocator_type &allocator) :
+   container_type(size, initialValue, allocator)
    {
    }
 
-template <typename T>
+template <typename T, class Alloc>
 template <typename InputIterator>
-TR::deque<T>::deque(InputIterator first, InputIterator last, const Allocator &allocator) :
-   container_type(first, last, allocator_type(allocator))
+TR::deque<T, Alloc>::deque(InputIterator first, InputIterator last, const allocator_type &allocator) :
+   container_type(first, last, allocator)
    {
    }
 
-template <typename T>
-TR::deque<T>::deque(const deque<T> &other) :
+template <typename T, class Alloc>
+TR::deque<T, Alloc>::deque(const deque<T, Alloc> &other) :
    container_type(other)
    {
    }
 
-template <typename T>
-TR::deque<T>::~deque()
+template <typename T, class Alloc>
+TR::deque<T, Alloc>::~deque()
    {
    }
 
-template <typename T>
-typename TR::deque<T>::reference
-TR::deque<T>::operator [](size_type index)
+template <typename T, class Alloc>
+typename TR::deque<T, Alloc>::reference
+TR::deque<T, Alloc>::operator [](size_type index)
    {
 // In DEBUG, at() is used for correctness due to its bound checking
 // whilst [] is used in PROD for performance
@@ -104,9 +104,9 @@ TR::deque<T>::operator [](size_type index)
 #endif // defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    }
 
-template <typename T>
-typename TR::deque<T>::const_reference
-TR::deque<T>::operator [](size_type index) const
+template <typename T, class Alloc>
+typename TR::deque<T, Alloc>::const_reference
+TR::deque<T, Alloc>::operator [](size_type index) const
    {
 // In DEBUG, at() is used for correctness due to its bound checking
 // whilst [] is used in PROD for performance

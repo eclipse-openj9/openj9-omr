@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -78,44 +78,46 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    class AuxiliaryData
       {
       private:
-         AuxiliaryData(int32_t numSymRefs, ncount_t nodeCount, TR::Allocator allocator) :
-             _onceReadSymbols(numSymRefs, BitVector(allocator), allocator),
-             _onceWrittenSymbols(numSymRefs, BitVector(allocator), allocator),
+         AuxiliaryData(int32_t numSymRefs, ncount_t nodeCount, TR::Region &region, TR::Allocator allocator) :
+             _region(region),
+             _onceReadSymbols(numSymRefs, _region),
+             _onceWrittenSymbols(numSymRefs, _region),
              _defsForSymbol(allocator, BitVector(allocator)),
-             _neverReadSymbols(allocator),
-             _neverReferencedSymbols(allocator),
-             _neverWrittenSymbols(allocator),
-             _volatileOrAliasedToVolatileSymbols(allocator),
-             _onceWrittenSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
-             _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), allocator),
+             _neverReadSymbols(numSymRefs, _region),
+             _neverReferencedSymbols(numSymRefs, _region),
+             _neverWrittenSymbols(numSymRefs, _region),
+             _volatileOrAliasedToVolatileSymbols(numSymRefs, _region),
+             _onceWrittenSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), _region),
+             _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), _region),
              _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
-             _sideTableToUseDefMap(allocator),
-             _numAliases(numSymRefs, allocator),
-             _nodesByGlobalIndex(nodeCount, allocator),
-             _loadsBySymRefNum(numSymRefs, allocator),
+             _sideTableToUseDefMap(_region),
+             _numAliases(numSymRefs, _region),
+             _nodesByGlobalIndex(nodeCount, _region),
+             _loadsBySymRefNum(numSymRefs, _region),
              _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
             {}
+      TR::Region _region;
 
-      TR::deque<BitVector> _onceReadSymbols;
-      TR::deque<BitVector> _onceWrittenSymbols;
+      TR::deque<TR_BitVector *, TR::Region&> _onceReadSymbols;
+      TR::deque<TR_BitVector *, TR::Region&> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
       CS2::ArrayOf<BitVector, TR::Allocator> _defsForSymbol;
-      TR::BitVector _neverReadSymbols;
-      TR::BitVector _neverReferencedSymbols;
-      TR::BitVector _neverWrittenSymbols;
-      TR::BitVector _volatileOrAliasedToVolatileSymbols;
-      TR::deque<TR::SparseBitVector> _onceWrittenSymbolsIndices;
-      TR::deque<TR::SparseBitVector> _onceReadSymbolsIndices;
+      TR_BitVector _neverReadSymbols;
+      TR_BitVector _neverReferencedSymbols;
+      TR_BitVector _neverWrittenSymbols;
+      TR_BitVector _volatileOrAliasedToVolatileSymbols;
+      TR::deque<TR::SparseBitVector, TR::Region&> _onceWrittenSymbolsIndices;
+      TR::deque<TR::SparseBitVector, TR::Region&> _onceReadSymbolsIndices;
 
       CS2::ArrayOf<CS2::Pair<TR::Node *, TR::TreeTop *>, TR::Allocator> _expandedAtoms;    //TR::Node            **_expandedNodes;
 
 
       protected:
-      CS2::ArrayOf<uint32_t, TR::Allocator> _sideTableToUseDefMap;
+      TR::deque<uint32_t, TR::Region&> _sideTableToUseDefMap;
       private:
-      TR::deque<uint32_t> _numAliases;
-      TR::deque<TR::Node *> _nodesByGlobalIndex;
-      TR::deque<TR::Node *> _loadsBySymRefNum;
+      TR::deque<uint32_t, TR::Region&> _numAliases;
+      TR::deque<TR::Node *, TR::Region&> _nodesByGlobalIndex;
+      TR::deque<TR::Node *, TR::Region&> _loadsBySymRefNum;
 
       protected:
       // used only in TR_OSRDefInfo - should extend AuxiliaryData really:

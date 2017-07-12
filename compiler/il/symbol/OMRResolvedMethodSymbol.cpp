@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -96,11 +96,12 @@ TR::TreeTop *findEndTreeTop(TR::ResolvedMethodSymbol *rms)
 void
 OMR::ResolvedMethodSymbol::initForCompilation(TR::Compilation *comp)
    {
-   self()->getParameterList()._trMemory = comp->trMemory();
-   self()->getAutomaticList()._trMemory = comp->trMemory();
+   TR::Region &heapRegion = comp->trMemory()->heapMemoryRegion();
+   self()->getParameterList().setRegion(heapRegion);
+   self()->getAutomaticList().setRegion(heapRegion);
 
-   self()->getVariableSizeSymbolList()._trMemory = comp->trMemory();
-   self()->getTrivialDeadTreeBlocksList()._trMemory = comp->trMemory();
+   self()->getVariableSizeSymbolList().setRegion(heapRegion);
+   self()->getTrivialDeadTreeBlocksList().setRegion(heapRegion);
    }
 
 
@@ -2015,7 +2016,7 @@ OMR::ResolvedMethodSymbol::getAutoSymRefs(int32_t slot)
          _autoSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, _resolvedMethod->numberOfParameterSlots() + _resolvedMethod->numberOfTemps() + 5, true);
       }
 
-   (*_autoSymRefs)[slot]._trMemory = m;
+   (*_autoSymRefs)[slot].setRegion(m->heapMemoryRegion());
 
    return (*_autoSymRefs)[slot];
    }
@@ -2044,7 +2045,7 @@ OMR::ResolvedMethodSymbol::getPendingPushSymRefs(int32_t slot)
       _pendingPushSymRefs = new (m->trHeapMemory()) TR_Array<List<TR::SymbolReference> >(m, 10, true);
       }
 
-   (*_pendingPushSymRefs)[slot]._trMemory = m;
+   (*_pendingPushSymRefs)[slot].setRegion(m->heapMemoryRegion());
 
    return (*_pendingPushSymRefs)[slot];
    }

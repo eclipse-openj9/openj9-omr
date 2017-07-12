@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -79,6 +79,7 @@ public :
 
 class TR_InternalPointerMap
    {
+   TR_Memory *_trMemory;
    List<TR_InternalPointerPair> _internalPtrPairs;
    int32_t _numDistinctPinningArrays;
    int32_t _size;
@@ -89,12 +90,13 @@ public:
    TR_ALLOC(TR_Memory::InternalPointerMap)
 
    TR_InternalPointerMap(TR_Memory * m)
-      : _numInternalPtrs(0),
+      : _trMemory(m),
+        _numInternalPtrs(0),
         _numDistinctPinningArrays(0),
         _internalPtrPairs(m),
         _size(0) {}
 
-   TR_Memory *   trMemory()     { return _internalPtrPairs.trMemory(); }
+   TR_Memory *   trMemory()     { return _trMemory; }
    TR_HeapMemory trHeapMemory() { return trMemory(); }
 
    TR_InternalPointerMap *clone()

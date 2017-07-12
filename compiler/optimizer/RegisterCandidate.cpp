@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -82,35 +82,28 @@
 #define keepAllStores false
 
 TR::GlobalSet::GlobalSet(TR::Compilation * comp, const TR::Allocator &alloc)
-   :_refAutosPerBlock(alloc),_comp(comp),_maxEntries(0)
+   :_refAutosPerBlock((RefMapComparator()),(RefMapAllocator(comp->trMemory()->heapMemoryRegion()))),
+    _comp(comp),_maxEntries(0)
    {
    }
 
 
 void TR::GlobalSet::DenseSet::print(TR::Compilation * comp)
    {
-   TR::BitVector::Cursor bit(_refs);
-   for (bit.SetToFirstOne(); bit.Valid(); bit.SetToNextOne())
+   TR_BitVectorIterator bits(_refs);
+   for (int32_t bit = bits.getFirstElement(); bits.hasMoreElements(); bit = bits.getNextElement())
      {
-       CS2::BitIndex bitNum = bit;
-       if (_refs[bitNum])
-         {
-          traceMsg(comp,"%d ",bitNum);
-         }
+     traceMsg(comp,"%d ",bit);
      }
    traceMsg(comp,"\n");
    }
 
 void TR::GlobalSet::SparseSet::print(TR::Compilation * comp)
    {
-   TR::SparseBitVector::Cursor bit(_refs);
-   for (bit.SetToFirstOne(); bit.Valid(); bit.SetToNextOne())
+   TR_BitVectorIterator bits(_refs);
+   for (int32_t bit = bits.getFirstElement(); bits.hasMoreElements(); bit = bits.getNextElement())
      {
-       CS2::SparseBitIndex bitNum = bit;
-       if (_refs[bitNum])
-         {
-          traceMsg(comp,"%d ",bitNum);
-         }
+     traceMsg(comp,"%d ",bit);
      }
    traceMsg(comp,"\n");
 
@@ -125,15 +118,15 @@ void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
    Set * refAutos = NULL;
    TR::Allocator alloc = _comp->allocator();
    if (_maxEntries > MB50)
-     refAutos  = new (_comp->trStackMemory()) SparseSet(alloc);
+     refAutos  = new (_comp->trStackMemory()) SparseSet(_comp->trMemory()->currentStackRegion());
    else
-     refAutos  = new (_comp->trStackMemory()) DenseSet(alloc);
+     refAutos  = new (_comp->trStackMemory()) DenseSet(_comp->trMemory()->currentStackRegion());
 
-   _refAutosPerBlock.AddEntryAtPosition(BB->getNumber(),refAutos);
+   _refAutosPerBlock[BB->getNumber()] = refAutos;
 
    vcount_t visitCount = _comp->incVisitCount();
    for (TR::TreeTop * tt = BB->getFirstRealTreeTop(); tt != BB->getExit(); tt = tt->getNextTreeTop())
-     collectReferencedAutoSymRefs(tt->getNode(), _refAutosPerBlock[BB->getNumber()], visitCount);
+     collectReferencedAutoSymRefs(tt->getNode(), refAutos, visitCount);
    }
 
 void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutoSymRefs, vcount_t visitCount)
@@ -288,8 +281,6 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
 
 TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
   : _compilation(comp), _trMemory(comp->trMemory()), _candidateTable(128, comp->allocator()),
-    _internalCalls(comp->allocator()),
-    _internalCallsComputed(false),
     _referencedAutoSymRefsInBlock(comp,comp->allocator())
    {
    _candidateForSymRefs = 0;
@@ -609,14 +600,6 @@ bool findLoadNearStartOfBlock(TR::Block *block, TR::SymbolReference *ref)
 bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::SymbolReference *symRef)
   {
 
-  // Calculate set of calls whose aliases can be ignored
-  if(!_internalCallsComputed)
-    {
-    _internalCallsComputed = true;
-
-
-    }
-
   if (!symRef->getSymbol()->isAutoOrParm() && !(TR::Compiler->target.cpu.isZ() && TR::Compiler->target.isLinux()) ) return true;
 
   TR::SparseBitVector use_def_aliases(comp->allocator());
@@ -624,7 +607,6 @@ bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::
   if (!use_def_aliases.IsZero())
     {
     use_def_aliases[symRef->getReferenceNumber()] = false;
-    use_def_aliases -= _internalCalls;
     if (!use_def_aliases.IsZero())
       return true;
     }

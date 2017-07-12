@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -35,6 +35,7 @@
 #include "infra/Cfg.hpp"                  // for CFG, CFGBase::::EndBlock, etc
 #include "infra/Link.hpp"                 // for TR_LinkHead, TR_Link
 #include "infra/List.hpp"                 // for List
+#include <map>
 
 class TR_GlobalRegisterAllocator;
 class TR_Structure;
@@ -57,12 +58,13 @@ public:
    {
     if(blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
         return NULL;
-    return _refAutosPerBlock.ElementAt(blockNum);
+    
+    return _refAutosPerBlock[blockNum];
    }
 
    void collectReferencedAutoSymRefs(TR::Block * BB);
-   bool isEmpty() { return _refAutosPerBlock.IsEmpty(); }
-   void makeEmpty() { _refAutosPerBlock.MakeEmpty(); }
+   bool isEmpty() { return _refAutosPerBlock.empty(); }
+   void makeEmpty() { _refAutosPerBlock.clear(); }
    void initialize(uint32_t numSymRefs, int32_t numBlocks) {_maxEntries = numSymRefs * numBlocks;}
 
    //Set, SparseSet and DenseSet
@@ -80,24 +82,24 @@ private:
    {
    public:
    TR_ALLOC(TR_Memory::RegisterCandidates);
-   SparseSet(TR::Allocator & alloc):_refs(alloc){}
-   virtual bool get(uint32_t refId) {return _refs.ValueAt(refId); }
-   virtual void set(uint32_t refId) {_refs[refId] = 1;     }
+   SparseSet(TR::Region &region):_refs(region){}
+   virtual bool get(uint32_t refId) {return _refs.get(refId); }
+   virtual void set(uint32_t refId) {_refs.set(refId);     }
    virtual void print(TR::Compilation * comp);
    private:
-   TR::SparseBitVector _refs;
+   TR_BitVector _refs;
    };
 
    class DenseSet: public Set
    {
    public:
    TR_ALLOC(TR_Memory::RegisterCandidates);
-   DenseSet(TR::Allocator & alloc):_refs(alloc){}
-   virtual bool get(uint32_t refId) {return _refs.ValueAt(refId); }
-   virtual void set(uint32_t refId) {_refs[refId] = 1    ; }
+   DenseSet(TR::Region &region):_refs(region){}
+   virtual bool get(uint32_t refId) {return _refs.get(refId); }
+   virtual void set(uint32_t refId) {_refs.set(refId); }
    virtual void print(TR::Compilation * comp);
    private:
-   CS2::ABitVector<TR::Allocator> _refs;
+   TR_BitVector _refs;
    };
 
 
@@ -110,7 +112,10 @@ private:
 
    void collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutos, vcount_t visitCount);
 
-   CS2::TableOf<Set *, TR::Allocator> _refAutosPerBlock;
+   typedef TR::typed_allocator<std::pair<uint32_t, Set*>, TR::Region&> RefMapAllocator;
+   typedef std::less<uint32_t> RefMapComparator;
+   typedef std::map<uint32_t, Set *, RefMapComparator, RefMapAllocator> RefMap;
+   RefMap _refAutosPerBlock;
    TR::Compilation * _comp;
    uint32_t _maxEntries;
    };
@@ -421,10 +426,6 @@ private:
    // Candidate invariant info based on CFG
    TR_BitVector                 _firstBlock;
    TR_BitVector                 _isExtensionOfPreviousBlock;
-
-   // Aliasing candidate invariant data
-   TR::SparseBitVector _internalCalls;
-   bool _internalCallsComputed;
 
 public:
    struct coordinates {

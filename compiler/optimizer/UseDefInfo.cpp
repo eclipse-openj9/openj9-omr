@@ -295,7 +295,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
 
    int numRegisters = _useDefForRegs ? comp()->cg()->getNumberOfGlobalRegisters() : 0;
 
-   aux._defsForSymbol.GrowTo(_numSymbols + numRegisters);
+   aux._defsForSymbol.resize(_numSymbols + numRegisters, BitVector(comp()->allocator()));
 
    // Initialize the array with definitions from method entry
    //
@@ -314,7 +314,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
    aux._sideTableToUseDefMap.resize(getExpandedTotalNodes());
 
    int32_t expandedNodeArraySize = getExpandedTotalNodes() * sizeof(TR::Node*);
-   aux._expandedAtoms.GrowTo(expandedNodeArraySize);
+   aux._expandedAtoms.resize(expandedNodeArraySize, std::make_pair<TR::Node*, TR::TreeTop*>(NULL, NULL));
 
    fillInDataStructures(aux);
 
@@ -1689,7 +1689,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
    aux._sideTableToUseDefMap[node->getLocalIndex()] = node->getUseDefIndex();
    _atoms[node->getUseDefIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
    if (!isTrivialUseDefNode(node, aux) && adjustArray)
-      aux._expandedAtoms[node->getLocalIndex()] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+      aux._expandedAtoms[node->getLocalIndex()] = std::make_pair(node, treeTop);
 
    if (trace())
       {
@@ -1720,7 +1720,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
 
          aux._defsForSymbol[j].GrowTo(getNumExpandedDefNodes());
          aux._defsForSymbol[j][k] = true;
-         aux._expandedAtoms[k] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+         aux._expandedAtoms[k] = std::make_pair(node, treeTop);
          }
       TR::GlobalSparseBitVector *mustKill = NULL;
       TR::Symbol *callSym = NULL;
@@ -1782,8 +1782,8 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          if (!restrictRegLoadVar)
             {
             aux._defsForSymbol[j][k] = true;
-            if (aux._expandedAtoms[k].getKey() == NULL)
-               aux._expandedAtoms[k] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+            if (aux._expandedAtoms[k].first == NULL)
+               aux._expandedAtoms[k] = std::make_pair(node, treeTop);
             }
 
          if (trace())
@@ -1803,7 +1803,7 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
          for (i = 0; i < num; i++)
             {
             aux._defsForSymbol[symRef->getSymbol()->getLocalIndex()][nodeIndex+i] = true;
-            aux._expandedAtoms[nodeIndex+i] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+            aux._expandedAtoms[nodeIndex+i] = std::make_pair(node, treeTop);
             }
          }
       }
@@ -1814,9 +1814,9 @@ void TR_UseDefInfo::insertData(TR::Block *block, TR::Node *node,TR::Node *parent
       LexicalTimer tlex("insertData_staticsNonTrivial", comp()->phaseTimer());
       for (int32_t i = 0; i < _numStaticsAndFields; ++i)
          {
-         aux._defsForSymbol[i].GrowTo(getNumExpandedDefNodes());
+         aux._defsForSymbol[i].resize(getNumExpandedDefNodes());
          aux._defsForSymbol[i][nodeIndex+i] = true;
-         aux._expandedAtoms[nodeIndex+i] = CS2::Pair<TR::Node *, TR::TreeTop *>(node, treeTop);
+         aux._expandedAtoms[nodeIndex+i] = std::make_pair(node, treeTop);
          }
       }
 #endif
@@ -1923,7 +1923,7 @@ void TR_UseDefInfo::buildUseDefs(void *vblockInfo, AuxiliaryData &aux)
 
          if (i >= _numDefsOnEntry)
             {
-            TR::Node *defNode = aux._expandedAtoms[i].getKey();
+            TR::Node *defNode = aux._expandedAtoms[i].first;
             if (defNode == NULL) continue;
 
             ii = i;
@@ -2475,7 +2475,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVec
             //
             if (i >= _numDefsOnEntry)
                {
-               TR::Node *defNode = aux._expandedAtoms[i].getKey();
+               TR::Node *defNode = aux._expandedAtoms[i].first;
                //verifySnapshots(comp(), node, defNode);
                if (trace())
                   traceMsg(comp(), "reached by expanded index %d [0x%p]\n", i, defNode);

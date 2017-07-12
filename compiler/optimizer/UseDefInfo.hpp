@@ -33,6 +33,7 @@
 #include "il/SymbolReference.hpp"   // for SymbolReference
 #include "infra/Assert.hpp"         // for TR_ASSERT
 #include "infra/deque.hpp"          // for TR::deque
+#include "infra/vector.hpp"         // for TR::vector
 #include "infra/TRlist.hpp"         // for TR::list
 
 class TR_ReachingDefinitions;
@@ -80,36 +81,36 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
       private:
          AuxiliaryData(int32_t numSymRefs, ncount_t nodeCount, TR::Region &region, TR::Allocator allocator) :
              _region(region),
-             _onceReadSymbols(numSymRefs, _region),
-             _onceWrittenSymbols(numSymRefs, _region),
-             _defsForSymbol(allocator, BitVector(allocator)),
+             _onceReadSymbols(numSymRefs, static_cast<TR_BitVector*>(NULL), _region),
+             _onceWrittenSymbols(numSymRefs, static_cast<TR_BitVector*>(NULL), _region),
+             _defsForSymbol(0, BitVector(allocator), _region),
              _neverReadSymbols(numSymRefs, _region),
              _neverReferencedSymbols(numSymRefs, _region),
              _neverWrittenSymbols(numSymRefs, _region),
              _volatileOrAliasedToVolatileSymbols(numSymRefs, _region),
              _onceWrittenSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), _region),
              _onceReadSymbolsIndices(numSymRefs, TR::SparseBitVector(allocator), _region),
-             _expandedAtoms(allocator, CS2::Pair<TR::Node *, TR::TreeTop *>(NULL, NULL)),
+             _expandedAtoms(0, std::make_pair<TR::Node *, TR::TreeTop *>(NULL, NULL), _region),
              _sideTableToUseDefMap(_region),
              _numAliases(numSymRefs, _region),
              _nodesByGlobalIndex(nodeCount, _region),
              _loadsBySymRefNum(numSymRefs, _region),
-             _defsForOSR(allocator, TR_UseDefInfo::BitVector(allocator))
+             _defsForOSR(0, TR_UseDefInfo::BitVector(allocator), _region)
             {}
       TR::Region _region;
 
-      TR::deque<TR_BitVector *, TR::Region&> _onceReadSymbols;
-      TR::deque<TR_BitVector *, TR::Region&> _onceWrittenSymbols;
+      TR::vector<TR_BitVector *, TR::Region&> _onceReadSymbols;
+      TR::vector<TR_BitVector *, TR::Region&> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
-      CS2::ArrayOf<BitVector, TR::Allocator> _defsForSymbol;
+      TR::vector<BitVector, TR::Region&> _defsForSymbol;
       TR_BitVector _neverReadSymbols;
       TR_BitVector _neverReferencedSymbols;
       TR_BitVector _neverWrittenSymbols;
       TR_BitVector _volatileOrAliasedToVolatileSymbols;
-      TR::deque<TR::SparseBitVector, TR::Region&> _onceWrittenSymbolsIndices;
-      TR::deque<TR::SparseBitVector, TR::Region&> _onceReadSymbolsIndices;
+      TR::vector<TR::SparseBitVector, TR::Region&> _onceWrittenSymbolsIndices;
+      TR::vector<TR::SparseBitVector, TR::Region&> _onceReadSymbolsIndices;
 
-      CS2::ArrayOf<CS2::Pair<TR::Node *, TR::TreeTop *>, TR::Allocator> _expandedAtoms;    //TR::Node            **_expandedNodes;
+      TR::vector<std::pair<TR::Node *, TR::TreeTop *>, TR::Region&> _expandedAtoms;
 
 
       protected:
@@ -121,7 +122,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
 
       protected:
       // used only in TR_OSRDefInfo - should extend AuxiliaryData really:
-      CS2::ArrayOf<BitVector, TR::Allocator> _defsForOSR;
+      TR::vector<BitVector, TR::Region&> _defsForOSR;
 
       friend class TR_UseDefInfo;
       friend class TR_ReachingDefinitions;

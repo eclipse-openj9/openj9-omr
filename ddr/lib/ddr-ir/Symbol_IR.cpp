@@ -289,6 +289,9 @@ MergeVisitor::visitType(ClassUDT *type) const
 	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
+	if (NULL == type->_superClass) {
+		type->_superClass = other->_superClass;
+	}
 	return DDR_RC_OK;
 }
 

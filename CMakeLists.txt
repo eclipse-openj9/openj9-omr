@@ -107,3 +107,7 @@ if(OMR_COMPILER)
   # TODO: Actually support the compiler
   add_subdirectory(compiler)
 endif(OMR_COMPILER)
+
+if(OMR_DDR)
+  add_subdirectory(ddr)
+endif(OMR_DDR)

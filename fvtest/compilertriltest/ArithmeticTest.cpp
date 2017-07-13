@@ -21,7 +21,7 @@
 
 class Int32Arithmetic : public BinaryOpTest<int32_t> {};
 
-TEST_P(Int32Arithmetic, ConstArithmetic) {
+TEST_P(Int32Arithmetic, UsingConst) {
     auto param = to_struct(GetParam());
 
     char inputTrees[120] = {0};
@@ -38,7 +38,7 @@ TEST_P(Int32Arithmetic, ConstArithmetic) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point());
 }
 
-TEST_P(Int32Arithmetic, LoadParamArithmetic) {
+TEST_P(Int32Arithmetic, UsingLoadParam) {
     auto param = to_struct(GetParam());
 
     char inputTrees[120] = {0};
@@ -56,8 +56,7 @@ TEST_P(Int32Arithmetic, LoadParamArithmetic) {
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
-    ::testing::ValuesIn(
-        make_value_pairs<int32_t>(INT32_ZERO, INT32_POS, INT32_NEG, INT32_MIN, INT32_MAX)),
+    ::testing::ValuesIn(combine(const_values<int32_t>(), const_values<int32_t>())),
     ::testing::Values(
         std::make_tuple("add", [](int32_t l, int32_t r){return l+r;}),
         std::make_tuple("sub", [](int32_t l, int32_t r){return l-r;}),
@@ -65,7 +64,7 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
-        filter(make_value_pairs<int32_t>(INT32_ZERO, INT32_POS, INT32_NEG, INT32_MIN, INT32_MAX),
+        filter(combine(const_values<int32_t>(), const_values<int32_t>()),
                [](std::tuple<int32_t, int32_t> a){ return std::get<1>(a) == 0;} )),
     ::testing::Values(
         std::make_tuple("div", [](int32_t l, int32_t r){return l/r;}),

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -172,7 +172,8 @@ MM_ConcurrentOverflow::overflowItemInternal(MM_EnvironmentBase *env, void *item,
 	/* ..and dirty its card if it is */
 		omrobjectptr_t objectPtr = (omrobjectptr_t)item;
 		cardTable->dirtyCard(envStandard, objectPtr);
-		_extensions->collectorLanguageInterface->workPacketOverflow_overflowItem(env, objectPtr);
+		MM_ParallelGlobalGC *globalCollector = (MM_ParallelGlobalGC *)_extensions->getGlobalCollector();
+		globalCollector->getMarkingScheme()->getMarkingDelegate()->handleWorkPacketOverflowItem(env,objectPtr);
 	}
 }
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -19,7 +19,7 @@
 #include "omrcfg.h"
 #include "ModronAssertions.h"
 
-#include "CollectorLanguageInterface.hpp"
+#include "Configuration.hpp"
 #include "EnvironmentStandard.hpp"
 #include "HeapRegionDescriptorStandard.hpp"
 
@@ -38,15 +38,13 @@ MM_HeapRegionDescriptorStandard::initialize(MM_EnvironmentBase *envBase, MM_Heap
 		return false;
 	}
 
-	MM_CollectorLanguageInterface *cli = MM_GCExtensionsBase::getExtensions(env->getOmrVM())->collectorLanguageInterface;
-	return cli->collectorHeapRegionDescriptorInitialize(env, this);
+	return env->getExtensions()->configuration->initializeHeapRegionDescriptor(env, this);
 }
 
 void 
 MM_HeapRegionDescriptorStandard::tearDown(MM_EnvironmentBase *env)
 {
-	MM_CollectorLanguageInterface *cli = MM_GCExtensionsBase::getExtensions(env->getOmrVM())->collectorLanguageInterface;
-	cli->collectorHeapRegionDescriptorTearDown(env, this);
+	env->getExtensions()->configuration->teardownHeapRegionDescriptor(env, this);
 
 	MM_HeapRegionDescriptor::tearDown(env);
 }

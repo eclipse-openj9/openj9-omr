@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -29,7 +29,6 @@ class GC_ObjectScanner;
 class MM_CompactScheme;
 class MM_EnvironmentStandard;
 class MM_ForwardedHeader;
-class MM_MarkingScheme;
 class MM_MemorySubSpaceSemiSpace;
 
 /**
@@ -42,14 +41,7 @@ private:
 protected:
 	OMR_VM *_omrVM;
 	MM_GCExtensionsBase *_extensions;
-	MM_MarkingScheme *_markingScheme;
 public:
-	enum AttachVMThreadReason {
-		ATTACH_THREAD = 0x0,
-		ATTACH_GC_DISPATCHER_THREAD = 0x1,
-		ATTACH_GC_HELPER_THREAD = 0x2,
-		ATTACH_GC_MASTER_THREAD = 0x3,
-	};
 
 private:
 protected:
@@ -67,34 +59,6 @@ protected:
 public:
 	static MM_CollectorLanguageInterfaceImpl *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
-
-	virtual void doFrequentObjectAllocationSampling(MM_EnvironmentBase* env) {}
-	virtual bool checkForExcessiveGC(MM_EnvironmentBase *env, MM_Collector *collector) {return false;}
-
-	virtual void flushNonAllocationCaches(MM_EnvironmentBase *env);
-
-	virtual OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason);
-	virtual void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason);
-
-	virtual bool globalCollector_isTimeForGlobalGCKickoff() {return false;}
-	virtual void globalCollector_internalPostCollect(MM_EnvironmentBase* env, MM_MemorySubSpace* subSpace) {}
-
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_beforeGC(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_afterGC(MM_EnvironmentBase *env, bool compactThisCycle) {}
-	virtual void parallelGlobalGC_postPrepareHeapForWalk(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_postMarkProcessing(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_setupBeforeGC(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_setMarkingScheme(MM_EnvironmentBase *env, void *markingScheme) {_markingScheme = (MM_MarkingScheme *)markingScheme;}
-	virtual bool parallelGlobalGC_createAccessBarrier(MM_EnvironmentBase *env) {return true;}
-	virtual void parallelGlobalGC_destroyAccessBarrier(MM_EnvironmentBase *env) {}
-	virtual bool parallelGlobalGC_heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress) {return true;}
-	virtual bool parallelGlobalGC_heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress) {return true;}
-	virtual bool parallelGlobalGC_createHeapWalker(MM_EnvironmentBase *env, MM_GlobalCollector *collector, MM_MarkMap *markMap) {return true;}
-	virtual void parallelGlobalGC_destroyHeapWalker(MM_EnvironmentBase *env) {}
-	virtual MM_HeapWalker *parallelGlobalGC_getHeapWalker() {return NULL;}
-	virtual void parallelGlobalGC_masterThreadGarbageCollect_gcComplete(MM_EnvironmentBase *env, bool didCompact) {}
-	virtual void parallelGlobalGC_collectorInitialized(MM_EnvironmentBase *env) {}
-	virtual void parallelGlobalGC_reportObjectEvents(MM_EnvironmentBase *env) {}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	virtual MM_ConcurrentSafepointCallback* concurrentGC_createSafepointCallback(MM_EnvironmentBase *env);
@@ -123,24 +87,7 @@ public:
 	virtual void concurrentGC_scanThread(MM_EnvironmentBase *env) {}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
-	virtual void markingScheme_masterSetupForGC(MM_EnvironmentBase *env);
-	virtual void markingScheme_scanRoots(MM_EnvironmentBase *env);
-	virtual void markingScheme_completeMarking(MM_EnvironmentBase *env);
-	virtual void markingScheme_markLiveObjectsComplete(MM_EnvironmentBase *env);
-	virtual void markingScheme_masterSetupForWalk(MM_EnvironmentBase *env);
-	virtual void markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env);
-	virtual uintptr_t markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason);
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	virtual uintptr_t markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo);
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-	virtual bool collectorHeapRegionDescriptorInitialize(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {return true;}
-	virtual void collectorHeapRegionDescriptorTearDown(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) {}
-
-	virtual void workPacketOverflow_overflowItem(MM_EnvironmentBase *env, omrobjectptr_t objectPtr) {}
-
 #if defined(OMR_GC_MODRON_COMPACTION)
-	virtual CompactPreventedReason parallelGlobalGC_checkIfCompactionShouldBePrevented(MM_EnvironmentBase *env) {return COMPACT_PREVENTED_NONE;}
 	virtual void compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env);
 	virtual void compactScheme_fixupRoots(MM_EnvironmentBase *env, MM_CompactScheme *compactScheme);
 	virtual void compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env);

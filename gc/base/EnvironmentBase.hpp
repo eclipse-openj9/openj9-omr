@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -112,6 +112,18 @@ protected:
 #endif /* OMR_GC_SEGREGATED_HEAP */
 
 public:
+	/**
+	 * Codes used to identify attached VM threads.
+	 *
+	 * @see attachVMThread()
+	 */
+	typedef enum AttachVMThreadReason {
+		ATTACH_THREAD = 0x0,
+		ATTACH_GC_DISPATCHER_THREAD = 0x1,
+		ATTACH_GC_HELPER_THREAD = 0x2,
+		ATTACH_GC_MASTER_THREAD = 0x3,
+	} AttachVMThreadReason;
+
 	MM_ObjectAllocationInterface *_objectAllocationInterface; /**< Per-thread interface that guides object allocation decisions */
 
 	MM_WorkStack _workStack;
@@ -175,6 +187,16 @@ protected:
 
 public:
 	static MM_EnvironmentBase *newInstance(MM_GCExtensionsBase *extensions, OMR_VMThread *vmThread);
+
+	static OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, AttachVMThreadReason reason = ATTACH_THREAD)
+	{
+		return MM_EnvironmentDelegate::attachVMThread(omrVM, threadName, reason);
+	}
+
+	static void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrThread, AttachVMThreadReason reason = ATTACH_THREAD)
+	{
+		MM_EnvironmentDelegate::detachVMThread(omrVM, omrThread, reason);
+	}
 
 	/**
 	 * Get the Core Environment.
@@ -352,6 +374,12 @@ public:
 	 * Object must previously have been saved via saveObjects().
 	 */
 	void restoreObjects(omrobjectptr_t *objectPtrIndirect);
+
+	/**
+	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated, but will
+	 * done before start of the next gc for all objects allocated since the last gc.
+	 */
+	bool objectAllocationNotify(omrobjectptr_t omrObject) { return _delegate.objectAllocationNotify(omrObject); }
 
 	/**
 	 *	Verbose: allocation Failure Start Report if required
@@ -540,6 +568,8 @@ public:
 
 	MMINLINE MM_WorkStack *getWorkStack() { return &_workStack; }
 
+	MMINLINE void flushNonAllocationCaches() { _delegate.flushNonAllocationCaches(); }
+
 	/**
 	 * Get a pointer to common GC metadata attached to this environment. The GC environment structure
 	 * is defined by the client language and bound to the environment delegate attached to this class.
@@ -547,40 +577,6 @@ public:
 	 * points into global structures.
 	 */
 	MMINLINE GC_Environment *getGCEnvironment() { return _delegate.getGCEnvironment(); }
-
-	/**
-	 * Called on each participating GC thread before starting mark phase. This can be used
-	 * to reset local thread stats and reference buffers prior to commencing marking.
-	 */
-	MMINLINE void
-	markingPhaseStarted()
-	{
-		_markStats.clear();
-		_workPacketStats.clear();
-
-		_delegate.markingStarted();
-
-#if defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME)
-		/* record that this thread is participating in this cycle */
-		_markStats._gcCount = _workPacketStats._gcCount = getExtensions()->globalGCStats.gcCount;
-#endif /* defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME) */
-	}
-
-	/**
-	 * Called on each participating GC thread after completing mark phase. This can be used
-	 * to merge local thread stats and reference buffers into global containers to compleete marking.
-	 */
-	MMINLINE void
-	markingPhaseFinished()
-	{
-		_delegate.markingFinished();
-
-#if defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME)
-		MM_GCExtensionsBase *extensions = getExtensions();
-		extensions->globalGCStats.markStats.merge(&_markStats);
-		extensions->globalGCStats.workPacketStats.merge(&_workPacketStats);
-#endif /* defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME) */
-	}
 
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	MMINLINE MM_HeapRegionQueue *getRegionWorkList() const { return _regionWorkList; }

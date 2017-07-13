@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -394,7 +394,7 @@ MM_TLHAllocationSupport::objectAllocationNotify(MM_EnvironmentBase *env, void *h
 	omrobjectptr_t object = NULL;
 
 	while(NULL != (object = objectHeapIterator.nextObject())){
-		cli->objectAllocationNotify(env, object);
+		env->objectAllocationNotify(object);
 	}
 }
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */

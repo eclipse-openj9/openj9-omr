@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -28,7 +28,6 @@
 #include "ForwardedHeader.hpp"
 #include "GCExtensionsBase.hpp"
 #include "HeapLinkedFreeHeader.hpp"
-#include "MarkingScheme.hpp"
 #include "mminitcore.h"
 #include "objectdescription.h"
 #include "ObjectModel.hpp"
@@ -92,84 +91,6 @@ bool
 MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
 {
 	return true;
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::flushNonAllocationCaches(MM_EnvironmentBase *env)
-{
-}
-
-OMR_VMThread *
-MM_CollectorLanguageInterfaceImpl::attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason)
-{
-	OMR_VMThread *omrVMThread = NULL;
-	omr_error_t rc = OMR_ERROR_NONE;
-
-	rc = OMR_Glue_BindCurrentThread(omrVM, threadName, &omrVMThread);
-	if (OMR_ERROR_NONE != rc) {
-		return NULL;
-	}
-	return omrVMThread;
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason)
-{
-	if (NULL != omrVMThread) {
-		OMR_Glue_UnbindCurrentThread(omrVMThread);
-	}
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterSetupForGC(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanRoots(MM_EnvironmentBase *env)
-{
-#error implement root walking code
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_completeMarking(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_markLiveObjectsComplete(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterSetupForWalk(MM_EnvironmentBase *env)
-{
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::markingScheme_masterCleanupAfterGC(MM_EnvironmentBase *env)
-{
-}
-
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanObject(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason)
-{
-	/* This will likely get moved back into MarkingScheme and use an object scanner to walk the slots of an Object */
-#error implement an object scanner
-}
-
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::markingScheme_scanObjectWithSize(MM_EnvironmentBase *env, omrobjectptr_t objectPtr, MarkingSchemeScanReason reason, uintptr_t sizeToDo)
-{
-#error implement an object scanner which scans up to sizeToDo bytes
-}
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-
-void
-MM_CollectorLanguageInterfaceImpl::parallelDispatcher_handleMasterThread(OMR_VMThread *omrVMThread)
-{
-	/* Do nothing for now.  only required for SRT */
 }
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
@@ -363,7 +284,6 @@ MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStand
 
 	switch (concurrentStatus) {
 	case CONCURRENT_ROOT_TRACING1:
-		markingScheme_scanRoots(env);
 		break;
 	default:
 		Assert_MM_unreachable();

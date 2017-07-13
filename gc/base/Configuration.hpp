@@ -25,8 +25,13 @@
 #include "omrport.h"
 
 #include "BaseVirtual.hpp"
+#include "CardTable.hpp"
 #include "ConfigurationDelegate.hpp"
+#include "EnvironmentBase.hpp"
+#include "GCExtensionsBase.hpp"
 #include "InitializationParameters.hpp"
+#include "Scavenger.hpp"
+#include "SlotObject.hpp"
 
 class MM_Dispatcher;
 class MM_GCExtensionsBase;
@@ -81,6 +86,15 @@ public:
 	virtual J9Pool* createEnvironmentPool(MM_EnvironmentBase* env) = 0;
 	virtual MM_Dispatcher *createDispatcher(MM_EnvironmentBase *env, omrsig_handler_fn handler, void* handler_arg, uintptr_t defaultOSStackSize);
 
+	bool initializeHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { return _delegate.initializeHeapRegionDescriptorExtension(env, region); }
+	void teardownHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { _delegate.teardownHeapRegionDescriptorExtension(env, region); }
+
+	/**
+	 * Delegated method to determine when to start tracking heap fragmentation, which should be inhibited
+	 * until the heap has grown to a stable operational size.
+	 */
+	MMINLINE bool canCollectFragmentationStats(MM_EnvironmentBase *env) { return _delegate.canCollectFragmentationStats(env); }
+
 	/**
 	 * Called once during startup to indicate that the default memory space has been allocated.
 	 * The configuration may use this opportunity to configure values related to the heap address.
@@ -105,10 +119,10 @@ public:
 	}
 
 protected:
+	MM_ConfigurationDelegate *getConfigurationDelegate() { return &_delegate; }
+
 	virtual bool initialize(MM_EnvironmentBase* env);
 	virtual void tearDown(MM_EnvironmentBase* env);
-
-	MM_ConfigurationDelegate *getConfigurationDelegate() { return &_delegate; }
 
 	virtual MM_EnvironmentBase* allocateNewEnvironment(MM_GCExtensionsBase* extensions, OMR_VMThread* omrVMThread) = 0;
 	virtual bool initializeEnvironment(MM_EnvironmentBase* env);

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -113,7 +113,7 @@ MM_OverflowStandard::overflowItemInternal(MM_EnvironmentBase *env, void *item)
 		markMap->atomicSetBit((omrobjectptr_t)((uintptr_t)item + markMap->getObjectGrain()));
 
 		/* Perform language specific actions */
-		_extensions->collectorLanguageInterface->workPacketOverflow_overflowItem(env,objectPtr);
+		markingScheme->getMarkingDelegate()->handleWorkPacketOverflowItem(env,objectPtr);
 	}
 }
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -23,7 +23,6 @@
 
 #include "EnvironmentStandard.hpp"
 #include "HeapRegionDescriptor.hpp"
-#include "HeapRegionDescriptorTypes.hpp"
 
 class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
@@ -31,7 +30,6 @@ class MM_GCExtensionsBase;
 class MM_HeapRegionDescriptorStandard : public MM_HeapRegionDescriptor {
 
 public:
-	MM_HeapRegionDescriptorStandardExtension _heapRegionDescriptionExtension;
 protected:
 private:
 

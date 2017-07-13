@@ -19,12 +19,6 @@
 #include "OpCodeTest.hpp"
 #include "jitbuilder_compiler.hpp"
 
-#include <limits>
-
-#define INT32_POS 3
-#define INT32_NEG -2
-#define INT32_ZERO 0
-
 class Int32Arithmetic : public BinaryOpTest<int32_t> {};
 
 TEST_P(Int32Arithmetic, ConstArithmetic) {

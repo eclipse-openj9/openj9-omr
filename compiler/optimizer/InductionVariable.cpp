@@ -6403,8 +6403,14 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
       // factor out goto blocks
       while (isGotoBlock(block) && (block->getPredecessors().size() == 1))
          {
-         skippedGotoBlock = block;
-         block = block->getPredecessors().front()->getFrom()->asBlock();
+         TR::Block *predBlock = block->getPredecessors().front()->getFrom()->asBlock();
+         if (predBlock->getStructureOf()->getContainingLoop() == block->getStructureOf()->getContainingLoop())
+            {
+            skippedGotoBlock = block;
+            block = predBlock;
+            }
+         else
+            break;
          }
 
       if (trace())

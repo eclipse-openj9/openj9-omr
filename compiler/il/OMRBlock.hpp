@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -433,6 +433,18 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    void setIsSpecialized(bool b = true)               { _flags.set(_isSpecialized, b); }
    bool isSpecialized()                               { return _flags.testAny(_isSpecialized); }
 
+   bool isLoopInvariantBlock()                        { return _flags.testAny(_isLoopInvariantBlock); }
+   void setAsLoopInvariantBlock(bool b)               { _flags.set(_isLoopInvariantBlock, b); }
+
+   bool isCreatedByVersioning()                       { return _flags.testAny(_isCreatedByVersioning); }
+   void setCreatedByVersioning(bool b)                { _flags.set(_isCreatedByVersioning, b); }
+
+   bool isEntryOfShortRunningLoop()                   { return _flags.testAny(_isEntryOfShortRunningLoop); }
+   void setIsEntryOfShortRunningLoop()                { _flags.set(_isEntryOfShortRunningLoop, true); }
+
+   bool wasHeaderOfCanonicalizedLoop()                { return _flags.testAny(_wasHeaderOfCanonicalizedLoop); }
+   void setWasHeaderOfCanonicalizedLoop(bool b)       { _flags.set(_wasHeaderOfCanonicalizedLoop, b); }
+
    enum partialFlags // Stored in lowest 8 bits of _moreflags
       {
       _unsanitizeable         = 0x00000001,
@@ -509,7 +521,11 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
       _createdAtCodeGen                     = 0x00080000,
       _hasCalls                             = 0x00200000,
       _hasCallToSuperCold                   = 0x00400000,
-      _isSpecialized                        = 0x00800000   // Block has been specialized by loop specializer
+      _isSpecialized                        = 0x00800000,  // Block has been specialized by loop specializer
+      _isLoopInvariantBlock                 = 0x01000000,
+      _isCreatedByVersioning                = 0x02000000,
+      _isEntryOfShortRunningLoop            = 0x04000000,
+      _wasHeaderOfCanonicalizedLoop         = 0x08000000,
       };
 
    TR::TreeTop *                         _pEntry;

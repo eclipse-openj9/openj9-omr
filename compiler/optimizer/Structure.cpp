@@ -61,14 +61,6 @@ TR_Structure::Kind TR_RegionStructure::getKind()            {return Region;}
 TR_BlockStructure::TR_BlockStructure(TR::Compilation * comp, int32_t index, TR::Block *b) :
    TR_Structure(comp, index), _block(b)
    {
-   TR_BlockStructure *old = b->getStructureOf();
-   if (old)
-      {
-      setAsLoopInvariantBlock(old->isLoopInvariantBlock());
-      if (old->isEntryOfShortRunningLoop())
-         setIsEntryOfShortRunningLoop();
-      setCreatedByVersioning(old->isCreatedByVersioning());
-      }
    b->setStructureOf(this);
    }
 
@@ -797,11 +789,8 @@ TR_Structure *TR_BlockStructure::cloneStructure(TR::Block **correspondingBlocks,
    {
    TR::Block *correspondingBlock = correspondingBlocks[getNumber()];
    TR_BlockStructure *clonedBlockStructure = new (cfg()->structureRegion()) TR_BlockStructure(comp(), correspondingBlock->getNumber(), correspondingBlock);
-   clonedBlockStructure->setAsLoopInvariantBlock(isLoopInvariantBlock());
    clonedBlockStructure->setNestingDepth(getNestingDepth());
    clonedBlockStructure->setMaxNestingDepth(getMaxNestingDepth());
-   if (isEntryOfShortRunningLoop())
-      clonedBlockStructure->setIsEntryOfShortRunningLoop();
    clonedBlockStructure->setDuplicatedBlock(this);
    return clonedBlockStructure;
    }

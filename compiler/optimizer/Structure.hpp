@@ -337,17 +337,17 @@ class TR_BlockStructure : public TR_Structure
 
    virtual List<TR::Block> *getBlocks(List<TR::Block> *);
 
-   bool isLoopInvariantBlock() {return _blockFlags.testAny(_isLoopInvariantBlock);}
-   void setAsLoopInvariantBlock(bool b) {_blockFlags.set(_isLoopInvariantBlock, b);}
+   bool isLoopInvariantBlock()          { return _block->isLoopInvariantBlock(); }
+   void setAsLoopInvariantBlock(bool b) { _block->setAsLoopInvariantBlock(b);    }
 
-   bool isCreatedByVersioning() {return _blockFlags.testAny(_isCreatedByVersioning);}
-   void setCreatedByVersioning(bool b) {_blockFlags.set(_isCreatedByVersioning, b);}
+   bool isCreatedByVersioning()         { return _block->isCreatedByVersioning(); }
+   void setCreatedByVersioning(bool b)  { _block->setCreatedByVersioning(b);     }
 
-   bool isEntryOfShortRunningLoop() { return _blockFlags.testAny(_isEntryOfShortRunningLoop); }
-   void setIsEntryOfShortRunningLoop() {_blockFlags.set(_isEntryOfShortRunningLoop, true);}
+   bool isEntryOfShortRunningLoop()     { return _block->isEntryOfShortRunningLoop(); }
+   void setIsEntryOfShortRunningLoop()  { _block->setIsEntryOfShortRunningLoop();     }
 
-   bool wasHeaderOfCanonicalizedLoop() { return _blockFlags.testAny(_wasHeaderOfCanonicalizedLoop); }
-   void setWasHeaderOfCanonicalizedLoop(bool b) {_blockFlags.set(_wasHeaderOfCanonicalizedLoop, b);}
+   bool wasHeaderOfCanonicalizedLoop()          { return _block->wasHeaderOfCanonicalizedLoop();  }
+   void setWasHeaderOfCanonicalizedLoop(bool b) { _block->setWasHeaderOfCanonicalizedLoop(b);    }
 
    virtual TR::Block *getEntryBlock() { return getBlock(); }
 
@@ -362,17 +362,8 @@ class TR_BlockStructure : public TR_Structure
    public:
    virtual List<TR::Block> *getBlocks(List<TR::Block> *, vcount_t);
 
-   enum  // flags
-      {
-      _isLoopInvariantBlock         = 0x01,
-      _isCreatedByVersioning        = 0x02,
-      _isEntryOfShortRunningLoop    = 0x04,
-      _wasHeaderOfCanonicalizedLoop = 0x08
-      };
-
    private:
    TR::Block          *_block;
-   flags8_t   _blockFlags;
    };
 
 // **********************************************************************

@@ -100,6 +100,7 @@ class CFG
       _rootStructure(NULL),
       _pStart(NULL),
       _pEnd(NULL),
+      _structureRegion(c->trMemory()->heapMemoryRegion()),
       _nextNodeNumber(0),
       _numEdges(0),
       _mightHaveUnreachableBlocks(false),
@@ -130,6 +131,7 @@ class CFG
    TR_Memory *trMemory() { return comp()->trMemory(); }
    TR_HeapMemory trHeapMemory() { return trMemory(); }
    TR_StackMemory trStackMemory() { return trMemory(); }
+   TR::Region &structureRegion() { return _structureRegion; }
 
    void setStartAndEnd(TR::CFGNode * s, TR::CFGNode * e) { addNode(s); addNode(e); setStart(s); setEnd(e); }
 
@@ -307,6 +309,7 @@ protected:
 
    TR::CFGNode *_pStart;
    TR::CFGNode *_pEnd;
+   TR::Region _structureRegion;
    TR_Structure *_rootStructure;
 
    TR_LinkHead1<TR::CFGNode> _nodes;
@@ -437,7 +440,7 @@ class TR_OrderedExceptionHandlerIterator
 public:
    TR_ALLOC(TR_Memory::OrderedExceptionHandlerIterator)
 
-   TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock);
+   TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock, TR::Region &workingRegion);
 
    TR::Block * getFirst();
 

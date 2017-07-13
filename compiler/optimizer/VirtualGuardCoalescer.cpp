@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -523,8 +523,8 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
       if (_cfg->getStructure())
          {
          next->getStructureOf()->getParent()->asRegion()->
-            addSubNode(new (trHeapMemory()) TR_StructureSubGraphNode
-                       (new (trHeapMemory()) TR_BlockStructure(comp(), clone->getNumber(), clone)));
+            addSubNode(new (_cfg->structureRegion()) TR_StructureSubGraphNode
+                       (new (_cfg->structureRegion()) TR_BlockStructure(comp(), clone->getNumber(), clone)));
          }
 
       if (trace())

@@ -243,7 +243,7 @@ void TR_LoopUnroller::unrollLoopOnce(TR_RegionStructure *loop, TR_StructureSubGr
       //Clone all the substructures
       TR_Structure *subStruct = subNode->getStructure();
       TR_Structure *clonedSubStruct = cloneStructure(subStruct);
-      TR_StructureSubGraphNode *clonedSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedSubStruct);
+      TR_StructureSubGraphNode *clonedSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedSubStruct);
 
       //Memorize the mapping between subNode and clonedSubNode
       SET_CLONE_NODE(subNode, clonedSubNode);
@@ -474,8 +474,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
       comp()->setStartTree(newBlock->getEntry());
 
       _cfg->addNode(newBlock);
-      TR_BlockStructure *newBlockStr = new (trHeapMemory()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
-      TR_StructureSubGraphNode *newNode  = new (trHeapMemory()) TR_StructureSubGraphNode(newBlockStr);
+      TR_BlockStructure *newBlockStr = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
+      TR_StructureSubGraphNode *newNode  = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBlockStr);
 
       parent->addSubNode(newNode);
 
@@ -639,8 +639,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
 
          _cfg->addNode(newBlock);
 
-         TR_BlockStructure *newBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
-         TR_StructureSubGraphNode *newSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(newBlockStructure);
+         TR_BlockStructure *newBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
+         TR_StructureSubGraphNode *newSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBlockStructure);
          parent->addSubNode(newSubNode);
 
          TR::CFGEdge *edgeToRemove = pBlock->getSuccessors().front();
@@ -790,8 +790,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
          pBlock->getExit()->join(newBlock->getEntry());
 
          _cfg->addNode(newBlock);
-         TR_BlockStructure *newBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
-         TR_StructureSubGraphNode *newSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(newBlockStructure);
+         TR_BlockStructure *newBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
+         TR_StructureSubGraphNode *newSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBlockStructure);
          parent->addSubNode(newSubNode);
 
          TR::CFGEdge *edgeToRemove = NULL;
@@ -823,8 +823,8 @@ void TR_LoopUnroller::modifyBranchTree(TR_RegionStructure *loop,
          TR::Block *newBlock = pBlock->split(lastTree, _cfg);
          pBlock->append(iterGuard);
 
-         TR_BlockStructure *newBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
-         TR_StructureSubGraphNode *newSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(newBlockStructure);
+         TR_BlockStructure *newBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newBlock->getNumber(), newBlock);
+         TR_StructureSubGraphNode *newSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBlockStructure);
          parent->addSubNode(newSubNode);
 
          _cfg->addEdge(TR::CFGEdge::createEdge(pBlock,  spillBlock, trMemory()));
@@ -1188,8 +1188,8 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
 
             newIfBlock->append(newIfTree);
             _cfg->addNode(newIfBlock);
-            newIfBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newIfBlock->getNumber(), newIfBlock);
-            newIfSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(newIfBlockStructure);
+            newIfBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newIfBlock->getNumber(), newIfBlock);
+            newIfSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newIfBlockStructure);
             parent->addSubNode(newIfSubNode);
 
             TR::Node *gotoNode  = TR::Node::create(newIfTree->getNode(), TR::Goto);
@@ -1199,8 +1199,8 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             _cfg->addNode(gotoBlock);
             _cfg->addEdge(TR::CFGEdge::createEdge(gotoBlock, spillLoop->getEntryBlock(), trMemory()));
 
-            TR_StructureSubGraphNode *gotoSubNode = new (trHeapMemory()) TR_StructureSubGraphNode
-               (new (trHeapMemory()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
+            TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode
+               (new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
             parent->addSubNode(gotoSubNode);
 
             if (spillLoop->contains(branchDestination->getStructureOf(), parent))
@@ -1413,16 +1413,16 @@ void TR_LoopUnroller::modifyOriginalLoop(TR_RegionStructure *loop, TR_StructureS
             newIfBlock->append(newIfTree);
 
             _cfg->addNode(newIfBlock);
-            newIfBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newIfBlock->getNumber(), newIfBlock);
-            newIfSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(newIfBlockStructure);
+            newIfBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newIfBlock->getNumber(), newIfBlock);
+            newIfSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newIfBlockStructure);
             parent->addSubNode(newIfSubNode);
 
             gotoNode  = TR::Node::create(newIfTree->getNode(), TR::Goto);
             gotoBlock = TR::Block::createEmptyBlock(gotoNode, comp(), newIfBlock->getFrequency(), newIfBlock);
             gotoBlock->append(TR::TreeTop::create(comp(), gotoNode));
             _cfg->addNode(gotoBlock);
-            TR_StructureSubGraphNode *gotoSubNode = new (trHeapMemory()) TR_StructureSubGraphNode
-               (new (trHeapMemory()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
+            TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode
+               (new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(), gotoBlock));
             parent->addSubNode(gotoSubNode);
 
             if (spillLoop->contains(branchDestination->getStructureOf(), parent))
@@ -2168,7 +2168,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    cloneBlocksInRegion(loop, true); // isSpillLoop = true
 
    TR_RegionStructure *spillLoop = cloneStructure(loop)->asRegion();
-   TR_StructureSubGraphNode *spillNode = new (trHeapMemory()) TR_StructureSubGraphNode(spillLoop);
+   TR_StructureSubGraphNode *spillNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(spillLoop);
    fixExitEdges(loop, spillLoop, branchNode);
 
    spillLoop->getEntryBlock()->getStructureOf()->setIsEntryOfShortRunningLoop();
@@ -2211,7 +2211,7 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    //clone the loop
    cloneBlocksInRegion(loop);
    TR_RegionStructure *spillLoop = cloneStructure(loop)->asRegion();
-   TR_StructureSubGraphNode *spillNode = new (trHeapMemory()) TR_StructureSubGraphNode(spillLoop);
+   TR_StructureSubGraphNode *spillNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(spillLoop);
    fixExitEdges(loop, spillLoop, branchNode);
 
    TR_StructureSubGraphNode *clonedBranchNode = GET_CLONE_NODE(branchNode);
@@ -2230,9 +2230,9 @@ void TR_LoopUnroller::generateSpillLoop(TR_RegionStructure *loop,
    _cfg->addNode(newBranchBlock);
 
    //create the structure
-   TR_BlockStructure *newBranchStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newBranchBlock->getNumber(),
+   TR_BlockStructure *newBranchStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newBranchBlock->getNumber(),
                                                                  newBranchBlock);
-   TR_StructureSubGraphNode *newBranchNode = new (trHeapMemory()) TR_StructureSubGraphNode(newBranchStructure);
+   TR_StructureSubGraphNode *newBranchNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newBranchStructure);
    spillLoop->addSubNode(newBranchNode);
 
    //make newBranchNode the entryNode
@@ -2519,9 +2519,9 @@ void TR_LoopUnroller::addEdgeForSpillLoop(TR_RegionStructure *region,
                }
 
             //create the structures
-            TR_BlockStructure *gotoStruct = new (trHeapMemory()) TR_BlockStructure(comp(), gotoBlock->getNumber(),
+            TR_BlockStructure *gotoStruct = new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(),
                                                                   gotoBlock);
-            TR_StructureSubGraphNode *gotoSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(gotoStruct);
+            TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(gotoStruct);
             region->addSubNode(gotoSubNode);
 
             //create the cfg edges
@@ -2654,9 +2654,9 @@ void TR_LoopUnroller::addExitEdgeAndFixEverything(TR_RegionStructure *region,
                      gotoBlock->getExit()->setNextTreeTop(NULL);
 
                   //create the structures
-                  TR_BlockStructure *gotoStruct = new (trHeapMemory()) TR_BlockStructure(comp(), gotoBlock->getNumber(),
+                  TR_BlockStructure *gotoStruct = new (_cfg->structureRegion()) TR_BlockStructure(comp(), gotoBlock->getNumber(),
                                                                         gotoBlock);
-                  TR_StructureSubGraphNode *gotoSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(gotoStruct);
+                  TR_StructureSubGraphNode *gotoSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(gotoStruct);
                   region->addSubNode(gotoSubNode);
 
                   //create the cfg edges
@@ -2936,7 +2936,7 @@ TR_Structure *TR_LoopUnroller::cloneBlockStructure(TR_BlockStructure *blockStruc
    TR::Block *block = blockStructure->getBlock();
    TR::Block *clonedBlock = GET_CLONE_BLOCK(block);
    TR_BlockStructure *clonedBlockStructure =
-      new (trHeapMemory()) TR_BlockStructure(comp(), clonedBlock->getNumber(), clonedBlock);
+      new (_cfg->structureRegion()) TR_BlockStructure(comp(), clonedBlock->getNumber(), clonedBlock);
    clonedBlockStructure->setAsLoopInvariantBlock(blockStructure->isLoopInvariantBlock());
    clonedBlockStructure->setNestingDepth(blockStructure->getNestingDepth());
    clonedBlockStructure->setMaxNestingDepth(blockStructure->getMaxNestingDepth());
@@ -2945,7 +2945,7 @@ TR_Structure *TR_LoopUnroller::cloneBlockStructure(TR_BlockStructure *blockStruc
 
 TR_Structure *TR_LoopUnroller::cloneRegionStructure(TR_RegionStructure *region)
    {
-   TR_RegionStructure *clonedRegion = new (trHeapMemory()) TR_RegionStructure(comp(), 0xDeadF00d); //for now
+   TR_RegionStructure *clonedRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), 0xDeadF00d); //for now
    clonedRegion->setAsCanonicalizedLoop(region->isCanonicalizedLoop());
    clonedRegion->setContainsInternalCycles(region->containsInternalCycles());
 
@@ -2957,7 +2957,7 @@ TR_Structure *TR_LoopUnroller::cloneRegionStructure(TR_RegionStructure *region)
       {
       subStruct = subNode->getStructure();
       TR_Structure *clonedSubStruct = cloneStructure(subStruct);
-      TR_StructureSubGraphNode *clonedSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedSubStruct);
+      TR_StructureSubGraphNode *clonedSubNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedSubStruct);
       SET_CLONE_NODE(subNode, clonedSubNode);
       clonedRegion->addSubNode(clonedSubNode);
       if (subNode == region->getEntry())

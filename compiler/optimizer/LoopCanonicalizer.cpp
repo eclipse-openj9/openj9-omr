@@ -1405,14 +1405,14 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    // new region replaces the original natural loop in its parent.
    //
    TR_Structure *parentStructure = whileLoop->getParent();
-   TR_RegionStructure *properRegion = new (trHeapMemory()) TR_RegionStructure(comp(), loopHeader->getNumber());
+   TR_RegionStructure *properRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), loopHeader->getNumber());
    properRegion->setAsCanonicalizedLoop(true);
    parentStructure->replacePart(whileLoop, properRegion);
    whileLoop->setParent(properRegion);
 
    whileLoop->setEntry(bodyNode);
    whileLoop->setNumber(loopBody->getNumber());
-   TR_BlockStructure *clonedHdrBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), clonedHeader->getNumber(), clonedHeader);
+   TR_BlockStructure *clonedHdrBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), clonedHeader->getNumber(), clonedHeader);
    if (needToSetFlag)
      {
      //clonedHdrBlockStructure->setIsEntryOfShortRunningLoop();
@@ -1431,21 +1431,21 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    clonedHdrBlockStructure->setWasHeaderOfCanonicalizedLoop(true);
    whileLoop->replacePart(entryGraphNode->getStructure(), clonedHdrBlockStructure);
 
-   TR_StructureSubGraphNode *hdrNode = new (trHeapMemory()) TR_StructureSubGraphNode(loopHeader->getStructureOf());
+   TR_StructureSubGraphNode *hdrNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(loopHeader->getStructureOf());
    properRegion->addSubNode(hdrNode);
    properRegion->setEntry(hdrNode);
 
-   TR_StructureSubGraphNode *node = new (trHeapMemory()) TR_StructureSubGraphNode(new (trHeapMemory()) TR_BlockStructure(comp(), splitter2->getNumber(), splitter2));
+   TR_StructureSubGraphNode *node = new (_cfg->structureRegion()) TR_StructureSubGraphNode(new (_cfg->structureRegion()) TR_BlockStructure(comp(), splitter2->getNumber(), splitter2));
    node->getStructure()->asBlock()->setAsLoopInvariantBlock(true);
    _invariantBlocks.add(splitter2);
    properRegion->addSubNode(node);
    TR::CFGEdge::createEdge(hdrNode, node, trMemory());
 
-   TR_StructureSubGraphNode *loopNode = new (trHeapMemory()) TR_StructureSubGraphNode(whileLoop);
+   TR_StructureSubGraphNode *loopNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(whileLoop);
    properRegion->addSubNode(loopNode);
    TR::CFGEdge::createEdge(node, loopNode, trMemory());
 
-   node = new (trHeapMemory()) TR_StructureSubGraphNode(new (trHeapMemory()) TR_BlockStructure(comp(), splitter1->getNumber(), splitter1));
+   node = new (_cfg->structureRegion()) TR_StructureSubGraphNode(new (_cfg->structureRegion()) TR_BlockStructure(comp(), splitter1->getNumber(), splitter1));
    properRegion->addSubNode(node);
    TR::CFGEdge::createEdge(hdrNode, node, trMemory());
 
@@ -1477,8 +1477,8 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
    if (reversedBranch)
       {
       bool naturalLoopStillExitsToJoinNode = false;
-      TR_BlockStructure *extraGotoStruct = new (trHeapMemory()) TR_BlockStructure(comp(), extraGoto->getNumber(), extraGoto);
-      node = new (trHeapMemory()) TR_StructureSubGraphNode(extraGotoStruct);
+      TR_BlockStructure *extraGotoStruct = new (_cfg->structureRegion()) TR_BlockStructure(comp(), extraGoto->getNumber(), extraGoto);
+      node = new (_cfg->structureRegion()) TR_StructureSubGraphNode(extraGotoStruct);
       properRegion->addSubNode(node);
       TR::CFGEdge::createEdge(loopNode, node, trMemory());
 
@@ -1496,7 +1496,7 @@ void TR_LoopCanonicalizer::canonicalizeNaturalLoop(TR_RegionStructure *whileLoop
             {
             if (fromNode->getStructure() == clonedHdrBlockStructure)
                {
-               edge->setTo(TR_StructureSubGraphNode::create(node->getNumber(), whileLoop));     //new (trHeapMemory()) TR_StructureSubGraphNode(node->getNumber()));
+               edge->setTo(TR_StructureSubGraphNode::create(node->getNumber(), whileLoop));     //new (_cfg->structureRegion()) TR_StructureSubGraphNode(node->getNumber()));
                }
             else
                naturalLoopStillExitsToJoinNode = true;
@@ -1702,7 +1702,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
       newExit->join(blockHeadTreeTop);
       }
 
-   TR_BlockStructure *invariantBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), loopInvariantBlock->getNumber(), loopInvariantBlock);
+   TR_BlockStructure *invariantBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), loopInvariantBlock->getNumber(), loopInvariantBlock);
    invariantBlockStructure->setAsLoopInvariantBlock(true);
 
    TR::Block *dummyEntryBlock = NULL;
@@ -1729,7 +1729,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
          dummyExit->join(newEntry);
          }
 
-      dummyEntryBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), dummyEntryBlock->getNumber(), dummyEntryBlock);
+      dummyEntryBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), dummyEntryBlock->getNumber(), dummyEntryBlock);
       targetBlock = dummyEntryBlock;
       }
    else
@@ -1765,7 +1765,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
 
    _cfg->setStructure(_rootStructure);
 
-   TR_StructureSubGraphNode *invariantNode = new (trHeapMemory()) TR_StructureSubGraphNode(invariantBlockStructure);
+   TR_StructureSubGraphNode *invariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(invariantBlockStructure);
    parentStructure->addSubNode(invariantNode);
 
    TR::CFGEdge::createEdge(invariantNode,  doWhileNode, trMemory());
@@ -1774,7 +1774,7 @@ void TR_LoopCanonicalizer::canonicalizeDoWhileLoop(TR_RegionStructure *doWhileLo
    TR_Structure *targetStructure = NULL;
    if (isEntry)
       {
-      TR_StructureSubGraphNode *dummyEntryNode = new (trHeapMemory()) TR_StructureSubGraphNode(dummyEntryBlockStructure);
+      TR_StructureSubGraphNode *dummyEntryNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(dummyEntryBlockStructure);
       parentStructure->addSubNode(dummyEntryNode);
 
       TR::CFGEdge::createEdge(dummyEntryNode,  invariantNode, trMemory());

@@ -70,6 +70,7 @@ class TR_Structure
       }
 
    TR::Compilation * comp() { return _comp; }
+   TR::CFG *cfg() { return _comp->getFlowGraph(); }
 
    TR_Memory *               trMemory()                    { return _trMemory; }
    TR_StackMemory            trStackMemory()               { return _trMemory; }
@@ -276,10 +277,10 @@ class TR_StructureSubGraphNode : public TR::CFGNode
    // Create a node for a concrete structure
    //
    TR_StructureSubGraphNode(TR_Structure *s)
-      : TR::CFGNode(s->getNumber(), s->trMemory()), _structure(s)  {s->setSubGraphNode(this);}
+      : TR::CFGNode(s->getNumber(), s->cfg()->structureRegion()), _structure(s)  {s->setSubGraphNode(this);}
 
-   TR_StructureSubGraphNode(int32_t n, TR_Memory * m)
-      : TR::CFGNode(n, m), _structure(0) {}
+   TR_StructureSubGraphNode(int32_t n, TR::Region &region)
+      : TR::CFGNode(n, region), _structure(0) {}
 
    static TR_StructureSubGraphNode *create(int32_t num, TR_RegionStructure *region);
 
@@ -425,8 +426,8 @@ class TR_RegionStructure : public TR_Structure
 
    TR_RegionStructure(TR::Compilation * c, int32_t index)
       : TR_Structure(c, index), _invariantSymbols(NULL), _blocksAtSameNestingLevel(NULL), _piv(NULL),
-        _basicIVs(c->trMemory()), _exitEdges(c->trMemory()), _subNodes(c->trMemory()->heapMemoryRegion()),
-        _invariantExpressions(NULL)
+        _basicIVs(c->getFlowGraph()->structureRegion()), _exitEdges(c->getFlowGraph()->structureRegion()),
+         _subNodes(c->getFlowGraph()->structureRegion()), _invariantExpressions(NULL)
       {
       }
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -95,7 +95,7 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
 
 void TR_RegionAnalysis::StructInfo::initialize(TR::Compilation * comp, int32_t index, TR::Block *block)
    {
-   _structure       = new (comp->trHeapMemory()) TR_BlockStructure(comp, block->getNumber(), block);
+   _structure       = new (comp->getFlowGraph()->structureRegion()) TR_BlockStructure(comp, block->getNumber(), block);
    _originalBlock   = block;
    _nodeIndex       = index;
    }
@@ -176,20 +176,19 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp, TR::ResolvedM
    // Calculate dominators
    // This has the side-effect of renumbering the blocks in depth-first order
    //
-   TR_Dominators *dominators = NULL;
-   dominators = new (comp->trHeapMemory()) TR_Dominators(comp);
+   TR_Dominators dominators = TR_Dominators(comp);
 
    #if DEBUG
    if (debug("verifyDominator"))
       {
-      TR_DominatorVerifier verifyDominator(*dominators);
+      TR_DominatorVerifier verifyDominator(dominators);
       }
    #endif
 
    TR::CFG *cfg = methSym->getFlowGraph();
    TR_ASSERT(cfg, "cfg is NULL\n");
 
-   TR_RegionAnalysis ra(comp, *dominators, cfg, comp->allocator());
+   TR_RegionAnalysis ra(comp, dominators, cfg, comp->allocator());
    ra._trace = comp->getOption(TR_TraceSA);
 
    ra._useNew = !comp->getOption(TR_DisableIterativeSA);
@@ -370,7 +369,7 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
    if (numBackEdges == 0)
       return NULL;
 
-   TR_RegionStructure *region = new (trHeapMemory()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_cfg->structureRegion()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -523,7 +522,7 @@ TR_RegionStructure *TR_RegionAnalysis::findRegion(StructInfo &node,
          return NULL;
       }
 
-   TR_RegionStructure *region = new (trHeapMemory()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_cfg->structureRegion()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -667,7 +666,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       StructInfo &fromNode = getInfo(fromIndex);
 
       if (cfgNodes[fromIndex] == NULL)
-         cfgNodes[fromIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(fromNode._structure);
+         cfgNodes[fromIndex] = new (_cfg->structureRegion()) TR_StructureSubGraphNode(fromNode._structure);
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
@@ -679,12 +678,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.ValueAt(toIndex))
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_cfg->structureRegion()) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure->getNumber(), trMemory());
+               cfgNodes[toIndex] = new (_cfg->structureRegion()) TR_StructureSubGraphNode(toNode._structure->getNumber(), _cfg->structureRegion());
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createEdge(from,  to, trMemory());
+         edge = TR::CFGEdge::createEdge(from,  to, _cfg->structureRegion());
          if (regionNodes.ValueAt(toIndex))
             {
             toNode._pred[fromIndex] = false;
@@ -714,12 +713,12 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          if (cfgNodes[toIndex] == NULL)
             {
             if (regionNodes.ValueAt(toIndex))
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure);
+               cfgNodes[toIndex] = new (_cfg->structureRegion()) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure->getNumber(), trMemory());
+               cfgNodes[toIndex] = new (_cfg->structureRegion()) TR_StructureSubGraphNode(toNode._structure->getNumber(), _cfg->structureRegion());
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createExceptionEdge(from,to,trMemory());
+         edge = TR::CFGEdge::createExceptionEdge(from, to, _cfg->structureRegion());
          if (regionNodes.ValueAt(toIndex))
             {
             toNode._exceptionPred[fromIndex] = false;

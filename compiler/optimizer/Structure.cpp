@@ -403,9 +403,9 @@ void TR_RegionStructure::checkForInternalCycles()
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    int32_t numNodes = comp()->getFlowGraph()->getNextNodeNumber();
-   TR_BitVector nodesSeenOnPath(numNodes,trMemory(), stackAlloc);
-   TR_BitVector nodesCleared(numNodes,trMemory(), stackAlloc);
-   TR_BitVector regionNodes(numNodes, trMemory(), stackAlloc);
+   TR_BitVector nodesSeenOnPath(numNodes, stackMemoryRegion);
+   TR_BitVector nodesCleared(numNodes, stackMemoryRegion);
+   TR_BitVector regionNodes(numNodes, stackMemoryRegion);
    for (auto itr = _subNodes.begin(), end = _subNodes.end(); itr != end; ++itr)
       regionNodes.set((*itr)->getNumber());
 
@@ -796,7 +796,7 @@ bool TR_RegionStructure::containsOnlyAcyclicRegions()
 TR_Structure *TR_BlockStructure::cloneStructure(TR::Block **correspondingBlocks, TR_StructureSubGraphNode **correspodingSubNodes, List<TR_Structure> *whileLoops, List<TR_Structure> *correspondingWhileLoops)
    {
    TR::Block *correspondingBlock = correspondingBlocks[getNumber()];
-   TR_BlockStructure *clonedBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), correspondingBlock->getNumber(), correspondingBlock);
+   TR_BlockStructure *clonedBlockStructure = new (cfg()->structureRegion()) TR_BlockStructure(comp(), correspondingBlock->getNumber(), correspondingBlock);
    clonedBlockStructure->setAsLoopInvariantBlock(isLoopInvariantBlock());
    clonedBlockStructure->setNestingDepth(getNestingDepth());
    clonedBlockStructure->setMaxNestingDepth(getMaxNestingDepth());
@@ -811,7 +811,8 @@ TR_Structure *TR_BlockStructure::cloneStructure(TR::Block **correspondingBlocks,
 
 TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks, TR_StructureSubGraphNode **correspondingSubNodes, List<TR_Structure> *whileLoops, List<TR_Structure> *correspondingWhileLoops)
    {
-   TR_RegionStructure *clonedRegionStructure = new (trHeapMemory()) TR_RegionStructure(comp(), correspondingBlocks[getNumber()]->getNumber());
+   TR::Region &structureRegion = cfg()->structureRegion();
+   TR_RegionStructure *clonedRegionStructure = new (structureRegion) TR_RegionStructure(comp(), correspondingBlocks[getNumber()]->getNumber());
    clonedRegionStructure->setAsCanonicalizedLoop(isCanonicalizedLoop());
    clonedRegionStructure->setContainsInternalCycles(containsInternalCycles());
 
@@ -822,7 +823,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
       {
       subStruct = subNode->getStructure();
       TR_Structure *clonedSubStruct = subStruct->cloneStructure(correspondingBlocks, correspondingSubNodes, whileLoops, correspondingWhileLoops);
-      TR_StructureSubGraphNode *clonedSubNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedSubStruct);
+      TR_StructureSubGraphNode *clonedSubNode = new (structureRegion) TR_StructureSubGraphNode(clonedSubStruct);
       clonedRegionStructure->addSubNode(clonedSubNode);
       if (subNode == getEntry())
          clonedRegionStructure->setEntry(clonedSubNode);
@@ -876,7 +877,7 @@ TR_Structure *TR_RegionStructure::cloneStructure(TR::Block **correspondingBlocks
    TR_InductionVariable *prevClonedInductionVariable = NULL;
    while (currInductionVariable)
       {
-      TR_InductionVariable *currClonedInductionVariable = new (trHeapMemory()) TR_InductionVariable();
+      TR_InductionVariable *currClonedInductionVariable = new (structureRegion) TR_InductionVariable();
       memcpy(currClonedInductionVariable, currInductionVariable, sizeof(TR_InductionVariable));
       if (!prevClonedInductionVariable)
          clonedRegionStructure->addInductionVariable(currClonedInductionVariable);
@@ -1032,6 +1033,7 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
       fromStruct->addExternalEdge(from->getStructureOf(), to->getNumber(), isExceptionEdge);
       }
 
+   TR::Region &structureRegion = cfg()->structureRegion();
    // Find the subgraph node for the to block
    //
    TR_StructureSubGraphNode *toNode;
@@ -1053,9 +1055,9 @@ void TR_RegionStructure::addEdge(TR::CFGEdge *edge, bool isExceptionEdge)
             {
             toStruct = to->getStructureOf();
             if (!toStruct)
-               toStruct = new (trHeapMemory()) TR_BlockStructure(comp(), to->getNumber(), to);
+               toStruct = new ((structureRegion)) TR_BlockStructure(comp(), to->getNumber(), to);
             toStruct->setNumber(to->getNumber());
-            toNode = new (trHeapMemory()) TR_StructureSubGraphNode(toStruct);
+            toNode = new (structureRegion) TR_StructureSubGraphNode(toStruct);
             addSubNode(toNode);
             toNode->setNumber(to->getNumber());
             }
@@ -1365,7 +1367,7 @@ TR_RegionStructure::addExitEdge(TR_StructureSubGraphNode *from, int32_t to, bool
       }
 
    TR::CFGEdge *edge;
-   TR::CFGNode *toNode = cursor ? cursor->getTo() : new (trHeapMemory()) TR_StructureSubGraphNode(to, trMemory());
+   TR::CFGNode *toNode = cursor ? cursor->getTo() : new (cfg()->structureRegion()) TR_StructureSubGraphNode(to, cfg()->structureRegion());
 
    if (origEdge)
       {
@@ -1398,7 +1400,7 @@ TR_StructureSubGraphNode::create(int32_t num, TR_RegionStructure *region)
    if (edge)
       return edge->getTo()->asStructureSubGraphNode();
 
-   return new (region->trHeapMemory()) TR_StructureSubGraphNode(num, region->trMemory());
+   return new (region->cfg()->structureRegion()) TR_StructureSubGraphNode(num, region->cfg()->structureRegion());
    }
 
 TR_StructureSubGraphNode *TR_StructureSubGraphNode::asStructureSubGraphNode() {return this;}

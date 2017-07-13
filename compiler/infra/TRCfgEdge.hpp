@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -46,6 +46,8 @@ class CFGEdge : public TR_Link<CFGEdge>
 
    static CFGEdge * createEdge (CFGNode *pF, CFGNode *pT, TR_Memory* trMemory, TR_AllocationKind allocKind = heapAlloc);
    static CFGEdge * createExceptionEdge (CFGNode *pF, CFGNode *pT, TR_Memory* trMemory, TR_AllocationKind allocKind = heapAlloc);
+   static CFGEdge * createEdge (CFGNode *pF, CFGNode *pT, TR::Region &region);
+   static CFGEdge * createExceptionEdge (CFGNode *pF, CFGNode *pT, TR::Region &reigon);
 
    CFGNode *getFrom() {return _pFrom;}
    CFGNode *getTo()   {return _pTo;}
@@ -89,7 +91,7 @@ class CFGEdge : public TR_Link<CFGEdge>
    private:
 
    //keeping this c-tor private since there is no real need to make it public right now
-   CFGEdge(CFGNode *pF, CFGNode *pT, TR_AllocationKind allocKind = heapAlloc);
+   CFGEdge(CFGNode *pF, CFGNode *pT);
 
    enum  // flags
       {

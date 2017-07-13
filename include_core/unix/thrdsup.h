@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 #ifndef thrdsup_h
 #define thrdsup_h
@@ -31,13 +32,13 @@
 #include "omrcomp.h"
 #include "omrutilbase.h"
 
-#if (defined(LINUX) || defined(OSX) || defined(MVS) || defined(J9ZOS390))
+#if (defined(LINUX) || defined(OSX) || defined(MVS) || defined(J9ZOS390) || defined(OMRZTPF))
 #include <sys/time.h>
 #if defined(OSX)
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif /* defined(OSX) */
-#endif /* (defined(LINUX) || defined(OSX) || defined(MVS) || defined(J9ZOS390)) */
+#endif /* defined(LINUX) || defined(OSX) || defined(MVS) || defined(J9ZOS390) || defined(OMRZTPF) */
 
 
 #include "omrmutex.h"
@@ -124,11 +125,11 @@ extern int priority_map[];
  *
  * CMVC 199234 - use CLOCK_MONOTONIC also on Linux
  */
-#if (defined(AIXPPC) && !defined(J9OS_I5)) || defined(LINUX)
+#if (defined(AIXPPC) && !defined(J9OS_I5)) || (defined(LINUX) && !defined(OMRZTPF))
 #define J9THREAD_USE_MONOTONIC_COND_CLOCK 1
-#else /* (defined(AIXPPC) && !defined(J9OS_I5)) || defined(LINUX) */
+#else /* (defined(AIXPPC) && !defined(J9OS_I5)) || (defined(LINUX) && !defined(OMRZTPF) */
 #define J9THREAD_USE_MONOTONIC_COND_CLOCK 0
-#endif /* (defined(AIXPPC) && !defined(J9OS_I5)) || defined(LINUX) */
+#endif /* (defined(AIXPPC) && !defined(J9OS_I5)) || (defined(LINUX) && !defined(OMRZTPF) */
 
 #if J9THREAD_USE_MONOTONIC_COND_CLOCK
 #define TIMEOUT_CLOCK timeoutClock
@@ -138,7 +139,7 @@ extern pthread_condattr_t *defaultCondAttr;
 #define TIMEOUT_CLOCK CLOCK_REALTIME
 #endif /* J9THREAD_USE_MONOTONIC_COND_CLOCK */
 
-#if ( defined(MVS) || defined(J9ZOS390) )
+#if (defined(MVS) || defined(J9ZOS390) || defined(OMRZTPF))
 #define SETUP_TIMEOUT(ts_, millis, nanos) {								\
 		struct timeval tv_;											\
 		J9DIV_T secs_ = J9DIV(millis, 1000);					\

@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include "thrdsup.h"
@@ -138,10 +139,17 @@ initialize_realtime_priority_map(void)
 	}
 	defaultPrio = currentPrio;
 
+#ifndef OMRZTPF
 	minRegularPrio = sched_get_priority_min(policy_regular_thread);
 	maxRegularPrio = sched_get_priority_max(policy_regular_thread);
 	minRealtimePrio = sched_get_priority_min(policy_realtime_thread);
 	maxRealtimePrio = sched_get_priority_max(policy_realtime_thread);
+#else
+	minRegularPrio = 0;
+	maxRegularPrio = 50;
+	minRealtimePrio = 0;
+	maxRealtimePrio = 50;
+#endif
 
 	lowerBoundRealtime = minRealtimePrio;
 	higherBoundRealtime = maxRealtimePrio;
@@ -300,10 +308,12 @@ initialize_thread_priority(omrthread_t thread)
 		}
 	}
 
+#if !defined(OMRZTPF)
 	/* on some platforms (i.e. Solaris) we get out of range values (e.g. 0) for threads with no explicitly set priority */
 	if (sched_param.sched_priority < sched_get_priority_min(policy) || sched_param.sched_priority > sched_get_priority_max(policy)) {
 		return;
 	}
+#endif
 
 	thread->priority = omrthread_map_native_priority(sched_param.sched_priority);
 }

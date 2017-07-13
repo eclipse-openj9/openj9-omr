@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include <ctype.h>
@@ -456,7 +457,11 @@ TraceHeaderWriter::headerTemplate(J9TDFOptions *options, FILE *fd, const char *m
 
 	strcpy(ucModule, moduleName);
 	while ('\0' != *pos) {
+#if !defined(OMRZTPF)
 		*pos = toupper(*pos);
+#else /* !defined(OMRZTPF) */
+		*pos = toupper((unsigned char)*pos);
+#endif /* !defined(OMRZTPF) */
 		pos++;
 	}
 	if (0 <= fprintf(fd, UT_H_FILE_HEADER_TEMPLATE,
@@ -507,7 +512,11 @@ TraceHeaderWriter::footerTemplate(FILE *fd, const char *moduleName)
 
 	strcpy(ucModule, moduleName);
 	while ('\0' != *pos) {
+#if !defined(OMRZTPF)
 		*pos = toupper(*pos);
+#else /* !defined(OMRZTPF) */
+        *pos = toupper((unsigned char)*pos);
+#endif /* !defined(OMRZTPF) */
 		pos++;
 	}
 	if (0 <= fprintf(fd, UT_H_FILE_FOOTER_TEMPLATE, moduleName, moduleName, moduleName, moduleName, ucModule)) {

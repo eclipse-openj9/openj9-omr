@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,7 +22,7 @@
 #pragma once
 
 #include <functional>
-   #include <stddef.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "env/RawAllocator.hpp"
 #include "infra/Assert.hpp"
@@ -53,7 +53,7 @@ public:
 
    ~MemorySegment() throw() {}
 
-   void * base()
+   void * base() const throw()
       {
       return _segment;
       }
@@ -66,17 +66,17 @@ public:
       return requested;
       }
 
-   void reset()
+   void reset() throw()
       {
       _allocated = 0;
       }
 
-   size_t remaining()
+   size_t remaining() const throw()
       {
       return _size - _allocated;
       }
 
-   size_t size()
+   size_t size() const throw()
       {
       return _size;
       }
@@ -95,7 +95,7 @@ public:
       return chain;
       }
 
-   MemorySegment &next() throw()
+   MemorySegment &next() const throw()
       {
       TR_ASSERT(_next, "_next should never be null");
       return *_next;

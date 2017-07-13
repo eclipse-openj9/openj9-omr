@@ -16,8 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#include "env/SegmentProvider.hpp"
+#include "env/SegmentAllocator.hpp"
 
-TR::SegmentProvider::~SegmentProvider() throw()
+TR::SegmentAllocator::~SegmentAllocator() throw()
    {
    }

@@ -31,12 +31,12 @@ namespace TR { using OMR::SystemSegmentProvider; }
 #include <set>
 #include "env/TypedAllocator.hpp"
 #include "infra/ReferenceWrapper.hpp"
-#include "env/SegmentProvider.hpp"
+#include "env/SegmentAllocator.hpp"
 #include "env/RawAllocator.hpp"
 
 namespace OMR {
 
-class SystemSegmentProvider : public TR::SegmentProvider
+class SystemSegmentProvider : public TR::SegmentAllocator
    {
 public:
    SystemSegmentProvider(size_t segmentSize, TR::RawAllocator rawAllocator);
@@ -44,6 +44,10 @@ public:
    virtual TR::MemorySegment &request(size_t requiredSize);
    virtual void release(TR::MemorySegment &segment) throw();
    size_t bytesAllocated() const throw();
+   size_t regionBytesAllocated() const throw();
+   size_t systemBytesAllocated() const throw();
+   size_t allocationLimit() const throw();
+   void setAllocationLimit(size_t);
 
 private:
    TR::RawAllocator _rawAllocator;

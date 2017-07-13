@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,64 +21,30 @@
 
 #pragma once
 
-#include "env/RawAllocator.hpp"
-#include "env/MemorySegment.hpp"
-#include "infra/Assert.hpp"
+#include "env/SegmentProvider.hpp"
 
 namespace TR {
 
-class SegmentAllocator
+class SegmentAllocator : public SegmentProvider
    {
 public:
+   virtual size_t regionBytesAllocated() const throw() = 0;
+   virtual size_t systemBytesAllocated() const throw() = 0;
+   virtual size_t allocationLimit() const throw() = 0;
+   virtual void setAllocationLimit(size_t) = 0;
 
-   explicit SegmentAllocator(::TR::RawAllocator allocator) :
-      _rawAllocator(allocator)
+protected:
+   explicit SegmentAllocator(size_t defaultSegmentSize) :
+      SegmentProvider(defaultSegmentSize)
       {
-      TR_ASSERT(((pageSize() & (pageSize() - 1)) == 0), "Page size is not a power of 2, %llu", static_cast<unsigned long long>(pageSize()) );
       }
 
    SegmentAllocator(const SegmentAllocator &other) :
-      _rawAllocator(other._rawAllocator)
+      SegmentProvider(other)
       {
-      TR_ASSERT(((pageSize() & (pageSize() - 1)) == 0), "Page size is not a power of 2, %llu", static_cast<unsigned long long>(pageSize()) );
       }
 
-   friend bool operator ==(const SegmentAllocator &left, const SegmentAllocator &right)
-      {
-      return left._rawAllocator == right._rawAllocator;
-      }
-
-   friend bool operator !=(const SegmentAllocator &left, const SegmentAllocator &right)
-      {
-      return !(operator ==(left, right));
-      }
-
-   TR::MemorySegment allocate(size_t const segmentSize)
-      {
-      size_t const alignedSize = pageAlign(segmentSize);
-      return TR::MemorySegment(
-         _rawAllocator.allocate(alignedSize),
-         alignedSize
-         );
-      }
-
-   void deallocate(TR::MemorySegment unusedSegment) throw()
-      {
-      _rawAllocator.deallocate(unusedSegment.rawSegment());
-      }
-
-   /**
-    * @brief pageSize determines the appropriate page size for which to align segment alloctions
-    * @return appropriate page size for alignment (CURRENTLY HARDCODED TO 4KiB)
-    */
-   size_t const pageSize() { return 1 << 12; }
-   size_t const pageAlign(size_t requestedSize)
-      {
-      return (requestedSize + pageSize() - 1) & ~(pageSize() - 1);
-      }
-
-private:
-   TR::RawAllocator _rawAllocator;
+   virtual ~SegmentAllocator() throw();
    };
 
 }

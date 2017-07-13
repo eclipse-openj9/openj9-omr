@@ -32,15 +32,17 @@
 #endif
 
 
+#include "map"
 #include "ilgen/IlBuilder.hpp"
+#include "env/TypedAllocator.hpp"
 
+class TR_Memory;
 class TR_HashTabString;
 
-namespace TR { typedef TR::SymbolReference IlReference; }
-
-namespace TR { class SegmentProvider; }
-namespace TR { class Region; }
-class TR_Memory;
+namespace OMR { class StructType; }
+namespace TR  { class SegmentProvider; }
+namespace TR  { class Region; }
+namespace TR  { typedef TR::SymbolReference IlReference; }
 
 
 namespace OMR
@@ -419,7 +421,13 @@ protected:
    TR::SegmentProvider *_segmentProvider;
    TR::Region *_memoryRegion;
    TR_Memory *_trMemory;
-   TR_HashTabString * _structsByName;
+
+   typedef bool (*StrComparator)(const char *, const char *);
+
+   typedef TR::typed_allocator<std::pair<const char *, OMR::StructType *>, TR::Region &> StructMapAllocator;
+   typedef std::map<const char *, OMR::StructType *, StrComparator, StructMapAllocator> StructMap;
+   StructMap          _structsByName;
+
    TR_HashTabString * _unionsByName;
 
    // convenience for primitive types
@@ -456,6 +464,8 @@ protected:
    TR::IlType       * pVectorInt64;
    TR::IlType       * pVectorFloat;
    TR::IlType       * pVectorDouble;
+
+   OMR::StructType * getStruct(const char *structName);
    };
 
 } // namespace OMR

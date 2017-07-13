@@ -1271,6 +1271,9 @@ DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector
 		rc = loadBlacklist(blacklistPath);
 	}
 
+	map<Type *, set<string> > typeToContainingFiles;
+	map<string, set<Type *> > fileToContainedTypes;
+
 	/* Read list of debug files to scan from the input file. */
 	for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
 		Symbol_IR newIR;

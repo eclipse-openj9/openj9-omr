@@ -291,6 +291,7 @@ MergeVisitor::visitType(ClassUDT *type) const
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	if (NULL == type->_superClass) {
 		type->_superClass = other->_superClass;
+		_merged->push_back(type);
 	}
 	return DDR_RC_OK;
 }

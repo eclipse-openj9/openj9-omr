@@ -484,8 +484,10 @@ Symbol_IR::findTypeInMap(Type *typeToFind)
 	Type *returnType = NULL;
 	if (NULL != typeToFind) {
 		string nameKey = typeToFind->getFullName();
-		if (NULL == typeToFind->getBaseType()) {
-			nameKey = typeToFind->getSymbolKindName() + nameKey;
+		if (nameKey.empty()) {
+			nameKey = typeToFind->getSymbolKindName();
+		} else if (NULL != typeToFind->getBaseType()) {
+			nameKey = "typedef " + nameKey;
 		}
 
 		if (_typeMap.end() != _typeMap.find(nameKey)) {
@@ -514,8 +516,10 @@ Symbol_IR::addTypeToMap(Type *type)
 	Type *startType = type;
 	while (NULL != type) {
 		string nameKey = type->getFullName();
-		if (NULL == type->getBaseType()) {
-			nameKey = type->getSymbolKindName() + nameKey;
+		if (nameKey.empty()) {
+			nameKey = type->getSymbolKindName();
+		} else if (NULL != type->getBaseType()) {
+			nameKey = "typedef " + nameKey;
 		}
 
 		_typeMap[nameKey].insert(type);

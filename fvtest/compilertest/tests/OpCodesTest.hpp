@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -167,7 +167,6 @@ class OpCodesTest : public TestDriver
    virtual void compileIntegerArithmeticTestMethods();
    virtual void compileMemoryOperationTestMethods();
    virtual void compileUnaryTestMethods();
-   virtual void compileShiftOrRolTestMethods();
    virtual void compileBitwiseMethods();
    virtual void compileCompareTestMethods();
    virtual void compileTernaryTestMethods();
@@ -177,7 +176,6 @@ class OpCodesTest : public TestDriver
    virtual void invokeIntegerArithmeticTests();
    virtual void invokeMemoryOperationTests();
    virtual void invokeUnaryTests();
-   virtual void invokeShiftOrRolTests();
    virtual void invokeBitwiseTests();
    virtual void invokeCompareTests();
    virtual void invokeTernaryTests();

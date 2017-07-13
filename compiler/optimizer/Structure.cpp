@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -138,8 +138,7 @@ void TR_BlockStructure::replacePart(TR_Structure *from, TR_Structure *to)
 
 void TR_RegionStructure::addSubNode(TR_StructureSubGraphNode *subNode)
    {
-   uint32_t index = comp()->getFlowGraph()->addStructureSubGraphNodes(subNode);
-   _subNodes[index] = 1;
+   _subNodes.push_back(subNode);
    TR_Structure *node = subNode->getStructure();
    node->setParent(this);
    }
@@ -215,8 +214,14 @@ void TR_RegionStructure::cleanupAfterNodeRemoval()
 
 void TR_RegionStructure::removeSubNode(TR_StructureSubGraphNode *node)
    {
-   _subNodes[node->getUniqueSubGraphIndex()] = 0;
-   comp()->getFlowGraph()->removeStructureSubGraphNodes(node);
+   for (auto itr = _subNodes.begin(), end = _subNodes.end(); itr != end; ++itr)
+      {
+      if (*itr == node)
+         {
+         _subNodes.erase(itr);
+         break;
+         }
+      }
    node->getStructure()->setParent(NULL);
    cleanupAfterNodeRemoval();
    }
@@ -362,8 +367,7 @@ void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR_RegisterCandidate 
       }
    }
 
-
-static bool findCycle(TR_StructureSubGraphNode *node, TR::BitVector &regionNodes, TR_BitVector &nodesSeenOnPath, TR_BitVector &nodesCleared, int32_t entryNode)
+static bool findCycle(TR_StructureSubGraphNode *node, TR_BitVector &regionNodes, TR_BitVector &nodesSeenOnPath, TR_BitVector &nodesCleared, int32_t entryNode)
    {
    if (nodesSeenOnPath.get(node->getNumber()))
       return true;             // An internal cycle found
@@ -376,7 +380,7 @@ static bool findCycle(TR_StructureSubGraphNode *node, TR::BitVector &regionNodes
       {
       TR_ASSERT((*edge)->getTo()->asStructureSubGraphNode(),"Expecting a CFG node which can be downcast to StructureSubGraphNode");
       TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
-      if (succ->getNumber() != entryNode && regionNodes.ValueAt(succ->getUniqueSubGraphIndex()) &&
+      if (succ->getNumber() != entryNode && regionNodes.get(succ->getNumber()) &&
           findCycle(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
          return true;
       }
@@ -384,7 +388,7 @@ static bool findCycle(TR_StructureSubGraphNode *node, TR::BitVector &regionNodes
       {
       TR_ASSERT((*edge)->getTo()->asStructureSubGraphNode(),"Expecting a CFG node which can be downcast to StructureSubGraphNode");
       TR_StructureSubGraphNode *succ = toStructureSubGraphNode((*edge)->getTo());
-      if (/* succ->getNumber() != entryNode && */ regionNodes.ValueAt(succ->getUniqueSubGraphIndex()) &&
+      if (/* succ->getNumber() != entryNode && */ regionNodes.get(succ->getNumber()) &&
           findCycle(succ,regionNodes,nodesSeenOnPath,nodesCleared,entryNode))
          return true;
       }
@@ -401,8 +405,11 @@ void TR_RegionStructure::checkForInternalCycles()
    int32_t numNodes = comp()->getFlowGraph()->getNextNodeNumber();
    TR_BitVector nodesSeenOnPath(numNodes,trMemory(), stackAlloc);
    TR_BitVector nodesCleared(numNodes,trMemory(), stackAlloc);
+   TR_BitVector regionNodes(numNodes, trMemory(), stackAlloc);
+   for (auto itr = _subNodes.begin(), end = _subNodes.end(); itr != end; ++itr)
+      regionNodes.set((*itr)->getNumber());
 
-   setContainsInternalCycles(findCycle(getEntry(), _subNodes, nodesSeenOnPath, nodesCleared, getNumber()));
+   setContainsInternalCycles(findCycle(getEntry(), regionNodes, nodesSeenOnPath, nodesCleared, getNumber()));
    }
 
 bool TR_RegionStructure::hasExceptionOutEdges()

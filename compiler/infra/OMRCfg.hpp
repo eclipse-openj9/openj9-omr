@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -106,7 +106,6 @@ class CFG
       _doesHaveUnreachableBlocks(false),
       _removingUnreachableBlocks(false),
       _ignoreUnreachableBlocks(false),
-      _structureGraphNodes(c->allocator()),
       _removeEdgeNestingDepth(0),
       _forwardTraversalOrder(NULL),
       _backwardTraversalOrder(NULL),
@@ -156,7 +155,6 @@ class CFG
 
    uint32_t addStructureSubGraphNodes (TR_StructureSubGraphNode *node);
    void removeStructureSubGraphNodes(TR_StructureSubGraphNode *node);
-   TR_StructureSubGraphNode *getStructureSubGraphNode (uint32_t index) {return _structureGraphNodes[index];}
 
    void addEdge(TR::CFGEdge *e);
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
@@ -312,7 +310,6 @@ protected:
    TR_Structure *_rootStructure;
 
    TR_LinkHead1<TR::CFGNode> _nodes;
-   CS2::TableOf <TR_StructureSubGraphNode *,TR::Allocator> _structureGraphNodes;
    int32_t _numEdges;
    int32_t _nextNodeNumber;
 

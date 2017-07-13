@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -121,24 +121,6 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
 
    return n;
    }
-
-
-uint32_t
-OMR::CFG::addStructureSubGraphNodes(TR_StructureSubGraphNode * node)
-   {
-   uint32_t index = _structureGraphNodes.AddEntry(node);
-   node->setUniqueSubGraphIndex(index);
-   return index;
-   }
-
-
-void
-OMR::CFG::removeStructureSubGraphNodes(TR_StructureSubGraphNode * node)
-   {
-   uint32_t index = node->getUniqueSubGraphIndex();
-   _structureGraphNodes.RemoveEntry(index);
-   }
-
 
 void
 OMR::CFG::addEdge(TR::CFGEdge *e)

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -24,7 +24,6 @@
 #include <stdint.h>                 // for int32_t, int16_t, uint32_t, etc
 #include "codegen/FrontEnd.hpp"     // for TR_FrontEnd
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/sparsrbit.h"          // for ASparseBitVector<>::Cursor
 #include "env/TRMemory.hpp"         // for TR_Memory, etc
 #include "il/Block.hpp"             // for Block
 #include "il/DataTypes.hpp"         // for TR_YesNoMaybe
@@ -37,6 +36,7 @@
 #include "infra/List.hpp"           // for List
 #include "infra/TRCfgEdge.hpp"      // for CFGEdge
 #include "infra/TRCfgNode.hpp"      // for CFGNode
+#include "infra/vector.hpp"         // for TR::vector
 
 #include "optimizer/VPConstraint.hpp"
 
@@ -276,10 +276,10 @@ class TR_StructureSubGraphNode : public TR::CFGNode
    // Create a node for a concrete structure
    //
    TR_StructureSubGraphNode(TR_Structure *s)
-      : TR::CFGNode(s->getNumber(), s->trMemory()), _structure(s), _index(0) {s->setSubGraphNode(this);}
+      : TR::CFGNode(s->getNumber(), s->trMemory()), _structure(s)  {s->setSubGraphNode(this);}
 
    TR_StructureSubGraphNode(int32_t n, TR_Memory * m)
-      : TR::CFGNode(n, m), _structure(0), _index (0) {}
+      : TR::CFGNode(n, m), _structure(0) {}
 
    static TR_StructureSubGraphNode *create(int32_t num, TR_RegionStructure *region);
 
@@ -287,12 +287,9 @@ class TR_StructureSubGraphNode : public TR::CFGNode
    void          setStructure(TR_Structure *s) {_structure = s; if (s) {setNumber(s->getNumber()); s->setSubGraphNode(this);}}
 
    virtual TR_StructureSubGraphNode *asStructureSubGraphNode();
-   uint32_t getUniqueSubGraphIndex() { return _index;}
-   void setUniqueSubGraphIndex(uint32_t index) { _index = index; }
 
    private:
    TR_Structure *_structure;
-   uint32_t _index;
    };
 
 // **********************************************************************
@@ -424,10 +421,11 @@ class TR_InductionVariable : public TR_Link<TR_InductionVariable>
 class TR_RegionStructure : public TR_Structure
    {
    public:
+   typedef TR::vector<TR_StructureSubGraphNode *, TR::Region&> SubNodeList;
 
    TR_RegionStructure(TR::Compilation * c, int32_t index)
       : TR_Structure(c, index), _invariantSymbols(NULL), _blocksAtSameNestingLevel(NULL), _piv(NULL),
-        _basicIVs(c->trMemory()), _exitEdges(c->trMemory()), _subNodes(c->allocator("Structures")),
+        _basicIVs(c->trMemory()), _exitEdges(c->trMemory()), _subNodes(c->trMemory()->heapMemoryRegion()),
         _invariantExpressions(NULL)
       {
       }
@@ -573,8 +571,7 @@ class TR_RegionStructure : public TR_Structure
 
    void addSubNode(TR_StructureSubGraphNode *subNode);
    void removeSubNode(TR_StructureSubGraphNode *subNode);
-   uint32_t numSubNodes() {return _subNodes.PopulationCount();}
-   //  List<TR_StructureSubGraphNode> &getSubNodes() {return _subNodes;}
+   uint32_t numSubNodes() {return _subNodes.size();}
 
    // Find the subnode numbered 'number' in the current region
    // Returns null, if none of the subnodes match
@@ -614,22 +611,27 @@ class TR_RegionStructure : public TR_Structure
       _isInvertible                 = 0x04
       };
 
+   SubNodeList::iterator begin() { return _subNodes.begin(); }
+   SubNodeList::iterator end()   { return _subNodes.end();   }
+
+   // The Cursor provides an immutable view of the elements of the region unlike the normal iterators
+   // above, note that there is a non-trivial cost to this Cursor because it must copy the structure's
+   // sublist into itself for the purposes of isolation
    class Cursor
-       {
-        public:
+      {
+      public:
 
-        Cursor(TR_RegionStructure & region):_nodes(region._subNodes),_iter(_nodes),_cfg(region.comp()->getFlowGraph()){_iter.SetToFirstOne();}
+      Cursor(TR_RegionStructure & region): _nodes(region._subNodes), _iter(_nodes.begin()) { }
 
-        TR_StructureSubGraphNode * getCurrent() {TR_StructureSubGraphNode * curr = (_iter.Valid()) ? _cfg->getStructureSubGraphNode(_iter) : NULL ; return curr;}
-        TR_StructureSubGraphNode * getNext()    {_iter.SetToNextOne(); return getCurrent();}
-        TR_StructureSubGraphNode * getFirst()   {return getCurrent();}
-        void reset() {_iter.SetToFirstOne();}
+      TR_StructureSubGraphNode * getCurrent() { return (_iter != _nodes.end()) ? *_iter : NULL; }
+      TR_StructureSubGraphNode * getNext()  { _iter++; return getCurrent(); }
+      TR_StructureSubGraphNode * getFirst() { return getCurrent(); }
+      void reset() { _iter = _nodes.begin(); }
 
-        private:
-          TR::BitVector _nodes;
-          TR::BitVector::Cursor _iter;
-          TR::CFG * _cfg;
-       };
+      private:
+      SubNodeList _nodes;
+      SubNodeList::iterator _iter;
+      };
 
    friend class Cursor;
    private:
@@ -646,14 +648,13 @@ class TR_RegionStructure : public TR_Structure
 
    void checkForInternalCycles();
    void removeEdge(TR::CFGEdge *edge, bool isExitEdge);
-   typedef TR::BitVector SubNodeIndices;
 
    TR_StructureSubGraphNode         *_entryNode;
    TR_BitVector                     *_invariantSymbols;
    TR_BitVector                     *_blocksAtSameNestingLevel;
 
-   List<TR::CFGEdge>                  _exitEdges;
-   SubNodeIndices                    _subNodes;
+   List<TR::CFGEdge>                 _exitEdges;
+   SubNodeList                       _subNodes;
    TR_LinkHead<TR_InductionVariable> _inductionVariables;
 
 

@@ -34,6 +34,7 @@ add_executable(comptest
    main.cpp
    TreeVerifierTest.cpp
    OpCodeTest.cpp
+   ShiftAndRotateTest.cpp
 )
 
 target_link_libraries(comptest

@@ -135,6 +135,14 @@ improperly referenced, and the commit is not signed off by the author.
 
 - http://chris.beams.io/posts/git-commit/
 
+### Install a git commit message hook script to validate local commits
+
+```
+cd omr_repo_dir
+cp scripts/commit-msg .git/hooks
+chmod +x .git/hooks/commit-msg
+```
+
 ## Legal considerations
 
 Please read the [Eclipse Foundation policy on accepting contributions via Git](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git).

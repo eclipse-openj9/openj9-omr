@@ -242,9 +242,12 @@ struct  {
 };
 
 #if defined(LINUX)
+
+#define OMR_CGROUP_V1_MOUNT_POINT "/sys/fs/cgroup"
+
 /* Currently 12 subsystems/resource controllers are defined.
  */
-typedef enum CgroupSubsystems {
+typedef enum OMRCgroupSubsystems {
 		BLKIO,
 		CPU,
 		CPUACCT,
@@ -258,7 +261,7 @@ typedef enum CgroupSubsystems {
 		PERF_EVENT,
 		PIDS,
 		NUM_SUBSYSTEMS
-} CgroupSubsystems;
+} OMRCgroupSubsystems;
 
 const char *subsystemNames[NUM_SUBSYSTEMS] = {
 						"blkio",
@@ -296,11 +299,11 @@ static uint64_t getPhysicalMemory(struct OMRPortLibrary *portLibrary);
 #endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) */
 
 #if defined(LINUX)
-static void freeCgroupEntries(struct OMRPortLibrary *portLibrary, CgroupEntry *cgEntryList);
-static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, CgroupEntry *cgEntryList, const char *subsystem);
-static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, CgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
-static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, CgroupEntry **cgroupEntryList);
-static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, CgroupSubsystems subsystem, const char *fileName, int32_t numItemsToRead, const char *format, ...);
+static void freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList);
+static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList, const char *subsystem);
+static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
+static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, OMRCgroupEntry **cgroupEntryList);
+static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, OMRCgroupSubsystems subsystem, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 #endif /* defined(LINUX) */
 
 
@@ -1506,7 +1509,7 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 {
 	uint64_t result = 0;
 
-	if (portLibrary->sysinfo_is_cgroup_limits_enabled(portLibrary)) {
+	if (portLibrary->sysinfo_cgroup_is_limits_enabled(portLibrary)) {
 		int rc = 0;
 
 		rc = portLibrary->sysinfo_cgroup_get_memlimit(portLibrary, &result);
@@ -3163,18 +3166,18 @@ omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernel
 
 /** 
  * @internal
- * Free resources allocated for CgroupEntry
+ * Free resources allocated for OMRCgroupEntry
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[in] cgEntryList pointer to list of CgroupEntry to be freed
+ * @param[in] cgEntryList pointer to list of OMRCgroupEntry to be freed
  *
  * @return void
  */
 static void
-freeCgroupEntries(struct OMRPortLibrary *portLibrary, CgroupEntry *cgEntryList)
+freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList)
 {
-	CgroupEntry *cgEntry = cgEntryList;
-	CgroupEntry *nextEntry = NULL;
+	OMRCgroupEntry *cgEntry = cgEntryList;
+	OMRCgroupEntry *nextEntry = NULL;
 
 	if (NULL == cgEntry) {
 		return;
@@ -3192,15 +3195,15 @@ freeCgroupEntries(struct OMRPortLibrary *portLibrary, CgroupEntry *cgEntryList)
  * linked list pointed by cgEntryList. 
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[in] cgEntryList pointer to CgroupEntry* which points to circular linked list
+ * @param[in] cgEntryList pointer to OMRCgroupEntry* which points to circular linked list
  * @param[in] subsystem The subsystem/resource controller for which cgroup is required
  *
  * @return name of the cgroup for the given subsystem if available, else NULL
  */
 static char *
-getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, CgroupEntry *cgEntryList, const char *subsystem)
+getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList, const char *subsystem)
 {
-	CgroupEntry *temp = cgEntryList;
+	OMRCgroupEntry *temp = cgEntryList;
 	char *cgName = NULL;
 
 	if (NULL == temp) {
@@ -3220,11 +3223,11 @@ _end:
 }
 
 /**
- * Allocates a new CgroupEntry structure and adds it to the circular linked list pointed by *cgEntryList.
- * On success, *cgEntryList points to the new CgroupEntry structure.
+ * Allocates a new OMRCgroupEntry structure and adds it to the circular linked list pointed by *cgEntryList.
+ * On success, *cgEntryList points to the new OMRCgroupEntry structure.
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[in] cgEntryList pointer to CgroupEntry* which points to circular linked list
+ * @param[in] cgEntryList pointer to OMRCgroupEntry* which points to circular linked list
  * @param[in] hierId hierarchy Id of the cgroup
  * @param[in] subsystem name of cgroup subsystem/resource controller
  * @param[in] cgroupName name of the cgroup
@@ -3232,10 +3235,10 @@ _end:
  * @return 0 on success, negative error code on failure
  */
 static int32_t
-addCgroupEntry(struct OMRPortLibrary *portLibrary, CgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName)
+addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName)
 {
-	CgroupEntry *cgEntry = NULL;
-	int32_t cgEntrySize = sizeof(CgroupEntry) + strlen(subsystem) + 1 + strlen(cgroupName) + 1;
+	OMRCgroupEntry *cgEntry = NULL;
+	int32_t cgEntrySize = sizeof(OMRCgroupEntry) + strlen(subsystem) + 1 + strlen(cgroupName) + 1;
 	int32_t rc = 0;
 
 	cgEntry = portLibrary->mem_allocate_memory(portLibrary, cgEntrySize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -3253,7 +3256,7 @@ addCgroupEntry(struct OMRPortLibrary *portLibrary, CgroupEntry **cgEntryList, in
 		*cgEntryList = cgEntry;
 		cgEntry->next = cgEntry; /* create a circular list */
 	} else {
-		CgroupEntry *first = *cgEntryList;
+		OMRCgroupEntry *first = *cgEntryList;
 		*cgEntryList = cgEntry;
 		cgEntry->next = first->next;
 		first->next = cgEntry;
@@ -3269,24 +3272,27 @@ _end:
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[in] pid process id
- * @param[out] cgroupEntryList pointer to CgroupEntry *. On successful return, *cgroupEntry
+ * @param[out] cgroupEntryList pointer to OMRCgroupEntry *. On successful return, *cgroupEntry
  * points to a circular linked list. Each element of the list is populated based on the contents 
  * of /proc/<pid>/cgroup file. 
  *
  * returns 0 on success, negative code on error
  */
 static int32_t
-readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, CgroupEntry **cgroupEntryList)
+readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, OMRCgroupEntry **cgroupEntryList)
 {
 	char cgroup[PATH_MAX];
+	uintptr_t requiredSize = 0; 
 	/* This array should be large enough to read names of all subsystems. 1024 should be enough. */
 	char subsystems[1024];
 	FILE *cgroupFile = NULL;
-	CgroupEntry *cgEntryList = NULL;
+	OMRCgroupEntry *cgEntryList = NULL;
 	int32_t rc = 0;
 
 	Assert_PRT_true(NULL != cgroupEntryList);
 	
+	requiredSize = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "/proc/%d/cgroup", pid);
+	Assert_PRT_true(requiredSize <= PATH_MAX);
 	portLibrary->str_printf(portLibrary, cgroup, sizeof(cgroup), "/proc/%d/cgroup", pid);
 	cgroupFile = fopen(cgroup, "r");
 	if (NULL == cgroupFile) {
@@ -3309,11 +3315,15 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, CgroupEntry **cgroup
 		 * 	3. control group in the hierarchy to which the process belongs
 		 */
 		rc = fscanf(cgroupFile, "%d:%[^:]:%s", &hierId, subsystems, cgroup);
+		/* Ensure we didn't overflow */
+		Assert_PRT_true(strlen(subsystems) < 1024);
+		Assert_PRT_true(strlen(cgroup) < PATH_MAX);
+
 		if (EOF == rc) {
 			rc = 0;
 			break;
 		} else if (3 != rc) {
-			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpcted format of process cgroup file");
+			rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpcted format of /proc/%d/cgroup file", pid);
 			goto _end;
 		}
 		cursor = subsystems;
@@ -3333,10 +3343,7 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, CgroupEntry **cgroup
 					goto _end;
 				}
 			} else {
-				char errBuf[512];
-
-				portLibrary->str_printf(portLibrary, errBuf, sizeof(errBuf), "multiple entries for subsystem %s found in process cgroup file", cursor);
-				rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_DUPLICATE_SUBSYSTEM_ENTRIES, errBuf);
+				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_DUPLICATE_SUBSYSTEM_ENTRIES, "multiple entries for subsystem %s found in process cgroup file", cursor);
 				goto _end;
 
 			}
@@ -3373,30 +3380,39 @@ _end:
  * @return 0 on successfully reading 'numItemsToRead' items from the file, negative error code on any error
  */
 static int32_t
-readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, CgroupSubsystems subsystem, const char *fileName, int32_t numItemsToRead, const char *format, ...)
+readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, OMRCgroupSubsystems subsystem, const char *fileName, int32_t numItemsToRead, const char *format, ...)
 {
 	char fileToRead[PATH_MAX];
+	char *fileNameBuf = fileToRead;
+	intptr_t fileNameLen = 0;
 	char *cgroup = NULL;
 	FILE *file = NULL;
 	int32_t rc = 0;
 	va_list args;
 
-	if (!portLibrary->sysinfo_is_cgroup_limits_enabled(portLibrary)) {
+	if (!portLibrary->sysinfo_cgroup_is_limits_enabled(portLibrary)) {
 		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED, "cgroup limits is disabled");
 		goto _end;
 	}
 	
 	cgroup = getCgroupNameForSubsystem(portLibrary, PPG_cgroupEntryList, subsystemNames[subsystem]);
 	if (NULL == cgroup) {
-		char errBuf[512];
-
-		portLibrary->str_printf(portLibrary, errBuf, sizeof(errBuf), "cgroup name for subsystem %s is not available", subsystemNames[MEMORY]);
-		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE, errBuf);
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE, "cgroup name for subsystem %s is not available", subsystemNames[MEMORY]);
 		goto _end;
 	}
 
-	portLibrary->str_printf(portLibrary, fileToRead, sizeof(fileToRead), "/sys/fs/cgroup/%s/%s/%s", subsystemNames[subsystem], cgroup, fileName);
-	file = fopen(fileToRead, "r");
+	/* absolute path of the file to be read is: /sys/fs/cgroup/subsystemNames[subsystem]/cgroup/filenName */
+	fileNameLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	if (fileNameLen > PATH_MAX) {
+		fileNameBuf = portLibrary->mem_allocate_memory(portLibrary, fileNameLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == fileNameBuf) {
+			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
+			goto _end;
+			
+		}
+	}
+	portLibrary->str_printf(portLibrary, fileNameBuf, fileNameLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	file = fopen(fileNameBuf, "r");
 	if (NULL == file) {
 		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_FILE_FOPEN_FAILED);
 		goto _end;
@@ -3407,16 +3423,16 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, CgroupSubsystems sub
 	va_end(args);
 
 	if (numItemsToRead != rc) {
-		char errBuf[512];
-
-		portLibrary->str_printf(portLibrary, errBuf, sizeof(errBuf), "unexpcted format of file %s", fileName);
-		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, errBuf);
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of file %s", fileNameBuf);
 		goto _end;
 	} else {
 		rc = 0;
 	}
 
 _end:
+	if (fileToRead != fileNameBuf) {
+		portLibrary->mem_free_memory(portLibrary, fileNameBuf);
+	}
 	if (NULL != file) {
 		fclose(file);
 	}
@@ -3426,22 +3442,20 @@ _end:
 #endif /* defined(LINUX) */
 
 int32_t
-omrsysinfo_is_cgroup_limits_supported(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary)
 {
 	int32_t rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 #if defined(LINUX)
-	char fileToTest[PATH_MAX];
 	struct statfs buf = {0};
 
 	if (NULL == PPG_cgroupEntryList) {
-		/* Check if tmpfs is mounted on /sys/fs/cgroup */
-		portLibrary->str_printf(portLibrary, fileToTest, sizeof(fileToTest), "/sys/fs/cgroup/");
-		rc = statfs(fileToTest, &buf);
+		/* If tmpfs is mounted on /sys/fs/cgroup, then it indicates cgroup v1 system is available */
+		rc = statfs(OMR_CGROUP_V1_MOUNT_POINT, &buf);
 		if (0 != rc) {
 			rc = portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_STATFS_FAILED);
 			goto _end;
 		} else if (TMPFS_MAGIC != buf.f_type) {
-			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED, "tmpfs is not mounted on /sys/fs/cgroup");
+			rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED, "tmpfs is not mounted on " OMR_CGROUP_V1_MOUNT_POINT);
 			goto _end;
 		}
 
@@ -3456,7 +3470,7 @@ _end:
 }
 
 BOOLEAN 
-omrsysinfo_is_cgroup_limits_enabled(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_is_limits_enabled(struct OMRPortLibrary *portLibrary)
 {
 #if defined(LINUX)
 	return PPG_cgroupLimitsEnabled;
@@ -3466,9 +3480,9 @@ omrsysinfo_is_cgroup_limits_enabled(struct OMRPortLibrary *portLibrary)
 }
 
 int32_t
-omrsysinfo_enable_cgroup_limits(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_enable_limits(struct OMRPortLibrary *portLibrary)
 {
-	int32_t cgroupSupported = portLibrary->sysinfo_is_cgroup_limits_supported(portLibrary);
+	int32_t cgroupSupported = portLibrary->sysinfo_cgroup_is_limits_supported(portLibrary);
 #if defined(LINUX)
 	if (0 == cgroupSupported) {
 		PPG_cgroupLimitsEnabled = TRUE;

@@ -20,12 +20,12 @@
 
 #if defined(LINUX)
 
-typedef struct CgroupEntry {
-        int32_t hierarchyId; /**< cgroup hierarch ID*/
+typedef struct OMRCgroupEntry {
+	int32_t hierarchyId; /**< cgroup hierarch ID*/
 	char *subsystem; /**< name of the subsystem*/
-        char *cgroup; /**< name of the cgroup*/
-	struct CgroupEntry *next; /**< pointer to next CgroupEntry*/
-} CgroupEntry;
+	char *cgroup; /**< name of the cgroup*/
+	struct OMRCgroupEntry *next; /**< pointer to next OMRCgroupEntry*/
+} OMRCgroupEntry;
 
 #endif /* defined(LINUX) */
 

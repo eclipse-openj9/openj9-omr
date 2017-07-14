@@ -80,7 +80,7 @@ typedef struct OMRPortPlatformGlobals {
 #endif /* defined(OMR_CONFIGURABLE_SUSPEND_SIGNAL) */
 #if defined(LINUX)
 	BOOLEAN cgroupLimitsEnabled; /**< indicates if port library supports cgroup limits */
-	CgroupEntry *cgroupEntryList; /**< head of the circular linked list, each element contains information about cgroup of the process for a subsystem */
+	OMRCgroupEntry *cgroupEntryList; /**< head of the circular linked list, each element contains information about cgroup of the process for a subsystem */
 #endif /* defined(LINUX) */
 } OMRPortPlatformGlobals;
 

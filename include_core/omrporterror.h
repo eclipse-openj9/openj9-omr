@@ -26,8 +26,9 @@
  * error codes dedicated to it's own use, some will use the generic portable error code values.
  *
  * Errors reported by the OS may be recorded by calling the port library functions @ref omrerror.c::omrerror_set_last_error "omrerror_set_last_error()"
- * or @ref omrerror.c::omrerror_set_last_error_with_message "omrerror_set_last_error_with_message()".  The mapping of the OS specific error
- * code to a portable error code is the responsibility of the calling module.
+ * or @ref omrerror.c::omrerror_set_last_error_with_message "omrerror_set_last_error_with_message()"
+ * or @ref omrerror.c::omrerror_set_last_error_with_message_format "omrerror_set_last_error_with_message_format()".
+ * The mapping of the OS specific error code to a portable error code is the responsibility of the calling module.
  */
 #ifndef omrporterror_h
 #define omrporterror_h

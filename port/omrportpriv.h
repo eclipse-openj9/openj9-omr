@@ -149,6 +149,8 @@ omrerror_shutdown(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t
 omrerror_set_last_error_with_message(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *errorMessage);
 extern J9_CFUNC int32_t
+omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *format, ...);
+extern J9_CFUNC int32_t
 omrerror_last_error_number(struct OMRPortLibrary *portLibrary);
 
 /* J9SourceJ9ErrorHelpers*/
@@ -510,11 +512,11 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *
 extern J9_CFUNC BOOLEAN
 omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo);
 extern J9_CFUNC int32_t 
-omrsysinfo_is_cgroup_limits_supported(struct OMRPortLibrary *portLibrary);
+omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC BOOLEAN 
-omrsysinfo_is_cgroup_limits_enabled(struct OMRPortLibrary *portLibrary);
+omrsysinfo_cgroup_is_limits_enabled(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t 
-omrsysinfo_enable_cgroup_limits(struct OMRPortLibrary *portLibrary);
+omrsysinfo_cgroup_enable_limits(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC int32_t 
 omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 

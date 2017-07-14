@@ -2128,7 +2128,7 @@ TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
 #endif
 
 	/* Call omrsysinfo_cgroup_get_memlimit after enabling cgroup limits */
-	cgroupLimitEnabled = omrsysinfo_enable_cgroup_limits();
+	cgroupLimitEnabled = omrsysinfo_cgroup_enable_limits();
 
 	rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
 

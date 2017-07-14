@@ -1614,19 +1614,19 @@ omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernel
 }
 
 int32_t 
-omrsysinfo_is_cgroup_limits_supported(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary)
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }
 
 BOOLEAN 
-omrsysinfo_is_cgroup_limits_enabled(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_is_limits_enabled(struct OMRPortLibrary *portLibrary)
 {
 	return FALSE;
 }
 
 int32_t 
-omrsysinfo_enable_cgroup_limits(struct OMRPortLibrary *portLibrary)
+omrsysinfo_cgroup_enable_limits(struct OMRPortLibrary *portLibrary)
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }

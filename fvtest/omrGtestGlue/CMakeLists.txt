@@ -39,10 +39,4 @@ target_sources(omrGtestGlue INTERFACE
 
 target_link_libraries(omrGtestGlue INTERFACE omrGtest)
 
-#TODO  system thread library should be linked in a more generic way.
-if(NOT OMR_HOST_OS STREQUAL "win")
-	if(NOT OMR_HOST_OS STREQUAL "zos")
-		target_link_libraries(omrGtest pthread)
-	endif()
-endif()
 #target_link_libraries(omrGtest INTERFACE omrGtestGlue)

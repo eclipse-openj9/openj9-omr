@@ -561,7 +561,7 @@ sub processFile
       # HACK: Pre-2.12.1 gas mixes up i386's CMPSD/MOVSD with SSE2's CMPSD/MOVSD; it also
       #       thinks that SSE2 instructions with QWORD PTR operands are reserved for x86-64
       # HACK: Unfortunately, post-2.15.90 gas on RHEL4 is broken again.
-      if (($gasVersion lt '2.12.1' or $gasVersion gt '2.12.90') and $llvmVersion gt '0')
+      if ($gasVersion lt '2.12.1' or $gasVersion gt '2.12.90')
          {
          # removing the modifier for SSE2 instructions seems to work
          $line =~ s/qword ptr//i

@@ -1858,7 +1858,8 @@ TR_InlinerBase::addGuardForVirtual(
    else if (!disableHCRGuards && comp()->getHCRMode() != TR::none)
       createdHCRGuard = true;
 
-   if (comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
+   static const char *enableFSDGuard = feGetEnv("TR_EnableFSDGuard");
+   if ( enableFSDGuard && comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
       {
       addAdditionalGuard(callNode, calleeSymbol, thisClass, block1, block2, block4, TR_BreakpointGuard, TR_FSDTest, false /*favourVftCompare*/,callerCFG);
       }
@@ -3895,18 +3896,20 @@ bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerB
   if (inliner->getPolicy()->replaceSoftwareCheckWithHardwareCheck(_initialCalleeMethod))
       return false;
 
+
    TR_OpaqueClassBlock *tempreceiverClass;
    TR_VirtualGuardSelection *guard;
    static const char *disableHCRGuards2 = feGetEnv("TR_DisableHCRGuards");
 
    const bool skipHCRGuardForCallee = inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeMethod);
 
+   static const char *enableFSDGuard = feGetEnv("TR_EnableFSDGuard");
    if (!disableHCRGuards2 && comp()->getHCRMode() != TR::none && !comp()->compileRelocatableCode() && !skipHCRGuardForCallee)
       {
       tempreceiverClass = _initialCalleeMethod->classOfMethod();
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
       }
-   else if (comp()->getOption(TR_FullSpeedDebug))
+   else if (enableFSDGuard && comp()->getOption(TR_FullSpeedDebug))
       {
       tempreceiverClass = _receiverClass;
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_BreakpointGuard, TR_FSDTest);

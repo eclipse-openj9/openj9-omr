@@ -87,6 +87,7 @@ add_subdirectory(tools)
 if(CMAKE_CROSSCOMPILING)
 	include(${OMR_TOOLS_IMPORTFILE})
 endif()
+
 add_subdirectory(thread)
 add_subdirectory(port)
 add_subdirectory(util)
@@ -103,7 +104,3 @@ if(OMR_GC)
   add_subdirectory("${OMR_GLUE}")
 endif(OMR_GC)
 
-if(OMR_COMPILER)
-  # TODO: Actually support the compiler
-  add_subdirectory(compiler)
-endif(OMR_COMPILER)

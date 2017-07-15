@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -25,6 +25,7 @@
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
 template <class T> class List;
+template <class T> class ListAppender;
 template <class T> class ListElement
    {
    ListElement<T> *_pNext;
@@ -46,7 +47,7 @@ template <class T> class ListElement
          }
       else
          {
-         rc = operator new(sz, freeList.trMemory(), freeList._allocKind);
+         rc = operator new(sz, freeList.getRegion());
          }
       return rc;
       }
@@ -66,16 +67,15 @@ template <class T> class ListBase
    {
    protected:
    ListElement<T> *_pHead;
+   TR::Region     *_region;
    ListBase() {}  // can be created only as a List
    friend void * ListElement<T>::operator new(size_t, List<T>&);
+   friend ListElement<T> *ListAppender<T>::add(T *p, List<T>& freeList);
+   friend ListElement<T> *ListAppender<T>::add(T *p);
 
    public:
-   TR_Memory *       _trMemory;
-   TR_AllocationKind _allocKind;
-
-   TR_Memory *    trMemory()      { return _trMemory; }
-   TR_HeapMemory  trHeapMemory()  { return _trMemory; }
-   TR_StackMemory trStackMemory() { return _trMemory; }
+   TR::Region       &getRegion() { return *_region; }
+   void              setRegion(TR::Region &region) { _region = &region; }
 
    TR_ALLOC(TR_Memory::LLList)
 
@@ -136,11 +136,14 @@ template <class T> class ListBase
  */
 template <class T> class List : public ListBase <T>
    {
+   protected:
+   List() { this->_pHead = NULL; this->_region = NULL; }
    public:
 
    TR_ALLOC(TR_Memory::LLList)
 
-   List(TR_Memory * m)  {this->_pHead = NULL; this->_allocKind = heapAlloc; this->_trMemory = m; }
+   List(TR_Memory *m) { this->_pHead = NULL; this->_region = &(m->heapMemoryRegion()); }
+   List(TR::Region &region)  {this->_pHead = NULL; this->_region = &region; }
 
    /**
     * Re-initialize the list
@@ -156,18 +159,9 @@ template <class T> class List : public ListBase <T>
 
    ListElement<T> *add(T *p)
       {
-      TR_ASSERT(this->_allocKind != persistentAlloc,
+      TR_ASSERT(this->_region != NULL,
              "Should not be using heap allocation to add to a persistent list. The 'add' routine in TR_PersistentList should be called\n");
-      //return this->_pHead = new (trMemory, this->_allocKind) ListElement<T>(p, this->_pHead);
-      return this->_pHead = new (this->trMemory(), this->_allocKind) ListElement<T>(p, this->_pHead);
-      }
-
-   ListElement<T> *add(T *p, TR_AllocationKind allocKind)
-      {
-      //TR_ASSERT(_allocKind == allocKind,
-      //       "Should not be using two different kinds of allocation to add to a particular list.\n");
-      // return this->_pHead = new (trMemory, allocKind) ListElement<T>(p, this->_pHead);
-      return this->_pHead = new (this->trMemory(), allocKind) ListElement<T>(p, this->_pHead);
+      return this->_pHead = new (this->getRegion()) ListElement<T>(p, this->_pHead);
       }
 
    ListElement<T> *add(T *p, List<T>& freeList) { return this->_phead = new (freeList) ListElement<T>(p, this->_pHead); }
@@ -221,8 +215,8 @@ template <class T> class List : public ListBase <T>
          p = add(elem);
       else
          {
-         TR_ASSERT(this->_allocKind != persistentAlloc, "Should not be using heap allocation to add to a persistent list. The 'addAfter' routine in TR_PersistentList should be called\n");
-         p = new (this->trMemory(), this->_allocKind) ListElement<T>(elem, previous->getNextElement());
+         TR_ASSERT(this->_region != NULL, "Should not be using heap allocation to add to a persistent list. The 'addAfter' routine in TR_PersistentList should be called\n");
+         p = new (this->getRegion()) ListElement<T>(elem, previous->getNextElement());
          previous->setNextElement(p);
          }
       return p;
@@ -371,19 +365,19 @@ template <class T> class ListAppender
 
    ListElement<T> *add(T *p)
       {
-      TR_ASSERT(_pList->_allocKind != persistentAlloc, "Should not be using heap allocation to append to a persistent list. Should use 'addPersistent' instead\n");
-      return addListElement(new (_pList->trMemory(), _pList->_allocKind) ListElement<T>(p,NULL));
+      TR_ASSERT(_pList->_region != NULL, "Should not be using heap allocation to append to a persistent list. Should use 'addPersistent' instead\n");
+      return addListElement(new (_pList->getRegion()) ListElement<T>(p,NULL));
       }
 
    ListElement<T> *add(T *p, List<T>& freeList)
       {
-      TR_ASSERT(_pList->_allocKind != persistentAlloc, "Should not be using heap allocation to append to a persistent list. Should use 'addPersistent' instead\n");
+      TR_ASSERT(_pList->_region != NULL, "Should not be using heap allocation to append to a persistent list. Should use 'addPersistent' instead\n");
       return addListElement(new (freeList) ListElement<T>(p,NULL));
       }
 
    ListElement<T> *addPersistent(T *p)
       {
-      TR_ASSERT(_pList->_allocKind == persistentAlloc, "Should not be using persistent allocation to append to a non-persistent list.\n");
+      TR_ASSERT(_pList->_region == NULL, "Should not be using persistent allocation to append to a non-persistent list.\n");
       return addListElement(new (PERSISTENT_NEW) ListElement<T>(p,NULL));
       }
 
@@ -471,18 +465,18 @@ template <class T> class TR_ScratchList : public List<T>
    {
    public:
    TR_ScratchList(TR_Memory * m)
-      : List<T>(m) { List<T>::_allocKind = stackAlloc; }
+      : List<T>(m) { List<T>::_region = &(m->currentStackRegion()); }
 
    TR_ScratchList(T *p, TR_Memory * m)
       : List<T>(m)
       {
-      List<T>::_pHead = new (List<T>::trStackMemory()) ListElement<T>(p);
-      List<T>::_allocKind = stackAlloc;
+      List<T>::_region = &(m->currentStackRegion());
+      List<T>::_pHead = new (List<T>::getRegion()) ListElement<T>(p);
       }
 
    ListElement<T> *add(T *p)
       {
-      return List<T>::_pHead = new (List<T>::trStackMemory()) ListElement<T>(p, List<T>::_pHead);
+      return List<T>::_pHead = new (List<T>::getRegion()) ListElement<T>(p, List<T>::_pHead);
       }
 
    ListElement<T> *addAfter(T * elem, ListElement<T> *previous)
@@ -492,7 +486,7 @@ template <class T> class TR_ScratchList : public List<T>
          p = add(elem);
       else
          {
-         p = new (List<T>::trStackMemory()) ListElement<T>(elem, previous->getNextElement());
+         p = new (List<T>::getRegion()) ListElement<T>(elem, previous->getNextElement());
          previous->setNextElement(p);
          }
       return p;
@@ -503,8 +497,8 @@ template <class T> class TR_ScratchList : public List<T>
 template <class T> class TR_PersistentList : public List<T>
    {
    public:
-   TR_PersistentList() : List<T>((TR_Memory *)0) { List<T>::_pHead = 0; List<T>::_allocKind = persistentAlloc;}
-   TR_PersistentList(T *p) : List<T>((TR_Memory *)0) { List<T>::_pHead = new (PERSISTENT_NEW) ListElement<T>(p); List<T>::_allocKind = persistentAlloc;}
+   TR_PersistentList() : List<T>() { List<T>::_pHead = 0; }
+   TR_PersistentList(T *p) : List<T>() { List<T>::_pHead = new (PERSISTENT_NEW) ListElement<T>(p); }
    ListElement<T> *add(T *p) { return List<T>::_pHead = new (PERSISTENT_NEW) ListElement<T>(p, List<T>::_pHead); }
 
    ListElement<T> *addAfter(T * elem, ListElement<T> *previous)
@@ -551,14 +545,14 @@ template <class T> class TR_Queue : public TR_ScratchList<T>
          List<T>::_pHead = _pTail =
             _useFreeList ?
             new (_freeList) ListElement<T>(elem, List<T>::_pHead) :
-            new (List<T>::trStackMemory()) ListElement<T>(elem, List<T>::_pHead);
+            new (List<T>::getRegion()) ListElement<T>(elem, List<T>::_pHead);
          }
       else
          {
          ListElement<T> *p =
             _useFreeList ?
             new (_freeList) ListElement<T>(elem, NULL) :
-            new (List<T>::trStackMemory()) ListElement<T>(elem, NULL);
+            new (List<T>::getRegion()) ListElement<T>(elem, NULL);
          _pTail->setNextElement(p);
          _pTail = p;
          }
@@ -618,8 +612,10 @@ template <class T> class TR_Queue : public TR_ScratchList<T>
 
    TR_ALLOC(TR_Memory::LLList)
 
-   ListHeadAndTail(TR_Memory * m) : List<T>(m) { init(); }
-   ListHeadAndTail(TR_Memory * m, T *p) : List<T>(m) { init(); add(p); }
+   ListHeadAndTail(TR_Memory * m) : List<T>(m->heapMemoryRegion()) { init(); }
+   ListHeadAndTail(TR_Memory * m, T *p) : List<T>(m->heapMemoryRegion()) { init(); add(p); }
+   ListHeadAndTail(TR::Region &region) : List<T>(region) { init(); }
+   ListHeadAndTail(TR::Region &region, T *p) : List<T>(region) { init(); add(p); }
 
    /** Re-initialize the list */
    void init() {this->_pHead = _pTail = 0;}
@@ -630,13 +626,13 @@ template <class T> class TR_Queue : public TR_ScratchList<T>
 
    ListElement<T> *add(T *p)
       {
-      this->_pHead = new (this->trMemory(), this->_allocKind) ListElement<T>(p, this->_pHead);
+      this->_pHead = new (this->getRegion()) ListElement<T>(p, this->_pHead);
       if (!_pTail) _pTail = this->_pHead;
       return this->_pHead;
       }
    ListElement<T> *append(T * p)
       {
-      ListElement<T> *ret = new (this->trMemory(), this->_allocKind) ListElement<T>(p, 0);
+      ListElement<T> *ret = new (this->getRegion()) ListElement<T>(p, 0);
       if (_pTail) _pTail->setNextElement(ret);
       _pTail = ret;
       if (!this->_pHead) this->_pHead = ret;

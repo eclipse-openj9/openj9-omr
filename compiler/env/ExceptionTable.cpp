@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -58,7 +58,7 @@ TR_ExceptionTableEntryIterator::TR_ExceptionTableEntryIterator(TR::Compilation *
          List<TR_ExceptionTableEntry> & tableEntries =
             _tableEntries[catchBlock->getInlineDepth()][catchBlock->getHandlerIndex()];
 
-         tableEntries._trMemory = comp->trMemory();
+         tableEntries.setRegion(comp->trMemory()->heapMemoryRegion());
 
          uint32_t catchType = catchBlock->getCatchType();
          TR_ResolvedMethod * method = catchBlock->getOwningMethod();

@@ -4734,7 +4734,6 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "compileEnd",
    "compileRequest",
    "gc",
-   "compileTime",
    "recompile",
    "compilePerformance",
    "filters",
@@ -5216,6 +5215,10 @@ bool  OMR::Options::fePostProcessJIT(void *base)
       char tmp[1025];
       fileName = _fe->getFormattedName(tmp, 1025, jitConfig->options.vLogFileName, NULL, TR::Options::getCmdLineOptions()->getOption(TR_EnablePIDExtension));
       jitConfig->options.vLogFile = trfopen(fileName, "w", false);
+      }
+   else
+      {
+      jitConfig->options.vLogFile = OMR::IO::Stderr;
       }
    self()->setVerboseOptions(jitConfig->options.verboseFlags);
 #endif

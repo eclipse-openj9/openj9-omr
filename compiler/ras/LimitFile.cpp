@@ -1022,6 +1022,11 @@ TR_Debug::scanFilterName(char *string, TR_FilterBST *filter)
                seenLineNumber = true;
                }
             }
+         else if (seenLineNumber && *string == ' ')
+            {
+            break;
+            }
+
          else
             signatureLen++;
          }

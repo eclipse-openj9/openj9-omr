@@ -1105,7 +1105,6 @@ enum TR_VerboseFlags
 
    TR_VerboseCompileRequest,
    TR_VerboseGc,
-   TR_VerboseCompileTime, // Not used in j9. TR_VerbosePerformance will do it
    TR_VerboseRecompile,   // this adds jit profiling information
    TR_VerbosePerformance, // Print options, compilation start/end/failure/time/memory
    TR_VerboseFilters,

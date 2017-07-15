@@ -51,7 +51,8 @@ public:
 
 private:
    TR::RawAllocator _rawAllocator;
-   size_t _bytesAllocated;
+   size_t _currentBytesAllocated;
+   size_t _highWaterMark;
    typedef TR::typed_allocator<
       TR::MemorySegment,
       TR::RawAllocator

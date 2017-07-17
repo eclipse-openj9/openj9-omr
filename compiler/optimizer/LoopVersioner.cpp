@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -5043,20 +5043,11 @@ void TR_LoopVersioner::buildIwrtbarComparisonsTree(List<TR::TreeTop> *iwrtbarTre
 
          if (!isX86 && (isVariableHeapBase || isVariableHeapSize))
             {
-            if (TR::Compiler->target.is64Bit())
-               ifNode1 =  TR::Node::create(TR::lucmpge, 2, TR::Node::create(TR::a2l, 1, duplicateBase), TR::Node::createWithSymRef(TR::lload, 0, comp()->getSymRefTab()->findOrCreateThreadLowTenureAddressSymbolRef()));
-            else
-               ifNode1 =  TR::Node::create(TR::iucmpge, 2, TR::Node::create(TR::a2i, 1, duplicateBase), TR::Node::createWithSymRef(TR::iload, 0, comp()->getSymRefTab()->findOrCreateThreadLowTenureAddressSymbolRef()));
+            ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::createWithSymRef(TR::aload, 0, comp()->getSymRefTab()->findOrCreateThreadLowTenureAddressSymbolRef()));
             }
          else
             {
-            if (TR::Compiler->target.is64Bit())
-               {
-               ifNode1 =  TR::Node::create(TR::lucmpge, 2, TR::Node::create(TR::a2l, 1, duplicateBase), TR::Node::create(duplicateBase, TR::lconst, 0, 0));
-               ifNode1->getSecondChild()->setLongInt(fej9->getLowTenureAddress());
-               }
-            else
-               ifNode1 =  TR::Node::create(TR::iucmpge, 2, TR::Node::create(TR::a2i, 1, duplicateBase), TR::Node::create(duplicateBase, TR::iconst, 0, fej9->getLowTenureAddress()));
+            ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::create(duplicateBase, TR::aconst, 0, fej9->getLowTenureAddress()));
             }
 
          //comparisonTrees->add(ifNode);
@@ -5067,20 +5058,11 @@ void TR_LoopVersioner::buildIwrtbarComparisonsTree(List<TR::TreeTop> *iwrtbarTre
 
          if (!isX86 && (isVariableHeapBase || isVariableHeapSize))
             {
-            if (TR::Compiler->target.is64Bit())
-               ifNode2 =  TR::Node::create(TR::lucmplt, 2, TR::Node::create(TR::a2l, 1, duplicateBase), TR::Node::createWithSymRef(TR::lload, 0, comp()->getSymRefTab()->findOrCreateThreadHighTenureAddressSymbolRef()));
-            else
-               ifNode2 =  TR::Node::create(TR::iucmplt, 2, TR::Node::create(TR::a2i, 1, duplicateBase), TR::Node::createWithSymRef(TR::iload, 0, comp()->getSymRefTab()->findOrCreateThreadHighTenureAddressSymbolRef()));
+            ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::createWithSymRef(TR::aload, 0, comp()->getSymRefTab()->findOrCreateThreadHighTenureAddressSymbolRef()));
             }
          else
             {
-            if (TR::Compiler->target.is64Bit())
-               {
-               ifNode2 =  TR::Node::create(TR::lucmplt, 2, TR::Node::create(TR::a2l, 1, duplicateBase), TR::Node::create(duplicateBase, TR::lconst, 0, 0));
-               ifNode2->getSecondChild()->setLongInt(fej9->getHighTenureAddress());
-               }
-            else
-               ifNode2 =  TR::Node::create(TR::iucmplt, 2, TR::Node::create(TR::a2i, 1, duplicateBase), TR::Node::create(duplicateBase, TR::iconst, 0, fej9->getHighTenureAddress()));
+            ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::create(duplicateBase, TR::aconst, 0, fej9->getHighTenureAddress()));
             }
 
          ifNode =  TR::Node::createif(TR::ificmpne, TR::Node::create(TR::iand, 2, ifNode1, ifNode2), TR::Node::create(duplicateBase, TR::iconst, 0, 0), exitGotoBlock->getEntry());

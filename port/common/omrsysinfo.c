@@ -237,6 +237,9 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 }
 /**
  * Determine the size of the total physical memory in the system, in bytes.
+ * Note that if cgroups limits is enabled (see omrsysinfo_cgroup_enable_limits())
+ * then this function returns the memory limit imposed by the cgroup,
+ * which would be same as the value returned by omrsysinfo_cgroup_get_memlimit().
  *
  * @param[in] portLibrary The port library.
  *
@@ -802,4 +805,61 @@ BOOLEAN
 omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo)
 {
 	return FALSE;
+}
+
+/**
+ * Checks if the port library can use cgroup limits
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @return 0 if the port library can use cgroup limits, otherwise negative error code
+ */
+int32_t 
+omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+}
+
+/**
+ * Returns TRUE if port library is using cgroup limits, FALSE otherwise
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @return TRUE if port library has been enabled to use cgroup limits, FALSE otherwise
+ */
+BOOLEAN 
+omrsysinfo_cgroup_is_limits_enabled(struct OMRPortLibrary *portLibrary)
+{
+	return FALSE;
+}
+
+/**
+ * Enable port library to use cgroup limits 
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary 
+ *
+ * @return 0 if the port library can use cgroup limits, otherwise negative error code
+ */
+int32_t 
+omrsysinfo_cgroup_enable_limits(struct OMRPortLibrary *portLibrary)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+}
+
+/**
+ * Retrieves the memory limit imposed by the cgroup to which the current process belongs.
+ * The caller should ensure port library is enabled to use cgroup limits by calling
+ * omrsysinfo_cgroup_enable_limits() before calling this function.
+ * When the fuction returns OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM,
+ * value of *limits is unspecified.
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ * @param[out] limit pointer to uint64_t which successful return contains memory limit imposed by cgroup
+ *
+ * @return 0 on success, otherwise negative error code
+ */
+int32_t
+omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }

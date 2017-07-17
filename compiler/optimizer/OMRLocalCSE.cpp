@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -1355,7 +1355,8 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
          }
       }
 
-   if ((node->getOpCode().isArrayRef()) &&
+   if (node->hasPinningArrayPointer() &&
+       node->computeIsInternalPointer() &&
        cg()->supportsInternalPointers() &&
        (node->getFirstChild()->getOpCodeValue() == TR::aload) &&
        (node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()) &&

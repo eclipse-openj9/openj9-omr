@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -2316,17 +2316,115 @@ OMR::Node::dontEliminateStores(bool isForLocalDeadStore)
 bool
 OMR::Node::isNotCollected()
    {
-   TR::Compilation * comp = TR::comp();
-   if (self()->getOpCode().hasSymbolReference() && self()->getSymbolReference()->getSymbol()->isNotCollected())
-      return true;
-   else if (comp->generateArraylets() &&
-            (self()->getOpCode().isArrayRef() &&
-             (self()->getFirstChild()->isNotCollected() || !self()->getFirstChild()->isInternalPointer())))
-      return true;
-   return false;
+   return !self()->computeIsCollectedReference();
    }
 
 
+/**
+ * \brief
+ *    Check if the node is an internal pointer.
+ *
+ * \return
+ *    Return true if the node is an internal pointer, false otherwise.
+ *
+ * \note
+ *    This query currently only works on opcodes that can have a pinning array pointer,
+ *    i.e. aiadd, aiuadd, aladd, aluadd. Suppport for other opcodes can be added if necessary.
+ */
+bool
+OMR::Node::computeIsInternalPointer()
+   {
+   TR_ASSERT(self()->getOpCode().hasPinningArrayPointer(), "Opcode %s is not supported, node is " POINTER_PRINTF_FORMAT, self()->getOpCode().getName(), self());
+   return self()->computeIsCollectedReference();
+   }
+
+/**
+ * \brief
+ *    Check if the node is collected.
+ *
+ * \return
+ *    Return true if the node is collected, false otherwise.
+ *
+ * \note
+ *    This query traverses down the children of the node and try to find if the node originates
+ *    from something collected, i.e. anything that is collected reference or internal pointer.
+ */
+bool
+OMR::Node::computeIsCollectedReference()
+   {
+   TR::Node *curNode = self();
+   if (curNode->getOpCode().isTreeTop())
+      return false;
+
+   while (curNode)
+      {
+      if (!curNode->getType().isAddress())
+         return false;
+
+      if (curNode->isInternalPointer())
+         return true;
+
+      TR::ILOpCode op = curNode->getOpCode();
+      TR::ILOpCodes opValue = curNode->getOpCodeValue();
+
+      // If a language can handle a collected reference going via a non-address type,
+      // then the logic would need to be augmented to handle that
+      if (op.isConversion())
+         return false;
+
+      // The following are all opcodes that are address type, non-TreeTop and non-conversion
+      switch (opValue)
+         {
+         case TR::aiadd:
+         case TR::aiuadd:
+         case TR::aladd:
+         case TR::aluadd:
+            curNode = curNode->getFirstChild();
+            break;
+         // Symbols for calls and news does not contain collectedness information.
+         // Current implementation treats all object references collectable, and also
+         // assumes that the return of an acall* is an object reference.
+         case TR::acall:
+         case TR::acalli:
+         case TR::New:
+         case TR::newarray:
+         case TR::anewarray:
+         case TR::variableNew:
+         case TR::variableNewArray:
+         case TR::multianewarray:
+              return true;
+         // aload, aloadi, aRegLoad and loadaddr are associated with a symref, we should
+         // be able to tell its collectedness from its symref.
+         case TR::aRegLoad:
+         case TR::aloadi:
+         case TR::aload:
+         case TR::loadaddr:
+            {
+            TR::Symbol *symbol = curNode->getSymbolReference()->getSymbol();
+            // isCollectedReference() responds false to generic int shadows because their type
+            // is int. However, address type generic int shadows refer to collected slots.
+            if (opValue == TR::aloadi && symbol == TR::comp()->getSymRefTab()->findGenericIntShadowSymbol())
+               return true;
+            else
+               return symbol->isCollectedReference();
+            }
+         case TR::aconst:
+            // aconst null can either be collected or uncollected. The collectedness of aconst
+            // null can be determined by usedef analysis, which is too expensive for a very
+            // basic query. Treating aconst null as a collected reference is always safe. The
+            // only problem is: we might mark an aladd/aiadd on a temp whose value is null as
+            // an internal pointer, thus creating a temp, pinning array and internal pointer
+            // map for it.
+            return self() == curNode && curNode->getAddress() == 0;
+         case TR::getstack:
+            return false;
+         default:
+            TR_ASSERT(false, "Unsupported opcode %s on node " POINTER_PRINTF_FORMAT, op.getName(), curNode);
+            return false;
+         }
+      }
+   return false;
+   }
 
 bool
 OMR::Node::addressPointsAtObject()
@@ -3629,7 +3727,8 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
    TR::TreeTop *newStoreTree = NULL;
 
    bool isInternalPointer = false;
-   if (self()->getOpCode().isArrayRef() ||
+   if ((self()->hasPinningArrayPointer() &&
+        self()->computeIsInternalPointer()) ||
        (self()->getOpCode().isLoadVarDirect() &&
         self()->getSymbolReference()->getSymbol()->isAuto() &&
         self()->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer()))
@@ -3707,7 +3806,8 @@ OMR::Node::createStoresForVar(TR::SymbolReference * &nodeRef, TR::TreeTop *inser
       nodeRef = comp->getSymRefTab()->createTemporary(comp->getMethodSymbol(), TR::Address, isInternalPointer);
       TR::Node* storeNode = TR::Node::createStore(nodeRef, self());
 
-      if (self()->getOpCode().isArrayRef())
+      if (self()->hasPinningArrayPointer() &&
+          self()->computeIsInternalPointer())
          self()->setIsInternalPointer(true);
 
       TR::Node *child = NULL;

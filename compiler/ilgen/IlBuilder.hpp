@@ -102,9 +102,7 @@ public:
       _partOfSequence(false),
       _connectedTrees(false),
       _comesBack(true),
-      _isHandler(false),
-      _haveReplayName(false),
-      _rpILCpp(0)
+      _isHandler(false)
       {
       }
    IlBuilder(TR::IlBuilder *source);
@@ -120,7 +118,7 @@ public:
 
    virtual bool isBytecodeBuilder()             { return false; }
 
-   char *getName();
+   //char *getName();
 
    void print(const char *title, bool recurse=false);
    void printBlock(TR::Block *block);
@@ -413,27 +411,6 @@ protected:
     * @brief returns true if this IlBuilder object is a handler for an exception edge
     */
    bool                          _isHandler;
-
-   /**
-    * @brief part of experimental "replay" support; returns true if replay is enabled
-    */
-   bool                          _haveReplayName;
-
-   /**
-    * @brief part of experimental "replay" support; the fstream where replay commands will be directed to
-    */
-   std::fstream                * _rpILCpp;
-
-   /**
-    * @brief part of experimental "replay" support; the name of the replay file name
-    */
-   char                          _replayName[21];
-
-   /**
-    * @brief part of experimental "replay" support: character array used to assemble each line of output
-    */
-   char                          _rpLine[256];
-
 
    virtual bool buildIL() { return true; }
 

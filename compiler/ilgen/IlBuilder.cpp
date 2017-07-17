@@ -52,14 +52,6 @@
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
 
-//#define REPLAY(x)            { x; }
-#define REPLAY(x)            { }
-#define ILB_REPLAY(...)	     { REPLAY({sprintf(_rpLine, ##__VA_ARGS__); (*_rpILCpp) << "\t" << _rpLine << std::endl;}) }
-#define REPLAY_VALUE(v)      ((v)->getSymbol()->getAutoSymbol()->getName())
-#define REPLAY_TYPE(t)       ((t)->getName())
-#define REPLAY_BUILDER(b)    ((b)->getName())
-#define REPLAY_BOOL(b)       ( b? "true" : "false")
-
 
 // IlBuilder is a class designed to help build Testarossa IL quickly without
 // a lot of knowledge of the intricacies of commoned references, symbols,
@@ -105,9 +97,7 @@ IlBuilder::IlBuilder(TR::IlBuilder *source)
    _count(-1),
    _partOfSequence(false),
    _connectedTrees(false),
-   _comesBack(true),
-   _haveReplayName(false),
-   _rpILCpp(0)
+   _comesBack(true)
    {
    }
 
@@ -165,6 +155,7 @@ IlBuilder::setupForBuildIL()
    }
 
 
+#if 0
 char *
 IlBuilder::getName()
    {
@@ -175,6 +166,7 @@ IlBuilder::getName()
       }
    return _replayName;
    }
+#endif
 
 
 void
@@ -500,7 +492,6 @@ IlBuilder::OrphanBuilder()
    TR::IlBuilder *orphan = new (comp()->trHeapMemory()) TR::IlBuilder(_methodBuilder, _types);
    orphan->initialize(_details, _methodSymbol, _fe, _symRefTab);
    orphan->setupForBuildIL();
-   ILB_REPLAY("%s = %s->OrphanBuilder();", REPLAY_BUILDER(orphan), REPLAY_BUILDER(this));
    return orphan;
    }
 
@@ -556,7 +547,6 @@ IlBuilder::appendBlock(TR::Block *newBlock, bool addEdge)
 void
 IlBuilder::AppendBuilder(TR::IlBuilder *builder)
    {
-   ILB_REPLAY("%s->AppendBuilder(%s);", REPLAY_BUILDER(this), REPLAY_BUILDER(builder));
    TR_ASSERT(builder->_partOfSequence == false, "builder cannot be in two places");
 
    builder->_partOfSequence = true;
@@ -631,8 +621,6 @@ IlBuilder::indirectLoadNode(TR::IlType *dt, TR::Node *addr, bool isVectorLoad)
 void
 IlBuilder::Store(const char *varName, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->Store(\"%s\", %s);", REPLAY_BUILDER(this), varName, REPLAY_VALUE(value));
-
    if (!_methodBuilder->symbolDefined(varName))
       _methodBuilder->defineValue(varName, _types->PrimitiveType(value->getDataType()));
    TR::SymbolReference *symRef = lookupSymbol(varName);
@@ -649,7 +637,6 @@ IlBuilder::Store(const char *varName, TR::IlValue *value)
 void
 IlBuilder::StoreOver(TR::IlValue *dest, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->StoreOver(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(dest), REPLAY_VALUE(value));
    dest->storeOver(value, _currentBlock);
    }
 
@@ -663,8 +650,6 @@ IlBuilder::StoreOver(TR::IlValue *dest, TR::IlValue *value)
 void
 IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->VectorStore(\"%s\", %s);", REPLAY_BUILDER(this), varName, REPLAY_VALUE(value));
-
    TR::Node *valueNode = loadValue(value);
    TR::DataType dt = valueNode->getDataType();
    if (!dt.isVector())
@@ -689,8 +674,6 @@ IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
 void
 IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->StoreAt(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(address), REPLAY_VALUE(value));
-
    TR_ASSERT(address->getDataType() == TR::Address, "StoreAt needs an address operand");
 
    TraceIL("IlBuilder[ %p ]::StoreAt address %d gets %d\n", this, address->getID(), value->getID());
@@ -706,8 +689,6 @@ IlBuilder::StoreAt(TR::IlValue *address, TR::IlValue *value)
 void
 IlBuilder::VectorStoreAt(TR::IlValue *address, TR::IlValue *value)
    {
-   ILB_REPLAY("%s->VectorStoreAt(%s, %s);", REPLAY_BUILDER(this), REPLAY_VALUE(address), REPLAY_VALUE(value));
-
    TR_ASSERT(address->getDataType() == TR::Address, "VectorStoreAt needs an address operand");
 
    TraceIL("IlBuilder[ %p ]::VectorStoreAt address %d gets %d\n", this, address->getID(), value->getID());
@@ -732,8 +713,6 @@ IlBuilder::CreateLocalArray(int32_t numElements, TR::IlType *elementType)
    TR::Node *arrayAddress = TR::Node::createWithSymRef(TR::loadaddr, 0, localArraySymRef);
    TR::IlValue *arrayAddressValue = newValue(TR::Address, arrayAddress);
 
-   ILB_REPLAY("%s = %s->CreateLocalArray(%d, %s);", REPLAY_VALUE(arrayAddressValue), REPLAY_BUILDER(this), numElements, REPLAY_TYPE(elementType));
-
    TraceIL("IlBuilder[ %p ]::CreateLocalArray array allocated %d bytes, address in %d\n", this, size, arrayAddressValue->getID());
    return arrayAddressValue;
 
@@ -752,8 +731,6 @@ IlBuilder::CreateLocalStruct(TR::IlType *structType)
    TR::Node *structAddress = TR::Node::createWithSymRef(TR::loadaddr, 0, localStructSymRef);
    TR::IlValue *structAddressValue = newValue(TR::Address, structAddress);
 
-   ILB_REPLAY("%s = %s->CreateLocalStruct(%s);", REPLAY_VALUE(structAddressValue), REPLAY_BUILDER(this), REPLAY_TYPE(newStructType));
-
    TraceIL("IlBuilder[ %p ]::CreateLocalStruct struct allocated %d bytes, address in %d\n", this, size, structAddressValue->getID());
    return structAddressValue;
    }
@@ -761,8 +738,6 @@ IlBuilder::CreateLocalStruct(TR::IlType *structType)
 void
 IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value)
   {
-  ILB_REPLAY("%s->StoreIndirect(\"%s\", \"%s\", %s, %s);", REPLAY_BUILDER(this), type, field, REPLAY_VALUE(object), REPLAY_VALUE(value));
-
   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
   TR::DataType fieldType = symRef->getSymbol()->getDataType();
   TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
@@ -790,7 +765,6 @@ IlBuilder::VectorLoad(const char *name)
    TR::IlValue *returnValue = newValue(returnType, loadNode);
    TraceIL("IlBuilder[ %p ]::%d is VectorLoad %s (%d)\n", this, returnValue->getID(), name, nameSymRef->getCPIndex());
 
-   ILB_REPLAY("%s = %s->Load(\"%s\");", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), name)
    return returnValue;
    }
 
@@ -801,7 +775,6 @@ IlBuilder::LoadIndirect(const char *type, const char *field, TR::IlValue *object
    TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TR::IlValue *returnValue = newValue(fieldType, TR::Node::createWithSymRef(comp()->il.opCodeForIndirectLoad(fieldType), 1, loadValue(object), 0, symRef));
    TraceIL("IlBuilder[ %p ]::%d is LoadIndirect %s.%s from (%d)\n", this, returnValue->getID(), type, field, object->getID());
-   ILB_REPLAY("%s = %s->LoadIndirect(%s, %s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), type, field, REPLAY_VALUE(object));
    return returnValue;
    }
 
@@ -811,7 +784,6 @@ IlBuilder::LoadAt(TR::IlType *dt, TR::IlValue *address)
    TR_ASSERT(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address));
    TraceIL("IlBuilder[ %p ]::%d is LoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
-   ILB_REPLAY("%s = %s->LoadAt(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_TYPE(dt), REPLAY_VALUE(address));
    return returnValue;
    }
 
@@ -821,7 +793,6 @@ IlBuilder::VectorLoadAt(TR::IlType *dt, TR::IlValue *address)
    TR_ASSERT(address->getDataType() == TR::Address, "LoadAt needs an address operand");
    TR::IlValue *returnValue = indirectLoadNode(dt, loadValue(address), true);
    TraceIL("IlBuilder[ %p ]::%d is VectorLoadAt type %d address %d\n", this, returnValue->getID(), dt->getPrimitiveType(), address->getID());
-   ILB_REPLAY("%s = %s->LoadAt(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_TYPE(dt), REPLAY_VALUE(address));
    return returnValue;
    }
 
@@ -866,7 +837,6 @@ IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
 
    TR::IlValue *address = newValue(Address, addrNode);
 
-   ILB_REPLAY("%s = %s->IndexAt(%s, %s, %s);", REPLAY_VALUE(address), REPLAY_BUILDER(this), REPLAY_TYPE(dt), REPLAY_VALUE(base), REPLAY_VALUE(index));
    TraceIL("IlBuilder[ %p ]::%d is IndexAt(%s) base %d index %d\n", this, address->getID(), dt->getName(), base->getID(), index->getID());
 
    return address;
@@ -912,7 +882,6 @@ TR::IlValue *
 IlBuilder::NullAddress()
    {
    TR::IlValue *returnValue = newValue(Address, TR::Node::aconst(0));
-   ILB_REPLAY("%s = %s->NullAddress();", REPLAY_VALUE(address), REPLAY_BUILDER(this));
    TraceIL("IlBuilder[ %p ]::%d is NullAddress\n", this, returnValue->getID());
    return returnValue;
    }
@@ -922,7 +891,6 @@ IlBuilder::ConstInt8(int8_t value)
    {
    TR::IlValue *returnValue = newValue(Int8, TR::Node::bconst(value));
    TraceIL("IlBuilder[ %p ]::%d is ConstInt8 %d\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstInt8(%d);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -931,7 +899,6 @@ IlBuilder::ConstInt16(int16_t value)
    {
    TR::IlValue *returnValue = newValue(Int16, TR::Node::sconst(value));
    TraceIL("IlBuilder[ %p ]::%d is ConstInt16 %d\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstInt16(%d);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -940,7 +907,6 @@ IlBuilder::ConstInt32(int32_t value)
    {
    TR::IlValue *returnValue = newValue(Int32, TR::Node::iconst(value));
    TraceIL("IlBuilder[ %p ]::%d is ConstInt32 %d\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstInt32(%d);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -949,7 +915,6 @@ IlBuilder::ConstInt64(int64_t value)
    {
    TR::IlValue *returnValue = newValue(Int64, TR::Node::lconst(value));
    TraceIL("IlBuilder[ %p ]::%d is ConstInt64 %d\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstInt64(%ld);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -960,7 +925,6 @@ IlBuilder::ConstFloat(float value)
    fconstNode->setFloat(value);
    TR::IlValue *returnValue = newValue(Float, fconstNode);
    TraceIL("IlBuilder[ %p ]::%d is ConstFloat %f\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstFloat(%f);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -971,7 +935,6 @@ IlBuilder::ConstDouble(double value)
    dconstNode->setDouble(value);
    TR::IlValue *returnValue = newValue(Double, dconstNode);
    TraceIL("IlBuilder[ %p ]::%d is ConstDouble %lf\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstDouble(%lf);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -980,7 +943,6 @@ IlBuilder::ConstString(const char * const value)
    {
    TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptrj_t)value));
    TraceIL("IlBuilder[ %p ]::%d is ConstString %p\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstString(%p);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -989,7 +951,6 @@ IlBuilder::ConstAddress(const void * const value)
    {
    TR::IlValue *returnValue = newValue(Address, TR::Node::aconst((uintptrj_t)value));
    TraceIL("IlBuilder[ %p ]::%d is ConstAddress %p\n", this, returnValue->getID(), value);
-   ILB_REPLAY("%s = %s->ConstAddress(%p);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), value);
    return returnValue;
    }
 
@@ -1017,7 +978,6 @@ IlBuilder::ConvertTo(TR::IlType *t, TR::IlValue *v)
       }
    TR::IlValue *convertedValue = convertTo(t, v, false);
    TraceIL("IlBuilder[ %p ]::%d is ConvertTo(%s) %d\n", this, convertedValue->getID(), t->getName(), v->getID());
-   ILB_REPLAY("%s = %s->ConvertTo(%s, %s);", REPLAY_VALUE(convertedValue), REPLAY_BUILDER(this), REPLAY_TYPE(t), REPLAY_VALUE(value));
    return convertedValue;
    }
 
@@ -1033,7 +993,6 @@ IlBuilder::UnsignedConvertTo(TR::IlType *t, TR::IlValue *v)
       }
    TR::IlValue *convertedValue = convertTo(t, v, true);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedConvertTo(%s) %d\n", this, convertedValue->getID(), t->getName(), v->getID());
-   ILB_REPLAY("%s = %s->UnsignedConvertTo(%s, %s);", REPLAY_VALUE(convertedValue), REPLAY_BUILDER(this), REPLAY_TYPE(t), REPLAY_VALUE(value));
    return convertedValue;
    }
 
@@ -1152,7 +1111,6 @@ IlBuilder::NotEqualTo(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=compareOp(TR_cmpNE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is NotEqualTo %d != %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->NotEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1170,14 +1128,11 @@ IlBuilder::Goto(TR::IlBuilder *dest)
    TraceIL("IlBuilder[ %p ]::Goto %p\n", this, dest);
    appendGoto(dest->getEntry());
    setDoesNotComeBack();
-
-   ILB_REPLAY("%s->Goto(%s);", REPLAY_BUILDER(this), REPLAY_BUILDER(dest));
    }
 
 void
 IlBuilder::Return()
    {
-   ILB_REPLAY("%s->Return();", REPLAY_BUILDER(this));
    TraceIL("IlBuilder[ %p ]::Return\n", this);
    TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(TR::NoType));
    genTreeTop(returnNode);
@@ -1188,7 +1143,6 @@ IlBuilder::Return()
 void
 IlBuilder::Return(TR::IlValue *value)
    {
-   ILB_REPLAY("%s->Return(%s);", REPLAY_BUILDER(this), REPLAY_VALUE(value));
    TraceIL("IlBuilder[ %p ]::Return %d\n", this, value->getID());
    TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(value->getDataType()), 1, loadValue(value));
    genTreeTop(returnNode);
@@ -1210,7 +1164,6 @@ IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    if (returnValue == NULL)
       returnValue=binaryOpFromOpMap(TR::ILOpCode::subtractOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Sub %d - %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Sub(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1238,7 +1191,6 @@ IlBuilder::Add(TR::IlValue *left, TR::IlValue *right)
    if (returnValue == NULL)
       returnValue = binaryOpFromOpMap(addOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Add %d + %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Add(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1354,7 +1306,6 @@ IlBuilder::AddWithOverflow(TR::IlBuilder **handler, TR::IlValue *left, TR::IlVal
    TR::ILOpCodes opcode = getOpCode(left, right);
    TR::IlValue *addValue = genOperationWithOverflowCHK(opcode, leftNode, rightNode, handler, TR::OverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is AddWithOverflow %d + %d\n", this, addValue->getID(), left->getID(), right->getID());
-   //ILB_REPLAY("%s = %s->AddWithOverflow(%s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_BUILDER(*handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 
@@ -1366,7 +1317,6 @@ IlBuilder::AddWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, T
    TR::ILOpCodes opcode = getOpCode(left, right);
    TR::IlValue *addValue = genOperationWithOverflowCHK(opcode, leftNode, rightNode, handler, TR::UnsignedOverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is AddWithUnsignedOverflow %d + %d\n", this, addValue->getID(), left->getID(), right->getID());
-   //ILB_REPLAY("%s = %s->AddWithUnsignedOverflow(%s, %s, %s);", REPLAY_VALUE(addValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return addValue;
    }
 
@@ -1387,7 +1337,6 @@ IlBuilder::SubWithUnsignedOverflow(TR::IlBuilder **handler, TR::IlValue *left, T
    TR::Node *rightNode = loadValue(right);
    TR::IlValue *unsignedSubValue = genOperationWithOverflowCHK(TR::ILOpCode::subtractOpCode(leftNode->getDataType()), leftNode, rightNode, handler, TR::UnsignedOverflowCHK);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedSubWithOverflow %d + %d\n", this, unsignedSubValue->getID(), left->getID(), right->getID());
-   //ILB_REPLAY("%s = %s->UnsignedSubWithOverflow(%s, %s, %s);", REPLAY_VALUE(unsignedSubValue), REPLAY_BUILDER(this), REPLAY_PTRTOBUILDER(handler), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return unsignedSubValue;
    }
 
@@ -1406,7 +1355,6 @@ IlBuilder::Mul(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::multiplyOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Mul %d * %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Mul(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1415,7 +1363,6 @@ IlBuilder::Div(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::divideOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Div %d / %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Div(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1424,7 +1371,6 @@ IlBuilder::And(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::andOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is And %d & %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->And(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1433,7 +1379,6 @@ IlBuilder::Or(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::orOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Or %d | %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Or(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1442,7 +1387,6 @@ IlBuilder::Xor(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::xorOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Xor %d ^ %d\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->Xor(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1491,7 +1435,6 @@ IlBuilder::ShiftL(TR::IlValue *v, TR::IlValue *amount)
    {
    TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::shiftLeftOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is shr %d << %d\n", this, returnValue->getID(), v->getID(), amount->getID());
-   ILB_REPLAY("%s = %s->ShiftL(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
    }
 
@@ -1500,7 +1443,6 @@ IlBuilder::ShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
    TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::shiftRightOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is shr %d >> %d\n", this, returnValue->getID(), v->getID(), amount->getID());
-   ILB_REPLAY("%s = %s->ShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
    }
 
@@ -1509,7 +1451,6 @@ IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
    TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::unsignedShiftRightOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is unsigned shr %d >> %d\n", this, returnValue->getID(), v->getID(), amount->getID());
-   ILB_REPLAY("%s = %s->UnsignedShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
    }
 
@@ -1628,7 +1569,6 @@ IlBuilder::EqualTo(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=compareOp(TR_cmpEQ, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is EqualTo %d == %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->EqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1650,7 +1590,6 @@ IlBuilder::LessThan(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLT, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is LessThan %d < %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->LessThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1660,7 +1599,6 @@ IlBuilder::UnsignedLessThan(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLT, true, left, right);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedLessThan %d < %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->UnsignedLessThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1670,7 +1608,6 @@ IlBuilder::LessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is LessOrEqualTo %d <= %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->LessOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1680,7 +1617,6 @@ IlBuilder::UnsignedLessOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpLE, true, left, right);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedLessOrEqualTo %d <= %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->UnsignedLessOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1690,7 +1626,6 @@ IlBuilder::GreaterThan(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGT, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is GreaterThan %d > %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->GreaterThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1700,7 +1635,6 @@ IlBuilder::UnsignedGreaterThan(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGT, true, left, right);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedGreaterThan %d > %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->UnsignedGreaterThan(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1710,7 +1644,6 @@ IlBuilder::GreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGE, false, left, right);
    TraceIL("IlBuilder[ %p ]::%d is GreaterOrEqualTo %d >= %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->GreaterOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1720,7 +1653,6 @@ IlBuilder::UnsignedGreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right)
    integerizeAddresses(&left, &right);
    TR::IlValue *returnValue=compareOp(TR_cmpGE, true, left, right);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedGreaterOrEqualTo %d >= %d?\n", this, returnValue->getID(), left->getID(), right->getID());
-   ILB_REPLAY("%s = %s->UnsignedGreaterOrEqualTo(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(left), REPLAY_VALUE(right));
    return returnValue;
    }
 
@@ -1744,7 +1676,6 @@ IlBuilder::processCallArgs(TR::Compilation *comp, int numArgs, va_list args)
 TR::IlValue *
 IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
    {
-   // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::ComputedCall %s\n", this, functionName);
    va_list args;
    va_start(args, numArgs);
@@ -1768,7 +1699,6 @@ IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, ...)
 TR::IlValue *
 IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlValue **argValues)
    {
-   // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::ComputedCall %s\n", this, functionName);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
@@ -1782,7 +1712,6 @@ IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlValue *
 TR::IlValue *
 IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
    {
-   // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::Call %s\n", this, functionName);
    va_list args;
    va_start(args, numArgs);
@@ -1800,7 +1729,6 @@ IlBuilder::Call(const char *functionName, int32_t numArgs, ...)
 TR::IlValue *
 IlBuilder::Call(const char *functionName, int32_t numArgs, TR::IlValue ** argValues)
    {
-   // TODO: figure out Call REPLAY
    TraceIL("IlBuilder[ %p ]::Call %s\n", this, functionName);
    TR::ResolvedMethod *resolvedMethod = _methodBuilder->lookupFunction(functionName);
    if (resolvedMethod == NULL && _methodBuilder->RequestFunction(functionName))
@@ -1978,7 +1906,6 @@ IlBuilder::Transaction(TR::IlBuilder **persistentFailureBuilder, TR::IlBuilder *
    //This assertion is to rule out platforms which don't have tstart evaluator yet. 
    TR_ASSERT(comp()->cg()->hasTMEvaluator(), "this platform doesn't support tstart or tfinish evaluator yet");   
     
-   //ILB_REPLAY("%s->TransactionBegin(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(persistentFailureBuilder), REPLAY_BUILDER(transientFailureBuilder), REPLAY_BUILDER(transactionBuilder)); 
    TraceIL("IlBuilder[ %p ]::transactionBegin %p, %p, %p, %p)\n", this, *persistentFailureBuilder, *transientFailureBuilder, *transactionBuilder);
 
    appendBlock();
@@ -2060,7 +1987,6 @@ void
 IlBuilder::IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
    {
    TR_ASSERT(target != NULL, "This IfCmpNotEqualZero requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpNotEqualZero(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(condition));
    TraceIL("IlBuilder[ %p ]::IfCmpNotEqualZero %d? -> [ %p ] B%d\n", this, condition->getID(), target, target->getEntry()->getNumber());
    ifCmpNotEqualZero(condition, target->getEntry());
    }
@@ -2076,7 +2002,6 @@ void
 IlBuilder::IfCmpNotEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpNotEqual requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpNotEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpNotEqual %d == %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpNE, false, left, right, target->getEntry());
    }
@@ -2092,7 +2017,6 @@ void
 IlBuilder::IfCmpEqualZero(TR::IlBuilder *target, TR::IlValue *condition)
    {
    TR_ASSERT(target != NULL, "This IfCmpEqualZero requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpEqualZero(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(condition));
    TraceIL("IlBuilder[ %p ]::IfCmpEqualZero %d == 0? -> [ %p ] B%d\n", this, condition->getID(), target, target->getEntry()->getNumber());
    ifCmpEqualZero(condition, target->getEntry());
    }
@@ -2108,7 +2032,6 @@ void
 IlBuilder::IfCmpEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpEqual requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpEqual %d == %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpEQ, false, left, right, target->getEntry());
    }
@@ -2124,7 +2047,6 @@ void
 IlBuilder::IfCmpLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpLessThan requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpLessThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpLessThan %d < %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLT, false, left, right, target->getEntry());
    }
@@ -2140,7 +2062,6 @@ void
 IlBuilder::IfCmpUnsignedLessThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpUnsignedLessThan requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpUnsignedLessThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessThan %d < %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLT, true, left, right, target->getEntry());
    }
@@ -2156,7 +2077,6 @@ void
 IlBuilder::IfCmpLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpLessOrEqual requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpLessOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLE, false, left, right, target->getEntry());
    }
@@ -2172,7 +2092,6 @@ void
 IlBuilder::IfCmpUnsignedLessOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
    TR_ASSERT(target != NULL, "This IfCmpUnsignedLessOrEqual requires a non-NULL builder object");
-   ILB_REPLAY("%s->IfCmpUnsignedLessOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedLessOrEqual %d <= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpLE, true, left, right, target->getEntry());
    }
@@ -2187,7 +2106,6 @@ IlBuilder::IfCmpGreaterThan(TR::IlBuilder **target, TR::IlValue *left, TR::IlVal
 void
 IlBuilder::IfCmpGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   ILB_REPLAY("%s->IfCmpGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpGreaterThan %d > %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpGT, false, left, right, target->getEntry());
    }
@@ -2202,7 +2120,6 @@ IlBuilder::IfCmpUnsignedGreaterThan(TR::IlBuilder **target, TR::IlValue *left, T
 void
 IlBuilder::IfCmpUnsignedGreaterThan(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   ILB_REPLAY("%s->IfCmpUnsignedGreaterThan(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedGreaterThan %d > %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpGT, true, left, right, target->getEntry());
    }
@@ -2217,7 +2134,6 @@ IlBuilder::IfCmpGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left, TR::Il
 void
 IlBuilder::IfCmpGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   ILB_REPLAY("%s->IfCmpGreaterOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpGreaterOrEqual %d >= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpGE, false, left, right, target->getEntry());
    }
@@ -2232,7 +2148,6 @@ IlBuilder::IfCmpUnsignedGreaterOrEqual(TR::IlBuilder **target, TR::IlValue *left
 void
 IlBuilder::IfCmpUnsignedGreaterOrEqual(TR::IlBuilder *target, TR::IlValue *left, TR::IlValue *right)
    {
-   ILB_REPLAY("%s->IfCmpUnsignedGreaterOrEqual(%s, %s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    TraceIL("IlBuilder[ %p ]::IfCmpUnsignedGreaterOrEqual %d >= %d? -> [ %p ] B%d\n", this, left->getID(), right->getID(), target, target->getEntry()->getNumber());
    ifCmpCondition(TR_cmpGE, true, left, right, target->getEntry());
    }
@@ -2282,7 +2197,6 @@ IlBuilder::appendGoto(TR::Block *destBlock)
 void
 IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::IlValue *condition)
    {
-   //ILB_REPLAY_BEGIN();
    TR_ASSERT(thenPath != NULL || elsePath != NULL, "IfThenElse needs at least one conditional path");
 
    TR::Block *thenEntry = NULL;
@@ -2345,8 +2259,6 @@ IlBuilder::IfThenElse(TR::IlBuilder **thenPath, TR::IlBuilder **elsePath, TR::Il
 
    // all paths possibly merge back here
    appendBlock(mergeBlock);
-   //ILB_REPLAY_END();
-   //ILB_REPLAY("IfThenElse(%s, %s, %s);", REPLAY_PTRTOBUILDER(thenPath), REPLAY_PTRTOBUILDER(elsePath), REPLAY_VALUE(condition));
    }
 
 void
@@ -2357,7 +2269,6 @@ IlBuilder::Switch(const char *selectionVar,
                   TR::IlBuilder **caseBuilders,
                   bool *caseFallsThrough)
    {
-   //ILB_REPLAY_BEGIN();
    TR::IlValue *selectorValue = Load(selectionVar);
    TR_ASSERT(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
    *defaultBuilder = createBuilderIfNeeded(*defaultBuilder);
@@ -2410,7 +2321,6 @@ IlBuilder::Switch(const char *selectionVar,
    AppendBuilder(*defaultBuilder);
 
    AppendBuilder(breakBuilder);
-   //ILB_REPLAY_END();
    }
 
 void
@@ -2419,8 +2329,6 @@ IlBuilder::Switch(const char *selectionVar,
                   uint32_t numCases,
                   ...)
    {
-   //TODO figure out switch replay
-   // ILB_REPLAY("%s->IfCmpGreaterThan(%s, %s);", REPLAY_BUILDER(this), REPLAY_BUILDER(target), REPLAY_VALUE(left), REPLAY_VALUE(right));
    int32_t *caseValues = (int32_t *) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(int32_t));
    TR_ASSERT(0 != caseValues, "out of memory");
 
@@ -2465,8 +2373,6 @@ IlBuilder::ForLoop(bool countsUp,
                    TR::IlValue *end,
                    TR::IlValue *increment)
    {
-   //ILB_REPLAY_BEGIN();
-   
    methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(loopCode != NULL, "ForLoop needs to have loopCode builder");
    *loopCode = createBuilderIfNeeded(*loopCode);
@@ -2519,27 +2425,11 @@ IlBuilder::ForLoop(bool countsUp,
 
    // make sure any subsequent operations go into their own block *after* the loop
    appendBlock();
-
-   //ILB_REPLAY_END();
-#if 0
-   ILB_REPLAY("%s->ForLoopUp(%s, \"%s\", %s, %s, %s, %s, %s, %s, %s);",
-          REPLAY_BUILDER(this),
-          REPLAY_BOOL(countsUp),
-          indVar,
-          REPLAY_PTRTOBUILDER(loopCode),
-          REPLAY_PTRTOBUILDER(breakBuilder),
-          REPLAY_PTRTOBUILDER(continueBuilder),
-          REPLAY_VALUE(initial),
-          REPLAY_VALUE(end),
-          REPLAY_VALUE(increment));
-#endif
    }
 
 void
 IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlBuilder **breakBuilder, TR::IlBuilder **continueBuilder)
    {
-   //ILB_REPLAY_BEGIN();
-
    methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(body != NULL, "doWhileLoop needs to have a body");
 
@@ -2573,21 +2463,11 @@ IlBuilder::DoWhileLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlB
 
    // make sure any subsequent operations go into their own block *after* the loop
    appendBlock();
-
-   //ILB_REPLAY_END();
-   //ILB_REPLAY("%s->DoWhileLoop(%s, %s, %s, %s);",
-          //REPLAY_BUILDER(this),
-          //whileCondition,
-          //REPLAY_PTRTOBUILDER(body),
-          //REPLAY_PTRTOBUILDER(breakBuilder),
-          //REPLAY_PTRTOBUILDER(continueBuilder));
    }
 
 void
 IlBuilder::WhileDoLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlBuilder **breakBuilder, TR::IlBuilder **continueBuilder)
    {
-   //ILB_REPLAY_BEGIN();
-
    methodSymbol()->setMayHaveLoops(true);
    TR_ASSERT(body != NULL, "WhileDo needs to have a body");
    TraceIL("IlBuilder[ %p ]::WhileDoLoop while %s do body %p\n", this, whileCondition, *body);
@@ -2617,14 +2497,6 @@ IlBuilder::WhileDoLoop(const char *whileCondition, TR::IlBuilder **body, TR::IlB
    setComesBack(); // this goto is on one particular flow path, doesn't mean every path does a goto
 
    AppendBuilder(done);
-
-   //ILB_REPLAY_END();
-   //ILB_REPLAY("%s->WhileDoLoop(%s, %s, %s, %s);",
-          //REPLAY_BUILDER(this),
-          //whileCondition,
-          //REPLAY_PTRTOBUILDER(body),
-          //REPLAY_PTRTOBUILDER(breakBuilder),
-          //REPLAY_PTRTOBUILDER(continueBuilder));
    }
 
 } // namespace OMR

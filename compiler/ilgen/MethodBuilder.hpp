@@ -239,8 +239,6 @@ class MethodBuilder : public TR::IlBuilder
 
    TR_BitVector              * _bytecodeWorklist;
    TR_BitVector              * _bytecodeHasBeenInWorklist;
-
-   std::fstream              * _rpCpp;
    };
 
 } // namespace OMR

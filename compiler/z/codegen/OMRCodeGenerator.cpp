@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -4568,7 +4568,7 @@ TR_S390Peephole::trueCompEliminationForLoadComp()
    prev = realInstruction(prev, false);
 
    TR::Register * srcReg = ((TR::S390RRInstruction *) curr)->getRegisterOperand(2);
-   TR::RealRegister *tempReg = null;
+   TR::RealRegister *tempReg = NULL;
    if((toRealRegister(srcReg))->getRegisterNumber() == TR::RealRegister::GPR1)
       {
       tempReg = _cg->machine()->getS390RealRegister(TR::RealRegister::GPR2);

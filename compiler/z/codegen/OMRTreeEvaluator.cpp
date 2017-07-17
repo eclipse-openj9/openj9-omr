@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -8040,7 +8040,7 @@ inlineHighestOneBit(
     **/
 
    // need to clobber evaluate all cases except when in 64-bit long
-   TR::Register * srcReg = null;
+   TR::Register * srcReg = NULL;
    bool srcClobbered = false;
    if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) && isLong)
       srcReg = cg->evaluate(firstChild);

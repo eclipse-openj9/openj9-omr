@@ -7047,7 +7047,7 @@ void OMR::ValuePropagation::transformStringConcats(VPStringCached *stringCached)
         }
      }
 
-  TR::Node *stringNode = null;
+  TR::Node *stringNode = NULL;
   TR::Node *indexNode = TR::Node::iconst(appendedString[0], 0); // Length of string 1
 
 
@@ -7089,7 +7089,7 @@ TR::SymbolReference * OMR::ValuePropagation::getStringCacheRef()
   TR_ScratchList<TR_ResolvedMethod> stringMethods(comp()->trMemory());
   comp()->fej9()->getResolvedMethods(comp()->trMemory(), stringClass, &stringMethods);
   ListIterator<TR_ResolvedMethod> it(&stringMethods);
-  TR::SymbolReference * callsymreference=null;
+  TR::SymbolReference * callsymreference=NULL;
 
   for (TR_ResolvedMethod *method = it.getCurrent(); method; method = it.getNext())
       {
@@ -7879,8 +7879,8 @@ void OMR::ValuePropagation::doDelayedTransformations()
       comp()->fej9()->getResolvedMethods(comp()->trMemory(), optClnClass, &clnMethods);
       ListIterator<TR_ResolvedMethod> clnit(&clnMethods);
 
-      TR_ResolvedMethod *method = null;
-      TR::SymbolReference *optClnClassSymRef = null;
+      TR_ResolvedMethod *method = NULL;
+      TR::SymbolReference *optClnClassSymRef = NULL;
       bool clnFound = false;
       for (method = clnit.getCurrent(); method; method = clnit.getNext())
          {

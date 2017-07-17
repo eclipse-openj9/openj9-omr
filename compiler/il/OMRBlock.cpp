@@ -1250,11 +1250,13 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
    //traceMsg("Splitting edge (%d,%d)\n", from->getNumber(), to->getNumber());
    TR_ASSERT(!to->isOSRCatchBlock(), "Splitting edge to OSRCatchBlock (block_%d -> block_%d) is not supported\n", from->getNumber(), to->getNumber());
    TR::Node *exitNode = from->getExit()->getNode();
+   TR::CFG *cfg = c->getFlowGraph();
+   TR_Structure *rootStructure = cfg->getStructure();
    TR_Structure *fromContainingLoop = NULL;
-   if (from->getStructureOf())
+   if (rootStructure && from->getStructureOf())
       fromContainingLoop = from->getStructureOf()->getContainingLoop();
    TR_Structure *toContainingLoop = NULL;
-   if (to->getStructureOf())
+   if (rootStructure && to->getStructureOf())
       toContainingLoop = to->getStructureOf()->getContainingLoop();
    if (fromContainingLoop != toContainingLoop)
       {
@@ -1269,7 +1271,6 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
          }
       }
 
-   TR::CFG * cfg = c->getFlowGraph();
    TR::Compilation *comp = cfg->comp();
    TR::TreeTop *entryTree = to->getEntry();
    TR::Block * newBlock;

@@ -331,6 +331,8 @@ TR_Structure *
 OMR::CFG::invalidateStructure()
    {
    setStructure(NULL);
+   _structureRegion.~Region();
+   new (&_structureRegion) TR::Region(comp()->trMemory()->heapMemoryRegion());
    return getStructure();
    }
 

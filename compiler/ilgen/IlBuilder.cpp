@@ -154,21 +154,6 @@ IlBuilder::setupForBuildIL()
    _exitBlock = emptyBlock();
    }
 
-
-#if 0
-char *
-IlBuilder::getName()
-   {
-   if (!_haveReplayName)
-      {
-      sprintf(_replayName, "B_%p", this);
-      _haveReplayName = true;
-      }
-   return _replayName;
-   }
-#endif
-
-
 void
 IlBuilder::print(const char *title, bool recurse)
    {

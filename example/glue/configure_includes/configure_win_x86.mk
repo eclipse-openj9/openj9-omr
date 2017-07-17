@@ -33,7 +33,8 @@ CONFIGURE_ARGS += \
   --enable-OMR_PORT \
   --enable-OMR_THREAD \
   --enable-OMR_OMRSIG \
-  --enable-OMR_THR_THREE_TIER_LOCKING
+  --enable-OMR_THR_THREE_TIER_LOCKING \
+  --enable-OMR_THR_SPIN_WAKE_CONTROL
   
 ifeq (win_x86-64_cmprssptrs_cuda, $(SPEC))
   CONFIGURE_ARGS += \

@@ -54,7 +54,8 @@ endif
 
 CONFIGURE_ARGS += \
   --enable-OMR_THR_THREE_TIER_LOCKING \
-  --enable-OMR_THR_YIELD_ALG
+  --enable-OMR_THR_YIELD_ALG \
+  --enable-OMR_THR_SPIN_WAKE_CONTROL
 
 # not currently in builds
 ifeq (linux_ppc-64_cmprssptrs_gcc, $(SPEC))

@@ -152,16 +152,16 @@ public:
 
    bool genPartialIL(TR_FrontEnd *, TR::Compilation *, TR::SymbolReferenceTable *, bool forceClassLookahead = false, TR_InlineBlocks *blocksToInline = 0);
 
-   void genOSRHelperCall(int32_t inlinedSiteIndex, TR::SymbolReferenceTable* symRefTab);
+   void genOSRHelperCall(int32_t inlinedSiteIndex, TR::SymbolReferenceTable* symRefTab, TR::CFG *cfg = NULL);
    void genAndAttachOSRCodeBlocks(int32_t inlinedSiteIndex) ;
    int  matchInduceOSRCall(TR::TreeTop* insertionPoint,
                                int16_t callerIndex,
                                int16_t byteCodeIndex,
                                const char* childPath);
 
-   TR::TreeTop *genInduceOSRCallNode(TR::TreeTop* insertionPoint, int32_t numChildren, bool copyChildren, bool shouldSplitBlock = true);
-   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
-   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, TR_OSRMethodData *osrMethodData, int32_t numChildren, bool copyChildren, bool shouldSplitBlock);
+   TR::TreeTop *genInduceOSRCallNode(TR::TreeTop* insertionPoint, int32_t numChildren, bool copyChildren, bool shouldSplitBlock = true, TR::CFG *cfg = NULL);
+   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, int32_t numChildren, bool copyChildren, bool shouldSplitBlock, TR::CFG *cfg = NULL);
+   TR::TreeTop *genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex, TR_OSRMethodData *osrMethodData, int32_t numChildren, bool copyChildren, bool shouldSplitBlock, TR::CFG *cfg = NULL);
    TR::TreeTop *genInduceOSRCallAndCleanUpFollowingTreesImmediately(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, bool shouldSplitBlock, TR::Compilation *comp);
 
    bool canInjectInduceOSR(TR::Node* node);

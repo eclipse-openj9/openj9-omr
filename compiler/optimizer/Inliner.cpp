@@ -2019,7 +2019,7 @@ TR_InlinerBase::addGuardForVirtual(
            createdHCRGuard ||
            (osrForNonHCRGuards && shouldAttemptOSR)))
          {
-         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false);
+         TR::TreeTop *induceTree = callerSymbol->genInduceOSRCall(guardedCallNodeTreeTop, callNode->getByteCodeInfo().getCallerIndex(), (callNode->getNumChildren() - callNode->getFirstArgumentIndex()), false, false, callerSymbol->getFlowGraph());
          if (induceOSRCallTree)
             *induceOSRCallTree = induceTree;
          }

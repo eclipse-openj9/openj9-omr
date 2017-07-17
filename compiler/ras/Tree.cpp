@@ -361,7 +361,7 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t 
 
    for (int32_t index = 0; index < regionAnalysis->_totalNumberOfNodes; index++)
       {
-      TR_RegionAnalysis::StructInfo &node = regionAnalysis->_infoTable[index+1];
+      TR_RegionAnalysis::StructInfo &node = regionAnalysis->getInfo(index);
       if (node._structure == NULL)
          continue;
 

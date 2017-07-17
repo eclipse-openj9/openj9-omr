@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,8 +21,6 @@
 
 #include <stdint.h>                 // for int32_t
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/arrayof.h"            // for StaticArrayOf
-#include "cs2/tableof.h"            // for TableOf
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Block.hpp"             // for Block
 #include "infra/Cfg.hpp"            // for CFG
@@ -57,10 +55,10 @@ class TR_RegionAnalysis
    private:
 
    class StructInfo;
-   typedef CS2::TableOf<StructInfo, TR::Allocator> InfoTable;
-   typedef TR::BitVector StructureBitVector;
-   typedef TR::BitVector WorkBitVector;
-   typedef TR::deque<TR_StructureSubGraphNode*> SubGraphNodes;
+   typedef StructInfo** InfoTable;
+   typedef TR_BitVector StructureBitVector;
+   typedef TR_BitVector WorkBitVector;
+   typedef TR::deque<TR_StructureSubGraphNode*, TR::Region&> SubGraphNodes;
 
    void simpleIterator(TR_Stack<int32_t>& workStack,
                        StructureBitVector& vector,
@@ -73,8 +71,8 @@ class TR_RegionAnalysis
    class StructInfo
       {
       public:
-      StructInfo(const TR::Allocator &allocator)
-         : _pred(allocator), _succ(allocator), _exceptionPred(allocator), _exceptionSucc(allocator)
+      StructInfo(TR::Region &region)
+         : _pred(region), _succ(region), _exceptionPred(region), _exceptionSucc(region)
          {
          }
       StructureBitVector     _pred;
@@ -89,21 +87,21 @@ class TR_RegionAnalysis
       int32_t getNumber() { return _originalBlock ? _originalBlock->getNumber() : -1; }
       };
 
-   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, const TR::Allocator &allocator) :
+   TR_RegionAnalysis(TR::Compilation *comp, TR_Dominators &dominators, TR::CFG * cfg, TR::Region &workingRegion) :
+      _workingRegion(workingRegion),
+      _structureRegion(comp->getFlowGraph()->structureRegion()),
       _compilation(comp),
-      _allocator(allocator),
-      _infoTable(cfg->getNumberOfNodes(), _allocator),
+      _infoTable(NULL),
       _dominators(dominators),
       _cfg(cfg)
       {
       }
-
+   TR::Region &_workingRegion;
+   TR::Region &_structureRegion;
    TR::Compilation *_compilation;
 
-   TR::Allocator _allocator;
-
    /** The StructInfoTable is 1-based */
-   StructInfo &getInfo(int32_t index) { return _infoTable[index+1]; }
+   StructInfo &getInfo(int32_t index) { return *(_infoTable[index+1]); }
    InfoTable       _infoTable;
 
    /** Total number of nodes in the flow graph */
@@ -119,9 +117,9 @@ class TR_RegionAnalysis
 
    bool _trace;
    bool _useNew;
-   void createLeafStructures(TR::CFG *cfg);
+   void createLeafStructures(TR::CFG *cfg, TR::Region &region);
 
-   TR_Structure       *findRegions();
+   TR_Structure       *findRegions(TR::Region &region);
    TR_RegionStructure *findNaturalLoop(StructInfo &node,
                                        WorkBitVector &regionNodes,
                                        WorkBitVector &nodesInPath);
@@ -155,7 +153,7 @@ class TR_RegionAnalysis
    void                buildRegionSubGraph(TR_RegionStructure *region,
                                            StructInfo &entryNode,
                                            WorkBitVector &regionNodes,
-                                           SubGraphNodes &cfgNodes);
+                                           SubGraphNodes &cfgNodes, TR::Region &memRegion);
 
    };
 

@@ -502,15 +502,26 @@ OMR::ResolvedMethodSymbol::canInjectInduceOSR(TR::Node* node)
    return true;
    }
 
-
-
-
+/**
+ * Generate and prepend an induce OSR call tree.
+ *
+ * \param insertionPoint Tree to prepend the OSR call to. It may also copy children from this tree if it is a call.
+ * \param numChildren The number of children to copy from the insertionPoint to the induce call.
+ * \param copyChildren Flag controlling whether to copy children to the induce call.
+ * \param shouldSplitBlock Flag controlling whether to split the block after the induce call.
+ * \param cfg Specify the CFG to use when splitting the block. Defaults to the outermost CFG.
+ */
 TR::TreeTop *
 OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
                                               int32_t numChildren,
                                               bool copyChildren,
-                                              bool shouldSplitBlock)
+                                              bool shouldSplitBlock,
+                                              TR::CFG *cfg)
    {
+   // If not specified use the outermost CFG
+   if (!cfg)
+      cfg = self()->comp()->getFlowGraph();
+
    //Now we need to put the induceOSR call as the first treetop of its block.
    //Because if we don't do that and if there is a method call before induceOSR in induceOSR's block
    //and that method gets inlined
@@ -527,7 +538,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
 
    TR::Block * firstHalfBlock = insertionPoint->getEnclosingBlock();
    if (shouldSplitBlock)
-       firstHalfBlock->split(insertionPoint, self()->comp()->getFlowGraph(), true);
+       firstHalfBlock->split(insertionPoint, cfg, true);
    firstHalfBlock->setIsOSRInduceBlock();
 
    // The arguments for a transition to this bytecode index may have already been stashed.
@@ -667,12 +678,28 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallAndCleanUpFollowingTreesImmediately(T
    return induceOSRCallTree;
    }
 
+/**
+ * Generate and prepend an induce OSR call. This function will also modify the block to fit OSR requirements, such as
+ * limiting successors to only the exit block and limiting exception successors to the matching OSR catch block.
+ *
+ * \param insertionPoint Tree to prepend the OSR call to. It may also copy children from this tree if it is a call.
+ * \param inlinedSiteIndex The inlined site index of the desired transition target. This should match the insertion points inlined site index.
+ * \param numChildren The number of children to copy from the insertionPoint to the induce OSR call.
+ * \param copyChildren Flag controlling whether to copy children to the induce OSR call.
+ * \param shouldSplitBlock Flag controlling whether to split the block after the induce OSR call.
+ * \param cfg CFG used for the block modifications. This will default to the outermost CFG, but can be specified if adding induce OSR calls
+ *            when it is not fully formed, such as during inlining.
+ */
 TR::TreeTop *
-OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint, int32_t inlinedSiteIndex,
-                        int32_t numChildren, bool copyChildren, bool shouldSplitBlock)
+OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
+                                          int32_t inlinedSiteIndex,
+                                          int32_t numChildren,
+                                          bool copyChildren,
+                                          bool shouldSplitBlock,
+                                          TR::CFG *cfg)
    {
    TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(inlinedSiteIndex, self());
-   return self()->genInduceOSRCall(insertionPoint, inlinedSiteIndex, osrMethodData, numChildren, copyChildren, shouldSplitBlock);
+   return self()->genInduceOSRCall(insertionPoint, inlinedSiteIndex, osrMethodData, numChildren, copyChildren, shouldSplitBlock, cfg);
    }
 
 TR::TreeTop *
@@ -681,9 +708,13 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
                                           TR_OSRMethodData *osrMethodData,
                                           int32_t numChildren,
                                           bool copyChildren,
-                                          bool shouldSplitBlock)
+                                          bool shouldSplitBlock,
+                                          TR::CFG *callerCFG)
    {
-   TR::CFG * callerCFG = self()->comp()->getFlowGraph();
+   // If not specified use the outermost CFG
+   if (!callerCFG)
+      callerCFG = self()->comp()->getFlowGraph();
+
    TR::Node *insertionPointNode = insertionPoint->getNode();
    if (self()->comp()->getOption(TR_TraceOSR))
       traceMsg(self()->comp(), "Osr point added for %p, callerIndex=%d, bcindex=%d\n",
@@ -691,7 +722,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
               insertionPointNode->getByteCodeInfo().getByteCodeIndex());
 
    TR::Block * OSRCatchBlock = osrMethodData->getOSRCatchBlock();
-   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCallNode(insertionPoint, numChildren, copyChildren, shouldSplitBlock);
+   TR::TreeTop *induceOSRCallTree = self()->genInduceOSRCallNode(insertionPoint, numChildren, copyChildren, shouldSplitBlock, callerCFG);
 
    TR::Block *enclosingBlock = insertionPoint->getEnclosingBlock();
    if (!enclosingBlock->getLastRealTreeTop()->getNode()->getOpCode().isReturn())
@@ -735,6 +766,8 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
    if (self()->getOSRPoints().isEmpty())
       firstOSRPoint = true;
 
+   // TODO: The late addition of OSR infrastructure based on the lack of OSR points should not be possible, as we shouldn't have been able to induce without
+   // an OSR point in the first place. This should be removed, as well as the genOSRHelperCall's cfg argument.
    if (firstOSRPoint)
       {
       TR::Block *OSRCodeBlock = osrMethodData->getOSRCodeBlock();
@@ -744,7 +777,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCall(TR::TreeTop* insertionPoint,
          traceMsg(self()->comp(), "code %p %d catch %p %d\n", OSRCodeBlock, OSRCodeBlock->getNumber(), OSRCatchBlock, OSRCatchBlock->getNumber());
 
       self()->getLastTreeTop()->insertTreeTopsAfterMe(OSRCatchBlock->getEntry(), OSRCodeBlock->getExit());
-      self()->genOSRHelperCall(inlinedSiteIndex, self()->comp()->getSymRefTab());
+      self()->genOSRHelperCall(inlinedSiteIndex, self()->comp()->getSymRefTab(), callerCFG);
       }
 
    self()->insertRematableStoresFromCallSites(self()->comp(), inlinedSiteIndex, induceOSRCallTree);
@@ -1000,8 +1033,12 @@ OMR::ResolvedMethodSymbol::sharesStackSlot(TR::SymbolReference *symRef)
    }
 
 void
-OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR::SymbolReferenceTable* symRefTab)
+OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR::SymbolReferenceTable* symRefTab, TR::CFG *cfg)
    {
+   // If not specified use the outermost CFG
+   if (!cfg)
+      cfg = self()->comp()->getFlowGraph();
+
    bool trace = self()->comp()->getOption(TR_TraceOSR);
    // Use first node of the method for bytecode info
    TR_ASSERT(self()->getFirstTreeTop(), "first tree top is NULL in %s", self()->signature(self()->comp()->trMemory()));
@@ -1173,7 +1210,8 @@ OMR::ResolvedMethodSymbol::genOSRHelperCall(int32_t currentInlinedSiteIndex, TR:
          }
       OSRCodeBlock->append(TR::TreeTop::create(self()->comp(), retNode));
       }
-   self()->comp()->getFlowGraph()->addEdge(OSRCodeBlock, self()->comp()->getFlowGraph()->getEnd());
+
+   cfg->addEdge(OSRCodeBlock, cfg->getEnd());
    }
 
 

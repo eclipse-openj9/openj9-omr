@@ -35,9 +35,12 @@ void
 GC_OMRVMThreadInterface::flushNonAllocationCaches(MM_EnvironmentBase *env)
 {
 	env->flushNonAllocationCaches();
+
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	if (env->getExtensions()->isStandardGC()) {
 		((MM_EnvironmentStandard *)env)->flushRememberedSet();
 	}
+#endif
 }
 
 void

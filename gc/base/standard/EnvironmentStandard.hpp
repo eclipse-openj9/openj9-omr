@@ -49,7 +49,9 @@ public:
 	MM_CopyScanCacheStandard *_deferredCopyCache; /**< a copy cache about to be pushed to scan queue, but before that may be merged with some other caches that collectively form contiguous memory */
 	MM_CopyScanCacheStandard *_tenureCopyScanCache; /**< the current copy cache for tenuring */
 	MM_CopyScanCacheStandard *_effectiveCopyScanCache; /**< the the copy cache the received the most recently copied object, or NULL if no object copied in copy() */
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	J9VMGC_SublistFragment _scavengerRememberedSet;
+#endif
 	void *_tenureTLHRemainderBase;  /**< base and top pointers of the last unused tenure TLH copy cache, that might be reused  on next copy refresh */
 	void *_tenureTLHRemainderTop;
 	bool _loaAllocation;  /** true, if tenure TLH remainder is in LOA (TODO: try preventing remainder creation in LOA) */
@@ -88,6 +90,7 @@ public:
 		_typeId = __FUNCTION__;
 	}
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	/**
 	 * Flush (to global stores) the local remembered object caches in thread-local GC_Environment
 	 */
@@ -95,6 +98,7 @@ public:
 	{
 		MM_SublistFragment::flush(&_scavengerRememberedSet);
 	}
+#endif
 
 protected:
 	virtual bool initialize(MM_GCExtensionsBase *extensions);

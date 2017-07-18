@@ -18,11 +18,6 @@
 
 #include "ddr/ir/Field.hpp"
 
-#include <stdlib.h>
-
-#include "ddr/config.hpp"
-#include "ddr/ir/TypedefUDT.hpp"
-
 Field::Field()
 	: _fieldType(NULL),
 	  _sizeOf(0),

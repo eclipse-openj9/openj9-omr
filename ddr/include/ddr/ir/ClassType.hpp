@@ -19,6 +19,8 @@
 #ifndef CLASSTYPE_HPP
 #define CLASSTYPE_HPP
 
+#include "ddr/config.hpp"
+
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/Field.hpp"
 #include "ddr/ir/NamespaceUDT.hpp"

@@ -19,6 +19,8 @@
 #ifndef NAMESPACEUDT_HPP
 #define NAMESPACEUDT_HPP
 
+#include "ddr/config.hpp"
+
 #include <string>
 
 #include "ddr/ir/Macro.hpp"

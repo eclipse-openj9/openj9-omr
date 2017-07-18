@@ -87,8 +87,6 @@ typedef vector<string> str_vect;
 #define DW_DLE_NOB				0x08 /* Not an object file */
 #define DW_DLE_VMM				0x09 /* Dwarf format/library version mismatch */
 
-
-
 #define DW_DLC_READ 0x01
 
 #define DW_DLV_NO_ENTRY -1
@@ -135,15 +133,17 @@ typedef vector<string> str_vect;
 #define DW_TAG_member 0x09
 #define DW_TAG_namespace 0x0a
 #define DW_TAG_pointer_type 0x0b
-#define DW_TAG_restrict_type 0x0c
-#define DW_TAG_shared_type 0x0d
-#define DW_TAG_structure_type 0x0e
-#define DW_TAG_subprogram 0x0f
-#define DW_TAG_subrange_type 0x10
-#define DW_TAG_subroutine_type 0x11
-#define DW_TAG_typedef 0x12
-#define DW_TAG_union_type 0x13
-#define DW_TAG_volatile_type 0x14
+#define DW_TAG_ptr_to_member_type 0x0c
+#define DW_TAG_restrict_type 0x0d
+#define DW_TAG_reference_type 0x0e
+#define DW_TAG_shared_type 0x0f
+#define DW_TAG_structure_type 0x10
+#define DW_TAG_subprogram 0x11
+#define DW_TAG_subrange_type 0x12
+#define DW_TAG_subroutine_type 0x13
+#define DW_TAG_typedef 0x14
+#define DW_TAG_union_type 0x15
+#define DW_TAG_volatile_type 0x16
 
 struct Dwarf_Error_s
 {
@@ -205,7 +205,7 @@ int dwarf_formstring(Dwarf_Attribute attr, char **returned_string, Dwarf_Error *
 
 void dwarf_dealloc(Dwarf_Debug dbg, void *space, Dwarf_Unsigned type);
 
-int dwarf_hasattr(Dwarf_Die die, Dwarf_Half   attr, Dwarf_Bool *returned_bool, Dwarf_Error *error);
+int dwarf_hasattr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Bool *returned_bool, Dwarf_Error *error);
 
 int dwarf_formudata(Dwarf_Attribute attr, Dwarf_Unsigned  *returned_val, Dwarf_Error *error);
 
@@ -245,5 +245,9 @@ int dwarf_init(int fd,
     Dwarf_Ptr errarg,
     Dwarf_Debug *dbg,
     Dwarf_Error *error);
+
+int dwarf_dieoffset(Dwarf_Die die, Dwarf_Off *dieOffset, Dwarf_Error *error);
+
+int dwarf_get_TAG_name(Dwarf_Half tag, const char **name);
 
 void setError(Dwarf_Error *error, Dwarf_Half num);

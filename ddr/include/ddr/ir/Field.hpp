@@ -19,12 +19,15 @@
 #ifndef FIELD_HPP
 #define FIELD_HPP
 
+#include "ddr/config.hpp"
+
 #include <string>
 
-#include "ddr/config.hpp"
 #include "ddr/ir/Members.hpp"
 #include "ddr/ir/Modifiers.hpp"
 #include "ddr/ir/Type.hpp"
+
+using std::string;
 
 class Field : public Members
 {
@@ -38,7 +41,7 @@ public:
 
 	Field();
 
-	std::string getTypeName();
+	string getTypeName();
 };
 
 #endif /* FIELD_HPP */

@@ -21,11 +21,11 @@
 
 #include "ddr/config.hpp"
 
+#include <vector>
+
 #include "ddr/ir/Members.hpp"
 #include "ddr/ir/Macro.hpp"
 #include "ddr/ir/Type.hpp"
-
-#include <vector>
 
 class UDT : public Type
 {

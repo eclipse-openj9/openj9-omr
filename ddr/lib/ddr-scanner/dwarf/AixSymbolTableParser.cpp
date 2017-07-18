@@ -15,26 +15,28 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "AixSymbolTableParser.hpp"
+#include "ddr/error.hpp"
 
-/* Statics to create: */
+#include "ddr/scanner/dwarf/AixSymbolTableParser.hpp"
+
+/* Statics. */
 static die_map createdDies;
 static die_map builtInDies;
 static std::set<string> filesAdded;
-/* This vector contains the typeID of the nested class, and parent class for populating nested classes */
+/* This vector contains the typeID of the nested class and parent class for populating nested classes. */
 static vector<pair<int, Dwarf_Die> > nestedClassesToPopulate;
-/* This vector contains the typeID of the type reference, and type attribute to populate */
+/* This vector contains the typeID of the type reference and type attribute to populate. */
 static vector<pair<int, Dwarf_Attribute> > refsToPopulate;
-/* This vector contains the Dwarf DIE with the bitfield attribute, which may have to be removed if it is unneeded */
+/* This vector contains the Dwarf DIE with the bitfield attribute. */
 static vector<Dwarf_Die> bitFieldsToCheck;
 static Dwarf_Die _lastDie = NULL;
 static Dwarf_Die _builtInTypeDie = NULL;
 static Dwarf_Die _undefinedRef = NULL;
-/* _startNewFile is a state counter */
+/* _startNewFile is a state counter. */
 static int _startNewFile = 0;
-/* Start numbering refs for refMap at one (zero will be for when no ref is found) */
+/* Start numbering DIE refs for refMap at one (zero will be for when no ref is found). */
 static Dwarf_Off refNumber = 1;
-/* This is used to initialize declLine to a unique value for each unique DIE, every time it is required */
+/* This is used to initialize declLine to a unique value for each unique DIE every time it is required. */
 static Dwarf_Off declarationLine = 1;
 Dwarf_CU_Context * Dwarf_CU_Context::_firstCU;
 Dwarf_CU_Context * Dwarf_CU_Context::_currentCU;
@@ -58,6 +60,8 @@ static void populateNestedClasses();
 static void removeUselessStubs();
 static int setDieAttributes(const string dieName, const unsigned int dieSize, Dwarf_Die currentDie, Dwarf_Error *error);
 
+using std::getline;
+
 int
 dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 {
@@ -72,13 +76,13 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 		Dwarf_CU_Context::_currentCU = nextCU;
 	}
 
-	/* Delete the built-in type DIEs */
+	/* Delete the built-in type DIEs. */
 	if (NULL != _builtInTypeDie) {
 		deleteDie(_builtInTypeDie);
 		_builtInTypeDie = NULL;
 	}
 
-	/* Delete the undefined type reference DIE */
+	/* Delete the undefined type reference DIE. */
 	if (NULL != _undefinedRef) {
 		deleteDie(_undefinedRef);
 		_undefinedRef = NULL;
@@ -100,24 +104,24 @@ dwarf_init(int fd,
 	Dwarf_Debug *dbg,
 	Dwarf_Error *error)
 {
-	/* Initialize some values */
+	/* Initialize CU values */
 	int ret = DW_DLV_OK;
 	FILE *fp = NULL;
-	char *buffer = NULL;
+	char buffer[PATH_MAX];
 	char filepath[100] = {'\0'};
 	Dwarf_CU_Context::_firstCU = NULL;
 	Dwarf_CU_Context::_currentCU = NULL;
 	refNumber = 1;
 	size_t len = 0;
 
-	/* Populate the built-in types */
+	/* Populate the built-in types. */
 	ret = populateBuiltInTypeDies(error);
 	populateAttributeReferences();
 
-	/* Get the path of the file descriptor */
+	/* Get the path of the file descriptor. */
 	sprintf(filepath, "/proc/%d/fd/%d", getpid(), fd);
 
-	/* Call dump to get the symbol table */
+	/* Call dump to get the symbol table. */
 	if (DW_DLV_OK == ret) {
 		stringstream ss;
 		ss << "dump -tvXany " << filepath << " 2>&1";
@@ -129,25 +133,24 @@ dwarf_init(int fd,
 	}
 
 	DEBUGPRINTF("Parsing through file.");
-	/* Parse through the file */
-	while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret)) {
+	/* Parse through the file. */
+	while ((NULL != fgets(buffer, PATH_MAX, fp)) && (DW_DLV_OK == ret)) {
 		ret = parseSymbolTable(buffer, error);
 	}
-	free(buffer);
 
 	if (NULL != fp) {
 		pclose(fp);
 	}
 
-	/* Populate the references and nested classes of the last file to get parsed */
+	/* Populate the references and nested classes of the last file to get parsed. */
 	populateAttributeReferences();
 	populateNestedClasses();
 	removeUselessStubs();
 
-	/* Must set _currentCU to null for dwarf_next_cu_header to work */
+	/* _currentCU must begin as NULL for dwarf_next_cu_header. */
 	Dwarf_CU_Context::_currentCU = NULL;
 
-	/* If the symbol table that we parsed contained no new files, create an empty generic CU and CU die to make sure DwarfScanner doesn't fail */
+	/* If the symbol table that we parsed contained no new files, create an empty placeholder generic CU and CU DIE. */
 	if (NULL == Dwarf_CU_Context::_firstCU) {
 		Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
 		Dwarf_Die newDie = new Dwarf_Die_s();
@@ -187,7 +190,7 @@ dwarf_init(int fd,
 		}
 	}
 
-	/* Create a DIE for undefined references */
+	/* Create a DIE for undefined references. */
 	_undefinedRef = new Dwarf_Die_s;
 	_undefinedRef->_tag = DW_TAG_unknown;
 	_undefinedRef->_parent = NULL;
@@ -198,10 +201,10 @@ dwarf_init(int fd,
 	_undefinedRef->_attribute = NULL;
 	Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)0, (Dwarf_Die)_undefinedRef));
 
-	/* Remove bit size attributes for members that don't need bit fields */
+	/* Remove bit size attributes for members which don't need bit fields. */
 	checkBitFields(error);
 
-	/* Clear the unordered_maps that were required during parsing */
+	/* Clear the maps after parsing. */
 	refsToPopulate.clear();
 	createdDies.clear();
 	nestedClassesToPopulate.clear();
@@ -214,7 +217,7 @@ dwarf_init(int fd,
 static void
 checkBitFields(Dwarf_Error *error) {
 	for (int i = 0; i < bitFieldsToCheck.size(); i++) {
-		/* Since this is a field, the type attribute is guaranteed to be the attribute after the first of the die passed in */
+		/* Since this is a field, the type attribute is always the attribute after the first of the die passed in. */
 		Dwarf_Attribute type = NULL;
 		Dwarf_Attribute bitSize = NULL;
 		Dwarf_Attribute tmpAttribute = bitFieldsToCheck[i]->_attribute;
@@ -241,8 +244,7 @@ checkBitFields(Dwarf_Error *error) {
 				case DW_TAG_const_type:
 				case DW_TAG_typedef:
 				case DW_TAG_volatile_type:
-					/* Check the type that this is referring to */
-
+					/* Check if the type that this is referring to has been found before. */
 					if (DW_DLV_OK == dwarf_attr(tmp, DW_AT_type, &tmpAttribute, error)) {
 						tmp = tmpAttribute->_ref;
 					} else {
@@ -250,7 +252,7 @@ checkBitFields(Dwarf_Error *error) {
 					}
 					break;
 				case DW_TAG_pointer_type:
-					/* Compare the bit size with the pointer size for the current architecture */
+					/* Compare the bit size with the pointer size for the current architecture. */
 					if (PTR_SIZE * 8 != bitSize->_udata) {
 						needsBitField = true;
 					}
@@ -262,7 +264,7 @@ checkBitFields(Dwarf_Error *error) {
 				}
 			}
 			if (!needsBitField) {
-				/* Remove the bit size attribute */
+				/* Remove the bit size attribute if its not needed. */
 				tmpAttribute = bitFieldsToCheck[i]->_attribute;
 				while (DW_AT_bit_size != tmpAttribute->_nextAttr->_type) {
 					tmpAttribute = tmpAttribute->_nextAttr;
@@ -280,7 +282,7 @@ checkBitFields(Dwarf_Error *error) {
 static void
 deleteDie(Dwarf_Die die)
 {
-	/* Free the Die's attributes. */
+	/* Delete the DIE's attributes. */
 	Dwarf_Attribute attr = die->_attribute;
 	while (NULL != attr) {
 		Dwarf_Attribute next = attr->_nextAttr;
@@ -291,7 +293,7 @@ deleteDie(Dwarf_Die die)
 		attr = next;
 	}
 
-	/* Free the Die's siblings and children. */
+	/* Delete the DIE's siblings and children. */
 	if (NULL != die->_sibling) {
 		deleteDie(die->_sibling);
 	}
@@ -363,8 +365,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 	if (2 <= data.length()) {
 		if ("ar" == data.substr(0, 2)) {
 			str_vect arrayInfo = split(data, ';');
-			/*
-			 * arrayInfo will be in the form: ar(INDEX_ID);(LOWER_BOUND);(UPPER_BOUND);(ARRAY_TYPE)
+			/* arrayInfo is in the form: ar(INDEX_ID);(LOWER_BOUND);(UPPER_BOUND);(ARRAY_TYPE)
 			 * arrayInfo[0] : ar + subrange type
 			 * arrayInfo[1] : lower bound
 			 * arrayInfo[2] : upper bound
@@ -373,7 +374,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 			/* Populate array */
 			Dwarf_Attribute type = new Dwarf_Attribute_s();
 
-			/* Create a DIE to hold info about the subrange type */
+			/* Create a DIE to hold info about the subrange type. */
 			Dwarf_Die newDie = new Dwarf_Die_s();
 			Dwarf_Attribute subrangeType = new Dwarf_Attribute_s();
 			Dwarf_Attribute subrangeUpperBound = new Dwarf_Attribute_s();
@@ -389,7 +390,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 				type->_refdata = 0;
 				type->_ref = NULL;
 
-				/* Add it to the list of attributes to populate */
+				/* Add the new attribute to the list of attributes to populate. */
 				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 				currentDie->_attribute = type;
 				newDie->_tag = DW_TAG_subrange_type;
@@ -399,7 +400,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 				newDie->_child = NULL;
 				newDie->_context = Dwarf_CU_Context::_currentCU;
 
-				/* subrangeType is of the type sizetype, which is a built-in type (-37)*/
+				/* subrangeType is of the type sizetype, a built-in type. (-37)*/
 				subrangeType->_type = DW_AT_type;
 				subrangeType->_nextAttr = subrangeUpperBound;
 				subrangeType->_form = DW_FORM_ref1;
@@ -407,7 +408,7 @@ parseArray(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 				subrangeType->_refdata = 0;
 				subrangeType->_ref = NULL;
 
-				/* Add subrangeType to the list of refs to populate in a second pass */
+				/* Add subrangeType to the list of refs to populate in a second pass. */
 				refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)-37, (Dwarf_Attribute)subrangeType));
 
 				subrangeUpperBound->_type = DW_AT_upper_bound;
@@ -441,10 +442,10 @@ parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 	int ret = DW_DLV_OK;
 	int index = toInt(data) * -1;
 
-	/* Populate the die according to the base type specified */
+	/* Populate the DIE according to the base type specified. */
 	if (!BUILT_IN_TYPES[index].empty()) {
-	Dwarf_Attribute name = new Dwarf_Attribute_s();
-	Dwarf_Attribute size = new Dwarf_Attribute_s();
+		Dwarf_Attribute name = new Dwarf_Attribute_s();
+		Dwarf_Attribute size = new Dwarf_Attribute_s();
 		if ((NULL == name) || (NULL == size)) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
@@ -462,7 +463,7 @@ parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 			size->_nextAttr = NULL;
 			size->_form = DW_FORM_udata;
 
-			/* Divide size in bits by 8bits/byte to get size in bytes */
+			/* Divide size in bits by 8 bits/byte to get size in bytes. */
 			size->_sdata = 0;
 			size->_udata = BUILT_IN_TYPE_SIZES[index] / 8;
 			size->_refdata = 0;
@@ -471,7 +472,7 @@ parseBaseType(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 			currentDie->_attribute = name;
 		}
 	} else {
-		/* It is a redundant built-in type, so we create a typedef instead */
+		/* It is a redundant built-in type; create a typedef instead. */
 		string builtInType = "0";
 		switch (index) {
 		case 6:
@@ -520,7 +521,7 @@ static int
 parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	/* Give the DIE a type attribute */
+	/* Give the DIE a type attribute. */
 	Dwarf_Attribute type = new Dwarf_Attribute_s();
 	if (NULL == type) {
 		ret = DW_DLV_ERROR;
@@ -534,7 +535,7 @@ parseNamelessReference(const string data, Dwarf_Die currentDie, Dwarf_Error *err
 		type->_refdata = 0;
 		type->_ref = NULL;
 
-		/* Add the attribute to the list of refs to be populated */
+		/* Add the attribute to the list of refs to be populated. */
 		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 
 		currentDie->_attribute = type;
@@ -561,19 +562,19 @@ parseDeclarationLine(const string data,
 {
 	Dwarf_Half ret = DW_TAG_unknown;
 
-	/* split the declaration into the name and the information about the declaration */
+	/* Split the declaration into the name and the information about the declaration. */
 	size_t indexOfFirstColon = data.find_first_of(':');
 	if (string::npos != indexOfFirstColon) {
 		*declarationData = stripLeading(data.substr(indexOfFirstColon), ':');
 		*name = data.substr(0, indexOfFirstColon);
 
 		if ((0 == (*name).size()) && ('t' == (*declarationData).at(0))) {
-			/* Nameless typedef declaration */
+			/* This typedef declaration is nameless. */
 			str_vect tmp = split(*declarationData, '=');
 			*typeID = extractTypeID(tmp[0]);
 			string type = tmp[1];
 
-			/* Parse the data string to get the type of the expression */
+			/* Parse the data string to get the type of the expression. */
 			switch (type[0]) {
 			case '-': /* Built-in type */
 				ret = DW_TAG_base_type;
@@ -609,7 +610,7 @@ parseDeclarationLine(const string data,
 					size_t indexOfFirstNonInteger = sizeAndType.find_first_not_of("1234567890");
 					members = stripLeading(members.substr(indexOfFirstParenthesis), '(');
 					*format = NEW_FORMAT;
-					/* Check if the declaration is for a class, structure or union */
+					/* Check if the declaration is for a class, structure, or union. */
 					switch(sizeAndType[indexOfFirstNonInteger]) {
 					case 'c':
 						ret = DW_TAG_class_type;
@@ -660,20 +661,20 @@ parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
 	string name;
 	string members;
 
-	/* get the type of the data of the line being parsed */
+	/* Get the type of the data of the parsed line. */
 	Dwarf_Half tag = parseDeclarationLine(line, &typeID, &format, &declarationData, &name);
 
-	/* Parse the line further based on the type of declaration */
+	/* Parse the line further based on the type of the declaration. */
 	if (DW_TAG_unknown != tag) {
 		Dwarf_Die newDie = NULL;
 
-		/* Search for the die in createdDies before creating a new one */
+		/* Search for the DIE in createdDies before creating a new one. */
 		die_map::iterator existingDieEntry = createdDies.find(typeID);
 		if (createdDies.end() != existingDieEntry) {
 			newDie = existingDieEntry->second.second;
 		}
 
-		/* Create a new die, if it wasn't previously created */
+		/* Create a new DIE only if it wasn't previously created. */
 		if (NULL == newDie) {
 			newDie = new Dwarf_Die_s();
 			if (NULL == newDie) {
@@ -688,17 +689,17 @@ parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
 				newDie->_context = Dwarf_CU_Context::_currentCU;
 				newDie->_attribute = NULL;
 
-				/* Insert the DIE into createdDies */
+				/* Insert the new DIE into createdDies. */
 				createdDies[typeID] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
 				refNumber = refNumber + 1;
 
-				/* If the current CU die doesn't have a child, make the first new newDie the child */
+				/* If the current CU DIE doesn't have a child then make the first new new DIE the child. */
 				if (NULL == Dwarf_CU_Context::_currentCU->_die->_child) {
 					Dwarf_CU_Context::_currentCU->_die->_child = newDie;
 				}
 
-				/* Set the last created die's sibling to be this die*/
+				/* Set the last created DIE's sibling to be this DIE. */
 				if (NULL != _lastDie) {
 					_lastDie->_sibling = newDie;
 					newDie->_previous = _lastDie;
@@ -710,11 +711,11 @@ parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
 		} else if (DW_TAG_unknown != tag) {
-			/* Do some preliminary parsing of the declarationData */
+			/* Do some preliminary parsing of the declarationData. */
 			str_vect tmp = split(declarationData, '=');
 			members = tmp[1];
 
-			/* Populate the dies */
+			/* Populate the dies. */
 			switch (tag) {
 			case DW_TAG_array_type:
 				ret = parseArray(members, newDie, error);
@@ -735,7 +736,7 @@ parseStabstringDeclarationIntoDwarfDie(const string line, Dwarf_Error *error)
 				ret = parseEnum(members, name, newDie, error);
 				break;
 			case DW_TAG_typedef:
-				/* Note: AIX label is the same as DWARF typedef */
+				/* Note: AIX label is the same as DWARF typedef. */
 				ret = parseTypeDef(members, name, newDie, error);
 				break;
 			case DW_TAG_structure_type:
@@ -767,7 +768,7 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 	string validData = "";
 	string fileName = "";
 
-	/* state machine processes each stage of the input
+	/* This state machine processes each stage of the input:
 	 * 0: has not reached the start of a new file yet
 	 * 1: reached the start of a new file, parse to get info about the file, populate Dwarf_CU_Context::_currentCU
  	 * 2: inside of a file, parse to get information to populate dies, check if end of file reached
@@ -781,16 +782,16 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + START_OF_FILE[1].length());
 				size_t indexOfFile = dataAfterNumber.find(START_OF_FILE[2]);
 				if (string::npos != indexOfFile) {
-					/* Check that there are only whitespaces between the words */
+					/* Verify that there are only whitespaces between the words. */
 					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
-						/* Populate the attribute references and nested classes from the previous file that we parsed */
+						/* Populate the attribute references and nested classes from the previous file that we parsed. */
 						populateAttributeReferences();
 						populateNestedClasses();
 
-						/* Remove DIEs which have no children, no size, and are not referred to by any other DIE */
+						/* Remove DIEs which have no children, no size, and are not referred to by any other DIE. */
 						removeUselessStubs();
 
-						/* Clear the unordered_maps we maintained from the last file */
+						/* Clear the unordered_maps we maintained from the last file. */
 						createdDies.clear();
 						nestedClassesToPopulate.clear();
 						refsToPopulate.clear();
@@ -806,20 +807,20 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 
 			fileName = strip(data.substr(index+fileNameIndex), '\n');
 
-			/* Check the file has not been parsed through before */
+			/* Verify that the file has not been parsed through before. */
 			if (filesAdded.end() == filesAdded.find(fileName)) {
 				/* Add the file to the list of files */
 				Dwarf_CU_Context::_fileList.push_back(fileName);
 
 				filesAdded.insert(fileName);
 
-				/* Create one compilation unit context per file */
+				/* Create one compilation unit context per file. */
 				Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
 
-				/* Create a DIE for the CU */
+				/* Create a DIE for the CU .*/
 				Dwarf_Die newDie = new Dwarf_Die_s();
 
-				/* Create name attribute for the DIE */
+				/* Create name attribute for the DIE. */
 				Dwarf_Attribute name = new Dwarf_Attribute_s();
 
 				if ((NULL == newCU) || (NULL == newDie) || (NULL == name)) {
@@ -862,8 +863,8 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 					_startNewFile = 2;
 				}
 			} else {
-				/* The file was already parsed through previously, perhaps in another .so file */
-				/* Skip parsing this file */
+				/* The file was already parsed through previously, perhaps in another .so file. */
+				/* Skip parsing this file. */
 				_startNewFile = 0;
 			}
 		}
@@ -876,9 +877,9 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + DECL_FILE[1].length());
 				size_t indexOfDecl = dataAfterNumber.find(DECL_FILE[2]);
 				if (string::npos != indexOfDecl) {
-					/* Check that there are only whitespaces between the words */
+					/* Verify that there are only whitespaces between the words. */
 					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfDecl == dataAfterNumber.find_first_not_of(' '))) {
-						/* Parse the data line to populate a die */
+						/* Parse the data line to populate a DIE. */
 						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
 						size_t index = dataAfterDecl.find_first_not_of(' ');
 						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
@@ -887,13 +888,13 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 					}
 				}
 			} else {
-				/* Check if it is the declaration for the start of another file, as the previous file may have contained no symbols */
+				/* Check if it is the declaration for the start of another file as the previous file may have contained no symbols */
 				indexOfNumber = dataAfterDebug.find(START_OF_FILE[1]);
 				if (string::npos != indexOfNumber) {
 					string dataAfterNumber = dataAfterDebug.substr(indexOfNumber+START_OF_FILE[1].length());
 					size_t indexOfFile = dataAfterNumber.find(START_OF_FILE[2]);
 					if (string::npos != indexOfFile) {
-						/* Check that there are only whitespaces between the words */
+						/* Verify that there are only whitespaces between the words */
 						if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfFile == dataAfterNumber.find_first_not_of(' '))) {
 							_startNewFile = 1;
 						}
@@ -902,7 +903,9 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 			}
 		}
 	} else if (3 == _startNewFile) {
-		/* Stops parsing whenever the end of the decl section is reached, since all the declarations in a file are guaranteed to be in a continuous block */
+		/* Stop parsing whenever the end of the decl section is reached because all of the
+		 * declarations in a file are guaranteed to be in a continuous block.
+		 */
 		size_t indexOfDebug = data.find(DECL_FILE[0]);
 		if (string::npos != indexOfDebug) {
 			string dataAfterDebug = data.substr(indexOfDebug + DECL_FILE[0].length());
@@ -911,9 +914,9 @@ parseSymbolTable(const char *line, Dwarf_Error *error)
 				string dataAfterNumber = dataAfterDebug.substr(indexOfNumber + DECL_FILE[1].length());
 				size_t indexOfDecl = dataAfterNumber.find(DECL_FILE[2]);
 				if (string::npos != indexOfDecl) {
-					/* Check that there are only whitespaces between the words */
+					/* Verify that there are only whitespaces between the words/ */
 					if ((indexOfNumber == dataAfterDebug.find_first_not_of(' ')) && (indexOfDecl == dataAfterNumber.find_first_not_of(' '))) {
-						/* Parse the data line to populate a die */
+						/* Parse the data line to populate a DIE. */
 						string dataAfterDecl = dataAfterNumber.substr(indexOfDecl + DECL_FILE[2].length());
 						size_t index = dataAfterDecl.find_first_not_of(' ');
 						validData.assign(strip(dataAfterDecl.substr(index), '\n'));
@@ -951,22 +954,22 @@ parseEnum(const string data,
 	Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	/* Parse the declaration line for the required fields */
+	/* Parse the declaration line for the required fields. */
 	string members = stripLeading(data, 'e');
 	size_t indexOfFirstNonInteger = members.find_first_not_of("123456790-");
 	if (string::npos != indexOfFirstNonInteger) {
 		members = stripLeading(members.substr(indexOfFirstNonInteger), ':');
 		members = stripTrailing(members, ';');
 
-		/* Check if the enum was generated a name by AIX, and if so, delete the generated name */
+		/* Check if the enum was a generated name by AIX, and if so, delete the generated name. */
 		if ((0 == strcmp("__", dieName.substr(0, 2).c_str())) && (string::npos == dieName.substr(2).find_first_not_of("1234567890"))) {
-			/* generated names are of the form __(INTEGER) */
+			/* Generated names are of the form __(INTEGER). */
 			dieName.assign("");
 		}
 		ret = setDieAttributes(dieName, 4, currentDie, error);
 
 		if (DW_DLV_OK == ret) {
-			/* Create new dies for each of the enumerators */
+			/* Create new DIEs for each of the enumerators. */
 			str_vect enumerators = split(members, ',');
 
 			Dwarf_Die newDie = new Dwarf_Die_s();
@@ -1004,7 +1007,7 @@ parseEnum(const string data,
 					}
 				}
 				if (DW_DLV_OK == ret) {
-					/* Create name and value attributes and assign them to each die */
+					/* Create name and value attributes and assign them to each DIE. */
 					str_vect tmp;
 					newDie = currentDie->_child;
 					for (str_vect::iterator it = enumerators.begin(); it != enumerators.end(); ++it) {
@@ -1058,11 +1061,11 @@ static int
 parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	/* field[0] will be the name, field[1] will be field attributes */
+	/* field[0] is the name and field[1] is field attributes. */
 	str_vect field = split(data, ':');
 	str_vect fieldAttributes = split(field[1], ',');
 
-	/* Create attributes */
+	/* Create attributes. */
 	Dwarf_Attribute name = new Dwarf_Attribute_s();
 	Dwarf_Attribute type = new Dwarf_Attribute_s();
 	Dwarf_Attribute declFile = new Dwarf_Attribute_s();
@@ -1090,22 +1093,22 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 		type->_refdata = 0;
 		type->_ref = NULL;
 
-		/* push the type into a vector to populate in a second pass */
+		/* Push the type into a vector to populate in a second pass. */
 		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 		declFile->_type = DW_AT_decl_file;
 		declFile->_form = DW_FORM_udata;
 		declFile->_nextAttr = NULL;
 		declFile->_sdata = 0;
-		/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+		/* The declaration file number starts at 1. */
 		declFile->_udata = Dwarf_CU_Context::_fileList.size();
 		declFile->_refdata = 0;
 		declFile->_ref = NULL;
 
-		/* Do a preliminary check if the field requires a bitSize or not */
+		/* Do a preliminary check of if the field requires a bitSize or not. */
 		bool bitSizeNeeded = true;
 		if (0 > ID) {
 			if (toInt(fieldAttributes[2]) == BUILT_IN_TYPE_SIZES[ID * -1]) {
-				/* If the type is built-in and sizes match, then bitSize is not needed */
+				/* If the type is built-in and the sizes match, then bitSize is not needed. */
 				bitSizeNeeded = false;
 			}
 		}
@@ -1113,7 +1116,7 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 			Dwarf_Attribute bitSize = new Dwarf_Attribute_s();
 			declFile->_nextAttr = bitSize;
 
-			/* Set the bit size */
+			/* Set the bit size. */
 			bitSize->_type = DW_AT_bit_size;
 			bitSize->_form = DW_FORM_udata;
 			bitSize->_nextAttr = NULL;
@@ -1142,21 +1145,21 @@ parseOldFormat(const string data,
 	Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	/* Get rid of the first index of data, as it specifies only if declaration is for struct or union */
+	/* Get rid of the first index of data. It only specifies if the declaration is for a struct or union. */
 	string unparsedMembers = data.substr(1);
 	size_t indexOfFirstNonInteger = unparsedMembers.find_first_not_of("1234567890");
 	if (string::npos != indexOfFirstNonInteger) {
 		int size = toInt(unparsedMembers.substr(0, indexOfFirstNonInteger));
 		unparsedMembers = unparsedMembers.substr(indexOfFirstNonInteger);
 
-		/* Set DIE attributes */
+		/* Set the DIE attributes. */
 		ret = setDieAttributes(dieName, size, currentDie, error);
 
 		if (DW_DLV_OK == ret) {
-			/* Get all the members of the structure */
+			/* Get all of the members of the structure. */
 			str_vect members = split(unparsedMembers, ';');
 
-			/* Get the last child of the die */
+			/* Get the last child of the DIE. */
 			Dwarf_Die lastChild = currentDie->_child;
 			if (NULL != lastChild) {
 				while (NULL != lastChild->_sibling) {
@@ -1182,7 +1185,7 @@ parseOldFormat(const string data,
 						ret = parseFields(members[i], newDie, error);
 
 						if (DW_DLV_OK == ret) {
-							/* Set the member as a child of the parent die */
+							/* Set the member to be a child of the parent DIE. */
 							if (NULL == lastChild) {
 								currentDie->_child = newDie;
 							} else {
@@ -1191,7 +1194,6 @@ parseOldFormat(const string data,
 							}
 							lastChild = newDie;
 						} else {
-							/* Delete the die to make sure there's no memory leak */
 							deleteDie(newDie);
 						}
 					}
@@ -1227,13 +1229,15 @@ parseNewFormat(const string data,
 
 			unsigned int size = toInt(sizeTypeAndInheritance.substr(0, indexOfFirstNonInteger));
 
-			/* If there is a parent class, create a DW_TAG_inheritance DIE. The numbers after the colon denote the ID of the parent class this class inherits from */
+			/* If there is a parent class, create a DIE with tag DW_TAG_inheritance.
+			 * The numbers after the colon denote the ID of the parent class this class inherits from.
+			 */
 			size_t indexOfColon = sizeTypeAndInheritance.find(':');
 			if (string::npos != indexOfColon) {
-				/* A parent class exists */
+				/* A parent class exists. */
 				int parentClassID = toInt(stripLeading(sizeTypeAndInheritance.substr(indexOfColon), ':'));
 
-				/* Create a Dwarf Die to record the inheritance */
+				/* Create a DIE to record the inheritance. */
 				Dwarf_Die inheritanceDie = new Dwarf_Die_s();
 				Dwarf_Attribute type = new Dwarf_Attribute_s();
 
@@ -1257,7 +1261,7 @@ parseNewFormat(const string data,
 					type->_refdata = 0;
 					type->_ref = NULL;
 
-					/* push the type into a vector to populate in a second pass */
+					/* Push the type ref into a vector to populate in a second pass. */
 					refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)parentClassID, (Dwarf_Attribute)type));
 
 					if (NULL == currentDie->_child) {
@@ -1272,12 +1276,12 @@ parseNewFormat(const string data,
 			}
 
 			if (DW_DLV_OK == ret) {
-			/* Set DIE attributes */
+			/* Set DIE attributes. */
 			ret = setDieAttributes(dieName, size, currentDie, error);
 			}
 
 			if (DW_DLV_OK == ret) {
-				/* Parse the members */
+				/* Parse the members. */
 				str_vect members = split(unparsedMembers, ';');
 
 				Dwarf_Die lastChild = currentDie->_child;
@@ -1302,22 +1306,18 @@ parseNewFormat(const string data,
 							newDie->_attribute = NULL;
 							if (2 <= members[i].size()) {
 								if (string::npos != members[i].find_first_of('[')) {
-									/* The member is a member function. We will delete the DIE. There is no point in creating
-									 * attributes or even keeping this member, as it will get skipped over in the DwarfScanner.
-									 */
+									/* The member is a member function. We will delete the DIE as functions are not necessary. */
 									deleteDie(newDie);
 								} else if (string::npos != members[i].find_first_of(']')) {
-									/* The member is a friend function. We will delete the DIE. There is no point in creating
-									 * attributes or even keeping this member, as it will get skipped over in the DwarfScanner.
-									 */
+									/* The member is a friend function. We will delete the DIE as functions are not necessary. */
 									deleteDie(newDie);
 								} else if (string::npos != members[i].find_first_of(':')) {
-									/* Check to see if valid data member */
+									/* Check to see if the data member is valid. */
 									size_t indexOfFirstColon  = members[i].find_first_of(':');
 									if (string::npos != indexOfFirstColon) {
 										ret = parseFields(members[i].substr(indexOfFirstColon+1), newDie, error);
 										if (DW_DLV_OK == ret) {
-											/* Set the member as a child of the parent die */
+											/* Set the member as a child of the parent die. */
 											if (NULL == lastChild) {
 												currentDie->_child = newDie;
 											} else {
@@ -1326,24 +1326,21 @@ parseNewFormat(const string data,
 											}
 											lastChild = newDie;
 										} else {
-											/* To prevent a memory leak, delete the new die */
 											deleteDie(newDie);
 										}
 									} else {
-										/* It's not a valid data member */
+										/* Delete DIE's for invalid data members. */
 										deleteDie(newDie);
 									}
 								} else if ('N' == members[i].at(1)) {
-									/* Check to see if valid nested class */
-									/* Get the ID of the nested class, which will be in tmp[1] */
+									/* Verift that the nested class is valid. */
+									/* Get the ID of the nested class from tmp[1]. */
 									str_vect tmp = split(members[i], 'N');
 									int ID = toInt(tmp[1]);
 									nestedClassesToPopulate.push_back(make_pair<int, Dwarf_Die>((int)ID, (Dwarf_Die)currentDie));
 
-									/* To prevent a memory leak, delete the new die */
 									deleteDie(newDie);
 								} else {
-									/* delete the new die, to prevent a memory leak */
 									deleteDie(newDie);
 								}
 							}
@@ -1376,7 +1373,7 @@ parseTypeDef(const string data,
 	int ret = DW_DLV_OK;
 	int ID = 0;
 
-	/* Set attributes for name, type, declaring file */
+	/* Set attributes for name, type, and declaring file. */
 	Dwarf_Attribute type = new Dwarf_Attribute_s();
 	Dwarf_Attribute name  = new Dwarf_Attribute_s();
 	Dwarf_Attribute declFile = new Dwarf_Attribute_s();
@@ -1390,7 +1387,7 @@ parseTypeDef(const string data,
 		type->_form = DW_FORM_ref1;
 		type->_nextAttr = name;
 
-		/* AIX classifies int64_t and uint64_t as intptr_t (IDATA) and uintptr_t (UDATA) respectively */
+		/* AIX classifies int64_t and uint64_t as intptr_t (IDATA) and uintptr_t (UDATA) respectively. */
 		if ((0 == strcmp("int64_t", dieName.c_str())) || (0 == strcmp("uint64_t", dieName.c_str()))) {
 			if (-36 == toInt(data)) {
 				ID = -32;
@@ -1407,7 +1404,7 @@ parseTypeDef(const string data,
 		type->_refdata = 0;
 		type->_ref = NULL;
 
-		/* Add type to the list of refs to populate on a second pass */
+		/* Add the new type attribute to the list of refs to populate on a second pass. */
 		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 		name->_type = DW_AT_name;
 		name->_form = DW_FORM_string;
@@ -1422,7 +1419,6 @@ parseTypeDef(const string data,
 		declLine->_nextAttr = declFile;
 		declLine->_form = DW_FORM_udata;
 		declLine->_sdata = 0;
-		/* DwarfScanner uses declLine+declFile to determine Type uniqueness */
 		declLine->_udata = declarationLine;
 		declLine->_refdata = 0;
 		declLine->_ref = NULL;
@@ -1436,10 +1432,10 @@ parseTypeDef(const string data,
 		declFile->_refdata = 0;
 		declFile->_ref = NULL;
 		if (!Dwarf_CU_Context::_fileList.empty()) {
-			/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+			/* The declaration file number starts at 1. */
 			declFile->_udata = Dwarf_CU_Context::_fileList.size();
 		} else {
-			/* If there is no declaring file, delete declFile and declLine */
+			/* If there is no declaring file then delete the attributes for the declFile and declLine. */
 			name->_nextAttr = NULL;
 			delete(declFile);
 			delete(declLine);
@@ -1456,28 +1452,28 @@ parseTypeDef(const string data,
 static void
 populateAttributeReferences()
 {
-	/* Iterate through the vector containing all attributes to be populated*/
+	/* Iterate through the vector containing all attributes to be populated. */
 	for (unsigned int i = 0; i < refsToPopulate.size(); i++) {
 		Dwarf_Attribute tmp = refsToPopulate[i].second;
 
-		/* If the reference is to a built-in type, search the unordered_map containing built-in types */
+		/* If the reference is to a built-in type then search the unordered_map containing built-in types. */
 		if (0 > refsToPopulate[i].first) {
-			/* Search for the reference in the die map */
+			/* Search for the reference in the DIE map. */
 			die_map::iterator existingDieEntry = builtInDies.find(refsToPopulate[i].first);
 			if (builtInDies.end() != existingDieEntry) {
 				tmp->_ref = existingDieEntry->second.second;
 
-				/* Set _refdata to the correct value and insert the reference into refMap*/
+				/* Set _refdata to the correct value and insert the reference into refMap. */
 				tmp->_refdata = existingDieEntry->second.first;
 				Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)existingDieEntry->second.first, (Dwarf_Die)existingDieEntry->second.second));
 			}
 		} else {
-			/* Search for the reference in the die map */
+			/* Search for the reference in the DIE map. */
 			die_map::iterator existingDieEntry = createdDies.find(refsToPopulate[i].first);
 			if (createdDies.end() != existingDieEntry) {
 				tmp->_ref = existingDieEntry->second.second;
 
-				/* Set _refdata to the correct value and insert the reference into refMap*/
+				/* Set _refdata to the correct value and insert the reference into refMap. */
 				tmp->_refdata = existingDieEntry->second.first;
 				Dwarf_Die_s::refMap.insert(make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)existingDieEntry->second.first, (Dwarf_Die)existingDieEntry->second.second));
 			}
@@ -1494,7 +1490,7 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 	int ret = DW_DLV_OK;
 	Dwarf_Die previousDie = NULL;
 
-	/* Populate the base types */
+	/* Populate the base types. */
 	for (unsigned int i = 1; i <= NUM_BUILT_IN_TYPES; i++) {
 		if ((DW_DLV_OK == ret) && (!BUILT_IN_TYPES[i].empty())) {
 			Dwarf_Die newDie = new Dwarf_Die_s();
@@ -1530,7 +1526,7 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 					size->_nextAttr = NULL;
 					size->_sdata = 0;
 
-					/* Divide size in bits by 8bits/byte to get size in bytes */
+					/* Divide the size in bits by 8 bits per byte to get the size in bytes */
 					size->_udata = BUILT_IN_TYPE_SIZES[i] / 8;
 					size->_refdata = 0;
 					size->_ref = NULL;
@@ -1545,16 +1541,17 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 					}
 					previousDie = newDie;
 
-					/* Insert the newly created DIE into the unordered map for use later on */
+					/* Insert the newly created DIE into the unordered_map for lookup by offset later on. */
 					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
-					/* Increment the refNumber */
+					/* Increment the refNumber. */
 					refNumber = refNumber + 1;
 				}
 			}
 		}
 	}
-	/* For redundant types, create typedefs that refer to the base types created above */
+
+	/* For redundant types, create typedefs that refer to the base types created above. */
 	for (unsigned int i = 0; i <= NUM_BUILT_IN_TYPES; i++) {
 		if ((DW_DLV_OK == ret) && (!BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[i].empty())) {
 			Dwarf_Die newDie = new Dwarf_Die_s();
@@ -1607,20 +1604,19 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 				ret = parseTypeDef(data, BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[i], newDie, error);
 
 				if (DW_DLV_OK == ret) {
-					/* Add to the linked list of DIEs */
+					/* Add the new child to the linked list of DIEs. */
 					if (NULL !=  previousDie) {
 						previousDie->_sibling = newDie;
 						newDie->_previous = previousDie;
 					}
 					previousDie = newDie;
 
-					/* Insert the typedef into the unordered map for use later on */
+					/* Insert the typedef into the unordered_map for lookup by offset later on. */
 					builtInDies[i * -1] = make_pair<Dwarf_Off, Dwarf_Die>((Dwarf_Off)refNumber, (Dwarf_Die)newDie);
 
-					/* Increment the refNumber */
+					/* Increment the refNumber to assign associate a unique number with each DIE. */
 					refNumber = refNumber + 1;
 				} else {
-					/* Delete to prevent a memory leak */
 					delete(newDie);
 				}
 			}
@@ -1635,7 +1631,7 @@ populateBuiltInTypeDies(Dwarf_Error *error)
 static void
 populateNestedClasses()
 {
-	/* Iterate through all the nested classes found */
+	/* Iterate through all the nested classes found. */
 	for (unsigned int i = 0; i < nestedClassesToPopulate.size(); i++) {
 		Dwarf_Die parent = nestedClassesToPopulate[i].second;
 		Dwarf_Die nestedClass = NULL;
@@ -1644,7 +1640,7 @@ populateNestedClasses()
 			if (createdDies.end() != existingDieEntry) {
 				nestedClass = existingDieEntry->second.second;
 				if (NULL != nestedClass) {
-					/* Get the last child of the die */
+					/* Get the last child of the DIE. */
 					Dwarf_Die lastChild = parent->_child;
 					if (NULL != lastChild) {
 						while (NULL != lastChild->_sibling) {
@@ -1652,12 +1648,12 @@ populateNestedClasses()
 						}
 					}
 
-					/* In case the current parent of nestedClass has nestedClass as the child, set it to be the sibling of nestedClass */
+					/* In case the current parent of nestedClass has nestedClass as the child, set it to be the sibling of nestedClass. */
 					if (nestedClass == nestedClass->_parent->_child) {
 						nestedClass->_parent->_child = nestedClass->_sibling;
 					}
 
-					/* Modify the linked list of DIEs to remove the nested class */
+					/* Remove the nested class from the linked list of DIEs. */
 					if (NULL != nestedClass->_previous) {
 						nestedClass->_previous->_sibling = nestedClass->_sibling;
 					}
@@ -1667,7 +1663,7 @@ populateNestedClasses()
 					nestedClass->_sibling = NULL;
 					nestedClass->_previous = NULL;
 
-					/* Set the nested class DIE to be a child of the parent */
+					/* Set the nested class DIE to be a child of its parent. */
 					if (NULL == lastChild) {
 						parent->_child = nestedClass;
 					} else {
@@ -1689,10 +1685,10 @@ removeUselessStubs()
 		Dwarf_Die dieToCheck = it->second.second;
 		Dwarf_Off refNumberToCheck = it->second.first;
 		if (Dwarf_Die_s::refMap.end() == Dwarf_Die_s::refMap.find(refNumberToCheck)) {
-			/* For now, only get rid of empty struct/union/class DIEs */
+			/* Het rid of empty struct/union/class DIEs. */
 			if ((DW_TAG_class_type == dieToCheck->_tag) || (DW_TAG_union_type == dieToCheck->_tag) || (DW_TAG_structure_type == dieToCheck->_tag)) {
 				if ((Dwarf_CU_Context::_currentCU->_die == dieToCheck->_parent) && (NULL == dieToCheck->_child)) {
-					/* If the DIE has a size of zero, has no children, and is not being referred to by any other DIE, it's useless */
+					/* If the DIE has a size of zero, has no children, and is not being referred to by any other DIE then it's useless. */
 					bool zeroSize = true;
 					Dwarf_Attribute attributeToCheck = dieToCheck->_attribute;
 					while (NULL != attributeToCheck) {
@@ -1705,7 +1701,7 @@ removeUselessStubs()
 						attributeToCheck = attributeToCheck->_nextAttr;
 					}
 					if (zeroSize) {
-						/* Remove the DIE and delete it */
+						/* Remove the DIE and delete it. */
 						if (dieToCheck->_parent->_child == dieToCheck) {
 							dieToCheck->_parent->_child = dieToCheck->_sibling;
 						}
@@ -1720,8 +1716,6 @@ removeUselessStubs()
 				}
 			}
 		}
-
-		/* Have to increment iterator this way or it won't compile on AIX */
 		it++;
 	}
 }
@@ -1739,7 +1733,7 @@ setDieAttributes(const string dieName,
 	Dwarf_Error *error)
 {
 	int ret = DW_DLV_OK;
-	/* If the die already had attributes, update them */
+	/* If the die already had attributes then update them. */
 	if (NULL != currentDie->_attribute) {
 		Dwarf_Attribute tmp = currentDie->_attribute;
 		while (NULL != tmp) {
@@ -1748,14 +1742,14 @@ setDieAttributes(const string dieName,
 				tmp->_udata = dieSize;
 				break;
 			case DW_AT_decl_file:
-				/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+				/* The declaration file number starts at 1. */
 				tmp->_udata = Dwarf_CU_Context::_fileList.size();
 				break;
 			}
 			tmp = tmp->_nextAttr;
 		}
 	} else {
-		/* Create attributes for name, size, declaring file. */
+		/* Create attributes for name, size, and declaring file. */
 		Dwarf_Attribute name  = new Dwarf_Attribute_s();
 		Dwarf_Attribute size = new Dwarf_Attribute_s();
 		Dwarf_Attribute declFile = new Dwarf_Attribute_s();
@@ -1786,7 +1780,7 @@ setDieAttributes(const string dieName,
 			declFile->_nextAttr = declLine;
 			declFile->_form = DW_FORM_udata;
 			declFile->_sdata = 0;
-			/* The declaration file number cannot be zero, as DwarfScanner subtracts by one to get the index to the filename string */
+			/* The declaration file number starts at 1. */
 			declFile->_udata = Dwarf_CU_Context::_fileList.size();
 			declFile->_refdata = 0;
 			declFile->_ref = NULL;
@@ -1795,13 +1789,12 @@ setDieAttributes(const string dieName,
 			declLine->_nextAttr = NULL;
 			declLine->_form = DW_FORM_udata;
 			declLine->_sdata = 0;
-			/* DwarfScanner uses declLine+declFile to determine Type uniqueness */
 			declLine->_udata = declarationLine;
 			declLine->_refdata = 0;
 			declLine->_ref = NULL;
 			currentDie->_attribute = name;
 
-			/* Increment the number of the declaration line */
+			/* Increment the number of the declaration line. */
 			declarationLine = declarationLine + 1;
 		}
 	}
@@ -1809,7 +1802,7 @@ setDieAttributes(const string dieName,
 }
 
 /**
- * Splits the string s on delimeters in argument delim and writes the output to
+ * Splits the string 'data' on delimeters in argument 'delim' and writes the output to
  * elements.
  *
  * @param[in]  data	  : string that needs to be split

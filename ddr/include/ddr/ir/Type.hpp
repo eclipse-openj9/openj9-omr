@@ -19,17 +19,19 @@
 #ifndef TYPE_HPP
 #define TYPE_HPP
 
+#include "ddr/config.hpp"
+
 #include <set>
 #include <string>
 
 #include "ddr/blobgen/genBlob.hpp"
-#include "ddr/config.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
 #include "ddr/ir/TypeVisitor.hpp"
 #include "ddr/scanner/Scanner.hpp"
 
 using std::set;
 using std::string;
+using std::vector;
 
 class ClassUDT;
 class ClassType;
@@ -44,7 +46,7 @@ struct FieldOverride;
 class Type
 {
 public:
-	std::string _name;
+	string _name;
 	size_t _sizeOf; /* Size of type in bytes */
 	bool _isDuplicate;
 
@@ -65,7 +67,7 @@ public:
 	virtual size_t getArrayDimensions();
 	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
-	virtual std::vector<UDT *> *getSubUDTS();
+	virtual vector<UDT *> *getSubUDTS();
 	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
 	virtual Type *getBaseType();
 

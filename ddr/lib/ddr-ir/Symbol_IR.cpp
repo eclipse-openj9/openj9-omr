@@ -16,6 +16,8 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+#include "ddr/config.hpp"
+
 #include "ddr/ir/Symbol_IR.hpp"
 
 #include <assert.h>
@@ -27,7 +29,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ddr/config.hpp"
 #include "ddr/ir/ClassType.hpp"
 #include "ddr/ir/ClassUDT.hpp"
 #include "ddr/ir/EnumUDT.hpp"

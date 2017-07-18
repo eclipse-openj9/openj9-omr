@@ -22,10 +22,13 @@
 #include <string>
 #include <vector>
 
+using std::string;
+using std::vector;
+
 class Modifiers
 {
 public:
-	std::vector<size_t> _arrayLengths;
+	vector<size_t> _arrayLengths;
 	int _modifierFlags;
 	size_t _offset;
 	size_t _pointerCount;
@@ -38,13 +41,13 @@ public:
 	static const int UNALIGNED_TYPE = 4;
 	static const int RESTRICT_TYPE = 8;
 	static const int SHARED_TYPE = 16;
-	static const std::string MODIFIER_NAMES[];
+	static const string MODIFIER_NAMES[];
 
 	Modifiers();
 	~Modifiers();
 
-	std::string getPointerType();
-	std::string getModifierNames();
+	string getPointerType();
+	string getModifierNames();
 	void addArrayDimension(size_t length);
 	bool isArray();
 	size_t getArrayLength(size_t i);

@@ -19,6 +19,8 @@
 #ifndef TYPEDEFUDT_HPP
 #define TYPEDEFUDT_HPP
 
+#include "ddr/config.hpp"
+
 #include <string>
 
 #include "Modifiers.hpp"

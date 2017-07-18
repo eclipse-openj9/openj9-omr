@@ -19,20 +19,26 @@
 #ifndef SYMBOL_IR_HPP
 #define SYMBOL_IR_HPP
 
+#include "ddr/config.hpp"
+
 #include <vector>
 #include <set>
 #include <unordered_map>
 
 #include "omrport.h"
 
-#include "ddr/config.hpp"
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/Field.hpp"
 #include "ddr/ir/Type.hpp"
 
 using std::vector;
 using std::set;
+
+#if defined(OMR_HAVE_TR1)
+using std::tr1::unordered_map;
+#else
 using std::unordered_map;
+#endif
 
 struct FieldOverride {
 	string structName;

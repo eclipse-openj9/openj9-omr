@@ -19,6 +19,8 @@
 #ifndef CLASSUDT_HPP
 #define CLASSUDT_HPP
 
+#include "ddr/config.hpp"
+
 #include "ddr/ir/ClassType.hpp"
 #include "ddr/error.hpp"
 

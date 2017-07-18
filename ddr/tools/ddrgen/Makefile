@@ -34,7 +34,9 @@ MODULE_STATIC_LIBS += $(DDRGEN_STATIC_LIBS)
 MODULE_STATIC_LIBS += omrstatic
 
 ifeq (dwo,$(DEBUG_FORMAT))
-MODULE_SHARED_LIBS += dwarf
+  ifneq (aix,$(OMR_HOST_OS))
+  MODULE_SHARED_LIBS += dwarf
+  endif
 endif
 
 # TODO libpath hack because ddrgen libs don't go into the same directory as omr libs (yet)

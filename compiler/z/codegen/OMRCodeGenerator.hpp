@@ -201,7 +201,8 @@ class TR_S390ProcessorInfo
       TR_z196                         = 6, ///< arch9
       TR_zEC12                        = 7, ///< arch10
       TR_z13                          = 8, ///< arch11
-      TR_zNext                        = 9, ///< arch12
+      TR_z14                          = 9, ///< arch12
+      TR_zNext                        = 10, ///< arch13
 
       TR_LatestArchitecture           = TR_zNext
       };
@@ -253,12 +254,15 @@ class TR_S390ProcessorInfo
    bool checkz196();
    bool checkzEC12();
    bool checkZ13();
+   bool checkZ14();
    bool checkZNext();
 
    void initialize()
       {
       if(checkZNext())
          _processorArchitecture = TR_zNext;
+      else if (checkZ14())
+         _processorArchitecture = TR_z14;
       else if (checkZ13())
          _processorArchitecture = TR_z13;
       else if (checkzEC12())

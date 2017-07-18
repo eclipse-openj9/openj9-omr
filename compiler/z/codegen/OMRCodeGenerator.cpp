@@ -393,7 +393,7 @@ bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz900: returns true if it's zArchitecture, otherwise false.
+// TR_S390ProcessorInfo::checkz900: returns true if it's zArchitecture, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz900()
@@ -421,7 +421,7 @@ TR_S390ProcessorInfo::checkz9()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz10: returns true if it's z6, otherwise false.
+// TR_S390ProcessorInfo::checkz10: returns true if it's z6, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz10()
@@ -430,7 +430,7 @@ TR_S390ProcessorInfo::checkz10()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz196: returns true if it's zGryphon, otherwise false.
+// TR_S390ProcessorInfo::checkz196: returns true if it's zGryphon, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz196()
@@ -439,7 +439,7 @@ TR_S390ProcessorInfo::checkz196()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkzEC12: returns true if it's zHelix, otherwise false.
+// TR_S390ProcessorInfo::checkzEC12: returns true if it's zHelix, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkzEC12()
@@ -448,7 +448,7 @@ TR_S390ProcessorInfo::checkzEC12()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkZ13: returns true if it's z13, otherwise false.
+// TR_S390ProcessorInfo::checkZ13: returns true if it's z13, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkZ13()
@@ -457,7 +457,16 @@ TR_S390ProcessorInfo::checkZ13()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
+// TR_S390ProcessorInfo::checkZ14: returns true if it's z14, otherwise false.
+////////////////////////////////////////////////////////////////////////////////
+bool
+TR_S390ProcessorInfo::checkZ14()
+   {
+   return TR::Compiler->target.cpu.getS390SupportsZ14();
+   }
+
+////////////////////////////////////////////////////////////////////////////////
+// TR_S390ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkZNext()
@@ -466,7 +475,7 @@ TR_S390ProcessorInfo::checkZNext()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S90ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
+//  TR_S390ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
 ////////////////////////////////////////////////////////////////////////////////
 TR_Processor
 TR_S390ProcessorInfo::getProcessor()
@@ -475,10 +484,14 @@ TR_S390ProcessorInfo::getProcessor()
 
    if (supportsArch(TR_S390ProcessorInfo::TR_zNext))
       {
+      result = TR_s370gp13;
+      }
+   else if (supportsArch(TR_S390ProcessorInfo::TR_z14))
+      {
       result = TR_s370gp12;
       }
    else if (supportsArch(TR_S390ProcessorInfo::TR_z13))
-   	{
+      {
       result = TR_s370gp11;
       }
    else if (supportsArch(TR_S390ProcessorInfo::TR_zEC12))
@@ -581,6 +594,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
             }
          case 6:
             {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
+            traceMsg(comp, "disablez14");
+            break;
+            }
+         case 7:
+            {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
             traceMsg(comp, "RandomGen: Setting disabling zNext processor architecture.");
             break;
@@ -607,6 +626,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (comp->getOption(TR_DisableZ13))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
+      }
+
+   if (comp->getOption(TR_DisableZ14))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
       }
 
    if (comp->getOption(TR_DisableZNext))
@@ -11278,10 +11302,10 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
    {
 
    /*
-    * Prior to zNext, vector operations that operated on floating point numbers only supported
-    * Doubles. On zNext and onward, Float type floating point numbers are supported as well.
+    * Prior to z14, vector operations that operated on floating point numbers only supported
+    * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14))
       {
       return false;
       }

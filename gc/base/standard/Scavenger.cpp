@@ -3521,9 +3521,6 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 			/* Merge sublists in the remembered set (if necessary) */
 			_extensions->rememberedSet.compact(env);
 
-			/* Must report object events before memory spaces are flipped */
-			_cli->scavenger_reportObjectEvents(env);
-
 			/* If -Xgc:fvtest=forcePoisonEvacuate has been specified, poison(fill poison pattern) evacuate space */
 			if(_extensions->fvtest_forcePoisonEvacuate) {
 				_activeSubSpace->poisonEvacuateSpace();

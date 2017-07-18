@@ -86,14 +86,6 @@ public:
 	virtual void scavenger_reportScavengeEnd(MM_EnvironmentBase * env, bool scavengeSuccessful) = 0;
 
 	/**
-	 * This method will be called on the master GC thread after each successful scavenger cycle, before the
-	 * allocate/survivor memory spaces are flipped. It may be used for reporting or other tasks as required.
-	 *
-	 * @param[in] env The environment for the calling thread.
-	 */
-	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env) = 0;
-
-	/**
 	 * This method is called on the master GC thread when a scavenge cycle is started. Implementations of
 	 * this method may clear any client-side stats or metadata relating to scavenge cycles at this point.
 	 *

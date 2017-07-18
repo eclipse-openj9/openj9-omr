@@ -680,7 +680,6 @@ public:
 	bool tarokEnableCompressedCardTable; /**< Enable usage of Compressed Card Table (Summary) */
 	MM_CompressedCardTable* compressedCardTable; /**< The pointer to Compressed Card Table */
 	bool tarokEnableLeafFirstCopying; /**< Enable copying of leaf children immediately after parent is copied in CopyForwardScheme */
-	bool tarokUseDepthFirstCopyForward; /**< True if we should use CopyForwardSchemeDepthFirst instead of the breadth-first version. */
 	uint64_t tarokMaximumAgeInBytes; /**< Maximum age in bytes for bytes-based-allocated aging system */
 	uint64_t tarokMaximumNurseryAgeInBytes; /**< Maximum Nursery Age in bytes for bytes-based-allocated aging system */
 	bool tarokAllocationAgeEnabled; /**< Enable Allocation-based aging system */
@@ -1548,7 +1547,6 @@ public:
 		, tarokEnableCompressedCardTable(true)
 		, compressedCardTable(NULL)
 		, tarokEnableLeafFirstCopying(false)
-		, tarokUseDepthFirstCopyForward(false)
 		, tarokMaximumAgeInBytes(0)
 		, tarokMaximumNurseryAgeInBytes(0)
 		, tarokAllocationAgeEnabled(false)

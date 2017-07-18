@@ -32,13 +32,13 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 
 ###
-### Getting the glue directory
+### Getting the glue target
 ###
-
-if (NOT DEFINED OMR_GLUE)
-    set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+if (NOT DEFINED OMR_GLUE_TARGET)
+	set(OMR_GLUE_TARGET "omr_example_glue" CACHE STRING "The glue target, must be an interface library")
     message(STATUS "Glue not set, defaulting to example glue")
 endif()
+add_subdirectory(example/glue)
 
 # TODO: OMR_EXAMPLE flag
 # TODO: OMR_RTTI flag
@@ -84,6 +84,17 @@ endif()
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
+add_library(omrglue STATIC)
+# lInk as private since we dont want the interface sources to propogate
+target_link_libraries(omrglue
+	PUBLIC
+	omrgc
+	PRIVATE
+	${OMR_GLUE_TARGET}
+)
+#but we need to propogate the include paths
+target_include_directories(omrglue INTERFACE $<TARGET_PROPERTY:${OMR_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+
 add_subdirectory(tools)
 # Yeah, its dumb doing this here. Read note in tools/CMakeLists.txt
 if(CMAKE_CROSSCOMPILING)
@@ -103,7 +114,8 @@ add_subdirectory(fvtest)
 
 if(OMR_GC)
   add_subdirectory(gc)
-  add_subdirectory("${OMR_GLUE}")
+  # if we are building the gc, add gc headers to omrglue
+  target_include_directories(omrglue PRIVATE $<TARGET_PROPERTY:omrgc,INCLUDE_DIRECTORIES>)
 endif(OMR_GC)
 
 if(OMR_JITBUILDER)

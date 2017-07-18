@@ -361,7 +361,7 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
    // Allocate the array of bit vectors that will represent live definitions at OSR points
    //
    int32_t numOSRPoints = _methodSymbol->getNumOSRPoints();
-   aux._defsForOSR.GrowTo(numOSRPoints);
+   aux._defsForOSR.resize(numOSRPoints, TR_UseDefInfo::BitVector(comp()->allocator()));
 
    TR::Block *block;
    TR::TreeTop *treeTop;

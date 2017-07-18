@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,7 +22,6 @@
 #include <stddef.h>                 // for NULL
 #include <stdint.h>                 // for int32_t
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/tableof.h"            // for TableOf
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Block.hpp"             // for Block
 #include "il/Node.hpp"              // for vcount_t
@@ -55,22 +54,18 @@ class TR_Dominators
    int             dominates(TR::Block *block, TR::Block *other);
 
    TR::Compilation * comp()         { return _compilation; }
-   TR_Memory *      trMemory()      { return comp()->trMemory(); }
-   TR_StackMemory   trStackMemory() { return trMemory(); }
    bool trace() { return _trace; }
-
-   TR::deque<int32_t> _dfNumbers;
 
    protected:
 
-   typedef TR::SparseBitVector SparseBitVector;
+   typedef TR_BitVector BitVector;
 
    private:
 
    struct BBInfo
       {
-      BBInfo(TR::Allocator allocator) :
-         _bucket(allocator), _block(NULL), _parent(-1), _idom(-1), _ancestor(-1), _label(-1), _child(-1), _sdno(-1), _size(0)
+      explicit BBInfo(TR::Region &region) :
+         _bucket(region), _block(NULL), _parent(-1), _idom(-1), _ancestor(-1), _label(-1), _child(-1), _sdno(-1), _size(0)
          {}
       TR::Block     *_block;     // The block whose info this is
       int32_t       _parent;    // The parent in the depth-first spanning tree
@@ -78,7 +73,7 @@ class TR_Dominators
       int32_t       _ancestor;  // The ancestor in the forest
       int32_t       _label;     // The node in the ancestor chain with minimal
                                 // semidominator number
-      SparseBitVector _bucket;    // The blocks whose semidominator is this node
+      BitVector _bucket;    // The blocks whose semidominator is this node
       int32_t       _child;
 
       int32_t       _sdno;      // The index of the semidominator for this block
@@ -124,10 +119,14 @@ class TR_Dominators
    void    compress(int32_t);
    void    link(int32_t, int32_t);
 
-
+   protected:
+   TR::Region _region;
+   public:
+   TR::deque<int32_t, TR::Region&> _dfNumbers;
+   private:
    TR::Compilation *_compilation;
-   TR::deque<BBInfo>  _info;
-   TR::deque<TR::Block *> _dominators;
+   TR::deque<BBInfo, TR::Region&>  _info;
+   TR::deque<TR::Block *, TR::Region&> _dominators;
    int32_t         _numNodes;
    int32_t         _topDfNum;
    vcount_t        _visitCount;
@@ -146,10 +145,10 @@ class TR_PostDominators : public TR_Dominators
    public:
    TR_ALLOC(TR_Memory::Dominators)
 
-   typedef CS2::TableOf<SparseBitVector, TR::Allocator> DependentsTable;
+   typedef TR_BitVector** DependentsTable;
 
    TR_PostDominators(TR::Compilation * comp) : TR_Dominators(comp, true)
-      , _directControlDependents(comp->getFlowGraph()->getNumberOfNodes()+1, comp->allocator("PostDominators"))
+      , _directControlDependents(NULL)//comp->getFlowGraph()->getNumberOfNodes()+1, comp->allocator("PostDominators"))
       {
       }
 
@@ -158,7 +157,7 @@ class TR_PostDominators : public TR_Dominators
    int32_t numberOfBlocksControlled(int32_t block);
 
    private:
-   typedef TR::BitVector BitVector;
+   typedef TR_BitVector BitVector;
    int32_t countBlocksControlled(int32_t block, BitVector &seen);
    DependentsTable _directControlDependents;
    };

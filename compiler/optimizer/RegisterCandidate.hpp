@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,10 +22,6 @@
 #include <stddef.h>                       // for NULL
 #include <stdint.h>                       // for int32_t, uint32_t, uint8_t
 #include "codegen/RegisterConstants.hpp"  // for TR_GlobalRegisterNumber, etc
-#include "cs2/bitvectr.h"                 // for ABitVector, etc
-#include "cs2/hashtab.h"                  // for HashTable, HashIndex
-#include "cs2/sparsrbit.h"
-#include "cs2/tableof.h"                  // for TableOf
 #include "env/TRMemory.hpp"               // for Allocator, TR_Memory, etc
 #include "il/DataTypes.hpp"               // for TR::DataType, DataTypes
 #include "il/Node.hpp"                    // for Node (ptr only), etc
@@ -35,6 +31,7 @@
 #include "infra/Cfg.hpp"                  // for CFG, CFGBase::::EndBlock, etc
 #include "infra/Link.hpp"                 // for TR_LinkHead, TR_Link
 #include "infra/List.hpp"                 // for List
+#include <map>
 
 class TR_GlobalRegisterAllocator;
 class TR_Structure;
@@ -50,19 +47,20 @@ namespace TR
 class GlobalSet
    {
 public:
-   GlobalSet(TR::Compilation * comp, const TR::Allocator & alloc);
+   GlobalSet(TR::Compilation * comp, TR::Region &region);
 
    class Set;
    Set * operator[](uint32_t blockNum)
    {
     if(blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
         return NULL;
-    return _refAutosPerBlock.ElementAt(blockNum);
+    
+    return _refAutosPerBlock[blockNum];
    }
 
    void collectReferencedAutoSymRefs(TR::Block * BB);
-   bool isEmpty() { return _refAutosPerBlock.IsEmpty(); }
-   void makeEmpty() { _refAutosPerBlock.MakeEmpty(); }
+   bool isEmpty() { return _refAutosPerBlock.empty(); }
+   void makeEmpty() { _refAutosPerBlock.clear(); }
    void initialize(uint32_t numSymRefs, int32_t numBlocks) {_maxEntries = numSymRefs * numBlocks;}
 
    //Set, SparseSet and DenseSet
@@ -80,24 +78,24 @@ private:
    {
    public:
    TR_ALLOC(TR_Memory::RegisterCandidates);
-   SparseSet(TR::Allocator & alloc):_refs(alloc){}
-   virtual bool get(uint32_t refId) {return _refs.ValueAt(refId); }
-   virtual void set(uint32_t refId) {_refs[refId] = 1;     }
+   SparseSet(TR::Region &region):_refs(region){}
+   virtual bool get(uint32_t refId) {return _refs.get(refId); }
+   virtual void set(uint32_t refId) {_refs.set(refId);     }
    virtual void print(TR::Compilation * comp);
    private:
-   TR::SparseBitVector _refs;
+   TR_BitVector _refs;
    };
 
    class DenseSet: public Set
    {
    public:
    TR_ALLOC(TR_Memory::RegisterCandidates);
-   DenseSet(TR::Allocator & alloc):_refs(alloc){}
-   virtual bool get(uint32_t refId) {return _refs.ValueAt(refId); }
-   virtual void set(uint32_t refId) {_refs[refId] = 1    ; }
+   DenseSet(TR::Region &region):_refs(region){}
+   virtual bool get(uint32_t refId) {return _refs.get(refId); }
+   virtual void set(uint32_t refId) {_refs.set(refId); }
    virtual void print(TR::Compilation * comp);
    private:
-   CS2::ABitVector<TR::Allocator> _refs;
+   TR_BitVector _refs;
    };
 
 
@@ -110,7 +108,10 @@ private:
 
    void collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutos, vcount_t visitCount);
 
-   CS2::TableOf<Set *, TR::Allocator> _refAutosPerBlock;
+   typedef TR::typed_allocator<std::pair<uint32_t, Set*>, TR::Region&> RefMapAllocator;
+   typedef std::less<uint32_t> RefMapComparator;
+   typedef std::map<uint32_t, Set *, RefMapComparator, RefMapAllocator> RefMap;
+   RefMap _refAutosPerBlock;
    TR::Compilation * _comp;
    uint32_t _maxEntries;
    };
@@ -129,55 +130,40 @@ enum TR_RegisterCandidateTypes
 class TR_RegisterCandidate : public TR_Link<TR_RegisterCandidate>
    {
 public:
-   TR_RegisterCandidate(TR::SymbolReference *, TR_Memory *, TR::Allocator);
+   TR_RegisterCandidate(TR::SymbolReference *, TR::Region &r);
 
    class BlockInfo {
-     TR_BitVector _block_set;
-     CS2::HashTable<uint32_t, uint32_t, TR::Allocator > _block_map;
+     typedef TR::typed_allocator<std::pair<uint32_t, uint32_t>, TR::Region &> InfoMapAllocator;
+     typedef std::less<uint32_t> InfoMapComparator;
+     typedef std::map<uint32_t, uint32_t, InfoMapComparator, InfoMapAllocator> InfoMap;
+     InfoMap _blockMap;
 
    public:
-     BlockInfo(TR_Memory *m, TR::Allocator &a) : _block_set(),
-     _block_map(_block_map.DefaultSize, TR::Allocator(a)) {
-       _block_set.init(1024, m, heapAlloc, growable);
-     }
+     typedef InfoMap::iterator InfoMapIterator;
+
+     BlockInfo(TR::Region &region)
+        : _blockMap((InfoMapComparator()), (InfoMapAllocator(region))) { }
 
      void setNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _block_set.set(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map[hi]=count;
-       else if (count)
-         _block_map.Add(block, count);
+       _blockMap[block] = count;
      }
      void incNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _block_set.set(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map[hi]+=count;
-       else if (count)
-         _block_map.Add(block, count);
+       _blockMap[block] += count;
      }
      void removeBlock(uint32_t block) {
-       _block_set.reset(block);
-       CS2::HashIndex hi;
-       if (_block_map.Locate(block, hi))
-         _block_map.Remove(hi);
+       _blockMap.erase(block);
      }
 
      bool find(uint32_t block) {
-       return (bool)_block_set.get(block);
+       return _blockMap.find(block) != _blockMap.end();
      }
      uint32_t getNumberOfLoadsAndStores(uint32_t block) {
-       CS2::HashIndex hi;
-       if (find(block) && _block_map.Locate(block, hi))
-         return _block_map[hi];
-       return 0;
+       auto result = _blockMap.find(block);
+       return result != _blockMap.end() ? result->second : 0;
      }
 
-     typedef TR_BitVectorIterator Cursor;
-     Cursor all() {
-       return Cursor(_block_set);
-     }
+     InfoMapIterator begin() { return _blockMap.begin(); }
+     InfoMapIterator end() { return _blockMap.end(); }
    };
 
    struct LoopInfo : TR_Link<LoopInfo>
@@ -379,8 +365,8 @@ public:
    TR_RegisterCandidate *newCandidate(TR::SymbolReference *ref);
 
    void releaseCandidates() {
-     _candidates.setFirst(0);
-     _candidateTable.MakeEmpty();
+     _candidateRegion.~Region();
+     new (_candidateRegion) TR::Region(_trMemory->heapMemoryRegion());
    }
 
    void collectCfgProperties(TR::Block **, int32_t);
@@ -398,8 +384,8 @@ private:
 
    TR::Compilation                   *_compilation;
    TR_Memory *                       _trMemory;
+   TR::Region                         _candidateRegion;
    TR_LinkHead<TR_RegisterCandidate> _candidates;
-   CS2::TableOf<TR_RegisterCandidate, TR::Allocator> _candidateTable;
 
    static int32_t                    _candidateTypeWeights[TR_NumRegisterCandidateTypes];
    TR::GlobalSet            _referencedAutoSymRefsInBlock;
@@ -422,19 +408,19 @@ private:
    TR_BitVector                 _firstBlock;
    TR_BitVector                 _isExtensionOfPreviousBlock;
 
-   // Aliasing candidate invariant data
-   TR::SparseBitVector _internalCalls;
-   bool _internalCallsComputed;
-
 public:
    struct coordinates {
      coordinates(uint32_t f, uint32_t l): first(f), last(l){}
      uint32_t first, last;
    };
 
-   typedef CS2::HashTable<int32_t, struct coordinates, TR::Allocator> Coordinates;
-   typedef CS2::TableOf<Coordinates, TR::Allocator > ReferenceTable;
+   typedef TR::typed_allocator<std::pair<int32_t, struct coordinates>, TR::Region &> CoordinatesAllocator;
+   typedef std::less<int32_t> CoordinatesComparator;
+   typedef std::map<int32_t, struct coordinates, CoordinatesComparator, CoordinatesAllocator> Coordinates;
 
+   typedef TR::typed_allocator<std::pair<uint32_t, Coordinates *>, TR::Region &> ReferenceTableAllocator;
+   typedef std::less<uint32_t> ReferenceTableComparator;
+   typedef std::map<uint32_t, Coordinates *, ReferenceTableComparator, ReferenceTableAllocator> ReferenceTable;
 private:
    ReferenceTable *overlapTable;
  };

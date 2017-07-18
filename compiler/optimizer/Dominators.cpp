@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -24,9 +24,6 @@
 #include "compile/Compilation.hpp"             // for Compilation, etc
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"                      // for ABitVector<>::BitRef
-#include "cs2/sparsrbit.h"
-#include "cs2/tableof.h"                       // for TableOf
 #include "env/IO.hpp"
 #include "env/TRMemory.hpp"                    // for Allocator
 #include "il/Block.hpp"                        // for Block, toBlock
@@ -39,10 +36,11 @@
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
 TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
+   _region(c->trMemory()->heapMemoryRegion()),
    _compilation(c),
-   _info(c->getFlowGraph()->getNextNodeNumber()+1, c->allocator(), c->allocator()),
-   _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, c->allocator()),
-   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, static_cast<TR::Block *>(NULL), c->allocator())
+   _info(c->getFlowGraph()->getNextNodeNumber()+1, BBInfo(_region), _region),
+   _dfNumbers(c->getFlowGraph()->getNextNodeNumber()+1, 0, _region),
+   _dominators(c->getFlowGraph()->getNextNodeNumber()+1, static_cast<TR::Block *>(NULL), _region)
    {
    LexicalTimer tlex("TR_Dominators::TR_Dominators", _compilation->phaseTimer());
 
@@ -124,7 +122,7 @@ TR_Dominators::TR_Dominators(TR::Compilation *c, bool post) :
    if (trace())
       traceMsg(comp(), "End of %sdominator calculation\n", _postDominators ? "post-" : "");
 
-   // Release no-longer-used CS2 data
+   // Release no-longer-used data
    _info.clear();
    }
 
@@ -213,13 +211,13 @@ void TR_Dominators::findDominators(TR::Block *start)
          }
 
       BBInfo &v = getInfo(w._sdno);
-      v._bucket[i] = true;
+      v._bucket.set(i);
       link(w._parent, i);
 
       // Compute immediate dominators for nodes in the bucket of w's parent
       //
-      SparseBitVector &parentBucket = getInfo(w._parent)._bucket;
-      SparseBitVector::Cursor cursor(parentBucket);
+      BitVector &parentBucket = getInfo(w._parent)._bucket;
+      BitVector::Cursor cursor(parentBucket);
       for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
          {
          BBInfo &sdom = getInfo(cursor);
@@ -229,7 +227,7 @@ void TR_Dominators::findDominators(TR::Block *start)
          else
         	 sdom._idom = w._parent;
          }
-      parentBucket.Clear();
+      parentBucket.empty();
       }
 
    // Adjust immediate dominators of nodes whose current version of the
@@ -459,14 +457,15 @@ void TR_PostDominators::findControlDependents()
    int32_t nextNodeNumber = _cfg->getNextNodeNumber();
    int32_t i;
 
+   _directControlDependents = (TR_BitVector**)_region.allocate(nextNodeNumber*sizeof(TR_BitVector *));
    // Initialize the table of direct control dependents
    for (i = 0; i < nextNodeNumber; i++)
-      _directControlDependents.AddEntry(comp()->allocator("PostDominators"));
+      _directControlDependents[i] = new (_region) TR_BitVector(nextNodeNumber, _region);//.AddEntry(comp()->allocator("PostDominators"));
 
    TR::Block * block;
    for (block = comp()->getStartBlock(); block!=NULL; block = block->getNextBlock())
       {
-      SparseBitVector &bv = _directControlDependents[block->getNumber()+1];
+      BitVector &bv = *_directControlDependents[block->getNumber()];
 
       auto next = block->getSuccessors().begin();
       while (next != block->getSuccessors().end())
@@ -475,7 +474,7 @@ void TR_PostDominators::findControlDependents()
          p = toBlock((*next)->getTo());
          while (p != getDominator(block))
 	        {
-            bv[p->getNumber()] = true;
+            bv.set(p->getNumber());
             p = getDominator(p);
             }
          ++next;
@@ -486,7 +485,7 @@ void TR_PostDominators::findControlDependents()
       {
       for (i = 0; i < nextNodeNumber; i++)
          {
-         SparseBitVector::Cursor cursor(_directControlDependents[i+1]);
+         BitVector::Cursor cursor(*_directControlDependents[i]);
          cursor.SetToFirstOne();
          traceMsg(comp(), "Block %d controls blocks: {", i);
          if (cursor.Valid())
@@ -507,21 +506,21 @@ void TR_PostDominators::findControlDependents()
 
 int32_t TR_PostDominators::numberOfBlocksControlled(int32_t block)
    {
-   BitVector seen(comp()->allocator());
+   BitVector seen(_region);
    return countBlocksControlled(block, seen);
    }
 
 int32_t TR_PostDominators::countBlocksControlled(int32_t block, BitVector &seen)
    {
    int32_t number = 0;
-   SparseBitVector::Cursor cursor(_directControlDependents[block+1]);
+   BitVector::Cursor cursor(*_directControlDependents[block]);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
       {
       int32_t i = cursor;
-      if (!seen[i])
+      if (!seen.get(i))
          {
          number++;
-         seen[i] = true;
+         seen.set(i);
          number += countBlocksControlled(i, seen);
          }
       }

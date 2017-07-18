@@ -73,10 +73,8 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _storeMap(NULL),
      _seenCallSymbolReferences(comp()->allocator()),
-     _parentAddedToHT(comp()->allocator()),
      _availableLoadExprs(comp()->allocator()),
      _availablePinningArrayExprs(comp()->allocator()),
-     _killedPinningArrayExprs(comp()->allocator()),
      _availableCallExprs(comp()->allocator()),
      _arrayRefNodes(trMemory())
    {
@@ -234,7 +232,9 @@ void OMR::LocalCSE::prePerformOnBlocks()
    _seenSymRefs.init(symRefCount, stackRegion, growable);
    _possiblyRelevantNodes.init(symRefCount, stackRegion, growable);
    _relevantNodes.init(symRefCount, stackRegion, growable);
+   _killedPinningArrayExprs.init(symRefCount, stackRegion, growable);
    _killedNodes.init(nodeCount, stackRegion, growable);
+   _parentAddedToHT.init(nodeCount, stackRegion, growable);
 
    comp()->incVisitCount();
    _mayHaveRemovedChecks = false;
@@ -295,9 +295,9 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    _relevantNodes.empty();
    _availableLoadExprs.Clear();
    _availablePinningArrayExprs.Clear();
-   _killedPinningArrayExprs.Clear();
+   _killedPinningArrayExprs.empty();
    _availableCallExprs.Clear();
-   _parentAddedToHT.Clear();
+   _parentAddedToHT.empty();
    _killedNodes.empty();
 
    // Visit counts are incremented multiple times while transforming a block.
@@ -1274,7 +1274,7 @@ bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, SharedSpars
             return false;
          }
 
-      if (!_parentAddedToHT.ValueAt(node->getChild(i)->getGlobalIndex()))
+      if (!_parentAddedToHT.get(node->getChild(i)->getGlobalIndex()))
          return false;
 
       i++;
@@ -1374,7 +1374,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
        cg()->supportsInternalPointers() &&
        (node->getFirstChild()->getOpCodeValue() == TR::aload) &&
        (node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()) &&
-       !_killedPinningArrayExprs[node->getFirstChild()->getSymbolReference()->getReferenceNumber()])
+       !_killedPinningArrayExprs.get(node->getFirstChild()->getSymbolReference()->getReferenceNumber()))
       {
       ListIterator<TR::Node> arrayRefNodesIt(&_arrayRefNodes);
       TR::Node *arrayRefNode = arrayRefNodesIt.getFirst();
@@ -1471,7 +1471,7 @@ void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolRef
           (arrayRefNode->getFirstChild()->getSymbolReference() == symRef))
          {
          _arrayRefNodes.remove(arrayRefNode);
-         _killedPinningArrayExprs[symRef->getReferenceNumber()] = true;
+         _killedPinningArrayExprs.set(symRef->getReferenceNumber());
          }
       }
    }
@@ -1693,7 +1693,7 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
    for (int32_t i = numChildren-1; i >= 0; i--)
       {
       TR::Node *child = node->getChild(i);
-      _parentAddedToHT[child->getGlobalIndex()]=1;
+      _parentAddedToHT.set(child->getGlobalIndex());
       }
 
    if ((node->getOpCode().isArrayRef()) &&

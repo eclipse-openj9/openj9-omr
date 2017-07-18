@@ -153,12 +153,12 @@ class LocalCSE : public TR::Optimization
    TR_BitVector _seenSymRefs;
    TR_BitVector _possiblyRelevantNodes;
    TR_BitVector _relevantNodes;
-   SharedSparseBitVector _parentAddedToHT;
+   TR_BitVector _parentAddedToHT;
    TR_BitVector _killedNodes;
    SharedSparseBitVector _availableLoadExprs;
    SharedSparseBitVector _availableCallExprs;
    SharedSparseBitVector _availablePinningArrayExprs;
-   SharedSparseBitVector _killedPinningArrayExprs;
+   TR_BitVector _killedPinningArrayExprs;
 
    HashTable *_hashTable;
    HashTable *_hashTableWithSyms;

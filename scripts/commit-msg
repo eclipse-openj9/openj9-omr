@@ -31,6 +31,9 @@ commit = ""
 message.each_line do |line|
   if (line.match(/^(?!#).*$/))
     commit.concat(line)
+  elsif (line.match(/^# ------------------------ >8 -.*$/))
+     # Stop processing after seeing the snip marker. 
+     break  
   end
 end
 

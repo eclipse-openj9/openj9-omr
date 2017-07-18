@@ -75,7 +75,6 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
      _seenCallSymbolReferences(comp()->allocator()),
      _seenSymRefs(comp()->allocator()),
      _parentAddedToHT(comp()->allocator()),
-     _killedNodes(comp()->allocator()),
      _availableLoadExprs(comp()->allocator()),
      _availablePinningArrayExprs(comp()->allocator()),
      _killedPinningArrayExprs(comp()->allocator()),
@@ -232,8 +231,10 @@ void OMR::LocalCSE::prePerformOnBlocks()
    _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
 
    int32_t symRefCount = comp()->getSymRefCount();
+   int32_t nodeCount = comp()->getNodeCount();
    _possiblyRelevantNodes.init(symRefCount, stackRegion, growable);
    _relevantNodes.init(symRefCount, stackRegion, growable);
+   _killedNodes.init(nodeCount, stackRegion, growable);
 
    comp()->incVisitCount();
    _mayHaveRemovedChecks = false;
@@ -297,7 +298,7 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    _killedPinningArrayExprs.Clear();
    _availableCallExprs.Clear();
    _parentAddedToHT.Clear();
-   _killedNodes.Clear();
+   _killedNodes.empty();
 
    // Visit counts are incremented multiple times while transforming a block.
    // For each block, make sure there is enough room in the visit count to do this.
@@ -1360,7 +1361,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
          ++nextIt;
          hashTable->erase(it);
          it = nextIt;
-         _killedNodes[other->getGlobalIndex()]=true;
+         _killedNodes.set(other->getGlobalIndex());
          }
       else
          {
@@ -1498,7 +1499,7 @@ void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable,
          {
          auto lastItem = range.second;
          --lastItem;
-         _killedNodes[lastItem->second->getGlobalIndex()]=true;
+         _killedNodes.set(lastItem->second->getGlobalIndex());
 
          hashTable->erase(range.first, range.second);
          }
@@ -1770,7 +1771,7 @@ bool OMR::LocalCSE::areSyntacticallyEquivalent(TR::Node *node1, TR::Node *node2,
       TR::Node *child1 = getNode(node1->getChild(i));
       TR::Node *child2 = getNode(node2->getChild(i));
 
-      if (_killedNodes.ValueAt(child1->getGlobalIndex()))
+      if (_killedNodes.get(child1->getGlobalIndex()))
          {
          *remove = true;
          return false;
@@ -1789,7 +1790,7 @@ bool OMR::LocalCSE::areSyntacticallyEquivalent(TR::Node *node1, TR::Node *node2,
                TR::Node *grandChild1 = getNode(child1->getChild(j));
                TR::Node *grandChild2 = getNode(child2->getChild(j));
 
-               if (_killedNodes.ValueAt(grandChild1->getGlobalIndex()))
+               if (_killedNodes.get(grandChild1->getGlobalIndex()))
                   {
                   *remove = true;
                   return false;

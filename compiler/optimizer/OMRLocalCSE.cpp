@@ -73,7 +73,6 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _storeMap(NULL),
      _seenCallSymbolReferences(comp()->allocator()),
-     _seenSymRefs(comp()->allocator()),
      _parentAddedToHT(comp()->allocator()),
      _availableLoadExprs(comp()->allocator()),
      _availablePinningArrayExprs(comp()->allocator()),
@@ -232,6 +231,7 @@ void OMR::LocalCSE::prePerformOnBlocks()
 
    int32_t symRefCount = comp()->getSymRefCount();
    int32_t nodeCount = comp()->getNodeCount();
+   _seenSymRefs.init(symRefCount, stackRegion, growable);
    _possiblyRelevantNodes.init(symRefCount, stackRegion, growable);
    _relevantNodes.init(symRefCount, stackRegion, growable);
    _killedNodes.init(nodeCount, stackRegion, growable);
@@ -334,7 +334,7 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    _nextReplacedNode = 0;
    SharedSparseBitVector seenAvailableLoadedSymbolReferences(comp()->allocator());
    _seenCallSymbolReferences.Clear();
-   _seenSymRefs.Clear();
+   _seenSymRefs.empty();
 
    int32_t nextNodeIndex = 0;
    comp()->incVisitCount();
@@ -667,7 +667,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
 
         // Kill slow copy propagation info
         //
-        if (_seenSymRefs.ValueAt(symRefNumber))
+        if (_seenSymRefs.get(symRefNumber))
            {
            TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
            for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
@@ -724,7 +724,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
          }
 
       if (symRef && !node->getOpCode().isCall())
-         _seenSymRefs[symRef->getReferenceNumber()]=true;
+         _seenSymRefs.set(symRef->getReferenceNumber());
       }
 
    killAvailableExpressionsAtGCSafePoints(node, parent, seenAvailableLoadedSymbolReferences);

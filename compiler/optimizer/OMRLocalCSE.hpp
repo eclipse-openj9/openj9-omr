@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -206,8 +206,10 @@ class LocalCSE : public TR::Optimization
    TR::Node *getNode(TR::Node *node);
 
    TR::TreeTop *_treeBeingExamined;
-   CS2::TableOf<TR::Node *, TR::Allocator> _storeNodes;
-   CS2::ArrayOf<uint32_t , TR::Allocator> _storeNodesIndex;
+   typedef TR::typed_allocator<std::pair<uint32_t, TR::Node*>, TR::Region&> StoreMapAllocator;
+   typedef std::less<uint32_t> StoreMapComparator;
+   typedef std::map<uint32_t, TR::Node*, StoreMapComparator, StoreMapAllocator> StoreMap;
+   StoreMap *_storeMap;
 
    TR::Node **_nullCheckNodesAsArray;
    TR::Node **_simulatedNodesAsArray;

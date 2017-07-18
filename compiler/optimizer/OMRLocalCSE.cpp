@@ -71,8 +71,7 @@
 
 OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _storeNodes(comp()->allocator()),
-     _storeNodesIndex(comp()->allocator(), 0),
+     _storeMap(NULL),
      _seenCallSymbolReferences(comp()->allocator()),
      _seenKilledSymbolReferences(comp()->allocator()),
      _seenSymRefs(comp()->allocator()),
@@ -176,6 +175,9 @@ int32_t OMR::LocalCSE::perform()
    if (trace())
       traceMsg(comp(), "Starting LocalCommonSubexpressionElimination\n");
 
+   TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
+   _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
+
    TR::TreeTop *tt, *exitTreeTop;
    for (tt = comp()->getStartTree(); tt; tt = exitTreeTop->getNextTreeTop())
       {
@@ -199,6 +201,7 @@ int32_t OMR::LocalCSE::perform()
    if (trace())
       traceMsg(comp(), "\nEnding LocalCommonSubexpressionElimination\n");
 
+   _storeMap = NULL;
    return 1; // actual cost
    }
 
@@ -228,6 +231,9 @@ int32_t OMR::LocalCSE::performOnBlock(TR::Block *block)
 
 void OMR::LocalCSE::prePerformOnBlocks()
    {
+   TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
+   _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
+
    comp()->incVisitCount();
    _mayHaveRemovedChecks = false;
    manager()->setAlteredCode(false);
@@ -241,6 +247,8 @@ void OMR::LocalCSE::prePerformOnBlocks()
 
 void OMR::LocalCSE::postPerformOnBlocks()
    {
+   _storeMap = NULL;
+
    if (_mayHaveRemovedChecks)
       requestOpt(OMR::catchBlockRemoval);
    }
@@ -308,8 +316,7 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
       getNumberOfNodes(node);
       }
 
-   _storeNodes.MakeEmpty();
-   _storeNodesIndex.ShrinkTo(0);
+   _storeMap->clear();
 
    _nullCheckNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(numNullChecks*sizeof(TR::Node*));
    memset(_nullCheckNodesAsArray, 0, numNullChecks*sizeof(TR::Node*));
@@ -454,33 +461,32 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
    TR::SymbolReference * symRef = node->getOpCode().hasSymbolReference() ? node->getSymbolReference() : 0;
    if (symRef && node->getOpCode().isLoadVar())
       {
-      int32_t i = _storeNodesIndex[symRef->getReferenceNumber()];
-      if (i && _storeNodes.Exists(i) &&
-          _storeNodes[i]->getSymbolReference()->getReferenceNumber() == symRef->getReferenceNumber())
+      StoreMap::iterator result = _storeMap->find(symRef->getReferenceNumber());
+      if (result != _storeMap->end() && result->second->getSymbolReference()->getReferenceNumber() == symRef->getReferenceNumber())
          {
          // Base case: where symrefs match
-         doCopyPropagationIfPossible(node, parent, childNum, _storeNodes[i], symRef, visitCount, doneCopyPropagation);
+         doCopyPropagationIfPossible(node, parent, childNum, result->second, symRef, visitCount, doneCopyPropagation);
          }
       else if (node->getOpCode().isLoadIndirect() &&
             node->getFirstChild()->getVisitCount() >= visitCount)
         {
         // Case #2: symrefs don't match, but underlying objects match by checking sizes, types, offsets, etc.
-        CS2::TableOf<TR::Node *, TR::Allocator>::Cursor nc(_storeNodes);
-        for (nc.SetToFirst(); nc.Valid(); nc.SetToNext())
+        for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
            {
-           if (_storeNodes[nc]->getOpCode().isStoreIndirect() &&
-               _storeNodes[nc]->getSymbolReference()->getSymbol()->getSize() == symRef->getSymbol()->getSize() &&
-               _storeNodes[nc]->getSymbolReference()->getSymbol()->getDataType() == symRef->getSymbol()->getDataType() &&
-               allowNodeTypes(_storeNodes[nc], node) &&
-               _storeNodes[nc]->getSymbolReference()->getOffset() == symRef->getOffset()
+           TR::Node *storeNode = itr->second;
+           if (storeNode->getOpCode().isStoreIndirect() &&
+               storeNode->getSymbolReference()->getSymbol()->getSize() == symRef->getSymbol()->getSize() &&
+               storeNode->getSymbolReference()->getSymbol()->getDataType() == symRef->getSymbol()->getDataType() &&
+               allowNodeTypes(storeNode, node) &&
+               storeNode->getSymbolReference()->getOffset() == symRef->getOffset()
 #ifdef J9_PROJECT_SPECIFIC
-               && (!_storeNodes[nc]->getType().isBCD() ||
-                _storeNodes[nc]->getDecimalPrecision() == node->getDecimalPrecision())
+               && (!storeNode->getType().isBCD() ||
+                storeNode->getDecimalPrecision() == node->getDecimalPrecision())
 #endif
                )
               {
 
-              if (doCopyPropagationIfPossible(node, parent, childNum, _storeNodes[nc], symRef, visitCount, doneCopyPropagation))
+              if (doCopyPropagationIfPossible(node, parent, childNum, storeNode, symRef, visitCount, doneCopyPropagation))
                  break;
               }
            }
@@ -550,7 +556,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
         if (UseDefAliases.containsAny(_seenSymRefs, comp()))
            {
 
-           uint32_t storeNodesSize = _storeNodes.NumberOfElements();
+           uint32_t storeNodesSize = _storeMap->size();
            // If we have over 500 store nodes, get aliases and iterate over the smaller set,
            // Less than 500 nodes should not be too significant as to which set to iterate over.
            if(storeNodesSize >= 500)
@@ -565,18 +571,22 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
               // Iterate over the smaller set to save compile time, this can be very significant
               if (storeNodesSize < tmpAliases.PopulationCount())
                  {
-                 CS2::TableOf<TR::Node *, TR::Allocator>::Cursor nc(_storeNodes);
-                 for (nc.SetToFirst(); nc.Valid(); nc.SetToNext())
+                 TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
+                 for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
+                    storeMapSymRefs.set(itr->first);
+
+                 TR_BitVectorIterator bvi(storeMapSymRefs);
+                 while (bvi.hasMoreElements())
                     {
+                    uint32_t nc = bvi.getNextElement();
                     // Kill stores that are available for copy propagation based
                     // on this definition
-                    TR::Node *storeNode = _storeNodes[nc];
+                    TR::Node *storeNode = (*_storeMap)[nc];
                     int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
 
                     if ((symRef->getReferenceNumber() == storeSymRefNum) || tmpAliases[storeSymRefNum])
                        {
-                       _storeNodes.RemoveEntry(nc);
-                       _storeNodesIndex[storeSymRefNum]=0;
+                       _storeMap->erase(nc);
                        }
                     }
                  }
@@ -585,29 +595,28 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
                  SharedSparseBitVector::Cursor sc(tmpAliases);
                  for (sc.SetToFirstOne(); sc.Valid(); sc.SetToNextOne())
                     {
-                    if (_storeNodesIndex[sc] != 0)
-                       {
-                       uint32_t index = _storeNodesIndex[sc];
-                       _storeNodes.RemoveEntry(index);
-                       _storeNodesIndex[sc] = 0;
-                       }
+                    StoreMap::iterator result = _storeMap->find(sc);
+                    if (result != _storeMap->end())
+                       _storeMap->erase(sc);
                     }
                  }
               }
            else
               {
-              CS2::TableOf<TR::Node *, TR::Allocator>::Cursor nc(_storeNodes);
-              for (nc.SetToFirst(); nc.Valid(); nc.SetToNext())
+              TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
+              for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
+                 storeMapSymRefs.set(itr->first);
+
+              TR_BitVectorIterator bvi(storeMapSymRefs);
+              while (bvi.hasMoreElements())
                  {
-                 // Kill stores that are available for copy propagation based
-                 // on this definition
-                 TR::Node *storeNode = _storeNodes[nc];
+                 uint32_t nc = bvi.getNextElement();
+                 TR::Node *storeNode = (*_storeMap)[nc];
                  int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
 
                  if ((symRef->getReferenceNumber() == storeSymRefNum) || UseDefAliases.contains(storeSymRefNum, comp()))
                     {
-                    _storeNodes.RemoveEntry(nc);
-                    _storeNodesIndex[storeSymRefNum]=0;
+                    _storeMap->erase(nc);
                     }
                  }
               }
@@ -660,14 +669,23 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
         //
         if (_seenSymRefs.ValueAt(symRefNumber))
            {
-           CS2::TableOf<TR::Node *, TR::Allocator>::Cursor nc(_storeNodes);
-           for (nc.SetToFirst(); nc.Valid(); nc.SetToNext())
+           TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
+           for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
+              storeMapSymRefs.set(itr->first);
+
+           TR_BitVectorIterator bvi(storeMapSymRefs);
+           while (bvi.hasMoreElements())
               {
-              int32_t storeSymRefNum = _storeNodes[nc]->getSymbolReference()->getReferenceNumber();
+              uint32_t nc = bvi.getNextElement();
+
+              // Kill stores that are available for copy propagation based
+              // on this definition
+              TR::Node *storeNode = (*_storeMap)[nc];
+              int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
+              
               if (symRefNumber == storeSymRefNum)
                  {
-                 _storeNodes.RemoveEntry(nc);
-                 _storeNodesIndex[storeSymRefNum]=0;
+                 _storeMap->erase(nc);
                  }
               }
            }
@@ -702,11 +720,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
       //
       if (node->getOpCode().isStore())
          {
-         uint32_t storeIndex = _storeNodesIndex[symRefNum];
-         if (storeIndex)
-            _storeNodes[storeIndex] = node;
-         else
-            _storeNodesIndex[symRefNum] = _storeNodes.AddEntry(node);
+         (*_storeMap)[symRefNum] = node;
          }
 
       if (symRef && !node->getOpCode().isCall())
@@ -1530,8 +1544,7 @@ void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInte
 
 void OMR::LocalCSE::killAllDataStructures(SharedSparseBitVector &seenAvailableLoadedSymbolReferences)
    {
-   _storeNodes.MakeEmpty();
-   _storeNodesIndex.ShrinkTo(0);
+   _storeMap->clear();
 
    seenAvailableLoadedSymbolReferences.Truncate();
 
@@ -1570,9 +1583,7 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
       if (trace())
          traceMsg(comp(), "Node %p is detected as a method enter/exit point\n", node);
 
-      int32_t i;
-      _storeNodes.MakeEmpty();
-      _storeNodesIndex.ShrinkTo(0);
+      _storeMap->clear();
 
       seenAvailableLoadedSymbolReferences.Truncate();
 
@@ -1592,19 +1603,23 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
       if (trace())
          traceMsg(comp(), "Node %p is detected as a GC safe point\n", node);
 
-      CS2::TableOf<TR::Node *, TR::Allocator>::Cursor nc(_storeNodes);
-
-      for (nc.SetToFirst(); nc.Valid(); nc.SetToNext())
+      TR_BitVector symRefs(comp()->trMemory()->currentStackRegion());
+      for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
+         symRefs.set(itr->first);
+      
+      TR_BitVectorIterator bvi(symRefs);
+      while (bvi.hasMoreElements())
          {
-         TR::Node *storeNode = _storeNodes[nc];
+         uint32_t nc = bvi.getNextElement();
+
+         TR::Node *storeNode = (*_storeMap)[nc];
          int32_t childAdjust = (storeNode->getOpCode().isWrtBar()) ? 2 : 1;
 
          TR::Node *rhsOfStoreDefNode = storeNode->getChild(storeNode->getNumChildren()-childAdjust);
          if (rhsOfStoreDefNode->getOpCode().isArrayRef())
             {
             int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
-            _storeNodes.RemoveEntry(nc);
-            _storeNodesIndex[storeSymRefNum] = 0;
+            _storeMap->erase(nc);
             }
          }
       killAllAvailableExpressions();

@@ -76,7 +76,7 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
      _availableLoadExprs(comp()->allocator()),
      _availablePinningArrayExprs(comp()->allocator()),
      _availableCallExprs(comp()->allocator()),
-     _arrayRefNodes(trMemory())
+     _arrayRefNodes(NULL)
    {
    static const char *e = feGetEnv("TR_loadaddrAsLoad");
    _loadaddrAsLoad = e ? atoi(e) != 0 : 1;
@@ -280,7 +280,7 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    _numNodes = 0;
    _numNullCheckNodes = 0;
    _numCopyPropagations = 0;
-   _arrayRefNodes.deleteAll();
+   _arrayRefNodes = new (stackMemoryRegion) TR_ScratchList<TR::Node>(trMemory());
 
    // Count the number of stores and null checks in this method; this is
    // required to allocate data structures of the correct size. Null checks
@@ -1376,7 +1376,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
        (node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()) &&
        !_killedPinningArrayExprs.get(node->getFirstChild()->getSymbolReference()->getReferenceNumber()))
       {
-      ListIterator<TR::Node> arrayRefNodesIt(&_arrayRefNodes);
+      ListIterator<TR::Node> arrayRefNodesIt(_arrayRefNodes);
       TR::Node *arrayRefNode = arrayRefNodesIt.getFirst();
       for (;arrayRefNode; arrayRefNode = arrayRefNodesIt.getNext())
          {
@@ -1461,7 +1461,7 @@ void OMR::LocalCSE::killAllAvailableExpressions()
 
 void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolReference *symRef)
    {
-   ListIterator<TR::Node> arrayRefNodesIt(&_arrayRefNodes);
+   ListIterator<TR::Node> arrayRefNodesIt(_arrayRefNodes);
    TR::Node *arrayRefNode = arrayRefNodesIt.getFirst();
    for (;arrayRefNode; arrayRefNode = arrayRefNodesIt.getNext())
       {
@@ -1470,7 +1470,7 @@ void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolRef
           (arrayRefNode->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()) &&
           (arrayRefNode->getFirstChild()->getSymbolReference() == symRef))
          {
-         _arrayRefNodes.remove(arrayRefNode);
+         _arrayRefNodes->remove(arrayRefNode);
          _killedPinningArrayExprs.set(symRef->getReferenceNumber());
          }
       }
@@ -1702,7 +1702,7 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
        (node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()))
       {
       _availablePinningArrayExprs[node->getFirstChild()->getSymbolReference()->getReferenceNumber()] = true;
-      _arrayRefNodes.add(node);
+      _arrayRefNodes->add(node);
       }
 
    auto pair = std::make_pair(hashValue, node);

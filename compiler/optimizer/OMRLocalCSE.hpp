@@ -177,7 +177,7 @@ class LocalCSE : public TR::Optimization
    bool _inSubTreeOfNullCheckReference;
    bool _isTreeTopNullCheck;
    TR::Block *_curBlock;
-   TR_ScratchList<TR::Node> _arrayRefNodes;
+   TR_ScratchList<TR::Node> *_arrayRefNodes;
 
    bool _loadaddrAsLoad;
 

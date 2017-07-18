@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -43,7 +43,7 @@ static const char *
 swapMessageBuffer(PortlibPTBuffers_t ptBuffers, const char *message)
 {
 	char *tempBuffer = ptBuffers->reportedMessageBuffer;
-	uint32_t tempBufferSize = ptBuffers->reportedMessageBufferSize;
+	uintptr_t tempBufferSize = ptBuffers->reportedMessageBufferSize;
 
 	if (message == NULL) {
 		return "";
@@ -317,7 +317,7 @@ int32_t
 omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *format, ...)
 {
 	PortlibPTBuffers_t ptBuffers = NULL;
-	uint32_t requiredSize = 0;
+	uintptr_t requiredSize = 0;
 	va_list args;
 
 	/* get the buffers, allocate if necessary.
@@ -333,14 +333,14 @@ omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, 
 	ptBuffers->portableErrorCode = portableCode;
 
 	va_start(args, format);
-	requiredSize = portLibrary->str_vprintf(portLibrary, NULL, (uint32_t)-1, format, args);
+	requiredSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
 	va_end(args);
 
 	/* Store the message, allocate a bigger buffer if required.  Keep the old buffer around
 	 * just in case memory can not be allocated
 	 */
 	requiredSize = (requiredSize < J9ERROR_DEFAULT_BUFFER_SIZE) ? J9ERROR_DEFAULT_BUFFER_SIZE : requiredSize;
-	if (requiredSize > ptBuffers->errorMessageBufferSize) {
+	if ((requiredSize > ptBuffers->errorMessageBufferSize) && (J9ERROR_MAXIMUM_BUFFER_SIZE > requiredSize)) {
 		char *newBuffer = portLibrary->mem_allocate_memory(portLibrary, requiredSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL != newBuffer) {
 			if (ptBuffers->errorMessageBuffer != NULL) {
@@ -351,10 +351,15 @@ omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, 
 		}
 	}
 
-	/* Save the message */
-	if (ptBuffers->errorMessageBufferSize > 0) {
-        	va_start(args, format);
-		portLibrary->str_vprintf(portLibrary, ptBuffers->errorMessageBuffer, requiredSize, format, args);
+	/* Save the message -- if we failed allocate an appropriate size buffer above it may be truncated into preexisting buffer*/
+	if ((NULL != ptBuffers->errorMessageBuffer) && (ptBuffers->errorMessageBufferSize > 0)) {
+		uintptr_t sizeWritten = 0;
+		va_start(args, format);
+		sizeWritten = portLibrary->str_vprintf(portLibrary, ptBuffers->errorMessageBuffer, ptBuffers->errorMessageBufferSize, format, args);
+		/* Check for truncation and add null byte at end if necessary */
+		if (sizeWritten == ptBuffers->errorMessageBufferSize) {
+			ptBuffers->errorMessageBuffer[sizeWritten - 1] = 0;
+		}
 		va_end(args);
 	}
 

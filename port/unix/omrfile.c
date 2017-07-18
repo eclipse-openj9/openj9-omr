@@ -918,7 +918,7 @@ omrfile_vprintf(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *for
 {
 	char outputBuffer[256];
 	char *allocatedBuffer;
-	uint32_t numberWritten;
+	uintptr_t numberWritten;
 	va_list copyOfArgs;
 
 	/* Attempt to write output to stack buffer */
@@ -939,7 +939,7 @@ omrfile_vprintf(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *for
 	COPY_VA_LIST(copyOfArgs, args);
 
 	/* What is size of buffer required ? Does not include the \0 */
-	numberWritten = portLibrary->str_vprintf(portLibrary, NULL, (uint32_t)(-1), format, copyOfArgs);
+	numberWritten = portLibrary->str_vprintf(portLibrary, NULL, 0, format, copyOfArgs);
 	numberWritten += 1;
 
 	allocatedBuffer = portLibrary->mem_allocate_memory(portLibrary, numberWritten, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);

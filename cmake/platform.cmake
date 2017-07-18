@@ -77,8 +77,8 @@ endif()
 if(OMR_HOST_OS STREQUAL "linux")
 	add_definitions(
 		-DLINUX
+		-D_REENTRANT
 		-D_FILE_OFFSET_BITS=64
-		-pthread
 	)
 endif()
 
@@ -104,8 +104,8 @@ endif()
 if(OMR_HOST_OS STREQUAL "osx")
 	add_definitions(
 		-DOSX
+		-D_REENTRANT
 		-D_FILE_OFFSET_BITS=64
-		-pthread
 	)
 endif()
 

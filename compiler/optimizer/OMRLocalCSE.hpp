@@ -150,7 +150,6 @@ class LocalCSE : public TR::Optimization
    int32_t *_symReferencesTable;
 
    SharedSparseBitVector _seenCallSymbolReferences;
-   SharedSparseBitVector _seenKilledSymbolReferences;
    SharedSparseBitVector _seenSymRefs;
    SharedSparseBitVector _possiblyRelevantNodes;
    SharedSparseBitVector _relevantNodes;

@@ -73,7 +73,6 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _storeMap(NULL),
      _seenCallSymbolReferences(comp()->allocator()),
-     _seenKilledSymbolReferences(comp()->allocator()),
      _seenSymRefs(comp()->allocator()),
      _possiblyRelevantNodes(comp()->allocator()),
      _relevantNodes(comp()->allocator()),

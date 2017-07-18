@@ -240,8 +240,6 @@ void OMR::LocalCSE::prePerformOnBlocks()
 
    _simulatedNodesAsArray = (TR::Node**)trMemory()->allocateStackMemory(comp()->getNodeCount()*sizeof(TR::Node*));
    memset(_simulatedNodesAsArray, 0, comp()->getNodeCount()*sizeof(TR::Node*));
-
-   memset (_previousNodeConversionsTable, 0, TR_PNC_BUCKETS * sizeof (OMR::PreviousNodeConversion *));
    }
 
 
@@ -1866,51 +1864,4 @@ rcount_t OMR::LocalCSE::recursivelyIncReferenceCount(TR::Node *node)
          recursivelyIncReferenceCount(node->getChild(childCount));
       }
    return count;
-   }
-
-
-void OMR::LocalCSE::setPreviousConversion(TR::Node *storeNode, TR::Node *convertedNode, TR::SymbolReference *symRef)
-   {
-   uint32_t hash = TR_PNC_HASH(storeNode) & (TR_PNC_BUCKETS - 1);
-
-   OMR::PreviousNodeConversion *cursor = _previousNodeConversionsTable[hash];
-   OMR::PreviousNodeConversion *prev = 0;
-
-   for (; cursor; prev = cursor, cursor = cursor->next)
-      {
-      if (cursor->getConvertedStoreNode() == storeNode)
-         {
-         cursor->addConvertedNode(convertedNode, symRef);
-         }
-      }
-
-   if (!cursor)
-      {
-      cursor = new (trHeapMemory()) OMR::PreviousNodeConversion(trMemory(), storeNode);
-      cursor->addConvertedNode(convertedNode, symRef);
-      cursor->next = 0;
-      if (prev)
-        prev->next = cursor;
-      else
-        _previousNodeConversionsTable[hash] = cursor;
-      }
-   }
-
-TR::Node *OMR::LocalCSE::getPreviousConversion(TR::Node *storeNode, TR::SymbolReference *symRef)
-   {
-   uint32_t hash = TR_PNC_HASH(storeNode) & (TR_PNC_BUCKETS - 1);
-
-   OMR::PreviousNodeConversion *cursor = _previousNodeConversionsTable[hash];
-   TR::Node *ret = NULL;
-
-   for (; cursor; cursor = cursor->next)
-      {
-      if (cursor->getConvertedStoreNode() == storeNode)
-         {
-         ret = cursor->findConvertedNodeForSymRef(symRef);
-         break;
-         }
-      }
-
-   return ret;
    }

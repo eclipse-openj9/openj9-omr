@@ -41,72 +41,6 @@ namespace TR { class TreeTop; }
 
 namespace OMR
 {
-struct previousConversion
-   {
-   TR::SymbolReference *symRef;
-   TR::Node *convertedNode;
-   };
-
-#define TR_PNC_BUCKETS 16
-#define TR_PNC_HASH(key) (((unsigned long)key>>16)^(unsigned long)key)
-
-class PreviousNodeConversion
-   {
-   public:
-   TR_ALLOC(TR_Memory::PreviousNodeConversion)
-
-   PreviousNodeConversion(TR_Memory *m, TR::Node *convertedStoreNode)
-      {
-      _trMemory = m;
-      _convertedStoreNode = convertedStoreNode;
-      _conversions = new (m->trHeapMemory()) TR_Array<struct previousConversion *>(m, 8, true, heapAlloc);
-      next = 0;
-      }
-
-   TR::Node *getConvertedStoreNode() { return _convertedStoreNode; }
-   TR_Array<struct previousConversion *> *getConversions() { return _conversions; }
-
-   void addConvertedNode(TR::Node *convertedNode, TR::SymbolReference *symRef)
-      {
-      struct previousConversion *pc = (struct previousConversion *) _trMemory->allocateHeapMemory(sizeof (struct previousConversion));
-      pc->symRef = symRef;
-      pc->convertedNode = convertedNode;
-      _conversions->add(pc);
-      }
-
-   TR::Node *findConvertedNodeForSymRef(TR::SymbolReference *symRef)
-      {
-      TR_ArrayIterator<struct previousConversion> it(_conversions);
-      TR::Node *ret = NULL;
-
-      struct previousConversion *pc = it.getFirst();
-      do
-         {
-         if (pc->symRef == symRef)
-            {
-            ret = pc->convertedNode;
-            break;
-            }
-
-         if (!it.atEnd())
-            {
-            pc = it.getNext();
-            }
-         else
-            break;
-         } while(1);
-
-      return ret;
-      }
-
-   PreviousNodeConversion *next;
-   private:
-   TR_Memory *_trMemory;
-   TR::Node *_convertedStoreNode;
-   TR_Array<struct previousConversion *> *_conversions;
-   };
-
-
 /**
  * Class LocalCSE (Local Common Subexpression Elimination)
  * =======================================================
@@ -180,8 +114,6 @@ class LocalCSE : public TR::Optimization
    bool canBeAvailable(TR::Node *, TR::Node *, SharedSparseBitVector &, bool);
    bool isAvailableNullCheck(TR::Node *, SharedSparseBitVector &);
    TR::Node *getAvailableExpression(TR::Node *parent, TR::Node *node);
-   TR::Node *getPreviousConversion(TR::Node *, TR::SymbolReference *);
-   void setPreviousConversion(TR::Node *storeNode, TR::Node *convertedNode, TR::SymbolReference *symRef);
    bool killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases);
    void killAvailableExpressionsAtGCSafePoints(TR::Node *, TR::Node *, SharedSparseBitVector &);
    void killAllAvailableExpressions();
@@ -250,7 +182,6 @@ class LocalCSE : public TR::Optimization
 
    bool _loadaddrAsLoad;
 
-   PreviousNodeConversion* _previousNodeConversionsTable[TR_PNC_BUCKETS];
    int32_t _volatileState;
    };
 

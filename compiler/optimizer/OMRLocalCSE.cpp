@@ -74,8 +74,6 @@ OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
      _storeMap(NULL),
      _seenCallSymbolReferences(comp()->allocator()),
      _seenSymRefs(comp()->allocator()),
-     _possiblyRelevantNodes(comp()->allocator()),
-     _relevantNodes(comp()->allocator()),
      _parentAddedToHT(comp()->allocator()),
      _killedNodes(comp()->allocator()),
      _availableLoadExprs(comp()->allocator()),
@@ -233,6 +231,10 @@ void OMR::LocalCSE::prePerformOnBlocks()
    TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
    _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
 
+   int32_t symRefCount = comp()->getSymRefCount();
+   _possiblyRelevantNodes.init(symRefCount, stackRegion, growable);
+   _relevantNodes.init(symRefCount, stackRegion, growable);
+
    comp()->incVisitCount();
    _mayHaveRemovedChecks = false;
    manager()->setAlteredCode(false);
@@ -288,8 +290,8 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    // along with local CSE. Also the total number of nodes are counted for
    // allocating data structures for local commoning.
    //
-   _possiblyRelevantNodes.Clear();
-   _relevantNodes.Clear();
+   _possiblyRelevantNodes.empty();
+   _relevantNodes.empty();
    _availableLoadExprs.Clear();
    _availablePinningArrayExprs.Clear();
    _killedPinningArrayExprs.Clear();
@@ -1182,9 +1184,9 @@ void OMR::LocalCSE::getNumberOfNodes(TR::Node *node)
 
    if (node->getOpCode().hasSymbolReference())
       {
-      if (_possiblyRelevantNodes.ValueAt(node->getSymbolReference()->getReferenceNumber()))
-         _relevantNodes[node->getSymbolReference()->getReferenceNumber()]=true;
-      _possiblyRelevantNodes[node->getSymbolReference()->getReferenceNumber()]=true;
+      if (_possiblyRelevantNodes.get(node->getSymbolReference()->getReferenceNumber()))
+         _relevantNodes.set(node->getSymbolReference()->getReferenceNumber());
+      _possiblyRelevantNodes.set(node->getSymbolReference()->getReferenceNumber());
       }
 
    for (int32_t i = 0; i < node->getNumChildren(); i++)
@@ -1683,7 +1685,7 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
       return;
 
    if (node->getOpCode().hasSymbolReference() &&
-       !_relevantNodes.ValueAt(node->getSymbolReference()->getReferenceNumber()))
+       !_relevantNodes.get(node->getSymbolReference()->getReferenceNumber()))
       return;
 
    int32_t numChildren = node->getNumChildren();

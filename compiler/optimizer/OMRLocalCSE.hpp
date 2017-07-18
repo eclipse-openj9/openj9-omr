@@ -151,8 +151,8 @@ class LocalCSE : public TR::Optimization
 
    SharedSparseBitVector _seenCallSymbolReferences;
    SharedSparseBitVector _seenSymRefs;
-   SharedSparseBitVector _possiblyRelevantNodes;
-   SharedSparseBitVector _relevantNodes;
+   TR_BitVector _possiblyRelevantNodes;
+   TR_BitVector _relevantNodes;
    SharedSparseBitVector _parentAddedToHT;
    SharedSparseBitVector _killedNodes;
    SharedSparseBitVector _availableLoadExprs;

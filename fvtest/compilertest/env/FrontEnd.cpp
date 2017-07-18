@@ -16,7 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "compilertest/env/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 
 #include <limits.h>
 #include <math.h>

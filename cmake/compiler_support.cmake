@@ -97,6 +97,47 @@ function(make_compiler_target TARGET_NAME)
 endfunction(make_compiler_target)
 
 # Filter through the provided list, and rewrite any 
+# .pasm files to .asm files, and add the .asm file to the list 
+# in lieu of the .pasm file. 
+#
+function(pasm2asm_files out_var compiler)
+
+   set(PASM_CMD ${CMAKE_C_COMPILER}) 
+   set(PASM_FLAGS -x assembler-with-cpp -E -P) 
+   set(PASM_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
+   add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
+
+   set(result "")
+   foreach(in_f ${ARGN})
+      get_filename_component(extension ${in_f} EXT)
+      if (extension STREQUAL ".pasm") # Requires preprocessing 
+         get_filename_component(absolute_in_f ${in_f} ABSOLUTE)
+
+         string(REGEX REPLACE ".pasm" ".asm" out_f ${in_f})
+
+         set(out_f "${CMAKE_CURRENT_BINARY_DIR}/${out_f}")
+         get_filename_component(out_dir ${out_f} DIRECTORY)
+         file(MAKE_DIRECTORY ${out_dir})
+
+         add_custom_command(OUTPUT ${out_f}
+            COMMAND ${PASM_CMD} ${PASM_FLAGS} ${PASM_INCLUDES} -o ${out_f} ${absolute_in_f}
+            DEPENDS ${in_f} 
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Running pasm2asm command on ${in_f} to create ${out_f}"
+            VERBATIM
+            )
+
+         list(APPEND result ${out_f})
+      else() 
+         list(APPEND result ${in_f}) # No change required. Not masm2gas target
+      endif()
+   endforeach()
+   set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+
+
+# Filter through the provided list, and rewrite any 
 # .asm files to .s files, and add the .s file to the list 
 # in lieu of the .asm file. 
 #
@@ -203,6 +244,10 @@ function(create_omr_compiler_library)
                      BYPRODUCTS ${BUILD_NAME_FILE}
                      COMMENT "Generate ${BUILD_NAME_FILE}"
                      )
+
+   # Convert pasm files ot asm files: run this before masm2gas to ensure 
+   # asm files subsequently get picked up. 
+   pasm2asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
    # Run masm2gas on contained .asm files 
    masm2gas_asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})

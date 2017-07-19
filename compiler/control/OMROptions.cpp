@@ -601,6 +601,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontJitIfSlotsSharedByRefAndNonRef", "O\tfail the compilation (in FSD mode) if a slot needs to be shared between an address and a nonaddress.",     SET_OPTION_BIT(TR_DontJitIfSlotsSharedByRefAndNonRef), "F"},
    {"dontRestrictInlinerDuringStartup",   "O\tdo not restrict trivial inliner during startup", RESET_OPTION_BIT(TR_RestrictInlinerDuringStartup), "F", NOT_IN_SUBSET},
    {"dontRIUpgradeAOTWarmMethods",         "M\tdon't RI upgrade AOT warm methods", SET_OPTION_BIT(TR_DontRIUpgradeAOTWarmMethods), "F", NOT_IN_SUBSET},
+   {"dontSuspendCompThreadsEarly",        "M\tDo not suspend compilation threads when QWeight drops under a threshold", RESET_OPTION_BIT(TR_SuspendEarly), "F", NOT_IN_SUBSET },
    {"dontTurnOffSelectiveNoOptServerIfNoStartupHint", "M\t", RESET_OPTION_BIT(TR_TurnOffSelectiveNoOptServerIfNoStartupHint), "F", NOT_IN_SUBSET },
    {"dontUseFastStackwalk",                "I\tDo not use accelerated stackwalking algorithm", SET_OPTION_BIT(TR_DoNotUseFastStackwalk), "P"},
    {"dontUseHigherCountsForNonSCCMethods", "M\tDo not use the default high counts for methods belonging to classes not in SCC", RESET_OPTION_BIT(TR_UseHigherCountsForNonSCCMethods), "F", NOT_IN_SUBSET },

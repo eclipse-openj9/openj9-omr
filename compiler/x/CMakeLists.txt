@@ -58,11 +58,11 @@ compiler_library(x
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/OMRRegisterIterator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/env/OMRCPU.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/env/OMRDebugEnv.cpp
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp> 
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMachine.cpp>
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp> 
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp>
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp>
-	$<$<EQUAL:${OMR_TARGET_DATASIZE},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp>
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp> 
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMachine.cpp>
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp> 
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp>
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp>
+	$<$<EQUAL:${TR_TARGET_BITS},64>: ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp>
 )
 

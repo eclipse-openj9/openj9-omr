@@ -571,23 +571,19 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
               // Iterate over the smaller set to save compile time, this can be very significant
               if (storeNodesSize < tmpAliases.elementCount())
                  {
-                 TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
-                 for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
-                    storeMapSymRefs.set(itr->first);
-
-                 TR_BitVectorIterator bvi(storeMapSymRefs);
-                 while (bvi.hasMoreElements())
+                 for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; )
                     {
-                    uint32_t nc = bvi.getNextElement();
                     // Kill stores that are available for copy propagation based
                     // on this definition
-                    TR::Node *storeNode = (*_storeMap)[nc];
+                    TR::Node *storeNode = itr->second;
                     int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
 
                     if ((symRef->getReferenceNumber() == storeSymRefNum) || tmpAliases.get(storeSymRefNum))
                        {
-                       _storeMap->erase(nc);
+                       _storeMap->erase(itr++);
                        }
+                    else
+                       ++itr;
                     }
                  }
               else
@@ -604,21 +600,17 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
               }
            else
               {
-              TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
-              for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
-                 storeMapSymRefs.set(itr->first);
-
-              TR_BitVectorIterator bvi(storeMapSymRefs);
-              while (bvi.hasMoreElements())
+              for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; )
                  {
-                 uint32_t nc = bvi.getNextElement();
-                 TR::Node *storeNode = (*_storeMap)[nc];
+                 TR::Node *storeNode = itr->second;
                  int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
 
                  if ((symRef->getReferenceNumber() == storeSymRefNum) || UseDefAliases.contains(storeSymRefNum, comp()))
                     {
-                    _storeMap->erase(nc);
+                    _storeMap->erase(itr++);
                     }
+                 else
+                    ++itr;
                  }
               }
            }
@@ -671,23 +663,16 @@ void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoade
         //
         if (_seenSymRefs.get(symRefNumber))
            {
-           TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
            for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
-              storeMapSymRefs.set(itr->first);
-
-           TR_BitVectorIterator bvi(storeMapSymRefs);
-           while (bvi.hasMoreElements())
               {
-              uint32_t nc = bvi.getNextElement();
-
               // Kill stores that are available for copy propagation based
               // on this definition
-              TR::Node *storeNode = (*_storeMap)[nc];
+              TR::Node *storeNode = itr->second;
               int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
               
               if (symRefNumber == storeSymRefNum)
                  {
-                 _storeMap->erase(nc);
+                 _storeMap->erase(itr++);
                  }
               }
            }
@@ -1605,24 +1590,19 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
       if (trace())
          traceMsg(comp(), "Node %p is detected as a GC safe point\n", node);
 
-      TR_BitVector symRefs(comp()->trMemory()->currentStackRegion());
-      for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
-         symRefs.set(itr->first);
-      
-      TR_BitVectorIterator bvi(symRefs);
-      while (bvi.hasMoreElements())
+      for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; )
          {
-         uint32_t nc = bvi.getNextElement();
-
-         TR::Node *storeNode = (*_storeMap)[nc];
+         TR::Node *storeNode = itr->second;
          int32_t childAdjust = (storeNode->getOpCode().isWrtBar()) ? 2 : 1;
 
          TR::Node *rhsOfStoreDefNode = storeNode->getChild(storeNode->getNumChildren()-childAdjust);
          if (rhsOfStoreDefNode->getOpCode().isArrayRef())
             {
             int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
-            _storeMap->erase(nc);
+            _storeMap->erase(itr++);
             }
+         else
+            ++itr;
          }
       killAllAvailableExpressions();
       }

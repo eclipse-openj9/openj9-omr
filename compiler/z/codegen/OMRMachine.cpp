@@ -6557,7 +6557,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       int32_t p = 0;
-      static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR::dontInitializeGlobalRegisterTableFromLinkage");
+      static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR_dontInitializeGlobalRegisterTableFromLinkage");
       bool enableHighWordGRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
       if (dontInitializeGlobalRegisterTableFromLinkage)
          {

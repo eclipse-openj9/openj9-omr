@@ -288,7 +288,7 @@ void OMR::ValuePropagation::initialize()
 
    _reachedMaxRelationDepth = false;
    _propagationDepth = 0;
-   static const char *pEnv = feGetEnv("TR::VPMaxRelDepth");
+   static const char *pEnv = feGetEnv("TR_VPMaxRelDepth");
    _maxPropagationDepth = pEnv ? atoi(pEnv) : MAX_RELATION_DEPTH;
    if (comp()->getMethodHotness() > warm)
       _maxPropagationDepth = _maxPropagationDepth * 3;

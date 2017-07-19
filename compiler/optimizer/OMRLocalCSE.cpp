@@ -223,8 +223,8 @@ void OMR::LocalCSE::prePerformOnBlocks()
    TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
    _storeMap = new (stackRegion) StoreMap((StoreMapComparator()), StoreMapAllocator(stackRegion));
 
-   int32_t symRefCount = comp()->getSymRefCount();
-   int32_t nodeCount = comp()->getNodeCount();
+   int32_t symRefCount = 0;//comp()->getSymRefCount();
+   int32_t nodeCount = 0;//comp()->getNodeCount();
    _seenCallSymbolReferences.init(symRefCount, stackRegion, growable);
    _availableLoadExprs.init(symRefCount, stackRegion, growable);
    _availablePinningArrayExprs.init(symRefCount, stackRegion, growable);

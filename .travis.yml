@@ -45,8 +45,6 @@ env:
     # core_pattern and don't have apport installed.  This can be removed when
     # apport is available in apt whitelist
 matrix:
-  allow_failures:
-    - env: BUILD_WITH_CMAKE=yes
   exclude:
     - os: osx
       env: BUILD_WITH_CMAKE=yes

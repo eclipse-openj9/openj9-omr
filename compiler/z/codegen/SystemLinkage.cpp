@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 // See also S390Linkage.cpp which contains more S390 Linkage
@@ -931,10 +932,21 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
    setReturnAddressRegister (TR::RealRegister::GPR14 );
 
    setGOTPointerRegister   (TR::RealRegister::GPR12  );
+
+#if defined(OMRZTPF)
+/*
+ * z/TPF os is a 64 bit target
+ */
+   setOffsetToRegSaveArea     (16);    // z/TPF is a 64 bit target only
+   setGPRSaveAreaBeginOffset  (16);    //x'10'  see ICST_R2 in tpf/icstk.h
+   setGPRSaveAreaEndOffset    (160);   //x'a0'  see ICST_PAT in tpf/icstk.h
+   setOffsetToFirstParm       (448);   //x'1c0' see ICST_PAR in tpf/icstk.h
+#else
    setOffsetToRegSaveArea   ((TR::Compiler->target.is64Bit()) ? 16 : 8);
    setGPRSaveAreaBeginOffset  ((TR::Compiler->target.is64Bit()) ? 48 : 24);
    setGPRSaveAreaEndOffset  ((TR::Compiler->target.is64Bit()) ? 128 : 64 );
    setOffsetToFirstParm   ((TR::Compiler->target.is64Bit()) ? 160 : 96);
+#endif /* defined(OMRZTPF) */
    setOffsetToFirstLocal  (0);
    setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
    setOutgoingParmAreaBeginOffset(getOffsetToFirstParm());

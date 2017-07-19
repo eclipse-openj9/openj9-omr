@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+      Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -29,7 +30,9 @@
 
 #if defined(LINUX)
 /* Allowing the use of pthread_attr_getstack in omrthread_get_stack_range */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <features.h>
 #elif defined(OSX)
 #include <pthread.h>

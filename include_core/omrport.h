@@ -602,7 +602,7 @@ typedef struct J9ProcessorInfos {
 #if !defined(OMRZTPF)
 #define OMRPORT_SLOPEN_LAZY  2
 #else /* !defined(OMRZTPF) */
-#define J9PORT_SLOPEN_LAZY  0
+#define OMRPORT_SLOPEN_LAZY  0
 #endif /* defined(OMRZTPF) */
 #define OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND  4
 #define OMRPORT_SLOPEN_OPEN_EXECUTABLE 8     /* Can be ORed without affecting existing flags. */

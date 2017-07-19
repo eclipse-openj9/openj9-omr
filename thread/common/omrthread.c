@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  *******************************************************************************/
 
 /**
@@ -1578,7 +1579,7 @@ thread_wrapper(WRAPPER_ARG arg)
 
 	threadEnableCpuMonitor(thread);
 
-#if defined(LINUX)
+#if defined(LINUX)  && !defined(OMRZTPF)
 	/* Workaround for NPTL bug on Linux. See omrthread_exit() */
 	{
 		jmp_buf jumpBuffer;
@@ -1589,9 +1590,9 @@ thread_wrapper(WRAPPER_ARG arg)
 		}
 		thread->jumpBuffer = NULL;
 	}
-#else /* defined(LINUX) */
+#else /* defined(LINUX) && !defined(OMRZTPF) */
 	thread->entrypoint(thread->entryarg);
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 	threadInternalExit();
 	/* UNREACHABLE */

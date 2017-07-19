@@ -118,11 +118,9 @@ static const sigvpair_t	pic2pair[] = {	IMPOSSIBLE, /*	0: Not assigned						*/
 }; 
 typedef	struct iproc IPROC;
 
-#define	J9SIGNAL_CONTEXT
-#define OSDUMP_SYMBOLS_ONLY
 #include "safe_storage.h"
 
-static void	ztpfDeriveSigcontext( struct sigcontext *uscPtr, ucontext_t *uctPtr );
+static void	ztpfDeriveSigcontext( struct sigcontext *sigcPtr, ucontext_t *uctPtr );
 static void	ztpfDeriveUcontext( ucontext_t *uscPtr );
 safeStorage *allocateDurableStorage( void );
 
@@ -324,10 +322,18 @@ ztpfDeriveSiginfo( siginfo_t *build ) {
  */
 
 static void
-ztpfDeriveSigcontext( struct sigcontext *uscPtr, ucontext_t *uctPtr ) {
-	memset( uscPtr, 0, sizeof(*uscPtr) );		/* Set it all to zeros, then */
-	uscPtr->sregs = &(uctPtr->uc_mcontext);		/*	fill it all in.			 */
-	uscPtr->oldmask[0] = uctPtr->uc_sigmask;
+ztpfDeriveSigcontext( struct sigcontext *sigcPtr, ucontext_t *uctPtr ) {
+        memset( sigcPtr, 0, sizeof(*sigcPtr) );         /* Set it all to zeros, then fill it all in.     */
+
+        sigcPtr->sregs->regs.psw.mask  = uctPtr->uc_mcontext.psw.mask;
+        sigcPtr->sregs->regs.psw.addr  = uctPtr->uc_mcontext.psw.addr;
+
+        memcpy(&(sigcPtr->sregs->regs.gprs), &(uctPtr->uc_mcontext.gregs),sizeof(sigcPtr->sregs->regs.gprs));
+        memcpy(&(sigcPtr->sregs->regs.acrs), &(uctPtr->uc_mcontext.aregs),sizeof(sigcPtr->sregs->regs.acrs));
+
+        memcpy(&(sigcPtr->sregs->fpregs), &(uctPtr->uc_mcontext.fpregs), sizeof(fpregset_t));
+
+        sigcPtr->oldmask[0]       = uctPtr->uc_sigmask;
 	return;
 }
 
@@ -353,9 +359,9 @@ ztpfDeriveUcontext( ucontext_t *uscPtr ) {
      *	 Fill in the uc_mcontext, uc_flags and uc_sigmask fields. 
 	 *	 Leave uc_link alone, it has no meaning in or for z/TPF.
      */
-	uscPtr->uc_mcontext.regs.psw.mask = pDib->dispw[0];	/* PSW lo half */
-	uscPtr->uc_mcontext.regs.psw.addr = pDib->dispw[1];	/* PSW hi half */
-	memcpy( uscPtr->uc_mcontext.regs.gprs, 
+   uscPtr->uc_mcontext.psw.mask = pDib->dispw[0];  /* PSW lo half */
+   uscPtr->uc_mcontext.psw.addr = pDib->dispw[1];  /* PSW hi half */
+   memcpy( uscPtr->uc_mcontext.gregs,
 		  pDib->direg, sizeof(pDib->direg) );		/*GPRs*/
 	memcpy( uscPtr->uc_mcontext.fpregs.fprs, 
 		  pDib->dfreg, sizeof(pDib->dfreg) );		/*FPRs*/
@@ -576,7 +582,7 @@ infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
 	*name = "";
 	if ( (index >=0) && (index < NUM_REGS)) {
 		*name = n_gpr[index];
-		*value = &(info->platformSignalInfo.context->uc_mcontext.regs.gprs[index]);
+		*value = &(info->platformSignalInfo.context->uc_mcontext.gregs[index]);
 		return OMRPORT_SIG_VALUE_ADDRESS;
 	}
 	return OMRPORT_SIG_VALUE_UNDEFINED;
@@ -606,11 +612,11 @@ infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info
 	case OMRPORT_SIG_CONTROL_PC:
 	case 0:
 		*name = "psw";
-		*value = &(mcontext->regs.psw.addr);
+		*value = &(mcontext->psw.addr);
 		return OMRPORT_SIG_VALUE_ADDRESS;
 	case 1:
 		*name = "mask";
-		*value = &(mcontext->regs.psw.mask);
+		*value = &(mcontext->psw.mask);
 		return OMRPORT_SIG_VALUE_ADDRESS;
 	case OMRPORT_SIG_CONTROL_S390_FPC:
 	case 2:
@@ -637,7 +643,7 @@ infoForModule(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info,
 	mcontext_t *mcontext = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
 	*name = "";
 
-	address = (void *)mcontext->regs.psw.addr;
+	address = (void *)mcontext->psw.addr;
 	dl_result = dladdr(address, dl_info);
 	switch (index) {
 	case OMRPORT_SIG_MODULE_NAME:

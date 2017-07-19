@@ -900,14 +900,14 @@ buildELFNoteArea(Elf64_Nhdr *buffer, DIB *dibPtr)
 	nsh_fpregs->n_type = NT_FPREGSET; /* Type = 2                    */
 	memcpy(nsh_fpregs + 1, "CORE", 5); /* Set "CORE" name ...        */
 	/*
-	 * We don't care what the real FPCR contained. We're setting the mask
+	 * We don't care what the real FPCR (fpc) contained. We're setting the mask
 	 * only to state that 16 fprs exist. The real FPCR is too hard to get,
 	 * anyway.
 	 */
-	fpregs->fpcr = 0x00800000;
+	fpregs->fpc = 0x00800000;
 	wSrc = (uint8_t *) &(dibPtr->dfreg); /* Get the adrs of the fp    */
-	wDest = (uint8_t *) &(fpregs->fpreg); /*  regs, then copy them    */
-	memcpy(wDest, wSrc, sizeof(fpregs->fpreg)); /*  into the note area.    */
+	wDest = (U_8 *)&(fpregs->fprs);                /*  regs, then copy them     */
+	memcpy( wDest, wSrc, sizeof(fpregs->fprs) );   /*  into the note area.      */
 	/*
 	 * ... then NT_S390_LAST_BREAK
 	 */

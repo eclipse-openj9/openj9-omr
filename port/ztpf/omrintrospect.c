@@ -23,9 +23,7 @@
  * @brief process introspection support
  */
 #include <pthread.h>
-#define J9ZTPF_introspect
 #include <sys/ucontext.h>
-#undef	J9ZTPF_introspect
 #include <sched.h>
 #include <string.h>
 #include <signal.h>
@@ -45,8 +43,6 @@
 #include <tpf/tpfapi.h>
 #include <tpf/c_thgl.h>
 #include <tpf/c_cinfc.h>
-#include "j9ztpf_time.h"
-#include "j9ztpf_kernel.h"
 
 /* z/TPF doesn't have a fdatasync(), it takes   */
 /*    one argument and returns void. Nullify it.*/
@@ -753,122 +749,11 @@ count_threads( struct PlatformWalkData *data ) {
 static int
 suspend_all_preemptive(struct PlatformWalkData *data)
 {
-#if defined(J9ZTPF)
+/*
+ *z/TPF platform will not suspend threads via this function.
+ */
     errno = EBADF;
     return -1;
-#endif
-	struct sigaction upcall_action;
-	pid_t pid = getpid();
-	int thread_count = 0;
-
-	struct OMRPortLibrary *portLibrary = data->state->portLibrary;
-	upcall_action.sa_sigaction = upcall_handler;
-	upcall_action.sa_flags = SA_SIGINFO | SA_RESTART;
-	sigemptyset(&upcall_action.sa_mask);
-	sigaddset(&upcall_action.sa_mask, SUSPEND_SIG);
-	Trc_PRT_introspect_suspendWithSignal(SUSPEND_SIG);
-
-	/* install the signal handler */
-	if (sigaction(SUSPEND_SIG, &upcall_action, &data->oldHandler) == -1) {
-		/* no solution but to bail if we can't install the handler */
-		RECORD_ERROR(data->state, SIGNAL_SETUP_ERROR, -1);
-		return -1;
-	}
-
-	if (data->oldHandler.sa_sigaction == upcall_handler) {
-		/* handler's already installed so we're screwed. We mustn't uninstall the handler
-		 * while cleaning as the thread that installed the initial handler will do so */
-		memset(&data->oldHandler, 0, sizeof(struct sigaction));
-		RECORD_ERROR(data->state, CONCURRENT_COLLECTION, -1);
-		return -1;
-	}
-
-	/* after this point it's safe to go through the full cleaup */
-	data->cleanupRequired = 1;
-
-	thread_count = count_threads(data);
-	if (thread_count < 1) {
-		RECORD_ERROR(data->state, THREAD_COUNT_FAILURE, -2);
-		return -2;
-	}
-
-	data->threadCount = 0;
-
-	/* our main suspend loop. We keep going round this until the number of suspended threads matches the number of
-	 * threads in the process
-	 */
-	do {
-		int i = 0;
-		sigval_t val;
-		val.sival_ptr = data;
-
-		/* fire off enough signals to pause all threads in the process barring us */
-		for (i = data->threadCount; i < thread_count -1; i++) {
-			int ret = sigqueue(pid, SUSPEND_SIG, val);
-
-			if (ret != 0) {
-				if (errno == EAGAIN) {
-					/* retry the queuing until we time out */
-					int j;
-					for (j = 0; ret != 0 && errno == EAGAIN && !timedOut(data->state->deadline1); j++) {
-						j9thread_yield();
-						ret = sigqueue(pid, SUSPEND_SIG, val);
-					}
-				}
-
-				if (ret != 0) {
-					/* failed to queue the signal, unrecoverable */
-					data->threadsOutstanding = i;
-					return -errno;
-				}
-			}
-
-			/* allow the signals time to be dispatched so we don't overflow the signal queue. 10 is an arbitrary
-			 * number to see if we can avoid the added complexity of coordination between the signal handler and
-			 * this suspend logic. Testing shows 48 threads suspended on AIX5.3 at the point where we get EAGAIN.
-			 */
-			if ((i % 10) == 0) {
-				j9thread_yield();
-			}
-		}
-
-		data->threadCount = thread_count;
-		thread_count = count_threads(data);
-		if (thread_count < 1) {
-			data->threadsOutstanding = data->threadCount - 1;
-			return -4;
-		}
-
-		if (data->threadCount == thread_count) {
-			/* nothing changed */
-			break;
-		} else if (data->threadCount > thread_count) {
-			/* threads exited in between us counting and generating signals, so swallow the surplus */
-			sigset_t set;
-			int sig;
-
-			for (i = 0; i < data->threadCount - thread_count; i++) {
-				/* sanity check that there is a signal on the queue for us */
-				sigpending(&set);
-				if (sigismember(&set, SUSPEND_SIG)) {
-					/* there is a suspend signal pending so swallow it */
-					sigemptyset(&set);
-					sigaddset(&set, SUSPEND_SIG);
-					sigwait(&set, &sig);
-				}
-			}
-
-			data->threadCount = thread_count;
-			break;
-		}
-	} while (!timedOut(data->state->deadline1));
-
-	if (timedOut(data->state->deadline1)) {
-		data->threadsOutstanding = data->threadCount - 1;
-		return -5;
-	}
-
-	return data->threadCount -1;
 }
 
 

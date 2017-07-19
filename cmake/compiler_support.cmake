@@ -50,6 +50,12 @@ endfunction(add_prefix)
 
 set(TR_TARGET_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, arm, or z)")
 set(TR_TARGET_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
+set(TR_TARGET_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+
+set(TR_HOST_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, or z)")
+set(TR_HOST_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
+set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+
 set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1" CACHE INTERNAL "ASM FLags")
 
 # Mark a target as consuming the compiler components. 

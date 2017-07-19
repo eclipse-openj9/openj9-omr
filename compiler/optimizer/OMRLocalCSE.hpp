@@ -104,24 +104,24 @@ class LocalCSE : public TR::Optimization
    void addToHashTable(TR::Node *node, int32_t hashValue);
    void removeFromHashTable(HashTable *hashTable, int32_t hashValue);
    TR::Node *replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference *,/* TR::SymbolReference *,*/ TR::Node *, TR::Node *, TR::Node *, TR::Node *, int32_t);
-   void examineNode(TR::Node *, SharedSparseBitVector &, TR::Node *, int32_t, int32_t *, bool *, int32_t);
+   void examineNode(TR::Node *, TR_BitVector &, TR::Node *, int32_t, int32_t *, bool *, int32_t);
    void commonNode(TR::Node *, int32_t, TR::Node *, TR::Node *);
    void transformBlock(TR::TreeTop *, TR::TreeTop *);
    void getNumberOfNodes(TR::Node *);
    bool allowNodeTypes(TR::Node *storeNode, TR::Node *node);
    void setIsInMemoryCopyPropFlag(TR::Node *rhsOfStoreDefNode);
-   void makeNodeAvailableForCommoning(TR::Node *, TR::Node *, SharedSparseBitVector &, bool *);
-   bool canBeAvailable(TR::Node *, TR::Node *, SharedSparseBitVector &, bool);
-   bool isAvailableNullCheck(TR::Node *, SharedSparseBitVector &);
+   void makeNodeAvailableForCommoning(TR::Node *, TR::Node *, TR_BitVector &, bool *);
+   bool canBeAvailable(TR::Node *, TR::Node *, TR_BitVector &, bool);
+   bool isAvailableNullCheck(TR::Node *, TR_BitVector &);
    TR::Node *getAvailableExpression(TR::Node *parent, TR::Node *node);
-   bool killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases);
-   void killAvailableExpressionsAtGCSafePoints(TR::Node *, TR::Node *, SharedSparseBitVector &);
+   bool killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases);
+   void killAvailableExpressionsAtGCSafePoints(TR::Node *, TR::Node *, TR_BitVector &);
    void killAllAvailableExpressions();
-   void killAllDataStructures(SharedSparseBitVector &);
+   void killAllDataStructures(TR_BitVector &);
    void killAvailableExpressions(int32_t);
-   void killAvailableExpressionsUsingBitVector(HashTable *hashTable, SharedSparseBitVector &vec);
+   void killAvailableExpressionsUsingBitVector(HashTable *hashTable, TR_BitVector &vec);
    void killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &);
-   void killAvailableExpressionsUsingAliases(SharedSparseBitVector &);
+   void killAvailableExpressionsUsingAliases(TR_BitVector &);
    void killAllInternalPointersBasedOnThisPinningArray(TR::SymbolReference *symRef);
 
    bool areSyntacticallyEquivalent(TR::Node *, TR::Node *, bool *);
@@ -149,15 +149,15 @@ class LocalCSE : public TR::Optimization
    TR::Node **_replacedNodesByAsArray;
    int32_t *_symReferencesTable;
 
-   SharedSparseBitVector _seenCallSymbolReferences;
+   TR_BitVector _seenCallSymbolReferences;
    TR_BitVector _seenSymRefs;
    TR_BitVector _possiblyRelevantNodes;
    TR_BitVector _relevantNodes;
    TR_BitVector _parentAddedToHT;
    TR_BitVector _killedNodes;
-   SharedSparseBitVector _availableLoadExprs;
-   SharedSparseBitVector _availableCallExprs;
-   SharedSparseBitVector _availablePinningArrayExprs;
+   TR_BitVector _availableLoadExprs;
+   TR_BitVector _availableCallExprs;
+   TR_BitVector _availablePinningArrayExprs;
    TR_BitVector _killedPinningArrayExprs;
 
    HashTable *_hashTable;

@@ -72,10 +72,6 @@
 OMR::LocalCSE::LocalCSE(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _storeMap(NULL),
-     _seenCallSymbolReferences(comp()->allocator()),
-     _availableLoadExprs(comp()->allocator()),
-     _availablePinningArrayExprs(comp()->allocator()),
-     _availableCallExprs(comp()->allocator()),
      _arrayRefNodes(NULL)
    {
    static const char *e = feGetEnv("TR_loadaddrAsLoad");
@@ -229,6 +225,10 @@ void OMR::LocalCSE::prePerformOnBlocks()
 
    int32_t symRefCount = comp()->getSymRefCount();
    int32_t nodeCount = comp()->getNodeCount();
+   _seenCallSymbolReferences.init(symRefCount, stackRegion, growable);
+   _availableLoadExprs.init(symRefCount, stackRegion, growable);
+   _availablePinningArrayExprs.init(symRefCount, stackRegion, growable);
+   _availableCallExprs.init(symRefCount, stackRegion, growable);
    _seenSymRefs.init(symRefCount, stackRegion, growable);
    _possiblyRelevantNodes.init(symRefCount, stackRegion, growable);
    _relevantNodes.init(symRefCount, stackRegion, growable);
@@ -293,10 +293,10 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    //
    _possiblyRelevantNodes.empty();
    _relevantNodes.empty();
-   _availableLoadExprs.Clear();
-   _availablePinningArrayExprs.Clear();
+   _availableLoadExprs.empty();
+   _availablePinningArrayExprs.empty();
    _killedPinningArrayExprs.empty();
-   _availableCallExprs.Clear();
+   _availableCallExprs.empty();
    _parentAddedToHT.empty();
    _killedNodes.empty();
 
@@ -332,8 +332,8 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
    _hashTableWithConsts = new (stackMemoryRegion) HashTable(std::less<int32_t>(), stackMemoryRegion);
 
    _nextReplacedNode = 0;
-   SharedSparseBitVector seenAvailableLoadedSymbolReferences(comp()->allocator());
-   _seenCallSymbolReferences.Clear();
+   TR_BitVector seenAvailableLoadedSymbolReferences(stackMemoryRegion);
+   _seenCallSymbolReferences.empty();
    _seenSymRefs.empty();
 
    int32_t nextNodeIndex = 0;
@@ -407,7 +407,7 @@ OMR::LocalCSE::allowNodeTypes(TR::Node *storeNode, TR::Node *node)
  * subexpression elimination on a given node.
  */
 
-void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, TR::Node *parent, int32_t childNum, int32_t *nextLoadIndex, bool *parentCanBeAvailable, int32_t depth)
+void OMR::LocalCSE::examineNode(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR::Node *parent, int32_t childNum, int32_t *nextLoadIndex, bool *parentCanBeAvailable, int32_t depth)
    {
    if (depth > MAX_DEPTH)
       {
@@ -528,10 +528,10 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
 
    if (trace())
       {
-      SharedSparseBitVector tmpAliases(comp()->allocator());
+      TR_BitVector tmpAliases(comp()->trMemory()->currentStackRegion());
       traceMsg(comp(), "For Node %p UseDefAliases = ",node);
-      UseDefAliases.getAliases(tmpAliases);
-      *(comp()) << tmpAliases;
+      UseDefAliases.getAliasesAndUnionWith(tmpAliases);
+      tmpAliases.print(comp());
       traceMsg(comp(), "\n");
       }
 
@@ -565,11 +565,11 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
               // Getting aliases can be very expensive if there are alot of aliases
               // For this reason we don't always want to do this, only if storeNodes is large
               // and we can make up the cost of getting aliases by iterating the smaller set
-              SharedSparseBitVector tmpAliases(comp()->allocator());
-              UseDefAliases.getAliases(tmpAliases);
+              TR_BitVector tmpAliases(comp()->trMemory()->currentStackRegion());
+              UseDefAliases.getAliasesAndUnionWith(tmpAliases);
 
               // Iterate over the smaller set to save compile time, this can be very significant
-              if (storeNodesSize < tmpAliases.PopulationCount())
+              if (storeNodesSize < tmpAliases.elementCount())
                  {
                  TR_BitVector storeMapSymRefs(comp()->trMemory()->currentStackRegion());
                  for (auto itr = _storeMap->begin(), end = _storeMap->end(); itr != end; ++itr)
@@ -584,7 +584,7 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
                     TR::Node *storeNode = (*_storeMap)[nc];
                     int32_t storeSymRefNum = storeNode->getSymbolReference()->getReferenceNumber();
 
-                    if ((symRef->getReferenceNumber() == storeSymRefNum) || tmpAliases[storeSymRefNum])
+                    if ((symRef->getReferenceNumber() == storeSymRefNum) || tmpAliases.get(storeSymRefNum))
                        {
                        _storeMap->erase(nc);
                        }
@@ -592,9 +592,10 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
                  }
               else
                  {
-                 SharedSparseBitVector::Cursor sc(tmpAliases);
-                 for (sc.SetToFirstOne(); sc.Valid(); sc.SetToNextOne())
+                 TR_BitVectorIterator bvi(tmpAliases);
+                 while (bvi.hasMoreElements())
                     {
+                    int32_t sc = bvi.getNextElement();
                     StoreMap::iterator result = _storeMap->find(sc);
                     if (result != _storeMap->end())
                        _storeMap->erase(sc);
@@ -624,19 +625,19 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
 
         // Kill fast commoning info
         //
-        SharedSparseBitVector tmp(comp()->allocator());
-        seenAvailableLoadedSymbolReferences.Andc(_seenCallSymbolReferences, tmp);
+        TR_BitVector tmp(seenAvailableLoadedSymbolReferences);
+        tmp -= _seenCallSymbolReferences;
 
         if (trace())
            {
            traceMsg(comp(), "For node %p tmp: ",node);
-           *(comp()) << tmp;
+           tmp.print(comp());
 
            traceMsg(comp(), "\n_seenCallSymbolReferences: ");
-           *(comp()) << _seenCallSymbolReferences;
+           _seenCallSymbolReferences.print(comp());
 
            traceMsg(comp(), "\n seenAvailableLoadedSymbolReferences:");
-           *(comp()) << seenAvailableLoadedSymbolReferences;
+           seenAvailableLoadedSymbolReferences.print(comp());
 
            traceMsg(comp(), "\n");
            }
@@ -646,17 +647,18 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
            // we want to keep the last load of a particular sym ref alive but no earlier loads should survive
            // note that volatile processing already handles killing symbols when necessary hence the else
            if (alreadyKilledAtVolatileLoad)
-              seenAvailableLoadedSymbolReferences[symRef->getReferenceNumber()]=true;
+              seenAvailableLoadedSymbolReferences.set(symRef->getReferenceNumber());
            else
               {
               previouslyAvailable = true;
-              seenAvailableLoadedSymbolReferences.And(_seenCallSymbolReferences,tmp);
+              tmp = seenAvailableLoadedSymbolReferences;
+              tmp &= _seenCallSymbolReferences;
               UseDefAliases.getAliasesAndSubtractFrom(seenAvailableLoadedSymbolReferences);
               seenAvailableLoadedSymbolReferences |= tmp;
               }
 
            if (alreadyKilledAtVolatileLoad) // we want to keep the last load of a particular sym ref alive but no earlier loads should surivive
-              seenAvailableLoadedSymbolReferences[symRef->getReferenceNumber()]=true;
+              seenAvailableLoadedSymbolReferences.set(symRef->getReferenceNumber());
            }
         }
      else
@@ -692,15 +694,15 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
 
         // Kill fast availability info for commoning
         //
-        if (seenAvailableLoadedSymbolReferences.ValueAt(symRef->getReferenceNumber()))
+        if (seenAvailableLoadedSymbolReferences.get(symRef->getReferenceNumber()))
            previouslyAvailable = true;
-        seenAvailableLoadedSymbolReferences[symRef->getReferenceNumber()]=false;
+        seenAvailableLoadedSymbolReferences.reset(symRef->getReferenceNumber());
         }
 
       // Internal pointers should be killed if the pinning array was killed
       //
       if (symRef && symRef->getSymbol()->isAuto() &&
-         _availablePinningArrayExprs.ValueAt(symRef->getReferenceNumber()))
+         _availablePinningArrayExprs.get(symRef->getReferenceNumber()))
          {
          killAllInternalPointersBasedOnThisPinningArray(symRef);
          }
@@ -737,17 +739,17 @@ void OMR::LocalCSE::examineNode(TR::Node *node, SharedSparseBitVector &seenAvail
 
    if (node->getOpCode().isCall())
       {
-      seenAvailableLoadedSymbolReferences[node->getSymbolReference()->getReferenceNumber()]=true;
+      seenAvailableLoadedSymbolReferences.set(node->getSymbolReference()->getReferenceNumber());
       // pure calls can be commoned so we must observe kills
       if (!node->isPureCall())
-         _seenCallSymbolReferences[node->getSymbolReference()->getReferenceNumber()]=true;;
+         _seenCallSymbolReferences.set(node->getSymbolReference()->getReferenceNumber());
       }
 
    static char *verboseProcessing = feGetEnv("TR_VerboseLocalCSEAvailableSymRefs");
    if (verboseProcessing)
       {
       traceMsg(comp(), "  after n%dn [%p] seenAvailableLoadedSymbolReferences:", node->getGlobalIndex(), node);
-      *(comp()) << seenAvailableLoadedSymbolReferences;
+      seenAvailableLoadedSymbolReferences.print(comp());
       traceMsg(comp(), "\n");
       }
    }
@@ -998,7 +1000,7 @@ bool OMR::LocalCSE::doCopyPropagationIfPossible(TR::Node *node, TR::Node *parent
 // Adjusts the availability information for the given node; called when
 // the node is being examined by commoning
 //
-void OMR::LocalCSE::makeNodeAvailableForCommoning(TR::Node *parent, TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, bool *canBeAvailable)
+void OMR::LocalCSE::makeNodeAvailableForCommoning(TR::Node *parent, TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, bool *canBeAvailable)
    {
    if (parent &&
        (parent->getOpCodeValue() == TR::Prefetch) &&
@@ -1013,7 +1015,7 @@ void OMR::LocalCSE::makeNodeAvailableForCommoning(TR::Node *parent, TR::Node *no
 
    if (node->getOpCode().hasSymbolReference())
       {
-      if (!seenAvailableLoadedSymbolReferences.ValueAt(node->getSymbolReference()->getReferenceNumber()))
+      if (!seenAvailableLoadedSymbolReferences.get(node->getSymbolReference()->getReferenceNumber()))
          {
          *canBeAvailable = false;
          if (_inSubTreeOfNullCheckReference)
@@ -1032,7 +1034,7 @@ void OMR::LocalCSE::makeNodeAvailableForCommoning(TR::Node *parent, TR::Node *no
                isCallDirect = true;
 
             TR::SymbolReference *symRef = node->getSymbolReference();
-            seenAvailableLoadedSymbolReferences[symRef->getReferenceNumber()]=true;
+            seenAvailableLoadedSymbolReferences.set(symRef->getReferenceNumber());
             }
          }
 
@@ -1201,7 +1203,7 @@ void OMR::LocalCSE::getNumberOfNodes(TR::Node *node)
 // could be available; this check fails if any symbol reference in the
 // subtree of the node is not available
 //
-bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, bool canBeAvailable)
+bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, bool canBeAvailable)
    {
   if (!canBeAvailable)
       return false;
@@ -1227,7 +1229,7 @@ bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, SharedSpars
       // based on an indirection chain involving a non final, non volatile variable must be different than an
       // earlier volatile load based on the same indirection chain.
       //
-      if ((!seenAvailableLoadedSymbolReferences.ValueAt(node->getSymbolReference()->getReferenceNumber())) ||
+      if ((!seenAvailableLoadedSymbolReferences.get(node->getSymbolReference()->getReferenceNumber())) ||
           ((_volatileState == VOLATILE_ONLY) && !node->getSymbol()->isAutoOrParm() && !node->getSymbol()->isVolatile() && !node->getSymbol()->isFinal()))
          return false;
 
@@ -1286,11 +1288,11 @@ bool OMR::LocalCSE::canBeAvailable(TR::Node *parent, TR::Node *node, SharedSpars
 
 // Performs 'fast' availability check for NULLCHK nodes
 //
-bool OMR::LocalCSE::isAvailableNullCheck(TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences)
+bool OMR::LocalCSE::isAvailableNullCheck(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences)
    {
    if (node->getOpCode().hasSymbolReference())
       {
-      if (!seenAvailableLoadedSymbolReferences.ValueAt(node->getSymbolReference()->getReferenceNumber()))
+      if (!seenAvailableLoadedSymbolReferences.get(node->getSymbolReference()->getReferenceNumber()))
          return false;
       }
 
@@ -1322,7 +1324,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
    if (trace())
       {
       traceMsg(comp(), "In getAvailableExpression _availableCallExprs = ");
-      *(comp()) << _availableCallExprs;
+      _availableCallExprs.print(comp());
       traceMsg(comp(),"\n");
       }
 
@@ -1407,7 +1409,7 @@ TR::Node* OMR::LocalCSE::getAvailableExpression(TR::Node *parent, TR::Node *node
 // This routine kills all prior volatile loads of the same (or aliased) sym ref before we add the current
 // volatile load to the available expressions
 //
-bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases)
+bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, TR_BitVector &seenAvailableLoadedSymbolReferences, TR_NodeKillAliasSetInterface &UseDefAliases)
    {
    bool isVolatileRead = false;
    if (!node->getOpCode().isLikeDef() && node->mightHaveVolatileSymbolReference())
@@ -1415,8 +1417,8 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
 
    if (isVolatileRead)
       {
-      SharedSparseBitVector tmp(comp()->allocator());
-      seenAvailableLoadedSymbolReferences.Andc(_seenCallSymbolReferences,tmp);
+      TR_BitVector tmp(seenAvailableLoadedSymbolReferences);
+      tmp -= _seenCallSymbolReferences;
       if (_volatileState != VOLATILE_ONLY)
          {
          if (node->getOpCode().hasSymbolReference() && UseDefAliases.containsAny(tmp, comp()))
@@ -1424,16 +1426,17 @@ bool OMR::LocalCSE::killExpressionsIfVolatileLoad(TR::Node *node, SharedSparseBi
          }
       else
          {
-         SharedSparseBitVector aliases(comp()->allocator());
-         SharedSparseBitVector processedAliases(comp()->allocator());
-         UseDefAliases.getAliases(aliases);
-         SharedSparseBitVector::Cursor c(aliases);
-         for (c.SetToFirstOne(); c.Valid(); c.SetToNextOne())
+         TR_BitVector aliases(comp()->trMemory()->currentStackRegion());
+         TR_BitVector processedAliases(comp()->trMemory()->currentStackRegion());
+         UseDefAliases.getAliasesAndUnionWith(aliases);
+         TR_BitVectorIterator bvi(aliases);
+         while (bvi.hasMoreElements())
             {
+            int32_t c = bvi.getNextElement();
             if (comp()->getSymRefTab()->getSymRef(c)->maybeVolatile())
-               processedAliases[c] = 1;
+               processedAliases.set(c);
             }
-         if (node->getOpCode().hasSymbolReference() && processedAliases.Intersects(tmp))
+         if (node->getOpCode().hasSymbolReference() && processedAliases.intersects(tmp))
             killAvailableExpressionsUsingAliases(processedAliases);
          }
       }
@@ -1452,9 +1455,9 @@ void OMR::LocalCSE::killAllAvailableExpressions()
  //  traceMsg(comp(), "killAllAvailableExpressions 1 setting _availableCallExprs[0] to false\n");
    removeFromHashTable(_hashTable, 0);
    removeFromHashTable(_hashTableWithSyms, 0);
-   _availableLoadExprs[0]=false;
-   _availablePinningArrayExprs[0]=false;
-   _availableCallExprs[0]=false;
+   _availableLoadExprs.reset(0);
+   _availablePinningArrayExprs.reset(0);
+   _availableCallExprs.reset(0);
    removeFromHashTable(_hashTableWithConsts, 0);
    removeFromHashTable(_hashTableWithCalls, 0);
    }
@@ -1481,19 +1484,18 @@ void OMR::LocalCSE::killAllInternalPointersBasedOnThisPinningArray(TR::SymbolRef
 void OMR::LocalCSE::killAvailableExpressions(int32_t symRefNum)
    {
    removeFromHashTable(_hashTableWithSyms, symRefNum);
-   _availableLoadExprs[symRefNum]=false;
-   _availablePinningArrayExprs[symRefNum]=false;
-   _availableCallExprs[symRefNum]=false;
+   _availableLoadExprs.reset(symRefNum);
+   _availablePinningArrayExprs.reset(symRefNum);
+   _availableCallExprs.reset(symRefNum);
    }
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable, SharedSparseBitVector &vec)
+void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable, TR_BitVector &vec)
    {
-   SharedSparseBitVector::Cursor c(vec);
-   for (c.SetToFirstOne(); c.Valid(); c.SetToNextOne())
+   TR_BitVectorIterator bvi(vec);
+   while (bvi.hasMoreElements())
       {
-      int32_t nextSymRefNum = c;
-
+      int32_t nextSymRefNum = bvi.getNextElement();
       auto range = hashTable->equal_range(nextSymRefNum);
       if (range.first != range.second)
          {
@@ -1507,18 +1509,18 @@ void OMR::LocalCSE::killAvailableExpressionsUsingBitVector(HashTable *hashTable,
    }
 
 
-void OMR::LocalCSE::killAvailableExpressionsUsingAliases(SharedSparseBitVector &aliases)
+void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_BitVector &aliases)
    {
-   SharedSparseBitVector tmp(_availableLoadExprs);
+   TR_BitVector tmp(_availableLoadExprs);
    _availableLoadExprs -= aliases;
 
-   tmp.Andc(_availableLoadExprs);
+   tmp -= _availableLoadExprs;
 
    killAvailableExpressionsUsingBitVector(_hashTableWithSyms, tmp);
 
-   SharedSparseBitVector tmp2(_availableCallExprs);
+   TR_BitVector tmp2(_availableCallExprs);
    _availableCallExprs -= aliases;
-   tmp2.Andc(_availableCallExprs);
+   tmp2 -= _availableCallExprs;
 
    killAvailableExpressionsUsingBitVector(_hashTableWithCalls, tmp2);
    }
@@ -1527,30 +1529,30 @@ void OMR::LocalCSE::killAvailableExpressionsUsingAliases(SharedSparseBitVector &
 
 void OMR::LocalCSE::killAvailableExpressionsUsingAliases(TR_NodeKillAliasSetInterface &UseDefAliases)
    {
-   SharedSparseBitVector tmp(_availableLoadExprs);
+   TR_BitVector tmp(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableLoadExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availablePinningArrayExprs);
-   tmp.Andc(_availableLoadExprs);
+   tmp -= _availableLoadExprs;
 
    killAvailableExpressionsUsingBitVector(_hashTableWithSyms, tmp);
 
-   SharedSparseBitVector tmp2(_availableCallExprs);
+   TR_BitVector tmp2(_availableCallExprs);
    UseDefAliases.getAliasesAndSubtractFrom(_availableCallExprs);
-   tmp2.Andc(_availableCallExprs);
+   tmp2 -= _availableCallExprs;
 
    killAvailableExpressionsUsingBitVector(_hashTableWithCalls, tmp2);
    }
 
 
-void OMR::LocalCSE::killAllDataStructures(SharedSparseBitVector &seenAvailableLoadedSymbolReferences)
+void OMR::LocalCSE::killAllDataStructures(TR_BitVector &seenAvailableLoadedSymbolReferences)
    {
    _storeMap->clear();
 
-   seenAvailableLoadedSymbolReferences.Truncate();
+   seenAvailableLoadedSymbolReferences.empty();
 
-   _availableLoadExprs.Clear();
-   _availablePinningArrayExprs.Clear();
-   _availableCallExprs.Clear();
+   _availableLoadExprs.empty();
+   _availablePinningArrayExprs.empty();
+   _availableCallExprs.empty();
 
    _hashTable->clear();
    _hashTableWithSyms->clear();
@@ -1563,7 +1565,7 @@ void OMR::LocalCSE::killAllDataStructures(SharedSparseBitVector &seenAvailableLo
 // If this is a GC safe point, kill the address type available expressions that are aload,
 // aiadd (or aladd) or that contain an aiadd (or an aladd).
 
-void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::Node *parent, SharedSparseBitVector &seenAvailableLoadedSymbolReferences)
+void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::Node *parent, TR_BitVector &seenAvailableLoadedSymbolReferences)
    {
    // A GC safe point can only occur at a treetop.
    //
@@ -1585,11 +1587,11 @@ void OMR::LocalCSE::killAvailableExpressionsAtGCSafePoints(TR::Node *node, TR::N
 
       _storeMap->clear();
 
-      seenAvailableLoadedSymbolReferences.Truncate();
+      seenAvailableLoadedSymbolReferences.empty();
 
-      _availableLoadExprs.Clear();
-      _availablePinningArrayExprs.Clear();
-      _availableCallExprs.Clear();
+      _availableLoadExprs.empty();
+      _availablePinningArrayExprs.empty();
+      _availableCallExprs.empty();
 
       _hashTable->clear();
       _hashTableWithSyms->clear();
@@ -1701,7 +1703,7 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
        (node->getFirstChild()->getOpCodeValue() == TR::aload) &&
        (node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto()))
       {
-      _availablePinningArrayExprs[node->getFirstChild()->getSymbolReference()->getReferenceNumber()] = true;
+      _availablePinningArrayExprs.set(node->getFirstChild()->getSymbolReference()->getReferenceNumber());
       _arrayRefNodes->add(node);
       }
 
@@ -1712,12 +1714,12 @@ void OMR::LocalCSE::addToHashTable(TR::Node *node, int32_t hashValue)
       if (node->getOpCode().isCall())
          {
          _hashTableWithCalls->insert(pair);
-         _availableCallExprs[node->getSymbolReference()->getReferenceNumber()]=true;
+         _availableCallExprs.set(node->getSymbolReference()->getReferenceNumber());
          }
       else
          {
          _hashTableWithSyms->insert(pair);
-         _availableLoadExprs[node->getSymbolReference()->getReferenceNumber()]=true;
+         _availableLoadExprs.set(node->getSymbolReference()->getReferenceNumber());
          }
       }
    else if (node->getOpCode().isLoadConst())

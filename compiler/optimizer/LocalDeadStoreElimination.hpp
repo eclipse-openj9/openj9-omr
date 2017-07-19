@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -21,7 +21,6 @@
 
 #include <stdint.h>                           // for int32_t
 #include "env/TRMemory.hpp"                   // for Allocator, etc
-#include "cs2/tableof.h"                      // for TableOf
 #include "il/Node.hpp"                        // for vcount_t, rcount_t
 #include "infra/deque.hpp"
 #include "optimizer/Optimization.hpp"         // for Optimization
@@ -72,19 +71,10 @@ class LocalDeadStoreElimination : public TR::Optimization
    virtual bool isNonRemovableStore(TR::Node *storeNode, bool &seenIdentityStore);
 
    private:
-
-   struct PendingIdentityStore
-      {
-      TR::TreeTop *treeTop;
-      TR::Node    *storeNode;
-      TR::Node    *loadNode;
-      };
-
    typedef TR::Node *StoreNode;
 
-   typedef CS2::TableOf<PendingIdentityStore, TR::Allocator> PendingIdentityStoreTable;
-   typedef TR::deque<StoreNode> StoreNodeTable;
-   typedef TR::BitVector LDSBitVector;
+   typedef TR::deque<StoreNode, TR::Region&> StoreNodeTable;
+   typedef TR_BitVector LDSBitVector;
 
    inline TR::LocalDeadStoreElimination *self();
 
@@ -114,9 +104,7 @@ class LocalDeadStoreElimination : public TR::Optimization
    TR::TreeTop                      *_curTree;
 
    private:
-
    StoreNodeTable                   *_storeNodes;
-   PendingIdentityStoreTable        *_pendingIdentityStores;
 
    bool                              _blockContainsReturn;
    bool                              _treesChanged;

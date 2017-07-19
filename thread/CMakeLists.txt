@@ -292,6 +292,7 @@ target_include_directories(j9thrstatic
 )
 
 target_link_libraries(j9thrstatic
+	-pthread
 	omrutil
 	j9pool
 )

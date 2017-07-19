@@ -312,7 +312,7 @@ class S390BranchInstruction : public TR::S390LabeledInstruction
    void assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned);
    TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}
    TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
-   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
+   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition()) << 4;}
    };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1464,7 +1464,7 @@ class S390RegInstruction : public TR::Instruction
 
    TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}
    TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
-   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
+   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition()) << 4;}
    };
 
 
@@ -2963,7 +2963,7 @@ class S390RRSInstruction : public TR::S390RRInstruction
    /** Get branch condition information */
    virtual TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}
    virtual TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
-   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
+   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition()) << 4;}
 
    /** Get branch destination information */
    virtual TR::MemoryReference * getBranchDestinationLabel() { return _branchDestination; }
@@ -3402,7 +3402,7 @@ class S390RIEInstruction : public TR::S390RegInstruction
    /** Get branch condition information */
    virtual TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}
    virtual TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
-   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
+   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition()) << 4;}
 
    /** Get branch destination information */
    virtual TR::LabelSymbol * getBranchDestinationLabel() { return _branchDestination; }
@@ -3616,7 +3616,7 @@ class S390RISInstruction : public TR::S390RIInstruction
    /** Get branch condition information */
    virtual TR::InstOpCode::S390BranchCondition getBranchCondition()  {return _branchCondition;}
    virtual TR::InstOpCode::S390BranchCondition setBranchCondition(TR::InstOpCode::S390BranchCondition branchCondition) {return _branchCondition = branchCondition;}
-   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition());}
+   uint8_t getMask() {return getMaskForBranchCondition(getBranchCondition()) << 4;}
 
    /** Get branch destination information */
    virtual TR::MemoryReference * getBranchDestinationLabel() { return _branchDestination; }

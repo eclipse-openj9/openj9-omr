@@ -263,6 +263,11 @@ function(create_omr_compiler_library)
    # Add the contents of the macro to CORE_COMPILER_OBJECTS in this scope.  
    # The library name parameter is currently ignored.
    macro(compiler_library libraryname)
+      # Since CMake *copies* the enviornment from parent to child scope, 
+      # a PARENT_SCOPE set ultimately is not reflected for local lookups. 
+      # As a result, we need to _also_ update the local scope here if we 
+      # want this to succeed when called multiple times in a scope. 
+      set(CORE_COMPILER_OBJECTS ${CORE_COMPILER_OBJECTS} ${ARGN}             )
       set(CORE_COMPILER_OBJECTS ${CORE_COMPILER_OBJECTS} ${ARGN} PARENT_SCOPE)
    endmacro(compiler_library)
 

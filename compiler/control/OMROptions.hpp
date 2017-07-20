@@ -281,7 +281,7 @@ enum TR_CompilationOptions
 
    // Option word 6
    //
-   // Available                           = 0x00000020 + 6,
+   TR_EnableAggressiveLoopVersioning      = 0x00000020 + 6,
    TR_EnableElementPrivatization          = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,

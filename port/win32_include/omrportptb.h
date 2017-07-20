@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -39,6 +39,7 @@
 #include "omrport.h"
 
 #define J9ERROR_DEFAULT_BUFFER_SIZE 256 /**< default customized error message size if we need to create one */
+#define J9ERROR_MAXIMUM_BUFFER_SIZE 0xFFFFFFFF /**< maximum customized error message size if we need to create one */
 
 /**
  * @typedef
@@ -52,11 +53,11 @@ typedef struct PortlibPTBuffers_struct {
 	int32_t platformErrorCode; /**< error code as reported by the OS */
 	int32_t portableErrorCode; /**< error code translated to portable format by application */
 	char *errorMessageBuffer; /**< last saved error message, either customized or from OS */
-	uint32_t errorMessageBufferSize; /**< error message buffer size */
+	uintptr_t errorMessageBufferSize; /**< error message buffer size */
 
 	int32_t reportedErrorCode; /**< last reported error code */
 	char *reportedMessageBuffer; /**< last reported error message, either customized or from OS */
-	uint32_t reportedMessageBufferSize; /**< reported message buffer size */
+	uintptr_t reportedMessageBufferSize; /**< reported message buffer size */
 } PortlibPTBuffers_struct;
 
 /**

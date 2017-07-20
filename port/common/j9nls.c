@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -189,10 +189,10 @@ j9nls_get_variant(struct OMRPortLibrary *portLibrary)
 static void
 writeSyslog(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *format, va_list args)
 {
-	char outputBuffer[512];
-	char *allocatedBuffer;
-	uintptr_t numberWritten, length;
-	va_list copyOfArgs;
+	va_list argsCopy;
+	char localBuffer[256];
+	char *writeBuffer = NULL;
+	uintptr_t bufferSize = 0;
 
 	BOOLEAN options_info = ((PPG_syslog_flags & J9NLS_INFO) == J9NLS_INFO);
 	BOOLEAN options_warn = ((PPG_syslog_flags & J9NLS_WARNING) == J9NLS_WARNING);
@@ -234,34 +234,32 @@ writeSyslog(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *for
 		return;
 	}
 
-	/* Attempt to write string to on-stack buffer */
-	COPY_VA_LIST(copyOfArgs, args);
-	numberWritten = portLibrary->str_vprintf(portLibrary, outputBuffer, sizeof(outputBuffer), format, copyOfArgs);
+	/* What is size of buffer required ? str_vprintf(..,NULL,..) result includes the null terminator */
+	COPY_VA_LIST(argsCopy, args);
+	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, argsCopy);
 
-	/* str_vprintf returns number characters written excluding the null terminator */
-	if (sizeof(outputBuffer) > (numberWritten + 1)) {
-		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, outputBuffer);
-		return;
+	/* use local buffer if possible, allocate a buffer from system memory if local buffer not large enough */
+	if (sizeof(localBuffer) >= bufferSize) {
+		writeBuffer = localBuffer;
+	} else {
+		writeBuffer = portLibrary->mem_allocate_memory(portLibrary, bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	}
 
-	/* Didn't fit into outputBuffer - find out how long the buffer needs to be */
-	COPY_VA_LIST(copyOfArgs, args);
-	length = portLibrary->str_vprintf(portLibrary, NULL, (uint32_t)(-1), format, copyOfArgs);
-	length += 1; /* For the \0 */
-
-	/* Allocate buffer from the heap */
-	allocatedBuffer = portLibrary->mem_allocate_memory(portLibrary, length, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-	if (NULL == allocatedBuffer) {
-		/* Might as well write the truncated string out */
-		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, outputBuffer);
+	/* format and write out the buffer (truncate into local buffer as last resort) */
+	COPY_VA_LIST(argsCopy, args);
+	if (NULL != writeBuffer) {
+		portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, argsCopy);
+		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, writeBuffer);
+		/* dispose of buffer if not on local */
+		if (writeBuffer != localBuffer) {
+			portLibrary->mem_free_memory(portLibrary, writeBuffer);
+		}
+	} else {
+		portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, argsCopy);
+		localBuffer[sizeof(localBuffer) - 1] = '\0';
+		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, localBuffer);
 		return;
 	}
-
-	portLibrary->str_vprintf(portLibrary, allocatedBuffer, length, format, args);
-
-	portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, allocatedBuffer);
-
-	portLibrary->mem_free_memory(portLibrary, allocatedBuffer);
 }
 
 /**
@@ -333,7 +331,10 @@ j9nls_vprintf(struct OMRPortLibrary *portLibrary, uintptr_t flags, uint32_t modu
 		 * text, limit of 1024 characters. NLS messages are typically less than 80 characters.
 		 */
 		COPY_VA_LIST(argsForTrace, args);
-		portLibrary->str_vprintf(portLibrary, buffer, sizeof(buffer), message, argsForTrace);
+		if (sizeof(buffer) == portLibrary->str_vprintf(portLibrary, buffer, sizeof(buffer), message, argsForTrace)) {
+			/* str_vprintf will fill buffer with no null terminator if message is longer than buffer length -- add null terminator */
+			buffer[sizeof(buffer) - 1] = '\0';
+		}
 		Trc_PRT_j9nls_vprintf(buffer);
 	}
 

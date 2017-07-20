@@ -2050,6 +2050,10 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
          }
 
       delete opt;
+      // we cannot easily invalidate during IL gen since we could be peeking and we cannot destroy our
+      // caller's alias sets
+      if (!isIlGenOpt())
+         comp()->invalidateAliasRegion();
       breakForTesting(-optNum);
       comp()->setAllocatorName(NULL);
 

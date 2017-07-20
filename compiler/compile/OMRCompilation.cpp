@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -94,6 +94,10 @@
 #include "control/Recompilation.hpp"           // for TR_Recompilation, etc
 #include "runtime/CodeCacheExceptions.hpp"
 #include "ilgen/IlGen.hpp"                     // for TR_IlGenerator
+
+// this ratio defines how full the alias memory region is allowed to become before
+// it is recreated after an optimization finishes
+#define ALIAS_REGION_LOAD_FACTOR 0.75
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"           // for TR_Recompilation, etc
@@ -214,6 +218,7 @@ OMR::Compilation::Compilation(
    _allocator(TRCS2MemoryAllocator(m)),
    _method(compilee),
    _arenaAllocator(TR::Allocator(self()->allocator("Arena"))),
+   _aliasRegion(heapMemoryRegion),
    _allocatorName(NULL),
    _ilGenerator(0),
    _optimizer(0),
@@ -2712,4 +2717,18 @@ OMR::Compilation::CompilationPhaseScope::CompilationPhaseScope(TR::Compilation *
 OMR::Compilation::CompilationPhaseScope::~CompilationPhaseScope()
    {
    _comp->restoreCompilationPhase(_savedPhase);
+   }
+
+TR::Region &OMR::Compilation::aliasRegion()
+   {
+   return self()->_aliasRegion;
+   }
+
+void OMR::Compilation::invalidateAliasRegion()
+   {
+   if (self()->_aliasRegion.bytesAllocated() > (ALIAS_REGION_LOAD_FACTOR) * TR::Region::initialSize())
+      {
+      self()->_aliasRegion.~Region();
+      new (&self()->_aliasRegion) TR::Region(_heapMemoryRegion);
+      }
    }

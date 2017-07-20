@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -626,7 +626,7 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
    visitCount = comp()->incOrResetVisitCount();
    //TR_ScratchList<TR::Node> seenNodes(trMemory());
    TR::SparseBitVector seenNodes(comp()->allocator());
-   for (TR::TreeTopIterator iter(startTree, this); iter != endTree; ++iter)
+   for (TR::TreeTopIterator iter(startTree, comp()); iter != endTree; ++iter)
       {
       // temporarily revert this fix
       //vcount_t compVisitCount = comp()->getVisitCount();

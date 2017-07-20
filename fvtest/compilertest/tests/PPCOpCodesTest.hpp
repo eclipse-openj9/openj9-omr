@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,7 +27,6 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void compileMemoryOperationTestMethods();
    virtual void compileTernaryTestMethods();
    virtual void compileCompareTestMethods();
-   virtual void compileShiftOrRolTestMethods();
    virtual void compileBitwiseTestMethods();
    virtual void compileAddressTestMethods();
 
@@ -35,7 +34,6 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void invokeMemoryOperationTests();
    virtual void invokeTernaryTests();
    virtual void invokeCompareTests();
-   virtual void invokeShiftOrRolTests();
    virtual void invokeBitwiseTests();
    virtual void invokeAddressTests();
    virtual void UnsupportedOpCodesTests();
@@ -46,7 +44,6 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void compileDisabledFloatArithmeticTestMethods();
    virtual void compileDisabledMemoryOperationTestMethods();
    virtual void compileDisabledUnaryTestMethods();
-   virtual void compileDisabledShiftOrRolTestMethods();
    virtual void compileDisabledBitwiseTestMethods();
    virtual void compileDisabledTernaryTestMethods();
    virtual void compileDisabledDirectCallTestMethods();
@@ -57,7 +54,6 @@ class PPCOpCodesTest : public OpCodesTest
    virtual void invokeDisabledFloatArithmeticTests();
    virtual void invokeDisabledMemoryOperationTests();
    virtual void invokeDisabledUnaryTests();
-   virtual void invokeDisabledShiftOrRolTests();
    virtual void invokeDisabledBitwiseTests();
    virtual void invokeDisabledTernaryTest();
    virtual void invokeDisabledDirectCallTest();

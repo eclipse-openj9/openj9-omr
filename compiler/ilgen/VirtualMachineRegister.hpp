@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2016
+ * (c) Copyright IBM Corp. 2016, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -86,7 +86,7 @@ class VirtualMachineRegister : public OMR::VirtualMachineState
       _localName(localName),
       _addressOfRegister(addressOfRegister),
       _pointerToRegisterType(pointerToRegisterType),
-      _elementType(pointerToRegisterType->baseType()),
+      _elementType(pointerToRegisterType->baseType()->baseType()),
       _adjustByStep(adjustByStep)
       {
       Reload(b);

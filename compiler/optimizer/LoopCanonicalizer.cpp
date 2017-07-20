@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -2927,7 +2927,7 @@ void TR_LoopCanonicalizer::rewritePostToPreIncrementTestInBlock(
       // otherwise there would only be one point of evaluation.
       bool between = false;
       TR::TreeTop * const start = block->startOfExtendedBlock()->getEntry();
-      for (TR::PostorderNodeIterator it(start, this); true; ++it)
+      for (TR::PostorderNodeIterator it(start, comp()); true; ++it)
          {
          if (it == testTree)
             {

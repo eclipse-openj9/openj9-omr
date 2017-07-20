@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -316,22 +316,6 @@ signatureCharFF_F_testMethodType  * OpCodesTest::_fMul = 0;
 signatureCharFF_F_testMethodType  * OpCodesTest::_fDiv = 0;
 signatureCharFF_F_testMethodType  * OpCodesTest::_fRem = 0;
 
-//Shift, Rol
-signatureCharII_I_testMethodType  * OpCodesTest::_iShl = 0;
-signatureCharJJ_J_testMethodType  * OpCodesTest::_lShl = 0;
-signatureCharII_I_testMethodType  * OpCodesTest::_iShr = 0;
-signatureCharJJ_J_testMethodType  * OpCodesTest::_lShr = 0;
-unsignedSignatureCharII_I_testMethodType  * OpCodesTest::_iuShr = 0;
-unsignedSignatureCharJJ_J_testMethodType  * OpCodesTest::_luShr = 0;
-signatureCharII_I_testMethodType  * OpCodesTest::_iRol = 0;
-signatureCharJJ_J_testMethodType  * OpCodesTest::_lRol = 0;
-signatureCharSS_S_testMethodType  * OpCodesTest::_sShl = 0;
-signatureCharBB_B_testMethodType  * OpCodesTest::_bShl = 0;
-signatureCharSS_S_testMethodType  * OpCodesTest::_sShr = 0;
-signatureCharBB_B_testMethodType  * OpCodesTest::_bShr = 0;
-unsignedSignatureCharSS_S_testMethodType  * OpCodesTest::_suShr = 0;
-unsignedSignatureCharBB_B_testMethodType  * OpCodesTest::_buShr = 0;
-
 //TR::Double
 signatureCharDD_D_testMethodType  * OpCodesTest::_dAdd = 0;
 signatureCharDD_D_testMethodType  * OpCodesTest::_dSub = 0;
@@ -630,16 +614,6 @@ OpCodesTest::compileUnaryTestMethods()
    compileOpCodeMethod(_f2i, _numberOfUnaryArgs, TR::f2i, "f2i", _argTypesUnaryFloat, TR::Int32, rc);
    compileOpCodeMethod(_d2i, _numberOfUnaryArgs, TR::d2i, "d2i", _argTypesUnaryDouble, TR::Int32, rc);
 
-   }
-
-void
-OpCodesTest::compileShiftOrRolTestMethods()
-   {
-   int32_t rc = 0;
-
-   compileOpCodeMethod(_iShl, _numberOfBinaryArgs, TR::ishl, "iShl", _argTypesBinaryInt, TR::Int32, rc);
-   compileOpCodeMethod(_iShr, _numberOfBinaryArgs, TR::ishr, "iShr", _argTypesBinaryInt, TR::Int32, rc);
-   compileOpCodeMethod(_iuShr, _numberOfBinaryArgs, TR::iushr, "iuShr", _argTypesBinaryInt, TR::Int32, rc);
    }
 
 void
@@ -1022,114 +996,6 @@ compileOpCodeMethod(      iMemCons, _numberOfUnaryArgs, TR::istore, resolvedMeth
       {
       OMR_CT_EXPECT_EQ(_aLoadi, addressDataArray[i], _aLoadi((uintptrj_t)(&addressDataArray[i])));
       }
-   }
-
-void
-OpCodesTest::invokeShiftOrRolTests()
-   {
-   const int8_t BYTE_MAX_STEP = 7;
-   const uint8_t UBYTE_MAX_STEP = 7;
-   const int16_t SHORT_MAX_STEP = 15;
-   const uint16_t USHORT_MAX_STEP = 15;
-   const int32_t INT_MAX_STEP = 31;
-   const uint32_t UINT_MAX_STEP = 31;
-
-   int32_t ishlDataArr[][2] =
-      {
-      INT_ZERO, INT_ZERO,
-      INT_MINIMUM, INT_ZERO,
-      INT_NEG, INT_ZERO,
-      INT_POS, INT_MAX_STEP
-      };
-   int32_t ishrDataArr[][2] =
-      {
-      INT_MAXIMUM, INT_POS,
-      INT_MAXIMUM, INT_MAX_STEP,
-      INT_MINIMUM, INT_MAX_STEP,
-      INT_NEG, INT_POS,
-      INT_POS, INT_POS
-      };
-   uint32_t iushrDataArr[][2] =
-      {
-      UINT_POS , UINT_MAX_STEP,
-      UINT_MINIMUM, UINT_POS,
-      UINT_MAXIMUM, UINT_MINIMUM,
-      UINT_POS, UINT_POS
-      };
-
-   int32_t rc = 0;
-   char resolvedMethodName [RESOLVED_METHOD_NAME_LENGTH];
-   uint32_t testCaseNum = 0;
-
-   signatureCharII_I_testMethodType  * iShiftOrRolConst = 0;
-   unsignedSignatureCharII_I_testMethodType  * iuShiftOrRolConst = 0;
-
-   //ishl
-   testCaseNum = sizeof(ishlDataArr) / sizeof(ishlDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_iShl, shl(ishlDataArr[i][0], ishlDataArr[i][1]), _iShl(ishlDataArr[i][0], ishlDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iShlConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishl, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 4, 1, &ishlDataArr[i][0], 2, &ishlDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shl(ishlDataArr[i][0], ishlDataArr[i][1]), iShiftOrRolConst(INT_PLACEHOLDER_1, INT_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "iShlConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishl, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 1, &ishlDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shl(ishlDataArr[i][0], ishlDataArr[i][1]), iShiftOrRolConst(INT_PLACEHOLDER_1, ishlDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iShlConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishl, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &ishlDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shl(ishlDataArr[i][0], ishlDataArr[i][1]), iShiftOrRolConst(ishlDataArr[i][0], INT_PLACEHOLDER_2));
-      }
-
-   //ishr
-   testCaseNum = sizeof(ishrDataArr) / sizeof(ishrDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_iShr, shr(ishrDataArr[i][0], ishrDataArr[i][1]), _iShr(ishrDataArr[i][0],ishrDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iShrConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(      iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 4, 1, &ishrDataArr[i][0], 2, &ishrDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shr(ishrDataArr[i][0], ishrDataArr[i][1]), iShiftOrRolConst(INT_PLACEHOLDER_1, INT_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "iShrConst2_TestCase%d", i + 1);
-      compileOpCodeMethod(      iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 1, &ishrDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shr(ishrDataArr[i][0], ishrDataArr[i][1]), iShiftOrRolConst(INT_PLACEHOLDER_1, ishrDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iShrConst3_TestCase%d", i + 1);
-      compileOpCodeMethod(      iShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::ishr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &ishrDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iShiftOrRolConst, shr(ishrDataArr[i][0], ishrDataArr[i][1]), iShiftOrRolConst(ishrDataArr[i][0], INT_PLACEHOLDER_2));
-      }
-
-   //iushr
-   testCaseNum = sizeof(iushrDataArr) / sizeof(iushrDataArr[0]);
-   for(uint32_t i = 0; i < testCaseNum; ++i)
-      {
-      OMR_CT_EXPECT_EQ(_iuShr, shr(iushrDataArr[i][0], iushrDataArr[i][1]), _iuShr(iushrDataArr[i][0],iushrDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iuShrConst1_TestCase%d", i + 1);
-      compileOpCodeMethod(      iuShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::iushr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 4, 1, &iushrDataArr[i][0], 2, &iushrDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iuShiftOrRolConst, shr(iushrDataArr[i][0], iushrDataArr[i][1]), iuShiftOrRolConst(INT_PLACEHOLDER_1, INT_PLACEHOLDER_2));
-
-      sprintf(resolvedMethodName, "iuShrConst2_TestCase%d", i + 1);
-compileOpCodeMethod(      iuShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::iushr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 1, &iushrDataArr[i][0]);
-      OMR_CT_EXPECT_EQ(iuShiftOrRolConst, shr(iushrDataArr[i][0], iushrDataArr[i][1]), iuShiftOrRolConst(INT_PLACEHOLDER_1, iushrDataArr[i][1]));
-
-      sprintf(resolvedMethodName, "iuShrConst3_TestCase%d", i + 1);
-compileOpCodeMethod(      iuShiftOrRolConst, 
-            _numberOfBinaryArgs, TR::iushr, resolvedMethodName, _argTypesBinaryInt, TR::Int32, rc, 2, 2, &iushrDataArr[i][1]);
-      OMR_CT_EXPECT_EQ(iuShiftOrRolConst, shr(iushrDataArr[i][0], iushrDataArr[i][1]), iuShiftOrRolConst(iushrDataArr[i][0], INT_PLACEHOLDER_2));
-      }
-
    }
 
 void
@@ -2725,13 +2591,6 @@ TEST(JITCrossPlatformsOpCodesTest, MemoryOperationTest)
    ::TestCompiler::OpCodesTest memoryOperationTest;
    memoryOperationTest.compileMemoryOperationTestMethods();
    memoryOperationTest.invokeMemoryOperationTests();
-   }
-
-TEST(JITCrossPlatformsOpCodesTest, ShiftOrRolTest)
-   {
-   ::TestCompiler::OpCodesTest shiftOrRolTest;
-   shiftOrRolTest.compileShiftOrRolTestMethods();
-   shiftOrRolTest.invokeShiftOrRolTests();
    }
 
 TEST(JITCrossPlatformsOpCodesTest, BitwiseTest)

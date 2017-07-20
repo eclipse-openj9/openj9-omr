@@ -810,6 +810,7 @@ TR::IlValue *
 IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    {
    TR::IlType *elemType = dt->baseType();
+   TR_ASSERT(base->getDataType() == TR::Address, "IndexAt must be called with a pointer base");
    TR_ASSERT(elemType != NULL, "IndexAt should be called with pointer type");
    TR_ASSERT(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
    TR::Node *baseNode = loadValue(base);

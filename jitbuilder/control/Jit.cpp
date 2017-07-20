@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2014, 2016
+ * (c) Copyright IBM Corp. 2014, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -179,7 +179,7 @@ extern "C"
 bool
 initializeJit()
    {
-   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer");
+   return initializeJitBuilder(0, 0, 0, (char *)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useIlValidator");
    }
 
 extern "C"

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -276,7 +276,7 @@ enum TR_CompilationOptions
    TR_DisableAOTWarmRunThroughputImprovement  = 0x04000000 + 5,
    TR_EnableUpgradingAllColdCompilations  = 0x08000000 + 5,
    TR_TraceLastOpt                        = 0x10000000 + 5,
-   // Available                           = 0x20000000 + 5,
+   TR_UseILValidator                      = 0x20000000 + 5,
    TR_DisableFPE                          = 0x40000000 + 5,
 
    // Option word 6

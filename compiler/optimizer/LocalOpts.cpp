@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -73,6 +73,7 @@
 #include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                       // for CFG, etc
 #include "infra/ILWalk.hpp"
+#include "ras/ILValidator.hpp"                 // for TR::ILValidator
 #include "infra/Link.hpp"                      // for TR_LinkHeadAndTail, etc
 #include "infra/List.hpp"                      // for List, TR_ScratchList, etc
 #include "optimizer/Inliner.hpp"               // for TR_InlineCall, etc
@@ -7057,7 +7058,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
    //
    TR::TreeTop *tt;
    int32_t numInvariantArgs = numParms;
-   for (TR::TreeTopIterator iter(methodSymbol->getFirstTreeTop(), this);
+   for (TR::TreeTopIterator iter(methodSymbol->getFirstTreeTop(), comp());
         iter != NULL && numInvariantArgs > 0;
         ++iter)
       {
@@ -8131,8 +8132,7 @@ TR_ColdBlockMarker::perform()
    static char *validate = feGetEnv("TR_validateBeforeColdBlockMarker");
    if (validate)
       {
-      TR::ILValidator validator(this);
-      validator.checkSoundness(comp()->getStartTree());
+      TR::ILValidator validator(comp());
       validator.treesAreValid(comp()->getStartTree());
       }
 
@@ -8163,7 +8163,7 @@ TR_ColdBlockMarker::identifyColdBlocks()
    initialize();
 
    bool foundColdBlocks = false;
-   for (TR::AllBlockIterator iter(optimizer()->getMethodSymbol()->getFlowGraph(), this); iter.currentBlock(); ++iter)
+   for (TR::AllBlockIterator iter(optimizer()->getMethodSymbol()->getFlowGraph(), comp()); iter.currentBlock(); ++iter)
       {
       TR::Block *block = iter.currentBlock();
       if (block->isCold())
@@ -8212,7 +8212,7 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
    //for (TR::PreorderNodeOccurrenceIterator iter(block->getFirstRealTreeTop(), this); iter != block->getExit(); ++iter)
    //for (TR::PostorderNodeOccurrenceIterator iter(block->getFirstRealTreeTop(), this); iter != block->getExit(); ++iter)
    //
-   for (TR::PreorderNodeIterator iter(block->getFirstRealTreeTop(), this); iter != block->getExit(); ++iter)
+   for (TR::PreorderNodeIterator iter(block->getFirstRealTreeTop(), comp()); iter != block->getExit(); ++iter)
       {
       TR::Node *node = iter.currentNode();
 

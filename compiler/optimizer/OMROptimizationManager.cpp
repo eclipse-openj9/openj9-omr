@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -35,6 +35,7 @@
 #include "infra/Cfg.hpp"                       // for CFG
 #include "infra/Flags.hpp"                     // for flags32_t
 #include "infra/List.hpp"                      // for List
+#include "ras/ILValidator.hpp"                 // for TR::ILValidator
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "env/CompilerEnv.hpp"
@@ -276,7 +277,18 @@ void OMR::OptimizationManager::performChecks()
    // From here, down, stack memory allocations will die when the function returns.
    TR::StackMemoryRegion stackMemoryRegion(*(self()->trMemory()));
    if (self()->getVerifyTrees() || self()->comp()->getOption(TR_EnableParanoidOptCheck) || debug("paranoidOptCheck"))
-      self()->comp()->verifyTrees(self()->comp()->getMethodSymbol());
+      {
+      if (!self()->comp()->getOption(TR_UseILValidator))
+         {
+         self()->comp()->verifyTrees(self()->comp()->getMethodSymbol());
+         }
+      else
+         {
+         TR::ILValidator validator(self()->comp());
+         auto methodSymbol = self()->comp()->getMethodSymbol();
+         validator.treesAreValid(methodSymbol->getFirstTreeTop(), methodSymbol->getLastTreeTop());
+         }
+      }
 
    if (self()->getVerifyBlocks() || self()->comp()->getOption(TR_EnableParanoidOptCheck) || debug("paranoidOptCheck"))
       self()->comp()->verifyBlocks(self()->comp()->getMethodSymbol());

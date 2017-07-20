@@ -179,46 +179,33 @@ test_omrstr_vprintf(struct OMRPortLibrary *portLibrary, const char *testName, co
 	/* Buffer larger than required */
 	va_start(args, expectedResult);
 	validate_omrstr_vprintf(OMRPORTLIB, testName, actualResult, sizeof(actualResult), expectedResult, format, args);
-	va_end(args);
 
 	/* Exact size buffer (+1 for NUL)*/
-	va_start(args, expectedResult);
 	validate_omrstr_vprintf(OMRPORTLIB, testName, actualResult, strlen(expectedResult) + 1, expectedResult, format, args);
-	va_end(args);
 
 	/* Truncated buffer - use strlen(expectedResult) as length of buffer thus reducing the size by 1*/
 	if (strlen(expectedResult) > 1) {
 		strcpy(truncatedExpectedResult, expectedResult);
 		truncatedExpectedResult[strlen(expectedResult) - 1] = '\0';
 
-		va_start(args, expectedResult);
 		validate_omrstr_vprintf(OMRPORTLIB, testName, actualResult, strlen(expectedResult), truncatedExpectedResult, format, args);
-		va_end(args);
-
 
 		/* Truncated buffer - use strlen(expectedResult)-1 as length of buffer thus reducing the size by 2*/
 		if (strlen(expectedResult) > 2) {
 			truncatedExpectedResult[strlen(expectedResult) - 2] = '\0';
 
-			va_start(args, expectedResult);
 			validate_omrstr_vprintf(OMRPORTLIB, testName, actualResult, strlen(expectedResult) - 1, truncatedExpectedResult, format, args);
-			va_end(args);
 		}
 	}
 
 	/* Some NULL test, size of buffer does not matter */
 	/* NULL, 0, expect size of buffer required */
-	va_start(args, expectedResult);
 	validate_omrstr_vprintf_with_NULL(OMRPORTLIB, testName, 0, (uint32_t)strlen(expectedResult) + 1, format, args);
-	va_end(args);
 
 	/* NULL, -1, expect size of buffer required */
-	va_start(args, expectedResult);
 	validate_omrstr_vprintf_with_NULL(OMRPORTLIB, testName, (uint32_t)-1, (uint32_t)strlen(expectedResult) + 1, format, args);
-	va_end(args);
 
 	/* NULL, truncated buffer, use strlen(expectedResult) as length of buffer thus reducing the size by 1 */
-	va_start(args, expectedResult);
 	validate_omrstr_vprintf_with_NULL(OMRPORTLIB, testName, (uint32_t)strlen(expectedResult), (uint32_t)strlen(expectedResult) + 1, format, args);
 	va_end(args);
 }

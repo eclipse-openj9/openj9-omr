@@ -60,6 +60,7 @@ typedef void *charconvState_t; /*dummy type */
 #include "omrgetjobname.h"
 #include "omrgetjobid.h"
 #include "omrgetasid.h"
+#include "omrstdarg.h"
 #include "hashtable_api.h"
 
 #define J9FTYPE_U64 1
@@ -408,6 +409,7 @@ omrstr_vprintf(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, 
 	formatData.formatString = format;
 	parseFormatString(portLibrary, &formatData);
 	readValues(portLibrary, &formatData, args);
+
 	return writeFormattedString(portLibrary, &formatData, buf, bufLen);
 }
 
@@ -663,26 +665,29 @@ static void
 readValues(struct OMRPortLibrary *portLibrary, J9FormatData *result, va_list args)
 {
 	uint8_t index;
+	va_list argsCopy;
 
+	COPY_VA_LIST(argsCopy, args);
 	for (index = 0; index < result->valueCount; index++) {
 		switch (result->valueType[index]) {
 		case J9FTYPE_U64:
-			result->value[index].u64 = va_arg(args, uint64_t);
+			result->value[index].u64 = va_arg(argsCopy, uint64_t);
 			break;
 		case J9FTYPE_U32:
-			result->value[index].u64 = va_arg(args, uint32_t);
+			result->value[index].u64 = va_arg(argsCopy, uint32_t);
 			break;
 		case J9FTYPE_DBL:
-			result->value[index].dbl = va_arg(args, double);
+			result->value[index].dbl = va_arg(argsCopy, double);
 			break;
 		case J9FTYPE_PTR:
-			result->value[index].ptr = va_arg(args, void *);
+			result->value[index].ptr = va_arg(argsCopy, void *);
 			break;
 		case J9FTYPE_IMMEDIATE:
 			/* shouldn't be encountered -- these should all be at the end of the value array */
 			break;
 		}
 	}
+	END_VA_LIST_COPY(argsCopy);
 }
 
 static uintptr_t
@@ -2038,12 +2043,10 @@ omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *toke
 	va_start(args, format);
 	/* find out how large a buffer we need to format the strings */
 	tokenBufLen = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
-	va_end(args);
 
 	/* stack allocate the necessary storage */
 	tokenBuf = (char *)alloca(tokenBufLen);
 
-	va_start(args, format);
 	valueLen = portLibrary->str_vprintf(portLibrary, tokenBuf, tokenBufLen, format, args);
 	va_end(args);
 

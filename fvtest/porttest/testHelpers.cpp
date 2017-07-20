@@ -240,18 +240,16 @@ outputErrorMessage(struct OMRPortLibrary *portLibrary, const char *fileName, int
 	va_start(args, format);
 	/* get the size needed to hold the error message that was passed in */
 	sizeBuf = omrstr_vprintf(NULL, 0, format, args);
-	va_end(args);
 
 	buf = (char *)omrmem_allocate_memory(sizeBuf, OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL != buf) {
-		va_start(args, format);
 		omrstr_vprintf(buf, sizeBuf, format, args);
-		va_end(args);
 	} else {
 		portTestEnv->log(LEVEL_ERROR, "\n\n******* omrmem_allocate_memory failed to allocate %i bytes, exiting.\n\n", sizeBuf);
 		exit(EXIT_OUT_OF_MEMORY);
 
 	}
+	va_end(args);
 
 	portTestEnv->log(LEVEL_ERROR, "%s line %4zi: %s ", fileName, lineNumber, testName);
 	portTestEnv->log(LEVEL_ERROR, "%s\n", buf);

@@ -334,7 +334,6 @@ omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, 
 
 	va_start(args, format);
 	requiredSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
-	va_end(args);
 
 	/* Store the message, allocate a bigger buffer if required.  Keep the old buffer around
 	 * just in case memory can not be allocated
@@ -354,14 +353,13 @@ omrerror_set_last_error_with_message_format(struct OMRPortLibrary *portLibrary, 
 	/* Save the message -- if we failed allocate an appropriate size buffer above it may be truncated into preexisting buffer*/
 	if ((NULL != ptBuffers->errorMessageBuffer) && (ptBuffers->errorMessageBufferSize > 0)) {
 		uintptr_t sizeWritten = 0;
-		va_start(args, format);
 		sizeWritten = portLibrary->str_vprintf(portLibrary, ptBuffers->errorMessageBuffer, ptBuffers->errorMessageBufferSize, format, args);
 		/* Check for truncation and add null byte at end if necessary */
 		if (sizeWritten == ptBuffers->errorMessageBufferSize) {
 			ptBuffers->errorMessageBuffer[sizeWritten - 1] = 0;
 		}
-		va_end(args);
 	}
+	va_end(args);
 
 	return portableCode;
 }

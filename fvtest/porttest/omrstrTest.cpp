@@ -520,8 +520,8 @@ TEST(PortStrTest, str_test3)
 	/* First test: The epoch */
 	portTestEnv->log("\t This test could fail if you abut the international dateline (westside of dateline)\n");
 	timeMillis = 0;
-	strncpy(expected, "1970 01 Jan 01 XX:00:00", J9STR_BUFFER_SIZE);
-	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d XX:%M:%S", timeMillis, expected);
+	strncpy(expected, "1970 01 Jan 01 XX:YY:00", J9STR_BUFFER_SIZE);
+	test_omrstr_ftime(OMRPORTLIB, testName, buf, J9STR_BUFFER_SIZE, "%Y %m %b %d XX:YY:%S", timeMillis, expected);
 
 
 

@@ -136,6 +136,12 @@ TR_LoopSpecializer::TR_LoopSpecializer(TR::OptimizationManager *manager)
    : TR_LoopVersioner(manager, true)
    {}
 
+const char *
+TR_LoopSpecializer::optDetailString() const throw()
+   {
+   return "O^O LOOP SPECIALIZER: ";
+   }
+
 TR_LoopVersioner::TR_LoopVersioner(TR::OptimizationManager *manager, bool onlySpecialize, bool refineAliases)
    : TR_LoopTransformer(manager),
    _versionableInductionVariables(trMemory()), _specialVersionableInductionVariables(trMemory()),
@@ -8475,4 +8481,10 @@ bool TR_LoopVersioner::isInverseConversions(TR::Node* node)
          return true;
       }
    return false;
+   }
+
+const char *
+TR_LoopVersioner::optDetailString() const throw()
+   {
+   return "O^O LOOP VERSIONER: ";
    }

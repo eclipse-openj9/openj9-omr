@@ -728,3 +728,8 @@ OMR::Simplifier::isBoundDefinitelyGELength(TR::Node *boundChild, TR::Node *lengt
    return false;
    }
 
+const char *
+OMR::Simplifier::optDetailString() const throw()
+   {
+   return "O^O TREE SIMPLIFICATION: ";
+   }

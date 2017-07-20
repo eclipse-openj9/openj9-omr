@@ -219,6 +219,12 @@ int32_t TR_TrivialInliner::perform()
    return 1; // cost??
    }
 
+const char *
+TR_TrivialInliner::optDetailString() const throw()
+   {
+   return "O^O TRIVIAL INLINER: ";
+   }
+
 
 //---------------------------------------------------------------------
 // TR_InlinerBase

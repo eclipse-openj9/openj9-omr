@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -66,6 +66,7 @@ class TR_LoopReplicator : public TR_LoopTransformer
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    // per loop structures
    struct BlockEntry : public TR_Link<BlockEntry>

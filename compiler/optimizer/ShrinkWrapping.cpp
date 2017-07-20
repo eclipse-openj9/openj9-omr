@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -2600,4 +2600,10 @@ TR_YesNoMaybe TR_ShrinkWrap::blockEndsInReturn(int32_t blockNum, bool &hasExcept
       }
 
    return TR_no;
+   }
+
+const char *
+TR_ShrinkWrap::optDetailString() const throw()
+   {
+   return "O^O SHRINK WRAPPING: ";
    }

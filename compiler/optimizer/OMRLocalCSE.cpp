@@ -1849,3 +1849,10 @@ rcount_t OMR::LocalCSE::recursivelyIncReferenceCount(TR::Node *node)
       }
    return count;
    }
+
+const char *
+OMR::LocalCSE::optDetailString() const throw()
+   {
+   return "O^O LOCAL COMMON SUBEXPRESSION ELIMINATION: ";
+   }
+

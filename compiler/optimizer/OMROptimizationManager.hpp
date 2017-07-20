@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -61,7 +61,7 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
 
    TR::OptimizationManager *self();
 
-   OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const char *optDetailString, const OptimizationStrategy *groupOfOpts = NULL);
+   OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const OptimizationStrategy *groupOfOpts = NULL);
 
    TR::Optimizer *           optimizer()                     { return _optimizer; }
    TR::Compilation *         comp()                          { return _optimizer->comp(); }
@@ -81,7 +81,6 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
    OptimizationFactory       factory()                       { return _factory; }
    OMR::Optimizations        id()                            { return _id; }
    const char *              name()                          { return OMR::Optimizer::getOptimizationName(_id); }
-   const char *              optDetailString()               { return _optDetailString; }
    const OptimizationStrategy *    groupOfOpts()                   { return _groupOfOpts; }
 
    int32_t                   numPassesCompleted()            { return _numPassesCompleted; }
@@ -202,7 +201,6 @@ class OMR_EXTENSIBLE OptimizationManager : public TR::Allocatable<OptimizationMa
    OptimizationFactory       _factory;
 
    OMR::Optimizations        _id;
-   const char *              _optDetailString;
    const OptimizationStrategy *    _groupOfOpts;
 
    int32_t                   _numPassesCompleted;

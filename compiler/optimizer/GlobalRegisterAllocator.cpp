@@ -5010,6 +5010,11 @@ TR_GlobalRegisterAllocator::createStoresForSignExt(
       *currentArrayAccess = prevArrayAccess;
    }
 
+const char *
+TR_GlobalRegisterAllocator::optDetailString() const throw()
+   {
+   return "O^O GLOBAL REGISTER ASSIGNER: ";
+   }
 
 TR_LiveRangeSplitter::TR_LiveRangeSplitter(TR::OptimizationManager *manager)
    : TR::Optimization(manager), _splitBlocks(manager->trMemory()), _changedSomething(false), _origSymRefs(NULL)
@@ -5868,4 +5873,10 @@ TR_LiveRangeSplitter::placeStoresInLoopExits(TR::Node *node, TR_StructureSubGrap
          }
       }
    */
+   }
+
+const char *
+TR_LiveRangeSplitter::optDetailString() const throw()
+   {
+   return "O^O LIVE RANGE SPLITTER: ";
    }

@@ -80,6 +80,7 @@ class LocalCSE : public TR::Optimization
    virtual int32_t performOnBlock(TR::Block *);
    virtual void prePerformOnBlocks();
    virtual void postPerformOnBlocks();
+   virtual const char * optDetailString() const throw();
 
    typedef TR::typed_allocator< std::pair< const int32_t, TR::Node* >, TR::Region & > HashTableAllocator;
    typedef std::multimap< int32_t, TR::Node*, std::less<int32_t>, HashTableAllocator > HashTable;

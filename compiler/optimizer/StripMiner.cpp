@@ -2133,3 +2133,9 @@ bool TR_StripMiner::findPivInSimpleForm(TR::Node *node, TR::SymbolReference *piv
 
    return false;
    }
+
+const char *
+TR_StripMiner::optDetailString() const throw()
+   {
+   return "O^O STRIP MINER: ";
+   }

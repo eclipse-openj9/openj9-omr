@@ -1512,14 +1512,7 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
          "%s=[%d,%d,-] rc=", bciOrLoc,
          node->getByteCodeInfo().getCallerIndex(),
          node->getByteCodeInfo().getByteCodeIndex());
-      if (node->hasOptAttributes())
-         {
-         output.append("%d", node->getReferenceCount());
-         }
-      else
-         {
-         output.append("-");
-         }
+      output.append("%d", node->getReferenceCount());
       }
    else
       {
@@ -1528,20 +1521,10 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
          node->getByteCodeInfo().getCallerIndex(),
          node->getByteCodeInfo().getByteCodeIndex(),
          lineNumber);
-      if (node->hasOptAttributes())
-         {
-         output.append("%d", node->getReferenceCount());
-         }
-      else
-         {
-         output.append("-");
-         }
+      output.append("%d", node->getReferenceCount());
       }
 
-   if (node->hasOptAttributes())
-      {
-      output.append(" vc=%d", node->getVisitCount());
-      }
+   output.append(" vc=%d", node->getVisitCount());
 
    if (!inDebugExtension() &&
          _comp->getOptimizer() &&
@@ -1550,12 +1533,12 @@ TR_Debug::printBasicPostNodeInfo(TR::FILE *pOutFile, TR::Node * node, uint32_t i
    else
       output.append(" vn=-");
 
-   if ((node->hasOptAttributes()) && (node->getLocalIndex()))
+   if (node->getLocalIndex())
       output.append(" li=%d", node->getLocalIndex());
    else
       output.append(" li=-");
 
-   if (node->hasOptAttributes() && node->getUseDefIndex())
+   if (node->getUseDefIndex())
       output.append(" udi=%d", node->getUseDefIndex());
    else
       output.append(" udi=-");

@@ -104,12 +104,9 @@ OMR::CodeGenerator::checkForLiveRegisters(TR_LiveRegisters *liveRegisters)
       traceMsg(self()->comp(), "\n\n");
       for (TR_LiveRegisterInfo *p = liveRegisters->getFirstLiveRegister(); p; p = p->getNext())
          {
-         if (p->getNode() && p->getNode()->hasOptAttributes())
+         if (p->getNode())
             traceMsg(self()->comp(), "Virtual register %s (for node [%s], ref count=%d) is live at end of method\n",
                         debug->getName(p->getRegister()), debug->getName(p->getNode()), p->getNode()->getReferenceCount());
-         else if (p->getNode())
-                     traceMsg(self()->comp(), "Virtual register %s (for node [%s]) is live at end of method\n",
-                                 debug->getName(p->getRegister()), debug->getName(p->getNode()));
          else
             traceMsg(self()->comp(), "Virtual register %s %p is live at end of method with node count %d\n", debug->getName(p->getRegister()), p->getRegister(), p->getNodeCount());
          regsAreLive = true;

@@ -265,122 +265,122 @@ OMR::Node::ChildIterator::stepForward()
 vcount_t
 OMR::Node::getVisitCount()
    {
-   return self()->getOptAttributes()->_visitCount;
+   return _visitCount;
    }
 
 vcount_t
 OMR::Node::setVisitCount(vcount_t vc)
    {
-   return (self()->getOptAttributes()->_visitCount = vc);
+   return (_visitCount = vc);
    }
 
 vcount_t
 OMR::Node::incVisitCount()
    {
-   ++self()->getOptAttributes()->_visitCount;
-   TR_ASSERT(self()->getOptAttributes()->_visitCount > 0, "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
-   return self()->getOptAttributes()->_visitCount;
+   ++_visitCount;
+   TR_ASSERT(_visitCount > 0, "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
+   return _visitCount;
    }
 
 rcount_t
 OMR::Node::getReferenceCount()
    {
-   return self()->getOptAttributes()->_referenceCount;
+   return _referenceCount;
    }
 
 rcount_t
 OMR::Node::setReferenceCount(rcount_t rc)
    {
-   return (self()->getOptAttributes()->_referenceCount = rc);
+   return (_referenceCount = rc);
    }
 
 rcount_t
 OMR::Node::incReferenceCount()
    {
-   ++(self()->getOptAttributes()->_referenceCount);
-   TR_ASSERT(self()->getOptAttributes()->_referenceCount > 0, "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
-   return self()->getOptAttributes()->_referenceCount;
+   ++(_referenceCount);
+   TR_ASSERT(_referenceCount > 0, "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
+   return _referenceCount;
    }
 
 rcount_t
 OMR::Node::decReferenceCount()
    {
-   TR_ASSERT(self()->getOptAttributes()->_referenceCount > 0 || self()->getOpCode().isTreeTop(), "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
-   return --(self()->getOptAttributes()->_referenceCount);
+   TR_ASSERT(_referenceCount > 0 || self()->getOpCode().isTreeTop(), "Assertion failure : %s (0x%p)", self()->getOpCode().getName(), this);
+   return --(_referenceCount);
    }
 
 scount_t
 OMR::Node::getLocalIndex()
    {
-   return self()->getOptAttributes()->_localIndex;
+   return _localIndex;
    }
 
 scount_t
 OMR::Node::setLocalIndex(scount_t li)
    {
-   return (self()->getOptAttributes()->_localIndex = li);
+   return (_localIndex = li);
    }
 
 scount_t
 OMR::Node::incLocalIndex()
    {
-   ++self()->getOptAttributes()->_localIndex;
-   TR_ASSERT(self()->getOptAttributes()->_localIndex>0, "assertion failure"); return self()->getOptAttributes()->_localIndex;
+   ++_localIndex;
+   TR_ASSERT(_localIndex>0, "assertion failure"); return _localIndex;
    }
 
 scount_t
 OMR::Node::decLocalIndex()
    {
-   TR_ASSERT(self()->getOptAttributes()->_localIndex > 0, "assertion failure"); return --self()->getOptAttributes()->_localIndex;
+   TR_ASSERT(_localIndex > 0, "assertion failure"); return --_localIndex;
    }
 
 scount_t
 OMR::Node::getFutureUseCount()
    {
-   return self()->getOptAttributes()->_localIndex;
+   return _localIndex;
    }
 
 scount_t
 OMR::Node::setFutureUseCount(scount_t li)
    {
-   return (self()->getOptAttributes()->_localIndex = (scount_t)li);
+   return (_localIndex = (scount_t)li);
    }
 
 scount_t
 OMR::Node::incFutureUseCount()
    {
-   ++self()->getOptAttributes()->_localIndex;
-   return self()->getOptAttributes()->_localIndex;
+   ++_localIndex;
+   return _localIndex;
    }
 
 scount_t
 OMR::Node::decFutureUseCount()
    {
-   return --self()->getOptAttributes()->_localIndex;
+   return --_localIndex;
    }
 
 uint16_t
 OMR::Node::getUseDefIndex()
    {
-   return self()->getOptAttributes()->_unionA._useDefIndex;
+   return _unionA._useDefIndex;
    }
 
 uint16_t
 OMR::Node::setUseDefIndex(uint16_t udi)
    {
-   return (self()->getOptAttributes()->_unionA._useDefIndex = udi);
+   return (_unionA._useDefIndex = udi);
    }
 
 ncount_t
 OMR::Node::getNodePoolIndex()
    {
-   return self()->getOptAttributes()->_poolIndex;
+   return _poolIndex;
    }
 
 void
 OMR::Node::setNodePoolIndex(ncount_t i)
    {
-   self()->getOptAttributes()->_poolIndex = i;
+   _poolIndex = i;
    }
 
 /**

@@ -31,7 +31,6 @@ void
 TR::NodePool::cleanUp()
    {
    _pool.MakeEmpty();
-   _optAttribPool.MakeEmpty();
    }
 
 void
@@ -41,7 +40,6 @@ TR::NodePool::removeNode(NodeIndex poolIdx)
    TR::Node &node = _pool.ElementAt(poolIdx);
    ncount_t globalIdx = node.getGlobalIndex();
    _pool.RemoveEntry(poolIdx);
-   _optAttribPool.RemoveEntry(poolIdx);
 
    CS2::HashIndex symRefHid;
    if (debug("traceNodePool"))
@@ -71,41 +69,6 @@ TR::NodePool::allocate(ncount_t poolIndex)
       diagnostic("%sAllocating Node[%p] with Global Index %d, Pool Index %d\n", OPT_DETAILS_NODEPOOL, &newNode, newNode.getGlobalIndex(), poolIndex);
       }
    return &newNode;
-   }
-
-OMR::Node::OptAttributes *
-TR::NodePool::allocateOptAttributes()
-   {
-   // We are calling AddEntryAtPositionNoConstruct instead of AddEntryAtPosition
-   // because TR::NodePool::allocateOptAttributes is only called from
-   // OMR::Node::OptAttributes operator new, which means that AddEntryAtPosition
-   // calls OMR::Node::OptAttributes' constructor and then once
-   // TR::NodePool::allocateOptAttributes returns, operator new calls
-   // OMR::Node::OptAttributes' constructor again, increasing compilation time.
-   ncount_t optAttribPoolIndex = _optAttribPool.AddEntryAtPositionNoConstruct(_poolIndex);
-   TR_ASSERT(optAttribPoolIndex == _poolIndex, "Cannot eliminate variable _optAttribPoolIndex and use _poolIndex instead. Was hoping this was possible");
-   _optAttribGlobalIndex++;
-   OMR::Node::OptAttributes & oa = _optAttribPool.ElementAt(_poolIndex);
-   return &oa;
-   }
-
-void
-TR::NodePool::FreeOptAttributes()
-   {
-   // Free all Opt Attributes
-   if (debug("traceNodePool"))
-      {
-      traceMsg(TR::comp(), "TR::NodePool::FreeOptAttributes: freeing %lu bytes\n", _optAttribPool.MemoryUsage());
-      }
-   _optAttribPool.MakeEmpty();
-
-   // Iterate over all Nodes, NULLing out the ptr
-   NodeIter nodePoolIdx(_pool);
-   for (nodePoolIdx.SetToFirst(); nodePoolIdx.Valid(); nodePoolIdx.SetToNext())
-      {
-      TR::Node &node = _pool.ElementAt(nodePoolIdx);
-      node._optAttributes = NULL;
-      }
    }
 
 bool

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -61,7 +61,6 @@
 #include "cs2/bitmanip.h"                           // for LeadingZeroes
 #include "cs2/hashtab.h"                            // for HashTable, etc
 #include "cs2/sparsrbit.h"                          // for operator<<
-#include "cs2/tableof.h"                            // for TableOf
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"                               // for IO
 #include "env/PersistentInfo.hpp"                   // for PersistentInfo
@@ -1610,11 +1609,11 @@ int32_t TR_SetMonitorStateOnBlockEntry::addSuccessors(TR::CFGNode * cfgNode,
                   newMonitorStack->pop();
                   }
 
-               if (_liveMonitorStacks->Exists(succBlock->getNumber()))
+               if (_liveMonitorStacks->find(succBlock->getNumber()) != _liveMonitorStacks->end())
                   {
-                  _liveMonitorStacks->RemoveEntry(succBlock->getNumber());
+                  _liveMonitorStacks->erase(succBlock->getNumber());
                   }
-               _liveMonitorStacks->AddEntryAtPosition(succBlock->getNumber(), newMonitorStack);
+               (*_liveMonitorStacks)[succBlock->getNumber()] = newMonitorStack;
                if (traceIt)
                   traceMsg(comp(), "adding monitorstack to successor %d (%p size %d)\n", succBlock->getNumber(), newMonitorStack, newMonitorStack->size());
                }
@@ -1658,8 +1657,8 @@ int32_t TR_SetMonitorStateOnBlockEntry::addSuccessors(TR::CFGNode * cfgNode,
 
 bool TR_SetMonitorStateOnBlockEntry::isMonitorStateConsistentForBlock( TR::Block *block, TR_Stack<TR::SymbolReference *> *newMonitorStack, bool popMonitor)
    {
-   TR_Stack<TR::SymbolReference *> *oldMonitorStack = _liveMonitorStacks->Exists(block->getNumber())? 
-      _liveMonitorStacks->ElementAt(block->getNumber()) : NULL; 
+   TR_Stack<TR::SymbolReference *> *oldMonitorStack = _liveMonitorStacks->find(block->getNumber()) != _liveMonitorStacks->end() ? 
+      (*_liveMonitorStacks)[block->getNumber()] : NULL; 
    static const bool traceItEnv = feGetEnv("TR_traceLiveMonitors") ? true : false;
    bool traceIt = traceItEnv || comp()->getOption(TR_TraceLiveMonitorMetadata);
    
@@ -1886,8 +1885,8 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
          traceMsg(comp(), "block to process: %d\n", block->getNumber());
 
       TR_Stack<TR::SymbolReference *> *monitorStack =
-         (_liveMonitorStacks->Exists(block->getNumber())) ?
-         _liveMonitorStacks->ElementAt(block->getNumber()) :
+         (_liveMonitorStacks->find(block->getNumber()) != _liveMonitorStacks->end()) ?
+         (*_liveMonitorStacks)[block->getNumber()] :
          NULL;
 
       if (traceIt && monitorStack && !monitorStack->isEmpty())

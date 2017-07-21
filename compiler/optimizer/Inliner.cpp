@@ -346,6 +346,22 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
    if (e)
       _nodeCountThreshold = atoi(e);
 
+   // Under voluntary OSR, OSR blocks and additional stores can
+   // significantly increase the node count, particularly dead stores
+   // in OSRCodeBlocks. To maintain the same inlining behaviour, the
+   // threshold must be increased.
+   //
+   // The compile time overhead of this threshold increase has been tested
+   // and was not significant, as this threshold is typically only reached
+   // in hot or above compiles.
+   if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::voluntaryOSR && comp()->supportsInduceOSR())
+      {
+      static const char *f = feGetEnv("TR_OSRNodeCountThreshold");
+      if (f)
+         _nodeCountThreshold = atoi(f);
+      else
+         _nodeCountThreshold *= 2;
+      }
 
    //call random functions to allow randomness to change limits
    if (comp()->getOption(TR_Randomize))

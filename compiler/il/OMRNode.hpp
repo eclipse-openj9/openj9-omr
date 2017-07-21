@@ -379,9 +379,6 @@ public:
    TR::Node *             uncommon();
 
    bool                   containsNode(TR::Node *searchNode, vcount_t visitCount); // Careful how you use this: it doesn't account for aliasing
-   // these call containsNode on each node found in the list or bitvector set of Nodes
-   bool                   containsAnyNode(List<TR::Node *> &nodeList, vcount_t visitCount);
-   bool                   containsAnyNode(TR::SparseBitVector &nodeSet, vcount_t visitCount, TR::Compilation *comp);
 
    /// Does this node have an unresolved symbol reference?
    bool                   hasUnresolvedSymbolReference();

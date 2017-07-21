@@ -5587,18 +5587,16 @@ static void cleanseIntegralNodeFlagsInSubtree(TR::Compilation *comp, TR::Node *n
    dumpOptDetails(comp, "%sCleansing Integer/Unsigned related flags under node n%in subtree\n",
          OPT_DETAILS_LOOP_VERSIONER, node->getGlobalIndex());
 
-   using namespace CS2;
-   QueueOf<ncount_t, TR::Allocator> queue(comp->allocator());
-   queue.Push(node->getNodePoolIndex());
-   TR::Node *tmp = NULL;
-   TR::SparseBitVector seen(comp->allocator());
-   while (!queue.IsEmpty())
+   TR::deque<TR::Node*, TR::Region&> queue(comp->trMemory()->currentStackRegion());
+   queue.push_back(node);
+   TR_BitVector seen(comp->trMemory()->currentStackRegion());
+   while (!queue.empty())
       {
-      auto poolIndex = queue.Pop();
-      if (seen[poolIndex])
+      TR::Node *tmp = queue.front();
+      queue.pop_front();
+      if (seen.get(tmp->getGlobalIndex()))
          continue;
-      seen[poolIndex] = 1;
-      tmp = comp->getNodePool().getNodeAtPoolIndex(poolIndex);
+      seen.set(tmp->getGlobalIndex());
       auto &op = tmp->getOpCode();
       if (op.isInteger() || op.isUnsigned())
          {
@@ -5607,11 +5605,11 @@ static void cleanseIntegralNodeFlagsInSubtree(TR::Compilation *comp, TR::Node *n
          tmp->setIsNonNegative(false);
          tmp->setIsNonPositive(false);
          }
-      for (int i=0; i<tmp->getNumChildren(); i++)
+      for (int i = 0; i < tmp->getNumChildren(); i++)
          {
-         poolIndex = tmp->getChild(i)->getNodePoolIndex();
-         if (!seen[poolIndex])
-            queue.Push(poolIndex);
+         TR::Node *child = tmp->getChild(i);
+         if (!seen.get(child->getGlobalIndex()))
+            queue.push_back(child);
          }
       }
    }

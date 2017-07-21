@@ -405,70 +405,70 @@ dwarf_get_TAG_name(Dwarf_Half tag, const char **name)
 		case DW_TAG_unknown:
 			(*name) = "DW_TAG_unknown";
 			break;
-		case DW_TAG_array_type
+		case DW_TAG_array_type:
 			(*name) = "DW_TAG_array_type";
 			break;
-		case DW_TAG_base_type
+		case DW_TAG_base_type:
 			(*name) = "DW_TAG_base_type";
 			break;
-		case DW_TAG_class_type
+		case DW_TAG_class_type:
 			(*name) = "DW_TAG_class_type";
 			break;
-		case DW_TAG_compile_unit
+		case DW_TAG_compile_unit:
 			(*name) = "DW_TAG_compile_unit";
 			break;
-		case DW_TAG_const_type
+		case DW_TAG_const_type:
 			(*name) = "DW_TAG_const_type";
 			break;
-		case DW_TAG_enumeration_type
+		case DW_TAG_enumeration_type:
 			(*name) = "DW_TAG_enumeration_type";
 			break;
-		case DW_TAG_enumerator
+		case DW_TAG_enumerator:
 			(*name) = "DW_TAG_enumerator";
 			break;
-		case DW_TAG_inheritance
+		case DW_TAG_inheritance:
 			(*name) = "DW_TAG_inheritance";
 			break;
-		case DW_TAG_member
+		case DW_TAG_member:
 			(*name) = "DW_TAG_member";
 			break;
-		case DW_TAG_namespace
+		case DW_TAG_namespace:
 			(*name) = "DW_TAG_namespace";
 			break;
-		case DW_TAG_pointer_type
+		case DW_TAG_pointer_type:
 			(*name) = "DW_TAG_pointer_type";
 			break;
-		case DW_TAG_ptr_to_member_type
+		case DW_TAG_ptr_to_member_type:
 			(*name) = "DW_TAG_ptr_to_member_type";
 			break;
-		case DW_TAG_restrict_type
+		case DW_TAG_restrict_type:
 			(*name) = "DW_TAG_restrict_type";
 			break;
-		case DW_TAG_reference_type
+		case DW_TAG_reference_type:
 			(*name) = "DW_TAG_reference_type";
 			break;
-		case DW_TAG_shared_type
+		case DW_TAG_shared_type:
 			(*name) = "DW_TAG_shared_type";
 			break;
-		case DW_TAG_structure_type
+		case DW_TAG_structure_type:
 			(*name) = "DW_TAG_structure_type";
 			break;
-		case DW_TAG_subprogram
+		case DW_TAG_subprogram:
 			(*name) = "DW_TAG_subprogram";
 			break;
-		case DW_TAG_subrange_type
+		case DW_TAG_subrange_type:
 			(*name) = "DW_TAG_subrange_type";
 			break;
-		case DW_TAG_subroutine_type
+		case DW_TAG_subroutine_type:
 			(*name) = "DW_TAG_subroutine_type";
 			break;
-		case DW_TAG_typedef
+		case DW_TAG_typedef:
 			(*name) = "DW_TAG_typedef";
 			break;
-		case DW_TAG_union_type
+		case DW_TAG_union_type:
 			(*name) = "DW_TAG_union_type";
 			break;
-		case DW_TAG_volatile_type
+		case DW_TAG_volatile_type:
 			(*name) = "DW_TAG_volatile_type";
 			break;
 		default:

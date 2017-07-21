@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -553,12 +553,8 @@ MM_CompactScheme::compact(MM_EnvironmentBase *envBase, bool rebuildMarkBits, boo
 	 *    multiple holes created per segment, thereby fragmenting the space. This will result in
 	 *    singlethreaded compaction per segment, and so should only be done in extreme OOM situations.
 	 *  o no slave GC threads
-	 *  o the J9HOOK_MM_OMR_OBJECT_RENAME hook has registered users. JVMPI does not support events being issued
-	 * 	  in parallel so we force single sub area compact to ensure all events issued under master GC thread.
 	 */
-	if (aggressive ||
-		1 == env->_currentTask->getThreadCount() ||
-		J9_EVENT_IS_HOOKED(_extensions->omrHookInterface, J9HOOK_MM_OMR_OBJECT_RENAME)) {
+	if (aggressive || (1 == env->_currentTask->getThreadCount())) {
 		singleThreaded = true;
 	}
 
@@ -1225,8 +1221,6 @@ MM_CompactScheme::doCompact(MM_EnvironmentStandard *env, MM_MemorySubSpace *memo
 			deadObject = (omrobjectptr_t)((uintptr_t)deadObject + objectSize);
 			continue;
 		}
-
-		TRIGGER_J9HOOK_MM_OMR_OBJECT_RENAME(env->getExtensions()->omrHookInterface, env->getOmrVMThread(), objectPtr, deadObject);
 
 		nobjects++;
 		nbytes += objectSizeAfterMove;

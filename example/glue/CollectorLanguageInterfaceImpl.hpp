@@ -91,7 +91,6 @@ public:
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	virtual void scavenger_reportObjectEvents(MM_EnvironmentBase *env);
 	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase *env);
 	virtual void scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase *env);
 	virtual void scavenger_reportScavengeEnd(MM_EnvironmentBase * envBase, bool scavengeSuccessful);

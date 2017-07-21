@@ -104,12 +104,6 @@ MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
 }
 #if defined(OMR_GC_MODRON_SCAVENGER)
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_reportObjectEvents(MM_EnvironmentBase *env)
-{
-	/* Do nothing for now */
-}
-
-void
 MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC(MM_EnvironmentBase *env)
 {
 	/* Do nothing for now */

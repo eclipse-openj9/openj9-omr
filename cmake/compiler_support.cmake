@@ -78,6 +78,9 @@ function(make_compiler_target TARGET_NAME)
    message("making ${TARGET_NAME} into a compiler target,for ${TARGET_COMPILER}.")
    message("Defines are ${COMPILER_DEFINES}, arch is ${TR_TARGET_ARCH} and ${TR_TARGET_SUBARCH}") 
    target_compile_features(${TARGET_NAME} PUBLIC cxx_static_assert)
+   # Until all the compiler written strings are resolved, we 
+   # silence the warning. 
+   target_compile_options(${TARGET_NAME} PRIVATE -Wno-write-strings) 
 
    target_include_directories(${TARGET_NAME} BEFORE PRIVATE 
       ${COMPILER_INCLUDES}

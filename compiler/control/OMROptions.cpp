@@ -454,6 +454,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOSR",                         "O\tdisable support for on-stack replacement", SET_OPTION_BIT(TR_DisableOSR), "F"},
    {"disableOSRCallSiteRemat",            "O\tdisable use of the call stack remat table in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRCallSiteRemat), "F"},
    {"disableOSRExceptionEdgeRemoval",     "O\tdon't trim away unused on-stack replacement points", TR::Options::disableOptimization, osrExceptionEdgeRemoval, 0, "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"disableOSRGuardRemoval",             "O\tdisable OSR guard removal",                      TR::Options::disableOptimization, osrGuardRemoval, 0, "P"},
+#endif
    {"disableOSRLocalRemat",               "O\tdisable use of remat when inserting guards for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLocalRemat), "F"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
@@ -1188,6 +1191,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching defintions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
    {"traceOSRGuardInsertion",           "L\ttrace HCR guard insertion",                    TR::Options::traceOptimization, osrGuardInsertion, 0, "P"},
+   {"traceOSRGuardRemoval",             "L\ttrace HCR guard removal",                      TR::Options::traceOptimization, osrGuardRemoval, 0, "P"},
 #endif
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},

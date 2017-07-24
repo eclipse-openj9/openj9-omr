@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -56,8 +56,6 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 	OMR_VMThread *omrVMThread = NULL;
 	uintptr_t slaveID = 0;
 	MM_ParallelDispatcher *dispatcher = slaveInfo->dispatcher;
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
-	MM_CollectorLanguageInterface *cli = extensions->collectorLanguageInterface;
 	MM_EnvironmentBase *env = NULL;
 	uintptr_t oldVMState = 0;
 
@@ -65,7 +63,7 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 	slaveID = slaveInfo->slaveID;
 
 	/* Attach the thread as a system daemon thread */
-	omrVMThread = cli->attachVMThread(omrVM, "GC Slave", MM_CollectorLanguageInterfaceImpl::ATTACH_GC_DISPATCHER_THREAD);
+	omrVMThread = MM_EnvironmentBase::attachVMThread(omrVM, "GC Slave", MM_EnvironmentBase::ATTACH_GC_DISPATCHER_THREAD);
 	if (NULL == omrVMThread) {
 		goto startup_failed;
 	}
@@ -94,7 +92,7 @@ dispatcher_thread_proc2(OMRPortLibrary* portLib, void *info)
 
 	/* Thread is terminating -- shut it down */
 	env->setSlaveID(0);
-	cli->detachVMThread(omrVM, omrVMThread, MM_CollectorLanguageInterfaceImpl::ATTACH_GC_DISPATCHER_THREAD);
+	MM_EnvironmentBase::detachVMThread(omrVM, omrVMThread, MM_EnvironmentBase::ATTACH_GC_DISPATCHER_THREAD);
 	
 	omrthread_monitor_enter(dispatcher->_dispatcherMonitor);
 	dispatcher->_threadShutdownCount -= 1;

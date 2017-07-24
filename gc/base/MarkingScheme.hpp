@@ -117,6 +117,7 @@ public:
 	void masterSetupForWalk(MM_EnvironmentBase *env);
 	void masterCleanupAfterGC(MM_EnvironmentBase *env);
 	void workerSetupForGC(MM_EnvironmentBase *env);
+	void workerCleanupAfterGC(MM_EnvironmentBase *env);
 	void completeMarking(MM_EnvironmentBase *env);
 
 	/**

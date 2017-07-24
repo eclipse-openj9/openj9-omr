@@ -26,6 +26,7 @@
 #include "compile/Compilation.hpp"  // for comp, Compilation (ptr only)
 #include "env/jittypes.h"           // for uintptrj_t
 #include "infra/Assert.hpp"         // for TR_ASSERT
+#include "OMRCodeGenerator.hpp"
 
 class TR_Debug;
 namespace TR { class CodeGenerator; }
@@ -47,7 +48,7 @@ class S390ConstantDataSnippet : public TR::Snippet
    protected:
    union
       {
-      uint8_t                       _value[16];
+      uint8_t                       _value[1<<TR_DEFAULT_DATA_SNIPPET_EXPONENT];
       char *                        _string;
       };
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -24,9 +24,6 @@
 #include "compile/Compilation.hpp"               // for Compilation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                         // for ArrayOf
-#include "cs2/hashtab.h"                         // for HashTable
-#include "cs2/tableof.h"                         // for TableOf
 #include "env/TRMemory.hpp"                      // for TR_Memory, etc
 #include "il/Node.hpp"                           // for Node, vcount_t
 #include "infra/Array.hpp"                       // for TR_Array
@@ -325,7 +322,6 @@ template<class Container>class TR_BasicDFSetAnalysis<Container *> :
    virtual void allocateBlockInfoContainer(Container **result, bool isSparse = true, bool lock = false);
    virtual void allocateBlockInfoContainer(Container **result, Container *other);
    virtual void allocateTempContainer(Container **result, Container *other);
-   TR::BitVector *allocateBitVector();
 
    Container *_regularInfo;
    Container *_exceptionInfo;
@@ -335,7 +331,7 @@ template<class Container>class TR_BasicDFSetAnalysis<Container *> :
    Container **_exceptionGenSetInfo;
    Container **_exceptionKillSetInfo;
    Container *_temp, *_temp2;
-   TR::BitVector *_nodesInCycle;
+   TR_BitVector *_nodesInCycle;
    bool _containsExceptionTreeTop;
    bool _firstIteration;
    bool _traceBVA;
@@ -344,7 +340,6 @@ template<class Container>class TR_BasicDFSetAnalysis<Container *> :
    int32_t _numberOfNodes;
    int32_t _maxReferenceNumber;
    TR::Node **_supportedNodesAsArray;
-   CS2::TableOf<TR::BitVector, TR::Allocator> *_bitVectorTable;
    bool _hasImproperRegion;
    };
 
@@ -387,9 +382,9 @@ template<class Container>class TR_ForwardDFSetAnalysis<Container *> :
    virtual void analyzeTreeTopsInBlockStructure(TR_BlockStructure *);
    virtual void analyzeNode(TR::Node *, vcount_t, TR_BlockStructure *, Container *);
 
-   bool analyzeNodeIfPredecessorsAnalyzed(TR_RegionStructure *, TR::BitVector &);
+   bool analyzeNodeIfPredecessorsAnalyzed(TR_RegionStructure *, TR_BitVector &);
 
-   virtual void initializeGenAndKillSetInfo(TR_RegionStructure *, TR::BitVector &);
+   virtual void initializeGenAndKillSetInfo(TR_RegionStructure *, TR_BitVector &);
    virtual void initializeGenAndKillSetInfoForRegion(TR_RegionStructure *);
    virtual void initializeGenAndKillSetInfoForBlock(TR_BlockStructure *);
    virtual bool canGenAndKillForStructure(TR_Structure *);
@@ -547,9 +542,9 @@ template<class Container>class TR_BackwardDFSetAnalysis<Container *> :
    virtual void analyzeTreeTopsInBlockStructure(TR_BlockStructure *);
    virtual void analyzeNode(TR::Node *, vcount_t, TR_BlockStructure *, Container *);
 
-   bool analyzeNodeIfSuccessorsAnalyzed(TR_RegionStructure *, TR::BitVector &, TR::BitVector &);
+   bool analyzeNodeIfSuccessorsAnalyzed(TR_RegionStructure *, TR_BitVector &, TR_BitVector &);
 
-   virtual void initializeGenAndKillSetInfo(TR_RegionStructure *, TR::BitVector &, TR::BitVector &, bool);
+   virtual void initializeGenAndKillSetInfo(TR_RegionStructure *, TR_BitVector &, TR_BitVector &, bool);
    virtual void initializeGenAndKillSetInfoForRegion(TR_RegionStructure *);
    virtual void initializeGenAndKillSetInfoForBlock(TR_BlockStructure *);
    virtual bool canGenAndKillForStructure(TR_Structure *);

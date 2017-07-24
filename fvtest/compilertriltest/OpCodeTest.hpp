@@ -23,7 +23,34 @@
 
 #include <string>
 #include <tuple>
+#include <vector>
+#include <initializer_list>
 #include <iterator>
+#include <limits>
+
+#define INT32_POS 3
+#define INT32_NEG -2
+#define INT32_ZERO 0
+
+/**
+ * @brief A family of functions returning constants of the specified type
+ */
+template <typename T> T zero_value() { return static_cast<T>(0); }
+template <typename T> T positive_value() { return static_cast<T>(3); }
+template <typename T> T negative_value() { return static_cast<T>(-2); }
+
+/**
+ * @brief A convenience function returning possible test inputs of the specified type
+ */
+template <typename T>
+std::vector<T> const_values()
+   {
+   return std::vector<T>{ zero_value<T>(),
+                          positive_value<T>(),
+                          negative_value<T>(),
+                          std::numeric_limits<T>::min(),
+                          std::numeric_limits<T>::max() };
+   }
 
 /**
  * @brief Type for holding argument to parameterized opcode tests
@@ -117,12 +144,63 @@ std::vector<std::tuple<L, R>> make_value_pairs(L lzero, L lpos, L lneg, L lmin, 
 }
 
 /**
- * @brief Given a set of input values, returns the cartesian product of the set with itself
+ * @brief Given a set of input values, returns the Cartesian product of the set with itself
  */
 template <typename T>
 std::vector<std::tuple<T, T>> make_value_pairs(T zero, T pos, T neg, T min, T max) {
     return make_value_pairs<T, T>(zero, pos, neg, min, max, zero, pos, neg, min, max);
 }
+
+/**
+ * @brief Returns the Cartesian product of two standard-conforming containers
+ * @tparam L is the type of the first input standard-conforming container
+ * @tparam R is the type of the second input standard-conforming container
+ * @param l is the first input standard-conforming container
+ * @param r is the second input standard-conforming container
+ * @return the cartesion product of the input containers as a std::vector of std::tuple
+ *
+ * Example:
+ *
+ *    combine(std::vector<int>{1, 2, 3}, std::list<float>{4.0, 5.0, 6.0})
+ */
+template <typename L, typename R>
+std::vector<std::tuple<typename L::value_type, typename R::value_type>> combine(L l, R r)
+   {
+   auto v = std::vector<std::tuple<typename L::value_type, typename R::value_type>>{};
+   v.reserve((l.end() - l.begin())*(r.end() - r.begin()));
+   for (auto i = l.begin(); i != l.end(); ++i)
+      for (auto j = r.begin(); j != r.end(); ++j)
+         v.push_back(std::make_tuple(*i, *j));
+   return v;
+   }
+
+/**
+ * @brief Returns the Cartesian product of two initializer lists
+ * @tparam L is the type of elements in the first initializer list
+ * @tparam R is the type of elements in the second initializer list
+ * @param l is the first initializer list
+ * @param r is the second initializer list
+ * @return the Cartesian product of the two input lists
+ *
+ * Becuase of the rules surrounding type-deduction of initializer lists, the
+ * types of the elements of the two lists must be explicitely specified when
+ * calling this function.
+ *
+ * Example:
+ *
+ *    combine<int, float>({1, 2, 3}, {4.0, 5.0, 6.0})
+ *
+ */
+template <typename L, typename R>
+std::vector<std::tuple<L, R>> combine(std::initializer_list<L> l, std::initializer_list<R> r)
+   {
+   auto v = std::vector<std::tuple<L, R>>{};
+   v.reserve((l.end() - l.begin())*(r.end() - r.begin()));
+   for (auto i = l.begin(); i != l.end(); ++i)
+      for (auto j = r.begin(); j != r.end(); ++j)
+         v.push_back(std::make_tuple(*i, *j));
+   return v;
+   }
 
 /**
  * @brief Given a vector and a predicate, returns a copy of the vector with the

@@ -32,6 +32,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/IGBase.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/IGNode.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/ILWalk.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidator.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/InterferenceGraph.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitor.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitorTable.cpp \
@@ -67,7 +68,9 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/OMRDebugEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRVMEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/SegmentProvider.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/SegmentAllocator.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/SystemSegmentProvider.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/DebugSegmentProvider.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/Region.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/StackMemoryRegion.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRPersistentInfo.cpp \

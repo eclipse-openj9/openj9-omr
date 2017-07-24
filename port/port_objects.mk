@@ -14,6 +14,7 @@
 #
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+#    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
 ###############################################################################
 
 # This makefile fragment defines logic that is common to building both shared and static libraries.
@@ -68,7 +69,7 @@ OBJECTS += omrgetjobname
 OBJECTS += omrgetjobid
 OBJECTS += omrgetasid
 
-ifeq (s390,$(OMR_HOST_ARCH))
+ifeq ($(OMR_HOST_ARCH),$(filter $(OMR_HOST_ARCH),s390 s390x))
   # z/OS and zLinux
   OBJECTS += omrrttime
 else
@@ -82,8 +83,8 @@ else
   endif
 endif
 
-ifeq (s390,$(OMR_HOST_ARCH))
-  ifeq (linux,$(OMR_HOST_OS))
+ifeq ($(OMR_HOST_ARCH),$(filter $(OMR_HOST_ARCH),s390 s390x))
+  ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),linux linux_ztpf))
     OBJECTS += omrgetstfle
   else
     ifeq (1,$(OMR_ENV_DATA64))
@@ -145,7 +146,7 @@ endif
 OBJECTS += omrsl
 OBJECTS += omrstr
 OBJECTS += omrsysinfo
-ifeq (zos,$(OMR_HOST_OS))
+ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),zos linux_ztpf))
   OBJECTS += omrsysinfo_helpers
 endif
 OBJECTS += omrsyslog

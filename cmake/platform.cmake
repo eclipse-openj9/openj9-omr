@@ -76,10 +76,14 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "linux")
 	add_definitions(
+		-pthread
 		-DLINUX
-		-D_REENTRANT
 		-D_FILE_OFFSET_BITS=64
 	)
+	if(OMR_WARNINGS_AS_ERRORS)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+	endif()
 endif()
 
 
@@ -103,8 +107,8 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "osx")
 	add_definitions(
+		-pthread
 		-DOSX
-		-D_REENTRANT
 		-D_FILE_OFFSET_BITS=64
 	)
 endif()
@@ -144,7 +148,15 @@ if(OMR_HOST_OS STREQUAL "win")
 		set(TARGET_MACHINE i386)
 	endif()
 	set(opt_flags "/GS-")
-	set(common_flags "-MD -Zm400")
+	# we want to disable C4091, and C4577
+	# C4577 is a bogus warning about specifying noexcept when exceptions are disabled
+	# C4091 is caused by broken windows sdk (https://connect.microsoft.com/VisualStudio/feedback/details/1302025/warning-c4091-in-sdk-7-1a-shlobj-h-1051-dbghelp-h-1054-3056)
+	set(common_flags "-MD -Zm400 /wd4577 /wd4091")
+	add_definitions(-D_HAS_EXCEPTIONS=0)
+	if(OMR_WARNINGS_AS_ERRORS)
+		set(common_flags "${common_flags} /WX")
+		# TODO we also want to be setting warning as error on linker flags
+	endif()
 
 	set(linker_common "-subsystem:console -machine:${TARGET_MACHINE}")
 	if(NOT OMR_ENV_DATA64)

@@ -32,6 +32,7 @@
 namespace TR {
 
 class SegmentProvider;
+class RegionProfiler;
 
 class Region
    {
@@ -124,9 +125,14 @@ public:
       return TR::typed_allocator<T, Region& >(*this);
       }
 
+   size_t bytesAllocated() { return _bytesAllocated; }
+
 private:
+   friend class TR::RegionProfiler;
+
    size_t round(size_t bytes);
 
+   size_t _bytesAllocated;
    TR::SegmentProvider &_segmentProvider;
    TR::RawAllocator _rawAllocator;
    TR::MemorySegment _initialSegment;

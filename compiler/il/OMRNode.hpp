@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -42,6 +42,7 @@ namespace OMR { typedef OMR::Node NodeConnector; }
 #include "infra/Annotations.hpp"          // for OMR_EXTENSIBLE
 #include "infra/Assert.hpp"               // for TR_ASSERT
 #include "infra/Flags.hpp"                // for flags32_t
+#include "infra/TRlist.hpp"               // for TR::list
 
 class TR_BitVector;
 class TR_Debug;
@@ -63,7 +64,6 @@ namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
 namespace TR { class NodeExtension; }
-namespace TR { template <class T> class list; }
 template <class T> class List;
 
 #define NUM_DEFAULT_CHILDREN    2
@@ -379,9 +379,6 @@ public:
    TR::Node *             uncommon();
 
    bool                   containsNode(TR::Node *searchNode, vcount_t visitCount); // Careful how you use this: it doesn't account for aliasing
-   // these call containsNode on each node found in the list or bitvector set of Nodes
-   bool                   containsAnyNode(List<TR::Node *> &nodeList, vcount_t visitCount);
-   bool                   containsAnyNode(TR::SparseBitVector &nodeSet, vcount_t visitCount, TR::Compilation *comp);
 
    /// Does this node have an unresolved symbol reference?
    bool                   hasUnresolvedSymbolReference();

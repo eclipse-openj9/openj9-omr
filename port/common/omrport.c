@@ -41,6 +41,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrerror_last_error_message, /* error_last_error_message */
 	omrerror_set_last_error, /* error_set_last_error */
 	omrerror_set_last_error_with_message, /* error_set_last_error_with_message */
+	omrerror_set_last_error_with_message_format, /* error_set_last_error_with_message_format */
 	omrtime_startup, /* time_startup */
 	omrtime_shutdown, /* time_shutdown */
 	omrtime_msec_clock, /* time_msec_clock */
@@ -250,6 +251,10 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_os_description, /* sysinfo_get_os_description */
 	omrsysinfo_os_has_feature, /* sysinfo_os_has_feature */
 	omrsysinfo_os_kernel_info, /* sysinfo_os_kernel_info */
+	omrsysinfo_cgroup_is_limits_supported, /* sysinfo_cgroup_is_limits_supported */
+	omrsysinfo_cgroup_is_limits_enabled, /* sysinfo_cgroup_is_limits_enabled */
+	omrsysinfo_cgroup_enable_limits, /* sysinfo_cgroup_enable_limits */
+	omrsysinfo_cgroup_get_memlimit, /* sysinfo_cgroup_get_memlimit */	
 	omrport_init_library, /* port_init_library */
 	omrport_startup_library, /* port_startup_library */
 	omrport_create_library, /* port_create_library */

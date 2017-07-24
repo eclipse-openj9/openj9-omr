@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include <ctype.h>
@@ -340,7 +341,7 @@ TDFParser::getTemplate(const char *line, const char *key)
 	char *format = NULL;
 	size_t len = 0;
 	/*
-	 * Number of quotes in the string. Must be 2 when the string is fully parsed to ensure there is an opening and closing quote.
+	 * Number of quotes in the string. Must be even when the string is fully parsed to ensure there is an opening and closing quote.
 	 */
 	int count = 0;
 
@@ -365,15 +366,15 @@ TDFParser::getTemplate(const char *line, const char *key)
 	}
 
 	len = (pos - vpos);
-	for (int i = strlen(line); i >= 0; i--){
-		if (line[i] == ' '){
-			continue;
-		}
-		else if (line[i] == '\"'){
+	for (size_t i = 0; i < strlen(line); i++) {
+		if (line[i] == '\"') {
 			count++;
 		}
 	}
-	if (!(count % 2 == 0)){
+	/*
+	 * If number of quotes is not even, then there must have been an opening quote without a closing quote
+	 */
+	if (count % 2 != 0) {
 		goto failed;
 	}
 
@@ -491,7 +492,11 @@ TDFParser::processAssertTemplate(const char *formatTemplate, unsigned int *count
 		if ('P' == *pos) {
 			pos++;
 			numStart = pos;
+#if !defined(OMRZTPF)
 			while (isdigit(*pos)) {
+#else
+			while (isdigit((unsigned char)*pos)) {
+#endif
 				pos++;
 			}
 			num = atoi(numStart);
@@ -598,7 +603,11 @@ TDFParser::processTemplate(const char *formatTemplate, char *str, unsigned int *
 					 * For a valid string, there must always be a follow on
 					 * type specifier, so this code runs in all valid cases
 					 */
+#if !defined(OMRZTPF)
 					char peekAhead = *(pos + 1);
+#else
+					unsigned char peekAhead = *(pos + 1);
+#endif
 					if (3 == state) {
 						/* This 0 is a continuation of a width specifier */
 					} else if ('.' == peekAhead) {

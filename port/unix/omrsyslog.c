@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 /**
@@ -153,6 +154,11 @@ get_conv_txt_num_bytes(struct OMRPortLibrary *portLibrary, const char *message)
 static void
 syslog_write(struct OMRPortLibrary *portLibrary, const char *buf, int priority)
 {
+#if defined(OMRZTPF)
+	sprintf(buf, "%s", buf);
+	syslog(priority, "%s", buf);
+	return;
+#else
 	const uintptr_t lclMsgLen = get_conv_txt_num_bytes(portLibrary, buf);
 	char *lclMsg = NULL;
 	BOOLEAN lclConvSuccess = FALSE;
@@ -193,4 +199,5 @@ syslog_write(struct OMRPortLibrary *portLibrary, const char *buf, int priority)
 	}
 
 	return;
+#endif
 }

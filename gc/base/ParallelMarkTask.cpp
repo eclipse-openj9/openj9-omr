@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,7 +27,6 @@
 
 #include "EnvironmentBase.hpp"
 #include "MarkingScheme.hpp"
-#include "GlobalGCStats.hpp"
 #include "WorkStack.hpp"
 
 
@@ -53,8 +52,6 @@ MM_ParallelMarkTask::run(MM_EnvironmentBase *env)
 void
 MM_ParallelMarkTask::setup(MM_EnvironmentBase *env)
 {
-	env->markingPhaseStarted();
-	
 	if(env->isMasterThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);
 	} else {
@@ -66,7 +63,7 @@ MM_ParallelMarkTask::setup(MM_EnvironmentBase *env)
 void
 MM_ParallelMarkTask::cleanup(MM_EnvironmentBase *env)
 {
-	env->markingPhaseFinished();
+	_markingScheme->workerCleanupAfterGC(env);
 
 	if (env->isMasterThread()) {
 		Assert_MM_true(_cycleState == env->_cycleState);

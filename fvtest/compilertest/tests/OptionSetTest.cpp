@@ -34,9 +34,10 @@ std::string
 TestCompiler::OptionSetTest::getMethodFromLine(const std::string &line)
    {
    size_t sep = line.find_last_of(':');
+   size_t end = line.find_first_of(' ', sep);
    if(sep == std::string::npos)
       return "";
-   return line.substr(sep + 1);
+   return line.substr(sep + 1, end - (sep + 1));
    }
 
 /**

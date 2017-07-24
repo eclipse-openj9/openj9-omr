@@ -26,8 +26,9 @@
  * error codes dedicated to it's own use, some will use the generic portable error code values.
  *
  * Errors reported by the OS may be recorded by calling the port library functions @ref omrerror.c::omrerror_set_last_error "omrerror_set_last_error()"
- * or @ref omrerror.c::omrerror_set_last_error_with_message "omrerror_set_last_error_with_message()".  The mapping of the OS specific error
- * code to a portable error code is the responsibility of the calling module.
+ * or @ref omrerror.c::omrerror_set_last_error_with_message "omrerror_set_last_error_with_message()"
+ * or @ref omrerror.c::omrerror_set_last_error_with_message_format "omrerror_set_last_error_with_message_format()".
+ * The mapping of the OS specific error code to a portable error code is the responsibility of the calling module.
  */
 #ifndef omrporterror_h
 #define omrporterror_h
@@ -267,6 +268,15 @@
 #define OMRPORT_ERROR_SYSINFO_ERROR_EFAULT (OMRPORT_ERROR_SYSINFO_BASE-14)
 #define OMRPORT_ERROR_SYSINFO_PROCESSOR_COUNT_UNSTABLE (OMRPORT_ERROR_SYSINFO_BASE-15)
 #define OMRPORT_ERROR_SYSINFO_GET_OPEN_FILES_NOT_SUPPORTED (OMRPORT_ERROR_SYSINFO_BASE-16)
+#define OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM (OMRPORT_ERROR_SYSINFO_BASE-17)
+#define OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED (OMRPORT_ERROR_SYSINFO_BASE-18)
+#define OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED (OMRPORT_ERROR_SYSINFO_BASE-19)
+#define OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_DUPLICATE_SUBSYSTEM_ENTRIES (OMRPORT_ERROR_SYSINFO_BASE-20)
+#define OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_STATFS_FAILED (OMRPORT_ERROR_SYSINFO_BASE-21)
+#define OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED (OMRPORT_ERROR_SYSINFO_BASE-22)
+#define OMRPORT_ERROR_SYSINFO_CGROUP_LIMITS_DISABLED (OMRPORT_ERROR_SYSINFO_BASE-23)
+#define OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE (OMRPORT_ERROR_SYSINFO_BASE-24)
+#define OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_FILE_FOPEN_FAILED (OMRPORT_ERROR_SYSINFO_BASE-25)
 
 /**
  * @name Port library initialization return codes

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2011, 2016
+ * (c) Copyright IBM Corp. 2017, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -13,14 +13,20 @@
  *      http://www.opensource.org/licenses/apache2.0.php
  *
  * Contributors:
- *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
  *******************************************************************************/
+#ifndef omrcgroup_h
+#define omrcgroup_h
 
-#ifndef HEAPREGIONDESCRIPTORTYPES_HPP_
-#define HEAPREGIONDESCRIPTORTYPES_HPP_
+#if defined(LINUX)
 
-typedef struct MM_HeapRegionDescriptorStandardExtension {
-} MM_HeapRegionDescriptorStandardExtension;
+typedef struct OMRCgroupEntry {
+	int32_t hierarchyId; /**< cgroup hierarch ID*/
+	char *subsystem; /**< name of the subsystem*/
+	char *cgroup; /**< name of the cgroup*/
+	struct OMRCgroupEntry *next; /**< pointer to next OMRCgroupEntry*/
+} OMRCgroupEntry;
 
+#endif /* defined(LINUX) */
 
-#endif /* HEAPREGIONDESCRIPTORTYPES_HPP_ */
+#endif /* omrcgroup_h */

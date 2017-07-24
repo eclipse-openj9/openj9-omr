@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -198,9 +198,7 @@ MM_TLHAllocationInterface::allocateObject(MM_EnvironmentBase *env, MM_AllocateDe
 
 	if ((NULL != result) && !allocDescription->isCompletedFromTlh()) {
 #if defined(OMR_GC_OBJECT_ALLOCATION_NOTIFY)
-		MM_GCExtensionsBase *extensions = env->getExtensions();
-		MM_CollectorLanguageInterface * cli = extensions->collectorLanguageInterface;
-		cli->objectAllocationNotify(env, (omrobjectptr_t)result);
+		env->objectAllocationNotify((omrobjectptr_t)result);
 #endif /* OMR_GC_OBJECT_ALLOCATION_NOTIFY */
 		_stats._allocationBytes += allocDescription->getContiguousBytes();
 		_stats._allocationCount += 1;

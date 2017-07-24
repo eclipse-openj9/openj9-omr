@@ -33,7 +33,8 @@ CONFIGURE_ARGS += \
   --enable-OMR_THREAD \
   --enable-OMR_OMRSIG \
   --enable-OMR_THR_THREE_TIER_LOCKING \
-  --enable-OMR_THR_YIELD_ALG
+  --enable-OMR_THR_YIELD_ALG \
+  --enable-OMR_THR_SPIN_WAKE_CONTROL
 
 ifneq (,$(findstring -64,$(SPEC)))
 CONFIGURE_ARGS += \

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -207,40 +207,39 @@ bool collectSymbolReferencesInNode(TR::Node *node,
 // TODO: Path retrieval is not implemented, but is trivial, making this O(N)
 static int32_t getLongestPathOfDAG(TR::Node *entry, TR::Compilation *cm)
    {
-   using namespace CS2;
    TR::StackMemoryRegion stackMemoryRegion(*cm->trMemory());
-
-   QueueOf<ncount_t, TR::Allocator> queue(cm->allocator());
-   HashTable<ncount_t, int32_t, TR::Allocator> longestPathLens(cm->allocator());
-   longestPathLens.Add(entry->getNodePoolIndex(), 0);
-   queue.Push(entry->getNodePoolIndex());
+   TR::deque<TR::Node *, TR::Region&> queue(stackMemoryRegion);
+   typedef TR::typed_allocator<std::pair<TR::Node *, int32_t>, TR::Region&> LongestPathAllocator;
+   typedef std::less<TR::Node *> LongestPathComparator;
+   typedef std::map<TR::Node *, int32_t, LongestPathComparator, LongestPathAllocator> LongestPathMap;
+   LongestPathMap longestPathLens((LongestPathComparator()), stackMemoryRegion);
+   longestPathLens[entry] = 0;
+   queue.push_back(entry);
    int32_t maxLen = 0;
-   while(!queue.IsEmpty())
+   while (!queue.empty())
       {
-      auto nodePoolIndex = queue.Pop();
-      auto node = cm->getNodePool().getNodeAtPoolIndex(nodePoolIndex);
-      auto prevLongestPathLen = longestPathLens.Get(nodePoolIndex);
+      TR::Node *node = queue.front();
+      queue.pop_front();
+      auto prevLongestPathLen = longestPathLens[node];
       if (node->getNumChildren() == 0)
          {
          if (prevLongestPathLen > maxLen)
             maxLen = prevLongestPathLen;
          }
-      for(int i=0; i<node->getNumChildren(); i++)
+      for (int i = 0; i < node->getNumChildren(); ++i)
          {
-         auto childPoolIndex = node->getChild(i)->getNodePoolIndex();
-         HashIndex hashIdx;
-         if (!longestPathLens.Locate(childPoolIndex, hashIdx))
-            longestPathLens.Add(childPoolIndex, 0, hashIdx);
-
+         TR::Node *child = node->getChild(i);
+         if (longestPathLens.find(child) == longestPathLens.end())
+            longestPathLens[child] = 0;
+         
          // if new longest path is found, update and push child
-         if (prevLongestPathLen + 1 > longestPathLens[hashIdx])
+         if (prevLongestPathLen + 1 > longestPathLens[child])
             {
-            longestPathLens[hashIdx] = prevLongestPathLen + 1;
-            queue.Push(childPoolIndex);
+            longestPathLens[child] = prevLongestPathLen + 1;
+            queue.push_back(child);
             }
          }
       }
-
    return maxLen;
    }
 
@@ -626,7 +625,7 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
    visitCount = comp()->incOrResetVisitCount();
    //TR_ScratchList<TR::Node> seenNodes(trMemory());
    TR::SparseBitVector seenNodes(comp()->allocator());
-   for (TR::TreeTopIterator iter(startTree, this); iter != endTree; ++iter)
+   for (TR::TreeTopIterator iter(startTree, comp()); iter != endTree; ++iter)
       {
       // temporarily revert this fix
       //vcount_t compVisitCount = comp()->getVisitCount();

@@ -26,6 +26,8 @@
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 
+class MM_HeapRegionDescriptor;
+
 /**
  * Client language delegate for GC configuration must be implemented by all GC clients.
  */
@@ -69,6 +71,31 @@ public:
 	{
 		return;
 	}
+
+	/**
+	 * For standard gc policies, an opaque (to OMR) object may be attached to each heap region to maintain language-specific
+	 * per region metadata.
+	 *
+	 * If the delegate allocates a region extension object in this method, it must set region->_heapRegionDescriptorExtension
+	 * to point to the object.
+	 *
+	 * @param env The calling thread environment
+	 * @param region the region to attach the region extension to
+	 * @return true unless a required region extension could not be initialized
+	 */
+	bool initializeHeapRegionDescriptorExtension(MM_EnvironmentBase* env, MM_HeapRegionDescriptor *region) { return true; }
+
+	/**
+	 * For standard gc policies, an opaque (to OMR) object may be attached to each heap region to maintain language-specific
+	 * per region metadata.
+	 *
+	 * If the delegate allocated a region extension object in region->_heapRegionDescriptorExtension, it must be deallocated
+	 * in this method and region->_heapRegionDescriptorExtension should be cleared (NULL).
+	 *
+	 * @param env The calling thread environment
+	 * @param region the region to deallocate the region extension from
+	 */
+	void teardownHeapRegionDescriptorExtension(MM_EnvironmentBase* env, MM_HeapRegionDescriptor *region) {}
 
 	/**
 	 * This method is called just after the heap has been initialized. Delegate may perform
@@ -129,6 +156,16 @@ public:
 	{
 		return 1;
 	}
+
+	/**
+	 * This method is called to determine when to start tracking heap fragmentation, which is initially inhibited to
+	 * allow the heap to grow to a stable operational size. Frequent transitions true->false will limit the quality
+	 * of heap fragmentation stats.
+	 *
+	 * @param[in] env The environment for the calling thread.
+	 * @return true to allow heap fragmentation tracking to start or continue
+	 */
+	bool canCollectFragmentationStats(MM_EnvironmentBase *env) { return false; }
 
 	/**
 	 * Return the GC policy preselected for the GC configuration.

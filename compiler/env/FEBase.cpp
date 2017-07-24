@@ -86,7 +86,7 @@ portLib_get390zLinuxMachineType()
    ::FILE * fp = fopen("/proc/cpuinfo", "r");
    if (fp)
       {
-      while (fgets(line, LINE_SIZE, fp) > 0)
+      while (fgets(line, LINE_SIZE, fp) != NULL)
          {
          int len = strlen(line);
          if (len > PROC_HEADER_SIZE && !memcmp(line, procHeader, PROC_HEADER_SIZE))

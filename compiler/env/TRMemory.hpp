@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -719,6 +719,11 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
    void * operator new[] (size_t s, TR_Memory * m, TR_AllocationKind k) \
       {void *alloc = m->allocateMemory(s, k, a); return alloc; } \
    void operator delete[] (void *p, TR_Memory * m, TR_AllocationKind k) { m->freeMemory(p, k, a); } \
+   void * operator new(size_t size, TR::Region &region) { return region.allocate(size); } \
+   void operator delete(void * p, TR::Region &region) { region.deallocate(p); } \
+   void * operator new[](size_t size, TR::Region &region) { return region.allocate(size); } \
+   void operator delete[](void * p, TR::Region &region) { region.deallocate(p); } \
+
 
 class TRPersistentMemoryAllocator
    {

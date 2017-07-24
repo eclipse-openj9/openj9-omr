@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -276,12 +276,12 @@ enum TR_CompilationOptions
    TR_DisableAOTWarmRunThroughputImprovement  = 0x04000000 + 5,
    TR_EnableUpgradingAllColdCompilations  = 0x08000000 + 5,
    TR_TraceLastOpt                        = 0x10000000 + 5,
-   // Available                           = 0x20000000 + 5,
+   TR_UseILValidator                      = 0x20000000 + 5,
    TR_DisableFPE                          = 0x40000000 + 5,
 
    // Option word 6
    //
-   // Available                           = 0x00000020 + 6,
+   TR_EnableAggressiveLoopVersioning      = 0x00000020 + 6,
    TR_EnableElementPrivatization          = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
@@ -732,8 +732,8 @@ enum TR_CompilationOptions
    TR_DisableRedundantBCDSignElimination              = 0x00080000 + 21,
    // Available                                       = 0x00100000 + 21,
    TR_AllowVPRangeNarrowingBasedOnDeclaredType        = 0x00200000 + 21,
-   // Available                                       = 0x00400000 + 21,
-   // Available                                       = 0x00800000 + 21,
+   TR_EnableScratchMemoryDebugging                    = 0x00400000 + 21,
+   TR_ProfileMemoryRegions                            = 0x00800000 + 21,
    TR_DisableConverterReducer                         = 0x01000000 + 21,
    // Available                                       = 0x02000000 + 21,
    // Available                                       = 0x04000000 + 21,
@@ -1105,7 +1105,6 @@ enum TR_VerboseFlags
 
    TR_VerboseCompileRequest,
    TR_VerboseGc,
-   TR_VerboseCompileTime, // Not used in j9. TR_VerbosePerformance will do it
    TR_VerboseRecompile,   // this adds jit profiling information
    TR_VerbosePerformance, // Print options, compilation start/end/failure/time/memory
    TR_VerboseFilters,

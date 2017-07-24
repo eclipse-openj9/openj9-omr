@@ -275,6 +275,22 @@ IlBuilder::NewValue(TR::IlType *dt)
    TR_ASSERT_FATAL(0, "should not create a value without a TR::Node");
    }
 
+TR::IlValue *
+IlBuilder::Copy(TR::IlValue *value)
+   {
+   TR::DataType dt = value->getDataType();
+   TR::SymbolReference *newSymRef = symRefTab()->createTemporary(_methodSymbol, dt);
+   newSymRef->getSymbol()->setNotCollected();
+
+   storeToTemp(newSymRef, loadValue(value));
+
+   TR::IlValue *newVal = newValue(newSymRef->getSymbol()->getDataType(), loadTemp(newSymRef));
+
+   TraceIL("IlBuilder[ %p ]::Copy value (%d) dataType (%d) to newVal (%d) at cpIndex (%d)\n", this, value->getID(), dt, newVal->getID(), newSymRef->getCPIndex());
+
+   return newVal;
+   }
+
 TR::TreeTop *
 IlBuilder::getFirstTree()
    {
@@ -810,6 +826,7 @@ TR::IlValue *
 IlBuilder::IndexAt(TR::IlType *dt, TR::IlValue *base, TR::IlValue *index)
    {
    TR::IlType *elemType = dt->baseType();
+   TR_ASSERT(base->getDataType() == TR::Address, "IndexAt must be called with a pointer base");
    TR_ASSERT(elemType != NULL, "IndexAt should be called with pointer type");
    TR_ASSERT(elemType->getPrimitiveType() != TR::NoType, "Cannot use IndexAt with pointer to NoType.");
    TR::Node *baseNode = loadValue(base);

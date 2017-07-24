@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -122,7 +122,7 @@ TR_VirtualGuard::addNOPSite()
    {
    TR_ASSERT(isNopable() || mergedWithHCRGuard(), "assertion failure");
 
-   TR_VirtualGuardSite *site = new (trHeapMemory()) TR_VirtualGuardSite;
+   TR_VirtualGuardSite *site = new (_sites.getRegion()) TR_VirtualGuardSite;
 
    _sites.add(site);
    return site;

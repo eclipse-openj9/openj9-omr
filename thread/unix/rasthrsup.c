@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 #include <pthread.h>
@@ -36,7 +37,7 @@
  * This is required to pick up correct thread IDs on Linux
  */
 
-#if !__GLIBC_PREREQ(2,4)
+#if !__GLIBC_PREREQ(2,4) && !defined(OMRZTPF)
 /**
  * Even though we don't use errno directly, it is used by the _syscall0 macro and some
  * distros incorrectly assume that errno is an int, in their header.  Including it here will
@@ -48,7 +49,7 @@
 
 /* this line is needed to build the syscall macro which is called (as gettid) within the function */
 _syscall0(pid_t, gettid);
-#endif
+#endif /* !__GLIBC_PREREQ(2,4) && !defined(OMRZTPF) */
 #endif /* defined(LINUX) */
 
 uintptr_t
@@ -56,7 +57,7 @@ omrthread_get_ras_tid(void)
 {
 	uintptr_t threadID = 0;
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #if __GLIBC_PREREQ(2,4)
 	/* Want thread id that shows up in /proc etc.  gettid() does not cut it */
 	threadID = syscall(SYS_gettid);
@@ -85,7 +86,7 @@ omrthread_get_ras_tid(void)
 	} else {
 		threadID = 0;
 	}
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return threadID;
 }
 

@@ -38,6 +38,7 @@ ALL_TESTS = \
             linkedlist \
             localarray \
             nestedloop \
+            operandarraytests \
             operandstacktests \
             pointer \
             pow2 \
@@ -75,6 +76,7 @@ all_goal: common_goal
 	./fieldaddress
 	./linkedlist
 	./localarray
+	./operandarraytests
 	./operandstacktests
 	./pointer
 	./recfib
@@ -199,6 +201,13 @@ nestedloop : libjitbuilder.a NestedLoop.o
 
 NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
+
+
+operandarraytests : libjitbuilder.a OperandArrayTests.o
+	g++ -g -fno-rtti -o $@ OperandArrayTests.o -L. -ljitbuilder -ldl
+
+OperandArrayTests.o: src/OperandArrayTests.cpp src/OperandArrayTests.hpp
+	g++ -o $@ $(CXXFLAGS) $<
 
 
 operandstacktests : libjitbuilder.a OperandStackTests.o

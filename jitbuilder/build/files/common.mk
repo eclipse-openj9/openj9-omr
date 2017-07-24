@@ -67,7 +67,9 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/OMRDebugEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRVMEnv.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/SegmentProvider.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/SegmentAllocator.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/SystemSegmentProvider.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/DebugSegmentProvider.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/Region.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/StackMemoryRegion.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRPersistentInfo.cpp \
@@ -87,6 +89,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ras/OptionsDebug.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/PPCOpNames.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/Tree.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidator.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/AsyncCheckInsertion.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/BackwardBitVectorAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/BackwardIntersectionBitVectorAnalysis.cpp \
@@ -217,6 +220,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandArray.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \

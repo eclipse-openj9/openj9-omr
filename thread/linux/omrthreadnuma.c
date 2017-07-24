@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.)   - initial z/TPF Port Updates
  *******************************************************************************/
 
 /**
@@ -22,7 +23,9 @@
  * @brief NUMA support for Thread library.
  */
 /* _GNU_SOURCE must be defined for CPU_SETSIZE */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <ctype.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -33,6 +36,16 @@
 
 #include "omrcfg.h"
 #include "threaddef.h"
+
+#if defined(J9ZTPF)
+#define CPU_SETSIZE 4
+#define CPU_ISSET(x,y) 0
+#define CPU_SET(x,y) {}
+#define CPU_CLR(x,y) {}
+typedef struct {
+        char __junkbits;
+} cpu_set_t[CPU_SETSIZE];
+#endif
 
 static uintptr_t cpuset_subset_or_equal(cpu_set_t *subset, cpu_set_t *superset);
 static void cpuset_logical_or(cpu_set_t *destination, const cpu_set_t *source);

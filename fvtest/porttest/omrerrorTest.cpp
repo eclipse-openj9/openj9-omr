@@ -87,6 +87,10 @@ TEST(PortErrorTest, error_test0)
 	if (NULL == OMRPORTLIB->error_set_last_error_with_message) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->error_set_last_error_with_message is NULL\n");
 	}
+
+	if (NULL == OMRPORTLIB->error_set_last_error_with_message_format) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->error_set_last_error_with_message_format is NULL\n");
+	}
 	reportTestExit(OMRPORTLIB, testName);
 }
 
@@ -180,7 +184,7 @@ TEST(PortErrorTest, error_test2)
 	 */
 	message = omrerror_last_error_message();
 	if (0 != strlen(message)) {
-		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned message of length %d expected %d\n", strlen(message), 1);
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned message of length %d expected %d\n", strlen(message), 0);
 	}
 
 	/* Set an error message, verify it is what we get back */
@@ -226,6 +230,79 @@ TEST(PortErrorTest, error_test2)
 	message = omrerror_last_error_message();
 	if (-300 != errorCode) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_number() returned %d expected %d\n", errorCode, -300);
+	}
+	if (strlen(message) != strlen(knownMessage)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned length %d expected %d\n", strlen(message), strlen(knownMessage));
+	}
+	if (0 != memcmp(message, knownMessage, strlen(knownMessage))) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned \"%s\" expected \"%s\"\n", message, knownMessage);
+	}
+
+	/* Delete the ptBuffers, verify no error is stored */
+	omrport_tls_free();
+	errorCode = omrerror_last_error_number();
+	if (0 != errorCode) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_number() returned %d expected %d\n", errorCode, 0);
+	}
+	reportTestExit(OMRPORTLIB, testName);
+}
+
+/**
+ * Verify port library error handling operations.
+ *
+ * Error codes are stored in per thread buffers so errors reported by one thread
+ * do not effect those reported by a second.  Errors stored via the helper
+ * function @ref omrerror.c::omrerror_set_last_error_with_message_format "omrerror_set_last_error_with_message_format()"
+ * are recorded in the per thread buffers without an error message.
+ * Verify the @ref omrerror_last_error_message "omrerror_last_error_message()" returns
+ * the correct message.
+ */
+TEST(PortErrorTest, error_test3)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrerror_test3";
+
+	const char *message;
+	const char *formatMessage1 = "This is a test message with format specifiers %s %d";
+	const char *formatMessage2 = "This is also a test message with format specifiers %s %d";
+	const char *arg1 = "arg1";
+	int32_t arg2 = 1;
+	char knownMessage[1024]; /* 1024 is large enough to hold format message */
+	int32_t errorCode;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* Delete the ptBuffers */
+	omrport_tls_free();
+
+	/* In theory there is now nothing stored, if we really did free the buffers.
+	 * Guess it is time to find out
+	 */
+	message = omrerror_last_error_message();
+	if (0 != strlen(message)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned message of length %d expected %d\n", strlen(message), 0);
+	}
+
+	/* Set an error message, verify it is what we get back */
+	omrstr_printf(knownMessage, 1024, formatMessage1, arg1, arg2);
+	errorCode = omrerror_set_last_error_with_message_format(200, formatMessage1, arg1, arg2);
+	message = omrerror_last_error_message();
+	if (200 != errorCode) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_set_last_error_with_message() returned %d expected %d\n", errorCode, 200);
+	}
+	if (strlen(message) != strlen(knownMessage)) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned length %d expected %d\n", strlen(message), strlen(knownMessage));
+	}
+	if (0 != memcmp(message, knownMessage, strlen(knownMessage))) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned \"%s\" expected \"%s\"\n", message, knownMessage);
+	}
+
+	/* Again, different message */
+	omrstr_printf(knownMessage, 1024, formatMessage2, arg1, arg2);
+	errorCode = omrerror_set_last_error_with_message_format(100, formatMessage2, arg1, arg2);
+	message = omrerror_last_error_message();
+	if (100 != errorCode) {
+		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_set_last_error_with_message() returned %d expected %d\n", errorCode, 100);
 	}
 	if (strlen(message) != strlen(knownMessage)) {
 		outputErrorMessage(PORTTEST_ERROR_ARGS, "omrerror_last_error_message() returned length %d expected %d\n", strlen(message), strlen(knownMessage));

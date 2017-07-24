@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,11 +34,19 @@ public:
    virtual TR::MemorySegment& request(size_t requiredSize) = 0;
    virtual void release(TR::MemorySegment& segment) throw() = 0;
    size_t defaultSegmentSize() { return _defaultSegmentSize; }
+   virtual size_t bytesAllocated() const throw() = 0;
 
 
 protected:
-   SegmentProvider(size_t defaultSegmentSize);
-   SegmentProvider(const SegmentProvider &other);
+   explicit SegmentProvider(size_t defaultSegmentSize) :
+      _defaultSegmentSize(defaultSegmentSize)
+      {
+      }
+
+   SegmentProvider(const SegmentProvider &other):
+      _defaultSegmentSize(other._defaultSegmentSize)
+      {
+      }
 
    /*
     * Require knowledge of the concrete class in order to destroy SegmentProviders

@@ -401,7 +401,7 @@ TR::VPConstraint *OMR::ValuePropagation::addConstraintToList(TR::Node *node, int
       // If the relationship does not exist, we must have traversed the whole list
       // Make sure that our lists are not getting too long -
       //
-      static const char *p = feGetEnv("TR::VPMaxRelDepth");
+      static const char *p = feGetEnv("TR_VPMaxRelDepth");
       static const int32_t maxRelDepth = p ? atoi(p) : 64;
       if (!rel && numRelatives > maxRelDepth)
          {
@@ -616,7 +616,7 @@ TR::VPConstraint *OMR::ValuePropagation::addGlobalConstraint(TR::Node *node, int
 
    bool newOrChanged = false;
 
-   static const char *p = feGetEnv("TR::VPMaxRelDepth");
+   static const char *p = feGetEnv("TR_VPMaxRelDepth");
    static const int32_t maxRelDepth = p ? atoi(p) : 64;
    if (!rel && numRelatives > maxRelDepth)
       {

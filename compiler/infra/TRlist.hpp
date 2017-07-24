@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -26,11 +26,11 @@
 #include "env/TRMemory.hpp"  // for TR_Memory, etc
 namespace TR
    {
-   template <class T> class list : public std::list<T, TR::typed_allocator<T, TR::Allocator> >
+   template <class T, class Alloc = TR::Allocator> class list : public std::list<T, TR::typed_allocator<T, Alloc> >
       {
       public:
-      list(TR::typed_allocator<T, TR::Allocator> ta) :
-         std::list<T, TR::typed_allocator<T, TR::Allocator> > (ta)
+      list(TR::typed_allocator<T, Alloc> ta) :
+         std::list<T, TR::typed_allocator<T, Alloc> > (ta)
          {
          }
 

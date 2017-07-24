@@ -135,6 +135,23 @@ improperly referenced, and the commit is not signed off by the author.
 
 - http://chris.beams.io/posts/git-commit/
 
+### Install a git commit message hook script to validate local commits
+
+We have a script that attempts to enforce some of these commit guidelines. You
+can install it by following instructions similar to the ones below. 
+
+```
+cd omr_repo_dir
+cp scripts/commit-msg .git/hooks
+chmod +x .git/hooks/commit-msg
+```
+
+If the hook declines your commit, the message will remain in 
+`omr_repo_dir/.git/COMMIT_EDITMSG`.
+
+Be sure to update your version of the script occasionally as it may evolve as
+our commit guidelines evolve.
+
 ## Legal considerations
 
 Please read the [Eclipse Foundation policy on accepting contributions via Git](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git).

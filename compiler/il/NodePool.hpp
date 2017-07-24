@@ -54,7 +54,6 @@ class NodePool
 
    TR::Node * allocate(ncount_t poolIndex = 0);
    bool      deallocate(TR::Node * node);
-   TR::Node * getNodeAtPoolIndex(ncount_t poolIdx);
    void      removeNodeAndReduceGlobalIndex(TR::Node * node);
    bool      removeDeadNodes();
    void      enableNodeGC()  { _disableGC = false; }

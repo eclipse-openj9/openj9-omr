@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -289,8 +289,8 @@ class TR_BlockListEntry
    public:
    TR_ALLOC(TR_Memory::DataFlowAnalysis)
 
-   TR_BlockListEntry(TR::Block *block, TR::CFGEdge *pred, TR_Memory * m)
-      : _preds(m)
+   TR_BlockListEntry(TR::Block *block, TR::CFGEdge *pred, TR::Region &region)
+      : _preds(region)
       { _block = block; if (pred != 0) _preds.add(pred); _count = 1; }
 
    TR::Block       * _block;   // block

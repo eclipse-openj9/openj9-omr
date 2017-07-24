@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -454,6 +454,9 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOSR",                         "O\tdisable support for on-stack replacement", SET_OPTION_BIT(TR_DisableOSR), "F"},
    {"disableOSRCallSiteRemat",            "O\tdisable use of the call stack remat table in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRCallSiteRemat), "F"},
    {"disableOSRExceptionEdgeRemoval",     "O\tdon't trim away unused on-stack replacement points", TR::Options::disableOptimization, osrExceptionEdgeRemoval, 0, "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"disableOSRGuardRemoval",             "O\tdisable OSR guard removal",                      TR::Options::disableOptimization, osrGuardRemoval, 0, "P"},
+#endif
    {"disableOSRLocalRemat",               "O\tdisable use of remat when inserting guards for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLocalRemat), "F"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
@@ -615,6 +618,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dynamicThreadPriority",              "M\tenable dynamic changing of compilation thread priority", SET_OPTION_BIT(TR_DynamicThreadPriority), "F", NOT_IN_SUBSET},
    {"earlyLPQ",                           "M\tAllow compilations from low priority queue to happen early, during startup", SET_OPTION_BIT(TR_EarlyLPQ), "F", NOT_IN_SUBSET },
    {"enableAggressiveLiveness",           "I\tenable globalLiveVariablesForGC below warm", SET_OPTION_BIT(TR_EnableAggressiveLiveness), "F"},
+   {"enableAggressiveLoopVersioning", "O\tOptions and thresholds that result in loop versioning occurring in more cases", SET_OPTION_BIT(TR_EnableAggressiveLoopVersioning), "F" },
    {"enableAllocationOfScratchBTL",       "M\tAllow the allocation scratch memory below the line (zOS 31-bit)", RESET_OPTION_BIT(TR_DontAllocateScratchBTL), "F", NOT_IN_SUBSET },
    {"enableAllocationSinking",            "O\tdelay object allocations until immediately before the corresponding constructor calls", TR::Options::enableOptimization, allocationSinking, 0, "P"},
    {EnableAnnotations,                    "O\tenable annotation support",                      SET_OPTION_BIT(TR_EnableAnnotations), "F"},
@@ -727,6 +731,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
    {"enableSCHint=","R<nnn>\tOverride default SC Hints to user-specified hints", TR::Options::set32BitHexadecimal, offsetof(OMR::Options, _enableSCHintFlags), 0, "F%d"},
    {"enableScorchInterpBlkFreqProfiling",   "R\tenable profiling blocks in the jit", SET_OPTION_BIT(TR_EnableScorchInterpBlockFrequencyProfiling), "F"},
+   {"enableScratchMemoryDebugging",          "I\tUse the debug segment provider for allocating region memory segments.", SET_OPTION_BIT(TR_EnableScratchMemoryDebugging),"F", NOT_IN_SUBSET},
    {"enableSelectiveEnterExitHooks",      "O\tadd method-specific test to JVMTI method enter and exit hooks", SET_OPTION_BIT(TR_EnableSelectiveEnterExitHooks), "F"},
    {"enableSelfTuningScratchMemoryUsageBeforeCompile", "O\tEnable self tuning scratch memory usage", SET_OPTION_BIT(TR_EnableSelfTuningScratchMemoryUsageBeforeCompile), "F", NOT_IN_SUBSET},
    {"enableSelfTuningScratchMemoryUsageInTrMemory", "O\tEnable self tuning scratch memory usage", SET_OPTION_BIT(TR_EnableSelfTuningScratchMemoryUsageInTrMemory), "F", NOT_IN_SUBSET},
@@ -1006,6 +1011,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"printErrorInfoOnCompFailure",        "O\tPrint compilation error info to stderr", SET_OPTION_BIT(TR_PrintErrorInfoOnCompFailure), "F", NOT_IN_SUBSET},
    {"privatizeOverlaps",  "O\tif BCD storageRefs are going to overlap then do the move through a temp", SET_OPTION_BIT(TR_PrivatizeOverlaps), "F"},
    {"profile",            "O\tcompile a profiling method body", SET_OPTION_BIT(TR_Profile), "F"},
+   {"profileMemoryRegions", "I\tenable the collection of scratch memory profiling data", SET_OPTION_BIT(TR_ProfileMemoryRegions), "F" },
    {"profilingCompNodecountThreshold=", "M<nnn>\tthreshold for doubling the method to do a profiling compile is considered expensive",
         TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_profilingCompNodecountThreshold, 0, "F%d", NOT_IN_SUBSET},
    {"profilingCount=",    "R<nnn>\tOverride JIT profiling count", TR::Options::set32BitNumeric, offsetof(OMR::Options, _profilingCount), 0, "F%d"},
@@ -1185,6 +1191,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRDefAnalysis",              "L\ttrace OSR reaching defintions analysis",       TR::Options::traceOptimization, osrDefAnalysis, 0, "P"},
 #ifdef J9_PROJECT_SPECIFIC
    {"traceOSRGuardInsertion",           "L\ttrace HCR guard insertion",                    TR::Options::traceOptimization, osrGuardInsertion, 0, "P"},
+   {"traceOSRGuardRemoval",             "L\ttrace HCR guard removal",                      TR::Options::traceOptimization, osrGuardRemoval, 0, "P"},
 #endif
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
@@ -1274,6 +1281,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"useHigherMethodCounts", "M\tuse the default high counts for methods even for AOT", SET_OPTION_BIT(TR_UseHigherMethodCounts), "F" },
    {"useHigherMethodCountsAfterStartup", "M\tuse the default high counts for methods after startup in AOT mode", SET_OPTION_BIT(TR_UseHigherMethodCountsAfterStartup), "F", NOT_IN_SUBSET },
    {"useIdleTime", "M\tuse cpu idle time to compile more aggressively", SET_OPTION_BIT(TR_UseIdleTime), "F", NOT_IN_SUBSET },
+   {"useIlValidator", "O\tuse the new ILValidator to check IL instead of the old TreeVerifier", SET_OPTION_BIT(TR_UseILValidator), "F"},
    {"useLowerMethodCounts",          "M\tuse the original initial counts for methods", SET_OPTION_BIT(TR_UseLowerMethodCounts), "F"},
    {"useLowPriorityQueueDuringCLP",  "O\tplace cold compilations due to classLoadPhase "
                                      "in the low priority queue to be compiled later",
@@ -4732,7 +4740,6 @@ char *OMR::Options::_verboseOptionNames[TR_NumVerboseOptions] =
    "compileEnd",
    "compileRequest",
    "gc",
-   "compileTime",
    "recompile",
    "compilePerformance",
    "filters",
@@ -5214,6 +5221,10 @@ bool  OMR::Options::fePostProcessJIT(void *base)
       char tmp[1025];
       fileName = _fe->getFormattedName(tmp, 1025, jitConfig->options.vLogFileName, NULL, TR::Options::getCmdLineOptions()->getOption(TR_EnablePIDExtension));
       jitConfig->options.vLogFile = trfopen(fileName, "w", false);
+      }
+   else
+      {
+      jitConfig->options.vLogFile = OMR::IO::Stderr;
       }
    self()->setVerboseOptions(jitConfig->options.verboseFlags);
 #endif

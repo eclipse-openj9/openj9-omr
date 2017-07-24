@@ -1000,6 +1000,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*error_set_last_error)(struct OMRPortLibrary *portLibrary,  int32_t platformCode, int32_t portableCode) ;
 	/** see @ref omrerror.c::omrerror_set_last_error_with_message "omrerror_set_last_error_with_message"*/
 	int32_t (*error_set_last_error_with_message)(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *errorMessage) ;
+	/** see @ref omrerror.c::omrerror_set_last_error_with_message_format "omrerror_set_last_error_with_message_format"*/
+	int32_t (*error_set_last_error_with_message_format)(struct OMRPortLibrary *portLibrary, int32_t portableCode, const char *format, ...) ;
 	/** see @ref omrtime.c::omrtime_startup "omrtime_startup"*/
 	int32_t (*time_startup)(struct OMRPortLibrary *portLibrary) ;
 	/** see @ref omrtime.c::omrtime_shutdown "omrtime_shutdown"*/
@@ -1408,6 +1410,14 @@ typedef struct OMRPortLibrary {
 	BOOLEAN  ( *sysinfo_os_has_feature)(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc, uint32_t feature) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_os_kernel_info "omrsysinfo_os_kernel_info"*/
 	BOOLEAN  ( *sysinfo_os_kernel_info)(struct OMRPortLibrary *portLibrary, struct OMROSKernelInfo *kernelInfo) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_is_limits_supported "omrsysinfo_cgroup_is_limits_supported"*/
+	int32_t ( *sysinfo_cgroup_is_limits_supported)(struct OMRPortLibrary *portLibrary);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_is_limits_enabled "omrsysinfo_cgroup_is_limits_enabled"*/
+	BOOLEAN ( *sysinfo_cgroup_is_limits_enabled)(struct OMRPortLibrary *portLibrary);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_enable_limits "omrsysinfo_cgroup_enable_limits"*/
+	int32_t ( *sysinfo_cgroup_enable_limits)(struct OMRPortLibrary *portLibrary);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_get_memlimit "omrsysinfo_cgroup_get_memlimit"*/
+	int32_t (*sysinfo_cgroup_get_memlimit)(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1645,6 +1655,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrerror_last_error_message() privateOmrPortLibrary->error_last_error_message(privateOmrPortLibrary)
 #define omrerror_set_last_error(param1,param2) privateOmrPortLibrary->error_set_last_error(privateOmrPortLibrary, (param1), (param2))
 #define omrerror_set_last_error_with_message(param1,param2) privateOmrPortLibrary->error_set_last_error_with_message(privateOmrPortLibrary, (param1), (param2))
+#define omrerror_set_last_error_with_message_format(...) privateOmrPortLibrary->error_set_last_error_with_message_format(privateOmrPortLibrary, __VA_ARGS__)
 #define omrtime_startup() privateOmrPortLibrary->time_startup(privateOmrPortLibrary)
 #define omrtime_shutdown() privateOmrPortLibrary->time_shutdown(privateOmrPortLibrary)
 #define omrtime_msec_clock() privateOmrPortLibrary->time_msec_clock(privateOmrPortLibrary)
@@ -1847,6 +1858,10 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_get_os_description(param1) privateOmrPortLibrary->sysinfo_get_os_description(privateOmrPortLibrary, (param1))
 #define omrsysinfo_os_has_feature(param1,param2) privateOmrPortLibrary->sysinfo_os_has_feature(privateOmrPortLibrary, (param1), (param2))
 #define omrsysinfo_os_kernel_info(param1) privateOmrPortLibrary->sysinfo_os_kernel_info(privateOmrPortLibrary, (param1))
+#define omrsysinfo_cgroup_is_limits_supported() privateOmrPortLibrary->sysinfo_cgroup_is_limits_supported(privateOmrPortLibrary)
+#define omrsysinfo_cgroup_is_limits_enabled() privateOmrPortLibrary->sysinfo_cgroup_is_limits_enabled(privateOmrPortLibrary) 
+#define omrsysinfo_cgroup_enable_limits() privateOmrPortLibrary->sysinfo_cgroup_enable_limits(privateOmrPortLibrary)
+#define omrsysinfo_cgroup_get_memlimit(param1) privateOmrPortLibrary->sysinfo_cgroup_get_memlimit(privateOmrPortLibrary, param1)
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

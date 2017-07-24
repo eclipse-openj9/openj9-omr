@@ -19,6 +19,8 @@
 #ifndef ENVIRONMENTDELEGATE_HPP_
 #define ENVIRONMENTDELEGATE_HPP_
 
+#include "objectdescription.h"
+
 class MM_EnvironmentBase;
 
 /**
@@ -90,6 +92,25 @@ protected:
 
 public:
 	/**
+	 * Bind current thread to OMR VM.
+	 *
+	 * @param omrVM Points to OMR VM structure
+	 * @param threadName Name to assign to bound thread
+	 * @param reason Language-defined value to pass to environment delegate
+	 * @return Pointer to OMR_VMThread structure binding calling thread to OMR VM
+	 */
+	static OMR_VMThread *attachVMThread(OMR_VM *omrVM, const char *threadName, uintptr_t reason);
+
+	/**
+	 * Unbind current thread from OMR VM
+	 *
+	 * @param omrVM Points to OMR VM structure
+	 * @param omrVMThread Points to OMR_VMThread structure binding calling thread to OMR VM
+	 * @param reason Language-defined value to pass to environment delegate
+	 */
+	static void detachVMThread(OMR_VM *omrVM, OMR_VMThread *omrVMThread, uintptr_t reason);
+
+	/**
 	 * Initialize the delegate's internal structures and values.
 	 * @return true if initialization completed, false otherwise
 	 */
@@ -110,6 +131,19 @@ public:
 	 */
 	GC_Environment *getGCEnvironment() { return &_gcEnv; }
 
+
+	/**
+	 * Flush any local material relating to GC here. This is called before a GC cycle begins,
+	 * and can be used to make local GC_Environment content available to the upcoming GC as
+	 * required.
+	 *
+	 * This is informational. OMR does not require any specific action to be implemented.
+	 *
+	 * @see GC_Environment
+	 *
+	 */
+	void flushNonAllocationCaches() { }
+
 	/**
 	 * Set or clear the transient master GC status on this thread. This thread obtains master status
 	 * when isMasterThread is true and relinquishes it when isMasterThread is false.
@@ -120,16 +154,11 @@ public:
 	 */
 	void setGCMasterThread(bool isMasterThread) { }
 
-
 	/**
-	 * Set up GC_Environment for marking
+	 * This will be called for every allocated object.  Note this is not necessarily done when the object is allocated, but will
+	 * done before start of the next gc for all objects allocated since the last gc.
 	 */
-	void markingStarted() { }
-
-	/**
-	 * Finalize GC_Environment after marking
-	 */
-	void markingFinished() { }
+	bool objectAllocationNotify(omrobjectptr_t omrObject) { return true; }
 
 	/**
 	 * Acquire shared VM access. Threads must acquire VM access before accessing any OMR internal

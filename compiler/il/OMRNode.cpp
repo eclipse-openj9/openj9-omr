@@ -1950,37 +1950,6 @@ OMR::Node::containsNode(TR::Node *searchNode, vcount_t visitCount)
    return false;
    }
 
-bool
-OMR::Node::containsAnyNode(List<TR::Node *> &nodeList, vcount_t visitCount)
-   {
-   for (ListElement<TR::Node *> *el = nodeList.getListHead(); el; el = el->getNextElement())
-      {
-      if (self()->containsNode(*el->getData(), visitCount))
-         return true;
-      }
-   return false;
-   }
-
-/**
- * Calls containsNode on each node from bitvector. The bitvector is a Set of nodes which holds
- * NodePool indices which is accessible via TR::Node::getGlobalIndex.
- * The node is retrieved per index through the NodePool.
- */
-bool
-OMR::Node::containsAnyNode(TR::SparseBitVector &nodeSet, vcount_t visitCount, TR::Compilation *comp)
-   {
-   TR::SparseBitVector::Cursor bi(nodeSet);
-   for (bi.SetToFirstOne(); bi.Valid(); bi.SetToNextOne())
-      {
-      TR::Node *chk = comp->getNodePool().getNodeAtPoolIndex((ncount_t)bi);
-      if (self()->containsNode(chk, visitCount))
-         return true;
-      }
-   return false;
-   }
-
-
-
 /**
  * Does this node have an unresolved symbol reference?
  */

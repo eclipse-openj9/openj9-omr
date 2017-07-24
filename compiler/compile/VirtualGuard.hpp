@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -241,9 +241,6 @@ class TR_VirtualGuard
    bool                    canBeRemoved()   { return !_cannotBeRemoved; }
 
 #ifdef J9_PROJECT_SPECIFIC
-   TR_Memory *             trMemory()       { return _sites.trMemory(); }
-   TR_HeapMemory           trHeapMemory()   { return trMemory(); }
-
    TR_VirtualGuardSite *addNOPSite();
    List<TR_VirtualGuardSite> &getNOPSites()   { return _sites; }
 #endif

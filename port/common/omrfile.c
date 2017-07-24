@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -607,41 +607,37 @@ EsTranslateOpenFlags(int32_t flags)
 void
 omrfile_vprintf(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *format, va_list args)
 {
-	char outputBuffer[256];
-	char *allocatedBuffer;
-	uint32_t numberWritten;
-	va_list copyOfArgs;
+	va_list argsCopy;
+	char localBuffer[256];
+	char *writeBuffer = NULL;
+	uintptr_t bufferSize = 0;
 
-	/* Attempt to write output to stack buffer */
-	COPY_VA_LIST(copyOfArgs, args);
-	numberWritten = portLibrary->str_vprintf(portLibrary, outputBuffer, sizeof(outputBuffer), format, copyOfArgs);
+	/* What is size of buffer required ? str_vprintf(..,NULL,..) result includes the null terminator */
+	COPY_VA_LIST(argsCopy, args);
+	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, argsCopy);
 
-	/* str_vprintf always null terminates, returns number characters written excluding the null terminator */
-	if (sizeof(outputBuffer) > (numberWritten + 1)) {
-		/* write out the buffer */
-		portLibrary->file_write_text(portLibrary, fd, outputBuffer, numberWritten);
-		return;
+	/* use local buffer if possible, allocate a buffer from system memory if local buffer not large enough */
+	if (sizeof(outputBuffer) >= bufferSize) {
+		writeBuffer = localBuffer;
+	} else {
+		writeBuffer = portLibrary->mem_allocate_memory(portLibrary, bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	}
 
-	/* Either the buffer was too small, or it was the exact size.  Unfortunately can't tell the difference,
-	 * need to determine the size of the buffer (another call to str_vprintf) then print to the buffer,
-	 * a third call to str_vprintf
-	 */
-	COPY_VA_LIST(copyOfArgs, args);
-
-	/* What is size of buffer required ? Does not include the \0 */
-	numberWritten = portLibrary->str_vprintf(portLibrary, NULL, (uint32_t)(-1), format, copyOfArgs);
-	numberWritten += 1;
-
-	allocatedBuffer = portLibrary->mem_allocate_memory(portLibrary, numberWritten, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-	if (NULL == allocatedBuffer) {
+	/* format and write out the buffer (truncate into local buffer as last resort) */
+	COPY_VA_LIST(argsCopy, args);
+	if (NULL != writeBuffer) {
+		portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, argsCopy);
+		portLibrary->file_write_text(portLibrary, fd, writeBuffer, bufferSize);
+		/* dispose of buffer if not on local */
+		if (writeBuffer != localBuffer) {
+			portLibrary->mem_free_memory(portLibrary, writeBuffer);
+		}
+	} else {
 		portLibrary->nls_printf(portLibrary, J9NLS_ERROR, J9NLS_PORT_FILE_MEMORY_ALLOCATE_FAILURE);
-		return;
+		portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, argsCopy);
+		localBuffer[sizeof(localBuffer) - 1] = '\0';
+		portLibrary->file_write_text(portLibrary, fd, localBuffer, sizeof(localBuffer));
 	}
-
-	numberWritten = portLibrary->str_vprintf(portLibrary, allocatedBuffer, numberWritten, format, args);
-	portLibrary->file_write_text(portLibrary, fd, allocatedBuffer, numberWritten);
-	portLibrary->mem_free_memory(portLibrary, allocatedBuffer);
 }
 /**
  * Write to a file.

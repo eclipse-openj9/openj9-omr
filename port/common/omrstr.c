@@ -2037,7 +2037,7 @@ omrstr_set_token(struct OMRPortLibrary *portLibrary, struct J9StringTokens *toke
 
 	va_start(args, format);
 	/* find out how large a buffer we need to format the strings */
-	tokenBufLen = portLibrary->str_vprintf(portLibrary, NULL, (unsigned int)-1, format, args);
+	tokenBufLen = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
 	va_end(args);
 
 	/* stack allocate the necessary storage */

@@ -1563,7 +1563,7 @@ int32_t TR_SetMonitorStateOnBlockEntry::addSuccessors(TR::CFGNode * cfgNode,
       if (walkOnlyExceptionSuccs && !succBlock->isCatchBlock())
          continue;
 
-      if (succBlock->getEntry() && succBlock->getVisitCount() != _visitCount)
+      if (succBlock->getEntry())
          {
          bool addInfo = true;
          if (monitorType == MonitorEnter)
@@ -1596,30 +1596,66 @@ int32_t TR_SetMonitorStateOnBlockEntry::addSuccessors(TR::CFGNode * cfgNode,
          if (traceIt)
             traceMsg(comp(), "process succBlock %d propagate (t/f: %d) isCatchBlock=%d monitorType=%d callerIndex=%d entryCallerIndex=%d\n", succBlock->getNumber(), addInfo, succBlock->isCatchBlock(), monitorType, callerIndex, succBlock->getEntry()->getNode()->getByteCodeInfo().getCallerIndex());
 
+         bool popMonitor = false;
          if (monitorStack)
             {
-            TR_Stack<TR::SymbolReference *> *newMonitorStack = new (trHeapMemory()) TR_Stack<TR::SymbolReference *>(*monitorStack);
-
-            if (traceIt)
-               traceMsg(comp(), "\tIn SMSOnBE::addSuccesors  created newMonitorStack %p and monitorStack %p\n", newMonitorStack,monitorStack);
-
             // pop the last element of the stack if dontPropagateMonitor is true
             //
             if (!addInfo &&
-                !newMonitorStack->isEmpty())
+                !monitorStack->isEmpty())
                {
-               if (traceIt)
-                  traceMsg(comp(), "popping monitor symRef=%d before propagation\n", newMonitorStack->top()->getReferenceNumber());
-               newMonitorStack->pop();
+               popMonitor = true;
                }
 
-            if (_liveMonitorStacks->Exists(succBlock->getNumber()))
+            if (succBlock->getVisitCount() != _visitCount)
                {
-               _liveMonitorStacks->RemoveEntry(succBlock->getNumber());
+               TR_Stack<TR::SymbolReference *> *newMonitorStack = new (trHeapMemory()) TR_Stack<TR::SymbolReference *>(*monitorStack);
+
+               if (traceIt)
+                  traceMsg(comp(), "\tIn SMSOnBE::addSuccesors  created newMonitorStack %p and monitorStack %p\n", newMonitorStack,monitorStack);
+
+               if (popMonitor)
+                  {
+                  if (traceIt)
+                     traceMsg(comp(), "popping monitor symRef=%d before propagation\n", newMonitorStack->top()->getReferenceNumber());
+                  newMonitorStack->pop();
+                  }
+
+               if (_liveMonitorStacks->Exists(succBlock->getNumber()))
+                  {
+                  _liveMonitorStacks->RemoveEntry(succBlock->getNumber());
+                  }
+               _liveMonitorStacks->AddEntryAtPosition(succBlock->getNumber(), newMonitorStack);
+               if (traceIt)
+                  traceMsg(comp(), "adding monitorstack to successor %d (%p size %d)\n", succBlock->getNumber(), newMonitorStack, newMonitorStack->size());
                }
-            _liveMonitorStacks->AddEntryAtPosition(succBlock->getNumber(), newMonitorStack);
-            if (traceIt)
-               traceMsg(comp(), "adding monitorstack to successor %d (%p size %d)\n", succBlock->getNumber(), newMonitorStack, newMonitorStack->size());
+            else 
+               {
+               // the block has been propagated already but we want to verify the monitor state is consistent
+               // skip osr blocks here because the monitor state of osrBlocks don't have to be consistent
+               if (!succBlock->isOSRCatchBlock() && !succBlock->isOSRCodeBlock()) 
+                  {
+                  if (!isMonitorStateConsistentForBlock(succBlock, monitorStack, popMonitor))               
+                     comp()->cg()->setLmmdFailed();
+                  else
+                     {
+                     if (traceIt)
+                        traceMsg(comp(), "verified block_%d monitorState is consistent\n", succBlock->getNumber());
+                     }
+                  }
+               continue;
+               }
+            }
+         else if (succBlock->getVisitCount() == _visitCount)
+            {
+            if(!succBlock->isOSRCatchBlock() && !succBlock->isOSRCodeBlock()) 
+               {
+               if (!isMonitorStateConsistentForBlock(succBlock, monitorStack, popMonitor))               
+                  comp()->cg()->setLmmdFailed();
+               else if (traceIt)
+                  traceMsg(comp(), "verified block_%d monitorState is consistent\n", succBlock->getNumber());
+               }
+            continue;
             }
 
          if (traceIt)
@@ -1631,6 +1667,58 @@ int32_t TR_SetMonitorStateOnBlockEntry::addSuccessors(TR::CFGNode * cfgNode,
    return returnValue;
    }
 
+bool TR_SetMonitorStateOnBlockEntry::isMonitorStateConsistentForBlock( TR::Block *block, TR_Stack<TR::SymbolReference *> *newMonitorStack, bool popMonitor)
+   {
+   TR_Stack<TR::SymbolReference *> *oldMonitorStack = _liveMonitorStacks->Exists(block->getNumber())? 
+      _liveMonitorStacks->ElementAt(block->getNumber()) : NULL; 
+   static const bool traceItEnv = feGetEnv("TR_traceLiveMonitors") ? true : false;
+   bool traceIt = traceItEnv || comp()->getOption(TR_TraceLiveMonitorMetadata);
+   
+   if (traceIt)
+      traceMsg(comp(), "MonitorState block_%d: oldMonitorStack %p newMonitorStack %p popMonitor %d\n", block->getNumber(), oldMonitorStack, newMonitorStack, popMonitor);
+
+   // first step: check if both monitor stacks are empty
+   bool oldMonitorStackEmpty = false;
+   bool newMonitorStackEmpty = false;
+  
+   if (!oldMonitorStack || oldMonitorStack->isEmpty())   
+      oldMonitorStackEmpty = true;
+   if (!newMonitorStack || newMonitorStack->isEmpty()
+       || (newMonitorStack->size() == 1 && popMonitor))
+      newMonitorStackEmpty = true;
+   if (oldMonitorStackEmpty != newMonitorStackEmpty)
+      {
+      if (traceIt)
+         traceMsg(comp(), "MonitorState inconsistent for block_%d: oldMonitorStack isEmpty %d, newMonitorStack isEmpty %d\n", block->getNumber(), oldMonitorStackEmpty, newMonitorStackEmpty);
+      return false;
+      }
+   else if (oldMonitorStackEmpty)
+      return true;
+
+   // second step: check if the monitor stacks are the same size
+   int32_t oldSize = oldMonitorStack->size();
+   int32_t newSize = newMonitorStack->size();
+   if (popMonitor)
+      newSize--;
+   if (newSize != oldSize)
+      {
+      if (traceIt)
+         traceMsg(comp(), "MonitorState inconsistent for block_%d: oldMonitorStack size %d, newMonitorStack size %d\n",block->getNumber(), oldSize, newSize);
+      return false;
+      }
+
+   // third step: check if all the monitors in both stacks are the same
+   for (int i = oldMonitorStack->topIndex(); i>= 0; i--)
+      {
+      if (newMonitorStack->element(i)->getReferenceNumber() != oldMonitorStack->element(i)->getReferenceNumber()) 
+         {
+         if (traceIt)
+            traceMsg(comp(), "MonitorState inconsistent for block_%d: oldMonitorStack(%d) symRef=%d, newMonitorStack(%d) symRef=%d\n",block->getNumber(), i, oldMonitorStack->element(i)->getReferenceNumber(), i, newMonitorStack->element(i)->getReferenceNumber());
+         return false;
+         }
+      }
+   return true;
+   }
 
 // this routine is used to decide if the monitorStack needs to be popped
 // the analysis needs to be careful in particular for DLT compiles as there are
@@ -1797,7 +1885,6 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
    {
    addSuccessors(comp()->getFlowGraph()->getStart(), 0, traceIt);
    static bool traceInitMonitorsForExceptionAfterMonexit = feGetEnv("TR_traceInitMonitorsForExceptionAfterMonexit")? true: false;
-   bool initializeMonitorAutos = false;
 
    while (!_blocksToVisit.isEmpty())
       {
@@ -1944,7 +2031,7 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
                      {
                      if (traceInitMonitorsForExceptionAfterMonexit)
                            traceMsg(comp(), "block_%d has exceptions after monexit with catch block in the same method %s\n", block->getNumber(), comp()->signature());
-                     initializeMonitorAutos = true;
+                     lmmdFailed = true;
                      break;
                      }
                   }
@@ -1959,7 +2046,7 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
                {
                if (traceIt)
                   traceMsg(comp(), "block_%d has monitorEnterStore=%d monitorExitFence=%d\n", block->getNumber(), monitorEnterStore, monitorExitFence);
-               initializeMonitorAutos = true;
+               lmmdFailed = true;
                }
 
             if (blockHasMonent)
@@ -2012,9 +2099,8 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
 
 #ifdef J9_PROJECT_SPECIFIC
    static bool disableCountingMonitors = feGetEnv("TR_disableCountingMonitors")? true: false;
-   if (initializeMonitorAutos && !disableCountingMonitors)
+   if (lmmdFailed && !disableCountingMonitors)
       {
-      lmmdFailed = true;
       TR_Array<List<TR::RegisterMappedSymbol> *> & monitorAutos = comp()->getMonitorAutos();
       for (int32_t i=0; i<monitorAutos.size(); i++)
          {
@@ -2024,6 +2110,7 @@ void TR_SetMonitorStateOnBlockEntry::set(bool& lmmdFailed, bool traceIt)
             ListIterator<TR::RegisterMappedSymbol> iterator(autos);
             for (TR::RegisterMappedSymbol * a = iterator.getFirst(); a; a = iterator.getNext())
                {
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "lmmdFailed/(%s)", comp()->signature()));
                a->setUninitializedReference();
                }
             }

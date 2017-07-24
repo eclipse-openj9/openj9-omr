@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,10 +27,6 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"                   // for TR::Options
-#include "cs2/arrayof.h"
-#include "cs2/bitvectr.h"
-#include "cs2/sparsrbit.h"
-#include "cs2/tableof.h"
 #include "env/CompilerEnv.hpp"
 #include "il/AliasSetInterface.hpp"
 #include "il/DataTypes.hpp"                              // for TR::DataType
@@ -78,12 +74,6 @@ int32_t TR::LocalDeadStoreElimination::perform()
    {
    if (trace())
       traceMsg(comp(), "Starting LocalDeadStoreElimination\n");
-
-   // Allocate data structures used by this opt.
-   // They will be automatically freed at the end of this method
-   //
-   PendingIdentityStoreTable pendingIdentityStoreTable(comp()->allocator());
-   _pendingIdentityStores = &pendingIdentityStoreTable;
 
    TR::TreeTop *tt, *exitTreeTop;
    for (tt = comp()->getStartTree(); tt; tt = exitTreeTop->getNextTreeTop())
@@ -192,7 +182,6 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
    {
    _curTree = entryTree;
    _blockContainsReturn = false;
-   _pendingIdentityStores->MakeEmpty();
    _treesAnchored = false;
 
    comp()->setCurrentBlock(entryTree->getEnclosingBlock());
@@ -209,7 +198,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
       _curTree = _curTree->getNextTreeTop();
       }
 
-   StoreNodeTable storeNodeTable(0, comp()->allocator());
+   StoreNodeTable storeNodeTable(0, comp()->trMemory()->currentStackRegion());
    SharedBitVector deadSymbolReferences(comp()->allocator());
    _storeNodes = &storeNodeTable;
 
@@ -369,18 +358,6 @@ TR::TreeTop *TR::LocalDeadStoreElimination::removeStoreTree(TR::TreeTop *treeTop
    _treesChanged = true;
    comp()->incVisitCount();
 
-   // Remove the tree from the list of pending identity stores, if it is there
-   //
-   PendingIdentityStoreTable::Cursor cursor(*_pendingIdentityStores);
-   for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
-      {
-      if (_pendingIdentityStores->ElementAt(cursor).treeTop == treeTop)
-         {
-         _pendingIdentityStores->RemoveEntry(cursor); // cursor is no longer valid after this
-         break;
-         }
-      }
-
    TR::Node *nodeInTreeTop = treeTop->getNode();
    TR::Node *storeNode = nodeInTreeTop->getStoreNode();
 
@@ -514,18 +491,6 @@ TR::TreeTop *TR::LocalDeadStoreElimination::removeStoreTree(TR::TreeTop *treeTop
 //
 bool TR::LocalDeadStoreElimination::isIdentityStore(TR::Node *storeNode)
    {
-   // First remove any existing identity stores that are killed by this store
-   //
-   PendingIdentityStoreTable::Cursor cursor(*_pendingIdentityStores);
-   for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
-      {
-      if (_pendingIdentityStores->ElementAt(cursor).storeNode->getSymbol() == storeNode->getSymbol())
-         {
-         _pendingIdentityStores->RemoveEntry(cursor); // cursor is no longer valid after this
-         break;
-         }
-      }
-
    // Now see if this is an identity store. If it is there are two cases:
    //    1) This is the first use of the load node - the store can be removed
    //       immediately.
@@ -601,10 +566,6 @@ bool TR::LocalDeadStoreElimination::isIdentityStore(TR::Node *storeNode)
          return true;
       }
 
-   //TableIndex ix = _pendingIdentityStores->AddEntry();
-   //_pendingIdentityStores->ElementAt(ix).treeTop = _curTree;
-   //_pendingIdentityStores->ElementAt(ix).storeNode = storeNode;
-   //_pendingIdentityStores->ElementAt(ix).loadNode = storedValue;
    return false;
    }
 
@@ -626,20 +587,6 @@ void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childN
    if (!node->getOpCode().hasSymbolReference())
       return;
    TR::SymbolReference *symRef = node->getSymbolReference();
-
-   // If this is a load, check to see if it is the load node of a pending
-   // identity store. If so, the pending store is a valid identity store and
-   // can be removed from the trees.
-   //
-   PendingIdentityStoreTable::Cursor cursor(*_pendingIdentityStores);
-   for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
-      {
-      if (_pendingIdentityStores->ElementAt(cursor).loadNode == node)
-         {
-         removeStoreTree(_pendingIdentityStores->ElementAt(cursor).treeTop);
-         break;
-         }
-      }
 
    if (node->getOpCode().isLoadVar() ||
       (node->getOpCodeValue() == TR::loadaddr))
@@ -930,7 +877,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
    //if (numSymbols == 1)
    //  return;
 
-   LDSBitVector usedLocalObjectSymbols(comp()->allocator());
+   LDSBitVector usedLocalObjectSymbols(comp()->trMemory()->currentStackRegion());
 
    TR::TreeTop *tt;
    // Go through the trees and find locally allocated objects
@@ -958,7 +905,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
          if (storeNode->getFirstChild()->getOpCode().hasSymbolReference() &&
              storeNode->getFirstChild()->getSymbolReference()->getSymbol()->isLocalObject() &&
              (storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
-             !usedLocalObjectSymbols.ValueAt(storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalIndex()))
+             !usedLocalObjectSymbols.get(storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalIndex()))
             removableLocalObjectStore = true;
          else if (currentNews.find(storeNode->getFirstChild()) ||
                   (storeNode->getFirstChild()->getOpCode().isArrayRef() &&
@@ -1067,7 +1014,7 @@ void TR::LocalDeadStoreElimination::findLocallyAllocatedObjectUses(LDSBitVector 
         node->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
        !(parent->getOpCode().isStoreIndirect() && childNum == 0 &&
          ( (uint32_t) parent->getSymbolReference()->getOffset() < fe()->getObjectHeaderSizeInBytes())))
-       usedLocalObjectSymbols[node->getSymbolReference()->getSymbol()->getLocalIndex()] = true;
+       usedLocalObjectSymbols.set(node->getSymbolReference()->getSymbol()->getLocalIndex());
 
    if (node->getVisitCount() == visitCount)
       return;

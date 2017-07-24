@@ -107,7 +107,11 @@
 #include "optimizer/FieldPrivatizer.hpp"
 #include "optimizer/ReorderIndexExpr.hpp"
 #include "optimizer/GlobalRegisterAllocator.hpp"
+#include "env/RegionProfiler.hpp"
 
+#if defined (_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
 
 namespace TR { class AutomaticSymbol; }
 
@@ -1241,6 +1245,10 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
    {
    OMR::Optimizations optNum = optimization->_num;
    TR::OptimizationManager *manager = getOptimization(optNum);
+   char description[256];
+   snprintf(description, sizeof(description), "performOptimization - %s", getOptimizationName(optNum));
+   description[255] = '\0';
+   TR::RegionProfiler heapMemoryProfiler(comp()->trMemory()->heapMemoryRegion(), *comp(), description);
 
    TR_ASSERT(manager != NULL, "Optimization manager should have been initialized for %s.",
       getOptimizationName(optNum));

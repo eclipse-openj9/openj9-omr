@@ -373,7 +373,7 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t 
               indentation+11,
               " ");
       int num = 0;
-      TR_RegionAnalysis::SparseBitVector::Cursor cursor(node._succ);
+      TR_RegionAnalysis::StructureBitVector::Cursor cursor(node._succ);
       for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
          {
         TR_RegionAnalysis::StructInfo &succ = regionAnalysis->getInfo(cursor);
@@ -395,7 +395,7 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t 
               indentation+11,
               " ");
       num = 0;
-      TR_RegionAnalysis::SparseBitVector::Cursor eCursor(node._exceptionSucc);
+      TR_RegionAnalysis::StructureBitVector::Cursor eCursor(node._exceptionSucc);
       for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
          {
          TR_RegionAnalysis::StructInfo &succ = regionAnalysis->getInfo(eCursor);

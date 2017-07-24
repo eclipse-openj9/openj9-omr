@@ -25,6 +25,11 @@ endif
 
 include $(CONFIG_INCL_DIR)/configure_common.mk
 
+# Notes (on disabled flags):
+# OMR_THR_SPIN_WAKE_CONTROL flag requires OMR_THR_THREE_TIER_LOCKING flag.
+# OMR_THR_SPIN_WAKE_CONTROL flag is disabled on AIX since
+# OMR_THR_THREE_TIER_LOCKING flag is unavailable on AIX.
+
 ifeq (aix_ppc-64_cmprssptrs, $(SPEC))
   CONFIGURE_ARGS += \
     --enable-OMRTHREAD_LIB_AIX \

@@ -51,13 +51,6 @@ TR::NodePool::removeNode(NodeIndex poolIdx)
    }
 
 TR::Node *
-TR::NodePool::getNodeAtPoolIndex(ncount_t poolIdx)
-   {
-   TR_ASSERT(_pool.Exists(poolIdx), "Node with Pool Index %d does not exist in the table", poolIdx);
-   return &_pool.ElementAt(poolIdx);
-   }
-
-TR::Node *
 TR::NodePool::allocate(ncount_t poolIndex)
    {
    if (!poolIndex)

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -160,11 +160,10 @@ MM_MasterGCThread::masterThreadEntryPoint()
 	OMR_VMThread *omrVMThread = NULL;
 	Assert_MM_true(NULL != _collectorControlMutex);
 	Assert_MM_true(NULL == _masterGCThread);
-	MM_CollectorLanguageInterface *cli = _extensions->collectorLanguageInterface;
 
 	/* Attach the thread as a system daemon thread */	
 	/* You need a VM thread so that the stack walker can work */
-	omrVMThread = cli->attachVMThread(_extensions->getOmrVM(), "Dedicated GC Master", MM_CollectorLanguageInterfaceImpl::ATTACH_GC_MASTER_THREAD);
+	omrVMThread = MM_EnvironmentBase::attachVMThread(_extensions->getOmrVM(), "Dedicated GC Master", MM_EnvironmentBase::ATTACH_GC_MASTER_THREAD);
 	if (NULL == omrVMThread) {
 		/* we failed to attach so notify the creating thread that we should fail to start up */
 		omrthread_monitor_enter(_collectorControlMutex);
@@ -236,7 +235,7 @@ MM_MasterGCThread::masterThreadEntryPoint()
 		_masterThreadState = STATE_TERMINATED;
 		_masterGCThread = NULL;
 		omrthread_monitor_notify(_collectorControlMutex);
-		cli->detachVMThread(_extensions->getOmrVM(), omrVMThread, MM_CollectorLanguageInterfaceImpl::ATTACH_GC_MASTER_THREAD);
+		MM_EnvironmentBase::detachVMThread(_extensions->getOmrVM(), omrVMThread, MM_EnvironmentBase::ATTACH_GC_MASTER_THREAD);
 		omrthread_exit(_collectorControlMutex);
 	}
 }

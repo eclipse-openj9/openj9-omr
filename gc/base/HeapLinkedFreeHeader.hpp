@@ -193,7 +193,13 @@ public:
 	 * Expand this entry by the specified number of bytes.
 	 */
 	MMINLINE void expandSize(uintptr_t increment) {
+#if defined(OMR_VALGRIND_MEMCHECK)
+	    VALGRIND_MAKE_MEM_DEFINED(this, sizeof(*this));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_size += increment;
+#if defined(OMR_VALGRIND_MEMCHECK)
+	    VALGRIND_MAKE_MEM_NOACCESS(this, sizeof(*this));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	}
 
 	/**

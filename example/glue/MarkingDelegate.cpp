@@ -25,6 +25,10 @@
 
 #include "MarkingDelegate.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 void
 MM_MarkingDelegate::scanRoots(MM_EnvironmentBase *env)
 {
@@ -53,16 +57,19 @@ MM_MarkingDelegate::masterCleanupAfterGC(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(env->getOmrVM());
 	J9HashTableState state;
-	ObjectEntry *rEntry = NULL;
+	ObjectEntry *oEntry = NULL;
 	OMR_VM_Example *omrVM = (OMR_VM_Example *)env->getOmrVM()->_language_vm;
-	rEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
-	while (rEntry != NULL) {
-		if (!_markingScheme->isMarked(rEntry->objPtr)) {
-			omrmem_free_memory((void *)rEntry->name);
-			rEntry->name = NULL;
+	oEntry = (ObjectEntry *)hashTableStartDo(omrVM->objectTable, &state);
+	while (oEntry != NULL) {
+		if (!_markingScheme->isMarked(oEntry->objPtr)) {
+#if defined(OMR_VALGRIND_MEMCHECK)
+	VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,oEntry->objPtr);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+			omrmem_free_memory((void *)oEntry->name);
+			oEntry->name = NULL;
 			hashTableDoRemove(&state);
 		}
-		rEntry = (ObjectEntry *)hashTableNextDo(&state);
+		oEntry = (ObjectEntry *)hashTableNextDo(&state);
 	}
 }
 

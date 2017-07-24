@@ -33,7 +33,8 @@ if(OMR_HOST_OS STREQUAL "win")
 			pdb/PdbScanner.cpp
 	)
 	target_link_libraries(omr_ddr_scanner
-		diaguids.lib
+		PUBLIC
+			diaguids.lib
 	)
 elseif(OMR_HOST_OS STREQUAL "linux")
 	target_sources(omr_ddr_scanner
@@ -57,6 +58,7 @@ elseif(OMR_HOST_OS STREQUAL "aix")
 			dwarf/DwarfScanner.cpp
 	)
 	target_link_libraries(omr_ddr_scanner
-		${LIBDWARF_LIBRARIES}
+		PUBLIC
+			${LIBDWARF_LIBRARIES}
 	)
 endif()

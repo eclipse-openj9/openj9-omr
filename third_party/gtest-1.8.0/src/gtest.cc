@@ -3212,6 +3212,8 @@ void PrettyUnitTestResultPrinter::OnTestIterationEnd(const UnitTest& unit_test,
     PrintFailedTests(unit_test);
     printf("\n%2d FAILED %s\n", num_failures,
                         num_failures == 1 ? "TEST" : "TESTS");
+  } else {
+	  ColoredPrintf(COLOR_GREEN,  "[  ALL TESTS PASSED  ] \n");
   }
 
   int num_disabled = unit_test.reportable_disabled_test_count();

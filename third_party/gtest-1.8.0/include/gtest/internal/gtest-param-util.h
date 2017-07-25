@@ -57,9 +57,10 @@ namespace testing {
 // Consists of the parameter value and the integer parameter index.
 template <class ParamType>
 struct TestParamInfo {
-  TestParamInfo(const ParamType& a_param, size_t an_index) :
-    param(a_param),
-    index(an_index) {}
+  TestParamInfo(const ParamType& a_param, size_t an_index) {
+    param = a_param;
+    index = an_index;
+  }
   ParamType param;
   size_t index;
 };

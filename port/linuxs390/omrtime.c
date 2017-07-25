@@ -245,9 +245,10 @@ omrtime_hires_delta(struct OMRPortLibrary *portLibrary, uint64_t startTime, uint
 	if (OMRTIME_HIRES_CLOCK_FREQUENCY == requiredResolution) {
 		/* no conversion necessary */
 	} else if (OMRTIME_HIRES_CLOCK_FREQUENCY < requiredResolution) {
-		ticks = (uint64_t)((double)ticks * ((double)requiredResolution / (double)OMRTIME_HIRES_CLOCK_FREQUENCY));
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	} else {
-		ticks = (uint64_t)((double)ticks / ((double)OMRTIME_HIRES_CLOCK_FREQUENCY / (double)requiredResolution));
+		/*equivalent to ticks / (OMRTIME_HIRES_CLOCK_FREQUENCY / requiredResolution)*/
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	}
 	return ticks;
 }

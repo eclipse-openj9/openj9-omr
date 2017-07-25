@@ -1115,9 +1115,6 @@ public:
       return 7;
       }
 
-   int64_t getCurrentTimeMillisDivisor() { return 8000; }
-   int64_t getNanoTimeMultiplier() { return 125; }
-
    // LL: move to .cpp
    bool arithmeticNeedsLiteralFromPool(TR::Node *node);
 

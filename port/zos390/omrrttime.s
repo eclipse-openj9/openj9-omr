@@ -47,7 +47,7 @@ LCarry0  s   r2,LC0
          ahi r2,-1
 LCarry1  s   r2,CVTLSO
          drop r0,r1
-         srdl r2,9
+         srdl r2,1
          EDCXEPLG
          AGO .JMP2
 
@@ -63,7 +63,7 @@ maxprec  CELQPRLG BASEREG=8
          using CVTXTNT2,r1
          slg r3,CVTLSO
          drop r0,r1
-         srlg r3,r3,9
+         srlg r3,r3,1
          CELQEPLG
 
 .JMP2    ANOP

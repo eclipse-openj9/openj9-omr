@@ -32,8 +32,9 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
     fi
   fi
 else
-  # Disable ddrgen on 32 bit builds--libdwarf in 32bit is unavailable.
-  if test "x$SPEC" = "xlinux_x86"; then
+  if test "x$SPEC" = "xlinux_x86" || test "x$SPEC" = "xosx_x86-64"; then
+     # Disable ddrgen on 32 bit builds--libdwarf in 32bit is unavailable.
+     # Disable ddrgen on osx--compilation and link errors.
     export EXTRA_CONFIGURE_ARGS="--disable-DDR"
   fi
   time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"

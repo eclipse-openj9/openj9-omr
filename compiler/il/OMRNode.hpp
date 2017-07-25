@@ -124,8 +124,6 @@ class OMR_EXTENSIBLE Node
 // Forward declarations
 public:
    class ChildIterator;
-protected:
-   struct OptAttributes;
 
 private:
 
@@ -139,7 +137,7 @@ private:
  */
 protected:
 
-   Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, OptAttributes * optAttributes = NULL);
+   Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren);
 
    Node(TR::Node *from, uint16_t numChildren = 0);
 
@@ -658,8 +656,6 @@ public:
    /**
     * OptAttributes functions
     */
-
-   bool            hasOptAttributes()  { return _optAttributes != NULL; }
 
    inline vcount_t getVisitCount();
    inline vcount_t setVisitCount(vcount_t vc);
@@ -1555,10 +1551,6 @@ protected:
 
    bool collectSymbolReferencesInNode(TR_BitVector &symbolReferencesInNode, vcount_t visitCount);
 
-   // For OptAttributes
-   void setOptAttributes(OptAttributes * oa) { _optAttributes = oa; }
-   OptAttributes * getOptAttributes() { TR_ASSERT(_optAttributes != NULL, "_optAttributes is NULL!"); return _optAttributes; }
-
    // For NodeExtension
    inline bool  hasNodeExtension();
    inline void  setHasNodeExtension(bool v);
@@ -1582,45 +1574,6 @@ public:
 
 // Protected inner classes and structs.
 protected:
-
-   /**
-    * Discarding optimization phase specific TR::Node data after node evaluation
-    *
-    * The OptAttribute class is meant contain fields of TR::Node which are relevant
-    * only before instruction selection has ended.
-    *
-    * A side table of OptAttributes is kept in TR::NodePool and will be freed
-    * when instruction selection is complete.  A Node's pointer to its
-    * OptAttributes will be NULLed as well, triggering an assertion on any
-    * attempt to access these fields post-instruction selection.
-    */
-   struct OptAttributes {
-      friend class TR::NodePool;
-
-      OptAttributes();
-      void * operator new (size_t s, TR::NodePool & nodes);
-
-      vcount_t _visitCount;
-      rcount_t _referenceCount;
-      scount_t _localIndex;        ///< general index that has the lifetime of a single optimization pass
-
-      union
-         {
-         uint16_t _useDefIndex;    ///< used by optimizations
-
-         /**
-          * The _register field is only used during codegen. It is a
-          * tagged pointer though. The low bit set means that the field
-          * is actually an evaluation priority.
-          * 0   - not evaluated, priority unknown
-          * odd - not evaluated, rest of the fields is evaluationPriority
-          * even- evaluated into a register
-          */
-         TR::Register * _register;
-         } _unionA;
-
-      ncount_t _poolIndex;         ///< index to retrieve node from nodepool, this can be shared amongst nodes with non-intersecting lifetimes
-   };
 
    struct NodeExtensionStore
       {
@@ -1678,6 +1631,21 @@ protected:
          }
       };
 
+   union UnionA
+      {
+      uint16_t _useDefIndex;    ///< used by optimizations
+
+      /**
+       * The _register field is only used during codegen. It is a
+       * tagged pointer though. The low bit set means that the field
+       * is actually an evaluation priority.
+       * 0   - not evaluated, priority unknown
+       * odd - not evaluated, rest of the fields is evaluationPriority
+       * even- evaluated into a register
+       */
+      TR::Register * _register;
+      };
+
    // Union Property verification helpers
    enum UnionPropertyA_Type
       {
@@ -1693,7 +1661,6 @@ protected:
 
    UnionPropertyA_Type getUnionPropertyA_Type();
 
-
 // Protected fields
 protected:
 
@@ -1706,6 +1673,9 @@ protected:
    /// Number of children this node has.
    uint16_t               _numChildren;
 
+   /// Visits to this node, used throughout optimizations.
+   vcount_t               _visitCount;
+
    /// Unique index for every single node created - no other node
    /// will have the same index within a compilation.
    ncount_t               _globalIndex;
@@ -1713,12 +1683,19 @@ protected:
    /// Flags for the node.
    flags32_t              _flags;
 
+   /// Index for this node, used throughout optimizations.
+   scount_t               _localIndex;
+
    /// Info about the byte code associated with this node.
    TR_ByteCodeInfo        _byteCodeInfo;
 
-   /// Contains fields of TR::Node which are relevant
-   /// only before instruction selection has ended.
-   OptAttributes *        _optAttributes;
+   ///< index to retrieve node from nodepool, this can be shared amongst nodes with non-intersecting lifetimes
+   ncount_t _poolIndex;
+
+   /// References to this node.
+   rcount_t _referenceCount;
+
+   UnionA                 _unionA;
 
    /// Elements unioned with children.
    UnionBase              _unionBase;

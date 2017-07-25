@@ -94,8 +94,10 @@ OMR::Node::Node()
      _numChildren(0),
      _globalIndex(0),
      _flags(0),
+     _visitCount(0),
+     _localIndex(0),
+     _referenceCount(0),
      _byteCodeInfo(),
-     _optAttributes(NULL),
      _unionBase(),
      _unionPropertyA()
    {
@@ -108,13 +110,15 @@ OMR::Node::~Node()
    self()->freeExtensionIfExists();
    }
 
-OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren, OptAttributes * optAttributes)
+OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren)
    : _opCode(op),
      _numChildren(numChildren),
      _globalIndex(0),
      _flags(0),
+     _visitCount(0),
+     _localIndex(0),
+     _referenceCount(0),
      _byteCodeInfo(),
-     _optAttributes(NULL),
      _unionBase(),
      _unionPropertyA()
    {
@@ -140,24 +144,16 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
       self()->setChild(1, NULL);
       }
 
-   if (optAttributes != NULL)
+   self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
+   self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
+   self()->setReferenceCount(0);
+   self()->setVisitCount(0);
+   self()->setLocalIndex(0);
+   memset( &(_unionA), 0, sizeof( _unionA ) );
+   if (self()->getGlobalIndex() == MAX_NODE_COUNT)
       {
-      self()->setOptAttributes(optAttributes);
-      }
-   else
-      {
-      self()->setOptAttributes(new (comp->getNodePool()) OMR::Node::OptAttributes());
-      self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
-      self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
-      self()->setReferenceCount(0);
-      self()->setVisitCount(0);
-      self()->setLocalIndex(0);
-      memset( &(self()->getOptAttributes()->_unionA), 0, sizeof( self()->getOptAttributes()->_unionA ) );
-      if (self()->getGlobalIndex() == MAX_NODE_COUNT)
-         {
-         TR_ASSERT(0, "getGlobalIndex() == MAX_NODE_COUNT");
-         comp->failCompilation<TR::ExcessiveComplexity>("Global index equal to max node count");
-         }
+      TR_ASSERT(0, "getGlobalIndex() == MAX_NODE_COUNT");
+      comp->failCompilation<TR::ExcessiveComplexity>("Global index equal to max node count");
       }
 
    _byteCodeInfo.setInvalidCallerIndex();
@@ -218,8 +214,10 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
      _numChildren(0),
      _globalIndex(0),
      _flags(0),
+     _visitCount(0),
+     _localIndex(0),
+     _referenceCount(0),
      _byteCodeInfo(),
-     _optAttributes(NULL),
      _unionBase(),
      _unionPropertyA()
    {
@@ -233,7 +231,6 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
    if (from->getOpCode().getOpCodeValue() == TR::allocationFence)
       self()->setAllocation(NULL);
 
-   self()->setOptAttributes(new (comp->getNodePool()) OMR::Node::OptAttributes());
    self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
    self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
    // a memcpy is used above to copy fields from the argument "node" to "this", but
@@ -241,7 +238,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
    self()->setReferenceCount(from->getReferenceCount());
    self()->setVisitCount(from->getVisitCount());
    self()->setLocalIndex(from->getLocalIndex());
-   self()->getOptAttributes()->_unionA = from->getOptAttributes()->_unionA;
+   _unionA = from->_unionA;
 
    if (self()->getGlobalIndex() == MAX_NODE_COUNT)
       {
@@ -577,11 +574,21 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
       // Recreate node from originalNode, ignore originatingByteCodeNode
       ncount_t poolIndex = originalNode->getNodePoolIndex();
       ncount_t globalIndex = originalNode->getGlobalIndex();
-      OptAttributes *optAttributes = originalNode->getOptAttributes();
+      vcount_t visitCount = originalNode->getVisitCount();
+      scount_t localIndex = originalNode->getLocalIndex();
+      rcount_t referenceCount = originalNode->getReferenceCount();
+      UnionA unionA = originalNode->_unionA;
       const TR_ByteCodeInfo byteCodeInfo = originalNode->getByteCodeInfo();  // copy bytecode info into temporary variable
-      TR::Node * node = new (TR::comp()->getNodePool(), poolIndex) TR::Node(0, op, numChildren, optAttributes);
+      TR::Node * node = new (TR::comp()->getNodePool(), poolIndex) TR::Node(0, op, numChildren);
       node->setGlobalIndex(globalIndex);
       node->setByteCodeInfo(byteCodeInfo);
+
+      node->setNodePoolIndex(poolIndex);
+      node->setVisitCount(visitCount);
+      node->setLocalIndex(localIndex);
+      node->setReferenceCount(referenceCount);
+      node->_unionA = unionA;
+
       return node;
       }
    }
@@ -4236,19 +4243,6 @@ OMR::Node::countChildren(TR::ILOpCodes opcode)
  * OptAttributes functions
  */
 
-OMR::Node::OptAttributes::OptAttributes() :
-   _visitCount(0),
-   _localIndex(0),
-   _referenceCount(0)
-   {
-   }
-
-void *
-OMR::Node::OptAttributes::operator new (size_t s, TR::NodePool & nodes)
-   {
-   return (void *)nodes.allocateOptAttributes();
-   }
-
 void
 OMR::Node::resetVisitCounts(vcount_t count)
    {
@@ -4315,13 +4309,13 @@ OMR::Node::setIsNotRematerializeable()
    {
    TR::Compilation * c = TR::comp();
    if (performNodeTransformation1(c, "Setting notRematerializeable flag on node %p\n", self()))
-      self()->getOptAttributes()->_localIndex = (self()->getOptAttributes()->_localIndex | SCOUNT_HIGH_BIT);
+      _localIndex = (_localIndex | SCOUNT_HIGH_BIT);
    }
 
 bool
 OMR::Node::isRematerializeable()
    {
-   if (self()->getOptAttributes()->_localIndex & SCOUNT_HIGH_BIT)
+   if (_localIndex & SCOUNT_HIGH_BIT)
       return false;
    return true;
    }
@@ -4330,8 +4324,8 @@ TR::Register*
 OMR::Node::getRegister()
    {
    TR_ASSERT(self()->getOpCodeValue() != TR::BBStart, "don't call getRegister for a BBStart");
-   if ((uintptr_t)self()->getOptAttributes()->_unionA._register & 1) return 0; // tagged pointer means the field is actually an evaluation priority
-   return self()->getOptAttributes()->_unionA._register;
+   if ((uintptr_t)_unionA._register & 1) return 0; // tagged pointer means the field is actually an evaluation priority
+   return _unionA._register;
    }
 
 TR::Register *
@@ -4372,7 +4366,7 @@ OMR::Node::setRegister(TR::Register *reg)
 #endif
       }
 
-   return (self()->getOptAttributes()->_unionA._register = reg);
+   return (_unionA._register = reg);
    }
 
 void *
@@ -4397,7 +4391,7 @@ OMR::Node::unsetRegister()
       reg->getLiveRegisterInfo()->setNode(NULL);
       }
 
-   self()->getOptAttributes()->_unionA._register = NULL;
+   _unionA._register = NULL;
    return NULL;
    }
 
@@ -4406,7 +4400,7 @@ OMR::Node::unsetRegister()
 int32_t
 OMR::Node::getEvaluationPriority(TR::CodeGenerator * codeGen)
    {
-   if (self()->getOptAttributes()->_unionA._register == 0) // not evaluated into register & priority unknown
+   if (_unionA._register == 0) // not evaluated into register & priority unknown
       {
       // Hack: our trees can have cycles (lmul/lumulh). To avoid infinite
       // recursion, initialize this node's priority to zero
@@ -4415,8 +4409,8 @@ OMR::Node::getEvaluationPriority(TR::CodeGenerator * codeGen)
       // dealt with the issue of cycles in nodes
       return self()->setEvaluationPriority(codeGen->getEvaluationPriority(self()));
       }
-   if ((uintptr_t)(self()->getOptAttributes()->_unionA._register) & 1) // evaluation priority
-      return (uintptr_t)(self()->getOptAttributes()->_unionA._register) >> 1;
+   if ((uintptr_t)(_unionA._register) & 1) // evaluation priority
+      return (uintptr_t)(_unionA._register) >> 1;
    else // already evaluated to a register - nonsensical question
       return 0;
    }
@@ -4424,10 +4418,10 @@ OMR::Node::getEvaluationPriority(TR::CodeGenerator * codeGen)
 int32_t
 OMR::Node::setEvaluationPriority(int32_t p)
    {
-   if (self()->getOptAttributes()->_unionA._register == 0 ||            // not evaluated, priority unknown
-       ((uintptr_t)(self()->getOptAttributes()->_unionA._register) & 1))  // not evaluated, priority known
+   if (_unionA._register == 0 ||            // not evaluated, priority unknown
+       ((uintptr_t)(_unionA._register) & 1))  // not evaluated, priority known
       {
-      self()->getOptAttributes()->_unionA._register = (TR::Register*)(uintptr_t)((p << 1) | 1);
+      _unionA._register = (TR::Register*)(uintptr_t)((p << 1) | 1);
       }
    else // evaluated into a register
       {

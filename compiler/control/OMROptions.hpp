@@ -883,7 +883,7 @@ enum TR_CompilationOptions
 
    // Option word 27
    TR_ForceIEEEDivideByZeroException                  = 0x00000020 + 27,
-   TR_DisableOptAttributesMemoryFree                  = 0x00000040 + 27,
+   // Available                                       = 0x00000040 + 27,
    TR_DisableDirectStaticAccessOnZ                    = 0x00000080 + 27,
    TR_EnableRubyTieredCompilation                     = 0x00000100 + 27,
    TR_EnableRIEMIT                                    = 0x00000200 + 27,

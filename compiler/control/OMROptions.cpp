@@ -446,7 +446,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNoVMAccess",                  "O\tdisable compilation without holding VM access",  SET_OPTION_BIT(TR_DisableNoVMAccess), "F"},
    {"disableOnDemandLiteralPoolRegister", "O\tdisable on demand literal pool register",        SET_OPTION_BIT(TR_DisableOnDemandLiteralPoolRegister), "F"},
    {"disableOOL",                         "O\tdisable out of line instruction selection",      SET_OPTION_BIT(TR_DisableOOL), "F"},
-   {"disableOptAttributesMemoryFree",     "O\tdisable freeing Node::OptAttributes",            SET_OPTION_BIT(TR_DisableOptAttributesMemoryFree), "F"},
    {"disableOpts=",                       "O{regex}\tlist of optimizations to disable",
                                           TR::Options::setRegex, offsetof(OMR::Options, _disabledOpts), 0, "P"},
    {"disableOptTransformations=",         "O{regex}\tlist of optimizer transformations to disable",

@@ -247,8 +247,8 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
 
    bool isLoadNodeNested = false;
 
-   // TODO: add MH and MHY here; outside of the zNext if check.
-   if(TR::Compiler->target.cpu.getS390SupportsZNext())
+   // TODO: add MH and MHY here; outside of the z14 if check.
+   if(TR::Compiler->target.cpu.getS390SupportsZ14())
       {
       bool isSetReg2Mem1 = false;
 
@@ -342,10 +342,10 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          }
       else
          {
-         if(TR::Compiler->target.cpu.getS390SupportsZNext())
+         if(TR::Compiler->target.cpu.getS390SupportsZ14())
             {
-            // Check for multiplications on zNext
-            TR::InstOpCode::Mnemonic zNextOpCode = TR::InstOpCode::BAD;
+            // Check for multiplications on z14
+            TR::InstOpCode::Mnemonic z14OpCode = TR::InstOpCode::BAD;
 
             if(root->getOpCodeValue() == TR::lmul &&
                     firstRegister != NULL &&
@@ -353,20 +353,20 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
                     secondRegister != NULL &&
                     secondRegister->is64BitReg())
                {
-               zNextOpCode = TR::InstOpCode::MSGRKC;
+               z14OpCode = TR::InstOpCode::MSGRKC;
                }
             else if(root->getOpCodeValue() == TR::imul &&
                     firstRegister != NULL &&
                     secondRegister != NULL)
                {
-               zNextOpCode = TR::InstOpCode::MSRKC;
+               z14OpCode = TR::InstOpCode::MSRKC;
                }
 
-            if(zNextOpCode != TR::InstOpCode::BAD)
+            if(z14OpCode != TR::InstOpCode::BAD)
                {
                bool isCanClobberFirstReg = cg()->canClobberNodesRegister(firstChild);
                nodeReg = isCanClobberFirstReg ? firstRegister : cg()->allocate64bitRegister();
-               generateRRFInstruction(cg(), zNextOpCode, root, nodeReg, firstRegister, secondRegister, 0, 0);
+               generateRRFInstruction(cg(), z14OpCode, root, nodeReg, firstRegister, secondRegister, 0, 0);
                }
             }
 
@@ -1289,7 +1289,7 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
       }
 
    /**  Attempt to use AGH to add halfworf from memory */
-   if (TR::Compiler->target.cpu.getS390SupportsZNext() &&
+   if (TR::Compiler->target.cpu.getS390SupportsZ14() &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&

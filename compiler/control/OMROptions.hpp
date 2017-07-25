@@ -285,7 +285,7 @@ enum TR_CompilationOptions
    TR_EnableElementPrivatization          = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
-   // Available                           = 0x00000200 + 6,
+   TR_DisableZ14                          = 0x00000200 + 6,
    // Available                           = 0x00000400 + 6,
    TR_EnableRangeSplittingGRA             = 0x00000800 + 6,
    TR_ForceUsePreexistence                = 0x00001000 + 6,

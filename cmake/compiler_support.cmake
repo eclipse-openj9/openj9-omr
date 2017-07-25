@@ -244,7 +244,6 @@ function(create_omr_compiler_library)
    add_custom_command(OUTPUT ${BUILD_NAME_FILE}  
                      COMMAND perl ${OMR_ROOT}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} > ${BUILD_NAME_FILE}
                      VERBATIM
-                     BYPRODUCTS ${BUILD_NAME_FILE}
                      COMMENT "Generate ${BUILD_NAME_FILE}"
                      )
 

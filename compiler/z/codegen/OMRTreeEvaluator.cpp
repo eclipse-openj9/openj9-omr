@@ -5251,10 +5251,10 @@ void OMR::Z::TreeEvaluator::evaluateRegLoads(TR::Node *node, TR::CodeGenerator *
       {
       auto tmp = queue.Pop();
       if (tmp->getRegister())
-         visited[tmp->getNodePoolIndex()] = 1;
-      if (visited[tmp->getNodePoolIndex()])
+         visited[tmp->getGlobalIndex()] = 1;
+      if (visited[tmp->getGlobalIndex()])
          continue;
-      visited[tmp->getNodePoolIndex()] = 1;
+      visited[tmp->getGlobalIndex()] = 1;
       if (tmp->getOpCode().hasSymbolReference() &&
           tmp->getSymbolReference()->getSymbol()->isRegisterSymbol())
          {
@@ -5265,7 +5265,7 @@ void OMR::Z::TreeEvaluator::evaluateRegLoads(TR::Node *node, TR::CodeGenerator *
          for(int i=0; i<tmp->getNumChildren(); i++)
             {
             auto child = tmp->getChild(i);
-            if (!visited[child->getNodePoolIndex()])
+            if (!visited[child->getGlobalIndex()])
                queue.Push(child);
             }
          }

@@ -31,7 +31,6 @@ TR::NodePool::NodePool(TR::Compilation * comp, const TR::Allocator &allocator) :
    _comp(comp),
    _disableGC(true),
    _globalIndex(0),
-   _poolIndex(0),
    _nodeRegion(comp->trMemory()->heapMemoryRegion())
    {
    }
@@ -48,13 +47,12 @@ TR::NodePool::allocate()
    {
    TR::Node *newNode = static_cast<TR::Node*>(_nodeRegion.allocate(sizeof(TR::Node)));//_pool.ElementAt(poolIndex);
    memset(newNode, 0, sizeof(TR::Node));
-   newNode->_poolIndex = ++_poolIndex;
    newNode->_globalIndex = ++_globalIndex;
    TR_ASSERT(_globalIndex < MAX_NODE_COUNT, "Reached TR::Node allocation limit");
    
    if (debug("traceNodePool"))
       {
-      diagnostic("%sAllocating Node[%p] with Global Index %d, Pool Index %d\n", OPT_DETAILS_NODEPOOL, newNode, newNode->getGlobalIndex(), newNode->getNodePoolIndex());
+      diagnostic("%sAllocating Node[%p] with Global Index %d\n", OPT_DETAILS_NODEPOOL, newNode, newNode->getGlobalIndex());
       }
    return newNode;
    }

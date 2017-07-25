@@ -43,7 +43,6 @@ class NodePool
    void      enableNodeGC()  { _disableGC = false; }
    void      disableNodeGC() { _disableGC = true; }
    ncount_t  getLastGlobalIndex()     { return _globalIndex; }
-   ncount_t  getLastPoolIndex()       { return _poolIndex; }
    ncount_t  getMaxIndex()           { return _globalIndex; }
    TR::Compilation * comp() { return _comp; }
 
@@ -53,7 +52,6 @@ class NodePool
    TR::Compilation *     _comp;
    bool                  _disableGC;
    ncount_t              _globalIndex;
-   ncount_t              _poolIndex;
 
    TR::Region            _nodeRegion;
    };

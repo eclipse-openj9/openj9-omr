@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -172,7 +172,7 @@ TR_PartialRedundancy::ContainerType *TR_PartialRedundancy::allocateContainer(int
 
 static bool ignoreValueOfMultipleReturnNode(TR::Node *node, TR::SparseBitVector &seenNodes)
    {
-   auto npIdx = node->getNodePoolIndex();
+   auto npIdx = node->getGlobalIndex();
    if (seenNodes[npIdx])
       return false;
    seenNodes[npIdx] = 1;

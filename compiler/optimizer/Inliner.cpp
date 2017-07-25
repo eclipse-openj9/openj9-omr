@@ -2301,7 +2301,7 @@ TR_ParameterToArgumentMapper::initialize(TR_CallStack *callStack)
             else
                {
                debugTrace(tracer(),"Setting parameterNode to n%in %s, argOffset=%d, argIndex=%d, _callNode n%in",
-                     arg->getNodePoolIndex(), arg->getOpCode().getName(), argOffset, argIndex, _callNode->getNodePoolIndex());
+                     arg->getGlobalIndex(), arg->getOpCode().getName(), argOffset, argIndex, _callNode->getGlobalIndex());
                parmMap->_parameterNode = arg;
 
                static const char *disableParmTempOpt = feGetEnv("TR_DisableParmTempOpt");

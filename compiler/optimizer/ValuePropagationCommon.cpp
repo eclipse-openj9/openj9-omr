@@ -601,7 +601,7 @@ void OMR::ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *en
       _curTree = treeTop;
       TR::Node *treeTopNode = treeTop->getNode();
       if (trace())
-         traceMsg(comp(), "Processing ttNode n%in %s\n", treeTopNode->getNodePoolIndex(),
+         traceMsg(comp(), "Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
                treeTopNode->getOpCode().getName());
 
       if (_enableVersionBlocks && !_disableVersionBlockForThisBlock && treeTop == lastRealTreeTop &&

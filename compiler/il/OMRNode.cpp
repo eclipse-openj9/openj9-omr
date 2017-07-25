@@ -150,8 +150,6 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
       self()->setChild(1, NULL);
       }
 
-   //self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
-   //self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
    self()->setReferenceCount(0);
    self()->setVisitCount(0);
    self()->setLocalIndex(0);
@@ -238,7 +236,6 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
       self()->setAllocation(NULL);
 
    self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
-   self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
    // a memcpy is used above to copy fields from the argument "node" to "this", but
    // opt attributes are separate, and need separate initialization.
    self()->setReferenceCount(from->getReferenceCount());
@@ -454,7 +451,6 @@ OMR::Node::copyValidProperties(TR::Node *fromNode, TR::Node *toNode)
    //   _opCode
    //   _numChildren         - init list
    //   _globalIndex
-   //   _poolIndex
    // OMR::Node
    //   _byteCodeInfo
    //   _unionPropertyB      - init list
@@ -578,7 +574,6 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
    else
       {
       // Recreate node from originalNode, ignore originatingByteCodeNode
-      ncount_t poolIndex = originalNode->getNodePoolIndex();
       ncount_t globalIndex = originalNode->getGlobalIndex();
       vcount_t visitCount = originalNode->getVisitCount();
       scount_t localIndex = originalNode->getLocalIndex();
@@ -590,7 +585,6 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
       node->setGlobalIndex(globalIndex);
       node->setByteCodeInfo(byteCodeInfo);
 
-      node->setNodePoolIndex(poolIndex);
       node->setVisitCount(visitCount);
       node->setLocalIndex(localIndex);
       node->setReferenceCount(referenceCount);

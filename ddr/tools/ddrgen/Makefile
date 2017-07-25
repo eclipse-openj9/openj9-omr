@@ -24,12 +24,6 @@ ARTIFACT_TYPE := cxx_executable
 
 MODULE_STATIC_LIBS += omrstatic
 
-ifeq (dwo,$(DEBUG_FORMAT))
-  ifneq (aix,$(OMR_HOST_OS))
-  MODULE_SHARED_LIBS += dwarf
-  endif
-endif
-
 # TODO libpath hack because ddrgen libs don't go into the same directory as omr libs (yet)
 MODULE_LIBPATH += $(top_srcdir)/lib
 
@@ -37,14 +31,8 @@ MODULE_INCLUDES += \
   $(top_srcdir)/ddr/include \
   $(top_srcdir)/include_core
 
-ifeq (dwo,$(DEBUG_FORMAT))
-else
-MODULE_INCLUDES += \
-  $(ddrgen_srcdir)/scanners/pdb/DIA-SDK/include
-endif
-
 ifeq (linux,$(OMR_HOST_OS))
-  MODULE_SHARED_LIBS += rt pthread
+  MODULE_SHARED_LIBS += rt pthread dwarf
   ifeq (x86,$(OMR_HOST_ARCH))
     MODULE_SHARED_LIBS += elf
   endif
@@ -55,12 +43,16 @@ ifeq (linux,$(OMR_HOST_OS))
     MODULE_SHARED_LIBS += z
   endif
 endif
+
 ifeq (aix,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += iconv perfstat
 endif
+
 ifeq (win,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
+  MODULE_INCLUDES += $(ddrgen_srcdir)/scanners/pdb/DIA-SDK/include
 endif
+
 ifeq (osx,$(OMR_HOST_OS))
   MODULE_SHARED_LIBS += iconv
 endif

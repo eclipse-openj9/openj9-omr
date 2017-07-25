@@ -28,7 +28,7 @@ message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)
-    string( REGEX REPLACE
+	string( REGEX REPLACE
 		"(^| )${opt}($| )"
 		""
 		${var}
@@ -176,7 +176,7 @@ if(OMR_HOST_OS STREQUAL "win")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
 	foreach(build_type IN LISTS CMAKE_CONFIGURATION_TYPES)
-        string(TOUPPER "${build_type}" build_type)
+		string(TOUPPER "${build_type}" build_type)
 		omr_remove_option("CMAKE_EXE_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
 		omr_remove_option("CMAKE_SHARED_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
 	endforeach()

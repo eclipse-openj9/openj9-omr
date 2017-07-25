@@ -1395,21 +1395,10 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
 
       if (firstOperand->getDataType() == TR::Address)
          {
-         if (TR::Compiler->target.is32Bit())
-            {
-            firstOperand = TR::Node::create(TR::a2i, 1, firstOperand);
-            secondOperand = TR::Node::create(TR::a2i, 1, secondOperand);
-            }
-         else
-            {
-            firstOperand = TR::Node::create(TR::a2l, 1, firstOperand);
-            secondOperand = TR::Node::create(TR::a2l, 1, secondOperand);
-            changeBranchFromIntToLong(loopTestNode);
-            }
-
-         TR::Node::recreate(loopTestNode, TR::ILOpCode::convertSignedCmpToUnsignedCmp(loopTestNode->getOpCodeValue()));
+         TR_ComparisonTypes compareType = TR::ILOpCode::getCompareType(loopTestNode->getOpCodeValue());
+         TR::ILOpCodes op = TR::ILOpCode::compareOpCode(TR::Address, compareType, true);
+         TR::Node::recreate(loopTestNode, TR::ILOpCode(op).convertCmpToIfCmp());
          }
-
      // on 64-bit, change the loop test condition to equivalent longs
      //
      if (usingAladd && firstOperand->getType().isInt64())
@@ -6430,9 +6419,15 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
          return false;
          }
 
-      if (!node->getFirstChild()->getType().isIntegral() && !node->getOpCode().isJumpWithMultipleTargets())
+      if (!(node->getFirstChild()->getType().isIntegral()
+            || (node->getFirstChild()->getType().isAddress()
+                && node->getFirstChild()->isInternalPointer()
+                && node->getSecondChild()->isInternalPointer()
+                && node->getOpCodeValue() != TR::ifacmpeq
+                && node->getOpCodeValue() != TR::ifacmpne))
+          && !node->getOpCode().isJumpWithMultipleTargets())
          {
-         if (trace()) traceMsg(comp(), "\tReject - Branch is not integral\n");
+         if (trace()) traceMsg(comp(), "\tReject - Branch node is not integral nor ordered comparison between internal pointers\n");
          return false;
          }
 

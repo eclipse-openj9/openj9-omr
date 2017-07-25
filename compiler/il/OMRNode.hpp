@@ -449,6 +449,8 @@ public:
    bool                   dontEliminateStores(bool isForLocalDeadStore = false);
 
    bool                   isNotCollected();
+   bool                   computeIsInternalPointer();
+   bool                   computeIsCollectedReference();
 
    bool                   addressPointsAtObject();
 
@@ -1572,8 +1574,11 @@ protected:
    bool hasBranchDestinationNode();
    bool hasBlock();
    bool hasArrayStride();
-   bool hasPinningArrayPointer();
    bool hasDataType();
+
+public:
+   // For opcode properties
+   bool hasPinningArrayPointer();
 
 // Protected inner classes and structs.
 protected:

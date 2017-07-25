@@ -5452,18 +5452,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createPointerCompareNode(TR::Node* nod
          dst = node->getChild(3)->duplicateTree();
       }
 
-   if (!is64Bit)
-      {
-      src = TR::Node::create(TR::a2i, 1, src);
-      dst = TR::Node::create(TR::a2i, 1, dst);
-      cmp = TR::Node::createif(TR::ifiucmpge, src, dst, NULL);
-      }
-   else
-      {
-      src = TR::Node::create(TR::a2l, 1, src);
-      dst = TR::Node::create(TR::a2l, 1, dst);
-      cmp = TR::Node::createif(TR::iflucmpge, src, dst, NULL);
-      }
+   cmp = TR::Node::createif(TR::ifacmpge, src, dst, NULL);
 
    TR::TreeTop *cmpTree = TR::TreeTop::create(comp(), cmp);
    return cmpTree;
@@ -5512,18 +5501,7 @@ TR::TreeTop* TR::ArraycopyTransformation::createRangeCompareNode(TR::Node* node,
       srcEndNode = TR::Node::create(TR::aiadd, 2, src, len);
       }
 
-   if (!is64Bit)
-      {
-      srcEndNode = TR::Node::create(TR::a2i, 1, srcEndNode);
-      dst = TR::Node::create(TR::a2i, 1, dst);
-      cmp = TR::Node::createif(TR::ifiucmpgt, srcEndNode, dst, NULL);
-      }
-   else
-      {
-      srcEndNode = TR::Node::create(TR::a2l, 1, srcEndNode);
-      dst = TR::Node::create(TR::a2l, 1, dst);
-      cmp = TR::Node::createif(TR::iflucmpgt, srcEndNode, dst, NULL);
-      }
+   cmp = TR::Node::createif(TR::ifacmpgt, srcEndNode, dst, NULL);
 
    TR::TreeTop *cmpTree = TR::TreeTop::create(comp(), cmp);
 

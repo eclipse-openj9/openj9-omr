@@ -28,13 +28,18 @@ if(LIBDWARF_FOUND)
 endif(LIBDWARF_FOUND)
 
 if(OMR_HOST_OS STREQUAL "win")
+	find_package(DiaSDK REQUIRED)
 	target_sources(omr_ddr_scanner
 		PRIVATE
 			pdb/PdbScanner.cpp
 	)
 	target_link_libraries(omr_ddr_scanner
 		PUBLIC
-			diaguids.lib
+			${DiaSDK_LIBRARIES}
+	)
+	target_include_directories(omr_ddr_scanner
+		PUBLIC
+			${DiaSDK_INCLUDE_DIRS}
 	)
 elseif(OMR_HOST_OS STREQUAL "linux")
 	target_sources(omr_ddr_scanner

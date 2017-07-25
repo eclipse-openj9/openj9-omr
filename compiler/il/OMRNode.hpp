@@ -155,7 +155,8 @@ public:
    Node();
    ~Node();
 
-   void * operator new(size_t s, TR::NodePool & nodePool, ncount_t poolIndex = 0);
+   void * operator new(size_t s, TR::NodePool & nodePool);
+   void * operator new(size_t s, void *ptr) throw();
 
    static TR::Node *copy(TR::Node *);
    static TR::Node *copy(TR::Node *, int32_t numChildren);

@@ -84,15 +84,21 @@
  */
 
 void *
-OMR::Node::operator new(size_t s, TR::NodePool& nodes, ncount_t poolIndex)
+OMR::Node::operator new(size_t s, TR::NodePool& nodes)
    {
-   return (void *) nodes.allocate(poolIndex);
+   return (void *) nodes.allocate();
+   }
+
+void *
+OMR::Node::operator new(size_t s, void *ptr) throw()
+   {
+   return ::operator new(s, ptr);
    }
 
 OMR::Node::Node()
    : _opCode(TR::BadILOp),
      _numChildren(0),
-     _globalIndex(0),
+     //_globalIndex(0),
      _flags(0),
      _visitCount(0),
      _localIndex(0),
@@ -113,7 +119,7 @@ OMR::Node::~Node()
 OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t numChildren)
    : _opCode(op),
      _numChildren(numChildren),
-     _globalIndex(0),
+     //_globalIndex(0),
      _flags(0),
      _visitCount(0),
      _localIndex(0),
@@ -144,8 +150,8 @@ OMR::Node::Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, uint16_t nu
       self()->setChild(1, NULL);
       }
 
-   self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
-   self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
+   //self()->setGlobalIndex(comp->getNodePool().getLastGlobalIndex());
+   //self()->setNodePoolIndex(comp->getNodePool().getLastPoolIndex());
    self()->setReferenceCount(0);
    self()->setVisitCount(0);
    self()->setLocalIndex(0);
@@ -560,7 +566,7 @@ OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCo
    TR::Node::copyValidProperties(originalNodeCopy, node);
 
    // add originalNodeCopy back to the node pool
-   comp->getNodePool().removeNodeAndReduceGlobalIndex(originalNodeCopy);
+   //comp->getNodePool().removeNodeAndReduceGlobalIndex(originalNodeCopy);
    return node;
    }
 
@@ -579,7 +585,8 @@ OMR::Node::createInternal(TR::Node *originatingByteCodeNode, TR::ILOpCodes op, u
       rcount_t referenceCount = originalNode->getReferenceCount();
       UnionA unionA = originalNode->_unionA;
       const TR_ByteCodeInfo byteCodeInfo = originalNode->getByteCodeInfo();  // copy bytecode info into temporary variable
-      TR::Node * node = new (TR::comp()->getNodePool(), poolIndex) TR::Node(0, op, numChildren);
+      //TR::Node * node = new (TR::comp()->getNodePool(), poolIndex) TR::Node(0, op, numChildren);
+      TR::Node *node = new ((void*)originalNode) TR::Node(0, op, numChildren);
       node->setGlobalIndex(globalIndex);
       node->setByteCodeInfo(byteCodeInfo);
 

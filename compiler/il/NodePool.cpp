@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -27,48 +27,36 @@
 
 #define OPT_DETAILS_NODEPOOL "O^O NODEPOOL :"
 
+TR::NodePool::NodePool(TR::Compilation * comp, const TR::Allocator &allocator) :
+   _comp(comp),
+   _disableGC(true),
+   _globalIndex(0),
+   _poolIndex(0),
+   _nodeRegion(comp->trMemory()->heapMemoryRegion())
+   {
+   }
+
 void
 TR::NodePool::cleanUp()
    {
-   _pool.MakeEmpty();
-   }
-
-void
-TR::NodePool::removeNode(NodeIndex poolIdx)
-   {
-   TR_ASSERT(_pool.Exists(poolIdx), "Node with Pool Index %d does not exist in the table", poolIdx);
-   TR::Node &node = _pool.ElementAt(poolIdx);
-   ncount_t globalIdx = node.getGlobalIndex();
-   _pool.RemoveEntry(poolIdx);
-
-   CS2::HashIndex symRefHid;
-   if (debug("traceNodePool"))
-      {
-      diagnostic("%sRemoving Node[%p] with Global Index %d, Table Index %d\n", OPT_DETAILS_NODEPOOL, &node, globalIdx, poolIdx);
-      }
+   _nodeRegion.~Region();
+   new (&_nodeRegion) TR::Region(_comp->trMemory()->heapMemoryRegion());
    }
 
 TR::Node *
-TR::NodePool::allocate(ncount_t poolIndex)
+TR::NodePool::allocate()
    {
-   if (!poolIndex)
-      {
-      // We are calling AddEntryNoConstruct instead of AddEntry
-      // because TR::NodePool::allocate is only called from OMR::Node's
-      // operator new, which means that AddEntry calls TR::Node's constructor
-      // and then once TR::NodePool::allocate returns, operator new calls
-      // a different TR::Node constructor resulting in TR::Node getting
-      // constructed twice, increasing compilation time.
-      poolIndex = _poolIndex = _pool.AddEntryNoConstruct();
-      _globalIndex++;
-      TR_ASSERT(_globalIndex < MAX_NODE_COUNT, "Reached TR::Node allocation limit");
-      }
-   TR::Node &newNode = _pool.ElementAt(poolIndex);
+   TR::Node *newNode = static_cast<TR::Node*>(_nodeRegion.allocate(sizeof(TR::Node)));//_pool.ElementAt(poolIndex);
+   memset(newNode, 0, sizeof(TR::Node));
+   newNode->_poolIndex = ++_poolIndex;
+   newNode->_globalIndex = ++_globalIndex;
+   TR_ASSERT(_globalIndex < MAX_NODE_COUNT, "Reached TR::Node allocation limit");
+   
    if (debug("traceNodePool"))
       {
-      diagnostic("%sAllocating Node[%p] with Global Index %d, Pool Index %d\n", OPT_DETAILS_NODEPOOL, &newNode, newNode.getGlobalIndex(), poolIndex);
+      diagnostic("%sAllocating Node[%p] with Global Index %d, Pool Index %d\n", OPT_DETAILS_NODEPOOL, newNode, newNode->getGlobalIndex(), newNode->getNodePoolIndex());
       }
-   return &newNode;
+   return newNode;
    }
 
 bool
@@ -83,14 +71,14 @@ TR::NodePool::deallocate(TR::Node * node)
        return false;
       }
 
-   removeNode(node->getNodePoolIndex());
+   node->~Node();
    return true;
    }
 
 void
 TR::NodePool::removeNodeAndReduceGlobalIndex(TR::Node * node)
    {
-   removeNode(node->getNodePoolIndex());
+   node->~Node();
    _globalIndex--;
    }
 
@@ -106,18 +94,8 @@ TR::NodePool::removeDeadNodes()
        return false;
       }
 
-   bool foundDeadNode = false;
-   NodeIter nodePoolIdx(_pool);
-   for (nodePoolIdx.SetToFirst(); nodePoolIdx.Valid(); nodePoolIdx.SetToNext())
-       {
-       TR::Node &node = _pool.ElementAt(nodePoolIdx);
-       if (!(node.getOpCode().isTreeTop() || node.getReferenceCount() > 0))
-          {
-          removeNode(nodePoolIdx);
-          foundDeadNode = true;
-          }
-       }
+   TR_ASSERT(false, "Node garbage colleciotn is not currently implemented");
 
-   return foundDeadNode;
+   return false;
    }
 

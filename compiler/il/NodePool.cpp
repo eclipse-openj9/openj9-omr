@@ -73,13 +73,6 @@ TR::NodePool::deallocate(TR::Node * node)
    return true;
    }
 
-void
-TR::NodePool::removeNodeAndReduceGlobalIndex(TR::Node * node)
-   {
-   node->~Node();
-   _globalIndex--;
-   }
-
 bool
 TR::NodePool::removeDeadNodes()
    {

@@ -562,7 +562,7 @@ OMR::Node::recreateAndCopyValidPropertiesImpl(TR::Node *originalNode, TR::ILOpCo
    TR::Node::copyValidProperties(originalNodeCopy, node);
 
    // add originalNodeCopy back to the node pool
-   //comp->getNodePool().removeNodeAndReduceGlobalIndex(originalNodeCopy);
+   comp->getNodePool().deallocate(originalNodeCopy);
    return node;
    }
 

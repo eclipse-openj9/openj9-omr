@@ -1,7 +1,7 @@
 find_package(LibDwarf)
 
 add_library(omr_ddr_scanner
-	scanner.cpp
+	Scanner.cpp
 )
 
 set_property(TARGET omr_ddr_scanner PROPERTY CXX_STANDARD 11)

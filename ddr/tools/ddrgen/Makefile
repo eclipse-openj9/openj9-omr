@@ -22,15 +22,6 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 MODULE_NAME := ddrgen
 ARTIFACT_TYPE := cxx_executable
 
-DDRGEN_STATIC_LIBS = \
-  ddr-scanner \
-  ddr-ir \
-  ddr-blobgen \
-  ddr-macros
-
-DEPENDENCIES += $(call buildStaticLibFilename,$(DDRGEN_STATIC_LIBS))
-MODULE_STATIC_LIBS += $(DDRGEN_STATIC_LIBS)
-
 MODULE_STATIC_LIBS += omrstatic
 
 ifeq (dwo,$(DEBUG_FORMAT))
@@ -81,6 +72,15 @@ endif
 ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
+
+DDRGEN_STATIC_LIBS = \
+  ddr-scanner \
+  ddr-ir \
+  ddr-blobgen \
+  ddr-macros
+
+DEPENDENCIES += $(call buildStaticLibFilename,$(DDRGEN_STATIC_LIBS))
+MODULE_STATIC_LIBS += $(DDRGEN_STATIC_LIBS)
 
 OBJECTS = \
   ddrgen$(OBJEXT)

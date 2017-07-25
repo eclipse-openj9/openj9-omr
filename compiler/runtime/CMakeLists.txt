@@ -16,10 +16,14 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
 
-
+compiler_library(runtime 
+	${CMAKE_CURRENT_SOURCE_DIR}/Runtime.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Trampoline.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Alignment.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/CodeCacheTypes.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeCache.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeCacheManager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeCacheMemorySegment.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeCacheConfig.cpp
+)

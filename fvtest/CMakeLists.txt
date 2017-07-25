@@ -20,7 +20,6 @@ add_subdirectory(util)
 
 add_subdirectory(omrGtestGlue)
 add_subdirectory(algotest)
-# add_subdirectory(compilertest)
 add_subdirectory(gctest)
 # add_subdirectory(jitbuildertest)
 add_subdirectory(porttest)
@@ -30,3 +29,9 @@ add_subdirectory(threadextendedtest)
 add_subdirectory(threadtest)
 add_subdirectory(utiltest)
 add_subdirectory(vmtest)
+
+
+if(NOT OMR_HOST_OS STREQUAL "win")
+    # TODO: Compiler test isn't ready for windows yet.
+    add_subdirectory(compilertest)
+endif()

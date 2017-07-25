@@ -16,10 +16,21 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
 
-
+compiler_library(infra 
+	${CMAKE_CURRENT_SOURCE_DIR}/Assert.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/BitVector.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/Checklist.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/HashTab.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/IGBase.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/IGNode.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/ILWalk.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/InterferenceGraph.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRMonitor.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRMonitorTable.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/Random.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/SimpleRegex.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/TreeServices.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCfg.cpp 
+)

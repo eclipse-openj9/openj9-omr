@@ -116,7 +116,6 @@ class SymbolReferenceTable
       isClassAndDepthFlagsSymbol,
       isClassFlagsSymbol,
       vftSymbol,
-      bcdCheckSymbol,
       currentThreadSymbol,
       recompilationCounterSymbol,
       excpSymbol,

@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <comdef.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <sstream>
 
@@ -176,7 +177,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 		int count = 0;
 		for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
 			if (count ++ > lastProgressUpdate + debugFiles->size() / 10) {
-				printf("Completed scanning %d of %d files...\n", count, debugFiles->size());
+				printf("Completed scanning "PRIu64" of "PRIu64" files...\n", count, debugFiles->size());
 				lastProgressUpdate = count;
 			}
 
@@ -329,7 +330,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	if (DDR_RC_OK == rc) {
 		hr = (*session)->get_globalScope(symbol);
 		if (FAILED(hr)) {
-			ERRMSG("get_globalScope() failed with HRESULT = %08x");
+			ERRMSG("get_globalScope() failed with HRESULT = %08x", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -578,7 +579,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		ERRMSG("get_symTag() failed with HRESULT = %08X", hr);
 		rc = DDR_RC_ERROR;
 	} else if (SymTagEnum != symTag) {
-		ERRMSG("symTag is not Enum", hr);
+		ERRMSG("symTag is not Enum");
 		rc = DDR_RC_ERROR;
 	}
 
@@ -835,7 +836,7 @@ PdbScanner::setBaseTypeInt(ULONGLONG ulLen, Type **type)
 		*type = getType("I64");
 		break;
 	default:
-		ERRMSG("Unknown int length: %d", ulLen);
+		ERRMSG("Unknown int length: "PRIu64, ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -856,7 +857,7 @@ PdbScanner::setBaseTypeFloat(ULONGLONG ulLen, Type **type)
 		*type = getType("double");
 		break;
 	default:
-		ERRMSG("Unknown float length: %d", ulLen);
+		ERRMSG("Unknown float length:"PRIu64, ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -887,7 +888,7 @@ PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 		*type = getType("U128");
 		break;
 	default:
-		ERRMSG("Unknown int length: %d", ulLen);
+		ERRMSG("Unknown int length:"PRIu64, ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}

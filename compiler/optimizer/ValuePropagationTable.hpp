@@ -403,10 +403,10 @@ const ValuePropagationPtr constraintHandlers[] =
 
    constrainCmpeq,           // TR::acmpeq
    constrainCmpne,           // TR::acmpne
-   constrainCmplt,           // TR::acmplt
-   constrainCmpge,           // TR::acmpge
-   constrainCmpgt,           // TR::acmpgt
-   constrainCmple,           // TR::acmple
+   constrainCmp,             // TR::acmplt
+   constrainCmp,             // TR::acmpge
+   constrainCmp,             // TR::acmpgt
+   constrainCmp,             // TR::acmple
 
    constrainCmpeq,           // TR::bcmpeq
    constrainCmpne,           // TR::bcmpne
@@ -488,10 +488,10 @@ const ValuePropagationPtr constraintHandlers[] =
 
    constrainIfcmpeq,         // TR::ifacmpeq
    constrainIfcmpne,         // TR::ifacmpne
-   constrainCondBranch,      // TR::ifacmplt
-   constrainCondBranch,      // TR::ifacmpge
-   constrainCondBranch,      // TR::ifacmpgt
-   constrainCondBranch,      // TR::ifacmple
+   constrainIfcmplt,         // TR::ifacmplt
+   constrainIfcmpge,         // TR::ifacmpge
+   constrainIfcmpgt,         // TR::ifacmpgt
+   constrainIfcmple,         // TR::ifacmple
 
    constrainCondBranch,      // TR::ifbcmpeq
    constrainCondBranch,      // TR::ifbcmpne

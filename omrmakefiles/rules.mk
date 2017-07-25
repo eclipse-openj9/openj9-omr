@@ -132,7 +132,8 @@ MODULE_LDFLAGS += $(call buildLibPathFlags,$(MODULE_LIBPATH))
 GLOBAL_LDFLAGS += $(call buildLibPathFlags,$(GLOBAL_LIBPATH))
 
 # Static Libraries
-GLOBAL_LDFLAGS += $(call buildLinkGroup,$(call buildStaticLibLinkFlags,$(MODULE_STATIC_LIBS) $(GLOBAL_STATIC_LIBS)))
+MODULE_LDFLAGS += $(call buildLinkGroup,$(call buildStaticLibLinkFlags,$(MODULE_STATIC_LIBS)))
+GLOBAL_LDFLAGS += $(call buildLinkGroup,$(call buildStaticLibLinkFlags,$(GLOBAL_STATIC_LIBS)))
 
 # Shared Libraries. Must be after static libraries.
 MODULE_LDFLAGS += $(call buildSharedLibLinkFlags,$(MODULE_SHARED_LIBS))

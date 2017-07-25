@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -176,6 +176,12 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
             {
             switch(ct)
                {
+               case TR_cmpEQ: return TR::acmpeq;
+               case TR_cmpNE: return TR::acmpne;
+               case TR_cmpLT: return TR::acmplt;
+               case TR_cmpLE: return TR::acmple;
+               case TR_cmpGT: return TR::acmpgt;
+               case TR_cmpGE: return TR::acmpge;
                default: return TR::BadILOp;
                }
             break;
@@ -291,3 +297,29 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
    return TR::BadILOp;
    }
 
+/**
+ * \brief
+ *    Return a comparison type given the compare opcode.
+ *
+ * \parm op
+ *    The compare opcode.
+ *
+ * \return
+ *    The compareison type.
+ */
+TR_ComparisonTypes
+OMR::ILOpCode::getCompareType(TR::ILOpCodes op)
+   {
+   if (isStrictlyLessThanCmp(op))
+      return TR_cmpLT;
+   else if (isStrictlyGreaterThanCmp(op))
+      return TR_cmpGT;
+   else if (isLessCmp(op))
+      return TR_cmpLE;
+   else if (isGreaterCmp(op))
+      return TR_cmpGE;
+   else if (isEqualCmp(op))
+      return TR_cmpEQ;
+   else
+      return TR_cmpNE;
+   }

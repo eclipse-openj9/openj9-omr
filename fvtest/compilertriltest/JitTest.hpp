@@ -49,4 +49,66 @@ class JitTest : public ::testing::Test
       }
    };
 
+/**
+ * @brief Returns the Cartesian product of two standard-conforming containers
+ * @tparam L is the type of the first input standard-conforming container
+ * @tparam R is the type of the second input standard-conforming container
+ * @param l is the first input standard-conforming container
+ * @param r is the second input standard-conforming container
+ * @return the Cartesian product of the input containers as a std::vector of std::tuple
+ *
+ * Example:
+ *
+ *    combine(std::vector<int>{1, 2, 3}, std::list<float>{4.0, 5.0, 6.0})
+ */
+template <typename L, typename R>
+std::vector<std::tuple<typename L::value_type, typename R::value_type>> combine(L l, R r)
+   {
+   auto v = std::vector<std::tuple<typename L::value_type, typename R::value_type>>{};
+   v.reserve((l.end() - l.begin())*(r.end() - r.begin()));
+   for (auto i = l.begin(); i != l.end(); ++i)
+      for (auto j = r.begin(); j != r.end(); ++j)
+         v.push_back(std::make_tuple(*i, *j));
+   return v;
+   }
+
+/**
+ * @brief Returns the Cartesian product of two initializer lists
+ * @tparam L is the type of elements in the first initializer list
+ * @tparam R is the type of elements in the second initializer list
+ * @param l is the first initializer list
+ * @param r is the second initializer list
+ * @return the Cartesian product of the two input lists
+ *
+ * Because of the rules surrounding type-deduction of initializer lists, the
+ * types of the elements of the two lists must be explicitly specified when
+ * calling this function.
+ *
+ * Example:
+ *
+ *    combine<int, float>({1, 2, 3}, {4.0, 5.0, 6.0})
+ *
+ */
+template <typename L, typename R>
+std::vector<std::tuple<L, R>> combine(std::initializer_list<L> l, std::initializer_list<R> r)
+   {
+   auto v = std::vector<std::tuple<L, R>>{};
+   v.reserve((l.end() - l.begin())*(r.end() - r.begin()));
+   for (auto i = l.begin(); i != l.end(); ++i)
+      for (auto j = r.begin(); j != r.end(); ++j)
+         v.push_back(std::make_tuple(*i, *j));
+   return v;
+   }
+
+/**
+ * @brief Given a vector and a predicate, returns a copy of the vector with the
+ *    elements matching the predicate removed
+ */
+template <typename T, typename Predicate>
+std::vector<T> filter(std::vector<T> range, Predicate pred) {
+    auto end = std::remove_if(std::begin(range), std::end(range), pred);
+    range.erase(end, std::end(range));
+    return range;
+}
+
 #endif // JITTEST_HPP

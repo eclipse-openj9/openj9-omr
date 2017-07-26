@@ -19,10 +19,10 @@
 #include "OpCodeTest.hpp"
 #include "jitbuilder_compiler.hpp"
 
-class Int32Arithmetic : public BinaryOpTest<int32_t> {};
+class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
 TEST_P(Int32Arithmetic, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -39,7 +39,7 @@ TEST_P(Int32Arithmetic, UsingConst) {
 }
 
 TEST_P(Int32Arithmetic, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -54,6 +54,8 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
+
+using namespace TRTest;
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(combine(const_values<int32_t>(), const_values<int32_t>())),

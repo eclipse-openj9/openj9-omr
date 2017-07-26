@@ -27,6 +27,9 @@
 
 extern "C" bool initializeJitWithOptions(char *options);
 
+namespace TRTest
+{
+
 /**
  * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
  *
@@ -113,5 +116,7 @@ std::vector<T> filter(std::vector<T> range, Predicate pred) {
     range.erase(end, std::end(range));
     return range;
 }
+
+} // namespace CompTest
 
 #endif // JITTEST_HPP

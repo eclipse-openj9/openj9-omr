@@ -22,7 +22,7 @@
 template <typename T> static
 std::vector<std::tuple<T, int32_t>> test_input_values()
    {
-   return combine(const_values<T>(), std::vector<int32_t>{0, 1, 5, 8, 25, 8*sizeof(T) - 1, 8*sizeof(T)});
+   return TRTest::combine(TRTest::const_values<T>(), std::vector<int32_t>{0, 1, 5, 8, 25, 8*sizeof(T) - 1, 8*sizeof(T)});
    }
 
 template <typename T> static T rotate(T a, int32_t b)
@@ -54,12 +54,12 @@ template <typename T> static T rotate(T a, int32_t b)
    }
 
 template <typename T>
-class ShiftAndRotateArithmetic : public OpCodeTest<T, T, int32_t> {};
+class ShiftAndRotateArithmetic : public TRTest::OpCodeTest<T, T, int32_t> {};
 
 class Int32ShiftAndRotate : public ShiftAndRotateArithmetic<int32_t> {};
 
 TEST_P(Int32ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -76,7 +76,7 @@ TEST_P(Int32ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int32ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -101,7 +101,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int32ShiftAndRotate, ::testing::Comb
 class Int64ShiftAndRotate : public ShiftAndRotateArithmetic<int64_t> {};
 
 TEST_P(Int64ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (l%s (lconst %ld) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -118,7 +118,7 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int64ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int32] (block (lreturn (l%s (lload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -143,7 +143,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int64ShiftAndRotate, ::testing::Comb
 class Int8ShiftAndRotate : public ShiftAndRotateArithmetic<int8_t> {};
 
 TEST_P(Int8ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int8 (block (ireturn (b%s (bconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -160,7 +160,7 @@ TEST_P(Int8ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8, Int32] (block (ireturn (b%s (bload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -184,7 +184,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int8ShiftAndRotate, ::testing::Combi
 class Int16ShiftAndRotate : public ShiftAndRotateArithmetic<int16_t> {};
 
 TEST_P(Int16ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int16 (block (ireturn (s%s (sconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -201,7 +201,7 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16, Int32] (block (ireturn (s%s (sload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -225,7 +225,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int16ShiftAndRotate, ::testing::Comb
 class UInt32ShiftAndRotate : public ShiftAndRotateArithmetic<uint32_t> {};
 
 TEST_P(UInt32ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -242,7 +242,7 @@ TEST_P(UInt32ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt32ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -265,7 +265,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt32ShiftAndRotate, ::testing::Com
 class UInt64ShiftAndRotate : public ShiftAndRotateArithmetic<uint64_t> {};
 
 TEST_P(UInt64ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (l%s (lconst %ld) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -282,7 +282,7 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt64ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int32] (block (lreturn (l%s (lload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -305,7 +305,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt64ShiftAndRotate, ::testing::Com
 class UInt8ShiftAndRotate : public ShiftAndRotateArithmetic<uint8_t> {};
 
 TEST_P(UInt8ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int8 (block (ireturn (b%s (bconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -322,7 +322,7 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8, Int32] (block (ireturn (b%s (bload parm=0) (iload parm=1)) )))", param.opcode.c_str());
@@ -345,7 +345,7 @@ INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt8ShiftAndRotate, ::testing::Comb
 class UInt16ShiftAndRotate : public ShiftAndRotateArithmetic<uint16_t> {};
 
 TEST_P(UInt16ShiftAndRotate, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int16 (block (ireturn (s%s (sconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
@@ -362,7 +362,7 @@ TEST_P(UInt16ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int16 args=[Int16, Int32] (block (ireturn (s%s (sload parm=0) (iload parm=1)) )))", param.opcode.c_str());

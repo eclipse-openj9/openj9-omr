@@ -28,6 +28,9 @@
 #include <iterator>
 #include <limits>
 
+namespace TRTest
+{
+
 /**
  * @brief A family of functions returning constants of the specified type
  */
@@ -103,5 +106,7 @@ class OpCodeTest : public JitTest, public ::testing::WithParamInterface<ParamTyp
 
 template <typename T>
 class BinaryOpTest : public JitTest, public ::testing::WithParamInterface<BinaryOpParamType<T,T,T>> {};
+
+} // namespace CompTest
 
 #endif // OPCODETEST_HPP

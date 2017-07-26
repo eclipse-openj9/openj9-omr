@@ -25,6 +25,8 @@
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
 
+extern "C" bool initializeJitWithOptions(char *options);
+
 /**
  * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
  *
@@ -40,7 +42,8 @@ class JitTest : public ::testing::Test
 
    static void SetUpTestCase()
       {
-      ASSERT_TRUE(initializeJit()) << "Failed to initialize the JIT.";
+      auto initSuccess = initializeJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useIlValidator,paranoidoptcheck");
+      ASSERT_TRUE(initSuccess) << "Failed to initialize the JIT.";
       }
 
    static void TearDownTestCase()

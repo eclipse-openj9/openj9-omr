@@ -39,7 +39,7 @@ template <typename T> T positive_value() { return static_cast<T>(3); }
 template <typename T> T negative_value() { return static_cast<T>(-2); }
 
 /**
- * @brief A convenience function returning possible test inputs of the specified type
+ * @brief Convenience function returning possible test inputs of the specified type
  */
 template <typename T>
 std::vector<T> const_values()
@@ -49,6 +49,15 @@ std::vector<T> const_values()
                           negative_value<T>(),
                           std::numeric_limits<T>::min(),
                           std::numeric_limits<T>::max() };
+   }
+
+/**
+ * @brief Convenience function returning pairs of possible test inputs of the specified types
+ */
+template <typename L, typename R>
+std::vector<std::tuple<L,R>> const_value_pairs()
+   {
+   return TRTest::combine(const_values<L>(), const_values<R>());
    }
 
 /**

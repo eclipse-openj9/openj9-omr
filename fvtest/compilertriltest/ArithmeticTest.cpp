@@ -55,10 +55,8 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
-using namespace TRTest;
-
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
-    ::testing::ValuesIn(combine(const_values<int32_t>(), const_values<int32_t>())),
+    ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
         std::make_tuple("add", [](int32_t l, int32_t r){return l+r;}),
         std::make_tuple("sub", [](int32_t l, int32_t r){return l-r;}),
@@ -66,8 +64,8 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
-        filter(combine(const_values<int32_t>(), const_values<int32_t>()),
-               [](std::tuple<int32_t, int32_t> a){ return std::get<1>(a) == 0;} )),
+        TRTest::filter(TRTest::const_value_pairs<int32_t, int32_t>(),
+                       [](std::tuple<int32_t, int32_t> a){ return std::get<1>(a) == 0;} )),
     ::testing::Values(
         std::make_tuple("div", [](int32_t l, int32_t r){return l/r;}),
         std::make_tuple("rem", [](int32_t l, int32_t r){return l%r;}) )));

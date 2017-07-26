@@ -34,9 +34,9 @@ namespace TRTest
 /**
  * @brief A family of functions returning constants of the specified type
  */
-template <typename T> T zero_value() { return static_cast<T>(0); }
-template <typename T> T positive_value() { return static_cast<T>(3); }
-template <typename T> T negative_value() { return static_cast<T>(-2); }
+template <typename T> constexpr T zero_value() { return static_cast<T>(0); }
+template <typename T> constexpr T positive_value() { return static_cast<T>(3); }
+template <typename T> constexpr T negative_value() { return static_cast<T>(-2); }
 
 /**
  * @brief Convenience function returning possible test inputs of the specified type

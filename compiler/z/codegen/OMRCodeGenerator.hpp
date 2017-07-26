@@ -1149,12 +1149,7 @@ public:
       }
 
 
-   /**
-    * _processorInfo contains the targetted hardware level for the compilation.
-    * This may be different than the real hardware the JVM is currently running
-    * on, due to user specified options.
-    */
-   TR_S390ProcessorInfo            _processorInfo;
+
    TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    RegisterAssignmentDirection     assignmentDirection;
    int32_t                        _extentOfLitPool;  // excludes snippets
@@ -1166,6 +1161,12 @@ protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;
    TR::list<TR::S390ConstantDataSnippet*>  _snippetDataList;
 
+   /**
+    * _processorInfo contains the targeted hardware level for the compilation.
+    * This may be different than the real hardware the JIT compiler is currently running
+    * on, due to user specified options.
+    */
+   TR_S390ProcessorInfo            _processorInfo;
 
 private:
    TR::list<TR::S390WritableDataSnippet*>  _writableList;

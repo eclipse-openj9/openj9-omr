@@ -709,7 +709,7 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
             node->setSymbolReference(autoForField);
             TR::Node *newFirstChild = 0;
             int32_t newFirstChildNum = -1;
-            if ( opCode.isIndirect() )
+            if (opCode.isIndirect())
                {
                if (opCode.isStore())
                   {
@@ -719,13 +719,16 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
                   newFirstChildNum = 1;
                   }
                else
-                  TR::Node::recreate(node, comp()->il.opCodeForDirectLoad(nodeDataType));
-
-               int32_t j;
-               for (j=0;j<node->getNumChildren();j++)
                   {
-                  if (j != newFirstChildNum)
-                     node->getChild(j)->recursivelyDecReferenceCount();
+                  TR::Node::recreate(node, comp()->il.opCodeForDirectLoad(nodeDataType));
+                  }
+
+               for (int32_t i = 0; i < node->getNumChildren(); i++)
+                  {
+                  if (i != newFirstChildNum)
+                     {
+                     node->getChild(i)->recursivelyDecReferenceCount();
+                     }
                   }
 
                if (newFirstChild)
@@ -734,22 +737,31 @@ void TR_FieldPrivatizer::privatizeFields(TR::Node *node, bool postDominatesEntry
                   node->setNumChildren(1);
                   }
                else
+                  {
                   node->setNumChildren(0);
+                  }
                }
             else
                {
-               if ( opCode.isStore() )
+               if (opCode.isStore())
                   {
                   _needToStoreBack->set(autoForField->getReferenceNumber());
+                  if (node->getOpCodeValue() == TR::wrtbar)
+                     {
+                     node->getChild(1)->recursivelyDecReferenceCount();
+                     node->setNumChildren(1);
+                     TR::Node::recreate(node, comp()->il.opCodeForDirectStore(nodeDataType));
+                     }
                   }
                }
             }
          }
       }
 
-   int32_t i;
-   for (i=0;i<node->getNumChildren();i++)
+   for (int32_t i = 0; i < node->getNumChildren(); i++)
+      {
       privatizeFields(node->getChild(i), postDominatesEntry, visitCount);
+      }
    }
 
 

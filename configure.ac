@@ -516,7 +516,7 @@ AS_IF([[test "x$enable_DDR" = "xyes"] && [test "$cross_compiling" != "yes"] && [
 )
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_IDLE_HEAP_MANAGER])
-OMRCFG_DEFINE_FLAG_OFF([OMR_VALGRIND_MEMCHECK])
+OMRCFG_DEFINE_FLAG_OFF([OMR_VALGRIND_MEMCHECK], [], [Integrate valgrind memcheck API. (Default: no)])
 
 ###
 ### Variable Substitution

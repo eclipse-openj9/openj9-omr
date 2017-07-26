@@ -107,6 +107,8 @@ int32_t TR_LoopStrider::perform()
 
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
+   _hoistedAutos = new (stackMemoryRegion) SymRefPairMap((SymRefPairMapComparator()), SymRefPairMapAllocator(stackMemoryRegion));
+   _reassociatedAutos = new (stackMemoryRegion) SymRefMap((SymRefMapComparator()), SymRefMapAllocator(stackMemoryRegion)); 
    _count = 0;
    _newTempsCreated = false;
    _newNonAddressTempsCreated = false;
@@ -293,10 +295,8 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
          i++;
          }
 
-      _reassociatedAutos = (TR::SymbolReference **)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::SymbolReference *));
-      memset(_reassociatedAutos, 0, symRefCount*sizeof(TR::SymbolReference *));
-      _hoistedAutos = (SymRefPair **)trMemory()->allocateStackMemory(symRefCount*sizeof(SymRefPair *));
-      memset(_hoistedAutos, 0, symRefCount*sizeof(SymRefPair *));
+      _reassociatedAutos->clear();
+      _hoistedAutos->clear();
       _reassociatedNodes.deleteAll();
       // compute the number of internal pointer temps or pinning array temps already initialized in
       // the loop pre-header.
@@ -895,7 +895,9 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
       int32_t j;
       for (j=0;j<symRefCount;j++)
          {
-         TR::SymbolReference *reassociatedAuto = _reassociatedAutos[j];
+         auto reassociatedAutoSearchResult = _reassociatedAutos->find(j);
+         TR::SymbolReference *reassociatedAuto = reassociatedAutoSearchResult != _reassociatedAutos->end() ?
+                                                    reassociatedAutoSearchResult->second : NULL;
          if (reassociatedAuto)
             {
             //dumpOptDetails(comp(), "j = %d reassociated auto = %d (%p)\n", j,
@@ -957,7 +959,8 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                newInductionCandidate->addAllBlocksInStructure(loopStructure, comp(), trace()?"strider auto":NULL);
             }
 
-         SymRefPair *symRefPair = _hoistedAutos[j];
+         auto symRefPairSearchResult = _hoistedAutos->find(j);
+         SymRefPair *symRefPair = symRefPairSearchResult != _hoistedAutos->end() ? symRefPairSearchResult->second : NULL;
 
          if (symRefPair)
             {
@@ -3422,7 +3425,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
            performTransformation(comp(), "%s Replacing invariant internal pointer %p based on symRef #%d\n", OPT_DETAILS, node, internalPointerSymbol))
          {
          TR::SymbolReference *internalPointerSymRef = NULL;
-         SymRefPair *symRefPair = _hoistedAutos[originalInternalPointerSymbol];
+         auto symRefPairSearchResult = _hoistedAutos->find(originalInternalPointerSymbol);
+         SymRefPair *symRefPair = symRefPairSearchResult != _hoistedAutos->end() ? symRefPairSearchResult->second : NULL;
          while (symRefPair)
             {
             bool matched = false;
@@ -3515,8 +3519,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                }
 
             pair->_derivedSymRef = newSymbolReference;
-            pair->_next = _hoistedAutos[originalInternalPointerSymbol];
-            _hoistedAutos[originalInternalPointerSymbol] = pair;
+            pair->_next = (*_hoistedAutos)[originalInternalPointerSymbol];
+            (*_hoistedAutos)[originalInternalPointerSymbol] = pair;
             internalPointerSymRef = newSymbolReference;
             }
 
@@ -3557,7 +3561,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                   _numInternalPointerOrPinningArrayTempsInitialized < MAX_INTERNAL_POINTER_AUTOS_INITIALIZED) &&
               performTransformation(comp(), "%s Replacing reassociated internal pointer based on symRef #%d\n", OPT_DETAILS, internalPointerSymbol))
             {
-            if (!_reassociatedAutos[originalInternalPointerSymbol])
+            if (_reassociatedAutos->find(originalInternalPointerSymbol) == _reassociatedAutos->end())
                {
                TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), TR::Address, isInternalPointer);
                if (isInternalPointer &&
@@ -3598,11 +3602,11 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                   else
                      symbol->castToInternalPointerAutoSymbol()->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
                   }
-               _reassociatedAutos[originalInternalPointerSymbol] = newSymbolReference;
+               (*_reassociatedAutos)[originalInternalPointerSymbol] = newSymbolReference;
                dumpOptDetails(comp(), "reass num %d newsymref %d\n", internalPointerSymbol, newSymbolReference->getReferenceNumber());
                }
 
-            TR::SymbolReference *internalPointerSymRef = _reassociatedAutos[originalInternalPointerSymbol];
+            TR::SymbolReference *internalPointerSymRef = (*_reassociatedAutos)[originalInternalPointerSymbol];
             originalNode->getFirstChild()->recursivelyDecReferenceCount();
             //node->recursivelyDecReferenceCount();
             node->decReferenceCount();
@@ -4271,10 +4275,8 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
       _storeTreesList = NULL;
       //_loadUsedInNewLoopIncrementList = NULL;
 
-      _reassociatedAutos = (TR::SymbolReference **)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::SymbolReference *));
-      memset(_reassociatedAutos, 0, symRefCount*sizeof(TR::SymbolReference *));
-      _hoistedAutos = (SymRefPair **)trMemory()->allocateStackMemory(symRefCount*sizeof(SymRefPair *));
-      memset(_hoistedAutos, 0, symRefCount*sizeof(SymRefPair *));
+      _reassociatedAutos->clear();
+      _hoistedAutos->clear();
 
       _numberOfLinearExprs = 0;
       _autosAccessed = NULL;

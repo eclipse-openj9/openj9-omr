@@ -1775,8 +1775,8 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       estimate += boundary - 1;
 
    if (self()->comp()->getOption(TR_TraceVFPSubstitution))
-      diagnostic("\n<instructions\n"
-                   "\ttitle=\"VFP Substitution\">");
+      traceMsg(self()->comp(), "\n<instructions\n"
+                                "\ttitle=\"VFP Substitution\">");
 
    // Estimate instruction length of prologue and remainder of method,
    // determine adjustments if using esp-relative addressing, and generate
@@ -1875,7 +1875,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    if (self()->comp()->getOption(TR_TraceVFPSubstitution))
-      diagnostic("\n</instructions>\n");
+      traceMsg(self()->comp(), "\n</instructions>\n");
 
    estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
    // When using copyBinaryToBuffer() to copy the encoding of an instruction we

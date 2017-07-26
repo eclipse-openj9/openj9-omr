@@ -266,6 +266,12 @@ add_library(omrgc
 )
 add_dependencies(omrgc omrgc_hookgen)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    target_compile_options(omrgc PRIVATE -fno-strict-aliasing)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "XL|VisualAge")
+    target_compile_options(omrgc PRIVATE -qalias=noansi)
+endif()
+
 target_include_directories(omrgc
 	PUBLIC
 		.

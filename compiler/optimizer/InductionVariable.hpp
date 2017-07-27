@@ -308,7 +308,11 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    List<TR::Node> _reassociatedNodes;
 
-   List<TR_StoreTreeInfo> **_storeTreesList;
+   typedef TR::typed_allocator<std::pair<uint32_t, List<TR_StoreTreeInfo> *>, TR::Region&> StoreTreeMapAllocator;
+   typedef std::less<uint32_t> StoreTreeMapComparator;
+   typedef std::map<uint32_t, List<TR_StoreTreeInfo>*, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
+   StoreTreeMap  _storeTreesSingleton;
+   StoreTreeMap *_storeTreesList;
    //List<TR::Node> **_loadUsedInNewLoopIncrementList;
 
    int32_t _numSymRefs;

@@ -133,6 +133,10 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    })
    }
 
+MethodBuilder::MethodBuilder(const MethodBuilder &src) = default;
+
+MethodBuilder::~MethodBuilder() { }
+
 TR::MethodBuilder *
 MethodBuilder::asMethodBuilder()
    {

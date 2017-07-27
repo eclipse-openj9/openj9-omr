@@ -50,7 +50,8 @@ class MethodBuilder : public TR::IlBuilder
    TR_ALLOC(TR_Memory::IlGenerator)
 
    MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState = NULL);
-   virtual ~MethodBuilder() { }
+   MethodBuilder(const MethodBuilder &src);
+   virtual ~MethodBuilder();
 
    virtual void setupForBuildIL();
 

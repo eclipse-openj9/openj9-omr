@@ -167,7 +167,6 @@ class MethodBuilder : public TR::IlBuilder
    int32_t GetNextBytecodeFromWorklist();
    
    protected:
-   void initMaps();
    virtual uint32_t countBlocks();
    virtual bool connectTrees();
 
@@ -177,6 +176,10 @@ class MethodBuilder : public TR::IlBuilder
    const char                * _methodName;
    TR::IlType                * _returnType;
    int32_t                     _numParameters;
+
+   // This map should only be accessed inside a compilation via lookupSymbol
+   TR_HashTabString          * _symbols;
+
    TR_HashTabString          * _parameterSlot;
    TR_HashTabString          * _symbolTypes;
    TR_HashTabInt             * _symbolNameFromSlot;
@@ -191,10 +194,7 @@ class MethodBuilder : public TR::IlBuilder
    TR::IlType                * _cachedParameterTypesArray[10];
    char                        _cachedSignatureArray[100];
 
-   // This map should only be accessed inside a compilation via lookupSymbol
-   TR_HashTabString          * _symbols;
    bool                        _newSymbolsAreTemps;
-
    int32_t                     _nextValueID;
 
    bool                        _useBytecodeBuilders;

@@ -468,11 +468,10 @@ protected:
 TypeDictionary::TypeDictionary() :
    _segmentProvider( static_cast<TR::SegmentProvider *>(new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(1 << 16, TR::Compiler->rawAllocator)) ),
    _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
-   _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) )
+   _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) ),
+   _structsByName(  new (PERSISTENT_NEW) TR_HashTabString(trMemory()) ),
+   _unionsByName( new (PERSISTENT_NEW) TR_HashTabString(trMemory()) )
    {
-   _structsByName = new (PERSISTENT_NEW) TR_HashTabString(trMemory());
-   _unionsByName = new (PERSISTENT_NEW) TR_HashTabString(trMemory());
-
    // primitive types
    NoType       = _primitiveType[TR::NoType]                = new (PERSISTENT_NEW) OMR::PrimitiveType("NoType", TR::NoType);
    Int8         = _primitiveType[TR::Int8]                  = new (PERSISTENT_NEW) OMR::PrimitiveType("Int8", TR::Int8);

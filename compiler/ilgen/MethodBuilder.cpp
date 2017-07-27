@@ -83,10 +83,16 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _methodName("NoName"),
    _returnType(NoType),
    _numParameters(0),
+   _symbols(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _parameterSlot(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _symbolTypes(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _symbolNameFromSlot(new (PERSISTENT_NEW) TR_HashTabInt(typeDictionary()->trMemory())),
+   _symbolIsArray(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _memoryLocations(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _functions(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
    _cachedParameterTypes(0),
    _cachedSignature(0),
    _definingFile(""),
-   _symbols(0),
    _newSymbolsAreTemps(false),
    _nextValueID(0),
    _useBytecodeBuilders(false),
@@ -125,26 +131,12 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
       strcpy(_replayName, "this");
       _haveReplayName = true;
    })
-
-   initMaps();
    }
 
 TR::MethodBuilder *
 MethodBuilder::asMethodBuilder()
    {
    return static_cast<TR::MethodBuilder *>(this);
-   }
-
-void
-MethodBuilder::initMaps()
-   {
-   _parameterSlot = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
-   _symbolTypes = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
-   _symbolNameFromSlot = new (PERSISTENT_NEW) TR_HashTabInt(typeDictionary()->trMemory());
-   _symbolIsArray = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
-   _memoryLocations = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
-   _functions = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
-   _symbols = new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory());
    }
 
 void

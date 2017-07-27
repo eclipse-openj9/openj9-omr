@@ -28,42 +28,10 @@
 void
 GCTestEnvironment::initParams()
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(portLib);
 	for (int i = 1; i < _argc; i++) {
-		if (strncmp(_argv[i], "-configListFile=", strlen("-configListFile=")) == 0) {
-			const char *configListFile = &_argv[i][strlen("-configListFile=")];
-			intptr_t fileDescriptor = omrfile_open(configListFile, EsOpenRead, 0444);
-			if (-1 == fileDescriptor) {
-				FAIL() << "Failed to open file " << configListFile;
-			}
-			char readLine[2048];
-			while (readLine == omrfile_read_text(fileDescriptor, readLine, 2048)) {
-				if ('#' == readLine[0]) {
-					continue;
-				}
-				const char *extension = ".xml";
-				char *newLine = strstr(readLine, extension);
-				if (NULL != newLine) {
-					newLine += strlen(extension);
-					*newLine = '\0';
-				} else {
-					FAIL() << "The file provided in option -configListFile= must contain a list of configuration files with extension " << extension;
-				}
-				char *line = (char *)omrmem_allocate_memory(2048, OMRMEM_CATEGORY_MM);
-				if (NULL == line) {
-					FAIL() << "Failed to allocate native memory.";
-				}
-				strcpy(line, readLine);
-				gcTestEnv->log(LEVEL_VERBOSE, "Configuration file: %s\n", line);
-				params.push_back(line);
-			}
-			omrfile_close(fileDescriptor);
-		} else if (0 == strcmp(_argv[i], "-keepVerboseLog")) {
+		if (0 == strcmp(_argv[i], "-keepVerboseLog")) {
 			keepLog = true;
 		}
-	}
-	if (params.empty()) {
-		FAIL() << "Please specify a file containing a list of configuration files using option -configListFile=";
 	}
 }
 

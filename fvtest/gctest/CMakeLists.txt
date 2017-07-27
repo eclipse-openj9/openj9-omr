@@ -53,5 +53,5 @@ endif()
 
 
 add_test(NAME gctest
-	COMMAND omrgctest "-configListFile=${omr_SOURCE_DIR}/fvtest/gctest/configuration/fvConfigListFile.txt"
+	COMMAND omrgctest "--gtest_filter="gcFunctionalTest*""
 	WORKING_DIRECTORY "${omr_SOURCE_DIR}")

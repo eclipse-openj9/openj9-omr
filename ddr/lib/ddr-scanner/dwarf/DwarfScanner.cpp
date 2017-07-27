@@ -704,11 +704,9 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, Names
 			isSubUDT = (isSubUDT) || (string::npos != newType->getFullName().find("::"));
 			rc = newType->acceptVisitor(DwarfVisitor(this, die));
 			DEBUGPRINTF("Done scanning child info");
-		} else {
-			rc = DDR_RC_OK;
 		}
 
-		if (!isSubUDT) {
+		if (!isSubUDT && (NULL == newType->getNamespace())) {
 			if (isNewType) {
 				_ir->_types.push_back(newType);
 			}
@@ -999,11 +997,17 @@ DwarfScanner::scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die, bool alre
 					/* The child is a member field. */
 					string fieldName = "";
 					rc = getName(childDie, &fieldName);
-					DEBUGPRINTF("fieldName: %s", fieldName.c_str());
-					if (DDR_RC_OK != addClassField(childDie, (ClassType *)newClass, fieldName)) {
-						rc = DDR_RC_ERROR;
-						break;
+#if defined(AIXPPC) || defined(LINUXPPC)
+					if ("__vfp" != fieldName) {
+#endif /* defined(AIXPPC) || defined(LINUXPPC) */
+						DEBUGPRINTF("fieldName: %s", fieldName.c_str());
+						if (DDR_RC_OK != addClassField(childDie, (ClassType *)newClass, fieldName)) {
+							rc = DDR_RC_ERROR;
+							break;
+						}
+#if defined(AIXPPC) || defined(LINUXPPC)
 					}
+#endif /* defined(AIXPPC) || defined(LINUXPPC) */
 				}
 			}
 		} while (DDR_RC_OK == getNextSibling(&childDie));
@@ -1177,11 +1181,10 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *const ir)
 	Dwarf_Unsigned nextCUheader = 0;
 	Dwarf_Error error = NULL;
 
-	_typeOffsetMap.clear();
-
 	/* Go over each cu header. */
 	while (DDR_RC_OK == rc) {
 		Symbol_IR newIR;
+		_typeOffsetMap.clear();
 		_ir = &newIR;
 
 		int ret = dwarf_next_cu_header(_debug, &cuHeaderLength, &versionStamp, &abbrevOffset, &addressSize, &nextCUheader, &error);

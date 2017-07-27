@@ -290,7 +290,7 @@ MergeVisitor::visitType(ClassUDT *type) const
 	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
-	if (NULL == type->_superClass) {
+	if ((NULL == type->_superClass) && (NULL != other->_superClass)) {
 		type->_superClass = other->_superClass;
 		_merged->push_back(type);
 	}
@@ -341,16 +341,20 @@ Symbol_IR::mergeFields(vector<Field *> *source, vector<Field *> *other, Type *ty
 	for (vector<Field *>::iterator it = source->begin(); it != source->end(); ++it) {
 		fieldNames.insert((*it)->_name);
 	}
+	bool fieldsMerged = false;
 	for (vector<Field *>::iterator it = other->begin(); it != other->end();) {
 		/* Fields in the other list not in the source list are added. */
 		if (fieldNames.end() == fieldNames.find((*it)->_name)) {
 			source->push_back(*it);
-			merged->push_back(type);
 			fieldNames.insert((*it)->_name);
+			fieldsMerged = true;
 			it = other->erase(it);
 		} else {
 			++ it;
 		}
+	}
+	if (fieldsMerged) {
+		merged->push_back(type);
 	}
 }
 

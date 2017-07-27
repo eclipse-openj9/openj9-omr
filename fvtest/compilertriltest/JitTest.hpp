@@ -109,13 +109,13 @@ std::vector<std::tuple<L, R>> combine(std::initializer_list<L> l, std::initializ
    }
 
 /**
- * @brief Given a vector and a predicate, returns a copy of the vector with the
- *    elements matching the predicate removed
+ * @brief Given standard container and a predicate, returns a copy of the
+ *    container with the elements matching the predicate removed
  */
-template <typename T, typename Predicate>
-std::vector<T> filter(std::vector<T> range, Predicate pred) {
-    auto end = std::remove_if(std::begin(range), std::end(range), pred);
-    range.erase(end, std::end(range));
+template <typename C, typename Predicate>
+C filter(C range, Predicate pred) {
+    auto end = std::remove_if(range.begin(), range.end(), pred);
+    range.erase(end, range.end());
     return range;
 }
 

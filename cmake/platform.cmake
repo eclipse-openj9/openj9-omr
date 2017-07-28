@@ -26,6 +26,10 @@ message(STATUS "CMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 
+include(cmake/DetectSystemInformation.cmake)
+
+omr_detect_system_information()
+
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)
 	string( REGEX REPLACE
@@ -35,44 +39,6 @@ macro(omr_remove_option var opt)
 		"${${var}}"
 	)
 endmacro(omr_remove_option)
-
-# TODO: Support all system types known in OMR
-# TODO: Is there a better way to do system flags?
-
-if((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64") OR (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64"))
-	set(OMR_ARCH_X86 ON)
-	set(OMR_ENV_DATA64 ON)
-	set(OMR_TARGET_DATASIZE 64)
-elseif((CMAKE_SYSTEM_PROCESSOR STREQUAL "x86") OR (CMAKE_SYSTEM_PROCESSOR MATCHES "i[3-6]86"))
-	set(OMR_ARCH_X86 ON)
-	set(OMR_ENV_DATA32 ON)
-	set(OMR_TARGET_DATASIZE 32)
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
-	set(OMR_ARCH_ARM ON)
-	set(OMR_ENV_DATA32 ON)
-	set(OMR_TARGET_DATASIZE 32)
-elseif(CMAKE_SYSTEM_NAME MATCHES "OS390")
-	set(OMR_ARCH_S390 ON)
-	set(OMR_ENV_DATA32 ON)
-	set(OMR_TARGET_DATASIZE 32)
-	set(OMR_HOST_OS "zos")
-else()
-	message(FATAL_ERROR "Unknown processor: ${CMAKE_SYSTEM_PROCESSOR}")
-endif()
-
-#TODO: detect other Operating systems (aix, and zos)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	set(OMR_HOST_OS "linux")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(OMR_HOST_OS "osx")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(OMR_HOST_OS "win")
-elseif(OMR_HOST_OS STREQUAL "zos")
-	# we already set up OS stuff above
-else()
-	message(FATAL_ERROR "Unsupported OS: ${CMAKE_SYSTEM_NAME}")
-endif()
-
 
 if(OMR_HOST_OS STREQUAL "linux")
 	add_definitions(
@@ -88,7 +54,6 @@ endif()
 
 
 if(OMR_ARCH_X86)
-	set(OMR_ENV_LITTLE_ENDIAN ON CACHE BOOL "TODO: Document")
 	if(OMR_ENV_DATA64)
 		add_definitions(-DJ9HAMMER)
 	else()
@@ -97,7 +62,6 @@ if(OMR_ARCH_X86)
 endif()
 
 if(OMR_ARCH_ARM)
-	set(OMR_ENV_LITTLE_ENDIAN ON CACHE BOOL "todo: Document")
 	add_definitions(
 		-DJ9ARM
 		-DARMGNU
@@ -118,8 +82,6 @@ endif()
 add_library(omr_shared INTERFACE)
 
 if(OMR_HOST_OS STREQUAL "win")
-	#TODO: should probably check for MSVC
-	set(OMR_WINVER "0x501")
 
 	add_definitions(
 		-DWIN32
@@ -140,12 +102,10 @@ if(OMR_HOST_OS STREQUAL "win")
 			-DWIN64
 			-D_AMD64_=1
 		)
-		set(TARGET_MACHINE AMD64)
 	else()
 		add_definitions(
 			-D_X86_
 		)
-		set(TARGET_MACHINE i386)
 	endif()
 	set(opt_flags "/GS-")
 	# we want to disable C4091, and C4577

@@ -402,6 +402,7 @@ OperandStackTestMethod::verifyStack(const char *step, int32_t max, int32_t num, 
       if (verbose) cout << "\tResult " << step << ": _realStack[" << a << "] == " << val << ": ";
       REPORT2(_realStack[a] == val, "_realStack[a]", _realStack[a], "val", val);
       }
+   va_end(args);
 
    if (verbose) cout << "\tResult " << step << ": upper stack untouched: ";
    REPORT1(verifyUntouched(max), "max", max);

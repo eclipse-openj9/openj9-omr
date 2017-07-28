@@ -189,10 +189,10 @@ j9nls_get_variant(struct OMRPortLibrary *portLibrary)
 static void
 writeSyslog(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *format, va_list args)
 {
-	va_list argsCopy;
 	char localBuffer[256];
 	char *writeBuffer = NULL;
 	uintptr_t bufferSize = 0;
+	uintptr_t stringSize = 0;
 
 	BOOLEAN options_info = ((PPG_syslog_flags & J9NLS_INFO) == J9NLS_INFO);
 	BOOLEAN options_warn = ((PPG_syslog_flags & J9NLS_WARNING) == J9NLS_WARNING);
@@ -235,8 +235,7 @@ writeSyslog(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *for
 	}
 
 	/* What is size of buffer required ? str_vprintf(..,NULL,..) result includes the null terminator */
-	COPY_VA_LIST(argsCopy, args);
-	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, argsCopy);
+	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
 
 	/* use local buffer if possible, allocate a buffer from system memory if local buffer not large enough */
 	if (sizeof(localBuffer) >= bufferSize) {
@@ -246,17 +245,18 @@ writeSyslog(struct OMRPortLibrary *portLibrary, uintptr_t flags, const char *for
 	}
 
 	/* format and write out the buffer (truncate into local buffer as last resort) */
-	COPY_VA_LIST(argsCopy, args);
 	if (NULL != writeBuffer) {
-		portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, argsCopy);
+		stringSize = portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, args);
 		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, writeBuffer);
 		/* dispose of buffer if not on local */
 		if (writeBuffer != localBuffer) {
 			portLibrary->mem_free_memory(portLibrary, writeBuffer);
 		}
 	} else {
-		portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, argsCopy);
-		localBuffer[sizeof(localBuffer) - 1] = '\0';
+		stringSize = portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, args);
+		if (sizeof(localBuffer) == stringSize) {
+			localBuffer[stringSize - 1] = '\0';
+		}
 		portLibrary->syslog_write(portLibrary, effectiveSyslogFlag, localBuffer);
 		return;
 	}

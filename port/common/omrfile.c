@@ -607,36 +607,33 @@ EsTranslateOpenFlags(int32_t flags)
 void
 omrfile_vprintf(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *format, va_list args)
 {
-	va_list argsCopy;
 	char localBuffer[256];
 	char *writeBuffer = NULL;
 	uintptr_t bufferSize = 0;
+	uintptr_t stringSize = 0;
 
-	/* What is size of buffer required ? str_vprintf(..,NULL,..) result includes the null terminator */
-	COPY_VA_LIST(argsCopy, args);
-	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, argsCopy);
+	/* str_vprintf(.., NULL, ..) result is size of buffer required including the null terminator */
+	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
 
 	/* use local buffer if possible, allocate a buffer from system memory if local buffer not large enough */
-	if (sizeof(outputBuffer) >= bufferSize) {
+	if (sizeof(localBuffer) >= bufferSize) {
 		writeBuffer = localBuffer;
 	} else {
 		writeBuffer = portLibrary->mem_allocate_memory(portLibrary, bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	}
 
-	/* format and write out the buffer (truncate into local buffer as last resort) */
-	COPY_VA_LIST(argsCopy, args);
+	/* format and write out the buffer (truncate into local buffer as last resort) without null terminator */
 	if (NULL != writeBuffer) {
-		portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, argsCopy);
-		portLibrary->file_write_text(portLibrary, fd, writeBuffer, bufferSize);
+		stringSize = portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, args);
+		portLibrary->file_write_text(portLibrary, fd, writeBuffer, stringSize);
 		/* dispose of buffer if not on local */
 		if (writeBuffer != localBuffer) {
 			portLibrary->mem_free_memory(portLibrary, writeBuffer);
 		}
 	} else {
 		portLibrary->nls_printf(portLibrary, J9NLS_ERROR, J9NLS_PORT_FILE_MEMORY_ALLOCATE_FAILURE);
-		portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, argsCopy);
-		localBuffer[sizeof(localBuffer) - 1] = '\0';
-		portLibrary->file_write_text(portLibrary, fd, localBuffer, sizeof(localBuffer));
+		stringSize = portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, args);
+		portLibrary->file_write_text(portLibrary, fd, localBuffer, stringSize);
 	}
 }
 /**

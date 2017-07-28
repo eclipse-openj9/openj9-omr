@@ -36,7 +36,7 @@ int main()
    assert(jit_initialized);
 
    std::cout << "Step 2: create TR::TypeDictionary instance\n";
-   auto d = TR::TypeDictionary{};
+   TR::TypeDictionary d;
 
    std::cout << "Step 3: test signed integral types\n";
    assert(TR::Int8 == d.toIlType<int8_t>()->getPrimitiveType());

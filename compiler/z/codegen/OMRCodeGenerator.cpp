@@ -11416,14 +11416,6 @@ bool TR_S390Peephole::forwardBranchTarget()
       }
    return false;
    }
-bool
-OMR::Z::CodeGenerator::canOptimizeEdit(uint8_t *parm, int32_t length)
-   {
-   bool leadingSigs = false, trailingStr = false;
-   uint8_t fill = 0;
-   int32_t numDigits = 0, numSigs = 0, sigOff = 0, lastDigit = 0, digitsAfterSig = 0;
-   return self()->parseEditParm(parm, length, leadingSigs, trailingStr, fill, numDigits, numSigs, sigOff, lastDigit, digitsAfterSig);
-   }
 
 bool
 OMR::Z::CodeGenerator::parseEditParm(uint8_t *parm,

@@ -1131,7 +1131,6 @@ public:
 
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
 
-   bool canOptimizeEdit(uint8_t *parm, int32_t length);
    bool parseEditParm(uint8_t *parm,
                       int32_t length,
                       bool &leadingSigs,

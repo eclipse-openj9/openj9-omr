@@ -21,7 +21,7 @@
 
 #include <string>
 
-class IllformedTrees : public JitTest, public ::testing::WithParamInterface<std::string> {};
+class IllformedTrees : public TRTest::JitTest, public ::testing::WithParamInterface<std::string> {};
 
 TEST_P(IllformedTrees, FailCompilation) {
     auto inputTrees = GetParam();
@@ -35,7 +35,7 @@ TEST_P(IllformedTrees, FailCompilation) {
             << "Compilation did not fail due to ill-formed input trees";
 }
 
-INSTANTIATE_TEST_CASE_P(TreeVerifierTest, IllformedTrees, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(TreeVerifierDeathTest, IllformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (iadd (iconst 1) (sconst 3)))))",
     "(method return=Int32 (block (ireturn (sadd (iconst 1) (iconst 3)))))",
     "(method return=Address (block (areturn (aiadd (aconst 4) (lconst 1)))))",
@@ -51,7 +51,7 @@ INSTANTIATE_TEST_CASE_P(TreeVerifierTest, IllformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (iadd (GlRegDeps) (iconst 1) (iconst 3)))))"
     ));
 
-class WellformedTrees : public JitTest, public ::testing::WithParamInterface<std::string> {};
+class WellformedTrees : public TRTest::JitTest, public ::testing::WithParamInterface<std::string> {};
 
 TEST_P(WellformedTrees, CompileOnly) {
     auto inputTrees = GetParam();

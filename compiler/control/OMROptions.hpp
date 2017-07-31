@@ -286,7 +286,7 @@ enum TR_CompilationOptions
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
    TR_DisableZ14                          = 0x00000200 + 6,
-   // Available                           = 0x00000400 + 6,
+   TR_DisableLoopTransfer                 = 0x00000400 + 6, // disables the loop transfer part of loop versioner
    TR_EnableRangeSplittingGRA             = 0x00000800 + 6,
    TR_ForceUsePreexistence                = 0x00001000 + 6,
    TR_TLHPrefetch                         = 0x00002000 + 6,

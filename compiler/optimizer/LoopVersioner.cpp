@@ -185,9 +185,14 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
    TR::Block *entryBlock = naturalLoop->getEntryBlock();
 
    if (entryBlock->isCold())
+      {
+      if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false for cold block\n");
       return false;
+      }
 
-   if (comp()->getMethodHotness() <= warm)
+   // if aggressive loop versioner flag is set then run at any optlevel, otherwise only at warm or less
+   bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+   if (aggressive || comp()->getMethodHotness() <= warm)
       {
       if (naturalLoop->getParent())
          {
@@ -203,7 +208,10 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
                int32_t unimportantLoopCountThreshold = unimportantLoopCountStr ? atoi(unimportantLoopCountStr) : 2;
 
                if ((unimportantLoopCountThreshold*loopInvariantBlock->getFrequency()) > entryBlock->getFrequency()) // loop does not even run twice
-                   return false;
+                  {
+                  if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on LoopCountThreshold\n");
+                  return false;
+                  }
                }
             }
          }
@@ -226,12 +234,15 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
          }
 
       if (trace()) traceMsg(comp(), "lvBlockFreqCutoff=%d\n", lvBlockFreqCutoff);
-         
 
       if (entryBlock->getFrequency() < lvBlockFreqCutoff)
+         {
+         if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on lvBlockFreqCutoff\n");
          return false;
+         }
       }
 
+   if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning true\n");
    return true;
    }
 

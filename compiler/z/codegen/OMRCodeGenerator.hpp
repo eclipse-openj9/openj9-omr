@@ -1131,18 +1131,6 @@ public:
 
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
 
-   bool canOptimizeEdit(uint8_t *parm, int32_t length);
-   bool parseEditParm(uint8_t *parm,
-                      int32_t length,
-                      bool &leadingSigs,
-                      bool &trailingStr,
-                      uint8_t &fill,
-                      int32_t &numDigits,
-                      int32_t &numSigs,
-                      int32_t &sigOff,
-                      int32_t &lastDigit,
-                      int32_t &digitsAfterSig);
-
    TR::Instruction *_ccInstruction;
    TR::Instruction* ccInstruction() { return _ccInstruction; }
    void setCCInstruction(TR::Instruction* cc) { _ccInstruction = cc; }

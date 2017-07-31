@@ -548,6 +548,10 @@ class TR_InductionVariableAnalysis : public TR::Optimization
    DeltaInfo ***_blockInfo;
    TR_Array<TR_BasicInductionVariable*> *_ivs;
    TR_Dominators *_dominators;
+
+   // BitVectors to memoize a check in analyzeExitEdges
+   TR_BitVector _seenInnerRegionExit;
+   TR_BitVector _isOSRInduceBlock;
    };
 
 /*

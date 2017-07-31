@@ -1,25 +1,25 @@
 # Find libelf
 # Will set:
-#  LIBELF_FOUND
-#  LIBELF_INCLUDE_DIRS
-#  LIBELF_LIBRARIES
-#  LIBELF_DEFINES
+#  LibElf_FOUND
+#  LibElf_INCLUDE_DIRS
+#  LibElf_LIBRARIES
+#  LibElf_DEFINES
 
 find_path(ELF_H_INCLUDE_DIR elf.h)
 
 find_path(LIBELF_H_INCLUDE_DIR libelf.h)
 
-set(LIBELF_INCLUDE_DIRS
+set(LibElf_INCLUDE_DIRS
 	${ELF_H_INCLUDE_DIR}
 	${LIBELF_H_INCLUDE_DIR}
 )
 
 find_library(LIBELF_LIBRARY elf)
 
-set(LIBELF_LIBRARIES
+set(LibElf_LIBRARIES
 	${LIBELF_LIBRARY}
 )
-set (LIBELF_DEFINES "")
+set (LibElf_DEFINES "")
 
 include(FindPackageHandleStandardArgs)
 

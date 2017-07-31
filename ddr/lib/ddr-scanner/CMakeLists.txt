@@ -12,20 +12,20 @@ target_link_libraries(omr_ddr_scanner
 		omr_ddr_ir
 )
 
-if(LIBDWARF_FOUND)
+if(LibDwarf_FOUND)
 	target_link_libraries(omr_ddr_scanner
 		PUBLIC
-			${LIBDWARF_LIBRARIES}
+			${LibDwarf_LIBRARIES}
 	)
 	target_include_directories(omr_ddr_scanner
 		PUBLIC
-			${LIBDWARF_INCLUDE_DIRS}
+			${LibDwarf_INCLUDE_DIRS}
 	)
 	target_compile_definitions(omr_ddr_scanner
 		PUBLIC
-			${LIBDWARF_DEFINITIONS}
+			${LibDwarf_DEFINITIONS}
 	)
-endif(LIBDWARF_FOUND)
+endif(LibDwarf_FOUND)
 
 if(OMR_HOST_OS STREQUAL "win")
 	find_package(DiaSDK REQUIRED)

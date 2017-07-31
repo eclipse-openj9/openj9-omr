@@ -1,4 +1,4 @@
-###############################################################################
+################################################################################
 #
 # (c) Copyright IBM Corp. 2017, 2017
 #
@@ -16,10 +16,10 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
-
-
+compiler_library(control 
+	${CMAKE_CURRENT_SOURCE_DIR}/OMROptions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OptimizationPlan.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRRecompilation.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/CompilationController.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/CompileMethod.cpp
+)

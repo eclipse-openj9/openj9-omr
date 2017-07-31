@@ -16,10 +16,15 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
 
-
+compiler_library(ilgen
+	${CMAKE_CURRENT_SOURCE_DIR}/IlGenRequest.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/IlBuilder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/IlValue.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/IlInjector.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/MethodBuilder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/BytecodeBuilder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/TypeDictionary.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/ThunkBuilder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/VirtualMachineOperandStack.cpp
+)

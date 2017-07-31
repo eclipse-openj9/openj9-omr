@@ -16,10 +16,21 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
 
 
+macro(create_jitbuilder_test target) 
+    add_executable(${target} ${ARGN})
+    target_link_libraries(${target} 
+        jitbuilder
+        ${CMAKE_DL_LIBS}) 
+    add_test(NAME ${target}_example_as_test COMMAND ${target}) 
+endmacro(create_jitbuilder_test) 
+
+
+create_jitbuilder_test(simple       src/Simple.cpp) 
+create_jitbuilder_test(conditionals src/Conditionals.cpp) 
+create_jitbuilder_test(dotproduct   src/DotProduct.cpp) 
+
+# Mandelbrot takes arguments for its test 
+# so will require we enhance create_jitbuilder_target. 
+#create_jitbuilder_target(mandelbrot   src/Mandelbrot.cpp) 

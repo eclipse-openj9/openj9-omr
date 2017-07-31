@@ -201,7 +201,8 @@ class TR_S390ProcessorInfo
       TR_z196                         = 6, ///< arch9
       TR_zEC12                        = 7, ///< arch10
       TR_z13                          = 8, ///< arch11
-      TR_zNext                        = 9, ///< arch12
+      TR_z14                          = 9, ///< arch12
+      TR_zNext                        = 10, ///< arch13
 
       TR_LatestArchitecture           = TR_zNext
       };
@@ -253,12 +254,15 @@ class TR_S390ProcessorInfo
    bool checkz196();
    bool checkzEC12();
    bool checkZ13();
+   bool checkZ14();
    bool checkZNext();
 
    void initialize()
       {
       if(checkZNext())
          _processorArchitecture = TR_zNext;
+      else if (checkZ14())
+         _processorArchitecture = TR_z14;
       else if (checkZ13())
          _processorArchitecture = TR_z13;
       else if (checkzEC12())
@@ -1126,18 +1130,6 @@ public:
    virtual bool isDispInRange(int64_t disp);
 
    bool getSupportsOpCodeForAutoSIMD(TR::ILOpCode, TR::DataType);
-
-   bool canOptimizeEdit(uint8_t *parm, int32_t length);
-   bool parseEditParm(uint8_t *parm,
-                      int32_t length,
-                      bool &leadingSigs,
-                      bool &trailingStr,
-                      uint8_t &fill,
-                      int32_t &numDigits,
-                      int32_t &numSigs,
-                      int32_t &sigOff,
-                      int32_t &lastDigit,
-                      int32_t &digitsAfterSig);
 
    TR::Instruction *_ccInstruction;
    TR::Instruction* ccInstruction() { return _ccInstruction; }

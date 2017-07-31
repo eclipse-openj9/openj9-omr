@@ -15,11 +15,6 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-
-#include "codegen/OMRTreeEvaluator.hpp"
-#include "il/Node.hpp"
-#include "il/Node_inlines.hpp"
-
 extern "C"
    {
    void *fwdHalfWordCopyTable = 0;

@@ -199,11 +199,10 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
       }
 
    StoreNodeTable storeNodeTable(0, comp()->trMemory()->currentStackRegion());
-   SharedBitVector deadSymbolReferences(comp()->allocator());
+   TR_BitVector deadSymbolReferences(comp()->trMemory()->currentStackRegion());
    _storeNodes = &storeNodeTable;
 
    int32_t symRefCount = comp()->getSymRefCount();
-   deadSymbolReferences.Clear();
 
    comp()->incOrResetVisitCount();
    int32_t i;
@@ -234,7 +233,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
               TR::SymbolReference *symRef = comp()->getSymRefTab()->getSymRef(symRefNumber);
               TR::Symbol *sym = symRef ? symRef->getSymbol() : 0;
               if (sym && (sym->isAuto() || sym->isParm())) {
-                deadSymbolReferences[symRefNumber]=true;
+                deadSymbolReferences.set(symRefNumber);
               }
             }
         }
@@ -257,7 +256,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
          //    b) an identical store has been seen
             if (!nonRemovableStore &&
                 (seenIdentityStore ||                                 // 1)
-                 (deadSymbolReferences.ValueAt(symRefNum) &&          // 2)
+                 (deadSymbolReferences.get(symRefNum) &&          // 2)
                   !symRef->getSymbol()->isVolatile()  &&
                   ((_blockContainsReturn              &&              //   a)
                     (symRef->getSymbol()->isAuto() ||
@@ -287,7 +286,7 @@ void TR::LocalDeadStoreElimination::transformBlock(TR::TreeTop * entryTree, TR::
           (currentNode->getOpCodeValue() == TR::treetop && currentNode->getFirstChild()->getOpCode().isJumpWithMultipleTargets()))
          {
          _blockContainsReturn = false;
-         deadSymbolReferences.Clear();
+         deadSymbolReferences.empty();
          _storeNodes->clear();
          }
 
@@ -569,7 +568,7 @@ bool TR::LocalDeadStoreElimination::isIdentityStore(TR::Node *storeNode)
    return false;
    }
 
-void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childNum, TR::Node *node, SharedBitVector &deadSymbolReferences)
+void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childNum, TR::Node *node, TR_BitVector &deadSymbolReferences)
    {
    if (!isFirstReferenceToNode(parent, childNum, node))
       {
@@ -591,7 +590,7 @@ void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childN
    if (node->getOpCode().isLoadVar() ||
       (node->getOpCodeValue() == TR::loadaddr))
       {
-      deadSymbolReferences[symRef->getReferenceNumber()]=false;
+      deadSymbolReferences.reset(symRef->getReferenceNumber());
       if (symRef->sharesSymbol())
          {
          symRef->getUseDefAliases().getAliasesAndSubtractFrom(deadSymbolReferences);
@@ -615,7 +614,7 @@ void TR::LocalDeadStoreElimination::examineNode(TR::Node *parent, int32_t childN
        node->mightHaveVolatileSymbolReference())
       {
       int32_t symRefNum = symRef->getReferenceNumber();
-      deadSymbolReferences[symRefNum]=false;
+      deadSymbolReferences.reset(symRefNum);
       symRef->getUseonlyAliases().getAliasesAndSubtractFrom(deadSymbolReferences);
       killStoreNodes(node);
       bool isCallDirect = node->getOpCode().isCallDirect();
@@ -746,7 +745,7 @@ bool TR::LocalDeadStoreElimination::areLhsOfStoresSyntacticallyEquivalent(TR::No
    return true;
    }
 
-void TR::LocalDeadStoreElimination::adjustStoresInfo(TR::Node *node, SharedBitVector &deadSymbolReferences)
+void TR::LocalDeadStoreElimination::adjustStoresInfo(TR::Node *node, TR_BitVector &deadSymbolReferences)
    {
    // Gen the information for this node if it is a store; mark the symbol
    // being stored into as unused so that any dead store encountered above
@@ -756,7 +755,7 @@ void TR::LocalDeadStoreElimination::adjustStoresInfo(TR::Node *node, SharedBitVe
       {
       TR::SymbolReference *symRef = node->getSymbolReference();
       TR::Symbol *sym = symRef->getSymbol();
-      deadSymbolReferences[symRef->getReferenceNumber()] = true;
+      deadSymbolReferences.set(symRef->getReferenceNumber());
       _storeNodes->push_back(node);
       }
    else if (node->getOpCode().isCall() ||

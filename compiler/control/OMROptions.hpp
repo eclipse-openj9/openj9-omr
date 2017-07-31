@@ -285,7 +285,7 @@ enum TR_CompilationOptions
    TR_EnableElementPrivatization          = 0x00000040 + 6,
    TR_CompileBit                          = 0x00000080 + 6,
    TR_WaitBit                             = 0x00000100 + 6,
-   // Available                           = 0x00000200 + 6,
+   TR_DisableZ14                          = 0x00000200 + 6,
    // Available                           = 0x00000400 + 6,
    TR_EnableRangeSplittingGRA             = 0x00000800 + 6,
    TR_ForceUsePreexistence                = 0x00001000 + 6,
@@ -883,7 +883,7 @@ enum TR_CompilationOptions
 
    // Option word 27
    TR_ForceIEEEDivideByZeroException                  = 0x00000020 + 27,
-   TR_DisableOptAttributesMemoryFree                  = 0x00000040 + 27,
+   // Available                                       = 0x00000040 + 27,
    TR_DisableDirectStaticAccessOnZ                    = 0x00000080 + 27,
    TR_EnableRubyTieredCompilation                     = 0x00000100 + 27,
    TR_EnableRIEMIT                                    = 0x00000200 + 27,

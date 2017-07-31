@@ -849,17 +849,6 @@ OMR::CodeGenerator::doInstructionSelection()
          }
       }
 
-   // Free opt attributes
-   //
-   if (!comp->getOption(TR_DisableOptAttributesMemoryFree))
-      {
-      if (!TR::Compiler->target.cpu.isX86())
-         {
-         // x86 code uses getRegister post instruction selection, prevents FreeOptAttributes() from being called
-         comp->getNodePool().FreeOptAttributes();
-         }
-      }
-
 #if defined(TR_TARGET_S390)
    // Virtual function insertInstructionPrefetches is implemented only for s390 platform,
    // for all other platforms the function is empty

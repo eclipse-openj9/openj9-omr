@@ -16,6 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
+/* ATTENTION: when updating this file, be sure to also update omrcfg.CMakeTemplate.h */
 /**
  * The OMR build configuration. A public header. Controls the APIs of all other headers.
  * Include at the top of every OMR source and header.

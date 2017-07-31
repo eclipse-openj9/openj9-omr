@@ -46,9 +46,7 @@ class NodePool
       _pool(allocator),
       _globalIndex(0),
       _poolIndex(0),
-      _disableGC(true),
-      _optAttribGlobalIndex(0),
-      _optAttribPool(allocator)
+      _disableGC(true)
       {
       }
 
@@ -63,9 +61,6 @@ class NodePool
    ncount_t  getMaxIndex()           { return _globalIndex; }
    TR::Compilation * comp() { return _comp; }
 
-   OMR::Node::OptAttributes * allocateOptAttributes();
-   void FreeOptAttributes();
-
    void cleanUp();
 
    private:
@@ -75,11 +70,8 @@ class NodePool
    bool                  _disableGC;
    ncount_t              _globalIndex;
    ncount_t              _poolIndex;
-   ncount_t              _optAttribGlobalIndex;
 
    Pool_t                _pool;
-
-   CS2::TableOf<OMR::Node::OptAttributes,TR::Allocator, 8, CS2::ABitVector> _optAttribPool;
    };
 
 }

@@ -19,13 +19,13 @@
 #include "OpCodeTest.hpp"
 #include "jitbuilder_compiler.hpp"
 
-class Int32Arithmetic : public BinaryOpTest<int32_t> {};
+class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
 TEST_P(Int32Arithmetic, UsingConst) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (i%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -39,10 +39,10 @@ TEST_P(Int32Arithmetic, UsingConst) {
 }
 
 TEST_P(Int32Arithmetic, UsingLoadParam) {
-    auto param = to_struct(GetParam());
+    auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (i%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -56,16 +56,16 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
 }
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
-    ::testing::ValuesIn(combine(const_values<int32_t>(), const_values<int32_t>())),
+    ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple("add", [](int32_t l, int32_t r){return l+r;}),
-        std::make_tuple("sub", [](int32_t l, int32_t r){return l-r;}),
-        std::make_tuple("mul", [](int32_t l, int32_t r){return l*r;}) )));
+        std::make_tuple("iadd", [](int32_t l, int32_t r){return l+r;}),
+        std::make_tuple("isub", [](int32_t l, int32_t r){return l-r;}),
+        std::make_tuple("imul", [](int32_t l, int32_t r){return l*r;}) )));
 
 INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
-        filter(combine(const_values<int32_t>(), const_values<int32_t>()),
-               [](std::tuple<int32_t, int32_t> a){ return std::get<1>(a) == 0;} )),
+        TRTest::filter(TRTest::const_value_pairs<int32_t, int32_t>(),
+                       [](std::tuple<int32_t, int32_t> a){ return std::get<1>(a) == 0;} )),
     ::testing::Values(
-        std::make_tuple("div", [](int32_t l, int32_t r){return l/r;}),
-        std::make_tuple("rem", [](int32_t l, int32_t r){return l%r;}) )));
+        std::make_tuple("idiv", [](int32_t l, int32_t r){return l/r;}),
+        std::make_tuple("irem", [](int32_t l, int32_t r){return l%r;}) )));

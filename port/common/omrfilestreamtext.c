@@ -80,10 +80,10 @@ transliterate_write_text(struct OMRPortLibrary *portLibrary, OMRFileStream *file
 void
 omrfilestream_vprintf(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *format, va_list args)
 {
-	char outputBuffer[512];
-	char *allocatedBuffer = NULL;
-	uintptr_t numberWritten = 0;
-	va_list copyOfArgs;
+	char localBuffer[512];
+	char *writeBuffer = NULL;
+	uintptr_t bufferSize = 0;
+	uintptr_t stringSize = 0;
 
 	Trc_PRT_filestream_vprintf_Entry(fileStream, format);
 
@@ -93,42 +93,31 @@ omrfilestream_vprintf(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStr
 		return;
 	}
 
-	/* Attempt to write output to stack buffer */
-	COPY_VA_LIST(copyOfArgs, args);
-	numberWritten = portLibrary->str_vprintf(portLibrary, outputBuffer, sizeof(outputBuffer), format, copyOfArgs);
+	/* str_vprintf(..,NULL,..) result is size of buffer required including the null terminator */
+	bufferSize = portLibrary->str_vprintf(portLibrary, NULL, 0, format, args);
 
-	/* str_vprintf always null terminates, returns number characters written excluding the null terminator */
-	if (sizeof(outputBuffer) > (numberWritten + 1)) {
-		/* write out the buffer */
-		portLibrary->filestream_write_text(portLibrary, fileStream, outputBuffer, numberWritten, J9STR_CODE_PLATFORM_RAW);
-		Trc_PRT_filestream_vprintf_Exit();
-		return;
+	/* use local buffer if possible, allocate a buffer from system memory if local buffer not large enough */
+	if (sizeof(localBuffer) >= bufferSize) {
+		writeBuffer = localBuffer;
+	} else {
+		Trc_PRT_filestream_vprintf_stackBufferNotBigEnough(fileStream, format, bufferSize);
+		writeBuffer = portLibrary->mem_allocate_memory(portLibrary, bufferSize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 	}
 
-	/* Either the buffer was too small, or it was the exact size.  Unfortunately can't tell the difference,
-	 * need to determine the size of the buffer (another call to str_vprintf) then print to the buffer,
-	 * a third call to str_vprintf
-	 */
-	COPY_VA_LIST(copyOfArgs, args);
-
-	/* What is size of buffer required ? Does not include the \0 */
-	numberWritten = portLibrary->str_vprintf(portLibrary, NULL, 0, format, copyOfArgs);
-	numberWritten += 1;
-
-	Trc_PRT_filestream_vprintf_stackBufferNotBigEnough(fileStream, format, numberWritten);
-
-	allocatedBuffer = portLibrary->mem_allocate_memory(portLibrary, numberWritten, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-	if (NULL == allocatedBuffer) {
+	/* format and write out the buffer (truncate into local buffer as last resort) */
+	if (NULL != writeBuffer) {
+		stringSize = portLibrary->str_vprintf(portLibrary, writeBuffer, bufferSize, format, args);
+		portLibrary->filestream_write_text(portLibrary, fileStream, writeBuffer, stringSize, J9STR_CODE_PLATFORM_RAW);
+		/* dispose of buffer if not on local */
+		if (writeBuffer != localBuffer) {
+			portLibrary->mem_free_memory(portLibrary, writeBuffer);
+		}
+	} else {
+		Trc_PRT_filestream_vprintf_failedMalloc(fileStream, format, bufferSize);
 		portLibrary->nls_printf(portLibrary, J9NLS_ERROR, J9NLS_PORT_FILE_MEMORY_ALLOCATE_FAILURE);
-		Trc_PRT_filestream_vprintf_failedMalloc(fileStream, format, numberWritten);
-		Trc_PRT_filestream_vprintf_Exit();
-		return;
+		stringSize = portLibrary->str_vprintf(portLibrary, localBuffer, sizeof(localBuffer), format, args);
+		portLibrary->filestream_write_text(portLibrary, fileStream, localBuffer, stringSize, J9STR_CODE_PLATFORM_RAW);
 	}
-
-	numberWritten = portLibrary->str_vprintf(portLibrary, allocatedBuffer, numberWritten, format, args);
-
-	portLibrary->filestream_write_text(portLibrary, fileStream, allocatedBuffer, numberWritten, J9STR_CODE_PLATFORM_RAW);
-	portLibrary->mem_free_memory(portLibrary, allocatedBuffer);
 
 	Trc_PRT_filestream_vprintf_Exit();
 }

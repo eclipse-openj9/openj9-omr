@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -4872,7 +4872,8 @@ static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures ARCH[] =
 /* 9*/   TR_S390ProcessorInfo::TR_z196,
 /*10*/   TR_S390ProcessorInfo::TR_zEC12,
 /*11*/   TR_S390ProcessorInfo::TR_z13,
-/*12*/   TR_S390ProcessorInfo::TR_zNext
+/*12*/   TR_S390ProcessorInfo::TR_z14,
+/*13*/   TR_S390ProcessorInfo::TR_zNext
    };
 
 static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures reqArchForLoad[4/*Form*/][4/*numberOfBits*/][2/*isSigned*/][2/*numberOfExtendBits*/] =
@@ -8040,7 +8041,7 @@ inlineHighestOneBit(
     **/
 
    // need to clobber evaluate all cases except when in 64-bit long
-   TR::Register * srcReg = null;
+   TR::Register * srcReg = NULL;
    bool srcClobbered = false;
    if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) && isLong)
       srcReg = cg->evaluate(firstChild);
@@ -9555,7 +9556,7 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    bool disableSIMDP256 = NULL != disableECCSIMD || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
    bool disableMLGRP256 = NULL != disableECCMLGR || comp->getOption(TR_Randomize) && cg->randomizer.randomBoolean();
 
-   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext) && cg->getSupportsVectorRegisters())
+   if (!disableVMSL && cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14) && cg->getSupportsVectorRegisters())
       return inlineVMSL256Multiply(node, cg);
    if (disableECCKarat==NULL && cg->getSupportsVectorRegisters())
       return inlineSIMDP256Multiply(node, cg);
@@ -16347,9 +16348,9 @@ OMR::Z::TreeEvaluator::inlineVectorBinaryOp(TR::Node * node, TR::CodeGenerator *
          breakInst = generateVRRcInstruction(cg, op, node, targetReg, sourceReg1, sourceReg2, 0, 0, mask4);
          break;
       /*
-       * Before zNext, these required mask4 = 0x3 and other values were illegal
+       * Before z14, these required mask4 = 0x3 and other values were illegal
        * This was because they only operated on long BFP elements.
-       * From zNext onward, mask4 is variable and sets the element size to operate on
+       * From z14 onward, mask4 is variable and sets the element size to operate on
        */
       case TR::InstOpCode::VFA:
       case TR::InstOpCode::VFS:

@@ -26,8 +26,10 @@ Various components may fail to compile with default configuration options, and s
 include(cmake/versions.cmake) # Required for OMR_VERSION 
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
+set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
 
 ###
 ### Getting the glue directory
@@ -87,6 +89,7 @@ add_subdirectory(tools)
 if(CMAKE_CROSSCOMPILING)
 	include(${OMR_TOOLS_IMPORTFILE})
 endif()
+
 add_subdirectory(thread)
 add_subdirectory(port)
 add_subdirectory(util)
@@ -103,10 +106,11 @@ if(OMR_GC)
   add_subdirectory("${OMR_GLUE}")
 endif(OMR_GC)
 
-if(OMR_COMPILER)
-  # TODO: Actually support the compiler
-  add_subdirectory(compiler)
-endif(OMR_COMPILER)
+if(NOT OMR_HOST_OS STREQUAL "win")
+    # TODO: JitBuilder built through CMake isn't quite 
+    #       ready for windows yet 
+    add_subdirectory(jitbuilder)
+endif()
 
 if(OMR_DDR)
   add_subdirectory(ddr)

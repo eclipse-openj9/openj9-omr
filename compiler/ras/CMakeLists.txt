@@ -16,10 +16,17 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Ensure the source tree hasn't been used for building before.
-message(STATUS "SRC = ${CMAKE_SOURCE_DIR}")
-if(EXISTS "${omr_SOURCE_DIR}/omrcfg.h")
-	message(FATAL_ERROR "An existing omrcfg.h has been detected in the source tree. This causes unexpected errors when compiling. Please build from a clean source tree.")
-endif()
 
-
+compiler_library(ras 
+	${CMAKE_CURRENT_SOURCE_DIR}/CallStack.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/CFGChecker.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/Debug.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/DebugCounter.cpp 
+    ${CMAKE_CURRENT_SOURCE_DIR}/ILValidator.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/IgnoreLocale.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/LimitFile.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/LogTracer.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/OptionsDebug.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/PPCOpNames.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/Tree.cpp 
+)

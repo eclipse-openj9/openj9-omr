@@ -37,8 +37,8 @@ public:
    Node() : OMR::NodeConnector() {}
 
    Node(TR::Node *originatingByteCodeNode, TR::ILOpCodes op,
-        uint16_t numChildren, OptAttributes * oa = NULL)
-      : OMR::NodeConnector(originatingByteCodeNode, op, numChildren, oa)
+        uint16_t numChildren)
+      : OMR::NodeConnector(originatingByteCodeNode, op, numChildren)
       {}
 
    Node(Node *from, uint16_t numChildren = 0)

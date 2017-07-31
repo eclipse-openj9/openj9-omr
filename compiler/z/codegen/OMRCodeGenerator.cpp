@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -393,7 +393,7 @@ bool OMR::Z::CodeGenerator::supportsDirectIntegralLoadStoresFromLiteralPool()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz900: returns true if it's zArchitecture, otherwise false.
+// TR_S390ProcessorInfo::checkz900: returns true if it's zArchitecture, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz900()
@@ -421,7 +421,7 @@ TR_S390ProcessorInfo::checkz9()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz10: returns true if it's z6, otherwise false.
+// TR_S390ProcessorInfo::checkz10: returns true if it's z6, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz10()
@@ -430,7 +430,7 @@ TR_S390ProcessorInfo::checkz10()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkz196: returns true if it's zGryphon, otherwise false.
+// TR_S390ProcessorInfo::checkz196: returns true if it's zGryphon, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkz196()
@@ -439,7 +439,7 @@ TR_S390ProcessorInfo::checkz196()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkzEC12: returns true if it's zHelix, otherwise false.
+// TR_S390ProcessorInfo::checkzEC12: returns true if it's zHelix, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkzEC12()
@@ -448,7 +448,7 @@ TR_S390ProcessorInfo::checkzEC12()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkZ13: returns true if it's z13, otherwise false.
+// TR_S390ProcessorInfo::checkZ13: returns true if it's z13, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkZ13()
@@ -457,7 +457,16 @@ TR_S390ProcessorInfo::checkZ13()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TR_S90ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
+// TR_S390ProcessorInfo::checkZ14: returns true if it's z14, otherwise false.
+////////////////////////////////////////////////////////////////////////////////
+bool
+TR_S390ProcessorInfo::checkZ14()
+   {
+   return TR::Compiler->target.cpu.getS390SupportsZ14();
+   }
+
+////////////////////////////////////////////////////////////////////////////////
+// TR_S390ProcessorInfo::checkZNext: returns true if it's zNext, otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390ProcessorInfo::checkZNext()
@@ -466,7 +475,7 @@ TR_S390ProcessorInfo::checkZNext()
    }
 
 ////////////////////////////////////////////////////////////////////////////////
-//  TR_S90ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
+//  TR_S390ProcessorInfo::getProcessor: returns the TR_s390gpX for current processorInfo
 ////////////////////////////////////////////////////////////////////////////////
 TR_Processor
 TR_S390ProcessorInfo::getProcessor()
@@ -475,10 +484,14 @@ TR_S390ProcessorInfo::getProcessor()
 
    if (supportsArch(TR_S390ProcessorInfo::TR_zNext))
       {
+      result = TR_s370gp13;
+      }
+   else if (supportsArch(TR_S390ProcessorInfo::TR_z14))
+      {
       result = TR_s370gp12;
       }
    else if (supportsArch(TR_S390ProcessorInfo::TR_z13))
-   	{
+      {
       result = TR_s370gp11;
       }
    else if (supportsArch(TR_S390ProcessorInfo::TR_zEC12))
@@ -581,6 +594,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
             }
          case 6:
             {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
+            traceMsg(comp, "disablez14");
+            break;
+            }
+         case 7:
+            {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
             traceMsg(comp, "RandomGen: Setting disabling zNext processor architecture.");
             break;
@@ -607,6 +626,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (comp->getOption(TR_DisableZ13))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
+      }
+
+   if (comp->getOption(TR_DisableZ14))
+      {
+      _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
       }
 
    if (comp->getOption(TR_DisableZNext))
@@ -4568,7 +4592,7 @@ TR_S390Peephole::trueCompEliminationForLoadComp()
    prev = realInstruction(prev, false);
 
    TR::Register * srcReg = ((TR::S390RRInstruction *) curr)->getRegisterOperand(2);
-   TR::RealRegister *tempReg = null;
+   TR::RealRegister *tempReg = NULL;
    if((toRealRegister(srcReg))->getRegisterNumber() == TR::RealRegister::GPR1)
       {
       tempReg = _cg->machine()->getS390RealRegister(TR::RealRegister::GPR2);
@@ -11278,10 +11302,10 @@ bool OMR::Z::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR
    {
 
    /*
-    * Prior to zNext, vector operations that operated on floating point numbers only supported
-    * Doubles. On zNext and onward, Float type floating point numbers are supported as well.
+    * Prior to z14, vector operations that operated on floating point numbers only supported
+    * Doubles. On z14 and onward, Float type floating point numbers are supported as well.
     */
-   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zNext))
+   if (dt == TR::Float && !self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14))
       {
       return false;
       }
@@ -11391,83 +11415,6 @@ bool TR_S390Peephole::forwardBranchTarget()
          }
       }
    return false;
-   }
-bool
-OMR::Z::CodeGenerator::canOptimizeEdit(uint8_t *parm, int32_t length)
-   {
-   bool leadingSigs = false, trailingStr = false;
-   uint8_t fill = 0;
-   int32_t numDigits = 0, numSigs = 0, sigOff = 0, lastDigit = 0, digitsAfterSig = 0;
-   return self()->parseEditParm(parm, length, leadingSigs, trailingStr, fill, numDigits, numSigs, sigOff, lastDigit, digitsAfterSig);
-   }
-
-bool
-OMR::Z::CodeGenerator::parseEditParm(uint8_t *parm,
-                                     int32_t length,
-                                     bool &leadingSigs,
-                                     bool &trailingStr,
-                                     uint8_t &fill,
-                                     int32_t &numDigits,
-                                     int32_t &numSigs,
-                                     int32_t &sigOff,
-                                     int32_t &lastDigit,
-                                     int32_t &digitsAfterSig)
-   {
-   if (self()->comp()->getOption(TR_DisableCrackedEditOptimization))
-      return false;
-
-   fill = *parm;
-   if (fill == 0x20 || fill == 0x21 || fill == 0x22) // fill-byte of a control function is not supported
-      return false;
-
-   leadingSigs = (parm[1] == 0x21);
-
-   numDigits      = 0;
-   numSigs        = 0;
-   sigOff         = 0;
-   lastDigit      = 0;
-   digitsAfterSig = 0;
-
-   for (int32_t i = 1; i < length; i++)
-      {
-      if (parm[i] == 0x22) // field-separator is not supported
-         return false;
-      if (parm[i] == 0x20 || parm[i] == 0x21)
-         {
-         numDigits++;
-         lastDigit = i;
-         if (leadingSigs || numSigs) digitsAfterSig++;
-         }
-      if (parm[i] == 0x21 && !(leadingSigs && (i == 1 || i == 2)))
-         {
-         numSigs++;
-         sigOff = i;
-         }
-      }
-
-   if (!numDigits) // no digit found
-      return false;
-
-   if (!(numDigits & 1)) // unsigned packed-decimal is not supported
-      return false;
-
-   if (numDigits > 31) // support up to 31 digits
-      return false;
-
-   if (leadingSigs)
-      {
-      if (numSigs) // other significance starter should not appear
-         return false;
-      sigOff = 1;
-      }
-   else
-      {
-      if (numSigs > 1) // multiple significance starters are not supported
-         return false;
-      }
-
-   trailingStr = (lastDigit != length - 1);
-   return true;
    }
 
 

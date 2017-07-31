@@ -31,9 +31,6 @@ namespace TR { class NodeChecklist; }
 namespace TR { class TreeTop; }
 template <class T> class List;
 
-typedef TR::SparseBitVector SharedSparseBitVector;
-typedef TR::SparseBitVector SharedBitVector;
-
 namespace TR
 {
 
@@ -79,13 +76,13 @@ class LocalDeadStoreElimination : public TR::Optimization
    inline TR::LocalDeadStoreElimination *self();
 
    bool isIdentityStore(TR::Node *);
-   void examineNode(TR::Node *, int32_t, TR::Node *, SharedBitVector &);
+   void examineNode(TR::Node *, int32_t, TR::Node *, TR_BitVector &);
    void transformBlock(TR::TreeTop *, TR::TreeTop *);
    bool isEntireNodeRemovable(TR::Node *);
    void setExternalReferenceCountToTree(TR::Node *node, rcount_t *externalReferenceCount);
     bool seenIdenticalStore(TR::Node *);
    bool areLhsOfStoresSyntacticallyEquivalent(TR::Node *, TR::Node *);
-   void adjustStoresInfo(TR::Node *, SharedBitVector &);
+   void adjustStoresInfo(TR::Node *, TR_BitVector &);
    TR::Node *getAnchorNode(TR::Node *parentNode, int32_t nodeIndex, TR::Node *, TR::TreeTop *, TR::NodeChecklist& visited);
 
    void setupReferenceCounts(TR::Node *);

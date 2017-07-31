@@ -308,7 +308,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
    /**  Attempt to use SGH to subtract halfword (64 <- 16).
     * The second child is a halfword from memory */
    bool is16BitMemory2Operand = false;
-   if (TR::Compiler->target.cpu.getS390SupportsZNext() &&
+   if (TR::Compiler->target.cpu.getS390SupportsZ14() &&
        secondChild->getOpCodeValue() == TR::s2l &&
        secondChild->getFirstChild()->getOpCodeValue() == TR::sloadi &&
        secondChild->isSingleRefUnevaluated() &&

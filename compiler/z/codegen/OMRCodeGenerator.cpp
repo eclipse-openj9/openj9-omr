@@ -553,60 +553,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
-   // Do random Disable<Platform> when -Xjit randomGen
-   if (comp->getOption(TR_Randomize))
-      {
-      switch(randomizer.randomInt(TR::Compiler->target.cpu.id() - TR_s370gp7))
-         {
-         case 1:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z9);
-            traceMsg(comp,"disablez9");
-            break;
-            }
-
-         case 2:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z10);
-            traceMsg(comp, "disablez10");
-            break;
-            }
-
-         case 3:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
-            traceMsg(comp, "disablez196");
-            break;
-            }
-
-         case 4:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
-            traceMsg(comp, "disablezEC12");
-            break;
-            }
-
-         case 5:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
-            traceMsg(comp, "disablez13");
-            break;
-            }
-         case 6:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
-            traceMsg(comp, "disablez14");
-            break;
-            }
-         case 7:
-            {
-            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
-            traceMsg(comp, "RandomGen: Setting disabling zNext processor architecture.");
-            break;
-            }
-         }
-      }
-
    // Check for -Xjit disable options and target this specific compilation for the proper target
    if (comp->getOption(TR_DisableZ10))
       {
@@ -753,6 +699,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
    else
       {
       comp->setOption(TR_DisableCompareAndBranchInstruction);
+
+      // No trap instructions available for z10 and below.
+      // Set disable traps so that the optimizations and codegen can avoid generating
+      // trap-specific nodes or instructions.
+      comp->setOption(TR_DisableTraps);
       }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z196))

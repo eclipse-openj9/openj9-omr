@@ -177,7 +177,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 		int count = 0;
 		for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
 			if (count ++ > lastProgressUpdate + debugFiles->size() / 10) {
-				printf("Completed scanning "PRIu64" of "PRIu64" files...\n", count, debugFiles->size());
+				printf("Completed scanning %zu of %zu files...\n", count, debugFiles->size());
 				lastProgressUpdate = count;
 			}
 
@@ -836,7 +836,7 @@ PdbScanner::setBaseTypeInt(ULONGLONG ulLen, Type **type)
 		*type = getType("I64");
 		break;
 	default:
-		ERRMSG("Unknown int length: "PRIu64, ulLen);
+		ERRMSG("Unknown int length: %zu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -857,7 +857,7 @@ PdbScanner::setBaseTypeFloat(ULONGLONG ulLen, Type **type)
 		*type = getType("double");
 		break;
 	default:
-		ERRMSG("Unknown float length:"PRIu64, ulLen);
+		ERRMSG("Unknown float length: %zu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -888,7 +888,7 @@ PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 		*type = getType("U128");
 		break;
 	default:
-		ERRMSG("Unknown int length:"PRIu64, ulLen);
+		ERRMSG("Unknown int length: %zu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}

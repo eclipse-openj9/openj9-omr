@@ -3152,7 +3152,13 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          int32_t unimportantFrequencyRatio = unimportantFrequencyRatioStr ? atoi(unimportantFrequencyRatioStr) : 20;
          int16_t blockFrequency = nextBlock->getFrequency();
          int16_t loopFrequency = whileLoop->getEntryBlock()->getFrequency();
-         if ( blockFrequency >= 0 // frequency must be valid
+
+         // If the aggressive loop versioning flag is set, only do the unimportant block test
+         // at lower optlevels
+         bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+
+         if ( (!aggressive || comp()->getMethodHotness() <= warm)
+              && blockFrequency >= 0 // frequency must be valid
               && blockFrequency < loopFrequency / unimportantFrequencyRatio
               && performTransformation(comp(), "%sDisregard unimportant block_%d frequency %d < loop %d frequency %d\n",
                  OPT_DETAILS_LOOP_VERSIONER, nextBlock->getNumber(), blockFrequency, whileLoop->getNumber(), loopFrequency)

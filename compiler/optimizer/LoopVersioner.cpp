@@ -208,8 +208,26 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
             }
          }
 
+      bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+
+      int32_t lvBlockFreqCutoff;
       static const char * b = feGetEnv("TR_LoopVersionerFreqCutoff");
-      int32_t lvBlockFreqCutoff = b ? atoi(b) : 5000;
+      if (b) 
+         {
+         lvBlockFreqCutoff = atoi(b);
+         }
+      else if (aggressive)
+         {
+         lvBlockFreqCutoff = 500;
+         }
+      else
+         {
+         lvBlockFreqCutoff = 5000;
+         }
+
+      if (trace()) traceMsg(comp(), "lvBlockFreqCutoff=%d\n", lvBlockFreqCutoff);
+         
+
       if (entryBlock->getFrequency() < lvBlockFreqCutoff)
          return false;
       }

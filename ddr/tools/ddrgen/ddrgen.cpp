@@ -208,11 +208,11 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			"		Overrides are of the format 'typeoverride.STRUCT_NAME.FIELD_NAME=TypeToChangeTo' or\n"
 			"		'fieldoverride.STRUCT_NAME.FIELD_NAME=NewFieldName'\n"
 			"	-l FILE, --blacklist FILE\n"
-			"		Optional. File containing list of type names and source file paths to ignore."
+			"		Optional. File containing list of type names and source file paths to ignore.\n"
 			"		Format is 'file:[filename]' or 'type:[typename]' on each line.\n"
 			"	-e, --show-empty\n"
 			"		Print structures, enums, and unions to the superset and blob even if they do not contain any fields.\n"
-			"		The default behaviour is to hide them."
+			"		The default behaviour is to hide them.\n"
 		);
 	} else if (showVersion) {
 		printf("Version 0.1\n");

@@ -33,7 +33,7 @@ set(CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-add_definitions(-g -fdiagnostics-color=always -Wno-deprecated -Wno-enum-compare -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing)
+add_definitions(-g -Wno-deprecated -Wno-enum-compare -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-threadsafe-statics -Wno-invalid-offsetof")
 
 BISON_TARGET(tril_parser tril.y ${CMAKE_CURRENT_BINARY_DIR}/tril.parser.c)

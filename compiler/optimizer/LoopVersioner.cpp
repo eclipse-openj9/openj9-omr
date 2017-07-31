@@ -545,9 +545,19 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       containsNonInlineGuard = false;
       if (!shouldOnlySpecializeLoops() && !refineAliases())
          {
-         if (((debug("nullCheckVersion") || comp()->cg()->performsChecksExplicitly() ||
-               (comp()->getMethodHotness() >= veryHot)) &&
-               nullChecksWillBeEliminated) ||
+         // default hotness threshold
+         TR_Hotness hotnessThreshold = hot;
+         if (TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning))
+            {
+            if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for conditionalsWillBeEliminated\n");
+            hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
+            }
+         
+         if (( (debug("nullCheckVersion") || 
+                comp()->cg()->performsChecksExplicitly() || 
+                (comp()->getMethodHotness() > hotnessThreshold)
+               ) && nullChecksWillBeEliminated
+             ) ||
              boundChecksWillBeEliminated ||
              divChecksWillBeEliminated  ||
              iwrtBarsWillBeEliminated  ||
@@ -4155,9 +4165,19 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
    // Construct the tests for invariant expressions that need
    // to be null checked.
-   //
-   if (comp()->cg()->performsChecksExplicitly() ||
-       (comp()->getMethodHotness() >= veryHot))
+   
+   // default hotness threshold
+   TR_Hotness hotnessThreshold = hot;
+
+   // If aggressive loop versioning is requested, don't call buildNullCheckComparisonsTree based on hotness
+   if (TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning))
+      {
+      if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
+      hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
+      }
+
+   if (comp()->cg()->performsChecksExplicitly() || 
+       (comp()->getMethodHotness() > hotnessThreshold))
       {
       if (!nullCheckTrees->isEmpty() &&
           !shouldOnlySpecializeLoops())

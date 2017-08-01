@@ -35,6 +35,8 @@ else
   # Disable ddrgen on 32 bit builds--libdwarf in 32bit is unavailable.
   if test "x$SPEC" = "xlinux_x86"; then
     export EXTRA_CONFIGURE_ARGS="--disable-DDR"
+  else
+    export EXTRA_CONFIGURE_ARGS="--enable-DDR"
   fi
   time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"
   if test "x$RUN_BUILD" != "xno"; then

@@ -106,10 +106,6 @@ if(OMR_GC)
   add_subdirectory("${OMR_GLUE}")
 endif(OMR_GC)
 
-
-
-if(NOT OMR_HOST_OS STREQUAL "win")
-    # TODO: JitBuilder built through CMake isn't quite 
-    #       ready for windows yet 
-    add_subdirectory(jitbuilder)
-endif()
+if(OMR_JITBUILDER)
+	add_subdirectory(jitbuilder)
+endif(OMR_JITBUILDER)

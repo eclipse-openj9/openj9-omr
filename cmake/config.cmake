@@ -24,7 +24,7 @@ set(OMR_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compile warnings as errors")
 
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
-set(OMR_JITBUILDER ON CACHE BOOL "Enable building JitBuilder")
+set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_THREAD ON CACHE BOOL "Enable thread library")

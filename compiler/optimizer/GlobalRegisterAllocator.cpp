@@ -3515,9 +3515,10 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
          int32_t symRefNumber = symRef->getReferenceNumber();
          if (rc)
             {
-            for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
+            TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator();
+            while (itr.hasMoreElements())
                {
-               int32_t block_num = itr->first;
+               int32_t block_num = itr.getNextElement();
                TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
                block = cfgBlocks[block_num];
                if (!block) continue;
@@ -3641,9 +3642,10 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                // If it is new then set the count to zero or one based on use in the block
                if (rc)
                   {
-                  for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
+                  TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator();
+                  while (itr.hasMoreElements())
                      {
-                     int32_t block_num = itr->first;
+                     int32_t block_num = itr.getNextElement();
                      TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
                      block = cfgBlocks[block_num];
                      if (!block) continue;
@@ -3787,10 +3789,11 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
                  (sym->isParm() && methodSymbol->getParameterList().find(sym->castToParmSymbol()) && sym->isReferencedParameter())))
                {
                TR_RegisterCandidate *rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-               
-               for (auto itr = rc->_blocks.begin(), end = rc->_blocks.end(); itr != end; ++itr)
+              
+               TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator(); 
+               while (itr.hasMoreElements())
                   {
-                  int32_t block_num = itr->first;
+                  int32_t block_num = itr.getNextElement();
                   TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
       block = cfgBlocks[block_num];
                   if (!block) continue;

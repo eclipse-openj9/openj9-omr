@@ -94,33 +94,47 @@ public:
      typedef std::less<uint32_t> InfoMapComparator;
      typedef std::map<uint32_t, uint32_t, InfoMapComparator, InfoMapAllocator> InfoMap;
      InfoMap _blockMap;
+     TR_BitVector _candidateBlocks;
 
    public:
-     typedef InfoMap::iterator InfoMapIterator;
+     typedef TR_BitVectorIterator iterator;
 
      BlockInfo(TR::Region &region)
-        : _blockMap((InfoMapComparator()), (InfoMapAllocator(region))) { }
+        : _blockMap((InfoMapComparator()), (InfoMapAllocator(region))),
+          _candidateBlocks(region) { }
 
      void setNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _blockMap[block] = count;
+       _candidateBlocks.set(block);
+
+       auto lookup = _blockMap.find(block);
+       if (lookup != _blockMap.end())
+          lookup->second = count;
+       else if (count > 0)
+          _blockMap[block] = count;
      }
      void incNumberOfLoadsAndStores(uint32_t block, uint32_t count) {
-       _blockMap[block] += count;
+       _candidateBlocks.set(block);
+       if (count > 0)
+          _blockMap[block] += count;
      }
      void removeBlock(uint32_t block) {
+       _candidateBlocks.reset(block);
        _blockMap.erase(block);
      }
 
      bool find(uint32_t block) {
-       return _blockMap.find(block) != _blockMap.end();
+       return _candidateBlocks.get(block);
      }
      uint32_t getNumberOfLoadsAndStores(uint32_t block) {
-       auto result = _blockMap.find(block);
-       return result != _blockMap.end() ? result->second : 0;
+       if (_candidateBlocks.get(block))
+          {
+          auto result = _blockMap.find(block);
+          return result != _blockMap.end() ? result->second : 0;
+          }
+       return 0;
      }
 
-     InfoMapIterator begin() { return _blockMap.begin(); }
-     InfoMapIterator end() { return _blockMap.end(); }
+     iterator getIterator() { return iterator(_candidateBlocks); }    
    };
 
    struct LoopInfo : TR_Link<LoopInfo>

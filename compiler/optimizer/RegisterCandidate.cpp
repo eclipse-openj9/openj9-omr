@@ -566,9 +566,10 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
    _loadsAndStores = new (comp->trStackMemory()) TR_Array<uint32_t>(comp->trMemory(), numberOfBlocks, true, stackAlloc);
 
    TR::CodeGenerator * cg = comp->cg();
-   for (auto itr = _blocks.begin(), end = _blocks.end(); itr != end; ++itr)
+   BlockInfo::iterator itr = _blocks.getIterator();
+   while (itr.hasMoreElements())
       {
-      int32_t blockNumber = itr->first;
+      int32_t blockNumber = itr.getNextElement();
       TR_ASSERT(blockNumber < cfg->getNextNodeNumber(), "Overflow on candidate BB numbers");
       TR::Block * b = blocks[blockNumber];
       if (!b) continue;
@@ -577,7 +578,7 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
       bool hasLoadNearStart = !isExtensionOfPreviousBlock.isSet(blockNumber) && findLoadNearStartOfBlock(b, getSymbolReference());
       TR_ASSERT((blockNumber < cfg->getNextNodeNumber()) && (blocks[blockNumber] == b),"blockNumber is wrong");
       
-      int32_t blockWeight = itr->second;
+      int32_t blockWeight = _blocks.getNumberOfLoadsAndStores(blockNumber);
       bool firstBlock = firstBlocks.isSet(blockNumber);
       if ((firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
            (!firstBlock && (symbolIsLive(b) || (hasLoopExitBlock(b) && (blockWeight==0)))))

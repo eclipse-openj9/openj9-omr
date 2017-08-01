@@ -103,8 +103,7 @@ void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
    if (!(BB->getEntry() && BB->getExit()))
         return;
 
-   Set * refAutos = NULL;
-   refAutos  = new (_comp->trStackMemory()) Set(_comp->trMemory()->currentStackRegion());
+   Set * refAutos = new (_comp->trStackMemory()) Set(_comp->trMemory()->currentStackRegion());
 
    _refAutosPerBlock[BB->getNumber()] = refAutos;
 
@@ -160,8 +159,7 @@ TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region 
      _dontAssignVMThreadRegister(false),
      _initialBlocksWeightComputed(false),
      _extendedLiveRange(false),
-     _availableOnExit(NULL),
-     _blocksVisited(NULL)
+     _availableOnExit(NULL)
    {
    }
 
@@ -314,7 +312,7 @@ TR_RegisterCandidates::find(TR::Symbol* sym)
 bool
 TR_RegisterCandidate::find(TR::Block * b)
    {
-     return _blocks.find(b->getNumber());
+   return _blocks.find(b->getNumber());
    }
 
 void
@@ -1676,7 +1674,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
       traceMsg(comp, "Extending live ranges due to live on exits\n");
 
    getAvailableOnExit()->empty();
-   getBlocksVisited()->empty();
+   TR_BitVector blocksVisited(comp->trMemory()->currentStackRegion());
 
    _liveOnExit.empty();  // this function will recalculate
 
@@ -1697,7 +1695,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
             if (pred == comp->getFlowGraph()->getStart())
                continue;
 
-            if (getBlocksVisited()->get(pred->getNumber()))
+            if (blocksVisited.get(pred->getNumber()))
                continue;
 
             TR_ASSERT(comp->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
@@ -1712,7 +1710,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
             TR::Block *lastBlock;
             do
                {
-               getBlocksVisited()->set(currBlock->getNumber());
+               blocksVisited.set(currBlock->getNumber());
 
                TR::GlobalSet::Set *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock->getNumber());
                if (autosInBlock &&
@@ -2195,7 +2193,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    // Init scratch bitvectors for extendLiveRangesForLiveOnExit
 
    TR_BitVector *availableOnExit = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory());
-   TR_BitVector *blocksVisited = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory());
 
    bool useProfilingFrequencies = comp()->getUsesBlockFrequencyInGRA();
    double freqRatio;
@@ -2382,7 +2379,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       if (!rc->getAvailableOnExit())
          {
          rc->setAvailableOnExit(availableOnExit);
-         rc->setBlocksVisited(blocksVisited);
          }
 
       rc->setWeight(blocks, blockStructureWeight, comp(), totalGPRCount,totalFPRCount, totalVRFCount, &referencedBlocks, _startOfExtendedBBForBB,

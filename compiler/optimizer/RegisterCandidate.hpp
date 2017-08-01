@@ -179,7 +179,6 @@ public:
 
    TR_BitVector &          getBlocksLiveOnEntry()     { return _liveOnEntry; }
    TR_BitVector &          getBlocksLiveOnExit()      { return _liveOnExit; }
-   TR_BitVector &          getBlocksLiveWithinGenSetsOnly() { return _liveWithinGenSetsOnly; }
    TR::Symbol *            getSymbol();
 
    TR::DataType           getDataType();
@@ -222,10 +221,8 @@ public:
    void extendLiveRangesForLiveOnExit(TR::Compilation *, TR::Block **, TR_Array<TR::Block *>& startOfExtendedBBForBB);
 
    TR_BitVector *          getAvailableOnExit()     { return _availableOnExit; }
-   TR_BitVector *          getBlocksVisited()       { return _blocksVisited; }
 
    void          setAvailableOnExit(TR_BitVector *b)     { _availableOnExit = b; }
-   void          setBlocksVisited(TR_BitVector *b)       { _blocksVisited = b; }
 
    void recalculateWeight(TR::Block * *, int32_t *, TR::Compilation *,
                           TR_Array<int32_t>&,TR_Array<int32_t>&,TR_Array<int32_t>&,TR_BitVector *, TR_Array<TR::Block *>& startOfExtendedBB);
@@ -269,9 +266,7 @@ private:
    TR_BitVector            _liveOnEntry;
    TR_BitVector            _liveOnExit;
    TR_BitVector            _originalLiveOnEntry;
-   TR_BitVector            _liveWithinGenSetsOnly;
    TR_BitVector           *_availableOnExit;
-   TR_BitVector           *_blocksVisited;
    TR_Array<uint32_t> *    _loadsAndStores;
    List<TR::TreeTop>        _stores;
    List<TR_Structure>      _loopsWithHoles;

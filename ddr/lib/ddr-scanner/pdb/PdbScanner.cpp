@@ -173,7 +173,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 		 * Finding UDT and enum children separately seems to work around this
 		 * quirk in the PDB API.
 		 */
-		int lastProgressUpdate = 0;
+		std::size_t lastProgressUpdate = 0;
 		std::size_t count = 0;
 		for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
 			if (count ++ > lastProgressUpdate + debugFiles->size() / 10) {

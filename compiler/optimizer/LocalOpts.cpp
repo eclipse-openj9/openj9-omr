@@ -8166,8 +8166,15 @@ TR_ColdBlockMarker::identifyColdBlocks()
    for (TR::AllBlockIterator iter(optimizer()->getMethodSymbol()->getFlowGraph(), comp()); iter.currentBlock(); ++iter)
       {
       TR::Block *block = iter.currentBlock();
+
       if (block->isCold())
+         {
+         // OSR blocks may not have had a chance to set their frequencies yet
+         if (block->isOSRCodeBlock() || block->isOSRCatchBlock())
+            block->setFrequency(UNKNOWN_COLD_BLOCK_COUNT);
+
          foundColdBlocks = true;
+         }
       else
          {
          int32_t coldness = isBlockCold(block);

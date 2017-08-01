@@ -121,32 +121,7 @@ void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, Set * referenc
    node->setVisitCount(visitCount);
 
    if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->getSymbol()->isAutoOrParm())
-      {
-      TR::SymbolReference* symRef = node->getSymbolReference();
-      if (symRef->getSymbol()->isAutoOrParm() || symRef->getSymbol()->isMethodMetaData())
-         referencedAutoSymRefs->set(symRef->getReferenceNumber());
-      else if (_comp->getOptLevel() > warm)
-         {
-         TR::SparseBitVector indirectMethodMetaUses(_comp->allocator());
-         symRef->getUseDefAliases(node->getOpCode().isCallDirect()).getAliases(indirectMethodMetaUses);
-         if (!indirectMethodMetaUses.IsZero())
-            {
-            TR::SparseBitVector::Cursor aliasesCursor(indirectMethodMetaUses);
-            for (aliasesCursor.SetToFirstOne(); aliasesCursor.Valid(); aliasesCursor.SetToNextOne())
-               {
-               int32_t usedSymbolIndex;
-               TR::SymbolReference *usedSymRef = _comp->getSymRefTab()->getSymRef(aliasesCursor);
-               TR::RegisterMappedSymbol *usedSymbol = usedSymRef->getSymbol()->getMethodMetaDataSymbol();
-               if (usedSymbol && usedSymbol->getDataType() != TR::NoType)
-                  {
-                  usedSymbolIndex = usedSymbol->getLiveLocalIndex();
-                  referencedAutoSymRefs->set(usedSymbolIndex);
-                  }
-               }
-            }
-         }
-      }
-
+      referencedAutoSymRefs->set(node->getSymbolReference()->getReferenceNumber());
 
    for (int32_t i = 0; i < node->getNumChildren(); ++i)
       collectReferencedAutoSymRefs(node->getChild(i), referencedAutoSymRefs, visitCount);
@@ -594,10 +569,6 @@ bool TR_RegisterCandidates::aliasesPreventAllocation(TR::Compilation *comp, TR::
       return true;
     }
 
-  // exclude symbols that can be used by  other symbols (WCode only)
-  TR::SparseBitVector use_aliases(comp->allocator());
-
-  symRef->getUseonlyAliases().getAliases(use_aliases);
   return false;
   }
 

@@ -15,11 +15,9 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
-#if defined(J9ZOS390)
-/* We need to define these for the limit macros to get defined in z/OS */
-#define _ISOC99_SOURCE
-#define __STDC_LIMIT_MACROS
-#endif /* defined(J9ZOS390) */
+
+#include "ddr/std/sstream.hpp"
+#include "ddr/std/string.hpp"
 
 #include "ddr/blobgen/java/genBinaryBlob.hpp"
 
@@ -27,11 +25,9 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <limits.h>
-#include <sstream>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <vector>

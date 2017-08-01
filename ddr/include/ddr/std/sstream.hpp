@@ -19,6 +19,8 @@
 #ifndef SSTREAM_HPP
 #define SSTREAM_HPP
 
+#include "ddr/config.hpp"
+
 #if defined(J9ZOS390)
 
 #include <ctype.h>

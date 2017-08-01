@@ -19,6 +19,8 @@
 #ifndef STRING_HPP
 #define STRING_HPP
 
+#include "ddr/config.hpp"
+
 #if defined(J9ZOS390)
 
 #include <ctype.h>

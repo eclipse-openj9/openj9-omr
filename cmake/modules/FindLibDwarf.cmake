@@ -43,8 +43,8 @@ include (FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(LibDwarf
 	DEFAULT_MSG
-	LIBELF_FOUND
-	DWARF_H_INCLUDE_DIR
 	LIBDWARF_LIBRARY
+	DWARF_H_INCLUDE_DIR
 	LIBDWARF_H_INCLUDE_DIR
+	LIBELF_FOUND
 )

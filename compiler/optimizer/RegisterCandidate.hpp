@@ -51,60 +51,30 @@ public:
 
    class Set;
    Set * operator[](uint32_t blockNum)
-   {
-    if(blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
-        return NULL;
+      {
+      if (blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
+         return NULL;
     
-    return _refAutosPerBlock[blockNum];
-   }
+      return _refAutosPerBlock[blockNum];
+      }
 
    void collectReferencedAutoSymRefs(TR::Block * BB);
    bool isEmpty() { return _refAutosPerBlock.empty(); }
    void makeEmpty() { _refAutosPerBlock.clear(); }
-   void initialize(uint32_t numSymRefs, int32_t numBlocks) {_maxEntries = numSymRefs * numBlocks;}
 
-   //Set, SparseSet and DenseSet
    class Set
       {
-   public:
-      virtual bool get(uint32_t refNum)            = 0;
-      virtual void set(uint32_t symRefNum)         = 0;
-      virtual void print(TR::Compilation* comp)    = 0;
-   };
+      public:
+      TR_ALLOC(TR_Memory::RegisterCandidates);
+      Set(TR::Region &region):_refs(region){}
+      bool get(uint32_t refId) { return _refs.get(refId); }
+      void set(uint32_t refId) { _refs.set(refId); }
+      void print(TR::Compilation * comp);
+      private:
+      TR_BitVector _refs;
+      };
 
 private:
-
-   class SparseSet: public Set
-   {
-   public:
-   TR_ALLOC(TR_Memory::RegisterCandidates);
-   SparseSet(TR::Region &region):_refs(region){}
-   virtual bool get(uint32_t refId) {return _refs.get(refId); }
-   virtual void set(uint32_t refId) {_refs.set(refId);     }
-   virtual void print(TR::Compilation * comp);
-   private:
-   TR_BitVector _refs;
-   };
-
-   class DenseSet: public Set
-   {
-   public:
-   TR_ALLOC(TR_Memory::RegisterCandidates);
-   DenseSet(TR::Region &region):_refs(region){}
-   virtual bool get(uint32_t refId) {return _refs.get(refId); }
-   virtual void set(uint32_t refId) {_refs.set(refId); }
-   virtual void print(TR::Compilation * comp);
-   private:
-   TR_BitVector _refs;
-   };
-
-
-
-   enum
-   {
-     MB50     = 0x19000000,
-     MB100    = 0x32000000
-   };
 
    void collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutos, vcount_t visitCount);
 
@@ -113,7 +83,6 @@ private:
    typedef std::map<uint32_t, Set *, RefMapComparator, RefMapAllocator> RefMap;
    RefMap _refAutosPerBlock;
    TR::Compilation * _comp;
-   uint32_t _maxEntries;
    };
 
 }

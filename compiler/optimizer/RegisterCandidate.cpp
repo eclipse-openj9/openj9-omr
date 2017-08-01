@@ -83,12 +83,12 @@
 
 TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
    :_refAutosPerBlock((RefMapComparator()),(RefMapAllocator(region))),
-    _comp(comp),_maxEntries(0)
+    _comp(comp)
    {
    }
 
 
-void TR::GlobalSet::DenseSet::print(TR::Compilation * comp)
+void TR::GlobalSet::Set::print(TR::Compilation * comp)
    {
    TR_BitVectorIterator bits(_refs);
    for (int32_t bit = bits.getFirstElement(); bits.hasMoreElements(); bit = bits.getNextElement())
@@ -96,31 +96,15 @@ void TR::GlobalSet::DenseSet::print(TR::Compilation * comp)
      traceMsg(comp,"%d ",bit);
      }
    traceMsg(comp,"\n");
-   }
-
-void TR::GlobalSet::SparseSet::print(TR::Compilation * comp)
-   {
-   TR_BitVectorIterator bits(_refs);
-   for (int32_t bit = bits.getFirstElement(); bits.hasMoreElements(); bit = bits.getNextElement())
-     {
-     traceMsg(comp,"%d ",bit);
-     }
-   traceMsg(comp,"\n");
-
    }
 
 void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
    {
-   TR_ASSERT(_maxEntries > 0, " Entries unknown\n");
    if (!(BB->getEntry() && BB->getExit()))
         return;
 
    Set * refAutos = NULL;
-   TR::Allocator alloc = _comp->allocator();
-   if (_maxEntries > MB50)
-     refAutos  = new (_comp->trStackMemory()) SparseSet(_comp->trMemory()->currentStackRegion());
-   else
-     refAutos  = new (_comp->trStackMemory()) DenseSet(_comp->trMemory()->currentStackRegion());
+   refAutos  = new (_comp->trStackMemory()) Set(_comp->trMemory()->currentStackRegion());
 
    _refAutosPerBlock[BB->getNumber()] = refAutos;
 

@@ -3460,7 +3460,6 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
    TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs();
-   referencedAutoSymRefsInBlock.initialize(symRefCount,numberOfNodes);
 
    if (newOffer || new2Offer)
       {
@@ -3745,7 +3744,6 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
    TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs();
-   referencedAutoSymRefsInBlock.initialize(symRefCount,numberOfNodes);
 //   TR_BitVector **referencedAutoSymRefsInBlock; // = candidates->getReferencedAutoSymRefs();
 //   referencedAutoSymRefsInBlock = (TR_BitVector **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(TR_BitVector *));
 //   memset(referencedAutoSymRefsInBlock, 0, numberOfNodes*sizeof(TR_BitVector *));

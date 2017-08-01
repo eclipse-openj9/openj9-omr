@@ -59,6 +59,7 @@
 #include "infra/Cfg.hpp"                       // for CFG, TR_SuccessorIterator
 #include "infra/Link.hpp"                      // for TR_LinkHead
 #include "infra/List.hpp"                      // for ListIterator, List, etc
+#include "infra/Checklist.hpp"             // for NodeChecklist
 #include "infra/TRCfgEdge.hpp"                 // for CFGEdge
 #include "infra/TRCfgNode.hpp"                 // for CFGNode
 #include "optimizer/Optimizations.hpp"
@@ -82,38 +83,47 @@
 #define keepAllStores false
 
 TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
-   :_refAutosPerBlock((RefMapComparator()),(RefMapAllocator(region))),
+   :_region(region),
+    _empty(region),
+    _refAutosPerBlock((RefMapComparator()),(RefMapAllocator(region))),
     _comp(comp)
    {
    }
 
 
-void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
+TR_BitVector *TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
    {
    if (!(BB->getEntry() && BB->getExit()))
-        return;
+        return NULL;
 
-   TR_BitVector * refAutos = new (_comp->trStackMemory()) TR_BitVector(_comp->trMemory()->currentStackRegion());
+   if (BB->getEntry()->getNextTreeTop() == BB->getExit())
+      {
+      _refAutosPerBlock[BB->getNumber()] = &_empty;
+      return &_empty;
+      }
+
+   TR_BitVector * refAutos = new (_region) TR_BitVector(_region);
 
    _refAutosPerBlock[BB->getNumber()] = refAutos;
 
-   vcount_t visitCount = _comp->incVisitCount();
+   TR::NodeChecklist visited(comp());
    for (TR::TreeTop * tt = BB->getFirstRealTreeTop(); tt != BB->getExit(); tt = tt->getNextTreeTop())
-     collectReferencedAutoSymRefs(tt->getNode(), refAutos, visitCount);
+     collectReferencedAutoSymRefs(tt->getNode(), refAutos, visited);
+   return refAutos;
    }
 
-void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutoSymRefs, vcount_t visitCount)
+void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutoSymRefs, TR::NodeChecklist &visited)
    {
-   if (node->getVisitCount() == visitCount)
+   if (visited.contains(node))
       return;
 
-   node->setVisitCount(visitCount);
+   visited.add(node);
 
    if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->getSymbol()->isAutoOrParm())
       referencedAutoSymRefs->set(node->getSymbolReference()->getReferenceNumber());
 
    for (int32_t i = 0; i < node->getNumChildren(); ++i)
-      collectReferencedAutoSymRefs(node->getChild(i), referencedAutoSymRefs, visitCount);
+      collectReferencedAutoSymRefs(node->getChild(i), referencedAutoSymRefs, visited);
    }
 
 // Duplicated in GlobalRegisterAllocator.cpp. TODO try and factor this out
@@ -220,7 +230,7 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
 
 TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
   : _compilation(comp), _trMemory(comp->trMemory()), _candidateRegion(_trMemory->heapMemoryRegion()),
-    _referencedAutoSymRefsInBlock(comp,_trMemory->heapMemoryRegion())
+    _referencedAutoSymRefsInBlock(NULL)
    {
    _candidateForSymRefs = 0;
    _candidateForSymRefsSize      = 0;
@@ -1649,7 +1659,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
                {
                blocksVisited.set(currBlock->getNumber());
 
-               TR_BitVector *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock->getNumber());
+               TR_BitVector *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock);
                if (autosInBlock &&
                   autosInBlock->get(getSymbolReference()->getReferenceNumber()))
                   getAvailableOnExit()->set(currBlock->getNumber());
@@ -3092,7 +3102,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                     TR::Block * block = blocks[blockNumber];
                     TR_BlockStructure *blockStructure = block->getStructureOf();
                     int32_t blockWeight = 1;
-                    TR_BitVector *autosInBlock = getReferencedAutoSymRefsInBlock(block->getNumber());
+                    TR_BitVector *autosInBlock = getReferencedAutoSymRefsInBlock(block);
 
                     if (blockStructure)
                        {

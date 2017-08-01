@@ -3459,7 +3459,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
    bool                    newOffer=!new2Offer && !debug("oldOffer");
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs();
+   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
 
    if (newOffer || new2Offer)
       {
@@ -3473,13 +3473,6 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
 
         interestedCFGNodes[numInterested++]=block->getNumber();
         }
-      }
-
-   vcount_t visitCount = comp()->incVisitCount();
-   for (block = comp()->getStartBlock(); block!=NULL; block = block->getNextBlock())
-      {
-      //block = toBlock(node);
-      referencedAutoSymRefsInBlock.collectReferencedAutoSymRefs(block);
       }
 
    int32_t origRefCount = comp()->getSymRefCount();
@@ -3530,7 +3523,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                   continue;
 
                TR_ASSERT(block_num == block->getNumber(),"blocks[x]->getNumber() != x");
-               if (!referencedAutoSymRefsInBlock[block_num]->get(symRefNumber))
+               if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
                   weight = 0;
 
                rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
@@ -3545,7 +3538,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                int32_t blockNumber = interestedCFGNodes[i];
                if ((rc && rc->_blocks.find(blockNumber)))
                   continue;
-               if (!referencedAutoSymRefsInBlock[blockNumber]->get(symRefNumber))
+               if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
                   weight = 0;
                // If there is a reference in some block then actually create a candidate
                // and set all the previous block NumberOfLoadsAndStores to zero
@@ -3570,7 +3563,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                int32_t blockNumber = interestedCFGNodes[i];
                if (rc->_blocks.find(blockNumber))
                   continue;
-               if (!referencedAutoSymRefsInBlock[blockNumber]->get(symRefNumber))
+               if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
                   weight = 0;
                rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
                }
@@ -3587,7 +3580,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                    !block->getExceptionPredecessors().empty())
                   continue;
 
-               if (!referencedAutoSymRefsInBlock[block->getNumber()]->get(symRefNumber))
+               if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
                   weight = 0;
 
                rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);
@@ -3657,7 +3650,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                         continue;
 
                      TR_ASSERT(block_num == block->getNumber(),"blocks[x]->getNumber() != x");
-                     if (!referencedAutoSymRefsInBlock[block_num]->get(symRefNumber))
+                     if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
                         weight = 0;
 
                      rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
@@ -3673,7 +3666,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                      if ((rc && rc->_blocks.find(blockNumber))
                         ) // handle reg(*) only in block with abnormal blocks
                         continue;
-                     if (!referencedAutoSymRefsInBlock[blockNumber]->get(symRefNumber))
+                     if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
                         weight = 0;
                      // If there is a reference in some block then actually create a candidate
                      // and set all the previous block NumberOfLoadsAndStores to zero
@@ -3698,7 +3691,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                      int32_t blockNumber = interestedCFGNodes[i];
                      if (rc->_blocks.find(blockNumber))
                         continue;
-                     if (!referencedAutoSymRefsInBlock[blockNumber]->get(symRef->getReferenceNumber()))
+                     if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRef->getReferenceNumber()))
                         weight = 0;
                      rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
                      }
@@ -3715,7 +3708,7 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
                          !block->getExceptionPredecessors().empty())
                          continue;
 
-                     if (!referencedAutoSymRefsInBlock[block->getNumber()]->get(symRef->getReferenceNumber()))
+                     if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
                         weight = 0;
 
                      rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);
@@ -3745,7 +3738,7 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
    TR::ResolvedMethodSymbol              *methodSymbol = comp()->getJittedMethodSymbol();
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs();
+   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
 //   TR_BitVector **referencedAutoSymRefsInBlock; // = candidates->getReferencedAutoSymRefs();
 //   referencedAutoSymRefsInBlock = (TR_BitVector **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(TR_BitVector *));
 //   memset(referencedAutoSymRefsInBlock, 0, numberOfNodes*sizeof(TR_BitVector *));
@@ -3754,14 +3747,6 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
 //   for (i=0;i<numberOfNodes;i++)
 //      referencedAutoSymRefsInBlock[i] = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
 
-
-   vcount_t visitCount = comp()->incVisitCount();
-   //for (node = cfg->getFirstNode(); node!=NULL; node = node->getNext())
-   for (block = comp()->getStartBlock(); block!=NULL; block = block->getNextBlock())
-      {
-      //block = toBlock(node);
-      referencedAutoSymRefsInBlock.collectReferencedAutoSymRefs(block);
-      }
 
    //
    // Offer all FP autos now
@@ -3804,7 +3789,7 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
                       !block->getExceptionPredecessors().empty())
                       continue;
 
-                  if (!referencedAutoSymRefsInBlock[block->getNumber()]->get(symRef->getReferenceNumber()))
+                  if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
                     weight = 0;
 
       rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
@@ -3820,7 +3805,7 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
                       !block->getExceptionPredecessors().empty())
                       continue;
 
-                  if (!referencedAutoSymRefsInBlock[block->getNumber()]->get(symRef->getReferenceNumber()))
+                  if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
                     weight = 0;
 
       rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);

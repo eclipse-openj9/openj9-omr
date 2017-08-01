@@ -23,6 +23,7 @@
 #include <stdint.h>                       // for int32_t, uint32_t, uint8_t
 #include "codegen/RegisterConstants.hpp"  // for TR_GlobalRegisterNumber, etc
 #include "env/TRMemory.hpp"               // for Allocator, TR_Memory, etc
+#include "il/Block.hpp"                   // for TR::Block
 #include "il/DataTypes.hpp"               // for TR::DataType, DataTypes
 #include "il/Node.hpp"                    // for Node (ptr only), etc
 #include "infra/Array.hpp"                // for TR_Array
@@ -36,11 +37,11 @@
 
 class TR_GlobalRegisterAllocator;
 class TR_Structure;
-namespace TR { class Block; }
 namespace TR { class Compilation; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 namespace TR { class TreeTop; }
+namespace TR { class NodeChecklist; }
 
 namespace TR
 {
@@ -50,22 +51,28 @@ class GlobalSet
 public:
    GlobalSet(TR::Compilation * comp, TR::Region &region);
 
-   TR_BitVector * operator[](uint32_t blockNum)
+   TR_BitVector * operator[](TR::Block *BB)
       {
+      uint32_t blockNum = BB->getNumber();
       if (blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
          return NULL;
-    
-      return _refAutosPerBlock[blockNum];
+   
+      auto lookup = _refAutosPerBlock.find(blockNum);
+      if (lookup != _refAutosPerBlock.end())
+         return lookup->second; 
+      return collectReferencedAutoSymRefs(BB);
       }
 
-   void collectReferencedAutoSymRefs(TR::Block * BB);
    bool isEmpty() { return _refAutosPerBlock.empty(); }
    void makeEmpty() { _refAutosPerBlock.clear(); }
 
 private:
 
-   void collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutos, vcount_t visitCount);
+   TR_BitVector *collectReferencedAutoSymRefs(TR::Block * BB);
+   void collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutos, TR::NodeChecklist &visited);
 
+   TR::Region &_region;
+   TR_BitVector _empty;
    typedef TR::typed_allocator<std::pair<uint32_t, TR_BitVector*>, TR::Region&> RefMapAllocator;
    typedef std::less<uint32_t> RefMapComparator;
    typedef std::map<uint32_t, TR_BitVector*, RefMapComparator, RefMapAllocator> RefMap;
@@ -311,12 +318,20 @@ public:
    TR_RegisterCandidate * find(TR::SymbolReference * symRef);
    TR_RegisterCandidate * find(TR::Symbol * sym);
 
-   TR::GlobalSet&      getReferencedAutoSymRefs() { return _referencedAutoSymRefsInBlock; }
-   TR_BitVector *getReferencedAutoSymRefsInBlock(int32_t i)
+   TR::GlobalSet&      getReferencedAutoSymRefs(TR::Region &region)
       {
-      if (_referencedAutoSymRefsInBlock.isEmpty())
+      if (_referencedAutoSymRefsInBlock == NULL)
+         {
+         void *memory = region.allocate(sizeof(TR::GlobalSet));
+         _referencedAutoSymRefsInBlock = new (memory) TR::GlobalSet(comp(), region);
+         }
+      return *_referencedAutoSymRefsInBlock;
+      }
+   TR_BitVector *getReferencedAutoSymRefsInBlock(TR::Block *block)
+      {
+      if (!_referencedAutoSymRefsInBlock || _referencedAutoSymRefsInBlock->isEmpty())
          return 0;
-      return _referencedAutoSymRefsInBlock[i];
+      return (*_referencedAutoSymRefsInBlock)[block];
       }
 
    bool assign(TR::Block **, int32_t, int32_t &, int32_t &);
@@ -357,7 +372,7 @@ private:
    TR_LinkHead<TR_RegisterCandidate> _candidates;
 
    static int32_t                    _candidateTypeWeights[TR_NumRegisterCandidateTypes];
-   TR::GlobalSet            _referencedAutoSymRefsInBlock;
+   TR::GlobalSet            *_referencedAutoSymRefsInBlock;
    TR_RegisterCandidate **  _candidateForSymRefs;
    uint32_t                 _candidateForSymRefsSize;
    TR_Array<TR::Block *> _startOfExtendedBBForBB;

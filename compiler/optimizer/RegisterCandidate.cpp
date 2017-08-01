@@ -571,89 +571,52 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
    _loadsAndStores = new (comp->trStackMemory()) TR_Array<uint32_t>(comp->trMemory(), numberOfBlocks, true, stackAlloc);
 
    TR::CodeGenerator * cg = comp->cg();
-
-   for (auto itr = _blocks.begin(), end = _blocks.end(); itr != end; ++itr) {
+   for (auto itr = _blocks.begin(), end = _blocks.end(); itr != end; ++itr)
+      {
       int32_t blockNumber = itr->first;
       TR_ASSERT(blockNumber < cfg->getNextNodeNumber(), "Overflow on candidate BB numbers");
       TR::Block * b = blocks[blockNumber];
       if (!b) continue;
 
       TR_ASSERT(blockNumber == b->getNumber(),"blocks[x]->getNumber() != x");
-      bool firstBlock = firstBlocks.isSet(blockNumber);
       bool hasLoadNearStart = !isExtensionOfPreviousBlock.isSet(blockNumber) && findLoadNearStartOfBlock(b, getSymbolReference());
       TR_ASSERT((blockNumber < cfg->getNextNodeNumber()) && (blocks[blockNumber] == b),"blockNumber is wrong");
+      
+      int32_t blockWeight = itr->second;
+      bool firstBlock = firstBlocks.isSet(blockNumber);
+      if ((firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
+           (!firstBlock && (symbolIsLive(b) || (hasLoopExitBlock(b) && (blockWeight==0)))))
+         _liveOnEntry.set(blockNumber);
 
-      static char *disableGRAChange = feGetEnv("TR_disableGRAChange");
-      if (((firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
-            (!firstBlock /* && (symbolIsLive(b) || hasLoopExitBlock(b)) */)) ||
-           !disableGRAChange)
+      TR_BlockStructure * blockStructure = b->getStructureOf();
+      int32_t blockFreq = 1;
+      if (blockStructure)
          {
-         int32_t blockWeight = _blocks.getNumberOfLoadsAndStores(blockNumber);
-
-         static bool recalcWeights = feGetEnv("TR_GRA_RecalculateBlockWeights") ? true : false;
-
-         TR_BlockStructure * blockStructure;
-         if (recalcWeights && blockWeight > 0 && (blockStructure = b->getStructureOf()))
-            {
-            blockWeight = blockStructureWeight[blockNumber];
-
-
-            // blockWeight = 1;
-            // blockStructure->calculateFrequencyOfExecution(&blockWeight);
-            int32_t origWeight = blockWeight;
-            if (blockStructure->getParent())
-               {
-               if (blockStructure->getWeight() < 0)
-                  blockStructure->getParent()->setConditionalityWeight(&blockWeight);
-               blockWeight = blockStructure->getWeight();
-               }
-
-            if (blockWeight < origWeight)
-               blockWeight = std::max(1, origWeight*9/10);
-
-            }
-
-         blockStructure = b->getStructureOf();
-         int32_t blockFreq = 1;
-         if (blockStructure)
-            {
-            blockFreq = blockStructureWeight[blockNumber];
-            }
-
-         TR_ASSERT(comp->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
-         TR::Block * extendedBlock = startOfExtendedBBForBB[blockNumber];
-         int32_t extendedBlockFreq = 1;
-         TR_BlockStructure *extendedBlockStructure = extendedBlock->getStructureOf();
-         if (extendedBlockStructure)
-            {
-            // extendedBlockStructure->calculateFrequencyOfExecution(&extendedBlockFreq);
-            extendedBlockFreq = blockStructureWeight[extendedBlock->getNumber()];
-            }
-
-         //traceMsg(comp, "for cand %d blockWeight %d b %d extended b %d live %d\n", getSymbolReference()->getReferenceNumber(), blockWeight, b->getNumber(), extendedBlock->getNumber(), symbolIsLive(b));
-
-         //if (b == extendedBlock)
-          if (disableGRAChange ||
-              (firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
-              (!firstBlock && (symbolIsLive(b)  || (hasLoopExitBlock(b) && (_blocks.getNumberOfLoadsAndStores(blockNumber)==0)))))
-            _liveOnEntry.set(b->getNumber());
-
-          // We should not mark a candidate as being referenced in the extended block if the
-          // only references to it are in the portion of the extended block that is outside a loop
-          // This is important as we cannot recognize that a candidate is not referenced at all in a loop
-          // otherwise. We see a 'false' use in the extended basic block that started inside the loop because
-          // of the portion of the extended basic block outside the loop.
-          //
-         if (extendedBlockFreq <= blockFreq)
-            {
-            //dumpOptDetails(comp(), "Reached here for b %d\n", b->getNumber());
-            //dumpOptDetails(comp(), "blockWeight %d ext loadsStores %d\n", blockWeight, (*_loadsAndStores)[extendedBlock->getNumber()]);
-            if ((uint32_t)blockWeight > (*_loadsAndStores)[extendedBlock->getNumber()])
-               (*_loadsAndStores)[extendedBlock->getNumber()] = blockWeight;
-            }
-         if ((uint32_t)blockWeight > (*_loadsAndStores)[blockNumber])
-            (*_loadsAndStores)[blockNumber] = blockWeight;
+         blockFreq = blockStructureWeight[blockNumber];
          }
+
+      TR_ASSERT(comp->getOptimizer()->cachedExtendedBBInfoValid(), "Incorrect value in _startOfExtendedBBForBB");
+      TR::Block * extendedBlock = startOfExtendedBBForBB[blockNumber];
+      int32_t extendedBlockFreq = 1;
+      TR_BlockStructure *extendedBlockStructure = extendedBlock->getStructureOf();
+      if (extendedBlockStructure)
+         {
+         extendedBlockFreq = blockStructureWeight[extendedBlock->getNumber()];
+         }
+
+       // We should not mark a candidate as being referenced in the extended block if the
+       // only references to it are in the portion of the extended block that is outside a loop
+       // This is important as we cannot recognize that a candidate is not referenced at all in a loop
+       // otherwise. We see a 'false' use in the extended basic block that started inside the loop because
+       // of the portion of the extended basic block outside the loop.
+       //
+      if (extendedBlockFreq <= blockFreq)
+         {
+         if ((uint32_t)blockWeight > (*_loadsAndStores)[extendedBlock->getNumber()])
+            (*_loadsAndStores)[extendedBlock->getNumber()] = blockWeight;
+         }
+      if ((uint32_t)blockWeight > (*_loadsAndStores)[blockNumber])
+         (*_loadsAndStores)[blockNumber] = blockWeight;
       }
 
    _originalLiveOnEntry |= _liveOnEntry;

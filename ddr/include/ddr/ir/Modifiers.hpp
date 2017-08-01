@@ -19,7 +19,7 @@
 #ifndef MODIFIERS_HPP
 #define MODIFIERS_HPP
 
-#include <string>
+#include "ddr/std/string.hpp"
 #include <vector>
 
 using std::string;

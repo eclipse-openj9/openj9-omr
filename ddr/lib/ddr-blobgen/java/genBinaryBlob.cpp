@@ -16,20 +16,23 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  *******************************************************************************/
 
-#include "ddr/std/sstream.hpp"
-#include "ddr/std/string.hpp"
+#include "ddr/config.hpp"
 
 #include "ddr/blobgen/java/genBinaryBlob.hpp"
 
+#include "ddr/std/sstream.hpp"
+
 #undef NDEBUG
+
 #include <assert.h>
+#include <cstring>
 #include <fcntl.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <vector>
 
 using std::string;

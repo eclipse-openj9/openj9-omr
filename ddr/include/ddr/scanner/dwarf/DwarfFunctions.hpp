@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sstream>
+#include "ddr/std/sstream.hpp"
 #include <tuple>
 #include <unordered_map>
 #include <vector>

@@ -21,7 +21,7 @@
 #include "ddr/error.hpp"
 #include "ddr/ir/Macro.hpp"
 
-#include <sstream>
+#include "ddr/std/sstream.hpp"
 #include <string.h>
 
 using std::string;

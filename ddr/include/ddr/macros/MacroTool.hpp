@@ -19,7 +19,7 @@
 #ifndef MACROTOOL_HPP
 #define MACROTOOL_HPP
 
-#include <string>
+#include "ddr/std/string.hpp"
 
 #include "ddr/config.hpp"
 #include "ddr/macros/MacroInfo.hpp"

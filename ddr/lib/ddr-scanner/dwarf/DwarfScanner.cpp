@@ -34,7 +34,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
-#include <sstream>
+#include "ddr/std/sstream.hpp"
 #include <stdio.h>
 #include <stdlib.h>     /* For exit() */
 #include <string.h>

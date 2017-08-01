@@ -23,7 +23,7 @@
 #include <comdef.h>
 #include <inttypes.h>
 #include <stdio.h>
-#include <sstream>
+#include "ddr/std/sstream.hpp"
 
 #include "ddr/config.hpp"
 #include "ddr/ir/EnumMember.hpp"

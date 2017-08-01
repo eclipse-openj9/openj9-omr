@@ -22,7 +22,7 @@
 #include "ddr/config.hpp"
 
 #include <set>
-#include <string>
+#include "ddr/std/string.hpp"
 
 #include "ddr/blobgen/genBlob.hpp"
 #include "ddr/ir/Symbol_IR.hpp"

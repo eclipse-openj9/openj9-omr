@@ -19,7 +19,7 @@
 #ifndef MACROINFO_HPP
 #define MACROINFO_HPP
 
-#include <string>
+#include "ddr/std/string.hpp"
 #include <set>
 #include <vector>
 

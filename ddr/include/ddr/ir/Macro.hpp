@@ -23,7 +23,7 @@
 
 #include "ddr/error.hpp"
 
-#include <string>
+#include "ddr/std/string.hpp"
 
 class Macro
 {

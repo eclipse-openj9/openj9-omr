@@ -21,7 +21,7 @@
 
 #include "ddr/config.hpp"
 
-#include <string>
+#include "ddr/std/string.hpp"
 
 #include "ddr/ir/Members.hpp"
 #include "ddr/ir/Modifiers.hpp"

@@ -21,7 +21,7 @@
 
 #include "ddr/config.hpp"
 
-#include <sstream>
+#include "ddr/std/sstream.hpp"
 #include <stdio.h>
 #include <string.h>
 

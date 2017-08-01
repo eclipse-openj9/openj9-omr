@@ -142,23 +142,15 @@ int32_t TR_RegisterCandidates::_candidateTypeWeights[TR_NumRegisterCandidateType
    };
 
 TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region &r)
-   : _symRef(sr), _splitSymRef(NULL), _restoreSymRef(NULL), _lowRegNumber(-1), _highRegNumber(-1), _allBlocks(false),
-     _failedToAssignToARegister(false),
+   : _symRef(sr), _splitSymRef(NULL), _restoreSymRef(NULL), _lowRegNumber(-1), _highRegNumber(-1),
      _liveOnEntry(), _liveOnExit(), _originalLiveOnEntry(),
-     _8BitGlobalGPR(false),
      _reprioritized(0),
      _blocks(r),
-     _valueModified(false),
-     _liveAcrossExceptionEdge(false),
      _loopExitBlocks(r),
      _stores(r),
      _loopsWithHoles(r),
      _mostRecentValue(NULL),
      _lastLoad(NULL),
-     _highWordZero(false),
-     _dontAssignVMThreadRegister(false),
-     _initialBlocksWeightComputed(false),
-     _extendedLiveRange(false),
      _availableOnExit(NULL)
    {
    }
@@ -602,7 +594,7 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
       TR_ASSERT((blockNumber < cfg->getNextNodeNumber()) && (blocks[blockNumber] == b),"blockNumber is wrong");
 
       static char *disableGRAChange = feGetEnv("TR_disableGRAChange");
-      if (((firstBlock && _allBlocks && cg->getSupportsGlRegDepOnFirstBlock()) ||
+      if (((firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
             (!firstBlock /* && (symbolIsLive(b) || hasLoopExitBlock(b)) */)) ||
            !disableGRAChange)
          {
@@ -652,7 +644,7 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
 
          //if (b == extendedBlock)
           if (disableGRAChange ||
-              (firstBlock && _allBlocks && cg->getSupportsGlRegDepOnFirstBlock()) ||
+              (firstBlock && isAllBlocks() && cg->getSupportsGlRegDepOnFirstBlock()) ||
               (!firstBlock && (symbolIsLive(b)  || (hasLoopExitBlock(b) && (_blocks.getNumberOfLoadsAndStores(blockNumber)==0)))))
             _liveOnEntry.set(b->getNumber());
 
@@ -798,7 +790,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
    referencedBlocks->empty();
    vcount_t visitCount = comp->incVisitCount();
    TR_BitVectorIterator bvi;
-   bool lookForBlocksToRemove = !_allBlocks;
+   bool lookForBlocksToRemove = !isAllBlocks();
    // TODO take this all out
    // used for MetaData that are live on entry in blocks, just to mark that they can escape via return but there is no real loads
    // so we do not want such live on entry blocks to contribute to weigh of the candidate
@@ -1607,7 +1599,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
       {
       if (rcNeeds2Regs(comp))
          {
-         if (!highWordZero())
+         if (!isHighWordZero())
             {
             loadsAndStores = 2*loadsAndStores;
             }
@@ -2057,7 +2049,7 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
    int32_t i;
    for (i = firstRegister; i <= lastRegister; ++i)
    {
-     if ((i == comp->cg()->getVMThreadGlobalRegisterNumber()) && rc->dontAssignVMThreadRegister())
+     if ((i == comp->cg()->getVMThreadGlobalRegisterNumber()) && rc->isDontAssignVMThreadRegister())
        continue;
 
      if(trace)
@@ -2591,13 +2583,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
             }
          }
 
-      if (rc->getFailedToAssignToARegister())
-         {
-         if (trace)
-            traceMsg(comp(),"Leaving candidate because rc->getFailedToAssignToARegister()\n");
-         continue;
-         }
-
       if (((++iterationCount & 0xf) == 0))
          {
          if (comp()->compilationShouldBeInterrupted(GRA_ASSIGN_CONTEXT))
@@ -3126,7 +3111,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                  traceMsg(comp(),"Searching for blocks/structures with max frequency for reg: %d\n",i);
                  }
               if ((!useRegisterPressureInfo && availableRegisters.get(i)) ||
-                  ((i == comp()->cg()->getVMThreadGlobalRegisterNumber()) && rc->dontAssignVMThreadRegister()))
+                  ((i == comp()->cg()->getVMThreadGlobalRegisterNumber()) && rc->isDontAssignVMThreadRegister()))
                  {
                  // Without register pressure information, we have no idea
                  // what to do to make pickRegister pick an availableRegister,
@@ -3873,7 +3858,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
           _exitEntryConflicts[i].isEmpty() &&
           _entryExitConflicts[i].isEmpty() &&
           comp()->cg()->isGlobalRegisterAvailable(i, rc->getDataType()) &&
-          ((i != comp()->cg()->getVMThreadGlobalRegisterNumber()) || !rc->dontAssignVMThreadRegister()))
+          ((i != comp()->cg()->getVMThreadGlobalRegisterNumber()) || !rc->isDontAssignVMThreadRegister()))
          {
          availableRegisters->set(i);
          }

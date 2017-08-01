@@ -29,6 +29,7 @@
 #include "infra/Assert.hpp"               // for TR_ASSERT
 #include "infra/BitVector.hpp"            // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                  // for CFG, CFGBase::::EndBlock, etc
+#include "infra/Flags.hpp"                // for flags16_t
 #include "infra/Link.hpp"                 // for TR_LinkHead, TR_Link
 #include "infra/List.hpp"                 // for List
 #include <map>
@@ -142,7 +143,7 @@ public:
       int32_t _numberOfLoadsAndStores;
       };
 
-   void addAllBlocks()         { _allBlocks = true; }
+   void addAllBlocks()         { setAllBlocks(true); }
 
    void addBlock(TR::Block * b, int32_t numberOfLoadsAndStores, TR_Memory *, bool ifNotFound = false);
 
@@ -187,18 +188,9 @@ public:
    TR_RegisterKinds        getRegisterKinds();
 
    uint32_t                getWeight()                { return _weight; }
-   int32_t                 is8BitGlobalGPR()          { return _8BitGlobalGPR; }
-   int32_t                 getFailedToAssignToARegister() { return _failedToAssignToARegister; }
 
    bool symbolIsLive(TR::Block *);
    bool canBeReprioritized() { return (_reprioritized > 0); }
-   bool getValueModified() { return _valueModified; }
-
-   bool isLiveAcrossExceptionEdge() { return _liveAcrossExceptionEdge; }
-   void setLiveAcrossExceptionEdge(bool b) { _liveAcrossExceptionEdge = b; }
-
-   bool highWordZero() { return _highWordZero; }
-   void setHighWordZero(bool b) { _highWordZero = b; }
 
    void setGlobalRegisterNumber(TR_GlobalRegisterNumber n) { _lowRegNumber = n; }
    void setLowGlobalRegisterNumber(TR_GlobalRegisterNumber n) { _lowRegNumber = n; }
@@ -207,11 +199,9 @@ public:
    void setWeight(TR::Block * *, int32_t *, TR::Compilation *,
                   TR_Array<int32_t>&,TR_Array<int32_t>&, TR_Array<int32_t>&,
                   TR_BitVector *, TR_Array<TR::Block *>& startOfExtendedBB, TR_BitVector &, TR_BitVector &);
-   void setIs8BitGlobalGPR(bool b) { _8BitGlobalGPR = b; }
    void setReprioritized() { _reprioritized--; }
    void setMaxReprioritized(uint8_t n) { _reprioritized = n;}
    uint8_t getReprioritized() { return  _reprioritized; }
-   void setValueModified(bool b) { _valueModified = b; }
    void processLiveOnEntryBlocks(TR::Block * *, int32_t *, TR::Compilation *,
                                  TR_Array<int32_t>&,TR_Array<int32_t>&, TR_Array<int32_t>&,
                                  TR_BitVector *, TR_Array<TR::Block *>& startOfExtendedBB, bool removeUnusedLoops = false);
@@ -232,15 +222,6 @@ public:
    List<TR_Structure> & getLoopsWithHoles() { return _loopsWithHoles; }
    void addLoopWithHole(TR_Structure *s) { if (!_loopsWithHoles.find(s)) _loopsWithHoles.add(s); }
 
-   bool dontAssignVMThreadRegister() { return _dontAssignVMThreadRegister; }
-   void setDontAssignVMThreadRegister(bool b) { _dontAssignVMThreadRegister = b; }
-
-   bool extendedLiveRange() { return _extendedLiveRange; }
-   void setExtendedLiveRange(bool b) { _extendedLiveRange = b; }
-
-   bool initialBlocksWeightComputed() { return _initialBlocksWeightComputed; }
-   void setInitialBlocksWeightComputed(bool b) { _initialBlocksWeightComputed = b; }
-
    void addStore(TR::TreeTop * tt)
       { _stores.add(tt); }
 
@@ -251,9 +232,28 @@ public:
 
    bool canAllocateDespiteAliases(TR::Compilation *);
 
+   bool extendedLiveRange()             { return _flags.testAny(extendLiveRange); }
+   bool is8BitGlobalGPR()               { return _flags.testAny(eightBitGlobalGPR); }
+   bool initialBlocksWeightComputed()   { return _flags.testAny(initialBlocksWeightComputedFlag); }
+   bool getValueModified()              { return _flags.testAny(valueModified); }
+   bool isHighWordZero()                { return _flags.testAny(highWordZero); }
+   bool isLiveAcrossExceptionEdge()     { return _flags.testAny(liveAcrossExceptionEdge); }
+   bool isDontAssignVMThreadRegister()  { return _flags.testAny(dontAssignVMThreadRegister); }
+
+   void setExtendedLiveRange(bool b)    { _flags.set(extendLiveRange, b); }
+   void setValueModified(bool b)        { _flags.set(valueModified, b); }
+   void setHighWordZero(bool b)         { _flags.set(highWordZero, b); }
+   void setLiveAcrossExceptionEdge(bool b) { _flags.set(liveAcrossExceptionEdge, b); }
+   void setDontAssignVMThreadRegister(bool b) { _flags.set(dontAssignVMThreadRegister, b); }
 private:
    friend class TR_RegisterCandidates;
    friend class TR_GlobalRegisterAllocator;
+
+   bool isAllBlocks() { return _flags.testAny(allBlocks); }
+
+   void setAllBlocks(bool b)                   { _flags.set(allBlocks, b); }
+   void setIs8BitGlobalGPR(bool b)             { _flags.set(eightBitGlobalGPR, b); }
+   void setInitialBlocksWeightComputed(bool b) { _flags.set(initialBlocksWeightComputedFlag, b); }
 
    TR::SymbolReference *    _symRef;
    TR::SymbolReference *    _splitSymRef;
@@ -272,16 +272,21 @@ private:
    List<TR_Structure>      _loopsWithHoles;
    TR::Node                *_mostRecentValue;
    TR::Node                *_lastLoad;
-   bool                    _allBlocks;
-   bool                    _failedToAssignToARegister;
-   bool                    _8BitGlobalGPR;
+   flags16_t                _flags;
+
+   enum
+      {
+      allBlocks                   = 0x0001,
+      eightBitGlobalGPR           = 0x0002,
+      valueModified               = 0x0004,
+      liveAcrossExceptionEdge     = 0x0008,
+      highWordZero                = 0x0010,
+      dontAssignVMThreadRegister  = 0x0020,
+      extendLiveRange             = 0x0040,
+      initialBlocksWeightComputedFlag = 0x0080,
+      };
+
    uint8_t                 _reprioritized;
-   bool                    _valueModified;
-   bool                    _liveAcrossExceptionEdge;
-   bool                    _highWordZero;
-   bool                    _dontAssignVMThreadRegister;
-   bool                    _extendedLiveRange;
-   bool                    _initialBlocksWeightComputed;
 
 #ifdef TRIM_ASSIGNED_CANDIDATES
    TR_LinkHead<LoopInfo>   _loops; // loops candidate is used in

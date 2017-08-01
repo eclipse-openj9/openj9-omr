@@ -1,5 +1,11 @@
 # Find DIA SDK
 # Will search the environment variable DIASDK first.
+#
+# Will set:
+#   DIASDK_FOUND
+#   DIASDK_INCLUDE_DIRS
+#   DIASDK_LIBRARIES
+#   DIASDK_DEFINES
 
 find_path(DIA2_H_DIR "dia2.h"
 	HINTS

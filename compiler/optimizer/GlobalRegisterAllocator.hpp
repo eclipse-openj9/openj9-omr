@@ -243,6 +243,9 @@ private:
 
    void populateSymRefNodes(TR::Node *node, vcount_t visitCount);
 
+   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef std::less<uint32_t> SymRefCandidateMapComparator;
+   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
    /*
    void splitLiveRanges();
    void splitLiveRanges(TR_StructureSubGraphNode *structureNode, vcount_t visitCount, TR_RegisterCandidate **registerCandidates);
@@ -256,7 +259,7 @@ private:
    int32_t      _lastGlobalRegisterNumber;
    bool         _gotoCreated;
    TR::Block    *_appendBlock;
-   TR_RegisterCandidate **_registerCandidates;
+   SymRefCandidateMap *_registerCandidates;
    TR_ScratchList<TR::Block> _newBlocks;
    TR_BitVector *_temp, *_temp2;
    TR_BitVector *_candidatesNeedingSignExtension;

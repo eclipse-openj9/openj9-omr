@@ -496,14 +496,13 @@ TR_GlobalRegisterAllocator::perform()
       else
          offerAllFPAutosAndParmsAsCandidates(cfgBlocks, numberOfBlocks);
 
-      _registerCandidates = (TR_RegisterCandidate **)trMemory()->allocateStackMemory(_origSymRefCount*sizeof(TR_RegisterCandidate *));
-      memset(_registerCandidates, 0, _origSymRefCount*sizeof(TR_RegisterCandidate *));
+      _registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
 
       _candidates = comp()->getGlobalRegisterCandidates();
 
       for (TR_RegisterCandidate * rc = _candidates->getFirst(); rc; rc = rc->getNext())
          {
-         _registerCandidates[rc->getSymbolReference()->getReferenceNumber()] = rc;
+         (*_registerCandidates)[rc->getSymbolReference()->getReferenceNumber()] = rc;
          }
 
       findIfThenRegisterCandidates();
@@ -608,7 +607,7 @@ TR_GlobalRegisterAllocator::perform()
          bool mayHaveDeadStore = false;
          for (TR_RegisterCandidate * rc = _candidates->getFirst(); rc; rc = rc->getNext())
             {
-            _registerCandidates[rc->getSymbolReference()->getReferenceNumber()] = rc;
+            (*_registerCandidates)[rc->getSymbolReference()->getReferenceNumber()] = rc;
             TR::SymbolReference *splitSymRef = rc->getSplitSymbolReference();
             if (splitSymRef)
                {
@@ -654,7 +653,7 @@ TR_GlobalRegisterAllocator::perform()
                TR::SymbolReference *outerSymRef = rc->getRestoreSymbolReference();
                while (outerSymRef)
                   {
-                  TR_RegisterCandidate *outerRc = _registerCandidates[outerSymRef->getReferenceNumber()];
+                  TR_RegisterCandidate *outerRc = (*_registerCandidates)[outerSymRef->getReferenceNumber()];
                   if (!outerRc)
                      break;
                   if (_valueModifiedSymRefs->get(rc->getSymbolReference()->getReferenceNumber()))
@@ -685,7 +684,7 @@ TR_GlobalRegisterAllocator::perform()
                   {
                   TR::Node *store = tt->getNode(), *load = tt->getNode()->getFirstChild();
                   if (store->getOpCode().isStoreDirect() && load->getOpCode().isLoadReg()
-                     && !_registerCandidates[store->getSymbolReference()->getReferenceNumber()]->extendedLiveRange())
+                     && !(*_registerCandidates)[store->getSymbolReference()->getReferenceNumber()]->extendedLiveRange())
                      {
                      storesFromRegisters.add(tt);
                      }
@@ -755,8 +754,8 @@ TR_GlobalRegisterAllocator::isSplittingCopy(TR::Node *node)
       TR::SymbolReference *loadSymRef  = node->getFirstChild()->getSymbolReferenceOfAnyType();
       if (storeSymRef && loadSymRef && storeSymRef != loadSymRef)
          {
-         TR_RegisterCandidate *storeRc = _registerCandidates[storeSymRef->getReferenceNumber()];
-         TR_RegisterCandidate *loadRc = _registerCandidates[loadSymRef->getReferenceNumber()];
+         TR_RegisterCandidate *storeRc = (*_registerCandidates)[storeSymRef->getReferenceNumber()];
+         TR_RegisterCandidate *loadRc = (*_registerCandidates)[loadSymRef->getReferenceNumber()];
          TR::SymbolReference *origStoreSymRef = storeRc ? storeRc->getSplitSymbolReference() : NULL;
          TR::SymbolReference *origLoadSymRef = loadRc ? loadRc->getSplitSymbolReference() : NULL;
          if ((origStoreSymRef && origLoadSymRef && origStoreSymRef == origLoadSymRef) ||
@@ -790,7 +789,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
       if (node->getSymbolReferenceOfAnyType())
          {
          int32_t symRefNum = node->getSymbolReferenceOfAnyType()->getReferenceNumber();
-         TR_RegisterCandidate *rc = _registerCandidates[symRefNum];
+         TR_RegisterCandidate *rc = (*_registerCandidates)[symRefNum];
          TR::SymbolReference *origSymRef = rc ? rc->getRestoreSymbolReference() : NULL;
          bool foundChangeSymRef = false;
          bool setValueModified = false;
@@ -798,7 +797,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
          while (origSymRef &&
                 (origSymRef != rc->getSplitSymbolReference()))
             {
-            TR_RegisterCandidate *origRc = _registerCandidates[origSymRef->getReferenceNumber()];
+            TR_RegisterCandidate *origRc = (*_registerCandidates)[origSymRef->getReferenceNumber()];
 
             if (setValueModified)
                _valueModifiedSymRefs->set(origRc->getSymbolReference()->getReferenceNumber());
@@ -825,7 +824,7 @@ TR_GlobalRegisterAllocator::restoreOriginalSymbol(TR::Node *node, vcount_t visit
             origSymRef = origRc->getRestoreSymbolReference();
             }
 
-         TR_RegisterCandidate *oldRc = origSymRef ? _registerCandidates[origSymRef->getReferenceNumber()] : 0;
+         TR_RegisterCandidate *oldRc = origSymRef ? (*_registerCandidates)[origSymRef->getReferenceNumber()] : 0;
          if (oldRc && oldRc->extendedLiveRange())
             {
             _valueModifiedSymRefs->set(oldRc->getSymbolReference()->getReferenceNumber());

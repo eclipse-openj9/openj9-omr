@@ -912,7 +912,6 @@ public:
    bool getFailCHTableCommit() const { return _failCHtableCommitFlag; }
    void setFailCHTableCommit(bool v) { _failCHtableCommitFlag = v; }
 
-   uint8_t *getNOPTranslateTable();
    size_t getNOPTranslateTableSize() { return TR_NOP_TRANSLATE_TABLE_SIZE; }
 
    TR_RandomGenerator &adhocRandom(){ return *_adhocRandom; } // Not recommended if you care about reproducibility
@@ -1055,8 +1054,6 @@ private:
    TR::list<TR_DevirtualizedCallInfo*>     _devirtualizedCalls;
    int32_t                            _inlinedCalls;
    int16_t                           _inlinedFramesAdded;
-
-   static uint8_t _NOPTranslateTable[TR_NOP_TRANSLATE_TABLE_SIZE];
 
    TR::list<TR_VirtualGuard*>              _virtualGuards;
 

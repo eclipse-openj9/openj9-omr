@@ -23,8 +23,8 @@ include (FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(DiaSDK
 	DEFAULT_MSG
-	DIA2_H_DIR
 	DIAGUIDS_LIBRARY
+	DIA2_H_DIR
 )
 
 if(DIASDK_FOUND)

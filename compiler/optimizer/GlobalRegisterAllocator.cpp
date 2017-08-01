@@ -3828,9 +3828,8 @@ TR_GlobalRegisterAllocator::findLoopAutoRegisterCandidates()
    TR::CFG * cfg = comp()->getFlowGraph();
    vcount_t visitCount = comp()->incVisitCount();
    TR_Structure *rootStructure = comp()->getFlowGraph()->getStructure();
-   TR_RegisterCandidate **registerCandidates = (TR_RegisterCandidate **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR_RegisterCandidate *));
-   memset(registerCandidates, 0, comp()->getSymRefCount()*sizeof(TR_RegisterCandidate *));
-   findLoopsAndCorrespondingAutos(NULL, visitCount, registerCandidates);
+   SymRefCandidateMap * registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
+   findLoopsAndCorrespondingAutos(NULL, visitCount, *registerCandidates);
    }
 
 TR_GlobalRegisterAllocator::BlockInfo &
@@ -3842,7 +3841,7 @@ TR_GlobalRegisterAllocator::blockInfo(int32_t i)
    }
 
 void
-TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *structureNode, vcount_t visitCount, TR_RegisterCandidate **registerCandidates)
+TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *structureNode, vcount_t visitCount, SymRefCandidateMap &registerCandidates)
    {
    TR_Structure *structure;
    if (structureNode)
@@ -4070,7 +4069,7 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
    List<TR::Block>        *blocksInLoop,
    vcount_t               visitCount,
    int32_t                executionFrequency,
-   TR_RegisterCandidate **registerCandidates,
+   SymRefCandidateMap    &registerCandidates,
    TR_BitVector          *assignedAutosInCurrentLoop,
    TR_BitVector          *symsThatShouldNotBeAssignedInCurrentLoop,
    bool                   hasCatchBlock)
@@ -5154,8 +5153,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
             _numberOfGPRs = 0;
             _numberOfFPRs = 0;
 
-            TR_RegisterCandidate **registerCandidates = (TR_RegisterCandidate **)trMemory()->allocateStackMemory(comp()->getSymRefCount()*sizeof(TR_RegisterCandidate *));
-            memset(registerCandidates, 0, comp()->getSymRefCount()*sizeof(TR_RegisterCandidate *));
+            SymRefCandidateMap *registerCandidates = new (trStackMemory()) SymRefCandidateMap((SymRefCandidateMapComparator()), SymRefCandidateMapAllocator(trMemory()->currentStackRegion()));
 
             TR_BitVector *replacedAutosInCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc);
             TR_BitVector *autosThatCannotBeReplacedInCurrentLoop = new (trStackMemory()) TR_BitVector(comp()->getSymRefCount(), trMemory(), stackAlloc);
@@ -5201,7 +5199,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
                   while (currentTree != exitTree)
                      {
                      TR::Node *currentNode = currentTree->getNode();
-                     replaceAutosUsedIn(currentTree, currentNode, NULL, nextBlock, &blocksInLoop, &exitBlocks, visitCount, executionFrequency, registerCandidates, correspondingSymRefs, replacedAutosInCurrentLoop, autosThatCannotBeReplacedInCurrentLoop, structureNode, loopInvariantBlock);
+                     replaceAutosUsedIn(currentTree, currentNode, NULL, nextBlock, &blocksInLoop, &exitBlocks, visitCount, executionFrequency, *registerCandidates, correspondingSymRefs, replacedAutosInCurrentLoop, autosThatCannotBeReplacedInCurrentLoop, structureNode, loopInvariantBlock);
                      currentTree = currentTree->getNextRealTreeTop();
                      }
                   }
@@ -5235,11 +5233,11 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
                    !replacedAutosInCurrentLoop->get(i) &&
                    !autosThatCannotBeReplacedInCurrentLoop->get(i))
                   {
-                  TR_RegisterCandidate *rc = registerCandidates[origSymRef->getReferenceNumber()];
+                  TR_RegisterCandidate *rc = (*registerCandidates)[origSymRef->getReferenceNumber()];
                   if (!rc)
                      {
                      rc = comp()->getGlobalRegisterCandidates()->find(origSymRef);
-                     registerCandidates[origSymRef->getReferenceNumber()] = rc;
+                     (*registerCandidates)[origSymRef->getReferenceNumber()] = rc;
                      }
 
                   if (trace() && origSymRef->getSymbol()->getAutoSymbol())
@@ -5298,7 +5296,7 @@ TR_LiveRangeSplitter::splitLiveRanges(TR_StructureSubGraphNode *structureNode)
                      TR_SymRefCandidatePair *correspondingSymRefCandidate = splitAndFixPreHeader(symRef, correspondingSymRefs, loopInvariantBlock, loopInvariantBlock->getEntry()->getNode());
                      TR::SymbolReference *correspondingSymRef = correspondingSymRefCandidate->_symRef;
                      //////printf("Splitting sym ref %d with new sym ref %d in method %s\n", symRef->getReferenceNumber(), correspondingSymRef->getReferenceNumber(), comp()->signature()); fflush(stdout);
-                     fixExitsAfterSplit(symRef, correspondingSymRefCandidate, correspondingSymRefs, loopInvariantBlock, &blocksInLoop, loopInvariantBlock->getEntry()->getNode(), registerCandidates, structureNode, replacedAutosInCurrentLoop, origSymRef);
+                     fixExitsAfterSplit(symRef, correspondingSymRefCandidate, correspondingSymRefs, loopInvariantBlock, &blocksInLoop, loopInvariantBlock->getEntry()->getNode(), *registerCandidates, structureNode, replacedAutosInCurrentLoop, origSymRef);
                      }
                   }
 
@@ -5351,7 +5349,7 @@ void
 TR_LiveRangeSplitter::replaceAutosUsedIn(
    TR::TreeTop *currentTree, TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, List<TR::Block> *exitBlocks,
    vcount_t visitCount, int32_t executionFrequency,
-   TR_RegisterCandidate **registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBeReplacedInCurrentLoop,
+   SymRefCandidateMap &registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBeReplacedInCurrentLoop,
    TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock)
    {
 
@@ -5528,7 +5526,7 @@ TR_LiveRangeSplitter::splitAndFixPreHeader(TR::SymbolReference *symRef, TR_SymRe
 
 
 void
-TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefCandidatePair *correspondingSymRefCandidate, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::Node *node, TR_RegisterCandidate **registerCandidates, TR_StructureSubGraphNode *loop, TR_BitVector *replacedAutosInCurrentLoop, TR::SymbolReference *origSymRef)
+TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefCandidatePair *correspondingSymRefCandidate, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::Node *node, SymRefCandidateMap &registerCandidates, TR_StructureSubGraphNode *loop, TR_BitVector *replacedAutosInCurrentLoop, TR::SymbolReference *origSymRef)
    {
 
    TR::SymbolReference *correspondingSymRef = correspondingSymRefCandidate->_symRef;

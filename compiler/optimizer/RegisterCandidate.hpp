@@ -268,7 +268,6 @@ private:
    TR_BitVector            _liveOnExit;
    TR_BitVector            _originalLiveOnEntry;
    TR_BitVector           *_availableOnExit;
-   TR_Array<uint32_t> *    _loadsAndStores;
    List<TR::TreeTop>        _stores;
    List<TR_Structure>      _loopsWithHoles;
    TR::Node                *_mostRecentValue;

@@ -563,7 +563,6 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
    _liveOnEntry.init(numberOfBlocks, comp->trMemory(), stackAlloc, growable);
    _liveOnExit.init(numberOfBlocks, comp->trMemory(), stackAlloc, growable);
    _originalLiveOnEntry.init(numberOfBlocks, comp->trMemory(), stackAlloc, growable);
-   _loadsAndStores = new (comp->trStackMemory()) TR_Array<uint32_t>(comp->trMemory(), numberOfBlocks, true, stackAlloc);
 
    TR::CodeGenerator * cg = comp->cg();
    BlockInfo::iterator itr = _blocks.getIterator();
@@ -608,11 +607,9 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
        //
       if (extendedBlockFreq <= blockFreq)
          {
-         if ((uint32_t)blockWeight > (*_loadsAndStores)[extendedBlock->getNumber()])
-            (*_loadsAndStores)[extendedBlock->getNumber()] = blockWeight;
+         if ((uint32_t)blockWeight > _blocks.getNumberOfLoadsAndStores(extendedBlock->getNumber()))
+            _blocks.setNumberOfLoadsAndStores(extendedBlock->getNumber(), blockWeight);
          }
-      if ((uint32_t)blockWeight > (*_loadsAndStores)[blockNumber])
-         (*_loadsAndStores)[blockNumber] = blockWeight;
       }
 
    _originalLiveOnEntry |= _liveOnEntry;
@@ -753,7 +750,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          int32_t blockNumber = bvi.getNextElement();
 
          if (trace)
-            dumpOptDetails(comp, "Examining original live-on-entry block_%d with loads and stores = %d\n", blockNumber, (*_loadsAndStores)[blockNumber]);
+            dumpOptDetails(comp, "Examining original live-on-entry block_%d with loads and stores = %d\n", blockNumber, _blocks.getNumberOfLoadsAndStores(blockNumber));
 
          TR::Block * block = blocks[blockNumber];
          bool referencedInPred = false;
@@ -826,9 +823,9 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          int32_t blockNumber = bvi.getNextElement();
 
          if (trace)
-            traceMsg(comp, "\tExamining live-on-entry block_%d with loads and stores = %d\n", blockNumber, (*_loadsAndStores)[blockNumber]);
+            traceMsg(comp, "\tExamining live-on-entry block_%d with loads and stores = %d\n", blockNumber, _blocks.getNumberOfLoadsAndStores(blockNumber));
 
-         if ((*_loadsAndStores)[blockNumber] == 0)
+         if (_blocks.getNumberOfLoadsAndStores(blockNumber) == 0)
             {
             TR::Block * block = blocks[blockNumber];
             bool liveOnExit = false;
@@ -866,7 +863,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
      {
       int32_t blockNumber = bvi.getNextElement();
       if (trace)
-         dumpOptDetails(comp, "Examining live-on-entry block_%d with loads and stores = %d to find maxFrequency\n", blockNumber, (*_loadsAndStores)[blockNumber]);
+         dumpOptDetails(comp, "Examining live-on-entry block_%d with loads and stores = %d to find maxFrequency\n", blockNumber, _blocks.getNumberOfLoadsAndStores(blockNumber));
       TR::Block * block = blocks[blockNumber];
       TR_BlockStructure *blockStructure = block->getStructureOf();
       int32_t blockWeight = 1;
@@ -933,7 +930,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
 
                if (blockWeight == frequency)
                   {
-                  if ((*_loadsAndStores)[blockNumber] == 0)
+                  if (_blocks.getNumberOfLoadsAndStores(blockNumber) == 0)
                      {
                      numUnreferencedBlocksAtThisFrequency++;
                      break;
@@ -998,7 +995,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
                      }
 
                   if (!referencedInNearestLoop  &&
-                      (((*_loadsAndStores)[blockNumber] == 0) ||
+                      ((_blocks.getNumberOfLoadsAndStores(blockNumber) == 0) ||
                        (dontAssignInColdBlocks(comp) && block->isCold())  /*||
                                                                             block->isRare(comp) */ ))
                      {
@@ -1035,7 +1032,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
                                     TR::Block *liveBlock = startOfExtendedBBForBB[nextBlock->getNumber()];
                                     if (_liveOnEntry.get(liveBlock->getNumber()))
                                        {
-                                       if (((*_loadsAndStores)[liveBlock->getNumber()] != 0) &&
+                                       if ((_blocks.getNumberOfLoadsAndStores(blockNumber) == 0) &&
                                             (!dontAssignInColdBlocks(comp) || !nextBlock->isCold()))
                                           {
                                           referencedInNearestLoop = true;
@@ -1198,7 +1195,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          ++origNumberOfBlocks;
 
       if (!ignoreBlock)
-         origLoadsAndStores += (*_loadsAndStores)[bnum];
+         origLoadsAndStores += _blocks.getNumberOfLoadsAndStores(bnum);
 
       if (trace && !performTransformation(comp, "%s Candidate %d live on entry at block_%d\n", OPT_DETAILS, getSymbolReference()->getReferenceNumber(), bnum))
          {
@@ -1233,7 +1230,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          }
 
       if (!ignoreBlock)
-         loadsAndStores += (*_loadsAndStores)[blockNumber];
+         loadsAndStores += _blocks.getNumberOfLoadsAndStores(blockNumber);
 
 
 
@@ -1301,8 +1298,8 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          if (((predWeight > blockWeight) &&
               !liveOnExitFromPred &&
               !_liveOnEntry.get(pred->getNumber())) &&
-              (*_loadsAndStores)[startOfExtendedBBForBB[pred->getNumber()]->getNumber()] == 0 &&
-              (*_loadsAndStores)[pred->getNumber()] == 0)
+              _blocks.getNumberOfLoadsAndStores(startOfExtendedBBForBB[pred->getNumber()]->getNumber()) == 0 &&
+              _blocks.getNumberOfLoadsAndStores(pred->getNumber()) == 0)
             {
             bool reset = true;
             if (useProfilingFrequencies && (pred->getFrequency() > 0) &&
@@ -1359,10 +1356,10 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
             if (!_liveOnEntry.get(pred->getNumber()) && (!dontAssignInColdBlocks(comp) || !pred->isCold()))
                {
                //++numberOfBlocks;  // TODO: try uncomment this
-               loadsAndStores += (*_loadsAndStores)[pred->getNumber()];
+               loadsAndStores += _blocks.getNumberOfLoadsAndStores(pred->getNumber());
                if (trace)
                   dumpOptDetails(comp, "\n    Adding %d loads and stores to pred  block_%d ",
-                                         (*_loadsAndStores)[pred->getNumber()], pred->getNumber());
+                                         _blocks.getNumberOfLoadsAndStores(pred->getNumber()), pred->getNumber());
 
                }
             }
@@ -1387,7 +1384,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
       {
       int32_t blockNumber = bvi.getNextElement();
       if (!_liveOnEntry.get(blockNumber) &&
-         ((*_loadsAndStores)[blockNumber] > 0))
+         (_blocks.getNumberOfLoadsAndStores(blockNumber) > 0))
          {
          int32_t blockWeight = blockStructureWeight[blockNumber];
          loadsAndStores = loadsAndStores + blockWeight;
@@ -1405,8 +1402,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
 
       do {
          blockNumber = block->getNumber();
-         if (((*_loadsAndStores)[blockNumber] == 0) &&
-             ((*_loadsAndStores)[blockNumber] == 0))
+         if (_blocks.getNumberOfLoadsAndStores(blockNumber) > 0)
             {
             bool foundEndOfRange = false;
             for (auto succ = block->getSuccessors().begin(); succ != block->getSuccessors().end(); ++succ)
@@ -1475,11 +1471,11 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
 
       if (!_liveOnEntry.get(extBlockNumber) &&
           (block != comp->getFlowGraph()->getStart()) &&
-          ((*_loadsAndStores)[extBlockNumber] == 0))
+          (_blocks.getNumberOfLoadsAndStores(extBlockNumber) == 0))
           {
           //do {
-             if (((*_loadsAndStores)[extBlockNumber] == 0) &&
-                 ((*_loadsAndStores)[blockNumber] == 0))
+             if ((_blocks.getNumberOfLoadsAndStores(extBlockNumber) == 0) &&
+                 (_blocks.getNumberOfLoadsAndStores(blockNumber) == 0))
                 {
                 bool foundEndOfRange = false;
                 for (auto succ = block->getSuccessors().begin(); succ != block->getSuccessors().end(); ++succ)
@@ -3121,7 +3117,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                        if (autosInBlock && autosInBlock->get(rc->getSymbolReference()->getReferenceNumber()))
                           {
                           // blockWeight = blockStructureWeight[block->getNumber()];
-                          blockWeight = (*rc->_loadsAndStores)[block->getNumber()];
+                          blockWeight = rc->_blocks.getNumberOfLoadsAndStores(block->getNumber());
 
                           if (blockWeight > maxFrequency)
                              {
@@ -3193,7 +3189,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                           if (blockStructure)
                              {
                              // blockWeight = blockStructureWeight[block->getNumber()];
-                             blockWeight = (*rc->_loadsAndStores)[block->getNumber()];
+                             blockWeight = rc->_blocks.getNumberOfLoadsAndStores(block->getNumber());
                              if (blockWeight > maxFrequency)
                                 {
                                 maxFrequency = blockWeight;

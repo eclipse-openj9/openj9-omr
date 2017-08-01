@@ -102,7 +102,7 @@ AS_IF([test "$enable_debug" != "no"],
 AC_ARG_ENABLE([DDR],
 	AS_HELP_STRING([[--enable-DDR]], [Enable DDR support. Requires --enable-debug. (Default: no)]),
 	[],
-	[enable_DDR=yes])
+	[enable_DDR=no])
 AS_IF([test $enable_DDR = "yes" && test $enable_debug != "yes"],
 	AC_MSG_ERROR([--enable-DDR requires --enable-debug.]))
 

@@ -2881,7 +2881,7 @@ fi
 if test "${enable_DDR+set}" = set; then :
   enableval=$enable_DDR;
 else
-  enable_DDR=yes
+  enable_DDR=no
 fi
 
 if test $enable_DDR = "yes" && test $enable_debug != "yes"; then :

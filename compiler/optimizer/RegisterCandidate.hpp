@@ -373,8 +373,12 @@ private:
 
    static int32_t                    _candidateTypeWeights[TR_NumRegisterCandidateTypes];
    TR::GlobalSet            *_referencedAutoSymRefsInBlock;
-   TR_RegisterCandidate **  _candidateForSymRefs;
-   uint32_t                 _candidateForSymRefsSize;
+
+   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef std::less<uint32_t> SymRefCandidateMapComparator;
+   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
+
+   SymRefCandidateMap    *  _candidateForSymRefs;
    TR_Array<TR::Block *> _startOfExtendedBBForBB;
 
    // scratch arrays for calculating register conflicts

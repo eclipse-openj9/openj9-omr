@@ -233,7 +233,6 @@ TR_RegisterCandidates::TR_RegisterCandidates(TR::Compilation *comp)
     _referencedAutoSymRefsInBlock(NULL)
    {
    _candidateForSymRefs = 0;
-   _candidateForSymRefsSize      = 0;
    }
 
  TR_RegisterCandidate *TR_RegisterCandidates::newCandidate(TR::SymbolReference *ref) {
@@ -248,14 +247,14 @@ TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
       {
       if (_candidateForSymRefs)
          {
-         _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
+         (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
          }
 
       return rc;
       }
    _candidates.add(rc = newCandidate(symRef));
    if (_candidateForSymRefs)
-      _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
+      (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
 
    TR_ASSERT(comp()->cg()->considerTypeForGRA(symRef),"should create a registerCandidate for symRef #%d with datatype %s\n",symRef->getReferenceNumber(),rc->getDataType().toString());
 
@@ -265,20 +264,15 @@ TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
 TR_RegisterCandidate *
 TR_RegisterCandidates::find(TR::SymbolReference * symRef)
    {
-   if (_candidateForSymRefsSize && symRef->getReferenceNumber() > _candidateForSymRefsSize) // some spots in GRA add more candidates after _candidateForSymRefs was created in certain cases (ex if there are unused parameters, offerAllAutos may create a new symref)
-      {
-      TR_ASSERT(0, "should not be indexing out of bounds!\n");
-      return NULL;
-      }
    if (symRef->getSymbol()->isAutoOrParm())
       {
-      TR_RegisterCandidate* rc= (_candidateForSymRefs) ? _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] : NULL;
+      TR_RegisterCandidate* rc= (_candidateForSymRefs) ? (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] : NULL;
       // two symrefs can point to same symbols so it is possible that we have an rc for symref->getSymbol but not have it added to the cache
       if(rc==NULL)
          {
          rc = find(symRef->getSymbol());
          if (_candidateForSymRefs)
-            _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
+            (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(symRef)] = rc;
          }
          return rc;
       }
@@ -2497,7 +2491,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    // and create loop info for each candidate
    //
    _candidates.setFirst(0);
-   memset(_candidateForSymRefs, 0, (_candidateForSymRefsSize*sizeof(TR_RegisterCandidates *));
+   _candidateForSymRefs->clear();
    for (rc = first; rc; rc = rc->getNext())
       {
       rc->countNumberOfLoadsAndStoresInLoops(trMemory());
@@ -2509,7 +2503,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    // assign the register candidates to global registers
    //
    _candidates.setFirst(0);
-   memset(_candidateForSymRefs, 0, _candidateForSymRefsSize*sizeof(TR_RegisterCandidates *));
+   _candidateForSymRefs->clear();
    unsigned iterationCount = 0;
    int32_t conflictingRegister = -1;
    int32_t numAssigns = 0;
@@ -3417,7 +3411,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
      _candidates.add(rc);
      TR_ASSERT(rc->getSymbolReference()->getSymbol()->isAutoOrParm()
            , "expecting auto or parm");
-     _candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
+     (*_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
 
      if (needs2Regs)
         {

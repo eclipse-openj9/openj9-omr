@@ -381,12 +381,10 @@ TR_GlobalRegisterAllocator::perform()
    int32_t numberOfBlocks = cfg->getNextNodeNumber();
 
    TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   candidates->_candidateForSymRefsSize = CANDIDATE_FOR_SYMREF_SIZE;
-   candidates->_candidateForSymRefs = (TR_RegisterCandidate **)trMemory()->allocateStackMemory(CANDIDATE_FOR_SYMREF_SIZE*sizeof(TR_RegisterCandidate *));
-   memset(candidates->_candidateForSymRefs, 0, CANDIDATE_FOR_SYMREF_SIZE*sizeof(TR_RegisterCandidates *));
+   candidates->_candidateForSymRefs = new (trStackMemory()) TR_RegisterCandidates::SymRefCandidateMap((TR_RegisterCandidates::SymRefCandidateMapComparator()), (TR_RegisterCandidates::SymRefCandidateMapAllocator(trMemory()->currentStackRegion())));
    TR_RegisterCandidate *rc = candidates->getFirst();
    for (; rc ; rc = rc->getNext())
-      candidates->_candidateForSymRefs[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
+      (*candidates->_candidateForSymRefs)[GET_INDEX_FOR_CANDIDATE_FOR_SYMREF(rc->getSymbolReference())] = rc;
 
    candidates->_startOfExtendedBBForBB.init(trMemory(),
                                             (uint32_t)(comp()->getFlowGraph()->getNextNodeNumber() * sizeof(TR::Block *) * 1.5),

@@ -50,8 +50,7 @@ class GlobalSet
 public:
    GlobalSet(TR::Compilation * comp, TR::Region &region);
 
-   class Set;
-   Set * operator[](uint32_t blockNum)
+   TR_BitVector * operator[](uint32_t blockNum)
       {
       if (blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
          return NULL;
@@ -63,25 +62,13 @@ public:
    bool isEmpty() { return _refAutosPerBlock.empty(); }
    void makeEmpty() { _refAutosPerBlock.clear(); }
 
-   class Set
-      {
-      public:
-      TR_ALLOC(TR_Memory::RegisterCandidates);
-      Set(TR::Region &region):_refs(region){}
-      bool get(uint32_t refId) { return _refs.get(refId); }
-      void set(uint32_t refId) { _refs.set(refId); }
-      void print(TR::Compilation * comp);
-      private:
-      TR_BitVector _refs;
-      };
-
 private:
 
-   void collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutos, vcount_t visitCount);
+   void collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutos, vcount_t visitCount);
 
-   typedef TR::typed_allocator<std::pair<uint32_t, Set*>, TR::Region&> RefMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t, TR_BitVector*>, TR::Region&> RefMapAllocator;
    typedef std::less<uint32_t> RefMapComparator;
-   typedef std::map<uint32_t, Set *, RefMapComparator, RefMapAllocator> RefMap;
+   typedef std::map<uint32_t, TR_BitVector*, RefMapComparator, RefMapAllocator> RefMap;
    RefMap _refAutosPerBlock;
    TR::Compilation * _comp;
    };
@@ -312,7 +299,7 @@ public:
    TR_RegisterCandidate * find(TR::Symbol * sym);
 
    TR::GlobalSet&      getReferencedAutoSymRefs() { return _referencedAutoSymRefsInBlock; }
-   TR::GlobalSet::Set *getReferencedAutoSymRefsInBlock(int32_t i)
+   TR_BitVector *getReferencedAutoSymRefsInBlock(int32_t i)
       {
       if (_referencedAutoSymRefsInBlock.isEmpty())
          return 0;

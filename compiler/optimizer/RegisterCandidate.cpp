@@ -88,22 +88,12 @@ TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
    }
 
 
-void TR::GlobalSet::Set::print(TR::Compilation * comp)
-   {
-   TR_BitVectorIterator bits(_refs);
-   for (int32_t bit = bits.getFirstElement(); bits.hasMoreElements(); bit = bits.getNextElement())
-     {
-     traceMsg(comp,"%d ",bit);
-     }
-   traceMsg(comp,"\n");
-   }
-
 void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
    {
    if (!(BB->getEntry() && BB->getExit()))
         return;
 
-   Set * refAutos = new (_comp->trStackMemory()) Set(_comp->trMemory()->currentStackRegion());
+   TR_BitVector * refAutos = new (_comp->trStackMemory()) TR_BitVector(_comp->trMemory()->currentStackRegion());
 
    _refAutosPerBlock[BB->getNumber()] = refAutos;
 
@@ -112,7 +102,7 @@ void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
      collectReferencedAutoSymRefs(tt->getNode(), refAutos, visitCount);
    }
 
-void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, Set * referencedAutoSymRefs, vcount_t visitCount)
+void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutoSymRefs, vcount_t visitCount)
    {
    if (node->getVisitCount() == visitCount)
       return;
@@ -1704,7 +1694,7 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
                {
                blocksVisited.set(currBlock->getNumber());
 
-               TR::GlobalSet::Set *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock->getNumber());
+               TR_BitVector *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock->getNumber());
                if (autosInBlock &&
                   autosInBlock->get(getSymbolReference()->getReferenceNumber()))
                   getAvailableOnExit()->set(currBlock->getNumber());
@@ -3147,7 +3137,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                     TR::Block * block = blocks[blockNumber];
                     TR_BlockStructure *blockStructure = block->getStructureOf();
                     int32_t blockWeight = 1;
-                    TR::GlobalSet::Set *autosInBlock = getReferencedAutoSymRefsInBlock(block->getNumber());
+                    TR_BitVector *autosInBlock = getReferencedAutoSymRefsInBlock(block->getNumber());
 
                     if (blockStructure)
                        {

@@ -3384,7 +3384,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
                            if (mergeBlock1->getStructureOf())
                               optimizer()->getStaticFrequency(mergeBlock1, &weight);
 
-                           rc->addBlock(mergeBlock1, weight, trMemory());
+                           rc->addBlock(mergeBlock1, weight);
                            }
                         if (toBlock(block)->findFirstReference(symRef->getSymbol(), comp()->incVisitCount()))
                            {
@@ -3392,8 +3392,8 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
                            if (toBlock(block)->getStructureOf())
                               optimizer()->getStaticFrequency(toBlock(block), &weight);
 
-                           rc->addBlock(block1, weight, trMemory());
-                           rc->addBlock(block2, weight, trMemory());
+                           rc->addBlock(block1, weight);
+                           rc->addBlock(block2, weight);
                            }
                         }
                      }
@@ -3428,7 +3428,7 @@ TR_GlobalRegisterAllocator::findIfThenRegisterCandidates()
                         if (branchBlock->getStructureOf())
                            optimizer()->getStaticFrequency(branchBlock, &weight);
                         //printf("Adding symRef %d in block_%d\n", symRef->getReferenceNumber(), branchBlock->getNumber());
-                        rc->addBlock(branchBlock, weight, trMemory());
+                        rc->addBlock(branchBlock, weight);
                         }
                      }
                   }
@@ -3967,7 +3967,7 @@ TR_GlobalRegisterAllocator::findLoopsAndCorrespondingAutos(TR_StructureSubGraphN
                   int32_t nextCandidate = bvi.getNextElement();
                   //dumpOptDetails(comp(), "For loop %d exit block_%d candidate %d\n", structureNode->getNumber(), exitBlock->getNumber(), nextCandidate);
                   TR_RegisterCandidate *rc = registerCandidates[nextCandidate];
-                  rc->addBlock(exitBlock, 0, trMemory());
+                  rc->addBlock(exitBlock, 0);
                   rc->addLoopExitBlock(exitBlock);
                   }
                }
@@ -4513,7 +4513,7 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
                if (!rc->hasBlock(nextBlock))
                   {
                   if (nextBlock != cfg->getStart())
-                     rc->addBlock(nextBlock, 0, trMemory());
+                     rc->addBlock(nextBlock, 0);
                   }
                }
             }
@@ -4530,7 +4530,7 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
             if ((node->getOpCode().isStoreDirect() && isSplittingCopy(node)) ||
                 (node->getOpCode().isLoadVarDirect() && parent && parent->getOpCode().isStoreDirect() && isSplittingCopy(parent)))
                {
-               rc->addBlock(block, 0, trMemory());
+               rc->addBlock(block, 0);
                }
             else
                {
@@ -4545,13 +4545,13 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
                      (grandParent->getOpCode().isStoreIndirect() ||
                      grandParent->getOpCode().isLoadIndirect()))))
                   {
-                  rc->addBlock(block, executionFrequency*10, trMemory());
+                  rc->addBlock(block, executionFrequency*10);
                   if (trace())
                       dumpOptDetails(comp(), "Increased weight of candidate #%d in block_%d to reduce AGI\n", rc->getSymbolReference()->getReferenceNumber(), block->getNumber());
                   }
                else
                   {
-                  rc->addBlock(block, executionFrequency, trMemory());
+                  rc->addBlock(block, executionFrequency);
                   }
                }
             }
@@ -5584,12 +5584,12 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
                if (rc->hasBlock(nextBlock))
                   {
                   int32_t numLoadsAndStores = rc->removeBlock(nextBlock);
-                  correspondingRc->addBlock(nextBlock, numLoadsAndStores, trMemory());
+                  correspondingRc->addBlock(nextBlock, numLoadsAndStores);
                   }
                blocksInInnerLoop->set(nextBlock->getNumber());
                }
 
-            correspondingRc->addBlock(loopInvariantBlock, 1, trMemory());
+            correspondingRc->addBlock(loopInvariantBlock, 1);
 
             TR_Structure *parentOfLoop = loop->getStructure()->getContainingLoop();
             if (parentOfLoop)
@@ -5604,7 +5604,7 @@ TR_LiveRangeSplitter::fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefC
                      {
          if (trace())
                         traceMsg(comp(), "Adding original candidate #%d in block_%d in outer loop %d (%p)\n", rc->getSymbolReference()->getReferenceNumber(), nextBlock->getNumber(), parentOfLoop->getNumber(), parentOfLoop);
-                     rc->addBlock(nextBlock, 0, trMemory());
+                     rc->addBlock(nextBlock, 0);
                      }
                   }
                }

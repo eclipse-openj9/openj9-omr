@@ -132,7 +132,7 @@ public:
 
    void addAllBlocks()         { setAllBlocks(true); }
 
-   void addBlock(TR::Block * b, int32_t numberOfLoadsAndStores, TR_Memory *, bool ifNotFound = false);
+   void addBlock(TR::Block * b, int32_t numberOfLoadsAndStores);
 
    void addLoopExitBlock(TR::Block *b);
    int32_t removeBlock(TR::Block * b);

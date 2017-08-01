@@ -194,7 +194,7 @@ void TR_RegisterCandidate::addAllBlocksInStructure(TR_Structure *structure, TR::
       TR_BlockStructure *blockStructure = structure->asBlock();
       TR::Block *block = blockStructure->getBlock();
 
-      addBlock(block, 0, comp->trMemory());
+      addBlock(block, 0);
 
       if (description)
          traceMsg(comp, "\nAdded %s #%d (symRef %p) as global reg candidate in block_%d\n", description, getSymbolReference()->getReferenceNumber(), getSymbolReference(), block->getNumber());
@@ -298,14 +298,9 @@ TR_RegisterCandidate::find(TR::Block * b)
    }
 
 void
-TR_RegisterCandidate::addBlock(TR::Block * block, int32_t numberOfLoadsAndStores, TR_Memory * m,
-                               bool ifNotFound)
+TR_RegisterCandidate::addBlock(TR::Block * block, int32_t numberOfLoadsAndStores)
    {
-     if (find(block)) {
-       if (!ifNotFound)
-         _blocks.incNumberOfLoadsAndStores(block->getNumber(), numberOfLoadsAndStores);
-     } else
-         _blocks.setNumberOfLoadsAndStores(block->getNumber(), numberOfLoadsAndStores);
+   _blocks.incNumberOfLoadsAndStores(block->getNumber(), numberOfLoadsAndStores);
    }
 
 int32_t
@@ -313,9 +308,9 @@ TR_RegisterCandidate::removeBlock(TR::Block * block)
    {
    if (find(block))
       {
-        int32_t numLoadsAndStores = _blocks.getNumberOfLoadsAndStores(block->getNumber());
-        _blocks.removeBlock(block->getNumber());
-        return numLoadsAndStores;
+      int32_t numLoadsAndStores = _blocks.getNumberOfLoadsAndStores(block->getNumber());
+      _blocks.removeBlock(block->getNumber());
+      return numLoadsAndStores;
       }
    return 0;
    }

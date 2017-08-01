@@ -35,11 +35,11 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 	target_link_libraries(omr_ddr_scanner
 		PUBLIC
-			${DiaSDK_LIBRARIES}
+			${DIASDK_LIBRARIES}
 	)
 	target_include_directories(omr_ddr_scanner
 		PUBLIC
-			${DiaSDK_INCLUDE_DIRS}
+			${DIASDK_INCLUDE_DIRS}
 	)
 elseif(OMR_HOST_OS STREQUAL "linux")
 	target_sources(omr_ddr_scanner

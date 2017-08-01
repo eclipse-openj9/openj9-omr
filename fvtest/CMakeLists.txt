@@ -31,7 +31,6 @@ add_subdirectory(utiltest)
 add_subdirectory(vmtest)
 
 
-if(NOT OMR_HOST_OS STREQUAL "win")
-    # TODO: Compiler test isn't ready for windows yet.
-    add_subdirectory(compilertest)
+if(OMR_TEST_COMPILER)
+	add_subdirectory(compilertest)
 endif()

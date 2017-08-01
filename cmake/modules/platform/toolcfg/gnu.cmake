@@ -17,3 +17,14 @@
 ###############################################################################
 
 set(OMR_WARNING_AS_ERROR_FLAG -Werror)
+
+if(OMR_ENV_DATA64)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+		-m64
+	)
+else()
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+		-m32
+		-msse2
+	)
+endif()

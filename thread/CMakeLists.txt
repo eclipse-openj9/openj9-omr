@@ -83,13 +83,10 @@ if(OMR_HOST_OS STREQUAL "osx")
 	include_directories(osx unix)
 endif()
 
-#TODO need to  implement AIX vpaths.
-#relevent section from makefile:
-#ifeq (aix,$(OMR_HOST_OS))
-  #vpath % $(THREAD_SRCDIR)aix
-  #vpath % $(THREAD_SRCDIR)unix
-  #MODULE_INCLUDES += $(THREAD_SRCDIR)aix $(THREAD_SRCDIR)unix
-#endif
+if(OMR_HOST_OS STREQUAL "aix")
+	list(APPEND VPATHS aix unix)
+	include_directories(aix unix)
+endif()
 
 list(APPEND VPATHS common)
 

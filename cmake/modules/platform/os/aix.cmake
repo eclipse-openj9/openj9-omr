@@ -1,4 +1,4 @@
-###############################################################################
+##############################################################################
 #
 # (c) Copyright IBM Corp. 2017
 #
@@ -16,11 +16,13 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-if(OMR_HOST_OS STREQUAL "zos")
-	add_subdirectory(a2e)
-endif()
-add_subdirectory(avl)
-add_subdirectory(hashtable)
-add_subdirectory(hookable)
-add_subdirectory(omrutil)
-add_subdirectory(pool)
+include(OmrAssert)
+
+omr_assert(TEST DEFINED OMR_ARCH_POWER MESSAGE "OMR_HOST_OS configured as AIX but OMR_ARCH_POWER is not defined")
+
+set(OMR_PLATFORM_DEFINITIONS
+	-DRS6000
+	-DAIXPPC
+	-D_LARGE_FILES
+	-D_ALL_SOURCE
+)

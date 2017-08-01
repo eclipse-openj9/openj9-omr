@@ -28,7 +28,6 @@ add_executable(omrgctest
 target_link_libraries(omrgctest
 	omrGtestGlue
 	pugixml
-	${OMR_VM_GLUE_TARGET}
 	omrtestutil
 	omrcore
 	${OMR_HOOK_LIB}

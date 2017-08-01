@@ -31,6 +31,10 @@ include(OmrUtility)
 
 omr_detect_system_information()
 
+if(NOT OMR_HOST_OS STREQUAL "zos")
+	enable_language(ASM)
+endif()
+
 # Pickup OS info
 include(platform/os/${OMR_HOST_OS})
 

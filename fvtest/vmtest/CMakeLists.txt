@@ -40,5 +40,3 @@ target_link_libraries(omrvmtest
 )
 
 add_test(NAME vmtest COMMAND omrvmtest)
-
-

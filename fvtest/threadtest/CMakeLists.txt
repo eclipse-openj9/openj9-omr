@@ -73,6 +73,8 @@ target_link_libraries(omrthreadtest
 	j9thrstatic
 	j9hashtable
 	${OMR_PORT_LIB}
+	omrcore
+	${OMR_GC_LIB}
 )
 if(OMR_HOST_OS STREQUAL "win")
     target_link_libraries(omrthreadtest

@@ -32,6 +32,8 @@ target_link_libraries(omrthreadextendedtest
 	${OMR_PORT_LIB}
 	omrutil
 	${OMR_THREAD_LIB}
+	omrcore
+	${OMR_GC_LIB}
 )
 
 if(OMR_HOST_OS STREQUAL "zos")

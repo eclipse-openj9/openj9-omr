@@ -213,7 +213,7 @@ class CFG
    TR::Block * * createArrayOfBlocks(TR_AllocationKind = stackAlloc);
 
    /// Find all blocks that are in loops
-   void findLoopingBlocks(TR::BitVector&);
+   void findLoopingBlocks(TR_BitVector&);
 
    int32_t createTraversalOrder(bool forward, TR_AllocationKind allocationKind, TR_BitVector *backEdges = NULL);
    TR::CFGNode *getForwardTraversalElement(int32_t idx) { return _forwardTraversalOrder[idx]; }

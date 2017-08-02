@@ -2085,7 +2085,6 @@ static const char *commonNonhelperSymbolNames[] =
    "<isClassAndDepthFlags>",
    "<isClassFlags>",
    "<vft>",
-   "<bcdCheckSymbol>",
    "<currentThread>",
    "<recompilationCounter>",
    "<excp>",

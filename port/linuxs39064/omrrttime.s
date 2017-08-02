@@ -28,7 +28,7 @@ maxprec:
     stckf 64(%r15)
     lg  %r1,64(%r15)
     sg %r1,.LC0-.LT0(%r3)
-    srlg %r1,%r1,9
+    srlg %r1,%r1,1
     lgr %r2,%r1
     br  %r14
 

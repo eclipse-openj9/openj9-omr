@@ -30,7 +30,6 @@
 #include "omrportpg.h"
 #include "omrport.h"
 
-#define OMRTIME_HIRES_CLOCK_FREQUENCY J9CONST_U64(8000000)
 #define OMRTIME_CLOCK_DELTA_ADJUSTMENT_INTERVAL_USEC J9CONST_I64(60 * 1000 * 1000)
 
 #define OMRTIME_NANOSECONDS_PER_SECOND J9CONST_I64(1000000000)
@@ -40,7 +39,23 @@ extern int64_t maxprec();
 
 static void omrtime_calculate_hw_time_delta(struct OMRPortLibrary *portLibrary);
 
-
+/**
+ * Multiply a number by a fraction
+ *
+ * @param[in] num The number to be multiplied by the fraction
+ * @param[in] numerator The numerator of the fraction
+ * @param[in] denominator The denominator of the fraction
+ *
+ * @return The result of the multiplication
+ */
+static int64_t
+muldiv64(const int64_t num, const int64_t numerator, const int64_t denominator)
+{
+	const int64_t quotient = num / denominator;
+	const int64_t remainder = num - quotient * denominator;
+	const int64_t res = quotient * numerator + ((remainder * numerator) / denominator);
+	return res;
+}
 
 /**
  * Query OS for timestamp.
@@ -55,7 +70,7 @@ uintptr_t
 omrtime_msec_clock(struct OMRPortLibrary *portLibrary)
 {
 	int64_t msec;
-	int64_t usec = maxprec() / 8;
+	int64_t usec = maxprec() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 
 	msec = usec / 1000;
 
@@ -82,7 +97,7 @@ omrtime_msec_clock(struct OMRPortLibrary *portLibrary)
 uintptr_t
 omrtime_usec_clock(struct OMRPortLibrary *portLibrary)
 {
-	int64_t usec = maxprec() / 8;
+	int64_t usec = maxprec() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 
 	if ((usec - PPG_last_clock_delta_update > OMRTIME_CLOCK_DELTA_ADJUSTMENT_INTERVAL_USEC)
 	 || (usec < PPG_last_clock_delta_update)
@@ -121,7 +136,7 @@ int64_t
 omrtime_current_time_millis(struct OMRPortLibrary *portLibrary)
 {
 	int64_t msec;
-	int64_t usec = maxprec() / 8;
+	int64_t usec = maxprec() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 
 	/*
 	 * Note that this function is called by JIT inlined code to not only
@@ -230,9 +245,10 @@ omrtime_hires_delta(struct OMRPortLibrary *portLibrary, uint64_t startTime, uint
 	if (OMRTIME_HIRES_CLOCK_FREQUENCY == requiredResolution) {
 		/* no conversion necessary */
 	} else if (OMRTIME_HIRES_CLOCK_FREQUENCY < requiredResolution) {
-		ticks = (uint64_t)((double)ticks * ((double)requiredResolution / (double)OMRTIME_HIRES_CLOCK_FREQUENCY));
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	} else {
-		ticks = (uint64_t)((double)ticks / ((double)OMRTIME_HIRES_CLOCK_FREQUENCY / (double)requiredResolution));
+		/*equivalent to ticks / (OMRTIME_HIRES_CLOCK_FREQUENCY / requiredResolution)*/
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	}
 	return ticks;
 }
@@ -253,7 +269,7 @@ omrtime_calculate_hw_time_delta(struct OMRPortLibrary *portLibrary)
 	struct timeval tp;
 
 	/* Get hardware microsecond UTC clock */
-	currentHWTime = maxprec() / 8;
+	currentHWTime = maxprec() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 
 	/* Get OS microsecond UTC clock */
 	gettimeofday(&tp, NULL);

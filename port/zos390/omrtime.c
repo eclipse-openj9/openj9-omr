@@ -30,10 +30,25 @@
 #include "omrportpriv.h"
 #include "omrportpg.h"
 
-/* Frequency is microseconds / second */
-#define OMRTIME_HIRES_CLOCK_FREQUENCY J9CONST_U64(8000000)
-
 extern int64_t MAXPREC();
+
+/**
+ * Multiply a number by a fraction
+ *
+ * @param[in] num The number to be multiplied by the fraction
+ * @param[in] numerator The numerator of the fraction
+ * @param[in] denominator The denominator of the fraction
+ *
+ * @return The result of the multiplication
+ */
+static int64_t
+muldiv64(const int64_t num, const int64_t numerator, const int64_t denominator)
+{
+	const int64_t quotient = num / denominator;
+	const int64_t remainder = num - quotient * denominator;
+	const int64_t res = quotient * numerator + ((remainder * numerator) / denominator);
+	return res;
+}
 
 /**
  * Query OS for timestamp.
@@ -48,7 +63,7 @@ extern int64_t MAXPREC();
 uintptr_t
 omrtime_msec_clock(struct OMRPortLibrary *portLibrary)
 {
-	int64_t millisec = MAXPREC() / 8000;
+	int64_t millisec = MAXPREC() / OMRPORT_TIME_HIRES_MILLITIME_DIVISOR;
 	return millisec;
 }
 /**
@@ -63,7 +78,7 @@ omrtime_msec_clock(struct OMRPortLibrary *portLibrary)
 uintptr_t
 omrtime_usec_clock(struct OMRPortLibrary *portLibrary)
 {
-	int64_t microsec = MAXPREC() / 8;
+	int64_t microsec = MAXPREC() / OMRPORT_TIME_HIRES_MICROTIME_DIVISOR;
 	return microsec;
 }
 
@@ -71,8 +86,14 @@ uint64_t
 omrtime_current_time_nanos(struct OMRPortLibrary *portLibrary, uintptr_t *success)
 {
 	*success = 1;
-	uint64_t nanos = MAXPREC() * 125;
-	return nanos;
+
+	const int64_t subnanosec = MAXPREC();
+
+	// calculate nanosec = subnanosec * NUMERATOR / DENOMINATOR via integer arithmetics
+	const int64_t nanosec = muldiv64(subnanosec,
+			OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR, OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR);
+
+	return nanosec;
 }
 
 /**
@@ -87,15 +108,20 @@ omrtime_current_time_nanos(struct OMRPortLibrary *portLibrary, uintptr_t *succes
 int64_t
 omrtime_current_time_millis(struct OMRPortLibrary *portLibrary)
 {
-	int64_t millisec = MAXPREC() / 8000;
+	int64_t millisec = MAXPREC() / OMRPORT_TIME_HIRES_MILLITIME_DIVISOR;
 	return millisec;
 }
 
 int64_t
 omrtime_nano_time(struct OMRPortLibrary *portLibrary)
 {
-	int64_t nanos = MAXPREC() * 125;
-	return nanos;
+	const int64_t subnanosec = MAXPREC();
+
+	// calculate nanosec = subnanosec * NUMERATOR / DENOMINATOR via integer arithmetics
+	const int64_t nanosec = muldiv64(subnanosec,
+			OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR, OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR);
+
+	return nanosec;
 }
 
 /**
@@ -158,9 +184,10 @@ omrtime_hires_delta(struct OMRPortLibrary *portLibrary, uint64_t startTime, uint
 	if (OMRTIME_HIRES_CLOCK_FREQUENCY == requiredResolution) {
 		/* no conversion necessary */
 	} else if (OMRTIME_HIRES_CLOCK_FREQUENCY < requiredResolution) {
-		ticks = (uint64_t)((double)ticks * ((double)requiredResolution / (double)OMRTIME_HIRES_CLOCK_FREQUENCY));
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	} else {
-		ticks = (uint64_t)((double)ticks / ((double)OMRTIME_HIRES_CLOCK_FREQUENCY / (double)requiredResolution));
+		/*equivalent to ticks / (OMRTIME_HIRES_CLOCK_FREQUENCY / requiredResolution)*/
+		ticks = muldiv64(ticks, requiredResolution, OMRTIME_HIRES_CLOCK_FREQUENCY);
 	}
 	return ticks;
 }

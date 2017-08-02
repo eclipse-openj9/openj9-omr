@@ -232,6 +232,34 @@
 #define OMRPORT_TIME_DELTA_IN_NANOSECONDS ((uint64_t) 1000000000)
 /** @} */
 
+#if defined(S390) || defined(J9ZOS390)
+/**
+ * @name Constants to calculate time from high-resolution timer
+ * @anchor hiresConstants
+ * High-resolution timer can be converted into millisecond timer or nanosecond timer through appropriate
+ * division or multiplication (respectively). For example, 390 high-resolution timer provides accuracy to
+ * 1/2048 of a microsecond so, to convert hires timer to
+ * - nanoseconds, multiply it by 125/256
+ * - microseconds, divide it by 2,048
+ * - milliseconds, divide it by 2,048,000
+ * @{
+ */
+#define OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR ((uint64_t) 125)
+#define OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR ((uint64_t) 256)
+#define OMRPORT_TIME_HIRES_MICROTIME_DIVISOR ((uint64_t) 2048)
+#define OMRPORT_TIME_HIRES_MILLITIME_DIVISOR ((uint64_t) 2048000)
+#define OMRTIME_HIRES_CLOCK_FREQUENCY ((uint64_t) 2048000000) /* Frequency is microseconds / second */
+
+#else
+
+#define OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR ((uint64_t) 0)
+#define OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR ((uint64_t) 0)
+#define OMRPORT_TIME_HIRES_MICROTIME_DIVISOR ((uint64_t) 0)
+#define OMRPORT_TIME_HIRES_MILLITIME_DIVISOR ((uint64_t) 0)
+
+#endif /* defined(S390) || defined(J9ZOS390) */
+/** @} */
+
 #if defined(LINUX) && !defined(OMRZTPF)
 #define OMR_CONFIGURABLE_SUSPEND_SIGNAL
 #endif /* defined(LINUX) */

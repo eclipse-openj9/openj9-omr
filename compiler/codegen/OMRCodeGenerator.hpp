@@ -646,12 +646,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint32_t getMaxObjectSizeGuaranteedNotToOverflow() { return _maxObjectSizeGuaranteedNotToOverflow; }
 
-   // high precision timer can be converted into millisecond timer or nanosecond timer through appropriate
-   // division or multiplication (respectively). For example, 390 high precision timer provides accuracy to
-   // 1/8 of a microsecond so converters are 8000 and 125 respectively (multiplying the two should give you 1000000)
-   int64_t getCurrentTimeMillisDivisor() { return 0; } // no virt
-   int64_t getNanoTimeMultiplier() { return 0; } // no virt
-
    // --------------------------------------------------------------------------
    // OSR, not code generator
    //

@@ -21,10 +21,10 @@ add_library(omrGtest STATIC
 	omrGtest.cpp)
 target_include_directories(omrGtest
 	PRIVATE
-		${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/
-		${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/src
+		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/
+		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/src
 	PUBLIC
-		${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/include
+		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/include
 )
 add_library(omrGtestGlue INTERFACE)
 

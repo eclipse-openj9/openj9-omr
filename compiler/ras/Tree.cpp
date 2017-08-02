@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -361,7 +361,7 @@ TR_Debug::print(TR::FILE *outFile, TR_RegionAnalysis * regionAnalysis, uint32_t 
 
    for (int32_t index = 0; index < regionAnalysis->_totalNumberOfNodes; index++)
       {
-      TR_RegionAnalysis::StructInfo &node = regionAnalysis->_infoTable[index+1];
+      TR_RegionAnalysis::StructInfo &node = regionAnalysis->getInfo(index);
       if (node._structure == NULL)
          continue;
 
@@ -1663,12 +1663,13 @@ TR_Debug::printNodeInfo(TR::Node * node, TR_PrettyPrinterString& output, bool pr
       else if (block->isCold())
          output.append(" (cold)");
 
+      if (block->isLoopInvariantBlock())
+         output.append(" (loop pre-header)");
       TR_BlockStructure *blockStructure = block->getStructureOf();
       if (blockStructure)
          {
-         if (blockStructure->isLoopInvariantBlock())
-            output.append(" (loop pre-header)");
-         if (!inDebugExtension())
+         if (!inDebugExtension()
+             && _comp->getFlowGraph()->getStructure())
             {
             TR_Structure *parent = blockStructure->getParent();
             while (parent)

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -25,9 +25,6 @@
 #include "compile/Compilation.hpp"                    // for Compilation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                              // for StaticArrayOf
-#include "cs2/bitvectr.h"
-#include "cs2/sparsrbit.h"
 #include "env/TRMemory.hpp"
 #include "il/Block.hpp"                               // for Block, toBlock
 #include "il/symbol/ResolvedMethodSymbol.hpp"
@@ -58,7 +55,7 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
       // The exit block must only be made part of the region headed by the entry
       // block. It provides an exit for all other regions.
       //
-      if (doThisCheck && next._succ.IsZero() &&
+      if (doThisCheck && next._succ.isEmpty() &&
           next._originalBlock == _cfg->getEnd())
          {
          if (hdrBlock->getNumber() != 0)
@@ -71,9 +68,9 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
       //We should be able to push the same node at most twice
       //so if we come across the same node the second time (nodesInPath[next]) we could say that we are done with this
       //particular node and move on
-      if (regionNodes.ValueAt(cursor))
+      if (regionNodes.get(cursor))
          {
-         if (!cyclesFound && nodesInPath.ValueAt(cursor) &&
+         if (!cyclesFound && nodesInPath.get(cursor) &&
              _dominators.dominates(hdrBlock, next._originalBlock))
             {
             cyclesFound = true;
@@ -95,7 +92,7 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
 
 void TR_RegionAnalysis::StructInfo::initialize(TR::Compilation * comp, int32_t index, TR::Block *block)
    {
-   _structure       = new (comp->trHeapMemory()) TR_BlockStructure(comp, block->getNumber(), block);
+   _structure       = new (comp->getFlowGraph()->structureRegion()) TR_BlockStructure(comp, block->getNumber(), block);
    _originalBlock   = block;
    _nodeIndex       = index;
    }
@@ -107,7 +104,7 @@ void TR_RegionAnalysis::StructInfo::initialize(TR::Compilation * comp, int32_t i
  * analysis. The structure information blocks are ordered in depth-first
  * order of basic blocks, so we can do a postorder scan of the structures.
  */
-void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg)
+void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg, TR::Region &region)
    {
    TR::CFGNode              *cfgNode;
    TR::Block                *b;
@@ -115,15 +112,16 @@ void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg)
 
    _totalNumberOfNodes = 0;
 
+   _infoTable = (StructInfo**) _workingRegion.allocate((cfg->getNumberOfNodes()+1)*sizeof(StructInfo*));
+
    // We need two passes to initialize the array of StructInfo objects
    // because the order of nodes is not necessarily sequential.
    // The first constructs the objects in order and the second initializes them
    // (in a different order)
-   // Note that TableOf entries are 1-based, not 0-based
    for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
       {
       	// Construct the right number of table entries
-      _infoTable.AddEntry(_allocator);
+      _infoTable[_totalNumberOfNodes+1] = new (region) StructInfo(region);
       _totalNumberOfNodes++;
       }
 
@@ -143,25 +141,25 @@ void TR_RegionAnalysis::createLeafStructures(TR::CFG *cfg)
          {
          next = toBlock((*p)->getFrom());
          index = _dominators._dfNumbers[next->getNumber()];
-         si._pred[index] = true;
+         si._pred.set(index);
          }
       for (auto p = b->getSuccessors().begin(); p != b->getSuccessors().end(); ++p)
          {
          next = toBlock((*p)->getTo());
          index = _dominators._dfNumbers[next->getNumber()];
-         si._succ[index] = true;
+         si._succ.set(index);
          }
       for (auto p = b->getExceptionPredecessors().begin(); p != b->getExceptionPredecessors().end(); ++p)
          {
          next = toBlock((*p)->getFrom());
          index = _dominators._dfNumbers[next->getNumber()];
-         si._exceptionPred[index] = true;
+         si._exceptionPred.set(index);
          }
       for (auto p = b->getExceptionSuccessors().begin(); p != b->getExceptionSuccessors().end(); ++p)
          {
          next = toBlock((*p)->getTo());
          index = _dominators._dfNumbers[next->getNumber()];
-         si._exceptionSucc[index] = true;
+         si._exceptionSucc.set(index);
          }
       }
    }
@@ -176,20 +174,19 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp, TR::ResolvedM
    // Calculate dominators
    // This has the side-effect of renumbering the blocks in depth-first order
    //
-   TR_Dominators *dominators = NULL;
-   dominators = new (comp->trHeapMemory()) TR_Dominators(comp);
+   TR_Dominators dominators = TR_Dominators(comp);
 
    #if DEBUG
    if (debug("verifyDominator"))
       {
-      TR_DominatorVerifier verifyDominator(*dominators);
+      TR_DominatorVerifier verifyDominator(dominators);
       }
    #endif
 
    TR::CFG *cfg = methSym->getFlowGraph();
    TR_ASSERT(cfg, "cfg is NULL\n");
 
-   TR_RegionAnalysis ra(comp, *dominators, cfg, comp->allocator());
+   TR_RegionAnalysis ra(comp, dominators, cfg, stackMemoryRegion);
    ra._trace = comp->getOption(TR_TraceSA);
 
    ra._useNew = !comp->getOption(TR_DisableIterativeSA);
@@ -199,15 +196,17 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp, TR::ResolvedM
       comp->getDebug()->print(comp->getOutFile(), cfg);
       }
 
-   ra.createLeafStructures(cfg);
+   ra.createLeafStructures(cfg, stackMemoryRegion);
 
    // Loop through the node set until there is only one node left - this is the
    // root of the control tree.
    //
-   TR_Structure *result = ra.findRegions();
+   TR_Structure *result = ra.findRegions(stackMemoryRegion);
 
    return result;
    }
+
+
 
 
 /**
@@ -231,7 +230,7 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp)
 
    TR::CFG *cfg = comp->getFlowGraph();
 
-   TR_RegionAnalysis ra(comp, dominators, cfg, comp->allocator());
+   TR_RegionAnalysis ra(comp, dominators, cfg, stackMemoryRegion);
    ra._trace = comp->getOption(TR_TraceSA);
 
    ra._useNew = !comp->getOption(TR_DisableIterativeSA);
@@ -241,12 +240,12 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp)
       comp->getDebug()->print(comp->getOutFile(), cfg);
       }
 
-   ra.createLeafStructures(cfg);
+   ra.createLeafStructures(cfg, stackMemoryRegion);
 
    // Loop through the node set until there is only one node left - this is the
    // root of the control tree.
    //
-   TR_Structure *result = ra.findRegions();
+   TR_Structure *result = ra.findRegions(stackMemoryRegion);
 
    return result;
    }
@@ -271,13 +270,13 @@ TR_Structure *TR_RegionAnalysis::getRegions(TR::Compilation *comp)
  * enough to consider.
  * The root region is returned.
  */
-TR_Structure *TR_RegionAnalysis::findRegions()
+TR_Structure *TR_RegionAnalysis::findRegions(TR::Region &memRegion)
    {
    // Create work areas
-   TR::BitVector regionNodes(comp()->allocator());
-   TR::BitVector nodesInPath(comp()->allocator());
+   TR_BitVector regionNodes(memRegion);
+   TR_BitVector nodesInPath(memRegion);
    // Create the array to hold created cfg nodes
-   SubGraphNodes cfgNodes(_totalNumberOfNodes, comp()->allocator());
+   SubGraphNodes cfgNodes(_totalNumberOfNodes, memRegion);
 
    // Loop through the active nodes in depth-first postorder looking for natural
    // loops.
@@ -299,7 +298,7 @@ TR_Structure *TR_RegionAnalysis::findRegions()
       //
       region = findNaturalLoop(node, regionNodes, nodesInPath);
       if (region != NULL)
-      	 buildRegionSubGraph(region, node, regionNodes, cfgNodes);
+      	 buildRegionSubGraph(region, node, regionNodes, cfgNodes, memRegion);
       }
 
    // Loop through the active nodes in depth-first postorder looking for other
@@ -321,7 +320,7 @@ TR_Structure *TR_RegionAnalysis::findRegions()
       region = findRegion(node, regionNodes, nodesInPath);
 
       if (region != NULL)
-         buildRegionSubGraph(region, node, regionNodes,cfgNodes);
+         buildRegionSubGraph(region, node, regionNodes,cfgNodes, memRegion);
       }
 
    TR_ASSERT(getInfo(0)._structure, "Region Analysis, root region not found");
@@ -338,9 +337,9 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
                                                        WorkBitVector &regionNodes,
                                                        WorkBitVector &nodesInPath)
    {
-   regionNodes.Clear();
-   regionNodes[node._nodeIndex] = true;
-   nodesInPath.Clear();
+   regionNodes.empty();
+   regionNodes.set(node._nodeIndex);
+   nodesInPath.empty();
    bool cyclesFound = false;
 
    int32_t numBackEdges = 0;
@@ -370,7 +369,7 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
    if (numBackEdges == 0)
       return NULL;
 
-   TR_RegionStructure *region = new (trHeapMemory()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -389,9 +388,9 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
 void TR_RegionAnalysis::addNaturalLoopNodesIterativeVersion(StructInfo &node, WorkBitVector &regionNodes, WorkBitVector &nodesInPath, bool &cyclesFound, TR::Block *hdrBlock)
    {
    //special case for addNaturalLoops
-   if (regionNodes.ValueAt(node._nodeIndex))
+   if (regionNodes.get(node._nodeIndex))
       {
-      if (nodesInPath.ValueAt(node._nodeIndex))
+      if (nodesInPath.get(node._nodeIndex))
          {
          cyclesFound = true;
          if (trace())
@@ -411,21 +410,21 @@ void TR_RegionAnalysis::addNaturalLoopNodesIterativeVersion(StructInfo &node, Wo
       {
       int32_t index = workStack.pop();
 
-      if (nodesInPath.ValueAt(index))
+      if (nodesInPath.get(index))
          {
          // If node is in path, in region and cycles have been found then processing
          // the node again will not have any sideeffects, so we can skip it completely
-         if (regionNodes[index] && cyclesFound)
+         if (regionNodes.get(index) && cyclesFound)
             continue;
-         nodesInPath[index] = false;
+         nodesInPath.reset(index);
          continue;
          }
       else
          {
          workStack.push(index); //push again but now it will be marked in nodesInPath,
          //so the next time we come across this index we won't process it again
-         regionNodes[index] = true;
-         nodesInPath[index] = true;
+         regionNodes.set(index);
+         nodesInPath.set(index);
          }
 
       if (trace())
@@ -454,9 +453,9 @@ void TR_RegionAnalysis::addNaturalLoopNodes(StructInfo &node, WorkBitVector &reg
 
    // If the node was already found in the region we can stop tracking this path.
    //
-   if (regionNodes.ValueAt(index))
+   if (regionNodes.get(index))
       {
-      if (nodesInPath.ValueAt(index))
+      if (nodesInPath.get(index))
          {
          cyclesFound = true;
          if (trace())
@@ -469,8 +468,8 @@ void TR_RegionAnalysis::addNaturalLoopNodes(StructInfo &node, WorkBitVector &reg
 
    // Add this node to the region and to this path and look at its predecessors.
    //
-   regionNodes[index] = true;
-   nodesInPath[index] = true;
+   regionNodes.set(index);
+   nodesInPath.set(index);
 
    StructureBitVector::Cursor cursor(node._pred);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
@@ -486,7 +485,7 @@ void TR_RegionAnalysis::addNaturalLoopNodes(StructInfo &node, WorkBitVector &reg
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addNaturalLoopNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
-   nodesInPath[index] = false;
+   nodesInPath.reset(index);
    }
 
 
@@ -506,8 +505,8 @@ TR_RegionStructure *TR_RegionAnalysis::findRegion(StructInfo &node,
    {
 
    bool cyclesFound = false;
-   regionNodes.Clear();
-   nodesInPath.Clear();
+   regionNodes.empty();
+   nodesInPath.empty();
 
    if (_useNew)
       {
@@ -519,11 +518,11 @@ TR_RegionStructure *TR_RegionAnalysis::findRegion(StructInfo &node,
       }
    if (!cyclesFound && (node._nodeIndex > 0))
       {
-      if (regionNodes.PopulationCount() < 100)
+      if (regionNodes.elementCount() < 100)
          return NULL;
       }
 
-   TR_RegionStructure *region = new (trHeapMemory()) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
+   TR_RegionStructure *region = new (_structureRegion) TR_RegionStructure(_compilation, node._structure->getNumber() /* node._nodeIndex */);
    if (cyclesFound)
       {
       if (trace())
@@ -547,17 +546,17 @@ void TR_RegionAnalysis::addRegionNodesIterativeVersion(StructInfo &node, WorkBit
    while (!workStack.isEmpty())
       {
       int32_t index = workStack.pop();
-      if (nodesInPath.ValueAt(index))
+      if (nodesInPath.get(index))
          {
-         nodesInPath[index] = false;
+         nodesInPath.reset(index);
          continue;
          }
       else
          {
          workStack.push(index); //push again but now it will be marked in nodesInPath,
          //so the next time we come across this index we won't process it again
-         regionNodes[index] = true;
-         nodesInPath[index] = true;
+         regionNodes.set(index);
+         nodesInPath.set(index);
          }
 
       if (trace())
@@ -586,9 +585,9 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
 
    // If the node was already found in the region we can stop tracking this path.
    //
-   if (regionNodes.ValueAt(index))
+   if (regionNodes.get(index))
       {
-      if (nodesInPath.ValueAt(index))
+      if (nodesInPath.get(index))
          {
          cyclesFound = true;
          if (trace())
@@ -601,8 +600,8 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
 
    // Add this node to the region and to this path and look at its successors.
    //
-   regionNodes[index] = true;
-   nodesInPath[index] = true;
+   regionNodes.set(index);
+   nodesInPath.set(index);
 
    StructureBitVector::Cursor cursor(node._succ);
    for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
@@ -612,7 +611,7 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
       // The exit block must only be made part of the region headed by the entry
       // block. It provides an exit for all other regions.
       //
-      if ((next._succ.IsZero()) &&
+      if ((next._succ.isEmpty()) &&
           next._originalBlock == _cfg->getEnd())
          {
          if (hdrBlock->getNumber() != 0)
@@ -629,7 +628,7 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addRegionNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
-   nodesInPath[index] = false;
+   nodesInPath.reset(index);
    }
 
 /**
@@ -639,7 +638,8 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
 void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
                                             StructInfo &entryNode,
                                             WorkBitVector &regionNodes,
-                                            SubGraphNodes &cfgNodes)
+                                            SubGraphNodes &cfgNodes,
+                                            TR::Region &memRegion)
    {
    StructInfo               *toNode;
    int32_t                   fromIndex, toIndex;
@@ -658,7 +658,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
 
    // Bits cannot be turned off while iterating over a CS2 sparse bit vector,
    // so they are accumulated in a separate vector and turned off after iteration
-   StructureBitVector bitsToBeRemoved(_compilation->allocator());
+   StructureBitVector bitsToBeRemoved(memRegion);
 
    WorkBitVector::Cursor rCursor(regionNodes);
    for (rCursor.SetToFirstOne(); rCursor.Valid(); rCursor.SetToNextOne())
@@ -667,7 +667,7 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       StructInfo &fromNode = getInfo(fromIndex);
 
       if (cfgNodes[fromIndex] == NULL)
-         cfgNodes[fromIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(fromNode._structure);
+         cfgNodes[fromIndex] = new (_structureRegion) TR_StructureSubGraphNode(fromNode._structure);
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
@@ -678,17 +678,17 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          StructInfo &toNode = getInfo(toIndex);
          if (cfgNodes[toIndex] == NULL)
             {
-            if (regionNodes.ValueAt(toIndex))
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure);
+            if (regionNodes.get(toIndex))
+               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure->getNumber(), trMemory());
+               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createEdge(from,  to, trMemory());
-         if (regionNodes.ValueAt(toIndex))
+         edge = TR::CFGEdge::createEdge(from,  to, _structureRegion);
+         if (regionNodes.get(toIndex))
             {
-            toNode._pred[fromIndex] = false;
-            bitsToBeRemoved[toIndex] = true;
+            toNode._pred.reset(fromIndex);
+            bitsToBeRemoved.set(toIndex);
             }
          else
             {
@@ -697,15 +697,15 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
                   {
                   // Change the successor edge to come from the new region
                   //
-               toNode._pred[fromIndex] = false;
-               toNode._pred[entryNode._nodeIndex] = true;
-               entryNode._succ[toIndex] = true;
+               toNode._pred.reset(fromIndex);
+               toNode._pred.set(entryNode._nodeIndex);
+               entryNode._succ.set(toIndex);
                }
             }
          }
       fromNode._succ -= bitsToBeRemoved;
 
-      bitsToBeRemoved.Clear();
+      bitsToBeRemoved.empty();
       StructureBitVector::Cursor eCursor(fromNode._exceptionSucc);
       for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
          {
@@ -713,26 +713,26 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
          StructInfo &toNode = getInfo(toIndex);
          if (cfgNodes[toIndex] == NULL)
             {
-            if (regionNodes.ValueAt(toIndex))
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure);
+            if (regionNodes.get(toIndex))
+               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure);
             else
-               cfgNodes[toIndex] = new (trHeapMemory()) TR_StructureSubGraphNode(toNode._structure->getNumber(), trMemory());
+               cfgNodes[toIndex] = new (_structureRegion) TR_StructureSubGraphNode(toNode._structure->getNumber(), _structureRegion);
             }
          to = cfgNodes[toIndex];
-         edge = TR::CFGEdge::createExceptionEdge(from,to,trMemory());
-         if (regionNodes.ValueAt(toIndex))
+         edge = TR::CFGEdge::createExceptionEdge(from, to, _structureRegion);
+         if (regionNodes.get(toIndex))
             {
-            toNode._exceptionPred[fromIndex] = false;
-            bitsToBeRemoved[toIndex] = true;
+            toNode._exceptionPred.reset(fromIndex);
+            bitsToBeRemoved.set(toIndex);
             }
          else
             {
             region->addExitEdge(edge);
             if (&fromNode != &entryNode)
                   {
-               toNode._exceptionPred[fromIndex] = false;
-               toNode._exceptionPred[entryNode._nodeIndex] = true;
-               entryNode._exceptionSucc[toIndex] = true;
+               toNode._exceptionPred.reset(fromIndex);
+               toNode._exceptionPred.set(entryNode._nodeIndex);
+               entryNode._exceptionSucc.set(toIndex);
                }
             }
          }

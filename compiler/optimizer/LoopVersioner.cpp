@@ -3914,7 +3914,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                      }
                   }
 
-               TR_BlockStructure *newGotoBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
+               TR_BlockStructure *newGotoBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
                newGotoBlockStructure->setCreatedByVersioning(true);
                if (!_neitherLoopCold)
                   {
@@ -4530,7 +4530,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          endTree = gotoBlockExitTree;
          //_cfg->addEdge(TR::CFGEdge::createEdge(comparisonBlock,  newGotoBlock, trMemory()));
          //_cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  clonedLoopInvariantBlock, trMemory()));
-         TR_BlockStructure *newGotoBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
+         TR_BlockStructure *newGotoBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
          newGotoBlockStructure->setCreatedByVersioning(true);
          if (!_neitherLoopCold)
             {
@@ -4727,20 +4727,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    whileLoop->setVersionedLoop(clonedWhileLoop);
 
    TR_BlockStructure *invariantBlockStructure = invariantBlock->getStructureOf();
-   TR_BlockStructure *clonedInvariantBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), clonedLoopInvariantBlock->getNumber(), clonedLoopInvariantBlock);
+   TR_BlockStructure *clonedInvariantBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), clonedLoopInvariantBlock->getNumber(), clonedLoopInvariantBlock);
    clonedInvariantBlockStructure->setCreatedByVersioning(true);
 
    if (!_neitherLoopCold)
    clonedInnerWhileLoops->deleteAll();
    clonedInvariantBlockStructure->setAsLoopInvariantBlock(true);
    TR_RegionStructure *parentStructure = whileLoop->getParent()->asRegion();
-   TR_RegionStructure *properRegion = new (trHeapMemory()) TR_RegionStructure(comp(), chooserBlock->getNumber());
+   TR_RegionStructure *properRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), chooserBlock->getNumber());
    parentStructure->replacePart(invariantBlockStructure, properRegion);
 
-   TR_StructureSubGraphNode *clonedWhileNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedWhileLoop);
-   TR_StructureSubGraphNode *whileNode = new (trHeapMemory()) TR_StructureSubGraphNode(whileLoop);
-   TR_StructureSubGraphNode *invariantNode = new (trHeapMemory()) TR_StructureSubGraphNode(invariantBlockStructure);
-   TR_StructureSubGraphNode *clonedInvariantNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedInvariantBlockStructure);
+   TR_StructureSubGraphNode *clonedWhileNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedWhileLoop);
+   TR_StructureSubGraphNode *whileNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(whileLoop);
+   TR_StructureSubGraphNode *invariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(invariantBlockStructure);
+   TR_StructureSubGraphNode *clonedInvariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedInvariantBlockStructure);
 
    properRegion->addSubNode(whileNode);
    properRegion->addSubNode(clonedWhileNode);
@@ -4760,9 +4760,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       {
       TR::Block *actualComparisonBlock = currComparisonBlock->getData();
 
-      TR_BlockStructure *comparisonBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), actualComparisonBlock->getNumber(), actualComparisonBlock);
+      TR_BlockStructure *comparisonBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), actualComparisonBlock->getNumber(), actualComparisonBlock);
       comparisonBlockStructure->setCreatedByVersioning(true);
-      TR_StructureSubGraphNode *comparisonNode = new (trHeapMemory()) TR_StructureSubGraphNode(comparisonBlockStructure);
+      TR_StructureSubGraphNode *comparisonNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(comparisonBlockStructure);
       properRegion->addSubNode(comparisonNode);
 
       if (prevComparisonNode)
@@ -4776,7 +4776,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
       if (currComparisonBlock)
          {
-         TR_StructureSubGraphNode *criticalEdgeNode = new (trHeapMemory()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
+         TR_StructureSubGraphNode *criticalEdgeNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
          properRegion->addSubNode(criticalEdgeNode);
          TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, trMemory());
          TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, trMemory());
@@ -4868,7 +4868,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    TR_BlockStructure *newGotoBlockStructure;
    for (newGotoBlockStructure = newGotoBlockStructuresIt.getCurrent(); newGotoBlockStructure; newGotoBlockStructure = newGotoBlockStructuresIt.getNext())
       {
-      TR_StructureSubGraphNode *newGotoBlockNode = new (trHeapMemory()) TR_StructureSubGraphNode(newGotoBlockStructure);
+      TR_StructureSubGraphNode *newGotoBlockNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newGotoBlockStructure);
       properRegion->addSubNode(newGotoBlockNode);
       TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, trMemory());
       }

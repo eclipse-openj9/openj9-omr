@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -100,13 +100,13 @@ class CFG
       _rootStructure(NULL),
       _pStart(NULL),
       _pEnd(NULL),
+      _structureRegion(c->trMemory()->heapMemoryRegion()),
       _nextNodeNumber(0),
       _numEdges(0),
       _mightHaveUnreachableBlocks(false),
       _doesHaveUnreachableBlocks(false),
       _removingUnreachableBlocks(false),
       _ignoreUnreachableBlocks(false),
-      _structureGraphNodes(c->allocator()),
       _removeEdgeNestingDepth(0),
       _forwardTraversalOrder(NULL),
       _backwardTraversalOrder(NULL),
@@ -131,6 +131,7 @@ class CFG
    TR_Memory *trMemory() { return comp()->trMemory(); }
    TR_HeapMemory trHeapMemory() { return trMemory(); }
    TR_StackMemory trStackMemory() { return trMemory(); }
+   TR::Region &structureRegion() { return _structureRegion; }
 
    void setStartAndEnd(TR::CFGNode * s, TR::CFGNode * e) { addNode(s); addNode(e); setStart(s); setEnd(e); }
 
@@ -156,7 +157,6 @@ class CFG
 
    uint32_t addStructureSubGraphNodes (TR_StructureSubGraphNode *node);
    void removeStructureSubGraphNodes(TR_StructureSubGraphNode *node);
-   TR_StructureSubGraphNode *getStructureSubGraphNode (uint32_t index) {return _structureGraphNodes[index];}
 
    void addEdge(TR::CFGEdge *e);
    TR::CFGEdge *addEdge(TR::CFGNode *f, TR::CFGNode *t, TR_AllocationKind = heapAlloc);
@@ -309,10 +309,10 @@ protected:
 
    TR::CFGNode *_pStart;
    TR::CFGNode *_pEnd;
+   TR::Region _structureRegion;
    TR_Structure *_rootStructure;
 
    TR_LinkHead1<TR::CFGNode> _nodes;
-   CS2::TableOf <TR_StructureSubGraphNode *,TR::Allocator> _structureGraphNodes;
    int32_t _numEdges;
    int32_t _nextNodeNumber;
 
@@ -440,7 +440,7 @@ class TR_OrderedExceptionHandlerIterator
 public:
    TR_ALLOC(TR_Memory::OrderedExceptionHandlerIterator)
 
-   TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock);
+   TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock, TR::Region &workingRegion);
 
    TR::Block * getFirst();
 

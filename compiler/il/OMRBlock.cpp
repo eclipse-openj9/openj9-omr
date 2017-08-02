@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -125,7 +125,7 @@ OMR::Block::Block(TR::TreeTop *entry, TR::TreeTop *exit, TR_Memory * m) :
 
 /// Copy constructor
 OMR::Block::Block(TR::Block &other, TR::TreeTop *entry, TR::TreeTop *exit) :
-   TR::CFGNode(other.trMemory()),
+   TR::CFGNode(other._region),
    _pEntry(entry),
    _pExit(exit),
    _pStructureOf(NULL),
@@ -141,18 +141,18 @@ OMR::Block::Block(TR::Block &other, TR::TreeTop *entry, TR::TreeTop *exit) :
    if (exit && exit->getNode())   exit->getNode()->setBlock(self());
 
    if (other._liveLocals)
-      _liveLocals = new (other.trHeapMemory()) TR_BitVector(*other._liveLocals);
+      _liveLocals = new (other._region) TR_BitVector(*other._liveLocals);
 
    if (other._catchBlockExtension)
       {
-      _catchBlockExtension = new (other.trHeapMemory())
+      _catchBlockExtension = new (other._region)
          TR_CatchBlockExtension(*other._catchBlockExtension);
       }
 
    self()->setFrequency(other.getFrequency());
 
    if (other._globalRegisters)
-      _globalRegisters = new (other.trHeapMemory()) TR_Array<TR_GlobalRegister>(*other._globalRegisters);
+      _globalRegisters = new (other._region) TR_Array<TR_GlobalRegister>(*other._globalRegisters);
 
    _flags.set(other._flags.getValue());
    _moreflags.set(other._moreflags.getValue());
@@ -427,8 +427,8 @@ OMR::Block::breakFallThrough(TR::Compilation *comp, TR::Block *faller, TR::Block
          comp->getFlowGraph()->addNode(gotoBlock, faller->getCommonParentStructureIfExists(fallee, comp->getFlowGraph()));
       else
          comp->getFlowGraph()->addNode(gotoBlock);
-      comp->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(faller,  gotoBlock, self()->trMemory()));
-      comp->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(gotoBlock,  fallee, self()->trMemory()));
+      comp->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(faller,  gotoBlock, comp->trMemory()));
+      comp->getFlowGraph()->addEdge(TR::CFGEdge::createEdge(gotoBlock,  fallee, comp->trMemory()));
       // remove the edge only if the branch target is not pointing to the next block
       if (lastNode->getBranchDestination() != fallee->getEntry())
          comp->getFlowGraph()->removeEdge(faller, fallee);
@@ -752,9 +752,9 @@ OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg)
 void
 OMR::Block::uncommonNodesBetweenBlocks(TR::Compilation *comp, TR::Block *newBlock, TR::ResolvedMethodSymbol *methodSymbol)
    {
-   TR_ScratchList<TR::SymbolReference> symbolReferenceTempsA(self()->trMemory());
-   TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(self()->trMemory());
-   TR_ScratchList<TR::SymbolReference> symbolReferenceTempsC(self()->trMemory());
+   TR_ScratchList<TR::SymbolReference> symbolReferenceTempsA(comp->trMemory());
+   TR_ScratchList<TR::SymbolReference> injectedBasicBlockTemps(comp->trMemory());
+   TR_ScratchList<TR::SymbolReference> symbolReferenceTempsC(comp->trMemory());
 
    TR_HandleInjectedBasicBlock ibb(comp, NULL, methodSymbol? methodSymbol: comp->getMethodSymbol(),
                                    symbolReferenceTempsA,
@@ -805,7 +805,7 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
    TR::Compilation * comp = cfg->comp();
    comp->setCurrentBlock(self());
    TR::Node * startNode = startOfNewBlock->getNode();
-   TR::Block * block2 = new (self()->trHeapMemory()) TR::Block(TR::TreeTop::create(comp, TR::Node::create(startNode, TR::BBStart)), self()->getExit(), self()->trMemory());
+   TR::Block * block2 = new (comp->trHeapMemory()) TR::Block(TR::TreeTop::create(comp, TR::Node::create(startNode, TR::BBStart)), self()->getExit(), comp->trMemory());
    block2->inheritBlockInfo(self());
 
    cfg->addNode(block2);
@@ -832,9 +832,9 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
       TR_BlockStructure *thisBlockStructure = self()->getStructureOf();
       if (thisBlockStructure)
          {
-         TR_BlockStructure *blockStructure2 = new (self()->trHeapMemory()) TR_BlockStructure(comp, block2->getNumber(), block2);
+         TR_BlockStructure *blockStructure2 = new (cfg->structureRegion()) TR_BlockStructure(comp, block2->getNumber(), block2);
          TR_RegionStructure *parentStructure = thisBlockStructure->getParent()->asRegion();
-         TR_StructureSubGraphNode *blockStructureNode2 = new (self()->trHeapMemory()) TR_StructureSubGraphNode(blockStructure2);
+         TR_StructureSubGraphNode *blockStructureNode2 = new (cfg->structureRegion()) TR_StructureSubGraphNode(blockStructure2);
          TR_StructureSubGraphNode *subNode;
          TR_RegionStructure::Cursor si(*parentStructure);
          for (subNode = si.getCurrent(); subNode != NULL; subNode = si.getNext())
@@ -849,7 +849,7 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
           (*nextSucc)->setFrom(blockStructureNode2);
 
          subNode->getSuccessors().clear();
-         TR::CFGEdge::createEdge(subNode,  blockStructureNode2, self()->trMemory());
+         TR::CFGEdge::createEdge(subNode,  blockStructureNode2, comp->trMemory());
 
          for (auto nextSucc = subNode->getExceptionSuccessors().begin(); nextSucc != subNode->getExceptionSuccessors().end(); ++nextSucc)
           {
@@ -873,7 +873,7 @@ OMR::Block::split(TR::TreeTop * startOfNewBlock, TR::CFG * cfg, bool fixupCommon
           if (excSuccWasAdded)
              {
              if (toStructureSubGraphNode((*nextSucc)->getTo())->getStructure())
-                 TR::CFGEdge::createExceptionEdge(blockStructureNode2, (*nextSucc)->getTo(), self()->trMemory());
+                 TR::CFGEdge::createExceptionEdge(blockStructureNode2, (*nextSucc)->getTo(), comp->trMemory());
              else
                 parentStructure->addExitEdge(blockStructureNode2, (*nextSucc)->getTo()->getNumber(), true);
              }
@@ -993,12 +993,12 @@ OMR::Block::createConditionalSideExitBeforeTree(TR::TreeTop *tree,
    exitBlock->append(returnTree);
    compareTree->getNode()->setBranchDestination(exitBlock->getEntry());
 
-   cfg->addEdge(TR::CFGEdge::createEdge(self(),  exitBlock, self()->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(self(),  exitBlock, comp->trMemory()));
 
    TR::CFGNode *afterExitBlock = cfg->getEnd(); // typically is a return which goes to EXIT
    if (returnTree->getNode()->getOpCode().isBranch())
       afterExitBlock = returnTree->getNode()->getBranchDestination()->getNode()->getBlock();
-   cfg->addEdge(TR::CFGEdge::createEdge(exitBlock,  afterExitBlock, self()->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(exitBlock,  afterExitBlock, comp->trMemory()));
 
    cfg->copyExceptionSuccessors(self(), exitBlock);
 
@@ -1104,8 +1104,8 @@ OMR::Block::createConditionalBlocksBeforeTree(TR::TreeTop * tree,
    ifBlock->append(TR::TreeTop::create(comp, TR::Node::create(node, TR::Goto, 0, remainderBlock->getEntry())));
    compareTree->getNode()->setBranchDestination(ifBlock->getEntry());
 
-   cfg->addEdge(TR::CFGEdge::createEdge(self(),  ifBlock, self()->trMemory()));
-   cfg->addEdge(TR::CFGEdge::createEdge(ifBlock,    remainderBlock, self()->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(self(),  ifBlock, comp->trMemory()));
+   cfg->addEdge(TR::CFGEdge::createEdge(ifBlock,    remainderBlock, comp->trMemory()));
 
    cfg->copyExceptionSuccessors(self(), ifBlock);
 
@@ -1123,8 +1123,8 @@ OMR::Block::createConditionalBlocksBeforeTree(TR::TreeTop * tree,
          elseBlock->setIsExtensionOfPreviousBlock(true);       // fall-through block is an extension
 
       cfg->addNode(elseBlock);
-      cfg->addEdge(TR::CFGEdge::createEdge(self(),  elseBlock, self()->trMemory()));
-      cfg->addEdge(TR::CFGEdge::createEdge(elseBlock,  remainderBlock, self()->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(self(),  elseBlock, comp->trMemory()));
+      cfg->addEdge(TR::CFGEdge::createEdge(elseBlock,  remainderBlock, comp->trMemory()));
       cfg->copyExceptionSuccessors(self(), elseBlock);
       cfg->removeEdge(self(), remainderBlock);
       }
@@ -1250,11 +1250,13 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
    //traceMsg("Splitting edge (%d,%d)\n", from->getNumber(), to->getNumber());
    TR_ASSERT(!to->isOSRCatchBlock(), "Splitting edge to OSRCatchBlock (block_%d -> block_%d) is not supported\n", from->getNumber(), to->getNumber());
    TR::Node *exitNode = from->getExit()->getNode();
+   TR::CFG *cfg = c->getFlowGraph();
+   TR_Structure *rootStructure = cfg->getStructure();
    TR_Structure *fromContainingLoop = NULL;
-   if (from->getStructureOf())
+   if (rootStructure && from->getStructureOf())
       fromContainingLoop = from->getStructureOf()->getContainingLoop();
    TR_Structure *toContainingLoop = NULL;
-   if (to->getStructureOf())
+   if (rootStructure && to->getStructureOf())
       toContainingLoop = to->getStructureOf()->getContainingLoop();
    if (fromContainingLoop != toContainingLoop)
       {
@@ -1269,7 +1271,6 @@ OMR::Block::splitEdge(TR::Block *from, TR::Block *to, TR::Compilation *c, TR::Tr
          }
       }
 
-   TR::CFG * cfg = c->getFlowGraph();
    TR::Compilation *comp = cfg->comp();
    TR::TreeTop *entryTree = to->getEntry();
    TR::Block * newBlock;
@@ -1547,7 +1548,7 @@ OMR::Block::setInstructionBoundaries(uint32_t startPC, uint32_t endPC)
 void
 OMR::Block::addExceptionRangeForSnippet(uint32_t startPC, uint32_t endPC)
    {
-   _snippetBoundaries.add(new (self()->trHeapMemory()) InstructionBoundaries(startPC, endPC));
+   _snippetBoundaries.add(new (TR::comp()->trHeapMemory()) InstructionBoundaries(startPC, endPC));
    }
 
 void
@@ -1822,7 +1823,7 @@ TR_BlockCloner::cloneBlocks(TR::Block * from, TR::Block * lastBlock)
       {
       comp->setCurrentBlock(from);
       TR::Block * to =
-         new (from->trHeapMemory()) TR::Block(*from, TR::TreeTop::create(comp, NULL), TR::TreeTop::create(comp, NULL));
+         new (comp->trHeapMemory()) TR::Block(*from, TR::TreeTop::create(comp, NULL), TR::TreeTop::create(comp, NULL));
       to->getEntry()->join(to->getExit());
 
       if (bMap.getLast())

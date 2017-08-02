@@ -178,6 +178,7 @@ test_targets := $(sort $(test_targets))
 
 targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
 targets_clean := $(addsuffix _clean,$(targets))
+targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/% ddr/%,$(targets)))
 
 ###
 ### Rules
@@ -275,6 +276,18 @@ else
 	@echo Enable by configuring with --enable-fvtest
 endif
 .PHONY: test
+
+
+# preprocess ddrgen-annotated source code
+
+ddrgen:
+	$(MAKE) -f GNUmakefile $(targets_ddrgen)
+
+$(targets_ddrgen):
+	$(MAKE) -C $(patsubst %_ddrgen,%,$@) ddrgen
+
+.PHONY: ddrgen $(targets_ddrgen)
+
 
 # Rerunning configure
 

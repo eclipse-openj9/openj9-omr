@@ -116,8 +116,6 @@ typedef TR::SparseBitVector SharedSparseBitVector;
 #endif
 
 
-#define TR_NOP_TRANSLATE_TABLE_SIZE 256
-
 // Return codes from the compilation. Any non-zero return code will abort the
 // compilation.
 enum CompilationReturnCodes
@@ -911,8 +909,6 @@ public:
 
    bool getFailCHTableCommit() const { return _failCHtableCommitFlag; }
    void setFailCHTableCommit(bool v) { _failCHtableCommitFlag = v; }
-
-   size_t getNOPTranslateTableSize() { return TR_NOP_TRANSLATE_TABLE_SIZE; }
 
    TR_RandomGenerator &adhocRandom(){ return *_adhocRandom; } // Not recommended if you care about reproducibility
    TR_RandomGenerator &primaryRandom() { return *_primaryRandom; }

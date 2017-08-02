@@ -178,7 +178,7 @@ test_targets := $(sort $(test_targets))
 
 targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
 targets_clean := $(addsuffix _clean,$(targets))
-targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/% ddr/%,$(targets)))
+targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib jitbuilder/% fvtest/% perftest/% third_party/% tools/% ddr ddr/% example/%,$(targets)))
 
 ###
 ### Rules

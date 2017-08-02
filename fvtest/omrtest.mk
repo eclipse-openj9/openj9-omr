@@ -42,7 +42,7 @@ omr_algotest:
 	./omralgotest -avltest:fvtest/algotest/avltest.lst
 	
 omr_gctest:
-	./omrgctest -configListFile=fvtest/gctest/configuration/fvConfigListFile.txt
+	./omrgctest --gtest_filter="gcFunctionalTest*"
 
 omr_jitbuilderexamples:
 	make -C jitbuilder/release test

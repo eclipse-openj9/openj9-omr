@@ -24,6 +24,7 @@ message(WARNING
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
 include(cmake/versions.cmake) # Required for OMR_VERSION 
+include(cmake/Assert.cmake)
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")

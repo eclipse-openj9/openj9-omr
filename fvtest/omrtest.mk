@@ -44,8 +44,18 @@ omr_algotest:
 omr_gctest:
 	./omrgctest --gtest_filter="gcFunctionalTest*"
 
+# jitbuilder can run different sets of tests on linux_x86 and osx than on other platforms
+# until we common this up, run "testall" on linux_x86 and osx but run "test" everywhere else
 omr_jitbuilderexamples:
+ifeq (,$(findstring linux_x86,$(SPEC)))
+	make -C jitbuilder/release testall
+else
+ifeq (,$(findstring osx,$(SPEC)))
+	make -C jitbuilder/release testall
+else
 	make -C jitbuilder/release test
+endif
+endif
 
 omr_jitbuildertest:
 	./omrjitbuildertest

@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <set>
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 
 #include "omrport.h"
 
@@ -33,12 +33,6 @@
 
 using std::vector;
 using std::set;
-
-#if defined(OMR_HAVE_TR1)
-using std::tr1::unordered_map;
-#else
-using std::unordered_map;
-#endif
 
 struct FieldOverride {
 	string structName;

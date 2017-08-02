@@ -22,7 +22,7 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 #include <string>
 
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))

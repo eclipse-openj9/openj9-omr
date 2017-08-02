@@ -18,7 +18,7 @@
 
 #include "ddr/config.hpp"
 
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -28,7 +28,6 @@
 #include "ddr/ir/NamespaceUDT.hpp"
 #include "ddr/std/unordered_map.hpp"
 
-using std::unordered_map;
 
 string
 MacroTool::getTypeName(string s)

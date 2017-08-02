@@ -25,7 +25,7 @@
 #include <string.h>
 #include "ddr/std/sstream.hpp"
 #include <tuple>
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 #include <vector>
 #include <errno.h>
 
@@ -49,13 +49,11 @@ using std::vector;
 using std::tr1::get;
 using std::tr1::make_tuple;
 using std::tr1::tuple;
-using std::tr1::unordered_map;
 #else /* OMR_HAVE_TR1 */
 using std::get;
 using std::make_tuple;
 using std::runtime_error;
 using std::tuple;
-using std::unordered_map;
 #endif /* OMR_HAVE_TR1 */
 
 typedef /*struct Dwarf_Debug_s*/ void *Dwarf_Debug;

@@ -21,7 +21,7 @@
 
 #include "ddr/config.hpp"
 
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 #include <map>
 
 #if defined(OSX) || defined(AIXPPC)
@@ -59,10 +59,8 @@ using std::string;
 
 #if defined(OMR_HAVE_TR1)
 using std::tr1::hash;
-using std::tr1::unordered_map;
 #else
 using std::hash;
-using std::unordered_map;
 #endif
 
 class DwarfScanner: public Scanner

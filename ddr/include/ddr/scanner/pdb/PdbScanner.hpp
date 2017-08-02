@@ -20,7 +20,7 @@
 #define PDBSCANNER_HPP
 
 #include <map>
-#include <unordered_map>
+#include "ddr/std/unordered_map.hpp"
 #include <utility>
 #include <vector>
 
@@ -42,7 +42,6 @@ using std::map;
 using std::pair;
 using std::set;
 using std::string;
-using std::unordered_map;
 using std::vector;
 
 typedef struct PostponedType

@@ -1842,7 +1842,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrnls_get_variant() privateOmrPortLibrary->nls_get_variant(privateOmrPortLibrary)
 #define omrnls_printf(...) privateOmrPortLibrary->nls_printf(privateOmrPortLibrary, __VA_ARGS__)
 #define omrnls_vprintf(param1,param2,param3) privateOmrPortLibrary->nls_vprintf(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrnls_lookup_message(param1,param2,param3) privateOmrPortLibrary->nls_lookup_message(privateOmrPortLibrary, (param1), param2, (param3))
+#define omrnls_lookup_message(param1,param2,param3,param4) privateOmrPortLibrary->nls_lookup_message(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrport_control(param1,param2) privateOmrPortLibrary->port_control(privateOmrPortLibrary, (param1), (param2))
 #define omrsig_startup() privateOmrPortLibrary->sig_startup(privateOmrPortLibrary)
 #define omrsig_shutdown() privateOmrPortLibrary->sig_shutdown(privateOmrPortLibrary)

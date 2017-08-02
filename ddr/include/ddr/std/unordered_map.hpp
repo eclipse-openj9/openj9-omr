@@ -27,20 +27,16 @@
 #undef tolower
 #endif /* defined(J9ZOS390) */
 
-
 #if defined(OMR_HAVE_CXX11)
 #include <unordered_map>
 using std::unordered_map;
 #elif defined(OMR_HAVE_TR1)
 #include <unordered_map>
-namespace std {
 using std::tr1::hash;
 using std::tr1::unordered_map;
-} /* namespace std */
 #else /* defined(OMR_HAVE_CXX11) */
 #error "Need std::unordered_map defined in TR1 or C++11."
 #endif /* defined(OMR_HAVE_CXX11) */
-
 
 #if defined(J9ZOS390)
 #define toupper(c)     (islower(c) ? (c & _XUPPER_ASCII) : c)

@@ -42,17 +42,17 @@ ifneq (,$(findstring pdb,$(DEBUG_FORMAT)))
 endif
 
 ifneq (,$(findstring dwo,$(DEBUG_FORMAT)))
-  OBJECTS += \
-    dwarf/DwarfScanner$(OBJEXT) \
-    dwarf/DwarfFunctions$(OBJEXT)
+  OBJECTS += dwarf/DwarfScanner$(OBJEXT)
 endif
 
 ifeq (osx,$(OMR_HOST_OS))
-  OBJECTS += dwarf/DwarfParser$(OBJEXT)
+  OBJECTS += dwarf/DwarfParser$(OBJEXT) \
+    dwarf/DwarfFunctions$(OBJEXT)
 endif
 
 ifeq (aix,$(OMR_HOST_OS))
-  OBJECTS += dwarf/AixSymbolTableParser$(OBJEXT)
+  OBJECTS += dwarf/AixSymbolTableParser$(OBJEXT) \
+    dwarf/DwarfFunctions$(OBJEXT)
 endif
 
 include $(top_srcdir)/omrmakefiles/rules.mk

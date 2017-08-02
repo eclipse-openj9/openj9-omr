@@ -33,7 +33,7 @@ error() {
 
 # chooseplatform 32bit_platform 64bit_platform
 chooseplatform() {
-    if [[ $thirty_two_bit -eq 1 ]] ; then
+    if [ $thirty_two_bit -eq 1 ] ; then
         platform=$1
     else
         platform=$2

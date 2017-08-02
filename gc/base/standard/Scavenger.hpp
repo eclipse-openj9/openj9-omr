@@ -502,6 +502,14 @@ protected:
 	 * @param env Master GC thread.
 	 */
 	virtual void processLargeAllocateStatsAfterGC(MM_EnvironmentBase *env);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/**
+	 * Perform partial initialization if Garbage Collection is called earlier then GC Master Thread is activated
+	 * @param env Master GC thread.
+	 */
+	virtual void preMasterGCThreadInitialize(MM_EnvironmentBase *env);
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	
 public:
 

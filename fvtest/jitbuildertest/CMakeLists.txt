@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2017
+# (c) Copyright IBM Corp. 2017, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -16,23 +16,25 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-add_subdirectory(util)
 
-add_subdirectory(omrGtestGlue)
-add_subdirectory(algotest)
-add_subdirectory(gctest)
-add_subdirectory(porttest)
-# add_subdirectory(rastest)
-add_subdirectory(sigtest)
-add_subdirectory(threadextendedtest)
-add_subdirectory(threadtest)
-add_subdirectory(utiltest)
-add_subdirectory(vmtest)
 
-if (OMR_JITBUILDER)
-	add_subdirectory(jitbuildertest)
-endif()
+include(../../cmake/compiler_support.cmake)
 
-if(OMR_TEST_COMPILER)
-	add_subdirectory(compilertest)
-endif()
+add_executable(jitbuildertest
+	main.cpp
+	selftest.cpp
+	UnionTest.cpp
+	FieldAddressTest.cpp
+	AnonymousTest.cpp
+	ControlFlowTest.cpp
+	SystemLinkageTest.cpp
+	WorklistTest.cpp
+)
+
+target_link_libraries(jitbuildertest
+	jitbuilder
+	omrGtest
+	${CMAKE_DL_LIBS}
+)
+
+add_test(NAME JitBuilderTest COMMAND jitbuildertest)

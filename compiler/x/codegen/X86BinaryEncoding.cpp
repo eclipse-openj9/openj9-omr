@@ -948,6 +948,22 @@ TR::X86ImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                   (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() , (TR_ExternalRelocationTargetKind) getReloKind(), cg()),
                   __FILE__, __LINE__, getNode());
                break;
+            case TR_MethodPointer:
+               if (getNode() && getNode()->getInlinedSiteIndex() == -1 && 
+                  (void *) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
+                  setReloKind(TR_RamMethod);
+               // intentional fall-through
+            case TR_RamMethod:
+               // intentional fall-through
+            case TR_ClassPointer:
+               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                                           (uint8_t*)getNode(),
+                                                                           (TR_ExternalRelocationTargetKind) _reloKind,
+                                                                           cg()),
+                  __FILE__, 
+                  __LINE__, 
+                  getNode());
+                  break;
             default:
                cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, (TR_ExternalRelocationTargetKind)getReloKind(), cg()),
                   __FILE__,
@@ -1539,7 +1555,8 @@ TR::X86RegImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
             break;
 
          case TR_MethodPointer:
-            if (getNode() && getNode()->getInlinedSiteIndex() == -1)
+            if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
+               (void *) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
                setReloKind(TR_RamMethod);
             // intentional fall-through
          case TR_RamMethod:
@@ -1681,7 +1698,8 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                 getNode());
          break;
       case TR_MethodPointer:
-         if (getNode() && getNode()->getInlinedSiteIndex() == -1)
+         if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
+            (void *) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
             setReloKind(TR_RamMethod);
          // intentional fall-through
       case TR_ClassPointer:
@@ -2556,7 +2574,8 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
                break;
 
             case TR_MethodPointer:
-               if (getNode() && getNode()->getInlinedSiteIndex() == -1)
+               if (getNode() && getNode()->getInlinedSiteIndex() == -1 &&
+                  (void *) getSourceImmediate() == cg()->comp()->getCurrentMethod()->resolvedMethodAddress())
                   setReloKind(TR_RamMethod);
                // intentional fall-through
             case TR_RamMethod:

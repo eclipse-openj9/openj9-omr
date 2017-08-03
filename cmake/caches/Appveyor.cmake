@@ -1,5 +1,7 @@
 set(OMR_EXAMPLE ON CACHE BOOL "")
 set(OMR_JIT  ON CACHE BOOL "")
+# TODO: JitBuilder built through CMake isn't quite ready for windows yet.
+set(OMR_JITBUILDER OFF CACHE BOOL "")
 set(OMR_GC ON CACHE BOOL "")
 set(OMR_PORT ON CACHE BOOL "")
 set(OMR_THREAD ON CACHE BOOL "")

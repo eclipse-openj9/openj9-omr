@@ -7752,7 +7752,7 @@ void TR_IVTypeTransformer::replaceAloadWithBaseIndexInSubtree(TR::Node *node)
        child->getOpCodeValue() == TR::aload &&
        child->getSymbolReference() == _addrSymRef &&
        performTransformation(comp(), "%s Replacing n%in aload with base int-index form\n",
-             optDetailString(), child->getNodePoolIndex()))
+             optDetailString(), child->getGlobalIndex()))
       {
       auto arrayRef = TR::Node::recreateWithoutProperties(child, TR::Compiler->target.is64Bit() ? TR::aladd : TR::aiadd, 2,
             TR::Node::createLoad(_baseSymRef),

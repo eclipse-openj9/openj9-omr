@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -19,9 +19,6 @@
 #ifndef NODEPOOL_INCL
 #define NODEPOOL_INCL
 
-#include "cs2/bitvectr.h"    // for ABitVector
-#include "cs2/hashtab.h"     // for HashTable
-#include "cs2/tableof.h"     // for TableOf, TableIndex, etc
 #include "env/TRMemory.hpp"  // for Allocator, TR_Memory, etc
 #include "il/Node.hpp"       // for Node
 #include "il/NodeUtils.hpp"  // for etc
@@ -35,43 +32,27 @@ namespace TR {
 class NodePool
    {
    public:
-   typedef CS2::TableIndex NodeIndex;
-   typedef CS2::TableOf<TR::Node,TR::Allocator, 8, CS2::ABitVector> Pool_t;
-   typedef TR::SparseBitVector DeadNodes;
-   typedef CS2::TableOf<TR::Node,TR::Allocator, 8, CS2::ABitVector>::Cursor NodeIter;
 
    TR_ALLOC(TR_Memory::Compilation)
-   NodePool(TR::Compilation * comp, const TR::Allocator &allocator):
-      _comp(comp),
-      _pool(allocator),
-      _globalIndex(0),
-      _poolIndex(0),
-      _disableGC(true)
-      {
-      }
+   NodePool(TR::Compilation * comp, const TR::Allocator &allocator);
 
-   TR::Node * allocate(ncount_t poolIndex = 0);
+   TR::Node * allocate();
    bool      deallocate(TR::Node * node);
-   void      removeNodeAndReduceGlobalIndex(TR::Node * node);
    bool      removeDeadNodes();
    void      enableNodeGC()  { _disableGC = false; }
    void      disableNodeGC() { _disableGC = true; }
    ncount_t  getLastGlobalIndex()     { return _globalIndex; }
-   ncount_t  getLastPoolIndex()       { return _poolIndex; }
    ncount_t  getMaxIndex()           { return _globalIndex; }
    TR::Compilation * comp() { return _comp; }
 
    void cleanUp();
 
    private:
-   void     removeNode(NodeIndex globalIdx);
-
    TR::Compilation *     _comp;
    bool                  _disableGC;
    ncount_t              _globalIndex;
-   ncount_t              _poolIndex;
 
-   Pool_t                _pool;
+   TR::Region            _nodeRegion;
    };
 
 }

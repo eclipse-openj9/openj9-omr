@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -369,18 +369,6 @@ uint16_t
 OMR::Node::setUseDefIndex(uint16_t udi)
    {
    return (_unionA._useDefIndex = udi);
-   }
-
-ncount_t
-OMR::Node::getNodePoolIndex()
-   {
-   return _poolIndex;
-   }
-
-void
-OMR::Node::setNodePoolIndex(ncount_t i)
-   {
-   _poolIndex = i;
    }
 
 /**

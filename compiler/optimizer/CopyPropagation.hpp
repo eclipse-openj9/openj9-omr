@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -61,6 +61,7 @@ class TR_CopyPropagation : public TR::Optimization
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private :
    void replaceCopySymbolReferenceByOriginalIn(TR::SymbolReference * copySymRef, TR::Node * rhsOfStoreDefNode, TR::Node * useNode, TR::Node *defNode, TR::Node * baseAddrNode = NULL,bool baseAddrAvail = false);

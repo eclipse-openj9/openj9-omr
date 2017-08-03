@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -690,4 +690,10 @@ ncount_t TR_LoadExtensions::indexNodesForCodegen(TR::Node *parent, ncount_t node
       }
 
    return _nodeCount;
+   }
+
+const char *
+TR_LoadExtensions::optDetailString() const throw()
+   {
+   return "O^O LOAD EXTENSION: ";
    }

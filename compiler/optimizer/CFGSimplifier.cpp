@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -841,4 +841,10 @@ bool TR_CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::No
 bool TR_CFGSimplifier::canReverseBranchMask()
    {
    return false;
+   }
+
+const char *
+TR_CFGSimplifier::optDetailString() const throw()
+   {
+   return "O^O CFG SIMPLIFICATION: ";
    }

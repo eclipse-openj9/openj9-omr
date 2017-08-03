@@ -143,56 +143,20 @@ Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymb
       const OptimizationStrategy *strategy, uint16_t VNType)
    : OMR::Optimizer(comp, methodSymbol, isIlGen, strategy, VNType)
    {
-   _opts[OMR::inductionVariableAnalysis] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_InductionVariableAnalysis::create, OMR::inductionVariableAnalysis, "O^O INDUCTION VARIABLE ANALYSIS: ");
-   _opts[OMR::partialRedundancyElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_PartialRedundancy::create, OMR::partialRedundancyElimination, "O^O PARTIAL REDUNDANCY ELIMINATION: ");
    _opts[OMR::isolatedStoreElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_IsolatedStoreElimination::create, OMR::isolatedStoreElimination, "O^O ISOLATED STORE ELIMINATION: ");
-   _opts[OMR::tacticalGlobalRegisterAllocator] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GlobalRegisterAllocator::create, OMR::tacticalGlobalRegisterAllocator, "O^O GLOBAL REGISTER ASSIGNER: ");
-   _opts[OMR::loopInversion] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopInverter::create, OMR::loopInversion, "O^O LOOP INVERTER: ");
-   _opts[OMR::loopSpecializer] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer, "O^O LOOP SPECIALIZER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_IsolatedStoreElimination::create, OMR::isolatedStoreElimination);
    _opts[OMR::trivialStoreSinking] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialSinkStores::create, OMR::trivialStoreSinking, "O^O TRIVIAL SINK STORES: ");
-   _opts[OMR::generalStoreSinking] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralSinkStores::create, OMR::generalStoreSinking, "O^O GENERAL SINK STORES: ");
-   _opts[OMR::liveRangeSplitter] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LiveRangeSplitter::create, OMR::liveRangeSplitter, "O^O LIVE RANGE SPLITTER: ");
-   _opts[OMR::redundantInductionVarElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantInductionVarElimination::create, OMR::redundantInductionVarElimination, "O^O REDUNDANT INDUCTION VAR ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialSinkStores::create, OMR::trivialStoreSinking);
    _opts[OMR::trivialDeadBlockRemover] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialDeadBlockRemover::create, OMR::trivialDeadBlockRemover, "O^O TRIVIAL DEAD BLOCK REMOVAL ");
-   _opts[OMR::regDepCopyRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::RegDepCopyRemoval::create, OMR::regDepCopyRemoval, "O^O REGISTER DEPENDENCY COPY REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialDeadBlockRemover::create, OMR::trivialDeadBlockRemover);
    // NOTE: Please add new IBM optimizations here!
 
    // initialize additional IBM optimization groups
 
-   _opts[OMR::arrayPrivatizationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::arrayPrivatizationGroup, "", arrayPrivatizationOpts);
-   _opts[OMR::reorderArrayExprGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::reorderArrayExprGroup, "", reorderArrayIndexOpts);
-   _opts[OMR::partialRedundancyEliminationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::partialRedundancyEliminationGroup, "", partialRedundancyEliminationOpts);
    _opts[OMR::isolatedStoreGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::isolatedStoreGroup, "", isolatedStoreOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::isolatedStoreGroup, isolatedStoreOpts);
    _opts[OMR::cheapTacticalGlobalRegisterAllocatorGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::cheapTacticalGlobalRegisterAllocatorGroup, "", cheapTacticalGlobalRegisterAllocatorOpts);
-   _opts[OMR::tacticalGlobalRegisterAllocatorGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::tacticalGlobalRegisterAllocatorGroup, "", tacticalGlobalRegisterAllocatorOpts);
-   _opts[OMR::finalGlobalGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::finalGlobalGroup, "", finalGlobalOpts);
-   _opts[OMR::loopVersionerGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopVersionerGroup, "", loopVersionerOpts);
-   _opts[OMR::lastLoopVersionerGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::lastLoopVersionerGroup, "", lastLoopVersionerOpts);
-   _opts[OMR::blockManipulationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::blockManipulationGroup, "", blockManipulationOpts);
-   _opts[OMR::eachLocalAnalysisPassGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::eachLocalAnalysisPassGroup, "", eachLocalAnalysisPassOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::cheapTacticalGlobalRegisterAllocatorGroup, cheapTacticalGlobalRegisterAllocatorOpts);
 
    // NOTE: Please add new IBM optimization groups here!
 

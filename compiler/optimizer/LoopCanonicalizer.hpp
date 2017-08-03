@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -228,6 +228,7 @@ class TR_LoopCanonicalizer : public TR_LoopTransformer
 
    virtual int32_t perform();
    virtual TR_LoopCanonicalizer *asLoopCanonicalizer() {return this;}
+   virtual const char * optDetailString() const throw();
 
    protected:
    void eliminateRedundantInductionVariablesFromLoop(TR_RegionStructure *naturalLoop);
@@ -293,6 +294,7 @@ class TR_LoopInverter : public TR_LoopTransformer
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    virtual int32_t detectCanonicalizedPredictableLoops(TR_Structure *, TR_BitVector **, int32_t);
    bool isInvertibleLoop(int32_t, TR_Structure *);
@@ -313,6 +315,7 @@ class TR_RedundantInductionVarElimination : public TR_LoopCanonicalizer
 
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
    };
 
 #endif

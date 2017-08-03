@@ -482,6 +482,7 @@ class TR_GeneralSinkStores : public TR_SinkStores
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
    virtual bool storeIsSinkingCandidate(TR::Block *block,
@@ -509,6 +510,7 @@ class TR_TrivialSinkStores : public TR_SinkStores
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
    TR::TreeTop *genSideExitTree(TR::TreeTop *store, TR::Block *exitBlock, bool isFirstGen);

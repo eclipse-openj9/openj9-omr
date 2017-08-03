@@ -648,6 +648,12 @@ bool TR_OSRDefAnalysis::requiresAnalysis()
    return methodSymbol->sharesStackSlots(comp());
    }
 
+const char *
+TR_OSRDefAnalysis::optDetailString() const throw()
+   {
+   return "O^O OSR DEF ANALYSIS: ";
+   }
+
 //Not needed anymore. I'll keep it commented out just in case it's needed in the future.
 //Check whether the first real non-profiling tree top in the block
 //is an OSR Helper call. If it is, return that treetop. Otherwise return null.
@@ -1299,6 +1305,12 @@ bool TR_OSRLiveRangeAnalysis::canAffordAnalysis()
    return true;
    }
 
+const char *
+TR_OSRLiveRangeAnalysis::optDetailString() const throw()
+   {
+   return "O^O OSR LIVE RANGE ANALYSIS: ";
+   }
+
 int32_t TR_OSRExceptionEdgeRemoval::perform()
    {
    if (comp()->getOption(TR_EnableOSR))
@@ -1366,4 +1378,10 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
    comp()->setOSRInfrastructureRemoved(true);
 
    return 1;
+   }
+
+const char *
+TR_OSRExceptionEdgeRemoval::optDetailString() const throw()
+   {
+   return "O^O OSR EXCEPTION EDGE REMOVAL: ";
    }

@@ -2531,6 +2531,12 @@ bool TR_GeneralSinkStores::storeIsSinkingCandidate(TR::Block *block, TR::Node *n
            treeIsSinkableStore(node, sinkIndirectLoads, indirectLoadCount, depth, isLoadStatic, enablePreciseSymbolTracking() ? comp()->incVisitCount() : comp()->getVisitCount()));
    }
 
+const char *
+TR_GeneralSinkStores::optDetailString() const throw()
+   {
+   return "O^O GENERAL SINK STORES: ";
+   }
+
 // return true if it is safe to propagate the store thru the moved stores in the edge placement
 bool TR_SinkStores::isSafeToSinkThruEdgePlacement(int symIdx, TR::CFGNode *block, TR::CFGNode *succBlock, TR_BitVector *allEdgeInfoUsedOrKilledSymbols)
    {
@@ -3848,7 +3854,11 @@ bool TR_TrivialSinkStores::sinkStorePlacement(TR_MovableStore *store,
       return sunkStore;
    }
 
-
+const char *
+TR_TrivialSinkStores::optDetailString() const throw()
+   {
+   return "O^O TRIVIAL SINK STORES: ";
+   }
 
 
 bool TR_GeneralSinkStores::sinkStorePlacement(TR_MovableStore *movableStore,

@@ -99,6 +99,7 @@ class ArraycopyTransformation : public TR::Optimization
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
    TR::TreeTop* createArrayNode(TR::TreeTop* tree, TR::TreeTop* newTree, TR::SymbolReference* srcRef, TR::SymbolReference* dstRef, TR::SymbolReference* lenRef, TR::SymbolReference* srcObjRef, TR::SymbolReference* dstObjRef, bool isForward);

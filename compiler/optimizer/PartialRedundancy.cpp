@@ -2242,6 +2242,11 @@ TR::TreeTop *TR_PartialRedundancy::replaceOptimalSubNodes(TR::TreeTop *curTree, 
    return curTree;
    }
 
+const char *
+TR_PartialRedundancy::optDetailString() const throw()
+   {
+   return "O^O PARTIAL REDUNDANCY ELIMINATION: ";
+   }
 
 
 // Analysis for adjusting the optimal info/redundant info sets for each block

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -136,6 +136,7 @@ class TR_LoopStrider : public TR_LoopTransformer
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    virtual int32_t detectCanonicalizedPredictableLoops(TR_Structure *, TR_BitVector **, int32_t);
 
@@ -453,6 +454,7 @@ class TR_InductionVariableAnalysis : public TR::Optimization
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    TR_Array<TR_BasicInductionVariable*> *getInductionVariables()
       {return _ivs; }
@@ -574,6 +576,7 @@ class TR_IVTypeTransformer : public TR_LoopTransformer
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
    void changeIVTypeFromAddrToInt(TR_RegionStructure *natLoop);

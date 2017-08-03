@@ -62,6 +62,7 @@ class LocalDeadStoreElimination : public TR::Optimization
    virtual int32_t performOnBlock(TR::Block *);
    virtual void prePerformOnBlocks();
    virtual void postPerformOnBlocks();
+   virtual const char * optDetailString() const throw();
 
    protected:
 

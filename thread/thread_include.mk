@@ -65,7 +65,7 @@ ifeq (zos,$(OMR_HOST_OS))
   MODULE_INCLUDES += $(THREAD_SRCDIR)zos390 $(THREAD_SRCDIR)unix
 endif
 
-ifeq (linux,$(OMR_HOST_OS))
+ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),linux linux_ztpf))
   vpath % $(THREAD_SRCDIR)linux
   vpath % $(THREAD_SRCDIR)unix
   MODULE_INCLUDES += $(THREAD_SRCDIR)linux $(THREAD_SRCDIR)unix

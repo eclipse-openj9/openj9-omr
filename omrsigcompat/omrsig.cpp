@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    James Johnston (IBM Corp.) - z/TPF uses single brace initializer
  *******************************************************************************/
 
 #if defined(J9ZOS390)
@@ -116,11 +117,11 @@ omrsig_handler(int sig, void *siginfo, void *uc)
 
 		if (handlerIsFunction(&handlerSlot.secondaryAction)) {
 #if defined(POSIX_SIGNAL)
-#if defined(OSX)
+#if defined(OSX) || defined(OMRZTPF)
 			sigset_t oldMask = {0};
-#else /* defined(OSX) */
+#else /* defined(OSX) || defined(OMRZTPF)  */
 			sigset_t oldMask = {{0}};
-#endif /* defined(OSX) */
+#endif /* defined(OSX) || defined(OMRZTPF)  */
 			sigset_t usedMask = handlerSlot.secondaryAction.sa_mask;
 			sigaddset(&usedMask, sig);
 			int ec = pthread_sigmask(SIG_BLOCK, &usedMask, &oldMask);
@@ -135,11 +136,11 @@ omrsig_handler(int sig, void *siginfo, void *uc)
 				|| (handlerSlot.secondaryAction.sa_flags & SA_RESETHAND)
 #endif /* (defined(AIXPPC) || defined(J9ZOS390)) */
 				)) {
-#if defined(OSX)
+#if defined(OSX) || defined(OMRZTPF)
 				sigset_t mask = {0};
-#else /* defined(OSX) */
+#else /* defined(OSX) || defined(OMRZTPF) */
 				sigset_t mask = {{0}};
-#endif /* defined(OSX) */
+#endif /* defined(OSX) || defined(OMRZTPF) */
 				sigemptyset(&mask);
 				sigaddset(&mask, sig);
 				ec = pthread_sigmask(SIG_UNBLOCK, &mask, NULL);
@@ -500,13 +501,13 @@ sighandler_t
 sigset(int sig, sighandler_t disp) __THROW
 {
 	sighandler_t ret = SIG_ERR;
-#if defined(OSX)
+#if defined(OSX) || defined(OMRZTPF)
 	sigset_t mask = {0};
 	sigset_t oldmask = {0};
-#else /* defined(OSX) */
+#else /* defined(OSX) || defined(OMRZTPF) */
 	sigset_t mask = {{0}};
 	sigset_t oldmask = {{0}};
-#endif /* defined(OSX) */
+#endif /* defined(OSX) || defined(OMRZTPF) */
 	struct sigaction oldact = {{0}};
 
 	if (SIG_HOLD == disp) {

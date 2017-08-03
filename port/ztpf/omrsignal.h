@@ -31,7 +31,7 @@
 struct J9SignalHandlerRecord {
 	struct J9SignalHandlerRecord *previous;
 	struct OMRPortLibrary *portLibrary;
-	j9sig_handler_fn handler;
+	omrsig_handler_fn handler;
 	void *handler_arg;
 	jmp_buf	mark;			
 	uint32_t flags;

@@ -14,6 +14,7 @@
 #
 # Contributors:
 #    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+#    James Johnston (IBM Corp.) - z/TPF does not need to link in libpthread.so
 ###############################################################################
 
 top_srcdir := ..
@@ -66,7 +67,9 @@ clean_exports:
 
 MODULE_STATIC_LIBS += omrutil
 ifneq (,$(findstring linux,$(OMR_HOST_OS)))
+  ifeq (,$(findstring ztpf,$(OMR_HOST_OS)))
     MODULE_SHARED_LIBS += pthread
+  endif
 endif
 ifneq (,$(findstring osx,$(OMR_HOST_OS)))
     MODULE_SHARED_LIBS += pthread

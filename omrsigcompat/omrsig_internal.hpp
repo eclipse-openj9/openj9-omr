@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015
+ * (c) Copyright IBM Corp. 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    James Johnston (IBM Corp.) - z/TPF does not support SA_ONSTACK nor SA_NOCLDWAIT
  *******************************************************************************/
  
 #include <signal.h>
@@ -49,6 +50,8 @@ typedef void (*sigaction_t)(int sig, siginfo_t *siginfo, void *uc);
  * sigprocmask() within a signal handler will cause the program to sig kill itself.
  */
 #define SECONDARY_FLAGS_WHITELIST (SA_NOCLDSTOP | SA_NOCLDWAIT)
+#elif (OMRZTPF) /* defined(J9ZOS390) */
+#define SECONDARY_FLAGS_WHITELIST (SA_NOCLDSTOP)
 #else /* defined(J9ZOS390) */
 #define SECONDARY_FLAGS_WHITELIST (SA_ONSTACK | SA_NOCLDSTOP | SA_NOCLDWAIT)
 #endif /* defined(J9ZOS390) */

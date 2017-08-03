@@ -221,7 +221,7 @@ ifeq (aix,$(OMR_HOST_OS))
   vpath % $(PORT_SRCDIR)aix
   MODULE_INCLUDES += $(PORT_SRCDIR)aix
 endif
-ifeq (linux,$(OMR_HOST_OS))
+ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),linux linux_ztpf))
   ifeq (ppc,$(OMR_HOST_ARCH))
     ifeq (1,$(OMR_ENV_DATA64))
       ifeq (1,$(OMR_ENV_LITTLE_ENDIAN))
@@ -235,7 +235,12 @@ ifeq (linux,$(OMR_HOST_OS))
     MODULE_INCLUDES += $(PORT_SRCDIR)linuxppc
   endif
 
-  ifeq (s390,$(OMR_HOST_ARCH))
+  ifeq (linux_ztpf,$(OMR_HOST_OS))
+    vpath % $(PORT_SRCDIR)ztpf
+    MODULE_INCLUDES += $(PORT_SRCDIR)ztpf
+  endif
+
+  ifeq ($(OMR_HOST_ARCH),$(filter $(OMR_HOST_ARCH), s390 s390x))
     ifeq (1,$(OMR_ENV_DATA64))
       vpath % $(PORT_SRCDIR)linuxs39064
       MODULE_INCLUDES += $(PORT_SRCDIR)linuxs39064

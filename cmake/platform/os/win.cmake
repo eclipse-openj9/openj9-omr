@@ -31,15 +31,17 @@ set(OMR_OS_DEFINITIONS
    _WIN32_WINNT=${OMR_WINVER}
    _DLL
    _HAS_EXCEPTIONS=0
-   )
+)
 
 if(OMR_ENV_DATA64)
    list(APPEND OMR_OS_DEFINITIONS 
       WIN64
-      _AMD64_=1)
+      _AMD64_=1
+   )
 else()
    list(APPEND OMR_OS_DEFINITIONS 
-      _X86_)
+      _X86_
+   )
 endif()
 
 

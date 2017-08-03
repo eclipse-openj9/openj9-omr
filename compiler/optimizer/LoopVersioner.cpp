@@ -703,8 +703,8 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    ////if (!_virtualGuardPairs.isEmpty())
    if (!_virtualGuardInfo.isEmpty())
       {
-      static char *pEnv = feGetEnv("TR_disableLoopTransfer");
-      if (!pEnv)
+      bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+      if (!disableLT) 
          performLoopTransfer();
       }
 
@@ -3249,7 +3249,9 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          vcount_t visitCount = comp()->incVisitCount(); //@TODO: unsafe API/use pattern
          updateDefinitionsAndCollectProfiledExprs(NULL, currentNode, visitCount, specializedInvariantNodes, invariantNodes, invariantTranslationNodesList, NULL, collectProfiledExprs, nextBlock, warmBranchCount);
 
-         if (currentNode->isTheVirtualGuardForAGuardedInlinedCall() &&
+         bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+         if (!disableLT &&
+             currentNode->isTheVirtualGuardForAGuardedInlinedCall() &&
              blocksInWhileLoop.find(currentNode->getBranchDestination()->getNode()->getBlock()))
             {
             _loopTransferDone = true;
@@ -3718,10 +3720,12 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          }
 
       TR::Node *lastTree = nextBlock->getLastRealTreeTop()->getNode();
-      if (lastTree->getOpCode().isIf() &&
-         blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock()) &&
-         lastTree->isTheVirtualGuardForAGuardedInlinedCall() &&
-         isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp()))
+      bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+      if (!disableLT &&
+          lastTree->getOpCode().isIf() &&
+          blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock()) &&
+          lastTree->isTheVirtualGuardForAGuardedInlinedCall() &&
+          isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp()))
          {
          // create the virtual guard info for this loop
          //

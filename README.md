@@ -1,3 +1,20 @@
+<!--
+(c) Copyright IBM Corp. 2016, 2017
+
+This program and the accompanying materials are made available
+under the terms of the Eclipse Public License v1.0 and
+Apache License v2.0 which accompanies this distribution.
+
+    The Eclipse Public License is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    The Apache License v2.0 is available at
+    http://www.opensource.org/licenses/apache2.0.php
+
+Contributors:
+  Multiple authors (IBM Corp.) - initial implementation and documentation
+-->
+
 [![Travis Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)
 [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/eclipse/omr?svg=true&branch=master)](https://ci.appveyor.com/project/eclipsewebmaster/omr)
 
@@ -179,3 +196,4 @@ Blog Posts about OMR technologies
 * [Introducing Eclipse OMR: Building Language Runtimes](https://developer.ibm.com/open/2016/03/08/introducing-omr-building-language-runtimes/)
 * [JitBuilder Library and Eclipse OMR: Just-In-Time Compilers made easy](https://developer.ibm.com/open/2016/07/19/jitbuilder-library-and-eclipse-omr-just-in-time-compilers-made-easy/)
 
+(c) Copyright IBM Corp. 2016, 2017

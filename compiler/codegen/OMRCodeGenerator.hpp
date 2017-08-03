@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -31,6 +31,7 @@ namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #include <limits.h>                             // for INT_MAX, etc
 #include <stddef.h>                             // for NULL, size_t
 #include <stdint.h>                             // for uint8_t, etc
+#include <map>
 #include "codegen/CodeGenPhase.hpp"             // for CodeGenPhase
 #include "codegen/FrontEnd.hpp"                 // for feGetEnv
 #include "codegen/LinkageConventionsEnum.hpp"
@@ -239,7 +240,10 @@ enum MonitorInBlock
 class TR_SetMonitorStateOnBlockEntry
    {
 public:
-   TR_SetMonitorStateOnBlockEntry(TR::Compilation * c, CS2::TableOf<TR_Stack<TR::SymbolReference *> *, TR::Allocator> *liveMonitorStacks)
+   typedef TR::typed_allocator<std::pair<int32_t , TR_Stack<TR::SymbolReference *>*>, TR::Region&> LiveMonitorStacksAllocator;
+   typedef std::less<int32_t> LiveMonitorStacksComparator;
+   typedef std::map<int32_t, TR_Stack<TR::SymbolReference *>*, LiveMonitorStacksComparator, LiveMonitorStacksAllocator> LiveMonitorStacks;
+   TR_SetMonitorStateOnBlockEntry(TR::Compilation * c, LiveMonitorStacks *liveMonitorStacks)
       : _blocksToVisit(c->trMemory(), 8, false, stackAlloc)
       {
       _comp = c;
@@ -261,7 +265,7 @@ private:
    TR::Compilation *     _comp;
    vcount_t             _visitCount;
    TR_Stack<TR::Block *> _blocksToVisit;
-   CS2::TableOf<TR_Stack<TR::SymbolReference *> *, TR::Allocator> *_liveMonitorStacks;
+   LiveMonitorStacks *_liveMonitorStacks;
    };
 
 TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef);

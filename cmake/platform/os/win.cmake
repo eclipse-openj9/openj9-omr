@@ -44,4 +44,6 @@ else()
 	)
 endif()
 
+macro(omr_os_global_setup)
+endmacro(omr_os_global_setup)
 

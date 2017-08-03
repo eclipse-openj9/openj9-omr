@@ -24,3 +24,7 @@ set(OMR_OS_DEFINITIONS
 set(OMR_OS_COMPILE_OPTIONS
 	-pthread
 )
+
+
+macro(omr_os_global_setup)
+endmacro(omr_os_global_setup)

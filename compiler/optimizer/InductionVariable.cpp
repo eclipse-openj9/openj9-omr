@@ -5463,7 +5463,12 @@ static inline int64_t ceiling(int64_t numer, int64_t denom)
    }
 
 TR_InductionVariableAnalysis::TR_InductionVariableAnalysis(TR::OptimizationManager *manager)
-   : TR::Optimization(manager), _ivs(0), _blockInfo(0), _dominators(NULL)
+   : TR::Optimization(manager),
+     _ivs(0),
+     _blockInfo(0),
+     _dominators(NULL),
+     _seenInnerRegionExit(0, trMemory(), stackAlloc, growable),
+     _isOSRInduceBlock(0, trMemory(), stackAlloc, growable)
    {}
 
 int32_t TR_InductionVariableAnalysis::perform()
@@ -6386,6 +6391,46 @@ TR_InductionVariableAnalysis::analyzeExitEdges(TR_RegionStructure *loop,
 
       if (subNode->getStructure()->asRegion())
          {
+         // OSR blocks can be ignored here as they will not be impacted by a loop controlling
+         // condition.
+         //
+         // Exit edges do not have structure for their destination, rather they only specify
+         // the block number. As all OSRInduceBlocks have an edge to the exit, even though
+         // they end in a throw, it is possible to search for a block with a matching number.
+         // This is potentially expensive, so it is memoized with two bit vectors, _seenInnerRegionExit
+         // and _isOSRInduceBlock.
+         //
+         bool osrInduceExitEdge = false;
+         int32_t toNum = edge->getTo()->getNumber();
+         if (!_seenInnerRegionExit.get(toNum))
+            {
+            TR::Block *dest = NULL;
+            TR::CFGNode *end = comp()->getFlowGraph()->getEnd();
+            for (auto predEdge = end->getPredecessors().begin(); predEdge != end->getPredecessors().end(); ++predEdge)
+               {
+               if ((*predEdge)->getFrom()->getNumber() == toNum)
+                  {
+                  dest = (*predEdge)->getFrom()->asBlock();
+                  break;
+                  }
+               }
+
+            _seenInnerRegionExit.set(toNum);
+            if (dest && dest->isOSRInduceBlock())
+               {
+               _isOSRInduceBlock.set(toNum);
+               osrInduceExitEdge = true;
+               }
+            }
+         else
+            osrInduceExitEdge = _isOSRInduceBlock.get(toNum);
+
+         if (osrInduceExitEdge)
+            {
+            if (trace()) traceMsg(comp(), "\tbranch from inner region is to OSR block, ignoring\n");
+            continue;
+            }
+
          if (trace()) traceMsg(comp(), "\tReject - exit edge from inner region\n");
          return false;
          }

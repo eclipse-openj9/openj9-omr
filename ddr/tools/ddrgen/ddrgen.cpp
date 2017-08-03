@@ -24,6 +24,10 @@
 #include <string.h>
 #include <vector>
 
+#if defined(J9ZOS390)
+#include "atoe.h"
+#endif /* defined(J9ZOS390) */
+
 #include "omrport.h"
 #include "thread_api.h"
 
@@ -50,6 +54,24 @@ main(int argc, char *argv[])
 	omrport_init_library(&portLibrary, sizeof(portLibrary));
 	DDR_RC rc = DDR_RC_OK;
 
+#if defined(J9ZOS390)
+	/* Convert EBCDIC to UTF-8 (ASCII) */
+	if (-1 != iconv_init()) {
+		/* translate argv strings to ascii */
+		for (int i = 0; i < argc; i++) {
+			argv[i] = e2a_string(argv[i]);
+			if (NULL == argv[i]) {
+				fprintf(stderr, "failed to convert argument #%d from EBCDIC to ASCII\n", i);
+				rc = DDR_RC_ERROR;
+				break;
+			}
+		}
+	} else {
+		fprintf(stderr, "failed to initialize iconv\n");
+		rc = DDR_RC_ERROR;
+	}
+#endif /* defined(J9ZOS390) */
+
 	/* Get options. */
 	const char *macroFile = NULL;
 	const char *supersetFile = "superset.out";
@@ -58,8 +80,10 @@ main(int argc, char *argv[])
 	const char *blacklistFile = NULL;
 	bool printEmptyTypes;
 	vector<string> debugFiles;
-	rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile,
-		&blobFile, &overrideFile, &debugFiles, &blacklistFile, &printEmptyTypes);
+	if (DDR_RC_OK == rc) {
+		rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile,
+			&blobFile, &overrideFile, &debugFiles, &blacklistFile, &printEmptyTypes);
+	}
 
 	/* Create IR from input. */
 #if defined(_MSC_VER)

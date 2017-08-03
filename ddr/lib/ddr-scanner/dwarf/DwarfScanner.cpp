@@ -831,7 +831,9 @@ DwarfScanner::createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, Type 
 	default:
 		{
 			const char *tagName = NULL;
+#if !defined(J9ZOS390)
 			dwarf_get_TAG_name(tag, &tagName);
+#endif /* !defined(J9ZOS390) */
 			ERRMSG("Symbol with name '%s' has unknown symbol type: %s (%d)\n", dieName.c_str(), tagName, tag);
 			rc = DDR_RC_ERROR;
 		}

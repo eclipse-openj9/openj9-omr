@@ -63,7 +63,8 @@
 void collectNodesForIsCorrectChecks(TR::Node * n, TR::list< TR::Node *> & checkNodes, TR::SparseBitVector & refsToCheckIfKilled, vcount_t vc);
 
 TR_CopyPropagation::TR_CopyPropagation(TR::OptimizationManager *manager)
-   : TR::Optimization(manager)
+   : TR::Optimization(manager),
+   _storeTreeTopsAsArray(comp()->trMemory()->currentStackRegion())
    {}
 
 template <class T>
@@ -447,30 +448,16 @@ int32_t TR_CopyPropagation::perform()
 
    _cleanupTemps = false;
 
-   _numStoreTreeTops = 0;
    TR::TreeTop *currentTree = comp()->getStartTree();
    while (currentTree)
       {
       TR::Node *currentNode = skipTreeTopAndGetNode(currentTree);
       if (currentNode->getOpCode().isLikeDef())
-         _numStoreTreeTops++;
+         _storeTreeTopsAsArray.push_back(currentTree);
       currentTree = currentTree->getNextTreeTop();
       }
-
-   _storeTreeTopsAsArray = (TR::TreeTop**)trMemory()->allocateStackMemory(_numStoreTreeTops*sizeof(TR::TreeTop*));
-
-   memset(_storeTreeTopsAsArray, 0, _numStoreTreeTops*sizeof(TR::TreeTop*));
 
    int32_t i = 0, j;
-   currentTree = comp()->getStartTree();
-   while (currentTree)
-      {
-      TR::Node *currentNode = skipTreeTopAndGetNode(currentTree);
-      if (currentNode->getOpCode().isLikeDef())
-         _storeTreeTopsAsArray[i++] = currentTree;
-      currentTree = currentTree->getNextTreeTop();
-      }
-
 
    _counter = 0;
    int32_t numDefsOnEntry    = useDefInfo->getNumDefsOnEntry();
@@ -1683,11 +1670,11 @@ TR::Node *TR_CopyPropagation::areAllDefsInCorrectForm(TR::Node *useNode, const T
 
           */
 
-         for (int32_t i=0;i<_numStoreTreeTops;i++)
+         for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
             {
-            if (skipTreeTopAndGetNode(_storeTreeTopsAsArray[i]) == lastDefNode)
+            if (skipTreeTopAndGetNode(*itr) == lastDefNode)
                {
-               _storeTree = _storeTreeTopsAsArray[i];
+               _storeTree = *itr;
                _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
                break;
                }
@@ -1732,11 +1719,11 @@ TR::TreeTop * TR_CopyPropagation::findAnchorTree(TR::Node *storeNode, TR::Node *
 
    TR::TreeTop *anchor = NULL;
 
-   for (int32_t i=0;i<_numStoreTreeTops;i++)
+   for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
       {
-      if (skipTreeTopAndGetNode(_storeTreeTopsAsArray[i]) == storeNode)
+      if (skipTreeTopAndGetNode(*itr) == storeNode)
          {
-         TR::TreeTop *treeTop = _storeTreeTopsAsArray[i];
+         TR::TreeTop *treeTop = *itr;
          anchor = treeTop;
 
          if (loadNode)
@@ -1776,11 +1763,11 @@ bool TR_CopyPropagation::isSafeToPropagate(TR::Node *storeNode, TR::Node *loadNo
    {
    bool seenStore = false;
 
-   for (int32_t i=0; i<_numStoreTreeTops; i++)
+   for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
       {
-      if (skipTreeTopAndGetNode(_storeTreeTopsAsArray[i]) == storeNode)
+      if (skipTreeTopAndGetNode(*itr) == storeNode)
          {
-         TR::TreeTop *_storeTreeTop = _storeTreeTopsAsArray[i];
+         TR::TreeTop *_storeTreeTop = *itr;
          _storeTree = _storeTreeTop;
 
          if (loadNode)
@@ -1913,11 +1900,11 @@ bool TR_CopyPropagation::isCorrectToPropagate(TR::Node *useNode, TR::Node *store
 
    if (_storeTree == NULL)
       {
-      for (int32_t i=0;i<_numStoreTreeTops;i++)
+      for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
          {
-         if (skipTreeTopAndGetNode(_storeTreeTopsAsArray[i]) == storeNode)
+         if (skipTreeTopAndGetNode(*itr) == storeNode)
             {
-            _storeTree = _storeTreeTopsAsArray[i];
+            _storeTree = *itr;
             _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
             break;
             }
@@ -2229,11 +2216,11 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
    if (_storeTree == NULL)
       {
-      for (int32_t i=0;i<_numStoreTreeTops;i++)
+      for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
          {
-         if (skipTreeTopAndGetNode(_storeTreeTopsAsArray[i]) == storeNode)
+         if (skipTreeTopAndGetNode(*itr) == storeNode)
             {
-            _storeTree = _storeTreeTopsAsArray[i];
+            _storeTree = *itr;
             _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
             break;
             }

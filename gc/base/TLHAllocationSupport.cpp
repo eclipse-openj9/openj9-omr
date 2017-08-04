@@ -182,7 +182,7 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 		newCache->_memorySubSpace = getMemorySubSpace();
 		newCache->setNext(_abandonedList);
 #if defined(OMR_VALGRIND_MEMCHECK)
-	    VALGRIND_MAKE_MEM_DEFINED(newCache, sizeof(*newCache));
+	    VALGRIND_MAKE_MEM_NOACCESS(newCache, sizeof(*newCache));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		_abandonedList = newCache;

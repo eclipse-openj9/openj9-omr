@@ -35,6 +35,10 @@
 #include "SweepPoolManagerAddressOrderedListBase.hpp"
 #include "ModronAssertions.h"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /**
  * Initialize any internal structures.
  * @return true if initialization is successful, false otherwise.
@@ -88,6 +92,11 @@ MM_SweepPoolManagerAddressOrderedListBase::calculateTrailingDetails(
 		if(projection < trailingCandidateByteCount) {
 			sweepChunk->trailingFreeCandidate = (void *)(((uintptr_t)trailingCandidate) + projection);
 			sweepChunk->trailingFreeCandidateSize = trailingCandidateByteCount - projection;
+				
+#if defined(OMR_VALGRIND_MEMCHECK)
+	VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 		}
 	}
 }
@@ -456,6 +465,10 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		sweepChunk->leadingFreeCandidate = address;
 		sweepChunk->leadingFreeCandidateSize = (uintptr_t)MM_Bits::convertSlotsToBytes(size);
 		Assert_MM_true(sweepChunk->leadingFreeCandidate > sweepChunk->trailingFreeCandidate);
+	
+#if defined(OMR_VALGRIND_MEMCHECK)
+	VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	} else if(address + size == (uintptr_t *)sweepChunk->chunkTop) {
 		/* Update the sweep chunk table entry with the trailing free hole information */
@@ -499,10 +512,15 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 			sweepChunk->previousFreeListTail = sweepChunk->freeListTail;
 			sweepChunk->freeListTail = (MM_HeapLinkedFreeHeader *)address;
 			sweepChunk->freeListTailSize = heapFreeByteCount;
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+		VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + heapFreeByteCount);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 		}
 		result = true;
 	}
-	
+
 	return result;
 }
 #endif /* defined(OMR_GC_MODRON_STANDARD) */

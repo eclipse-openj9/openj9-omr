@@ -372,6 +372,11 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 
 	env->getExtensions()->identityHashDataRemoveRange(env, subspace, size, lowAddress, highAddress);
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+	//remove heap range from valgrind
+	VALGRIND_MAKE_MEM_UNDEFINED(lowAddress,highAddress);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 	return result;
 }
 

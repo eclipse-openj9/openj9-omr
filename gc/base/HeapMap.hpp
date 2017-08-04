@@ -90,7 +90,7 @@ protected:
 	const uintptr_t _heapMapIndexShift;	/* number of low-order bits to be shifted out of heap address to obtain heap map slot index */
 	const uintptr_t _heapMapBitMask;	/* bit mask for capturing bit index within heap map slot from (unshifted) heap address */
 	const uintptr_t _heapMapBitShift;	/* number of low-order bits to be shifted out of captured bit index to obtain actual bit index */
-
+	 
 	MM_GCExtensionsBase *_extensions;
 
 	void *_heapBase;
@@ -131,6 +131,7 @@ public:
 	getSlotIndexAndMask(omrobjectptr_t objectPtr, uintptr_t *slotIndex, uintptr_t *bitMask)
 	{
 		uintptr_t slot = ((uintptr_t)objectPtr) - _heapMapBaseDelta;
+		// _heapBitMask is in order of 2^n -1, and val % 2^n = val & (2^n -1)
 		uintptr_t bitIndex = (slot & _heapMapBitMask) >> _heapMapBitShift;
 		*bitMask = (((uintptr_t)1) << bitIndex);
 		*slotIndex = slot >> _heapMapIndexShift;

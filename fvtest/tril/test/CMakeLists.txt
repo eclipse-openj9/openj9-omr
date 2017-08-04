@@ -24,10 +24,10 @@ project(triltest LANGUAGES CXX)
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/ ${CMAKE_CURRENT_BINARY_DIR}/tril)
-
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
 add_executable(triltest
    ASTTest.cpp
@@ -37,7 +37,8 @@ add_executable(triltest
    CompileTest.cpp
 )
 
-target_link_libraries(triltest 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/ ${CMAKE_CURRENT_BINARY_DIR}/tril)
+target_link_libraries(triltest
    ${GTEST_BOTH_LIBRARIES}
    tril
 )

@@ -26,7 +26,6 @@ set(CXX_EXTENSIONS OFF)
 
 enable_testing()
 find_package(GTest REQUIRED)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/tril ${CMAKE_CURRENT_BINARY_DIR}/tril)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-rtti -fno-threadsafe-statics -Wno-deprecated -Wno-enum-compare -Wno-invalid-offsetof -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing")
 
@@ -38,6 +37,7 @@ add_executable(comptest
    ShiftAndRotateTest.cpp
 )
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/tril ${CMAKE_CURRENT_BINARY_DIR}/tril)
 target_link_libraries(comptest
    ${GTEST_BOTH_LIBRARIES}
    tril

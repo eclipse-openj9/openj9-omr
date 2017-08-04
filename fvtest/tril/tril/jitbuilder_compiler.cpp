@@ -26,7 +26,6 @@
 #include "compile/Method.hpp"
 #include "control/CompileMethod.hpp"
 #include "env/jittypes.h"
-#include "gtest/gtest.h"
 #include "il/DataTypes.hpp"
 #include "ilgen.hpp"
 #include "Jit.hpp"

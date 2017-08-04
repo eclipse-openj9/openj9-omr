@@ -52,7 +52,8 @@ endif()
 
 # Create jitbuilder library. 
 create_omr_compiler_library(NAME       jitbuilder
-                            OBJECTS    ${JITBUILDER_OBJECTS})
+                            OBJECTS    ${JITBUILDER_OBJECTS}
+                            DEFINES    PROD_WITH_ASSUMES)
 
 # Add interface path so that include paths propagate. 
 # NOTE: `release` directory  isn't being automatically setup, so this 

@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrAssert)
+include(OmrDetectSystemInformation)
 
 ###
 ### Platform flags
@@ -26,7 +28,6 @@ message(STATUS "CMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION}")
 message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 
-include(cmake/DetectSystemInformation.cmake)
 omr_detect_system_information()
 
 # Pickup OS info 

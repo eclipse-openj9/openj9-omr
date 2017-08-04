@@ -464,15 +464,14 @@ int32_t TR_CopyPropagation::perform()
    int32_t lastDefIndex      = useDefInfo->getLastDefIndex();
    int32_t numDefNodes       = lastDefIndex - firstRealDefIndex + 1;
 
-   int32_t *usesToBeFixed = (int32_t *) trMemory()->allocateStackMemory(useDefInfo->getTotalNodes()*sizeof(int32_t));
-   memset(usesToBeFixed, 0xFF, useDefInfo->getTotalNodes()*sizeof(int32_t));
+   typedef TR::typed_allocator<std::pair<int32_t, int32_t>, TR::Region&> UDMapAllocator;
+   typedef std::less<int32_t> UDMapComparator;
+   typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> UsesToBeFixedMap;
+   typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> EquivalentDefMap;
 
+   UsesToBeFixedMap usesToBeFixed((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
 
-   typedef TR::typed_allocator<std::pair<int32_t, int32_t>, TR::Region&> EquivalentDefMapAllocator;
-   typedef std::less<int32_t> EquivalentDefMapComparator;
-   typedef std::map<int32_t, int32_t, EquivalentDefMapComparator, EquivalentDefMapAllocator> EquivalentDefMap;
-
-   EquivalentDefMap equivalentDefs((EquivalentDefMapComparator()), EquivalentDefMapAllocator(trMemory()->currentStackRegion()));
+   EquivalentDefMap equivalentDefs((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
 
    _lookForOriginalDefs = false;
    for (i = firstRealDefIndex; i <= lastDefIndex; i++)
@@ -742,42 +741,38 @@ int32_t TR_CopyPropagation::perform()
 
 
    bool invalidateDefUseInfo = false;
-   int32_t fixUseIndex = useDefInfo->getFirstUseIndex();
-   for (;fixUseIndex <= lastUseIndex;fixUseIndex++)
+   for (auto itr = usesToBeFixed.begin(), end = usesToBeFixed.end(); itr != end; )
       {
-      if (usesToBeFixed[fixUseIndex] > -1)
+      int32_t fixUseIndex = itr->first;
+      invalidateDefUseInfo = true;
+      for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
          {
-         invalidateDefUseInfo = true;
-         int32_t i;
-         for (i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
+         if (!useDefInfo->getNode(i))
+            continue;
+
+         if (useDefInfo->getNode(i)->getReferenceCount() == 0)
+            continue;
+
+         if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
             {
-            if (!useDefInfo->getNode(i))
-               continue;
-
-            if (useDefInfo->getNode(i)->getReferenceCount() == 0)
-               continue;
-
-            if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
+            TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
+            useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
+            if (!defsOfUseToBeFixed.IsZero())
                {
-               TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
-               useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
-               if (!defsOfUseToBeFixed.IsZero())
+               TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
+               for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
                   {
-                  TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
-                  for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
-                     {
-                     int32_t nextDef = cursor;
-                     useDefInfo->setUseDef(i, nextDef);
-                     }
+                  int32_t nextDef = cursor;
+                  useDefInfo->setUseDef(i, nextDef);
                   }
-               useDefInfo->resetUseDef(i, fixUseIndex);
                }
+            useDefInfo->resetUseDef(i, fixUseIndex);
             }
-
-         useDefInfo->clearUseDef(fixUseIndex);
-         useDefInfo->setUseDef(fixUseIndex, usesToBeFixed[fixUseIndex]);
-         usesToBeFixed[fixUseIndex] = -1;
          }
+
+      useDefInfo->clearUseDef(fixUseIndex);
+      useDefInfo->setUseDef(fixUseIndex, itr->second);
+      usesToBeFixed.erase(itr++);
       }
 
    if (_cleanupTemps)
@@ -956,59 +951,55 @@ int32_t TR_CopyPropagation::perform()
    if (_cleanupTemps)
       commonIndirectLoadsFromAutos();
 
-   fixUseIndex = useDefInfo->getFirstUseIndex();
-   for (;fixUseIndex <= lastUseIndex;fixUseIndex++)
+   for (auto itr = usesToBeFixed.begin(), end = usesToBeFixed.end(); itr != end; ++itr)
       {
-      if (usesToBeFixed[fixUseIndex] > -1)
+      int32_t fixUseIndex = itr->first;
+      invalidateDefUseInfo = true;
+
+      if (useDefInfo->hasLoadsAsDefs())
          {
-         invalidateDefUseInfo = true;
-         int32_t i;
-
-         if (useDefInfo->hasLoadsAsDefs())
+         for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
             {
-            for (i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
-               {
-               if (!useDefInfo->getNode(i))
-                  continue;
-               if (useDefInfo->getNode(i)->getReferenceCount() == 0)
-                  continue;
+            if (!useDefInfo->getNode(i))
+               continue;
+            if (useDefInfo->getNode(i)->getReferenceCount() == 0)
+               continue;
 
-               if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
+            if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
+               {
+               TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
+               useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
+               if (!defsOfUseToBeFixed.IsZero())
                   {
-                  TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
-                  useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
-                  if (!defsOfUseToBeFixed.IsZero())
+                  TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
+                  for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
                      {
-                     TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
-                     for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
-                        {
-                        int32_t nextDef = cursor;
-                        useDefInfo->setUseDef(i, nextDef);
-                        }
-                     useDefInfo->resetUseDef(i, fixUseIndex);
+                     int32_t nextDef = cursor;
+                     useDefInfo->setUseDef(i, nextDef);
                      }
+                  useDefInfo->resetUseDef(i, fixUseIndex);
                   }
                }
             }
+         }
 
-         useDefInfo->clearUseDef(fixUseIndex);
+      useDefInfo->clearUseDef(fixUseIndex);
 
-         if (useDefInfo->hasLoadsAsDefs())
+      if (useDefInfo->hasLoadsAsDefs())
+         {
+         useDefInfo->setUseDef(fixUseIndex, itr->second);
+         }
+      else if (itr->second != 0)
+         {
+         TR_UseDefInfo::BitVector defsOfRhs(comp()->allocator());
+         useDefInfo->getUseDef(defsOfRhs, itr->second);
+         if (!defsOfRhs.IsZero())
             {
-            useDefInfo->setUseDef(fixUseIndex, usesToBeFixed[fixUseIndex]);
-            }
-         else if (usesToBeFixed[fixUseIndex] != 0)
-            {
-            TR_UseDefInfo::BitVector defsOfRhs(comp()->allocator());
-            useDefInfo->getUseDef(defsOfRhs, usesToBeFixed[fixUseIndex]);
-            if (!defsOfRhs.IsZero())
+            TR_UseDefInfo::BitVector::Cursor cursor(defsOfRhs);
+            for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
                {
-               TR_UseDefInfo::BitVector::Cursor cursor(defsOfRhs);
-               for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
-                  {
-                  int32_t nextDef = cursor;
-                  useDefInfo->setUseDef(fixUseIndex, nextDef);
-                  }
+               int32_t nextDef = cursor;
+               useDefInfo->setUseDef(fixUseIndex, nextDef);
                }
             }
          }

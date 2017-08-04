@@ -92,7 +92,6 @@ class TR_CopyPropagation : public TR::Optimization
 
    bool _canMaintainUseDefs;
    bool _cleanupTemps;
-   int32_t _counter;
    TR::TreeTop *_storeTree;
    TR::TreeTop *_useTree;
    TR::deque<TR::TreeTop *, TR::Region&> _storeTreeTopsAsArray;

@@ -459,7 +459,6 @@ int32_t TR_CopyPropagation::perform()
 
    int32_t i = 0, j;
 
-   _counter = 0;
    int32_t numDefsOnEntry    = useDefInfo->getNumDefsOnEntry();
    int32_t firstRealDefIndex = useDefInfo->getFirstDefIndex() + numDefsOnEntry;
    int32_t lastDefIndex      = useDefInfo->getLastDefIndex();

@@ -457,8 +457,6 @@ int32_t TR_CopyPropagation::perform()
       currentTree = currentTree->getNextTreeTop();
       }
 
-   int32_t i = 0, j;
-
    int32_t numDefsOnEntry    = useDefInfo->getNumDefsOnEntry();
    int32_t firstRealDefIndex = useDefInfo->getFirstDefIndex() + numDefsOnEntry;
    int32_t lastDefIndex      = useDefInfo->getLastDefIndex();
@@ -470,140 +468,155 @@ int32_t TR_CopyPropagation::perform()
    typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> EquivalentDefMap;
 
    UsesToBeFixedMap usesToBeFixed((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
-
    EquivalentDefMap equivalentDefs((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
 
-   _lookForOriginalDefs = false;
-   for (i = firstRealDefIndex; i <= lastDefIndex; i++)
-      {
-      TR::Node *defNode = useDefInfo->getNode(i);
+   typedef TR::typed_allocator<std::pair<TR::Node*, TR::deque<TR::Node*, TR::Region&>*>, TR::Region&> StoreNodeMapAllocator;
+   typedef std::less<TR::Node*> StoreNodeMapComparator;
+   typedef std::map<TR::Node*, TR::deque<TR::Node*, TR::Region&>*, StoreNodeMapComparator, StoreNodeMapAllocator> StoreNodeMap;
 
-      // If there is no usedef info for this def node, it must have been removed
-      // by a previous optimization
-      //
-      if (defNode == NULL)
+   StoreNodeMap storeMap((StoreNodeMapComparator()), StoreNodeMapAllocator(trMemory()->currentStackRegion()));
+
+   _lookForOriginalDefs = false;
+   for (TR::TreeTop *tree = comp()->getStartTree(); tree; tree = tree->getNextTreeTop())
+      {
+      TR::Node *defNode = tree->getNode();
+      if (defNode->getOpCodeValue() == TR::BBStart && !defNode->getBlock()->isExtensionOfPreviousBlock())
+         {
+         storeMap.clear();
+         continue;
+         }
+
+      if (!(defNode->getOpCode().isStoreDirect()
+            && defNode->getSymbolReference()->getSymbol()->isAutoOrParm()
+            && !defNode->storedValueIsIrrelevant()))
          continue;
 
-      if (defNode->getOpCode().isStoreDirect() && defNode->getSymbolReference()->getSymbol()->isAutoOrParm())
+      TR::Node *rhsOfStoreDefNode = defNode->getChild(0);
+      int32_t i = defNode->getUseDefIndex();
+      if (i == 0)
+         continue;
+
+      auto storeLookup = storeMap.find(rhsOfStoreDefNode);
+      if (storeLookup != storeMap.end())
          {
-         TR::Node *rhsOfStoreDefNode = defNode->getChild(0);
-
-         for (j = firstRealDefIndex; j < i; j++)
+         for (auto itr = storeLookup->second->begin(), end = storeLookup->second->end(); itr != end; ++itr)
             {
-            TR::Node *prevDefNode = useDefInfo->getNode(j);
-            if (prevDefNode == NULL)
-               continue;
-            if (prevDefNode->getOpCode().isStoreDirect() && prevDefNode->getSymbolReference()->getSymbol()->isAutoOrParm())
-               {
-               TR::Node *rhsOfPrevStoreDefNode = prevDefNode->getChild(0);
-               if (rhsOfStoreDefNode == rhsOfPrevStoreDefNode)
-                  {
-                  int32_t thisDefSlot = defNode->getSymbolReference()->getCPIndex();
-                  int32_t prevDefSlot = prevDefNode->getSymbolReference()->getCPIndex();
+            TR::Node *prevDefNode = *itr;
+            int32_t j = prevDefNode->getUseDefIndex();
+            int32_t thisDefSlot = defNode->getSymbolReference()->getCPIndex();
+            int32_t prevDefSlot = prevDefNode->getSymbolReference()->getCPIndex();
 
-                  bool thisSymRefIsPreferred = false;
-                  if (thisDefSlot < 0) // pending pushes
-		     thisSymRefIsPreferred = true;
-                  else if (thisDefSlot < comp()->getOwningMethodSymbol(defNode->getSymbolReference()->getOwningMethodIndex())->getFirstJitTempIndex()) // autos and parms
-                     thisSymRefIsPreferred = true;
+            bool thisSymRefIsPreferred = false;
+            if (thisDefSlot < 0) // pending pushes
+               thisSymRefIsPreferred = true;
+            else if (thisDefSlot < comp()->getOwningMethodSymbol(defNode->getSymbolReference()->getOwningMethodIndex())->getFirstJitTempIndex()) // autos and parms
+               thisSymRefIsPreferred = true;
 
-                  bool prevSymRefIsPreferred = false;
-                  if (prevDefSlot < 0) // pending pushes
-		     prevSymRefIsPreferred = true;
-                  else if (prevDefSlot < comp()->getOwningMethodSymbol(prevDefNode->getSymbolReference()->getOwningMethodIndex())->getFirstJitTempIndex()) // autos and parms
-                     prevSymRefIsPreferred = true;
+            bool prevSymRefIsPreferred = false;
+            if (prevDefSlot < 0) // pending pushes
+               prevSymRefIsPreferred = true;
+            else if (prevDefSlot < comp()->getOwningMethodSymbol(prevDefNode->getSymbolReference()->getOwningMethodIndex())->getFirstJitTempIndex()) // autos and parms
+               prevSymRefIsPreferred = true;
 
 #ifdef J9_PROJECT_SPECIFIC
-                  if (prevDefNode->getType().isBCD())
-                     {
-                     TR_ASSERT(defNode->getType().isBCD(),"expecting defNode to be a BCD type (dt=%s) when prevDefNode is a BCD type (dt=%s)\n",
-                        defNode->getDataType().toString(),prevDefNode->getDataType().toString());
-                     if (defNode->getType().isBCD() &&
-                         defNode->getDataType() == prevDefNode->getDataType() &&
-                         prevDefNode->getDecimalPrecision() == defNode->getDecimalPrecision() &&
-                         (defNode->getDataType() != TR::PackedDecimal || prevDefNode->mustCleanSignInPDStoreEvaluator() == defNode->mustCleanSignInPDStoreEvaluator()))
-                        {
-                        dumpOptDetails(comp(), "%s   Def nodes %p (precision = %d) and %p (precision = %d) are equivalent\n",OPT_DETAILS,
-                           defNode,
-                           defNode->getDecimalPrecision(),
-                           prevDefNode,
-                           prevDefNode->getDecimalPrecision());
+            if (prevDefNode->getType().isBCD())
+               {
+               TR_ASSERT(defNode->getType().isBCD(),"expecting defNode to be a BCD type (dt=%s) when prevDefNode is a BCD type (dt=%s)\n",
+                  defNode->getDataType().toString(),prevDefNode->getDataType().toString());
+               if (defNode->getType().isBCD() &&
+                   defNode->getDataType() == prevDefNode->getDataType() &&
+                   prevDefNode->getDecimalPrecision() == defNode->getDecimalPrecision() &&
+                   (defNode->getDataType() != TR::PackedDecimal || prevDefNode->mustCleanSignInPDStoreEvaluator() == defNode->mustCleanSignInPDStoreEvaluator()))
+                  {
+                  dumpOptDetails(comp(), "%s   Def nodes %p (precision = %d) and %p (precision = %d) are equivalent\n",OPT_DETAILS,
+                     defNode,
+                     defNode->getDecimalPrecision(),
+                     prevDefNode,
+                     prevDefNode->getDecimalPrecision());
 
-                        auto equivalentDefLookup = equivalentDefs.find(j);
-                        if ((!thisSymRefIsPreferred &&
-                             (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
-                           {
-                           if (trace())
-                              traceMsg(comp(), "000setting i %d to j %d\n", i, j);
-                           if (equivalentDefLookup == equivalentDefs.end())
-                              {
-                              if (i != j)
-                                 equivalentDefs[i] = j;
-                              }
-                           else if (i == equivalentDefLookup->second)
-                              {
-                              equivalentDefs.erase(i);
-                              }
-                           else
-                              {
-                              equivalentDefs[i] = equivalentDefLookup->second;
-                              }
-                           }
-                        else if (equivalentDefs.find(j) == equivalentDefs.end())
-                           {
-                           if (trace())
-                               traceMsg(comp(), "111setting j %d to i %d\n", j, i);
-                           if (i != j)
-                              equivalentDefs[j] = i;
-                           }
-                        }
-                     }
-                  else
-#endif
+                  auto equivalentDefLookup = equivalentDefs.find(j);
+                  if ((!thisSymRefIsPreferred &&
+                       (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                      {
-                     dumpOptDetails(comp(), "%s   Def nodes %p and %p are equivalent\n",OPT_DETAILS,
-                        defNode,
-                        prevDefNode);
-
-                     auto equivalentDefLookup = equivalentDefs.find(j);
-                     if ((!thisSymRefIsPreferred &&
-                         (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
+                     if (trace())
+                        traceMsg(comp(), "000setting i %d to j %d\n", i, j);
+                     if (equivalentDefLookup == equivalentDefs.end())
                         {
-                        if (trace())
-                           traceMsg(comp(), "000setting i %d to j %d\n", i, j);
-                        
-                        if (equivalentDefLookup == equivalentDefs.end())
-                           {
-                           if (i != j)
-                              equivalentDefs[i] = j;
-                           }
-                        else if (i == equivalentDefLookup->second)
-                           {
-                           equivalentDefs.erase(i);
-                           }
-                        else
-                           {
-                           equivalentDefs[i] = equivalentDefLookup->second;
-                           }
-                        }
-                     else if (equivalentDefs.find(j) == equivalentDefs.end())
-                        {
-                        if (trace())
-                           traceMsg(comp(), "111setting j %d to i %d\n", j, i);
                         if (i != j)
-                           equivalentDefs[j] = i;
+                           equivalentDefs[i] = j;
+                        }
+                     else if (i == equivalentDefLookup->second)
+                        {
+                        equivalentDefs.erase(i);
+                        }
+                     else
+                        {
+                        equivalentDefs[i] = equivalentDefLookup->second;
                         }
                      }
-                  break;
+                  else if (equivalentDefs.find(j) == equivalentDefs.end())
+                     {
+                     if (trace())
+                         traceMsg(comp(), "111setting j %d to i %d\n", j, i);
+                     if (i != j)
+                        equivalentDefs[j] = i;
+                     }
                   }
                }
+            else
+#endif
+               {
+               dumpOptDetails(comp(), "%s   Def nodes %p and %p are equivalent\n",OPT_DETAILS,
+                  defNode,
+                  prevDefNode);
+
+               auto equivalentDefLookup = equivalentDefs.find(j);
+               if ((!thisSymRefIsPreferred &&
+                   (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
+                  {
+                  if (trace())
+                     traceMsg(comp(), "000setting i %d to j %d\n", i, j);
+                  
+                  if (equivalentDefLookup == equivalentDefs.end())
+                     {
+                     if (i != j)
+                        equivalentDefs[i] = j;
+                     }
+                  else if (i == equivalentDefLookup->second)
+                     {
+                     equivalentDefs.erase(i);
+                     }
+                  else
+                     {
+                     equivalentDefs[i] = equivalentDefLookup->second;
+                     }
+                  }
+               else if (equivalentDefs.find(j) == equivalentDefs.end())
+                  {
+                  if (trace())
+                     traceMsg(comp(), "111setting j %d to i %d\n", j, i);
+                  if (i != j)
+                     equivalentDefs[j] = i;
+                  }
+               }
+            break;
             }
+         }
+
+      if (storeLookup == storeMap.end())
+         {
+         storeMap[rhsOfStoreDefNode] = new (trStackMemory()) TR::deque<TR::Node*, TR::Region&>(trMemory()->currentStackRegion());
+         storeMap[rhsOfStoreDefNode]->push_back(defNode);
+         }
+      else
+         {
+         storeMap[rhsOfStoreDefNode]->push_back(defNode);
          }
       }
 
 
    int32_t lastUseIndex = useDefInfo->getLastUseIndex();
-   for (i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
+   for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
       {
       TR::Node *useNode = useDefInfo->getNode(i);
 
@@ -779,7 +792,7 @@ int32_t TR_CopyPropagation::perform()
       rematerializeIndirectLoadsFromAutos();
 
    _lookForOriginalDefs = true;
-   for (i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
+   for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
       {
       TR_UseDefInfo::BitVector defs(comp()->allocator());
       useDefInfo->getUseDef(defs, i);

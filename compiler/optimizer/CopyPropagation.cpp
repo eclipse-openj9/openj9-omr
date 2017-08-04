@@ -481,7 +481,12 @@ int32_t TR_CopyPropagation::perform()
    int32_t *usesToBeFixed = (int32_t *) trMemory()->allocateStackMemory(useDefInfo->getTotalNodes()*sizeof(int32_t));
    memset(usesToBeFixed, 0xFF, useDefInfo->getTotalNodes()*sizeof(int32_t));
 
-   int32_t *equivalentDefs = (int32_t*)trMemory()->allocateStackMemory(numDefNodes*sizeof(int32_t));
+
+   typedef TR::typed_allocator<std::pair<int32_t, int32_t>, TR::Region&> EquivalentDefMapAllocator;
+   typedef std::less<int32_t> EquivalentDefMapComparator;
+   typedef std::map<int32_t, int32_t, EquivalentDefMapComparator, EquivalentDefMapAllocator> EquivalentDefMap;
+
+   EquivalentDefMap equivalentDefs((EquivalentDefMapComparator()), EquivalentDefMapAllocator(trMemory()->currentStackRegion()));
 
    _lookForOriginalDefs = false;
    for (i = firstRealDefIndex; i <= lastDefIndex; i++)
@@ -494,7 +499,6 @@ int32_t TR_CopyPropagation::perform()
       if (defNode == NULL)
          continue;
 
-      equivalentDefs[i-firstRealDefIndex] = i;
       if (defNode->getOpCode().isStoreDirect() && defNode->getSymbolReference()->getSymbol()->isAutoOrParm())
          {
          TR::Node *rhsOfStoreDefNode = defNode->getChild(0);
@@ -540,18 +544,32 @@ int32_t TR_CopyPropagation::perform()
                            prevDefNode,
                            prevDefNode->getDecimalPrecision());
 
+                        auto equivalentDefLookup = equivalentDefs.find(j);
                         if ((!thisSymRefIsPreferred &&
-                             (prevSymRefIsPreferred || (equivalentDefs[j-firstRealDefIndex] != j))))
+                             (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                            {
                            if (trace())
                               traceMsg(comp(), "000setting i %d to j %d\n", i, j);
-                           equivalentDefs[i-firstRealDefIndex] = equivalentDefs[j-firstRealDefIndex];
+                           if (equivalentDefLookup == equivalentDefs.end())
+                              {
+                              if (i != j)
+                                 equivalentDefs[i] = j;
+                              }
+                           else if (i == equivalentDefLookup->second)
+                              {
+                              equivalentDefs.erase(i);
+                              }
+                           else
+                              {
+                              equivalentDefs[i] = equivalentDefLookup->second;
+                              }
                            }
-                        else if (equivalentDefs[j-firstRealDefIndex] == j)
+                        else if (equivalentDefs.find(j) == equivalentDefs.end())
                            {
                            if (trace())
                                traceMsg(comp(), "111setting j %d to i %d\n", j, i);
-                           equivalentDefs[j-firstRealDefIndex] = i;
+                           if (i != j)
+                              equivalentDefs[j] = i;
                            }
                         }
                      }
@@ -562,19 +580,34 @@ int32_t TR_CopyPropagation::perform()
                         defNode,
                         prevDefNode);
 
+                     auto equivalentDefLookup = equivalentDefs.find(j);
                      if ((!thisSymRefIsPreferred &&
-                         (prevSymRefIsPreferred || (equivalentDefs[j-firstRealDefIndex] != j))))
+                         (prevSymRefIsPreferred || (equivalentDefLookup != equivalentDefs.end()))))
                         {
                         if (trace())
                            traceMsg(comp(), "000setting i %d to j %d\n", i, j);
-                         equivalentDefs[i-firstRealDefIndex] = equivalentDefs[j-firstRealDefIndex];
-                         }
-                      else if (equivalentDefs[j-firstRealDefIndex] == j)
-                         {
-                         if (trace())
-                            traceMsg(comp(), "111setting j %d to i %d\n", j, i);
-                         equivalentDefs[j-firstRealDefIndex] = i;
-                         }
+                        
+                        if (equivalentDefLookup == equivalentDefs.end())
+                           {
+                           if (i != j)
+                              equivalentDefs[i] = j;
+                           }
+                        else if (i == equivalentDefLookup->second)
+                           {
+                           equivalentDefs.erase(i);
+                           }
+                        else
+                           {
+                           equivalentDefs[i] = equivalentDefLookup->second;
+                           }
+                        }
+                     else if (equivalentDefs.find(j) == equivalentDefs.end())
+                        {
+                        if (trace())
+                           traceMsg(comp(), "111setting j %d to i %d\n", j, i);
+                        if (i != j)
+                           equivalentDefs[j] = i;
+                        }
                      }
                   break;
                   }
@@ -615,7 +648,7 @@ int32_t TR_CopyPropagation::perform()
          continue;
          }
 
-         if (equivalentDefs[defIndex-firstRealDefIndex] == defIndex)
+         if (equivalentDefs.find(defIndex) == equivalentDefs.end())
             continue;
 
          TR::Node *defNode = useDefInfo->getNode(defIndex);
@@ -624,8 +657,8 @@ int32_t TR_CopyPropagation::perform()
          if(defNode == NULL)
             continue;
 
-         TR::Node *equivalentDefNode = useDefInfo->getNode(equivalentDefs[defIndex-firstRealDefIndex]);
-         TR::TreeTop *equivalentDefTree = useDefInfo->getTreeTop(equivalentDefs[defIndex-firstRealDefIndex]);
+         TR::Node *equivalentDefNode = useDefInfo->getNode(equivalentDefs[defIndex]);
+         TR::TreeTop *equivalentDefTree = useDefInfo->getTreeTop(equivalentDefs[defIndex]);
 
          if (useNode->getOpCodeValue() == TR::loadaddr)
             continue;
@@ -699,7 +732,7 @@ int32_t TR_CopyPropagation::perform()
 
                comp()->incOrResetVisitCount();
                replaceCopySymbolReferenceByOriginalIn(copySymbolReference, equivalentDefNode, useNode, defNode);
-               usesToBeFixed[useNode->getUseDefIndex()] = equivalentDefs[defIndex-firstRealDefIndex];
+               usesToBeFixed[useNode->getUseDefIndex()] = equivalentDefs[defIndex];
 
                donePropagation = true;
 
@@ -712,7 +745,7 @@ int32_t TR_CopyPropagation::perform()
                if (trace())
                   {
                   traceMsg(comp(), "   Use #%d[%p] is defined by:\n",useNode->getUseDefIndex(), useNode);
-                  traceMsg(comp(), "      Added New Def #%d[%p]\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex-firstRealDefIndex]));
+                  traceMsg(comp(), "      Added New Def #%d[%p]\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex]));
                   }
 
                if (trace())

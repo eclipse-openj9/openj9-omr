@@ -614,146 +614,134 @@ int32_t TR_CopyPropagation::perform()
          }
       }
 
-
-   int32_t lastUseIndex = useDefInfo->getLastUseIndex();
-   for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
+   int32_t firstUseIndex = useDefInfo->getFirstUseIndex();
+   for (auto itr = equivalentDefs.begin(), end = equivalentDefs.end(); itr != end; ++itr)
       {
-      TR::Node *useNode = useDefInfo->getNode(i);
-
-      if (!useNode)
-          continue;
-      if (useNode->getReferenceCount() == 0)
+      int32_t defIndex = itr->first;
+      TR::Node *defNode = useDefInfo->getNode(defIndex);
+      TR::TreeTop *defTree = useDefInfo->getTreeTop(defIndex);
+      TR::TreeTop *extendedBlockEntry = defTree->getEnclosingBlock()->startOfExtendedBlock()->getEntry();
+      TR::TreeTop *extendedBlockExit = extendedBlockEntry->getExtendedBlockExitTreeTop();
+      if (defNode == NULL)
          continue;
 
-      TR_UseDefInfo::BitVector defs(comp()->allocator());
-      useDefInfo->getUseDef(defs, i);
+      TR::Node *equivalentDefNode = useDefInfo->getNode(itr->second);
+      TR::TreeTop *equivalentDefTree = useDefInfo->getTreeTop(itr->second);
 
-      // could use "if (defs.PopulationCount() == 1) continue", but this is more efficient
-      TR_UseDefInfo::BitVector::Cursor cursor(defs);
-      cursor.SetToFirstOne();
-      if (!cursor.Valid())
-         continue;
-      int32_t defIndex = cursor;
-      cursor.SetToNextOne();
-      if (cursor.Valid())
-         continue;
-
-      // Now we know there is a single definition for this use node
-      //
-
-      if (defIndex < firstRealDefIndex)
+      TR_UseDefInfo::BitVector uses(comp()->allocator());
+      useDefInfo->getUsesFromDef(uses, itr->first, useDefInfo->hasLoadsAsDefs());
+      TR_UseDefInfo::BitVector::Cursor useCursor(uses);
+      for (useCursor.SetToFirstOne(); useCursor.Valid(); useCursor.SetToNextOne())
          {
-         continue;
-         }
+         int32_t i = useCursor + firstUseIndex;
 
-         if (equivalentDefs.find(defIndex) == equivalentDefs.end())
+         TR_UseDefInfo::BitVector defs(comp()->allocator());
+         useDefInfo->getUseDef(defs, i);
+
+         // could use "if (defs.PopulationCount() == 1) continue", but this is more efficient
+         TR_UseDefInfo::BitVector::Cursor cursor(defs);
+         cursor.SetToFirstOne();
+         if (!cursor.Valid())
+            continue;
+         int32_t defIndex = cursor;
+         cursor.SetToNextOne();
+         if (cursor.Valid())
             continue;
 
-         TR::Node *defNode = useDefInfo->getNode(defIndex);
-         TR::TreeTop *defTree = useDefInfo->getTreeTop(defIndex);
-
-         if(defNode == NULL)
+         TR::Node *useNode = useDefInfo->getNode(i);
+         if (!useNode || useNode->getReferenceCount() == 0)
             continue;
 
-         TR::Node *equivalentDefNode = useDefInfo->getNode(equivalentDefs[defIndex]);
-         TR::TreeTop *equivalentDefTree = useDefInfo->getTreeTop(equivalentDefs[defIndex]);
-
-         if (useNode->getOpCodeValue() == TR::loadaddr)
-            continue;
-
-         if (defNode->getOpCode().isStoreDirect() &&
-         	   defNode->getSymbolReference()->getSymbol()->isAutoOrParm())
+         // Now we know there is a single definition for this use node
+         //
+         TR::SymbolReference *copySymbolReference = defNode->getSymbolReference();
+         if (performTransformation(comp(), "%s   Copy1 Propagation replacing Copy symRef #%d %p %p\n",OPT_DETAILS, copySymbolReference->getReferenceNumber(), defNode,  equivalentDefNode))
             {
-            TR::SymbolReference *copySymbolReference = defNode->getSymbolReference();
-            if (copySymbolReference->getSymbol()->isAutoOrParm() &&
-                performTransformation(comp(), "%s   Copy1 Propagation replacing Copy symRef #%d %p %p\n",OPT_DETAILS, copySymbolReference->getReferenceNumber(), defNode,  equivalentDefNode))
+	    comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
+
+            _storeTree = NULL;
+            _useTree = NULL;
+            _storeBlock = NULL;
+
+            if (!isCorrectToReplace(useNode, equivalentDefNode, defs, useDefInfo))
+               continue;
+
+            TR::TreeTop *cursorTree = extendedBlockEntry;
+
+            bool defSeenFirst = false;
+            bool equivalentDefSeenFirst = false;
+            while (cursorTree != extendedBlockExit)
                {
-	       comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
-
-               _storeTree = NULL;
-               _useTree = NULL;
-               _storeBlock = NULL;
-
-               if (!isCorrectToReplace(useNode, equivalentDefNode, defs, useDefInfo))
-                  continue;
-
-               TR::TreeTop *extendedBlockEntry = defTree->getEnclosingBlock()->startOfExtendedBlock()->getEntry();
-               TR::TreeTop *extendedBlockExit = extendedBlockEntry->getExtendedBlockExitTreeTop();
-               TR::TreeTop *cursorTree = extendedBlockEntry;
-
-               bool defSeenFirst = false;
-               bool equivalentDefSeenFirst = false;
-               while (cursorTree != extendedBlockExit)
+               if (cursorTree == defTree)
                   {
-                  if (cursorTree == defTree)
+                  defSeenFirst = true;
+                  break;
+                  }
+
+               if (cursorTree == equivalentDefTree)
+                  {
+                  equivalentDefSeenFirst = true;
+                  break;
+                  }
+
+              cursorTree = cursorTree->getNextTreeTop();
+              }
+
+
+            bool safe = true;
+            if (defSeenFirst)
+               {
+               cursorTree = defTree;
+               while (cursorTree != equivalentDefTree)
+                  {
+                  if (!cursorTree->getNode()->getOpCode().isStore() ||
+                        (cursorTree->getNode()->getFirstChild() != defNode->getFirstChild()))
                      {
-                     defSeenFirst = true;
+                     safe = false;
                      break;
                      }
 
-                  if (cursorTree == equivalentDefTree)
-                     {
-                     equivalentDefSeenFirst = true;
-                     break;
-                     }
-
-                 cursorTree = cursorTree->getNextTreeTop();
-                 }
-
-
-               bool safe = true;
-               if (defSeenFirst)
-                  {
-                  cursorTree = defTree;
-                  while (cursorTree != equivalentDefTree)
-                     {
-                     if (!cursorTree->getNode()->getOpCode().isStore() ||
-                           (cursorTree->getNode()->getFirstChild() != defNode->getFirstChild()))
-                        {
-                        safe = false;
-                        break;
-                        }
-
-                     cursorTree = cursorTree->getNextTreeTop();
-                     }
+                  cursorTree = cursorTree->getNextTreeTop();
                   }
-
-               if (!safe)
-                  continue;
-
-
-               TR::SymbolReference *originalSymbolReference = equivalentDefNode->getSymbolReference();
-
-               dumpOptDetails(comp(), "%s   By Original symRef #%d in Use node : %p\n",OPT_DETAILS, originalSymbolReference->getReferenceNumber(), useNode);
-               dumpOptDetails(comp(), "%s   Use #%d[%p] is defined by:\n",OPT_DETAILS,i,useNode);
-               dumpOptDetails(comp(), "%s      Def #%d[%p]\n",OPT_DETAILS, defIndex,useDefInfo->getNode(defIndex));
-
-               comp()->incOrResetVisitCount();
-               replaceCopySymbolReferenceByOriginalIn(copySymbolReference, equivalentDefNode, useNode, defNode);
-               usesToBeFixed[useNode->getUseDefIndex()] = equivalentDefs[defIndex];
-
-               donePropagation = true;
-
-               if (trace())
-                  {
-                  traceMsg(comp(), "   Use #%d[%p] :\n",useNode->getUseDefIndex(),useNode);
-                  traceMsg(comp(), "      Does NOT get Defined by #%d[%p] from now\n",defNode->getUseDefIndex(), defNode);
-                  }
-
-               if (trace())
-                  {
-                  traceMsg(comp(), "   Use #%d[%p] is defined by:\n",useNode->getUseDefIndex(), useNode);
-                  traceMsg(comp(), "      Added New Def #%d[%p]\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex]));
-                  }
-
-               if (trace())
-                  traceMsg(comp(), "\n");
                }
+
+            if (!safe)
+               continue;
+
+
+            TR::SymbolReference *originalSymbolReference = equivalentDefNode->getSymbolReference();
+
+            dumpOptDetails(comp(), "%s   By Original symRef #%d in Use node : %p\n",OPT_DETAILS, originalSymbolReference->getReferenceNumber(), useNode);
+            dumpOptDetails(comp(), "%s   Use #%d[%p] is defined by:\n",OPT_DETAILS,i,useNode);
+            dumpOptDetails(comp(), "%s      Def #%d[%p]\n",OPT_DETAILS, defIndex,useDefInfo->getNode(defIndex));
+
+            comp()->incOrResetVisitCount();
+            replaceCopySymbolReferenceByOriginalIn(copySymbolReference, equivalentDefNode, useNode, defNode);
+            usesToBeFixed[useNode->getUseDefIndex()] = equivalentDefs[defIndex];
+
+            donePropagation = true;
+
+            if (trace())
+               {
+               traceMsg(comp(), "   Use #%d[%p] :\n",useNode->getUseDefIndex(),useNode);
+               traceMsg(comp(), "      Does NOT get Defined by #%d[%p] from now\n",defNode->getUseDefIndex(), defNode);
+               }
+
+            if (trace())
+               {
+               traceMsg(comp(), "   Use #%d[%p] is defined by:\n",useNode->getUseDefIndex(), useNode);
+               traceMsg(comp(), "      Added New Def #%d[%p]\n",defIndex,useDefInfo->getNode(equivalentDefs[defIndex]));
+               }
+
+            if (trace())
+               traceMsg(comp(), "\n");
             }
+         }
       }
 
 
    bool invalidateDefUseInfo = false;
+   int32_t lastUseIndex = useDefInfo->getLastUseIndex();
    for (auto itr = usesToBeFixed.begin(), end = usesToBeFixed.end(); itr != end; )
       {
       int32_t fixUseIndex = itr->first;

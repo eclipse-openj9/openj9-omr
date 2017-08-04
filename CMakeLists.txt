@@ -31,7 +31,7 @@ set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
 include(OmrAssert)
-
+include(OmrFindFiles)
 
 ###
 ### Getting the glue directory
@@ -53,7 +53,6 @@ endif()
 
 include(cmake/platform.cmake)
 include(cmake/config.cmake)
-include(cmake/vpath.cmake)
 
 enable_testing()
 

@@ -16,7 +16,7 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-
+include(OmrFindFiles)
 
 set(OBJECTS "")
 set(VPATH "")
@@ -300,8 +300,8 @@ endif()
 
 
 if(OMR_HOST_OS STREQUAL "osx")
-	list(APPEND VPATH osx_include osx)
-	target_include_directories(omrport PRIVATE osx_include osx)
+	list(APPEND VPATH osx)
+	target_include_directories(omrport PRIVATE osx)
 endif()
 
 
@@ -318,9 +318,10 @@ target_include_directories(omrport PRIVATE common include)
 
 #TODO need to set some flags and etc see line 300
 
-
-set(resolvedPaths "")
-VPathResolve(OBJECTS VPATH resolvedPaths)
+omr_find_files(resolvedPaths
+	PATHS ${VPATH}
+	FILES ${OBJECTS}
+)
 
 
 if(OMR_HOST_OS STREQUAL "win")

@@ -64,7 +64,7 @@ void collectNodesForIsCorrectChecks(TR::Node * n, TR::list< TR::Node *> & checkN
 
 TR_CopyPropagation::TR_CopyPropagation(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-   _storeTreeTopsAsArray(comp()->trMemory()->currentStackRegion())
+   _storeTreeTops((StoreTreeMapComparator()), StoreTreeMapAllocator(comp()->trMemory()->currentStackRegion()))
    {}
 
 template <class T>
@@ -453,7 +453,7 @@ int32_t TR_CopyPropagation::perform()
       {
       TR::Node *currentNode = skipTreeTopAndGetNode(currentTree);
       if (currentNode->getOpCode().isLikeDef())
-         _storeTreeTopsAsArray.push_back(currentTree);
+         _storeTreeTops[currentNode] = currentTree;
       currentTree = currentTree->getNextTreeTop();
       }
 
@@ -1663,15 +1663,11 @@ TR::Node *TR_CopyPropagation::areAllDefsInCorrectForm(TR::Node *useNode, const T
             n1799n        ==>iconst -4
 
           */
-
-         for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
+         auto lookup = _storeTreeTops.find(lastDefNode);
+         if (lookup != _storeTreeTops.end())
             {
-            if (skipTreeTopAndGetNode(*itr) == lastDefNode)
-               {
-               _storeTree = *itr;
-               _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
-               break;
-               }
+            _storeTree = lookup->second;
+            _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
             }
 
          TR::Node * currentNode = skipTreeTopAndGetNode(_storeTree);
@@ -1713,29 +1709,26 @@ TR::TreeTop * TR_CopyPropagation::findAnchorTree(TR::Node *storeNode, TR::Node *
 
    TR::TreeTop *anchor = NULL;
 
-   for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
+   auto lookup = _storeTreeTops.find(storeNode);
+   if (lookup != _storeTreeTops.end())
       {
-      if (skipTreeTopAndGetNode(*itr) == storeNode)
+      TR::TreeTop *treeTop = lookup->second;
+      anchor = treeTop;
+
+      if (loadNode)
          {
-         TR::TreeTop *treeTop = *itr;
-         anchor = treeTop;
+         TR::SymbolReference *originalSymbolReference = loadNode->getSymbolReference();
 
-         if (loadNode)
+         comp()->incOrResetVisitCount();
+         while (!((treeTop->getNode()->getOpCode().getOpCodeValue() == TR::BBStart) &&
+                  !treeTop->getNode()->getBlock()->isExtensionOfPreviousBlock()))
             {
-            TR::SymbolReference *originalSymbolReference = loadNode->getSymbolReference();
-
             comp()->incOrResetVisitCount();
-            while (!((treeTop->getNode()->getOpCode().getOpCodeValue() == TR::BBStart) &&
-                     !treeTop->getNode()->getBlock()->isExtensionOfPreviousBlock()))
-               {
-               comp()->incOrResetVisitCount();
-               if (containsNode(treeTop->getNode(), loadNode))
-                  anchor = treeTop;
+            if (containsNode(treeTop->getNode(), loadNode))
+               anchor = treeTop;
 
-               treeTop = treeTop->getPrevTreeTop();
-               }
+            treeTop = treeTop->getPrevTreeTop();
             }
-         return anchor;
          }
       }
 
@@ -1757,42 +1750,40 @@ bool TR_CopyPropagation::isSafeToPropagate(TR::Node *storeNode, TR::Node *loadNo
    {
    bool seenStore = false;
 
-   for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
+   auto lookup = _storeTreeTops.find(storeNode);
+   if (lookup != _storeTreeTops.end())
       {
-      if (skipTreeTopAndGetNode(*itr) == storeNode)
+      TR::TreeTop *_storeTreeTop = lookup->second;
+      _storeTree = _storeTreeTop;
+
+      if (loadNode)
          {
-         TR::TreeTop *_storeTreeTop = *itr;
-         _storeTree = _storeTreeTop;
+         TR::SymbolReference *originalSymbolReference = loadNode->getSymbolReference();
 
-         if (loadNode)
+         if (storeNode->getSymbolReference() == loadNode->getSymbolReference())
             {
-            TR::SymbolReference *originalSymbolReference = loadNode->getSymbolReference();
-
-            if (storeNode->getSymbolReference() == loadNode->getSymbolReference())
-               {
-               _storeTreeTop = _storeTreeTop->getPrevTreeTop(); // skip i = i + 1
-               }
-
-            comp()->incOrResetVisitCount();
-
-            // Walk the tree backward to first treetop inside extended basic block, reject if org sym is killed
-            while (!((_storeTreeTop->getNode()->getOpCode().getOpCodeValue() == TR::BBStart) &&
-                     !_storeTreeTop->getNode()->getBlock()->isExtensionOfPreviousBlock()))
-               {
-               TR::Node * node = skipTreeTopAndGetNode(_storeTreeTop);
-
-               if (node->mayKill().contains(originalSymbolReference, comp()))
-                  seenStore = true;
-
-               if (seenStore && containsNode(_storeTreeTop->getNode(), loadNode))
-                  return false;
-
-               _storeTreeTop = _storeTreeTop->getPrevTreeTop();
-               }
+            _storeTreeTop = _storeTreeTop->getPrevTreeTop(); // skip i = i + 1
             }
 
-         return true;
+         comp()->incOrResetVisitCount();
+
+         // Walk the tree backward to first treetop inside extended basic block, reject if org sym is killed
+         while (!((_storeTreeTop->getNode()->getOpCode().getOpCodeValue() == TR::BBStart) &&
+                  !_storeTreeTop->getNode()->getBlock()->isExtensionOfPreviousBlock()))
+            {
+            TR::Node * node = skipTreeTopAndGetNode(_storeTreeTop);
+
+            if (node->mayKill().contains(originalSymbolReference, comp()))
+               seenStore = true;
+
+            if (seenStore && containsNode(_storeTreeTop->getNode(), loadNode))
+               return false;
+
+            _storeTreeTop = _storeTreeTop->getPrevTreeTop();
+            }
          }
+
+      return true;
       }
 
    TR_ASSERT(0, "end of isSafeToPropagate!");
@@ -1802,7 +1793,7 @@ bool TR_CopyPropagation::isSafeToPropagate(TR::Node *storeNode, TR::Node *loadNo
 
 TR::Node* TR_CopyPropagation::skipTreeTopAndGetNode (TR::TreeTop* tt)
    {
-   TR_ASSERT(tt, "tt should always be set no matter if it comes from _storeTreeTopsAsArray or an iterator");
+   TR_ASSERT(tt, "tt should always be set no matter if it comes from _storeTreeTops an iterator");
    return (tt->getNode()->getOpCodeValue() == TR::treetop) ? tt->getNode()->getFirstChild() : tt->getNode();
    }
 
@@ -1894,14 +1885,11 @@ bool TR_CopyPropagation::isCorrectToPropagate(TR::Node *useNode, TR::Node *store
 
    if (_storeTree == NULL)
       {
-      for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
+      auto lookup = _storeTreeTops.find(storeNode);
+      if (lookup != _storeTreeTops.end())
          {
-         if (skipTreeTopAndGetNode(*itr) == storeNode)
-            {
-            _storeTree = *itr;
-            _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
-            break;
-            }
+         _storeTree = lookup->second;
+         _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
          }
       }
 
@@ -2210,14 +2198,11 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
 
    if (_storeTree == NULL)
       {
-      for (auto itr = _storeTreeTopsAsArray.begin(), end = _storeTreeTopsAsArray.end(); itr != end; ++itr)
+      auto lookup = _storeTreeTops.find(storeNode);
+      if (lookup != _storeTreeTops.end())
          {
-         if (skipTreeTopAndGetNode(*itr) == storeNode)
-            {
-            _storeTree = *itr;
-            _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
-            break;
-            }
+         _storeTree = lookup->second;
+         _storeBlock = _storeTree->getEnclosingBlock()->startOfExtendedBlock();
          }
       }
 

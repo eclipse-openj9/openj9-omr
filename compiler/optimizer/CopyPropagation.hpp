@@ -94,7 +94,12 @@ class TR_CopyPropagation : public TR::Optimization
    bool _cleanupTemps;
    TR::TreeTop *_storeTree;
    TR::TreeTop *_useTree;
-   TR::deque<TR::TreeTop *, TR::Region&> _storeTreeTopsAsArray;
+
+   typedef TR::typed_allocator<std::pair<TR::Node*, TR::TreeTop*>, TR::Region&> StoreTreeMapAllocator;
+   typedef std::less<TR::Node*> StoreTreeMapComparator;
+   typedef std::map<TR::Node *, TR::TreeTop *, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
+   StoreTreeMap _storeTreeTops;
+   
    TR::Block *_storeBlock;
    bool _lookForOriginalDefs;
    bool _propagatingWholeExpression;

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -78,6 +78,7 @@ public:
    virtual int32_t performOnBlock(TR::Block *);
    int32_t process(TR::TreeTop *, TR::TreeTop *);
    bool hasSynergy(TR::Block *, TR::Node *);
+   virtual const char * optDetailString() const throw();
    };
 
 class TR_BlockManipulator : public TR::Optimization
@@ -105,6 +106,7 @@ public:
       }
 
    virtual int32_t perform();
+   virtual const char *optDetailString() const throw();
 
 private:
    int32_t orderBlocksWithFrequencyInfo();
@@ -121,6 +123,7 @@ public:
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
    };
 
 
@@ -144,6 +147,7 @@ public:
 
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
+   virtual const char * optDetailString() const throw();
    int32_t process(TR::TreeTop *, TR::TreeTop *);
 
 private:
@@ -173,6 +177,7 @@ public:
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
    virtual void prePerformOnBlocks();
+   virtual const char * optDetailString() const throw();
    int32_t process(TR::TreeTop *, TR::TreeTop *);
    };
 
@@ -191,6 +196,7 @@ public:
    int32_t process(TR::TreeTop *, TR::TreeTop *);
    void reduceArraysetStores(TR::Block *, TR_BitVector *, TR_BitVector *, TR_BitVector *);
    bool optimizeArraysetIfPossible(TR::Node *, TR::Node *, TR::TreeTop *, TR::Node *, TR_BitVector *, TR_BitVector *, TR_BitVector *, vcount_t, TR::TreeTop *);
+   virtual const char * optDetailString() const throw();
    };
 
 /*
@@ -223,6 +229,8 @@ public:
    bool replacePassThroughIfPossible(TR::Node *, TR::Node *, TR::Node *, TR::Node *, bool *, TR_BitVector *, vcount_t, vcount_t, TR::TreeTop *);
 
    bool replaceNullCheckIfPossible(TR::Node *cursorNode, TR::Node *objectRef, TR::Node *prevNode, TR::Node *currentParent, TR_BitVector *writtenSymbols, vcount_t visitCount, vcount_t initialVisitCount, bool &compactionDone);
+
+   virtual const char * optDetailString() const throw();
 
    bool _isNextTree;
    };
@@ -312,6 +320,7 @@ public:
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
    int32_t process(TR::TreeTop *, TR::TreeTop *);
+   virtual const char * optDetailString() const throw();
    };
 
 /*
@@ -381,6 +390,7 @@ public:
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
    virtual void prePerformOnBlocks();
+   virtual const char * optDetailString() const throw();
    int32_t process(TR::TreeTop *, TR::TreeTop *);
 
    void addParentToList(TR::Node *, List<TR::Node> *, TR::Node *, List< List<TR::Node> > *);
@@ -460,6 +470,7 @@ class TR_LongRegAllocation : public TR_Rematerialization
       }
 
    virtual void postPerformOnBlocks();
+   virtual const char * optDetailString() const throw();
 
    private:
    void printStats();
@@ -478,6 +489,7 @@ public:
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
 private:
    double alpha;
@@ -718,6 +730,7 @@ class TR_InvariantArgumentPreexistence : public TR::Optimization
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
 
@@ -785,6 +798,8 @@ class TR_CheckcastAndProfiledGuardCoalescer : public TR::Optimization
    virtual int32_t perform();
    void doBasicCase (TR::TreeTop* checkcastTree, TR::TreeTop* profiledGuardTree);
 
+   virtual const char * optDetailString() const throw();
+
    private:
       TR::Node* storeObjectInATemporary (TR::TreeTop* checkcastTree);
    };
@@ -799,6 +814,7 @@ class TR_ColdBlockMarker : public TR_BlockManipulator
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    protected:
    void initialize();
@@ -822,6 +838,7 @@ class TR_ColdBlockOutlining : public TR_ColdBlockMarker
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
    void reorderColdBlocks();
@@ -839,6 +856,7 @@ class TR_ProfiledNodeVersioning : public TR::Optimization
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    // Use this as follows:
    //
@@ -865,6 +883,8 @@ class TR_TrivialDeadTreeRemoval : public TR::Optimization
 
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
+   virtual const char * optDetailString() const throw();
+
    void transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTree);
    void examineNode(TR::Node *node, vcount_t visitCount);
 
@@ -892,6 +912,7 @@ class TR_TrivialBlockExtension : public TR::Optimization
 
    virtual int32_t perform();
    virtual int32_t performOnBlock(TR::Block *);
+   virtual const char * optDetailString() const throw();
    };
 
 #endif

@@ -1,9 +1,29 @@
+###############################################################################
+#
+# (c) Copyright IBM Corp. 2017
+#
+#  This program and the accompanying materials are made available
+#  under the terms of the Eclipse Public License v1.0 and
+#  Apache License v2.0 which accompanies this distribution.
+#
+#      The Eclipse Public License is available at
+#      http://www.eclipse.org/legal/epl-v10.html
+#
+#      The Apache License v2.0 is available at
+#      http://www.opensource.org/licenses/apache2.0.php
+#
+# Contributors:
+#    Multiple authors (IBM Corp.) - initial implementation and documentation
+###############################################################################
+
 set(OMR_DDR ON CACHE BOOL "Enable DDR")
 set(OMR_EXAMPLE ON CACHE BOOL "")
 set(OMR_JIT  ON CACHE BOOL "")
+set(OMR_JITBUILDER ON CACHE BOOL "")
 set(OMR_GC ON CACHE BOOL "")
 set(OMR_PORT ON CACHE BOOL "")
 set(OMR_THREAD ON CACHE BOOL "")
+set(OMR_TEST_COMPILER ON CACHE BOOL "")
 set(OMR_OMRSIG ON CACHE BOOL "")
 set(OMR_FVTEST ON CACHE BOOL "")
 set(OMR_GLUE ${CMAKE_SOURCE_DIR}/example/glue)

@@ -4798,6 +4798,14 @@ MM_Scavenger::completeConcurrentCycle(MM_EnvironmentBase *env)
 	}
 }
 
+void
+MM_Scavenger::preMasterGCThreadInitialize(MM_EnvironmentBase *env)
+{
+	if (0 == _extensions->concurrentScavengerBackgroundThreads) {
+		_extensions->concurrentScavengerBackgroundThreads = OMR_MAX(1, _extensions->dispatcher->threadCount() / 2);
+	}
+}
+
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 #endif /* OMR_GC_MODRON_SCAVENGER */

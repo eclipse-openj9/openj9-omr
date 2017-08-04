@@ -570,9 +570,6 @@ getUnicodeCmdline(struct OMRPortLibrary *portLibrary, const char *command[], uin
 	 * Therefore we need to rebuild the line that has been sliced in java...
 	 * Subtle : if a token embbeds a <space>, the token will be quoted (only
 	 * 			if it hasn't been quoted yet) The quote char is "
-	 * Note (see "XXX references in the code)
-		 * Our CDev scanner/parser does not handle '"' correctly. A workaround is to close
-		 * the '"' with another " , embedded in a C comment.
 	 */
 	needToBeQuoted = (char *)omrmem_allocate_memory(commandLength, OMRMEM_CATEGORY_PORT_LIBRARY);
 	if (NULL == needToBeQuoted) {
@@ -590,7 +587,7 @@ getUnicodeCmdline(struct OMRPortLibrary *portLibrary, const char *command[], uin
 			/* check_for_embbeded_space */
 			if (commandILength > 0) {
 				commandStart = command[i];
-				if (commandStart[0] != '"' /*"XXX*/) {
+				if (commandStart[0] != '"') {
 					for (j = 0; j < (intptr_t)commandILength ; j += 1) {
 						if (commandStart[j] == ' ') {
 							needToBeQuoted[i] = '\1'; /* a random value, different from zero though*/
@@ -616,7 +613,7 @@ getUnicodeCmdline(struct OMRPortLibrary *portLibrary, const char *command[], uin
 			for (k = 0; k < commandLength ; k += 1) {
 				l = strlen(argi = command[k]);
 				if (needToBeQuoted[k]) {
-					*ptr++ = '"' /*"XXX*/ ;
+					*ptr++ = '"';
 				}
 				memcpy(ptr, argi, l);
 				ptr += l;
@@ -624,7 +621,7 @@ getUnicodeCmdline(struct OMRPortLibrary *portLibrary, const char *command[], uin
 					if (l > 1 && *(ptr - 1) == '\\' && *(ptr - 2) != '\\') {
 						*ptr++ = '\\';
 					}
-					*ptr++ = '"' /*"XXX*/ ;
+					*ptr++ = '"';
 				}
 				*ptr++ = ' '; /* put a <blank> between each token */
 			}

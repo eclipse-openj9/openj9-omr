@@ -31,9 +31,9 @@ if(OMR_OPT_CUDA)
 		cudaMemory.cpp
 		cudaModule.cpp
 		cudaPeer.cpp
-		cudaPropery.cpp
+		cudaProperty.cpp
 		cudaPtx.cpp
-		cudaStram.cpp
+		cudaStream.cpp
 		cudaTests.cpp
 	)
 endif()

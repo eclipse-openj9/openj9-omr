@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,8 +34,8 @@ class OMR_EXTENSIBLE OptimizationManager : public OMR::OptimizationManagerConnec
    {
    public:
 
-   OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const char *optDetailString, const OptimizationStrategy *groupOfOpts = NULL) :
-      OMR::OptimizationManagerConnector(o, factory, optNum, optDetailString, groupOfOpts) {}
+   OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const OptimizationStrategy *groupOfOpts = NULL) :
+      OMR::OptimizationManagerConnector(o, factory, optNum, groupOfOpts) {}
    };
 
 }

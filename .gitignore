@@ -139,6 +139,11 @@ Testing/
 *.o.spp
 *.pyc
 
+# eclipse
+/.cproject
+/.project
+/.settings/
+
 # Visual Studio
 *.dir/
 *.opensdf

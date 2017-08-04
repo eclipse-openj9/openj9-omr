@@ -601,7 +601,7 @@ void OMR::ValuePropagation::processTrees(TR::TreeTop *startTree, TR::TreeTop *en
       _curTree = treeTop;
       TR::Node *treeTopNode = treeTop->getNode();
       if (trace())
-         traceMsg(comp(), "Processing ttNode n%in %s\n", treeTopNode->getNodePoolIndex(),
+         traceMsg(comp(), "Processing ttNode n%in %s\n", treeTopNode->getGlobalIndex(),
                treeTopNode->getOpCode().getName());
 
       if (_enableVersionBlocks && !_disableVersionBlockForThisBlock && treeTop == lastRealTreeTop &&
@@ -4092,6 +4092,11 @@ TR::TreeTop *TR::LocalValuePropagation::processBlock(TR::TreeTop *startTree)
    return startTree;
    }
 
+const char *
+TR::LocalValuePropagation::optDetailString() const throw()
+   {
+   return "O^O LOCAL VALUE PROPAGATION: ";
+   }
 
 void OMR::ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t whichChild)
    {

@@ -219,6 +219,12 @@ int32_t TR_TrivialInliner::perform()
    return 1; // cost??
    }
 
+const char *
+TR_TrivialInliner::optDetailString() const throw()
+   {
+   return "O^O TRIVIAL INLINER: ";
+   }
+
 
 //---------------------------------------------------------------------
 // TR_InlinerBase
@@ -346,6 +352,22 @@ TR_InlinerBase::setInlineThresholds(TR::ResolvedMethodSymbol *callerSymbol)
    if (e)
       _nodeCountThreshold = atoi(e);
 
+   // Under voluntary OSR, OSR blocks and additional stores can
+   // significantly increase the node count, particularly dead stores
+   // in OSRCodeBlocks. To maintain the same inlining behaviour, the
+   // threshold must be increased.
+   //
+   // The compile time overhead of this threshold increase has been tested
+   // and was not significant, as this threshold is typically only reached
+   // in hot or above compiles.
+   if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::voluntaryOSR && comp()->supportsInduceOSR())
+      {
+      static const char *f = feGetEnv("TR_OSRNodeCountThreshold");
+      if (f)
+         _nodeCountThreshold = atoi(f);
+      else
+         _nodeCountThreshold *= 2;
+      }
 
    //call random functions to allow randomness to change limits
    if (comp()->getOption(TR_Randomize))
@@ -1002,7 +1024,7 @@ void
 TR_CallStack::initializeControlFlowInfo(TR::ResolvedMethodSymbol * callerSymbol)
    {
    TR::CFG * cfg = callerSymbol->getFlowGraph();
-   TR::BitVector loopingBlocks(comp()->allocator());
+   TR_BitVector loopingBlocks(comp()->trMemory()->currentStackRegion());
 
    cfg->findLoopingBlocks(loopingBlocks);
 
@@ -1011,7 +1033,7 @@ TR_CallStack::initializeControlFlowInfo(TR::ResolvedMethodSymbol * callerSymbol)
 
    for (int32_t i = 0; i < numberOfBlocks; ++i)
       {
-      blockInfo(i)._inALoop = loopingBlocks.ValueAt(i);
+      blockInfo(i)._inALoop = loopingBlocks.get(i);
       }
    // Walk forward following successor edges to mark blocks that are always reached
    //
@@ -1858,8 +1880,8 @@ TR_InlinerBase::addGuardForVirtual(
    else if (!disableHCRGuards && comp()->getHCRMode() != TR::none)
       createdHCRGuard = true;
 
-   static const char *enableFSDGuard = feGetEnv("TR_EnableFSDGuard");
-   if ( enableFSDGuard && comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
+   static const char *disableFSDGuard = feGetEnv("TR_DisableFSDGuard");
+   if ( !disableFSDGuard && comp()->getOption(TR_FullSpeedDebug) && guard->_kind != TR_BreakpointGuard)
       {
       addAdditionalGuard(callNode, calleeSymbol, thisClass, block1, block2, block4, TR_BreakpointGuard, TR_FSDTest, false /*favourVftCompare*/,callerCFG);
       }
@@ -2301,7 +2323,7 @@ TR_ParameterToArgumentMapper::initialize(TR_CallStack *callStack)
             else
                {
                debugTrace(tracer(),"Setting parameterNode to n%in %s, argOffset=%d, argIndex=%d, _callNode n%in",
-                     arg->getNodePoolIndex(), arg->getOpCode().getName(), argOffset, argIndex, _callNode->getNodePoolIndex());
+                     arg->getGlobalIndex(), arg->getOpCode().getName(), argOffset, argIndex, _callNode->getGlobalIndex());
                parmMap->_parameterNode = arg;
 
                static const char *disableParmTempOpt = feGetEnv("TR_DisableParmTempOpt");
@@ -3903,13 +3925,13 @@ bool TR_DirectCallSite::findCallSiteTarget (TR_CallStack* callStack, TR_InlinerB
 
    const bool skipHCRGuardForCallee = inliner->getPolicy()->skipHCRGuardForCallee(_initialCalleeMethod);
 
-   static const char *enableFSDGuard = feGetEnv("TR_EnableFSDGuard");
+   static const char *disableFSDGuard = feGetEnv("TR_DisableFSDGuard");
    if (!disableHCRGuards2 && comp()->getHCRMode() != TR::none && !comp()->compileRelocatableCode() && !skipHCRGuardForCallee)
       {
       tempreceiverClass = _initialCalleeMethod->classOfMethod();
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_HCRGuard, TR_NonoverriddenTest);
       }
-   else if (enableFSDGuard && comp()->getOption(TR_FullSpeedDebug))
+   else if (!disableFSDGuard && comp()->getOption(TR_FullSpeedDebug))
       {
       tempreceiverClass = _receiverClass;
       guard = new (comp()->trHeapMemory()) TR_VirtualGuardSelection(TR_BreakpointGuard, TR_FSDTest);

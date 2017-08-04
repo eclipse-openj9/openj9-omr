@@ -212,7 +212,7 @@ if(OMR_HOST_ARCH STREQUAL ppc)
 endif()
 
 if(OMR_OPT_CUDA)
-	list(APPEND OBJECTS omrcuda.c)
+	list(APPEND OBJECTS omrcuda.cpp)
 endif()
 
 

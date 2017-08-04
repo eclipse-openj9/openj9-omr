@@ -33,7 +33,7 @@ maxprec:
     ahi %r2,-1
 .LCarry:
     s   %r2,.LC0-.LT0(%r1)
-    srdl %r2,9
+    srdl %r2,1
     br  %r14
 
     .align  8

@@ -136,6 +136,12 @@ TR_LoopSpecializer::TR_LoopSpecializer(TR::OptimizationManager *manager)
    : TR_LoopVersioner(manager, true)
    {}
 
+const char *
+TR_LoopSpecializer::optDetailString() const throw()
+   {
+   return "O^O LOOP SPECIALIZER: ";
+   }
+
 TR_LoopVersioner::TR_LoopVersioner(TR::OptimizationManager *manager, bool onlySpecialize, bool refineAliases)
    : TR_LoopTransformer(manager),
    _versionableInductionVariables(trMemory()), _specialVersionableInductionVariables(trMemory()),
@@ -185,9 +191,14 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
    TR::Block *entryBlock = naturalLoop->getEntryBlock();
 
    if (entryBlock->isCold())
+      {
+      if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false for cold block\n");
       return false;
+      }
 
-   if (comp()->getMethodHotness() <= warm)
+   // if aggressive loop versioner flag is set then run at any optlevel, otherwise only at warm or less
+   bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+   if (aggressive || comp()->getMethodHotness() <= warm)
       {
       if (naturalLoop->getParent())
          {
@@ -203,17 +214,41 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
                int32_t unimportantLoopCountThreshold = unimportantLoopCountStr ? atoi(unimportantLoopCountStr) : 2;
 
                if ((unimportantLoopCountThreshold*loopInvariantBlock->getFrequency()) > entryBlock->getFrequency()) // loop does not even run twice
-                   return false;
+                  {
+                  if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on LoopCountThreshold\n");
+                  return false;
+                  }
                }
             }
          }
 
+      bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+
+      int32_t lvBlockFreqCutoff;
       static const char * b = feGetEnv("TR_LoopVersionerFreqCutoff");
-      int32_t lvBlockFreqCutoff = b ? atoi(b) : 5000;
+      if (b) 
+         {
+         lvBlockFreqCutoff = atoi(b);
+         }
+      else if (aggressive)
+         {
+         lvBlockFreqCutoff = 500;
+         }
+      else
+         {
+         lvBlockFreqCutoff = 5000;
+         }
+
+      if (trace()) traceMsg(comp(), "lvBlockFreqCutoff=%d\n", lvBlockFreqCutoff);
+
       if (entryBlock->getFrequency() < lvBlockFreqCutoff)
+         {
+         if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning false based on lvBlockFreqCutoff\n");
          return false;
+         }
       }
 
+   if (trace()) traceMsg(comp(), "loopIsWorthVersioning returning true\n");
    return true;
    }
 
@@ -527,9 +562,19 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       containsNonInlineGuard = false;
       if (!shouldOnlySpecializeLoops() && !refineAliases())
          {
-         if (((debug("nullCheckVersion") || comp()->cg()->performsChecksExplicitly() ||
-               (comp()->getMethodHotness() >= veryHot)) &&
-               nullChecksWillBeEliminated) ||
+         // default hotness threshold
+         TR_Hotness hotnessThreshold = hot;
+         if (TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning))
+            {
+            if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for conditionalsWillBeEliminated\n");
+            hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
+            }
+         
+         if (( (debug("nullCheckVersion") || 
+                comp()->cg()->performsChecksExplicitly() || 
+                (comp()->getMethodHotness() > hotnessThreshold)
+               ) && nullChecksWillBeEliminated
+             ) ||
              boundChecksWillBeEliminated ||
              divChecksWillBeEliminated  ||
              iwrtBarsWillBeEliminated  ||
@@ -664,8 +709,8 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    ////if (!_virtualGuardPairs.isEmpty())
    if (!_virtualGuardInfo.isEmpty())
       {
-      static char *pEnv = feGetEnv("TR_disableLoopTransfer");
-      if (!pEnv)
+      bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+      if (!disableLT) 
          performLoopTransfer();
       }
 
@@ -3134,7 +3179,13 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          int32_t unimportantFrequencyRatio = unimportantFrequencyRatioStr ? atoi(unimportantFrequencyRatioStr) : 20;
          int16_t blockFrequency = nextBlock->getFrequency();
          int16_t loopFrequency = whileLoop->getEntryBlock()->getFrequency();
-         if ( blockFrequency >= 0 // frequency must be valid
+
+         // If the aggressive loop versioning flag is set, only do the unimportant block test
+         // at lower optlevels
+         bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
+
+         if ( (!aggressive || comp()->getMethodHotness() <= warm)
+              && blockFrequency >= 0 // frequency must be valid
               && blockFrequency < loopFrequency / unimportantFrequencyRatio
               && performTransformation(comp(), "%sDisregard unimportant block_%d frequency %d < loop %d frequency %d\n",
                  OPT_DETAILS_LOOP_VERSIONER, nextBlock->getNumber(), blockFrequency, whileLoop->getNumber(), loopFrequency)
@@ -3204,7 +3255,9 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          vcount_t visitCount = comp()->incVisitCount(); //@TODO: unsafe API/use pattern
          updateDefinitionsAndCollectProfiledExprs(NULL, currentNode, visitCount, specializedInvariantNodes, invariantNodes, invariantTranslationNodesList, NULL, collectProfiledExprs, nextBlock, warmBranchCount);
 
-         if (currentNode->isTheVirtualGuardForAGuardedInlinedCall() &&
+         bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+         if (!disableLT &&
+             currentNode->isTheVirtualGuardForAGuardedInlinedCall() &&
              blocksInWhileLoop.find(currentNode->getBranchDestination()->getNode()->getBlock()))
             {
             _loopTransferDone = true;
@@ -3673,10 +3726,12 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          }
 
       TR::Node *lastTree = nextBlock->getLastRealTreeTop()->getNode();
-      if (lastTree->getOpCode().isIf() &&
-         blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock()) &&
-         lastTree->isTheVirtualGuardForAGuardedInlinedCall() &&
-         isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp()))
+      bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
+      if (!disableLT &&
+          lastTree->getOpCode().isIf() &&
+          blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock()) &&
+          lastTree->isTheVirtualGuardForAGuardedInlinedCall() &&
+          isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp()))
          {
          // create the virtual guard info for this loop
          //
@@ -3869,7 +3924,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                      }
                   }
 
-               TR_BlockStructure *newGotoBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
+               TR_BlockStructure *newGotoBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
                newGotoBlockStructure->setCreatedByVersioning(true);
                if (!_neitherLoopCold)
                   {
@@ -4131,9 +4186,19 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
    // Construct the tests for invariant expressions that need
    // to be null checked.
-   //
-   if (comp()->cg()->performsChecksExplicitly() ||
-       (comp()->getMethodHotness() >= veryHot))
+   
+   // default hotness threshold
+   TR_Hotness hotnessThreshold = hot;
+
+   // If aggressive loop versioning is requested, don't call buildNullCheckComparisonsTree based on hotness
+   if (TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning))
+      {
+      if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
+      hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
+      }
+
+   if (comp()->cg()->performsChecksExplicitly() || 
+       (comp()->getMethodHotness() > hotnessThreshold))
       {
       if (!nullCheckTrees->isEmpty() &&
           !shouldOnlySpecializeLoops())
@@ -4475,7 +4540,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          endTree = gotoBlockExitTree;
          //_cfg->addEdge(TR::CFGEdge::createEdge(comparisonBlock,  newGotoBlock, trMemory()));
          //_cfg->addEdge(TR::CFGEdge::createEdge(newGotoBlock,  clonedLoopInvariantBlock, trMemory()));
-         TR_BlockStructure *newGotoBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
+         TR_BlockStructure *newGotoBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), newGotoBlock->getNumber(), newGotoBlock);
          newGotoBlockStructure->setCreatedByVersioning(true);
          if (!_neitherLoopCold)
             {
@@ -4672,20 +4737,20 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    whileLoop->setVersionedLoop(clonedWhileLoop);
 
    TR_BlockStructure *invariantBlockStructure = invariantBlock->getStructureOf();
-   TR_BlockStructure *clonedInvariantBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), clonedLoopInvariantBlock->getNumber(), clonedLoopInvariantBlock);
+   TR_BlockStructure *clonedInvariantBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), clonedLoopInvariantBlock->getNumber(), clonedLoopInvariantBlock);
    clonedInvariantBlockStructure->setCreatedByVersioning(true);
 
    if (!_neitherLoopCold)
    clonedInnerWhileLoops->deleteAll();
    clonedInvariantBlockStructure->setAsLoopInvariantBlock(true);
    TR_RegionStructure *parentStructure = whileLoop->getParent()->asRegion();
-   TR_RegionStructure *properRegion = new (trHeapMemory()) TR_RegionStructure(comp(), chooserBlock->getNumber());
+   TR_RegionStructure *properRegion = new (_cfg->structureRegion()) TR_RegionStructure(comp(), chooserBlock->getNumber());
    parentStructure->replacePart(invariantBlockStructure, properRegion);
 
-   TR_StructureSubGraphNode *clonedWhileNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedWhileLoop);
-   TR_StructureSubGraphNode *whileNode = new (trHeapMemory()) TR_StructureSubGraphNode(whileLoop);
-   TR_StructureSubGraphNode *invariantNode = new (trHeapMemory()) TR_StructureSubGraphNode(invariantBlockStructure);
-   TR_StructureSubGraphNode *clonedInvariantNode = new (trHeapMemory()) TR_StructureSubGraphNode(clonedInvariantBlockStructure);
+   TR_StructureSubGraphNode *clonedWhileNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedWhileLoop);
+   TR_StructureSubGraphNode *whileNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(whileLoop);
+   TR_StructureSubGraphNode *invariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(invariantBlockStructure);
+   TR_StructureSubGraphNode *clonedInvariantNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(clonedInvariantBlockStructure);
 
    properRegion->addSubNode(whileNode);
    properRegion->addSubNode(clonedWhileNode);
@@ -4705,9 +4770,9 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       {
       TR::Block *actualComparisonBlock = currComparisonBlock->getData();
 
-      TR_BlockStructure *comparisonBlockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), actualComparisonBlock->getNumber(), actualComparisonBlock);
+      TR_BlockStructure *comparisonBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), actualComparisonBlock->getNumber(), actualComparisonBlock);
       comparisonBlockStructure->setCreatedByVersioning(true);
-      TR_StructureSubGraphNode *comparisonNode = new (trHeapMemory()) TR_StructureSubGraphNode(comparisonBlockStructure);
+      TR_StructureSubGraphNode *comparisonNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(comparisonBlockStructure);
       properRegion->addSubNode(comparisonNode);
 
       if (prevComparisonNode)
@@ -4721,7 +4786,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
       if (currComparisonBlock)
          {
-         TR_StructureSubGraphNode *criticalEdgeNode = new (trHeapMemory()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
+         TR_StructureSubGraphNode *criticalEdgeNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
          properRegion->addSubNode(criticalEdgeNode);
          TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, trMemory());
          TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, trMemory());
@@ -4813,7 +4878,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    TR_BlockStructure *newGotoBlockStructure;
    for (newGotoBlockStructure = newGotoBlockStructuresIt.getCurrent(); newGotoBlockStructure; newGotoBlockStructure = newGotoBlockStructuresIt.getNext())
       {
-      TR_StructureSubGraphNode *newGotoBlockNode = new (trHeapMemory()) TR_StructureSubGraphNode(newGotoBlockStructure);
+      TR_StructureSubGraphNode *newGotoBlockNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(newGotoBlockStructure);
       properRegion->addSubNode(newGotoBlockNode);
       TR::CFGEdge::createEdge(clonedWhileNode,  newGotoBlockNode, trMemory());
       }
@@ -8416,4 +8481,10 @@ bool TR_LoopVersioner::isInverseConversions(TR::Node* node)
          return true;
       }
    return false;
+   }
+
+const char *
+TR_LoopVersioner::optDetailString() const throw()
+   {
+   return "O^O LOOP VERSIONER: ";
    }

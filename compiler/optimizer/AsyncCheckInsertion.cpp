@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -174,4 +174,10 @@ int32_t TR_AsyncCheckInsertion::perform()
       }
 
    return 0;
+   }
+
+const char *
+TR_AsyncCheckInsertion::optDetailString() const throw()
+   {
+   return "O^O ASYNC CHECK INSERTION: ";
    }

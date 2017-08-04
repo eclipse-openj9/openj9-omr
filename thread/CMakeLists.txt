@@ -42,10 +42,9 @@ list(APPEND OBJECTS
 	rwmutex.c
 )
 
-#TODO need to port this makefile snippet
-#ifeq (1,$(OMR_THR_JLM))
-  #OBJECTS += omrthreadjlm
-#endif
+if(OMR_THR_JLM)
+	list(APPEND OBJECTS omrthreadjlm.c)
+endif(OMR_THR_JLM)
 
 if(NOT OMR_HOST_OS STREQUAL "win")
 	list(APPEND OBJECTS unixpriority.c)

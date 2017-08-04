@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -636,7 +636,7 @@ int32_t TR_OSRDefAnalysis::perform()
 
    //set the structure to NULL so that the inliner (which is applied very soon after) doesn't need
    //update it.
-   optimizer()->getMethodSymbol()->getFlowGraph()->setStructure(NULL);
+   optimizer()->getMethodSymbol()->getFlowGraph()->invalidateStructure();
 
    return 0;
    }
@@ -646,6 +646,12 @@ bool TR_OSRDefAnalysis::requiresAnalysis()
    {
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
    return methodSymbol->sharesStackSlots(comp());
+   }
+
+const char *
+TR_OSRDefAnalysis::optDetailString() const throw()
+   {
+   return "O^O OSR DEF ANALYSIS: ";
    }
 
 //Not needed anymore. I'll keep it commented out just in case it's needed in the future.
@@ -776,7 +782,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
 
    //set the structure to NULL so that the inliner (which is applied very soon after) doesn't need
    //update it.
-   optimizer()->getMethodSymbol()->getFlowGraph()->setStructure(NULL);
+   optimizer()->getMethodSymbol()->getFlowGraph()->invalidateStructure();
 
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
 
@@ -1299,6 +1305,12 @@ bool TR_OSRLiveRangeAnalysis::canAffordAnalysis()
    return true;
    }
 
+const char *
+TR_OSRLiveRangeAnalysis::optDetailString() const throw()
+   {
+   return "O^O OSR LIVE RANGE ANALYSIS: ";
+   }
+
 int32_t TR_OSRExceptionEdgeRemoval::perform()
    {
    if (comp()->getOption(TR_EnableOSR))
@@ -1366,4 +1378,10 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
    comp()->setOSRInfrastructureRemoved(true);
 
    return 1;
+   }
+
+const char *
+TR_OSRExceptionEdgeRemoval::optDetailString() const throw()
+   {
+   return "O^O OSR EXCEPTION EDGE REMOVAL: ";
    }

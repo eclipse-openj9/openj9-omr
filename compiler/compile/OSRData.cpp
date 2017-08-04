@@ -626,14 +626,16 @@ void
 TR_OSRMethodData::createOSRBlocks(TR::Node* n)
    {
    if (getOSRCodeBlock() != NULL) return;
+   bool duringIlgen = comp()->getCurrentIlGenerator() != NULL;
+
    // Create one if there is no match
    TR_ASSERT(n, "reference node must be provided");
-   osrCodeBlock = TR::Block::createEmptyBlock(n, comp(), 0);
+   osrCodeBlock = TR::Block::createEmptyBlock(n, comp(), duringIlgen ? -1 : 0);
    osrCodeBlock->setIsCold();
    osrCodeBlock->setIsOSRCodeBlock();
    osrCodeBlock->setDoNotProfile();
 
-   osrCatchBlock = TR::Block::createEmptyBlock(n, comp(), 0);
+   osrCatchBlock = TR::Block::createEmptyBlock(n, comp(), duringIlgen ? -1 : 0);
    osrCatchBlock->setIsCold();
    osrCatchBlock->setDoNotProfile();
    osrCatchBlock->setIsOSRCatchBlock();

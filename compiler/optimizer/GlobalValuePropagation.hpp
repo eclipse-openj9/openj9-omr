@@ -50,6 +50,7 @@ class GlobalValuePropagation : public TR::ValuePropagation
       }
 
    virtual int32_t perform();
+   virtual const char * optDetailString() const throw();
 
    private:
 

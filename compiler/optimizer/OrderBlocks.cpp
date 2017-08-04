@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -2156,6 +2156,11 @@ int32_t TR_OrderBlocks::perform()
    return 1; // actual cost
    }
 
+const char *
+TR_OrderBlocks::optDetailString() const throw()
+   {
+   return "O^O ORDER BLOCKS: ";
+   }
 
 void checkOrderingConsistency(TR::Compilation *comp)
    {
@@ -2424,4 +2429,10 @@ void TR_BlockShuffling::reverse(TR::Block **blocks)
    for (upper=0, lower=_numBlocks-1; upper < lower; upper++, lower--)
       if (performTransformation(comp(), "O^O BLOCK SHUFFLING:   swap [%3d] and [%3d] (block_%d and block_%d)\n", upper, lower, blocks[upper]->getNumber(), blocks[lower]->getNumber()))
          swap(blocks, upper, lower);
+   }
+
+const char *
+TR_BlockShuffling::optDetailString() const throw()
+   {
+   return "O^O BLOCK SHUFFLING: ";
    }

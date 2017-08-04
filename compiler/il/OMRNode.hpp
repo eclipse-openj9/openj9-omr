@@ -155,7 +155,8 @@ public:
    Node();
    ~Node();
 
-   void * operator new(size_t s, TR::NodePool & nodePool, ncount_t poolIndex = 0);
+   void * operator new(size_t s, TR::NodePool & nodePool);
+   void * operator new(size_t s, void *ptr) throw();
 
    static TR::Node *copy(TR::Node *);
    static TR::Node *copy(TR::Node *, int32_t numChildren);
@@ -696,9 +697,6 @@ public:
 
    int32_t         getEvaluationPriority(TR::CodeGenerator *codeGen);
    int32_t         setEvaluationPriority(int32_t p);
-
-   inline ncount_t getNodePoolIndex();
-   inline void     setNodePoolIndex(ncount_t i);
 
    /**
     * OptAttributes functions end
@@ -1688,9 +1686,6 @@ protected:
 
    /// Info about the byte code associated with this node.
    TR_ByteCodeInfo        _byteCodeInfo;
-
-   ///< index to retrieve node from nodepool, this can be shared amongst nodes with non-intersecting lifetimes
-   ncount_t _poolIndex;
 
    /// References to this node.
    rcount_t _referenceCount;

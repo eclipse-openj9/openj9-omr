@@ -42,7 +42,7 @@
 
 struct OptimizationStrategy;
 
-OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const char *optDetailString, const OptimizationStrategy *groupOfOpts)
+OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFactory factory, OMR::Optimizations optNum, const OptimizationStrategy *groupOfOpts)
       : _optimizer(o),
         _factory(factory),
         _id(optNum),
@@ -57,7 +57,6 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
    {
    if (_id < OMR::Optimizations::numGroups)
       TR_ASSERT_SAFE_FATAL(_id < OMR::Optimizations::numGroups, "The optimization id requested (%d) is too high", _id);
-   _optDetailString = optDetailString;
 
    // set flags if necessary
    switch (self()->id())

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -26,10 +26,6 @@
 #include "compile/Compilation.hpp"             // for Compilation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                       // for ArrayOf
-#include "cs2/bitvectr.h"
-#include "cs2/listof.h"                        // for ListOf
-#include "cs2/tableof.h"                       // for TableOf
 #include "env/TRMemory.hpp"                    // for Allocator, etc
 #include "env/PersistentInfo.hpp"              // for PersistentInfo
 #include "il/Block.hpp"                        // for Block
@@ -83,7 +79,7 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
          TR_BlockStructure *blockStructure = block->getStructureOf();
          TR_StructureSubGraphNode *blockNode = NULL;
          if (!blockStructure)
-            blockStructure = new (trHeapMemory()) TR_BlockStructure(comp(), block->getNumber(), block);
+            blockStructure = new (structureRegion()) TR_BlockStructure(comp(), block->getNumber(), block);
          else
             {
             TR_StructureSubGraphNode *node;
@@ -102,7 +98,7 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
 
          if (!blockNode)
             {
-            blockNode = new (trHeapMemory()) TR_StructureSubGraphNode(blockStructure);
+            blockNode = new (structureRegion()) TR_StructureSubGraphNode(blockStructure);
             if (!isEntryInParent)
                {
                parent->addSubNode(blockNode);
@@ -121,24 +117,6 @@ OMR::CFG::addNode(TR::CFGNode *n, TR_RegionStructure *parent, bool isEntryInPare
 
    return n;
    }
-
-
-uint32_t
-OMR::CFG::addStructureSubGraphNodes(TR_StructureSubGraphNode * node)
-   {
-   uint32_t index = _structureGraphNodes.AddEntry(node);
-   node->setUniqueSubGraphIndex(index);
-   return index;
-   }
-
-
-void
-OMR::CFG::removeStructureSubGraphNodes(TR_StructureSubGraphNode * node)
-   {
-   uint32_t index = node->getUniqueSubGraphIndex();
-   _structureGraphNodes.RemoveEntry(index);
-   }
-
 
 void
 OMR::CFG::addEdge(TR::CFGEdge *e)
@@ -348,7 +326,10 @@ OMR::CFG::copyExceptionSuccessors(
 TR_Structure *
 OMR::CFG::invalidateStructure()
    {
-   return setStructure(0);
+   setStructure(NULL);
+   _structureRegion.~Region();
+   new (&_structureRegion) TR::Region(comp()->trMemory()->heapMemoryRegion());
+   return getStructure();
    }
 
 TR_Structure *
@@ -370,7 +351,7 @@ bool OMR::alwaysTrue(TR::CFGEdge * e)
    }
 
 
-TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock)
+TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block * tryBlock, TR::Region &workingRegion)
    {
    if (tryBlock->getExceptionSuccessors().empty())
       _dim = 0;
@@ -387,7 +368,7 @@ TR_OrderedExceptionHandlerIterator::TR_OrderedExceptionHandlerIterator(TR::Block
          }
 
       _dim = handlerDim * inlineDim;
-      _handlers = (TR::Block **)tryBlock->trMemory()->allocateStackMemory(_dim*sizeof(TR::Block *));
+      _handlers = (TR::Block **)workingRegion.allocate(_dim*sizeof(TR::Block *));
       memset(_handlers, 0, _dim*sizeof(TR::Block *));
 
       for (auto e = tryBlock->getExceptionSuccessors().begin(); e != tryBlock->getExceptionSuccessors().end(); ++e)
@@ -425,16 +406,30 @@ TR_OrderedExceptionHandlerIterator::getCurrent()
    }
 
 
-TR::CFGEdge::CFGEdge(TR::CFGNode *pF, TR::CFGNode *pT, TR_AllocationKind allocKind)
+TR::CFGEdge::CFGEdge(TR::CFGNode *pF, TR::CFGNode *pT)
    : _pFrom(pF), _pTo(pT), _visitCount(0), _frequency(0), _id(-1)
    {}
 
 TR::CFGEdge * TR::CFGEdge::createEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR_Memory* trMemory, TR_AllocationKind allocKind)
    {
-   TR::CFGEdge * newEdge =  new (trMemory, allocKind) TR::CFGEdge(pF, pT, allocKind);
+   TR::CFGEdge * newEdge =  new (trMemory, allocKind) TR::CFGEdge(pF, pT);
 
-   pF->addSuccessor(newEdge, allocKind);
-   pT->addPredecessor(newEdge, allocKind);
+   pF->addSuccessor(newEdge);
+   pT->addPredecessor(newEdge);
+   if (pT->getFrequency() >= 0)
+      newEdge->setFrequency(pT->getFrequency());
+   if ((pF->getFrequency() >= 0) && (pF->getFrequency() < newEdge->getFrequency()))
+      newEdge->setFrequency(pF->getFrequency());
+
+   return newEdge;
+   }
+
+TR::CFGEdge * TR::CFGEdge::createEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR::Region &region)
+   {
+   TR::CFGEdge * newEdge =  new (region) TR::CFGEdge(pF, pT);
+
+   pF->addSuccessor(newEdge);
+   pT->addPredecessor(newEdge);
    if (pT->getFrequency() >= 0)
       newEdge->setFrequency(pT->getFrequency());
    if ((pF->getFrequency() >= 0) && (pF->getFrequency() < newEdge->getFrequency()))
@@ -445,15 +440,23 @@ TR::CFGEdge * TR::CFGEdge::createEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR_Memo
 
 TR::CFGEdge * TR::CFGEdge::createExceptionEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR_Memory* trMemory, TR_AllocationKind allocKind)
    {
-   TR::CFGEdge * newEdge =  new (trMemory, allocKind) TR::CFGEdge(pF, pT, allocKind);
+   TR::CFGEdge * newEdge =  new (trMemory, allocKind) TR::CFGEdge(pF, pT);
 
-   pF->addExceptionSuccessor(newEdge, allocKind);
-   pT->addExceptionPredecessor(newEdge, allocKind);
+   pF->addExceptionSuccessor(newEdge);
+   pT->addExceptionPredecessor(newEdge);
 
    return newEdge;
    }
 
+TR::CFGEdge * TR::CFGEdge::createExceptionEdge (TR::CFGNode *pF, TR::CFGNode *pT, TR::Region &region)
+   {
+   TR::CFGEdge * newEdge =  new (region) TR::CFGEdge(pF, pT);
 
+   pF->addExceptionSuccessor(newEdge);
+   pT->addExceptionPredecessor(newEdge);
+
+   return newEdge;
+   }
 
 void TR::CFGEdge::setFrom(TR::CFGNode *pF)
    {
@@ -535,7 +538,7 @@ TR::CFGNode::CFGNode(TR_Memory * m)
      _frequency(-1),
      _forwardTraversalIndex(-1),
      _backwardTraversalIndex(-1),
-     _m(m),
+     _region(m->heapMemoryRegion()),
      _successors(m->heapMemoryRegion()),
      _predecessors(m->heapMemoryRegion()),
      _exceptionSuccessors(m->heapMemoryRegion()),
@@ -548,11 +551,37 @@ TR::CFGNode::CFGNode(int32_t n, TR_Memory * m)
      _frequency(-1),
      _forwardTraversalIndex(-1),
      _backwardTraversalIndex(-1),
-     _m(m),
+     _region(m->heapMemoryRegion()),
      _successors(m->heapMemoryRegion()),
      _predecessors(m->heapMemoryRegion()),
      _exceptionSuccessors(m->heapMemoryRegion()),
      _exceptionPredecessors(m->heapMemoryRegion())
+   {
+   }
+TR::CFGNode::CFGNode(TR::Region &region)
+   : _nodeNumber(-1),
+     _visitCount(0),
+     _frequency(-1),
+     _forwardTraversalIndex(-1),
+     _backwardTraversalIndex(-1),
+     _region(region),
+     _successors(region),
+     _predecessors(region),
+     _exceptionSuccessors(region),
+     _exceptionPredecessors(region)
+   {
+   }
+TR::CFGNode::CFGNode(int32_t n, TR::Region &region)
+   : _nodeNumber(n),
+     _visitCount(0),
+     _frequency(-1),
+     _forwardTraversalIndex(-1),
+     _backwardTraversalIndex(-1),
+     _region(region),
+     _successors(region),
+     _predecessors(region),
+     _exceptionSuccessors(region),
+     _exceptionPredecessors(region)
    {
    }
 
@@ -1341,21 +1370,25 @@ OMR::CFG::createArrayOfBlocks(TR_AllocationKind allocKind)
 class LoopInfo
    {
    public:
-   LoopInfo(TR::Allocator allocator) : isInLoop(allocator) {}
+   LoopInfo(TR::Region &region) : isInLoop(region) {}
    int32_t top;
    int32_t bottom;
-   TR::BitVector isInLoop;
+   TR_BitVector isInLoop;
    };
 
 // Find all blocks that are in loops and return as a bit vector.
 // This uses less memory than createBlockPredecessorBitVectors() when
 // all that is needed is the looping blocks.
-void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
+void OMR::CFG::findLoopingBlocks(TR_BitVector &loopingBlocks)
    {
+   TR::Region workingSpace = TR::Region(comp()->trMemory()->heapMemoryRegion());
    int32_t numberOfBlocks = getNextNodeNumber();
-   TR::deque<int32_t> seenIndex(numberOfBlocks, comp()->allocator());
-   CS2::ArrayOf<TR::Block *, TR::Allocator> stack(256, comp()->allocator());
-   CS2::TableOf<LoopInfo, TR::Allocator> loops(8, comp()->allocator());
+   TR::deque<int32_t, TR::Region&> seenIndex(numberOfBlocks, workingSpace);
+   TR::deque<TR::Block *, TR::Region&> stack(numberOfBlocks, workingSpace);
+   typedef TR::typed_allocator<std::pair<int32_t, LoopInfo*>, TR::Region&> LoopMapAllocator;
+   typedef std::less<int32_t> LoopMapComparator;
+   typedef std::map<int32_t, LoopInfo*, LoopMapComparator, LoopMapAllocator> LoopMap;
+   LoopMap loops((LoopMapComparator()), LoopMapAllocator(workingSpace));
    int32_t i, j;
    const bool trace = false;
    vcount_t blockVisitCount = comp()->incVisitCount();
@@ -1368,6 +1401,7 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
 
       int32_t lowestLoop = 0; // lowest loop in the table of loops
       int32_t top = 0;
+      int32_t loopID = 0;
       stack[top] = block;
       for (i = numberOfBlocks-1; i >= 0; i--)
          seenIndex[i] = -1;
@@ -1401,23 +1435,22 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
                   {
                   // There are existing loops on the stack. Collapse them all into
                   // a single loop
-                  if (loops[lowestLoop].bottom > seenIndex[n])
-                     loops[lowestLoop].bottom = seenIndex[n];
-                  loops[lowestLoop].top = index;
+                  if (loops[lowestLoop]->bottom > seenIndex[n])
+                     loops[lowestLoop]->bottom = seenIndex[n];
+                  loops[lowestLoop]->top = index;
                   // Remove any loops that are subsumed by this loop, rolling in their
                   // list of blocks already marked as being in the loop.
                   // This is done iteratively to avoid removing entries while using a cursor.
                   do
                      {
-                     CS2::TableOf<LoopInfo, TR::Allocator>::Cursor cursor(loops);
                      i = 0;
-                     for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
+                     for (auto itr = loops.begin(), end = loops.end(); itr != end; ++itr)
                         {
-                        j = cursor;
+                        j = itr->first;
                         if (lowestLoop != j)
                            {
                            // Roll this loop into the new loop
-                           loops[lowestLoop].isInLoop |= loops[j].isInLoop;
+                           loops[lowestLoop]->isInLoop |= itr->second->isInLoop;
                            i = j;  // Remove one entry at a time
                            break;
                            }
@@ -1425,17 +1458,19 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
                      if (i > 0)
                         {
                         if (trace)
-                           dumpOptDetails(comp(), "Remove loop based at %d\n", stack[loops[i].bottom]->getNumber());
-                        loops.RemoveEntry(i);
+                           dumpOptDetails(comp(), "Remove loop based at %d\n", stack[loops[i]->bottom]->getNumber());
+                        loops.erase(i);
                         }
                      } while (i > 0);
                   }
                else
                   {
                   // Create a new loop entry
-                  lowestLoop = loops.AddEntry(comp()->allocator());
-                  loops[lowestLoop].bottom = seenIndex[n];
-                  loops[lowestLoop].top = index;
+                  LoopInfo *info = new (workingSpace.allocate(sizeof(LoopInfo))) LoopInfo(workingSpace);
+                  info->bottom = seenIndex[n];
+                  info->top = index;
+                  lowestLoop = loopID++;
+                  loops[lowestLoop] = info;
                   if (trace)
                      dumpOptDetails(comp(), "Create loop at %d up to %d\n", stack[n]->getNumber(), number);
                   }
@@ -1445,15 +1480,14 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
                // This predecessor has been looked at.
                // If it is a member of an existing loop whose bottom is still on the stack,
                // that loop can be extended to the current block
-               CS2::TableOf<LoopInfo, TR::Allocator>::Cursor cursor(loops);
-               for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
+               for (auto itr = loops.begin(), end = loops.end(); itr != end; ++itr)
                   {
-                  if (loops[cursor].isInLoop.ValueAt(n))
+                  if (itr->second->isInLoop.get(n))
                      {
                      // Extend this loop up to the current block
-                     loops[cursor].top = index;
+                     itr->second->top = index;
                      if (trace)
-                        dumpOptDetails(comp(), "Extend loop at %d up to %d\n", stack[loops[cursor].bottom]->getNumber(), number);
+                        dumpOptDetails(comp(), "Extend loop at %d up to %d\n", stack[itr->second->bottom]->getNumber(), number);
                      }
                   }
                }
@@ -1472,21 +1506,20 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
             do
                {
                i = 0;
-               CS2::TableOf<LoopInfo, TR::Allocator>::Cursor cursor(loops);
-               for (cursor.SetToFirst(); cursor.Valid(); cursor.SetToNext())
+               for (auto itr = loops.begin(), end = loops.end(); itr != end; ++itr)
                   {
-                  j = cursor;
-                  if (loops[j].top >= index)
+                  j = itr->first;
+                  if (itr->second->top >= index)
                      {
                      if (trace)
-                        dumpOptDetails(comp(), "Block %d in a loop based at block %d\n", number, stack[loops[j].bottom]->getNumber());
-                     loops[j].isInLoop[number] = true;
-                     if (loops[j].bottom >= index)
+                        dumpOptDetails(comp(), "Block %d in a loop based at block %d\n", number, stack[itr->second->bottom]->getNumber());
+                     itr->second->isInLoop.set(number);
+                     if (itr->second->bottom >= index)
                         {
                         i = j; // Mark the block for removal
                         break;
                         }
-                     loops[j].top = index-1;
+                     itr->second->top = index-1;
                      }
                   if (lowestLoop == 0 || lowestLoop > j)
                      lowestLoop = j;
@@ -1494,12 +1527,12 @@ void OMR::CFG::findLoopingBlocks(TR::BitVector &loopingBlocks)
                if (i > 0)
                   {
                   // This is the last block for this loop, free the loop entry
-                  loopingBlocks |= loops[i].isInLoop;
-                  loops.RemoveEntry(i);
+                  loopingBlocks |= loops[i]->isInLoop;
+                  loops.erase(i);
                   if (i == lowestLoop)
                      lowestLoop = 0;
                   if (trace)
-                     dumpOptDetails(comp(), "Remove loop based at %d\n", stack[loops[i].bottom]->getNumber());
+                     dumpOptDetails(comp(), "Remove loop based at %d\n", stack[loops[i]->bottom]->getNumber());
                   }
                } while (i > 0);
             seenIndex[number] = -1;
@@ -1725,7 +1758,7 @@ OMR::CFG::clone()
    //
    setStructure(0);
 
-   TR_BlockCloner *cloner = new (trHeapMemory()) TR_BlockCloner(self(), false, true);
+   TR_BlockCloner *cloner = new (structureRegion()) TR_BlockCloner(self(), false, true);
    TR::Block *clonedBlock = cloner->cloneBlocks(comp()->getStartTree()->getNode()->getBlock(), lastTreeTop->getNode()->getBlock());
    lastTreeTop->join(clonedBlock->getEntry());
 

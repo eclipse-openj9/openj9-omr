@@ -2085,7 +2085,6 @@ static const char *commonNonhelperSymbolNames[] =
    "<isClassAndDepthFlags>",
    "<isClassFlags>",
    "<vft>",
-   "<bcdCheckSymbol>",
    "<currentThread>",
    "<recompilationCounter>",
    "<excp>",
@@ -2267,11 +2266,11 @@ TR_Debug::printBlockInfo(TR::FILE *pOutFile, TR::Node *node)
          else if (block->isCold())
             trfprintf(pOutFile, " (cold)");
 
+         if (block->isLoopInvariantBlock())
+            trfprintf(pOutFile, " (loop pre-header)");
          TR_BlockStructure *blockStructure = block->getStructureOf();
-         if (blockStructure)
+         if (_comp->getFlowGraph()->getStructure() && blockStructure)
             {
-            if (blockStructure->isLoopInvariantBlock())
-               trfprintf(pOutFile, " (loop pre-header)");
             if (!inDebugExtension())
                {
                TR_Structure *parent = blockStructure->getParent();

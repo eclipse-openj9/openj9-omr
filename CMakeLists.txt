@@ -24,6 +24,7 @@ message(WARNING
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
 include(cmake/versions.cmake) # Required for OMR_VERSION 
+include(cmake/Assert.cmake)
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")
@@ -106,12 +107,11 @@ if(OMR_GC)
   add_subdirectory("${OMR_GLUE}")
 endif(OMR_GC)
 
-if(NOT OMR_HOST_OS STREQUAL "win")
-    # TODO: JitBuilder built through CMake isn't quite 
-    #       ready for windows yet 
-    add_subdirectory(jitbuilder)
-endif()
-
 if(OMR_DDR)
   add_subdirectory(ddr)
 endif(OMR_DDR)
+
+if(OMR_JITBUILDER)
+	add_subdirectory(jitbuilder)
+endif(OMR_JITBUILDER)
+

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -51,10 +51,11 @@ class CFGNode : public ::TR_Link1<CFGNode>
    CFGNode(TR_Memory * m);
    CFGNode(int32_t n, TR_Memory * m);
 
-   TR_Memory *        trMemory()  { return _m; }
-   TR_HeapMemory   trHeapMemory() { return trMemory(); }
-   TR_StackMemory trStackMemory() { return trMemory(); }
+   protected:
+   CFGNode(TR::Region &region);
+   CFGNode(int32_t n, TR::Region &region);
 
+   public:
    TR::CFGEdgeList& getSuccessors()            {return _successors;}
    TR::CFGEdgeList& getPredecessors()          {return _predecessors;}
    TR::CFGEdgeList& getExceptionSuccessors()   {return _exceptionSuccessors;}
@@ -141,13 +142,15 @@ class CFGNode : public ::TR_Link1<CFGNode>
    virtual TR_StructureSubGraphNode *asStructureSubGraphNode() {return NULL;}
 
    private:
-   TR_Memory * _m;
    template <typename FUNC>
    CFGEdge * getEdgeMatchingNodeInAList (CFGNode * n, TR::CFGEdgeList& list, FUNC blockGetter);
    static CFGNode * fromBlockGetter (CFGEdge * e) {return e->getFrom();};
    static CFGNode * toBlockGetter (CFGEdge * e)   {return e->getTo();};
 
+   protected:
+   TR::Region      &_region;
 
+   private:
    TR::CFGEdgeList _successors;
    TR::CFGEdgeList _predecessors;
    TR::CFGEdgeList _exceptionSuccessors;

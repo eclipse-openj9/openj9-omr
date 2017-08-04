@@ -730,180 +730,180 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
    // initialize OMR optimizations
 
    _opts[OMR::andSimplification] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_SimplifyAnds::create, OMR::andSimplification, "O^O AND SIMPLIFICATION");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_SimplifyAnds::create, OMR::andSimplification);
    _opts[OMR::arraysetStoreElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ArraysetStoreElimination::create, OMR::arraysetStoreElimination, "O^O ARRAYSET STORE ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ArraysetStoreElimination::create, OMR::arraysetStoreElimination);
    _opts[OMR::asyncCheckInsertion] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_AsyncCheckInsertion::create, OMR::asyncCheckInsertion, "O^O ASYNC CHECK INSERTION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_AsyncCheckInsertion::create, OMR::asyncCheckInsertion);
    _opts[OMR::basicBlockExtension] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ExtendBasicBlocks::create, OMR::basicBlockExtension, "O^O BASIC BLOCK EXTENSION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ExtendBasicBlocks::create, OMR::basicBlockExtension);
    _opts[OMR::basicBlockHoisting] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_HoistBlocks::create, OMR::basicBlockHoisting, "O^O BASIC BLOCK HOISTING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_HoistBlocks::create, OMR::basicBlockHoisting);
    _opts[OMR::basicBlockOrdering] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_OrderBlocks::create, OMR::basicBlockOrdering, "O^O ORDER BLOCKS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_OrderBlocks::create, OMR::basicBlockOrdering);
    _opts[OMR::basicBlockPeepHole] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_PeepHoleBasicBlocks::create, OMR::basicBlockPeepHole, "O^O BASIC BLOCK PEEPHOLE: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_PeepHoleBasicBlocks::create, OMR::basicBlockPeepHole);
    _opts[OMR::blockShuffling] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_BlockShuffling::create, OMR::blockShuffling, "O^O BLOCK SHUFFLING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_BlockShuffling::create, OMR::blockShuffling);
    _opts[OMR::blockSplitter] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_BlockSplitter::create, OMR::blockSplitter, "O^O BLOCK SPLITTER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_BlockSplitter::create, OMR::blockSplitter);
    _opts[OMR::catchBlockRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CatchBlockRemover::create, OMR::catchBlockRemoval, "O^O CATCH BLOCK REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CatchBlockRemover::create, OMR::catchBlockRemoval);
    _opts[OMR::CFGSimplification] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CFGSimplifier::create, OMR::CFGSimplification, "O^O CFG SIMPLIFICATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CFGSimplifier::create, OMR::CFGSimplification);
    _opts[OMR::checkcastAndProfiledGuardCoalescer] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CheckcastAndProfiledGuardCoalescer::create, OMR::checkcastAndProfiledGuardCoalescer, "O^O CHECKCAST AND PROFILED GUARD COALESCER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CheckcastAndProfiledGuardCoalescer::create, OMR::checkcastAndProfiledGuardCoalescer);
    _opts[OMR::coldBlockMarker] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ColdBlockMarker::create, OMR::coldBlockMarker, "O^O COLD BLOCK MARKER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ColdBlockMarker::create, OMR::coldBlockMarker);
    _opts[OMR::coldBlockOutlining] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ColdBlockOutlining::create, OMR::coldBlockOutlining, "O^O COLD BLOCK OUTLINING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ColdBlockOutlining::create, OMR::coldBlockOutlining);
    _opts[OMR::compactLocals] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactLocals::create, OMR::compactLocals, "O^O COMPACT LOCALS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactLocals::create, OMR::compactLocals);
    _opts[OMR::compactNullChecks] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactNullChecks::create, OMR::compactNullChecks, "O^O COMPACT NULL CHECKS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CompactNullChecks::create, OMR::compactNullChecks);
    _opts[OMR::deadTreesElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::DeadTreesElimination::create, OMR::deadTreesElimination, "O^O DEAD TREES ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::DeadTreesElimination::create, OMR::deadTreesElimination);
    _opts[OMR::expressionsSimplification] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ExpressionsSimplification::create, OMR::expressionsSimplification, "O^O EXPRESSION SIMPLIFICATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ExpressionsSimplification::create, OMR::expressionsSimplification);
    _opts[OMR::generalLoopUnroller] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralLoopUnroller::create, OMR::generalLoopUnroller, "O^O GENERAL LOOP UNROLLER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralLoopUnroller::create, OMR::generalLoopUnroller);
    _opts[OMR::globalCopyPropagation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CopyPropagation::create, OMR::globalCopyPropagation, "O^O COPY PROPAGATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CopyPropagation::create, OMR::globalCopyPropagation);
    _opts[OMR::globalDeadStoreElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_DeadStoreElimination::create, OMR::globalDeadStoreElimination, "O^O DEAD STORE ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_DeadStoreElimination::create, OMR::globalDeadStoreElimination);
    _opts[OMR::innerPreexistence] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_InnerPreexistence::create, OMR::innerPreexistence, "O^O INNER PREEXISTENCE: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_InnerPreexistence::create, OMR::innerPreexistence);
    _opts[OMR::invariantArgumentPreexistence] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_InvariantArgumentPreexistence::create, OMR::invariantArgumentPreexistence, "O^O INVARIANT ARGUMENT PREEXISTENCE: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_InvariantArgumentPreexistence::create, OMR::invariantArgumentPreexistence);
    _opts[OMR::loadExtensions] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoadExtensions::create, OMR::loadExtensions, "O^O LOAD EXTENSION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoadExtensions::create, OMR::loadExtensions);
    _opts[OMR::localCSE] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalCSE::create, OMR::localCSE, "O^O LOCAL COMMON SUBEXPRESSION ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalCSE::create, OMR::localCSE);
    _opts[OMR::localDeadStoreElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalDeadStoreElimination::create, OMR::localDeadStoreElimination, "O^O LOCAL DEAD STORE ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalDeadStoreElimination::create, OMR::localDeadStoreElimination);
    _opts[OMR::localLiveRangeReduction] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LocalLiveRangeReduction::create, OMR::localLiveRangeReduction, "O^O LOCAL LIVE RANGE REDUCTION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LocalLiveRangeReduction::create, OMR::localLiveRangeReduction);
    _opts[OMR::localReordering] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LocalReordering::create, OMR::localReordering, "O^O LOCAL REORDERING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LocalReordering::create, OMR::localReordering);
    _opts[OMR::longRegAllocation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LongRegAllocation::create, OMR::longRegAllocation, "O^O LONG REG ALLOCATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LongRegAllocation::create, OMR::longRegAllocation);
    _opts[OMR::loopCanonicalization] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopCanonicalizer::create, OMR::loopCanonicalization, "O^O LOOP CANONICALIZER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopCanonicalizer::create, OMR::loopCanonicalization);
    _opts[OMR::loopVersioner] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopVersioner::create, OMR::loopVersioner, "O^O LOOP VERSIONER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopVersioner::create, OMR::loopVersioner);
    _opts[OMR::loopReduction] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopReducer::create, OMR::loopReduction, "O^O LOOP REDUCER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopReducer::create, OMR::loopReduction);
    _opts[OMR::loopReplicator] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopReplicator::create, OMR::loopReplicator, "O^O LOOP REPLICATOR: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopReplicator::create, OMR::loopReplicator);
    _opts[OMR::profiledNodeVersioning] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ProfiledNodeVersioning::create, OMR::profiledNodeVersioning, "O^O PROFILED NODE VERSIONING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ProfiledNodeVersioning::create, OMR::profiledNodeVersioning);
    _opts[OMR::redundantAsyncCheckRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantAsyncCheckRemoval::create, OMR::redundantAsyncCheckRemoval, "O^O REDUNDANT ASYNC CHECK REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantAsyncCheckRemoval::create, OMR::redundantAsyncCheckRemoval);
    _opts[OMR::redundantGotoElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_EliminateRedundantGotos::create, OMR::redundantGotoElimination, "O^O GOTO ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_EliminateRedundantGotos::create, OMR::redundantGotoElimination);
    _opts[OMR::rematerialization] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_Rematerialization::create, OMR::rematerialization, "O^O REMATERIALIZATION");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_Rematerialization::create, OMR::rematerialization);
    _opts[OMR::shrinkWrapping] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_ShrinkWrap::create, OMR::shrinkWrapping, "O^O SHRINK WRAPPING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_ShrinkWrap::create, OMR::shrinkWrapping);
    _opts[OMR::treesCleansing] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_CleanseTrees::create, OMR::treesCleansing, "O^O TREE CLEANSING: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_CleanseTrees::create, OMR::treesCleansing);
    _opts[OMR::treeSimplification] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::Simplifier::create, OMR::treeSimplification, "O^O TREE SIMPLIFICATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::Simplifier::create, OMR::treeSimplification);
    _opts[OMR::trivialBlockExtension] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialBlockExtension::create, OMR::trivialBlockExtension, "O^O TRIVIAL BLOCK EXTENSION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialBlockExtension::create, OMR::trivialBlockExtension);
    _opts[OMR::trivialDeadTreeRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialDeadTreeRemoval::create, OMR::trivialDeadTreeRemoval, "O^O TRIVIAL DEAD TREE REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_TrivialDeadTreeRemoval::create, OMR::trivialDeadTreeRemoval);
    _opts[OMR::virtualGuardHeadMerger] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_VirtualGuardHeadMerger::create, OMR::virtualGuardHeadMerger, "O^O VIRTUAL GUARD HEAD MERGER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_VirtualGuardHeadMerger::create, OMR::virtualGuardHeadMerger);
    _opts[OMR::virtualGuardTailSplitter] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_VirtualGuardTailSplitter::create, OMR::virtualGuardTailSplitter, "O^O VIRTUAL GUARD COALESCER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_VirtualGuardTailSplitter::create, OMR::virtualGuardTailSplitter);
    _opts[OMR::generalStoreSinking] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralSinkStores::create, OMR::generalStoreSinking, "O^O GENERAL SINK STORES: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_GeneralSinkStores::create, OMR::generalStoreSinking);
    _opts[OMR::globalValuePropagation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::GlobalValuePropagation::create, OMR::globalValuePropagation, "O^O GLOBAL VALUE PROPAGATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::GlobalValuePropagation::create, OMR::globalValuePropagation);
    _opts[OMR::localValuePropagation] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalValuePropagation::create, OMR::localValuePropagation, "O^O LOCAL VALUE PROPAGATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::LocalValuePropagation::create, OMR::localValuePropagation);
    _opts[OMR::redundantInductionVarElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantInductionVarElimination::create, OMR::redundantInductionVarElimination, "O^O REDUNDANT INDUCTION VAR ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_RedundantInductionVarElimination::create, OMR::redundantInductionVarElimination);
    _opts[OMR::partialRedundancyElimination] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_PartialRedundancy::create, OMR::partialRedundancyElimination, "O^O PARTIAL REDUNDANCY ELIMINATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_PartialRedundancy::create, OMR::partialRedundancyElimination);
    _opts[OMR::loopInversion] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopInverter::create, OMR::loopInversion, "O^O LOOP INVERTER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopInverter::create, OMR::loopInversion);
    _opts[OMR::inductionVariableAnalysis] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_InductionVariableAnalysis::create, OMR::inductionVariableAnalysis, "O^O INDUCTION VARIABLE ANALYSIS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_InductionVariableAnalysis::create, OMR::inductionVariableAnalysis);
    _opts[OMR::osrExceptionEdgeRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRExceptionEdgeRemoval::create, OMR::osrExceptionEdgeRemoval, "O^O OSR EXCEPTION EDGE REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRExceptionEdgeRemoval::create, OMR::osrExceptionEdgeRemoval);
    _opts[OMR::regDepCopyRemoval] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR::RegDepCopyRemoval::create, OMR::regDepCopyRemoval, "O^O REGISTER DEPENDENCY COPY REMOVAL: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::RegDepCopyRemoval::create, OMR::regDepCopyRemoval);
    _opts[OMR::prefetchInsertion] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_PrefetchInsertion::create, OMR::prefetchInsertion, "O^O PREFETCH INSERTION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_PrefetchInsertion::create, OMR::prefetchInsertion);
    _opts[OMR::stripMining] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_StripMiner::create, OMR::stripMining, "O^O STRIP MINER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_StripMiner::create, OMR::stripMining);
    _opts[OMR::fieldPrivatization] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_FieldPrivatizer::create, OMR::fieldPrivatization, "O^O FIELD PRIVATIZATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_FieldPrivatizer::create, OMR::fieldPrivatization);
    _opts[OMR::reorderArrayIndexExpr] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_IndexExprManipulator::create, OMR::reorderArrayIndexExpr, "O^O ARRAY INDEX EXPRESSION MANIPULATION: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_IndexExprManipulator::create, OMR::reorderArrayIndexExpr);
    _opts[OMR::loopStrider] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopStrider::create, OMR::loopStrider, "O^O LOOP STRIDER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopStrider::create, OMR::loopStrider);
    _opts[OMR::osrDefAnalysis] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRDefAnalysis::create, OMR::osrDefAnalysis, "O^O OSR DEF ANALYSIS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRDefAnalysis::create, OMR::osrDefAnalysis);
    _opts[OMR::osrLiveRangeAnalysis] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRLiveRangeAnalysis::create, OMR::osrLiveRangeAnalysis, "O^O OSR LIVE RANGE ANALYSIS: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_OSRLiveRangeAnalysis::create, OMR::osrLiveRangeAnalysis);
    _opts[OMR::tacticalGlobalRegisterAllocator] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_GlobalRegisterAllocator::create, OMR::tacticalGlobalRegisterAllocator, "O^O GLOBAL REGISTER ASSIGNER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_GlobalRegisterAllocator::create, OMR::tacticalGlobalRegisterAllocator);
    _opts[OMR::liveRangeSplitter] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LiveRangeSplitter::create, OMR::liveRangeSplitter, "O^O LIVE RANGE SPLITTER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LiveRangeSplitter::create, OMR::liveRangeSplitter);
    _opts[OMR::loopSpecializer] =
-      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer, "O^O LOOP SPECIALIZER: ");
+      new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer);
 
    // NOTE: Please add new OMR optimizations here!
 
    // initialize OMR optimization groups
 
    _opts[OMR::globalDeadStoreGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::globalDeadStoreGroup, "", globalDeadStoreOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::globalDeadStoreGroup, globalDeadStoreOpts);
    _opts[OMR::loopCanonicalizationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopCanonicalizationGroup, "", loopCanonicalizationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopCanonicalizationGroup, loopCanonicalizationOpts);
    _opts[OMR::loopVersionerGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopVersionerGroup, "", loopVersionerOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopVersionerGroup, loopVersionerOpts);
    _opts[OMR::lastLoopVersionerGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::lastLoopVersionerGroup, "", lastLoopVersionerOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::lastLoopVersionerGroup, lastLoopVersionerOpts);
    _opts[OMR::methodHandleInvokeInliningGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::methodHandleInvokeInliningGroup, "", methodHandleInvokeInliningOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::methodHandleInvokeInliningGroup, methodHandleInvokeInliningOpts);
    _opts[OMR::earlyGlobalGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyGlobalGroup, "", earlyGlobalOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyGlobalGroup, earlyGlobalOpts);
    _opts[OMR::earlyLocalGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, "", earlyLocalOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::earlyLocalGroup, earlyLocalOpts);
    _opts[OMR::stripMiningGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::stripMiningGroup, "", stripMiningOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::stripMiningGroup, stripMiningOpts);
    _opts[OMR::arrayPrivatizationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::arrayPrivatizationGroup, "", arrayPrivatizationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::arrayPrivatizationGroup, arrayPrivatizationOpts);
    _opts[OMR::veryCheapGlobalValuePropagationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::veryCheapGlobalValuePropagationGroup, "", veryCheapGlobalValuePropagationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::veryCheapGlobalValuePropagationGroup, veryCheapGlobalValuePropagationOpts);
    _opts[OMR::eachExpensiveGlobalValuePropagationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::eachExpensiveGlobalValuePropagationGroup, "", eachExpensiveGlobalValuePropagationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::eachExpensiveGlobalValuePropagationGroup, eachExpensiveGlobalValuePropagationOpts);
    _opts[OMR::veryExpensiveGlobalValuePropagationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::veryExpensiveGlobalValuePropagationGroup, "", veryExpensiveGlobalValuePropagationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::veryExpensiveGlobalValuePropagationGroup, veryExpensiveGlobalValuePropagationOpts);
    _opts[OMR::loopSpecializerGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopSpecializerGroup, "", loopSpecializerOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::loopSpecializerGroup, loopSpecializerOpts);
    _opts[OMR::prefetchInsertionGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::prefetchInsertionGroup, "", prefetchInsertionOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::prefetchInsertionGroup, prefetchInsertionOpts);
    _opts[OMR::lateLocalGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::lateLocalGroup, "", lateLocalOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::lateLocalGroup, lateLocalOpts);
    _opts[OMR::eachLocalAnalysisPassGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::eachLocalAnalysisPassGroup, "", eachLocalAnalysisPassOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::eachLocalAnalysisPassGroup, eachLocalAnalysisPassOpts);
    _opts[OMR::tacticalGlobalRegisterAllocatorGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::tacticalGlobalRegisterAllocatorGroup, "", tacticalGlobalRegisterAllocatorOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::tacticalGlobalRegisterAllocatorGroup, tacticalGlobalRegisterAllocatorOpts);
    _opts[OMR::partialRedundancyEliminationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::partialRedundancyEliminationGroup, "", partialRedundancyEliminationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::partialRedundancyEliminationGroup, partialRedundancyEliminationOpts);
    _opts[OMR::reorderArrayExprGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::reorderArrayExprGroup, "", reorderArrayIndexOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::reorderArrayExprGroup, reorderArrayIndexOpts);
    _opts[OMR::blockManipulationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::blockManipulationGroup, "", blockManipulationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::blockManipulationGroup, blockManipulationOpts);
    _opts[OMR::localValuePropagationGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::localValuePropagationGroup, "", localValuePropagationOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::localValuePropagationGroup, localValuePropagationOpts);
    _opts[OMR::finalGlobalGroup] =
-      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::finalGlobalGroup, "", finalGlobalOpts);
+      new (comp->allocator()) TR::OptimizationManager(self(), NULL, OMR::finalGlobalGroup, finalGlobalOpts);
 
    // NOTE: Please add new OMR optimization groups here!
 

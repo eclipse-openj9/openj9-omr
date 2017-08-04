@@ -238,7 +238,7 @@ class TR_VirtualGuard
    TR::Node                *getCallNode()    { TR_ASSERT(!isInlineGuard(), "assertion failure"); return _callNode; }
    TR_ByteCodeInfo         &getByteCodeInfo() { return _bcInfo; }
    void                    setCannotBeRemoved() { _cannotBeRemoved = true; }
-   bool                    canBeRemoved()   { return !_cannotBeRemoved; }
+   bool                    canBeRemoved(bool ignoreMerged=false)   { return ignoreMerged ? !_cannotBeRemoved : !(_cannotBeRemoved || _mergedWithHCRGuard || _mergedWithOSRGuard); }
 
 #ifdef J9_PROJECT_SPECIFIC
    TR_VirtualGuardSite *addNOPSite();
@@ -254,10 +254,10 @@ class TR_VirtualGuard
 
    bool                    shouldGenerateChildrenCode() { return _evalChildren; }
    void                    dontGenerateChildrenCode()   { _evalChildren = false; }
-   void                    setMergedWithHCRGuard() { _mergedWithHCRGuard=true; _cannotBeRemoved = true; }
+   void                    setMergedWithHCRGuard(bool merged=true) { _mergedWithHCRGuard=merged; }
    bool                    mergedWithHCRGuard() { return _mergedWithHCRGuard; }
 
-   void                    setMergedWithOSRGuard() { _mergedWithOSRGuard=true; _cannotBeRemoved = true; }
+   void                    setMergedWithOSRGuard(bool merged=true) { _mergedWithOSRGuard=merged; }
    bool                    mergedWithOSRGuard() { return _mergedWithOSRGuard; }
 
    int32_t                 getCurrentInlinedSiteIndex() { return _currentInlinedSiteIndex; }

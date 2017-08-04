@@ -745,16 +745,18 @@ int32_t TR_CopyPropagation::perform()
    for (auto itr = usesToBeFixed.begin(), end = usesToBeFixed.end(); itr != end; )
       {
       int32_t fixUseIndex = itr->first;
+      TR::Node *fixUseNode = useDefInfo->getNode(fixUseIndex);
       invalidateDefUseInfo = true;
+      if (useDefInfo->hasLoadsAsDefs())
+         {
+         printf("here\n");
       for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
          {
-         if (!useDefInfo->getNode(i))
+         TR::Node *useNode = useDefInfo->getNode(i);
+         if (!useNode || useNode->getReferenceCount() == 0)
             continue;
 
-         if (useDefInfo->getNode(i)->getReferenceCount() == 0)
-            continue;
-
-         if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
+         if (useDefInfo->getSingleDefiningLoad(useNode) == fixUseNode)
             {
             TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
             useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
@@ -769,6 +771,7 @@ int32_t TR_CopyPropagation::perform()
                }
             useDefInfo->resetUseDef(i, fixUseIndex);
             }
+         }
          }
 
       useDefInfo->clearUseDef(fixUseIndex);
@@ -955,18 +958,18 @@ int32_t TR_CopyPropagation::perform()
    for (auto itr = usesToBeFixed.begin(), end = usesToBeFixed.end(); itr != end; ++itr)
       {
       int32_t fixUseIndex = itr->first;
+      TR::Node *fixUseNode = useDefInfo->getNode(fixUseIndex);
       invalidateDefUseInfo = true;
 
       if (useDefInfo->hasLoadsAsDefs())
          {
          for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
             {
-            if (!useDefInfo->getNode(i))
-               continue;
-            if (useDefInfo->getNode(i)->getReferenceCount() == 0)
+            TR::Node *useNode = useDefInfo->getNode(i);
+            if (!useNode || useNode->getReferenceCount() == 0)
                continue;
 
-            if (useDefInfo->getSingleDefiningLoad(useDefInfo->getNode(i)) == useDefInfo->getNode(fixUseIndex))
+            if (useDefInfo->getSingleDefiningLoad(useNode) == fixUseNode)
                {
                TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
                useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);

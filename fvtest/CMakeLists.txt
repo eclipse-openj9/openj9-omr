@@ -34,3 +34,8 @@ add_subdirectory(vmtest)
 if(OMR_TEST_COMPILER)
 	add_subdirectory(compilertest)
 endif()
+
+if(OMR_JITBUILDER)
+	add_subdirectory(compilertriltest)
+	add_subdirectory(tril/test)
+endif()

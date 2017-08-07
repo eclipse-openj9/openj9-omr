@@ -1153,6 +1153,8 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
 
    if (canRemoveStructure)
       {
+      // check for any defs whose uses appear outside this region
+      // we cannot remove structure if we find any of these
       TR_BitVectorIterator defs(*defsInStructure);
       while (canRemoveStructure && defs.hasMoreElements())
          {
@@ -1181,6 +1183,10 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
                }
             }
          }
+      // if we can remove the strucutre then these defs are ok here and in all parent structures
+      // so we don't need to check them again
+      if (canRemoveStructure)
+         defsInStructure->empty();
       }
 
 
@@ -1679,9 +1685,14 @@ TR_IsolatedStoreElimination::markNodesAndLocateSideEffectIn(TR::Node *node, vcou
 
    if (node->getOpCode().isLikeDef() && node->getUseDefIndex())
       {
-      if (trace())
-         traceMsg(comp(), "Marking useDefIndex %d as seendef at node n%dn\n", node->getUseDefIndex(), node->getGlobalIndex());
-      defsSeen->set(node->getUseDefIndex());
+      // we don't need to record defs marked as stored value is irrelevant - there will be no uses of the dead values
+      if (!(node->getOpCode().isStoreDirect()
+            && node->getSymbolReference()->getSymbol()->isAutoOrParm() && node->storedValueIsIrrelevant()))
+         {
+         if (trace())
+            traceMsg(comp(), "Marking useDefIndex %d as seendef at node n%dn\n", node->getUseDefIndex(), node->getGlobalIndex());
+         defsSeen->set(node->getUseDefIndex());
+         }
       }
 
    int32_t childNum;

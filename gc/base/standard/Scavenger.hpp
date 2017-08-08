@@ -104,7 +104,7 @@ private:
 	uintptr_t _cacheLineAlignment; /**< The number of bytes per cache line which is used to determine which boundaries in memory represent the beginning of a cache line */
 	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
 
-	uintptr_t _backOutDoneIndex; /**< snapshot of _doneIndex, when backOut was detected */
+	volatile uintptr_t _backOutDoneIndex; /**< snapshot of _doneIndex, when backOut was detected */
 
 	void *_heapBase;  /**< Cached base pointer of heap */
 	void *_heapTop;  /**< Cached top pointer of heap */

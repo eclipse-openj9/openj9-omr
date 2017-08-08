@@ -94,7 +94,9 @@ MM_SweepPoolManagerAddressOrderedListBase::calculateTrailingDetails(
 			sweepChunk->trailingFreeCandidateSize = trailingCandidateByteCount - projection;
 				
 #if defined(OMR_VALGRIND_MEMCHECK)
-	VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
+//	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+//	omrtty_printf("VALGRIND: C2 Clearing area b/w %p %p\n", sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
+	// VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		}
@@ -456,6 +458,19 @@ bool
 MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env, MM_ParallelSweepChunk *sweepChunk, uintptr_t *address, uintptr_t size)
 {
 	bool result = false;
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+	std::set<uintptr_t>::iterator it;
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	omrtty_printf("VALGRIND: Clearing area b/w %x %x\n", address, address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+
+	for(it = _extensions->_allocatedObjects.lower_bound((uintptr_t)address); it!= _extensions->_allocatedObjects.upper_bound((uintptr_t)address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));it++)
+	{
+		int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
+		omrtty_printf("VALGRIND: Clearing chunk at %x of size %d\n", *it,objSize);
+		VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);		
+	}	
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	
 	/* This implementation is able to support SORTED pieces of memory ONLY!!! */
 	Assert_MM_true((uintptr_t *)sweepChunk->freeListTail <= address);
@@ -467,7 +482,9 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		Assert_MM_true(sweepChunk->leadingFreeCandidate > sweepChunk->trailingFreeCandidate);
 	
 #if defined(OMR_VALGRIND_MEMCHECK)
-	VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+	// OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	// omrtty_printf("VALGRIND: C1 Clearing area b/w %p %p\n", address, address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+	// VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	} else if(address + size == (uintptr_t *)sweepChunk->chunkTop) {
@@ -477,6 +494,12 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 	} else {
 		/* Check if the hole is a free list candidate */
 		uintptr_t heapFreeByteCount = MM_Bits::convertSlotsToBytes(size);
+#if defined(OMR_VALGRIND_MEMCHECK)
+		// OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		// omrtty_printf("VALGRIND: C3 Clearing area b/w %p %p\n", address, address + heapFreeByteCount);
+		// VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + heapFreeByteCount);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 		uintptr_t objectSizeDelta = 
 			_extensions->objectModel.getConsumedSizeInBytesWithHeader((omrobjectptr_t)(address - J9MODRON_HEAP_SLOTS_PER_MARK_BIT))
 			- (J9MODRON_HEAP_SLOTS_PER_MARK_BIT * sizeof(uintptr_t));
@@ -514,7 +537,9 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 			sweepChunk->freeListTailSize = heapFreeByteCount;
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + heapFreeByteCount);
+		// OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+		// omrtty_printf("VALGRIND: Clearing area b/w %p %p\n", address, address + heapFreeByteCount);
+		// VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,address,address + heapFreeByteCount);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		}

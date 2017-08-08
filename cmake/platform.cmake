@@ -1,4 +1,4 @@
-###############################################################################
+##############################################################################
 #
 # (c) Copyright IBM Corp. 2017
 #
@@ -27,8 +27,21 @@ message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 
 include(cmake/DetectSystemInformation.cmake)
-
 omr_detect_system_information()
+
+# Pickup OS info 
+include(cmake/platform/os/${OMR_HOST_OS}.cmake OPTIONAL)
+
+# Pickup Arch Info
+include(cmake/platform/arch/${OMR_HOST_ARCH}.cmake OPTIONAL) 
+
+# Pickup toolconfig based on platform. 
+include(cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake OPTIONAL)
+
+# Verify toolconfig!
+include(cmake/platform/toolcfg/verify.cmake)
+
+include(cmake/AddPrefix.cmake)
 
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)
@@ -40,42 +53,24 @@ macro(omr_remove_option var opt)
 	)
 endmacro(omr_remove_option)
 
+
+omr_add_prefix(OMR_OS_DEFINITIONS_PREFIXED   ${OMR_C_DEFINITION_PREFIX} ${OMR_OS_DEFINITIONS})
+omr_add_prefix(OMR_ARCH_DEFINITIONS_PREFIXED ${OMR_C_DEFINITION_PREFIX} ${OMR_ARCH_DEFINITIONS})
+
+
+add_definitions(
+	${OMR_OS_COMPILE_OPTIONS}
+	${OMR_OS_DEFINITIONS_PREFIXED}
+	${OMR_ARCH_DEFINITIONS_PREFIXED}
+)
+
 if(OMR_HOST_OS STREQUAL "linux")
-	add_definitions(
-		-pthread
-		-DLINUX
-		-D_FILE_OFFSET_BITS=64
-	)
 	if(OMR_WARNINGS_AS_ERRORS)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OMR_WARNING_AS_ERROR_FLAG}")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OMR_WARNING_AS_ERROR_FLAG}")
 	endif()
 endif()
 
-
-if(OMR_ARCH_X86)
-	if(OMR_ENV_DATA64)
-		add_definitions(-DJ9HAMMER)
-	else()
-		add_definitions(-DJ9X86)
-	endif()
-endif()
-
-if(OMR_ARCH_ARM)
-	add_definitions(
-		-DJ9ARM
-		-DARMGNU
-		-DFIXUP_UNALIGNED
-	)
-endif()
-
-if(OMR_HOST_OS STREQUAL "osx")
-	add_definitions(
-		-pthread
-		-DOSX
-		-D_FILE_OFFSET_BITS=64
-	)
-endif()
 
 # interface library for exporting symbols from dynamic library
 # currently does nothing except on zos
@@ -83,38 +78,14 @@ add_library(omr_shared INTERFACE)
 
 if(OMR_HOST_OS STREQUAL "win")
 
-	add_definitions(
-		-DWIN32
-		-D_CRT_SECURE_NO_WARNINGS
-		-DCRTAPI1=_cdecl
-		-DCRTAPI2=_cdecl
-		-D_WIN_95
-		-D_WIN32_WINDOWS=0x0500
-		-D_WIN32_DCOM
-		-D_MT
-		-D_WINSOCKAPI_
-		-D_WIN32_WINVER=${OMR_WINVER}
-		-D_WIN32_WINNT=${OMR_WINVER}
-		-D_DLL
-	)
-	if(OMR_ENV_DATA64)
-		add_definitions(
-			-DWIN64
-			-D_AMD64_=1
-		)
-	else()
-		add_definitions(
-			-D_X86_
-		)
-	endif()
 	set(opt_flags "/GS-")
 	# we want to disable C4091, and C4577
 	# C4577 is a bogus warning about specifying noexcept when exceptions are disabled
 	# C4091 is caused by broken windows sdk (https://connect.microsoft.com/VisualStudio/feedback/details/1302025/warning-c4091-in-sdk-7-1a-shlobj-h-1051-dbghelp-h-1054-3056)
 	set(common_flags "-MD -Zm400 /wd4577 /wd4091")
-	add_definitions(-D_HAS_EXCEPTIONS=0)
+
 	if(OMR_WARNINGS_AS_ERRORS)
-		set(common_flags "${common_flags} /WX")
+           set(common_flags "${common_flags} ${OMR_WARNING_AS_ERROR_FLAG}")
 		# TODO we also want to be setting warning as error on linker flags
 	endif()
 

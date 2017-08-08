@@ -33,17 +33,7 @@ endif()
 
 set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl CACHE INTERNAL "MASM2GAS PATH")
 
-# Given a prefix, and a list of arguments, prefix the list of arguments and
-# assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
-# "-Ia;-Ib;-Ic".
-function(add_prefix out prefix) 
-   set(ret "")
-   foreach(var IN ITEMS ${ARGN}) 
-      list(APPEND ret "${prefix}${var}")
-   endforeach()
-   set(${out} ${ret} PARENT_SCOPE)
-endfunction(add_prefix) 
-
+include(${OMR_ROOT}/cmake/AddPrefix.cmake) 
 
 # Platform setup code!
 # TODO: THis needs to be abstracted for cross platform builds
@@ -108,7 +98,7 @@ function(pasm2asm_files out_var compiler)
    set(PASM_CMD ${CMAKE_C_COMPILER}) 
    set(PASM_FLAGS -x assembler-with-cpp -E -P) 
    set(PASM_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
-   add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
+   omr_add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
 
    set(result "")
    foreach(in_f ${ARGN})
@@ -150,7 +140,7 @@ function(masm2gas_asm_files out_var compiler)
    # This portion should be abstracted away, and the ATT_INCLUDES below should be made 
    # into target properties to avoid polluting the rest of the info 
    set(MASM2GAS_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
-   add_prefix(MASM2GAS_INCLUDES "-I" ${MASM2GAS_INCLUDES})
+   omr_add_prefix(MASM2GAS_INCLUDES "-I" ${MASM2GAS_INCLUDES})
    set(MASM2GAS_FLAGS --64 )
    set(CMAKE_ASM-ATT_INCLUDES ${MASM2GAS_INCLUDES} CACHE INTERNAL "ASM Includes") 
     

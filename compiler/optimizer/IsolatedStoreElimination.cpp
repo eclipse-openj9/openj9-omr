@@ -1010,6 +1010,7 @@ TR_IsolatedStoreElimination::findStructuresAndNodesUsedIn(TR_UseDefInfo *info, T
       TR_RegionStructure *regionStructure = structure->asRegion();
 
       if (regionStructure->isNaturalLoop() &&
+          regionStructure->numSubNodes() == 1 &&
           (regionStructure->getParent() &&
            regionStructure->getParent()->asRegion()->isCanonicalizedLoop()))
          {

@@ -4304,12 +4304,13 @@ JitOptions::set(J9CudaJitOptions *j9options)
 		}
 
 		if (0 != j9options->target) {
-			CUjit_target target = CU_TARGET_COMPUTE_10;
+			uint32_t target = j9options->target;
 
-			switch (j9options->target) {
+			/* In CUDA 6.0 and later, values of CU_TARGET_* don't need translation. */
+#if CUDA_VERSION < 6000
+			switch (target) {
 			default:
 				goto invalid;
-
 			case 10:
 				target = CU_TARGET_COMPUTE_10;
 				break;
@@ -4331,28 +4332,14 @@ JitOptions::set(J9CudaJitOptions *j9options)
 			case 30:
 				target = CU_TARGET_COMPUTE_30;
 				break;
-#if CUDA_VERSION >= 6000
-			case 32:
-				target = CU_TARGET_COMPUTE_32;
-				break;
-#endif
 			case 35:
 				target = CU_TARGET_COMPUTE_35;
 				break;
-#if CUDA_VERSION >= 6050
-			case 37:
-				target = CU_TARGET_COMPUTE_37;
-				break;
-#endif
-#if CUDA_VERSION >= 6000
-			case 50:
-				target = CU_TARGET_COMPUTE_50;
-				break;
-#endif
 			}
+#endif /* CUDA_VERSION < 6000 */
 
 			keys[index] = CU_JIT_TARGET;
-			values[index] = (void *)target;
+			values[index] = (void *)(uintptr_t)target;
 			index += 1;
 		}
 

@@ -125,8 +125,10 @@ C filter(C range, Predicate pred) {
  * @brief A family of functions returning constants of the specified type
  */
 template <typename T> constexpr T zero_value() { return static_cast<T>(0); }
-template <typename T> constexpr T positive_value() { return static_cast<T>(3); }
-template <typename T> constexpr T negative_value() { return static_cast<T>(-2); }
+template <typename T> constexpr T one_value() { return static_cast<T>(1); }
+template <typename T> constexpr T negative_one_value() { return static_cast<T>(-1); }
+template <typename T> constexpr T positive_value() { return static_cast<T>(42); }
+template <typename T> constexpr T negative_value() { return static_cast<T>(-42); }
 
 /**
  * @brief Convenience function returning possible test inputs of the specified type
@@ -135,10 +137,15 @@ template <typename T>
 std::vector<T> const_values()
    {
    return std::vector<T>{ zero_value<T>(),
+                          one_value<T>(),
+                          negative_one_value<T>(),
                           positive_value<T>(),
                           negative_value<T>(),
                           std::numeric_limits<T>::min(),
-                          std::numeric_limits<T>::max() };
+                          std::numeric_limits<T>::max(),
+                          std::numeric_limits<T>::min() + 1,
+                          std::numeric_limits<T>::max() - 1
+                        };
    }
 
 /**

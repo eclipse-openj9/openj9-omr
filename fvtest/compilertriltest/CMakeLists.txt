@@ -29,7 +29,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-rtti -fno-threadsafe-statics -Wn
 add_executable(comptest
    main.cpp
    JitTestUtilitiesTest.cpp
-   TreeVerifierTest.cpp
+   ILValidatorTest.cpp
    ArithmeticTest.cpp
    ShiftAndRotateTest.cpp
 )

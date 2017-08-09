@@ -126,16 +126,22 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
    TR::Node* childNode = node->getChild(0);
    TR::Register* childReg = cg->evaluate(childNode);
 
-   uint8_t shufconst = 0;
+   TR::Register* resultReg = cg->allocateRegister(TR_VRF);
    switch (node->getDataType())
       {
       case TR::VectorInt32:
-      case TR::VectorFloat:
-         shufconst = 0x00; // 00 00 00 00 shuffle xxxA to AAAA
+         generateRegRegInstruction(MOVDRegReg4, node, resultReg, childReg, cg);
+         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
       case TR::VectorInt64:
+         generateRegRegInstruction(MOVQRegReg8, node, resultReg, childReg, cg);
+         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
+         break;
+      case TR::VectorFloat:
+         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, childReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
+         break;
       case TR::VectorDouble:
-         shufconst = 0x44; // 01 00 01 00 shuffle xxBA to BABA
+         generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, childReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
       default:
          if (cg->comp()->getOption(TR_TraceCG))
@@ -143,9 +149,6 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
          TR_ASSERT(false, "Unsupported data type");
          break;
       }
-
-   TR::Register* resultReg = cg->allocateRegister(TR_VRF);
-   generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, childReg, shufconst, cg);
 
    node->setRegister(resultReg);
    cg->decReferenceCount(childNode);

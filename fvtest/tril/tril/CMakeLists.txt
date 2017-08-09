@@ -18,6 +18,8 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
+if(NOT TARGET tril)
+
 project(tril LANGUAGES C CXX)
 
 find_package(BISON)
@@ -28,18 +30,12 @@ set(JITBUILDER_PATH ${OMR_PATH}/jitbuilder)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-set(CXX_EXTENSIONS OFF)
-
-set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
-set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-
-add_definitions(-g -fdiagnostics-color=always -Wno-deprecated -Wno-enum-compare -Wno-write-strings -O3 -pthread -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-threadsafe-statics -Wno-invalid-offsetof")
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 BISON_TARGET(tril_parser tril.y ${CMAKE_CURRENT_BINARY_DIR}/tril.parser.c)
 FLEX_TARGET(tril_scanner tril.l ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.c
-            COMPILE_FLAGS "--yylineno"
-            DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.h)
+    COMPILE_FLAGS "--yylineno --header-file=${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.h")
+#            DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.h)
 ADD_FLEX_BISON_DEPENDENCY(tril_scanner tril_parser)
 
 add_library(tril STATIC
@@ -64,7 +60,6 @@ target_compile_definitions(tril PUBLIC
     TR_TARGET_64BIT
     SUPPORTS_THREAD_LOCAL
     _LONG_LONG
-    J9HAMMER
 )
 
 target_include_directories(tril PUBLIC
@@ -79,12 +74,21 @@ target_include_directories(tril PUBLIC
     ${OMR_PATH}
     ${OMR_PATH}/include_core
 )
+
+# not very robust but since we can't build JitBuilder by itself using cmake yet,
+# this will have to do
+if(NOT "${CMAKE_PROJECT_NAME}" STREQUAL "omr")
+    set(OMR_JITBUILDER ON CACHE BOOL "")
+    set(OMR_WARNINGS_AS_ERRORS OFF CACHE BOOL "")
+    add_subdirectory(${OMR_PATH} ${CMAKE_CURRENT_BINARY_DIR}/omr)
+endif()
 target_link_libraries(tril INTERFACE
-    ${JITBUILDER_PATH}/release/libjitbuilder.a
+    jitbuilder
     dl
 )
 
-export(TARGETS tril FILE tril-config.cmake)
+#export(TARGETS tril jitbuilder FILE tril-config.cmake)
 #install(FILES ast.h ilgen.hpp DESTINATION include)
 #install(TARGETS tril EXPORT tril-targets ARCHIVE DESTINATION lib)
 #install(EXPORT tril-targets FILE tril-config.cmake DESTINATION lib/cmake/tril)
+endif()

@@ -85,6 +85,7 @@ function(make_compiler_target TARGET_NAME)
       TR_HOST_X86
       TR_TARGET_X86
       TR_TARGET_64BIT
+      SUPPORTS_THREAD_LOCAL
       ${COMPILER_DEFINES} 
       )
 endfunction(make_compiler_target)

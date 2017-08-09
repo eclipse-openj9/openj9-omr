@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,14 +14,25 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  ******************************************************************************/
 
 #ifndef THREADLOCAL_INCL
 #define THREADLOCAL_INCL
 
+#if defined(OMRZTPF) && !defined(SUPPORTS_THREAD_LOCAL)
+/*
+ * For this include file, ThreadLocal.h, and the z/TPF OS platform,
+ * say that tls is supported. The z/TPF platform should use
+ * pthread _key_t variables and pthread functions for
+ * the tls* functions that are defined here.
+ */
+#define SUPPORTS_THREAD_LOCAL
+#endif
+
 #if defined(SUPPORTS_THREAD_LOCAL)
 
-#if defined(WINDOWS) || defined(LINUX) || defined(OSX) || defined(AIXPPC)
+#if defined(WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)
  #if defined(WINDOWS)
   #include "windows.h"
   #define tlsDeclare(type, variable) extern DWORD variable
@@ -38,7 +49,7 @@
   #define tlsSet(variable, value) variable = value
   #define tlsGet(variable, type) (variable)
  #endif
-#else /* !(defined(WINDOWS) || defined(LINUX) || defined(OSX) || defined(AIXPPC)) */  /* mainly defined(J9ZOS390) */
+#else /* !(defined(WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)) */  /* Mainly for defined(OMRZTPF) or defined(J9ZOS390) */
  #include <pthread.h>
 
  #define tlsDeclare(type, variable) extern pthread_key_t variable

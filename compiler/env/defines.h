@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
  ******************************************************************************/
 
 
@@ -82,11 +83,13 @@
 #endif
 
 /*
-  Standarize the OS macros Use HOST_OS instead of various different
+  Standardize the OS macros Use HOST_OS instead of various different
   ways of checking for a particular host os.  As a reference, see
   http://sourceforge.net/p/predef/wiki/OperatingSystems/
 */
 #if defined(__linux__)
+#  define HOST_OS OMR_LINUX
+#elif defined(_TPF_SOURCE)
 #  define HOST_OS OMR_LINUX
 #elif defined(_AIX)
 #  define HOST_OS OMR_AIX

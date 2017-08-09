@@ -75,7 +75,7 @@ typedef struct {
    uint32_t flags; /* argv[5] = 32 bits of output flags	*/
    uint32_t	wkspcSize; /* argv[6] = How big is argv[7]?	*/
    uint8_t *wkSpace; /* argv[7] = ptr to workspace */
-   struct J9PortLibrary	*portLibrary;   /* argv[8] = ptr to J9PortLibrary */
+   struct OMRPortLibrary	*portLibrary;   /* argv[8] = ptr to OMRPortLibrary */
    DIB *dibPtr;		  /* argv[9] = ptr to Dump Interchange Blk.	*/
 } args;
 
@@ -121,13 +121,11 @@ void *			ztpfBuildCoreFile( void *argv ); /* This decl is set up to take a
 		/*
 		 *    External entry point declarations WRT this T.U.
 		 */
-#ifndef J9SIGNAL_CONTEXT
 extern void		ztpfDeriveSiginfo( siginfo_t *build ) __attribute__((nonnull));
 extern void		translateInterruptContexts( args *argv ) __attribute__((nonnull));
 extern uint8_t *allocateContextStorage( void );
 extern void     ztpf_preemptible_helper(void);
 extern void     ztpf_nonpreemptible_helper(void);
-#endif
 
 			/*********************************************************/
 			/*	  Programming convenience definitions/declarations	 */
@@ -198,9 +196,6 @@ extern void     ztpf_nonpreemptible_helper(void);
  *	  Aggregate data type declarations of importance to the ELF core file.
  *	  Most of these aggregates appear somewhere in the .NOTE section.
  */
-//avoid: error: conflicting types for greg_t, etc... sys/ucontext.h already has them
-//typedef uint64_t	greg_t;			/* Datatype for a general register			*/
-//typedef SYS_FLOAT	fpreg_t;		/* Datatype for a floating point reg		*/
 					 
 /*					 
  *	The NT_AUXV segment means something to a UNIX or Linux system. It means
@@ -231,13 +226,6 @@ typedef struct {
    uint32_t		acrs[16];			/* Access registers (no value in z/TPF)		*/
    uint64_t		orig_gpr2;			/* Original R2, held by interpreter.		*/
 } s390_regs;
-
-//
-//avoid: error: conflicting types for ‘gregset_t’ sys/ucontext.h has the definition already.
-//
-//typedef struct {					/* Datatype for a full set of ...			*/
-//	uint64_t		gprs[16];			/* ... sixteen 64-bit general registers.	*/
-//} gregset_t;
 
 typedef struct shortsiginfo_t {		/* This is the leading struct in ELF		*/
 	uint32_t		si_signo;		/*	PRSTATUS.								*/

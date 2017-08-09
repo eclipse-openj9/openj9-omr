@@ -958,15 +958,17 @@ OMR::ResolvedMethodSymbol::genAndAttachOSRCodeBlocks(int32_t currentInlinedSiteI
          lastTreeTop = tt;
       }
 
-   //if an OSR code block has been created, attach its treetops and osr catch block's
-   //treetops to the method's treetops
-   if (!self()->getOSRPoints().isEmpty())
-      {
-      TR_OSRMethodData *osrMethodData = self()->comp()->getOSRCompilationData()->findOrCreateOSRMethodData(currentInlinedSiteIndex, self());
-      TR::Block *OSRCodeBlock = osrMethodData->getOSRCodeBlock();
-      TR::Block *OSRCatchBlock = osrMethodData->getOSRCatchBlock();
-      lastTreeTop->insertTreeTopsAfterMe(OSRCatchBlock->getEntry(), OSRCodeBlock->getExit());
-      }
+   // If OSR code and catch blocks have been created, stitch them into the
+   // method's trees. Check for the OSR blocks directly, since they're specific
+   // to the current inlined call site, unlike getOSRPoints().
+   TR::Block * const osrCodeBlock = osrMethodData->getOSRCodeBlock();
+   TR::Block * const osrCatchBlock = osrMethodData->getOSRCatchBlock();
+   TR_ASSERT_FATAL(
+      (osrCodeBlock != NULL) == (osrCatchBlock != NULL),
+      "either OSR code or catch block was generated without the other\n");
+
+   if (osrCodeBlock != NULL)
+      lastTreeTop->insertTreeTopsAfterMe(osrCatchBlock->getEntry(), osrCodeBlock->getExit());
    }
 
 static void getNeighboringSymRefLists(int32_t index, TR_Array<List<TR::SymbolReference> >* listArray,
@@ -1291,11 +1293,12 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
             // parms, and locals alive. Only do this in non HCR mode since under HCR we will be more selective about where to
             // add OSR points.
             //
+            const int32_t siteIndex = comp->getCurrentInlinedSiteIndex();
             bool doOSR = comp->getOption(TR_EnableOSR)
                && !comp->isPeekingMethod()
                && !(comp->getOption(TR_DisableNextGenHCR) && comp->getOption(TR_EnableHCR))
                && comp->supportsInduceOSR()
-               && !self()->cannotAttemptOSRDuring(comp->getCurrentInlinedSiteIndex(), comp);
+               && !self()->cannotAttemptOSRDuring(siteIndex, comp);
 
             optimizer = TR::Optimizer::createOptimizer(comp, self(), true);
             previousOptimizer = comp->getOptimizer();
@@ -1305,17 +1308,25 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
             if (doOSR)
                {
-               TR_ASSERT(comp->getOSRCompilationData(), "OSR compilation data is NULL\n");
-               self()->genAndAttachOSRCodeBlocks(comp->getCurrentInlinedSiteIndex());
-               if (!self()->getOSRPoints().isEmpty())
+               TR_OSRCompilationData *osrCompData = comp->getOSRCompilationData();
+               TR_ASSERT(osrCompData != NULL, "OSR compilation data is NULL\n");
+
+               self()->genAndAttachOSRCodeBlocks(siteIndex);
+
+               // Check for the OSR blocks directly, since they're specific
+               // to the current inlined call site, unlike getOSRPoints().
+               TR_OSRMethodData *osrMethodData =
+                  osrCompData->findOrCreateOSRMethodData(siteIndex, self());
+
+               if (osrMethodData->getOSRCodeBlock() != NULL)
                   {
-                  self()->genOSRHelperCall(comp->getCurrentInlinedSiteIndex(), symRefTab);
+                  self()->genOSRHelperCall(siteIndex, symRefTab);
                   if (comp->getOption(TR_TraceOSR))
                      comp->dumpMethodTrees("Trees after OSR in genIL", self());
                   }
 
                if (!comp->isOutermostMethod())
-                  self()->cleanupUnreachableOSRBlocks(comp->getCurrentInlinedSiteIndex(), comp);
+                  self()->cleanupUnreachableOSRBlocks(siteIndex, comp);
                }
 
             if (optimizer)

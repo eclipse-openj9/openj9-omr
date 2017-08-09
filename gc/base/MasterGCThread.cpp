@@ -173,6 +173,7 @@ MM_MasterGCThread::masterThreadEntryPoint()
 	} else {
 		/* thread attached successfully */
 		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
+		bool deferredVMAccessRelease = false;
 		env->setThreadType(GC_MASTER_THREAD);
 
 		/* Begin running the thread */
@@ -201,7 +202,14 @@ MM_MasterGCThread::masterThreadEntryPoint()
 				_collector->masterThreadGarbageCollect(env, _allocDesc);
 
 				/* clear the exclusive access state */
-				uintptr_t exclusiveCount = env->relinquishExclusiveVMAccess();
+				if (_extensions->isConcurrentScavengerEnabled()) {
+					/* Keep holding VM access by master GC thread if this STW phase is immediately followed by a concurrent phase,  since we want to
+					 * prevent/delay any other party from obtaining exclusive VM access while we are accessing/mutating the heap.
+					 * Language specific part may disobey our request to defer release and do it right away. It will notify as so we don't try to release it twice.
+					 */
+					deferredVMAccessRelease = _collector->isConcurrentWorkAvailable(env);
+				}
+				uintptr_t exclusiveCount = env->relinquishExclusiveVMAccess(&deferredVMAccessRelease);
 				Assert_MM_true(1 == exclusiveCount);
 
 				env->_cycleState = NULL;
@@ -218,7 +226,6 @@ MM_MasterGCThread::masterThreadEntryPoint()
 					_collector->preConcurrentInitializeStatsAndReport(env, &stats);
 					/* ensure that we get out of this monitor so that the mutator can wake up */
 					omrthread_monitor_exit(_collectorControlMutex);
-					/* note that we currently run the concurrent mark without VM access since it could deadlock us with another thread trying to acquire exclusive to invoke a GC */
 					uintptr_t bytesConcurrentlyScanned = _collector->masterThreadConcurrentCollect(env);
 					omrthread_monitor_enter(_collectorControlMutex);
 					_collector->postConcurrentUpdateStatsAndReport(env, &stats, bytesConcurrentlyScanned);
@@ -226,7 +233,13 @@ MM_MasterGCThread::masterThreadEntryPoint()
 						/* we are still in the concurrent state (might have changed if a GC was requested) so set it back to waiting */
 						_masterThreadState = STATE_WAITING;
 					}
+					/* Now that we are done with Concurrent phase, let's release VM Access */
+					if (deferredVMAccessRelease) {
+						deferredVMAccessRelease = false;
+						env->releaseVMAccess();
+					}
 				} else {
+					Assert_MM_false(deferredVMAccessRelease);
 					omrthread_monitor_wait(_collectorControlMutex);
 				}
 			}

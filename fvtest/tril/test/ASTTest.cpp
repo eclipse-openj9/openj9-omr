@@ -242,8 +242,7 @@ TEST(ASTNodeTest, CreateNullNode) {
 }
 
 TEST(ASTNodeTest, CreateNodeWithJustName) {
-   char* nodeName = "theName";
-
+   auto nodeName = "theName";
    auto node = createNode(nodeName, NULL, NULL, NULL);
 
    ASSERT_STREQ(nodeName, node->name);
@@ -288,10 +287,10 @@ TEST(ASTNodeTest, CreateNodeWithJustArgumentList) {
 }
 
 TEST(ASTNodeTest, CreateListFrom2SingleNodes) {
-   char* nodeName_1 = "a node name";
+   auto nodeName_1 = "a node name";
    ASTNodeArg* argList_1 = NULL;
    auto node_1 = createNode(nodeName_1, argList_1, NULL, NULL);
-   char* nodeName_0 = "another node name";
+   auto nodeName_0 = "another node name";
    ASTNodeArg* argList_0 = getNodeArgList();
    auto node_0 = createNode(nodeName_0, argList_0, NULL, NULL);
 
@@ -309,10 +308,10 @@ TEST(ASTNodeTest, CreateListFrom2SingleNodes) {
 }
 
 TEST(ASTNodeTest, Concatenate2SingleNodes)  {
-   char* nodeName_1 = "a node name";
+   auto nodeName_1 = "a node name";
    ASTNodeArg* argList_1 = NULL;
    auto node_1 = createNode(nodeName_1, argList_1, NULL, NULL);
-   char* nodeName_0 = "another node name";
+   auto nodeName_0 = "another node name";
    ASTNodeArg* argList_0 = getNodeArgList();
    auto node_0 = createNode(nodeName_0, argList_0, NULL, node_1);
 
@@ -328,13 +327,13 @@ TEST(ASTNodeTest, Concatenate2SingleNodes)  {
 }
 
 TEST(ASTNodeTest, CreateListFromListOf2AndSingleNode) {
-   char* nodeName_2 = "some node name";
+   auto nodeName_2 = "some node name";
    ASTNodeArg* argList_2 = getNodeArgList();
    auto node_2 = createNode(nodeName_2, argList_2, NULL, NULL);
-   char* nodeName_1 = "a node name";
+   auto nodeName_1 = "a node name";
    ASTNodeArg* argList_1 = NULL;
    auto node_1 = createNode(nodeName_1, argList_1, NULL, NULL);
-   char* nodeName_0 = "another node name";
+   auto nodeName_0 = "another node name";
    ASTNodeArg* argList_0 = getNodeArgList();
    auto node_0 = createNode(nodeName_0, argList_0, NULL, NULL);
 
@@ -358,13 +357,13 @@ TEST(ASTNodeTest, CreateListFromListOf2AndSingleNode) {
 }
 
 TEST(ASTNodeTest, Concatenate3SingleNodes)  {
-   char* nodeName_2 = "some node name";
+   auto nodeName_2 = "some node name";
    ASTNodeArg* argList_2 = getNodeArgList();
    auto node_2 = createNode(nodeName_2, argList_2, NULL, NULL);
-   char* nodeName_1 = "a node name";
+   auto nodeName_1 = "a node name";
    ASTNodeArg* argList_1 = NULL;
    auto node_1 = createNode(nodeName_1, argList_1, NULL, NULL);
-   char* nodeName_0 = "another node name";
+   auto nodeName_0 = "another node name";
    ASTNodeArg* argList_0 = getNodeArgList();
    auto node_0 = createNode(nodeName_0, argList_0, NULL, node_1);
 

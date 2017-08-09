@@ -41,6 +41,10 @@ namespace TR { class ResolvedMethod; }
 namespace TR { class SymbolReference; }
 namespace OMR { class VirtualMachineState; }
 
+namespace TR { class SegmentProvider; }
+namespace TR { class Region; }
+class TR_Memory;
+
 namespace OMR
 {
 
@@ -172,6 +176,9 @@ class MethodBuilder : public TR::IlBuilder
    virtual bool connectTrees();
 
    private:
+   TR::SegmentProvider *_segmentProvider;
+   TR::Region *_memoryRegion;
+   TR_Memory *_trMemory;
 
    // These values are typically defined outside of a compilation
    const char                * _methodName;

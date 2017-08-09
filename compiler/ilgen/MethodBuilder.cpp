@@ -22,6 +22,9 @@
 #include <stdint.h>
 #include "compile/Method.hpp"
 #include "env/FrontEnd.hpp"
+#include "env/Region.hpp"
+#include "env/SystemSegmentProvider.hpp"
+#include "env/TRMemory.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
@@ -44,6 +47,9 @@
 #include "ilgen/VirtualMachineState.hpp"
 
 #define OPT_DETAILS "O^O ILBLD: "
+
+// Size of MethodBuilder memory segments
+#define MEM_SEGMENT_SIZE 1 << 16   // i.e. 65536 bytes (~64KB)
 
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
@@ -80,16 +86,25 @@ namespace OMR
 
 MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
    : TR::IlBuilder(asMethodBuilder(), types),
+   // Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within MethodBuilder
+   // in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
+   // them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
+   // have to do it explicitly in the MethodBuilder destructor. And since C++ destroys the other members *after* executing the user defined
+   // destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are explicitly destroyed
+   // and deallocated *before* _memoryRegion in the MethodBuilder destructor.
+   _segmentProvider(new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(MEM_SEGMENT_SIZE, TR::Compiler->rawAllocator)),
+   _memoryRegion(new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator)),
+   _trMemory(new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion)),
    _methodName("NoName"),
    _returnType(NoType),
    _numParameters(0),
-   _symbols(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
-   _parameterSlot(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
-   _symbolTypes(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
-   _symbolNameFromSlot(new (PERSISTENT_NEW) TR_HashTabInt(typeDictionary()->trMemory())),
-   _symbolIsArray(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
-   _memoryLocations(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
-   _functions(new (PERSISTENT_NEW) TR_HashTabString(typeDictionary()->trMemory())),
+   _symbols(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _parameterSlot(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _symbolTypes(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _symbolNameFromSlot(new (*_memoryRegion) TR_HashTabInt(_trMemory)),
+   _symbolIsArray(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _memoryLocations(new (*_memoryRegion) TR_HashTabString(_trMemory)),
+   _functions(new (*_memoryRegion) TR_HashTabString(_trMemory)),
    _cachedParameterTypes(0),
    _cachedSignature(0),
    _definingFile(""),
@@ -135,7 +150,17 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
 
 MethodBuilder::MethodBuilder(const MethodBuilder &src) = default;
 
-MethodBuilder::~MethodBuilder() { }
+MethodBuilder::~MethodBuilder()
+   {
+   // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
+
+   _trMemory->~TR_Memory();
+   ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
+   _memoryRegion->~Region();
+   ::operator delete(_memoryRegion, TR::Compiler->persistentAllocator());
+   static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
+   ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
+   }
 
 TR::MethodBuilder *
 MethodBuilder::asMethodBuilder()
@@ -520,7 +545,7 @@ MethodBuilder::DefineFunction(const char* const name,
       }   
    MB_REPLAY(");");
 
-   TR::ResolvedMethod *method = new (PERSISTENT_NEW) TR::ResolvedMethod((char*)fileName,
+   TR::ResolvedMethod *method = new (*_memoryRegion) TR::ResolvedMethod((char*)fileName,
                                                                         (char*)lineNumber,
                                                                         (char*)name,
                                                                         numParms,

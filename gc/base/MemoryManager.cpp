@@ -514,12 +514,12 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 		//check any left over chunks
 		std::set<uintptr_t>::iterator it;
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("VALGRIND: Destroying virtual memory, looking for any chunks still left");
+		omrtty_printf("VALGRIND: Destroying virtual memory, looking for any objects still left\n");
 
 		for(it = env->getExtensions()->_allocatedObjects.begin(); it != env->getExtensions()->_allocatedObjects.begin(); it++)
 		{
 			int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			omrtty_printf("VALGRIND: Chunk still left: %x of size %d\n", *it,objSize);
+			omrtty_printf("VALGRIND: object still left: %x of size %d\n", *it,objSize);
 			VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);		
 		}
 		env->getExtensions()->_allocatedObjects.clear();

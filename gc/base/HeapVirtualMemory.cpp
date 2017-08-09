@@ -346,6 +346,10 @@ MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 	env->getExtensions()->identityHashDataAddRange(env, subspace, size, lowAddress, highAddress);
 
 #if defined(OMR_VALGRIND_MEMCHECK)
+
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	omrtty_printf("VALGRIND: Adding heap Range b/w %x and  %x\n", lowAddress,highAddress);
+	
 	//add heap range to valgrind
 	VALGRIND_MAKE_MEM_NOACCESS(lowAddress,size);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
@@ -374,7 +378,24 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//remove heap range from valgrind
-	VALGRIND_MAKE_MEM_UNDEFINED(lowAddress,highAddress);
+
+	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+	omrtty_printf("VALGRIND: Removing heap Range b/w %x and  %x\n", lowAddress,highAddress);
+
+	std::set<uintptr_t>::iterator it;
+	for(it = env->getExtensions()->_allocatedObjects.lower_bound((uintptr_t)lowAddress); 
+		it!= env->getExtensions()->_allocatedObjects.upper_bound((uintptr_t)highAddress);it++)
+	{
+		int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
+		omrtty_printf("VALGRIND: heapRemoveRange: Clearing object at %x of size %d\n", *it,objSize);
+		VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);
+	}
+	env->getExtensions()->_allocatedObjects.erase(env->getExtensions()->_allocatedObjects.lower_bound((uintptr_t)lowAddress), 
+		env->getExtensions()->_allocatedObjects.upper_bound((uintptr_t)highAddress));
+
+
+	//remove range from valgrind
+	VALGRIND_MAKE_MEM_UNDEFINED(lowAddress, (uintptr_t) highAddress - (uintptr_t) lowAddress);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return result;

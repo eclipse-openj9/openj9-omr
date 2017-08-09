@@ -438,20 +438,7 @@ void TR_UseDefInfo::setVolatileSybolsIndexAndRecurse(TR::BitVector &volatileSymb
       if (!aliasedSymRef || !aliasedSymRef->getSymbol())
          continue;
 
-      // I believe this to be a possible optimization.  However, it seems like some pali aliases end up making us still overly conservative
-      // I think more alias refinement should be done -- ie if a symbol does not appear in the method, we should remove it from all alias sets.
-      //if(aliasedSymRef->getSymbol()->isMethod())
-      //   continue;
-
-//      if (symRef->getSymbol()->isVolatile())
-//         {
-//         traceMsg(comp(), "Recursing on alias %d\n",aliasedSymRef->getReferenceNumber());
-         setVolatileSybolsIndexAndRecurse(volatileSymbols,aliasedSymRef->getReferenceNumber());
-//         }
-//      else if (aliasedSymRef->getSymbol()->isVolatile())
-//         {
-//         setVolatileSymbolIndexAndRecurse(volatileSymbols,symRefNum);
-//         }
+      setVolatileSybolsIndexAndRecurse(volatileSymbols,aliasedSymRef->getReferenceNumber());
       }
    }
 

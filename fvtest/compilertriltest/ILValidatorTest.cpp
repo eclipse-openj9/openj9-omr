@@ -73,3 +73,64 @@ INSTANTIATE_TEST_CASE_P(ILValidatorTest, WellformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (scmpeq (sconst 1) (sconst 3)))))",
     "(method return=Int32 (block (ireturn (lcmpeq (lconst 1) (lconst 3)))))"
     ));
+
+class CommoningTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int32_t, int32_t>> {};
+
+TEST_P(CommoningTest, CommoningUnderSameTree)
+   {
+   auto param = GetParam();
+   auto tril = TRIL((method return=Int32 args=[Int32, Int32]
+                       (block
+                           (ireturn
+                               (icmpeq
+                                  (imul
+                                     (iadd (iload parm=0 id="loadParm0") (iload parm=1 id="loadParm1"))
+                                     (isub (@common id="loadParm0") (@common id="loadParm1")))
+                                  (isub
+                                     (imul (@common id="loadParm0") (@common id="loadParm0"))
+                                     (imul (@common id="loadParm1") (@common id="loadParm1")))
+                                  )))));
+
+   auto ast = parseString(tril);
+   ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
+
+   Tril::JitBuilderCompiler compiler{ast};
+   ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly";
+
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
+   ASSERT_NOTNULL(entry_point);
+
+   ASSERT_EQ(1, entry_point(std::get<0>(param), std::get<1>(param)));
+   }
+
+TEST_P(CommoningTest, CommoningWithinBlock)
+   {
+   auto param = GetParam();
+   auto tril = TRIL((method return=Int32 args=[Int32, Int32]
+                       (block
+                           (iload parm=0 id="loadParm0")
+                           (iload parm=1 id="loadParm1")
+                           (ireturn
+                               (icmpeq
+                                  (imul
+                                     (iadd (@common id="loadParm0") (@common id="loadParm1"))
+                                     (isub (@common id="loadParm0") (@common id="loadParm1")))
+                                  (isub
+                                     (imul (@common id="loadParm0") (@common id="loadParm0"))
+                                     (imul (@common id="loadParm1") (@common id="loadParm1")))
+                                  )))));
+
+   auto ast = parseString(tril);
+   ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
+
+   Tril::JitBuilderCompiler compiler{ast};
+   ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly";
+
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
+   ASSERT_NOTNULL(entry_point);
+
+   ASSERT_EQ(1, entry_point(std::get<0>(param), std::get<1>(param)));
+   }
+
+INSTANTIATE_TEST_CASE_P(CommingValidationTest, CommoningTest,
+  ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()));

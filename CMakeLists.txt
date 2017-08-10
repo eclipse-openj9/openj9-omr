@@ -99,8 +99,9 @@ add_subdirectory(omr)
 add_subdirectory(third_party)
 add_subdirectory(omrsigcompat)
 
-#TODO should be wrapped in if()
-add_subdirectory(fvtest)
+if(OMR_FVTEST)
+  add_subdirectory(fvtest)
+endif()
 
 if(OMR_GC)
   add_subdirectory(gc)

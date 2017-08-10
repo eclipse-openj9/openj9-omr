@@ -238,7 +238,7 @@ function(create_omr_compiler_library)
                      COMMENT "Generate ${BUILD_NAME_FILE}"
                      )
 
-   # Convert pasm files ot asm files: run this before masm2gas to ensure 
+   # Convert pasm files to asm files: run this before masm2gas to ensure 
    # asm files subsequently get picked up. 
    pasm2asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
@@ -302,8 +302,17 @@ function(create_omr_compiler_library)
       list(REMOVE_ITEM CORE_COMPILER_OBJECTS ${abs_filename})
    endforeach()
 
+   # Convert pasm files to asm files: run this before masm2gas to ensure 
+   # asm files subsequently get picked up. 
+   pasm2asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+
+   # Run masm2gas on contained .asm files 
+   masm2gas_asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+
    # Append to the compiler sources list
    target_sources(${COMPILER_NAME} PRIVATE ${CORE_COMPILER_OBJECTS})
+
+
   
    # Set include paths and defines.  
    make_compiler_target(${COMPILER_NAME} COMPILER ${COMPILER_NAME})

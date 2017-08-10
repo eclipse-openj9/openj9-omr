@@ -31,18 +31,18 @@ message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 omr_detect_system_information()
 
 # Pickup OS info 
-include(cmake/platform/os/${OMR_HOST_OS}.cmake OPTIONAL)
+include(${OMR_ROOT}/cmake/platform/os/${OMR_HOST_OS}.cmake OPTIONAL)
 
 # Pickup Arch Info
-include(cmake/platform/arch/${OMR_HOST_ARCH}.cmake OPTIONAL) 
+include(${OMR_ROOT}/cmake/platform/arch/${OMR_HOST_ARCH}.cmake OPTIONAL) 
 
 # Pickup toolconfig based on platform. 
-include(cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake OPTIONAL)
+include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake OPTIONAL)
 
 # Verify toolconfig!
-include(cmake/platform/toolcfg/verify.cmake)
+include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
 
-include(cmake/AddPrefix.cmake)
+include(${OMR_ROOT}/cmake/AddPrefix.cmake)
 
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)

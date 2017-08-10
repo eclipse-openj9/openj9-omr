@@ -56,10 +56,8 @@ extern "C" void _patchVirtualGuard(uint8_t* locationAddr, uint8_t* destinationAd
 
    int64_t displacement = static_cast<int64_t>(destinationAddr - locationAddr) / 2;
 
-   if (locationAddr[0] == 0xA7 || locationAddr[0] == 0xC0)
+   if ((locationAddr[0] == 0xA7 || locationAddr[0] == 0xC0) && locationAddr[1] == 0x04)
       {
-      TR_ASSERT_FATAL((locationAddr[1] & 0x04) == 0x04, "Expected to find BRC (0xA704) or BRCL (0xC004) instruction at %p but instead found %x\n", locationAddr, *reinterpret_cast<int16_t*>(locationAddr + 2));
-
       if (locationAddr[0] == 0xA7)
          {
          TR_ASSERT_FATAL(*reinterpret_cast<int16_t*>(locationAddr + 2) == displacement, "Branch RI displacement at %p (%x) does not match the displacement calculated from argument %p (%x)\n", locationAddr, *reinterpret_cast<int16_t*>(locationAddr + 2), destinationAddr, displacement);

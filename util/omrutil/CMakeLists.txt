@@ -77,7 +77,7 @@
 
 add_tracegen(utilcore.tdf j9utilcore)
 
-add_library(omrutil STATIC
+add_library(omrutil_obj OBJECT
 	AtomicFunctions.cpp
 	argscan.c
 	detectVMDirectory.c
@@ -98,11 +98,15 @@ add_library(omrutil STATIC
 )
 
 if(OMR_HOST_OS STREQUAL "win")
-	target_sources(omrutil
+	target_sources(omrutil_obj
 		PRIVATE
 			win/j9getdbghelp.c
 	)
 endif()
+
+add_library(omrutil STATIC
+	$<TARGET_OBJECTS:omrutil_obj>
+)
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
 	omrglue

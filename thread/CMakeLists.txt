@@ -285,9 +285,13 @@ omr_find_files(resolvedPaths
 
 include_directories(common)
 #TODO also should be able to build dynamic lib
-add_library(j9thrstatic
+add_library(j9thr_obj OBJECT
 	${resolvedPaths}
 	ut_j9thr.c
+)
+
+add_library(j9thrstatic STATIC
+	$<TARGET_OBJECTS:j9thr_obj>
 )
 
 target_include_directories(j9thrstatic

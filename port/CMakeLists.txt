@@ -21,9 +21,11 @@ include(OmrFindFiles)
 set(OBJECTS "")
 set(VPATH "")
 
+add_tracegen(common/omrport.tdf)
+
 # Logic below will set the target_includes, and supplement the 
 # target_sources
-add_library(omrport STATIC 
+add_library(omrport_obj OBJECT
 	ut_omrport.c
 )
 
@@ -222,13 +224,13 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND VPATH zos390)
-	target_include_directories(omrport PRIVATE zos390)
+	target_include_directories(omrport_obj PRIVATE zos390)
 endif()
 
 if(OMR_HOST_OS STREQUAL "win")
 	if(OMR_ENV_DATA64)
 		list(APPEND VPATH win64amd)
-		target_include_directories(omrport PRIVATE win64amd)
+		target_include_directories(omrport_obj PRIVATE win64amd)
 	endif()
 endif()
 
@@ -280,41 +282,41 @@ if(OMR_HOST_OS STREQUAL "linux")
 
 	if(OMR_ARCH_ARM)
 		list(APPEND VPATH linuxarm)
-		target_include_directories(omrport PRIVATE linuxarm)
+		target_include_directories(omrport_obj PRIVATE linuxarm)
 	endif()
 
 	if(OMR_ARCH_X86)
 		if(OMR_ENV_DATA64)
 			list(APPEND VPATH linuxamd64)
-			target_include_directories(omrport PRIVATE linuxamd64)
+			target_include_directories(omrport_obj PRIVATE linuxamd64)
 		else()
 			list(APPEND VPATH linux386)
-			target_include_directories(omrport PRIVATE linux386)
+			target_include_directories(omrport_obj PRIVATE linux386)
 		endif()
 
 	endif()
 
 	list(APPEND VPATH linux)
-	target_include_directories(omrport PRIVATE linux)
+	target_include_directories(omrport_obj PRIVATE linux)
 endif()
 
 
 if(OMR_HOST_OS STREQUAL "osx")
 	list(APPEND VPATH osx)
-	target_include_directories(omrport PRIVATE osx)
+	target_include_directories(omrport_obj PRIVATE osx)
 endif()
 
 
 if(OMR_HOST_OS STREQUAL "win")
 	list(APPEND VPATH win32_include win32)
-	target_include_directories(omrport PRIVATE win32_include win32)
+	target_include_directories(omrport_obj PRIVATE win32_include win32)
 else()
 	list(APPEND VPATH unix)
-	target_include_directories(omrport PRIVATE unix unix_include)
+	target_include_directories(omrport_obj PRIVATE unix unix_include)
 endif()
 
 list(APPEND VPATH common include)
-target_include_directories(omrport PRIVATE common include)
+target_include_directories(omrport_obj PRIVATE common include)
 
 #TODO need to set some flags and etc see line 300
 
@@ -328,22 +330,23 @@ if(OMR_HOST_OS STREQUAL "win")
     list(APPEND resolvedPaths win32/omrsyslogmessages.rc)
 endif()
 
-add_tracegen(common/omrport.tdf)
+target_sources(omrport_obj PRIVATE ${resolvedPaths})
 
-target_sources(omrport PRIVATE ${resolvedPaths})
+add_library(omrport STATIC
+	$<TARGET_OBJECTS:omrport_obj>
+)
 
 target_link_libraries(omrport
 	j9thrstatic
 	j9hashtable
 )
 
-#TODO: at the moment this assumes all C source files which is a lie
-target_include_directories(omrport PRIVATE 
+target_include_directories(omrport_obj PRIVATE
 	../nls
 )
 
 # This flag indicates that we are compiling the port library
-target_compile_definitions(omrport PRIVATE -DOMRPORT_LIBRARY_DEFINE)
+target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
 
 
 

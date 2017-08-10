@@ -22,13 +22,14 @@ set(OMR_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compile warnings as errors")
 ### Major Feature Flags
 ###
 
-set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
+set(OMR_FVTEST OFF CACHE BOOL "Enable the FV Testing.")
+set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
-set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
-set(OMR_PORT ON CACHE BOOL "Enable portability library")
-set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
+set(OMR_PORT ON CACHE BOOL "Enable portability library")
+set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
+set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 # set(OMR_TOOLS On CACHE BOOL "Enable the build tools")
 # TODO: Support building only tools for cross-compilation build
 

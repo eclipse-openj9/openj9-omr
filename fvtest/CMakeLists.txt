@@ -16,6 +16,10 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrAssert)
+
+omr_assert(TEST OMR_FVTEST)
+
 add_subdirectory(util)
 
 add_subdirectory(omrGtestGlue)

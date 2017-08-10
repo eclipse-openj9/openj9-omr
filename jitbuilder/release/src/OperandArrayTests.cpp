@@ -502,7 +502,7 @@ OperandArrayTestMethod::testArray(TR::BytecodeBuilder *builder, bool useEqual)
 bool
 OperandArrayTestMethod::buildIL()
    {
-   TR::IlType *pElementType = _types->PointerTo(Word);
+   TR::IlType *pElementType = _types->PointerTo(_types->PointerTo(Word));
 
    Call("createArray", 0);
 
@@ -530,7 +530,7 @@ OperandArrayTestUsingFalseMethod::OperandArrayTestUsingFalseMethod(TR::TypeDicti
 bool
 OperandArrayTestUsingFalseMethod::buildIL()
    {
-   TR::IlType *pElementType = _types->PointerTo(Word);
+   TR::IlType *pElementType = _types->PointerTo(_types->PointerTo(Word));
 
    Call("createArray", 0);
 

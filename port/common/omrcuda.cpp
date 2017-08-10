@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2013, 2016
+ * (c) Copyright IBM Corp. 2013, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -995,6 +995,10 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
+#if CUDA_VERSION <= 9000
+	OMRCUDA_LIBRARY_ENTRY(9, 0),
+#endif /* CUDA_VERSION <= 9000 */
+
 #if CUDA_VERSION <= 8000
 	OMRCUDA_LIBRARY_ENTRY(8, 0),
 #endif /* CUDA_VERSION <= 8000 */

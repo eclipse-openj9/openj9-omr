@@ -28,34 +28,9 @@ extern "C" {
 
 typedef enum {Int64, Double, String} ASTValueType;
 
-struct ASTValue;
 typedef struct ASTValue ASTValue;
-struct ASTValue {
-    ASTValueType type;
-    union {
-        uint64_t int64;
-        double f64;
-        const char* str;
-    } value;
-    ASTValue* next;
-};
-
-struct ASTNodeArg;
 typedef struct ASTNodeArg ASTNodeArg;
-struct ASTNodeArg {
-    const char* name;
-    ASTValue* value;
-    ASTNodeArg* next;
-};
-
-struct ASTNode;
 typedef struct ASTNode ASTNode;
-struct ASTNode {
-    const char* name;
-    ASTNodeArg* args;
-    ASTNode* children;
-    ASTNode* next;
-};
 
 ASTNode* createNode(const char* name, ASTNodeArg* args, ASTNode* children,  ASTNode* next);
 

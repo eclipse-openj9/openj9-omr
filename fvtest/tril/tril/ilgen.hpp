@@ -22,7 +22,7 @@
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlInjector.hpp"
 
-#include "ast.h"
+#include "ast.hpp"
 
 #include <map>
 #include <string>

@@ -18,7 +18,7 @@
 
 #include <cstring>
 #include <gtest/gtest.h>
-#include "ast.h"
+#include "ast.hpp"
 
 bool operator == (ASTValue lhs, ASTValue rhs) {
    if (lhs.type == rhs.type) {

@@ -16,7 +16,7 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#include "ast.h"
+#include "ast.hpp"
 #include <stdlib.h>
 #include <string.h>
 

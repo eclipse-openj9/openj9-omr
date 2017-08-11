@@ -41,7 +41,7 @@ ADD_FLEX_BISON_DEPENDENCY(tril_scanner tril_parser)
 add_library(tril STATIC
     ${BISON_tril_parser_OUTPUTS}
     ${FLEX_tril_scanner_OUTPUTS}
-    ast.c
+    ast.cpp
     ilgen.cpp
     jitbuilder_compiler.cpp
 )

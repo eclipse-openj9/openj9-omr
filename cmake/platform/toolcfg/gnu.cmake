@@ -22,6 +22,3 @@ set(OMR_WARNING_AS_ERROR_FLAG -Werror)
 
 set(OMR_C_DEFINITION_PREFIX -D) 
 
-
-macro(omr_toolconfig_global_setup)
-endmacro(omr_toolconfig_global_setup)

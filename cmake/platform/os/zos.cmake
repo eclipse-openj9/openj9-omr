@@ -107,5 +107,3 @@ macro(omr_os_global_setup)
 	message(STATUS "DEBUG: so LDFLAGS=${CMAKE_SHARED_LINKER_FLAGS}")
 
 endmacro(omr_os_global_setup)
-
-

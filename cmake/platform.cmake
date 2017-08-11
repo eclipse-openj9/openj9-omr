@@ -78,10 +78,14 @@ endif()
 add_library(omr_shared INTERFACE)
 
 # If the OS requires global setup, do it here. 
-omr_os_global_setup()
+if(COMMAND omr_os_global_setup)
+	omr_os_global_setup()
+endif()
 
 # And now the toolconfig setup
-omr_toolconfig_global_setup()
+if(COMMAND omr_toolconfig_global_setup)
+	omr_toolconfig_global_setup()
+endif()
 
 
 ###

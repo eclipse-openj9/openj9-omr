@@ -1076,8 +1076,8 @@ IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
 
 TR::Node*
 IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
-                             TR::Node *leftNode,
-                             TR::Node *rightNode) 
+                                 TR::Node *leftNode,
+                                 TR::Node *rightNode) 
    {
    TR::DataType leftType = leftNode->getDataType();
    TR::DataType rightType = rightNode->getDataType();
@@ -1443,10 +1443,50 @@ IlBuilder::Xor(TR::IlValue *left, TR::IlValue *right)
    return returnValue;
    }
 
+TR::Node*
+IlBuilder::shiftOpNodeFromNodes(TR::ILOpCodes op,
+                                TR::Node *leftNode,
+                                TR::Node *rightNode) 
+   {
+   TR::DataType leftType = leftNode->getDataType();
+   TR::DataType rightType = rightNode->getDataType();
+   TR_ASSERT(leftType.isIntegral() && rightType.isInt32(), "shift operation first operand must be an integer, and shift amount must be 32-bit integer");
+
+   return TR::Node::create(op, 2, leftNode, rightNode);
+   }
+
+TR::IlValue *
+IlBuilder::shiftOpFromNodes(TR::ILOpCodes op,
+                            TR::Node *leftNode,
+                            TR::Node *rightNode) 
+   {
+   TR::Node *result = shiftOpNodeFromNodes(op, leftNode, rightNode);
+   TR::IlValue *returnValue = newValue(result->getDataType(), result);
+   return returnValue;
+   } 
+
+TR::IlValue *
+IlBuilder::shiftOpFromOpMap(OpCodeMapper mapOp,
+                            TR::IlValue *left,
+                            TR::IlValue *right)
+   {
+   TR::Node *leftNode = loadValue(left);
+   TR::DataType leftType = leftNode->getDataType();
+   TR_ASSERT(leftType.isIntegral(), "left operand of shift must be integer type");
+
+   TR::Node *rightNode = loadValue(right);
+   if (!rightNode->getDataType().isInt32())
+      right = ConvertTo(Int32, right);
+
+   doVectorConversions(&leftNode, &rightNode);
+
+   return shiftOpFromNodes(mapOp(leftType), leftNode, rightNode);
+   }
+
 TR::IlValue *
 IlBuilder::ShiftL(TR::IlValue *v, TR::IlValue *amount)
    {
-   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::shiftLeftOpCode, v, amount);
+   TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::shiftLeftOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is shr %d << %d\n", this, returnValue->getID(), v->getID(), amount->getID());
    ILB_REPLAY("%s = %s->ShiftL(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
@@ -1455,7 +1495,7 @@ IlBuilder::ShiftL(TR::IlValue *v, TR::IlValue *amount)
 TR::IlValue *
 IlBuilder::ShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
-   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::shiftRightOpCode, v, amount);
+   TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::shiftRightOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is shr %d >> %d\n", this, returnValue->getID(), v->getID(), amount->getID());
    ILB_REPLAY("%s = %s->ShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;
@@ -1464,7 +1504,7 @@ IlBuilder::ShiftR(TR::IlValue *v, TR::IlValue *amount)
 TR::IlValue *
 IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
    {
-   TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::unsignedShiftRightOpCode, v, amount);
+   TR::IlValue *returnValue=shiftOpFromOpMap(TR::ILOpCode::unsignedShiftRightOpCode, v, amount);
    TraceIL("IlBuilder[ %p ]::%d is unsigned shr %d >> %d\n", this, returnValue->getID(), v->getID(), amount->getID());
    ILB_REPLAY("%s = %s->UnsignedShiftR(%s, %s);", REPLAY_VALUE(returnValue), REPLAY_BUILDER(this), REPLAY_VALUE(v), REPLAY_VALUE(amount));
    return returnValue;

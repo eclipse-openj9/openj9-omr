@@ -1142,7 +1142,7 @@ void TR_FieldPrivatizer::placeStoresBackInExit(TR::Block *block, bool placeAtEnd
             // Add global reg candidate in exit as well
             // so that store backs are done from the registers
             //
-            privatizedCandidate->getData()->addBlock(block, blockWeight, trMemory());
+            privatizedCandidate->getData()->addBlock(block, blockWeight);
          }
 
       currentNodeElem = currentNodeElem->getNextElement();

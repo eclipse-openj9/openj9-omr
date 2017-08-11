@@ -354,7 +354,7 @@ void TR_RegionStructure::addGlobalRegisterCandidateToExits(TR_RegisterCandidate 
       if (nextBlock->getStructureOf())
          {
          nextBlock->getStructureOf()->calculateFrequencyOfExecution(&blockWeight);
-         inductionCandidate->addBlock(nextBlock, blockWeight, trMemory());
+         inductionCandidate->addBlock(nextBlock, blockWeight);
          }
       }
    }

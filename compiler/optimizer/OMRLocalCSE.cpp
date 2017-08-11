@@ -365,7 +365,7 @@ void OMR::LocalCSE::transformBlock(TR::TreeTop * entryTree, TR::TreeTop * exitTr
       bool nodeCanBeAvailable = true;
       examineNode(currentNode, seenAvailableLoadedSymbolReferences, NULL, -1, &nextNodeIndex, &nodeCanBeAvailable, 0);
       }
-
+   comp()->invalidateAliasRegion();
    }
 
 #ifdef J9_PROJECT_SPECIFIC

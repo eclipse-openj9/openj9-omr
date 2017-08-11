@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2000, 2016
+ * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -954,6 +954,9 @@ public:
 
    bool notYetRunMeansCold();
 
+   TR::Region &aliasRegion();
+   void invalidateAliasRegion();
+
 private:
    void resetVisitCounts(vcount_t, TR::ResolvedMethodSymbol *);
    int16_t restoreInlineDepthUntil(int32_t stopIndex, TR_ByteCodeInfo &currentInfo);
@@ -1027,6 +1030,7 @@ private:
    TR_ResolvedMethod                 *_method; // must be declared before _flowGraph
    TR_ArenaAllocator                 _arenaAllocator;
    const char *                      _allocatorName;
+   TR::Region                        _aliasRegion;
 
 
    TR_IlGenerator                    *_ilGenerator;

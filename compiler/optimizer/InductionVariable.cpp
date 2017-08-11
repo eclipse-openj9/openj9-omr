@@ -1,5 +1,5 @@
 /*******************************************************************************
- *
+ 
  * (c) Copyright IBM Corp. 2000, 2017
  *
  *  This program and the accompanying materials are made available
@@ -81,7 +81,8 @@
 
 TR_LoopStrider::TR_LoopStrider(TR::OptimizationManager *manager)
    : TR_LoopTransformer(manager),
-   _reassociatedNodes(trMemory())
+   _reassociatedNodes(trMemory()),
+   _storeTreesSingleton((StoreTreeMapComparator()), StoreTreeMapAllocator(comp()->trMemory()->currentStackRegion()))
    {
    _indirectInductionVariable = false; // TODO: add this c->getMethodHotness() >= scorching;
    _autosAccessed = NULL;
@@ -107,6 +108,8 @@ int32_t TR_LoopStrider::perform()
 
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
+   _hoistedAutos = new (stackMemoryRegion) SymRefPairMap((SymRefPairMapComparator()), SymRefPairMapAllocator(stackMemoryRegion));
+   _reassociatedAutos = new (stackMemoryRegion) SymRefMap((SymRefMapComparator()), SymRefMapAllocator(stackMemoryRegion)); 
    _count = 0;
    _newTempsCreated = false;
    _newNonAddressTempsCreated = false;
@@ -160,15 +163,19 @@ bool TR_LoopStrider::foundLoad(TR::TreeTop *storeTreeTop, TR::Node *node, int32_
       {
       if (_storeTreesList)
          {
-         List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
-         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-         TR_StoreTreeInfo *storeTree;
-         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+         auto lookup = _storeTreesList->find(symRefNum);
+         if (lookup != _storeTreesList->end())
             {
-            if (storeTree->_tt == storeTreeTop)
+            List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+            ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+            TR_StoreTreeInfo *storeTree;
+            for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
                {
-               if (node != storeTree->_loadUsedInLoopIncrement)
-                  return true;
+               if (storeTree->_tt == storeTreeTop)
+                  {
+                  if (node != storeTree->_loadUsedInLoopIncrement)
+                     return true;
+                  }
                }
             }
          }
@@ -282,21 +289,23 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
       _numSymRefs = symRefCount;
       initializeSymbolsWrittenAndReadExactlyOnce(symRefCount, notGrowable);
 
-      _storeTreesList = (List<TR_StoreTreeInfo> **)trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR_StoreTreeInfo> *));
+      if (_storeTreesList == NULL)
+         _storeTreesList = &_storeTreesSingleton;
+      _storeTreesList->clear();
+         
+      //_storeTreesList = (List<TR_StoreTreeInfo> **)trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR_StoreTreeInfo> *));
       //_loadUsedInNewLoopIncrementList = (List<TR::Node> **)trMemory()->allocateStackMemory(symRefCount*sizeof(List<TR::Node> *));
       //memset(_storeTreesList, 0, symRefCount*sizeof(List<TR::TreeTop> *));
-      int32_t i = 0;
-      while (i < symRefCount)
-         {
-         _storeTreesList[i] = new (trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(trMemory());
-         //_loadUsedInNewLoopIncrementList[i] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
-         i++;
-         }
+      //int32_t i = 0;
+      //while (i < symRefCount)
+      //   {
+      //   _storeTreesList[i] = new (trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(trMemory());
+      //   //_loadUsedInNewLoopIncrementList[i] = new (trStackMemory()) TR_ScratchList<TR::Node>(trMemory());
+      //   i++;
+      //   }
 
-      _reassociatedAutos = (TR::SymbolReference **)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::SymbolReference *));
-      memset(_reassociatedAutos, 0, symRefCount*sizeof(TR::SymbolReference *));
-      _hoistedAutos = (SymRefPair **)trMemory()->allocateStackMemory(symRefCount*sizeof(SymRefPair *));
-      memset(_hoistedAutos, 0, symRefCount*sizeof(SymRefPair *));
+      _reassociatedAutos->clear();
+      _hoistedAutos->clear();
       _reassociatedNodes.deleteAll();
       // compute the number of internal pointer temps or pinning array temps already initialized in
       // the loop pre-header.
@@ -412,17 +421,21 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
 
                if (storeInRequiredForm && _storeTreesList)
                   {
-                  List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[nextInductionVariableNumber];
-                  ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-                  TR_StoreTreeInfo *storeTree;
-                  for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+                  auto lookup = _storeTreesList->find(nextInductionVariableNumber);
+                  if (lookup != _storeTreesList->end())
                      {
-                     //traceMsg(comp(), "store tree %p\n", storeTree->_tt->getNode());
-                     storeInRequiredForm = foundLoad(storeTree->_tt, nextInductionVariableNumber, comp());
-                     if (!storeInRequiredForm)
+                     List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+                     ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+                     TR_StoreTreeInfo *storeTree;
+                     for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
                         {
-                        //traceMsg(comp(), "reject store tree %p\n", storeTree->_tt->getNode());
-                        break;
+                        //traceMsg(comp(), "store tree %p\n", storeTree->_tt->getNode());
+                        storeInRequiredForm = foundLoad(storeTree->_tt, nextInductionVariableNumber, comp());
+                        if (!storeInRequiredForm)
+                           {
+                           //traceMsg(comp(), "reject store tree %p\n", storeTree->_tt->getNode());
+                           break;
+                           }
                         }
                      }
                   }
@@ -470,23 +483,27 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                      {
                      if (_storeTreesList)
                         {
-                        List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[nextInductionVariableNumber];
-                        ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-                        TR_StoreTreeInfo *storeTree;
-                        for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
-                           {
-                           TR::Node *storeNode = storeTree->_tt->getNode();
-
-                           if (!storeNode->getOpCode().isStore())
-                              storeNode = storeNode->getFirstChild();
-
-                           TR_ASSERT(storeNode->getOpCode().isStore(), "Expected to find a store\n");
-
-                           if (firstChildOfLoopTestNode == storeNode->getFirstChild() &&
-                              storeTree->_loadUsedInLoopIncrement)
+                        auto lookup = _storeTreesList->find(nextInductionVariableNumber);
+                        if (lookup != _storeTreesList->end())
+                           {   
+                           List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+                           ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+                           TR_StoreTreeInfo *storeTree;
+                           for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
                               {
-                              indexSymRef = storeNode->getSymbolReference();
-                              break;
+                              TR::Node *storeNode = storeTree->_tt->getNode();
+
+                              if (!storeNode->getOpCode().isStore())
+                                 storeNode = storeNode->getFirstChild();
+
+                              TR_ASSERT(storeNode->getOpCode().isStore(), "Expected to find a store\n");
+
+                              if (firstChildOfLoopTestNode == storeNode->getFirstChild() &&
+                                 storeTree->_loadUsedInLoopIncrement)
+                                 {
+                                 indexSymRef = storeNode->getSymbolReference();
+                                 break;
+                                 }
                               }
                            }
                         }
@@ -895,7 +912,9 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
       int32_t j;
       for (j=0;j<symRefCount;j++)
          {
-         TR::SymbolReference *reassociatedAuto = _reassociatedAutos[j];
+         auto reassociatedAutoSearchResult = _reassociatedAutos->find(j);
+         TR::SymbolReference *reassociatedAuto = reassociatedAutoSearchResult != _reassociatedAutos->end() ?
+                                                    reassociatedAutoSearchResult->second : NULL;
          if (reassociatedAuto)
             {
             //dumpOptDetails(comp(), "j = %d reassociated auto = %d (%p)\n", j,
@@ -957,7 +976,8 @@ int32_t TR_LoopStrider::detectCanonicalizedPredictableLoops(TR_Structure *loopSt
                newInductionCandidate->addAllBlocksInStructure(loopStructure, comp(), trace()?"strider auto":NULL);
             }
 
-         SymRefPair *symRefPair = _hoistedAutos[j];
+         auto symRefPairSearchResult = _hoistedAutos->find(j);
+         SymRefPair *symRefPair = symRefPairSearchResult != _hoistedAutos->end() ? symRefPairSearchResult->second : NULL;
 
          if (symRefPair)
             {
@@ -1075,16 +1095,26 @@ TR::VPIntRange* TR_LoopStrider::genVPIntRange(TR::VPConstraint* cons, int64_t co
 
 void TR_LoopStrider::findOrCreateStoreInfo(TR::TreeTop *tree, int32_t i)
    {
-   List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[i];
-   ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-   TR_StoreTreeInfo *storeTree;
-   for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+   auto lookup = _storeTreesList->find(i);
+   if (lookup != _storeTreesList->end())
       {
-      if (storeTree->_tt == tree)
-         return;
+      List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+      ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+      TR_StoreTreeInfo *storeTree;
+      for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+         {
+         if (storeTree->_tt == tree)
+            return;
+         }
+   
+      lookup->second->add(new (trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
       }
-
-   _storeTreesList[i]->add(new (trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
+   else
+      {
+      TR_ScratchList<TR_StoreTreeInfo> *newList = new (trStackMemory()) TR_ScratchList<TR_StoreTreeInfo>(trMemory());
+      newList->add(new (trStackMemory()) TR_StoreTreeInfo(tree, NULL, NULL, NULL, NULL, false, NULL, false));
+      (*_storeTreesList)[i] = newList;
+      }
    }
 
 
@@ -1104,37 +1134,41 @@ TR::Node *TR_LoopStrider::getNewLoopIncrement(TR::Node *oldLoad, int32_t k, int3
       {
       if (_storeTreesList)
          {
-         List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
-         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-         TR_StoreTreeInfo *storeTree;
-         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+         auto lookup = _storeTreesList->find(symRefNum);
+         if (lookup != _storeTreesList->end())
             {
-            if (oldLoad == storeTree->_loadUsedInLoopIncrement &&
-                storeTree->_load)
+            List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+            ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+            TR_StoreTreeInfo *storeTree;
+            for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
                {
-               TR_NodeIndexPair *head = storeTree->_loads;
-               TR_NodeIndexPair *cursor = head;
-
-               while (cursor)
+               if (oldLoad == storeTree->_loadUsedInLoopIncrement &&
+                   storeTree->_load)
                   {
-                  if (cursor->_index == k)
+                  TR_NodeIndexPair *head = storeTree->_loads;
+                  TR_NodeIndexPair *cursor = head;
+
+                  while (cursor)
                      {
-                     newLoad = cursor->_node;
-                     if (newLoad)
-		        break;
+                     if (cursor->_index == k)
+                        {
+                        newLoad = cursor->_node;
+                        if (newLoad)
+	                   break;
+                        }
+
+                     cursor = cursor->_next;
                      }
 
-                  cursor = cursor->_next;
+                  if (newLoad)
+	             break;
+                  //newLoad = storeTree->_load;
+                  //break;
                   }
-
-               if (newLoad)
-	          break;
-               //newLoad = storeTree->_load;
-               //break;
                }
             }
-        }
-    }
+         }
+      }
 
    if (!newLoad &&
        (oldLoad == _loadUsedInLoopIncrement) &&
@@ -1349,19 +1383,23 @@ void TR_LoopStrider::changeLoopCondition(TR_BlockStructure *loopInvariantBlock, 
             {
             if (_storeTreesList)
                {
-               List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[bestCandidate];
-               ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-               TR_StoreTreeInfo *storeTree;
-               for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+               auto lookup = _storeTreesList->find(bestCandidate);
+               if (lookup != _storeTreesList->end())
                   {
-                  if (firstChildOfLoopTestNode == storeTree->_loadUsedInLoopIncrement &&
-                      storeTree->_load)
-                      {
-                      newLoad = storeTree->_load;
-                      break;
-                      }
-                   }
-                }
+                  List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+                  ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+                  TR_StoreTreeInfo *storeTree;
+                  for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+                     {
+                     if (firstChildOfLoopTestNode == storeTree->_loadUsedInLoopIncrement &&
+                         storeTree->_load)
+                         {
+                         newLoad = storeTree->_load;
+                         break;
+                         }
+                     }
+                  }
+               }
             }
          */
 
@@ -2482,9 +2520,10 @@ TR::Node *TR_LoopStrider::placeNewInductionVariableIncrementTree(TR_BlockStructu
    int32_t loopTestBlockNum = _loopTestTree->getNextTreeTop()->getNode()->getBlock()->startOfExtendedBlock()->getNumber();
 
    int32_t symRefNum = inductionVarSymRef->getReferenceNumber();
-   if (_storeTreesList[symRefNum])
+   auto lookup = _storeTreesList->find(symRefNum);
+   if (lookup != _storeTreesList->end())
       {
-      List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
+      List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
       ListIterator<TR_StoreTreeInfo> si(storeTreesList);
       ListElement<TR_StoreTreeInfo> *storeTree;
       storeTree = storeTreesList->getListHead();
@@ -3010,21 +3049,25 @@ bool TR_LoopStrider::identifyExpressionLinearInInductionVariable(TR::Node *node,
          }
       else
          {
-         List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
-         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-         TR_StoreTreeInfo *storeTree;
-         bool flag = false;
-         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
-             {
-             if (_currTree == storeTree->_tt)
+         auto lookup = _storeTreesList->find(symRefNum);
+         if (lookup != _storeTreesList->end())
+            {
+            List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+            ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+            TR_StoreTreeInfo *storeTree;
+            bool flag = false;
+            for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
                 {
-                flag = true;
-                break;
+                if (_currTree == storeTree->_tt)
+                   {
+                   flag = true;
+                   break;
+                   }
                 }
-             }
 
-         if (!flag)
-            _cannotBeEliminated->set(symRefNum);
+            if (!flag)
+               _cannotBeEliminated->set(symRefNum);
+            }
          }
       }
    else if (((node->getOpCodeValue() == TR::iadd) || (node->getOpCodeValue() == TR::isub))
@@ -3140,19 +3183,23 @@ TR::Node *TR_LoopStrider::setUsesLoadUsedInLoopIncrement(TR::Node *node, int32_t
    {
    if (_storeTreesList)
       {
-      List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[_loopDrivingInductionVar];
-      ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-      TR_StoreTreeInfo *storeTree;
-      for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+      auto lookup = _storeTreesList->find(_loopDrivingInductionVar);
+      if (lookup != _storeTreesList->end())
          {
-         if (!storeTree->_loadUsedInLoopIncrement &&
-             node->getReferenceCount() > 1)
-            return NULL;
-         if (node == storeTree->_loadUsedInLoopIncrement && !storeTree->_incrementInDifferentExtendedBlock)
+         List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+         TR_StoreTreeInfo *storeTree;
+         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
             {
-            _usesLoadUsedInLoopIncrement = true;
-            _storeTreeInfoForLoopIncrement = storeTree;
-            //_loadUsedInNewLoopIncrement[k] = node;
+            if (!storeTree->_loadUsedInLoopIncrement &&
+                node->getReferenceCount() > 1)
+               return NULL;
+            if (node == storeTree->_loadUsedInLoopIncrement && !storeTree->_incrementInDifferentExtendedBlock)
+               {
+               _usesLoadUsedInLoopIncrement = true;
+               _storeTreeInfoForLoopIncrement = storeTree;
+               //_loadUsedInNewLoopIncrement[k] = node;
+               }
             }
          }
       }
@@ -3422,7 +3469,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
            performTransformation(comp(), "%s Replacing invariant internal pointer %p based on symRef #%d\n", OPT_DETAILS, node, internalPointerSymbol))
          {
          TR::SymbolReference *internalPointerSymRef = NULL;
-         SymRefPair *symRefPair = _hoistedAutos[originalInternalPointerSymbol];
+         auto symRefPairSearchResult = _hoistedAutos->find(originalInternalPointerSymbol);
+         SymRefPair *symRefPair = symRefPairSearchResult != _hoistedAutos->end() ? symRefPairSearchResult->second : NULL;
          while (symRefPair)
             {
             bool matched = false;
@@ -3515,8 +3563,8 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                }
 
             pair->_derivedSymRef = newSymbolReference;
-            pair->_next = _hoistedAutos[originalInternalPointerSymbol];
-            _hoistedAutos[originalInternalPointerSymbol] = pair;
+            pair->_next = (*_hoistedAutos)[originalInternalPointerSymbol];
+            (*_hoistedAutos)[originalInternalPointerSymbol] = pair;
             internalPointerSymRef = newSymbolReference;
             }
 
@@ -3557,7 +3605,7 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                   _numInternalPointerOrPinningArrayTempsInitialized < MAX_INTERNAL_POINTER_AUTOS_INITIALIZED) &&
               performTransformation(comp(), "%s Replacing reassociated internal pointer based on symRef #%d\n", OPT_DETAILS, internalPointerSymbol))
             {
-            if (!_reassociatedAutos[originalInternalPointerSymbol])
+            if (_reassociatedAutos->find(originalInternalPointerSymbol) == _reassociatedAutos->end())
                {
                TR::SymbolReference *newSymbolReference = comp()->getSymRefTab()->createTemporary(comp()->getMethodSymbol(), TR::Address, isInternalPointer);
                if (isInternalPointer &&
@@ -3598,11 +3646,11 @@ bool TR_LoopStrider::reassociateAndHoistComputations(TR::Block *loopInvariantBlo
                   else
                      symbol->castToInternalPointerAutoSymbol()->setPinningArrayPointer(pinningArrayPointer->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
                   }
-               _reassociatedAutos[originalInternalPointerSymbol] = newSymbolReference;
+               (*_reassociatedAutos)[originalInternalPointerSymbol] = newSymbolReference;
                dumpOptDetails(comp(), "reass num %d newsymref %d\n", internalPointerSymbol, newSymbolReference->getReferenceNumber());
                }
 
-            TR::SymbolReference *internalPointerSymRef = _reassociatedAutos[originalInternalPointerSymbol];
+            TR::SymbolReference *internalPointerSymRef = (*_reassociatedAutos)[originalInternalPointerSymbol];
             originalNode->getFirstChild()->recursivelyDecReferenceCount();
             //node->recursivelyDecReferenceCount();
             node->decReferenceCount();
@@ -3651,28 +3699,33 @@ bool TR_LoopStrider::isStoreInRequiredForm(int32_t symRefNum, TR_Structure *loop
 
    if (_storeTreesList)
       {
-      List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
-      ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-      TR_StoreTreeInfo *storeTree;
-      bool b = false;
-      for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+      auto lookup = _storeTreesList->find(symRefNum);
+      if (lookup != _storeTreesList->end())
          {
-         TR::Node *storeNode = storeTree->_tt->getNode();
-         if ((!storeNode->getType().isInt32() && !storeNode->getType().isInt64()) ||
-             (!storeNode->getSymbolReference()->getSymbol()->getType().isInt32() && !storeNode->getSymbolReference()->getSymbol()->getType().isInt64()))
-            return false;
+         List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+         TR_StoreTreeInfo *storeTree;
+         bool b = false;
+         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+            {
+            TR::Node *storeNode = storeTree->_tt->getNode();
+            if ((!storeNode->getType().isInt32() && !storeNode->getType().isInt64()) ||
+                (!storeNode->getSymbolReference()->getSymbol()->getType().isInt32() && !storeNode->getSymbolReference()->getSymbol()->getType().isInt64()))
+               return false;
 
-         b = isStoreInRequiredForm(storeNode, symRefNum, loopStructure);
-         storeTree->_loadUsedInLoopIncrement = _loadUsedInLoopIncrement;
+            b = isStoreInRequiredForm(storeNode, symRefNum, loopStructure);
+            storeTree->_loadUsedInLoopIncrement = _loadUsedInLoopIncrement;
 
-         if (!b)
-            return false;
+            if (!b)
+               return false;
 
-         if (storeTree->_tt->getEnclosingBlock()->getStructureOf()->getContainingLoop() != loopStructure)
-            return false;
+            if (storeTree->_tt->getEnclosingBlock()->getStructureOf()->getContainingLoop() != loopStructure)
+               return false;
+            }
+
+         return b;
          }
-
-      return b;
+      return false;
       }
 
    TR::Node *storeNode = _storeTrees[symRefNum]->getNode();
@@ -3697,16 +3750,20 @@ void TR_LoopStrider::checkIfIncrementInDifferentExtendedBlock(TR::Block *block, 
 
    if (_storeTreesList)
       {
-      List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[inductionVariable];
-      ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-      TR_StoreTreeInfo *storeTree;
-      for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+      auto lookup = _storeTreesList->find(inductionVariable);
+      if (lookup != _storeTreesList->end())
          {
-         if (block !=
-             storeTree->_tt->getEnclosingBlock()->startOfExtendedBlock())
+         List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+         TR_StoreTreeInfo *storeTree;
+         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
             {
-            storeTree->_incrementInDifferentExtendedBlock = true;
-            return;
+            if (block !=
+                storeTree->_tt->getEnclosingBlock()->startOfExtendedBlock())
+               {
+               storeTree->_incrementInDifferentExtendedBlock = true;
+               return;
+               }
             }
          }
       }
@@ -3721,7 +3778,7 @@ TR::Node *TR_LoopStrider::updateLoadUsedInLoopIncrement(TR::Node *node, int32_t 
        opCode.isLoadVar() &&
        (node->getSymbolReference()->getReferenceNumber() < _numSymRefs) &&
        ((!_storeTreesList && _writtenExactlyOnce.ValueAt(node->getSymbolReference()->getReferenceNumber())) ||
-        (_storeTreesList && _storeTreesList[node->getSymbolReference()->getReferenceNumber()]->isSingleton())))
+        (_storeTreesList && _storeTreesList->find(node->getSymbolReference()->getReferenceNumber()) != _storeTreesList->end() && (*_storeTreesList)[node->getSymbolReference()->getReferenceNumber()]->isSingleton())))
       {
       TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
       if (!useDefInfo)
@@ -3865,18 +3922,22 @@ bool TR_LoopStrider::isStoreInRequiredForm(TR::Node *storeNode, int32_t symRefNu
 
    if (_storeTreesList)
       {
-      List<TR_StoreTreeInfo> *storeTreesList = _storeTreesList[symRefNum];
-      ListIterator<TR_StoreTreeInfo> si(storeTreesList);
-      TR_StoreTreeInfo *storeTree;
-      for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
+      auto lookup = _storeTreesList->find(symRefNum);
+      if (lookup != _storeTreesList->end())
          {
-         //traceMsg(comp(), "storeTree %p storeNode = %p cursor %p\n", storeTree, storeNode, storeTree->_tt->getNode());
-         if (storeNode == storeTree->_tt->getNode())
+         List<TR_StoreTreeInfo> *storeTreesList = lookup->second;
+         ListIterator<TR_StoreTreeInfo> si(storeTreesList);
+         TR_StoreTreeInfo *storeTree;
+         for (storeTree = si.getCurrent(); storeTree != NULL; storeTree = si.getNext())
             {
-            storeTree->_insertionTreeTop = storeTree->_tt;
-            storeTree->_constNode = _constNode;
-            storeTree->_isAddition = _isAddition;
-            break;
+            //traceMsg(comp(), "storeTree %p storeNode = %p cursor %p\n", storeTree, storeNode, storeTree->_tt->getNode());
+            if (storeNode == storeTree->_tt->getNode())
+               {
+               storeTree->_insertionTreeTop = storeTree->_tt;
+               storeTree->_constNode = _constNode;
+               storeTree->_isAddition = _isAddition;
+               break;
+               }
             }
          }
       }
@@ -4268,13 +4329,13 @@ void TR_LoopStrider::detectLoopsForIndVarConversion(
 
       initializeSymbolsWrittenAndReadExactlyOnce(symRefCount, growable);
 
+      if (_storeTreesList)
+         _storeTreesList->clear();
       _storeTreesList = NULL;
       //_loadUsedInNewLoopIncrementList = NULL;
 
-      _reassociatedAutos = (TR::SymbolReference **)trMemory()->allocateStackMemory(symRefCount*sizeof(TR::SymbolReference *));
-      memset(_reassociatedAutos, 0, symRefCount*sizeof(TR::SymbolReference *));
-      _hoistedAutos = (SymRefPair **)trMemory()->allocateStackMemory(symRefCount*sizeof(SymRefPair *));
-      memset(_hoistedAutos, 0, symRefCount*sizeof(SymRefPair *));
+      _reassociatedAutos->clear();
+      _hoistedAutos->clear();
 
       _numberOfLinearExprs = 0;
       _autosAccessed = NULL;

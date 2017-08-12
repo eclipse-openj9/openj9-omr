@@ -21,6 +21,8 @@
 
 #include "ast.h"
 
+#include <cstring>
+
 struct ASTValue {
     ASTValueType type;
     union {
@@ -43,5 +45,16 @@ struct ASTNode {
     ASTNode* children;
     ASTNode* next;
 };
+
+inline bool operator == (ASTValue lhs, ASTValue rhs) {
+   if (lhs.type == rhs.type) {
+      switch (lhs.type) {
+         case Int64: return lhs.value.int64 == rhs.value.int64;
+         case Double: return lhs.value.f64 == rhs.value.f64;
+         case String: return std::strcmp(lhs.value.str, rhs.value.str) == 0;
+      }
+   }
+   return false;
+}
 
 #endif // AST_HPP

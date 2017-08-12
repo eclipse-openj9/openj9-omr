@@ -40,27 +40,15 @@ ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next)
 }
 
 ASTValue* createInt64Value(uint64_t val) {
-    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-    v->type = Int64;
-    v->value.int64 = val;
-    v->next = NULL;
-    return v;
+    return new ASTValue{val};
 }
 
 ASTValue* createDoubleValue(double val) {
-    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-    v->type = Double;
-    v->value.f64 = val;
-    v->next = NULL;
-    return v;
+    return new ASTValue{val};
 }
 
 ASTValue* createStrValue(const char* val) {
-   ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-   v->type = String;
-   v->value.str = val;
-   v->next = NULL;
-   return v;
+    return new ASTValue{val};
 }
 
 void appendSiblingNode(ASTNode* list, ASTNode* newNode) {
@@ -130,11 +118,11 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
 }
 
 void printASTValueUnion(FILE* file, ASTValue* value) {
-    switch (value->type) {
-        case Int64: fprintf(file, "%lu", value->value.int64); break;
-        case Double: fprintf(file, "%f", value->value.f64); break;
-        case String: fprintf(file, "\"%s\"", value->value.str); break;
-        default: fprintf(file, "{bad arg type %d}", value->type);
+    switch (value->getType()) {
+        case Int64: fprintf(file, "%lu", value->get<ASTValue::Integer_t>()); break;
+        case Double: fprintf(file, "%f", value->get<ASTValue::Double_t>()); break;
+        case String: fprintf(file, "\"%s\"", value->get<ASTValue::String_t>()); break;
+        default: fprintf(file, "{bad arg type %d}", value->getType());
     };
 }
 

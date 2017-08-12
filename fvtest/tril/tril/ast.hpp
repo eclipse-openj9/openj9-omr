@@ -21,17 +21,74 @@
 
 #include "ast.h"
 
+#include <type_traits>
+#include <assert.h>
 #include <cstring>
 
 struct ASTValue {
-    ASTValueType type;
+    private:
+    ASTValueType _type;
     union {
-        uint64_t int64;
-        double f64;
+        uint64_t integer;
+        double floatingPoint;
         const char* str;
-    } value;
+    } _value;
+
+    public:
     ASTValue* next;
+
+    using Integer_t = uint64_t;
+    using Double_t = double;
+    using String_t = const char *;
+
+    explicit ASTValue(Integer_t v) : _type{Int64}, next{nullptr} { _value.integer = v; }
+    explicit ASTValue(Double_t v) : _type{Double}, next{nullptr} { _value.floatingPoint = v; }
+    explicit ASTValue(String_t v) : _type{String}, next{nullptr} { _value.str = v; }
+
+    template <typename T>
+    typename std::enable_if<std::is_integral<T>::value, T>::type get() const {
+        assert(Int64 == _type);
+        return static_cast<T>(_value.integer);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_floating_point<T>::value, T>::type get() const {
+        assert(Double == _type);
+        return static_cast<T>(_value.floatingPoint);
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_same<String_t, T>::value, T>::type get() const {
+        assert(String == _type);
+        return _value.str;
+    }
+
+    template <typename T>
+    typename std::enable_if<std::is_integral<T>::value, bool>::type isCompatibleWith() const {
+        return Int64 == _type;
+    }
+    template <typename T>
+    typename std::enable_if<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
+        return Double == _type;
+    }
+    template <typename T>
+    typename std::enable_if<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
+        return String == _type;
+    }
+
+    ASTValueType getType() const { return _type; }
 };
+
+inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
+   if (lhs.getType() == rhs.getType()) {
+      switch (lhs.getType()) {
+         case Int64: return lhs.get<ASTValue::Integer_t>() == rhs.get<ASTValue::Integer_t>();
+         case Double: return lhs.get<ASTValue::Double_t>() == rhs.get<ASTValue::Double_t>();
+         case String: return std::strcmp(lhs.get<ASTValue::String_t>(), rhs.get<ASTValue::String_t>()) == 0;
+      }
+   }
+   return false;
+}
 
 struct ASTNodeArg {
     const char* name;
@@ -45,16 +102,5 @@ struct ASTNode {
     ASTNode* children;
     ASTNode* next;
 };
-
-inline bool operator == (ASTValue lhs, ASTValue rhs) {
-   if (lhs.type == rhs.type) {
-      switch (lhs.type) {
-         case Int64: return lhs.value.int64 == rhs.value.int64;
-         case Double: return lhs.value.f64 == rhs.value.f64;
-         case String: return std::strcmp(lhs.value.str, rhs.value.str) == 0;
-      }
-   }
-   return false;
-}
 
 #endif // AST_HPP

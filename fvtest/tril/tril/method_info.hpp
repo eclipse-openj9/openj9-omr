@@ -40,20 +40,20 @@ class MethodInfo {
          */
         explicit MethodInfo(const ASTNode* methodNode) : _methodNode{methodNode} {
             auto returnTypeArg = getArgByName(_methodNode, "return");
-            _returnType = getTRDataTypes(returnTypeArg->value->value.str);
+            _returnType = getTRDataTypes(returnTypeArg->value->get<ASTValue::String_t>());
 
             auto argTypesArg = getArgByName(_methodNode, "args");
             if (argTypesArg != nullptr) {
                 auto typeValue = argTypesArg->value;
                 while (typeValue != nullptr) {
-                    _argTypes.push_back(getTRDataTypes(typeValue->value.str));
+                    _argTypes.push_back(getTRDataTypes(typeValue->get<ASTValue::String_t>()));
                     typeValue = typeValue->next;
                 }
             }
 
             auto nameArg = getArgByName(_methodNode, "name");
             if (nameArg != nullptr) {
-                _name = nameArg->value->value.str;
+                _name = nameArg->value->get<ASTValue::String_t>();
             }
         }
 

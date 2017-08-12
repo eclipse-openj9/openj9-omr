@@ -25,8 +25,8 @@ TEST(ASTValueTest, CreateInt64ASTValue) {
 
    auto value = createInt64Value(baseValue);
 
-   ASSERT_EQ(Int64, value->type);
-   ASSERT_EQ(baseValue, value->value.int64);
+   ASSERT_EQ(Int64, value->getType());
+   ASSERT_EQ(baseValue, value->get<ASTValue::Integer_t>());
 }
 
 TEST(ASTValueTest, CreateFloat64ASTValue) {
@@ -34,8 +34,8 @@ TEST(ASTValueTest, CreateFloat64ASTValue) {
 
    auto value = createDoubleValue(baseValue);
 
-   ASSERT_EQ(Double, value->type);
-   ASSERT_EQ(baseValue, value->value.f64);
+   ASSERT_EQ(Double, value->getType());
+   ASSERT_EQ(baseValue, value->get<ASTValue::Double_t>());
 }
 
 TEST(ASTValueTest, CreateStringASTValue) {
@@ -43,8 +43,8 @@ TEST(ASTValueTest, CreateStringASTValue) {
 
    auto value = createStrValue(baseValue);
 
-   ASSERT_EQ(String, value->type);
-   ASSERT_STREQ(baseValue, value->value.str);
+   ASSERT_EQ(String, value->getType());
+   ASSERT_STREQ(baseValue, value->get<ASTValue::String_t>());
 }
 
 TEST(ASTValueTest, CreateValueList) {
@@ -60,18 +60,18 @@ TEST(ASTValueTest, CreateValueList) {
     appendSiblingValue(intValue, stringValue);
 
     auto v = intValue;
-    ASSERT_EQ(Int64, v->type);
-    ASSERT_EQ(intBaseValue, v->value.int64);
+    ASSERT_EQ(Int64, v->getType());
+    ASSERT_EQ(intBaseValue, v->get<ASTValue::Integer_t>());
     ASSERT_EQ(doubleValue, v->next);
 
     v = v->next;
-    ASSERT_EQ(Double, v->type);
-    ASSERT_EQ(doubleBaseValue, v->value.f64);
+    ASSERT_EQ(Double, v->getType());
+    ASSERT_EQ(doubleBaseValue, v->get<ASTValue::Double_t>());
     ASSERT_EQ(stringValue, v->next);
 
     v = v->next;
-    ASSERT_EQ(String, v->type);
-    ASSERT_STREQ(stringBaseValue, v->value.str);
+    ASSERT_EQ(String, v->getType());
+    ASSERT_STREQ(stringBaseValue, v->get<ASTValue::String_t>());
     ASSERT_EQ(NULL, v->next);
 }
 

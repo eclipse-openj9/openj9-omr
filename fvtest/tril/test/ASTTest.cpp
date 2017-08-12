@@ -80,8 +80,8 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustInt64Value) {
    auto value = createInt64Value(baseValue);
    auto arg = createNodeArg(NULL, value, NULL);
 
-   ASSERT_STREQ(NULL, arg->name);
-   ASSERT_EQ(value, arg->value);
+   ASSERT_STREQ(NULL, arg->getName());
+   ASSERT_EQ(value, arg->getValue());
    ASSERT_EQ(NULL, arg->next);
 }
 
@@ -90,8 +90,8 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustFloat64Value) {
    auto value = createDoubleValue(baseValue);
    auto arg = createNodeArg(NULL, value, NULL);
 
-   ASSERT_STREQ(NULL, arg->name);
-   ASSERT_EQ(value, arg->value);
+   ASSERT_STREQ(NULL, arg->getName());
+   ASSERT_EQ(value, arg->getValue());
    ASSERT_EQ(NULL, arg->next);
 }
 
@@ -100,8 +100,8 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustStringValue) {
    auto value = createStrValue(baseValue);
    auto arg = createNodeArg(NULL, value, NULL);
 
-   ASSERT_STREQ(NULL, arg->name);
-   ASSERT_EQ(value, arg->value);
+   ASSERT_STREQ(NULL, arg->getName());
+   ASSERT_EQ(value, arg->getValue());
    ASSERT_EQ(NULL, arg->next);
 }
 
@@ -111,8 +111,8 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithNameAndInt64Value) {
    auto value = createInt64Value(baseValue);
    auto arg = createNodeArg(argName, value, NULL);
 
-   ASSERT_STREQ(argName, arg->name);
-   ASSERT_EQ(value, arg->value);
+   ASSERT_STREQ(argName, arg->getName());
+   ASSERT_EQ(value, arg->getValue());
    ASSERT_EQ(NULL, arg->next);
 }
 
@@ -127,12 +127,12 @@ TEST(ASTNodeArgumentTest, CreateListFrom2SingleNodeArguments) {
    auto value_0 = createDoubleValue(baseValue_0);
    auto arg_0 = createNodeArg(argName_0, value_0, arg_1);
 
-   ASSERT_STREQ(argName_0, arg_0->name);
-   ASSERT_EQ(value_0, arg_0->value);
+   ASSERT_STREQ(argName_0, arg_0->getName());
+   ASSERT_EQ(value_0, arg_0->getValue());
    ASSERT_EQ(arg_1, arg_0->next);
 
-   ASSERT_STREQ(argName_1, arg_1->name);
-   ASSERT_EQ(value_1, arg_1->value);
+   ASSERT_STREQ(argName_1, arg_1->getName());
+   ASSERT_EQ(value_1, arg_1->getValue());
    ASSERT_EQ(NULL, arg_1->next);
 }
 
@@ -149,12 +149,12 @@ TEST(ASTNodeArgumentTest, Concatenate2SingleNodeArguments) {
 
    appendSiblingArg(arg_0, arg_1);
 
-   ASSERT_STREQ(argName_0, arg_0->name);
-   ASSERT_EQ(value_0, arg_0->value);
+   ASSERT_STREQ(argName_0, arg_0->getName());
+   ASSERT_EQ(value_0, arg_0->getValue());
    ASSERT_EQ(arg_1, arg_0->next);
 
-   ASSERT_STREQ(argName_1, arg_1->name);
-   ASSERT_EQ(value_1, arg_1->value);
+   ASSERT_STREQ(argName_1, arg_1->getName());
+   ASSERT_EQ(value_1, arg_1->getValue());
    ASSERT_EQ(NULL, arg_1->next);
 }
 
@@ -176,16 +176,16 @@ TEST(ASTNodeArgumentTest, CreateListFromListOf2AndSingleArgument) {
 
    appendSiblingArg(arg_0, arg_2);
 
-   ASSERT_STREQ(argName_0, arg_0->name);
-   ASSERT_EQ(value_0, arg_0->value);
+   ASSERT_STREQ(argName_0, arg_0->getName());
+   ASSERT_EQ(value_0, arg_0->getValue());
    ASSERT_EQ(arg_1, arg_0->next);
 
-   ASSERT_STREQ(argName_1, arg_1->name);
-   ASSERT_EQ(value_1, arg_1->value);
+   ASSERT_STREQ(argName_1, arg_1->getName());
+   ASSERT_EQ(value_1, arg_1->getValue());
    ASSERT_EQ(arg_2, arg_1->next);
 
-   ASSERT_STREQ(argName_2, arg_2->name);
-   ASSERT_EQ(value_2, arg_2->value);
+   ASSERT_STREQ(argName_2, arg_2->getName());
+   ASSERT_EQ(value_2, arg_2->getValue());
    ASSERT_EQ(NULL, arg_2->next);
 }
 
@@ -208,16 +208,16 @@ TEST(ASTNodeArgumentTest, CreateListFrom3SingleArguments) {
    appendSiblingArg(arg_0, arg_1);
    appendSiblingArg(arg_0, arg_2);
 
-   ASSERT_STREQ(argName_0, arg_0->name);
-   ASSERT_EQ(value_0, arg_0->value);
+   ASSERT_STREQ(argName_0, arg_0->getName());
+   ASSERT_EQ(value_0, arg_0->getValue());
    ASSERT_EQ(arg_1, arg_0->next);
 
-   ASSERT_STREQ(argName_1, arg_1->name);
-   ASSERT_EQ(value_1, arg_1->value);
+   ASSERT_STREQ(argName_1, arg_1->getName());
+   ASSERT_EQ(value_1, arg_1->getValue());
    ASSERT_EQ(arg_2, arg_1->next);
 
-   ASSERT_STREQ(argName_2, arg_2->name);
-   ASSERT_EQ(value_2, arg_2->value);
+   ASSERT_STREQ(argName_2, arg_2->getName());
+   ASSERT_EQ(value_2, arg_2->getValue());
    ASSERT_EQ(NULL, arg_2->next);
 }
 

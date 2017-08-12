@@ -91,9 +91,18 @@ inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
 }
 
 struct ASTNodeArg {
-    const char* name;
-    ASTValue* value;
+    private:
+    const char* _name;
+    const ASTValue* _value;
+
+    public:
     ASTNodeArg* next;
+
+    ASTNodeArg(const char* name, ASTValue* value, ASTNodeArg* next = nullptr)
+        : _name{name}, _value{value}, next{next} {}
+
+    const char* getName() const { return _name; }
+    const ASTValue* getValue() const { return _value; }
 };
 
 struct ASTNode {

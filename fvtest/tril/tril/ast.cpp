@@ -32,11 +32,7 @@ ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  AST
 }
 
 ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
-    ASTNodeArg* a = (ASTNodeArg*)malloc(sizeof(ASTNodeArg));
-    a->name = name;
-    a->value = value;
-    a->next = next;
-    return a;
+    return new ASTNodeArg{name, value, next};
 }
 
 ASTValue* createInt64Value(uint64_t val) {
@@ -81,7 +77,7 @@ uint16_t countNodes(const ASTNode* n) {
 const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
     const ASTNodeArg* arg = node->args;
     while (arg) {
-        if (arg->name != NULL && strcmp(name, arg->name) == 0) { // arg need not have a name
+        if (arg->getName() != NULL && strcmp(name, arg->getName()) == 0) { // arg need not have a name
             return arg;
         }
         arg = arg->next;
@@ -117,7 +113,7 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
     return NULL;
 }
 
-void printASTValueUnion(FILE* file, ASTValue* value) {
+void printASTValueUnion(FILE* file, const ASTValue* value) {
     switch (value->getType()) {
         case Int64: fprintf(file, "%lu", value->get<ASTValue::Integer_t>()); break;
         case Double: fprintf(file, "%f", value->get<ASTValue::Double_t>()); break;
@@ -126,8 +122,8 @@ void printASTValueUnion(FILE* file, ASTValue* value) {
     };
 }
 
-void printASTValue(FILE* file, ASTValue* value) {
-    ASTValue* v = value;
+void printASTValue(FILE* file, const ASTValue* value) {
+    const ASTValue* v = value;
     int isList = v->next != NULL;
     if (isList) {
         printf("[");
@@ -147,10 +143,10 @@ void printASTArgs(FILE* file, ASTNodeArg* args) {
     ASTNodeArg* a = args;
     while (a) {
         printf(" ");
-        if (a->name != NULL && strcmp("", a->name) != 0) {
-            fprintf(file, "%s=", a->name);
+        if (a->getName() != NULL && strcmp("", a->getName()) != 0) {
+            fprintf(file, "%s=", a->getName());
         }
-        printASTValue(file, a->value);
+        printASTValue(file, a->getValue());
         a = a->next;
     }
 }

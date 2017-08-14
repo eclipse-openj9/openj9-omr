@@ -44,3 +44,11 @@ function(omr_stringify output)
 	set(${output} ${result} PARENT_SCOPE)
 endfunction(omr_stringify)
 
+# omr_append_flags(<variable> [<flag>...])
+# Append flags to variable. Flags are space separated.
+# <variable> is a string, <flag> is a list.
+function(omr_append_flags variable)
+	omr_stringify(flags ${ARGN})
+	set(${variable} "${${variable}} ${flags}" PARENT_SCOPE)
+endfunction(omr_append_flags)
+

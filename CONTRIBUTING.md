@@ -3,7 +3,7 @@
 Thanks for your interest in this project.
 
 We welcome and enourage all kinds of contribution to the project, not only code. 
-This can incuding bug reports, user experience feedback, assistance in reproducing
+This includes bug reports, user experience feedback, assistance in reproducing
 issues and more.
 
 This project uses GitHub Issues to track ongoing development, discuss project
@@ -46,9 +46,10 @@ Following these guidelines will help us to merge your pull requests smoothly:
 ## Commit Guidelines
 
 The first line describes the change made. It is written in the imperative mood,
-say what happens when the patch is applied. Keep it short and simple. The first
-line should be less than 50 characters, sentence case, and does not end in a
-period. Leave a blank line between the first line and the message body.
+and should say what happens when the patch is applied. Keep it short and
+simple. The first line should be less than 50 characters, sentence case, and
+does not end in a period. Leave a blank line between the first line and the
+message body.
 
 The body should be wrapped at 72 characters, where reasonable.
 
@@ -71,6 +72,8 @@ When a commit has related issues or commits, explain the relation in the message
 body. You should also leave an `Issue` tag in the footer. For example:
 
 ```
+Correct race in frobnicator 
+
 This patch eliminates the race condition in issue #1234.
 
 Issue: #1234

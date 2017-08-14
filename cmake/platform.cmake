@@ -43,20 +43,8 @@ include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake)
 # Verify toolconfig!
 include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
 
-# Remove a specified option from a variable
-macro(omr_remove_option var opt)
-	string( REGEX REPLACE
-		"(^| )${opt}($| )"
-		""
-		${var}
-		"${${var}}"
-	)
-endmacro(omr_remove_option)
-
-
 omr_add_prefix(OMR_OS_DEFINITIONS_PREFIXED   ${OMR_C_DEFINITION_PREFIX} ${OMR_OS_DEFINITIONS})
 omr_add_prefix(OMR_ARCH_DEFINITIONS_PREFIXED ${OMR_C_DEFINITION_PREFIX} ${OMR_ARCH_DEFINITIONS})
-
 
 add_definitions(
 	${OMR_OS_DEFINITIONS_PREFIXED}

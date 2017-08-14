@@ -37,3 +37,10 @@ function(omr_remove_flags variable)
 	set(${variable} ${result} PARENT_SCOPE)
 endfunction(omr_remove_flags)
 
+# omr_stringify(<output_variable> <item>...)
+# Convert items to a string of space-separated items.
+function(omr_stringify output)
+	string(REPLACE ";" " " result "${ARGN}")
+	set(${output} ${result} PARENT_SCOPE)
+endfunction(omr_stringify)
+

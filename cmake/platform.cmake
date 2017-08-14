@@ -31,18 +31,18 @@ message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 omr_detect_system_information()
 
 # Pickup OS info 
-include(cmake/platform/os/${OMR_HOST_OS}.cmake OPTIONAL)
+include(${OMR_ROOT}/cmake/platform/os/${OMR_HOST_OS}.cmake)
 
 # Pickup Arch Info
-include(cmake/platform/arch/${OMR_HOST_ARCH}.cmake OPTIONAL) 
+include(${OMR_ROOT}/cmake/platform/arch/${OMR_HOST_ARCH}.cmake) 
 
 # Pickup toolconfig based on platform. 
-include(cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake OPTIONAL)
+include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake)
 
 # Verify toolconfig!
-include(cmake/platform/toolcfg/verify.cmake)
+include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
 
-include(cmake/AddPrefix.cmake)
+include(${OMR_ROOT}/cmake/AddPrefix.cmake)
 
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)
@@ -60,10 +60,12 @@ omr_add_prefix(OMR_ARCH_DEFINITIONS_PREFIXED ${OMR_C_DEFINITION_PREFIX} ${OMR_AR
 
 
 add_definitions(
-	${OMR_OS_COMPILE_OPTIONS}
 	${OMR_OS_DEFINITIONS_PREFIXED}
 	${OMR_ARCH_DEFINITIONS_PREFIXED}
 )
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OMR_OS_COMPILE_OPTIONS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OMR_OS_COMPILE_OPTIONS}")
 
 if(OMR_HOST_OS STREQUAL "linux")
 	if(OMR_WARNINGS_AS_ERRORS)

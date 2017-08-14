@@ -70,7 +70,7 @@ class MethodInfo {
         /**
          * @brief Returns the AST representation of the method's body
          */
-        const ASTNode* getBodyAST() const { return _methodNode->children; }
+        const ASTNode* getBodyAST() const { return _methodNode->getChildren(); }
 
         /**
          * @brief Returns the return type of the method

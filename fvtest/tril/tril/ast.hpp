@@ -106,10 +106,21 @@ struct ASTNodeArg {
 };
 
 struct ASTNode {
-    const char* name;
-    ASTNodeArg* args;
-    ASTNode* children;
+    private:
+    const char* _name;
+    ASTNodeArg* _args;
+    ASTNode* _children;
+
+    public:
     ASTNode* next;
+
+    ASTNode(const char* name, ASTNodeArg* args, ASTNode* children, ASTNode* next)
+        : _name{name}, _args{args}, _children{children}, next{next} {}
+
+    const char* getName() const { return _name; }
+    const ASTNodeArg* getArgs() const { return _args; }
+    const ASTNode* getChildren() const { return _children; }
+    int getChildCount() const { return countNodes(_children); }
 };
 
 #endif // AST_HPP

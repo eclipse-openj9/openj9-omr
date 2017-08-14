@@ -52,8 +52,8 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name);
 
 void printASTValueUnion(FILE* file, const ASTValue* value);
 void printASTValue(FILE* file, const ASTValue* value);
-void printASTArgs(FILE* file, ASTNodeArg* args);
-void printTrees(FILE* file, ASTNode* trees, int indent);
+void printASTArgs(FILE* file, const ASTNodeArg* args);
+void printTrees(FILE* file, const ASTNode* trees, int indent);
 
 ASTNode* parseFile(FILE* in);
 ASTNode* parseString(const char* in);

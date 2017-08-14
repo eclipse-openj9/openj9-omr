@@ -21,14 +21,7 @@
 #include <string.h>
 
 ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
-    ASTNode* n = (ASTNode*)malloc(sizeof(ASTNode));
-    //printf("  node at %p\n", n);
-    n->name = name;
-    n->args = args;
-    n->next = next;
-    //printf("  children at %p\n", children);
-    n->children = children;
-    return n;
+    return new ASTNode{name, args, children, next};
 }
 
 ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
@@ -75,7 +68,7 @@ uint16_t countNodes(const ASTNode* n) {
 }
 
 const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
-    const ASTNodeArg* arg = node->args;
+    const ASTNodeArg* arg = node->getArgs();
     while (arg) {
         if (arg->getName() != NULL && strcmp(name, arg->getName()) == 0) { // arg need not have a name
             return arg;
@@ -88,7 +81,7 @@ const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
 const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
     const ASTNode* node = list;
     while (node) {
-        if (strcmp(name, node->name) == 0) {
+        if (strcmp(name, node->getName()) == 0) {
             return node;
         }
         node = node->next;
@@ -99,7 +92,7 @@ const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
 const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
     const ASTNode* node = tree;
     while (node) {
-        if (strcmp(name, node->name) == 0) {
+        if (strcmp(name, node->getName()) == 0) {
             return node;
         }
 
@@ -139,8 +132,8 @@ void printASTValue(FILE* file, const ASTValue* value) {
     }
 }
 
-void printASTArgs(FILE* file, ASTNodeArg* args) {
-    ASTNodeArg* a = args;
+void printASTArgs(FILE* file, const ASTNodeArg* args) {
+    const ASTNodeArg* a = args;
     while (a) {
         printf(" ");
         if (a->getName() != NULL && strcmp("", a->getName()) != 0) {
@@ -151,14 +144,14 @@ void printASTArgs(FILE* file, ASTNodeArg* args) {
     }
 }
 
-void printTrees(FILE* file, ASTNode* trees, int indent) {
-    ASTNode* t = trees;
+void printTrees(FILE* file, const ASTNode* trees, int indent) {
+    const ASTNode* t = trees;
     while(t) {
-        int indentVal = indent*2 + (int)strlen(t->name); // indent with two spaces
-        fprintf(file, "(%p) %*s", t, indentVal, t->name);
-        printASTArgs(file, t->args);
+        int indentVal = indent*2 + (int)strlen(t->getName()); // indent with two spaces
+        fprintf(file, "(%p) %*s", t, indentVal, t->getName());
+        printASTArgs(file, t->getArgs());
         fprintf(file, "\n");
-        printTrees(file, t->children, indent + 1);
+        printTrees(file, t->getChildren(), indent + 1);
         t = t->next;
     }
 }

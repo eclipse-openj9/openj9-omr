@@ -46,7 +46,7 @@
 #include <tpf/c_eb0eb.h>
 #include <tpf/c_proc.h>
 #include "omrport.h"
-#include "portpriv.h"
+#include "omrportpriv.h"
 #include "omrosdump_helpers.h"
 #include "omrsignal.h"
 #include <signal.h>
@@ -121,7 +121,7 @@ uintptr_t
 omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpType, void *userData)
 {
 	uint8_t workspace[PATH_MAX];
-	uint8_t *errMsg = "";
+	char *errMsg = NULL;
 	uint8_t *JVMfn = NULL;
 	uint8_t holdkey = 0;
 
@@ -138,7 +138,7 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		return 1; /* Return Failure. */
 	}
 	s->argv.portLibrary = portLibrary;
-	s->argv.OSFilename = filename;
+	s->argv.OSFilename = (unsigned char *)filename;
 
 	/*
 	 * First, figure out whether or not we have to generate the dump buffer contents.
@@ -219,7 +219,7 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	 */
 	if (!JVMfn) { /* Uh oh. There was an error. What to say?      */
 		if (s->argv.flags & J9TPF_ERRMSG_IN_WKSPC) {
-			errMsg = s->argv.wkSpace; /* The thread told us what to say ...           */
+			errMsg = (char *)s->argv.wkSpace; /* The thread told us what to say ...           */
 		} else { /* How do we come up with a message?            */
 			switch (s->argv.flags & J9TPF_FLAGS_ERR_MASK) {
 			case (J9TPF_JDUMPBUFFER_LOCKED + J9TPF_NO_JAVA_DUMPBUFFER):
@@ -233,8 +233,8 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 				if (s->argv.rc) { /* If the thread left us an errno,      */
 					errMsg = strerror(s->argv.rc); /*see if we can get a decent   */
 				} /* reason out of strerror().    */
-				else if (strlen(s->argv.wkSpace)) { /* Otherwise, see if there's     */
-					errMsg = s->argv.wkSpace; /*	 a message left by the dump writer	*/
+				else if (strlen((char *)s->argv.wkSpace)) { /* Otherwise, see if there's     */
+					errMsg = (char *)s->argv.wkSpace; /*	 a message left by the dump writer	*/
 				} /* If there is, use it.                 */
 				break;
 			case J9TPF_OUT_OF_BUFFERSPACE:
@@ -242,10 +242,10 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 						"insufficient free buffer space to write the core file";
 				break;
 			default:
-				sprintf(workspace,
+				sprintf((const char *)workspace,
 						"unantipated err flag value (0x%X). errno=%x.",
 						s->argv.flags, s->argv.rc);
-				errMsg = workspace;
+				errMsg = (char *)workspace;
 				strcat(errMsg, "\nThere is no system dump to work with.");
 				break;
 			}
@@ -254,24 +254,24 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 				"unable to write ELF core dump: %s\n", errMsg);
 		return 1; /* Report failure, get outta here.      */
 	} else {
-		s->argv.rc = rename(s->argv.wkSpace, JVMfn); /* Success. Return.                     */
+		s->argv.rc = rename((const char *)s->argv.wkSpace, (const char *)JVMfn); /* Success. Return.                     */
 		if ((s->argv.rc < 0) && (errno == ENOENT)) {
 			//Current working directory may be different from target Dump Directory.
 			//In this scenario the dump is already in the target directory.
 			//Therefore re-issue the command using an absolute path name for old
 			//name.
-			targetDirectory = dirname(JVMfn);
+			targetDirectory = dirname((char *)JVMfn);
 			if (targetDirectory == NULL) {
 				portLibrary->tty_err_printf(portLibrary,
 						"Problem determining directory for %s\n", JVMfn);
 			}
 			// +2 for terminating Null and joining path seperator
 			oldPath = alloca(
-					strlen(targetDirectory) + strlen(s->argv.wkSpace) + 2);
+					strlen(targetDirectory) + strlen((const char *)s->argv.wkSpace) + 2);
 			strcpy(oldPath, targetDirectory);
 			strcat(oldPath, "/");
-			strcat(oldPath, s->argv.wkSpace);
-			s->argv.rc = rename(oldPath, JVMfn); /* Success. Return. */
+			strcat(oldPath, (const char *)s->argv.wkSpace);
+			s->argv.rc = rename(oldPath, (const char *)JVMfn); /* Success. Return. */
 			if (s->argv.rc < 0) {
 				portLibrary->tty_err_printf(portLibrary,
 						"Failed to rename: %s\n", oldPath);

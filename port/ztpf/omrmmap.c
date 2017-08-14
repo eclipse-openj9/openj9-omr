@@ -41,10 +41,11 @@
 #include <string.h>
 
 #include "omrport.h"
+#include "omrportasserts.h"
 #include "portnls.h"
-#include "ut_omrprt.h"
+#include "ut_omrport.h"
 #include "protect_helpers.h"
-#include "portpriv.h"
+#include "omrportpriv.h"
 
 
 /**

@@ -60,6 +60,26 @@ struct ASTValue {
     using FloatingPoint_t = double;
     using String_t = const char *;
 
+    /**
+     * STL compatible type traits for working with AST data types
+     *
+     * The `is_*_Compatible` type traits have their `::value` field set to true
+     * if the specified type is compatible with the named type, false otherwise.
+     *
+     * Examples:
+     *
+     * is_Integer_Compatible<int>::value;          // true
+     * is_Integer_Compatible<double>::value;       // false
+     * is_FloatintPoint_Compatible<double>::value; // true
+     * is_String_Compatible<const char*>::value;   // true
+     */
+    template <typename T>
+    using is_Integer_Compatible = std::is_integral<T>;
+    template <typename T>
+    using is_FloatingPoint_Compatible = std::is_floating_point<T>;
+    template <typename T>
+    using is_String_Compatible = std::is_same<String_t, T>;
+
     // constructors
     explicit ASTValue(Integer_t v) : _type{Integer}, next{nullptr} { _value.integer = v; }
     explicit ASTValue(FloatingPoint_t v) : _type{FloatingPoint}, next{nullptr} { _value.floatingPoint = v; }
@@ -86,19 +106,19 @@ struct ASTValue {
      * b.get<int>();    // causes an assertion failure
      */
     template <typename T>
-    typename std::enable_if<std::is_integral<T>::value, T>::type get() const {
+    typename std::enable_if<is_Integer_Compatible<T>::value, T>::type get() const {
         assert(Integer == _type);
         return static_cast<T>(_value.integer);
     }
     template <typename T>
-    typename std::enable_if<std::is_floating_point<T>::value, T>::type get() const {
+    typename std::enable_if<is_FloatingPoint_Compatible<T>::value, T>::type get() const {
         assert(FloatingPoint == _type);
         return static_cast<T>(_value.floatingPoint);
     }
     template <typename T>
-    typename std::enable_if<std::is_same<String_t, T>::value, T>::type get() const {
+    typename std::enable_if<is_String_Compatible<T>::value, T>::type get() const {
         assert(String == _type);
-        return _value.str;
+        return static_cast<T>(_value.str);
     }
 
     /**
@@ -133,15 +153,15 @@ struct ASTValue {
      * b.isCompatibleWith<int>();    // returns false
      */
     template <typename T>
-    typename std::enable_if<std::is_integral<T>::value, bool>::type isCompatibleWith() const {
+    typename std::enable_if<is_Integer_Compatible<T>::value, bool>::type isCompatibleWith() const {
         return Integer == _type;
     }
     template <typename T>
-    typename std::enable_if<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
+    typename std::enable_if<is_FloatingPoint_Compatible<T>::value, bool>::type isCompatibleWith() const {
         return FloatingPoint == _type;
     }
     template <typename T>
-    typename std::enable_if<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
+    typename std::enable_if<is_String_Compatible<T>::value, bool>::type isCompatibleWith() const {
         return String == _type;
     }
 

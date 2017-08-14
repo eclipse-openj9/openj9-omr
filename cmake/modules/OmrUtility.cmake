@@ -19,11 +19,11 @@
 # Given a prefix, and a list of arguments, prefix the list of arguments and
 # assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
 # "-Ia;-Ib;-Ic".
-function(omr_add_prefix out prefix) 
+function(omr_add_prefix out prefix)
    set(ret "")
-   foreach(var IN ITEMS ${ARGN}) 
+   foreach(var IN ITEMS ${ARGN})
       list(APPEND ret "${prefix}${var}")
    endforeach()
    set(${out} ${ret} PARENT_SCOPE)
-endfunction(omr_add_prefix) 
+endfunction(omr_add_prefix)
 

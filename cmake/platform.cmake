@@ -18,6 +18,7 @@
 
 include(OmrAssert)
 include(OmrDetectSystemInformation)
+include(OmrUtility)
 
 ###
 ### Platform flags
@@ -41,8 +42,6 @@ include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake)
 
 # Verify toolconfig!
 include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
-
-include(${OMR_ROOT}/cmake/AddPrefix.cmake)
 
 # Remove a specified option from a variable
 macro(omr_remove_option var opt)

@@ -119,7 +119,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
               default:
                  return nullptr;
            }
-           TraceIL("floating point value %f\n", tree->getArgs()->getValue()->get<ASTValue::Double_t>());
+           TraceIL("floating point value %f\n", tree->getArgs()->getValue()->get<ASTValue::FloatingPoint_t>());
         }
      }
      else if (opcode.isLoadDirect()) {

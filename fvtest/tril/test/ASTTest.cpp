@@ -23,19 +23,19 @@
 TEST(ASTValueTest, CreateInt64ASTValue) {
    auto baseValue = 3UL;
 
-   auto value = createInt64Value(baseValue);
+   auto value = createIntegerValue(baseValue);
 
-   ASSERT_EQ(Int64, value->getType());
+   ASSERT_EQ(ASTValue::Integer, value->getType());
    ASSERT_EQ(baseValue, value->get<ASTValue::Integer_t>());
 }
 
 TEST(ASTValueTest, CreateFloat64ASTValue) {
    auto baseValue = 3.0;
 
-   auto value = createDoubleValue(baseValue);
+   auto value = createFloatingPointValue(baseValue);
 
-   ASSERT_EQ(Double, value->getType());
-   ASSERT_EQ(baseValue, value->get<ASTValue::Double_t>());
+   ASSERT_EQ(ASTValue::FloatingPoint, value->getType());
+   ASSERT_EQ(baseValue, value->get<ASTValue::FloatingPoint_t>());
 }
 
 TEST(ASTValueTest, CreateStringASTValue) {
@@ -43,7 +43,7 @@ TEST(ASTValueTest, CreateStringASTValue) {
 
    auto value = createStrValue(baseValue);
 
-   ASSERT_EQ(String, value->getType());
+   ASSERT_EQ(ASTValue::String, value->getType());
    ASSERT_STREQ(baseValue, value->get<ASTValue::String_t>());
 }
 
@@ -52,32 +52,32 @@ TEST(ASTValueTest, CreateValueList) {
     auto doubleBaseValue = 2.71828;
     auto stringBaseValue = "a string";
 
-    auto intValue = createInt64Value(intBaseValue);
-    auto doubleValue = createDoubleValue(doubleBaseValue);
+    auto intValue = createIntegerValue(intBaseValue);
+    auto doubleValue = createFloatingPointValue(doubleBaseValue);
     auto stringValue = createStrValue(stringBaseValue);
 
     appendSiblingValue(intValue, doubleValue);
     appendSiblingValue(intValue, stringValue);
 
     auto v = intValue;
-    ASSERT_EQ(Int64, v->getType());
+    ASSERT_EQ(ASTValue::Integer, v->getType());
     ASSERT_EQ(intBaseValue, v->get<ASTValue::Integer_t>());
     ASSERT_EQ(doubleValue, v->next);
 
     v = v->next;
-    ASSERT_EQ(Double, v->getType());
-    ASSERT_EQ(doubleBaseValue, v->get<ASTValue::Double_t>());
+    ASSERT_EQ(ASTValue::FloatingPoint, v->getType());
+    ASSERT_EQ(doubleBaseValue, v->get<ASTValue::FloatingPoint_t>());
     ASSERT_EQ(stringValue, v->next);
 
     v = v->next;
-    ASSERT_EQ(String, v->getType());
+    ASSERT_EQ(ASTValue::String, v->getType());
     ASSERT_STREQ(stringBaseValue, v->get<ASTValue::String_t>());
     ASSERT_EQ(NULL, v->next);
 }
 
 TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustInt64Value) {
    auto baseValue = 3UL;
-   auto value = createInt64Value(baseValue);
+   auto value = createIntegerValue(baseValue);
    auto arg = createNodeArg(NULL, value, NULL);
 
    ASSERT_STREQ(NULL, arg->getName());
@@ -87,7 +87,7 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustInt64Value) {
 
 TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustFloat64Value) {
    auto baseValue = 3.0;
-   auto value = createDoubleValue(baseValue);
+   auto value = createFloatingPointValue(baseValue);
    auto arg = createNodeArg(NULL, value, NULL);
 
    ASSERT_STREQ(NULL, arg->getName());
@@ -108,7 +108,7 @@ TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustStringValue) {
 TEST(ASTNodeArgumentTest, CreateNodeArgumentWithNameAndInt64Value) {
    auto baseValue = 3UL;
    auto argName = "the argument name";
-   auto value = createInt64Value(baseValue);
+   auto value = createIntegerValue(baseValue);
    auto arg = createNodeArg(argName, value, NULL);
 
    ASSERT_STREQ(argName, arg->getName());
@@ -124,7 +124,7 @@ TEST(ASTNodeArgumentTest, CreateListFrom2SingleNodeArguments) {
 
    auto baseValue_0 = 3.0;
    auto argName_0 = "the argument name";
-   auto value_0 = createDoubleValue(baseValue_0);
+   auto value_0 = createFloatingPointValue(baseValue_0);
    auto arg_0 = createNodeArg(argName_0, value_0, arg_1);
 
    ASSERT_STREQ(argName_0, arg_0->getName());
@@ -144,7 +144,7 @@ TEST(ASTNodeArgumentTest, Concatenate2SingleNodeArguments) {
 
    auto baseValue_0 = 3.0;
    auto argName_0 = "the argument name";
-   auto value_0 = createDoubleValue(baseValue_0);
+   auto value_0 = createFloatingPointValue(baseValue_0);
    auto arg_0 = createNodeArg(argName_0, value_0, NULL);
 
    appendSiblingArg(arg_0, arg_1);
@@ -161,7 +161,7 @@ TEST(ASTNodeArgumentTest, Concatenate2SingleNodeArguments) {
 TEST(ASTNodeArgumentTest, CreateListFromListOf2AndSingleArgument) {
    auto baseValue_2 = 3.0;
    auto argName_2 = "the argument name";
-   auto value_2 = createDoubleValue(baseValue_2);
+   auto value_2 = createFloatingPointValue(baseValue_2);
    auto arg_2 = createNodeArg(argName_2, value_2, NULL);
 
    auto baseValue_1 = "a simple string";
@@ -171,7 +171,7 @@ TEST(ASTNodeArgumentTest, CreateListFromListOf2AndSingleArgument) {
 
    auto baseValue_0 = 3.0;
    auto argName_0 = "yet another name";
-   auto value_0 = createDoubleValue(baseValue_0);
+   auto value_0 = createFloatingPointValue(baseValue_0);
    auto arg_0 = createNodeArg(argName_0, value_0, arg_1);
 
    appendSiblingArg(arg_0, arg_2);
@@ -192,7 +192,7 @@ TEST(ASTNodeArgumentTest, CreateListFromListOf2AndSingleArgument) {
 TEST(ASTNodeArgumentTest, CreateListFrom3SingleArguments) {
    auto baseValue_2 = 3.0;
    auto argName_2 = "the argument name";
-   auto value_2 = createDoubleValue(baseValue_2);
+   auto value_2 = createFloatingPointValue(baseValue_2);
    auto arg_2 = createNodeArg(argName_2, value_2, NULL);
 
    auto baseValue_1 = "a simple string";
@@ -202,7 +202,7 @@ TEST(ASTNodeArgumentTest, CreateListFrom3SingleArguments) {
 
    auto baseValue_0 = 3.0;
    auto argName_0 = "yet another name";
-   auto value_0 = createDoubleValue(baseValue_0);
+   auto value_0 = createFloatingPointValue(baseValue_0);
    auto arg_0 = createNodeArg(argName_0, value_0, NULL);
 
    appendSiblingArg(arg_0, arg_1);
@@ -241,7 +241,7 @@ TEST(ASTNodeTest, CreateNodeWithJustName) {
 }
 
 TEST(ASTNodeTest, CreateNodeWithJust1Argument) {
-   auto nodeArgValue = createDoubleValue(3.0);
+   auto nodeArgValue = createFloatingPointValue(3.0);
    auto nodeArg = createNodeArg("someArgument", nodeArgValue, NULL);
    auto node = createNode(NULL, nodeArg, NULL, NULL);
 
@@ -252,9 +252,9 @@ TEST(ASTNodeTest, CreateNodeWithJust1Argument) {
 }
 
 ASTNodeArg* getNodeArgList() {
-   auto nodeArgValue_2 = createDoubleValue(3.0);
+   auto nodeArgValue_2 = createFloatingPointValue(3.0);
    auto nodeArg_2 = createNodeArg("someArgument", nodeArgValue_2, NULL);
-   auto nodeArgValue_1 = createInt64Value(3);
+   auto nodeArgValue_1 = createIntegerValue(3);
    auto nodeArg_1 = createNodeArg("someArgument", nodeArgValue_1, nodeArg_2);
    auto nodeArgValue_0 = createStrValue("some string");
    auto nodeArg_0 = createNodeArg("someArgument", nodeArgValue_0, nodeArg_1);

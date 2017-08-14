@@ -109,11 +109,11 @@ value:
     INTEGER
         {
             //printf("Generating value %d\n", $1);
-            $$ = createInt64Value($1);
+            $$ = createIntegerValue($1);
         }
     | DOUBLE
         {
-            $$ = createDoubleValue($1);
+            $$ = createFloatingPointValue($1);
         }
     | STRING
         {

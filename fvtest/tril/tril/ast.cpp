@@ -28,11 +28,11 @@ ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next)
     return new ASTNodeArg{name, value, next};
 }
 
-ASTValue* createInt64Value(uint64_t val) {
+ASTValue* createIntegerValue(uint64_t val) {
     return new ASTValue{val};
 }
 
-ASTValue* createDoubleValue(double val) {
+ASTValue* createFloatingPointValue(double val) {
     return new ASTValue{val};
 }
 
@@ -108,9 +108,9 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
 
 void printASTValueUnion(FILE* file, const ASTValue* value) {
     switch (value->getType()) {
-        case Int64: fprintf(file, "%lu", value->get<ASTValue::Integer_t>()); break;
-        case Double: fprintf(file, "%f", value->get<ASTValue::Double_t>()); break;
-        case String: fprintf(file, "\"%s\"", value->get<ASTValue::String_t>()); break;
+        case ASTValue::Integer: fprintf(file, "%lu", value->get<ASTValue::Integer_t>()); break;
+        case ASTValue::FloatingPoint: fprintf(file, "%f", value->get<ASTValue::FloatingPoint_t>()); break;
+        case ASTValue::String: fprintf(file, "\"%s\"", value->get<ASTValue::String_t>()); break;
         default: fprintf(file, "{bad arg type %d}", value->getType());
     };
 }

@@ -26,8 +26,11 @@
 #include <cstring>
 
 struct ASTValue {
+    public:
+    enum ASTType {Integer, FloatingPoint, String} ;
+
     private:
-    ASTValueType _type;
+    ASTType _type;
     union {
         uint64_t integer;
         double floatingPoint;
@@ -38,22 +41,22 @@ struct ASTValue {
     ASTValue* next;
 
     using Integer_t = uint64_t;
-    using Double_t = double;
+    using FloatingPoint_t = double;
     using String_t = const char *;
 
-    explicit ASTValue(Integer_t v) : _type{Int64}, next{nullptr} { _value.integer = v; }
-    explicit ASTValue(Double_t v) : _type{Double}, next{nullptr} { _value.floatingPoint = v; }
+    explicit ASTValue(Integer_t v) : _type{Integer}, next{nullptr} { _value.integer = v; }
+    explicit ASTValue(FloatingPoint_t v) : _type{FloatingPoint}, next{nullptr} { _value.floatingPoint = v; }
     explicit ASTValue(String_t v) : _type{String}, next{nullptr} { _value.str = v; }
 
     template <typename T>
     typename std::enable_if<std::is_integral<T>::value, T>::type get() const {
-        assert(Int64 == _type);
+        assert(Integer == _type);
         return static_cast<T>(_value.integer);
     }
 
     template <typename T>
     typename std::enable_if<std::is_floating_point<T>::value, T>::type get() const {
-        assert(Double == _type);
+        assert(FloatingPoint == _type);
         return static_cast<T>(_value.floatingPoint);
     }
 
@@ -65,26 +68,26 @@ struct ASTValue {
 
     template <typename T>
     typename std::enable_if<std::is_integral<T>::value, bool>::type isCompatibleWith() const {
-        return Int64 == _type;
+        return Integer == _type;
     }
     template <typename T>
     typename std::enable_if<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
-        return Double == _type;
+        return FloatingPoint == _type;
     }
     template <typename T>
     typename std::enable_if<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
         return String == _type;
     }
 
-    ASTValueType getType() const { return _type; }
+    ASTType getType() const { return _type; }
 };
 
 inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
    if (lhs.getType() == rhs.getType()) {
       switch (lhs.getType()) {
-         case Int64: return lhs.get<ASTValue::Integer_t>() == rhs.get<ASTValue::Integer_t>();
-         case Double: return lhs.get<ASTValue::Double_t>() == rhs.get<ASTValue::Double_t>();
-         case String: return std::strcmp(lhs.get<ASTValue::String_t>(), rhs.get<ASTValue::String_t>()) == 0;
+         case ASTValue::Integer: return lhs.get<ASTValue::Integer_t>() == rhs.get<ASTValue::Integer_t>();
+         case ASTValue::FloatingPoint: return lhs.get<ASTValue::FloatingPoint_t>() == rhs.get<ASTValue::FloatingPoint_t>();
+         case ASTValue::String: return std::strcmp(lhs.get<ASTValue::String_t>(), rhs.get<ASTValue::String_t>()) == 0;
       }
    }
    return false;

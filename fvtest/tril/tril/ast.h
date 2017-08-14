@@ -26,8 +26,6 @@ extern "C" {
 #include <stdio.h>
 #include <stdint.h>
 
-typedef enum {Int64, Double, String} ASTValueType;
-
 typedef struct ASTValue ASTValue;
 typedef struct ASTNodeArg ASTNodeArg;
 typedef struct ASTNode ASTNode;
@@ -36,8 +34,8 @@ ASTNode* createNode(const char* name, ASTNodeArg* args, ASTNode* children,  ASTN
 
 ASTNodeArg* createNodeArg(const char* name, ASTValue * value,  ASTNodeArg* next);
 
-ASTValue* createInt64Value(uint64_t val);
-ASTValue* createDoubleValue(double val);
+ASTValue* createIntegerValue(uint64_t val);
+ASTValue* createFloatingPointValue(double val);
 ASTValue* createStrValue(const char* val);
 
 void appendSiblingNode(ASTNode* list, ASTNode* newNode);

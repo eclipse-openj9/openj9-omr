@@ -24,3 +24,4 @@ set(OMR_OS_DEFINITIONS
 set(OMR_OS_COMPILE_OPTIONS
 	-pthread
 )
+

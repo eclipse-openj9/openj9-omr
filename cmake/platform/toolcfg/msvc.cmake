@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrUtility)
+
 set(OMR_C_DEFINITION_PREFIX /D)
 
 set(OMR_WARNING_AS_ERROR_FLAG /WX)
@@ -45,14 +47,14 @@ macro(omr_toolconfig_global_setup)
 
 
 	# Make sure we are building without incremental linking
-	omr_remove_option(CMAKE_EXE_LINKER_FLAGS "/INCREMENTAL")
-	omr_remove_option(CMAKE_SHARED_LINKER_FLAGS "/INCREMENTAL")
+	omr_remove_flags(CMAKE_EXE_LINKER_FLAGS "/INCREMENTAL")
+	omr_remove_flags(CMAKE_SHARED_LINKER_FLAGS "/INCREMENTAL")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /INCREMENTAL:NO /NOLOGO")
 	foreach(build_type IN LISTS CMAKE_CONFIGURATION_TYPES)
 		string(TOUPPER "${build_type}" build_type)
-		omr_remove_option("CMAKE_EXE_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
-		omr_remove_option("CMAKE_SHARED_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
+		omr_remove_flags("CMAKE_EXE_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
+		omr_remove_flags("CMAKE_SHARED_LINKER_FLAGS_${build_type}" "/INCREMENTAL")
 	endforeach()
 
 	if(OMR_ENV_DATA64)
@@ -62,8 +64,7 @@ macro(omr_toolconfig_global_setup)
 	endif()
 
 	#strip out exception handling flags (added by default by cmake)
-	omr_remove_option(CMAKE_CXX_FLAGS "/EHsc")
-	omr_remove_option(CMAKE_CXX_FLAGS "/GR")
+	omr_remove_flags(CMAKE_CXX_FLAGS "/EHsc" "/GR")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${common_flags}")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${common_flags}")
 

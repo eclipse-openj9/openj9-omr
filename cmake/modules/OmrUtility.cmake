@@ -27,13 +27,13 @@ function(omr_add_prefix out prefix)
    set(${out} ${ret} PARENT_SCOPE)
 endfunction(omr_add_prefix)
 
-# Remove a specified option from a variable
-macro(omr_remove_option var opt)
-	string( REGEX REPLACE
-		"(^| )${opt}($| )"
-		""
-		${var}
-		"${${var}}"
-	)
-endmacro(omr_remove_option)
+# omr_remove_flags(<variable> [<flag>...])
+# Remove flags from a string.
+function(omr_remove_flags variable)
+	set(result "${${variable}}")
+	foreach(option IN ITEMS ${ARGN})
+		string(REGEX REPLACE "(^| )${option}($| )" "" result "${result}")
+	endforeach()
+	set(${variable} ${result} PARENT_SCOPE)
+endfunction(omr_remove_flags)
 

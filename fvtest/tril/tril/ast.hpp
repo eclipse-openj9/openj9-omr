@@ -102,6 +102,21 @@ struct ASTValue {
     }
 
     /**
+     * @brief Return the contained value as its underlying integer type, if that is its type
+     */
+    Integer_t getInteger() const { assert(Integer == _type); return _value.integer; }
+
+    /**
+     * @brief Return the contained value as its underlying floating point type, if that is its type
+     */
+    FloatingPoint_t getFloatingPoint() const { assert(FloatingPoint == _type); return _value.floatingPoint; }
+
+    /**
+     * @brief Return the contained value as its underlying string type, if that is its type
+     */
+    String_t getString() const { assert(String == _type); return _value.str; }
+
+    /**
      * @brief Checks whether the type of the contained value and the specified type are compatible
      * @tparam T is the type to be checked for compatibility
      *
@@ -157,9 +172,9 @@ struct ASTValue {
 inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
    if (lhs.getType() == rhs.getType()) {
       switch (lhs.getType()) {
-         case ASTValue::Integer: return lhs.get<ASTValue::Integer_t>() == rhs.get<ASTValue::Integer_t>();
-         case ASTValue::FloatingPoint: return lhs.get<ASTValue::FloatingPoint_t>() == rhs.get<ASTValue::FloatingPoint_t>();
-         case ASTValue::String: return std::strcmp(lhs.get<ASTValue::String_t>(), rhs.get<ASTValue::String_t>()) == 0;
+         case ASTValue::Integer: return lhs.getInteger() == rhs.getInteger();
+         case ASTValue::FloatingPoint: return lhs.getFloatingPoint() == rhs.getFloatingPoint();
+         case ASTValue::String: return std::strcmp(lhs.getString(), rhs.getString()) == 0;
       }
    }
    return false;

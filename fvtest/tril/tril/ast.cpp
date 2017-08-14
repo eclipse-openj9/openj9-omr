@@ -108,9 +108,9 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
 
 void printASTValueUnion(FILE* file, const ASTValue* value) {
     switch (value->getType()) {
-        case ASTValue::Integer: fprintf(file, "%lu", value->get<ASTValue::Integer_t>()); break;
-        case ASTValue::FloatingPoint: fprintf(file, "%f", value->get<ASTValue::FloatingPoint_t>()); break;
-        case ASTValue::String: fprintf(file, "\"%s\"", value->get<ASTValue::String_t>()); break;
+        case ASTValue::Integer: fprintf(file, "%lu", value->getInteger()); break;
+        case ASTValue::FloatingPoint: fprintf(file, "%f", value->getFloatingPoint()); break;
+        case ASTValue::String: fprintf(file, "\"%s\"", value->getString()); break;
         default: fprintf(file, "{bad arg type %d}", value->getType());
     };
 }

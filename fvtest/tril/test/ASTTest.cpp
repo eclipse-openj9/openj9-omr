@@ -61,17 +61,17 @@ TEST(ASTValueTest, CreateValueList) {
 
     auto v = intValue;
     ASSERT_EQ(ASTValue::Integer, v->getType());
-    ASSERT_EQ(intBaseValue, v->get<ASTValue::Integer_t>());
+    ASSERT_EQ(intBaseValue, v->getInteger());
     ASSERT_EQ(doubleValue, v->next);
 
     v = v->next;
     ASSERT_EQ(ASTValue::FloatingPoint, v->getType());
-    ASSERT_EQ(doubleBaseValue, v->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(doubleBaseValue, v->getFloatingPoint());
     ASSERT_EQ(stringValue, v->next);
 
     v = v->next;
     ASSERT_EQ(ASTValue::String, v->getType());
-    ASSERT_STREQ(stringBaseValue, v->get<ASTValue::String_t>());
+    ASSERT_STREQ(stringBaseValue, v->getString());
     ASSERT_EQ(NULL, v->next);
 }
 

@@ -109,7 +109,7 @@ TEST(ParserTest, SingleNodeWithIntArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(3, arg->getValue()->get<ASTValue::Integer_t>());
+    ASSERT_EQ(3, arg->getValue()->getInteger());
     ASSERT_NULL(arg->next);
 }
 
@@ -125,7 +125,7 @@ TEST(ParserTest, SingleNodeWithFloatArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(3.00, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(3.00, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
 
@@ -141,7 +141,7 @@ TEST(ParserTest, SingleNodeWithStringArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("foo", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("foo", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
@@ -157,7 +157,7 @@ TEST(ParserTest, SingleNodeWithIdentiferArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("id", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("id", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
@@ -173,7 +173,7 @@ TEST(ParserTest, SingleNodeWithCommandArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("@cmd", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("@cmd", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
@@ -189,7 +189,7 @@ TEST(ParserTest, SingleNodeWithNamedArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(3.14, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(3.14, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
 
@@ -205,7 +205,7 @@ TEST(ParserTest, SingleNodeWithNamedIdentifierArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("ID", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("ID", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
@@ -221,7 +221,7 @@ TEST(ParserTest, SingleNodeWithNamedCommandArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("@cmd", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("@cmd", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
@@ -237,13 +237,13 @@ TEST(ParserTest, SingleNodeWithNamedArgAndAnonymousArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("foo", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("foo", arg->getValue()->getString());
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(6.33, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(6.33, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
 
@@ -262,17 +262,17 @@ TEST(ParserTest, SingleNodeWithNamedListArg) {
 
     auto value = arg->getValue();
     ASSERT_EQ(ASTValue::Integer, value->getType());
-    ASSERT_EQ(5, value->get<ASTValue::Integer_t>());
+    ASSERT_EQ(5, value->getInteger());
     ASSERT_NOTNULL(value->next);
 
     value = value->next;
     ASSERT_EQ(ASTValue::FloatingPoint, value->getType());
-    ASSERT_EQ(3.14159, value->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(3.14159, value->getFloatingPoint());
     ASSERT_NOTNULL(value->next);
 
     value = value->next;
     ASSERT_EQ(ASTValue::String, value->getType());
-    ASSERT_STREQ("foo", value->get<ASTValue::String_t>());
+    ASSERT_STREQ("foo", value->getString());
     ASSERT_NULL(value->next);
 }
 
@@ -288,13 +288,13 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndNamedArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(5.11, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(5.11, arg->getValue()->getFloatingPoint());
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("arg2", arg->getName());
     ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(2, arg->getValue()->get<ASTValue::Integer_t>());
+    ASSERT_EQ(2, arg->getValue()->getInteger());
     ASSERT_NULL(arg->next);
 }
 
@@ -310,7 +310,7 @@ TEST(ParserTest, SingleNodeWithNamedArgAndChild) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(3, arg->getValue()->get<ASTValue::Integer_t>());
+    ASSERT_EQ(3, arg->getValue()->getInteger());
     ASSERT_NULL(arg->next);
 
     trees = trees->getChildren();
@@ -332,7 +332,7 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndChildWithNamedArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("bar", arg->getValue()->get<ASTValue::String_t>());
+    ASSERT_STREQ("bar", arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 
     trees = trees->getChildren();
@@ -344,7 +344,7 @@ TEST(ParserTest, SingleNodeWithAnonymousArgAndChildWithNamedArg) {
     arg = trees->getArgs();
     ASSERT_STREQ("arg", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(4.0, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(4.0, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
 
@@ -360,13 +360,13 @@ TEST(ParserTest, SingleNodeWithTwoAnonymousArgs) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(2.71828, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(2.71828, arg->getValue()->getFloatingPoint());
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(3.14159, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(3.14159, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
 
@@ -382,12 +382,12 @@ TEST(ParserTest, SingleNodeWithTwoNamedArgs) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("pi", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(3.14159, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(3.14159, arg->getValue()->getFloatingPoint());
     ASSERT_NOTNULL(arg->next);
 
     arg = arg->next;
     ASSERT_STREQ("e", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(2.71828, arg->getValue()->get<ASTValue::FloatingPoint_t>());
+    ASSERT_EQ(2.71828, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }

@@ -82,7 +82,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
 
      if (strcmp("@common", tree->getName()) == 0) {
          auto idArg = getArgByName(tree, "id");
-         auto id = idArg->getValue()->get<ASTValue::String_t>();
+         auto id = idArg->getValue()->getString();
          auto iter = _nodeMap.find(id);
          if (iter != _nodeMap.end()) {
              auto n = iter->second;
@@ -119,7 +119,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
               default:
                  return nullptr;
            }
-           TraceIL("floating point value %f\n", tree->getArgs()->getValue()->get<ASTValue::FloatingPoint_t>());
+           TraceIL("floating point value %f\n", tree->getArgs()->getValue()->getFloatingPoint());
         }
      }
      else if (opcode.isLoadDirect()) {
@@ -133,7 +133,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
              node = TR::Node::createLoad(symref);
          }
          else if (strcmp("temp", tree->getArgs()->getName()) == 0) {
-             const auto symName = tree->getArgs()->getValue()->get<ASTValue::String_t>();
+             const auto symName = tree->getArgs()->getValue()->getString();
              TraceIL("temporary %s\n", symName);
              auto symref = _symRefMap[symName];
              node = TR::Node::createLoad(symref);
@@ -148,7 +148,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
 
         // the name of the first argument tells us what kind of symref we're storing to
         if (strcmp("temp", tree->getArgs()->getName()) == 0) {
-            const auto symName = tree->getArgs()->getValue()->get<ASTValue::String_t>();
+            const auto symName = tree->getArgs()->getValue()->getString();
             TraceIL("temporary %s\n", symName);
 
             // check if a symref has already been created for the temp
@@ -178,7 +178,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          node = TR::Node::createWithSymRef(opcode.getOpCodeValue(), childCount, symref);
      }
      else if (opcode.isIf()) {
-         const auto targetName = tree->getArgs()->getValue()->get<ASTValue::String_t>();
+         const auto targetName = tree->getArgs()->getValue()->getString();
          auto targetId = _blockMap[targetName];
          auto targetEntry = _blocks[targetId]->getEntry();
          TraceIL("  is if with target block %d (%s, entry = %p", targetId, targetName, targetEntry);
@@ -195,7 +195,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          node = TR::Node::createif(opcode.getOpCodeValue(), c1, c2, targetEntry);
      }
      else if (opcode.isBranch()) {
-         const auto targetName = tree->getArgs()->getValue()->get<ASTValue::String_t>();
+         const auto targetName = tree->getArgs()->getValue()->getString();
          auto targetId = _blockMap[targetName];
          auto targetEntry = _blocks[targetId]->getEntry();
          TraceIL("  is branch to target block %d (%s, entry = %p", targetId, targetName, targetEntry);
@@ -211,7 +211,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
 
      auto nodeIdArg = getArgByName(tree, "id");
      if (nodeIdArg != nullptr) {
-         auto id = nodeIdArg->getValue()->get<ASTValue::String_t>();
+         auto id = nodeIdArg->getValue()->getString();
          _nodeMap[id] = node;
          TraceIL("  node ID %s\n", id);
      }
@@ -257,7 +257,7 @@ bool Tril::TRLangBuilder::cfgFor(const ASTNode* const tree) {
        TraceIL("Added CFG edge from block %d to @exit -> %s\n", _currentBlockNumber, tree->getName());
    }
    else if (opcode.isBranch()) {
-      const auto targetName = tree->getArgs()->getValue()->get<ASTValue::String_t>();
+      const auto targetName = tree->getArgs()->getValue()->getString();
       auto targetId = _blockMap[targetName];
       cfg()->addEdge(_currentBlock, _blocks[targetId]);
       isFallthroughNeeded = isFallthroughNeeded && opcode.isIf();
@@ -293,7 +293,7 @@ bool Tril::TRLangBuilder::injectIL() {
        const ASTNodeArg* a = block->getArgs();
        while (a) {
            if (strcmp("name", a->getName()) == 0) {
-               auto name = a->getValue()->get<ASTValue::String_t>();
+               auto name = a->getValue()->getString();
                _blockMap[name] = blockIndex;
                TraceIL("Name of block %d set to \"%s\"\n", blockIndex, name);
            }
@@ -338,7 +338,7 @@ bool Tril::TRLangBuilder::injectIL() {
        // create fall-through edge
        auto fallthroughArg = getArgByName(block, "fallthrough");
        if (fallthroughArg != nullptr) {
-           auto target = std::string(fallthroughArg->getValue()->get<ASTValue::String_t>());
+           auto target = std::string(fallthroughArg->getValue()->getString());
            if (target == "@exit") {
                cfg()->addEdge(_currentBlock, cfg()->getEnd());
                TraceIL("Added fallthrough edge from block %d to \"%s\"\n", _currentBlockNumber, target.c_str());

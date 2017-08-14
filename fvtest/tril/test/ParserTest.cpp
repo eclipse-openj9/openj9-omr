@@ -113,6 +113,39 @@ TEST(ParserTest, SingleNodeWithIntArg) {
     ASSERT_NULL(arg->next);
 }
 
+TEST(ParserTest, SingleNodeWithHexArg) {
+    auto trees = parseString("(nodeName 0xabc123)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->getName());
+    ASSERT_NOTNULL(trees->getArgs());
+    ASSERT_NULL(trees->getChildren());
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->getArgs();
+    ASSERT_STREQ("", arg->getName());
+    ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
+    ASSERT_EQ(0xabc123, arg->getValue()->getInteger());
+    ASSERT_NULL(arg->next);
+}
+
+TEST(ParserTest, SingleNodeWithNegativeHexArg) {
+    auto trees = parseString("(nodeName -0x249DEF)");
+
+    ASSERT_NOTNULL(trees);
+    ASSERT_STREQ("nodeName", trees->getName());
+    ASSERT_NOTNULL(trees->getArgs());
+    ASSERT_NULL(trees->getChildren());
+    ASSERT_NULL(trees->next);
+
+    auto arg = trees->getArgs();
+    ASSERT_STREQ("", arg->getName());
+    ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
+    ASSERT_EQ(-0x249DEF, arg->getValue()->getInteger());
+    ASSERT_NULL(arg->next);
+}
+
+
 TEST(ParserTest, SingleNodeWithFloatArg) {
     auto trees = parseString("(nodeName 3.00)");
 

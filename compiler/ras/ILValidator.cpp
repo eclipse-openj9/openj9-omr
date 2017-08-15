@@ -39,6 +39,7 @@
 
 TR::ILValidator::ILValidator(TR::Compilation *comp)
    :_comp(comp)
+   ,_isValidSoFar(true)
    ,_nodeStates(comp->trMemory())
    ,_liveNodes(_nodeStates, comp->trMemory())
    {

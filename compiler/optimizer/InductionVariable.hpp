@@ -301,14 +301,28 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    int64_t **_linearEquations;
    TR::Node **_loadUsedInNewLoopIncrement;
-   TR::SymbolReference **_reassociatedAutos;
+
+   typedef TR::typed_allocator<std::pair<uint32_t, TR::SymbolReference*>, TR::Region&> SymRefMapAllocator;
+   typedef std::less<uint32_t> SymRefMapComparator;
+   typedef std::map<uint32_t, TR::SymbolReference*, SymRefMapComparator, SymRefMapAllocator> SymRefMap;
+   SymRefMap *_reassociatedAutos;
+
    List<TR::Node> _reassociatedNodes;
 
-   List<TR_StoreTreeInfo> **_storeTreesList;
+   typedef TR::typed_allocator<std::pair<uint32_t, List<TR_StoreTreeInfo> *>, TR::Region&> StoreTreeMapAllocator;
+   typedef std::less<uint32_t> StoreTreeMapComparator;
+   typedef std::map<uint32_t, List<TR_StoreTreeInfo>*, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
+   StoreTreeMap  _storeTreesSingleton;
+   StoreTreeMap *_storeTreesList;
    //List<TR::Node> **_loadUsedInNewLoopIncrementList;
 
    int32_t _numSymRefs;
-   SymRefPair **_hoistedAutos;
+
+   typedef TR::typed_allocator<std::pair<uint32_t, SymRefPair*>, TR::Region&> SymRefPairMapAllocator;
+   typedef std::less<uint32_t> SymRefPairMapComparator;
+   typedef std::map<uint32_t, SymRefPair*, SymRefPairMapComparator, SymRefPairMapAllocator> SymRefPairMap;
+   SymRefPairMap *_hoistedAutos;
+
    SymRefPair *_parmAutoPairs;
    int32_t _count;
    int32_t _numberOfLinearExprs, _numInternalPointers;

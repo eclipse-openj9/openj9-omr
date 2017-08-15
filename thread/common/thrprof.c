@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.) - z/TPF does not have getrusage().
  *******************************************************************************/
 
 /**
@@ -715,7 +716,7 @@ omrthread_get_process_times(omrthread_process_time_t *processTime)
 		}
 #endif	/* WIN32 || WIN64*/
 
-#if defined(LINUX) || defined(AIXPPC) || defined(OSX)
+#if (defined(LINUX) && !defined(J9ZTPF)) || defined(AIXPPC) || defined(OSX)
 		struct rusage rUsage;
 		memset(&rUsage, 0, sizeof(rUsage));
 

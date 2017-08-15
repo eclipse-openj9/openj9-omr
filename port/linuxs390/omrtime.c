@@ -175,14 +175,13 @@ omrtime_current_time_millis(struct OMRPortLibrary *portLibrary)
 int64_t
 omrtime_nano_time(struct OMRPortLibrary *portLibrary)
 {
-	struct timespec ts;
-	int64_t hiresTime = 0;
+	const int64_t subnanosec = maxprec();
 
-	if (0 == clock_gettime(OMRTIME_NANO_CLOCK, &ts)) {
-		hiresTime = ((int64_t)ts.tv_sec * OMRTIME_NANOSECONDS_PER_SECOND) + (int64_t)ts.tv_nsec;
-	}
+	// calculate nanosec = subnanosec * NUMERATOR / DENOMINATOR via integer arithmetics
+	const int64_t nanosec = muldiv64(subnanosec,
+			OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR, OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR);
 
-	return hiresTime;
+	return nanosec;
 }
 
 /**

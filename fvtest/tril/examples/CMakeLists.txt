@@ -20,9 +20,5 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 project(tril_examples)
 
-if(NOT DEFINED tril_DIR)
-    set(tril_DIR ${CMAKE_CURRENT_LIST_DIR}/../tril/build)
-endif()
-
 add_subdirectory(incordec)
 add_subdirectory(mandelbrot)

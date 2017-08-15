@@ -16,12 +16,15 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrAssert)
+
+omr_assert(TEST OMR_FVTEST)
+
 add_subdirectory(util)
 
 add_subdirectory(omrGtestGlue)
 add_subdirectory(algotest)
 add_subdirectory(gctest)
-# add_subdirectory(jitbuildertest)
 add_subdirectory(porttest)
 # add_subdirectory(rastest)
 add_subdirectory(sigtest)
@@ -30,7 +33,15 @@ add_subdirectory(threadtest)
 add_subdirectory(utiltest)
 add_subdirectory(vmtest)
 
+if (OMR_JITBUILDER)
+	add_subdirectory(jitbuildertest)
+endif()
 
 if(OMR_TEST_COMPILER)
 	add_subdirectory(compilertest)
+endif()
+
+if(OMR_JITBUILDER)
+	add_subdirectory(compilertriltest)
+	add_subdirectory(tril/test)
 endif()

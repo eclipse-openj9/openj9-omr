@@ -232,13 +232,6 @@ class MaxIfThenMethod : public TR::MethodBuilder
    virtual bool buildIL();
    };
 
-class SubIfFalseThenMethod : public TR::MethodBuilder
-   {
-   public:
-   SubIfFalseThenMethod(TR::TypeDictionary *types, BuilderTest *test);
-   virtual bool buildIL();
-   };
-
 class IfThenElseLoopMethod : public TR::MethodBuilder
    {
    public:

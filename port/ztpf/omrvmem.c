@@ -15,6 +15,7 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
  *    Multiple authors (IBM Corp.) - refactoring and modifications for z/TPF platform
+ *    James Johnston (IBM Corp.) - fixes to get an initial clean build.
  *******************************************************************************/
 
 /**
@@ -25,17 +26,20 @@
 
 /* for syscall */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 
 #include "omrport.h"
-#include "portpriv.h"
+#include "omrportpriv.h"
 #include "omrportpg.h"
-#include "ut_omrprt.h"
+#include "ut_omrport.h"
 #include "omrportasserts.h"
 #include "omrvmem.h"
 
 #include <dirent.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -706,9 +710,9 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary,
 		update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 		Trc_PRT_vmem_omrvmem_reserve_memory_invalid_input();
 	} else if (PPG_vmem_pageSize[0] == params->pageSize) {
-		uintptr_t alignmentInBytes = max(params->pageSize,
+		uintptr_t alignmentInBytes = OMR_MAX(params->pageSize,
 				params->alignmentInBytes);
-		uintptr_t minimumGranule = min(params->pageSize, params->alignmentInBytes);
+		uintptr_t minimumGranule = OMR_MIN(params->pageSize, params->alignmentInBytes);
 
 		/* Make sure that the alignment is a multiple of both requested alignment and page size (enforces that arguments are powers of two and, thus, their max is their lowest common multiple) */
 		if ((0 == minimumGranule)
@@ -719,9 +723,9 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary,
 					params->options, params->mode);
 		}
 	} else if (PPG_vmem_pageSize[1] == params->pageSize) {
-		uintptr_t largePageAlignmentInBytes = max(params->pageSize,
+		uintptr_t largePageAlignmentInBytes = OMR_MAX(params->pageSize,
 				params->alignmentInBytes);
-		uintptr_t largePageMinimumGranule = min(params->pageSize,
+		uintptr_t largePageMinimumGranule = OMR_MIN(params->pageSize,
 				params->alignmentInBytes);
 
 		/* Make sure that the alignment is a multiple of both requested alignment and page size (enforces that arguments are powers of two and, thus, their max is their lowest common multiple) */
@@ -739,9 +743,9 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary,
 				printf("\t\t\t NULL == memoryPointer, reverting to default pages\n");fflush(stdout);
 #endif
 				uintptr_t defaultPageSize = PPG_vmem_pageSize[0];
-				uintptr_t alignmentInBytes = max(defaultPageSize,
+				uintptr_t alignmentInBytes = OMR_MAX(defaultPageSize,
 						params->alignmentInBytes);
-				uintptr_t minimumGranule = min(defaultPageSize,
+				uintptr_t minimumGranule = OMR_MIN(defaultPageSize,
 						params->alignmentInBytes);
 
 				/* Make sure that the alignment is a multiple of both requested alignment and page size (enforces that arguments are powers of two and, thus, their max is their lowest common multiple) */

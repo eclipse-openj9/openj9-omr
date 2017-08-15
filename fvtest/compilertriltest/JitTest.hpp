@@ -27,6 +27,8 @@
 #define EXPECT_NULL(pointer) EXPECT_EQ(nullptr, (pointer))
 #define EXPECT_NOTNULL(pointer) EXPECT_TRUE(nullptr != (pointer))
 
+#define TRIL(code) #code
+
 extern "C" bool initializeJitWithOptions(char *options);
 
 namespace TRTest
@@ -118,6 +120,42 @@ C filter(C range, Predicate pred) {
     range.erase(end, range.end());
     return range;
 }
+
+/**
+ * @brief A family of functions returning constants of the specified type
+ */
+template <typename T> constexpr T zero_value() { return static_cast<T>(0); }
+template <typename T> constexpr T one_value() { return static_cast<T>(1); }
+template <typename T> constexpr T negative_one_value() { return static_cast<T>(-1); }
+template <typename T> constexpr T positive_value() { return static_cast<T>(42); }
+template <typename T> constexpr T negative_value() { return static_cast<T>(-42); }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <typename T>
+std::vector<T> const_values()
+   {
+   return std::vector<T>{ zero_value<T>(),
+                          one_value<T>(),
+                          negative_one_value<T>(),
+                          positive_value<T>(),
+                          negative_value<T>(),
+                          std::numeric_limits<T>::min(),
+                          std::numeric_limits<T>::max(),
+                          std::numeric_limits<T>::min() + 1,
+                          std::numeric_limits<T>::max() - 1
+                        };
+   }
+
+/**
+ * @brief Convenience function returning pairs of possible test inputs of the specified types
+ */
+template <typename L, typename R>
+std::vector<std::tuple<L,R>> const_value_pairs()
+   {
+   return TRTest::combine(const_values<L>(), const_values<R>());
+   }
 
 } // namespace CompTest
 

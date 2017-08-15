@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-ASTNode* createNode(char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
+ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
     ASTNode* n = (ASTNode*)malloc(sizeof(ASTNode));
     //printf("  node at %p\n", n);
     n->name = name;

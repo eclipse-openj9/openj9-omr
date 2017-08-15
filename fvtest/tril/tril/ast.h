@@ -51,13 +51,13 @@ struct ASTNodeArg {
 struct ASTNode;
 typedef struct ASTNode ASTNode;
 struct ASTNode {
-    char* name;
+    const char* name;
     ASTNodeArg* args;
     ASTNode* children;
     ASTNode* next;
 };
 
-ASTNode* createNode(char* name, ASTNodeArg* args, ASTNode* children,  ASTNode* next);
+ASTNode* createNode(const char* name, ASTNodeArg* args, ASTNode* children,  ASTNode* next);
 
 ASTNodeArg* createNodeArg(const char* name, ASTValue * value,  ASTNodeArg* next);
 

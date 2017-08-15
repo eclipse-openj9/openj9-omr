@@ -30,7 +30,8 @@ OBJECTS := \
 	AnonymousTest \
 	ControlFlowTest \
 	SystemLinkageTest \
-	WorklistTest
+	WorklistTest \
+	IfThenElseTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

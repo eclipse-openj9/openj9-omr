@@ -97,12 +97,16 @@ class TR_LiveRangeSplitter : public TR::Optimization
    virtual int32_t perform();
    virtual const char * optDetailString() const throw();
 
+   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef std::less<uint32_t> SymRefCandidateMapComparator;
+   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
+
    void splitLiveRanges();
    void splitLiveRanges(TR_StructureSubGraphNode *structureNode);
-   void replaceAutosUsedIn(TR::TreeTop *currentTree, TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, List<TR::Block> *exitBlocks, vcount_t visitCount, int32_t executionFrequency, TR_RegisterCandidate **registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBereplacedInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
+   void replaceAutosUsedIn(TR::TreeTop *currentTree, TR::Node *node, TR::Node *parent, TR::Block * block, List<TR::Block> *blocksInLoop, List<TR::Block> *exitBlocks, vcount_t visitCount, int32_t executionFrequency, SymRefCandidateMap &registerCandidates, TR_SymRefCandidatePair **correspondingSymRefs, TR_BitVector *replacedAutosInCurrentLoop, TR_BitVector *autosThatCannotBereplacedInCurrentLoop, TR_StructureSubGraphNode *loop, TR::Block *loopInvariantBlock);
    void placeStoresInLoopExits(TR::Node *node, TR_StructureSubGraphNode *loop, List<TR::Block> *blocksInLoop, TR::SymbolReference *orig, TR::SymbolReference *replacement);
    TR_SymRefCandidatePair *splitAndFixPreHeader(TR::SymbolReference *symRef, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, TR::Node *node);
-   void fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefCandidatePair *correspondingSymRefCandidate, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::Node *node, TR_RegisterCandidate **registerCandidates, TR_StructureSubGraphNode *loop, TR_BitVector *replacedAutosInCurrentLoop, TR::SymbolReference *origSymRef);
+   void fixExitsAfterSplit(TR::SymbolReference *symRef, TR_SymRefCandidatePair *correspondingSymRefCandidate, TR_SymRefCandidatePair **correspondingSymRefs, TR::Block *loopInvariantBlock, List<TR::Block> *blocksInLoop, TR::Node *node, SymRefCandidateMap &registerCandidates, TR_StructureSubGraphNode *loop, TR_BitVector *replacedAutosInCurrentLoop, TR::SymbolReference *origSymRef);
    void appendStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
    void prependStoreToBlock(TR::SymbolReference *storeSymRef, TR::SymbolReference *loadSymRef, TR::Block *block, TR::Node *node);
 
@@ -170,13 +174,16 @@ public:
    TR::Node *           resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode);
 
 private:
+   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef std::less<uint32_t> SymRefCandidateMapComparator;
+   typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
    void                findIfThenRegisterCandidates();
    void                findLoopAutoRegisterCandidates();
-   void                findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *, vcount_t, TR_RegisterCandidate **);
+   void                findLoopsAndCorrespondingAutos(TR_StructureSubGraphNode *, vcount_t, SymRefCandidateMap &);
    void                findLoopsAndAutosNoStructureInfo(vcount_t visitCount, TR_RegisterCandidate **registerCandidates);
    void                initializeControlFlowInfo();
-   void                markAutosUsedIn(TR::Node *, TR::Node *, TR::Node *, TR::Node **, TR::Block *, List<TR::Block> *, vcount_t, int32_t, TR_RegisterCandidate **, TR_BitVector *, TR_BitVector *, bool);
+   void                markAutosUsedIn(TR::Node *, TR::Node *, TR::Node *, TR::Node **, TR::Block *, List<TR::Block> *, vcount_t, int32_t, SymRefCandidateMap &, TR_BitVector *, TR_BitVector *, bool);
    void                signExtendAllDefNodes(TR::Node *, List<TR::Node> *);
    void                findSymsUsedInIndirectAccesses(TR::Node *, TR_BitVector *, TR_BitVector *, bool);
 
@@ -258,7 +265,7 @@ private:
    int32_t      _lastGlobalRegisterNumber;
    bool         _gotoCreated;
    TR::Block    *_appendBlock;
-   TR_RegisterCandidate **_registerCandidates;
+   SymRefCandidateMap *_registerCandidates;
    TR_ScratchList<TR::Block> _newBlocks;
    TR_BitVector *_temp, *_temp2;
    TR_BitVector *_candidatesNeedingSignExtension;

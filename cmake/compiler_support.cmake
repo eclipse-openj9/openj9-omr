@@ -31,32 +31,65 @@ if (NOT PERL_FOUND )
    message(FATAL_ERROR "Perl not found")
 endif()
 
+
 set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl CACHE INTERNAL "MASM2GAS PATH")
 
-# Given a prefix, and a list of arguments, prefix the list of arguments and
-# assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
-# "-Ia;-Ib;-Ic".
-function(add_prefix out prefix) 
-   set(ret "")
-   foreach(var IN ITEMS ${ARGN}) 
-      list(APPEND ret "${prefix}${var}")
-   endforeach()
-   set(${out} ${ret} PARENT_SCOPE)
-endfunction(add_prefix) 
+include(${OMR_ROOT}/cmake/AddPrefix.cmake) 
+
+# Fetch the OMR view of the system.
+include(OmrDetectSystemInformation)
+
+macro(tr_detect_system_information)
+
+	macro(jit_not_ready)
+		message(FATAL "JIT isn't ready to build with CMake on this platform")
+	endmacro()
 
 
-# Platform setup code!
-# TODO: THis needs to be abstracted for cross platform builds
+	omr_detect_system_information()
 
-set(TR_TARGET_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, arm, or z)")
-set(TR_TARGET_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
-set(TR_TARGET_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
 
-set(TR_HOST_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, or z)")
-set(TR_HOST_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
-set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+	set(TR_COMPILE_DEFINITIONS "")
 
-set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1" CACHE INTERNAL "ASM FLags")
+
+	# Platform setup code! 
+	# TODOs:
+	#  - Support more platforms, and, separate host and target arch. 
+	#  - Once we support all the platforms OMR supports with CMake, this can be
+	#    largely integrated into OmrDetectSystemInformation.cmake. 
+	if(OMR_ARCH_X86)
+		set(TR_HOST_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, or z)")
+		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_X86 TR_TARGET_X86)
+		if(OMR_ENV_DATA64)
+			set(TR_HOST_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
+			set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+			set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1" CACHE INTERNAL "ASM FLags")
+			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
+		else()
+			jit_not_ready()
+		endif()
+	else()
+		jit_not_ready()
+	endif()
+
+	if(OMR_HOST_OS MATCHES "osx|linux")
+		list(APPEND TR_COMPILE_DEFINITIONS SUPPORTS_THREAD_LOCAL)
+		string(TOUPPER ${OMR_HOST_OS} upcase_os)
+		list(APPEND TR_COMPILE_DEFINITIONS ${upcase_os} SUPPORTS_THREAD_LOCAL)
+	else()
+		jit_not_ready()
+	endif()
+
+
+	# Currently not doing cross, so assume HOST == TARGET
+	set(TR_TARGET_ARCH    ${TR_HOST_ARCH}    CACHE INTERNAL "The architecture directory used for the compiler code (x, p, arm, or z)")
+	set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH} CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
+	set(TR_TARGET_BITS    ${TR_HOST_BITS}    CACHE INTERNAL  "Bitness of the target architecture")
+
+	message(STATUS "Set TR_COMPILE_DEFINITIONS to ${TR_COMPILE_DEFINITIONS}")
+endmacro(tr_detect_system_information)
+
+tr_detect_system_information()
 
 # Mark a target as consuming the compiler components. 
 # 
@@ -90,11 +123,7 @@ function(make_compiler_target TARGET_NAME)
    target_compile_definitions(${TARGET_NAME} PRIVATE
       BITVECTOR_BIT_NUMBERING_MSB
       UT_DIRECT_TRACE_REGISTRATION
-      TR_HOST_64BIT
-      LINUX
-      TR_HOST_X86
-      TR_TARGET_X86
-      TR_TARGET_64BIT
+      ${TR_COMPILE_DEFINITIONS}
       ${COMPILER_DEFINES} 
       )
 endfunction(make_compiler_target)
@@ -108,7 +137,7 @@ function(pasm2asm_files out_var compiler)
    set(PASM_CMD ${CMAKE_C_COMPILER}) 
    set(PASM_FLAGS -x assembler-with-cpp -E -P) 
    set(PASM_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
-   add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
+   omr_add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
 
    set(result "")
    foreach(in_f ${ARGN})
@@ -150,7 +179,7 @@ function(masm2gas_asm_files out_var compiler)
    # This portion should be abstracted away, and the ATT_INCLUDES below should be made 
    # into target properties to avoid polluting the rest of the info 
    set(MASM2GAS_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
-   add_prefix(MASM2GAS_INCLUDES "-I" ${MASM2GAS_INCLUDES})
+   omr_add_prefix(MASM2GAS_INCLUDES "-I" ${MASM2GAS_INCLUDES})
    set(MASM2GAS_FLAGS --64 )
    set(CMAKE_ASM-ATT_INCLUDES ${MASM2GAS_INCLUDES} CACHE INTERNAL "ASM Includes") 
     
@@ -247,7 +276,7 @@ function(create_omr_compiler_library)
                      COMMENT "Generate ${BUILD_NAME_FILE}"
                      )
 
-   # Convert pasm files ot asm files: run this before masm2gas to ensure 
+   # Convert pasm files to asm files: run this before masm2gas to ensure 
    # asm files subsequently get picked up. 
    pasm2asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
@@ -311,8 +340,17 @@ function(create_omr_compiler_library)
       list(REMOVE_ITEM CORE_COMPILER_OBJECTS ${abs_filename})
    endforeach()
 
+   # Convert pasm files to asm files: run this before masm2gas to ensure 
+   # asm files subsequently get picked up. 
+   pasm2asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+
+   # Run masm2gas on contained .asm files 
+   masm2gas_asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+
    # Append to the compiler sources list
    target_sources(${COMPILER_NAME} PRIVATE ${CORE_COMPILER_OBJECTS})
+
+
   
    # Set include paths and defines.  
    make_compiler_target(${COMPILER_NAME} COMPILER ${COMPILER_NAME})

@@ -117,11 +117,12 @@ static const OptimizationStrategy JBwarmStrategyOpts[] =
    { OMR::treeSimplification                                                       },
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },
 
-   { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  },
-   { OMR::loopCanonicalization,                      OMR::IfLoops                  },
+   { OMR::basicBlockOrdering,                        OMR::IfLoops                  }, // clean up block order for loop canonicalization, if it will run
+   { OMR::loopCanonicalization,                      OMR::IfLoops                  }, // canonicalization must run before inductionVariableAnalysis else indvar data gets messed up
+   { OMR::inductionVariableAnalysis,                 OMR::IfLoops                  }, // needed for loop unroller
    { OMR::generalLoopUnroller,                       OMR::IfLoops                  },
-   { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // extend blocks; move trees around if reqd
-   { OMR::treeSimplification                                                       }, // revisit; not really required ?
+   { OMR::basicBlockExtension,                       OMR::MarkLastRun              }, // clean up order and extend blocks now
+   { OMR::treeSimplification                                                       },
    { OMR::localCSE                                                                 },
    { OMR::treeSimplification,                        OMR::IfEnabled                },
    { OMR::trivialDeadTreeRemoval,                    OMR::IfEnabled                },

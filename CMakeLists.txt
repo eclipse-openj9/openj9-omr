@@ -18,28 +18,31 @@
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
+message(STATUS "Starting with CMake version ${CMAKE_VERSION}")
+
 # Warn user that CMake support is currently experimental
 message(WARNING
 "CMake support is currently experimental.\n\
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
 include(cmake/versions.cmake) # Required for OMR_VERSION 
-include(cmake/Assert.cmake)
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
+include(OmrAssert)
+include(OmrFindFiles)
 
 ###
-### Getting the glue directory
+### Getting the glue target
 ###
-
-if (NOT DEFINED OMR_GLUE)
-    set(OMR_GLUE "./example/glue" CACHE PATH "The glue directory")
+if (NOT DEFINED OMR_GLUE_TARGET)
+	set(OMR_GLUE_TARGET "omr_example_glue" CACHE STRING "The glue target, must be an interface library")
     message(STATUS "Glue not set, defaulting to example glue")
 endif()
+add_subdirectory(example/glue)
 
 # TODO: OMR_EXAMPLE flag
 # TODO: OMR_RTTI flag
@@ -52,7 +55,6 @@ endif()
 
 include(cmake/platform.cmake)
 include(cmake/config.cmake)
-include(cmake/vpath.cmake)
 
 enable_testing()
 
@@ -85,6 +87,17 @@ endif()
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
+add_library(omrglue STATIC)
+# Link as private since we dont want the interface sources to propagate
+target_link_libraries(omrglue
+	PUBLIC
+	omrgc
+	PRIVATE
+	${OMR_GLUE_TARGET}
+)
+#but we need to propagate the include paths
+target_include_directories(omrglue INTERFACE $<TARGET_PROPERTY:${OMR_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+
 add_subdirectory(tools)
 # Yeah, its dumb doing this here. Read note in tools/CMakeLists.txt
 if(CMAKE_CROSSCOMPILING)
@@ -99,12 +112,14 @@ add_subdirectory(omr)
 add_subdirectory(third_party)
 add_subdirectory(omrsigcompat)
 
-#TODO should be wrapped in if()
-add_subdirectory(fvtest)
+if(OMR_FVTEST)
+  add_subdirectory(fvtest)
+endif()
 
 if(OMR_GC)
   add_subdirectory(gc)
-  add_subdirectory("${OMR_GLUE}")
+  # if we are building the gc, add gc headers to omrglue
+  target_include_directories(omrglue PRIVATE $<TARGET_PROPERTY:omrgc,INCLUDE_DIRECTORIES>)
 endif(OMR_GC)
 
 if(OMR_DDR)

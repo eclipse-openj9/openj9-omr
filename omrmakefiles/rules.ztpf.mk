@@ -242,7 +242,7 @@ ifneq (,$(findstring executable,$(ARTIFACT_TYPE)))
 	endif
 
 	## Default Libraries
-	#DEFAULT_LIBS:=-lm -lpthread -lc -lrt -ldl -lutil -Wl,-z,origin,-rpath,\$$ORIGIN,--disable-new-dtags,-rpath-link,$(top_srcdir)
+	DEFAULT_LIBS:=-lm -lpthread -lc -lrt -ldl -lutil -Wl,-z,origin,-rpath,\$$ORIGIN,--disable-new-dtags,-rpath-link,$(top_srcdir)
 	GLOBAL_LDFLAGS+=$(DEFAULT_LIBS)
 endif
 
@@ -382,8 +382,8 @@ endif
 GLOBAL_CFLAGS+=$(OPTIMIZATION_FLAGS)
 GLOBAL_CXXFLAGS+=$(OPTIMIZATION_FLAGS)
 
-GLOBAL_CFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -fno-builtin-isdigit -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -I/ztpf/commit/base/include -I/ztpf/commit/opensource/include46 -I/ztpf/commit/opensource/include46/g++ -I/ztpf/commit/opensource/include -I/ztpf/commit
-GLOBAL_CXXFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -fno-builtin-isdigit -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -I/ztpf/commit/base/include -I/ztpf/commit/opensource/include46 -I/ztpf/commit/opensource/include46/g++ -I/ztpf/commit/opensource/include -I/ztpf/commit
+GLOBAL_CFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -fno-builtin-isdigit -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -isystem /tpfjava/cleanbuild/jvmupgrade/base/include -isystem /tpfjava/cleanbuild/jvmupgrade/opensource/include -isystem /ztpf/commit/base/include -isystem /ztpf/commit/opensource/include46 -isystem /ztpf/commit/opensource/include46/g++ -isystem /ztpf/commit/opensource/include -isystem /ztpf/commit/noship/include -isystem /ztpf/commit
+GLOBAL_CXXFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -fno-builtin-isdigit -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -isystem /tpfjava/cleanbuild/jvmupgrade/base/include -isystem /tpfjava/cleanbuild/jvmupgrade/opensource/include -isystem /ztpf/commit/base/include -isystem /ztpf/commit/opensource/include46 -isystem /ztpf/commit/opensource/include46/g++ -isystem /ztpf/commit/opensource/include -isystem /ztpf/commit/noship/include -isystem /ztpf/commit
 
 # Override the default recipe if we are using USE_GNU_DEBUG, so that we strip out the
 # symbols and store them seperately.

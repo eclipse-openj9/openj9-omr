@@ -101,10 +101,6 @@ BuilderTest::compileControlFlowTestMethods()
    rc = compileMethodBuilder(&maxIfThenMethodBuilder, &entry);
    _maxIfThenMethod = (IfFunctionType *) entry;
 
-   SubIfFalseThenMethod subIfFalseThenMethodBuilder(&types, this);
-   rc = compileMethodBuilder(&subIfFalseThenMethodBuilder, &entry);
-   _subIfFalseThenMethod = (IfLongFunctionType *) entry;
-
    DoWhileFibonnaciMethod doWhileFibonnaciMethodBuilder(&types, this);
    rc = compileMethodBuilder(&doWhileFibonnaciMethodBuilder, &entry);
    _doWhileFibMethod = (DoWhileFibFunctionType *) entry;
@@ -1568,32 +1564,6 @@ MaxIfThenMethod::buildIL()
 
    Return(
       Load("rightV"));
-
-   return true;
-   }
-
-SubIfFalseThenMethod::SubIfFalseThenMethod(TR::TypeDictionary *types, BuilderTest *test)
-   : TR::MethodBuilder(types, test)
-   {
-   DefineLine(LINETOSTR(__LINE__));
-   DefineFile(__FILE__);
-
-   DefineName("SubIfFalseThenMethod");
-   DefineParameter("valueA", Int64);
-   DefineParameter("valueB", Int64);
-   DefineReturnType(Int64);
-   }
-
-bool
-SubIfFalseThenMethod::buildIL()
-   {
-   TR::IlBuilder *elsePath = NULL;
-   IfThenElse(NULL, &elsePath, ConstInt64(0));
-
-   elsePath->Return(
-   elsePath->   Sub(
-   elsePath->      Load("valueA"),
-   elsePath->      Load("valueB")));
 
    return true;
    }

@@ -63,6 +63,10 @@ int omrdiscard_data(void *address, int numFrames);
 
 #endif /*J9ZOS390 */
 
+#if defined(OMRZTPF)
+#include <tpf/tpfapi.h>
+#endif /* defined(OMRZTPF) */
+
 void *
 omrmem_allocate_memory_basic(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount)
 {

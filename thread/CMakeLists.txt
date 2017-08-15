@@ -16,6 +16,7 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrFindFiles)
 
 add_tracegen(j9thr.tdf)
 
@@ -276,13 +277,21 @@ list(APPEND VPATHS common)
 #$(WRITE_ADAPTIVE_SPIN_THREAD_EXPORTS)
 #$(WRITE_TRACING_THREAD_EXPORTS)
 #endef
-set(resolvedPaths "")
-VPathResolve(OBJECTS VPATHS resolvedPaths)
+
+omr_find_files(resolvedPaths
+	PATHS ${VPATHS}
+	FILES ${OBJECTS}
+)
+
 include_directories(common)
 #TODO also should be able to build dynamic lib
-add_library(j9thrstatic
+add_library(j9thr_obj OBJECT
 	${resolvedPaths}
 	ut_j9thr.c
+)
+
+add_library(j9thrstatic STATIC
+	$<TARGET_OBJECTS:j9thr_obj>
 )
 
 target_include_directories(j9thrstatic

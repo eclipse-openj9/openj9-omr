@@ -187,7 +187,9 @@ struct ASTValue {
     ASTValue* next;
 };
 
-// overloaded operators for ASTValue
+/*
+ * Overloaded operators for ASTValue
+ */
 
 inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
    if (lhs.getType() == rhs.getType()) {
@@ -198,6 +200,10 @@ inline bool operator == (const ASTValue& lhs, const ASTValue& rhs) {
       }
    }
    return false;
+}
+
+inline bool operator != (const ASTValue& lhs, const ASTValue& rhs) {
+    return ! (lhs == rhs);
 }
 
 /**

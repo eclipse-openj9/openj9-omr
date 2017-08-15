@@ -75,6 +75,111 @@ TEST(ASTValueTest, CreateValueList) {
     ASSERT_EQ(NULL, v->next);
 }
 
+/*
+ * Since the comparison tests verify the behavior of overloaded comparison
+ * operators, they explicitly call the operators inside an ASSERT_{TRUE|FALSE}
+ * instead of using comparison ASSERTs (ASSERT_EQ, ASSERT_NE, etc.).
+ */
+
+TEST(ASTValueTest, CompareIntegerValueWithSelf) {
+    const auto intBaseValue = 10UL;
+    auto value = createIntegerValue(intBaseValue);
+
+    ASSERT_TRUE(*value == *value);
+    ASSERT_FALSE(*value != *value);
+}
+
+TEST(ASTValueTest, CompareEqualIntegerValues) {
+    const auto intBaseValue = 10UL;
+    auto value1 = createIntegerValue(intBaseValue);
+    auto value2 = createIntegerValue(intBaseValue);
+
+    ASSERT_TRUE(*value1 == *value2);
+    ASSERT_FALSE(*value1 != *value2);
+}
+
+TEST(ASTValueTest, CompareFloatingPointValueWithSelf) {
+    const double doubleBaseValue = 4.56;
+    auto value = createFloatingPointValue(doubleBaseValue);
+
+    ASSERT_TRUE(*value == *value);
+    ASSERT_FALSE(*value != *value);
+}
+
+TEST(ASTValueTest, CompareEqualFloatingPointValues) {
+    const double doubleBaseValue = 4.56;
+    auto value1 = createFloatingPointValue(doubleBaseValue);
+    auto value2 = createFloatingPointValue(doubleBaseValue);
+
+    ASSERT_TRUE(*value1 == *value2);
+    ASSERT_FALSE(*value1 != *value2);
+}
+
+TEST(ASTValueTest, CompareStringValueWithSelf) {
+    auto baseStrValue = "Some string\n";
+    auto value = createStrValue(baseStrValue);
+
+    ASSERT_TRUE(*value == *value);
+    ASSERT_FALSE(*value != *value);
+}
+
+TEST(ASTValueTest, CompareEqualStringValues) {
+    auto baseStrValue = "Some string\n";
+    auto value1 = createStrValue(baseStrValue);
+    auto value2 = createStrValue(baseStrValue);
+
+    ASSERT_TRUE(*value1 == *value2);
+    ASSERT_FALSE(*value1 != *value2);
+}
+
+TEST(ASTValueTest, CompareDifferentIntegerValues) {
+    auto value1 = createIntegerValue(3);
+    auto value2 = createIntegerValue(15);
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
+TEST(ASTValueTest, CompareDifferentFloatingPointValues) {
+    auto value1 = createFloatingPointValue(3.6);
+    auto value2 = createFloatingPointValue(3.4);
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
+TEST(ASTValueTest, CompareDifferentStringValues) {
+    auto value1 = createStrValue("string 1");
+    auto value2 = createStrValue("string 2");
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
+TEST(ASTValueTest, CompareIntegerAndFloatingPointValues) {
+    auto value1 = createIntegerValue(3);
+    auto value2 = createFloatingPointValue(3.0);
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
+TEST(ASTValueTest, CompareFloatingPointAndStringValues) {
+    auto value1 = createFloatingPointValue(3.6);
+    auto value2 = createStrValue("3.6");
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
+TEST(ASTValueTest, CompareStringAndIntegerValues) {
+    auto value1 = createStrValue("123");
+    auto value2 = createIntegerValue(123);
+
+    ASSERT_TRUE(*value1 != *value2);
+    ASSERT_FALSE(*value1 == *value2);
+}
+
 TEST(ASTNodeArgumentTest, CreateNodeArgumentWithJustInt64Value) {
    auto baseValue = 3UL;
    auto value = createIntegerValue(baseValue);

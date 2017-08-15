@@ -224,6 +224,14 @@ struct ASTNodeArg {
     const ASTValue* getValue() const { return _value; }
 };
 
+// overloaded operators for ASTNodeArg
+
+bool operator == (const ASTNodeArg& lhs, const ASTNodeArg& rhs);
+
+inline bool operator != (const ASTNodeArg& lhs, const ASTNodeArg& rhs) {
+    return ! (lhs == rhs);
+}
+
 /**
  * @brief A struct representing nodes in the Tril AST
  */

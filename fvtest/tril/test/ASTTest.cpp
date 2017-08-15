@@ -326,6 +326,63 @@ TEST(ASTNodeArgumentTest, CreateListFrom3SingleArguments) {
    ASSERT_EQ(NULL, arg_2->next);
 }
 
+TEST(ASTNodeArgumentTest, CompareArgumentsWithSelf) {
+    auto v = createIntegerValue(10);
+    auto name = "arg0";
+    auto arg = createNodeArg(name, v, nullptr);
+
+    ASSERT_TRUE(*arg == *arg);
+    ASSERT_FALSE(*arg != *arg);
+}
+
+TEST(ASTNodeArgumentTest, CompareEqualArguments) {
+    auto v0 = createIntegerValue(10);
+    auto v1 = createIntegerValue(10);
+    auto name0 = "arg0";
+    auto name1 = "arg0";
+    auto arg0 = createNodeArg(name0, v0, nullptr);
+    auto arg1 = createNodeArg(name1, v1, nullptr);
+
+    ASSERT_TRUE(*arg0 == *arg1);
+    ASSERT_FALSE(*arg0 != *arg1);
+}
+
+TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentNames) {
+    auto v0 = createIntegerValue(10);
+    auto v1 = createIntegerValue(10);
+    auto name0 = "arg0";
+    auto name1 = "arg1";
+    auto arg0 = createNodeArg(name0, v0, nullptr);
+    auto arg1 = createNodeArg(name1, v1, nullptr);
+
+    ASSERT_TRUE(*arg0 != *arg1);
+    ASSERT_FALSE(*arg0 == *arg1);
+}
+
+TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentValues) {
+    auto v0 = createIntegerValue(10);
+    auto v1 = createIntegerValue(14);
+    auto name0 = "arg0";
+    auto name1 = "arg0";
+    auto arg0 = createNodeArg(name0, v0, nullptr);
+    auto arg1 = createNodeArg(name1, v1, nullptr);
+
+    ASSERT_TRUE(*arg0 != *arg1);
+    ASSERT_FALSE(*arg0 == *arg1);
+}
+
+TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentTypes) {
+    auto v0 = createIntegerValue(10);
+    auto v1 = createFloatingPointValue(10.0);
+    auto name0 = "arg0";
+    auto name1 = "arg0";
+    auto arg0 = createNodeArg(name0, v0, nullptr);
+    auto arg1 = createNodeArg(name1, v1, nullptr);
+
+    ASSERT_TRUE(*arg0 != *arg1);
+    ASSERT_FALSE(*arg0 == *arg1);
+}
+
 TEST(ASTNodeTest, CreateNullNode) {
    auto node = createNode(NULL, NULL, NULL, NULL);
 

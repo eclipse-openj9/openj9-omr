@@ -18,7 +18,7 @@
 
 #include "ast.hpp"
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 
 ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
     return new ASTNode{name, args, children, next};
@@ -154,4 +154,23 @@ void printTrees(FILE* file, const ASTNode* trees, int indent) {
         printTrees(file, t->getChildren(), indent + 1);
         t = t->next;
     }
+}
+
+bool operator == (const ASTNodeArg& lhs, const ASTNodeArg& rhs) {
+    std::string lhsName = lhs.getName();
+    std::string rhsName = rhs.getName();
+    if (lhsName != rhsName) return false;
+
+    auto lhsValue = lhs.getValue();
+    auto rhsValue = rhs.getValue();
+
+    while (lhsValue != nullptr && rhsValue != nullptr) {
+        if (*lhsValue != *rhsValue) return false;
+        lhsValue = lhsValue->next;
+        rhsValue = rhsValue->next;
+    }
+
+    if (lhsValue != nullptr || rhsValue != nullptr) return false;
+
+    return true;
 }

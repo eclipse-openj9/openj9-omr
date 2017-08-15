@@ -37,7 +37,8 @@ addons:
       - ninja-build
 env:
   matrix:
-    - BUILD_WITH_CMAKE=yes
+    - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+    - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
   global:
     - GTEST_COLOR=1
     - GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
@@ -47,7 +48,9 @@ env:
 matrix:
   exclude:
     - os: osx
-      env: BUILD_WITH_CMAKE=yes
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+    - os: osx
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
   include:
     - os: linux
       env: SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc

@@ -21,12 +21,16 @@ set -evx
 
 export JOBS=4
 
+if test "x$CMAKE_GENERATOR" = "x"; then
+  export CMAKE_GENERATOR="Ninja"
+fi
+
 if test "x$BUILD_WITH_CMAKE" = "xyes"; then
   mkdir build
   cd build
-  time cmake -Wdev -GNinja -C../cmake/caches/Travis.cmake ..
+  time cmake -Wdev -G "$CMAKE_GENERATOR" -C../cmake/caches/Travis.cmake ..
   if test "x$RUN_BUILD" != "xno"; then
-    time ninja -j$JOBS  
+    time cmake --build . -- -j $JOBS
     if test "x$RUN_TESTS" != "xno"; then
       time ctest -V --parallel $JOBS
     fi

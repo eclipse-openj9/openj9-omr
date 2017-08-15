@@ -749,29 +749,28 @@ int32_t TR_CopyPropagation::perform()
       invalidateDefUseInfo = true;
       if (useDefInfo->hasLoadsAsDefs())
          {
-         printf("here\n");
-      for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
-         {
-         TR::Node *useNode = useDefInfo->getNode(i);
-         if (!useNode || useNode->getReferenceCount() == 0)
-            continue;
-
-         if (useDefInfo->getSingleDefiningLoad(useNode) == fixUseNode)
+         for (int32_t i = useDefInfo->getFirstUseIndex(); i <= lastUseIndex; i++)
             {
-            TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
-            useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
-            if (!defsOfUseToBeFixed.IsZero())
+            TR::Node *useNode = useDefInfo->getNode(i);
+            if (!useNode || useNode->getReferenceCount() == 0)
+               continue;
+
+            if (useDefInfo->getSingleDefiningLoad(useNode) == fixUseNode)
                {
-               TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
-               for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+               TR_UseDefInfo::BitVector defsOfUseToBeFixed(comp()->allocator());
+               useDefInfo->getUseDef(defsOfUseToBeFixed, fixUseIndex);
+               if (!defsOfUseToBeFixed.IsZero())
                   {
-                  int32_t nextDef = cursor;
-                  useDefInfo->setUseDef(i, nextDef);
+                  TR_UseDefInfo::BitVector::Cursor cursor(defsOfUseToBeFixed);
+                  for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+                     {
+                     int32_t nextDef = cursor;
+                     useDefInfo->setUseDef(i, nextDef);
+                     }
                   }
+               useDefInfo->resetUseDef(i, fixUseIndex);
                }
-            useDefInfo->resetUseDef(i, fixUseIndex);
             }
-         }
          }
 
       useDefInfo->clearUseDef(fixUseIndex);

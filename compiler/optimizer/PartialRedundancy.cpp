@@ -213,6 +213,20 @@ bool TR_PartialRedundancy::ignoreNode (TR::Node *node)
 
 int32_t TR_PartialRedundancy::perform()
    {
+   // Calculate the number of expressions commoned by PRE that are allowed
+   // to be profiled. This is to keep the value profiling related code expansion
+   // within some limits
+   //
+   _numProfilingsAllowed = (((USHRT_MAX/2 - 1000) - comp()->getNodeCount())/NUMBER_OF_NODES_PER_PROFILING_EXPANSION);
+   if (_numProfilingsAllowed < 0)
+     _numProfilingsAllowed = 0;
+
+   // PRE is too expensive when profiling with HCR on, due to the number
+   // of blocks and temps this configuration creates. Disabling it
+   // won't affect performance if there are no profilings allowed.
+   if (comp()->isProfilingCompilation() && comp()->getHCRMode() != TR::none && _numProfilingsAllowed == 0)
+      return 0;
+
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    // setAlteredCode(false);
@@ -222,14 +236,6 @@ int32_t TR_PartialRedundancy::perform()
 
    // for particularly big methods, see also comments in LocalAnalysis.cpp
    //comp()->resetVisitCounts(0);
-
-   // Calculate the number of expressions commoned by PRE that are allowed
-   // to be profiled. This is to keep the value profiling related code expansion
-   // within some limits
-   //
-   _numProfilingsAllowed = (((USHRT_MAX/2 - 1000) - comp()->getNodeCount())/NUMBER_OF_NODES_PER_PROFILING_EXPANSION);
-   if (_numProfilingsAllowed < 0)
-     _numProfilingsAllowed = 0;
 
    if (trace())
       {

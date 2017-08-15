@@ -191,7 +191,7 @@ TR::Register *OMR::Power::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::Co
       else
          {
          TR::Register *longReg = cg->evaluate(child);
-         if (TR::Compiler->target.cpu.id() == TR_PPCp8)
+         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, target, longReg->getHighOrder(), longReg->getLowOrder(), tmp1);
@@ -260,7 +260,7 @@ TR::Register *OMR::Power::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::Co
          {
          highReg = cg->allocateRegister();
          lowReg = cg->allocateRegister();
-         if (TR::Compiler->target.cpu.id() == TR_PPCp8)
+         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, fpr2gprHost32, false, highReg, lowReg, doubleReg, tmp1);
@@ -1373,7 +1373,7 @@ TR::Register *OMR::Power::TreeEvaluator::int2dbl(TR::Node * node, TR::Register *
             else
                generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::srawi, node, tempReg, srcReg, 31);
 
-            if (TR::Compiler->target.cpu.id() == TR_PPCp8)
+            if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
                {
                TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
                generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, tempReg, srcReg, tmp1);
@@ -1527,7 +1527,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2dbl(TR::Node *node, TR::CodeGenera
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
       else
          {
-         if (TR::Compiler->target.cpu.id() == TR_PPCp8)
+         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder(), tmp1);
@@ -1588,7 +1588,7 @@ TR::Register *OMR::Power::TreeEvaluator::long2float(TR::Node *node, TR::CodeGene
          generateMvFprGprInstructions(cg, node, gpr2fprHost64, false, trgReg, srcReg);
       else
          {
-         if (TR::Compiler->target.cpu.id() == TR_PPCp8)
+         if (TR::Compiler->target.cpu.id() >= TR_PPCp8)
             {
             TR::Register * tmp1 = cg->allocateRegister(TR_FPR);
             generateMvFprGprInstructions(cg, node, gpr2fprHost32, false, trgReg, srcReg->getHighOrder(), srcReg->getLowOrder(), tmp1);

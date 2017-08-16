@@ -4419,7 +4419,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
             // Duplicate the OSR guard tree
             TR::Node *guard = osrGuard->duplicateTree();
-            traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
+            if (trace())
+               traceMsg(comp(), "OSRGuard n%dn has been created to guard against method invalidation\n", guard->getGlobalIndex());
             guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
             comparisonTrees.add(guard);
             }

@@ -18,6 +18,7 @@
 
 include(OmrAssert)
 include(OmrDetectSystemInformation)
+include(OmrUtility)
 
 ###
 ### Platform flags
@@ -42,35 +43,21 @@ include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake)
 # Verify toolconfig!
 include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
 
-include(${OMR_ROOT}/cmake/AddPrefix.cmake)
-
-# Remove a specified option from a variable
-macro(omr_remove_option var opt)
-	string( REGEX REPLACE
-		"(^| )${opt}($| )"
-		""
-		${var}
-		"${${var}}"
-	)
-endmacro(omr_remove_option)
-
-
 omr_add_prefix(OMR_OS_DEFINITIONS_PREFIXED   ${OMR_C_DEFINITION_PREFIX} ${OMR_OS_DEFINITIONS})
 omr_add_prefix(OMR_ARCH_DEFINITIONS_PREFIXED ${OMR_C_DEFINITION_PREFIX} ${OMR_ARCH_DEFINITIONS})
-
 
 add_definitions(
 	${OMR_OS_DEFINITIONS_PREFIXED}
 	${OMR_ARCH_DEFINITIONS_PREFIXED}
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OMR_OS_COMPILE_OPTIONS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OMR_OS_COMPILE_OPTIONS}")
+omr_append_flags(CMAKE_C_FLAGS   ${OMR_OS_COMPILE_OPTIONS})
+omr_append_flags(CMAKE_CXX_FLAGS ${OMR_OS_COMPILE_OPTIONS})
 
 if(OMR_HOST_OS STREQUAL "linux")
 	if(OMR_WARNINGS_AS_ERRORS)
-		set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${OMR_WARNING_AS_ERROR_FLAG}")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OMR_WARNING_AS_ERROR_FLAG}")
+		omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
+		omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
 	endif()
 endif()
 

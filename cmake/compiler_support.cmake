@@ -26,6 +26,7 @@
 ## Tools and helpers:
 
 Find_package(Perl)
+include(OmrUtility)
 
 if (NOT PERL_FOUND )
    message(FATAL_ERROR "Perl not found")
@@ -34,7 +35,6 @@ endif()
 
 set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl CACHE INTERNAL "MASM2GAS PATH")
 
-include(${OMR_ROOT}/cmake/AddPrefix.cmake) 
 
 # Fetch the OMR view of the system.
 include(OmrDetectSystemInformation)

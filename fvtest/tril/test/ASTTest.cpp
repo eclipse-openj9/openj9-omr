@@ -536,3 +536,80 @@ TEST(ASTNodeTest, Concatenate3SingleNodes)  {
    ASSERT_EQ(NULL, node_2->next);
 }
 
+ASTNodeArg* getMixedArgumentList() {
+   auto argList = createNodeArg("arg0", createIntegerValue(3), nullptr);
+   appendSiblingArg(argList, createNodeArg("", createStrValue("value1"), nullptr));
+   appendSiblingArg(argList, createNodeArg("arg1", createFloatingPointValue(5.4), nullptr));
+   appendSiblingArg(argList, createNodeArg("", createStrValue("value3"), nullptr));
+
+   return argList;
+}
+
+TEST(ASTNodeTest, GetArgsTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getArgs();
+   ASSERT_EQ(*argList, *arg);
+   arg = arg->next;
+   argList = argList->next;
+   ASSERT_EQ(*argList, *arg);
+   arg = arg->next;
+   argList = argList->next;
+   ASSERT_EQ(*argList, *arg);
+   arg = arg->next;
+   argList = argList->next;
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetFirstArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getArgument(0);
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetThirdArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getArgument(2);
+   argList = argList->next->next;
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetFirstPositionalArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getPositionalArg(0);
+   argList = argList->next;
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetSecondPositionalArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getPositionalArg(1);
+   argList = argList->next->next->next;
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetFirstNamedArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getArgByName("arg0");
+   ASSERT_EQ(*argList, *arg);
+}
+
+TEST(ASTNodeTest, GetSecondNamedArgumentTest) {
+   auto argList = getMixedArgumentList();
+   auto node = createNode("testNode", argList, nullptr, nullptr);
+
+   auto arg = node->getArgByName("arg1");
+   argList = argList->next->next;
+   ASSERT_EQ(*argList, *arg);
+}

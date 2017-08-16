@@ -67,17 +67,6 @@ uint16_t countNodes(const ASTNode* n) {
     return count;
 }
 
-const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
-    const ASTNodeArg* arg = node->getArgs();
-    while (arg) {
-        if (arg->getName() != NULL && strcmp(name, arg->getName()) == 0) { // arg need not have a name
-            return arg;
-        }
-        arg = arg->next;
-    }
-    return NULL;
-}
-
 const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
     const ASTNode* node = list;
     while (node) {

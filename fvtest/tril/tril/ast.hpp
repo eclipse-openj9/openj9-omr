@@ -248,7 +248,78 @@ struct ASTNode {
         : _name{name}, _args{args}, _children{children}, next{next} {}
 
     const char* getName() const { return _name; }
+
+    /**
+     * @brief Returns pointer to linked list of arguments
+     */
     const ASTNodeArg* getArgs() const { return _args; }
+
+    /**
+     * @brief Finds and returns an argument by its index
+     * @param index is the index of the argument
+     * @return the argument at the given index if found, NULL otherwise
+     */
+    const ASTNodeArg* getArgument(int index) const {
+        auto arg = _args;
+
+        while (arg != nullptr && index > 0) {
+            arg = arg->next;
+            --index;
+        }
+
+        return arg;
+    }
+
+    /**
+     * @brief Finds and returns an argument by name
+     * @param name is the name for the argument
+     * @return the argument with the given name if found, NULL otherwise
+     */
+    const ASTNodeArg* getArgByName(const char* name) const {
+        auto arg = _args;
+        while (arg) {
+            if (arg->getName() != NULL && strcmp(name, arg->getName()) == 0) { // arg need not have a name
+                return arg;
+            }
+            arg = arg->next;
+        }
+        return NULL;
+    }
+
+    /**
+     * @brief Finds and returns a positional (nameless) argument by its position (index)
+     * @param index is the index of the positional argument
+     * @return the positional argument at the given index if found, NULL otherwise
+     */
+    const ASTNodeArg* getPositionalArg(int index) const {
+        auto arg = _args;
+
+        while (arg != nullptr) {
+            const auto name = arg->getName();
+            if (name == nullptr || name[0] == '\0') {
+                if (index > 0) { --index; }
+                else { break; }
+            }
+            arg = arg->next;
+        }
+        return arg;
+    }
+
+    /**
+     * @brief Returns the number of arguments the node has
+     */
+    int argumentCount() const {
+        auto arg = _args;
+        auto i = 0;
+
+        while (arg != nullptr) {
+            ++i;
+            arg = arg->next;
+        }
+
+        return i;
+    }
+
     const ASTNode* getChildren() const { return _children; }
     int getChildCount() const { return countNodes(_children); }
 };

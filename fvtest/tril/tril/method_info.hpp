@@ -39,10 +39,10 @@ class MethodInfo {
          * @param methodNode is the Tril AST node
          */
         explicit MethodInfo(const ASTNode* methodNode) : _methodNode{methodNode} {
-            auto returnTypeArg = getArgByName(_methodNode, "return");
+            auto returnTypeArg = _methodNode->getArgByName("return");
             _returnType = getTRDataTypes(returnTypeArg->getValue()->getString());
 
-            auto argTypesArg = getArgByName(_methodNode, "args");
+            auto argTypesArg = _methodNode->getArgByName("args");
             if (argTypesArg != nullptr) {
                 auto typeValue = argTypesArg->getValue();
                 while (typeValue != nullptr) {
@@ -51,7 +51,7 @@ class MethodInfo {
                 }
             }
 
-            auto nameArg = getArgByName(_methodNode, "name");
+            auto nameArg = _methodNode->getArgByName("name");
             if (nameArg != nullptr) {
                 _name = nameArg->getValue()->get<ASTValue::String_t>();
             }

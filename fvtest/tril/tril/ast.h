@@ -80,14 +80,6 @@ void appendSiblingValue(ASTValue* list, ASTValue* newValue);
 uint16_t countNodes(const ASTNode* n);
 
 /**
- * @brief Searches a (linked-) list for an instance of ASTNodeArg with a given name
- * @param node is the start of the linked-list to be searched
- * @param name is the name of the ASTNodeArg instance being searched for
- * @return the instance of ASTNodeArg if found, NULL otherwise
- */
-const ASTNodeArg* getArgByName(const ASTNode* node, const char* name);
-
-/**
  * @brief Searches a (linked-) list for an instance of ASTNode with a given name
  * @param list is the start of the linked-list to be searched
  * @param name is the name of the ASTNode instance being searched for

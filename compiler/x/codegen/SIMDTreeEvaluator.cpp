@@ -18,6 +18,7 @@
 
 #include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
 #include "codegen/MemoryReference.hpp"
+#include "codegen/RegisterPair.hpp"                   // for RegisterPair
 #include "codegen/TreeEvaluator.hpp"
 #include "il/ILOpCodes.hpp"                           // for ILOpCodes, etc
 #include "il/ILOps.hpp"                               // for ILOpCode
@@ -134,7 +135,19 @@ TR::Register* OMR::X86::TreeEvaluator::SIMDsplatsEvaluator(TR::Node* node, TR::C
          generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x00, cg); // 00 00 00 00 shuffle xxxA to AAAA
          break;
       case TR::VectorInt64:
-         generateRegRegInstruction(MOVQRegReg8, node, resultReg, childReg, cg);
+         if (TR::Compiler->target.is32Bit())
+            {
+            TR::Register* tempVectorReg = cg->allocateRegister(TR_VRF);
+            generateRegRegInstruction(MOVDRegReg4, node, tempVectorReg, childReg->getHighOrder(), cg);
+            generateRegImmInstruction(PSLLQRegImm1, node, tempVectorReg, 0x20, cg);
+            generateRegRegInstruction(MOVDRegReg4, node, resultReg, childReg->getLowOrder(), cg);
+            generateRegRegInstruction(POR, node, resultReg, tempVectorReg, cg);
+            cg->stopUsingRegister(tempVectorReg);
+            }
+         else
+            {
+            generateRegRegInstruction(MOVQRegReg8, node, resultReg, childReg, cg);
+            }
          generateRegRegImmInstruction(PSHUFDRegRegImm1, node, resultReg, resultReg, 0x44, cg); // 01 00 01 00 shuffle xxBA to BABA
          break;
       case TR::VectorFloat:

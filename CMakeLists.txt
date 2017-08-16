@@ -122,6 +122,11 @@ if(OMR_GC)
   target_include_directories(omrglue PRIVATE $<TARGET_PROPERTY:omrgc,INCLUDE_DIRECTORIES>)
 endif(OMR_GC)
 
+if(OMR_DDR)
+  add_subdirectory(ddr)
+endif(OMR_DDR)
+
 if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)
 endif(OMR_JITBUILDER)
+

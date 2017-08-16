@@ -133,12 +133,6 @@ main_targets += omrtrace
 # OMR Startup
 main_targets += omr omr/startup
 
-# DDR tools
-ifeq (yes,$(ENABLE_DDR))
-postbuild_targets += tools/ddrgen
-targets += tools/ddrgen
-endif
-
 # RAS Tests
 test_targets += fvtest/rastest
 
@@ -161,6 +155,11 @@ main_targets += jitbuilder
 test_targets += fvtest/jitbuildertest jitbuilder/release
 endif
 
+ifeq (yes,$(ENABLE_DDR))
+  postbuild_targets += ddr
+  ddr:: staticlib
+endif
+
 DO_TEST_TARGET := yes
 # ENABLE_FVTEST_AGENT forces rastest to build, even if fvtests are disabled.
 ifeq (no,$(ENABLE_FVTEST))
@@ -177,10 +176,9 @@ postbuild_targets += tests
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets)
+targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
 targets_clean := $(addsuffix _clean,$(targets))
-targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib fvtest/% perftest/% third_party/% tools/%, $(targets)))
-
+targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib jitbuilder/% fvtest/% perftest/% third_party/% tools/% ddr ddr/% example/%,$(targets)))
 
 ###
 ### Rules
@@ -223,8 +221,6 @@ tools/tracegen:: util/a2e
 tools/tracemerge:: util/a2e
 tools/hookgen:: util/a2e
 endif
-
-tools/ddrgen:: staticlib
 
 $(HOOK_DEFINITION_SENTINEL): $(exe_output_dir)/hookgen$(EXEEXT)
 %.sentinel: %.hdf
@@ -283,6 +279,7 @@ endif
 
 
 # preprocess ddrgen-annotated source code
+
 ddrgen:
 	$(MAKE) -f GNUmakefile $(targets_ddrgen)
 

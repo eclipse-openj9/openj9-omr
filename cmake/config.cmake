@@ -23,6 +23,7 @@ set(OMR_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compile warnings as errors")
 ###
 
 set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
+set(OMR_DDR OFF CACHE BOOL "Enable DDR")
 set(OMR_FVTEST OFF CACHE BOOL "Enable the FV Testing.")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")

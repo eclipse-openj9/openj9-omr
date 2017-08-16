@@ -31,6 +31,8 @@ addons:
       - bison
       - clang-3.4
       - libclang-3.4-dev
+      - libdwarf-dev
+      - libelf-dev
       - llvm-3.4
       - gcc-multilib
       - g++-multilib

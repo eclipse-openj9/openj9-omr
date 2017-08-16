@@ -226,4 +226,12 @@
  */
 #undef OMR_THR_YIELD_ALG
 
+/**
+ * Dwarf
+ */
+#undef HAVE_DWARF_H
+#undef HAVE_LIBDWARF_DWARF_H
+#undef HAVE_LIBDWARF_H
+#undef HAVE_LIBDWARF_LIBDWARF_H
+
 #endif /* !defined(OMRCFG_H_) */

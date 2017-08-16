@@ -16,6 +16,7 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+set(OMR_DDR ON CACHE BOOL "Enable DDR")
 set(OMR_EXAMPLE ON CACHE BOOL "")
 set(OMR_JIT  ON CACHE BOOL "")
 set(OMR_JITBUILDER ON CACHE BOOL "")

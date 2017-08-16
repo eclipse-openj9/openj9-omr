@@ -1,0 +1,33 @@
+# Find libelf
+# Will set:
+#  LIBELF_FOUND
+#  LIBELF_INCLUDE_DIRS
+#  LIBELF_LIBRARIES
+#  LIBELF_DEFINITIONS
+
+find_path(ELF_H_INCLUDE_DIR elf.h)
+
+find_path(LIBELF_H_INCLUDE_DIR libelf.h)
+
+find_library(LIBELF_LIBRARY elf)
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(LibElf
+	DEFAULT_MSG
+	LIBELF_LIBRARY
+	ELF_H_INCLUDE_DIR
+	LIBELF_H_INCLUDE_DIR
+)
+
+if(LIBELF_FOUND)
+	set(LIBELF_INCLUDE_DIRS
+		${ELF_H_INCLUDE_DIR}
+		${LIBELF_H_INCLUDE_DIR}
+	)
+	set(LIBELF_LIBRARIES
+		${LIBELF_LIBRARY}
+	)
+	set (LIBELF_DEFINITIONS "")
+endif(LIBELF_FOUND)
+

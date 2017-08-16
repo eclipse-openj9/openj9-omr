@@ -300,7 +300,12 @@ target_include_directories(j9thrstatic
 )
 
 target_link_libraries(j9thrstatic
-	-pthread
 	omrutil
 	j9pool
 )
+
+if(OMR_HOST_OS MATCHES "linux|osx")
+	target_link_libraries(j9thrstatic
+		-pthread
+	)
+endif()

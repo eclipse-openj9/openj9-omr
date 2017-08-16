@@ -221,25 +221,36 @@ TR_OSRCompilationData::addInstruction2SharedSlotMapEntry(
 void
 TR_OSRCompilationData::compressInstruction2SharedSlotMap()
    {
-   for (int i = 0; i < instruction2SharedSlotMap.size()-1;)
+   // This approach isn't ideal, as it will result in copies when moving to the new list
+   // and back, however, it is cheaper than the prior implementation.
+   //
+   // TODO: Replace TR_Array with a TR::deque in TR_Instruction2SharedSlotMap
+   if (instruction2SharedSlotMap.size() > 0)
       {
-      const TR_ScratchBufferInfos& curInfos = instruction2SharedSlotMap[i].scratchBufferInfos;
-      const TR_ScratchBufferInfos& nextInfos = instruction2SharedSlotMap[i+1].scratchBufferInfos;
-      //check the equality of infos of the current and the next element
-      //if they are equal, we remove the next info
-      if (curInfos.size() != nextInfos.size())
+      TR_Instruction2SharedSlotMap tmpList(comp->trMemory());
+      tmpList.add(instruction2SharedSlotMap[0]);
+
+      for (int i = 1; i < instruction2SharedSlotMap.size(); i++)
          {
-         i++;
-         continue;
+         const TR_ScratchBufferInfos& prevInfos = tmpList[tmpList.lastIndex()].scratchBufferInfos;
+         const TR_ScratchBufferInfos& curInfos = instruction2SharedSlotMap[i].scratchBufferInfos;
+         //check the equality of infos of the prev and the current element
+         //if they are equal, don't add the current to the list
+         if (curInfos.size() != prevInfos.size())
+            {
+            tmpList.add(instruction2SharedSlotMap[i]);
+            continue;
+            }
+
+         for (int j = 0; j < curInfos.size(); j++)
+            if (!(curInfos[j] == prevInfos[j]))
+               {
+               tmpList.add(instruction2SharedSlotMap[i]);
+               break;
+               }
          }
-      bool equal = true;
-      for (int j = 0; j < curInfos.size(); j++)
-         if (!(curInfos[j] == nextInfos[j]))
-            equal = false;
-      if (equal)
-         instruction2SharedSlotMap.remove(i+1);
-      else
-         i++;
+
+      instruction2SharedSlotMap = tmpList;
       }
    }
 

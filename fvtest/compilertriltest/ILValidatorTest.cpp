@@ -85,10 +85,10 @@ TEST_P(CommoningTest, CommoningUnderSameTree)
                                (icmpeq
                                   (imul
                                      (iadd (iload parm=0 id="loadParm0") (iload parm=1 id="loadParm1"))
-                                     (isub (@common id="loadParm0") (@common id="loadParm1")))
+                                     (isub (@id "loadParm0") (@id "loadParm1")))
                                   (isub
-                                     (imul (@common id="loadParm0") (@common id="loadParm0"))
-                                     (imul (@common id="loadParm1") (@common id="loadParm1")))
+                                     (imul (@id "loadParm0") (@id "loadParm0"))
+                                     (imul (@id "loadParm1") (@id "loadParm1")))
                                   )))));
 
    auto ast = parseString(tril);
@@ -113,11 +113,11 @@ TEST_P(CommoningTest, CommoningWithinBlock)
                            (ireturn
                                (icmpeq
                                   (imul
-                                     (iadd (@common id="loadParm0") (@common id="loadParm1"))
-                                     (isub (@common id="loadParm0") (@common id="loadParm1")))
+                                     (iadd (@id "loadParm0") (@id "loadParm1"))
+                                     (isub (@id "loadParm0") (@id "loadParm1")))
                                   (isub
-                                     (imul (@common id="loadParm0") (@common id="loadParm0"))
-                                     (imul (@common id="loadParm1") (@common id="loadParm1")))
+                                     (imul (@id "loadParm0") (@id "loadParm0"))
+                                     (imul (@id "loadParm1") (@id "loadParm1")))
                                   )))));
 
    auto ast = parseString(tril);

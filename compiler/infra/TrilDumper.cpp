@@ -165,7 +165,7 @@ void TR::TrilDumper::visitingCommonedChildNode(TR::Node* node)
    {
    // for commoned nodes, we can "close" the node right away since the children
    // are not re-visited
-   fprintf(_outputFile, "(@common id=\"n%dn\") ", node->getGlobalIndex());
+   fprintf(_outputFile, "(@id \"n%dn\") ", node->getGlobalIndex());
    }
 
 void TR::TrilDumper::visitedAllChildrenOfNode(TR::Node* node)

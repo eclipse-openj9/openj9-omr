@@ -62,12 +62,12 @@
                (ddiv
                   (dconst 2.0000)
                   (i2d
-                     (@common id="setup_iload_parm1") ) ) )
+                     (@id "setup_iload_parm1") ) ) )
             (dconst 1.0000) ) )
       (dstore temp="x"                          ; double x = 0.0;
          (dconst 0.0000 id="setup_dconst_0") )
       (dstore temp="y"                          ; double y = 0.0;
-         (@common id="setup_dconst_0") )
+         (@id "setup_dconst_0") )
       (istore temp="iter"                       ; int iter = 0;
          (iconst 0) ) )
    (block name="loop"                           ; loop:
@@ -76,10 +76,10 @@
             (dadd
                (dmul
                   (dload temp="x" id="loop_dload_x")
-                  (@common id="loop_dload_x") )
+                  (@id "loop_dload_x") )
                (dmul
                   (dload temp="y" id="loop_dload_y")
-                  (@common id="loop_dload_y") ) )
+                  (@id "loop_dload_y") ) )
             (dconst 4.0000) ) )
       (istore temp="comp2"                      ; int comp2 = iter < parm0;
          (icmplt
@@ -97,10 +97,10 @@
             (dsub
                (dmul
                   (dload temp="x" id="loop_body_dload_x")
-                  (@common id="loop_body_dload_x") )
+                  (@id "loop_body_dload_x") )
                (dmul
                   (dload temp="y" id="loop_body_dload_y")
-                  (@common id="loop_body_dload_y") ) ) ) )
+                  (@id "loop_body_dload_y") ) ) ) )
       (dstore temp="y"                          ; y = y0 + 2.0 * x * y;
          (dadd
             (dload temp="y0")

@@ -80,17 +80,31 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
 
      auto childCount = tree->getChildCount();
 
-     if (strcmp("@common", tree->getName()) == 0) {
-         auto idArg = tree->getArgByName("id");
-         auto id = idArg->getValue()->getString();
+     if (strcmp("@id", tree->getName()) == 0) {
+         auto id = tree->getPositionalArg(0)->getValue()->getString();
          auto iter = _nodeMap.find(id);
          if (iter != _nodeMap.end()) {
              auto n = iter->second;
-             TraceIL("Commoning node n%dn (%p) from ASTNode %p (ID \"%s\")\n", n->getGlobalIndex(), n, tree, id);
+             TraceIL("Commoning node n%dn (%p) from ASTNode %p (@id \"%s\")\n", n->getGlobalIndex(), n, tree, id);
              return n;
          }
          else {
-             TraceIL("Failed to find node for commoning (id=\"%s\")\n", id)
+             TraceIL("Failed to find node for commoning (@id \"%s\")\n", id)
+             return nullptr;
+         }
+     }
+     else if (strcmp("@common", tree->getName()) == 0) {
+         auto id = tree->getArgByName("id")->getValue()->getString();
+         TraceIL("WARNING: Using @common is deprecated. Please use (@id \"%s\") instead.\n", id);
+         fprintf(stderr, "WARNING: Using @common is deprecated. Please use (@id \"%s\") instead.\n", id);
+         auto iter = _nodeMap.find(id);
+         if (iter != _nodeMap.end()) {
+             auto n = iter->second;
+             TraceIL("Commoning node n%dn (%p) from ASTNode %p (@id \"%s\")\n", n->getGlobalIndex(), n, tree, id);
+             return n;
+         }
+         else {
+             TraceIL("Failed to find node for commoning (@id \"%s\")\n", id)
              return nullptr;
          }
      }

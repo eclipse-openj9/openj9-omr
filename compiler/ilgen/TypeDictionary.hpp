@@ -32,15 +32,17 @@
 #endif
 
 
+#include "map"
 #include "ilgen/IlBuilder.hpp"
+#include "env/TypedAllocator.hpp"
 
-class TR_HashTabString;
-
-namespace TR { typedef TR::SymbolReference IlReference; }
-
-namespace TR { class SegmentProvider; }
-namespace TR { class Region; }
 class TR_Memory;
+
+namespace OMR { class StructType; }
+namespace OMR { class UnionType; }
+namespace TR  { class SegmentProvider; }
+namespace TR  { class Region; }
+namespace TR  { typedef TR::SymbolReference IlReference; }
 
 
 namespace OMR
@@ -132,6 +134,7 @@ public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
    TypeDictionary();
+   TypeDictionary(const TypeDictionary &src) = delete;
    ~TypeDictionary() throw();
 
    TR::IlType * LookupStruct(const char *structName);
@@ -418,8 +421,16 @@ protected:
    TR::SegmentProvider *_segmentProvider;
    TR::Region *_memoryRegion;
    TR_Memory *_trMemory;
-   TR_HashTabString * _structsByName;
-   TR_HashTabString * _unionsByName;
+
+   typedef bool (*StrComparator)(const char *, const char *);
+
+   typedef TR::typed_allocator<std::pair<const char *, OMR::StructType *>, TR::Region &> StructMapAllocator;
+   typedef std::map<const char *, OMR::StructType *, StrComparator, StructMapAllocator> StructMap;
+   StructMap          _structsByName;
+
+   typedef TR::typed_allocator<std::pair<const char *, OMR::UnionType *>, TR::Region &> UnionMapAllocator;
+   typedef std::map<const char *, OMR::UnionType *, StrComparator, UnionMapAllocator> UnionMap;
+   UnionMap           _unionsByName;
 
    // convenience for primitive types
    TR::IlType       * _primitiveType[TR::NumOMRTypes];
@@ -455,6 +466,9 @@ protected:
    TR::IlType       * pVectorInt64;
    TR::IlType       * pVectorFloat;
    TR::IlType       * pVectorDouble;
+
+   OMR::StructType * getStruct(const char *structName);
+   OMR::UnionType  * getUnion(const char *unionName);
    };
 
 } // namespace OMR

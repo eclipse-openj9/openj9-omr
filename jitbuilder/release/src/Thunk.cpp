@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
    assert(jit_initialized);
 
    std::cout << "Step 2: create TR::TypeDictionary instance\n";
-   auto d = TR::TypeDictionary{};
+   TR::TypeDictionary d;
 
    uint32_t rc;
    uint8_t *startPC;

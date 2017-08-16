@@ -27,19 +27,24 @@
 #endif
 
 
+#include <map>
+#include <set>
 #include <fstream>
 #include "ilgen/IlBuilder.hpp"
+#include "env/TypedAllocator.hpp"
 
 // Maximum length of _definingLine string (including null terminator)
 #define MAX_LINE_NUM_LEN 7
 
-class TR_HashTabInt;
-class TR_HashTabString;
 class TR_BitVector;
 namespace TR { class BytecodeBuilder; }
 namespace TR { class ResolvedMethod; }
 namespace TR { class SymbolReference; }
 namespace OMR { class VirtualMachineState; }
+
+namespace TR { class SegmentProvider; }
+namespace TR { class Region; }
+class TR_Memory;
 
 namespace OMR
 {
@@ -50,7 +55,8 @@ class MethodBuilder : public TR::IlBuilder
    TR_ALLOC(TR_Memory::IlGenerator)
 
    MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState = NULL);
-   virtual ~MethodBuilder() { }
+   MethodBuilder(const MethodBuilder &src);
+   virtual ~MethodBuilder();
 
    virtual void setupForBuildIL();
 
@@ -167,34 +173,59 @@ class MethodBuilder : public TR::IlBuilder
    int32_t GetNextBytecodeFromWorklist();
    
    protected:
-   void initMaps();
    virtual uint32_t countBlocks();
    virtual bool connectTrees();
 
    private:
+   TR::SegmentProvider *_segmentProvider;
+   TR::Region *_memoryRegion;
+   TR_Memory *_trMemory;
 
    // These values are typically defined outside of a compilation
    const char                * _methodName;
    TR::IlType                * _returnType;
    int32_t                     _numParameters;
-   TR_HashTabString          * _parameterSlot;
-   TR_HashTabString          * _symbolTypes;
-   TR_HashTabInt             * _symbolNameFromSlot;
-   TR_HashTabString          * _symbolIsArray;
-   TR_HashTabString          * _memoryLocations;
-   TR_HashTabString          * _functions;
 
-   TR::IlType               ** _cachedParameterTypes;
-   char                      * _cachedSignature;
+   typedef bool (*StrComparator)(const char *, const char*);
+
+   typedef TR::typed_allocator<std::pair<const char *, TR::SymbolReference *>, TR::Region &> SymbolMapAllocator;
+   typedef std::map<const char *, TR::SymbolReference *, StrComparator, SymbolMapAllocator> SymbolMap;
+
+   // This map should only be accessed inside a compilation via lookupSymbol
+   SymbolMap                   _symbols;
+
+   typedef TR::typed_allocator<std::pair<const char *, int32_t>, TR::Region &> ParameterMapAllocator;
+   typedef std::map<const char *, int32_t, StrComparator, ParameterMapAllocator> ParameterMap;
+   ParameterMap                _parameterSlot;
+
+   typedef TR::typed_allocator<std::pair<const char *, TR::IlType *>, TR::Region &> SymbolTypeMapAllocator;
+   typedef std::map<const char *, TR::IlType *, StrComparator, SymbolTypeMapAllocator> SymbolTypeMap;
+   SymbolTypeMap               _symbolTypes;
+
+   typedef TR::typed_allocator<std::pair<int32_t, const char *>, TR::Region &> SlotToSymNameMapAllocator;
+   typedef std::map<int32_t, const char *, std::less<int32_t>, SlotToSymNameMapAllocator> SlotToSymNameMap;
+   SlotToSymNameMap            _symbolNameFromSlot;
+   
+   typedef TR::typed_allocator<const char *, TR::Region &> StringSetAllocator;
+   typedef std::set<const char *, StrComparator, StringSetAllocator> ArrayIdentifierSet;
+
+   // This set acts as an identifier for symbols which correspond to arrays
+   ArrayIdentifierSet          _symbolIsArray;
+
+   typedef TR::typed_allocator<std::pair<const char *, void *>, TR::Region &> MemoryLocationMapAllocator;
+   typedef std::map<const char *, void *, StrComparator, MemoryLocationMapAllocator> MemoryLocationMap;
+   MemoryLocationMap           _memoryLocations;
+
+   typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
+   typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;
+   FunctionMap                 _functions;
+
+   TR::IlType                ** _cachedParameterTypes;
    const char                * _definingFile;
    char                        _definingLine[MAX_LINE_NUM_LEN];
    TR::IlType                * _cachedParameterTypesArray[10];
-   char                        _cachedSignatureArray[100];
 
-   // This map should only be accessed inside a compilation via lookupSymbol
-   TR_HashTabString          * _symbols;
    bool                        _newSymbolsAreTemps;
-
    int32_t                     _nextValueID;
 
    bool                        _useBytecodeBuilders;

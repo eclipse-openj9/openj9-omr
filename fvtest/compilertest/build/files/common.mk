@@ -29,6 +29,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/BitVector.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/Checklist.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/HashTab.cpp \
+    $(JIT_OMR_DIRTY_DIR)/infra/STLUtils.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/IGBase.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/IGNode.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/ILWalk.cpp \

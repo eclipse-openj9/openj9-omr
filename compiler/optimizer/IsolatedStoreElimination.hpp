@@ -72,8 +72,8 @@ class TR_IsolatedStoreElimination : public TR::Optimization
    void    examineNode(TR::Node *, vcount_t visitCount, bool);
 
    void performDeadStructureRemoval(TR_UseDefInfo *);
-   bool findStructuresAndNodesUsedIn(TR_UseDefInfo *, TR_Structure *, vcount_t, TR_BitVector *,bool *);
-   bool markNodesAndLocateSideEffectIn(TR::Node *, vcount_t, TR_BitVector *);
+   bool findStructuresAndNodesUsedIn(TR_UseDefInfo *, TR_Structure *, vcount_t, TR_BitVector *, TR_BitVector *, bool *);
+   bool markNodesAndLocateSideEffectIn(TR::Node *, vcount_t, TR_BitVector *, TR_BitVector *);
 
    void analyzeSingleBlockLoop(TR_RegionStructure *, TR::Block *);
 
@@ -88,7 +88,7 @@ class TR_IsolatedStoreElimination : public TR::Optimization
       doNotExamine
       };
 
-   TR_BitVector        *_usedSymbols, *_temp, *_temp1, *_temp2;
+   TR_BitVector        *_usedSymbols;
    TR_Array<TR::Node *> *_storeNodes;
    TR_Array<int32_t>  *_defParentOfUse;
    TR_Array<defStatus>  *_defStatus;

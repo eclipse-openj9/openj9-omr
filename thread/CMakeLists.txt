@@ -18,6 +18,8 @@
 
 include(OmrFindFiles)
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_tracegen(j9thr.tdf)
 
 

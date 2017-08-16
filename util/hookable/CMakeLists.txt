@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 #TODO there is a bunch of stuff with vpaths, presumably for some extensibility reasons
 # need to figure out if its actually needed and implement properly if required
 add_library(j9hookstatic STATIC

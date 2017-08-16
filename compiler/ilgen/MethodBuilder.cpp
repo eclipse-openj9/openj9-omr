@@ -148,8 +148,6 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    })
    }
 
-MethodBuilder::MethodBuilder(const MethodBuilder &src) = default;
-
 MethodBuilder::~MethodBuilder()
    {
    // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)

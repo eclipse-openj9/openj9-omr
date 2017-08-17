@@ -1132,7 +1132,7 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    else
       _numDefOnlyNodes = _numDefsOnEntry;
    _numDefUseNodes = _numExpandedDefUseNodes = 0;
-   _numUseOnlyNodes = _numExpandedUseOnlyNodes = 0;
+   _numUseOnlyNodes = _numExpandedUseOnlyNodes = _numIrrelevantStores = 0;
    comp()->incVisitCount();
    TR::TreeTop *treeTop = NULL;
    TR::Block *block = NULL;
@@ -1177,9 +1177,9 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       dumpOptDetails(comp(), "   use/def failed, too many expanded use nodes (%d)\n", getNumExpandedUseNodes());
       return false;
       }
-   if (getNumDefNodes() * getNumUseNodes() >= maxDefByUseNodes)
+   if ((getNumDefNodes() - getNumIrrelevantStores()) * getNumUseNodes() >= maxDefByUseNodes)
       {
-      dumpOptDetails(comp(), "   use/def failed, too many def/use combinations (%d)\n", getNumDefNodes()*getNumUseNodes());
+      dumpOptDetails(comp(), "   use/def failed, too many def/use combinations (%d)\n", (getNumDefNodes() - getNumIrrelevantStores())*getNumUseNodes());
       return false;
       }
 
@@ -1199,7 +1199,8 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    if (trace())
       {
       traceMsg(comp(), "      expanded nodes          = %d\n", getExpandedTotalNodes());
-      traceMsg(comp(), "      def/use combinations    = %d\n", getNumDefNodes()*getNumUseNodes());
+      traceMsg(comp(), "      def/use combinations    = %d\n", (getNumDefNodes() - getNumIrrelevantStores())*getNumUseNodes());
+      traceMsg(comp(), "      irrelevant stores       = %d\n", getNumIrrelevantStores());
       traceMsg(comp(), "      expanded use nodes      = %d\n", getNumExpandedUseNodes());
       traceMsg(comp(), "      expanded def nodes      = %d\n", getNumExpandedDefNodes());
       traceMsg(comp(), "      local index level  = %d\n", _numExpandedDefUseNodes);
@@ -1352,6 +1353,8 @@ bool TR_UseDefInfo::findUseDefNodes(
          //   }
 
          useDefIndex = _numDefOnlyNodes++;
+         if (opCode.isStore() && node->storedValueIsIrrelevant())
+            _numIrrelevantStores++;
 
          if (isTrivialUseDefNode(node, aux))
             {

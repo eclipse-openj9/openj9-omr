@@ -60,6 +60,11 @@ macro(omr_platform_global_setup)
 	endif()
 
 	# If the OS requires global setup, do it here.
+	if(COMMAND omr_arch_global_setup)
+		omr_arch_global_setup()
+	endif()
+
+	# If the OS requires global setup, do it here.
 	if(COMMAND omr_os_global_setup)
 		omr_os_global_setup()
 	endif()

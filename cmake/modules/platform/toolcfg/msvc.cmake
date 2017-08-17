@@ -18,8 +18,6 @@
 
 include(OmrUtility)
 
-set(OMR_C_DEFINITION_PREFIX /D)
-
 set(OMR_WARNING_AS_ERROR_FLAG /WX)
 
 macro(omr_toolconfig_global_setup)

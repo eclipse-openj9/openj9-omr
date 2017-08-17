@@ -16,9 +16,4 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-
-
 set(OMR_WARNING_AS_ERROR_FLAG -Werror)
-
-set(OMR_C_DEFINITION_PREFIX -D) 
-

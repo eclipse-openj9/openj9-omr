@@ -37,16 +37,16 @@ message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
 omr_detect_system_information()
 
 # Pickup OS info 
-include(${OMR_ROOT}/cmake/platform/os/${OMR_HOST_OS}.cmake)
+include(platform/os/${OMR_HOST_OS})
 
 # Pickup Arch Info
-include(${OMR_ROOT}/cmake/platform/arch/${OMR_HOST_ARCH}.cmake) 
+include(platform/arch/${OMR_HOST_ARCH})
 
-# Pickup toolconfig based on platform. 
-include(${OMR_ROOT}/cmake/platform/toolcfg/${OMR_TOOLCONFIG}.cmake)
+# Pickup toolconfig based on platform
+include(platform/toolcfg/${OMR_TOOLCONFIG})
 
 # Verify toolconfig!
-include(${OMR_ROOT}/cmake/platform/toolcfg/verify.cmake)
+include(platform/toolcfg/verify)
 
 omr_add_prefix(OMR_OS_DEFINITIONS_PREFIXED   ${OMR_C_DEFINITION_PREFIX} ${OMR_OS_DEFINITIONS})
 omr_add_prefix(OMR_ARCH_DEFINITIONS_PREFIXED ${OMR_C_DEFINITION_PREFIX} ${OMR_ARCH_DEFINITIONS})

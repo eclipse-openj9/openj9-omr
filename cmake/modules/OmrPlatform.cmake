@@ -29,11 +29,6 @@ include(OmrUtility)
 ### Platform flags
 ### TODO: arch flags. Defaulting to x86-64
 
-message(STATUS "CMAKE_SYSTEM_NAME=${CMAKE_SYSTEM}")
-message(STATUS "CMAKE_SYSTEM_VERSION=${CMAKE_SYSTEM_VERSION}")
-message(STATUS "CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING}")
-
 omr_detect_system_information()
 
 # Pickup OS info 

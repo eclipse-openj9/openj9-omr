@@ -558,19 +558,11 @@ bool OMR::Compilation::canAffordOSRControlFlow()
    {
    if (self()->getOption(TR_DisableOSR) || !self()->getOption(TR_EnableOSR))
       {
-      if (self()->getOption(TR_TraceOSR))
-         {
-         traceMsg(self(), "canAffordOSRControlFlow returning false due to OSR options: disableOSR %d, enableOSR %d\n", self()->getOption(TR_DisableOSR), self()->getOption(TR_EnableOSR));
-         }
       return false;
       }
 
    if (self()->osrInfrastructureRemoved())
       {
-      if (self()->getOption(TR_TraceOSR))
-         {
-         traceMsg(self(), "canAffordOSRControlFlow returning false due to removal of OSR infrastructure\n");
-         }
       return false;
       }
 

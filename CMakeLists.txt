@@ -37,6 +37,12 @@ include(OmrFindFiles)
 include(OmrPlatform)
 
 ###
+### Set up the global platform configuration
+###
+
+omr_platform_global_setup()
+
+###
 ### Getting the glue target
 ###
 if (NOT DEFINED OMR_GLUE_TARGET)

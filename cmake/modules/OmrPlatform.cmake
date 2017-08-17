@@ -43,36 +43,36 @@ include(platform/toolcfg/${OMR_TOOLCONFIG})
 # Verify toolconfig!
 include(platform/toolcfg/verify)
 
-add_definitions(
-	${OMR_OS_DEFINITIONS}
-	${OMR_ARCH_DEFINITIONS}
-)
+macro(omr_platform_global_setup)
+	omr_append_flags(CMAKE_C_FLAGS   ${OMR_OS_COMPILE_OPTIONS})
+	omr_append_flags(CMAKE_CXX_FLAGS ${OMR_OS_COMPILE_OPTIONS})
 
-omr_append_flags(CMAKE_C_FLAGS   ${OMR_OS_COMPILE_OPTIONS})
-omr_append_flags(CMAKE_CXX_FLAGS ${OMR_OS_COMPILE_OPTIONS})
+	add_definitions(
+		${OMR_OS_DEFINITIONS}
+		${OMR_ARCH_DEFINITIONS}
+	)
 
-if(OMR_HOST_OS STREQUAL "linux")
-	if(OMR_WARNINGS_AS_ERRORS)
-		omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
-		omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
+	if(OMR_HOST_OS STREQUAL "linux")
+		if(OMR_WARNINGS_AS_ERRORS)
+			omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
+			omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
+		endif()
 	endif()
-endif()
 
+	# If the OS requires global setup, do it here.
+	if(COMMAND omr_os_global_setup)
+		omr_os_global_setup()
+	endif()
+
+	# And now the toolconfig setup
+	if(COMMAND omr_toolconfig_global_setup)
+		omr_toolconfig_global_setup()
+	endif()
+endmacro()
 
 # interface library for exporting symbols from dynamic library
 # currently does nothing except on zos
 add_library(omr_shared INTERFACE)
-
-# If the OS requires global setup, do it here. 
-if(COMMAND omr_os_global_setup)
-	omr_os_global_setup()
-endif()
-
-# And now the toolconfig setup
-if(COMMAND omr_toolconfig_global_setup)
-	omr_toolconfig_global_setup()
-endif()
-
 
 ###
 ### Flags we aren't using

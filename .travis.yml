@@ -50,8 +50,6 @@ env:
 matrix:
   exclude:
     - os: osx
-      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
-    - os: osx
       env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
   include:
     - os: linux
@@ -63,8 +61,6 @@ matrix:
       dist: precise
     - os: linux
       env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
-    - os: osx
-      env: SPEC=osx_x86-64
 before_script:
   - ulimit -c unlimited
 script:

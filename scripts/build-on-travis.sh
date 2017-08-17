@@ -26,6 +26,11 @@ if test "x$CMAKE_GENERATOR" = "x"; then
 fi
 
 if test "x$BUILD_WITH_CMAKE" = "xyes"; then
+
+  if test "x$TRAVIS_OS_NAME" = "xosx" && test "x$CMAKE_GENERATOR" = "xNinja"; then
+    brew install ninja
+  fi
+
   mkdir build
   cd build
   time cmake -Wdev -G "$CMAKE_GENERATOR" -C../cmake/caches/Travis.cmake ..

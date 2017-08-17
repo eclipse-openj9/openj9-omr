@@ -16,20 +16,4 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-# Verify that all the definitions required from a toolcfg exist. 
-
-# Error if a variable isn't defined. 
-macro(omr_assert_defined var) 
-	if(NOT DEFINED ${var}) 
-		message(FATAL_ERROR "Missing variable definition ${var} from toolconfig ${OMR_TOOLCONFIG}")
-	endif()
-endmacro(omr_assert_defined)
-
-# Warn if a variable isn't defined
-macro(omr_warn_if_not_defined var) 
-	if(NOT DEFINED ${var}) 
-		message(WARNING "Missing variable definition ${var} from toolconfig ${OMR_TOOLCONFIG}")
-	endif()
-endmacro(omr_warn_if_not_defined)
-
-omr_warn_if_not_defined("OMR_WARNING_AS_ERROR_FLAG")
+omr_assert(WARNING TEST DEFINED OMR_WARNING_AS_ERROR_FLAG)

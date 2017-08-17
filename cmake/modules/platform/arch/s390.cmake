@@ -19,3 +19,15 @@
 list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DJ9VM_TIERED_CODE_CACHE
 )
+
+# Testarossa build variables. Longer term the distinction between TR and the rest 
+# of the OMR code should be heavily reduced. In the mean time, we keep
+# the distinction
+set(TR_HOST_ARCH    z)
+set(TR_HOST_BITS    64)
+list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_S390 TR_TARGET_S390)
+
+if(OMR_ENV_DATA64)
+	list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
+endif()
+set(CMAKE_ASM-ATT_FLAGS "-noexecstack -march=z9-109")

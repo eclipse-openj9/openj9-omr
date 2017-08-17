@@ -206,6 +206,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
 
 
    public:
+   int32_t getNumIrrelevantStores() { return _numIrrelevantStores; }
    int32_t getNumUseNodes() {return _numUseOnlyNodes+_numDefUseNodes;}
    int32_t getNumDefNodes() {return _numDefOnlyNodes+_numDefUseNodes;}
    int32_t getNumDefOnlyNodes() {return _numDefOnlyNodes;}
@@ -326,6 +327,7 @@ class TR_UseDefInfo : public TR::Allocatable<TR_UseDefInfo, TR::Allocator>
    int32_t             _numDefOnlyNodes;
    int32_t             _numDefUseNodes;
    int32_t             _numUseOnlyNodes;
+   int32_t             _numIrrelevantStores;
    int32_t             _numExpandedDefOnlyNodes;
    int32_t             _numExpandedDefUseNodes;
    int32_t             _numExpandedUseOnlyNodes;

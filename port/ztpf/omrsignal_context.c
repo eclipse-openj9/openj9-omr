@@ -225,7 +225,7 @@ ztpfDeriveSiginfo( siginfo_t *build ) {
    uint16_t	ilc;
    uint8_t dxc;
    sigvpair_t *translated = NULL;
-   char *lowcore = NULL;
+   void *lowcore = NULL;
    DIB *pDib = ecbp2()->ce2dib;
    DBFHDR *pDbf = (DBFHDR *)(pDib->dibjdb);
    DBFITEM *pDbi;
@@ -241,8 +241,8 @@ ztpfDeriveSiginfo( siginfo_t *build ) {
    if( pDbf && pDbf->ijavcnt ) {	/* We have the full Error Recording Info, use it.	*/
 	  pDbi = (DBFITEM *)pDbf+1;					/* We have a bunch of void ptrs			*/
 	  pEri = (struct cderi *)(pDbi->ijavsbuf);	/*	to cast through ... ugh...			*/
-	  lowcore = (uint8_t *)pEri;					/* And struct cderi is incomplete ...	*/
-	  lowcore += 0x310;							/*	ai yi yi Lucy.						*/
+	  lowcore = pEri;							/* And struct cderi is incomplete ...	*/
+	  lowcore += (unsigned long int)0x310;		/*	ai yi yi Lucy.						*/
    }
    else {							/* All we have is the DIB, so use it instead.		*/
 	  lowcore = pDib->dilow;					/* Fixup low core pointer				*/
@@ -295,8 +295,8 @@ ztpfDeriveSiginfo( siginfo_t *build ) {
    case SIGSEGV:
 	  if( build->si_code == SEGV_MAPERR && pEri ) { 
 		 uint64_t *address;
-		 lowcore = (char *)pEri;		/* The failing vaddr is at ISVTRXAD */
-		 address = (uint64_t *)lowcore+0x1b8;	/*	at offset 0x1B8 into the ERI*/
+		 lowcore = pEri;			/* The failing vaddr is at ISVTRXAD */
+		 address = lowcore+(unsigned long int)0x1b8;	/*	at offset 0x1B8 into the ERI*/
 		 build->si_addr = (void *)*address; /* Move the failed address.		*/
 	  }									/* Otherwise leave it zero.			*/
 	  break;
@@ -340,16 +340,16 @@ ztpfDeriveSigcontext( struct sigcontext *sigcPtr, ucontext_t *uctPtr ) {
 
 static void
 ztpfDeriveUcontext( ucontext_t *uscPtr ) { 
-   DIB *pDib = ecbp2()->ce2dib;	 
-   DBFHDR *pJdb = (DBFHDR *)(pDib->dibjdb);
-   DBFITEM *pDbi = NULL;
-   uint8_t*	lowcore = NULL;
+   DIB * pDib = ecbp2()->ce2dib;
+   DBFHDR * pJdb = (DBFHDR *)(pDib->dibjdb);
+   DBFITEM * pDbi = NULL;
+   void * lowcore = NULL;
 
    memset( uscPtr, 0, sizeof(*uscPtr) );	/* Zeroize everything		*/
    if( pJdb ) {					 /* If JDB contents are for this thread */
 	  if( pJdb->ijavcnt ) {		 /*  and the JDB is unlocked			*/
 		 pDbi = (DBFITEM *)(pJdb+1);		 /* Point at the JDB base	*/
-		 lowcore = (uint8_t *)(pDbi->ijavsbuf);  /*  and its low core copy. */
+		 lowcore = (pDbi->ijavsbuf);		/*  and its low core copy. */
 	  }
 	  else {					 /* Otherwise use what's in the DIB		*/
 		 lowcore = pDib->dilow;  /* Use the low core pointer from DIB	*/

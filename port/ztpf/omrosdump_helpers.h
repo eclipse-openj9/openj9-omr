@@ -35,7 +35,7 @@
 
 #ifndef OSDUMP_SYMBOLS_ONLY
 #include "omrport.h"
-#include "portpriv.h" 
+#include "omrportpriv.h"
 #endif
 
 /*

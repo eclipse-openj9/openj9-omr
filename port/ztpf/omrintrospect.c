@@ -47,13 +47,13 @@
 /* z/TPF doesn't have a fdatasync(), it takes   */
 /*    one argument and returns void. Nullify it.*/
 #define fdatasync(x)    {}
+#include "omrintrospect.h"
 #include "omrport.h"
-#include "portpriv.h"
+#include "omrportpriv.h"
 #include "omrportpg.h"
 #include "omrsignal_context.h"
-#include "omrintrospect.h"
-#include "util_core_api.h"
-#include "ut_omrprt.h"
+#include "omrutilbase.h"
+#include "ut_omrport.h"
 
 extern void loadfpc();
 
@@ -159,13 +159,13 @@ barrier_init_r(barrier_r *barrier, int value)
 
 	do {
 		old_value = barrier->initial_value;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->initial_value, old_value, value, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t *)&barrier->initial_value, old_value, value) != old_value);
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, old_value, value, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&barrier->in_count, old_value, value) != old_value);
 	do {
 		old_value = barrier->released;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->released, old_value, 0, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&barrier->released, old_value, 0) != old_value);
 
 	return 0;
 }
@@ -256,7 +256,7 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 		deadline = spec.tv_sec + seconds;
 	}
 
-	if ((compareAndSwapuintptr_t((uintptr_t*)&barrier->released, 0, 1, &barrier->spinlock)) != 0) {
+	if ((compareAndSwapUDATA((uintptr_t*)&barrier->released, 0, 1)) != 0) {
 		/* barrier->released should have been 0, write something into the pipe so that poll doesn't block,
 		 * converts this to a busy wait
 		 */
@@ -265,7 +265,7 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 	}
 
 	/* wait until all entrants have arrived */
-	while ((compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, -1, -1, &barrier->spinlock)) > 0) {
+	while ((compareAndSwapUDATA((uintptr_t*)&barrier->in_count, -1, -1)) > 0) {
 		if ((result = barrier_block_until_poked(barrier, deadline)) == -1) {
 			/* timeout or error */
 			break;
@@ -296,9 +296,9 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* decrement the wait count */
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, old_value, old_value - 1, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&barrier->in_count, old_value, old_value - 1) != old_value);
 
-	if (old_value == 1 && (compareAndSwapuintptr_t((uintptr_t*)&barrier->released, 0, 0, &barrier->spinlock))) {
+	if (old_value == 1 && (compareAndSwapUDATA((uintptr_t*)&barrier->released, 0, 0))) {
 		/* we're the last through the barrier so wake everyone up */
 		write(barrier->descriptor_pair[1], &byte, 1);
 	}
@@ -306,7 +306,7 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* if we're entering a barrier with a negative count then count us out but we don't need to do anything */
 
 	/* wait until we are formally released */
-	while (compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, -1, -1, &barrier->spinlock) > 0 || !barrier->released) {
+	while (compareAndSwapUDATA((uintptr_t*)&barrier->in_count, -1, -1) > 0 || !barrier->released) {
 		if ((result = barrier_block_until_poked(barrier, deadline)) < 0) {
 			/* timeout or error */
 			break;
@@ -316,7 +316,7 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 	/* increment the out count */
 	do {
 		old_value = barrier->out_count;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->out_count, old_value, old_value + 1, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&barrier->out_count, old_value, old_value + 1) != old_value);
 	return result;
 }
 
@@ -342,7 +342,7 @@ barrier_update_r(barrier_r *barrier, int new_value)
 
 	do {
 		old_value = barrier->in_count;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, old_value, old_value + difference, &barrier->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&barrier->in_count, old_value, old_value + difference) != old_value);
 
 	if (old_value < 0 || (old_value == 0 && barrier->initial_value != 0)) {
 		int restore_value = old_value;
@@ -350,14 +350,14 @@ barrier_update_r(barrier_r *barrier, int new_value)
 		/* barrier was already exited, so undo update and return error */
 		do {
 			old_value = barrier->in_count;
-		} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, old_value, restore_value, &barrier->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t*)&barrier->in_count, old_value, restore_value) != old_value);
 
 		return -1;
 	} else {
 		/* we've updated the in_count so update the initial_value */
 		do {
 			old_value = barrier->initial_value;
-		} while (compareAndSwapuintptr_t((uintptr_t*)&barrier->initial_value, old_value, new_value, &barrier->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t*)&barrier->initial_value, old_value, new_value) != old_value);
 
 		/* don't need to notify anyone if updated_value is <= 0 as release will do it when called */
 
@@ -387,8 +387,8 @@ barrier_destroy_r(barrier_r *barrier, int block)
 	/* decrement the wait count */
 	if (block) {
 		do {
-			current = compareAndSwapuintptr_t((uintptr_t*)&barrier->out_count, -1, -1, &barrier->spinlock);
-			in = compareAndSwapuintptr_t((uintptr_t*)&barrier->in_count, -1, -1, &barrier->spinlock);
+			current = compareAndSwapUDATA((uintptr_t*)&barrier->out_count, -1, -1);
+			in = compareAndSwapUDATA((uintptr_t*)&barrier->in_count, -1, -1);
 		} while (current + in < barrier->initial_value);
 	}
 }
@@ -461,9 +461,9 @@ sem_timedwait_r(sem_t_r *sem, uintptr_t seconds)
 	}
 
 	while (1) {
-		old_value = compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, -1, -1, &sem->spinlock);
+		old_value = compareAndSwapUDATA((uintptr_t*)&sem->sem_value, -1, -1);
 		while (old_value > 0) {
-			if (compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, old_value, old_value - 1, &sem->spinlock) == old_value) {
+			if (compareAndSwapUDATA((uintptr_t*)&sem->sem_value, old_value, old_value - 1) == old_value) {
 				/* successfully acquired lock */
 				return 0;
 			}
@@ -512,9 +512,9 @@ sem_trywait_r(sem_t_r *sem)
 	uintptr_t old_value = 0;
 
 	/* try to get the lock */
-	old_value = compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, -1, -1, &sem->spinlock);
+	old_value = compareAndSwapUDATA((uintptr_t*)&sem->sem_value, -1, -1);
 	while (old_value > 0) {
-		int value = compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, old_value, old_value - 1, &sem->spinlock);
+		int value = compareAndSwapUDATA((uintptr_t*)&sem->sem_value, old_value, old_value - 1);
 		if (value == old_value) {
 			/* successfully acquired lock */
 			return 0;
@@ -545,7 +545,7 @@ sem_post_r(sem_t_r *sem)
 	/* release the lock */
 	do {
 		old_value = sem->sem_value;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, old_value, old_value + 1, &sem->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&sem->sem_value, old_value, old_value + 1) != old_value);
 
 	/* wake up a waiter */
 	if (write(sem->descriptor_pair[1], &byte, 1) != 1) {
@@ -572,13 +572,13 @@ sem_destroy_r(sem_t_r *sem)
 	/* prevent the semaphore from being acquired by subtracting initial value*/
 	do {
 		old_value = sem->sem_value;
-	} while (compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, old_value, old_value - sem->initial_value, &sem->spinlock) != old_value);
+	} while (compareAndSwapUDATA((uintptr_t*)&sem->sem_value, old_value, old_value - sem->initial_value) != old_value);
 
 	if (old_value != sem->initial_value) {
 		/* undo the block and return error */
 		do {
 			old_value = sem->sem_value;
-		} while (compareAndSwapuintptr_t((uintptr_t*)&sem->sem_value, old_value, old_value + sem->initial_value, &sem->spinlock) != old_value);
+		} while (compareAndSwapUDATA((uintptr_t*)&sem->sem_value, old_value, old_value + sem->initial_value) != old_value);
 
 		/* semaphore is still in use */
 		return -1;
@@ -662,7 +662,7 @@ upcall_handler(int signal, siginfo_t *siginfo, void *context_arg)
 	struct PlatformWalkData *data = NULL;
 	int ret = 0;
 	pid_t pid = getpid();
-	unsigned long tid = j9thread_get_ras_tid();
+	unsigned long tid = omrthread_get_ras_tid();
 
 	/* check that this signal was queued by this process. */
 	if (siginfo->si_code != SI_QUEUE || siginfo->si_value.sival_ptr == NULL) {
@@ -749,11 +749,8 @@ count_threads( struct PlatformWalkData *data ) {
 static int
 suspend_all_preemptive(struct PlatformWalkData *data)
 {
-/*
- *z/TPF platform will not suspend threads via this function.
- */
-    errno = EBADF;
-    return -1;
+	errno = EBADF;
+	return -1;
 }
 
 
@@ -862,7 +859,7 @@ resume_all_preempted(struct PlatformWalkData *data)
 
 	if (data->error) {
 		/* allow threads in upcall handler to run */
-		j9thread_yield();
+		omrthread_yield();
 	}
 	/* clean up the semaphores */
 	sem_destroy_r(&data->client_sem);
@@ -992,7 +989,7 @@ setup_native_thread(J9ThreadWalkState *state, thread_context *sigContext, int he
 		if (sigContext) {
 			/* we're using the provided context instead of generating it */
 			memcpy(state->current_thread->context, ((J9UnixSignalInfo*)sigContext)->platformSignalInfo.context, size);
-		} else if (state->current_thread->thread_id == j9thread_get_ras_tid()) {
+		} else if (state->current_thread->thread_id == omrthread_get_ras_tid()) {
 			/* return context for current thread */
 			J9ZTPF_getcontext((ucontext_t*)state->current_thread->context);
 		} else {
@@ -1098,7 +1095,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 
 	memset(data, 0, sizeof(struct PlatformWalkData));
 	data->state = state;
-	data->controllerThread = j9thread_get_ras_tid();
+	data->controllerThread = omrthread_get_ras_tid();
 
 	memset(&thread, 0, sizeof(J9PlatformThread));
 
@@ -1146,7 +1143,7 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 	data->thread = NULL;
 
 	/* pass back the current thread as we can be sure we won't hit a problem getting it */
-	thread.thread_id = j9thread_get_ras_tid();
+	thread.thread_id = omrthread_get_ras_tid();
 	thread.process_id = getpid();
 	data->thread = &thread;
 
@@ -1165,13 +1162,13 @@ cleanup:
 	return NULL;
 }
 
-/* This function is identical to j9introspect_threads_startDo_with_signal but omits the signal argument
+/* This function is identical to omrintrospect_threads_startDo_with_signal but omits the signal argument
  * and instead uses a live context for the calling thread.
  */
 J9PlatformThread*
 omrintrospect_threads_startDo(struct OMRPortLibrary *portLibrary, J9Heap *heap, J9ThreadWalkState *state)
 {
-	return j9introspect_threads_startDo_with_signal(portLibrary, heap, state, NULL);
+	return omrintrospect_threads_startDo_with_signal(portLibrary, heap, state, NULL);
 }
 
 /* This function is called repeatedly to get subsequent threads in the iteration. The only way to
@@ -1180,7 +1177,7 @@ omrintrospect_threads_startDo(struct OMRPortLibrary *portLibrary, J9Heap *heap, 
  * @param state state structure initialised by a call to one of the startDo functions.
  *
  * @return NULL if there is an error or if no more threads are available. Sets the error fields as
- * listed detailed for j9introspect_threads_startDo_with_signal.
+ * listed detailed for omrintrospect_threads_startDo_with_signal.
  */
 J9PlatformThread*
 omrintrospect_threads_nextDo(J9ThreadWalkState *state)
@@ -1254,7 +1251,7 @@ omrintrospect_threads_nextDo(J9ThreadWalkState *state)
 				 * the hopes that it will cause one of the remaining threads to respond.
 				 */
 				sigqueue(getpid(), SUSPEND_SIG, val);
-				j9thread_yield();
+				omrthread_yield();
 			}
 		}
 	}

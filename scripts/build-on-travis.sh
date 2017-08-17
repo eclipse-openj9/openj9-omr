@@ -19,7 +19,7 @@
 
 set -evx
 
-export JOBS=4
+export JOBS=2
 
 if test "x$CMAKE_GENERATOR" = "x"; then
   export CMAKE_GENERATOR="Ninja"

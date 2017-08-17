@@ -16,6 +16,11 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+if(OMR_PLATFORM_)
+	return()
+endif()
+set(OMR_PLATFORM_ 1)
+
 include(OmrAssert)
 include(OmrDetectSystemInformation)
 include(OmrUtility)

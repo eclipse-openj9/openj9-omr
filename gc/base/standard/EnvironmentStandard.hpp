@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,9 +62,6 @@ public:
 	void *_survivorTLHRemainderBase; /**< base and top pointers of the last unused survivor TLH copy cache, that might be reused  on next copy refresh */
 	void *_survivorTLHRemainderTop;
 
-	/* TODO: Temporary hiding place for thread specific GC structures */
-	bool _threadCleaningCards;
-
 protected:
 
 private:
@@ -91,7 +88,6 @@ public:
 		,_loaAllocation(false)
 		,_survivorTLHRemainderBase(NULL)
 		,_survivorTLHRemainderTop(NULL)
-		,_threadCleaningCards(false)
 	{
 		_typeId = __FUNCTION__;
 	}

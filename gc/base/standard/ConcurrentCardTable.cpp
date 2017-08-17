@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,6 +29,8 @@
 
 #include "AtomicOperations.hpp"
 #include "CollectorLanguageInterface.hpp"
+#include "ConcurrentGC.hpp"
+#include "ConcurrentGCStats.hpp"
 #include "ConcurrentCardTable.hpp"
 #include "Debug.hpp"
 #include "EnvironmentStandard.hpp"
@@ -58,7 +60,7 @@ void
 MM_ConcurrentCardTable::tlhRefreshed(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
 {
 	MM_CacheRefreshedEvent* event = (MM_CacheRefreshedEvent*)eventData;
-	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(event->currentThread);
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 
 	((MM_ConcurrentCardTable *)userData)->processTLHMarkBits(env,
 													(MM_MemorySubSpace *)event->subSpace,
@@ -76,7 +78,7 @@ void
 MM_ConcurrentCardTable::tlhCleared(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
 {
 	MM_CacheClearedEvent* event = (MM_CacheClearedEvent*)eventData;
-	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(event->currentThread);
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 
 	((MM_ConcurrentCardTable *)userData)->processTLHMarkBits(env,
 													(MM_MemorySubSpace *)event->subSpace,
@@ -105,7 +107,7 @@ MM_ConcurrentCardTable::tlhCleared(J9HookInterface** hook, uintptr_t eventNum, v
  * @return the required size (in bytes) of the TLH mark map
  */
 uintptr_t
-MM_ConcurrentCardTable::calculateTLHMarkMapSize(MM_EnvironmentStandard *env, uintptr_t cardTableSize)
+MM_ConcurrentCardTable::calculateTLHMarkMapSize(MM_EnvironmentBase *env, uintptr_t cardTableSize)
 {
 	uintptr_t size;
 
@@ -124,7 +126,7 @@ MM_ConcurrentCardTable::calculateTLHMarkMapSize(MM_EnvironmentStandard *env, uin
  * @param cleanNewCards If true all new cards are to be cleared to zero
  */
 bool
-MM_ConcurrentCardTable::allocateCardTableEntriesForHeapRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards)
+MM_ConcurrentCardTable::allocateCardTableEntriesForHeapRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards)
 {
 	Card *lowCard, *highCard;
 
@@ -159,7 +161,7 @@ MM_ConcurrentCardTable::allocateCardTableEntriesForHeapRange(MM_EnvironmentStand
  */
 bool
 MM_ConcurrentCardTable::freeCardTableEntriesForHeapRange(
-	MM_EnvironmentStandard *env, uintptr_t size, void *lowAddress, void *highAddress,
+	MM_EnvironmentBase *env, uintptr_t size, void *lowAddress, void *highAddress,
 	void *lowValidAddress, void *highValidAddress)
 {
 	Card *lowCard, *highCard, *lowValidCard, *highValidCard;
@@ -197,7 +199,7 @@ MM_ConcurrentCardTable::freeCardTableEntriesForHeapRange(
  * @param highAddress The top address (non-inclusive) of the memory added to the heap
  */
 bool
-MM_ConcurrentCardTable::allocateTLHMarkMapEntriesForHeapRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress)
+MM_ConcurrentCardTable::allocateTLHMarkMapEntriesForHeapRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress)
 {
 	bool commited = true;
 
@@ -261,7 +263,7 @@ MM_ConcurrentCardTable::allocateTLHMarkMapEntriesForHeapRange(MM_EnvironmentStan
  */
 bool
 MM_ConcurrentCardTable::freeTLHMarkMapEntriesForHeapRange(
-	MM_EnvironmentStandard *env, uintptr_t size, void *lowAddress, void *highAddress,
+	MM_EnvironmentBase *env, uintptr_t size, void *lowAddress, void *highAddress,
 	void *lowValidAddress, void *highValidAddress)
 {
 	bool decommited = true;
@@ -340,7 +342,7 @@ MM_ConcurrentCardTable::freeTLHMarkMapEntriesForHeapRange(
  * @param cleaNewCards - If true all new cards should be cleared immediately
  */
 bool
-MM_ConcurrentCardTable::heapAddRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards)
+MM_ConcurrentCardTable::heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards)
 {
 	/* Determine the current top of heap */
 	_heapAlloc = _extensions->heap->getHeapTop();
@@ -371,7 +373,7 @@ MM_ConcurrentCardTable::heapAddRange(MM_EnvironmentStandard *env, MM_MemorySubSp
  *
  */
 bool
-MM_ConcurrentCardTable::heapRemoveRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress)
+MM_ConcurrentCardTable::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress)
 {
 	bool result = true;
 	/*
@@ -414,7 +416,7 @@ MM_ConcurrentCardTable::heapRemoveRange(MM_EnvironmentStandard *env, MM_MemorySu
  *
  */
 void
-MM_ConcurrentCardTable::heapReconfigured(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::heapReconfigured(MM_EnvironmentBase *env)
 {
 }
 
@@ -455,9 +457,8 @@ MM_ConcurrentCardTable::newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_M
  * @return TRUE if object initialized OK; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::initialize(MM_EnvironmentBase *envModron, MM_Heap *heap)
+MM_ConcurrentCardTable::initialize(MM_EnvironmentBase *env, MM_Heap *heap)
 {
-	MM_EnvironmentStandard* env = MM_EnvironmentStandard::getEnvironment(envModron);
 	bool initialized = MM_CardTable::initialize(env, heap);
 	if (initialized) {
 		J9HookInterface** mmPrivateHooks = J9_HOOK_INTERFACE(_extensions->privateHookInterface);
@@ -548,7 +549,7 @@ MM_ConcurrentCardTable::tearDown(MM_EnvironmentBase *env)
  * @return Size of all cards which map the supplied heap range
  */
 uintptr_t
-MM_ConcurrentCardTable::cardBytesForHeapRange(MM_EnvironmentStandard *env, void* heapBase, void* heapTop)
+MM_ConcurrentCardTable::cardBytesForHeapRange(MM_EnvironmentBase *env, void* heapBase, void* heapTop)
 {
 	Card *firstCard,*lastCard;
 	uintptr_t numBytes;
@@ -570,7 +571,7 @@ MM_ConcurrentCardTable::cardBytesForHeapRange(MM_EnvironmentStandard *env, void*
  *
  */
 void
-MM_ConcurrentCardTable::clearNonConcurrentCards(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::clearNonConcurrentCards(MM_EnvironmentBase *env)
 {
 	MM_HeapRegionDescriptor *region = NULL;
 	MM_Heap *heap = _extensions->heap;
@@ -599,7 +600,7 @@ MM_ConcurrentCardTable::clearNonConcurrentCards(MM_EnvironmentStandard *env)
  * @param heapTop - top of heap range
  */
 void
-MM_ConcurrentCardTable::dirtyCardsInRange(MM_EnvironmentStandard *env, void *heapBase, void *heapTop)
+MM_ConcurrentCardTable::dirtyCardsInRange(MM_EnvironmentBase *env, void *heapBase, void *heapTop)
 {
 	Card *baseCard = heapAddrToCardAddr(env, heapBase);
 	Card *topCard = heapAddrToCardAddr(env, heapTop);
@@ -618,7 +619,7 @@ MM_ConcurrentCardTable::dirtyCardsInRange(MM_EnvironmentStandard *env, void *hea
  *
  */
 void
-MM_ConcurrentCardTable::initializeCardCleaning(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::initializeCardCleaning(MM_EnvironmentBase *env)
 {
 	initializeCardCleaningStatistics();
 
@@ -643,7 +644,7 @@ MM_ConcurrentCardTable::initializeCardCleaning(MM_EnvironmentStandard *env)
  *
  */
 void
-MM_ConcurrentCardTable::prepareCardsForCleaning(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::prepareCardsForCleaning(MM_EnvironmentBase *env)
 {
 	void *firstFree;
 	MM_MemorySubSpace *subspace;
@@ -714,7 +715,7 @@ MM_ConcurrentCardTable::prepareCardsForCleaning(MM_EnvironmentStandard *env)
  * Report that we have switched to the second card cleaning pass
  */
 void
-MM_ConcurrentCardTable::reportCardCleanPass2Start(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::reportCardCleanPass2Start(MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 
@@ -731,7 +732,7 @@ MM_ConcurrentCardTable::reportCardCleanPass2Start(MM_EnvironmentStandard *env)
  * @return TRUE if we got control; FALSE otherwise
  */
 MMINLINE bool
-MM_ConcurrentCardTable::getExclusiveCardTableAccess(MM_EnvironmentStandard *env, CardCleanPhase currentPhase, bool threadAtSafePoint)
+MM_ConcurrentCardTable::getExclusiveCardTableAccess(MM_EnvironmentBase *env, CardCleanPhase currentPhase, bool threadAtSafePoint)
 {
 
 	/* Try to take control of preparation for next stage of card cleaning */
@@ -756,7 +757,7 @@ MM_ConcurrentCardTable::getExclusiveCardTableAccess(MM_EnvironmentStandard *env,
  * Release exclusive control of the card table
  */
 MMINLINE  void
-MM_ConcurrentCardTable::releaseExclusiveCardTableAccess(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::releaseExclusiveCardTableAccess(MM_EnvironmentBase *env)
 {
 
 	/* Cache the current value */
@@ -788,7 +789,7 @@ MM_ConcurrentCardTable::releaseExclusiveCardTableAccess(MM_EnvironmentStandard *
  * @return FALSE if a GC occurs during during card table preparation.
  */
 bool
-MM_ConcurrentCardTable::cleanCards(MM_EnvironmentStandard *env, bool isMutator, uintptr_t sizeToDo,	uintptr_t *sizeDone, bool threadAtSafePoint)
+MM_ConcurrentCardTable::cleanCards(MM_EnvironmentBase *env, bool isMutator, uintptr_t sizeToDo,	uintptr_t *sizeDone, bool threadAtSafePoint)
 {
 	Card *nextDirtyCard;
 	uintptr_t cleanedSoFar;
@@ -854,7 +855,7 @@ MM_ConcurrentCardTable::cleanCards(MM_EnvironmentStandard *env, bool isMutator, 
 	nextDirtyCard = NULL;
 
 	/* Clean cards until we have done enough or card clean phase changes */
-	MM_ConcurrentGCStats *stats = _extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats();
+	MM_ConcurrentGCStats *stats = _collector->getConcurrentGCStats();
 	while ( cleanedSoFar < sizeToDo && currentCleaningPhase == _cardCleanPhase ) {
 
 		/* Get next dirty card; if any */
@@ -911,7 +912,6 @@ MM_ConcurrentCardTable::cleanCards(MM_EnvironmentStandard *env, bool isMutator, 
 	 * counts will be accurate enough for use currently made of them.
 	 */
  	incConcurrentCleanedCards(cardsCleaned, currentCleaningPhase);
-	env->_threadCleaningCards = false;
 
 	/* If we ran out of cards to clean ...*/
 	if (NULL == nextDirtyCard) {
@@ -939,7 +939,7 @@ MM_ConcurrentCardTable::cleanCards(MM_EnvironmentStandard *env, bool isMutator, 
  * @return TRUE if all objects cleaned; FALSE if GC is waiting
  */
 bool
-MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentStandard *env, Card *card, uintptr_t bytesToClean, uintptr_t *totalBytesCleaned)
+MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentBase *env, Card *card, uintptr_t bytesToClean, uintptr_t *totalBytesCleaned)
 {
 	omrobjectptr_t objectPtr = 0;
 	/* Calculate address of first slot in cards */
@@ -957,11 +957,9 @@ MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentStandard *env, Card *card,
 
 	/* Iterate over all marked objects in the card */
 	MM_HeapMapIterator markedObjectIterator(_extensions, _markingScheme->getMarkMap(), heapBase, heapTop);
-	/* Flag thread is currently cleaning cards */
-	env->_threadCleaningCards = true;
 
 	/* Re-trace all objects which START in this card */
-	MM_ConcurrentGCStats *stats = _extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats();
+	MM_ConcurrentGCStats *stats = _collector->getConcurrentGCStats();
 	while (NULL != (objectPtr = markedObjectIterator.nextObject())) {
 		/* Check to see if another thread  is waiting for exclusive VM access. If so get out quick.
 	 	 */
@@ -1024,7 +1022,7 @@ MM_ConcurrentCardTable::cleanSingleCard(MM_EnvironmentStandard *env, Card *card,
  * Called by STW to do any necessary initialization prior to final card cleaning.
  */
 void
-MM_ConcurrentCardTable::initializeFinalCardCleaning(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::initializeFinalCardCleaning(MM_EnvironmentBase *env)
 {
 	if (_cardTableReconfigured){
 		determineCleaningRanges(env);
@@ -1054,7 +1052,7 @@ MM_ConcurrentCardTable::initializeFinalCardCleaning(MM_EnvironmentStandard *env)
  *
  */
 bool
-MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentStandard *env, uintptr_t *bytesTraced)
+MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentBase *env, uintptr_t *bytesTraced)
 {
 	uintptr_t traceCount = 0;
 	Card * nextDirtyCard;
@@ -1134,7 +1132,7 @@ MM_ConcurrentCardTable::finalCleanCards(MM_EnvironmentStandard *env, uintptr_t *
  *
  */
 void
-MM_ConcurrentCardTable::processTLHMarkBits(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, void *tlhBase, void *tlhTop, BitMapAction action)
+MM_ConcurrentCardTable::processTLHMarkBits(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, void *tlhBase, void *tlhTop, BitMapAction action)
 {
 	/* We should only get called for concurrently collectable subspaces */
 	assume0(subspace->isConcurrentCollectable());
@@ -1170,7 +1168,7 @@ MM_ConcurrentCardTable::processTLHMarkBits(MM_EnvironmentStandard *env, MM_Memor
 		 * to be cleared later (rather than cleaned). We would not then retrace
 		 * objects in that card and refernces may be missed.
 		 */
-		if ((CLEAR == action) && !(_extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getConcurrentWorkStackOverflowOcurred())) {
+		if ((CLEAR == action) && !(_collector->getConcurrentGCStats()->getConcurrentWorkStackOverflowOcurred())) {
 			clearCardsInRange(env,base,top);
 
 			/* Need a store barrier here so that all cards are cleared BEFORE we reset
@@ -1256,7 +1254,7 @@ MM_ConcurrentCardTable::processTLHMarkBits(MM_EnvironmentStandard *env, MM_Memor
  * @return TRUE if cards are clean; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isCardTableEmpty(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::isCardTableEmpty(MM_EnvironmentBase *env)
 {
 	bool empty = true;
 	Card *currentCard, *endCard;
@@ -1292,7 +1290,7 @@ MM_ConcurrentCardTable::isCardTableEmpty(MM_EnvironmentStandard *env)
  * @return TRUE if TLH mark bits all off; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isTLHMarkBitsEmpty(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::isTLHMarkBitsEmpty(MM_EnvironmentBase *env)
 {
 	bool empty = true;
 
@@ -1343,7 +1341,7 @@ MM_ConcurrentCardTable::isTLHMarkBitsEmpty(MM_EnvironmentStandard *env)
  * @return TRUE if reference is to an object within an active TLH; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isObjectInActiveTLH(MM_EnvironmentStandard *env, omrobjectptr_t object)
+MM_ConcurrentCardTable::isObjectInActiveTLH(MM_EnvironmentBase *env, omrobjectptr_t object)
 {
 	uintptr_t markIndex,markBit;
 	bool active;
@@ -1384,7 +1382,7 @@ MM_ConcurrentCardTable::isObjectInActiveTLH(MM_EnvironmentStandard *env, omrobje
  * @return TRUE if card is within an active TLH; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isCardInActiveTLH(MM_EnvironmentStandard *env, Card *card)
+MM_ConcurrentCardTable::isCardInActiveTLH(MM_EnvironmentBase *env, Card *card)
 {
 	uintptr_t markIndex,markBit;
 	bool active;
@@ -1425,7 +1423,7 @@ MM_ConcurrentCardTable::isCardInActiveTLH(MM_EnvironmentStandard *env, Card *car
  * @return TRUE if reference is to an object within a dirty card; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isObjectInDirtyCardNoCheck(MM_EnvironmentStandard *env, omrobjectptr_t object)
+MM_ConcurrentCardTable::isObjectInDirtyCardNoCheck(MM_EnvironmentBase *env, omrobjectptr_t object)
 {
 	bool dirty;
 
@@ -1450,7 +1448,7 @@ MM_ConcurrentCardTable::isObjectInDirtyCardNoCheck(MM_EnvironmentStandard *env, 
  * @return TRUE if card has NOT already been cleaned; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object)
+MM_ConcurrentCardTable::isObjectInUncleanedDirtyCard(MM_EnvironmentBase *env, omrobjectptr_t object)
 {
 	CleaningRange *currentRange;
 
@@ -1493,7 +1491,7 @@ MM_ConcurrentCardTable::isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env
  * @return TRUE if reference is to an object within a dirty card; FALSE otherwise
  */
 bool
-MM_ConcurrentCardTable::isObjectInDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object)
+MM_ConcurrentCardTable::isObjectInDirtyCard(MM_EnvironmentBase *env, omrobjectptr_t object)
 {
 	bool dirty = false;
 
@@ -1519,7 +1517,7 @@ MM_ConcurrentCardTable::isObjectInDirtyCard(MM_EnvironmentStandard *env, omrobje
  *
  */
 void
-MM_ConcurrentCardTable::determineCleaningRanges(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::determineCleaningRanges(MM_EnvironmentBase *env)
 {
 	bool initDone = false;
 
@@ -1591,7 +1589,7 @@ MM_ConcurrentCardTable::determineCleaningRanges(MM_EnvironmentStandard *env)
  *
  */
 void
-MM_ConcurrentCardTable::resetCleaningRanges(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTable::resetCleaningRanges(MM_EnvironmentBase *env)
 {
 	for (CleaningRange  *range =_cleaningRanges; range < _lastCleaningRange; range++) {
 		range->nextCard = range->baseCard;
@@ -1615,7 +1613,7 @@ MM_ConcurrentCardTable::resetCleaningRanges(MM_EnvironmentStandard *env)
  * for exclusive VM access.
  */
 Card*
-MM_ConcurrentCardTable::getNextDirtyCard(MM_EnvironmentStandard *env, Card cardMask, bool concurrentCardClean)
+MM_ConcurrentCardTable::getNextDirtyCard(MM_EnvironmentBase *env, Card cardMask, bool concurrentCardClean)
 {
 	/* Get a local copy of next current range being cleaned */
 	CleaningRange *currentRange = (CleaningRange *)_currentCleaningRange;
@@ -1748,7 +1746,7 @@ MM_ConcurrentCardTable::getNextDirtyCard(MM_EnvironmentStandard *env, Card cardM
  *
  */
 MMINLINE void
-MM_ConcurrentCardTable::setTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t slotIndex, uintptr_t slotBits)
+MM_ConcurrentCardTable::setTLHMarkBits(MM_EnvironmentBase *env, uintptr_t slotIndex, uintptr_t slotBits)
 {
 	volatile uintptr_t *tlhMarkMapSlot= (uintptr_t *)&(_tlhMarkBits[slotIndex]);
 	uintptr_t oldValue, newValue;
@@ -1770,7 +1768,7 @@ MM_ConcurrentCardTable::setTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t sl
  *
  */
 MMINLINE void
-MM_ConcurrentCardTable::clearTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t slotIndex, uintptr_t slotBits)
+MM_ConcurrentCardTable::clearTLHMarkBits(MM_EnvironmentBase *env, uintptr_t slotIndex, uintptr_t slotBits)
 {
 	volatile uintptr_t *tlhMarkMapSlot = (uintptr_t *)&(_tlhMarkBits[slotIndex]);
 	uintptr_t oldValue, newValue;
@@ -1795,7 +1793,7 @@ MM_ConcurrentCardTable::clearTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t 
  *
  */
 bool
-MM_ConcurrentCardTable::cardHasMarkedObjects(MM_EnvironmentStandard *env, Card *card)
+MM_ConcurrentCardTable::cardHasMarkedObjects(MM_EnvironmentBase *env, Card *card)
 {
 	bool hasMarked;
 	/* Calculate address of first slot in heap for card to be scanned */

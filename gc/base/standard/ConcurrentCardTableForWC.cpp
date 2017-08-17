@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,7 +21,7 @@
  *******************************************************************************/
 
 #include "omrcfg.h"
-/* TODO 90354 rm: #include "j9.h" */
+
 #if defined(AIXPPC) || defined(LINUXPPC)
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
@@ -33,6 +33,7 @@
 #include "AtomicOperations.hpp" 
 #include "CollectorLanguageInterface.hpp"
 #include "ConcurrentCardTableForWC.hpp"
+#include "ConcurrentGC.hpp"
 #include "ConcurrentPrepareCardTableTask.hpp"
 #include "Debug.hpp"
 #include "Dispatcher.hpp"
@@ -78,7 +79,7 @@ MM_ConcurrentCardTableForWC::initialize(MM_EnvironmentBase *env, MM_Heap *heap)
 		goto error_no_memory;
 	}	
 	
-	_callback = env->getExtensions()->collectorLanguageInterface->concurrentGC_createSafepointCallback(env);
+	_callback = _collector->_concurrentDelegate.createSafepointCallback(env);
 
 	if (NULL == _callback) {
 		goto error_no_memory;

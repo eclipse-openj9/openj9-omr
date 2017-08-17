@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,6 +67,7 @@ class MM_Scavenger : public MM_Collector
 	 * Data members
 	 */
 private:
+	MM_CollectorLanguageInterface *_cli;
 	const uintptr_t _objectAlignmentInBytes;	/**< Run-time objects alignment in bytes */
 	bool _isRememberedSetInOverflowAtTheBeginning; /**< Cached RS Overflow flag at the beginning of the scavenge */
 
@@ -545,7 +546,7 @@ protected:
 	
 public:
 
-	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_CollectorLanguageInterface *cli, MM_HeapRegionManager *regionManager);
+	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
 	
 	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
@@ -731,8 +732,9 @@ public:
 
 	virtual void heapReconfigured(MM_EnvironmentBase *env);
 
-	MM_Scavenger(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli, MM_HeapRegionManager *regionManager) :
-		MM_Collector(cli)
+	MM_Scavenger(MM_EnvironmentBase *env, MM_HeapRegionManager *regionManager) :
+		MM_Collector()
+		, _cli(env->getExtensions()->collectorLanguageInterface)
 		, _objectAlignmentInBytes(env->getObjectAlignmentInBytes())
 		, _isRememberedSetInOverflowAtTheBeginning(false)
 		, _extensions(env->getExtensions())

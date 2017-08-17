@@ -29,9 +29,6 @@
 
 #include "BaseVirtual.hpp"
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-#include "CollectorLanguageInterface.hpp"
-#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "MarkingDelegate.hpp"
@@ -67,17 +64,8 @@ public:
 	 */
 private:
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool isConcurrentMarkInProgress() {
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK) 
-		uintptr_t mode = _extensions->collectorLanguageInterface->concurrentGC_getConcurrentStats()->getExecutionMode();
-		return (CONCURRENT_ROOT_TRACING <= mode) && (mode < CONCURRENT_EXHAUSTED);
-#else	
-		return false;
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-	}
+	bool isConcurrentMarkInProgress();
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-	
-
 
 	MMINLINE void
 	assertSaneObjectPtr(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)

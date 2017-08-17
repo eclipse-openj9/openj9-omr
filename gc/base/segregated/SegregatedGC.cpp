@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,13 +52,13 @@
  * Initialization
  */
 MM_SegregatedGC *
-MM_SegregatedGC::newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli)
+MM_SegregatedGC::newInstance(MM_EnvironmentBase *env)
 {
 	MM_SegregatedGC *globalGC;
 
 	globalGC = (MM_SegregatedGC *)env->getForge()->allocate(sizeof(MM_SegregatedGC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != globalGC) {
-		new(globalGC) MM_SegregatedGC(env, cli);
+		new(globalGC) MM_SegregatedGC(env);
 		if (!globalGC->initialize(env)) { 
 			globalGC->kill(env);
 			globalGC = NULL;

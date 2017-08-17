@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * (c) Copyright 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,7 +52,6 @@ private:
 	uintptr_t _exclusiveAccessCount; /**< The number of times exclusive access requests have been made to use the receiver */
 
 protected:
-	MM_CollectorLanguageInterface *_cli; /**< Language specific interface used to extend the Modron GC framework */
 
 	uintptr_t _bytesRequested;
 
@@ -289,10 +288,9 @@ public:
 	 */
 	virtual MM_ConcurrentPhaseStatsBase *getConcurrentPhaseStats() { return NULL; }
 	
-	MM_Collector(MM_CollectorLanguageInterface *cli)
+	MM_Collector()
 		: MM_BaseVirtual()
 		, _exclusiveAccessCount(0)
-		, _cli(cli)
 		, _bytesRequested(0)
 		, _globalCollector(false)
 		, _gcCompleted(false)

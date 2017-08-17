@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,7 +74,7 @@ protected:
 	void reportSweepEnd(MM_EnvironmentBase *env);
 
 public:
-	static MM_SegregatedGC *newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli);
+	static MM_SegregatedGC *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
@@ -113,8 +113,8 @@ public:
 		return _sweepScheme;
 	}
 
-	MM_SegregatedGC(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli)
-		: MM_GlobalCollector(env, cli)
+	MM_SegregatedGC(MM_EnvironmentBase *env)
+		: MM_GlobalCollector()
 		, _extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))
 		, _portLibrary(env->getPortLibrary())
 		, _markingScheme(NULL)

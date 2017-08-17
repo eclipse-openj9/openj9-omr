@@ -217,7 +217,7 @@ MM_ConfigurationSegregated::createHeapRegionManager(MM_EnvironmentBase *env)
 MM_GlobalCollector*
 MM_ConfigurationSegregated::createGlobalCollector(MM_EnvironmentBase* env)
 {
-	return MM_SegregatedGC::newInstance(env, env->getExtensions()->collectorLanguageInterface);
+	return MM_SegregatedGC::newInstance(env);
 }
 
 MM_Dispatcher *

@@ -96,15 +96,15 @@ MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (extensions->concurrentMark) {
-		return MM_ConcurrentGC::newInstance(env, extensions->collectorLanguageInterface);
+		return MM_ConcurrentGC::newInstance(env);
 	}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 	if (extensions->concurrentSweep) {
-		return MM_ConcurrentSweepGC::newInstance((MM_EnvironmentStandard *)env, extensions->collectorLanguageInterface);
+		return MM_ConcurrentSweepGC::newInstance(env);
 	}
 #endif /* OMR_GC_CONCURRENT_SWEEP */
-	return MM_ParallelGlobalGC::newInstance(env, extensions->collectorLanguageInterface);
+	return MM_ParallelGlobalGC::newInstance(env);
 }
 
 /**

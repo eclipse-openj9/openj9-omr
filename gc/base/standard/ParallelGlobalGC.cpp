@@ -187,13 +187,13 @@ hookGlobalGcSweepEndAbortedCSFixHeap(J9HookInterface** hook, UDATA eventNum, voi
  * Initialization
  */
 MM_ParallelGlobalGC *
-MM_ParallelGlobalGC::newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli)
+MM_ParallelGlobalGC::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ParallelGlobalGC *globalGC;
 		
 	globalGC = (MM_ParallelGlobalGC *)env->getForge()->allocate(sizeof(MM_ParallelGlobalGC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (globalGC) {
-		new(globalGC) MM_ParallelGlobalGC(env, cli);
+		new(globalGC) MM_ParallelGlobalGC(env);
 		if (!globalGC->initialize(env)) { 
 			globalGC->kill(env);
 			globalGC = NULL;

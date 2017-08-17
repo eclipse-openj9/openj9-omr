@@ -51,20 +51,6 @@
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
 
-/* This enum extends ConcurrentStatus with values > CONCURRENT_ROOT_TRACING. Values from this
- * and from ConcurrentStatus are treated as uintptr_t values everywhere except when used as
- * case labels in switch() statements where manifest constants are required.
- *
- * ConcurrentStatus extensions allow the client language to define discrete units of work
- * that can be executed in parallel by concurrent threads. ConcurrentGC will call
- * MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(..., concurrentStatus, ...)
- * only once with each client-defined status value. The thread that receives the call
- * can check the concurrentStatus value to select and execute the appropriate unit of work.
- */
-enum {
-	CONCURRENT_ROOT_TRACING1 = ((uintptr_t)((uintptr_t)CONCURRENT_ROOT_TRACING + 1))
-};
-
 /**
  * Initialization
  */
@@ -294,49 +280,3 @@ MM_CollectorLanguageInterfaceImpl::compactScheme_languageMasterSetupForGC(MM_Env
 }
 #endif /* OMR_GC_MODRON_COMPACTION */
 
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-MM_ConcurrentSafepointCallback*
-MM_CollectorLanguageInterfaceImpl::concurrentGC_createSafepointCallback(MM_EnvironmentBase *env)
-{
-	MM_EnvironmentStandard *envStd = MM_EnvironmentStandard::getEnvironment(env);
-	return MM_ConcurrentSafepointCallback::newInstance(envStd);
-}
-
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::concurrentGC_getNextTracingMode(uintptr_t executionMode)
-{
-	uintptr_t nextExecutionMode = CONCURRENT_TRACE_ONLY;
-	switch (executionMode) {
-	case CONCURRENT_ROOT_TRACING:
-		nextExecutionMode = CONCURRENT_ROOT_TRACING1;
-		break;
-	case CONCURRENT_ROOT_TRACING1:
-		nextExecutionMode = CONCURRENT_TRACE_ONLY;
-		break;
-	default:
-		Assert_MM_unreachable();
-	}
-
-	return nextExecutionMode;
-}
-
-uintptr_t
-MM_CollectorLanguageInterfaceImpl::concurrentGC_collectRoots(MM_EnvironmentStandard *env, uintptr_t concurrentStatus, bool *collectedRoots, bool *paidTax)
-{
-	MM_ParallelGlobalGC *globalCollector = (MM_ParallelGlobalGC *)_extensions->getGlobalCollector();
-	MM_MarkingScheme *markingScheme = globalCollector->getMarkingScheme();
-	uintptr_t bytesScanned = 0;
-	*collectedRoots = true;
-	*paidTax = true;
-
-	switch (concurrentStatus) {
-	case CONCURRENT_ROOT_TRACING1:
-		markingScheme->markLiveObjectsRoots(env);
-		break;
-	default:
-		Assert_MM_unreachable();
-	}
-
-	return bytesScanned;
-}
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */

@@ -283,6 +283,7 @@ class Simplifier : public TR::Optimization
 
    TR::TreeTop      *_performLowerTreeSimplifier;
    TR::Node         *_performLowerTreeNode;
+   TR::list<std::pair<TR::TreeTop*, TR::Node*> > _performLowerTreeNodePairs;
    };
 
 }

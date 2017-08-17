@@ -34,7 +34,7 @@ namespace TR
    class CodeCacheManager : public JitBuilder::CodeCacheManager
       {
       public:
-      CodeCacheManager(TR_FrontEnd *fe) : JitBuilder::CodeCacheManager(fe) { }
+      CodeCacheManager(TR::RawAllocator rawAllocator) : JitBuilder::CodeCacheManager(rawAllocator) { }
       };
 
 } // namespace TR

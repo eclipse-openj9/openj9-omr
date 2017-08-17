@@ -35,40 +35,19 @@
 
 
 TR::CodeCacheManager *JitBuilder::CodeCacheManager::_codeCacheManager = NULL;
-JitBuilder::JitConfig *JitBuilder::CodeCacheManager::_jitConfig = NULL;
 
+JitBuilder::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator)
+   : OMR::CodeCacheManagerConnector(rawAllocator)
+   {
+   TR_ASSERT_FATAL(!_codeCacheManager, "CodeCacheManager already instantiated. "
+                                       "Cannot create multiple instances");
+   _codeCacheManager = self();
+   }
 
 TR::CodeCacheManager *
 JitBuilder::CodeCacheManager::self()
    {
    return static_cast<TR::CodeCacheManager *>(this);
-   }
-
-
-TR::CodeCache *
-JitBuilder::CodeCacheManager::initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup)
-   {
-   _jitConfig = pyfe()->jitConfig();
-   //_allocator = TR::globalAllocator("CodeCache");
-   return this->OMR::CodeCacheManager::initialize(useConsolidatedCache, numberOfCodeCachesToCreateAtStartup);
-   }
-
-void *
-JitBuilder::CodeCacheManager::getMemory(size_t sizeInBytes)
-   {
-   void * ptr = malloc(sizeInBytes);
-   //fprintf(stderr,"JitBuilder::CodeCacheManager::getMemory(%d) allocated %p\n", sizeInBytes, ptr);
-
-   return ptr;
-   //return _allocator.allocate(sizeInBytes);
-   }
-
-void
-JitBuilder::CodeCacheManager::freeMemory(void *memoryToFree)
-   {
-   //fprintf(stderr,"JitBuilder::CodeCacheManager::free(%p)\n", memoryToFree);
-   free(memoryToFree);
-   //return _allocator.deallocate(memoryToFree, 0);
    }
 
 TR::CodeCacheMemorySegment *

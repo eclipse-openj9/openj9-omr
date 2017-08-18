@@ -46,7 +46,7 @@
 #define hashTable_printf omrtty_printf
 #define HASHTABLE_DEBUG_PORT(_portLibrary) OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary)
 #else
-#define hashTable_printf
+#define hashTable_printf(...)
 #define HASHTABLE_DEBUG_PORT(_portLibrary)
 #endif
 

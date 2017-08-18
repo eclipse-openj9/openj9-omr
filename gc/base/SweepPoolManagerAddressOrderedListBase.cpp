@@ -92,12 +92,6 @@ MM_SweepPoolManagerAddressOrderedListBase::calculateTrailingDetails(
 		if(projection < trailingCandidateByteCount) {
 			sweepChunk->trailingFreeCandidate = (void *)(((uintptr_t)trailingCandidate) + projection);
 			sweepChunk->trailingFreeCandidateSize = trailingCandidateByteCount - projection;
-				
-#if defined(OMR_VALGRIND_MEMCHECK)
-//	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-//	omrtty_printf("VALGRIND: C2 Clearing area b/w %p %p\n", sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
-	// VALGRIND_MEMPOOL_CLEAR(_extensions->valgrindMempoolAddr,sweepChunk->trailingFreeCandidate,(uintptr_t)sweepChunk->trailingFreeCandidate + sweepChunk->trailingFreeCandidateSize);
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		}
 	}
@@ -458,8 +452,9 @@ bool
 MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env, MM_ParallelSweepChunk *sweepChunk, uintptr_t *address, uintptr_t size)
 {
 #if defined(OMR_VALGRIND_MEMCHECK)
+	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("VALGRIND: Clearing area b/w %x %x\n", address, address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+	omrtty_printf("VALGRIND: Clearing area between 0x%x 0x%x and size 0x%x\n", address, (uintptr_t)address + valgrindAreaSize, valgrindAreaSize);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	bool result = false;
@@ -491,7 +486,10 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		MM_MemoryPoolAddressOrderedListBase *memoryPool = (MM_MemoryPoolAddressOrderedListBase *)sweepChunk->memoryPool;
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		omrtty_printf("VALGRIND: Adjusted the clearing area to b/w %x %x\n", address, address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));
+		omrtty_printf("VALGRIND: Original size used %d = 0x%x\n",valgrindAreaSize, valgrindAreaSize);
+		valgrindAreaSize = heapFreeByteCount;
+		omrtty_printf("VALGRIND: Adjusted size %d = 0x%x\n",valgrindAreaSize,valgrindAreaSize);
+		omrtty_printf("VALGRIND: Adjusted the clearing area to b/w 0x%x 0x%x\n", address, (uintptr_t)address + valgrindAreaSize);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 
@@ -530,14 +528,14 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 #if defined(OMR_VALGRIND_MEMCHECK)
 	std::set<uintptr_t>::iterator it;
 
-	for(it = _extensions->_allocatedObjects.lower_bound((uintptr_t)address); it!= _extensions->_allocatedObjects.upper_bound((uintptr_t)address + (uintptr_t)MM_Bits::convertSlotsToBytes(size));it++)
+	for(it = _extensions->_allocatedObjects.lower_bound((uintptr_t)address); it!= _extensions->_allocatedObjects.upper_bound((uintptr_t)address + valgrindAreaSize);it++)
 	{
 		int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-		omrtty_printf("VALGRIND: Clearing object at %x of size %d\n", *it,objSize);
+		omrtty_printf("VALGRIND: Clearing object at 0x%x of size %d = 0x%x\n", *it,objSize,objSize);
 		VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);
 	}
 	_extensions->_allocatedObjects.erase(_extensions->_allocatedObjects.lower_bound((uintptr_t)address), 
-		_extensions->_allocatedObjects.upper_bound((uintptr_t)address + (uintptr_t)MM_Bits::convertSlotsToBytes(size)));
+		_extensions->_allocatedObjects.upper_bound((uintptr_t)address + valgrindAreaSize));
 	omrtty_printf("VALGRIND: Done clearing area\n");
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 

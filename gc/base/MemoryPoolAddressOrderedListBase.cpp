@@ -74,7 +74,7 @@ MM_MemoryPoolAddressOrderedListBase::createFreeEntry(MM_EnvironmentBase* env, vo
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("VALGRIND: Recycled Heap chunk b/w %x %x and nextFreeEntry is %x\n", 
+		omrtty_printf("VALGRIND: Recycled Heap chunk b/w 0x%x 0x%x and nextFreeEntry is 0x%x\n", 
 			addrBase, addrTop, nextFreeEntry);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 

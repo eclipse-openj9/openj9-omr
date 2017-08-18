@@ -40,13 +40,13 @@ elseif(OMR_ARCH_S390)
         z/codegen/Evaluator.cpp
         z/codegen/JBCodeGenerator.cpp
         )
-# elseif(OMR_ARCH_POWER)
-#     list(APPEND JITBUILDER_OBJECTS 
-#         p/codegen/Evaluator.cpp
-#         p/runtime/CodeSync.cpp
-#         p/runtime/AsmUtil.spp
-#         p/runtime/CodeDispatch.spp
-#         )
+elseif(OMR_ARCH_POWER)
+    list(APPEND JITBUILDER_OBJECTS 
+        p/codegen/Evaluator.cpp
+        p/runtime/CodeSync.cpp
+        p/runtime/AsmUtil.spp
+        p/runtime/CodeDispatch.spp
+        )
 endif()
 
 

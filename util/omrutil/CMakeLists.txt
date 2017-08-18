@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 #TODO port following vpath code:
 #ifeq (s390,$(OMR_HOST_ARCH))
   #ifeq (zos,$(OMR_HOST_OS))

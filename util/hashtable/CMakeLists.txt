@@ -17,6 +17,8 @@
 ###############################################################################
 
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 #TODO need to port following makefile snippet
 #ifeq ($(OMR_TOOLCHAIN),gcc)
 #    MODULE_CFLAGS += -Wno-unused-value

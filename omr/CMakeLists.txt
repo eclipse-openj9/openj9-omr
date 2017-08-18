@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_tracegen(omrti.tdf)
 add_tracegen(omrvm.tdf)
 

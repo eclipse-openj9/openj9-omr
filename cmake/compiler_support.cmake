@@ -32,38 +32,37 @@ if (NOT PERL_FOUND )
    message(FATAL_ERROR "Perl not found")
 endif()
 
-
 set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl CACHE INTERNAL "MASM2GAS PATH")
 
-
-# Fetch the OMR view of the system.
-include(OmrDetectSystemInformation)
-
 macro(tr_detect_system_information)
-
 	macro(jit_not_ready)
-		message(FATAL "JIT isn't ready to build with CMake on this platform")
+		message(FATAL_ERROR "JIT isn't ready to build with CMake on this platform: ")
 	endmacro()
 
-
-	omr_detect_system_information()
-
-
 	set(TR_COMPILE_DEFINITIONS "")
-
+	set(TR_COMPILE_OPTIONS     "")
 
 	# Platform setup code! 
-	# TODOs:
-	#  - Support more platforms, and, separate host and target arch. 
-	#  - Once we support all the platforms OMR supports with CMake, this can be
-	#    largely integrated into OmrDetectSystemInformation.cmake. 
+	# 
+	# Longer term this will have to be integrated into the evolving platform story, 
+	# hence the attempt to try to isolate the pieces by architecture, OS, and toolconfig.
 	if(OMR_ARCH_X86)
 		set(TR_HOST_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, or z)")
 		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_X86 TR_TARGET_X86)
 		if(OMR_ENV_DATA64)
 			set(TR_HOST_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
 			set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+
 			set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1" CACHE INTERNAL "ASM FLags")
+			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
+		else()
+			jit_not_ready()
+		endif()
+	elseif(OMR_ARCH_POWER)
+		set(TR_HOST_ARCH p CACHE INTERNAL "")
+		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_POWER TR_TARGET_POWER)
+		if(OMR_ENV_DATA64)
+			set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
 			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
 		else()
 			jit_not_ready()
@@ -72,12 +71,56 @@ macro(tr_detect_system_information)
 		jit_not_ready()
 	endif()
 
+	string(TOUPPER ${OMR_HOST_OS} upcase_os)
+	# OS Setup Code. 
 	if(OMR_HOST_OS MATCHES "osx|linux")
-		list(APPEND TR_COMPILE_DEFINITIONS SUPPORTS_THREAD_LOCAL)
-		string(TOUPPER ${OMR_HOST_OS} upcase_os)
-		list(APPEND TR_COMPILE_DEFINITIONS ${upcase_os} SUPPORTS_THREAD_LOCAL)
+		list(APPEND TR_COMPILE_DEFINITIONS
+			${upcase_os}
+			SUPPORTS_THREAD_LOCAL
+		)
+		
+	elseif(OMR_HOST_OS MATCHES "aix")
+		list(APPEND TR_COMPILE_DEFINITIONS
+			${upcase_os}
+			SUPPORTS_THREAD_LOCAL
+			_XOPEN_SOURCE_EXTENDED=1 
+    			_ALL_SOURCE
+		)
 	else()
 		jit_not_ready()
+	endif()
+
+	message("OMR_TOOLCONFIG is ${OMR_TOOLCONFIG}")
+	# TOOLCHAIN setup code. 
+	if(OMR_TOOLCONFIG MATCHES "gnu|clang")
+		list(APPEND TR_COMPILE_OPTIONS 
+			-std=c++0x
+			-Wno-write-strings #This warning swamps almost all other output
+			) 
+
+
+   		set(PASM_CMD ${CMAKE_C_COMPILER}) 
+   		set(PASM_FLAGS -x assembler-with-cpp -E -P) 
+
+		set(SPP_CMD ${CMAKE_C_COMPILER}) 
+		set(SPP_FLAGS -x assembler-with-cpp -E -P) 
+	elseif(OMR_TOOLCONFIG MATCHES "msvc")
+		# MSVC Specifics
+	elseif(OMR_TOOLCONFIG MATCHES "xlc") 
+		list(APPEND TR_COMPILE_OPTIONS
+			-qarch=pwr7
+			-qtls 
+			-qnotempinc 
+			-qenum=small 
+			-qmbcs 
+			-qlanglvl=extended0x 
+			-qfuncsect 
+			-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
+			-qdebug=nscrep
+			)
+
+		set(SPP_CMD ${CMAKE_C_COMPILER}) 
+		set(SPP_FLAGS -E -P) 
 	endif()
 
 
@@ -108,12 +151,6 @@ function(make_compiler_target TARGET_NAME)
    set(COMPILER_DEFINES  ${${TARGET_COMPILER}_DEFINES})
    set(COMPILER_ROOT     ${${TARGET_COMPILER}_ROOT})
    set(COMPILER_INCLUDES ${${TARGET_COMPILER}_INCLUDES})
-   message("making ${TARGET_NAME} into a compiler target,for ${TARGET_COMPILER}.")
-   message("Defines are ${COMPILER_DEFINES}, arch is ${TR_TARGET_ARCH} and ${TR_TARGET_SUBARCH}") 
-   target_compile_features(${TARGET_NAME} PUBLIC cxx_static_assert)
-   # Until all the compiler written strings are resolved, we 
-   # silence the warning. 
-   target_compile_options(${TARGET_NAME} PRIVATE -Wno-write-strings) 
 
    target_include_directories(${TARGET_NAME} BEFORE PRIVATE 
       ${COMPILER_INCLUDES}
@@ -126,6 +163,13 @@ function(make_compiler_target TARGET_NAME)
       ${TR_COMPILE_DEFINITIONS}
       ${COMPILER_DEFINES} 
       )
+
+   target_compile_options(${TARGET_NAME} PRIVATE 
+	   ${TR_COMPILE_OPTIONS}
+	)
+
+   message("Made ${TARGET_NAME} into a compiler target,for ${TARGET_COMPILER}.")
+   message("Defines are ${COMPILER_DEFINES} and ${TR_COMPILE_DEFINITIONS}, arch is ${TR_TARGET_ARCH} and ${TR_TARGET_SUBARCH}, compile options are ${TR_COMPILE_OPTIONS} ") 
 endfunction(make_compiler_target)
 
 # Filter through the provided list, and rewrite any 
@@ -134,8 +178,6 @@ endfunction(make_compiler_target)
 #
 function(pasm2asm_files out_var compiler)
 
-   set(PASM_CMD ${CMAKE_C_COMPILER}) 
-   set(PASM_FLAGS -x assembler-with-cpp -E -P) 
    set(PASM_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
    omr_add_prefix(PASM_INCLUDES "-I" ${PASM_INCLUDES})
 
@@ -166,7 +208,6 @@ function(pasm2asm_files out_var compiler)
    endforeach()
    set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
-
 
 
 # Filter through the provided list, and rewrite any 
@@ -217,7 +258,81 @@ function(masm2gas_asm_files out_var compiler)
    set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
+function(spp2s_files out_var compiler)
+# This peculiar pipeline exists to work around some issues that 
+# are created by the pickiness of the AIX assembler. 
+# 
+# Convert an SPP file to an IPP using the pre-processor. 
+# Rewrite the IPP file to a .s file using sed. 
 
+
+   # Get the definitions already set in this directory
+   # - A concern would be how this would interact with target_compile_definitions
+   get_property(compile_defs DIRECTORY PROPERTY COMPILE_DEFINITIONS) 
+
+   set(SPP_INCLUDES ${${compiler}_INCLUDES})
+   set(SPP_DEFINES  ${${compiler}_DEFINES} ${compile_defs})
+
+   message(STATUS "Set SPP defines to ${SPP_DEFINES}")
+   omr_add_prefix(SPP_INCLUDES "-I" ${SPP_INCLUDES})
+   omr_add_prefix(SPP_DEFINES  "-D" ${SPP_DEFINES})
+   set(result "")
+   foreach(in_f ${ARGN})
+      get_filename_component(extension ${in_f} EXT)
+      if (extension STREQUAL ".spp") # Requires conversion!
+         get_filename_component(absolute_in_f ${in_f} ABSOLUTE)
+
+         string(REGEX REPLACE ".spp" ".ipp" ipp_out_f ${in_f})
+         set(ipp_out_f "${CMAKE_CURRENT_BINARY_DIR}/${ipp_out_f}")
+         get_filename_component(out_dir ${ipp_out_f} DIRECTORY)
+         file(MAKE_DIRECTORY ${out_dir}) # Just in case it doesn't exist already
+
+         add_custom_command(OUTPUT ${ipp_out_f}
+            COMMAND ${SPP_CMD} ${SPP_FLAGS} ${SPP_DEFINES} ${SPP_INCLUDES} -E -P ${absolute_in_f} > ${ipp_out_f}
+            DEPENDS ${in_f} 
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Running preprocessing ${in_f} to create ${ipp_out_f}"
+            VERBATIM
+            )
+
+         string(REGEX REPLACE ".ipp" ".s" s_out_f ${ipp_out_f})
+
+         add_custom_command(OUTPUT ${s_out_f}
+            COMMAND sed s/\!/\#/g ${ipp_out_f} > ${s_out_f}
+            DEPENDS ${ipp_out_f} 
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Replacing comment tokens in  ${ipp_out_f} to create  ${s_out_f}"
+            VERBATIM
+            )
+
+         list(APPEND result ${s_out_f})
+      else() 
+         list(APPEND result ${in_f}) # No change required. Not masm2gas target
+      endif()
+   endforeach()
+   set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
+
+# Some source files in OMR don't map well into the transforms 
+# CMake already knows about. This generates a pipeline of custom commands
+# to transform these source files into files that CMake _does_ understand. 
+function(inject_object_modification_targets result compiler_name)
+   set(arg ${ARGN})
+
+   # Convert pasm files ot asm files: run this before masm2gas to ensure 
+   # asm files subsequently get picked up. 
+   pasm2asm_files(arg ${compiler_name} ${arg})
+
+   # Run masm2gas on contained .asm files 
+   masm2gas_asm_files(arg ${compiler_name} ${arg})
+
+
+   # COnvert SPP files to .s files
+   spp2s_files(arg ${compiler_name} ${arg})
+
+   set(${result} ${arg} PARENT_SCOPE)
+endfunction(inject_object_modification_targets)
 
 # Create an OMR Compiler component
 # 
@@ -276,12 +391,7 @@ function(create_omr_compiler_library)
                      COMMENT "Generate ${BUILD_NAME_FILE}"
                      )
 
-   # Convert pasm files to asm files: run this before masm2gas to ensure 
-   # asm files subsequently get picked up. 
-   pasm2asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
-
-   # Run masm2gas on contained .asm files 
-   masm2gas_asm_files(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
+   inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
    add_library(${COMPILER_NAME} ${LIB_TYPE} 
       ${BUILD_NAME_FILE} 
@@ -328,10 +438,7 @@ function(create_omr_compiler_library)
    add_compiler_subdirectory(runtime)
    add_compiler_subdirectory(ilgen)
 
-   if(${TR_TARGET_ARCH} STREQUAL "x")
-      add_compiler_subdirectory(x)
-   endif()
-
+   add_compiler_subdirectory(${TR_TARGET_ARCH})
 
    # Filter out objects requested to be removed by 
    # client project (if any): 
@@ -340,12 +447,9 @@ function(create_omr_compiler_library)
       list(REMOVE_ITEM CORE_COMPILER_OBJECTS ${abs_filename})
    endforeach()
 
-   # Convert pasm files to asm files: run this before masm2gas to ensure 
-   # asm files subsequently get picked up. 
-   pasm2asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
 
-   # Run masm2gas on contained .asm files 
-   masm2gas_asm_files(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+
+   inject_object_modification_targets(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
 
    # Append to the compiler sources list
    target_sources(${COMPILER_NAME} PRIVATE ${CORE_COMPILER_OBJECTS})

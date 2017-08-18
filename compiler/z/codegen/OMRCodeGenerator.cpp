@@ -4062,7 +4062,7 @@ TR_S390Peephole::ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPRep
    currInst = _cursor;
    nextInst = _cursor->getNext();
 
-   TR::InstOpCode::S390BranchCondition cond = getBranchConditionForMask(0xF - ((getMaskForBranchCondition(branchInst->getBranchCondition()) >> 4) & 0xF));
+   TR::InstOpCode::S390BranchCondition cond = getBranchConditionForMask(0xF - (getMaskForBranchCondition(branchInst->getBranchCondition()) & 0xF));
 
    if (performTransformation(comp(), "O^O S390 PEEPHOLE: Conditionalizing fall-through block following %p.\n", currInst))
       {

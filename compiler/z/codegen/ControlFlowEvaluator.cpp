@@ -3734,12 +3734,12 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             
             auto mnemonic = is64BitRegister ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
 
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER)>>4, true);
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER)>>4, true);
+            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
+            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
             }
          else
             {
-            generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc))>>4, true);
+            generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
             }
          }
       else
@@ -3845,14 +3845,14 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
             auto mnemonic = trueReg->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
 
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER) >> 4, true);
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER) >> 4, true);
+            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
+            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
             }
          else
             {
             auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
 
-            generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER)>>4, true);
+            generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
             }
          }
       else
@@ -4048,7 +4048,7 @@ TR::Instruction *generateAlwaysTrapSequence(TR::Node *node, TR::CodeGenerator *c
    TR::RegisterDependencyConditions *regDeps =
          new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
    regDeps->addPostCondition(zeroReg, TR::RealRegister::AssignAny);
-   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER)>>4, true, cg);
+   cursor = new (cg->trHeapMemory()) TR::S390RRFInstruction(TR::InstOpCode::CLRT, node, zeroReg, zeroReg, getMaskForBranchCondition(TR::InstOpCode::COND_BER), true, cg);
    cursor->setDependencyConditions(regDeps);
 
    cg->stopUsingRegister(zeroReg);

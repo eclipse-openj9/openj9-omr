@@ -753,7 +753,7 @@ public:
    void setCondCodeShouldBePreserved(bool b) { _cgFlags.set(S390CG_condCodeShouldBePreserved, b); }
 
    uint8_t getFCondMoveBranchOpCond() { return fCondMoveBranchOpCond; }
-   void setFCondMoveBranchOpCond(TR::InstOpCode::S390BranchCondition b) { fCondMoveBranchOpCond = (getMaskForBranchCondition(b) >> 4) & 0xF; }
+   void setFCondMoveBranchOpCond(TR::InstOpCode::S390BranchCondition b) { fCondMoveBranchOpCond = (getMaskForBranchCondition(b)) & 0xF; }
 
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
 

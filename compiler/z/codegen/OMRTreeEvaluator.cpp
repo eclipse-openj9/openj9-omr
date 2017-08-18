@@ -3670,8 +3670,8 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
       TR::InstOpCode::S390BranchCondition branchOpCond =
          generateS390CompareOps(node, cg, fBranchOpCond, rBranchOpCond);
       uint8_t branchMask = getMaskForBranchCondition(branchOpCond);
-      branchMask += 0x10;
-      branchOpCond = getBranchConditionForMask(branchMask>>4);
+      branchMask += 0x01;
+      branchOpCond = getBranchConditionForMask(branchMask);
       cursor = generateS390BranchInstruction(cg, branchOp, branchOpCond, node, doneCmp);
       }
    else
@@ -3975,7 +3975,7 @@ TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderM
    TR::InstOpCode::S390BranchCondition newCond = brCond;
    if (getIntegralValue(constNode) == 0)
       { 
-      if (getBranchConditionForMask(getMaskForBranchCondition(brCond)>>4) == TR::InstOpCode::COND_MASK8)
+      if (getBranchConditionForMask(getMaskForBranchCondition(brCond)) == TR::InstOpCode::COND_MASK8)
          {
          newCond = TR::InstOpCode::COND_BZ;
          }
@@ -3984,7 +3984,7 @@ TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderM
          newCond = TR::InstOpCode::COND_MASK7;
          }
       }
-   else if (getBranchConditionForMask(getMaskForBranchCondition(brCond)>>4) == TR::InstOpCode::COND_MASK8)
+   else if (getBranchConditionForMask(getMaskForBranchCondition(brCond)) == TR::InstOpCode::COND_MASK8)
       {
       newCond = TR::InstOpCode::COND_BO;
       }
@@ -4804,8 +4804,8 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
          if (comp->getOption(TR_TraceCG))
             traceMsg(comp, "in else statement\n");
          uint8_t branchMask = getMaskForBranchCondition(opBranchCond);
-         branchMask += 0x10;
-         opBranchCond = getBranchConditionForMask(branchMask>>4);
+         branchMask += 0x01;
+         opBranchCond = getBranchConditionForMask(branchMask);
 
          generateS390BranchInstruction(cg, branchOp, opBranchCond, node, node->getBranchDestination()->getNode()->getLabel(),deps);
          }
@@ -10278,7 +10278,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
       ifxcmpBrCond = getStandardIfBranchConditionForArraycmp(ificmpNode, cg);
       }
 
-   bool isIfxcmpBrCondContainEqual = getMaskForBranchCondition(ifxcmpBrCond) & 0x80;
+   bool isIfxcmpBrCondContainEqual = getMaskForBranchCondition(ifxcmpBrCond) & 0x08;
    bool isStartInternalControlFlowSet = false;
    bool isCondLabelNeeded = true;
    bool isEndLabelNeeded = false;
@@ -15590,7 +15590,7 @@ void arraycmpWithPadHelper::generateConstCLCSpacePaddingLoop()
       {
       //if src1leng < src2len and remain == 1, CLI forces a reverse compare order which leads an additional BRC following CLI. i.e.,
       //CLI
-      //TR::InstOpCode::S390BranchCondition brCond = getBranchConditionForMask(getReverseBranchMask((getMaskForBranchCondition(finalBrCond) >> 4) & 0x0E));
+      //TR::InstOpCode::S390BranchCondition brCond = getBranchConditionForMask(getReverseBranchMask((getMaskForBranchCondition(finalBrCond)) & 0x0E));
       ////Do not use --> TR::InstOpCode::S390BranchCondition brCond = getReverseBranchCondition(finalBrCond);
       //BRC on brCond
       //Not worth doing that.
@@ -18021,7 +18021,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
       needResultReg = false;// Result register is not applicable for the isFoldedIf case
       }
 
-   bool isIfxcmpBrCondContainEqual = getMaskForBranchCondition(ifxcmpBrCond) & 0x80;
+   bool isIfxcmpBrCondContainEqual = getMaskForBranchCondition(ifxcmpBrCond) & 0x08;
 
    TR::Register * firstAddrReg = cg->gprClobberEvaluate(firstAddrNode);
    TR::Register * secondAddrReg = cg->gprClobberEvaluate(secondAddrNode);

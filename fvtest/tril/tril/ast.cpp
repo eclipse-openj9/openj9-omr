@@ -16,51 +16,28 @@
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
  ******************************************************************************/
 
-#include "ast.h"
+#include "ast.hpp"
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 
 ASTNode* createNode(const char * name, ASTNodeArg* args, ASTNode* children,  ASTNode* next) {
-    ASTNode* n = (ASTNode*)malloc(sizeof(ASTNode));
-    //printf("  node at %p\n", n);
-    n->name = name;
-    n->args = args;
-    n->next = next;
-    //printf("  children at %p\n", children);
-    n->children = children;
-    return n;
+    return new ASTNode{name, args, children, next};
 }
 
 ASTNodeArg* createNodeArg(const char * name, ASTValue* value,  ASTNodeArg* next) {
-    ASTNodeArg* a = (ASTNodeArg*)malloc(sizeof(ASTNodeArg));
-    a->name = name;
-    a->value = value;
-    a->next = next;
-    return a;
+    return new ASTNodeArg{name, value, next};
 }
 
-ASTValue* createInt64Value(uint64_t val) {
-    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-    v->type = Int64;
-    v->value.int64 = val;
-    v->next = NULL;
-    return v;
+ASTValue* createIntegerValue(uint64_t val) {
+    return new ASTValue{val};
 }
 
-ASTValue* createDoubleValue(double val) {
-    ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-    v->type = Double;
-    v->value.f64 = val;
-    v->next = NULL;
-    return v;
+ASTValue* createFloatingPointValue(double val) {
+    return new ASTValue{val};
 }
 
 ASTValue* createStrValue(const char* val) {
-   ASTValue* v = (ASTValue*)malloc(sizeof(ASTValue));
-   v->type = String;
-   v->value.str = val;
-   v->next = NULL;
-   return v;
+    return new ASTValue{val};
 }
 
 void appendSiblingNode(ASTNode* list, ASTNode* newNode) {
@@ -90,21 +67,10 @@ uint16_t countNodes(const ASTNode* n) {
     return count;
 }
 
-const ASTNodeArg* getArgByName(const ASTNode* node, const char* name) {
-    const ASTNodeArg* arg = node->args;
-    while (arg) {
-        if (arg->name != NULL && strcmp(name, arg->name) == 0) { // arg need not have a name
-            return arg;
-        }
-        arg = arg->next;
-    }
-    return NULL;
-}
-
 const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
     const ASTNode* node = list;
     while (node) {
-        if (strcmp(name, node->name) == 0) {
+        if (strcmp(name, node->getName()) == 0) {
             return node;
         }
         node = node->next;
@@ -115,7 +81,7 @@ const ASTNode* findNodeByNameInList(const ASTNode* list, const char* name) {
 const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
     const ASTNode* node = tree;
     while (node) {
-        if (strcmp(name, node->name) == 0) {
+        if (strcmp(name, node->getName()) == 0) {
             return node;
         }
 
@@ -129,17 +95,17 @@ const ASTNode* findNodeByNameInTree(const ASTNode* tree, const char* name) {
     return NULL;
 }
 
-void printASTValueUnion(FILE* file, ASTValue* value) {
-    switch (value->type) {
-        case Int64: fprintf(file, "%lu", value->value.int64); break;
-        case Double: fprintf(file, "%f", value->value.f64); break;
-        case String: fprintf(file, "\"%s\"", value->value.str); break;
-        default: fprintf(file, "{bad arg type %d}", value->type);
+void printASTValueUnion(FILE* file, const ASTValue* value) {
+    switch (value->getType()) {
+        case ASTValue::Integer: fprintf(file, "%lu", value->getInteger()); break;
+        case ASTValue::FloatingPoint: fprintf(file, "%f", value->getFloatingPoint()); break;
+        case ASTValue::String: fprintf(file, "\"%s\"", value->getString()); break;
+        default: fprintf(file, "{bad arg type %d}", value->getType());
     };
 }
 
-void printASTValue(FILE* file, ASTValue* value) {
-    ASTValue* v = value;
+void printASTValue(FILE* file, const ASTValue* value) {
+    const ASTValue* v = value;
     int isList = v->next != NULL;
     if (isList) {
         printf("[");
@@ -155,26 +121,45 @@ void printASTValue(FILE* file, ASTValue* value) {
     }
 }
 
-void printASTArgs(FILE* file, ASTNodeArg* args) {
-    ASTNodeArg* a = args;
+void printASTArgs(FILE* file, const ASTNodeArg* args) {
+    const ASTNodeArg* a = args;
     while (a) {
         printf(" ");
-        if (a->name != NULL && strcmp("", a->name) != 0) {
-            fprintf(file, "%s=", a->name);
+        if (a->getName() != NULL && strcmp("", a->getName()) != 0) {
+            fprintf(file, "%s=", a->getName());
         }
-        printASTValue(file, a->value);
+        printASTValue(file, a->getValue());
         a = a->next;
     }
 }
 
-void printTrees(FILE* file, ASTNode* trees, int indent) {
-    ASTNode* t = trees;
+void printTrees(FILE* file, const ASTNode* trees, int indent) {
+    const ASTNode* t = trees;
     while(t) {
-        int indentVal = indent*2 + (int)strlen(t->name); // indent with two spaces
-        fprintf(file, "(%p) %*s", t, indentVal, t->name);
-        printASTArgs(file, t->args);
+        int indentVal = indent*2 + (int)strlen(t->getName()); // indent with two spaces
+        fprintf(file, "(%p) %*s", t, indentVal, t->getName());
+        printASTArgs(file, t->getArgs());
         fprintf(file, "\n");
-        printTrees(file, t->children, indent + 1);
+        printTrees(file, t->getChildren(), indent + 1);
         t = t->next;
     }
+}
+
+bool operator == (const ASTNodeArg& lhs, const ASTNodeArg& rhs) {
+    std::string lhsName = lhs.getName();
+    std::string rhsName = rhs.getName();
+    if (lhsName != rhsName) return false;
+
+    auto lhsValue = lhs.getValue();
+    auto rhsValue = rhs.getValue();
+
+    while (lhsValue != nullptr && rhsValue != nullptr) {
+        if (*lhsValue != *rhsValue) return false;
+        lhsValue = lhsValue->next;
+        rhsValue = rhsValue->next;
+    }
+
+    if (lhsValue != nullptr || rhsValue != nullptr) return false;
+
+    return true;
 }

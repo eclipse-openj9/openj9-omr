@@ -18,7 +18,13 @@
 [-]?[0-9]+      {
                 yylval.integer = atol(yytext);
                 return INTEGER;
+            };
+
+[-]?0x[0-9a-fA-F]+      {
+                yylval.integer = strtol(yytext, NULL, 16);
+                return INTEGER;
             }
+
 
 [-]?[0-9]+[.][0-9]+      {
                 yylval.f64 = strtod(yytext, NULL);

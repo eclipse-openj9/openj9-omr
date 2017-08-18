@@ -3560,6 +3560,9 @@ OMR::Node::exceptionsRaised()
 
    switch (node->getOpCodeValue())
       {
+      case TR::ZEROCHK:
+         possibleExceptions |= TR::Block:: CanCatchEverything;
+      break;
       case TR::DIVCHK:
          possibleExceptions |= TR::Block:: CanCatchDivCheck;
          break;

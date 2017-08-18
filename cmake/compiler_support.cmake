@@ -32,7 +32,6 @@ if (NOT PERL_FOUND )
    message(FATAL_ERROR "Perl not found")
 endif()
 
-set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl CACHE INTERNAL "MASM2GAS PATH")
 
 macro(tr_detect_system_information)
 	macro(jit_not_ready)
@@ -42,27 +41,28 @@ macro(tr_detect_system_information)
 	set(TR_COMPILE_DEFINITIONS "")
 	set(TR_COMPILE_OPTIONS     "")
 
+
 	# Platform setup code! 
 	# 
 	# Longer term this will have to be integrated into the evolving platform story, 
 	# hence the attempt to try to isolate the pieces by architecture, OS, and toolconfig.
 	if(OMR_ARCH_X86)
-		set(TR_HOST_ARCH    x     CACHE INTERNAL "The architecture directory used for the compiler code (x, p, or z)")
+		set(TR_HOST_ARCH    x)
 		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_X86 TR_TARGET_X86)
 		if(OMR_ENV_DATA64)
-			set(TR_HOST_SUBARCH amd64 CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
-			set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+			set(TR_HOST_SUBARCH amd64)
+			set(TR_HOST_BITS    64)
+			set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1")
 
-			set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1" CACHE INTERNAL "ASM FLags")
 			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
 		else()
 			jit_not_ready()
 		endif()
 	elseif(OMR_ARCH_POWER)
-		set(TR_HOST_ARCH p CACHE INTERNAL "")
+		set(TR_HOST_ARCH p)
 		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_POWER TR_TARGET_POWER)
 		if(OMR_ENV_DATA64)
-			set(TR_HOST_BITS    64    CACHE INTERNAL  "Bitness of the target architecture")
+			set(TR_HOST_BITS    64)
 			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
 		else()
 			jit_not_ready()
@@ -125,9 +125,11 @@ macro(tr_detect_system_information)
 
 
 	# Currently not doing cross, so assume HOST == TARGET
-	set(TR_TARGET_ARCH    ${TR_HOST_ARCH}    CACHE INTERNAL "The architecture directory used for the compiler code (x, p, arm, or z)")
-	set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH} CACHE INTERNAL "The subarchitecture directory used for the compiler code. May be empty (i386 or amd64)")
-	set(TR_TARGET_BITS    ${TR_HOST_BITS}    CACHE INTERNAL  "Bitness of the target architecture")
+	set(TR_TARGET_ARCH    ${TR_HOST_ARCH})
+	set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH})
+	set(TR_TARGET_BITS    ${TR_HOST_BITS})
+
+	set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl)
 
 	message(STATUS "Set TR_COMPILE_DEFINITIONS to ${TR_COMPILE_DEFINITIONS}")
 endmacro(tr_detect_system_information)
@@ -222,7 +224,7 @@ function(masm2gas_asm_files out_var compiler)
    set(MASM2GAS_INCLUDES ${${compiler}_INCLUDES} $ENV{J9SRC}/oti)
    omr_add_prefix(MASM2GAS_INCLUDES "-I" ${MASM2GAS_INCLUDES})
    set(MASM2GAS_FLAGS --64 )
-   set(CMAKE_ASM-ATT_INCLUDES ${MASM2GAS_INCLUDES} CACHE INTERNAL "ASM Includes") 
+   set(CMAKE_ASM-ATT_INCLUDES ${MASM2GAS_INCLUDES} PARENT_SCOPE) 
     
    set(result "")
    foreach(in_f ${ARGN})

@@ -29,11 +29,6 @@ macro(omr_toolconfig_global_setup)
 	# C4091 is caused by broken windows sdk (https://connect.microsoft.com/VisualStudio/feedback/details/1302025/warning-c4091-in-sdk-7-1a-shlobj-h-1051-dbghelp-h-1054-3056)
 	list(APPEND common_flags -MD -Zm400 /wd4577 /wd4091)
 
-	if(OMR_WARNINGS_AS_ERRORS)
-		list(APPEND common_flags ${OMR_WARNING_AS_ERROR_FLAG})
-		# TODO we also want to be setting warning as error on linker flags
-	endif()
-
 	set(linker_common "-subsystem:console -machine:${TARGET_MACHINE}")
 	if(NOT OMR_ENV_DATA64)
 		set(linker_common "${linker_common} /SAFESEH")

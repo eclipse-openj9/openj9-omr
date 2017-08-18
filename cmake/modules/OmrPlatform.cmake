@@ -52,11 +52,9 @@ macro(omr_platform_global_setup)
 		${OMR_ARCH_DEFINITIONS}
 	)
 
-	if(OMR_HOST_OS STREQUAL "linux")
-		if(OMR_WARNINGS_AS_ERRORS)
-			omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
-			omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
-		endif()
+	if(OMR_WARNINGS_AS_ERRORS)
+		omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
+		omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
 	endif()
 
 	# If the OS requires global setup, do it here.
